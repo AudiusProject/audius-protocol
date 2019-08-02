@@ -1,0 +1,19 @@
+# Copied from .env.staging or .env.production
+.env
+
+# build
+build
+
+# deps
+local-storage
+node_modules
+package-lock.json
+
+# misc
+.DS_Store
+*.swp
+yarn.lock
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
