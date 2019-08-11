@@ -451,48 +451,6 @@ Coverage HTML written to dir cov_html
 ========================== 2 passed in 1.94 seconds ===========================
 ```
 
-## Deploying to ECS
-
-The docker-compose structure can be pushed up to run on AWS infrastructure. There are two ways to run containers: EC2 and Fargate. In EC2, all processes get run on an EC2 instance and cpu cycles and RAM can be allocated for each container. Fargate handles spinning up and scaling each container separately, essentially it's "Lambda" for containers. All containers perform bounded tasks and storage is ephemeral. We currently support only support EC2.
-
-The order of operations is 
-1. Build and deploy the Discprov to ECR. This is basically a private docker hub that allows you to store built images and use them in ECS.
-2. Install AWS CLI and ESC-CLI tools and login 
-3. Use ECS-CLI to create a cluster and deploy to ECS
-
-ECS also looks for a new file call `ecs-params.yml`. This file defines the cpu cycles and RAM in bytes that each container can occupy in the EC2 instance. It's possible to move this to work with Fargate and scale horizontally, if we can use pull Postgres out and use RDS with read replicas. Fargate isn't currently supported in discprov because storage in Fargat
-e is ephemeral. 
-
-#### Building and deploying to ECR
-Navigate to `ECS > Repositories` and create a new repository. When you create a new repo, AWS should give you commands to push to ECR. Run those commands and store the `Repository URI` after the upload finishes. The `Repository URI` goes in your docker-compose.aws.yml file as the `image` property because the `BUILD .` property isn't supported.
-
-#### Install CLI tools
-https://docs.aws.amazon.com/cli/latest/userguide/installing.html
-https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CLI_installation.html
-
-
-#### ECS-CLI commands to deploy to EC2-ECS
-For a full tutorial on how to stand up a cluster and deploy to it, go [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-cli-tutorial-ec2.html). 
-
-Summary of commands included below:
-
-```shell 
-# Create a cluster of type EC2
-ecs-cli configure --cluster audius-discprov-alpha-v2 --region us-west-1 --default-launch-type EC2 --config-name audius-discprov-alpha-v2
-
-# Configure Access to the cluster by providing a key/secret pair with access to ECS 
-ecs-cli configure profile --access-key <key> --secret-key <secret> --profile-name audius-discprov-alpha-v2
-
-# Selects the size and instances
-ecs-cli up --keypair audius-alpha --size 2 --instance-type t2.medium --cluster-config audius-discprov-alpha-v2 --security-group sg-0326d39c5ba9b3d6e --vpc vpc-016ae358cbd4b6fbb --subnets subnet-07ee24688fa48d242,subnet-0b9cdb23761d05e57 --instance-role ecsInstanceRole
-
-# Add the newly created instances from the ECS cluster to a load balancer via an auto scaling group
-aws autoscaling attach-load-balancer-target-groups --auto-scaling-group-name amazon-ecs-cli-setup-audius-discprov-ec2-EcsInstanceAsg-90NUZ9JT4NGC --target-group-arns arn:aws:elasticloadbalancing:us-west-1:526177477460:targetgroup/testTarget5000/fd817f2a9e028c22
-
-# Push up the docker compose file to the ECS cluster
-ecs-cli compose --file docker-compose.aws.yml up --create-log-groups --cluster-config audius-discprov-alpha-v2
-```
-
 ### Links
 
 #### Circus

@@ -7,6 +7,8 @@ Audius is working to create a fully decentralized community of artists, develope
 
 This repository encompasses all of the services, contracts and libs that comprise the Audius protocol.
 
+[![CircleCI](https://circleci.com/gh/AudiusProject/audius-protocol/tree/master.svg?style=svg&circle-token=e272a756b49e50a54dcc096af8fd8b0405f6bf41)](https://circleci.com/gh/AudiusProject/audius-protocol/tree/master)
+
 ### Audius Services
 
 | Service                                                        | Description                                                                                       

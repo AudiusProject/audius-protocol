@@ -1,7 +1,5 @@
-# Audius Contracts
-This repository contains the smart contracts being developed for the audius streaming protocol.
-
-TODO: Add more details
+# Audius Data Contracts
+This repository contains the smart contracts for account, user and content management. These are currently deployed to the POA network blockchain.
 
 ## First Time Setup
 
@@ -21,7 +19,7 @@ https://docs.docker.com/install
 run ``` docker ``` in your terminal application to confirm the installation
 
 Ensure the docker daemon is running, it can be started from either the command line or
-through the docker macOs gui - https://docs.docker.com/docker-for-mac/install/#install-and-run-docker-for-mac
+through the docker macOS GUI - https://docs.docker.com/docker-for-mac/install/#install-and-run-docker-for-mac
 
 Pull the trufflesuite/ganche-cli container to your local box:
 
