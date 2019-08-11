@@ -1,0 +1,51 @@
+{
+  "name": "eth-contracts",
+  "version": "0.1.0",
+  "description": "Audius token and other contracts on Ethereum",
+  "author": "AudiusProject",
+  "license": "Apache-2.0",
+  "scripts": {
+    "test": "npm run truffle-test",
+    "test-circle-ci": "./scripts/circleci-test.sh",
+    "truffle-test": "./scripts/truffle-test.sh",
+    "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
+    "ganache": "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000",
+    "ganache-i": "docker ps",
+    "ganache-q": "docker rm -f audius_ganache_cli_eth_contracts > /dev/null",
+    "truffle-compile": "./node_modules/.bin/truffle compile",
+    "truffle-migrate": "npm run truffle-compile && ./node_modules/.bin/truffle migrate --reset --network development",
+    "truffle-console": "./node_modules/.bin/truffle console --network development",
+    "solidity-lint": "./node_modules/.bin/solium -d contracts",
+    "lint": "./node_modules/.bin/standard",
+    "lint-fix": "./node_modules/.bin/standard --fix"
+  },
+  "dependencies": {
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "ethlint": "^1.2.3",
+    "fs-extra": "^7.0.0",
+    "openzeppelin-solidity": "^2.3.0",
+    "truffle": "5.0.1",
+    "truffle-hdwallet-provider": "^1.0.13"
+  },
+  "devDependencies": {
+    "standard": "^12.0.1",
+    "async": "^2.6.1",
+    "babel-register": "^6.26.0"
+  },
+  "engines": {
+    "node": ">=10.16.0",
+    "npm": "6.1.0"
+  },
+  "standard": {
+    "globals": [
+      "artifacts",
+      "assert",
+      "beforeEach",
+      "it",
+      "contract",
+      "before"
+    ],
+    "ignore": []
+  }
+}

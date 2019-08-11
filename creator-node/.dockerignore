@@ -1,0 +1,14 @@
+.circleci/
+.e2e-overrides/
+docker-compose/
+file_storage/
+node_modules/
+
+.dockerignore
+.env
+.gitignore
+
+Dockerfile
+npm-debug.log
+local-config.json
+README.md

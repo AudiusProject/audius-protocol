@@ -1,0 +1,11 @@
+{
+  "development": {
+    "use_env_variable": "dbUrl"
+  },
+  "test": {
+    "use_env_variable": "dbUrl"
+  },
+  "production": {
+    "use_env_variable": "dbUrl"
+  }
+}

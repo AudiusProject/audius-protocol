@@ -1,0 +1,22 @@
+{
+  "dbUrl": "postgres://postgres:postgres@localhost:7432/audius_identity_service",
+  "port": 7000,
+  "redisHost": "localhost",
+  "redisPort": 7379,
+  "logLevel": "debug",
+  "twitterAPIKey": "",
+  "twitterAPISecret": "",
+  "instagramAPIKey": "",
+  "instagramAPISecret": "",
+  "web3Provider": "http://localhost:8545/",
+  "relayerPrivateKey": "34efbbc0431c7f481cdba15d65bbc9ef47196b9cf38d5c4b30afa2bcf86fafba",
+  "relayerPublicKey": "0xaaaa90Fc2bfa70028D6b444BB9754066d9E2703b",
+  "userVerifierPrivateKey": "ebba299e6163ff3208de4e82ce7db09cf7e434847b5bdab723af96ae7c763a0e",
+  "userVerifierPublicKey": "0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0",
+  "blacklisterPrivateKey": "87e08695a0c368b9fcbf7420183d266514a1b70791fd0b4254b3cbb8373803c7",
+  "blacklisterPublicKey": "0xcccc36bE44D106C6aC14199A2Ed6a29fDa25d5Ae",
+  "rateLimitingReqLimit": 15000,
+  "rateLimitingAuthLimit": 5000,
+  "rateLimitingTwitterLimit": 5000,
+  "minimumBalance": 1
+}

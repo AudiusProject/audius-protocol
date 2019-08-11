@@ -1,0 +1,151 @@
+{
+  "contractName": "ServiceProviderStorageInterface",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "name": "_endpoint",
+          "type": "string"
+        }
+      ],
+      "name": "register",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "name": "_endpoint",
+          "type": "string"
+        }
+      ],
+      "name": "deregister",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "name": "_serviceId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getServiceProviderInfo",
+      "outputs": [
+        {
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "name": "endpoint",
+          "type": "string"
+        },
+        {
+          "name": "blocknumber",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_endpoint",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getServiceProviderIdFromEndpoint",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_ownerAddress",
+          "type": "address"
+        },
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getServiceProviderIdsFromAddress",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getTotalServiceTypeProviders",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "contractName": "UserStorageInterface",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_wallet",
+          "type": "address"
+        },
+        {
+          "name": "_handle",
+          "type": "bytes16"
+        },
+        {
+          "name": "_handleLower",
+          "type": "bytes16"
+        }
+      ],
+      "name": "addUser",
+      "outputs": [
+        {
+          "name": "newUserId",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "getUser",
+      "outputs": [
+        {
+          "name": "wallet",
+          "type": "address"
+        },
+        {
+          "name": "handle",
+          "type": "bytes16"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "userExists",
+      "outputs": [
+        {
+          "name": "exists",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_handle",
+          "type": "bytes16"
+        }
+      ],
+      "name": "handleIsTaken",
+      "outputs": [
+        {
+          "name": "isTaken",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

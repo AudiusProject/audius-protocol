@@ -1,0 +1,1 @@
+# Declare test as module

@@ -1,0 +1,690 @@
+{
+  "contractName": "UserFactory",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "kill",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x41c0e1b5"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x715018a6"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x8da5cb5b"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x8f32d59b"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_registryAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setRegistry",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xa91ee0dc"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xf2fde38b"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "usedSignatures",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0xf978fd61"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_registryAddress",
+          "type": "address"
+        },
+        {
+          "name": "_userStorageRegistryKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_networkId",
+          "type": "uint256"
+        },
+        {
+          "name": "_verifierAddress",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor",
+      "signature": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_handle",
+          "type": "bytes16"
+        },
+        {
+          "indexed": false,
+          "name": "_wallet",
+          "type": "address"
+        }
+      ],
+      "name": "AddUser",
+      "type": "event",
+      "signature": "0xd1d6ad95bbecda8e24685116c6fcbf8bbbd6a03c07fea60fad548103fceffe5f"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_multihashDigest",
+          "type": "bytes32"
+        }
+      ],
+      "name": "UpdateMultihash",
+      "type": "event",
+      "signature": "0x0b3c47cf5987756c09345045f9d607c7df6565537126fe0e728c84ccae3f493e"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_name",
+          "type": "bytes32"
+        }
+      ],
+      "name": "UpdateName",
+      "type": "event",
+      "signature": "0x9b6107f4b7ebf09cb539dd0ee11828c588cb696924082fbfb6730ca103f64680"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_location",
+          "type": "bytes32"
+        }
+      ],
+      "name": "UpdateLocation",
+      "type": "event",
+      "signature": "0x218e0779ad52ae82f133a3258c0122bfb578807cf2cc9910f410b1ef620ac08a"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_bio",
+          "type": "string"
+        }
+      ],
+      "name": "UpdateBio",
+      "type": "event",
+      "signature": "0xc29a654846b675986efd662b2b8ae8a5fef979d24cd054630c3540552f1539eb"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_profilePhotoDigest",
+          "type": "bytes32"
+        }
+      ],
+      "name": "UpdateProfilePhoto",
+      "type": "event",
+      "signature": "0xa404544365c5470e1016fb75ec96d1c96a6205ed11ff90a5db99bdd1c4151404"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_coverPhotoDigest",
+          "type": "bytes32"
+        }
+      ],
+      "name": "UpdateCoverPhoto",
+      "type": "event",
+      "signature": "0x57150fecd31580d01998659881486f4cd3a0cbf51061c5156dc37af78fbd4d2f"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_isCreator",
+          "type": "bool"
+        }
+      ],
+      "name": "UpdateIsCreator",
+      "type": "event",
+      "signature": "0x914531849c1b0d5ead57b0db0e64a6321c8065c5bfbef4a49e384be6c5a1346d"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_isVerified",
+          "type": "bool"
+        }
+      ],
+      "name": "UpdateIsVerified",
+      "type": "event",
+      "signature": "0x49bc85f8dda63ee321b3397be6085137abeef4f08ca07aa23fc4ecd4590b4736"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_creatorNodeEndpoint",
+          "type": "string"
+        }
+      ],
+      "name": "UpdateCreatorNodeEndpoint",
+      "type": "event",
+      "signature": "0x1de68860660449be41a0be3b2c20925b05e4d5b2b4fd6a35a9d41f936f55a65e"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event",
+      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_callerAddress",
+          "type": "address"
+        },
+        {
+          "name": "_userId",
+          "type": "uint256"
+        }
+      ],
+      "name": "callerOwnsUser",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x865cc490"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "getUser",
+      "outputs": [
+        {
+          "name": "wallet",
+          "type": "address"
+        },
+        {
+          "name": "handle",
+          "type": "bytes16"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0xb0467deb"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "name": "_handle",
+          "type": "bytes16"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "addUser",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x5f18ce6c"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_multihashDigest",
+          "type": "bytes32"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateMultihash",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x344639b4"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_name",
+          "type": "bytes32"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateName",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xc3c742c0"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_location",
+          "type": "bytes32"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateLocation",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xe1fef537"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_bio",
+          "type": "string"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateBio",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x8f47b2a0"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_profilePhotoDigest",
+          "type": "bytes32"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateProfilePhoto",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xf712849f"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_coverPhotoDigest",
+          "type": "bytes32"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateCoverPhoto",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x7865fc60"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_isCreator",
+          "type": "bool"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateIsCreator",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xf80fc430"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_isVerified",
+          "type": "bool"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateIsVerified",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x6ddaf8ea"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_creatorNodeEndpoint",
+          "type": "string"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateCreatorNodeEndpoint",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x3d4314dd"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_handle",
+          "type": "bytes16"
+        }
+      ],
+      "name": "handleIsValid",
+      "outputs": [
+        {
+          "name": "isValid",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x69eea1d6"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "userExists",
+      "outputs": [
+        {
+          "name": "exists",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x6f93dd91"
+    }
+  ]
+}

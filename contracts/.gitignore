@@ -1,0 +1,8 @@
+*.swp
+*.swo
+*.swn
+.DS_Store
+.npmrc
+ganache_log.txt
+node_modules/
+build/

@@ -1,0 +1,12 @@
+*.swp
+*.swo
+*.swn
+.DS_Store
+.npmrc
+local-config.json
+node_modules/
+npm-debug.log
+file_storage/
+local-storage/
+local-test/
+contract-config.json

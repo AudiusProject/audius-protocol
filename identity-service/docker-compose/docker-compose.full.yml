@@ -1,0 +1,27 @@
+version: '3'
+services:
+  db:
+    image: postgres:11.1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: audius_identity_service
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - '7432:5432'
+  redis:
+    image: redis:5.0.4
+    ports:
+      - '7379:6379'
+  identity-service:
+    build: ../.
+    env_file:
+      - ./development.env
+    depends_on:
+      - db
+      - redis
+    ports:
+      - '7000:7000'
+
+volumes:
+  postgres_data:

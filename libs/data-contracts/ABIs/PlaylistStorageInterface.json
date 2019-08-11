@@ -1,0 +1,129 @@
+{
+  "contractName": "PlaylistStorageInterface",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_isAlbum",
+          "type": "bool"
+        },
+        {
+          "name": "_trackIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "createPlaylist",
+      "outputs": [
+        {
+          "name": "newPlaylistId",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "name": "_addedTrackId",
+          "type": "uint256"
+        }
+      ],
+      "name": "addPlaylistTrack",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "name": "_deletedTrackId",
+          "type": "uint256"
+        }
+      ],
+      "name": "deletePlaylistTrack",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getPlaylistOwner",
+      "outputs": [
+        {
+          "name": "playlistOwnerId",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "name": "_trackId",
+          "type": "uint256"
+        }
+      ],
+      "name": "isTrackInPlaylist",
+      "outputs": [
+        {
+          "name": "trackInPlaylist",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        }
+      ],
+      "name": "playlistExists",
+      "outputs": [
+        {
+          "name": "exists",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

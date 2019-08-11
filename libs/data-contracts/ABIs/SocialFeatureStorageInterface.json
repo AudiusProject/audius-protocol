@@ -1,0 +1,123 @@
+{
+  "contractName": "SocialFeatureStorageInterface",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_trackId",
+          "type": "uint256"
+        }
+      ],
+      "name": "addTrackRepost",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_trackId",
+          "type": "uint256"
+        }
+      ],
+      "name": "deleteTrackRepost",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_trackId",
+          "type": "uint256"
+        }
+      ],
+      "name": "userRepostedTrack",
+      "outputs": [
+        {
+          "name": "reposted",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        }
+      ],
+      "name": "addPlaylistRepost",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        }
+      ],
+      "name": "deletePlaylistRepost",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        }
+      ],
+      "name": "userRepostedPlaylist",
+      "outputs": [
+        {
+          "name": "reposted",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

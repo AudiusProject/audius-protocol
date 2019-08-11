@@ -1,0 +1,16 @@
+web3==4.5.0
+Flask==1.0.2
+psycopg2==2.7.7
+SQLAlchemy==1.2.5
+alembic==1.0.0
+celery[redis]==4.2.0
+redis==3.2.0
+pytest==3.7.4
+SQLAlchemy-Utils==0.33.3
+chance==0.110
+pylint==2.3.1
+git+https://github.com/AudiusProject/py-ipfs-api.git@f3e1f7fef2d3a789bf45416f817627b10aaa9241#egg=ipfshttpclient
+pytest-cov==2.6.0
+base58==1.0.0
+flask-cors==3.0.6
+gunicorn==19.9.0

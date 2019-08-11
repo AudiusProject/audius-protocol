@@ -1,0 +1,7 @@
+version: '3'
+services:
+  content-service:
+    network_mode: "host"
+    build: ../.
+    env_file:
+      - ./development.env

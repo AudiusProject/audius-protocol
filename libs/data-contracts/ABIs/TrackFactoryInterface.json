@@ -1,0 +1,73 @@
+{
+  "contractName": "TrackFactoryInterface",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_caller",
+          "type": "address"
+        },
+        {
+          "name": "_trackId",
+          "type": "uint256"
+        }
+      ],
+      "name": "callerOwnsTrack",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "getTrack",
+      "outputs": [
+        {
+          "name": "trackOwnerId",
+          "type": "uint256"
+        },
+        {
+          "name": "multihashDigest",
+          "type": "bytes32"
+        },
+        {
+          "name": "multihashHashFn",
+          "type": "uint8"
+        },
+        {
+          "name": "multihashSize",
+          "type": "uint8"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "trackExists",
+      "outputs": [
+        {
+          "name": "exists",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

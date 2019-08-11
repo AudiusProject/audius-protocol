@@ -1,0 +1,409 @@
+{
+  "contractName": "TrackFactory",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "kill",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x41c0e1b5"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x715018a6"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x8da5cb5b"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x8f32d59b"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_registryAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setRegistry",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xa91ee0dc"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xf2fde38b"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "usedSignatures",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0xf978fd61"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_registryAddress",
+          "type": "address"
+        },
+        {
+          "name": "_trackStorageRegistryKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_userFactoryRegistryKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_networkId",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor",
+      "signature": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_trackOwnerId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_multihashDigest",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "_multihashHashFn",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "name": "_multihashSize",
+          "type": "uint8"
+        }
+      ],
+      "name": "NewTrack",
+      "type": "event",
+      "signature": "0x8e687115e7e80f8142cbe3e2ef071123ae6dfa4dcd1840207333058b678e2c60"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_trackId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_trackOwnerId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_multihashDigest",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "_multihashHashFn",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "name": "_multihashSize",
+          "type": "uint8"
+        }
+      ],
+      "name": "UpdateTrack",
+      "type": "event",
+      "signature": "0x88d57684d74592e09f11552553498ff3014977afd295f7aa9d73ded5a0e47626"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_trackId",
+          "type": "uint256"
+        }
+      ],
+      "name": "TrackDeleted",
+      "type": "event",
+      "signature": "0x35498d07f797499b7f994b0ecb5bd630ac57b3e44471b58cea5ba7e4510bd8eb"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event",
+      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "trackExists",
+      "outputs": [
+        {
+          "name": "exists",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x8302d70e"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_trackOwnerId",
+          "type": "uint256"
+        },
+        {
+          "name": "_multihashDigest",
+          "type": "bytes32"
+        },
+        {
+          "name": "_multihashHashFn",
+          "type": "uint8"
+        },
+        {
+          "name": "_multihashSize",
+          "type": "uint8"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "addTrack",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x549a712d"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_trackId",
+          "type": "uint256"
+        },
+        {
+          "name": "_trackOwnerId",
+          "type": "uint256"
+        },
+        {
+          "name": "_multihashDigest",
+          "type": "bytes32"
+        },
+        {
+          "name": "_multihashHashFn",
+          "type": "uint8"
+        },
+        {
+          "name": "_multihashSize",
+          "type": "uint8"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateTrack",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x2acceb1d"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_trackId",
+          "type": "uint256"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "deleteTrack",
+      "outputs": [
+        {
+          "name": "status",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x5aab8dd0"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_caller",
+          "type": "address"
+        },
+        {
+          "name": "_trackId",
+          "type": "uint256"
+        }
+      ],
+      "name": "callerOwnsTrack",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0xbd25e9ce"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "getTrack",
+      "outputs": [
+        {
+          "name": "trackOwnerId",
+          "type": "uint256"
+        },
+        {
+          "name": "multihashDigest",
+          "type": "bytes32"
+        },
+        {
+          "name": "multihashHashFn",
+          "type": "uint8"
+        },
+        {
+          "name": "multihashSize",
+          "type": "uint8"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x629058ca"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+data-contracts/config.json
+eth-contracts/config.json
+node_modules/
+*.swp
+*.swo
+*.swn
+.DS_Store*
+test.js
+*.code-workspace
+local-storage/
+.npmrc

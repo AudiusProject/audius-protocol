@@ -1,0 +1,121 @@
+{
+  "contractName": "TrackStorageInterface",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_trackId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getTrack",
+      "outputs": [
+        {
+          "name": "trackOwnerId",
+          "type": "uint256"
+        },
+        {
+          "name": "multihashDigest",
+          "type": "bytes32"
+        },
+        {
+          "name": "multihashHashFn",
+          "type": "uint8"
+        },
+        {
+          "name": "multihashSize",
+          "type": "uint8"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_trackOwnerId",
+          "type": "uint256"
+        },
+        {
+          "name": "_multihashDigest",
+          "type": "bytes32"
+        },
+        {
+          "name": "_multihashHashFn",
+          "type": "uint8"
+        },
+        {
+          "name": "_multihashSize",
+          "type": "uint8"
+        }
+      ],
+      "name": "addTrack",
+      "outputs": [
+        {
+          "name": "newTrackId",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_trackId",
+          "type": "uint256"
+        },
+        {
+          "name": "_trackOwnerId",
+          "type": "uint256"
+        },
+        {
+          "name": "_multihashDigest",
+          "type": "bytes32"
+        },
+        {
+          "name": "_multihashHashFn",
+          "type": "uint8"
+        },
+        {
+          "name": "_multihashSize",
+          "type": "uint8"
+        }
+      ],
+      "name": "updateTrack",
+      "outputs": [
+        {
+          "name": "updatePerformed",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_id",
+          "type": "uint256"
+        }
+      ],
+      "name": "trackExists",
+      "outputs": [
+        {
+          "name": "exists",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

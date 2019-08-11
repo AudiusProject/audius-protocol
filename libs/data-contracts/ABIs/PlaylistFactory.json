@@ -1,0 +1,701 @@
+{
+  "contractName": "PlaylistFactory",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "kill",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x41c0e1b5"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x715018a6"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x8da5cb5b"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x8f32d59b"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_registryAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setRegistry",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xa91ee0dc"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xf2fde38b"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "usedSignatures",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0xf978fd61"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_registryAddress",
+          "type": "address"
+        },
+        {
+          "name": "_playlistStorageRegistryKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_userFactoryRegistryKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_trackFactoryRegistryKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_networkId",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor",
+      "signature": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_playlistOwnerId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_isPrivate",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "name": "_isAlbum",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "name": "_trackIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "PlaylistCreated",
+      "type": "event",
+      "signature": "0xc2b9c566e71dea8d94007fd7f260377c8d417c9e90e8ea34d61bf85c82bf603b"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_playlistId",
+          "type": "uint256"
+        }
+      ],
+      "name": "PlaylistDeleted",
+      "type": "event",
+      "signature": "0x595879402c70baa06301bb93ba3a15a6a0e36c639f2057f433852771d7012639"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_addedTrackId",
+          "type": "uint256"
+        }
+      ],
+      "name": "PlaylistTrackAdded",
+      "type": "event",
+      "signature": "0x17352c0de07c7dc5c8c04f4d440f5cf4c40b2068938f0c959a6c178eaf5f6565"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_deletedTrackId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_deletedTrackTimestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "PlaylistTrackDeleted",
+      "type": "event",
+      "signature": "0xf3d152a5a82d1cdcfc5b6ef3824bf411366c5c9ec5ab14a4a0423f3f0cbb51b8"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_orderedTrackIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "PlaylistTracksOrdered",
+      "type": "event",
+      "signature": "0x54984fc8e37fdd9a4eb32a8fbc5c1e0b6c05cfcc32c4ec2537cc40a9bef41c41"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_updatedPlaylistName",
+          "type": "string"
+        }
+      ],
+      "name": "PlaylistNameUpdated",
+      "type": "event",
+      "signature": "0xf6f8309b849a4a1d82e0e6605594408081a96ed563ae02dd22848cd767c3d6ce"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_updatedIsPrivate",
+          "type": "bool"
+        }
+      ],
+      "name": "PlaylistPrivacyUpdated",
+      "type": "event",
+      "signature": "0xbb0f0337be9be22a60a5bb8db7ec020085a663cf69a9938fa3453b5844323fd8"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_playlistImageMultihashDigest",
+          "type": "bytes32"
+        }
+      ],
+      "name": "PlaylistCoverPhotoUpdated",
+      "type": "event",
+      "signature": "0xa726080b12d3c0c85bd759aa9c874b69744ded551b0277a2ed37021a240ccdd8"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_playlistDescription",
+          "type": "string"
+        }
+      ],
+      "name": "PlaylistDescriptionUpdated",
+      "type": "event",
+      "signature": "0xc58002e2e8cc2197972a97d5c567fcf02885a9e2bfdcb2680df2eac34f3c623c"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_playlistUPC",
+          "type": "bytes32"
+        }
+      ],
+      "name": "PlaylistUPCUpdated",
+      "type": "event",
+      "signature": "0x3aab0825d89d0f64d129cbcaf705ad6d1b540b46c930690c5fedc9261745b39a"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event",
+      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_playlistOwnerId",
+          "type": "uint256"
+        },
+        {
+          "name": "_playlistName",
+          "type": "string"
+        },
+        {
+          "name": "_isPrivate",
+          "type": "bool"
+        },
+        {
+          "name": "_isAlbum",
+          "type": "bool"
+        },
+        {
+          "name": "_trackIds",
+          "type": "uint256[]"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "createPlaylist",
+      "outputs": [
+        {
+          "name": "newPlaylistId",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x3c1f715c"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "deletePlaylist",
+      "outputs": [
+        {
+          "name": "status",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xbe14ed12"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "name": "_addedTrackId",
+          "type": "uint256"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "addPlaylistTrack",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x748c1ffd"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "name": "_deletedTrackId",
+          "type": "uint256"
+        },
+        {
+          "name": "_deletedTrackTimestamp",
+          "type": "uint256"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "deletePlaylistTrack",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x9a92ad37"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "name": "_trackIds",
+          "type": "uint256[]"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "orderPlaylistTracks",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xdfef3880"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "name": "_updatedPlaylistName",
+          "type": "string"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updatePlaylistName",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x1697bdba"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "name": "_updatedPlaylistPrivacy",
+          "type": "bool"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updatePlaylistPrivacy",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xfb1797e1"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "name": "_playlistImageMultihashDigest",
+          "type": "bytes32"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updatePlaylistCoverPhoto",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xa18a8169"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "name": "_playlistDescription",
+          "type": "string"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updatePlaylistDescription",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xaefc3d75"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "name": "_updatedPlaylistUPC",
+          "type": "bytes32"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updatePlaylistUPC",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xb123e682"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        }
+      ],
+      "name": "playlistExists",
+      "outputs": [
+        {
+          "name": "exists",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x0f3b8483"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        },
+        {
+          "name": "_trackId",
+          "type": "uint256"
+        }
+      ],
+      "name": "isTrackInPlaylist",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x8b2cda41"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_caller",
+          "type": "address"
+        },
+        {
+          "name": "_playlistId",
+          "type": "uint256"
+        }
+      ],
+      "name": "callerOwnsPlaylist",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0xcf35aff3"
+    }
+  ]
+}
