@@ -41,9 +41,12 @@ contract('ServiceProvider test', async (accounts) => {
     registry = await Registry.new()
 
     proxy = await OwnedUpgradeabilityProxy.new({ from: proxyOwner })
+
+    // Deploy registry
+    await registry.addContract(ownedUpgradeabilityProxyKey, proxy.address)
+
     token = await AudiusToken.new({ from: treasuryAddress })
     tokenAddress = token.address
-
     impl0 = await Staking.new()
 
     // Create initialization data
@@ -61,9 +64,6 @@ contract('ServiceProvider test', async (accounts) => {
     staking = await Staking.at(proxy.address)
     stakingAddress = staking.address
 
-    // Deploy registry
-    await registry.addContract(ownedUpgradeabilityProxyKey, proxy.address)
-
     // Deploy sp storage
     serviceProviderStorage = await ServiceProviderStorage.new(registry.address)
     await registry.addContract(serviceProviderStorageKey, serviceProviderStorage.address)
@@ -76,7 +76,8 @@ contract('ServiceProvider test', async (accounts) => {
 
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)
 
-    // Permission sp factory as caller, from the proxy owner address (which happens to equal treasury in this test case)
+    // Permission sp factory as caller, from the proxy owner address 
+    // (which happens to equal treasury in this test case)
     await staking.setStakingOwnerAddress(serviceProviderFactory.address, { from: proxyOwner })
 
     // Transfer 1000 tokens to accounts[1]
@@ -90,6 +91,7 @@ contract('ServiceProvider test', async (accounts) => {
       type,
       endpoint,
       amount,
+      account,
       { from: account })
 
     let args = tx.logs.find(log => log.event === 'RegisteredServiceProvider').args

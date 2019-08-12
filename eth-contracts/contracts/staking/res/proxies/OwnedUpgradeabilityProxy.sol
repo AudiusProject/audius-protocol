@@ -70,7 +70,7 @@ contract OwnedUpgradeabilityProxy is UpgradeabilityProxy, RegistryContract {
      * @param data represents the msg.data to bet sent in the low level call. This parameter may include the function
      * signature of the implementation to be called with the needed payload
      */
-    function upgradeToAndCall(address payable implementation, bytes memory data) public  payable onlyProxyOwner {
+    function upgradeToAndCall(address payable implementation, bytes memory data) public payable onlyProxyOwner {
         upgradeTo(implementation);
         // TODO: Figure out if returnData is useful before removing
         (bool success, ) = address(this).call.value(msg.value)(data); 
