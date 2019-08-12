@@ -7,7 +7,6 @@
 FROM node:10.16 as builder
 
 COPY package*.json ./
-COPY .npmrc ./
 RUN npm install --loglevel verbose
 
 FROM node:10.16-alpine
