@@ -22,6 +22,14 @@ class AudiusTokenClient {
     const tx = await this.ethWeb3Manager.sendTransaction(contractMethod)
     return { txReceipt: tx }
   }
+
+  // Allow spender to withdraw from calling account up to value amount
+  // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
+  async approve (spender, value) {
+    const contractMethod = this.AudiusTokenContract.methods.approve(spender, value)
+    const tx = await this.ethWeb3Manager.sendTransaction(contractMethod)
+    return { txReceipt: tx }
+  }
 }
 
 module.exports = AudiusTokenClient

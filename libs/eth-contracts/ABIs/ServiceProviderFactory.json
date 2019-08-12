@@ -88,6 +88,10 @@
           "type": "address"
         },
         {
+          "name": "_stakingProxyOwnerKey",
+          "type": "bytes32"
+        },
+        {
           "name": "_serviceProviderStorageRegistryKey",
           "type": "bytes32"
         }
@@ -119,11 +123,16 @@
           "indexed": false,
           "name": "_endpoint",
           "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "_stakeAmount",
+          "type": "uint256"
         }
       ],
       "name": "RegisteredServiceProvider",
       "type": "event",
-      "signature": "0x49d3a8f0b84151233eb81a82dada06259a6b856ca3a0e64b8839c84ae3262470"
+      "signature": "0xda2823651979534b78c11c1fd32e8a90ecd0f8f98a8648a8f78fb12d01765c6d"
     },
     {
       "anonymous": false,
@@ -147,11 +156,85 @@
           "indexed": false,
           "name": "_endpoint",
           "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "_unstakeAmount",
+          "type": "uint256"
         }
       ],
       "name": "DeregisteredServiceProvider",
       "type": "event",
-      "signature": "0x62bc5b5f1b70f4ce2cb5115437fc65fe9a15c54ab65811c4c7bc1a9edbfa69cf"
+      "signature": "0x4b8bf251858c5cb19e132cd9a354e12ccae21f47bf38534fd03b2708c0fba5a4"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_spID",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_endpoint",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "_stakeAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "UpdatedStakeAmount",
+      "type": "event",
+      "signature": "0x74b7febb5adb1bb0065200d3ecc2cbf299f2b30bc6bc5adff24f695b34ee2f15"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "test",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "msg",
+          "type": "string"
+        }
+      ],
+      "name": "Test",
+      "type": "event",
+      "signature": "0x48912ec7290f5632f782d57553918136d1725b8af9c6f8805b18e23a35577703"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "test",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "msg",
+          "type": "string"
+        }
+      ],
+      "name": "TestUint",
+      "type": "event",
+      "signature": "0xd4c17c087be9518d1da0c156ff84c0c67887335306b81fb83520c317c3c760f9"
     },
     {
       "anonymous": false,
@@ -181,6 +264,10 @@
         {
           "name": "_endpoint",
           "type": "string"
+        },
+        {
+          "name": "_stakeAmount",
+          "type": "uint256"
         }
       ],
       "name": "register",
@@ -193,7 +280,7 @@
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0xcf2d31fb"
+      "signature": "0xb9b5bec9"
     },
     {
       "constant": false,
@@ -218,6 +305,62 @@
       "stateMutability": "nonpayable",
       "type": "function",
       "signature": "0xeb3c972a"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "name": "_endpoint",
+          "type": "string"
+        },
+        {
+          "name": "_increaseStakeAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "increaseServiceStake",
+      "outputs": [
+        {
+          "name": "newTotalStake",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x7d2f7876"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "name": "_endpoint",
+          "type": "string"
+        },
+        {
+          "name": "_decreaseStakeAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "decreaseServiceStake",
+      "outputs": [
+        {
+          "name": "newTotalStake",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xf61f08d3"
     },
     {
       "constant": true,
@@ -262,7 +405,7 @@
           "type": "string"
         },
         {
-          "name": "blocknumber",
+          "name": "blockNumber",
           "type": "uint256"
         }
       ],
@@ -303,17 +446,17 @@
           "type": "bytes32"
         }
       ],
-      "name": "getServiceProviderIdsFromAddress",
+      "name": "getServiceProviderIdFromAddress",
       "outputs": [
         {
           "name": "spIds",
-          "type": "uint256[]"
+          "type": "uint256"
         }
       ],
       "payable": false,
       "stateMutability": "view",
       "type": "function",
-      "signature": "0x2bec8e16"
+      "signature": "0x2cd6e60f"
     }
   ]
 }

@@ -47,7 +47,7 @@
       "name": "deregister",
       "outputs": [
         {
-          "name": "",
+          "name": "deregisteredSpID",
           "type": "uint256"
         }
       ],
@@ -117,11 +117,11 @@
           "type": "bytes32"
         }
       ],
-      "name": "getServiceProviderIdsFromAddress",
+      "name": "getServiceProviderIdFromAddress",
       "outputs": [
         {
           "name": "",
-          "type": "uint256[]"
+          "type": "uint256"
         }
       ],
       "payable": false,

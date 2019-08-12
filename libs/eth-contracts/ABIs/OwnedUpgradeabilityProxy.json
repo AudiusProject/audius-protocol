@@ -1,5 +1,5 @@
 {
-  "contractName": "ServiceProviderStorage",
+  "contractName": "OwnedUpgradeabilityProxy",
   "abi": [
     {
       "constant": false,
@@ -10,6 +10,21 @@
       "stateMutability": "nonpayable",
       "type": "function",
       "signature": "0x41c0e1b5"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "implementation",
+      "outputs": [
+        {
+          "name": "impl",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x5c60da1b"
     },
     {
       "constant": false,
@@ -82,34 +97,34 @@
       "signature": "0xf2fde38b"
     },
     {
-      "inputs": [
-        {
-          "name": "_registryAddress",
-          "type": "address"
-        }
-      ],
+      "inputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "constructor",
       "signature": "constructor"
     },
     {
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "fallback"
+    },
+    {
       "anonymous": false,
       "inputs": [
         {
           "indexed": false,
-          "name": "test",
-          "type": "bytes32"
+          "name": "previousOwner",
+          "type": "address"
         },
         {
           "indexed": false,
-          "name": "msg",
-          "type": "string"
+          "name": "newOwner",
+          "type": "address"
         }
       ],
-      "name": "TestStg",
+      "name": "ProxyOwnershipTransferred",
       "type": "event",
-      "signature": "0x9f1c36321e12d306f94d4b5154ac504bf754a1022a6be84df15067251afb4a64"
+      "signature": "0x5a3e66efaa1e445ebd894728a69d6959842ea1e97bd79b892797106e270efcd9"
     },
     {
       "anonymous": false,
@@ -130,156 +145,81 @@
       "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
     },
     {
-      "constant": false,
+      "anonymous": false,
       "inputs": [
         {
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
-          "name": "_owner",
+          "indexed": true,
+          "name": "implementation",
           "type": "address"
-        },
-        {
-          "name": "_endpoint",
-          "type": "string"
         }
       ],
-      "name": "register",
-      "outputs": [
-        {
-          "name": "spId",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xcf6c4596"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
-          "name": "_owner",
-          "type": "address"
-        },
-        {
-          "name": "_endpoint",
-          "type": "string"
-        }
-      ],
-      "name": "deregister",
-      "outputs": [
-        {
-          "name": "deregisteredSpID",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xe2f4b9e2"
+      "name": "Upgraded",
+      "type": "event",
+      "signature": "0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b"
     },
     {
       "constant": true,
-      "inputs": [
-        {
-          "name": "_serviceType",
-          "type": "bytes32"
-        }
-      ],
-      "name": "getTotalServiceTypeProviders",
-      "outputs": [
-        {
-          "name": "numberOfProviders",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function",
-      "signature": "0x623fa631"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
-          "name": "_serviceId",
-          "type": "uint256"
-        }
-      ],
-      "name": "getServiceProviderInfo",
+      "inputs": [],
+      "name": "proxyOwner",
       "outputs": [
         {
           "name": "owner",
           "type": "address"
-        },
-        {
-          "name": "endpoint",
-          "type": "string"
-        },
-        {
-          "name": "blocknumber",
-          "type": "uint256"
         }
       ],
       "payable": false,
       "stateMutability": "view",
       "type": "function",
-      "signature": "0xbd1ed292"
+      "signature": "0x025313a2"
     },
     {
-      "constant": true,
+      "constant": false,
       "inputs": [
         {
-          "name": "_endpoint",
-          "type": "bytes32"
+          "name": "newOwner",
+          "type": "address"
         }
       ],
-      "name": "getServiceProviderIdFromEndpoint",
-      "outputs": [
-        {
-          "name": "spID",
-          "type": "uint256"
-        }
-      ],
+      "name": "transferProxyOwnership",
+      "outputs": [],
       "payable": false,
-      "stateMutability": "view",
+      "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0x860dba22"
+      "signature": "0xf1739cae"
     },
     {
-      "constant": true,
+      "constant": false,
       "inputs": [
         {
-          "name": "_ownerAddress",
+          "name": "implementation",
+          "type": "address"
+        }
+      ],
+      "name": "upgradeTo",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x3659cfe6"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "implementation",
           "type": "address"
         },
         {
-          "name": "_serviceType",
-          "type": "bytes32"
+          "name": "data",
+          "type": "bytes"
         }
       ],
-      "name": "getServiceProviderIdFromAddress",
-      "outputs": [
-        {
-          "name": "spID",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
+      "name": "upgradeToAndCall",
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable",
       "type": "function",
-      "signature": "0x2cd6e60f"
+      "signature": "0x4f1ef286"
     }
   ]
 }

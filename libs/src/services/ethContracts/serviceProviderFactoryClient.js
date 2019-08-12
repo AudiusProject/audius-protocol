@@ -6,11 +6,20 @@ let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 class ServiceProviderFactoryClient {
-  constructor (ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress) {
+  constructor (
+    ethWeb3Manager,
+    contractABI,
+    contractRegistryKey,
+    getRegistryAddress,
+    audiusTokenClient,
+    stakingProxyClient
+  ) {
     this.ethWeb3Manager = ethWeb3Manager
     this.contractABI = contractABI
     this.contractRegistryKey = contractRegistryKey
     this.getRegistryAddress = getRegistryAddress
+    this.audiusTokenClient = audiusTokenClient
+    this.stakingProxyClient = stakingProxyClient
     this.web3 = this.ethWeb3Manager.getWeb3()
   }
 
@@ -19,9 +28,12 @@ class ServiceProviderFactoryClient {
     this.ServiceProviderFactory = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
   }
 
-  async register (serviceType, endpoint) {
+  async register (serviceType, endpoint, amount) {
     if (!Utils.isFQDN(endpoint)) {
       throw new Error('Not a fully qualified domain name!')
+    }
+    if (!Number.isInteger(amount) && !this.web3.utils.isBN(amount)) {
+      throw new Error('Invalid amount')
     }
 
     let requestUrl = urlJoin(endpoint, 'version')
@@ -36,21 +48,59 @@ class ServiceProviderFactoryClient {
       throw new Error('Attempting to register endpoint with mismatched service type')
     }
 
+    // Approve token transfer operation
+    let tx0 = await this.audiusTokenClient.approve(
+      this.stakingProxyClient.contractAddress,
+      amount)
+
+    // Register and stake
     let contractMethod = this.ServiceProviderFactory.methods.register(
       Utils.utf8ToHex(serviceType),
-      endpoint)
+      endpoint,
+      amount)
     let tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
     return {
       txReceipt: tx,
       spID: parseInt(tx.events.RegisteredServiceProvider.returnValues._spID),
       serviceType: Utils.hexToUtf8(tx.events.RegisteredServiceProvider.returnValues._serviceType),
       owner: tx.events.RegisteredServiceProvider.returnValues._owner,
-      endpoint: tx.events.RegisteredServiceProvider.returnValues._endpoint
+      endpoint: tx.events.RegisteredServiceProvider.returnValues._endpoint,
+      tokenApproveReceipt: tx0
+    }
+  }
+
+  async increaseStake (serviceType, endpoint, amount) {
+    let tx0 = await this.audiusTokenClient.approve(
+      this.stakingProxyClient.contractAddress,
+      amount)
+    let contractMethod = this.ServiceProviderFactory.methods.increaseServiceStake(
+      Utils.utf8ToHex(serviceType),
+      endpoint,
+      amount)
+    let tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
+    return {
+      txReceipt: tx,
+      tokenApproveReceipt: tx0
+    }
+  }
+
+  async decreaseStake (serviceType, endpoint, amount) {
+    let contractMethod = this.ServiceProviderFactory.methods.decreaseServiceStake(
+      Utils.utf8ToHex(serviceType),
+      endpoint,
+      amount)
+    let tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
+    return {
+      txReceipt: tx
     }
   }
 
   async deregister (serviceType, endpoint) {
-    let requestUrl = urlJoin(endpoint, 'version')
+    // TODO: Review whether the below validation is necessary...
+    // When testing locally, an ngrok endpoint that disappeared was registered
+    // Since owner validation is already performed, this should NOT be necessary
+    // let requestUrl = urlJoin(endpoint, 'version')
+    /*
     let axiosRequestObj = {
       url: requestUrl,
       method: 'get',
@@ -61,6 +111,7 @@ class ServiceProviderFactoryClient {
     if (serviceType !== endpointServiceType) {
       throw new Error('Attempting to deregister endpoint with mismatched service type')
     }
+    */
 
     let contractMethod = this.ServiceProviderFactory.methods.deregister(
       Utils.utf8ToHex(serviceType),
@@ -117,8 +168,8 @@ class ServiceProviderFactoryClient {
     return info
   }
 
-  async getServiceProviderIdsFromAddress (ownerAddress, serviceType) {
-    let info = await this.ServiceProviderFactory.methods.getServiceProviderIdsFromAddress(
+  async getServiceProviderIdFromAddress (ownerAddress, serviceType) {
+    let info = await this.ServiceProviderFactory.methods.getServiceProviderIdFromAddress(
       ownerAddress,
       Utils.utf8ToHex(serviceType)
     ).call()
@@ -126,7 +177,7 @@ class ServiceProviderFactoryClient {
   }
 
   async getServiceProviderInfoFromAddress (ownerAddress, serviceType) {
-    let idsList = await this.getServiceProviderIdsFromAddress(ownerAddress, serviceType)
+    let idsList = await this.getServiceProviderIdFromAddress(ownerAddress, serviceType)
 
     const spsInfo = await Promise.all(
       _.range(idsList.length).map(i =>

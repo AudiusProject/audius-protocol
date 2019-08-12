@@ -14,7 +14,7 @@ interface ServiceProviderStorageInterface {
     bytes32 _serviceType,
     address _owner,
     string calldata _endpoint
-  ) external returns (uint);
+  ) external returns (uint deregisteredSpID);
 
   function getServiceProviderInfo(
     bytes32 _serviceType,
@@ -25,10 +25,10 @@ interface ServiceProviderStorageInterface {
     bytes32 _endpoint
   ) external view returns (uint);
 
-  function getServiceProviderIdsFromAddress(
+  function getServiceProviderIdFromAddress(
     address _ownerAddress,
     bytes32 _serviceType
-  ) external view returns (uint[] memory);
+  ) external view returns (uint);
 
   function getTotalServiceTypeProviders(
     bytes32 _serviceType
