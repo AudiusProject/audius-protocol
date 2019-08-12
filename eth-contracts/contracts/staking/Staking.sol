@@ -29,8 +29,10 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     // 604800 / 14 = 46523, ~46000 blocks
     uint256 private constant CLAIM_BLOCK_DIFFERENCE = 46000;
 
+    // Default minimum stake is 0
     uint256 internal minStakeAmount = 0;
-    uint256 internal maxStakeAmount = 0;
+    // Default maximum stake is 100,000,000
+    uint256 internal maxStakeAmount = 100000000;
 
     // Reward tracking info
     uint256 internal currentClaimBlock;
@@ -365,8 +367,8 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         }
 
         // Confirm stake is within configured bounds
-        require(newStake > minStakeAmount, 'Minimum stake threshold exceeded')
-        require(newStake < maxStakeAmount, 'Maximum stake threshold exceeded')
+        require(newStake > minStakeAmount, 'Minimum stake threshold exceeded');
+        require(newStake < maxStakeAmount, 'Maximum stake threshold exceeded');
 
         // add new value to account history
         accounts[_accountAddress].stakedHistory.add64(getBlockNumber64(), newStake);
