@@ -1,6 +1,6 @@
 {
   "name": "@audius/libs",
-  "version": "0.8.11",
+  "version": "0.10.0",
   "description": "",
   "main": "src/index.js",
   "browser": {
