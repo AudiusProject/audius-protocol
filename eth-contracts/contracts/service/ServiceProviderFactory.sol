@@ -65,7 +65,8 @@ contract ServiceProviderFactory is RegistryContract {
     function register(
         bytes32 _serviceType,
         string calldata _endpoint,
-        uint256 _stakeAmount
+        uint256 _stakeAmount,
+        address _delegateOwnerWallet
     ) external returns (uint spID)
     {
         address owner = msg.sender;
@@ -78,7 +79,8 @@ contract ServiceProviderFactory is RegistryContract {
         ).register(
             _serviceType,
             owner,
-            _endpoint
+            _endpoint,
+            _delegateOwnerWallet
         );
 
         emit RegisteredServiceProvider(
@@ -136,7 +138,7 @@ contract ServiceProviderFactory is RegistryContract {
         address owner = msg.sender;
         uint updatedSpID = this.getServiceProviderIdFromEndpoint(keccak256(bytes(_endpoint)));
         require(updatedSpID != 0, "Increase stake - endpoint not registered");
-        (address stgOwner, ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
+        (address stgOwner, , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
         require(stgOwner == owner, "Increase stake - incorrect owner");
 
         // Stake increased token amount for msg.sender
@@ -170,7 +172,7 @@ contract ServiceProviderFactory is RegistryContract {
         // Confirm correct owner for this endpoint
         uint updatedSpID = this.getServiceProviderIdFromEndpoint(keccak256(bytes(_endpoint)));
         require(updatedSpID != 0, "Increase stake - endpoint not registered");
-        (address stgOwner, ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
+        (address stgOwner, , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
         require(stgOwner == owner, "Increase stake - incorrect owner");
 
         // Decrease staked token amount for msg.sender
@@ -205,7 +207,7 @@ contract ServiceProviderFactory is RegistryContract {
     }
 
     function getServiceProviderInfo(bytes32 _serviceType, uint _serviceId)
-    external view returns (address owner, string memory endpoint, uint blockNumber)
+    external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet)
     {
         return ServiceProviderStorageInterface(
             registry.getContract(serviceProviderStorageRegistryKey)

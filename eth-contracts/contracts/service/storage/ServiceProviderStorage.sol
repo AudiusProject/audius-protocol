@@ -12,7 +12,7 @@ contract ServiceProviderStorage is RegistryContract {
         address owner;
         string endpoint;
         uint blocknumber;
-        address delegatePublicKey;
+        address delegateOwnerWallet;
     }
 
     bytes32 constant CALLER_REGISTRY_KEY = "ServiceProviderFactory";
@@ -43,6 +43,11 @@ contract ServiceProviderStorage is RegistryContract {
     /** @notice - stores the number of services registered by a provider, can never be >1 */
     mapping(address => uint) serviceProviderAddressNumberOfEndpoints;
 
+    /** @dev - mapping of delegateOwnerWallet -> address */
+    /** @notice - stores the current user of a delegate owner wallet, these cannot be duplicated
+    between registrants */
+   mapping(address => address) delegateOwnerWalletToServiceProvider;
+
     event TestStg(
       bytes32 test,
       string msg);
@@ -59,7 +64,8 @@ contract ServiceProviderStorage is RegistryContract {
     function register(
         bytes32 _serviceType,
         address _owner,
-        string calldata _endpoint
+        string calldata _endpoint,
+        address _delegateOwnerWallet
     ) external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint spId)
     {
         require (
@@ -70,6 +76,10 @@ contract ServiceProviderStorage is RegistryContract {
           serviceProviderAddressNumberOfEndpoints[_owner] == 0,
           "Account already has an endpoint registered");
 
+        require (
+          delegateOwnerWalletToServiceProvider[_delegateOwnerWallet] == address(0x0),
+          "Registering account is a delegate wallet");
+
         uint assignedSpId = serviceProviderTypeIDs[_serviceType] + 1;
         serviceProviderTypeIDs[_serviceType] = assignedSpId;
 
@@ -78,7 +88,7 @@ contract ServiceProviderStorage is RegistryContract {
             owner: _owner,
             endpoint: _endpoint,
             blocknumber: block.number,
-            delegatePublicKey: _owner
+            delegateOwnerWallet: _delegateOwnerWallet
         });
 
         // Update endpoint mapping
@@ -89,6 +99,9 @@ contract ServiceProviderStorage is RegistryContract {
 
         // Update count mapping for this address to 1
         serviceProviderAddressNumberOfEndpoints[_owner] = 1;
+
+        // Update delegate owner wallet mapping
+        delegateOwnerWalletToServiceProvider[_delegateOwnerWallet] = _owner;
 
         return assignedSpId;
     }
@@ -110,6 +123,8 @@ contract ServiceProviderStorage is RegistryContract {
             serviceProviderInfo[_serviceType][deregisteredID].owner == _owner,
             "Invalid deregister operation");
 
+        address delegateOwner = serviceProviderInfo[_serviceType][deregisteredID].delegateOwnerWallet; 
+
         // Update info mapping
         delete serviceProviderInfo[_serviceType][deregisteredID];
 
@@ -118,6 +133,9 @@ contract ServiceProviderStorage is RegistryContract {
 
         // Update count mapping to 0
         serviceProviderAddressNumberOfEndpoints[_owner] = 0;
+
+        // Update delegate owner wallet mapping
+        delegateOwnerWalletToServiceProvider[delegateOwner] = address(0x0);
 
         return deregisteredID;
     }

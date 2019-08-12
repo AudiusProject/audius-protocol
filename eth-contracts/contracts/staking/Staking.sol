@@ -29,10 +29,10 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     // 604800 / 14 = 46523, ~46000 blocks
     uint256 private constant CLAIM_BLOCK_DIFFERENCE = 46000;
 
-    // Default minimum stake is 0
+    // Default minimum stake 
     uint256 internal minStakeAmount = 0;
-    // Default maximum stake is 100,000,000
-    uint256 internal maxStakeAmount = 100000000;
+    // Default maximum stake 
+    uint256 internal maxStakeAmount = 0;
 
     // Reward tracking info
     uint256 internal currentClaimBlock;
@@ -72,6 +72,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // Initialize claim values to zero, disabling claim prior to initial funding
         currentClaimBlock = 0;
         currentClaimableAmount = 0;
+        maxStakeAmount = 100000000;
     }
 
     /* External functions */
@@ -136,6 +137,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
 
     /**
      * @notice Slashes `_amount` tokens from _slashAddress
+     * Controlled by treasury address
      * @param _amount Number of tokens slashed
      * @param _slashAddress address being slashed
      */
@@ -153,7 +155,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
 
     /**
       * @notice Sets caller for stake and unstake functions
-      * Controlled by treasury address, and indirectly audius
+      * Controlled by treasury address
       */
     function setStakingOwnerAddress(address _stakeCaller) external isInitialized {
         require(msg.sender == treasuryAddress, "Slashing functionality locked to treasury owner");
@@ -300,6 +302,22 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         return totalStakedHistory.get(_blockNumber);
     }
 
+    /**
+     * @notice Return the minimum stake configuration
+     * @return min stake
+     */
+    function getMinStakeAmount() external view returns (uint256) {
+      return minStakeAmount; 
+    }
+
+    /**
+     * @notice Return the maximum stake configuration
+     * @return max stake
+     */
+    function getMaxStakeAmount() external view returns (uint256) {
+      return maxStakeAmount; 
+    }
+
     /* Public functions */
 
     /**
@@ -368,7 +386,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
 
         // Confirm stake is within configured bounds
         // require(newStake > minStakeAmount, 'Minimum stake threshold exceeded');
-        // require(newStake < maxStakeAmount, 'Maximum stake threshold exceeded');
+        require(newStake <= maxStakeAmount, 'Maximum stake threshold exceeded');
 
         // add new value to account history
         accounts[_accountAddress].stakedHistory.add64(getBlockNumber64(), newStake);

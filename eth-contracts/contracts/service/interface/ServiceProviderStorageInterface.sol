@@ -7,7 +7,8 @@ interface ServiceProviderStorageInterface {
   function register(
     bytes32 _serviceType,
     address _owner,
-    string calldata _endpoint
+    string calldata _endpoint,
+    address _delegateOwnerWallet
   ) external returns (uint);
 
   function deregister(
@@ -19,7 +20,7 @@ interface ServiceProviderStorageInterface {
   function getServiceProviderInfo(
     bytes32 _serviceType,
     uint _serviceId
-  ) external view returns (address owner, string memory endpoint, uint blocknumber);
+  ) external view returns (address owner, string memory endpoint, uint blocknumber, address delegateOwnerWallet);
 
   function getServiceProviderIdFromEndpoint(
     bytes32 _endpoint
