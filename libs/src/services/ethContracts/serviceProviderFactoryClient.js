@@ -28,7 +28,7 @@ class ServiceProviderFactoryClient {
     this.ServiceProviderFactory = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
   }
 
-  async register (serviceType, endpoint, amount) {
+  async registerWithDelegate (serviceType, endpoint, amount, delegateOwnerWallet) {
     if (!Utils.isFQDN(endpoint)) {
       throw new Error('Not a fully qualified domain name!')
     }
@@ -57,7 +57,8 @@ class ServiceProviderFactoryClient {
     let contractMethod = this.ServiceProviderFactory.methods.register(
       Utils.utf8ToHex(serviceType),
       endpoint,
-      amount)
+      amount,
+      delegateOwnerWallet)
     let tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
     return {
       txReceipt: tx,
@@ -67,6 +68,14 @@ class ServiceProviderFactoryClient {
       endpoint: tx.events.RegisteredServiceProvider.returnValues._endpoint,
       tokenApproveReceipt: tx0
     }
+  }
+
+  async register (serviceType, endpoint, amount) {
+    return this.registerWithDelegate(
+      serviceType,
+      endpoint,
+      amount,
+      this.ethWeb3Manager.getWalletAddress())
   }
 
   async increaseStake (serviceType, endpoint, amount) {
