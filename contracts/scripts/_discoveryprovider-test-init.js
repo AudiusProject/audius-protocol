@@ -14,7 +14,6 @@ const path = require('path')
 const os = require('os');
 
 const Registry = artifacts.require('Registry')
-const audius_shared_libs = require('@audius/shared-libs')
 const truffle_dev_config = artifacts.options['_values']['networks']['development']
 
 const AudiusLibs = 'libs'
@@ -29,14 +28,6 @@ let registry
 const getDefaultAccount = async () => {
   let accounts = await web3.eth.getAccounts()
   return accounts[0]
-}
-
-const getSharedLib = async () => {
-  let provider = `http://${truffle_dev_config['host']}:${truffle_dev_config['port']}`
-  let registryAddr = (await Registry.deployed()).address
-  let validWallet = await getDefaultAccount()
-  console.log(`audius-shared-lib arguments: Provider=${provider}, RegistryAddr=${registryAddr}, OwnerWallet=${validWallet}`)
-  return new audius_shared_libs(provider, registryAddr, validWallet)
 }
 
 // dirName is directory name of the audius repo that you're trying to get the path to
@@ -189,10 +180,6 @@ module.exports = async callback => {
       fs.mkdirSync(dappOutput, { recursive: true })
     }
     outputJsonConfigFile(dappOutput + '/config.json')
-
-    let audius_shared_lib = await getSharedLib()
-    await audius_shared_lib.init()
-    audius_shared_lib.registerDiscoveryProvider(defaultDiscprovEndpoint)
   }
   /** Replace contracts artifacts in libs with new ABIs, signature schemas and config */
   else if (process.argv[4] === '-run-audlib'){
