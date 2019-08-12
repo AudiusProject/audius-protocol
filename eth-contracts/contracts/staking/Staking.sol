@@ -72,6 +72,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // Initialize claim values to zero, disabling claim prior to initial funding
         currentClaimBlock = 0;
         currentClaimableAmount = 0;
+        minStakeAmount = 100;
         maxStakeAmount = 100000000;
     }
 
@@ -160,6 +161,16 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     function setStakingOwnerAddress(address _stakeCaller) external isInitialized {
         require(msg.sender == treasuryAddress, "Slashing functionality locked to treasury owner");
         stakingOwnerAddress = _stakeCaller;
+    }
+
+    function setMinStakeAmount(uint256 _amount) external isInitialized {
+        require(msg.sender == treasuryAddress, "Stake amount manipulation limited to treasury owner");
+        minStakeAmount = _amount; 
+    }
+
+    function setMaxStakeAmount(uint256 _amount) external isInitialized {
+        require(msg.sender == treasuryAddress, "Stake amount manipulation limited to treasury owner");
+        maxStakeAmount = _amount; 
     }
 
     /**
@@ -385,8 +396,8 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         }
 
         // Confirm stake is within configured bounds
-        // require(newStake > minStakeAmount, 'Minimum stake threshold exceeded');
         require(newStake <= maxStakeAmount, 'Maximum stake threshold exceeded');
+        require(newStake > minStakeAmount || newStake == 0, 'Minimum stake threshold exceeded');
 
         // add new value to account history
         accounts[_accountAddress].stakedHistory.add64(getBlockNumber64(), newStake);
