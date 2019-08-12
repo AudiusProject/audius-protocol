@@ -367,8 +367,8 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         }
 
         // Confirm stake is within configured bounds
-        require(newStake > minStakeAmount, 'Minimum stake threshold exceeded');
-        require(newStake < maxStakeAmount, 'Maximum stake threshold exceeded');
+        // require(newStake > minStakeAmount, 'Minimum stake threshold exceeded');
+        // require(newStake < maxStakeAmount, 'Maximum stake threshold exceeded');
 
         // add new value to account history
         accounts[_accountAddress].stakedHistory.add64(getBlockNumber64(), newStake);
