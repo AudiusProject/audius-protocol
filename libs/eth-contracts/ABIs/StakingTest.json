@@ -130,6 +130,20 @@
     },
     {
       "constant": true,
+      "inputs": [],
+      "name": "getMaxStakeAmount",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
       "inputs": [
         {
           "name": "_accountAddress",
@@ -174,6 +188,20 @@
         }
       ],
       "name": "totalStakedFor",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getMinStakeAmount",
       "outputs": [
         {
           "name": "",

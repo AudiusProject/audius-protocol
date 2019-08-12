@@ -458,6 +458,36 @@
     },
     {
       "constant": true,
+      "inputs": [],
+      "name": "getMinStakeAmount",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x527cb1d7"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getMaxStakeAmount",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x451309ed"
+    },
+    {
+      "constant": true,
       "inputs": [
         {
           "name": "_accountAddress",

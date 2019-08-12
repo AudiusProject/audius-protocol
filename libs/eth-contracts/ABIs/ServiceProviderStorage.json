@@ -143,6 +143,10 @@
         {
           "name": "_endpoint",
           "type": "string"
+        },
+        {
+          "name": "_delegateOwnerWallet",
+          "type": "address"
         }
       ],
       "name": "register",
@@ -155,7 +159,7 @@
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0xcf6c4596"
+      "signature": "0x7cc977ba"
     },
     {
       "constant": false,

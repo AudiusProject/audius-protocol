@@ -15,6 +15,10 @@
         {
           "name": "_endpoint",
           "type": "string"
+        },
+        {
+          "name": "_delegateOwnerWallet",
+          "type": "address"
         }
       ],
       "name": "register",
@@ -80,6 +84,10 @@
         {
           "name": "blocknumber",
           "type": "uint256"
+        },
+        {
+          "name": "delegateOwnerWallet",
+          "type": "address"
         }
       ],
       "payable": false,
