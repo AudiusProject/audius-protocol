@@ -98,8 +98,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     }
 
     /**
-     * TODO: add comms
-     * @notice WIP to allow claiming of stake
+     * @notice Allows reward claiming for service providers
      */
     function makeClaim() external isInitialized {
         require(msg.sender != treasuryAddress, "Treasury cannot claim staking reward");
@@ -163,11 +162,19 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         stakingOwnerAddress = _stakeCaller;
     }
 
+    /** 
+      * @notice Sets the minimum stake possible
+      * Controlled by treasury
+      */
     function setMinStakeAmount(uint256 _amount) external isInitialized {
         require(msg.sender == treasuryAddress, "Stake amount manipulation limited to treasury owner");
         minStakeAmount = _amount; 
     }
 
+    /** 
+      * @notice Sets the max stake possible
+      * Controlled by treasury
+      */
     function setMaxStakeAmount(uint256 _amount) external isInitialized {
         require(msg.sender == treasuryAddress, "Stake amount manipulation limited to treasury owner");
         maxStakeAmount = _amount; 
