@@ -98,9 +98,7 @@ const outputJsonConfigFile = async (outputPath) => {
  */
 const outputFlaskConfigFile = async (outputPath) => {
   try {
-    console.log('test')
     registry = await Registry.deployed()
-    console.log('test2')
 
     let configFileContents = '[contracts]\n'
     configFileContents += 'registry = ' + registry.address + '\n'
