@@ -91,6 +91,9 @@ contract('Staking test', async (accounts) => {
       { from: proxyOwner })
 
     staking = await Staking.at(proxy.address)
+    // Reset min for test purposes
+    await staking.setMinStakeAmount(0)
+
     stakingAddress = staking.address
 
     // Permission test address as caller

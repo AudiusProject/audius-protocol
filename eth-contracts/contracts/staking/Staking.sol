@@ -72,8 +72,10 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // Initialize claim values to zero, disabling claim prior to initial funding
         currentClaimBlock = 0;
         currentClaimableAmount = 0;
-        minStakeAmount = 100;
-        maxStakeAmount = 100000000;
+        // Default min stake amount is 100 AUD tokens
+        minStakeAmount = 100 * 10**uint256(18);
+        // Default max stake amount is 100 million tokens or 1/10 total supply
+        maxStakeAmount = 100000000 * 10**uint256(18);
     }
 
     /* External functions */
@@ -109,11 +111,10 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
 
         if (accounts[msg.sender].claimHistory.history.length > 0) {
             uint256 lastClaimedBlock = accounts[msg.sender].claimHistory.lastUpdated();
-            uint256 currentBlock = getBlockNumber();
             // Require a minimum block difference alloted to be ~1 week of blocks
             // Note that a new claim funding after the latest claim for this staker overrides the minimum block difference
             require(
-                currentBlock.sub(lastClaimedBlock) >= CLAIM_BLOCK_DIFFERENCE || lastClaimedBlock < currentClaimBlock,
+                lastClaimedBlock < currentClaimBlock,
                 "Minimum block difference not met");
         }
 
@@ -166,6 +167,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
       * @notice Sets the minimum stake possible
       * Controlled by treasury
       */
+     // NOTE that _amounts are in wei throughout
     function setMinStakeAmount(uint256 _amount) external isInitialized {
         require(msg.sender == treasuryAddress, "Stake amount manipulation limited to treasury owner");
         minStakeAmount = _amount; 
