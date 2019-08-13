@@ -62,13 +62,13 @@ async function saveFileFromBuffer (req, buffer) {
 async function saveFileToIPFSFromFS (req, srcPath) {
   // make sure user has authenticated before saving file
   if (!req.userId) throw new Error('User must be authenticated to save a file')
-  
+
   const ipfs = req.app.get('ipfsAPI')
 
   const multihash = (await ipfs.addFromFs(srcPath))[0].hash
-  
+
   const dstPath = path.join(req.app.get('storagePath'), multihash)
-  
+
   // store segment file under multihash instead for easy future retrieval
   fs.renameSync(srcPath, dstPath)
 
