@@ -54,6 +54,11 @@ class StakingProxyClient {
     }
   }
 
+  async getLastClaimedBlockForUser () {
+    let tx = await this.StakingProxy.methods.lastClaimedFor(this.ethWeb3Manager.getWalletAddress()).call()
+    return tx
+  }
+
   async getClaimInfo () {
     let tx = await this.StakingProxy.methods.getClaimInfo().call()
     return {
