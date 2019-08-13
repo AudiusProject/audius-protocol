@@ -28,6 +28,14 @@ class StakingProxyClient {
     return parseInt(await this.StakingProxy.methods.totalStaked().call(), 10)
   }
 
+  async getMinStakeAmount () {
+    return parseInt(await this.StakingProxy.methods.getMinStakeAmount().call(), 10)
+  }
+
+  async getMaxStakeAmount () {
+    return parseInt(await this.StakingProxy.methods.getMaxStakeAmount().call(), 10)
+  }
+
   async supportsHistory () {
     return this.StakingProxy.methods.supportsHistory().call()
   }
@@ -61,6 +69,18 @@ class StakingProxyClient {
     return {
       txReceipt: tx
     }
+  }
+
+  async setMinStakeAmount (amountInWei) {
+    let contractMethod = this.StakingProxy.methods.setMinStakeAmount(amountInWei)
+    let tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
+    return { txReceipt: tx }
+  }
+
+  async setMaxStakeAmount (amountInWei) {
+    let contractMethod = this.StakingProxy.methods.setMaxStakeAmount(amountInWei)
+    let tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
+    return { txReceipt: tx }
   }
 }
 

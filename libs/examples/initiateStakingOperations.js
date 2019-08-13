@@ -33,8 +33,21 @@ switch (args[2]) {
     console.log('fundclaim')
     getClaimInfo()
     break
+  case 'stakeinfo':
+    console.log('stakeinfo')
+    getStakingParameters()
+    break
   default:
     throwArgError()
+}
+
+async function getStakingParameters () {
+  const audius1 = await initAudiusLibs(true)
+  let min = await audius1.ethContracts.StakingProxyClient.getMinStakeAmount()
+  let max = await audius1.ethContracts.StakingProxyClient.getMaxStakeAmount()
+
+  console.log(`Min: ${min}`)
+  console.log(`Max: ${max}`)
 }
 
 async function getClaimInfo () {

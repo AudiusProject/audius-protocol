@@ -65,6 +65,10 @@ describe('Staking tests', () => {
     await audius0.init()
     token = audius0.ethContracts.AudiusTokenClient
     accounts = await audius0.ethWeb3Manager.getWeb3().eth.getAccounts()
+
+    // Reset min stake
+    await audius0.ethContracts.StakingProxyClient.setMinStakeAmount(0)
+
     ownerWallet = accounts[0]
     sp1 = accounts[1]
     sp2 = accounts[2]
