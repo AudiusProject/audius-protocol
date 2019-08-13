@@ -367,6 +367,30 @@
       "signature": "0xf61f08d3"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "name": "_updatedDelegateOwnerWallet",
+          "type": "address"
+        }
+      ],
+      "name": "updateDelegateOwnerWallet",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0xcd2bc478"
+    },
+    {
       "constant": true,
       "inputs": [
         {
@@ -465,6 +489,26 @@
       "stateMutability": "view",
       "type": "function",
       "signature": "0x2cd6e60f"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getDelegateOwnerWallet",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x59fe321f"
     }
   ]
 }
