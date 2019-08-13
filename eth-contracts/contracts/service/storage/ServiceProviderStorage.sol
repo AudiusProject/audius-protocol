@@ -195,7 +195,7 @@ contract ServiceProviderStorage is RegistryContract {
       uint spID = this.getServiceProviderIdFromAddress(_ownerAddress, _serviceType);
       ( , , , address delegateOwnerWallet) = this.getServiceProviderInfo(_serviceType, spID);
       require(
-        delegateOwnerWalletToServiceProvider[_ownerAddress] == delegateOwnerWallet,
+        delegateOwnerWalletToServiceProvider[delegateOwnerWallet] == _ownerAddress,
         "Mismatched delegate owner wallet");
       return delegateOwnerWallet;
     }

@@ -242,6 +242,38 @@ contract('ServiceProvider test', async (accounts) => {
           decreaseStakeAmount,
           stakerAccount))
     })
+
+    it('updates delegateOwnerWallet', async () => {
+      let currentDelegateOwner = await serviceProviderFactory.getDelegateOwnerWallet(
+        testServiceType,
+        { from: stakerAccount })
+      assert.equal(
+        stakerAccount,
+        currentDelegateOwner,
+        'Expect initial delegateOwnerWallet equal to registrant')
+      // Confirm wrong owner update is rejected
+      await _lib.assertRevert(
+        serviceProviderFactory.updateDelegateOwnerWallet(
+          testServiceType,
+          accounts[7],
+          { from: accounts[8] }
+        ),
+        'Invalid update'
+      )
+      // Perform and validate update
+      let newDelegateOwnerWallet = accounts[4]
+      let tx = await serviceProviderFactory.updateDelegateOwnerWallet(
+        testServiceType,
+        newDelegateOwnerWallet,
+        { from: stakerAccount })
+      let newDelegateFromChain = await serviceProviderFactory.getDelegateOwnerWallet(
+        testServiceType,
+        { from: stakerAccount })
+      assert.equal(
+        newDelegateOwnerWallet,
+        newDelegateFromChain,
+        'Expect updated delegateOwnerWallet equivalency')
+    })
   })
 
   // TODO: Address how approval works..? do we need to approve? doesnt seem like it exactly
