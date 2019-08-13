@@ -127,7 +127,7 @@ class ContentReplicator {
   async initBootstrapPeers () {
     logger.info('Initializing Bootstrap Peers:')
     let ipfsPeerAddrConfig = config.get('ipfsPeerAddresses')
-    let ipfsPeerAddresses = ipfsPeerAddrConfig.split(',')
+    let ipfsPeerAddresses = ipfsPeerAddrConfig.split(',').filter(Boolean)
     for (let peer of ipfsPeerAddresses) {
       try {
         // Add to list of bootstrap peers
@@ -141,7 +141,7 @@ class ContentReplicator {
 
   async refreshPeers () {
     let ipfsPeerAddrConfig = config.get('ipfsPeerAddresses')
-    let ipfsPeerAddresses = ipfsPeerAddrConfig.split(',')
+    let ipfsPeerAddresses = ipfsPeerAddrConfig.split(',').filter(Boolean)
     for (let peer of ipfsPeerAddresses) {
       try {
         // Manually connect to peer
