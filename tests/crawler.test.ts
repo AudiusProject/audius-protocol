@@ -2,7 +2,7 @@ import req from './req'
 
 const URL = process.env.PUBLIC_URL as string
 
-it('resolves with og tags', async () => {
+it('resolves with og tags for slack', async () => {
   const options = {
     url: URL,
     headers: {
@@ -14,7 +14,7 @@ it('resolves with og tags', async () => {
   expect(body.includes(`<title>Audius</title>`)).toBe(true)
 })
 
-it('resolves with og tags', async () => {
+it('resolves with og tags for facebook', async () => {
   const options = {
     url: URL,
     headers: {
