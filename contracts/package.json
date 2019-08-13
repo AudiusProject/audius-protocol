@@ -26,7 +26,6 @@
     "discprov-script-t": "./node_modules/.bin/truffle exec scripts/_discoveryprovider-test-init.js -test --ipfs-test-host localhost --ipfs-test-port 6001"
   },
   "dependencies": {
-    "@audius/shared-libs": "^0.0.1",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "bignumber.js": "^8.0.2",
