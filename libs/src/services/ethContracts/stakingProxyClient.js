@@ -59,7 +59,7 @@ class StakingProxyClient {
     return {
       txReceipt: tx,
       claimableAmount: tx[0] / Math.pow(10, 18),
-      currentClaimBlock: tx[1]
+      currentClaimBlock: parseInt(tx[1], 10)
     }
   }
 

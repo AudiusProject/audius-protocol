@@ -11,7 +11,7 @@ const creatorNodeEndpoint2 = 'http://localhost:4010'
 const spEndpoint2 = 'http://localhost:5001'
 
 function throwArgError () {
-  throw new Error('missing argument - format: node examples/initiateStakingOperations.js [distribute, fundclaim]')
+  throw new Error('missing argument - format: node examples/initiateStakingOperations.js [distribute, fundclaim, getclaim, stakeinfo]')
 }
 let testVersionStr = '0.0.1'
 

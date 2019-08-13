@@ -24,6 +24,9 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     string private constant ERROR_TOKEN_TRANSFER = "STAKING_TOKEN_TRANSFER";
     string private constant ERROR_NOT_ENOUGH_BALANCE = "STAKING_NOT_ENOUGH_BALANCE";
 
+    // standard - imitates relationship between Ether and Wei
+    uint8 private constant DECIMALS = 18;
+
     // 604800 - 1 week in seconds
     // assuming avg block time of 13s
     // 604800 / 14 = 46523, ~46000 blocks
@@ -404,9 +407,11 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
             newStake = currentStake.sub(_by);
         }
 
-        // Confirm stake is within configured bounds
-        require(newStake <= maxStakeAmount, 'Maximum stake threshold exceeded');
-        require(newStake > minStakeAmount || newStake == 0, 'Minimum stake threshold exceeded');
+        // Confirm stake is within configured bounds for non-treasury addresses
+        if (_accountAddress != treasuryAddress) {
+          require(newStake <= maxStakeAmount, 'Maximum stake threshold exceeded');
+          require(newStake > minStakeAmount || newStake == 0, 'Minimum stake threshold exceeded');
+        }
 
         // add new value to account history
         accounts[_accountAddress].stakedHistory.add64(getBlockNumber64(), newStake);
