@@ -7,7 +7,7 @@ var spawn = require('child_process').spawn
 async function getTrackDuration (fileDir) {
   try {
     const resp = await getInfo(fileDir, { path: ffprobeStatic.path })
-    const duration = +(resp.streams[0].duration) // + --> attempt cast to Number
+    const duration = Number(resp.streams[0].duration)
     if (isNaN(duration)) throw new Error(`Invalid return value from FFProbe: ${duration}`)
     return duration
   } catch (e) {

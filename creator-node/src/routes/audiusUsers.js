@@ -9,7 +9,7 @@ const { handleResponse, successResponse, errorResponseBadRequest } = require('..
 module.exports = function (app) {
   // create AudiusUser from provided metadata, and make metadata available to network
   app.post('/audius_users', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    // TODO(roneilr): do some validation on metadata given
+    // TODO: do some validation on metadata given
     const metadataJSON = req.body
 
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
@@ -66,9 +66,8 @@ module.exports = function (app) {
       return errorResponseBadRequest(`Audius User doesn't exist for that blockchainId`)
     }
 
-    // TODO(roneilr, dmanjunath): do some validation on metadata given
+    // TODO: do some validation on metadata given
     const metadataJSON = req.body
-
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
 
     // write to a new file so there's still a record of the old file

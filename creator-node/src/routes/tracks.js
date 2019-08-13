@@ -143,7 +143,7 @@ module.exports = function (app) {
       return errorResponseBadRequest('Invalid track ID')
     }
 
-    // TODO(roneilr): validate that provided blockchain ID is indeed associated with
+    // TODO: validate that provided blockchain ID is indeed associated with
     // user wallet and metadata CID
     await track.update({
       blockchainId: blockchainId
@@ -171,9 +171,8 @@ module.exports = function (app) {
 
     if (!track) return errorResponseBadRequest(`Could not find track with id ${blockchainId} owned by calling user`)
 
-    // TODO(roneilr, dmanjunath): do some validation on metadata given
+    // TODO: do some validation on metadata given
     const metadataJSON = req.body
-
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
 
     // write to a new file so there's still a record of the old file

@@ -15,8 +15,11 @@ const maxMemoryFileSize = parseInt(config.get('maxMemoryFileSizeBytes')) // Defa
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 
-/** (1) Add file to IPFS; (2) save file to disk;
- *  (3) pin file via IPFS; (4) save file ref to DB
+/**
+ * (1) Add file to IPFS; (2) save file to disk;
+ * (3) pin file via IPFS; (4) save file ref to DB
+ * @dev - only call this function when file is not already stored to disk
+ *      - if it is, then use saveFileToIPFSFromFS()
  */
 async function saveFileFromBuffer (req, buffer) {
   // make sure user has authenticated before saving file
@@ -32,7 +35,7 @@ async function saveFileFromBuffer (req, buffer) {
 
   await writeFile(dstPath, buffer)
 
-  // TODO(roneilr): switch to using the IPFS filestore below to avoid duplicating content
+  // TODO: switch to using the IPFS filestore below to avoid duplicating content
   await ipfs.pin.add(multihash)
 
   // add reference to file to database

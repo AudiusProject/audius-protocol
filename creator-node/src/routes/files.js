@@ -12,14 +12,15 @@ let Redis = require('ioredis')
 let client = new Redis(config.get('redisPort'), config.get('redisHost'))
 
 module.exports = function (app) {
-  // upload image file and make avail
-  // TODO(ss) - input validation
+  /** Store image on disk + DB and make available via IPFS */
   app.post('/image_upload', authMiddleware, nodeSyncMiddleware, upload.single('file'), handleResponse(async (req, res) => {
+    // TODO: input validation
+    // TODO: switch to saveFileToIPFSFromFS
     const { multihash } = await saveFileFromBuffer(req, req.file.buffer)
     return successResponse({ 'image_file_multihash': multihash })
   }))
 
-  // upload metadata to IPFS and save in Files table
+  /** upload metadata to IPFS and save in Files table */
   app.post('/metadata', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
     const metadataJSON = req.body
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
