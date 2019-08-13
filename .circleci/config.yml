@@ -4,6 +4,8 @@ jobs:
   test:
     working_directory: ~/general-admission
     docker:
+      - image: circleci/node:10.13
+    steps:
       - checkout
 
       - run:
@@ -26,17 +28,11 @@ jobs:
           paths:
             - ./node_modules
 
-      - run:
-          name: lint
-          command: npm run lint
+      - run: npm run lint
 
-      - run:
-          name: test-staging
-          command: npm run test:staging
+      - run: npm run test:staging
 
-      - run:
-          name: test-prod
-          command: npm run test:production
+      - run: npm run test:production
 
 workflows:
   version: 2
