@@ -13,7 +13,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@audius/libs": "^0.7.0",
+    "@audius/libs": "0.10.0",
     "body-parser": "^1.18.3",
     "bunyan": "^1.8.12",
     "convict": "^5.1.0",

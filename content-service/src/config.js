@@ -66,6 +66,37 @@ const config = convict({
     format: String,
     default: null,
     env: 'registryAddress'
+  },
+
+  ethProviderUrl: {
+    doc: 'eth provider url',
+    format: String,
+    env: 'ethProviderUrl',
+    default: null
+  },
+  ethNetworkId: {
+    doc: 'eth network id',
+    format: String,
+    env: 'ethNetworkId',
+    default: null
+  },
+  ethTokenAddress: {
+    doc: 'eth token address',
+    format: String,
+    env: 'ethTokenAddress',
+    default: null
+  },
+  ethRegistryAddress: {
+    doc: 'eth registry address',
+    format: String,
+    env: 'ethRegistryAddress',
+    default: null
+  },
+  ethOwnerWallet: {
+    doc: 'eth owner wallet',
+    format: String,
+    env: 'ethOwnerWallet',
+    default: null
   }
 })
 
