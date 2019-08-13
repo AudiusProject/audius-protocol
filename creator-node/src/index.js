@@ -2,7 +2,7 @@
 
 const S3 = require('aws-sdk').S3
 const ON_DEATH = require('death')
-const ipfsAPI = require('ipfs-api')
+const ipfsClient = require('ipfs-http-client')
 const path = require('path')
 
 const initializeApp = require('./app')
@@ -53,7 +53,7 @@ if (!ipfsAddr) {
   logger.error('Must set ipfsAddr')
   process.exit(1)
 }
-let ipfs = ipfsAPI(ipfsAddr, config.get('ipfsPort'))
+let ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
 
 // run all migrations
 logger.info('Executing database migrations...')

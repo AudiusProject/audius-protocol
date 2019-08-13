@@ -1,19 +1,19 @@
+const { Buffer } = require('ipfs-http-client')
+
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
 const nodeSyncMiddleware = require('../redis').nodeSyncMiddleware
-const { saveFile } = require('../fileManager')
+const { saveFileFromBuffer } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 
 module.exports = function (app) {
   // create AudiusUser from provided metadata, and make metadata available to network
   app.post('/audius_users', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const ipfs = req.app.get('ipfsAPI')
-
-    // TODO(roneilr): do some validation on metadata given
+    // TODO: do some validation on metadata given
     const metadataJSON = req.body
 
-    const metadataBuffer = ipfs.types.Buffer.from(JSON.stringify(metadataJSON))
-    const { multihash, fileUUID } = await saveFile(req, metadataBuffer)
+    const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
+    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer)
 
     const audiusUserObj = {
       cnodeUserUUID: req.userId,
@@ -58,7 +58,6 @@ module.exports = function (app) {
 
   // update a AudiusUser
   app.put('/audius_users/:blockchainId', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const ipfs = req.app.get('ipfsAPI')
     const blockchainId = req.params.blockchainId
     const audiusUser = await models.AudiusUser.findOne({ where: { blockchainId, cnodeUserUUID: req.userId } })
 
@@ -67,13 +66,12 @@ module.exports = function (app) {
       return errorResponseBadRequest(`Audius User doesn't exist for that blockchainId`)
     }
 
-    // TODO(roneilr, dmanjunath): do some validation on metadata given
+    // TODO: do some validation on metadata given
     const metadataJSON = req.body
-
-    const metadataBuffer = ipfs.types.Buffer.from(JSON.stringify(metadataJSON))
+    const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
 
     // write to a new file so there's still a record of the old file
-    const { multihash, fileUUID } = await saveFile(req, metadataBuffer)
+    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer)
 
     // Update the file to the new fileId and write the metadata blob in the json field
     let updateObj = {

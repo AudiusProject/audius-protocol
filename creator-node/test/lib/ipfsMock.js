@@ -2,17 +2,14 @@ const sinon = require('sinon')
 
 function getIPFSMock () {
   const ipfsMock = {
-    types: {
-      Buffer: Buffer
-    },
-    files: {
-      add: sinon.mock()
-    },
+    add: sinon.mock(),
+    addFromFs: sinon.mock(),
     pin: {
       add: sinon.mock()
     }
   }
-  ipfsMock.files.add.returns([{ hash: 'testCIDLink' }])
+  ipfsMock.add.returns([{ hash: 'testCIDLink' }])
+  ipfsMock.addFromFs.returns([{ hash: 'testCIDLink' }])
 
   return ipfsMock
 }

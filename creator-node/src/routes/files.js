@@ -1,4 +1,6 @@
-const { saveFile, upload } = require('../fileManager')
+const { Buffer } = require('ipfs-http-client')
+
+const { saveFileFromBuffer, upload } = require('../fileManager')
 const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound } = require('../apiHelpers')
 
 const models = require('../models')
@@ -10,19 +12,19 @@ let Redis = require('ioredis')
 let client = new Redis(config.get('redisPort'), config.get('redisHost'))
 
 module.exports = function (app) {
-  // upload image file and make avail
-  // TODO(ss) - input validation
+  /** Store image on disk + DB and make available via IPFS */
   app.post('/image_upload', authMiddleware, nodeSyncMiddleware, upload.single('file'), handleResponse(async (req, res) => {
-    const { multihash } = await saveFile(req, req.file.buffer)
+    // TODO: input validation
+    // TODO: switch to saveFileToIPFSFromFS
+    const { multihash } = await saveFileFromBuffer(req, req.file.buffer)
     return successResponse({ 'image_file_multihash': multihash })
   }))
 
-  // upload metadata to IPFS and save in Files table
+  /** upload metadata to IPFS and save in Files table */
   app.post('/metadata', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const ipfs = req.app.get('ipfsAPI')
     const metadataJSON = req.body
-    const metadataBuffer = ipfs.types.Buffer.from(JSON.stringify(metadataJSON))
-    const { multihash } = await saveFile(req, metadataBuffer)
+    const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
+    const { multihash } = await saveFileFromBuffer(req, metadataBuffer)
     return successResponse({ 'metadataMultihash': multihash })
   }))
 

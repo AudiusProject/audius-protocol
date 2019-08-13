@@ -15,10 +15,13 @@ const maxMemoryFileSize = parseInt(config.get('maxMemoryFileSizeBytes')) // Defa
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 
-/** (1) Add file to IPFS; (2) save file to disk;
- *  (3) pin file via IPFS; (4) save file ref to DB
+/**
+ * (1) Add file to IPFS; (2) save file to disk;
+ * (3) pin file via IPFS; (4) save file ref to DB
+ * @dev - only call this function when file is not already stored to disk
+ *      - if it is, then use saveFileToIPFSFromFS()
  */
-async function saveFile (req, buffer) {
+async function saveFileFromBuffer (req, buffer) {
   // make sure user has authenticated before saving file
   if (!req.userId) {
     throw new Error('User must be authenticated to save a file')
@@ -26,15 +29,13 @@ async function saveFile (req, buffer) {
 
   const ipfs = req.app.get('ipfsAPI')
 
-  let multihash = await ipfs.files.add(buffer, { onlyHash: true })
-  multihash = multihash[0].hash
+  const multihash = (await ipfs.add(buffer))[0].hash
 
-  const fileLocation = path.join(req.app.get('storagePath'), '/' + multihash)
-  await writeFile(fileLocation, buffer)
+  const dstPath = path.join(req.app.get('storagePath'), multihash)
 
-  // TODO(roneilr): switch to using the IPFS filestore below to avoid duplicating content
-  const filesAdded = await ipfs.files.add(buffer)
-  assert.strictEqual(multihash, filesAdded[0].hash)
+  await writeFile(dstPath, buffer)
+
+  // TODO: switch to using the IPFS filestore below to avoid duplicating content
   await ipfs.pin.add(multihash)
 
   // add reference to file to database
@@ -43,13 +44,48 @@ async function saveFile (req, buffer) {
       cnodeUserUUID: req.userId,
       multihash: multihash,
       sourceFile: req.fileName,
-      storagePath: fileLocation
+      storagePath: dstPath
     }
   })
 
   file = file[0].dataValues
 
   req.logger.info('\nAdded file:', multihash, 'file id', file.fileUUID)
+  return { multihash: multihash, fileUUID: file.fileUUID }
+}
+
+/**
+ * Save file to IPFS given file path.
+ * - Add and pin file to IPFS.
+ * - Re-save file to disk under multihash.
+ * - Save reference to file in DB.
+ */
+async function saveFileToIPFSFromFS (req, srcPath) {
+  // make sure user has authenticated before saving file
+  if (!req.userId) throw new Error('User must be authenticated to save a file')
+
+  const ipfs = req.app.get('ipfsAPI')
+
+  const multihash = (await ipfs.addFromFs(srcPath))[0].hash
+  const dstPath = path.join(req.app.get('storagePath'), multihash)
+
+  // store segment file copy under multihash for easy future retrieval
+  fs.copyFileSync(srcPath, dstPath)
+
+  // TODO: switch to using the IPFS filestore below to avoid duplicating content
+  await ipfs.pin.add(multihash)
+
+  // add reference to file to database
+  const file = (await models.File.findOrCreate({ where:
+    {
+      cnodeUserUUID: req.userId,
+      multihash: multihash,
+      sourceFile: req.fileName,
+      storagePath: dstPath
+    }
+  }))[0].dataValues
+
+  req.logger.info(`\nAdded file: ${multihash} for fileUUID ${file.fileUUID} from sourceFile ${req.fileName}`)
   return { multihash: multihash, fileUUID: file.fileUUID }
 }
 
@@ -168,7 +204,7 @@ const trackDiskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     // save file under randomly named folders to avoid collisions
     const randomFileName = getUuid()
-    const fileDir = req.app.get('storagePath') + '/' + randomFileName
+    const fileDir = path.join(req.app.get('storagePath'), randomFileName)
 
     // create directories for original file and segments
     fs.mkdirSync(fileDir)
@@ -207,4 +243,4 @@ function getFileExtension (fileName) {
   return (fileName.lastIndexOf('.') >= 0) ? fileName.substr(fileName.lastIndexOf('.')) : ''
 }
 
-module.exports = { saveFile, saveFileForMultihash, removeTrackFolder, upload, trackFileUpload }
+module.exports = { saveFileFromBuffer, saveFileToIPFSFromFS, saveFileForMultihash, removeTrackFolder, upload, trackFileUpload }

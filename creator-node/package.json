@@ -32,7 +32,7 @@
     "ffmpeg-static": "^2.4.0",
     "ffprobe-static": "^3.0.0",
     "ioredis": "^4.9.3",
-    "ipfs-api": "^26.1.2",
+    "ipfs-http-client": "^33.1.1",
     "multer": "^1.4.0",
     "pg": "^7.6.1",
     "rate-limit-redis": "^1.6.0",
