@@ -1,0 +1,56 @@
+version: 2.1
+
+jobs:
+  test:
+    working_directory: ~/general-admission
+    docker:
+      - checkout
+
+      - run:
+          name: update-npm
+          command: 'sudo npm install -g npm@latest'
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - dependency-cache-
+
+      - run: rm -rf /home/circleci/audius-dapp/node_modules/websocket/.git
+
+      - run: npm install
+
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+
+      - run:
+          name: lint
+          command: npm run lint
+
+      - run:
+          name: test-staging
+          command: npm run test:staging
+
+      - run:
+          name: test-prod
+          command: npm run test:production
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
+
+  ten_minutes:
+    triggers:
+      - schedule:
+          cron: "*/10 * * * * "
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - test
