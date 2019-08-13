@@ -18,7 +18,7 @@ const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 /** (1) Add file to IPFS; (2) save file to disk;
  *  (3) pin file via IPFS; (4) save file ref to DB
  */
-async function saveFile (req, buffer) {
+async function saveFileFromBuffer (req, buffer) {
   // make sure user has authenticated before saving file
   if (!req.userId) {
     throw new Error('User must be authenticated to save a file')
@@ -50,6 +50,42 @@ async function saveFile (req, buffer) {
   file = file[0].dataValues
 
   req.logger.info('\nAdded file:', multihash, 'file id', file.fileUUID)
+  return { multihash: multihash, fileUUID: file.fileUUID }
+}
+
+/**
+ * Save file to IPFS given file path.
+ * - Add and pin file to IPFS.
+ * - Re-save file to disk under multihash.
+ * - Save reference to file in DB.
+ */
+async function saveFileToIPFSFromFS (req, srcPath) {
+  // make sure user has authenticated before saving file
+  if (!req.userId) throw new Error('User must be authenticated to save a file')
+  
+  const ipfs = req.app.get('ipfsAPI')
+
+  const multihash = (await ipfs.addFromFs(srcPath))[0].hash
+  
+  const dstPath = path.join(req.app.get('storagePath'), multihash)
+  
+  // store segment file under multihash instead for easy future retrieval
+  fs.renameSync(srcPath, dstPath)
+
+  // TODO: switch to using the IPFS filestore below to avoid duplicating content
+  await ipfs.pin.add(multihash)
+
+  // add reference to file to database
+  const file = (await models.File.findOrCreate({ where:
+    {
+      cnodeUserUUID: req.userId,
+      multihash: multihash,
+      sourceFile: req.fileName,
+      storagePath: dstPath
+    }
+  }))[0].dataValues
+
+  req.logger.info(`\nAdded file: ${multihash} for fileUUID ${file.fileUUID} from sourceFile ${req.fileName}`)
   return { multihash: multihash, fileUUID: file.fileUUID }
 }
 
@@ -168,7 +204,7 @@ const trackDiskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     // save file under randomly named folders to avoid collisions
     const randomFileName = getUuid()
-    const fileDir = req.app.get('storagePath') + '/' + randomFileName
+    const fileDir = path.join(req.app.get('storagePath'), randomFileName)
 
     // create directories for original file and segments
     fs.mkdirSync(fileDir)
@@ -207,4 +243,4 @@ function getFileExtension (fileName) {
   return (fileName.lastIndexOf('.') >= 0) ? fileName.substr(fileName.lastIndexOf('.')) : ''
 }
 
-module.exports = { saveFile, saveFileForMultihash, removeTrackFolder, upload, trackFileUpload }
+module.exports = { saveFileFromBuffer, saveFileToIPFSFromFS, saveFileForMultihash, removeTrackFolder, upload, trackFileUpload }

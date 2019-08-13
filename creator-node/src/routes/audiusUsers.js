@@ -1,7 +1,7 @@
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
 const nodeSyncMiddleware = require('../redis').nodeSyncMiddleware
-const { saveFile } = require('../fileManager')
+const { saveFileFromBuffer } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 
 module.exports = function (app) {
@@ -13,7 +13,7 @@ module.exports = function (app) {
     const metadataJSON = req.body
 
     const metadataBuffer = ipfs.types.Buffer.from(JSON.stringify(metadataJSON))
-    const { multihash, fileUUID } = await saveFile(req, metadataBuffer)
+    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer)
 
     const audiusUserObj = {
       cnodeUserUUID: req.userId,
@@ -73,7 +73,7 @@ module.exports = function (app) {
     const metadataBuffer = ipfs.types.Buffer.from(JSON.stringify(metadataJSON))
 
     // write to a new file so there's still a record of the old file
-    const { multihash, fileUUID } = await saveFile(req, metadataBuffer)
+    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer)
 
     // Update the file to the new fileId and write the metadata blob in the json field
     let updateObj = {

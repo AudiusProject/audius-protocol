@@ -1,4 +1,4 @@
-const { saveFile, upload } = require('../fileManager')
+const { saveFileFromBuffer, upload } = require('../fileManager')
 const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound } = require('../apiHelpers')
 
 const models = require('../models')
@@ -13,7 +13,7 @@ module.exports = function (app) {
   // upload image file and make avail
   // TODO(ss) - input validation
   app.post('/image_upload', authMiddleware, nodeSyncMiddleware, upload.single('file'), handleResponse(async (req, res) => {
-    const { multihash } = await saveFile(req, req.file.buffer)
+    const { multihash } = await saveFileFromBuffer(req, req.file.buffer)
     return successResponse({ 'image_file_multihash': multihash })
   }))
 
@@ -22,7 +22,7 @@ module.exports = function (app) {
     const ipfs = req.app.get('ipfsAPI')
     const metadataJSON = req.body
     const metadataBuffer = ipfs.types.Buffer.from(JSON.stringify(metadataJSON))
-    const { multihash } = await saveFile(req, metadataBuffer)
+    const { multihash } = await saveFileFromBuffer(req, metadataBuffer)
     return successResponse({ 'metadataMultihash': multihash })
   }))
 

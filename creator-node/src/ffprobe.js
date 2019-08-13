@@ -6,9 +6,10 @@ var spawn = require('child_process').spawn
 
 async function getTrackDuration (fileDir) {
   try {
-    const info = await getInfo(fileDir, { path: ffprobeStatic.path })
-    // TODO - data validation
-    return info.streams[0].duration
+    const resp = await getInfo(fileDir, { path: ffprobeStatic.path })
+    const duration = +(resp.streams[0].duration)  // + --> attempt cast to Number
+    if (isNaN(duration)) throw new Error(`Invalid return value from FFProbe: ${duration}`)
+    return duration
   } catch (e) {
     // If the error is the text below, it means the segment doesn't have any
     // data. In that case, just return null so we skip adding the segment
