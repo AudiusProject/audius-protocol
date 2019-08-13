@@ -47,7 +47,7 @@ describe('test Tracks', function () {
     server = appInfo.server
     session = await createStarterCNodeUser()
 
-    ipfsMock.files.add.exactly(64)
+    ipfsMock.add.exactly(64)
     ipfsMock.pin.add.exactly(32)
 
     // Confirm max audio file size is respected by multer
@@ -76,7 +76,7 @@ describe('test Tracks', function () {
     server = appInfo.server
     session = await createStarterCNodeUser()
 
-    ipfsMock.files.add.exactly(64)
+    ipfsMock.add.exactly(64)
     ipfsMock.pin.add.exactly(32)
 
     // Confirm max audio file size is respected by multer
@@ -96,7 +96,7 @@ describe('test Tracks', function () {
   it('uploads file to IPFS', async function () {
     const file = fs.readFileSync(testAudioFilePath)
 
-    ipfsMock.files.add.exactly(64)
+    ipfsMock.addFromFs.exactly(32)
     ipfsMock.pin.add.exactly(32)
 
     const resp1 = await request(app)
@@ -116,7 +116,7 @@ describe('test Tracks', function () {
   it('creates Audius track', async function () {
     const file = fs.readFileSync(testAudioFilePath)
 
-    ipfsMock.files.add.exactly(66)
+    ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
 
     const resp1 = await request(app)
@@ -153,7 +153,7 @@ describe('test Tracks', function () {
   it('fails to create Audius track when segments not provided', async function () {
     const file = fs.readFileSync(testAudioFilePath)
 
-    ipfsMock.files.add.exactly(66)
+    ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
 
     const resp1 = await request(app)
@@ -185,7 +185,7 @@ describe('test Tracks', function () {
   it('fails to create Audius track when invalid segment multihashes are provided', async function () {
     const file = fs.readFileSync(testAudioFilePath)
 
-    ipfsMock.files.add.exactly(66)
+    ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
 
     const resp1 = await request(app)
@@ -218,7 +218,7 @@ describe('test Tracks', function () {
   it('fails to create Audius track when owner_id is not provided', async function () {
     const file = fs.readFileSync(testAudioFilePath)
 
-    ipfsMock.files.add.exactly(66)
+    ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
 
     const resp1 = await request(app)
@@ -250,7 +250,7 @@ describe('test Tracks', function () {
   it('completes Audius track creation', async function () {
     const file = fs.readFileSync(testAudioFilePath)
 
-    ipfsMock.files.add.exactly(66)
+    ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
 
     const resp1 = await request(app)

@@ -1,4 +1,5 @@
 const path = require('path')
+const { Buffer } = require('ipfs-http-client')
 
 const ffmpeg = require('../ffmpeg')
 const ffprobe = require('../ffprobe')
@@ -56,8 +57,6 @@ module.exports = function (app) {
     * - return on failure: error if linked segments have not already been created via POST /track_content
     */
   app.post('/tracks', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const ipfs = req.app.get('ipfsAPI')
-
     // TODO - input validation
     const metadataJSON = req.body
 
@@ -91,7 +90,7 @@ module.exports = function (app) {
     }
 
     // store metadata multihash
-    const metadataBuffer = ipfs.types.Buffer.from(JSON.stringify(metadataJSON))
+    const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer)
 
     // build track object for db storage
@@ -165,7 +164,6 @@ module.exports = function (app) {
 
   // update a track
   app.put('/tracks/:blockchainId', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const ipfs = req.app.get('ipfsAPI')
     const blockchainId = req.params.blockchainId
     const cnodeUserUUID = req.userId
 
@@ -176,7 +174,7 @@ module.exports = function (app) {
     // TODO(roneilr, dmanjunath): do some validation on metadata given
     const metadataJSON = req.body
 
-    const metadataBuffer = ipfs.types.Buffer.from(JSON.stringify(metadataJSON))
+    const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
 
     // write to a new file so there's still a record of the old file
     const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer)

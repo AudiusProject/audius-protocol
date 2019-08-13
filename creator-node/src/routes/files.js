@@ -1,3 +1,5 @@
+const { Buffer } = require('ipfs-http-client')
+
 const { saveFileFromBuffer, upload } = require('../fileManager')
 const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound } = require('../apiHelpers')
 
@@ -19,9 +21,8 @@ module.exports = function (app) {
 
   // upload metadata to IPFS and save in Files table
   app.post('/metadata', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const ipfs = req.app.get('ipfsAPI')
     const metadataJSON = req.body
-    const metadataBuffer = ipfs.types.Buffer.from(JSON.stringify(metadataJSON))
+    const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const { multihash } = await saveFileFromBuffer(req, metadataBuffer)
     return successResponse({ 'metadataMultihash': multihash })
   }))

@@ -26,15 +26,13 @@ async function saveFileFromBuffer (req, buffer) {
 
   const ipfs = req.app.get('ipfsAPI')
 
-  let multihash = await ipfs.files.add(buffer, { onlyHash: true })
-  multihash = multihash[0].hash
+  const multihash = (await ipfs.add(buffer))[0].hash
 
-  const fileLocation = path.join(req.app.get('storagePath'), '/' + multihash)
-  await writeFile(fileLocation, buffer)
+  const dstPath = path.join(req.app.get('storagePath'), multihash)
+
+  await writeFile(dstPath, buffer)
 
   // TODO(roneilr): switch to using the IPFS filestore below to avoid duplicating content
-  const filesAdded = await ipfs.files.add(buffer)
-  assert.strictEqual(multihash, filesAdded[0].hash)
   await ipfs.pin.add(multihash)
 
   // add reference to file to database
@@ -43,7 +41,7 @@ async function saveFileFromBuffer (req, buffer) {
       cnodeUserUUID: req.userId,
       multihash: multihash,
       sourceFile: req.fileName,
-      storagePath: fileLocation
+      storagePath: dstPath
     }
   })
 
@@ -66,11 +64,10 @@ async function saveFileToIPFSFromFS (req, srcPath) {
   const ipfs = req.app.get('ipfsAPI')
 
   const multihash = (await ipfs.addFromFs(srcPath))[0].hash
-
   const dstPath = path.join(req.app.get('storagePath'), multihash)
 
-  // store segment file under multihash instead for easy future retrieval
-  fs.renameSync(srcPath, dstPath)
+  // store segment file copy under multihash for easy future retrieval
+  fs.copyFileSync(srcPath, dstPath)
 
   // TODO: switch to using the IPFS filestore below to avoid duplicating content
   await ipfs.pin.add(multihash)

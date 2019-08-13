@@ -28,7 +28,6 @@ module.exports.lock = RedisLock
 
 /** Ensure resource write access */
 async function nodeSyncMiddleware (req, res, next) {
-  req.logger.info('before nodeysnc middleware')
   if (req.session && req.session.wallet) {
     const redisKey = getNodeSyncRedisKey(req.session.wallet)
     const lockHeld = await RedisLock.getLock(redisKey)
@@ -38,7 +37,6 @@ async function nodeSyncMiddleware (req, res, next) {
       ))
     }
   }
-  req.logger.info('after nodeysnc middleware')
   next()
 }
 

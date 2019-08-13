@@ -21,7 +21,7 @@ describe('test AudiusUsers', function () {
     const metadata = {
       test: 'field1'
     }
-    ipfsMock.files.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
+    ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
     ipfsMock.pin.add.once().withArgs('testCIDLink')
 
     request(app)
@@ -44,7 +44,7 @@ describe('test AudiusUsers', function () {
     const metadata = {
       test: 'field1'
     }
-    ipfsMock.files.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
+    ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
     ipfsMock.pin.add.once().withArgs('testCIDLink')
 
     request(app)
