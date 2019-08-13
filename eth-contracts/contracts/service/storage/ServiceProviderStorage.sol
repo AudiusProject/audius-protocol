@@ -140,6 +140,28 @@ contract ServiceProviderStorage is RegistryContract {
         return deregisteredID;
     }
 
+    function updateDelegateOwnerWallet(
+      address _ownerAddress,
+      bytes32 _serviceType,
+      address _updatedDelegateOwnerWallet
+    ) external returns (address) 
+    {
+      uint spID = this.getServiceProviderIdFromAddress(_ownerAddress, _serviceType);
+      address oldDelegateWallet = serviceProviderInfo[_serviceType][spID].delegateOwnerWallet;
+
+      require(
+        delegateOwnerWalletToServiceProvider[oldDelegateWallet] == _ownerAddress,
+        "Invalid update operation, wrong owner");
+
+      serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
+
+      // Invalidate existing mapping
+      delegateOwnerWalletToServiceProvider[oldDelegateWallet] = address(0x0);
+
+      // Update mapping
+      delegateOwnerWalletToServiceProvider[_updatedDelegateOwnerWallet] = _ownerAddress; 
+    }
+
     function getTotalServiceTypeProviders(bytes32 _serviceType)
     external view returns (uint numberOfProviders)
     {
@@ -147,10 +169,10 @@ contract ServiceProviderStorage is RegistryContract {
     }
 
     function getServiceProviderInfo(bytes32 _serviceType, uint _serviceId)
-    external view returns (address owner, string memory endpoint, uint blocknumber)
+    external view returns (address owner, string memory endpoint, uint blocknumber, address delegateOwnerWallet)
     {
         ServiceProvider memory sp = serviceProviderInfo[_serviceType][_serviceId];
-        return (sp.owner, sp.endpoint, sp.blocknumber);
+        return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet);
     }
 
     function getServiceProviderIdFromEndpoint(bytes32 _endpoint)
@@ -163,5 +185,18 @@ contract ServiceProviderStorage is RegistryContract {
     external view returns (uint spID)
     {
         return serviceProviderAddressToId[_ownerAddress][_serviceType];
+    }
+    
+    function getDelegateOwnerWallet(
+      address _ownerAddress,
+      bytes32 _serviceType
+    ) external view returns (address)
+    {
+      uint spID = this.getServiceProviderIdFromAddress(_ownerAddress, _serviceType);
+      ( , , , address delegateOwnerWallet) = this.getServiceProviderInfo(_serviceType, spID);
+      require(
+        delegateOwnerWalletToServiceProvider[_ownerAddress] == delegateOwnerWallet,
+        "Mismatched delegate owner wallet");
+      return delegateOwnerWallet;
     }
 }

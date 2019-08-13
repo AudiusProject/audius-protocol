@@ -76,9 +76,9 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         currentClaimBlock = 0;
         currentClaimableAmount = 0;
         // Default min stake amount is 100 AUD tokens
-        minStakeAmount = 100 * 10**uint256(18);
+        minStakeAmount = 100 * 10**uint256(DECIMALS);
         // Default max stake amount is 100 million tokens or 1/10 total supply
-        maxStakeAmount = 100000000 * 10**uint256(18);
+        maxStakeAmount = 100000000 * 10**uint256(DECIMALS);
     }
 
     /* External functions */

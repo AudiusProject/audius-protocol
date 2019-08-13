@@ -17,6 +17,12 @@ interface ServiceProviderStorageInterface {
     string calldata _endpoint
   ) external returns (uint deregisteredSpID);
 
+  function updateDelegateOwnerWallet(
+    address _owner,
+    bytes32 _serviceType,
+    address _updatedDelegateOwnerWallet
+  ) external returns (address);
+
   function getServiceProviderInfo(
     bytes32 _serviceType,
     uint _serviceId
@@ -34,4 +40,9 @@ interface ServiceProviderStorageInterface {
   function getTotalServiceTypeProviders(
     bytes32 _serviceType
   ) external view returns (uint);
+  
+  function getDelegateOwnerWallet(
+    address _owner,
+    bytes32 _serviceType
+  ) external view returns (address);
 }

@@ -41,7 +41,6 @@ contract('Upgrade proxy test', async (accounts) => {
       [token.address, treasuryAddress])
 
     staking0 = await Staking.at(proxy.address)
-
     staking1 = await StakingTest.at(proxy.address)
   })
 
@@ -67,6 +66,9 @@ contract('Upgrade proxy test', async (accounts) => {
       await token.transfer(spAccount2, 1000, { from: treasuryAddress })
 
       await proxy.upgradeToAndCall(impl0.address, initializeData, { from: proxyOwner })
+
+      // Reset min for test purposes
+      await staking0.setMinStakeAmount(0)
 
       // Permission test address as caller
       await staking0.setStakingOwnerAddress(testStakingCallerAddress, { from: treasuryAddress })
