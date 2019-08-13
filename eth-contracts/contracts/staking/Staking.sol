@@ -27,11 +27,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     // standard - imitates relationship between Ether and Wei
     uint8 private constant DECIMALS = 18;
 
-    // 604800 - 1 week in seconds
-    // assuming avg block time of 13s
-    // 604800 / 14 = 46523, ~46000 blocks
-    uint256 private constant CLAIM_BLOCK_DIFFERENCE = 46000;
-
     // Default minimum stake 
     uint256 internal minStakeAmount = 0;
     // Default maximum stake 
@@ -77,7 +72,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         currentClaimableAmount = 0;
         // Default min stake amount is 100 AUD tokens
         minStakeAmount = 100 * 10**uint256(DECIMALS);
-        // Default max stake amount is 100 million tokens or 1/10 total supply
+        // Default max stake amount is 100 million AUD tokens
         maxStakeAmount = 100000000 * 10**uint256(DECIMALS);
     }
 
