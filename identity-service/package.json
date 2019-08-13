@@ -13,7 +13,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@audius/libs": "0.8.8",
+    "@audius/libs": "^0.10.0",
     "aws-sdk": "^2.313.0",
     "base64-url": "^2.2.0",
     "body-parser": "^1.18.3",
