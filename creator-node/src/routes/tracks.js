@@ -25,8 +25,7 @@ module.exports = function (app) {
       req.logger.info(`Segmenting file ${req.fileName}...`)
       const segmentTimeStart = Date.now()
       segmentFilePaths = await ffmpeg.segmentFile(req, req.fileDir, req.fileName)
-      const segmentTime = Date.now() - segmentTimeStart
-      req.logger.info(`Segment file time: ${segmentTime}ms`)
+      req.logger.info(`Segment file time: ${Date.now() - segmentTimeStart}ms`)
     } catch (err) {
       removeTrackFolder(req, req.fileDir)
       return errorResponseServerError(err)
@@ -53,8 +52,7 @@ module.exports = function (app) {
     })
     // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
     trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
-    const saveSegmentFileTime = Date.now() - saveSegmentFileTimeStart
-    req.logger.info(`Save segment file time: ${saveSegmentFileTime}ms`)
+    req.logger.info(`Save segment file time: ${Date.now() - saveSegmentFileTimeStart}ms`)
 
     return successResponse({ 'track_segments': trackSegments })
   }))
