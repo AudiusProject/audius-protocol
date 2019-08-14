@@ -44,10 +44,23 @@ class StakingProxyClient {
     return parseInt(await this.StakingProxy.methods.totalStakedFor(account).call(), 10)
   }
 
-  async fundNewClaim (amount) {
-    let tokenApproveTx = await this.audiusTokenClient.approve(this.contractAddress, amount)
+  async fundNewClaim (amount, privateKey = null) {
+    console.log('funding claim')
+    let tokenApproveTx = await this.audiusTokenClient.approve(
+      this.contractAddress,
+      amount,
+      privateKey)
     let contractMethod = this.StakingProxy.methods.fundNewClaim(amount)
-    let tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
+    let tx
+    if (privateKey === null) {
+      tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
+    } else {
+      tx = await this.ethWeb3Manager.sendTransaction(
+        contractMethod,
+        1000000,
+        this.contractAddress,
+        privateKey)
+    }
     return {
       txReceipt: tx,
       tokenApproveReceipt: tokenApproveTx
