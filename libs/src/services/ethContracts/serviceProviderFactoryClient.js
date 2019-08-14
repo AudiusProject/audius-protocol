@@ -1,6 +1,7 @@
 const Utils = require('../../utils')
 const axios = require('axios')
 const _ = require('lodash')
+const BN = require('bn.js')
 
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
@@ -32,7 +33,7 @@ class ServiceProviderFactoryClient {
     if (!Utils.isFQDN(endpoint)) {
       throw new Error('Not a fully qualified domain name!')
     }
-    if (!Number.isInteger(amount) && !this.web3.utils.isBN(amount)) {
+    if (!Number.isInteger(amount) && !BN.isBN(amount)) {
       throw new Error('Invalid amount')
     }
 
