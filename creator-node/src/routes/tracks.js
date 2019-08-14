@@ -22,7 +22,10 @@ module.exports = function (app) {
     // create and save track file segments to disk
     let segmentFilePaths
     try {
+      req.logger.info(`Segmenting file ${req.fileName}...`)
+      const segmentTimeStart = Date.now()
       segmentFilePaths = await ffmpeg.segmentFile(req, req.fileDir, req.fileName)
+      req.logger.info(`Segment file time: ${Date.now() - segmentTimeStart}ms`)
     } catch (err) {
       removeTrackFolder(req, req.fileDir)
       return errorResponseServerError(err)
@@ -30,6 +33,7 @@ module.exports = function (app) {
 
     // for each path, call saveFile and get back multihash; return multihash + segment duration
     // run all async ops in parallel as they are not independent
+    const saveSegmentFileTimeStart = Date.now()
     let saveFileProms = []
     let durationProms = []
     for (let filePath of segmentFilePaths) {
@@ -48,6 +52,7 @@ module.exports = function (app) {
     })
     // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
     trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
+    req.logger.info(`Save segment file time: ${Date.now() - saveSegmentFileTimeStart}ms`)
 
     return successResponse({ 'track_segments': trackSegments })
   }))
