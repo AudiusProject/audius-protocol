@@ -36,3 +36,5 @@ cov_html/*
 *.tar.bz2
 
 build/
+
+.vscode/

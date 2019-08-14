@@ -26,7 +26,8 @@
     "fs-extra": "^7.0.0",
     "openzeppelin-solidity": "^2.3.0",
     "truffle": "5.0.1",
-    "truffle-hdwallet-provider": "^1.0.13"
+    "truffle-hdwallet-provider": "^1.0.13",
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
     "standard": "^12.0.1",
