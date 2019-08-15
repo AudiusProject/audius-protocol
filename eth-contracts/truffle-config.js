@@ -31,14 +31,14 @@ module.exports = {
   // to customize your Truffle configuration!
   networks: {
     production: {
-      provider: () => new HDWalletProvider(privateKey, liveNetwork),
+      provider: new HDWalletProvider(privateKey, liveNetwork),
       network_id: liveNetworkId,
-      gasPrice: web3.utils.toWei('20', 'gwei')
+      gasPrice: web3.utils.toWei('10', 'gwei')
     },
     staging: {
-      provider: () => new HDWalletProvider(privateKey, liveNetwork),
+      provider: new HDWalletProvider(privateKey, liveNetwork),
       network_id: liveNetworkId,
-      gasPrice: web3.utils.toWei('1', 'gwei')
+      gasPrice: web3.utils.toWei('20', 'gwei')
     },
     development: {
       host: '127.0.0.1',     // Localhost (default: none)
