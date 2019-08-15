@@ -44,23 +44,3 @@ export const parseTx = (txReceipt) => {
     }
   }
 }
-
-export const assertThrows = async (blockOrPromise, expectedErrorCode, expectedReason) => {
-  try {
-    (typeof blockOrPromise === 'function') ? await blockOrPromise() : await blockOrPromise
-  } catch (error) {
-    assert(error.message.search(expectedErrorCode) > -1, `Expected error code "${expectedErrorCode}" but failed with "${error}" instead.`)
-    return error
-  }
-  // assert.fail() for some reason does not have its error string printed 🤷
-  assert(false, `Expected "${expectedErrorCode}"${expectedReason ? ` (with reason: "${expectedReason}")` : ''} but it did not fail`)
-}
-
-export const assertRevert = async (blockOrPromise, expectedReason) => {
-  const error = await assertThrows(blockOrPromise, 'revert', expectedReason)
-  if (!expectedReason) {
-    return
-  }
-  const expectedMsgFound = error.message.indexOf(expectedReason) >= 0
-  assert.isTrue(expectedMsgFound, 'Expected revert reason not found')
-}

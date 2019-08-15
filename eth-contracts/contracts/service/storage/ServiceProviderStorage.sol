@@ -12,7 +12,6 @@ contract ServiceProviderStorage is RegistryContract {
         address owner;
         string endpoint;
         uint blocknumber;
-        address delegateOwnerWallet;
     }
 
     bytes32 constant CALLER_REGISTRY_KEY = "ServiceProviderFactory";
@@ -37,21 +36,7 @@ contract ServiceProviderStorage is RegistryContract {
     /** @dev - mapping of address -> sp id array */
     /** @notice - stores all the services registered by a provider. for each address,
     provides the ability to lookup by service type and see all registered services */
-    mapping(address => mapping(bytes32 => uint)) serviceProviderAddressToId;
-
-    /** @dev - mapping of address -> number of service providers registered */
-    /** @notice - stores the number of services registered by a provider, can never be >1 */
-    mapping(address => uint) serviceProviderAddressNumberOfEndpoints;
-
-    /** @dev - mapping of delegateOwnerWallet -> address */
-    /** @notice - stores the current user of a delegate owner wallet, these cannot be duplicated
-    between registrants */
-   mapping(address => address) delegateOwnerWalletToServiceProvider;
-
-    event TestStg(
-      bytes32 test,
-      string msg);
-
+    mapping(address => mapping(bytes32 => uint[])) serviceProviderAddressToId;
 
     constructor(address _registryAddress) public {
         require(
@@ -61,24 +46,12 @@ contract ServiceProviderStorage is RegistryContract {
         registry = RegistryInterface(_registryAddress);
     }
 
-    function register(
-        bytes32 _serviceType,
-        address _owner,
-        string calldata _endpoint,
-        address _delegateOwnerWallet
-    ) external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint spId)
+    function register(bytes32 _serviceType, address _owner, string calldata _endpoint)
+    external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint spId)
     {
         require (
             serviceProviderEndpointToId[keccak256(bytes(_endpoint))] == 0,
             "Endpoint already registered");
-
-        require (
-          serviceProviderAddressNumberOfEndpoints[_owner] == 0,
-          "Account already has an endpoint registered");
-
-        require (
-          delegateOwnerWalletToServiceProvider[_delegateOwnerWallet] == address(0x0),
-          "Registering account is a delegate wallet");
 
         uint assignedSpId = serviceProviderTypeIDs[_serviceType] + 1;
         serviceProviderTypeIDs[_serviceType] = assignedSpId;
@@ -87,21 +60,14 @@ contract ServiceProviderStorage is RegistryContract {
         serviceProviderInfo[_serviceType][assignedSpId] = ServiceProvider({
             owner: _owner,
             endpoint: _endpoint,
-            blocknumber: block.number,
-            delegateOwnerWallet: _delegateOwnerWallet
+            blocknumber: block.number
         });
 
         // Update endpoint mapping
         serviceProviderEndpointToId[keccak256(bytes(_endpoint))] = assignedSpId;
 
         // Update address mapping
-        serviceProviderAddressToId[_owner][_serviceType] = assignedSpId;
-
-        // Update count mapping for this address to 1
-        serviceProviderAddressNumberOfEndpoints[_owner] = 1;
-
-        // Update delegate owner wallet mapping
-        delegateOwnerWalletToServiceProvider[_delegateOwnerWallet] = _owner;
+        serviceProviderAddressToId[_owner][_serviceType].push(assignedSpId);
 
         return assignedSpId;
     }
@@ -119,47 +85,28 @@ contract ServiceProviderStorage is RegistryContract {
         // Update endpoint mapping
         serviceProviderEndpointToId[keccak256(bytes(_endpoint))] = 0;
 
+        // Update info mapping
         require (
             serviceProviderInfo[_serviceType][deregisteredID].owner == _owner,
             "Invalid deregister operation");
-
-        address delegateOwner = serviceProviderInfo[_serviceType][deregisteredID].delegateOwnerWallet; 
-
-        // Update info mapping
         delete serviceProviderInfo[_serviceType][deregisteredID];
 
-        // Reset id
-        serviceProviderAddressToId[_owner][_serviceType] = 0;
+        // Delete entry in address to id mapping
+        // Reference - https://ethereum.stackexchange.com/questions/1527/how-to-delete-an-element-at-a-certain-index-in-an-array
+        uint deleteIndex;
+        for (uint i = 0; i < serviceProviderAddressToId[_owner][_serviceType].length; i++) {
+            if (serviceProviderAddressToId[_owner][_serviceType][i] == deregisteredID) {
+                deleteIndex = i;
+                break;
+            }
+        }
 
-        // Update count mapping to 0
-        serviceProviderAddressNumberOfEndpoints[_owner] = 0;
-
-        // Update delegate owner wallet mapping
-        delegateOwnerWalletToServiceProvider[delegateOwner] = address(0x0);
-
+        // Overwrite index to be deleted and reduce array size
+        // Order is not a concern here, hence why this works and a manual shift of each element is not required
+        uint arrayLength = serviceProviderAddressToId[_owner][_serviceType].length; 
+        serviceProviderAddressToId[_owner][_serviceType][deleteIndex] = serviceProviderAddressToId[_owner][_serviceType][arrayLength - 1]; 
+        serviceProviderAddressToId[_owner][_serviceType].length--;
         return deregisteredID;
-    }
-
-    function updateDelegateOwnerWallet(
-      address _ownerAddress,
-      bytes32 _serviceType,
-      address _updatedDelegateOwnerWallet
-    ) external returns (address) 
-    {
-      uint spID = this.getServiceProviderIdFromAddress(_ownerAddress, _serviceType);
-      address oldDelegateWallet = serviceProviderInfo[_serviceType][spID].delegateOwnerWallet;
-
-      require(
-        delegateOwnerWalletToServiceProvider[oldDelegateWallet] == _ownerAddress,
-        "Invalid update operation, wrong owner");
-
-      serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
-
-      // Invalidate existing mapping
-      delegateOwnerWalletToServiceProvider[oldDelegateWallet] = address(0x0);
-
-      // Update mapping
-      delegateOwnerWalletToServiceProvider[_updatedDelegateOwnerWallet] = _ownerAddress; 
     }
 
     function getTotalServiceTypeProviders(bytes32 _serviceType)
@@ -169,10 +116,10 @@ contract ServiceProviderStorage is RegistryContract {
     }
 
     function getServiceProviderInfo(bytes32 _serviceType, uint _serviceId)
-    external view returns (address owner, string memory endpoint, uint blocknumber, address delegateOwnerWallet)
+    external view returns (address owner, string memory endpoint, uint blocknumber)
     {
         ServiceProvider memory sp = serviceProviderInfo[_serviceType][_serviceId];
-        return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet);
+        return (sp.owner, sp.endpoint, sp.blocknumber);
     }
 
     function getServiceProviderIdFromEndpoint(bytes32 _endpoint)
@@ -181,22 +128,9 @@ contract ServiceProviderStorage is RegistryContract {
         return serviceProviderEndpointToId[_endpoint];
     }
 
-    function getServiceProviderIdFromAddress(address _ownerAddress, bytes32 _serviceType)
-    external view returns (uint spID)
+    function getServiceProviderIdsFromAddress(address _ownerAddress, bytes32 _serviceType)
+    external view returns (uint[] memory spIDs)
     {
         return serviceProviderAddressToId[_ownerAddress][_serviceType];
-    }
-    
-    function getDelegateOwnerWallet(
-      address _ownerAddress,
-      bytes32 _serviceType
-    ) external view returns (address)
-    {
-      uint spID = this.getServiceProviderIdFromAddress(_ownerAddress, _serviceType);
-      ( , , , address delegateOwnerWallet) = this.getServiceProviderInfo(_serviceType, spID);
-      require(
-        delegateOwnerWalletToServiceProvider[delegateOwnerWallet] == _ownerAddress,
-        "Mismatched delegate owner wallet");
-      return delegateOwnerWallet;
     }
 }

@@ -50,7 +50,6 @@ async function registerVersionsAndServiceProviders () {
   }
 
   console.log('----version init---/')
-  return
 
   console.log('\nregistering service providers/---')
   try {

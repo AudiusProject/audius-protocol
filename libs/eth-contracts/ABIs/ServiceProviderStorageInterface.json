@@ -15,10 +15,6 @@
         {
           "name": "_endpoint",
           "type": "string"
-        },
-        {
-          "name": "_delegateOwnerWallet",
-          "type": "address"
         }
       ],
       "name": "register",
@@ -51,35 +47,8 @@
       "name": "deregister",
       "outputs": [
         {
-          "name": "deregisteredSpID",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_owner",
-          "type": "address"
-        },
-        {
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
-          "name": "_updatedDelegateOwnerWallet",
-          "type": "address"
-        }
-      ],
-      "name": "updateDelegateOwnerWallet",
-      "outputs": [
-        {
           "name": "",
-          "type": "address"
+          "type": "uint256"
         }
       ],
       "payable": false,
@@ -111,10 +80,6 @@
         {
           "name": "blocknumber",
           "type": "uint256"
-        },
-        {
-          "name": "delegateOwnerWallet",
-          "type": "address"
         }
       ],
       "payable": false,
@@ -152,11 +117,11 @@
           "type": "bytes32"
         }
       ],
-      "name": "getServiceProviderIdFromAddress",
+      "name": "getServiceProviderIdsFromAddress",
       "outputs": [
         {
           "name": "",
-          "type": "uint256"
+          "type": "uint256[]"
         }
       ],
       "payable": false,
@@ -176,29 +141,6 @@
         {
           "name": "",
           "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "_owner",
-          "type": "address"
-        },
-        {
-          "name": "_serviceType",
-          "type": "bytes32"
-        }
-      ],
-      "name": "getDelegateOwnerWallet",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
         }
       ],
       "payable": false,

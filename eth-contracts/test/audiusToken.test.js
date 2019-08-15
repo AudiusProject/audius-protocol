@@ -10,7 +10,7 @@ contract('AudiusToken', async (accounts) => {
   let token
 
   beforeEach(async () => {
-    token = await AudiusToken.new({ from: accounts[0] })
+    token = await AudiusToken.new({from: accounts[0]})
   })
 
   it('Initial token properties', async () => {
