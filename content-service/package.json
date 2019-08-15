@@ -35,6 +35,11 @@
     "standard": "^12.0.1",
     "supertest": "^3.3.0"
   },
+  "//": {
+    "dependencies": {
+      "lodash": "Vuln in < 4.17.13, fixed by https://github.com/lodash/lodash/pull/4336"
+    }
+  },
   "standard": {
     "globals": [
       "assert",
