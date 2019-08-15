@@ -35,7 +35,7 @@
     "babel-register": "^6.26.0"
   },
   "//": {
-    "dependencies": {
+    "dependenciesComments": {
       "lodash": "Vuln in < 4.17.13, fixed by https://github.com/lodash/lodash/pull/4336"
     }
   },
