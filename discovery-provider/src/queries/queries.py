@@ -311,7 +311,7 @@ def get_feed():
                 func.min(repost_subquery.c.created_at).label("min_created_at")
             )
             .group_by(repost_subquery.c.repost_item_id, repost_subquery.c.repost_type)
-            .order_by("min_created_at desc")
+            .order_by(desc("min_created_at"))
         )
         followee_reposts = paginate_query(repost_query, False).all()
 
@@ -807,7 +807,7 @@ def get_followers_for_user(followee_user_id):
             )
             .group_by(outer_follow.follower_user_id)
             .order_by(
-                response_name_constants.follower_count + " desc",
+                desc(response_name_constants.follower_count),
                 # secondary sort to guarantee determinism as explained here:
                 # https://stackoverflow.com/questions/13580826/postgresql-repeating-rows-from-limit-offset
                 asc(outer_follow.follower_user_id)
@@ -880,7 +880,7 @@ def get_followees_for_user(follower_user_id):
                 outer_follow.is_delete == False
             )
             .group_by(outer_follow.followee_user_id)
-            .order_by(response_name_constants.follower_count + " desc")
+            .order_by(desc(response_name_constants.follower_count))
         )
         followee_user_ids_by_follower_count = paginate_query(outer_select).all()
 
@@ -936,7 +936,7 @@ def get_reposters_for_track(repost_track_id):
                 Follow.is_delete == False
             )
             .group_by(Follow.followee_user_id)
-            .order_by(response_name_constants.follower_count + " desc")
+            .order_by(desc(response_name_constants.follower_count))
         )
         follower_count_subquery = paginate_query(follower_count_subquery).subquery()
 
@@ -988,7 +988,7 @@ def get_reposters_for_playlist(repost_playlist_id):
                 Follow.is_delete == False
             )
             .group_by(Follow.followee_user_id)
-            .order_by(response_name_constants.follower_count + " desc")
+            .order_by(desc(response_name_constants.follower_count))
         )
         follower_count_subquery = paginate_query(follower_count_subquery).subquery()
 
