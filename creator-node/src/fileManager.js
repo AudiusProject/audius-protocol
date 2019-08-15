@@ -43,7 +43,7 @@ async function saveFileFromBuffer (req, buffer) {
     {
       cnodeUserUUID: req.userId,
       multihash: multihash,
-      sourceFile: req.fileName || null,
+      sourceFile: req.fileName,
       storagePath: dstPath
     }
   })
