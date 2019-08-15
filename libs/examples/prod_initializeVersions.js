@@ -1,11 +1,11 @@
 const Web3 = require('web3')
 const AudiusLibs = require('../src/index')
 const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service']
-const dataWeb3ProviderEndpoint = 'https://sokol.poa.network:443'
-const ethWeb3ProviderEndpoint = 'https://ropsten.infura.io/v3/c569c6faf4f14d15a49d0044e7ddd668'
-const dataRegistryAddress = '0x09033761774Fe45F40A47191DdF873F18B62DE05'
-const ethRegistryAddress = '0xB631ABAA63a26311366411b2025F0cAca00DE27F'
-const ethTokenAddress = '0xF8e679Aa54361467B12c7394BFF57Eb890f6d934'
+const dataWeb3ProviderEndpoint = 'https://core.poa.network:443'
+const ethWeb3ProviderEndpoint = 'https://mainnet.infura.io/v3/c569c6faf4f14d15a49d0044e7ddd668'
+const dataRegistryAddress = '0xC611C82150b56E6e4Ec5973AcAbA8835Dd0d75A2'
+const ethRegistryAddress = '0x53CFeD846d43BbF4C092f5a5c6F618515Ae137C1'
+const ethTokenAddress = '0x65ca91574256b2c194a964e340e8b0a802e17ec6'
 let latestVersionStr = '0.1.0'
 
 const isServer = true
@@ -30,13 +30,16 @@ if (args.length < 3) {
 
 switch(args[2]) {
   case 'setversion':
-    initializeVersionServiceProviderContracts()
+    setServiceVersion()
     break
   case 'getclaim':
     getClaimInfo()
     break
   case 'fundclaim':
     fundNewClaim()
+    break
+  case 'stakeinfo':
+    getStakingParameters()
     break
   default:
     throwArgError()
@@ -107,14 +110,13 @@ async function getClaimInfo () {
   console.log(await audiusLibs.ethContracts.StakingProxyClient.getClaimInfo())
 }
 
-async function initializeVersionServiceProviderContracts () {
+async function setServiceVersion () {
   let audiusLibs = await getAudiusLibs()
 
   console.log('----version init---')
   let testTx = null
   let privateKey = getEnv('AUDIUS_PRIVATE_KEY')
 
-  /*
   for (const serviceType of serviceTypeList) {
     console.log(`\nregistering ${serviceType}`)
     try {
@@ -131,7 +133,6 @@ async function initializeVersionServiceProviderContracts () {
       }
     }
   }
-  */
   for (const serviceType of serviceTypeList) {
     let versionTx = await audiusLibs.ethContracts.VersioningFactoryClient.getCurrentVersion(serviceType)
     let numVersionsTx = await audiusLibs.ethContracts.VersioningFactoryClient.getNumberOfVersions(serviceType)
@@ -166,4 +167,3 @@ async function fundNewClaim () {
 
   await getClaimInfo()
 }
-
