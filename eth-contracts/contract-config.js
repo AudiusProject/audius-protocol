@@ -15,10 +15,10 @@ module.exports = {
   },
   'staging': {
     versionerAddress: '0xcccc7428648c4AdC0ae262D3547584dDAE25c465',
-    treasuryAddress: null
+    treasuryAddress: '0xcccc7428648c4AdC0ae262D3547584dDAE25c465'
   },
   'production': {
-    versionerAddress: '0xcccc7428648c4AdC0ae262D3547584dDAE25c465',
-    treasuryAddress: null
+    versionerAddress: '0x6054e3dcec782744ec022c2958c3f9641b764b42',
+    treasuryAddress: '0x0da86ededd278072162a866a30806192f2840cd5'
   }
 }
