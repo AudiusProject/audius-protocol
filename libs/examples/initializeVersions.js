@@ -4,8 +4,8 @@ const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service'
 const dataWeb3ProviderEndpoint = 'https://sokol.poa.network:443'
 const ethWeb3ProviderEndpoint = 'https://ropsten.infura.io/v3/c569c6faf4f14d15a49d0044e7ddd668'
 const dataRegistryAddress = '0x09033761774Fe45F40A47191DdF873F18B62DE05'
-const ethRegistryAddress = '0xBBeB72177EF2c0ec9fF96453f924a2b9590DF9B2'
-const ethTokenAddress = '0x65ca91574256b2c194a964e340e8b0a802e17ec6'
+const ethRegistryAddress = '0xB631ABAA63a26311366411b2025F0cAca00DE27F'
+const ethTokenAddress = '0xF8e679Aa54361467B12c7394BFF57Eb890f6d934'
 let latestVersionStr = '0.1.0'
 
 const isServer = true
@@ -30,7 +30,7 @@ async function initializeVersionServiceProviderContracts () {
   let privateKey = getEnv('AUDIUS_PRIVATE_KEY')
   let ownerWallet = getEnv('AUDIUS_OWNER_WALLET')
   if (!privateKey || !ownerWallet) {
-    throw new Error('Missing private key or owner wallet') 
+    throw new Error('Missing private key or owner wallet')
   }
   console.log('Querying environment variables:')
   console.log(privateKey)
@@ -61,7 +61,6 @@ async function initializeVersionServiceProviderContracts () {
   let audiusLibs = new AudiusLibs(audiusLibsConfig)
   console.log('Initializing...')
   await audiusLibs.init()
-  return
 
   console.log('----version init---')
   let testTx = null

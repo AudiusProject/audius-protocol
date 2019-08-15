@@ -97,6 +97,24 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
+          "name": "test",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "msg",
+          "type": "string"
+        }
+      ],
+      "name": "TestStg",
+      "type": "event",
+      "signature": "0x9f1c36321e12d306f94d4b5154ac504bf754a1022a6be84df15067251afb4a64"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": true,
           "name": "previousOwner",
           "type": "address"
@@ -125,6 +143,10 @@
         {
           "name": "_endpoint",
           "type": "string"
+        },
+        {
+          "name": "_delegateOwnerWallet",
+          "type": "address"
         }
       ],
       "name": "register",
@@ -137,7 +159,7 @@
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0xcf6c4596"
+      "signature": "0x7cc977ba"
     },
     {
       "constant": false,
@@ -166,6 +188,34 @@
       "stateMutability": "nonpayable",
       "type": "function",
       "signature": "0xe2f4b9e2"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_ownerAddress",
+          "type": "address"
+        },
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "name": "_updatedDelegateOwnerWallet",
+          "type": "address"
+        }
+      ],
+      "name": "updateDelegateOwnerWallet",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "signature": "0x9e53c41f"
     },
     {
       "constant": true,
@@ -212,6 +262,10 @@
         {
           "name": "blocknumber",
           "type": "uint256"
+        },
+        {
+          "name": "delegateOwnerWallet",
+          "type": "address"
         }
       ],
       "payable": false,
@@ -251,17 +305,41 @@
           "type": "bytes32"
         }
       ],
-      "name": "getServiceProviderIdsFromAddress",
+      "name": "getServiceProviderIdFromAddress",
       "outputs": [
         {
-          "name": "spIDs",
-          "type": "uint256[]"
+          "name": "spID",
+          "type": "uint256"
         }
       ],
       "payable": false,
       "stateMutability": "view",
       "type": "function",
-      "signature": "0x2bec8e16"
+      "signature": "0x2cd6e60f"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_ownerAddress",
+          "type": "address"
+        },
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getDelegateOwnerWallet",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0x940d59d1"
     }
   ]
 }

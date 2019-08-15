@@ -42,4 +42,26 @@ const audiusLibsConfig = {
   isServer: true
 }
 
+async function initializeLibConfig (ownerWallet) {
+  return {
+    web3Config: AudiusLibs.configExternalWeb3(
+      dataContractsConfig.registryAddress,
+      dataWeb3
+    ),
+    ethWeb3Config: AudiusLibs.configEthWeb3(
+      ethContractsConfig.audiusTokenAddress,
+      ethContractsConfig.registryAddress,
+      ethWeb3,
+      ownerWallet
+    ),
+    isServer: true
+  }
+}
+
+// Export configured libs instance
 module.exports.audiusInstance = new AudiusLibs(audiusLibsConfig)
+
+// Export libs config for re-use
+module.exports.audiusLibsConfig = audiusLibsConfig
+
+module.exports.initializeLibConfig = initializeLibConfig

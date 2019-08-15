@@ -5,6 +5,7 @@ const AudiusTokenClient = require('./audiusTokenClient')
 const RegistryClient = require('./registryClient')
 const VersioningFactoryClient = require('./versioningFactoryClient')
 const ServiceProviderFactoryClient = require('./serviceProviderFactoryClient')
+const StakingProxyClient = require('./stakingProxyClient')
 const Utils = require('../../utils')
 
 let localStorage
@@ -19,9 +20,11 @@ const AudiusTokenABI = Utils.importEthContractABI('AudiusToken.json').abi
 const RegistryABI = Utils.importEthContractABI('Registry.json').abi
 const VersioningFactoryABI = Utils.importEthContractABI('VersioningFactory.json').abi
 const ServiceProviderFactoryABI = Utils.importEthContractABI('ServiceProviderFactory.json').abi
+const StakingABI = Utils.importEthContractABI('Staking.json').abi
 
 const VersioningFactoryRegistryKey = 'VersioningFactory'
 const ServiceProviderFactoryRegistryKey = 'ServiceProviderFactory'
+const OwnedUpgradeabilityProxyKey = 'OwnedUpgradeabilityProxy'
 
 const serviceType = Object.freeze({
   DISCOVERY_PROVIDER: 'discovery-provider',
@@ -64,11 +67,22 @@ class EthContracts {
     )
     this.clients.push(this.VersioningFactoryClient)
 
+    this.StakingProxyClient = new StakingProxyClient(
+      this.ethWeb3Manager,
+      StakingABI,
+      OwnedUpgradeabilityProxyKey,
+      this.getRegistryAddressForContract,
+      this.AudiusTokenClient
+    )
+    this.clients.push(this.StakingProxyClient)
+
     this.ServiceProviderFactoryClient = new ServiceProviderFactoryClient(
       this.ethWeb3Manager,
       ServiceProviderFactoryABI,
       ServiceProviderFactoryRegistryKey,
-      this.getRegistryAddressForContract
+      this.getRegistryAddressForContract,
+      this.AudiusTokenClient,
+      this.StakingProxyClient
     )
     this.clients.push(this.ServiceProviderFactoryClient)
 
@@ -197,7 +211,9 @@ class EthContracts {
     }
     if (!this.isServer) {
       this.discProvInterval = setInterval(() => {
-        localStorage.setItem(DISCOVERY_PROVIDER_TIMESTAMP, JSON.stringify({ endpoint, timestamp: Date.now() }))
+        if (endpoint) {
+          localStorage.setItem(DISCOVERY_PROVIDER_TIMESTAMP, JSON.stringify({ endpoint, timestamp: Date.now() }))
+        }
       }, DISCOVERY_PROVIDER_TIMESTAMP_INTERVAL)
     }
     return endpoint
