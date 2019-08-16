@@ -4,13 +4,13 @@ const config = require('./config.js')
 const registryAddress = config.get('registryAddress')
 const web3ProviderUrl = config.get('web3Provider')
 
-let audiusInstance
+let audiusInstance = {}
 
 async function setupAndRun () {
   const dataWeb3 = await AudiusLibs.Utils.configureWeb3(web3ProviderUrl, null, false)
   if (!dataWeb3) throw new Error('Web3 incorrectly configured')
 
-  audiusInstance = new AudiusLibs({
+  audiusInstance.libs = new AudiusLibs({
     web3Config: {
       registryAddress,
       useExternalWeb3: true,
@@ -24,8 +24,8 @@ async function setupAndRun () {
     isServer: true
   })
 
-  return audiusInstance.init()
+  return audiusInstance.libs.init()
 }
 
-module.exports.audiusLibsInstance = audiusInstance
 module.exports = setupAndRun
+module.exports.audiusLibsInstance = audiusInstance
