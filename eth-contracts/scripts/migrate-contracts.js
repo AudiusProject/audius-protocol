@@ -5,6 +5,9 @@ const os = require('os');
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
 
+const AudiusIdentityService = 'identity-service'
+const AudiusContentService = 'content-service'
+
 const Libs = 'libs'
 
 const getDefaultAccount = async () => {
@@ -78,6 +81,22 @@ module.exports = async callback => {
 
   copyBuildDirectory(libsDirRoot + '/ABIs')
   outputJsonConfigFile(libsDirRoot + '/config.json')
+
+  // output to Identity Service
+  try {
+    outputJsonConfigFile(getDirectoryRoot(AudiusIdentityService) + '/eth-contract-config.json') 
+  }
+  catch(e){
+    console.log("Identity service doesn't exist, probably running via E2E setup scripts")
+  }
+  
+  // special case for content service which isn't run locally for E2E test or during front end dev
+  try {
+    outputJsonConfigFile(getDirectoryRoot(AudiusContentService) + '/eth-contract-config.json')
+  }
+  catch(e){
+    console.log("Content service folder doesn't exist, probably running via E2E setup scripts")
+  }
   
   const dappOutput = os.homedir() + '/.audius'
   if (!fs.existsSync(dappOutput)) {

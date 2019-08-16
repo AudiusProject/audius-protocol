@@ -54,8 +54,8 @@ class AudiusLibs {
    * @param {?number} networkId network chain id
    * @param {?string} walletOverride wallet address to force use instead of the first wallet on the provided web3
    */
-  static async configExternalWeb3 (registryAddress, web3Provider, networkId, walletOverride = null) {
-    const web3Instance = await Utils.configureWeb3(web3Provider, networkId)
+  static async configExternalWeb3 (registryAddress, web3Provider, networkId, walletOverride = null, requiresAccount = true) {
+    const web3Instance = await Utils.configureWeb3(web3Provider, networkId, requiresAccount)
     if (!web3Instance) {
       throw new Error('External web3 incorrectly configured')
     }

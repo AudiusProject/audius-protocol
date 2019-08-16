@@ -5,9 +5,9 @@ const initAudiusLibs = require('./initAudiusLibs')
 const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service']
 const spDiscProvType = serviceTypeList[0]
 const spCreatorNodeType = serviceTypeList[1]
-const discProvEndpoint1 = 'http://localhost:5000'
-const creatorNodeEndpoint1 = 'http://localhost:4000'
-const creatorNodeEndpoint2 = 'http://localhost:4010'
+const discProvEndpoint1 = 'http://docker.for.mac.localhost:5000'
+const creatorNodeEndpoint1 = 'http://docker.for.mac.localhost:4000'
+const creatorNodeEndpoint2 = 'http://docker.for.mac.localhost:4010'
 const spEndpoint2 = 'http://localhost:5001'
 let testVersionStr = '0.1.0'
 
