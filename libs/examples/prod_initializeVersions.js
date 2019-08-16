@@ -4,8 +4,8 @@ const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service'
 const dataWeb3ProviderEndpoint = 'https://core.poa.network:443'
 const ethWeb3ProviderEndpoint = 'https://mainnet.infura.io/v3/c569c6faf4f14d15a49d0044e7ddd668'
 const dataRegistryAddress = '0xC611C82150b56E6e4Ec5973AcAbA8835Dd0d75A2'
-const ethRegistryAddress = '0x53CFeD846d43BbF4C092f5a5c6F618515Ae137C1'
-const ethTokenAddress = '0x65ca91574256b2c194a964e340e8b0a802e17ec6'
+const ethRegistryAddress = '0xb2be26Ca062c5D74964921B80DE6cfa28D9A36c0'
+const ethTokenAddress = '0xADEf65C0f6a30Dcb5f88Eb8653BBFe09Bf99864f'
 let latestVersionStr = '0.1.0'
 
 const isServer = true

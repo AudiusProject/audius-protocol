@@ -20,7 +20,6 @@ module.exports = (deployer, network, accounts) => {
     // const networkId = Registry.network_id
     const config = contractConfig[network]
     const treasuryAddress = config.treasuryAddress || accounts[0]
-    const versionerAddress = config.versionerAddress || accounts[0]
 
     const token = await AudiusToken.deployed()
     let staking = await deployer.deploy(Staking)
@@ -37,10 +36,12 @@ module.exports = (deployer, network, accounts) => {
       ['address', 'address'],
       [token.address, treasuryAddress])
 
+    let contractDeployer = accounts[0]
+
     // Initialize staking proxy
     await ownedUpgradeabilityProxy.upgradeToAndCall(
       staking.address,
       initializeData,
-      { from: versionerAddress })
+      { from: contractDeployer })
   })
 }

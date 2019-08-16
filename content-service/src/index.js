@@ -3,7 +3,6 @@
 const ON_DEATH = require('death')
 const ipfsHttpClient = require('ipfs-http-client')
 const AudiusLibs = require('@audius/libs')
-const Web3 = require('web3')
 
 const initializeApp = require('./app')
 const ContentReplicator = require('./contentReplicator')
@@ -43,26 +42,20 @@ const runDBMigrations = async () => {
 }
 
 const initAudiusLibs = async () => {
-  const registryAddress = config.get('registryAddress')
-  const web3ProviderUrl = config.get('web3ProviderUrl')
-  const dataWeb3 = new Web3(new Web3.providers.HttpProvider(web3ProviderUrl))
-
   const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
     config.get('ethProviderUrl'),
     config.get('ethNetworkId'),
     /* requiresAccount */ false
   )
 
-  const ethWeb3Config = AudiusLibs.configEthWeb3(
-    config.get('ethTokenAddress'),
-    config.get('ethRegistryAddress'),
-    ethWeb3,
-    config.get('ethOwnerWallet')
-  )
   const audiusLibs = new AudiusLibs(
     {
-      web3Config: AudiusLibs.configExternalWeb3(registryAddress, dataWeb3, null, false),
-      ethWeb3Config,
+      ethWeb3Config: AudiusLibs.configEthWeb3(
+        config.get('ethTokenAddress'),
+        config.get('ethRegistryAddress'),
+        ethWeb3,
+        config.get('ethOwnerWallet')
+      ),
       discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true)
     }
   )
