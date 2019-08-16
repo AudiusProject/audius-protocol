@@ -5,8 +5,6 @@
   "dbUrl": "postgres://postgres:postgres@localhost:8432/audius_content_service",
   "port": 8000,
   "logLevel": "debug",
-  "web3ProviderUrl": "http://localhost:8545",
-  "registryAddress": "",
   "delegateOwnerWallet": "",
   "delegatePrivateKey": "",
   "ethProviderUrl": "http://localhost:8546",

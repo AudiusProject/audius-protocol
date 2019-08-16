@@ -3,7 +3,6 @@
 const ON_DEATH = require('death')
 const ipfsHttpClient = require('ipfs-http-client')
 const AudiusLibs = require('@audius/libs')
-const Web3 = require('web3')
 
 const initializeApp = require('./app')
 const ContentReplicator = require('./contentReplicator')
