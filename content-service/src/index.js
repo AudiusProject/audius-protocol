@@ -42,9 +42,6 @@ const runDBMigrations = async () => {
 }
 
 const initAudiusLibs = async () => {
-  const registryAddress = config.get('registryAddress')
-  const web3ProviderUrl = config.get('web3ProviderUrl')
-
   const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
     config.get('ethProviderUrl'),
     config.get('ethNetworkId'),
