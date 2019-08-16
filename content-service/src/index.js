@@ -45,7 +45,6 @@ const runDBMigrations = async () => {
 const initAudiusLibs = async () => {
   const registryAddress = config.get('registryAddress')
   const web3ProviderUrl = config.get('web3ProviderUrl')
-  const dataWeb3 = new Web3(new Web3.providers.HttpProvider(web3ProviderUrl))
 
   const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
     config.get('ethProviderUrl'),
@@ -53,16 +52,14 @@ const initAudiusLibs = async () => {
     /* requiresAccount */ false
   )
 
-  const ethWeb3Config = AudiusLibs.configEthWeb3(
-    config.get('ethTokenAddress'),
-    config.get('ethRegistryAddress'),
-    ethWeb3,
-    config.get('ethOwnerWallet')
-  )
   const audiusLibs = new AudiusLibs(
     {
-      web3Config: AudiusLibs.configExternalWeb3(registryAddress, dataWeb3),
-      ethWeb3Config,
+      ethWeb3Config: AudiusLibs.configEthWeb3(
+        config.get('ethTokenAddress'),
+        config.get('ethRegistryAddress'),
+        ethWeb3,
+        config.get('ethOwnerWallet')
+      ),
       discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true)
     }
   )
