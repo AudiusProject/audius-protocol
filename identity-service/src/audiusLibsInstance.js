@@ -1,5 +1,4 @@
 const AudiusLibs = require('@audius/libs')
-const Web3 = require('web3')
 const config = require('./config.js')
 
 const registryAddress = config.get('registryAddress')
