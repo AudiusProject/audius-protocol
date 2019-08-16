@@ -13,7 +13,7 @@ const spEndpoint2 = 'http://localhost:5001'
 function throwArgError () {
   throw new Error('missing argument - format: node examples/initiateStakingOperations.js [distribute, fundclaim, getclaim, stakeinfo]')
 }
-let testVersionStr = '0.0.1'
+let testVersionStr = '0.1.0'
 
 let args = process.argv
 if (args.length < 3) {
@@ -36,6 +36,18 @@ switch (args[2]) {
   case 'stakeinfo':
     console.log('stakeinfo')
     getStakingParameters()
+    break
+  case 'initversions':
+    initializeVersions()
+    break
+  case 'register-sps':
+    registerLocalServices()
+    break
+  case 'query-sps':
+    queryLocalServices()
+    break
+  case 'init-all':
+    initializeLocalEnvironment()
     break
   default:
     throwArgError()
@@ -104,4 +116,114 @@ async function distributeTokens () {
     let tx = await audius1.ethContracts.AudiusTokenClient.transfer(acct, initialTokenInAudWeiBN)
     console.log(tx)
   }
+}
+
+async function initializeVersions () {
+  const audius1 = await initAudiusLibs(true)
+  let testTx = null
+  for (const serviceType of serviceTypeList) {
+    console.log(`\nregistering ${serviceType}`)
+    try {
+      testTx = await audius1.ethContracts.VersioningFactoryClient.setServiceVersion(
+        serviceType,
+        testVersionStr)
+      console.log(testTx)
+    } catch (e) {
+      if (!e.toString().includes('Already registered')) {
+        console.log(e)
+      } else {
+        console.log('Already registered')
+      }
+    }
+  }
+
+  for (const serviceType of serviceTypeList) {
+    let versionTx = await audius1.ethContracts.VersioningFactoryClient.getCurrentVersion(serviceType)
+    let numVersionsTx = await audius1.ethContracts.VersioningFactoryClient.getNumberOfVersions(serviceType)
+    console.log(`${serviceType} | current version: ${versionTx} | number of versions : ${numVersionsTx}`)
+  }
+
+  console.log('----version init---/')
+}
+
+async function registerLocalServices () {
+  await distributeTokens()
+  const testWeb3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8546/'))
+  const audius1 = await initAudiusLibs(true)
+  let ethweb3 = audius1.ethWeb3Manager.getWeb3()
+  let ethAccts = await ethweb3.eth.getAccounts()
+  console.log('\nregistering service providers/---')
+  const amountOfAUDS = 100000
+  let initialTokenInAudWei = testWeb3.utils.toWei(amountOfAUDS.toString(), 'ether')
+  let initialTokenInAudWeiBN = testWeb3.utils.toBN(initialTokenInAudWei)
+  try {
+    // Register discovery provider
+    console.log('\nregistering disc prov')
+    let tx = await audius1.ethContracts.ServiceProviderFactoryClient.register(
+      spDiscProvType,
+      discProvEndpoint1,
+      initialTokenInAudWeiBN)
+    console.dir(tx, { depth: 5 })
+  } catch (e) {
+    if (!e.toString().includes('already registered')) {
+      console.log(e)
+    } else {
+      console.log(`\n${discProvEndpoint1} already registered`)
+    }
+  }
+  // Initialize w/different acct
+  const audius2 = await initAudiusLibs(true, null, ethAccts[1])
+  try {
+    // Register creator node
+    console.log('\nregistering creator node 2')
+    let tx = await audius2.ethContracts.ServiceProviderFactoryClient.register(
+      spCreatorNodeType,
+      creatorNodeEndpoint1,
+      initialTokenInAudWeiBN)
+    console.dir(tx, { depth: 5 })
+  } catch (e) {
+    if (!e.toString().includes('already registered')) {
+      console.log(e)
+    } else {
+      console.log(`\n${creatorNodeEndpoint2} already registered`)
+    }
+  }
+}
+
+async function queryLocalServices () {
+  const ethWeb3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8546/'))
+  const ethAccounts = await ethWeb3.eth.getAccounts()
+  const audius1 = await initAudiusLibs(true)
+  for (const spType of serviceTypeList) {
+    console.log(`\n${spType}`)
+    let spList = await audius1.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(spType)
+    for (const sp of spList) {
+      console.log(sp)
+      let endpt = sp.endpoint
+      let spID = sp.spID
+      let type = sp.type
+      let idFromEndpoint =
+        await audius1.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(endpt)
+      console.log(`ID from endpoint: ${idFromEndpoint}`)
+      let infoFromId =
+        await audius1.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo(type, spID)
+      let jsonInfoFromId = JSON.stringify(infoFromId)
+      console.log(`Info from ID: ${jsonInfoFromId}`)
+      let idsFromAddress =
+        await audius1.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(
+          ethAccounts[0],
+          type)
+      console.log(`SP IDs from owner wallet ${ethAccounts[0]}: ${idsFromAddress}`)
+    }
+    let numProvs = await audius1.ethContracts.ServiceProviderFactoryClient.getTotalServiceTypeProviders(spType)
+    console.log(`num ${spType}: ${numProvs}`)
+  }
+  console.log('----querying service providers done')
+}
+
+async function initializeLocalEnvironment () {
+  await distributeTokens()
+  await initializeVersions()
+  await registerLocalServices()
+  await queryLocalServices()
 }

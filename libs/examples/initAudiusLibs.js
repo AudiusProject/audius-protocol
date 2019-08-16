@@ -10,9 +10,10 @@ const dataWeb3ProviderEndpoint = 'http://localhost:8545'
 const ethWeb3ProviderEndpoint = 'http://localhost:8546'
 const isServer = true
 
-async function initAudiusLibs (useExternalWeb3, ownerWalletOverride = null) {
+async function initAudiusLibs (useExternalWeb3, ownerWalletOverride = null, ethOwnerWalletOverride = null) {
   let audiusLibsConfig
   const ethWeb3 = new Web3(new Web3.providers.HttpProvider(ethWeb3ProviderEndpoint))
+  let ethWallet = ethOwnerWalletOverride === null ? ethContractsConfig.ownerWallet : ethOwnerWalletOverride
   if (useExternalWeb3) {
     const dataWeb3 = new Web3(new Web3.providers.HttpProvider(dataWeb3ProviderEndpoint))
     audiusLibsConfig = {
@@ -27,7 +28,7 @@ async function initAudiusLibs (useExternalWeb3, ownerWalletOverride = null) {
         ethContractsConfig.audiusTokenAddress,
         ethContractsConfig.registryAddress,
         ethWeb3,
-        ethContractsConfig.ownerWallet
+        ethWallet
       ),
       discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true),
       creatorNodeConfig: AudiusLibs.configCreatorNode(creatorNodeEndpoint),
