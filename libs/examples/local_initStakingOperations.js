@@ -11,7 +11,7 @@ const creatorNodeEndpoint2 = 'http://localhost:4010'
 const spEndpoint2 = 'http://localhost:5001'
 
 function throwArgError () {
-  throw new Error('missing argument - format: node examples/initiateStakingOperations.js [distribute, fundclaim, getclaim, stakeinfo]')
+  throw new Error('missing argument - format: node examples/initiateStakingOperations.js [distribute, fundclaim, getclaim, stakeinfo, initversions, register-sps, query-sps, init-all]')
 }
 let testVersionStr = '0.1.0'
 
@@ -20,38 +20,50 @@ if (args.length < 3) {
   throwArgError()
 }
 
-switch (args[2]) {
-  case 'distribute':
-    console.log('distribute')
-    distributeTokens()
-    break
-  case 'fundclaim':
-    console.log('fundclaim')
-    fundNewClaim()
-    break
-  case 'getclaim':
-    console.log('fundclaim')
-    getClaimInfo()
-    break
-  case 'stakeinfo':
-    console.log('stakeinfo')
-    getStakingParameters()
-    break
-  case 'initversions':
-    initializeVersions()
-    break
-  case 'register-sps':
-    registerLocalServices()
-    break
-  case 'query-sps':
-    queryLocalServices()
-    break
-  case 'init-all':
-    initializeLocalEnvironment()
-    break
-  default:
-    throwArgError()
+async function run() {
+  try{
+    switch (args[2]) {
+      case 'distribute':
+        console.log('distribute')
+        await distributeTokens()
+        break
+      case 'fundclaim':
+        console.log('fundclaim')
+        await fundNewClaim()
+        break
+      case 'getclaim':
+        console.log('fundclaim')
+        await getClaimInfo()
+        break
+      case 'stakeinfo':
+        console.log('stakeinfo')
+        await getStakingParameters()
+        break
+      case 'initversions':
+        await initializeVersions()
+        break
+      case 'register-sps':
+        await registerLocalServices()
+        break
+      case 'query-sps':
+        await queryLocalServices()
+        break
+      case 'init-all':
+        await initializeLocalEnvironment()
+        break
+      default:
+        throwArgError()
+    }
+  
+    process.exit(0)
+  }
+  catch(e){
+    console.error(e)
+    process.exit(1)
+  }
 }
+
+run()
 
 async function getStakingParameters () {
   const audius1 = await initAudiusLibs(true)
