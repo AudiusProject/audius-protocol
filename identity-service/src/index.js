@@ -21,9 +21,9 @@ setTimeout(async () => {
   logger.info('Executing database migrations...')
   runMigrations().then(async () => {
     logger.info('Migrations completed successfully')
-    
+
     await initAudiusLibs()
-    
+
     appInfo = initializeApp(config.get('port'))
   }).error((err) => {
     logger.error('Error in migrations: ', err)
