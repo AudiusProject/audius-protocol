@@ -10,3 +10,4 @@ file_storage/
 local-storage/
 local-test/
 contract-config.json
+eth-contract-config.json

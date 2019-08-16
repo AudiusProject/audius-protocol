@@ -1,19 +1,31 @@
 const AudiusLibs = require('@audius/libs')
-const Web3 = require('web3')
 const config = require('./config.js')
 
-async function setupAndRun () {
-  const registryAddress = config.get('registryAddress')
-  const web3ProviderUrl = config.get('web3Provider')
-  const dataWeb3 = new Web3(new Web3.providers.HttpProvider(web3ProviderUrl))
+const registryAddress = config.get('registryAddress')
+const web3ProviderUrl = config.get('web3Provider')
 
-  const audiusInstance = new AudiusLibs({
-    web3Config: AudiusLibs.configExternalWeb3(registryAddress, dataWeb3),
+let audiusInstance = {}
+
+async function setupAndRun () {
+  const dataWeb3 = await AudiusLibs.Utils.configureWeb3(web3ProviderUrl, null, false)
+  if (!dataWeb3) throw new Error('Web3 incorrectly configured')
+
+  audiusInstance.libs = new AudiusLibs({
+    web3Config: {
+      registryAddress,
+      useExternalWeb3: true,
+      externalWeb3Config: {
+        web3: dataWeb3,
+        // this is a stopgap since libs external web3 init requires an ownerWallet
+        // this is never actually used in the service's libs calls
+        ownerWallet: config.get('relayerPublicKey')
+      }
+    },
     isServer: true
   })
 
-  await audiusInstance.init()
-  return audiusInstance
+  return audiusInstance.libs.init()
 }
 
 module.exports = setupAndRun
+module.exports.audiusLibsInstance = audiusInstance

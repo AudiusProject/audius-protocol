@@ -39,12 +39,6 @@ const config = convict({
     env: 'port',
     default: null
   },
-  web3ProviderUrl: {
-    doc: 'web3 provider url',
-    format: String,
-    env: 'web3ProviderUrl',
-    default: null
-  },
 
   // wallet information
   delegateOwnerWallet: {
@@ -61,13 +55,6 @@ const config = convict({
   },
 
   // loaded through contract-config.json, if an env variable declared, env var takes precendence
-  registryAddress: {
-    doc: 'Registry address of contracts deployed on web3Provider',
-    format: String,
-    default: null,
-    env: 'registryAddress'
-  },
-
   ethProviderUrl: {
     doc: 'eth provider url',
     format: String,
@@ -114,6 +101,19 @@ if (defaultConfigExists) config.loadFile('default-config.json')
 // during development
 const contractConfigExists = fs.existsSync('contract-config.json')
 if (contractConfigExists) config.loadFile('contract-config.json')
+
+// the eth-contract-config.json file is used to load registry address locally
+// during development
+const ethContractConfigExists = fs.existsSync('eth-contract-config.json')
+if (ethContractConfigExists) {
+  let ethContractConfig = require('../eth-contract-config.json')
+
+  config.load({
+    'ethTokenAddress': ethContractConfig.audiusTokenAddress,
+    'ethRegistryAddress': ethContractConfig.registryAddress,
+    'ethOwnerWallet': ethContractConfig.ownerWallet
+  })
+}
 
 // Perform validation and error any properties are not present on schema
 config.validate()
