@@ -39,12 +39,6 @@ const config = convict({
     env: 'port',
     default: null
   },
-  web3ProviderUrl: {
-    doc: 'web3 provider url',
-    format: String,
-    env: 'web3ProviderUrl',
-    default: null
-  },
 
   // wallet information
   delegateOwnerWallet: {
@@ -61,13 +55,6 @@ const config = convict({
   },
 
   // loaded through contract-config.json, if an env variable declared, env var takes precendence
-  registryAddress: {
-    doc: 'Registry address of contracts deployed on web3Provider',
-    format: String,
-    default: null,
-    env: 'registryAddress'
-  },
-
   ethProviderUrl: {
     doc: 'eth provider url',
     format: String,
