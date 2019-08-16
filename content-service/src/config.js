@@ -131,6 +131,4 @@ if (ethContractConfigExists) {
 // Perform validation and error any properties are not present on schema
 config.validate()
 
-console.log(config.getProperties())
-
 module.exports = config

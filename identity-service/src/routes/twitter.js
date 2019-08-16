@@ -4,7 +4,7 @@ const config = require('../config.js')
 const models = require('../models')
 const uuidv4 = require('uuid/v4')
 const txRelay = require('../txRelay')
-const getAudiusLibsInstance = require('../audiusLibsInstance')
+const { audiusLibsInstance } = require('../audiusLibsInstance')
 
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 
@@ -113,7 +113,6 @@ module.exports = function (app) {
    */
   app.post('/twitter/associate', handleResponse(async (req, res, next) => {
     let { uuid, userId, handle } = req.body
-    let audiusLibsInstance = await getAudiusLibsInstance()
     try {
       let twitterObj = await models.TwitterUser.findOne({ where: { uuid: uuid } })
       // only set blockchainUserId if not already set
