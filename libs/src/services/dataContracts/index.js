@@ -4,7 +4,6 @@ const Utils = require('../../utils')
 const RegistryClient = require('./registryClient')
 const UserFactoryClient = require('./userFactoryClient')
 const TrackFactoryClient = require('./trackFactoryClient')
-const DiscoveryProviderFactoryClient = require('./discoveryProviderFactoryClient')
 const SocialFeatureFactoryClient = require('./socialFeatureFactoryClient')
 const PlaylistFactoryClient = require('./playlistFactoryClient')
 const UserLibraryFactoryClient = require('./userLibraryFactoryClient')
@@ -15,7 +14,6 @@ const IPLDBlacklistFactoryClient = require('./IPLDBlacklistFactoryClient')
 const RegistryABI = Utils.importDataContractABI('Registry.json').abi
 const UserFactoryABI = Utils.importDataContractABI('UserFactory.json').abi
 const TrackFactoryABI = Utils.importDataContractABI('TrackFactory.json').abi
-const DiscoveryProviderFactoryABI = Utils.importDataContractABI('DiscoveryProviderFactory.json').abi
 const SocialFeatureFactoryABI = Utils.importDataContractABI('SocialFeatureFactory.json').abi
 const PlaylistFactoryABI = Utils.importDataContractABI('PlaylistFactory.json').abi
 const UserLibraryFactoryABI = Utils.importDataContractABI('UserLibraryFactory.json').abi
@@ -24,7 +22,6 @@ const IPLDBlacklistFactoryABI = Utils.importDataContractABI('IPLDBlacklistFactor
 // define contract registry keys
 const UserFactoryRegistryKey = 'UserFactory'
 const TrackFactoryRegistryKey = 'TrackFactory'
-const DiscoveryProviderFactoryRegistryKey = 'DiscoveryProviderFactory'
 const SocialFeatureFactoryRegistryKey = 'SocialFeatureFactory'
 const PlaylistFactoryRegistryKey = 'PlaylistFactory'
 const UserLibraryFactoryRegistryKey = 'UserLibraryFactory'
@@ -63,14 +60,6 @@ class AudiusContracts {
       this.getRegistryAddressForContract
     )
     this.clients.push(this.TrackFactoryClient)
-
-    this.DiscoveryProviderFactoryClient = new DiscoveryProviderFactoryClient(
-      this.web3Manager,
-      DiscoveryProviderFactoryABI,
-      DiscoveryProviderFactoryRegistryKey,
-      this.getRegistryAddressForContract
-    )
-    this.clients.push(this.DiscoveryProviderFactoryClient)
 
     this.SocialFeatureFactoryClient = new SocialFeatureFactoryClient(
       this.web3Manager,
@@ -130,52 +119,6 @@ class AudiusContracts {
       throw new Error(`No registry contract found for contract address ${address}`)
     }
     return contractRegistryKey
-  }
-
-  /**
-   * Registers a discovery service endpoint if it's not currently in the blockchain
-   * If it is already registered, returns id of the endpoint from the contract
-   * @param {string} endpoint fully qualified domain name of discprov endpoint
-   * @param {Boolean} validateEndpointHealth
-   */
-  async registerDiscoveryProviderOnChain (endpoint, validateEndpointHealth = true) {
-    let listOfProviders = await this.DiscoveryProviderFactoryClient.getDiscoveryProviderList()
-    for (var i = 0; i < listOfProviders.length; i++) {
-      let parsedName = listOfProviders[i]
-      if (parsedName === endpoint) {
-        // Return discovery provider ID if already registered
-        return i + 1
-      }
-    }
-    if (!Utils.isFQDN(endpoint)) {
-      throw new Error('Not a fully qualified domain name!')
-    } else if (validateEndpointHealth && !(await Utils.isHealthy(endpoint))) {
-      throw new Error('Discovery provider failed health check. Provider could not be registered.')
-    } else {
-      return this.DiscoveryProviderFactoryClient.register(endpoint)
-    }
-  }
-
-  /** TODO: REMOVE AS THIS IS DEPRECATED
-   * Need to select a discovery service for libs to make queries against */
-  async selectDiscoveryProviderToUse (idx) {
-    let discoveryProviders = await this.DiscoveryProviderFactoryClient.getDiscoveryProviderList()
-
-    // on chain the discprov count starts at 1, not 0, but the list of discovery providers
-    // starts at index 0, so the index refers to the on chain
-    // discovery provider id, not the index from the list of discovery providers
-    if (discoveryProviders && discoveryProviders.length >= 1) {
-      let offsetIdx = idx - 1
-      let discoveryProviderEndpoint
-      if (idx && idx >= 1 && discoveryProviders[offsetIdx]) {
-        discoveryProviderEndpoint = discoveryProviders[offsetIdx]
-      } else {
-        discoveryProviderEndpoint = discoveryProviders[1]
-      }
-      return discoveryProviderEndpoint
-    } else {
-      throw new Error('Cannot register discovery provider, not enough providers available')
-    }
   }
 }
 

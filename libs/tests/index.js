@@ -1,5 +1,4 @@
 require('./helpers')
-require('./discoveryProviderClientTest')
 require('./registryClientTest')
 require('./userClientTest')
 require('./creatorNodeTest')
