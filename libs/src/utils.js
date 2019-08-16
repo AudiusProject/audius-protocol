@@ -93,6 +93,7 @@ class Utils {
       }
       if (requiresAccount) {
         const accounts = await web3Instance.eth.getAccounts()
+        console.log(`accounts: ${accounts}`)
         if (!accounts || accounts.length < 1) {
           return false
         }
