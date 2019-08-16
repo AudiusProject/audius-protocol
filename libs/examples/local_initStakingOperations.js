@@ -5,10 +5,9 @@ const initAudiusLibs = require('./initAudiusLibs')
 const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service']
 const spDiscProvType = serviceTypeList[0]
 const spCreatorNodeType = serviceTypeList[1]
-const discProvEndpoint1 = 'http://localhost:5000'
-const creatorNodeEndpoint1 = 'http://localhost:4000'
-const creatorNodeEndpoint2 = 'http://localhost:4010'
-const spEndpoint2 = 'http://localhost:5001'
+const discProvEndpoint1 = 'http://docker.for.mac.localhost:5000'
+const creatorNodeEndpoint1 = 'http://docker.for.mac.localhost:4000'
+const creatorNodeEndpoint2 = 'http://docker.for.mac.localhost:4010'
 
 function throwArgError () {
   throw new Error('missing argument - format: node examples/initiateStakingOperations.js [distribute, fundclaim, getclaim, stakeinfo, initversions, register-sps, query-sps, init-all]')
@@ -183,11 +182,12 @@ async function registerLocalServices () {
       console.log(`\n${discProvEndpoint1} already registered`)
     }
   }
+
   // Initialize w/different acct
   const audius2 = await initAudiusLibs(true, null, ethAccts[1])
   try {
     // Register creator node
-    console.log('\nregistering creator node 2')
+    console.log('\nregistering creator node 1')
     let tx = await audius2.ethContracts.ServiceProviderFactoryClient.register(
       spCreatorNodeType,
       creatorNodeEndpoint1,
@@ -197,7 +197,7 @@ async function registerLocalServices () {
     if (!e.toString().includes('already registered')) {
       console.log(e)
     } else {
-      console.log(`\n${creatorNodeEndpoint2} already registered`)
+      console.log(`\n${creatorNodeEndpoint1} already registered`)
     }
   }
 }
