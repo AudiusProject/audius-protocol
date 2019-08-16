@@ -61,7 +61,7 @@ const initAudiusLibs = async () => {
   )
   const audiusLibs = new AudiusLibs(
     {
-      web3Config: AudiusLibs.configExternalWeb3(registryAddress, dataWeb3),
+      web3Config: AudiusLibs.configExternalWeb3(registryAddress, dataWeb3, null, false),
       ethWeb3Config,
       discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true)
     }
