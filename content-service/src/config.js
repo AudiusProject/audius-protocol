@@ -120,7 +120,7 @@ if (contractConfigExists) config.loadFile('contract-config.json')
 const ethContractConfigExists = fs.existsSync('eth-contract-config.json')
 if (ethContractConfigExists) {
   let ethContractConfig = require('../eth-contract-config.json')
-  
+
   config.load({
     'ethTokenAddress': ethContractConfig.audiusTokenAddress,
     'ethRegistryAddress': ethContractConfig.registryAddress,
