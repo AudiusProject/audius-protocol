@@ -479,6 +479,24 @@ workflows:
   # else, any changes to master will be tagged `latest-dev`
   dockerhub-build-and-push:
     jobs:
+      # libs: test, build and push
+      - test-libs:
+          force: true
+          filters:
+            tags:
+              only: /^@audius/libs@\d+\.\d+\.\d+/
+            branches:
+              only: master
+      - docker-build-and-push:
+          name: build-libs
+          repo: libs
+          requires:
+            - test-libs
+          filters:
+            tags:
+              only: /^@audius/libs@\d+\.\d+\.\d+/
+            branches:
+              only: master
       # contracts: test, build and push
       - test-contracts:
           force: true
