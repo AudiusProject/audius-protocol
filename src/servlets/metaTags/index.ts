@@ -134,7 +134,7 @@ const getResponse = async (
   } = req.params
 
   let context: Context
-  const id = title ? title.split('-').slice(-1)[0] : null
+  const id = title ? parseInt(title.split('-').slice(-1)[0], 10) : -1
   switch (format) {
     case MetaTagFormat.Track:
       context = await getTrackContext(id)
