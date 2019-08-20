@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "tsc": "tsc",
-    "copyfiles": "copyfiles -u 1 src/public/* src/**/*.html build/",
-    "spinup": "npm run tsc && npm run copyfiles && node build/index.js",
+    "copyfiles": "copyfiles -u 1 src/public/* src/**/*.html build/src",
+    "spinup": "npm run tsc && npm run copyfiles && node build/src/index.js",
     "start": "env-cmd -f .env npm run spinup",
     "start:staging": "env-cmd -f .env.staging npm run spinup",
     "start:production": "env-cmd -f .env.production npm run spinup",
