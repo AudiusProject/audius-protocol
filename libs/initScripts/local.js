@@ -1,10 +1,9 @@
-const Web3 = require('web3')
-
 const initAudiusLibs = require('../examples/initAudiusLibs')
 const { distributeTokens } = require('./helpers/distributeTokens')
 const { setServiceVersion } = require('./helpers/version')
-const { registerLocalService, deregisterLocalService, queryLocalServices } = require('./helpers/spRegistration')
-const { getClaimInfo } = require('./helpers/claim')
+const { registerLocalService, queryLocalServices } = require('./helpers/spRegistration')
+// const { deregisterLocalService } = require('./helpers/spRegistration')
+const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 
 const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service']
 const spDiscProvType = serviceTypeList[0]
@@ -19,7 +18,6 @@ async function run () {
     let audiusLibs = await initAudiusLibs(true)
     let ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
     const ethAccounts = await ethWeb3.eth.getAccounts()
-    let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[1])
 
     // await distributeTokens(audiusLibs)
 
@@ -27,13 +25,18 @@ async function run () {
     // await setServiceVersion(audiusLibs, spCreatorNodeType, testVersionStr)
 
     // await registerLocalService(audiusLibs, spDiscProvType, discProvEndpoint1)
+    // let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[1])
     // await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint1)
+    // let audiusLibs3 = await initAudiusLibs(true, null, ethAccounts[2])
+    // await registerLocalService(audiusLibs3, spCreatorNodeType, creatorNodeEndpoint2)
+
+    // await queryLocalServices(audiusLibs, serviceTypeList)
+
+    console.log(await getClaimInfo(audiusLibs))
+    console.log(await fundNewClaim(audiusLibs))
 
     // await deregisterLocalService(audiusLibs, spDiscProvType, discProvEndpoint1)
     // await deregisterLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint1)
-
-    // console.log(await getClaimInfo(audiusLibs))
-    await queryLocalServices(audiusLibs, serviceTypeList)
 
     process.exit(0)
   } catch (e) {

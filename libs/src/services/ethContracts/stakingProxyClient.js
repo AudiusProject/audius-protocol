@@ -44,6 +44,9 @@ class StakingProxyClient {
     return parseInt(await this.StakingProxy.methods.totalStakedFor(account).call(), 10)
   }
 
+  /**
+   * This actually funds the treasury that service providers claim from
+   */
   async fundNewClaim (amount, privateKey = null) {
     console.log('funding claim')
     let tokenApproveTx = await this.audiusTokenClient.approve(

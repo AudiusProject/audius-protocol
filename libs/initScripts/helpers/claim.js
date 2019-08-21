@@ -8,7 +8,7 @@ async function getClaimInfo (audiusLibs) {
 }
 
 /**
- *
+ * Funds the treasury that service providers can claim from
  * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection
  * @param {String} privateKey The private key string
  */
@@ -30,7 +30,7 @@ async function fundNewClaim (audiusLibs, privateKey = null) {
   console.log(tx)
   console.log('/---- End funding new claim')
 
-  return getClaimInfo()
+  return getClaimInfo(audiusLibs)
 }
 
 module.exports = { getClaimInfo, fundNewClaim }
