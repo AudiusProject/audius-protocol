@@ -1,7 +1,7 @@
 /**
- * 
+ *
  * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection
- * @param {String} serviceType service type trying to register 
+ * @param {String} serviceType service type trying to register
  * @param {String} serviceVersionStr version string to register
  * @param {String?} privateKey optional private key string
  */
@@ -21,7 +21,7 @@ async function setServiceVersion (audiusLibs, serviceType, serviceVersionStr, pr
     } else {
       console.log('Already registered')
     }
-  }3
+  }
 
   let versionTx = await audiusLibs.ethContracts.VersioningFactoryClient.getCurrentVersion(serviceType)
   let numVersionsTx = await audiusLibs.ethContracts.VersioningFactoryClient.getNumberOfVersions(serviceType)

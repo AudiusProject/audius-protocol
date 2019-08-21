@@ -1,8 +1,3 @@
-
-// TODO (DM) - remove this
-const initAudiusLibs = require('../../examples/initAudiusLibs')
-
-
 /**
  * Local only
  * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection

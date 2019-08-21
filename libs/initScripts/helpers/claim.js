@@ -1,17 +1,16 @@
 /**
- * @param {Object`} audiusLibs fully formed audius libs instance with eth contracts connection
+ * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection
  */
 async function getClaimInfo (audiusLibs) {
   // @dev - audius instance numbering is off-by-1 from accounts to
   // align with creator/track numbering below, which are 1-indexed
-  let audiusLibs = await getAudiusLibs()
   return audiusLibs.ethContracts.StakingProxyClient.getClaimInfo()
 }
 
 /**
- * 
- * @param {Object`} audiusLibs fully formed audius libs instance with eth contracts connection
- * @param {String} privateKey The private key string 
+ *
+ * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection
+ * @param {String} privateKey The private key string
  */
 async function fundNewClaim (audiusLibs, privateKey = null) {
   // Set default claim to 1,000,000 tokens
