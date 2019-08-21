@@ -247,4 +247,3 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
     cnode_entries = cnode_url_list.split(',')
     multi_addrs_to_peer = get_multi_addr_list_from_cnodes(cnode_entries)
     update_task.ipfs_client.update_peers(multi_addrs_to_peer)
-
