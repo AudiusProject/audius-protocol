@@ -1,4 +1,5 @@
 const { Buffer } = require('ipfs-http-client')
+const Redis = require('ioredis')
 
 const { saveFileFromBuffer, upload } = require('../fileManager')
 const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound } = require('../apiHelpers')
@@ -7,9 +8,9 @@ const models = require('../models')
 const authMiddleware = require('../authMiddleware')
 const nodeSyncMiddleware = require('../redis').nodeSyncMiddleware
 const { logger } = require('../logging')
-let config = require('../config.js')
-let Redis = require('ioredis')
-let client = new Redis(config.get('redisPort'), config.get('redisHost'))
+const config = require('../config.js')
+const client = new Redis(config.get('redisPort'), config.get('redisHost'))
+const resizeImage = require('../resizeImage')
 
 module.exports = function (app) {
   /** Store image on disk + DB and make available via IPFS */
@@ -18,6 +19,14 @@ module.exports = function (app) {
     // TODO: switch to saveFileToIPFSFromFS
     const { multihash } = await saveFileFromBuffer(req, req.file.buffer)
     return successResponse({ 'image_file_multihash': multihash })
+  }))
+
+  app.post('/image_upload2', upload.single('file'), handleResponse(async (req, res) => {
+    req.logger.info('TEST')
+    const resizedImage = resizeImage(req, req.file.buffer, 1000, true)
+    return successResponse(resizedImage)
+    // // const { multihash } = await saveFileFromBuffer(req, req.file.buffer)
+    // return successResponse({ 'image': resizedImage })
   }))
 
   /** upload metadata to IPFS and save in Files table */

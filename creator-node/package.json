@@ -39,7 +39,9 @@
     "shortid": "^2.2.14",
     "umzug": "^2.2.0",
     "uuid": "3.3.2",
-    "lodash": "^4.17.15"
+    "lodash": "^4.17.15",
+    "jimp": "^0.6.1",
+    "exif-parser": "^0.1.12"
   },
   "devDependencies": {
     "mocha": "^5.2.0",
