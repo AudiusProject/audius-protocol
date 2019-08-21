@@ -3,7 +3,7 @@ const Web3 = require('web3')
 const initAudiusLibs = require('../examples/initAudiusLibs')
 const { distributeTokens } = require('./helpers/distributeTokens')
 const { setServiceVersion } = require('./helpers/version')
-const { registerLocalServices, queryLocalServices } = require('./helpers/spRegistration')
+const { registerLocalService, deregisterLocalService, queryLocalServices } = require('./helpers/spRegistration')
 
 const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service']
 const spDiscProvType = serviceTypeList[0]
@@ -17,11 +17,22 @@ const ethWeb3ProviderUrl = 'http://localhost:8545/'
 async function run() {
   try{
     let audiusLibs = await initAudiusLibs(true)
+    let ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
+    const ethAccounts = await ethWeb3.eth.getAccounts()
+    let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[1])
+    
+    
     // await distributeTokens(audiusLibs)
+    
     // await setServiceVersion(audiusLibs, spDiscProvType, testVersionStr)
     // await setServiceVersion(audiusLibs, spCreatorNodeType, testVersionStr)
-    await registerLocalServices(audiusLibs, spDiscProvType, discProvEndpoint1)
-    await registerLocalServices(audiusLibs, spCreatorNodeType, creatorNodeEndpoint1)
+    
+    // await registerLocalService(audiusLibs, spDiscProvType, discProvEndpoint1)
+    await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint1)
+    
+    // await deregisterLocalService(audiusLibs, spDiscProvType, discProvEndpoint1)
+    // await deregisterLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint1)
+    
     // await queryLocalServices(audiusLibs)
   
     process.exit(0)

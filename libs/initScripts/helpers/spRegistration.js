@@ -22,7 +22,7 @@ async function getStakingParameters (audiusLibs) {
  * @param {String} serviceType service type trying to register 
  * @param {String} serviceEndpoint url string of service to register
  */
-async function registerLocalServices (audiusLibs, serviceType, serviceEndpoint) {
+async function registerLocalService (audiusLibs, serviceType, serviceEndpoint) {
   // await distributeTokens()
   let ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
   let ethAccounts = await ethWeb3.eth.getAccounts()
@@ -44,6 +44,25 @@ async function registerLocalServices (audiusLibs, serviceType, serviceEndpoint) 
     } else {
       console.log(`\n${serviceEndpoint} already registered`)
     }
+  }
+}
+
+/**
+ * Local only
+ * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection
+ * @param {String} serviceType service type trying to register 
+ * @param {String} serviceEndpoint url string of service to register
+ */
+async function deregisterLocalService (audiusLibs, serviceType, serviceEndpoint) {
+  try {
+    // de-register service
+    console.log(`\nde-egistering service ${serviceType} ${serviceEndpoint}`)
+    let tx = await audiusLibs.ethContracts.ServiceProviderFactoryClient.deregister(
+      serviceType,
+      serviceEndpoint)
+    console.dir(tx, { depth: 5 })
+  } catch (e) {
+    console.log(e)
   }
 }
 
@@ -83,4 +102,4 @@ async function queryLocalServices (audiusLibs) {
   console.log('----querying service providers done')
 }
 
-module.exports = { getStakingParameters, registerLocalServices, queryLocalServices }
+module.exports = { getStakingParameters, registerLocalService, deregisterLocalService, queryLocalServices }
