@@ -133,7 +133,7 @@ def index_blocks(self, db, blocks_list):
             )
 
     if num_blocks > 0:
-        logger.warning(f"IPLDBLACKLIST | Indexed {num_blocks} blocks")
+        logger.info(f"IPLDBLACKLIST | Indexed {num_blocks} blocks")
 
 
 def revert_blocks(self, db, revert_blocks_list):

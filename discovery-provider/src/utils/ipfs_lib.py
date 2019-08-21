@@ -35,7 +35,7 @@ class IPFSClient:
             api_metadata = self.get_metadata_from_gateway(multihash, metadata_format)
             retrieved_from_gateway = api_metadata != metadata_format
         except Exception:
-            logger.error(
+            logger.info(
                 f"Failed to retrieve CID from gateway, {multihash}", exc_info=True
             )
 
@@ -78,7 +78,7 @@ class IPFSClient:
             # Skip URL if invalid
             validate_url = urlparse(gateway_query_address)
             if not validate_url.scheme:
-                logger.error(
+                logger.info(
                     f"IPFSCLIENT | Invalid URL from provided gateway addr - "
                     f"provided host: {address} CID address:{gateway_query_address}"
                 )
@@ -153,7 +153,7 @@ class IPFSClient:
                 raise Exception(f"IPFSCLIENT | Expected list format for peers")
             for peer in peerslist:
                 r = self._api.swarm.connect(peer)
-                logger.warning(r)
-        except:
+                logger.info(r)
+        except Exception as e:
             logger.error(f"IPFSCLIENT | IPFS Failed to update peers")
-            raise
+            logger.error(e)

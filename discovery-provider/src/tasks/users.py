@@ -1,6 +1,8 @@
 import logging
+from urllib.parse import urljoin
 from datetime import datetime
 from sqlalchemy.orm.session import make_transient
+import requests
 from src import contract_addresses
 from src.utils import helpers
 from src.models import User, BlacklistedIPLD
@@ -211,8 +213,38 @@ def get_metadata_overrides_from_ipfs(session, update_task, user_record):
         if ipld_blacklist_entry:
             return None
 
+        # Manually peer with user creator nodes
+        update_ipfs_peers_from_user_endpoint(
+            update_task,
+            user_record.creator_node_endpoint)
+
         user_metadata = update_task.ipfs_client.get_metadata(
             user_record.metadata_multihash,
             user_metadata_format)
 
     return user_metadata
+
+def get_ipfs_info_from_cnode_endpoint(url):
+    id_url = urljoin(url, 'ipfs_peer_info')
+    resp = requests.get(id_url)
+    return resp.json()
+
+def get_multi_addr_list_from_cnodes(cnode_endpoints):
+    multi_addrs_to_peer = []
+    for cnode_url in cnode_endpoints:
+        if cnode_url == '':
+            continue
+        ipfs_id_dict = get_ipfs_info_from_cnode_endpoint(cnode_url)
+        ipfs_multiaddr_entries = ipfs_id_dict['addresses']
+        for multiaddr in ipfs_multiaddr_entries:
+            if ('127.0.0.1' not in multiaddr) and ('ip6' not in multiaddr):
+                multi_addrs_to_peer.append(multiaddr)
+    return multi_addrs_to_peer
+
+def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
+    if cnode_url_list is None:
+        return
+    cnode_entries = cnode_url_list.split(',')
+    multi_addrs_to_peer = get_multi_addr_list_from_cnodes(cnode_entries)
+    update_task.ipfs_client.update_peers(multi_addrs_to_peer)
+

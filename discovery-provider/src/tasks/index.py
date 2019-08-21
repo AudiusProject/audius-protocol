@@ -1,16 +1,12 @@
 import logging
-import requests
-import json
-from urllib.parse import urljoin
 from src import contract_addresses
 from src.models import Block, User, Track, Repost, Follow, Playlist, Save
 from src.tasks.celery_app import celery
 from src.tasks.tracks import track_state_update
-from src.tasks.users import user_state_update # pylint: disable=E0611,E0001
+from src.tasks.users import user_state_update, get_multi_addr_list_from_cnodes # pylint: disable=E0611,E0001
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.playlists import playlist_state_update
 from src.tasks.user_library import user_library_state_update
-from src.utils import helpers
 
 logger = logging.getLogger(__name__)
 
@@ -396,10 +392,8 @@ def revert_blocks(self, db, revert_blocks_list):
             session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict")
 
 
-######## CELERY TASKS ########
-
+######## IPFS PEER REFRESH ########
 def get_cnode_multiaddrs(db):
-    logger.warning('peering endpoints')
     with db.scoped_session() as session:
         cnode_endpoints = {}
         distinct_cnode_endpts = (
@@ -412,18 +406,14 @@ def get_cnode_multiaddrs(db):
                     if cnode_url == '':
                         continue
                     cnode_endpoints[cnode_url] = True
-        multi_addrs_to_peer = []
-        for cnode_url in cnode_endpoints:
-            id_url = urljoin(cnode_url, 'ipfs_peer_info')
-            resp = requests.get(id_url)
-            ipfs_id_dict = resp.json()
-            ipfs_multiaddr_entries = ipfs_id_dict['addresses']
-            for multiaddr in ipfs_multiaddr_entries:
-                if '127.0.0.1' not in multiaddr:
-                    multi_addrs_to_peer.append(multiaddr)
+        multi_addrs_to_peer = get_multi_addr_list_from_cnodes(cnode_endpoints)
         return multi_addrs_to_peer
 
+def refresh_peer_connections(db, ipfs_client):
+    addrs_to_peer = get_cnode_multiaddrs(db)
+    ipfs_client.update_peers(addrs_to_peer)
 
+######## CELERY TASKS ########
 @celery.task(name="update_discovery_provider", bind=True)
 def update_task(self):
     # Cache custom task class properties
@@ -438,13 +428,12 @@ def update_task(self):
     # Define redis lock object
     update_lock = redis.lock("disc_prov_lock", timeout=7200)
     try:
-        addrs_to_peer = get_cnode_multiaddrs(db)
-        logger.warning(addrs_to_peer)
-        ipfs_client.update_peers(addrs_to_peer)
-        raise Exception('test')
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
+            # Refresh all IPFS peer connections
+            refresh_peer_connections(db, ipfs_client)
+
             logger.debug(f"index.py | update_task | Acquired disc_prov_lock")
             initialize_blocks_table_if_necessary(db)
 
