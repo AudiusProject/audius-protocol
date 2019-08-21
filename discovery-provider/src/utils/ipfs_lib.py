@@ -146,3 +146,14 @@ class IPFSClient:
         except:
             logger.error(f"IPFSCLIENT | IPFS cat timed out for CID {multihash}")
             raise  # error is of type ipfshttpclient.exceptions.TimeoutError
+
+    def update_peers(self, peerslist):
+        try:
+            if not isinstance(peerslist, list):
+                raise Exception(f"IPFSCLIENT | Expected list format for peers")
+            for peer in peerslist:
+                r = self._api.swarm.connect(peer)
+                logger.warning(r)
+        except:
+            logger.error(f"IPFSCLIENT | IPFS Failed to update peers")
+            raise
