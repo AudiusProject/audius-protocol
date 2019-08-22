@@ -6,7 +6,9 @@ const { getEthWeb3AndAccounts, convertAudsToWeiBN } = require('./utils')
 async function getClaimInfo (audiusLibs) {
   // @dev - audius instance numbering is off-by-1 from accounts to
   // align with creator/track numbering below, which are 1-indexed
-  return audiusLibs.ethContracts.StakingProxyClient.getClaimInfo()
+  const claimInfo = await audiusLibs.ethContracts.StakingProxyClient.getClaimInfo()
+  console.log('getClaimInfo', claimInfo)
+  return claimInfo
 }
 
 /**

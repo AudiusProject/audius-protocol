@@ -6,7 +6,6 @@
 async function getEthWeb3AndAccounts (audiusLibs) {
   const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
   const ethAccounts = await ethWeb3.eth.getAccounts()
-  console.log(ethWeb3, ethAccounts)
   return { ethWeb3, ethAccounts }
 }
 

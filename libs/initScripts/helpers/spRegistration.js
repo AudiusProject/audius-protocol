@@ -7,6 +7,7 @@ const { getEthWeb3AndAccounts, convertAudsToWeiBN } = require('./utils')
 async function getStakingParameters (audiusLibs) {
   let min = await audiusLibs.ethContracts.StakingProxyClient.getMinStakeAmount()
   let max = await audiusLibs.ethContracts.StakingProxyClient.getMaxStakeAmount()
+  console.log(`getStakingParameters: min: ${min}, max: ${max}`)
   return { min, max }
 }
 
