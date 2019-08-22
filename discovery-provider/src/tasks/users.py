@@ -227,23 +227,20 @@ def get_metadata_overrides_from_ipfs(session, update_task, user_record):
 def get_ipfs_info_from_cnode_endpoint(url):
     id_url = urljoin(url, 'ipfs_peer_info')
     resp = requests.get(id_url)
-    return resp.json()
-
-def get_multi_addr_list_from_cnodes(cnode_endpoints):
-    multi_addrs_to_peer = []
-    for cnode_url in cnode_endpoints:
-        if cnode_url == '':
-            continue
-        ipfs_id_dict = get_ipfs_info_from_cnode_endpoint(cnode_url)
-        ipfs_multiaddr_entries = ipfs_id_dict['addresses']
-        for multiaddr in ipfs_multiaddr_entries:
-            if ('127.0.0.1' not in multiaddr) and ('ip6' not in multiaddr):
-                multi_addrs_to_peer.append(multiaddr)
-    return multi_addrs_to_peer
+    json_resp = resp.json()
+    ipfs_multiaddr_entries = json_resp['addresses']
+    for multiaddr in ipfs_multiaddr_entries:
+        if ('127.0.0.1' not in multiaddr) and ('ip6' not in multiaddr):
+            return multiaddr
+    raise Exception('Failed to find valid multiaddr')
 
 def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
     if cnode_url_list is None:
         return
+    redis = update_task.redis
     cnode_entries = cnode_url_list.split(',')
-    multi_addrs_to_peer = get_multi_addr_list_from_cnodes(cnode_entries)
-    update_task.ipfs_client.update_peers(multi_addrs_to_peer)
+    interval = int(update_task.shared_config["discprov"]["peer_refresh_interval"])
+    for cnode_url in cnode_entries:
+        multiaddr = get_ipfs_info_from_cnode_endpoint(cnode_url)
+        update_task.ipfs_client.connect_peer(multiaddr)
+        redis.set(cnode_url, multiaddr, interval)
