@@ -1,3 +1,5 @@
+const { getEthWeb3AndAccounts, convertAudsToWeiBN } = require('./utils')
+
 /**
  * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection
  */
@@ -15,14 +17,13 @@ async function getClaimInfo (audiusLibs) {
 async function fundNewClaim (audiusLibs, privateKey = null) {
   // Set default claim to 1,000,000 tokens
   const claimAmountInAUDS = 1000000
+  const { ethWeb3 } = await getEthWeb3AndAccounts(audiusLibs)
   const libOwner = audiusLibs.ethContracts.ethWeb3Manager.getWalletAddress()
 
   console.log('/---- Funding new claim')
   let bal = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(libOwner)
   console.log(bal)
-  let dataWeb3 = audiusLibs.contracts.web3Manager.getWeb3()
-  let claimAmountInAudWei = dataWeb3.utils.toWei(claimAmountInAUDS.toString(), 'ether')
-  let claimAmountInAudWeiBN = dataWeb3.utils.toBN(claimAmountInAudWei)
+  let claimAmountInAudWeiBN = convertAudsToWeiBN(ethWeb3, claimAmountInAUDS)
   console.log(claimAmountInAudWeiBN)
 
   // Actually perform fund op

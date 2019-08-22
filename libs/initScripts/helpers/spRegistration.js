@@ -1,3 +1,5 @@
+const { getEthWeb3AndAccounts, convertAudsToWeiBN } = require('./utils')
+
 /**
  *
  * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection
@@ -15,13 +17,13 @@ async function getStakingParameters (audiusLibs) {
  * @param {String} serviceEndpoint url string of service to register
  */
 async function registerLocalService (audiusLibs, serviceType, serviceEndpoint) {
+  const { ethWeb3 } = await getEthWeb3AndAccounts(audiusLibs)
   // await distributeTokens()
-  let ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
 
   console.log('\nregistering service providers/---')
   const amountOfAUDS = 100000
-  let initialTokenInAudWei = ethWeb3.utils.toWei(amountOfAUDS.toString(), 'ether')
-  let initialTokenInAudWeiBN = ethWeb3.utils.toBN(initialTokenInAudWei)
+  let initialTokenInAudWeiBN = convertAudsToWeiBN(ethWeb3, amountOfAUDS)
+
   try {
     // Register service
     console.log(`\nregistering service ${serviceType} ${serviceEndpoint}`)
@@ -63,8 +65,7 @@ async function deregisterLocalService (audiusLibs, serviceType, serviceEndpoint)
  * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection
  */
 async function queryLocalServices (audiusLibs, serviceTypeList) {
-  let ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
-  const ethAccounts = await ethWeb3.eth.getAccounts()
+  const { ethAccounts } = await getEthWeb3AndAccounts(audiusLibs)
 
   for (const spType of serviceTypeList) {
     console.log(`\n${spType}`)

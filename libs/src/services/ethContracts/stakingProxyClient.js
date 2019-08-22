@@ -45,7 +45,7 @@ class StakingProxyClient {
   }
 
   /**
-   * This actually funds the treasury that service providers claim from
+   * Funds the treasury that service providers claim from
    */
   async fundNewClaim (amount, privateKey = null) {
     console.log('funding claim')
