@@ -117,12 +117,12 @@ class Users extends Base {
    */
   async uploadProfileImages (profilePictureFile, coverPhotoFile, metadata) {
     if (profilePictureFile) {
-      const resp = await this.creatorNode.uploadImage(profilePictureFile)
-      metadata.profile_picture = resp.image_file_multihash
+      const resp = await this.creatorNode.uploadImage(profilePictureFile, true)
+      metadata.profile_picture = resp.dirCID
     }
     if (coverPhotoFile) {
-      const resp = await this.creatorNode.uploadImage(profilePictureFile)
-      metadata.profile_picture = resp.image_file_multihash
+      const resp = await this.creatorNode.uploadImage(coverPhotoFile, false)
+      metadata.cover_photo = resp.dirCID
     }
     return metadata
   }
