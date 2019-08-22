@@ -30,7 +30,7 @@ module.exports = function (app) {
     const imageBuffer1000x1000 = await resizeImage(req, imageBufferOriginal, 1000, squareFormat)
     const imageBuffer480x480 = await resizeImage(req, imageBufferOriginal, 480, squareFormat)
     const imageBuffer150x150 = await resizeImage(req, imageBufferOriginal, 150, squareFormat)
-    
+
     const imageBuffers = [imageBuffer1000x1000, imageBuffer480x480, imageBuffer150x150, imageBufferOriginal]
 
     // Add directory with all images to IPFS
@@ -45,7 +45,6 @@ module.exports = function (app) {
 
     // Get dir CID (last entry in returned array)
     const dirCID = resp[resp.length - 1].hash
-    const originalCID = resp[resp.length-2].hash
 
     // Save each file to disk + DB
     for (let i = 0; i < resp.length - 1; i++) {
@@ -69,7 +68,7 @@ module.exports = function (app) {
       req.logger.info('Added file', fileResp, file)
     }
 
-    return successResponse({ dirCID, originalCID })
+    return successResponse({ dirCID })
   }))
 
   /** upload metadata to IPFS and save in Files table */
@@ -95,13 +94,13 @@ module.exports = function (app) {
 
     // Do not act as a public gateway. Only serve IPFS files that are tracked by this creator node.
     const reqMultihash = req.params.multihash
-    // let queryResults = await models.File.findOne({ where: { multihash: reqMultihash } })
-    // if (!queryResults) {
-    //   return sendResponse(req, res, errorResponseNotFound(`No file found for provided segment multihash: ${reqMultihash}`))
-    // }
+    const queryResults = await models.File.findOne({ where: { multihash: reqMultihash } })
+    if (!queryResults) {
+      return sendResponse(req, res, errorResponseNotFound(`No file found for provided segment multihash: ${reqMultihash}`))
+    }
 
     redisClient.incr('ipfsStandaloneReqs')
-    let totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
+    const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
     logger.info(`IPFS Standalone Request - ${reqMultihash}`)
     logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 

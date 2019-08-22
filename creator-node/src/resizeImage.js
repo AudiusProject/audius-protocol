@@ -25,7 +25,7 @@ async function resizeImage (req, imageBuffer, maxWidth, square) {
   }
 
   let img = await Jimp.read(imageBuffer)
-  
+
   img = _exifRotate(img, exif)
   img.background(COLOR_WHITE)
   let width = img.bitmap.width
