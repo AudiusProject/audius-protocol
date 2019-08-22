@@ -399,7 +399,10 @@ def refresh_peer_connections(task_context):
     interval = int(task_context.shared_config["discprov"]["peer_refresh_interval"])
     with db.scoped_session() as session:
         db_cnode_endpts = (
-            session.query(User.creator_node_endpoint).filter(User.creator_node_endpoint != None).distinct()
+            session.query(
+                User.creator_node_endpoint).filter(
+                    User.creator_node_endpoint != None, User.is_current == True
+                ).distinct()
         )
 
         cnode_endpoints = {}
@@ -420,11 +423,17 @@ def refresh_peer_connections(task_context):
                 continue
             if cnode_url == '':
                 continue
-            multiaddr_info[cnode_url] = get_ipfs_info_from_cnode_endpoint(cnode_url)
+
+            try:
+                multiaddr_info[cnode_url] = get_ipfs_info_from_cnode_endpoint(cnode_url)
+            except Exception as e:  # pylint: disable=broad-except
+                # Handle error in retrieval by not peering this node
+                logger.warning('Error retrieving info for %s, %s', cnode_url, str(e))
+                multiaddr_info[cnode_url] = None
 
         for key in multiaddr_info:
             stored_url_val = redis.get(key)
-            if stored_url_val is None:
+            if (stored_url_val is None) and (multiaddr_info[key] is not None):
                 # Peer nodes
                 ipfs_client.connect_peer(multiaddr_info[key])
                 redis.set(key, multiaddr_info[key], interval)

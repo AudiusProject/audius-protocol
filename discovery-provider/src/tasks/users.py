@@ -226,7 +226,7 @@ def get_metadata_overrides_from_ipfs(session, update_task, user_record):
 
 def get_ipfs_info_from_cnode_endpoint(url):
     id_url = urljoin(url, 'ipfs_peer_info')
-    resp = requests.get(id_url)
+    resp = requests.get(id_url, timeout=5)
     json_resp = resp.json()
     ipfs_multiaddr_entries = json_resp['addresses']
     for multiaddr in ipfs_multiaddr_entries:
