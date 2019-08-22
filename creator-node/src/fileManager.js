@@ -9,8 +9,8 @@ const getUuid = require('uuid/v4')
 const config = require('./config')
 const models = require('./models')
 
-const maxAudioFileSize = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 1,000,000,000 bytes = 1GB
-const maxMemoryFileSize = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 100,000,000 bytes = 100MB
+const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 1,000,000,000 bytes = 1GB
+const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 100,000,000 bytes = 100MB
 
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
@@ -47,7 +47,6 @@ async function saveFileFromBuffer (req, buffer) {
       storagePath: dstPath
     }
   })
-
   file = file[0].dataValues
 
   req.logger.info('\nAdded file:', multihash, 'file id', file.fileUUID)
@@ -195,7 +194,7 @@ function removeTrackFolder (req, fileDir) {
 // Simple in-memory storage for metadata/generic files
 const memoryStorage = multer.memoryStorage()
 const upload = multer({
-  limits: { fileSize: maxMemoryFileSize },
+  limits: { fileSize: MAX_MEMORY_FILE_SIZE },
   storage: memoryStorage
 })
 
@@ -223,9 +222,7 @@ const trackDiskStorage = multer.diskStorage({
 
 const trackFileUpload = multer({
   storage: trackDiskStorage,
-  limits: {
-    fileSize: maxAudioFileSize
-  },
+  limits: { fileSize: MAX_AUDIO_FILE_SIZE },
   fileFilter: function (req, file, cb) {
     // the function should call `cb` with a boolean to indicate if the file should be accepted
     if (ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(getFileExtension(file.originalname).slice(1)) && AUDIO_MIME_TYPE_REGEX.test(file.mimetype)) {

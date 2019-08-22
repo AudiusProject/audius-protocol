@@ -1,52 +1,56 @@
 const Jimp = require('jimp')
 const ExifParser = require('exif-parser')
 
+const CRAZY_HEIGHT = 6000 // No image should be taller than this.
+const COLOR_WHITE = 0xFFFFFFFF
+const IMAGE_QUALITY = 90
+const MIME_TYPE_JPEG = 'image/jpeg'
+
 /**
-* Returns an image that's been resized, cropped into a square, converted into JPEG, and compressed.
-* @param {string} imageUrl the url of the image to use
-* @param {number} maxWidth max size of the returned square (default is 1,000px x 1,000px)
-* @param {boolean} square whether or not to square the image
-* @return a blob of the converted image
-*/
-function resizeImage (req, imageBuffer, maxWidth, square) {
-  const CRAZY_HEIGHT = 6000 // No image should be taller than this.
+ * Returns an image that's been resized, cropped into a square, converted into JPEG, and compressed.
+ * @param {Object} req
+ * @param {string} imageBuffer the buffer of the image to use
+ * @param {number} maxWidth max width of the returned image (default is 1,000px)
+ * @param {boolean} square whether or not to square the image
+ * @return {Buffer} the converted image
+ */
+async function resizeImage (req, imageBuffer, maxWidth, square) {
   // eslint-disable-next-line
   let exif
   try {
     exif = ExifParser.create(imageBuffer).parse()
   } catch (error) {
+    req.logger.error(error)
     exif = null
   }
-  Jimp.read(imageBuffer).then(img => {
-    img = _exifRotate(img, exif)
-    img.background(0xFFFFFFFF)
-    let width = img.bitmap.width
-    let height = img.bitmap.height
 
-    if (square) {
-      // If both sides are larger than maxWidth, resizing must occur
-      if (width > maxWidth && height > maxWidth) {
-        width > height ? img.resize(Jimp.AUTO, maxWidth) : img.resize(maxWidth, Jimp.AUTO)
-      }
-      // Crop the image to be square
-      let min = Math.min(img.bitmap.width, img.bitmap.height)
-      img.cover(min, min)
-    } else {
-      // Resize to max width and crop at crazy height
-      if (width > maxWidth) {
-        img.resize(maxWidth, Jimp.AUTO)
-      }
-      img.cover(img.bitmap.width, Math.min(img.bitmap.height, CRAZY_HEIGHT))
+  let img = await Jimp.read(imageBuffer)
+  
+  img = _exifRotate(img, exif)
+  img.background(COLOR_WHITE)
+  let width = img.bitmap.width
+  let height = img.bitmap.height
+
+  if (square) {
+    // If both sides are larger than maxWidth, resizing must occur
+    if (width > maxWidth && height > maxWidth) {
+      width > height ? img.resize(Jimp.AUTO, maxWidth) : img.resize(maxWidth, Jimp.AUTO)
     }
+    // Crop the image to be square
+    let min = Math.min(img.bitmap.width, img.bitmap.height)
+    img.cover(min, min)
+  } else {
+    // Resize to max width and crop at crazy height
+    if (width > maxWidth) {
+      img.resize(maxWidth, Jimp.AUTO)
+    }
+    img.cover(img.bitmap.width, Math.min(img.bitmap.height, CRAZY_HEIGHT))
+  }
 
-    // Very high quality, decent size reduction
-    img.quality(90)
+  // Very high quality, decent size reduction
+  img.quality(IMAGE_QUALITY)
 
-    let mimeType = 'image/jpeg'
-    img.getBufferAsync(mimeType).then(buffer => {
-      return buffer
-    })
-  })
+  return img.getBufferAsync(MIME_TYPE_JPEG)
 }
 
 // Copied directly from Jimp.
