@@ -76,7 +76,6 @@ module.exports = function (app) {
 
     // get single file per multihash or error if DNE
     let segmentFiles = []
-    // for-await-of syntax from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of
     for await (const segment of metadataJSON.track_segments) {
       // TODO[SS] error check
       //  - check if properties exist, if right format, if valid multihash, if valid duration
@@ -105,27 +104,31 @@ module.exports = function (app) {
       metadataJSON: metadataJSON
     }
 
-    const coverArtFileMultihash = metadataJSON.cover_art
-    if (coverArtFileMultihash) { // assumes Track.coverArtFileId is an optional param
-      // ensure file exists for given multihash
-      const imageFile = await models.File.findOne({
-        where: {
-          multihash: coverArtFileMultihash,
-          cnodeUserUUID: req.userId
-        }
-      })
-      if (!imageFile) {
-        return errorResponseBadRequest(`No file found for provided multihash: ${coverArtFileMultihash}`)
-      }
-      trackObj.coverArtFileId = imageFile.id
-    }
+    /**
+     * TODO - replace with logic to get coverArtDirCID, check if dir if not fail else...
+     * get all contents of dir and ensure each hash has corresponding file
+     * then decide which of files to store in trackObj.coverArtFileUUId.
+     */
+
+    // const coverArtFileMultihash = metadataJSON.cover_art
+    // if (coverArtFileMultihash) { // assumes Track.coverArtFileUUID is an optional param
+    //   // ensure file exists for given multihash
+    //   const imageFile = await models.File.findOne({
+    //     where: {
+    //       multihash: coverArtFileMultihash,
+    //       cnodeUserUUID: req.userId
+    //     }
+    //   })
+    //   if (!imageFile) {
+    //     return errorResponseBadRequest(`No file found for provided multihash: ${coverArtFileMultihash}`)
+    //   }
+    //   trackObj.coverArtFileUUID = imageFile.fileUUID
+    // }
 
     const track = await models.Track.create(trackObj)
     console.log('track uuid', track.trackUUID)
     // associate matching segmentFiles from above with newly created track
-    // models.Track.addFile() is an auto-generated function from sequelize oneToMany association
     for await (const file of segmentFiles) {
-      // await track.addFile(file)
       file.trackUUID = track.trackUUID
       await file.save()
     }
@@ -202,7 +205,7 @@ module.exports = function (app) {
     // Update the file to the new fileId and write the metadata blob in the json field
     let updateObj = {
       metadataJSON: metadataJSON,
-      metadataFileId: fileUUID
+      metadataFileUUID: fileUUID
     }
     if (coverArtFileUUID) updateObj.coverArtFileUUID = coverArtFileUUID
 

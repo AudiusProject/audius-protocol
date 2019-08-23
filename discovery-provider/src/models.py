@@ -80,7 +80,9 @@ class User(Base):
     is_verified = Column(Boolean, nullable=False, default=False, server_default='false')
     name = Column(Text)
     profile_picture = Column(String)
+    profile_picture_sizes = Column(String)
     cover_photo = Column(String)
+    cover_photo_sizes = Column(String)
     bio = Column(String)
     location = Column(String)
     metadata_multihash = Column(String)
@@ -102,7 +104,9 @@ wallet={self.wallet},\
 is_creator={self.is_creator},\
 name={self.name},\
 profile_pic={self.profile_picture},\
+profile_pic_sizes={self.profile_picture_sizes},\
 cover_photo={self.cover_photo},\
+cover_photo_sizes={self.cover_photo_sizes},\
 bio={self.bio},\
 location={self.location},\
 metadata_multihash={self.metadata_multihash},\
@@ -123,6 +127,7 @@ class Track(Base):
     title = Column(Text)
     length = Column(Integer)
     cover_art = Column(String)
+    cover_art_sizes = Column(String)
     tags = Column(String)
     genre = Column(String)
     mood = Column(String)
@@ -152,6 +157,7 @@ owner_id={self.owner_id},\
 title={self.title},\
 length={self.length},\
 cover_art={self.cover_art},\
+cover_art_sizes={self.cover_art_sizes},\
 tags={self.tags},\
 genre={self.genre},\
 mood={self.mood},\
@@ -180,6 +186,7 @@ class Playlist(Base):
     playlist_name = Column(String)
     playlist_contents = Column(JSONB, nullable=False)
     playlist_image_multihash = Column(String)
+    playlist_image_sizes_multihash = Column(String)
     description = Column(String)
     upc = Column(String)
     is_current = Column(Boolean, nullable=False)
@@ -200,6 +207,7 @@ is_private={self.is_private},\
 playlist_name={self.playlist_name},\
 playlist_contents={self.playlist_contents},\
 playlist_image_multihash={self.playlist_image_multihash},\
+playlist_image_sizes_multihash={self.playlist_image_sizes_multihash},\
 description={self.description},\
 upc={self.upc}\
 is_current={self.is_current},\

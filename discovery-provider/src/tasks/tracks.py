@@ -151,6 +151,9 @@ def parse_track_event(
             track_metadata)
         track_record.metadata_multihash = track_metadata_multihash
 
+        # TODO - check if user_record.cover_photo is a DIR CID. if yes then set to sizes else set to reg
+        logger.warning(f"CREATE TRACK: track record: {track_record}")
+
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
         upd_track_metadata_hash_fn = event_args._multihashHashFn
@@ -169,12 +172,18 @@ def parse_track_event(
         track_record.is_delete = False
         track_metadata = update_task.ipfs_client.get_metadata(
             upd_track_metadata_multihash,
-            track_metadata_format)
+            track_metadata_format
+        )
 
         track_record = populate_track_record_metadata(
             track_record,
-            track_metadata)
+            track_metadata
+        )
         track_record.metadata_multihash = upd_track_metadata_multihash
+
+        logger.warning(f"UPDATE TRACK: track record: {track_record}")
+
+        # TODO - check if user_record.cover_photo is a DIR CID. if yes then set to sizes else set to reg
 
     if event_type == track_event_types_lookup["delete_track"]:
         track_record.is_delete = True

@@ -113,7 +113,7 @@ class Users extends Base {
    * @param {?File} profilePictureFile an optional file to upload as the profile picture
    * @param {?File} coverPhotoFile an optional file to upload as the cover phtoo
    * @param {Object} metadata to update
-   * @returns {Object} the passed in metadata object with profile_picture and cover_phtoo fields added
+   * @returns {Object} the passed in metadata object with profile_picture and cover_photo fields added
    */
   async uploadProfileImages (profilePictureFile, coverPhotoFile, metadata) {
     if (profilePictureFile) {
@@ -124,6 +124,7 @@ class Users extends Base {
       const resp = await this.creatorNode.uploadImage(coverPhotoFile, false)
       metadata.cover_photo = resp.dirCID
     }
+    console.log('upload profile images', metadata)
     return metadata
   }
 
@@ -323,6 +324,8 @@ class Users extends Base {
   async _addUserOperations (userId, metadata) {
     let addOps = []
 
+    console.log('_addUserOperations', metadata)
+
     if (metadata['name']) {
       addOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata['name']))
     }
@@ -358,6 +361,8 @@ class Users extends Base {
 
   async _updateUserOperations (metadata, currentMetadata, userId) {
     let updateOps = []
+
+    console.log('update user operations', metadata)
 
     // Compare the existing metadata with the new values and conditionally
     // perform update operations

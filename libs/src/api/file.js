@@ -64,7 +64,9 @@ class File extends Base {
   async uploadImage (file, square) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(file)
-    return this.creatorNode.uploadImage(file, square)
+    const resp = await this.creatorNode.uploadImage(file, square)
+    console.log('FILE upload image resp', resp)
+    return resp
   }
 }
 

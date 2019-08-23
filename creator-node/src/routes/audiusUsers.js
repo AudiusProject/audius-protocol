@@ -22,7 +22,7 @@ module.exports = function (app) {
     }
 
     try {
-      const { coverArtFileUUID, profilePicFileUUID } = await _getFileIdForPictures(req, metadataJSON)
+      const { coverArtFileUUID, profilePicFileUUID } = await _getFileUUIDForImageCID(req, metadataJSON)
       if (coverArtFileUUID) audiusUserObj.coverArtFileUUID = coverArtFileUUID
       if (profilePicFileUUID) audiusUserObj.profilePicFileUUID = profilePicFileUUID
     } catch (e) {
@@ -80,7 +80,7 @@ module.exports = function (app) {
     }
 
     try {
-      const { coverArtFileUUID, profilePicFileUUID } = await _getFileIdForPictures(req, metadataJSON)
+      const { coverArtFileUUID, profilePicFileUUID } = await _getFileUUIDForImageCID(req, metadataJSON)
       if (coverArtFileUUID) updateObj.coverArtFileUUID = coverArtFileUUID
       if (profilePicFileUUID) updateObj.profilePicFileUUID = profilePicFileUUID
     } catch (e) {
@@ -93,38 +93,48 @@ module.exports = function (app) {
   }))
 }
 
-async function _getFileIdForPictures (req, metadataJSON) {
+/**
+ * TODO - if CID is not DIR then fail
+ * else - check all image hashes within DIR and ensure all present
+ * which fileUUID should be stored in audiusUser.coverArtFileUUID / profilePicFileUUID? original?
+ */
+async function _getFileUUIDForImageCID (req, metadataJSON) {
+  const ipfs = req.app.get('ipfsAPI')
+  
   let coverArtFileUUID = null
   let profilePicFileUUID = null
 
-  const coverArtFileMultihash = metadataJSON.cover_photo
-  if (coverArtFileMultihash) { // assumes AudiusUser.coverArtFileUUID is an optional param
-    // ensure file exists for given multihash
-    const imageFile = await models.File.findOne({
-      where: {
-        multihash: coverArtFileMultihash,
-        cnodeUserUUID: req.userId
-      }
-    })
-    if (!imageFile) {
-      throw new Error(`No file found for provided multihash: ${coverArtFileMultihash}`)
-    }
-    coverArtFileUUID = imageFile.fileUUID
-  }
-  const profilePicFileMultihash = metadataJSON.profile_picture
-  if (profilePicFileMultihash) { // assumes AudiusUser.profilePicFileUUID is an optional param
-    // ensure file exists for given multihash
-    const imageFile = await models.File.findOne({
-      where: {
-        multihash: profilePicFileMultihash,
-        cnodeUserUUID: req.userId
-      }
-    })
-    if (!imageFile) {
-      throw new Error(`No file found for provided multihash: ${profilePicFileMultihash}`)
-    }
-    profilePicFileUUID = imageFile.fileUUID
-  }
+  const coverArtDirCID = metadataJSON.cover_photo
+  req.logger.info('coverArtDirCID', coverArtDirCID)
+  // if (coverArtDirCID) { // assumes AudiusUser.coverArtFileUUID is an optional param
+  //   // ensure files exist for all dir contents
+    
+  //   const imageFile = await models.File.findOne({
+  //     where: {
+  //       multihash: coverArtDirCID,
+  //       cnodeUserUUID: req.userId
+  //     }
+  //   })
+  //   if (!imageFile) {
+  //     throw new Error(`No file found for provided multihash: ${coverArtDirCID}`)
+  //   }
+  //   coverArtFileUUID = imageFile.fileUUID
+  // }
+  const profilePicDirCID = metadataJSON.profile_picture
+  req.logger.info('profilePicDirCID', profilePicDirCID)
+  // if (profilePicDirCID) { // assumes AudiusUser.profilePicFileUUID is an optional param
+  //   // ensure file exists for given multihash
+  //   const imageFile = await models.File.findOne({
+  //     where: {
+  //       multihash: profilePicDirCID,
+  //       cnodeUserUUID: req.userId
+  //     }
+  //   })
+  //   if (!imageFile) {
+  //     throw new Error(`No file found for provided multihash: ${profilePicDirCID}`)
+  //   }
+  //   profilePicFileUUID = imageFile.fileUUID
+  // }
 
   return { coverArtFileUUID: coverArtFileUUID, profilePicFileUUID: profilePicFileUUID }
 }

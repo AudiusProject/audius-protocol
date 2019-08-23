@@ -140,6 +140,7 @@ def parse_user_event(
     elif event_type == user_event_types_lookup["update_multihash"]:
         metadata_multihash = event_args._multihashDigest
         user_record.metadata_multihash = helpers.multihash_digest_to_cid(metadata_multihash)
+        logger.warning(f"UPDATE USER METADATA MULTIHASH {user_record.metadata_multihash}")
     elif event_type == user_event_types_lookup["update_name"]:
         user_record.name = helpers.bytes32_to_str(event_args._name)
     elif event_type == user_event_types_lookup["update_location"]:
@@ -148,6 +149,7 @@ def parse_user_event(
         user_record.bio = event_args._bio
     elif event_type == user_event_types_lookup["update_profile_photo"]:
         user_record.profile_picture = helpers.multihash_digest_to_cid(event_args._profilePhotoDigest)
+        logger.warning(f"UPATE PROFILE PHOTO {user_record.profile_picture}")
     elif event_type == user_event_types_lookup["update_cover_photo"]:
         user_record.cover_photo = helpers.multihash_digest_to_cid(event_args._coverPhotoDigest)
     elif event_type == user_event_types_lookup["update_is_creator"]:
@@ -178,6 +180,11 @@ def parse_user_event(
         if metadata_overrides["location"]:
             user_record.location = metadata_overrides["location"]
 
+    # TODO - check if user_record.cover_photo is a DIR CID. if yes then set to sizes else set to reg
+    ipfs = update_task.ipfs_client._api
+    asdf = ipfs.ls(user_record.profile_picture)
+    logger.warning(f"ipfs ls {asdf}")
+
     # Find out if a user is ready to query in the db. If they are, set the is_ready field
     user_record.is_ready = is_user_ready(user_record)
 
@@ -198,11 +205,9 @@ def is_user_ready(user_record):
 
 
 def get_metadata_overrides_from_ipfs(session, update_task, user_record):
-
     user_metadata = user_metadata_format
-
+    
     if user_record.is_creator and user_record.metadata_multihash and user_record.handle:
-
         ipld_blacklist_entry = (
             session.query(BlacklistedIPLD)
             .filter(BlacklistedIPLD.ipld == user_record.metadata_multihash)

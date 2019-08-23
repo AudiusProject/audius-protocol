@@ -207,9 +207,12 @@ def parse_playlist_event(
         playlist_record.is_private = event_args._updatedIsPrivate
 
     if event_type == playlist_event_types_lookup["playlist_cover_photo_updated"]:
+        # TODO - check if user_record.cover_photo is a DIR CID. if yes then set to sizes else set to reg
+        
         playlist_record.playlist_image_multihash = helpers.multihash_digest_to_cid(
             event_args._playlistImageMultihashDigest
         )
+        logger.warning(f"playlist cover photo CID: {playlist_record.playlist_image_multihash}")
 
     if event_type == playlist_event_types_lookup["playlist_description_updated"]:
         playlist_record.description = event_args._playlistDescription

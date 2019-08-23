@@ -45,10 +45,13 @@ module.exports = function (app) {
 
     // Get dir CID (last entry in returned array)
     const dirCID = resp[resp.length - 1].hash
+    req.logger.info('dirCID', dirCID)
 
     // Save each file to disk + DB
     for (let i = 0; i < resp.length - 1; i++) {
       const fileResp = resp[i]
+
+      req.logger.info('fileResp.hash', fileResp.hash)
 
       // Save file to disk
       const destPath = path.join(req.app.get('storagePath'), fileResp.hash)
@@ -74,6 +77,7 @@ module.exports = function (app) {
   /** upload metadata to IPFS and save in Files table */
   app.post('/metadata', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
     const metadataJSON = req.body
+    req.logger.info('metadataJSON', metadataJSON)
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const { multihash } = await saveFileFromBuffer(req, metadataBuffer)
     return successResponse({ 'metadataMultihash': multihash })

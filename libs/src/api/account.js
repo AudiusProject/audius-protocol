@@ -80,6 +80,7 @@ class Account extends Base {
       if (this.web3Manager.web3IsExternal()) {
         this.REQUIRES(Services.IDENTITY_SERVICE)
 
+        metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
         userId = await this.User.addUser(metadata)
         await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
         await this.identityService.associate(email, metadata.handle, this.web3Manager)

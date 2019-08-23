@@ -115,8 +115,10 @@ class CreatorNode {
     }, true, false)
   }
 
-  async uploadImage (file, square) {
-    return this._uploadFile(file, '/image_upload', square)
+  async uploadImage (file, square = true) {
+    const resp = await this._uploadFile(file, '/image_upload', square)
+    console.log('CNODE | uploadimage', resp.dirCID)
+    return resp
   }
 
   async uploadTrackContent (file) {
