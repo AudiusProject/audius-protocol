@@ -12,9 +12,10 @@ const discProvEndpoint1 = 'http://docker.for.mac.localhost:5000'
 const creatorNodeEndpoint1 = 'http://docker.for.mac.localhost:4000'
 const creatorNodeEndpoint2 = 'http://docker.for.mac.localhost:4010'
 const versionStr = '0.1.0'
+const amountOfAuds = 100000
 
 const throwArgError = () => {
-  throw new Error(`missing argument - format: node examples/initiateStakingOperations.js [
+  throw new Error(`missing argument - format: node initScripts/local.js [
     distribute,
     fundclaim,
     getclaim,
@@ -46,7 +47,7 @@ const run = async () => {
 
       case 'fundclaim':
         console.log('fundclaim')
-        await fundNewClaim(audiusLibs)
+        await fundNewClaim(audiusLibs, amountOfAuds)
         break
 
       case 'getclaim':
@@ -98,13 +99,13 @@ const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
 }
 
 const _registerAllSPs = async (audiusLibs, ethAccounts) => {
-  await registerLocalService(audiusLibs, spDiscProvType, discProvEndpoint1)
+  await registerLocalService(audiusLibs, spDiscProvType, discProvEndpoint1, amountOfAuds)
 
   let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[1])
-  await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint1)
+  await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint1, amountOfAuds)
 
   let audiusLibs3 = await initAudiusLibs(true, null, ethAccounts[2])
-  await registerLocalService(audiusLibs3, spCreatorNodeType, creatorNodeEndpoint2)
+  await registerLocalService(audiusLibs3, spCreatorNodeType, creatorNodeEndpoint2, amountOfAuds)
 }
 
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {

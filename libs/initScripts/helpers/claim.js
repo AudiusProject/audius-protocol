@@ -16,14 +16,16 @@ async function getClaimInfo (audiusLibs) {
  * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection
  * @param {String} privateKey The private key string
  */
-async function fundNewClaim (audiusLibs, claimAmountInAUDS = 1000000, privateKey = null) {
+async function fundNewClaim (audiusLibs, amountOfAUDS, privateKey = null) {
+  if (!amountOfAUDS) throw new Error('fundNewClaim requires an amountOfAUDS property')
+
   const { ethWeb3 } = await getEthWeb3AndAccounts(audiusLibs)
   const libOwner = audiusLibs.ethContracts.ethWeb3Manager.getWalletAddress()
 
   console.log('/---- Funding new claim')
   let bal = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(libOwner)
   console.log(bal)
-  let claimAmountInAudWeiBN = convertAudsToWeiBN(ethWeb3, claimAmountInAUDS)
+  let claimAmountInAudWeiBN = convertAudsToWeiBN(ethWeb3, amountOfAUDS)
   console.log(claimAmountInAudWeiBN)
 
   // Actually perform fund op

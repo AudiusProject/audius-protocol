@@ -17,12 +17,11 @@ async function getStakingParameters (audiusLibs) {
  * @param {String} serviceType service type trying to register
  * @param {String} serviceEndpoint url string of service to register
  */
-async function registerLocalService (audiusLibs, serviceType, serviceEndpoint) {
-  const { ethWeb3 } = await getEthWeb3AndAccounts(audiusLibs)
-  // await distributeTokens()
+async function registerLocalService (audiusLibs, serviceType, serviceEndpoint, amountOfAUDS) {
+  if (!amountOfAUDS) throw new Error('registerLocalService requires an amountOfAuds property')
 
+  const { ethWeb3 } = await getEthWeb3AndAccounts(audiusLibs)
   console.log('\nregistering service providers/---')
-  const amountOfAUDS = 100000
   let initialTokenInAudWeiBN = convertAudsToWeiBN(ethWeb3, amountOfAUDS)
 
   try {

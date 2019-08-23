@@ -43,10 +43,10 @@ const run = async () => {
         await getClaimInfo(audiusLibs)
         break
       case 'fundclaim':
-        if (!args[3]) { throw new Error('missing argument - format: node prod.js fundclaim <claimAmountInAUDS>') }
+        if (!args[3]) { throw new Error('missing argument - format: node prod.js fundclaim <amountOfAuds>') }
 
-        const claimAmountInAUDS = args[3]
-        await fundNewClaim(audiusLibs, claimAmountInAUDS, privateKey)
+        const amountOfAuds = args[3]
+        await fundNewClaim(audiusLibs, amountOfAuds, privateKey)
         break
       case 'stakeinfo':
         await getStakingParameters(audiusLibs)
