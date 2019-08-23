@@ -432,11 +432,10 @@ def refresh_peer_connections(task_context):
                 multiaddr_info[cnode_url] = None
 
         for key in multiaddr_info:
-            stored_url_val = redis.get(key)
-            if (stored_url_val is None) and (multiaddr_info[key] is not None):
+            if multiaddr_info[key] is not None:
                 # Peer nodes
                 ipfs_client.connect_peer(multiaddr_info[key])
-                redis.set(key, multiaddr_info[key], interval)
+                redis.set(key, multiaddr_info[key], ex=interval)
 
 ######## CELERY TASKS ########
 @celery.task(name="update_discovery_provider", bind=True)

@@ -31,7 +31,6 @@ module.exports = function (app) {
   app.get('/ipfs_peer_info', handleResponse(async (req, res) => {
     const ipfs = req.app.get('ipfsAPI')
     let ipfsIDObj = await ipfs.id()
-
     return successResponse(ipfsIDObj)
   }))
 
