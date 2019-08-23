@@ -149,7 +149,7 @@ class IPFSClient:
 
     def connect_peer(self, peer):
         try:
-            logger.warning('peering with %s', peer)
+            logger.info('peering with %s', peer)
             r = self._api.swarm.connect(peer)
             logger.info(r)
             return r
