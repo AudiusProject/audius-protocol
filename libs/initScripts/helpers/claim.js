@@ -16,9 +16,7 @@ async function getClaimInfo (audiusLibs) {
  * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection
  * @param {String} privateKey The private key string
  */
-async function fundNewClaim (audiusLibs, privateKey = null) {
-  // Set default claim to 1,000,000 tokens
-  const claimAmountInAUDS = 1000000
+async function fundNewClaim (audiusLibs, claimAmountInAUDS = 1000000, privateKey = null) {
   const { ethWeb3 } = await getEthWeb3AndAccounts(audiusLibs)
   const libOwner = audiusLibs.ethContracts.ethWeb3Manager.getWalletAddress()
 

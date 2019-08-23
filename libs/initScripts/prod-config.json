@@ -1,0 +1,8 @@
+{
+  "dataWeb3ProviderEndpoint": "https://core.poa.network:443",
+  "ethWeb3ProviderEndpoint": "https://mainnet.infura.io/v3/c569c6faf4f14d15a49d0044e7ddd668",
+  "dataRegistryAddress": "0xC611C82150b56E6e4Ec5973AcAbA8835Dd0d75A2",
+  "ethRegistryAddress": "0xb2be26Ca062c5D74964921B80DE6cfa28D9A36c0",
+  "ethTokenAddress": "0xADEf65C0f6a30Dcb5f88Eb8653BBFe09Bf99864f",
+  "latestVersionStr": "0.1.0"
+}

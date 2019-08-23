@@ -11,7 +11,7 @@ const spCreatorNodeType = serviceTypeList[1]
 const discProvEndpoint1 = 'http://docker.for.mac.localhost:5000'
 const creatorNodeEndpoint1 = 'http://docker.for.mac.localhost:4000'
 const creatorNodeEndpoint2 = 'http://docker.for.mac.localhost:4010'
-const testVersionStr = '0.1.0'
+const versionStr = '0.1.0'
 
 const throwArgError = () => {
   throw new Error(`missing argument - format: node examples/initiateStakingOperations.js [
@@ -19,7 +19,7 @@ const throwArgError = () => {
     fundclaim,
     getclaim,
     stakeinfo,
-    initversions,
+    setversion,
     register-sps,
     deregister-sps,
     query-sps,
@@ -59,7 +59,7 @@ const run = async () => {
         await getStakingParameters(audiusLibs)
         break
 
-      case 'initversions':
+      case 'setversion':
         await _initAllVersions(audiusLibs)
         break
 
@@ -119,6 +119,6 @@ const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
 
 const _initAllVersions = async (audiusLibs) => {
   for (let serviceType of serviceTypeList) {
-    await setServiceVersion(audiusLibs, serviceType, testVersionStr)
+    await setServiceVersion(audiusLibs, serviceType, versionStr)
   }
 }
