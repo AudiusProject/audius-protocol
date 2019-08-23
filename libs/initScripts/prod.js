@@ -1,13 +1,10 @@
-const initAudiusLibs = require('../examples/initAudiusLibs')
-const { distributeTokens } = require('./helpers/distributeTokens')
+const Web3 = require('web3')
+
 const { setServiceVersion } = require('./helpers/version')
-const { registerLocalService, queryLocalServices, getStakingParameters } = require('./helpers/spRegistration')
-const { deregisterLocalService } = require('./helpers/spRegistration')
+const { getStakingParameters } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 
-
 const AudiusLibs = require('../src/index')
-const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service']
 const config = require('./prod-config.json')
 
 const isServer = true
@@ -15,8 +12,7 @@ const isServer = true
 const getEnv = env => {
   const value = process.env[env]
   if (typeof value === 'undefined') {
-    console.log(`${env} has not been set.`)
-    return null
+    throw new Error(`${env} has not been set.`)
   }
   return value
 }
@@ -32,14 +28,13 @@ if (args.length < 3) {
 
 const run = async () => {
   try {
-    let audiusLibs = await getAudiusLibs()
     let privateKey = getEnv('AUDIUS_PRIVATE_KEY')
     let ownerWallet = getEnv('AUDIUS_OWNER_WALLET')
-    switch(args[2]) {
+    let audiusLibs = await getAudiusLibs(privateKey, ownerWallet)
+    switch (args[2]) {
       case 'setversion':
-        if (!args[3] || !args[4])
-          throw new Error('missing arguments - format: node prod.js setversion <serviceType> <versionStr>')
-        
+        if (!args[3] || !args[4]) { throw new Error('missing arguments - format: node prod.js setversion <serviceType> <versionStr>') }
+
         const serviceType = args[3]
         const versionStr = args[4]
         await setServiceVersion(audiusLibs, serviceType, versionStr, privateKey)
@@ -48,9 +43,8 @@ const run = async () => {
         await getClaimInfo(audiusLibs)
         break
       case 'fundclaim':
-        if(!args[3])
-          throw new Error('missing argument - format: node prod.js fundclaim <claimAmountInAUDS>')
-        
+        if (!args[3]) { throw new Error('missing argument - format: node prod.js fundclaim <claimAmountInAUDS>') }
+
         const claimAmountInAUDS = args[3]
         await fundNewClaim(audiusLibs, claimAmountInAUDS, privateKey)
         break
@@ -62,17 +56,17 @@ const run = async () => {
     }
 
     process.exit(0)
-  } catch(e) {
+  } catch (e) {
     throw e
   }
 }
 
 run()
 
-function getLibsConfig () {
+function getLibsConfig (privateKey, ownerWallet) {
   let audiusLibsConfig
-  let privateKey = config.audiusPrivateKey
-  let ownerWallet = config.audiusOwnerWallet
+  let privateKey = audiusPrivateKey
+  let ownerWallet = audiusOwnerWallet
   if (!privateKey || !ownerWallet) {
     throw new Error('Missing private key or owner wallet')
   }
@@ -105,8 +99,8 @@ function getLibsConfig () {
   return audiusLibsConfig
 }
 
-async function getAudiusLibs () {
-  let config = getLibsConfig()
+async function getAudiusLibs (privateKey, ownerWallet) {
+  let config = getLibsConfig(privateKey, ownerWallet)
   let audiusLibs = new AudiusLibs(config)
   await audiusLibs.init()
   return audiusLibs
