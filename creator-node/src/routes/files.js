@@ -28,6 +28,12 @@ module.exports = function (app) {
     return successResponse({ 'metadataMultihash': multihash })
   }))
 
+  app.get('/ipfs_peer_info', handleResponse(async (req, res) => {
+    const ipfs = req.app.get('ipfsAPI')
+    let ipfsIDObj = await ipfs.id()
+    return successResponse(ipfsIDObj)
+  }))
+
   // Serve audius network IPFS segments
   // This route does not handle responses by design, so we can pipe the gateway response
   app.get('/ipfs/:multihash', async (req, res) => {

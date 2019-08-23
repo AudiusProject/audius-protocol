@@ -35,7 +35,7 @@ class IPFSClient:
             api_metadata = self.get_metadata_from_gateway(multihash, metadata_format)
             retrieved_from_gateway = api_metadata != metadata_format
         except Exception:
-            logger.error(
+            logger.info(
                 f"Failed to retrieve CID from gateway, {multihash}", exc_info=True
             )
 
@@ -78,7 +78,7 @@ class IPFSClient:
             # Skip URL if invalid
             validate_url = urlparse(gateway_query_address)
             if not validate_url.scheme:
-                logger.error(
+                logger.info(
                     f"IPFSCLIENT | Invalid URL from provided gateway addr - "
                     f"provided host: {address} CID address:{gateway_query_address}"
                 )
@@ -146,3 +146,13 @@ class IPFSClient:
         except:
             logger.error(f"IPFSCLIENT | IPFS cat timed out for CID {multihash}")
             raise  # error is of type ipfshttpclient.exceptions.TimeoutError
+
+    def connect_peer(self, peer):
+        try:
+            logger.info('peering with %s', peer)
+            r = self._api.swarm.connect(peer)
+            logger.info(r)
+            return r
+        except Exception as e:
+            logger.error(f"IPFSCLIENT | IPFS Failed to update peer")
+            logger.error(e)
