@@ -14,19 +14,6 @@ if (args.length < 3) {
   _throwArgError()
 }
 
-const _getEnv = env => {
-  const value = process.env[env]
-  if (typeof value === 'undefined') {
-    throw new Error(`${env} has not been set.`)
-  }
-  return value
-}
-
-const _throwArgError = () => {
-  throw new Error('missing argument - format: node prod.js <configFilePath> [setversion, fundclaim, getclaim, stakeinfo] [additional options]')
-}
-
-
 /*
  *
  * export AUDIUS_PRIVATE_KEY=
@@ -54,7 +41,7 @@ const run = async () => {
         await getClaimInfo(audiusLibs)
         break
       case 'fundclaim':
-        if (!args[4]) { throw new Error('missing argument - format: node prod.js fundclaim <amountOfAuds>') }
+        if (!args[4]) { throw new Error('missing argument - format: node mainnet.js fundclaim <amountOfAuds>') }
 
         const amountOfAuds = args[4]
         await fundNewClaim(audiusLibs, amountOfAuds, privateKey)
@@ -113,4 +100,16 @@ async function getAudiusLibs (config, privateKey, ownerWallet) {
   let audiusLibs = new AudiusLibs(audiusLibsConfig)
   await audiusLibs.init()
   return audiusLibs
+}
+
+function _getEnv (env) {
+  const value = process.env[env]
+  if (typeof value === 'undefined') {
+    throw new Error(`${env} has not been set.`)
+  }
+  return value
+}
+
+function _throwArgError () {
+  throw new Error('missing argument - format: node prod.js <configFilePath> [setversion, fundclaim, getclaim, stakeinfo] [additional options]')
 }

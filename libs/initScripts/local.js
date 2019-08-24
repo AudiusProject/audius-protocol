@@ -15,7 +15,7 @@ const versionStr = '0.1.0'
 const amountOfAuds = 100000
 
 const throwArgError = () => {
-  throw new Error(`missing argument - format: node initScripts/local.js [
+  throw new Error(`missing argument - format: node local.js [
     distribute,
     fundclaim,
     getclaim,
