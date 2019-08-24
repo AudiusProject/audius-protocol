@@ -1,5 +1,6 @@
 const { Base, Services } = require('./base')
 const axios = require('axios')
+const Utils = require('../utils')
 
 const DEFAULT_TIMEOUT = 250
 
@@ -8,6 +9,38 @@ const publicGateways = [
   'https://ipfs.io/ipfs/',
   'https://cloudflare-ipfs.com/ipfs/'
 ]
+
+async function batchRace (
+  urls,
+  batchSize,
+  batchTimeout = DEFAULT_TIMEOUT,
+  callback = () => {},
+  batch = 0
+) {
+  if (batch >= urls.length) throw new Error('Failed to get result')
+
+  const requests = urls.slice(batch, batch + batchSize).map(async url =>
+    axios({
+      method: 'get',
+      url,
+      responseType: 'blob',
+      timeout
+    }).then(response => ({
+      blob: response,
+      url
+    }))
+  )
+
+  let response
+  try {
+    response = await Utils.promiseFight(requests)
+  } catch (e) {
+    // Continue to next batch
+    return batchRace(urls, batchSize, batchTimeout, callback, batch + batchSize)
+  }
+  callback(response.url)
+  return response.blob
+}
 
 class File extends Base {
   /**
@@ -22,39 +55,16 @@ class File extends Base {
   async fetchCID (cid, creatorNodeGateways, callback = null) {
     this.REQUIRES(Services.IPFS_GATEWAY)
 
-    let gateways = publicGateways
+    const gateways = publicGateways
       .concat(creatorNodeGateways)
       .concat([this.ipfsGateway])
-
-    for (let i = 0; i < gateways.length; ++i) {
-      const gateway = gateways[i]
-      if (gateway) {
-        const url = `${gateway}${cid}`
-        // No timeout if this is the last request.
-        const timeout = i === gateways.length - 1 ? 0 : DEFAULT_TIMEOUT
-        try {
-          const response = await axios({
-            method: 'get',
-            url: url,
-            responseType: 'blob',
-            timeout: timeout
-          })
-          // We serve json error messages when the content on IPFS is not resolved
-          // properly. This is a stop-gap but axios will only let us retrieve the
-          // response as either blob or json and we need to pass the blob through for
-          // image/file processing.
-          if (response.data.type === 'application/json') {
-            throw new Error() // continue on to the next gateway
-          }
-          if (callback) callback(gateway, true)
-          return response
-        } catch (e) {
-          if (callback) callback(gateway, false)
-        }
-      }
-    }
-
-    throw new Error(`Failed to retrieve ${cid}`)
+    const urls = gateways.map(gateway => `${gateway}${cid}`)
+    
+    try {
+      return batchRace(urls, 3, DEFAULT_TIMEOUT, callback)
+    } catch (e) {
+      throw new Error(`Failed to retrieve ${cid}`)
+    }  
   }
 
   /**

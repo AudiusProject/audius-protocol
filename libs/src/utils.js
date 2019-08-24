@@ -107,7 +107,7 @@ class Utils {
   /**
    * Given an array of promises, it returns the first resolved promise as soon as it finishes
    * * @param {Array<Promise>} promises
-   * @return {Promise<T>} A promise that resolves to the first resolves to the promise
+   * @return {Promise<T>} A promise that resolves with the first promise that resolves
    */
   static async promiseFight (promises) {
     return Promise.all(promises.map(p => {
