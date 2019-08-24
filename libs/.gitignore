@@ -8,4 +8,5 @@ node_modules/
 test.js
 *.code-workspace
 local-storage/
+initScripts/*-config.json
 .npmrc
