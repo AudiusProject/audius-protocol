@@ -159,7 +159,7 @@ def parse_track_event(
             try:
                 # attempt to cat single byte from CID to determine if dir or file
                 ipfs.cat(track_record.cover_art, 0, 1)
-            except Exception as e:
+            except Exception as e:  # pylint: disable=W0703
                 if "this dag node is a directory" in str(e):
                     track_record.cover_art_sizes = track_record.cover_art
                     track_record.cover_art = None
@@ -200,7 +200,7 @@ def parse_track_event(
             try:
                 # attempt to cat single byte from CID to determine if dir or file
                 ipfs.cat(track_record.cover_art, 0, 1)
-            except Exception as e:
+            except Exception as e:  # pylint: disable=W0703
                 if "this dag node is a directory" in str(e):
                     track_record.cover_art_sizes = track_record.cover_art
                     track_record.cover_art = None

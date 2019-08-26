@@ -218,7 +218,7 @@ def parse_playlist_event(
             try:
                 # attempt to cat single byte from CID to determine if dir or file
                 ipfs.cat(playlist_record.playlist_image_multihash, 0, 1)
-            except Exception as e:
+            except Exception as e:  # pylint: disable=W0703
                 if "this dag node is a directory" in str(e):
                     playlist_record.playlist_image_sizes_multihash = playlist_record.playlist_image_multihash
                     playlist_record.playlist_image_multihash = None

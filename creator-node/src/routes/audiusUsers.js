@@ -99,8 +99,8 @@ module.exports = function (app) {
  * which fileUUID should be stored in audiusUser.coverArtFileUUID / profilePicFileUUID? original?
  */
 async function _getFileUUIDForImageCID (req, metadataJSON) {
-  const ipfs = req.app.get('ipfsAPI')
-  
+  // const ipfs = req.app.get('ipfsAPI')
+
   let coverArtFileUUID = null
   let profilePicFileUUID = null
 
@@ -108,7 +108,7 @@ async function _getFileUUIDForImageCID (req, metadataJSON) {
   req.logger.info('coverArtDirCID', coverArtDirCID)
   // if (coverArtDirCID) { // assumes AudiusUser.coverArtFileUUID is an optional param
   //   // ensure files exist for all dir contents
-    
+
   //   const imageFile = await models.File.findOne({
   //     where: {
   //       multihash: coverArtDirCID,
