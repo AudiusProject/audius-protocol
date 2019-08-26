@@ -13,7 +13,7 @@ class IPFSClient:
     """ Helper class for Audius Discovery Provider + IPFS interaction """
 
     def __init__(self, ipfs_peer_host, ipfs_peer_port, gateway_addresses):
-        self._api = ipfshttpclient.connect(ipfs_peer_host, ipfs_peer_port)
+        self._api = ipfshttpclient.connect(f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http")
         self._gateway_addresses = gateway_addresses
         self._ipfsid = self._api.id()
 

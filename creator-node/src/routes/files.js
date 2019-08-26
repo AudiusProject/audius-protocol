@@ -35,10 +35,10 @@ module.exports = function (app) {
 
     // Add directory with all images to IPFS
     const resp = await ipfs.add([
-      { path: path.join(req.file.originalname, '1000x1000'), content: imageBuffer1000x1000 },
-      { path: path.join(req.file.originalname, '480x480'), content: imageBuffer480x480 },
-      { path: path.join(req.file.originalname, '150x150'), content: imageBuffer150x150 },
-      { path: path.join(req.file.originalname, 'original'), content: imageBufferOriginal }
+      { path: path.join(req.file.originalname, '1000x1000.jpg'), content: imageBuffer1000x1000 },
+      { path: path.join(req.file.originalname, '480x480.jpg'), content: imageBuffer480x480 },
+      { path: path.join(req.file.originalname, '150x150.jpg'), content: imageBuffer150x150 },
+      { path: path.join(req.file.originalname, 'original.jpg'), content: imageBufferOriginal }
     ],
     { pin: true }
     )

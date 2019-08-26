@@ -182,8 +182,15 @@ def parse_user_event(
 
     # TODO - check if user_record.cover_photo is a DIR CID. if yes then set to sizes else set to reg
     ipfs = update_task.ipfs_client._api
-    asdf = ipfs.ls(user_record.profile_picture)
-    logger.warning(f"ipfs ls {asdf}")
+    # try:
+    #     logger.warning('asdf prof pic')
+    #     asdf = ipfs.ls(user_record.profile_picture)
+    #     logger.warning('asdf2')
+    #     asdf2 = ipfs.ls(user_record.metadata_multihash)
+    #     logger.warning(f"ipfs ls profpic {asdf}")
+    #     logger.warning(f"ipfs ls metadatahash {asdf2}")
+    # except Exception as e:
+    #     logger.error(f"IPFS LS ERROR {e}")
 
     # Find out if a user is ready to query in the db. If they are, set the is_ready field
     user_record.is_ready = is_user_ready(user_record)

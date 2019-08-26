@@ -124,6 +124,8 @@ def parse_track_event(
     # Just use block_timestamp as integer
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
 
+    ipfs = update_task.ipfs_client._api
+
     if event_type == track_event_types_lookup["new_track"]:
         track_record.created_at = block_datetime
 
@@ -151,8 +153,16 @@ def parse_track_event(
             track_metadata)
         track_record.metadata_multihash = track_metadata_multihash
 
-        # TODO - check if user_record.cover_photo is a DIR CID. if yes then set to sizes else set to reg
-        logger.warning(f"CREATE TRACK: track record: {track_record}")
+        # TODO - check if track_record.cover_photo is a DIR CID. if yes then set to sizes else set to reg
+        try:
+            # logger.warning(f"ipfs ls track metadata multihash {track_record.metadata_multihash}")
+            # asdf = ipfs.ls(track_record.metadata_multihash)
+            # logger.warning(f"asdf metadata {asdf}")
+            logger.warning(f"ipfs ls track cover art hash {track_record.cover_art}")
+            asdf2 = ipfs.ls(track_record.cover_art)
+            logger.warning(f"asdf2 cover art {asdf2}")
+        except Exception as e:
+            logger.error(f"IPFS LS ERROR {e}")
 
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
@@ -183,7 +193,16 @@ def parse_track_event(
 
         logger.warning(f"UPDATE TRACK: track record: {track_record}")
 
-        # TODO - check if user_record.cover_photo is a DIR CID. if yes then set to sizes else set to reg
+        # TODO - check if track_record.cover_photo is a DIR CID. if yes then set to sizes else set to reg
+        try:
+            # logger.warning(f"ipfs ls track metadata multihash {track_record.metadata_multihash}")
+            # asdf = ipfs.ls(track_record.metadata_multihash)
+            # logger.warning(f"asdf metadata {asdf}")
+            logger.warning(f"ipfs ls track cover art hash {track_record.cover_art}")
+            asdf2 = ipfs.ls(track_record.cover_art)
+            logger.warning(f"asdf2 cover art {asdf2}")
+        except Exception as e:
+            logger.error(f"IPFS LS ERROR {e}")
 
     if event_type == track_event_types_lookup["delete_track"]:
         track_record.is_delete = True

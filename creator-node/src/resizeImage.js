@@ -1,7 +1,7 @@
 const Jimp = require('jimp')
 const ExifParser = require('exif-parser')
 
-const CRAZY_HEIGHT = 6000 // No image should be taller than this.
+const MAX_HEIGHT = 6000 // No image should be taller than this.
 const COLOR_WHITE = 0xFFFFFFFF
 const IMAGE_QUALITY = 90
 const MIME_TYPE_JPEG = 'image/jpeg'
@@ -44,7 +44,7 @@ async function resizeImage (req, imageBuffer, maxWidth, square) {
     if (width > maxWidth) {
       img.resize(maxWidth, Jimp.AUTO)
     }
-    img.cover(img.bitmap.width, Math.min(img.bitmap.height, CRAZY_HEIGHT))
+    img.cover(img.bitmap.width, Math.min(img.bitmap.height, MAX_HEIGHT))
   }
 
   // Very high quality, decent size reduction
@@ -54,6 +54,7 @@ async function resizeImage (req, imageBuffer, maxWidth, square) {
 }
 
 // Copied directly from Jimp.
+// https://github.com/oliver-moran/jimp/blob/12248941fd481121dc5372f6a8154f01930c8d0f/packages/core/src/utils/image-bitmap.js#L31
 function _exifRotate (img, exif) {
   if (exif && exif.tags && exif.tags.Orientation) {
     switch (exif.tags.Orientation) {
