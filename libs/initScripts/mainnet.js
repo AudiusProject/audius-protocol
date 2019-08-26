@@ -23,7 +23,6 @@ const run = async () => {
   try {
     let configFile = args[2]
     let commandToRun = args[3]
-    console.log(path.join(__dirname, configFile))
     const config = require(path.join(__dirname, configFile))
 
     let privateKey = _getEnv('AUDIUS_PRIVATE_KEY')
@@ -31,17 +30,20 @@ const run = async () => {
     let audiusLibs = await getAudiusLibs(config, privateKey, ownerWallet)
     switch (commandToRun) {
       case 'setversion':
-        if (!args[4] || !args[5]) { console.error(args); throw new Error('missing arguments - format: node prod.js setversion <serviceType> <versionStr>') }
-
         const serviceType = args[4]
         const versionStr = args[5]
+        if (!serviceType || !versionStr) {
+          throw new Error('missing arguments - format: node mainnet.js setversion <serviceType> <versionStr>')
+        }
         await setServiceVersion(audiusLibs, serviceType, versionStr, privateKey)
         break
       case 'getclaim':
         await getClaimInfo(audiusLibs)
         break
       case 'fundclaim':
-        if (!args[4]) { throw new Error('missing argument - format: node mainnet.js fundclaim <amountOfAuds>') }
+        if (!args[4]) {
+          throw new Error('missing argument - format: node mainnet.js fundclaim <amountOfAuds>')
+        }
 
         const amountOfAuds = args[4]
         await fundNewClaim(audiusLibs, amountOfAuds, privateKey)
@@ -111,5 +113,5 @@ function _getEnv (env) {
 }
 
 function _throwArgError () {
-  throw new Error('missing argument - format: node prod.js <configFilePath> [setversion, fundclaim, getclaim, stakeinfo] [additional options]')
+  throw new Error('missing argument - format: node mainnet.js <configFilePath> [setversion, fundclaim, getclaim, stakeinfo] [additional options]')
 }

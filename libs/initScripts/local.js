@@ -1,7 +1,11 @@
 const initAudiusLibs = require('../examples/initAudiusLibs')
 const { distributeTokens } = require('./helpers/distributeTokens')
 const { setServiceVersion } = require('./helpers/version')
-const { registerLocalService, queryLocalServices, getStakingParameters } = require('./helpers/spRegistration')
+const {
+  registerLocalService,
+  queryLocalServices,
+  getStakingParameters
+} = require('./helpers/spRegistration')
 const { deregisterLocalService } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 
@@ -42,7 +46,7 @@ const run = async () => {
     switch (args[2]) {
       case 'distribute':
         console.log('distribute')
-        await distributeTokens(audiusLibs)
+        await distributeTokens(audiusLibs, amountOfAuds)
         break
 
       case 'fundclaim':

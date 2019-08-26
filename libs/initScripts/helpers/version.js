@@ -6,6 +6,8 @@
  * @param {String?} privateKey optional private key string
  */
 async function setServiceVersion (audiusLibs, serviceType, serviceVersionStr, privateKey = null) {
+  if (!audiusLibs) throw new Error('audiusLibs is not defined')
+
   console.log('----version init---')
   let testTx = null
 
