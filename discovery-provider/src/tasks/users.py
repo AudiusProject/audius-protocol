@@ -140,7 +140,6 @@ def parse_user_event(
     elif event_type == user_event_types_lookup["update_multihash"]:
         metadata_multihash = event_args._multihashDigest
         user_record.metadata_multihash = helpers.multihash_digest_to_cid(metadata_multihash)
-        logger.warning(f"UPDATE USER METADATA MULTIHASH {user_record.metadata_multihash}")
     elif event_type == user_event_types_lookup["update_name"]:
         user_record.name = helpers.bytes32_to_str(event_args._name)
     elif event_type == user_event_types_lookup["update_location"]:
@@ -149,7 +148,6 @@ def parse_user_event(
         user_record.bio = event_args._bio
     elif event_type == user_event_types_lookup["update_profile_photo"]:
         user_record.profile_picture = helpers.multihash_digest_to_cid(event_args._profilePhotoDigest)
-        logger.warning(f"UPATE PROFILE PHOTO {user_record.profile_picture}")
     elif event_type == user_event_types_lookup["update_cover_photo"]:
         user_record.cover_photo = helpers.multihash_digest_to_cid(event_args._coverPhotoDigest)
     elif event_type == user_event_types_lookup["update_is_creator"]:
@@ -180,17 +178,35 @@ def parse_user_event(
         if metadata_overrides["location"]:
             user_record.location = metadata_overrides["location"]
 
-    # TODO - check if user_record.cover_photo is a DIR CID. if yes then set to sizes else set to reg
-    ipfs = update_task.ipfs_client._api
-    # try:
-    #     logger.warning('asdf prof pic')
-    #     asdf = ipfs.ls(user_record.profile_picture)
-    #     logger.warning('asdf2')
-    #     asdf2 = ipfs.ls(user_record.metadata_multihash)
-    #     logger.warning(f"ipfs ls profpic {asdf}")
-    #     logger.warning(f"ipfs ls metadatahash {asdf2}")
-    # except Exception as e:
-    #     logger.error(f"IPFS LS ERROR {e}")
+    # if profile_picture CID is of a dir, store under _sizes field instead
+    if user_record.profile_picture:
+        ipfs = update_task.ipfs_client._api
+        logger.warning(f"catting user profile_picture {user_record.profile_picture}")
+        try:
+            # attempt to cat single byte from CID to determine if dir or file
+            ipfs.cat(user_record.profile_picture, 0, 1)
+        except Exception as e:
+            if "this dag node is a directory" in str(e):
+                user_record.profile_picture_sizes = user_record.profile_picture
+                user_record.profile_picture = None
+                logger.warning('Successfully processed CID')
+            else:
+                raise Exception(e)
+    
+    # if cover_photo CID is of a dir, store under _sizes field instead
+    if user_record.cover_photo:
+        ipfs = update_task.ipfs_client._api
+        logger.warning(f"catting user over_photo {user_record.cover_photo}")
+        try:
+            # attempt to cat single byte from CID to determine if dir or file
+            ipfs.cat(user_record.cover_photo, 0, 1)
+        except Exception as e:
+            if "this dag node is a directory" in str(e):
+                user_record.cover_photo_sizes = user_record.cover_photo
+                user_record.cover_photo = None
+                logger.warning('Successfully processed CID')
+            else:
+                raise Exception(e)
 
     # Find out if a user is ready to query in the db. If they are, set the is_ready field
     user_record.is_ready = is_user_ready(user_record)

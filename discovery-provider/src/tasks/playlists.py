@@ -207,12 +207,24 @@ def parse_playlist_event(
         playlist_record.is_private = event_args._updatedIsPrivate
 
     if event_type == playlist_event_types_lookup["playlist_cover_photo_updated"]:
-        # TODO - check if user_record.cover_photo is a DIR CID. if yes then set to sizes else set to reg
-        
         playlist_record.playlist_image_multihash = helpers.multihash_digest_to_cid(
             event_args._playlistImageMultihashDigest
         )
-        logger.warning(f"playlist cover photo CID: {playlist_record.playlist_image_multihash}")
+
+        # if playlist_image_multihash CID is of a dir, store under _sizes field instead
+        if playlist_record.playlist_image_multihash:
+            ipfs = update_task.ipfs_client._api
+            logger.warning(f"catting playlist_image_multihash {playlist_record.playlist_image_multihash}")
+            try:
+                # attempt to cat single byte from CID to determine if dir or file
+                ipfs.cat(playlist_record.playlist_image_multihash, 0, 1)
+            except Exception as e:
+                if "this dag node is a directory" in str(e):
+                    playlist_record.playlist_image_sizes_multihash = playlist_record.playlist_image_multihash
+                    playlist_record.playlist_image_multihash = None
+                    logger.info('Successfully processed CID')
+                else:
+                    raise Exception(e)
 
     if event_type == playlist_event_types_lookup["playlist_description_updated"]:
         playlist_record.description = event_args._playlistDescription
