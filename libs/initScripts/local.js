@@ -96,7 +96,7 @@ const run = async () => {
 run()
 
 const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
-  await distributeTokens(audiusLibs)
+  await distributeTokens(audiusLibs, amountOfAuds)
   await _initAllVersions(audiusLibs)
   await _registerAllSPs(audiusLibs, ethAccounts)
   await queryLocalServices(audiusLibs, serviceTypeList)
