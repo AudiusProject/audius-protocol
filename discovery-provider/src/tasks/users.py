@@ -241,6 +241,8 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
     cnode_entries = cnode_url_list.split(',')
     interval = int(update_task.shared_config["discprov"]["peer_refresh_interval"])
     for cnode_url in cnode_entries:
+        if cnode_url == '':
+            continue
         multiaddr = get_ipfs_info_from_cnode_endpoint(cnode_url)
         update_task.ipfs_client.connect_peer(multiaddr)
         redis.set(cnode_url, multiaddr, interval)
