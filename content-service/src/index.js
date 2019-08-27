@@ -14,6 +14,7 @@ const { logger } = require('./logging')
 const initIPFS = () => {
   // connect to IPFS
   let ipfsAddr = config.get('ipfsHost')
+  logger.info(ipfsAddr)
   if (!ipfsAddr) {
     logger.error('Must set ipfsAddr')
     process.exit(1)
@@ -67,6 +68,7 @@ const startApp = async () => {
   const ipfs = initIPFS()
   await runDBMigrations()
   const audiusLibs = await initAudiusLibs()
+  console.log('Initialized audius libs')
 
   const appInfo = initializeApp(config.get('port'), ipfs)
 

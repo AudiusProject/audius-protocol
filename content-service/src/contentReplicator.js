@@ -1,6 +1,8 @@
 const { logger } = require('./logging')
 const models = require('./models')
 
+const trackIdWindowSize = 10
+const userIdWindowSize = 5
 const ipfsRepoMaxUsagePercent = 90
 const config = require('./config')
 
@@ -25,10 +27,10 @@ class ContentReplicator {
     let start = Date.now()
     const file = await models.File.findOne({ where: { multihash: pinMultihash, trackId: pinTrackId } })
     if (!file) {
-      logger.info(`Pinning ${pinMultihash}`)
+      logger.info(`TrackID ${pinTrackId} - Pinning ${pinMultihash}`)
       await this.ipfs.pin.add(pinMultihash)
       let duration = Date.now() - start
-      logger.info(`Pinned ${pinMultihash} in ${duration}ms`)
+      logger.info(`TrackID ${pinTrackId} - Pinned ${pinMultihash} in ${duration}ms`)
       await models.File.create({
         multihash: pinMultihash,
         trackId: pinTrackId
@@ -36,20 +38,77 @@ class ContentReplicator {
     }
   }
 
+  async _replicateUser (user) {
+    let pinUserId = user.user_id
+    let pinPromises = []
+    if (user.profile_picture) {
+      pinPromises.push(this._replicateUserMultihash(user.user_id, user.profile_picture))
+    }
+    if (user.cover_photo) {
+      pinPromises.push(this._replicateUserMultihash(user.user_id, user.cover_photo))
+    }
+    if (!user.cover_photo && !user.profile_picture) {
+      // Add empty DB entry for this user who has no multihashes to pin
+      pinPromises.push(
+        models.File.create(
+          {
+            trackId: pinUserId
+          }
+        )
+      )
+    }
+
+    return pinPromises
+  }
+
   async _replicateUserMultihash (pinUserId, pinMultihash) {
     // TODO(roneilr): remove outdated CIDs associated with a given track ID
     let start = Date.now()
     const file = await models.File.findOne({ where: { multihash: pinMultihash, userId: pinUserId } })
     if (!file) {
-      logger.info(`Pinning ${pinMultihash}`)
+      logger.info(`UserID ${pinUserId} - Pinning ${pinMultihash}`)
       await this.ipfs.pin.add(pinMultihash)
       let duration = Date.now() - start
-      logger.info(`Pinned ${pinMultihash} in ${duration}ms`)
+      logger.info(`UserID ${pinUserId} - Pinned ${pinMultihash} in ${duration}ms`)
       await models.File.create({
         multihash: pinMultihash,
         userId: pinUserId
       })
     }
+  }
+
+  async getUserIdsArray () {
+    return this.getIdsArray('userId', userIdWindowSize)
+  }
+
+  async getTrackIdsArray () {
+    return this.getIdsArray('trackId', trackIdWindowSize)
+  }
+
+  async getIdsArray (type, arraySize) {
+    if (type !== 'trackId' && type !== 'userId') {
+      throw new Error('Invalid type of id requested')
+    }
+
+    let highestIdFromDB = await models.File.max(type)
+    if (Number.isNaN(highestIdFromDB)) {
+      highestIdFromDB = 1
+    }
+    if (Number.isNaN(highestIdFromDB)) {
+      throw new Error('Invalid query state')
+    }
+    logger.info(`Highest id: ${highestIdFromDB}, ${type}`)
+    let idLow = highestIdFromDB
+    logger.info(`idlow: ${idLow}, ${type}`)
+    let idHigh = idLow + arraySize
+    logger.info(`idhigh id: ${idHigh}, ${type}`)
+    let ids = []
+    let iter = idLow
+    while (iter < idHigh) {
+      ids.push(iter)
+      iter++
+    }
+    return ids
   }
 
   async replicate () {
@@ -58,9 +117,15 @@ class ContentReplicator {
       try {
         let start = Date.now()
         await this.monitorDiskUsage()
+        let trackIds = await this.getTrackIdsArray()
+        logger.info(trackIds)
+        const tracks = await this.audiusLibs.Track.getTracks(trackIdWindowSize, 0, trackIds)
+        let userIds = await this.getUserIdsArray()
+        logger.info(userIds)
+        let users = await this.audiusLibs.User.getUsers(userIdWindowSize, userIds)
+        let usersDesc = await this.audiusLibs.user.getUsers(100, 0, 
+        // logger.info(users)
         // TODO(hareeshn): sort users by blocknumber or other metric once enabled in disc prov
-        const users = await this.audiusLibs.discoveryProvider.getUsers()
-        const tracks = await this.audiusLibs.discoveryProvider.getTracks(100, 0, null, null, 'blocknumber:desc')
         const pinPromises = []
 
         tracks.forEach(track => {
@@ -80,12 +145,7 @@ class ContentReplicator {
         })
 
         users.forEach(user => {
-          if (user.profile_picture) {
-            pinPromises.push(this._replicateUserMultihash(user.user_id, user.profile_picture))
-          }
-          if (user.cover_photo) {
-            pinPromises.push(this._replicateUserMultihash(user.user_id, user.cover_photo))
-          }
+          pinPromises.push(this._replicateUser(user))
         })
 
         let numSegments = pinPromises.length

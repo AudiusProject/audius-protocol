@@ -1,7 +1,7 @@
 {
   "ipfsHost": "localhost",
   "ipfsPort": "6001",
-  "ipfsPeerAddresses": "",
+  "ipfsPeerAddresses": "/ip4/52.53.214.67/tcp/4001/ipfs/QmVkepa91CJkyq8zSQFsPwSQ68FVv271vByd3cyrhsBRme",
   "dbUrl": "postgres://postgres:postgres@localhost:8432/audius_content_service",
   "port": 8000,
   "logLevel": "debug",

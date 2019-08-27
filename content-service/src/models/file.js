@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     multihash: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: true
     },
     trackId: {
       type: DataTypes.BIGINT,
