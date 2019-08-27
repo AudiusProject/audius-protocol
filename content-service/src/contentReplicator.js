@@ -13,7 +13,7 @@ class ContentReplicator {
     this.replicating = false
     this.interval = null
     this.pollInterval = pollInterval
-    this.numberOfRecordsProcessed = 0
+    this.numberOfTrackRecordsProcessed = 0
   }
 
   async start () {
@@ -30,10 +30,15 @@ class ContentReplicator {
     let start = Date.now()
     const file = await models.File.findOne({ where: { multihash: pinMultihash, trackId: pinTrackId } })
     if (!file) {
-      logger.info(`TrackID ${pinTrackId} - Pinning ${pinMultihash}`)
-      await this.ipfs.pin.add(pinMultihash)
-      let duration = Date.now() - start
-      logger.info(`TrackID ${pinTrackId} - Pinned ${pinMultihash} in ${duration}ms`)
+      // logger.info(`TrackID ${pinTrackId} - Pinning ${pinMultihash}`)
+      try {
+        await this.ipfs.pin.add(pinMultihash)
+      } catch (e) {
+        logger.error(`Error pinning ${pinMultihash} - ${e}`)
+        throw e
+      }
+      // let duration = Date.now() - start
+      // logger.info(`TrackID ${pinTrackId} - Pinned ${pinMultihash} in ${duration}ms`)
       await models.File.create({
         multihash: pinMultihash,
         trackId: pinTrackId
@@ -126,16 +131,13 @@ class ContentReplicator {
       this.replicating = true
       try {
         let start = Date.now()
-        await this.monitorDiskUsage()
-        let trackIds = await this.getTrackIdsArray()
-        logger.info(trackIds)
+        // await this.monitorDiskUsage()
         const tracks = (await this.audiusLibs.Track.getTracks(
           trackIdWindowSize,
-          this.numberOfRecordsProcessed,
+          this.numberOfTrackRecordsProcessed,
           null,
           null,
           'blocknumber:asc'))
-        // logger.info(tracks)
 
         /*
         let userIds = await this.getUserIdsArray()
@@ -144,25 +146,31 @@ class ContentReplicator {
         */
         // logger.info(users)
         // TODO(hareeshn): sort users by blocknumber or other metric once enabled in disc prov
-        const trackPinPromises = []
+        let numMultihashes = 0
 
-        tracks.forEach(track => {
-          logger.info(track['track_id'])
-          return
-          if (track.track_segments) {
-            track.track_segments.forEach((segment) => {
-              if (segment.multihash) {
-                trackPinPromises.push(this._replicateTrackMultihash(track.track_id, segment.multihash, true))
-              }
-            })
-          }
-          if (track.cover_art) {
-            trackPinPromises.push(this._replicateTrackMultihash(track.track_id, track.cover_art, true))
-          }
-          if (track.metadata_multihash) {
-            trackPinPromises.push(this._replicateTrackMultihash(track.track_id, track.metadata_multihash, true))
-          }
-        })
+        await Promise.all(
+          tracks.map(async (track) => {
+            const trackPinPromises = []
+            if (track.track_segments) {
+              track.track_segments.forEach((segment) => {
+                if (segment.multihash) {
+                  trackPinPromises.push(this._replicateTrackMultihash(track.track_id, segment.multihash, true))
+                  numMultihashes++
+                }
+              })
+            }
+            if (track.cover_art) {
+              trackPinPromises.push(this._replicateTrackMultihash(track.track_id, track.cover_art, true))
+              numMultihashes++
+            }
+            if (track.metadata_multihash) {
+              trackPinPromises.push(this._replicateTrackMultihash(track.track_id, track.metadata_multihash, true))
+              numMultihashes++
+            }
+            await Promise.all(trackPinPromises)
+            logger.info(`TrackID - ${track.track_id} processed `)
+          })
+        )
 
         /*
         users.forEach(user => {
@@ -170,16 +178,16 @@ class ContentReplicator {
         })
         */
 
-        let numSegments = trackPinPromises.length
-        await Promise.all(trackPinPromises)
         logger.info(`tracks length : ${tracks.length}`)
-        this.numberOfRecordsProcessed += tracks.length
+        this.numberOfTrackRecordsProcessed += tracks.length
 
         let end = Date.now()
         let duration = end - start
 
-        logger.info(`Replicating ${numSegments} segments`)
-        logger.info(`Replication complete. ${numSegments} segments in ${duration}ms`)
+        logger.info(`Replication complete. ${numMultihashes} multihashes in ${duration}ms`)
+      } catch (e) {
+        logger.error(`ERROR IN ALL`)
+        logger.error(e)
       } finally {
         // if this does not get reset we will become stuck
         this.replicating = false

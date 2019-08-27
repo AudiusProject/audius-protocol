@@ -11,7 +11,7 @@ const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 
-const initIPFS = () => {
+const initIPFS = async () => {
   // connect to IPFS
   let ipfsAddr = config.get('ipfsHost')
   logger.info(ipfsAddr)
@@ -21,12 +21,8 @@ const initIPFS = () => {
   }
 
   let ipfs = ipfsHttpClient(ipfsAddr, config.get('ipfsPort'))
-  ipfs.id(function (err, identity) {
-    if (err) {
-      throw err
-    }
-    logger.info(`Current IPFS Peer ID: ${JSON.stringify(identity)}`)
-  })
+  let identity = await ipfs.id()
+  logger.info(`Current IPFS Peer ID: ${JSON.stringify(identity)}`)
   return ipfs
 }
 
