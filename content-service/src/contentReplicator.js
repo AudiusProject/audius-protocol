@@ -10,19 +10,22 @@ class ContentReplicator {
   constructor (ipfsHandle, audiusLibs, pollInterval = 5) {
     this.ipfs = ipfsHandle
     this.audiusLibs = audiusLibs
-
     this.replicating = false
     this.interval = null
     this.pollInterval = pollInterval
+    this.numberOfRecordsProcessed = 0
   }
 
   async start () {
     logger.info('Starting content replicator!')
-    this.interval = setInterval(() => this.replicate(), this.pollInterval * 1000)
+    this.interval = setInterval(
+      () => this.replicate(),
+      this.pollInterval * 1000)
     this.peerInterval = setInterval(() => this.refreshPeers(), this.pollInterval * 10 * 1000)
+    this.highestReplicatedTrackId = 0
   }
 
-  async _replicateTrackMultihash (pinTrackId, pinMultihash) {
+  async _replicateTrackMultihash (pinTrackId, pinMultihash, updateMemory = false) {
     // TODO(roneilr): remove outdated CIDs associated with a given track ID
     let start = Date.now()
     const file = await models.File.findOne({ where: { multihash: pinMultihash, trackId: pinTrackId } })
@@ -90,17 +93,17 @@ class ContentReplicator {
       throw new Error('Invalid type of id requested')
     }
 
-    let highestIdFromDB = await models.File.max(type)
+    let highestIdFromDB = this.highestReplicatedTrackId // await models.File.max(type)
     if (Number.isNaN(highestIdFromDB)) {
       highestIdFromDB = 1
     }
     if (Number.isNaN(highestIdFromDB)) {
       throw new Error('Invalid query state')
     }
-    logger.info(`Highest id: ${highestIdFromDB}, ${type}`)
     let idLow = highestIdFromDB
-    logger.info(`idlow: ${idLow}, ${type}`)
     let idHigh = idLow + arraySize
+    logger.info(`Highest id: ${highestIdFromDB}, ${type}`)
+    logger.info(`idlow: ${idLow}, ${type}`)
     logger.info(`idhigh id: ${idHigh}, ${type}`)
     let ids = []
     let iter = idLow
@@ -111,6 +114,13 @@ class ContentReplicator {
     return ids
   }
 
+  async queryHighestTrackId () {
+    const newestTrack = (await this.audiusLibs.discoveryProvider.getTracks(1, 0, null, null, 'created_at:desc'))[0]
+    const highestTrackId = newestTrack.track_id
+    logger.info(highestTrackId)
+    return highestTrackId
+  }
+
   async replicate () {
     if (!this.replicating) {
       this.replicating = true
@@ -119,40 +129,56 @@ class ContentReplicator {
         await this.monitorDiskUsage()
         let trackIds = await this.getTrackIdsArray()
         logger.info(trackIds)
-        const tracks = await this.audiusLibs.Track.getTracks(trackIdWindowSize, 0, trackIds)
+        const tracks = (await this.audiusLibs.Track.getTracks(
+          trackIdWindowSize,
+          this.numberOfRecordsProcessed,
+          null,
+          null,
+          'blocknumber:asc'))
+        // logger.info(tracks)
+
+        /*
         let userIds = await this.getUserIdsArray()
         logger.info(userIds)
         let users = await this.audiusLibs.User.getUsers(userIdWindowSize, userIds)
-        let usersDesc = await this.audiusLibs.user.getUsers(100, 0, 
+        */
         // logger.info(users)
         // TODO(hareeshn): sort users by blocknumber or other metric once enabled in disc prov
-        const pinPromises = []
+        const trackPinPromises = []
 
         tracks.forEach(track => {
+          logger.info(track['track_id'])
+          return
           if (track.track_segments) {
             track.track_segments.forEach((segment) => {
               if (segment.multihash) {
-                pinPromises.push(this._replicateTrackMultihash(track.track_id, segment.multihash))
+                trackPinPromises.push(this._replicateTrackMultihash(track.track_id, segment.multihash, true))
               }
             })
           }
           if (track.cover_art) {
-            pinPromises.push(this._replicateTrackMultihash(track.track_id, track.cover_art))
+            trackPinPromises.push(this._replicateTrackMultihash(track.track_id, track.cover_art, true))
           }
           if (track.metadata_multihash) {
-            pinPromises.push(this._replicateTrackMultihash(track.track_id, track.metadata_multihash))
+            trackPinPromises.push(this._replicateTrackMultihash(track.track_id, track.metadata_multihash, true))
           }
         })
 
+        /*
         users.forEach(user => {
           pinPromises.push(this._replicateUser(user))
         })
+        */
 
-        let numSegments = pinPromises.length
-        logger.info(`Replicating ${numSegments} segments`)
-        await Promise.all(pinPromises)
+        let numSegments = trackPinPromises.length
+        await Promise.all(trackPinPromises)
+        logger.info(`tracks length : ${tracks.length}`)
+        this.numberOfRecordsProcessed += tracks.length
+
         let end = Date.now()
         let duration = end - start
+
+        logger.info(`Replicating ${numSegments} segments`)
         logger.info(`Replication complete. ${numSegments} segments in ${duration}ms`)
       } finally {
         // if this does not get reset we will become stuck
