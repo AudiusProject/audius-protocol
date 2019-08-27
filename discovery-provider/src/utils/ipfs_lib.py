@@ -15,6 +15,7 @@ class IPFSClient:
     def __init__(self, ipfs_peer_host, ipfs_peer_port, gateway_addresses):
         self._api = ipfshttpclient.connect(ipfs_peer_host, ipfs_peer_port)
         self._gateway_addresses = gateway_addresses
+        self._ipfsid = self._api.id()
 
     def get_metadata_from_json(self, metadata_format, resp_json):
         metadata = {}
@@ -149,10 +150,10 @@ class IPFSClient:
 
     def connect_peer(self, peer):
         try:
-            logger.info('peering with %s', peer)
+            if peer in self._ipfsid['Addresses']:
+                return
             r = self._api.swarm.connect(peer)
             logger.info(r)
-            return r
         except Exception as e:
             logger.error(f"IPFSCLIENT | IPFS Failed to update peer")
             logger.error(e)
