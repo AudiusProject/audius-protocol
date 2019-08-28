@@ -21,6 +21,8 @@ module.exports = function (app) {
   /** Store image in multiple-resolutions on disk + DB and make available via IPFS */
   app.post('/image_upload', authMiddleware, nodeSyncMiddleware, upload.single('file'), handleResponse(async (req, res) => {
     if (!req.body.square) return errorResponseBadRequest('Must provide square boolean param in request body')
+
+    let routestart = Date.now()
     
     const ipfs = req.app.get('ipfsAPI')
     const imageBufferOriginal = req.file.buffer
@@ -29,9 +31,12 @@ module.exports = function (app) {
 
     if (req.body.square === 'true') {
       // Resize image to desired resolutions
-      const imageBuffer1000x1000 = await resizeImage(req, imageBufferOriginal, 1000, true)
-      const imageBuffer480x480 = await resizeImage(req, imageBufferOriginal, 480, true)
-      const imageBuffer150x150 = await resizeImage(req, imageBufferOriginal, 150, true)
+      const [imageBuffer1000x1000, imageBuffer480x480, imageBuffer150x150] = await Promise.all([
+        resizeImage(req, imageBufferOriginal, 1000, true),
+        resizeImage(req, imageBufferOriginal, 480, true),
+        resizeImage(req, imageBufferOriginal, 150, true)
+      ])
+      
       imageBuffers = [imageBuffer1000x1000, imageBuffer480x480, imageBuffer150x150, imageBufferOriginal]
 
       // Add directory with all images to IPFS
@@ -103,6 +108,7 @@ module.exports = function (app) {
       req.logger.info('Added file', fileResp, file)
     }
     req.logger.info('Added all files for dir', dir)
+    req.logger.info(`route time = ${Date.now() - routestart}`)
     return successResponse({ dirCID })
   }))
 

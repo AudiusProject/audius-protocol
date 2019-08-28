@@ -13,18 +13,24 @@ const MIME_TYPE_JPEG = 'image/jpeg'
  * @param {number} maxWidth max width of the returned image (default is 1,000px)
  * @param {boolean} square whether or not to square the image
  * @return {Buffer} the converted image
+ * @dev TODO - replace with child node process bc need for speed
  */
 async function resizeImage (req, imageBuffer, maxWidth, square) {
   // eslint-disable-next-line
   let exif
+  let time = Date.now()
+  req.logger.info(`resize image ${maxWidth} - start`)
   try {
     exif = ExifParser.create(imageBuffer).parse()
+    req.logger.info(`resize image ${maxWidth} - create time ${Date.now() - time}`)
+    time = Date.now()
   } catch (error) {
     req.logger.error(error)
     exif = null
   }
 
   let img = await Jimp.read(imageBuffer)
+  req.logger.info(`resize image ${maxWidth} - read time ${Date.now() - time}`)
 
   img = _exifRotate(img, exif)
   img.background(COLOR_WHITE)
