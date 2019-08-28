@@ -13,7 +13,7 @@ services:
     build: ../.
     command: sh -c '/usr/bin/wait && exec ./node_modules/.bin/nodemon src/index.js | ./node_modules/.bin/bunyan'
     env_file:
-      - ./staging.env
+      - ./local.env
     depends_on:
       - db
     ports:

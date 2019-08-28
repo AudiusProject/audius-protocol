@@ -59,7 +59,11 @@ def get_users():
                 base_query = base_query.filter(User.user_id.in_(user_id_list))
             except ValueError as e:
                 raise exceptions.ArgumentError("Invalid value found in user id list", e)
-
+        if "min_block_number" in request.args:
+            min_block_number = request.args.get("min_block_number", type=int)
+            base_query = base_query.filter(
+                User.blocknumber >= min_block_number
+            )
         users = paginate_query(base_query).all()
         users = helpers.query_result_to_list(users)
 
@@ -103,6 +107,12 @@ def get_tracks():
             user_id = request.args.get("user_id", type=int)
             base_query = base_query.filter(
                 Track.owner_id == user_id
+            )
+
+        if "min_block_number" in request.args:
+            min_block_number = request.args.get("min_block_number", type=int)
+            base_query = base_query.filter(
+                Track.blocknumber >= min_block_number
             )
 
         whitelist_params = ['created_at', 'create_date', 'release_date', 'blocknumber']

@@ -468,6 +468,7 @@ def update_task(self):
             # Capture outdated block information given current database state
             revert_blocks_list = []
 
+            logger.warning('New task')
             with db.scoped_session() as session:
                 block_intersection_found = False
                 intersect_block_hash = web3.toHex(latest_block.hash)

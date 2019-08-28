@@ -35,7 +35,7 @@ class DiscoveryProvider {
    * await getUsers()
    * await getUsers(100, 0, [3,2,6]) - Invalid user ids will not be accepted
    */
-  async getUsers (limit = 100, offset = 0, idsArray = null, walletAddress = null, handle = null, isCreator = null) {
+  async getUsers (limit = 100, offset = 0, idsArray = null, walletAddress = null, handle = null, isCreator = null, minBlockNumber = null) {
     let req = {
       endpoint: 'users',
       queryParams: { limit: limit, offset: offset }
@@ -48,6 +48,9 @@ class DiscoveryProvider {
     }
     if (walletAddress) {
       req.queryParams.wallet = walletAddress
+    }
+    if (minBlockNumber) {
+      req.queryParams.min_block_number = minBlockNumber
     }
     if (idsArray != null) {
       if (!Array.isArray(idsArray)) {
@@ -77,13 +80,17 @@ class DiscoveryProvider {
    * await getTracks()
    * await getTracks(100, 0, [3,2,6]) - Invalid track ids will not be accepted
    */
-  async getTracks (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null) {
+  async getTracks (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null, minBlockNumber = null) {
     let req = { endpoint: 'tracks', queryParams: { limit: limit, offset: offset } }
-    if (idsArray != null) {
+    if (idsArray) {
       if (!Array.isArray(idsArray)) {
         throw new Error('Expected array of track ids')
       }
       req.queryParams.id = idsArray
+    }
+    if (minBlockNumber) {
+      console.log('minBlockNumber' + minBlockNumber)
+      req.queryParams.min_block_number = minBlockNumber
     }
     if (targetUserId) {
       req.queryParams.user_id = targetUserId

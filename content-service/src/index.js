@@ -61,7 +61,7 @@ const initAudiusLibs = async () => {
 }
 
 const startApp = async () => {
-  const ipfs = initIPFS()
+  const ipfs = await initIPFS()
   await runDBMigrations()
   const audiusLibs = await initAudiusLibs()
   console.log('Initialized audius libs')

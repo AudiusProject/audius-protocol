@@ -1,7 +1,7 @@
 const { logger } = require('./logging')
 const models = require('./models')
 
-const trackIdWindowSize = 10
+const trackIdWindowSize = 5
 const userIdWindowSize = 5
 const ipfsRepoMaxUsagePercent = 90
 const config = require('./config')
@@ -13,7 +13,8 @@ class ContentReplicator {
     this.replicating = false
     this.interval = null
     this.pollInterval = pollInterval
-    this.numberOfTrackRecordsProcessed = 0
+
+    this.minTrackBlockNumber = 0
   }
 
   async start () {
@@ -30,15 +31,15 @@ class ContentReplicator {
     let start = Date.now()
     const file = await models.File.findOne({ where: { multihash: pinMultihash, trackId: pinTrackId } })
     if (!file) {
-      // logger.info(`TrackID ${pinTrackId} - Pinning ${pinMultihash}`)
+      logger.info(`TrackID ${pinTrackId} - Pinning ${pinMultihash}`)
       try {
         await this.ipfs.pin.add(pinMultihash)
       } catch (e) {
         logger.error(`Error pinning ${pinMultihash} - ${e}`)
         throw e
       }
-      // let duration = Date.now() - start
-      // logger.info(`TrackID ${pinTrackId} - Pinned ${pinMultihash} in ${duration}ms`)
+      let duration = Date.now() - start
+      logger.info(`TrackID ${pinTrackId} - Pinned ${pinMultihash} in ${duration}ms`)
       await models.File.create({
         multihash: pinMultihash,
         trackId: pinTrackId
@@ -134,10 +135,11 @@ class ContentReplicator {
         // await this.monitorDiskUsage()
         const tracks = (await this.audiusLibs.Track.getTracks(
           trackIdWindowSize,
-          this.numberOfTrackRecordsProcessed,
+          0,
           null,
           null,
-          'blocknumber:asc'))
+          'blocknumber:asc',
+          this.minTrackBlockNumber + 1))
 
         /*
         let userIds = await this.getUserIdsArray()
@@ -150,6 +152,7 @@ class ContentReplicator {
 
         await Promise.all(
           tracks.map(async (track) => {
+            const blocknumber = parseInt(track.blocknumber)
             const trackPinPromises = []
             if (track.track_segments) {
               track.track_segments.forEach((segment) => {
@@ -169,6 +172,9 @@ class ContentReplicator {
             }
             await Promise.all(trackPinPromises)
             logger.info(`TrackID - ${track.track_id} processed `)
+            if (blocknumber >= this.minTrackBlockNumber) {
+              this.minTrackBlockNumber = blocknumber
+            }
           })
         )
 
@@ -177,9 +183,6 @@ class ContentReplicator {
           pinPromises.push(this._replicateUser(user))
         })
         */
-
-        logger.info(`tracks length : ${tracks.length}`)
-        this.numberOfTrackRecordsProcessed += tracks.length
 
         let end = Date.now()
         let duration = end - start
