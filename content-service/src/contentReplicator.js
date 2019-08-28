@@ -75,7 +75,6 @@ class ContentReplicator {
         let start = Date.now()
         let currentTrackBlockNumber = await this.queryHighestBlockNumber('track')
         let currentUserBlockNumber = await this.queryHighestBlockNumber('user')
-        // await this.monitorDiskUsage()
         const tracks = (await this.audiusLibs.Track.getTracks(
           trackIdWindowSize,
           0,
@@ -158,6 +157,7 @@ class ContentReplicator {
       } finally {
         // if this does not get reset we will become stuck
         this.replicating = false
+        await this.monitorDiskUsage()
       }
     } else {
       logger.info('Replicator job already in progress. Waiting for next interval.')
