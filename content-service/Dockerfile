@@ -5,8 +5,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --loglevel verbose
 
-# COPY ./node_modules ./node_modules
-
 FROM node:10.16-alpine
 
 WORKDIR /usr/src/app
