@@ -13,8 +13,8 @@ class ContentReplicator {
     this.replicating = false
     this.interval = null
     this.pollInterval = pollInterval
-
     this.minTrackBlockNumber = 0
+    this.minUserBlockNumber = 0
   }
 
   async start () {
@@ -141,10 +141,18 @@ class ContentReplicator {
           'blocknumber:asc',
           this.minTrackBlockNumber + 1))
 
+        logger.info(`MinBlock user query - ${this.minUserBlockNumber}`)
+        let users = await this.audiusLibs.User.getUsers(
+          userIdWindowSize,
+          0,
+          null,
+          null,
+          null,
+          null,
+          this.minUserBlockNumber + 1)
         /*
         let userIds = await this.getUserIdsArray()
         logger.info(userIds)
-        let users = await this.audiusLibs.User.getUsers(userIdWindowSize, userIds)
         */
         // logger.info(users)
         // TODO(hareeshn): sort users by blocknumber or other metric once enabled in disc prov
@@ -175,6 +183,15 @@ class ContentReplicator {
             if (blocknumber >= this.minTrackBlockNumber) {
               this.minTrackBlockNumber = blocknumber
             }
+          }),
+          users.map(async (user) => {
+            const blocknumber = parseInt(user.blocknumber)
+            await this._replicateUser(user)
+            if (blocknumber >= this.minUserBlockNumber) {
+              this.minUserBlockNumber = blocknumber
+            }
+            logger.info(`UserID - ${user.user_id} processed `)
+            logger.info(`UserID - minblock ${this.minUserBlockNumber} processed `)
           })
         )
 
