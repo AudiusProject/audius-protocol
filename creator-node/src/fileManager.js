@@ -21,7 +21,7 @@ const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
  * @dev - only call this function when file is not already stored to disk
  *      - if it is, then use saveFileToIPFSFromFS()
  */
-async function saveFileFromBuffer (req, buffer) {
+async function saveFileFromBuffer (req, buffer, fileType) {
   // make sure user has authenticated before saving file
   if (!req.userId) {
     throw new Error('User must be authenticated to save a file')
@@ -39,15 +39,15 @@ async function saveFileFromBuffer (req, buffer) {
   await ipfs.pin.add(multihash)
 
   // add reference to file to database
-  let file = await models.File.findOrCreate({ where:
+  const file = (await models.File.findOrCreate({ where:
     {
       cnodeUserUUID: req.userId,
       multihash: multihash,
       sourceFile: req.fileName,
-      storagePath: dstPath
+      storagePath: dstPath,
+      type: fileType
     }
-  })
-  file = file[0].dataValues
+  }))[0].dataValues
 
   req.logger.info('\nAdded file:', multihash, 'file id', file.fileUUID)
   return { multihash: multihash, fileUUID: file.fileUUID }
@@ -59,7 +59,7 @@ async function saveFileFromBuffer (req, buffer) {
  * - Re-save file to disk under multihash.
  * - Save reference to file in DB.
  */
-async function saveFileToIPFSFromFS (req, srcPath) {
+async function saveFileToIPFSFromFS (req, srcPath, fileType) {
   // make sure user has authenticated before saving file
   if (!req.userId) throw new Error('User must be authenticated to save a file')
 
@@ -80,7 +80,8 @@ async function saveFileToIPFSFromFS (req, srcPath) {
       cnodeUserUUID: req.userId,
       multihash: multihash,
       sourceFile: req.fileName,
-      storagePath: dstPath
+      storagePath: dstPath,
+      type: fileType
     }
   }))[0].dataValues
 

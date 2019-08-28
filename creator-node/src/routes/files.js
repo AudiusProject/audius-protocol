@@ -4,6 +4,7 @@ const path = require('path')
 const fs = require('fs')
 const { promisify } = require('util')
 const writeFile = promisify(fs.writeFile)
+const mkdir = promisify(fs.mkdir)
 
 const { saveFileFromBuffer, upload } = require('../fileManager')
 const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound } = require('../apiHelpers')
@@ -24,37 +25,54 @@ module.exports = function (app) {
     if (!req.body.square) return errorResponseBadRequest('Must provide square boolean param in request body')
     const squareFormat = (req.body.square === 'true')
 
-    const imageBufferOriginal = req.file.buffer
+    // TODO logic for non-square images
 
     // Resize image to desired resolutions
+    const imageBufferOriginal = req.file.buffer
     const imageBuffer1000x1000 = await resizeImage(req, imageBufferOriginal, 1000, squareFormat)
     const imageBuffer480x480 = await resizeImage(req, imageBufferOriginal, 480, squareFormat)
     const imageBuffer150x150 = await resizeImage(req, imageBufferOriginal, 150, squareFormat)
-
     const imageBuffers = [imageBuffer1000x1000, imageBuffer480x480, imageBuffer150x150, imageBufferOriginal]
 
     // Add directory with all images to IPFS
-    const resp = await ipfs.add([
+    const ipfsAddResp = await ipfs.add([
       { path: path.join(req.file.originalname, '1000x1000.jpg'), content: imageBuffer1000x1000 },
       { path: path.join(req.file.originalname, '480x480.jpg'), content: imageBuffer480x480 },
       { path: path.join(req.file.originalname, '150x150.jpg'), content: imageBuffer150x150 },
       { path: path.join(req.file.originalname, 'original.jpg'), content: imageBufferOriginal }
-    ],
-    { pin: true }
+    ], { pin: true }
     )
+    req.logger.info('ipfs add resp', ipfsAddResp)
 
     // Get dir CID (last entry in returned array)
-    const dirCID = resp[resp.length - 1].hash
+    const dirCID = ipfsAddResp[ipfsAddResp.length - 1].hash
     req.logger.info('dirCID', dirCID)
 
-    // Save each file to disk + DB
-    for (let i = 0; i < resp.length - 1; i++) {
-      const fileResp = resp[i]
+    // Create dir in fs, and store files under this dir
+    const dirDestPath = path.join(req.app.get('storagePath'), dirCID)
+    try {
+      await mkdir(dirDestPath)
+    } catch (e) {
+      if (e.message.indexOf('already exists') < 0) throw e
+    }
 
+    // Save dir file reference to DB
+    const dirDBResp = await models.File.findOrCreate({ where: {
+      cnodeUserUUID: req.userId,
+      multihash: dirCID,
+      sourceFile: null,
+      storagePath: dirDestPath,
+      type: 'dir'
+    } })
+    const dir = dirDBResp[0].dataValues
+
+    // Save each file to disk + DB
+    for (let i = 0; i < ipfsAddResp.length - 1; i++) {
+      const fileResp = ipfsAddResp[i]
       req.logger.info('fileResp.hash', fileResp.hash)
 
       // Save file to disk
-      const destPath = path.join(req.app.get('storagePath'), fileResp.hash)
+      const destPath = path.join(req.app.get('storagePath'), dirCID, fileResp.hash)
       await writeFile(destPath, imageBuffers[i])
 
       // Save file reference to DB
@@ -63,14 +81,14 @@ module.exports = function (app) {
           cnodeUserUUID: req.userId,
           multihash: fileResp.hash,
           sourceFile: fileResp.path,
-          storagePath: destPath
+          storagePath: destPath,
+          type: 'image'
         }
       })
       const file = dbResp[0].dataValues
-
       req.logger.info('Added file', fileResp, file)
     }
-
+    req.logger.info('Added all files for dir', dir)
     return successResponse({ dirCID })
   }))
 
@@ -79,7 +97,7 @@ module.exports = function (app) {
     const metadataJSON = req.body
     req.logger.info('metadataJSON', metadataJSON)
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
-    const { multihash } = await saveFileFromBuffer(req, metadataBuffer)
+    const { multihash } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
     return successResponse({ 'metadataMultihash': multihash })
   }))
 

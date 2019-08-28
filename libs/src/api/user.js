@@ -118,11 +118,11 @@ class Users extends Base {
   async uploadProfileImages (profilePictureFile, coverPhotoFile, metadata) {
     if (profilePictureFile) {
       const resp = await this.creatorNode.uploadImage(profilePictureFile, true)
-      metadata.profile_picture = resp.dirCID
+      metadata.profile_picture_sizes = resp.dirCID
     }
     if (coverPhotoFile) {
       const resp = await this.creatorNode.uploadImage(coverPhotoFile, false)
-      metadata.cover_photo = resp.dirCID
+      metadata.cover_photo_sizes = resp.dirCID
     }
     console.log('upload profile images', metadata)
     return metadata
@@ -335,16 +335,16 @@ class Users extends Base {
     if (metadata['bio']) {
       addOps.push(this.contracts.UserFactoryClient.updateBio(userId, metadata['bio']))
     }
-    if (metadata['profile_picture']) {
+    if (metadata['profile_picture_sizes']) {
       addOps.push(this.contracts.UserFactoryClient.updateProfilePhoto(
         userId,
-        Utils.decodeMultihash(metadata['profile_picture']).digest
+        Utils.decodeMultihash(metadata['profile_picture_sizes']).digest
       ))
     }
-    if (metadata['cover_photo']) {
+    if (metadata['cover_photo_sizes']) {
       addOps.push(this.contracts.UserFactoryClient.updateCoverPhoto(
         userId,
-        Utils.decodeMultihash(metadata['cover_photo']).digest
+        Utils.decodeMultihash(metadata['cover_photo_sizes']).digest
       ))
     }
     if (metadata['is_creator']) {
@@ -380,16 +380,16 @@ class Users extends Base {
         if (key === 'location') {
           updateOps.push(this.contracts.UserFactoryClient.updateLocation(userId, metadata['location']))
         }
-        if (key === 'profile_picture') {
+        if (key === 'profile_picture_sizes') {
           updateOps.push(this.contracts.UserFactoryClient.updateProfilePhoto(
             userId,
-            Utils.decodeMultihash(metadata['profile_picture']).digest
+            Utils.decodeMultihash(metadata['profile_picture_sizes']).digest
           ))
         }
-        if (key === 'cover_photo') {
+        if (key === 'cover_photo_sizes') {
           updateOps.push(this.contracts.UserFactoryClient.updateCoverPhoto(
             userId,
-            Utils.decodeMultihash(metadata['cover_photo']).digest
+            Utils.decodeMultihash(metadata['cover_photo_sizes']).digest
           ))
         }
         if (key === 'creator_node_endpoint') {
@@ -407,8 +407,8 @@ class Users extends Base {
       'is_verified',
       'name',
       'handle',
-      'profile_picture',
-      'cover_photo',
+      'profile_picture_sizes',
+      'cover_photo_sizes',
       'bio',
       'location',
       'creator_node_endpoint'

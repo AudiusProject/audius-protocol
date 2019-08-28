@@ -201,30 +201,6 @@ async function insertUUIDs (queryInterface, t) {
     await queryInterface.sequelize.query(`UPDATE "AudiusUsers" SET "audiusUserUUID" = '${uuid()}' WHERE "id" = '${audiusUser.id}'`, { transaction: t })
   }
 
-  // Script to fill in file type in the future
-  // const files = (await queryInterface.sequelize.query(`SELECT * FROM "Files";`, { transaction: t }))[0]
-  // for (let file of files) {
-  //   // track
-  //   // picture
-  //   // metadata
-  //   let type
-  //   if (file.sourceFile) {
-  //     type = 'track'
-  //   }
-  //   else {
-  //     console.log(file.multihash)
-  //     let respData = (await axios.get(`https://creatornode.audius.co/ipfs/${file.multihash}`)).data
-  //     try {
-  //       JSON.parse(JSON.stringify(respData))
-  //       type = 'metadata'
-  //     }
-  //     catch(e){
-  //       type = 'picture'
-  //     }
-  //   }
-  //   await queryInterface.sequelize.query(`UPDATE "Files" SET "type" = '${type}' WHERE "id" = '${file.id}'`, { transaction: t })
-  // }
-
   // associate AudiusUsers table with cnodeUserUUID
   await queryInterface.sequelize.query(`
     UPDATE "AudiusUsers"

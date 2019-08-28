@@ -183,7 +183,8 @@ module.exports = function (app) {
         cnodeUserUUID: fetchedCnodeUserUUID,
         multihash: file.multihash,
         sourceFile: file.sourceFile,
-        storagePath: file.storagePath
+        storagePath: file.storagePath,
+        type: file.type
       })), { transaction: t })
       req.logger.info(redisKey, 'created all non-track files')
 
@@ -208,7 +209,8 @@ module.exports = function (app) {
         cnodeUserUUID: fetchedCnodeUserUUID,
         multihash: trackFile.multihash,
         sourceFile: trackFile.sourceFile,
-        storagePath: trackFile.storagePath
+        storagePath: trackFile.storagePath,
+        type: trackFile.type
       })), { transaction: t })
       req.logger.info('saved all track files to db')
 
