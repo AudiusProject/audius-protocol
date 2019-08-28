@@ -13,13 +13,11 @@ services:
     build: ../.
     command: sh -c '/usr/bin/wait && exec ./node_modules/.bin/nodemon src/index.js | ./node_modules/.bin/bunyan'
     env_file:
-      - ./local.env
+      - ./development.env
     depends_on:
       - db
     ports:
       - '8000:8000'
-      # volumes:
-      # - '..:/usr/src/app'
 
 volumes:
   postgres_data:

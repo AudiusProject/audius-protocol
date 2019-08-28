@@ -21,7 +21,6 @@ class ContentReplicator {
       () => this.replicate(),
       this.pollInterval * 1000)
     this.peerInterval = setInterval(() => this.refreshPeers(), this.pollInterval * 10 * 1000)
-    this.highestReplicatedTrackId = 0
   }
 
   async _replicateTrackMultihash (pinTrackId, pinMultihash) {
@@ -117,7 +116,6 @@ class ContentReplicator {
               numMultihashes++
             }
             await Promise.all(trackPinPromises)
-
             let currentHighestTrackBlock = await this.queryHighestBlockNumber('track')
             if (blocknumber > currentHighestTrackBlock) {
               await models.Block.create({
