@@ -9,14 +9,14 @@ const globalConfig = require('../config')
 const basename = path.basename(__filename)
 const db = {}
 
-// TODO(roneilr): set up debug-level logging of queries
+// TODO: set up debug-level logging of queries
 const sequelize = new Sequelize(globalConfig.get('dbUrl'), {
   logging: true,
   operatorsAliases: false,
   pool: {
-    max: 50,
+    max: 100,
     min: 5,
-    acquire: 10000,
+    acquire: 60000,
     idle: 10000
   }
 })
