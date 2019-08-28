@@ -166,11 +166,16 @@ def parse_user_event(
     )
 
     if metadata_overrides:
+        logger.warning(metadata_overrides)
         # metadata_overrides properties are defined in get_metadata_overrides_from_ipfs
         if metadata_overrides["profile_picture"]:
             user_record.profile_picture = metadata_overrides["profile_picture"]
+        if metadata_overrides["profile_picture_sizes"]:
+            user_record.profile_picture = metadata_overrides["profile_picture_sizes"]
         if metadata_overrides["cover_photo"]:
             user_record.cover_photo = metadata_overrides["cover_photo"]
+        if metadata_overrides["cover_photo_sizes"]:
+            user_record.cover_photo = metadata_overrides["cover_photo_sizes"]
         if metadata_overrides["bio"]:
             user_record.bio = metadata_overrides["bio"]
         if metadata_overrides["name"]:
@@ -244,11 +249,13 @@ def get_metadata_overrides_from_ipfs(session, update_task, user_record):
         # Manually peer with user creator nodes
         update_ipfs_peers_from_user_endpoint(
             update_task,
-            user_record.creator_node_endpoint)
+            user_record.creator_node_endpoint
+        )
 
         user_metadata = update_task.ipfs_client.get_metadata(
             user_record.metadata_multihash,
-            user_metadata_format)
+            user_metadata_format
+        )
 
     return user_metadata
 

@@ -146,11 +146,13 @@ def parse_track_event(
         track_record.is_delete = False
         track_metadata = update_task.ipfs_client.get_metadata(
             track_metadata_multihash,
-            track_metadata_format)
+            track_metadata_format
+        )
 
         track_record = populate_track_record_metadata(
             track_record,
-            track_metadata)
+            track_metadata
+        )
         track_record.metadata_multihash = track_metadata_multihash
 
         # if cover_art CID is of a dir, store under _sizes field instead
@@ -226,6 +228,7 @@ def populate_track_record_metadata(track_record, track_metadata):
     track_record.title = track_metadata["title"]
     track_record.length = track_metadata["length"]
     track_record.cover_art = track_metadata["cover_art"]
+    if track_metadata["cover_art_sizes"] track_record.cover_art = track_metadata["cover_art_sizes"]
     track_record.tags = track_metadata["tags"]
     track_record.genre = track_metadata["genre"]
     track_record.mood = track_metadata["mood"]
