@@ -1,15 +1,15 @@
 {
-  "ipfsHost": "docker.for.mac.localhost",
-  "ipfsPort": "6011",
-  "ipfsPeerAddresses": "/ip4/52.53.214.67/tcp/4001/ipfs/QmVkepa91CJkyq8zSQFsPwSQ68FVv271vByd3cyrhsBRme",
-  "dbUrl": "postgres://postgres:postgres@docker.for.mac.localhost:8432/audius_content_service",
+  "ipfsHost": "localhost",
+  "ipfsPort": "6001",
+  "ipfsPeerAddresses": "",
+  "dbUrl": "postgres://postgres:postgres@localhost:8432/audius_content_service",
   "port": 8000,
   "logLevel": "debug",
   "delegateOwnerWallet": "",
   "delegatePrivateKey": "",
-  "ethProviderUrl": "http://docker.for.mac.localhost:8546",
+  "ethProviderUrl": "http://localhost:8546",
   "ethNetworkId": "",
-  "ethTokenAddress": "0xed9E95064beeCa249864eB8e21D20197F60b2Df1",
-  "ethRegistryAddress": "0x6821CF9E5351D0073D840f8F99b6e92D16488b0f",
+  "ethTokenAddress": "",
+  "ethRegistryAddress": "",
   "ethOwnerWallet": ""
 }
