@@ -89,7 +89,6 @@ class DiscoveryProvider {
       req.queryParams.id = idsArray
     }
     if (minBlockNumber) {
-      console.log('minBlockNumber' + minBlockNumber)
       req.queryParams.min_block_number = minBlockNumber
     }
     if (targetUserId) {

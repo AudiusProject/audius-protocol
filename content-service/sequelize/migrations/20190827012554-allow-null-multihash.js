@@ -14,7 +14,30 @@ module.exports = {
       type: Sequelize.TEXT,
       index: true
     })
-    return multihashChange
+    let blocksTableChange = queryInterface.createTable('Blocks', {
+      id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false
+      },
+      blocknumber: {
+        type: Sequelize.BIGINT,
+        allowNull: false
+      },
+      type: {
+        type: Sequelize.ENUM('track', 'user')
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      },
+      updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      }
+    })
+    return Promise.all([multihashChange, blocksTableChange])
   },
 
   down: (queryInterface, Sequelize) => {
@@ -30,6 +53,7 @@ module.exports = {
       type: Sequelize.TEXT,
       index: true
     })
-    return multihashChange
+    let blocksTableChange = queryInterface.dropTable('Blocks')
+    return Promise.all([multihashChange, blocksTableChange])
   }
 }
