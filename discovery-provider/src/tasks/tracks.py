@@ -228,7 +228,8 @@ def populate_track_record_metadata(track_record, track_metadata):
     track_record.title = track_metadata["title"]
     track_record.length = track_metadata["length"]
     track_record.cover_art = track_metadata["cover_art"]
-    if track_metadata["cover_art_sizes"] track_record.cover_art = track_metadata["cover_art_sizes"]
+    if track_metadata["cover_art_sizes"]:
+        track_record.cover_art = track_metadata["cover_art_sizes"]
     track_record.tags = track_metadata["tags"]
     track_record.genre = track_metadata["genre"]
     track_record.mood = track_metadata["mood"]
