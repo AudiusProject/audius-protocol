@@ -4,19 +4,18 @@ const config = require('../config.js')
 const versionInfo = require('../../.version.json')
 
 module.exports = function (app) {
+  /** @dev TODO - Explore checking more than just DB (ex. IPFS) */
   app.get('/health_check', handleResponse(async (req, res) => {
-    // for now we just check db connectivity. In future, this could / should check other
-    // things (ex. IPFS)
-
-    // log out PG stats
-    const pgStatDatabase = (await sequelize.query('SELECT "datname", "numbackends" from "pg_stat_database"'))[0]
-    const pgStatActivity = (await sequelize.query('select "datname", "usename", "application_name", "client_addr", "wait_event_type", "wait_event", "state", "query", "backend_type" from "pg_stat_activity"'))[0]
+    const numConnections = (await sequelize.query("SELECT numbackends from pg_stat_database where datname = 'audius_creator_node'"))[0][0].numbackends
+    const connectionInfo = (await sequelize.query("select datname, usename, application_name, client_addr, wait_event_type, wait_event, state, query, backend_type from pg_stat_activity where datname = 'audius_creator_node'"))[0]
+    req.logger.info('numConnections', numConnections)
+    req.logger.info('connectionInfo', connectionInfo)
 
     return successResponse({
       'healthy': true,
       'GIT_SHA': process.env.GIT_SHA,
-      'pg_stat_database': pgStatDatabase,
-      'pg_stat_activity': pgStatActivity
+      numConnections,
+      connectionInfo
     })
   }))
 
