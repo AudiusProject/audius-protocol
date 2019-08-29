@@ -24,9 +24,9 @@ module.exports = function (app) {
 
     // Fetch all data for cnodeUserUUIDs: audiusUsers, tracks, files.
     const [audiusUsers, tracks, files] = await Promise.all([
-      await models.AudiusUser.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t }),
-      await models.Track.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t }),
-      await models.File.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t })
+      models.AudiusUser.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t }),
+      models.Track.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t }),
+      models.File.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t })
     ])
     await t.commit()
 
