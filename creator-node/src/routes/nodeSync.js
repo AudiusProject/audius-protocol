@@ -200,7 +200,7 @@ module.exports = function (app) {
       // Save all track files to disk
       await Promise.all(trackFiles.map(trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath)))
       req.logger.info('save all track files to disk/ipfs')
-      
+
       // Save all track files to db
       await models.File.bulkCreate(trackFiles.map(trackFile => ({
         fileUUID: trackFile.fileUUID,
