@@ -23,7 +23,7 @@ class CreatorNode {
 
     this.lazyConnect = lazyConnect
     this.connected = false
-
+    this.connecting = false
     this.authToken = null
   }
 
@@ -36,15 +36,26 @@ class CreatorNode {
 
   /** Establishes a connection to a creator node endpoint */
   async connect () {
+    this.connecting = true
     await this._signupNodeUser(this.web3Manager.getWalletAddress())
     await this._loginNodeUser()
     this.connected = true
+    this.connecting = false
   }
 
   /** Checks if connected, otherwise establishing a connection */
   async ensureConnected () {
-    if (!this.connected) {
+    if (!this.connected && !this.connecting) {
       await this.connect()
+    } else if (this.connecting) {
+      let interval
+      // We were already connecting so wait for connection
+      await new Promise((resolve, reject) => {
+        interval = setInterval(() => {
+          if (this.connected) resolve()
+        }, 100)
+      })
+      clearInterval(interval)
     }
   }
 
@@ -115,12 +126,12 @@ class CreatorNode {
     }, true, false)
   }
 
-  async uploadImage (file) {
-    return this._uploadFile(file, '/image_upload')
+  async uploadImage (file, onProgress) {
+    return this._uploadFile(file, '/image_upload', onProgress)
   }
 
-  async uploadTrackContent (file) {
-    return this._uploadFile(file, '/track_content')
+  async uploadTrackContent (file, onProgress) {
+    return this._uploadFile(file, '/track_content', onProgress)
   }
 
   /**
@@ -137,13 +148,30 @@ class CreatorNode {
     }, true, syncSecondaries)
   }
 
-  async uploadTrack (file, metadata) {
-    if (!this.userStateManager.getCurrentUserId()) {
-      throw new Error('No users loaded for this wallet')
+  async uploadTrack (trackFile, coverArtFile, metadata, onProgress) {
+    let loadedImageBytes = 0
+    let loadedTrackBytes = 0
+    let totalImageBytes = 0
+    let totalTrackBytes = 0
+    const onImageProgress = (loaded, total) => {
+      loadedImageBytes = loaded
+      if (!totalImageBytes) totalImageBytes += total
+      if (totalImageBytes && totalTrackBytes) {
+        onProgress(loadedImageBytes + loadedTrackBytes, totalImageBytes + totalTrackBytes)
+      }
     }
-    metadata.creator_id = this.userStateManager.getCurrentUserId()
-
-    const trackContentResp = await this.uploadTrackContent(file)
+    const onTrackProgress = (loaded, total) => {
+      loadedTrackBytes = loaded
+      if (!totalTrackBytes) totalTrackBytes += total
+      if (totalImageBytes && totalTrackBytes) {
+        onProgress(loadedImageBytes + loadedTrackBytes, totalImageBytes + totalTrackBytes)
+      }
+    }
+    const [trackContentResp, coverArtResp] = await Promise.all([
+      this.uploadTrackContent(trackFile, onTrackProgress),
+      this.uploadImage(coverArtFile, onImageProgress)
+    ])
+    metadata.cover_art = coverArtResp.image_file_multihash
     metadata.track_segments = trackContentResp.track_segments
 
     // Creates new track entity on creator node, making track's metadata available on IPFS
@@ -337,28 +365,35 @@ class CreatorNode {
    * Uploads a file to the connected creator node.
    * @param {File} file
    * @param {string} route route to handle upload (image_upload, track_upload, etc.)
+   * @param {?function} onProgress called with loaded bytes and total bytes
    */
-  async _uploadFile (file, route) {
+  async _uploadFile (file, route, onProgress = (loaded, total) => {}) {
     await this.ensureConnected()
 
     // form data is from browser, not imported npm module
     let fileData = new FormData()
     fileData.append('file', file)
 
-    // Make POST request
-    // TODO(roneilr): figure out why this._makeRequest does not work with formData
-    // return this._makeRequest(request)
     let headers = {}
     if (this.isServer) {
       headers = fileData.getHeaders()
     }
     headers['X-Session-ID'] = this.authToken
 
+    let total
     const resp = await axios.post(
       this.creatorNodeEndpoint + route,
       fileData,
-      { headers: headers }
+      {
+        headers: headers,
+        // Add a 10% inherit processing time for the file upload.
+        onUploadProgress: (progressEvent) => {
+          if (!total) total = progressEvent.total
+          onProgress(progressEvent.loaded, total)
+        }
+      }
     )
+    onProgress(total, total)
     return resp.data
   }
 }
