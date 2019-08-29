@@ -29,9 +29,9 @@ class Users extends Base {
    * await getUsers()
    * await getUsers(100, 0, [3,2,6]) - Invalid user ids will not be accepted
    */
-  async getUsers (limit = 100, offset = 0, idsArray = null, walletAddress = null, handle = null, isCreator = null) {
+  async getUsers (limit = 100, offset = 0, idsArray = null, walletAddress = null, handle = null, isCreator = null, minBlockNumber = null) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getUsers(limit, offset, idsArray, walletAddress, handle, isCreator)
+    return this.discoveryProvider.getUsers(limit, offset, idsArray, walletAddress, handle, isCreator, minBlockNumber)
   }
 
   /**

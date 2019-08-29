@@ -11,21 +11,18 @@ const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 
-const initIPFS = () => {
+const initIPFS = async () => {
   // connect to IPFS
   let ipfsAddr = config.get('ipfsHost')
+  logger.info(ipfsAddr)
   if (!ipfsAddr) {
     logger.error('Must set ipfsAddr')
     process.exit(1)
   }
 
   let ipfs = ipfsHttpClient(ipfsAddr, config.get('ipfsPort'))
-  ipfs.id(function (err, identity) {
-    if (err) {
-      throw err
-    }
-    logger.info(`Current IPFS Peer ID: ${JSON.stringify(identity)}`)
-  })
+  let identity = await ipfs.id()
+  logger.info(`Current IPFS Peer ID: ${JSON.stringify(identity)}`)
   return ipfs
 }
 
@@ -64,9 +61,10 @@ const initAudiusLibs = async () => {
 }
 
 const startApp = async () => {
-  const ipfs = initIPFS()
+  const ipfs = await initIPFS()
   await runDBMigrations()
   const audiusLibs = await initAudiusLibs()
+  console.log('Initialized audius libs')
 
   const appInfo = initializeApp(config.get('port'), ipfs)
 

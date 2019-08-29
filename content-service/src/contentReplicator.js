@@ -1,6 +1,8 @@
 const { logger } = require('./logging')
 const models = require('./models')
 
+const trackIdWindowSize = 5
+const userIdWindowSize = 5
 const ipfsRepoMaxUsagePercent = 90
 const config = require('./config')
 
@@ -8,7 +10,6 @@ class ContentReplicator {
   constructor (ipfsHandle, audiusLibs, pollInterval = 5) {
     this.ipfs = ipfsHandle
     this.audiusLibs = audiusLibs
-
     this.replicating = false
     this.interval = null
     this.pollInterval = pollInterval
@@ -16,7 +17,9 @@ class ContentReplicator {
 
   async start () {
     logger.info('Starting content replicator!')
-    this.interval = setInterval(() => this.replicate(), this.pollInterval * 1000)
+    this.interval = setInterval(
+      () => this.replicate(),
+      this.pollInterval * 1000)
     this.peerInterval = setInterval(() => this.refreshPeers(), this.pollInterval * 10 * 1000)
   }
 
@@ -25,10 +28,15 @@ class ContentReplicator {
     let start = Date.now()
     const file = await models.File.findOne({ where: { multihash: pinMultihash, trackId: pinTrackId } })
     if (!file) {
-      logger.info(`Pinning ${pinMultihash}`)
-      await this.ipfs.pin.add(pinMultihash)
+      logger.info(`TrackID ${pinTrackId} - Pinning ${pinMultihash}`)
+      try {
+        await this.ipfs.pin.add(pinMultihash)
+      } catch (e) {
+        logger.error(`Error pinning ${pinMultihash} - ${e}`)
+        throw e
+      }
       let duration = Date.now() - start
-      logger.info(`Pinned ${pinMultihash} in ${duration}ms`)
+      logger.info(`TrackID ${pinTrackId} - Pinned ${pinMultihash} in ${duration}ms`)
       await models.File.create({
         multihash: pinMultihash,
         trackId: pinTrackId
@@ -41,10 +49,10 @@ class ContentReplicator {
     let start = Date.now()
     const file = await models.File.findOne({ where: { multihash: pinMultihash, userId: pinUserId } })
     if (!file) {
-      logger.info(`Pinning ${pinMultihash}`)
+      logger.info(`UserID ${pinUserId} - Pinning ${pinMultihash}`)
       await this.ipfs.pin.add(pinMultihash)
       let duration = Date.now() - start
-      logger.info(`Pinned ${pinMultihash} in ${duration}ms`)
+      logger.info(`UserID ${pinUserId} - Pinned ${pinMultihash} in ${duration}ms`)
       await models.File.create({
         multihash: pinMultihash,
         userId: pinUserId
@@ -52,51 +60,114 @@ class ContentReplicator {
     }
   }
 
+  async queryHighestBlockNumber (type) {
+    let highestVal = await models.Block.max('blocknumber', { where: { 'type': type } })
+    if (Number.isNaN(highestVal)) {
+      highestVal = 0
+    }
+    return highestVal
+  }
+
   async replicate () {
     if (!this.replicating) {
       this.replicating = true
       try {
         let start = Date.now()
-        await this.monitorDiskUsage()
-        // TODO(hareeshn): sort users by blocknumber or other metric once enabled in disc prov
-        const users = await this.audiusLibs.discoveryProvider.getUsers()
-        const tracks = await this.audiusLibs.discoveryProvider.getTracks(100, 0, null, null, 'blocknumber:desc')
-        const pinPromises = []
+        // Retrieve stored highest block values for track and user
+        let currentTrackBlockNumber = await this.queryHighestBlockNumber('track')
+        let currentUserBlockNumber = await this.queryHighestBlockNumber('user')
 
-        tracks.forEach(track => {
-          if (track.track_segments) {
-            track.track_segments.forEach((segment) => {
-              if (segment.multihash) {
-                pinPromises.push(this._replicateTrackMultihash(track.track_id, segment.multihash))
-              }
-            })
-          }
-          if (track.cover_art) {
-            pinPromises.push(this._replicateTrackMultihash(track.track_id, track.cover_art))
-          }
-          if (track.metadata_multihash) {
-            pinPromises.push(this._replicateTrackMultihash(track.track_id, track.metadata_multihash))
-          }
-        })
+        // Query track and user with blocknumber ascending
+        // Sets the minimum blocknumber as the current highest blocknumber
+        // Limit the number of results to configured window - by default this is set to 5
+        const tracks = await this.audiusLibs.Track.getTracks(
+          trackIdWindowSize,
+          0,
+          null,
+          null,
+          'blocknumber:asc',
+          currentTrackBlockNumber + 1)
 
-        users.forEach(user => {
-          if (user.profile_picture) {
-            pinPromises.push(this._replicateUserMultihash(user.user_id, user.profile_picture))
-          }
-          if (user.cover_photo) {
-            pinPromises.push(this._replicateUserMultihash(user.user_id, user.cover_photo))
-          }
-        })
+        let users = await this.audiusLibs.User.getUsers(
+          userIdWindowSize,
+          0,
+          null,
+          null,
+          null,
+          null,
+          currentUserBlockNumber + 1)
 
-        let numSegments = pinPromises.length
-        logger.info(`Replicating ${numSegments} segments`)
-        await Promise.all(pinPromises)
+        let numMultihashes = 0
+
+        // For each track and user, pin any associatd multihash
+        // This includes track segments, cover photos, profile pictures, and metadata
+        // Any record that has a higher block number is stored in the Blocks table for subsequent discovery provider queries
+        await Promise.all(
+          tracks.map(async (track) => {
+            const blocknumber = parseInt(track.blocknumber)
+            const trackPinPromises = []
+            if (track.track_segments) {
+              track.track_segments.forEach((segment) => {
+                if (segment.multihash) {
+                  trackPinPromises.push(this._replicateTrackMultihash(track.track_id, segment.multihash, true))
+                  numMultihashes++
+                }
+              })
+            }
+            if (track.cover_art) {
+              trackPinPromises.push(this._replicateTrackMultihash(track.track_id, track.cover_art, true))
+              numMultihashes++
+            }
+            if (track.metadata_multihash) {
+              trackPinPromises.push(this._replicateTrackMultihash(track.track_id, track.metadata_multihash, true))
+              numMultihashes++
+            }
+            await Promise.all(trackPinPromises)
+            let currentHighestTrackBlock = await this.queryHighestBlockNumber('track')
+            if (blocknumber > currentHighestTrackBlock) {
+              await models.Block.create({
+                blocknumber: blocknumber,
+                type: 'track'
+              })
+            }
+          }),
+          users.map(async (user) => {
+            const blocknumber = parseInt(user.blocknumber)
+            let currentHighestUserBlock = await this.queryHighestBlockNumber('user')
+            const userPinPromises = []
+            if (user.profile_picture) {
+              userPinPromises.push(this._replicateUserMultihash(user.user_id, user.profile_picture))
+              numMultihashes++
+            }
+            if (user.cover_photo) {
+              userPinPromises.push(this._replicateUserMultihash(user.user_id, user.cover_photo))
+              numMultihashes++
+            }
+            if (user.metadata_multihash) {
+              userPinPromises.push(this._replicateUserMultihash(user.user_id, user.metadata_multihash))
+              numMultihashes++
+            }
+            await Promise.all(userPinPromises)
+            if (blocknumber > currentHighestUserBlock) {
+              await models.Block.create({
+                blocknumber: blocknumber,
+                type: 'user'
+              })
+            }
+          })
+        )
+
         let end = Date.now()
         let duration = end - start
-        logger.info(`Replication complete. ${numSegments} segments in ${duration}ms`)
+        logger.info(`Replication complete. ${numMultihashes} multihashes in ${duration}ms`)
+      } catch (e) {
+        logger.error(`ERROR IN ALL`)
+        logger.error(e)
       } finally {
         // if this does not get reset we will become stuck
         this.replicating = false
+        // Query information and cleanup maximum usage of ipfs repo
+        await this.monitorDiskUsage()
       }
     } else {
       logger.info('Replicator job already in progress. Waiting for next interval.')

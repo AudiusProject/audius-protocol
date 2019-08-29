@@ -1,31 +1,27 @@
 'use strict'
 
 module.exports = (sequelize, DataTypes) => {
-  const File = sequelize.define('File', {
+  const Block = sequelize.define('Block', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       allowNull: false
     },
-    multihash: {
-      type: DataTypes.TEXT,
-      allowNull: true
-    },
-    trackId: {
+    blocknumber: {
       type: DataTypes.BIGINT,
-      allowNull: true,
+      allowNull: false,
       index: true
     },
-    userId: {
-      type: DataTypes.BIGINT,
-      allowNull: true,
+    type: {
+      type: DataTypes.ENUM('track', 'user'),
+      allowNull: false,
       index: true
     }
   }, {})
 
-  File.associate = function (models) {
+  Block.associate = function (models) {
   }
 
-  return File
+  return Block
 }

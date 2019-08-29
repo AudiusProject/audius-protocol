@@ -24,9 +24,9 @@ class Tracks extends Base {
    * await getTracks()
    * await getTracks(100, 0, [3,2,6]) - Invalid track ids will not be accepted
    */
-  async getTracks (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null) {
+  async getTracks (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null, minBlockNumber = null) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getTracks(limit, offset, idsArray, targetUserId, sort)
+    return this.discoveryProvider.getTracks(limit, offset, idsArray, targetUserId, sort, minBlockNumber)
   }
 
   /**
