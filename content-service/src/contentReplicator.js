@@ -73,15 +73,20 @@ class ContentReplicator {
       this.replicating = true
       try {
         let start = Date.now()
+        // Retrieve stored highest block values for track and user
         let currentTrackBlockNumber = await this.queryHighestBlockNumber('track')
         let currentUserBlockNumber = await this.queryHighestBlockNumber('user')
-        const tracks = (await this.audiusLibs.Track.getTracks(
+
+        // Query track and user with blocknumber ascending
+        // Sets the minimum blocknumber as the current highest blocknumber
+        // Limit the number of results to configured window - by default this is set to 5
+        const tracks = await this.audiusLibs.Track.getTracks(
           trackIdWindowSize,
           0,
           null,
           null,
           'blocknumber:asc',
-          currentTrackBlockNumber + 1))
+          currentTrackBlockNumber + 1)
 
         let users = await this.audiusLibs.User.getUsers(
           userIdWindowSize,
@@ -94,6 +99,9 @@ class ContentReplicator {
 
         let numMultihashes = 0
 
+        // For each track and user, pin any associatd multihash
+        // This includes track segments, cover photos, profile pictures, and metadata
+        // Any record that has a higher block number is stored in the Blocks table for subsequent discovery provider queries
         await Promise.all(
           tracks.map(async (track) => {
             const blocknumber = parseInt(track.blocknumber)
@@ -139,6 +147,7 @@ class ContentReplicator {
               userPinPromises.push(this._replicateUserMultihash(user.user_id, user.metadata_multihash))
               numMultihashes++
             }
+            await Promise.all(userPinPromises)
             if (blocknumber > currentHighestUserBlock) {
               await models.Block.create({
                 blocknumber: blocknumber,
@@ -157,6 +166,7 @@ class ContentReplicator {
       } finally {
         // if this does not get reset we will become stuck
         this.replicating = false
+        // Query information and cleanup maximum usage of ipfs repo
         await this.monitorDiskUsage()
       }
     } else {
