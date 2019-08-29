@@ -7,7 +7,6 @@ module.exports = function (app) {
   app.get('/health_check', handleResponse(async (req, res) => {
     // for now we just check db connectivity. In future, this could / should check other
     // things (ex. IPFS)
-    await sequelize.query('SELECT 1', { type: sequelize.QueryTypes.SELECT })
 
     // log out PG stats
     const pgStatDatabase = (await sequelize.query('SELECT "datname", "numbackends" from "pg_stat_database"'))[0]

@@ -133,7 +133,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
   }
 
   // Write file to disk.
-  const storagePath = path.join(req.app.get('storagePath'), '/' + multihash)
+  const storagePath = path.join(req.app.get('storagePath'), multihash)
   assert.strictEqual(storagePath, expectedStoragePath)
   req.logger.info(`writing file to ${storagePath}...`)
   await writeFile(storagePath, fileBuffer)
