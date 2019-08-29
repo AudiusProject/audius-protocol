@@ -36,7 +36,6 @@ module.exports = function (app) {
         resizeImage(req, imageBufferOriginal, 480, true),
         resizeImage(req, imageBufferOriginal, 150, true)
       ])
-      
       imageBuffers = [imageBuffer1000x1000, imageBuffer480x480, imageBuffer150x150, imageBufferOriginal]
 
       // Add directory with all images to IPFS
@@ -45,12 +44,13 @@ module.exports = function (app) {
         { path: path.join(req.file.originalname, '480x480.jpg'), content: imageBuffer480x480 },
         { path: path.join(req.file.originalname, '150x150.jpg'), content: imageBuffer150x150 },
         { path: path.join(req.file.originalname, 'original.jpg'), content: imageBufferOriginal }
-      ], { pin: true }
-      )
+      ], { pin: true })
     } else if (req.body.square === 'false') {
       // Resize image to desired resolutions
-      const imageBuffer2000x = await resizeImage(req, imageBufferOriginal, 2000, false)
-      const imageBuffer640x = await resizeImage(req, imageBufferOriginal, 640, false)
+      const [imageBuffer2000x, imageBuffer640x] = await Promise.all([
+        resizeImage(req, imageBufferOriginal, 2000, false),
+        resizeImage(req, imageBufferOriginal, 640, false)
+      ])
       imageBuffers = [imageBuffer2000x, imageBuffer640x, imageBufferOriginal]
 
       // Add directory with all images to IPFS
@@ -58,8 +58,7 @@ module.exports = function (app) {
         { path: path.join(req.file.originalname, '2000x.jpg'), content: imageBuffer2000x },
         { path: path.join(req.file.originalname, '640x.jpg'), content: imageBuffer640x },
         { path: path.join(req.file.originalname, 'original.jpg'), content: imageBufferOriginal }
-      ], { pin: true }
-      )
+      ], { pin: true })
     } else { return errorResponseBadRequest('Must provide square boolean param in request body') }
     req.logger.info('ipfs add resp', ipfsAddResp)
 
@@ -95,15 +94,13 @@ module.exports = function (app) {
       await writeFile(destPath, imageBuffers[i])
 
       // Save file reference to DB
-      const dbResp = await models.File.findOrCreate({ where:
-        {
-          cnodeUserUUID: req.userId,
-          multihash: fileResp.hash,
-          sourceFile: fileResp.path,
-          storagePath: destPath,
-          type: 'image'
-        }
-      })
+      const dbResp = await models.File.findOrCreate({ where: {
+        cnodeUserUUID: req.userId,
+        multihash: fileResp.hash,
+        sourceFile: fileResp.path,
+        storagePath: destPath,
+        type: 'image'
+      }})
       const file = dbResp[0].dataValues
       req.logger.info('Added file', fileResp, file)
     }
