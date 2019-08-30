@@ -6,6 +6,10 @@ const versionInfo = require('../../.version.json')
 module.exports = function (app) {
   /** @dev TODO - Explore checking more than just DB (ex. IPFS) */
   app.get('/health_check', handleResponse(async (req, res) => {
+    return successResponse({ 'healthy': true, 'GIT_SHA': process.env.GIT_SHA })
+  }))
+
+  app.get('/db_check', handleResponse(async (req, res) => {
     let numConnections = 0
     let connectionInfo = null
 
