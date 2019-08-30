@@ -4,11 +4,29 @@ const config = require('../config.js')
 const versionInfo = require('../../.version.json')
 
 module.exports = function (app) {
+  /** @dev TODO - Explore checking more than just DB (ex. IPFS) */
   app.get('/health_check', handleResponse(async (req, res) => {
-    // for now we just check db connectivity. In future, this could / should check other
-    // things (ex. IPFS)
-    await sequelize.query('SELECT 1', { type: sequelize.QueryTypes.SELECT })
-    return successResponse({ 'healthy': true, 'GIT_SHA': process.env.GIT_SHA })
+    let numConnections = 0
+    let connectionInfo = null
+
+    let numConnectionsQuery = await sequelize.query("SELECT numbackends from pg_stat_database where datname = 'audius_creator_node'")
+    if (numConnectionsQuery && numConnectionsQuery[0] && numConnectionsQuery[0][0] && numConnectionsQuery[0][0].numbackends) {
+      numConnections = numConnectionsQuery[0][0].numbackends
+    }
+
+    let connectionInfoQuery = (await sequelize.query("select datname, usename, application_name, client_addr, wait_event_type, wait_event, state, query, backend_type from pg_stat_activity where datname = 'audius_creator_node'"))
+    if (connectionInfoQuery && connectionInfoQuery[0]) {
+      connectionInfo = connectionInfoQuery[0]
+    }
+    req.logger.info('numConnections', numConnections)
+    req.logger.info('connectionInfo', connectionInfo)
+
+    return successResponse({
+      'healthy': true,
+      'GIT_SHA': process.env.GIT_SHA,
+      numConnections,
+      connectionInfo
+    })
   }))
 
   app.get('/version', handleResponse(async (req, res) => {
