@@ -6,8 +6,6 @@ const versionInfo = require('../../.version.json')
 module.exports = function (app) {
   /** @dev TODO - Explore checking more than just DB (ex. IPFS) */
   app.get('/health_check', handleResponse(async (req, res) => {
-    // for now we just check db connectivity. In future, this could / should check other
-    // things (ex. IPFS)
     return successResponse({ 'healthy': true, 'GIT_SHA': process.env.GIT_SHA })
   }))
 
