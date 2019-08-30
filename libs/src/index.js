@@ -9,6 +9,7 @@ const DiscoveryProvider = require('./services/discoveryProvider/index')
 const AudiusABIDecoder = require('./services/ABIDecoder/index')
 const UserStateManager = require('./userStateManager')
 const Utils = require('./utils')
+const SanityChecks = require('./sanityChecks')
 
 const Account = require('./api/account')
 const User = require('./api/user')
@@ -267,3 +268,4 @@ module.exports = AudiusLibs
 
 module.exports.AudiusABIDecoder = AudiusABIDecoder
 module.exports.Utils = Utils
+module.exports.SanityChecks = SanityChecks
