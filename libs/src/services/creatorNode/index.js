@@ -116,8 +116,7 @@ class CreatorNode {
   }
 
   async uploadImage (file, square = true) {
-    const resp = await this._uploadFile(file, '/image_upload', square)
-    console.log('CNODE | uploadimage', resp.dirCID)
+    const resp = await this._uploadFile(file, '/image_upload', { 'square': square })
     return resp
   }
 
@@ -339,14 +338,17 @@ class CreatorNode {
    * Uploads a file to the connected creator node.
    * @param {File} file
    * @param {string} route route to handle upload (image_upload, track_upload, etc.)
+   * @param {Object<string, any>} extraFormDataOptions extra FormData fields passed to the upload
    */
-  async _uploadFile (file, route, square = null) {
+  async _uploadFile (file, route, extraFormDataOptions = {}) {
     await this.ensureConnected()
 
     // form data is from browser, not imported npm module
     let formData = new FormData()
     formData.append('file', file)
-    if (square) formData.append('square', square)
+    Object.keys(extraFormDataOptions).forEach(key => {
+      formData.append(key, extraFormDataOptions[key])
+    })
 
     // TODO: figure out why this._makeRequest does not work with formData
     let headers = {}

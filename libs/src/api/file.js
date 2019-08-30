@@ -65,7 +65,6 @@ class File extends Base {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(file)
     const resp = await this.creatorNode.uploadImage(file, square)
-    console.log('FILE upload image resp', resp)
     return resp
   }
 }

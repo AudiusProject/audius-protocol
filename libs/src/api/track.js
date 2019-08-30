@@ -123,7 +123,6 @@ class Tracks extends Base {
     }
     metadata.owner_id = ownerId
     this._validateTrackMetadata(metadata)
-    console.log('track cover art', metadata.cover_art_sizes)
 
     const trackId = metadata.track_id
     let resp = await this.creatorNode.updateTrack(trackId, metadata)
