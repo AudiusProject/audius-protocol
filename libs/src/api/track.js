@@ -199,7 +199,7 @@ class Tracks extends Base {
       'owner_id',
       'title',
       'length',
-      'cover_art',
+      'cover_art_sizes',
       'tags',
       'genre',
       'mood',

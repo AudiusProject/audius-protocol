@@ -17,7 +17,7 @@ def test_ipfs(app):
     ipfsclient = IPFSClient(ipfs_peer_host, ipfs_peer_port, [])
 
     remove_test_file(json_file)
-    api = ipfshttpclient.connect(ipfs_peer_host, ipfs_peer_port)
+    api = ipfshttpclient.connect(f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http")
 
     # Create generic metadata object w/above IPFS multihash
     test_metadata_object = dict(track_metadata_format)

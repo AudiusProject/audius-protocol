@@ -124,6 +124,8 @@ def parse_track_event(
     # Just use block_timestamp as integer
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
 
+    ipfs = update_task.ipfs_client._api
+
     if event_type == track_event_types_lookup["new_track"]:
         track_record.created_at = block_datetime
 
@@ -144,12 +146,28 @@ def parse_track_event(
         track_record.is_delete = False
         track_metadata = update_task.ipfs_client.get_metadata(
             track_metadata_multihash,
-            track_metadata_format)
+            track_metadata_format
+        )
 
         track_record = populate_track_record_metadata(
             track_record,
-            track_metadata)
+            track_metadata
+        )
         track_record.metadata_multihash = track_metadata_multihash
+
+        # if cover_art CID is of a dir, store under _sizes field instead
+        if track_record.cover_art:
+            logger.warning(f"catting track cover_art {track_record.cover_art}")
+            try:
+                # attempt to cat single byte from CID to determine if dir or file
+                ipfs.cat(track_record.cover_art, 0, 1)
+            except Exception as e:  # pylint: disable=W0703
+                if "this dag node is a directory" in str(e):
+                    track_record.cover_art_sizes = track_record.cover_art
+                    track_record.cover_art = None
+                    logger.info('Successfully processed CID')
+                else:
+                    raise Exception(e)
 
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
@@ -169,12 +187,28 @@ def parse_track_event(
         track_record.is_delete = False
         track_metadata = update_task.ipfs_client.get_metadata(
             upd_track_metadata_multihash,
-            track_metadata_format)
+            track_metadata_format
+        )
 
         track_record = populate_track_record_metadata(
             track_record,
-            track_metadata)
+            track_metadata
+        )
         track_record.metadata_multihash = upd_track_metadata_multihash
+
+        # if cover_art CID is of a dir, store under _sizes field instead
+        if track_record.cover_art:
+            logger.warning(f"catting track cover_art {track_record.cover_art}")
+            try:
+                # attempt to cat single byte from CID to determine if dir or file
+                ipfs.cat(track_record.cover_art, 0, 1)
+            except Exception as e:  # pylint: disable=W0703
+                if "this dag node is a directory" in str(e):
+                    track_record.cover_art_sizes = track_record.cover_art
+                    track_record.cover_art = None
+                    logger.info('Successfully processed CID')
+                else:
+                    raise Exception(e)
 
     if event_type == track_event_types_lookup["delete_track"]:
         track_record.is_delete = True
@@ -194,6 +228,8 @@ def populate_track_record_metadata(track_record, track_metadata):
     track_record.title = track_metadata["title"]
     track_record.length = track_metadata["length"]
     track_record.cover_art = track_metadata["cover_art"]
+    if track_metadata["cover_art_sizes"]:
+        track_record.cover_art = track_metadata["cover_art_sizes"]
     track_record.tags = track_metadata["tags"]
     track_record.genre = track_metadata["genre"]
     track_record.mood = track_metadata["mood"]

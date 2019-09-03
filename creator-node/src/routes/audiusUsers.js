@@ -5,6 +5,7 @@ const authMiddleware = require('../authMiddleware')
 const nodeSyncMiddleware = require('../redis').nodeSyncMiddleware
 const { saveFileFromBuffer } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const { getFileUUIDForImageCID } = require('../utils')
 
 module.exports = function (app) {
   // create AudiusUser from provided metadata, and make metadata available to network
@@ -13,7 +14,7 @@ module.exports = function (app) {
     const metadataJSON = req.body
 
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
-    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer)
+    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
 
     const audiusUserObj = {
       cnodeUserUUID: req.userId,
@@ -22,7 +23,8 @@ module.exports = function (app) {
     }
 
     try {
-      const { coverArtFileUUID, profilePicFileUUID } = await _getFileIdForPictures(req, metadataJSON)
+      const coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_photo_sizes)
+      const profilePicFileUUID = await getFileUUIDForImageCID(req, metadataJSON.profile_picture_sizes)
       if (coverArtFileUUID) audiusUserObj.coverArtFileUUID = coverArtFileUUID
       if (profilePicFileUUID) audiusUserObj.profilePicFileUUID = profilePicFileUUID
     } catch (e) {
@@ -47,7 +49,7 @@ module.exports = function (app) {
       return errorResponseBadRequest('Invalid Audius user ID')
     }
 
-    // TODO(roneilr): validate that provided blockchain ID is indeed associated with
+    // TODO: validate that provided blockchain ID is indeed associated with
     // user wallet and metadata CID
     await audiusUser.update({
       blockchainId: blockchainId
@@ -71,7 +73,7 @@ module.exports = function (app) {
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
 
     // write to a new file so there's still a record of the old file
-    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer)
+    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
 
     // Update the file to the new fileId and write the metadata blob in the json field
     let updateObj = {
@@ -80,7 +82,8 @@ module.exports = function (app) {
     }
 
     try {
-      const { coverArtFileUUID, profilePicFileUUID } = await _getFileIdForPictures(req, metadataJSON)
+      const coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_photo_sizes)
+      const profilePicFileUUID = await getFileUUIDForImageCID(req, metadataJSON.profile_picture_sizes)
       if (coverArtFileUUID) updateObj.coverArtFileUUID = coverArtFileUUID
       if (profilePicFileUUID) updateObj.profilePicFileUUID = profilePicFileUUID
     } catch (e) {
@@ -91,40 +94,4 @@ module.exports = function (app) {
 
     return successResponse({ 'metadataMultihash': multihash })
   }))
-}
-
-async function _getFileIdForPictures (req, metadataJSON) {
-  let coverArtFileUUID = null
-  let profilePicFileUUID = null
-
-  const coverArtFileMultihash = metadataJSON.cover_photo
-  if (coverArtFileMultihash) { // assumes AudiusUser.coverArtFileUUID is an optional param
-    // ensure file exists for given multihash
-    const imageFile = await models.File.findOne({
-      where: {
-        multihash: coverArtFileMultihash,
-        cnodeUserUUID: req.userId
-      }
-    })
-    if (!imageFile) {
-      throw new Error(`No file found for provided multihash: ${coverArtFileMultihash}`)
-    }
-    coverArtFileUUID = imageFile.fileUUID
-  }
-  const profilePicFileMultihash = metadataJSON.profile_picture
-  if (profilePicFileMultihash) { // assumes AudiusUser.profilePicFileUUID is an optional param
-    // ensure file exists for given multihash
-    const imageFile = await models.File.findOne({
-      where: {
-        multihash: profilePicFileMultihash,
-        cnodeUserUUID: req.userId
-      }
-    })
-    if (!imageFile) {
-      throw new Error(`No file found for provided multihash: ${profilePicFileMultihash}`)
-    }
-    profilePicFileUUID = imageFile.fileUUID
-  }
-
-  return { coverArtFileUUID: coverArtFileUUID, profilePicFileUUID: profilePicFileUUID }
 }

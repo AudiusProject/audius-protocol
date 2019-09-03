@@ -166,17 +166,52 @@ def parse_user_event(
     )
 
     if metadata_overrides:
+        logger.warning(metadata_overrides)
         # metadata_overrides properties are defined in get_metadata_overrides_from_ipfs
         if metadata_overrides["profile_picture"]:
             user_record.profile_picture = metadata_overrides["profile_picture"]
+        if metadata_overrides["profile_picture_sizes"]:
+            user_record.profile_picture = metadata_overrides["profile_picture_sizes"]
         if metadata_overrides["cover_photo"]:
             user_record.cover_photo = metadata_overrides["cover_photo"]
+        if metadata_overrides["cover_photo_sizes"]:
+            user_record.cover_photo = metadata_overrides["cover_photo_sizes"]
         if metadata_overrides["bio"]:
             user_record.bio = metadata_overrides["bio"]
         if metadata_overrides["name"]:
             user_record.name = metadata_overrides["name"]
         if metadata_overrides["location"]:
             user_record.location = metadata_overrides["location"]
+
+    # if profile_picture CID is of a dir, store under _sizes field instead
+    if user_record.profile_picture:
+        ipfs = update_task.ipfs_client._api
+        logger.warning(f"catting user profile_picture {user_record.profile_picture}")
+        try:
+            # attempt to cat single byte from CID to determine if dir or file
+            ipfs.cat(user_record.profile_picture, 0, 1)
+        except Exception as e:  # pylint: disable=W0703
+            if "this dag node is a directory" in str(e):
+                user_record.profile_picture_sizes = user_record.profile_picture
+                user_record.profile_picture = None
+                logger.warning('Successfully processed CID')
+            else:
+                raise Exception(e)
+
+    # if cover_photo CID is of a dir, store under _sizes field instead
+    if user_record.cover_photo:
+        ipfs = update_task.ipfs_client._api
+        logger.warning(f"catting user over_photo {user_record.cover_photo}")
+        try:
+            # attempt to cat single byte from CID to determine if dir or file
+            ipfs.cat(user_record.cover_photo, 0, 1)
+        except Exception as e:  # pylint: disable=W0703
+            if "this dag node is a directory" in str(e):
+                user_record.cover_photo_sizes = user_record.cover_photo
+                user_record.cover_photo = None
+                logger.warning('Successfully processed CID')
+            else:
+                raise Exception(e)
 
     # Find out if a user is ready to query in the db. If they are, set the is_ready field
     user_record.is_ready = is_user_ready(user_record)
@@ -198,11 +233,9 @@ def is_user_ready(user_record):
 
 
 def get_metadata_overrides_from_ipfs(session, update_task, user_record):
-
     user_metadata = user_metadata_format
 
     if user_record.is_creator and user_record.metadata_multihash and user_record.handle:
-
         ipld_blacklist_entry = (
             session.query(BlacklistedIPLD)
             .filter(BlacklistedIPLD.ipld == user_record.metadata_multihash)
@@ -216,11 +249,13 @@ def get_metadata_overrides_from_ipfs(session, update_task, user_record):
         # Manually peer with user creator nodes
         update_ipfs_peers_from_user_endpoint(
             update_task,
-            user_record.creator_node_endpoint)
+            user_record.creator_node_endpoint
+        )
 
         user_metadata = update_task.ipfs_client.get_metadata(
             user_record.metadata_multihash,
-            user_metadata_format)
+            user_metadata_format
+        )
 
     return user_metadata
 

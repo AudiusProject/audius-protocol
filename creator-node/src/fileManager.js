@@ -9,8 +9,8 @@ const getUuid = require('uuid/v4')
 const config = require('./config')
 const models = require('./models')
 
-const maxAudioFileSize = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 1,000,000,000 bytes = 1GB
-const maxMemoryFileSize = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 100,000,000 bytes = 100MB
+const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 1,000,000,000 bytes = 1GB
+const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 100,000,000 bytes = 100MB
 
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
@@ -21,7 +21,7 @@ const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
  * @dev - only call this function when file is not already stored to disk
  *      - if it is, then use saveFileToIPFSFromFS()
  */
-async function saveFileFromBuffer (req, buffer) {
+async function saveFileFromBuffer (req, buffer, fileType) {
   // make sure user has authenticated before saving file
   if (!req.userId) {
     throw new Error('User must be authenticated to save a file')
@@ -39,16 +39,15 @@ async function saveFileFromBuffer (req, buffer) {
   await ipfs.pin.add(multihash)
 
   // add reference to file to database
-  let file = await models.File.findOrCreate({ where:
+  const file = (await models.File.findOrCreate({ where:
     {
       cnodeUserUUID: req.userId,
       multihash: multihash,
       sourceFile: req.fileName,
-      storagePath: dstPath
+      storagePath: dstPath,
+      type: fileType
     }
-  })
-
-  file = file[0].dataValues
+  }))[0].dataValues
 
   req.logger.info('\nAdded file:', multihash, 'file id', file.fileUUID)
   return { multihash: multihash, fileUUID: file.fileUUID }
@@ -60,7 +59,7 @@ async function saveFileFromBuffer (req, buffer) {
  * - Re-save file to disk under multihash.
  * - Save reference to file in DB.
  */
-async function saveFileToIPFSFromFS (req, srcPath) {
+async function saveFileToIPFSFromFS (req, srcPath, fileType) {
   // make sure user has authenticated before saving file
   if (!req.userId) throw new Error('User must be authenticated to save a file')
 
@@ -81,7 +80,8 @@ async function saveFileToIPFSFromFS (req, srcPath) {
       cnodeUserUUID: req.userId,
       multihash: multihash,
       sourceFile: req.fileName,
-      storagePath: dstPath
+      storagePath: dstPath,
+      type: fileType
     }
   }))[0].dataValues
 
@@ -195,7 +195,7 @@ function removeTrackFolder (req, fileDir) {
 // Simple in-memory storage for metadata/generic files
 const memoryStorage = multer.memoryStorage()
 const upload = multer({
-  limits: { fileSize: maxMemoryFileSize },
+  limits: { fileSize: MAX_MEMORY_FILE_SIZE },
   storage: memoryStorage
 })
 
@@ -223,9 +223,7 @@ const trackDiskStorage = multer.diskStorage({
 
 const trackFileUpload = multer({
   storage: trackDiskStorage,
-  limits: {
-    fileSize: maxAudioFileSize
-  },
+  limits: { fileSize: MAX_AUDIO_FILE_SIZE },
   fileFilter: function (req, file, cb) {
     // the function should call `cb` with a boolean to indicate if the file should be accepted
     if (ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(getFileExtension(file.originalname).slice(1)) && AUDIO_MIME_TYPE_REGEX.test(file.mimetype)) {

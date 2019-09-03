@@ -113,17 +113,18 @@ class Users extends Base {
    * @param {?File} profilePictureFile an optional file to upload as the profile picture
    * @param {?File} coverPhotoFile an optional file to upload as the cover phtoo
    * @param {Object} metadata to update
-   * @returns {Object} the passed in metadata object with profile_picture and cover_phtoo fields added
+   * @returns {Object} the passed in metadata object with profile_picture and cover_photo fields added
    */
   async uploadProfileImages (profilePictureFile, coverPhotoFile, metadata) {
     if (profilePictureFile) {
-      const resp = await this.creatorNode.uploadImage(profilePictureFile)
-      metadata.profile_picture = resp.image_file_multihash
+      const resp = await this.creatorNode.uploadImage(profilePictureFile, true)
+      metadata.profile_picture_sizes = resp.dirCID
     }
     if (coverPhotoFile) {
-      const resp = await this.creatorNode.uploadImage(profilePictureFile)
-      metadata.profile_picture = resp.image_file_multihash
+      const resp = await this.creatorNode.uploadImage(coverPhotoFile, false)
+      metadata.cover_photo_sizes = resp.dirCID
     }
+    console.log('upload profile images', metadata)
     return metadata
   }
 
@@ -323,6 +324,8 @@ class Users extends Base {
   async _addUserOperations (userId, metadata) {
     let addOps = []
 
+    console.log('_addUserOperations', metadata)
+
     if (metadata['name']) {
       addOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata['name']))
     }
@@ -332,16 +335,16 @@ class Users extends Base {
     if (metadata['bio']) {
       addOps.push(this.contracts.UserFactoryClient.updateBio(userId, metadata['bio']))
     }
-    if (metadata['profile_picture']) {
+    if (metadata['profile_picture_sizes']) {
       addOps.push(this.contracts.UserFactoryClient.updateProfilePhoto(
         userId,
-        Utils.decodeMultihash(metadata['profile_picture']).digest
+        Utils.decodeMultihash(metadata['profile_picture_sizes']).digest
       ))
     }
-    if (metadata['cover_photo']) {
+    if (metadata['cover_photo_sizes']) {
       addOps.push(this.contracts.UserFactoryClient.updateCoverPhoto(
         userId,
-        Utils.decodeMultihash(metadata['cover_photo']).digest
+        Utils.decodeMultihash(metadata['cover_photo_sizes']).digest
       ))
     }
     if (metadata['is_creator']) {
@@ -359,6 +362,8 @@ class Users extends Base {
   async _updateUserOperations (metadata, currentMetadata, userId) {
     let updateOps = []
 
+    console.log('update user operations', metadata)
+
     // Compare the existing metadata with the new values and conditionally
     // perform update operations
     for (const key in metadata) {
@@ -375,16 +380,16 @@ class Users extends Base {
         if (key === 'location') {
           updateOps.push(this.contracts.UserFactoryClient.updateLocation(userId, metadata['location']))
         }
-        if (key === 'profile_picture') {
+        if (key === 'profile_picture_sizes') {
           updateOps.push(this.contracts.UserFactoryClient.updateProfilePhoto(
             userId,
-            Utils.decodeMultihash(metadata['profile_picture']).digest
+            Utils.decodeMultihash(metadata['profile_picture_sizes']).digest
           ))
         }
-        if (key === 'cover_photo') {
+        if (key === 'cover_photo_sizes') {
           updateOps.push(this.contracts.UserFactoryClient.updateCoverPhoto(
             userId,
-            Utils.decodeMultihash(metadata['cover_photo']).digest
+            Utils.decodeMultihash(metadata['cover_photo_sizes']).digest
           ))
         }
         if (key === 'creator_node_endpoint') {
@@ -402,8 +407,8 @@ class Users extends Base {
       'is_verified',
       'name',
       'handle',
-      'profile_picture',
-      'cover_photo',
+      'profile_picture_sizes',
+      'cover_photo_sizes',
       'bio',
       'location',
       'creator_node_endpoint'

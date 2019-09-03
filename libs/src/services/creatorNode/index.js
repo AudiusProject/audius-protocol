@@ -115,8 +115,9 @@ class CreatorNode {
     }, true, false)
   }
 
-  async uploadImage (file) {
-    return this._uploadFile(file, '/image_upload')
+  async uploadImage (file, square = true) {
+    const resp = await this._uploadFile(file, '/image_upload', { 'square': square })
+    return resp
   }
 
   async uploadTrackContent (file) {
@@ -337,26 +338,28 @@ class CreatorNode {
    * Uploads a file to the connected creator node.
    * @param {File} file
    * @param {string} route route to handle upload (image_upload, track_upload, etc.)
+   * @param {Object<string, any>} extraFormDataOptions extra FormData fields passed to the upload
    */
-  async _uploadFile (file, route) {
+  async _uploadFile (file, route, extraFormDataOptions = {}) {
     await this.ensureConnected()
 
     // form data is from browser, not imported npm module
-    let fileData = new FormData()
-    fileData.append('file', file)
+    let formData = new FormData()
+    formData.append('file', file)
+    Object.keys(extraFormDataOptions).forEach(key => {
+      formData.append(key, extraFormDataOptions[key])
+    })
 
-    // Make POST request
-    // TODO(roneilr): figure out why this._makeRequest does not work with formData
-    // return this._makeRequest(request)
+    // TODO: figure out why this._makeRequest does not work with formData
     let headers = {}
     if (this.isServer) {
-      headers = fileData.getHeaders()
+      headers = formData.getHeaders()
     }
     headers['X-Session-ID'] = this.authToken
 
     const resp = await axios.post(
       this.creatorNodeEndpoint + route,
-      fileData,
+      formData,
       { headers: headers }
     )
     return resp.data

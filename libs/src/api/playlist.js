@@ -127,10 +127,10 @@ class Playlists extends Base {
   async updatePlaylistCoverPhoto (playlistId, fileData) {
     this.REQUIRES(Services.CREATOR_NODE)
 
-    let updatedPlaylistImage = await this.creatorNode.uploadImage(fileData)
+    let updatedPlaylistImage = await this.creatorNode.uploadImage(fileData, true)
     return this.contracts.PlaylistFactoryClient.updatePlaylistCoverPhoto(
       playlistId,
-      Utils.formatOptionalMultihash(updatedPlaylistImage['image_file_multihash']))
+      Utils.formatOptionalMultihash(updatedPlaylistImage.dirCID))
   }
 
   /**

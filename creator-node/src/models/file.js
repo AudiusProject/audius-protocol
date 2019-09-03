@@ -30,6 +30,13 @@ module.exports = (sequelize, DataTypes) => {
     storagePath: { // format: '/file_storage/__multihash__
       type: DataTypes.TEXT,
       allowNull: false
+    },
+    type: {
+      type: DataTypes.STRING(16),
+      allowNull: true,
+      validate: {
+        isIn: [['track', 'metadata', 'image', 'dir']]
+      }
     }
   }, {})
 

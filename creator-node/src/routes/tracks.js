@@ -9,6 +9,7 @@ const authMiddleware = require('../authMiddleware')
 const nodeSyncMiddleware = require('../redis').nodeSyncMiddleware
 const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
+const { getFileUUIDForImageCID } = require('../utils')
 
 module.exports = function (app) {
   /**
@@ -38,7 +39,7 @@ module.exports = function (app) {
     let durationProms = []
     for (let filePath of segmentFilePaths) {
       const absolutePath = path.join(req.fileDir, 'segments', filePath)
-      const saveFileProm = saveFileToIPFSFromFS(req, absolutePath)
+      const saveFileProm = saveFileToIPFSFromFS(req, absolutePath, 'track')
       const durationProm = ffprobe.getTrackDuration(absolutePath)
       saveFileProms.push(saveFileProm)
       durationProms.push(durationProm)
@@ -76,7 +77,6 @@ module.exports = function (app) {
 
     // get single file per multihash or error if DNE
     let segmentFiles = []
-    // for-await-of syntax from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of
     for await (const segment of metadataJSON.track_segments) {
       // TODO[SS] error check
       //  - check if properties exist, if right format, if valid multihash, if valid duration
@@ -96,7 +96,7 @@ module.exports = function (app) {
 
     // store metadata multihash
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
-    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer)
+    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
 
     // build track object for db storage
     const trackObj = {
@@ -105,27 +105,19 @@ module.exports = function (app) {
       metadataJSON: metadataJSON
     }
 
-    const coverArtFileMultihash = metadataJSON.cover_art
-    if (coverArtFileMultihash) { // assumes Track.coverArtFileId is an optional param
-      // ensure file exists for given multihash
-      const imageFile = await models.File.findOne({
-        where: {
-          multihash: coverArtFileMultihash,
-          cnodeUserUUID: req.userId
-        }
-      })
-      if (!imageFile) {
-        return errorResponseBadRequest(`No file found for provided multihash: ${coverArtFileMultihash}`)
-      }
-      trackObj.coverArtFileId = imageFile.id
+    // get file UUID for track cover art CID from metadata
+    try {
+      const coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_art_sizes)
+      if (coverArtFileUUID) trackObj.coverArtFileUUID = coverArtFileUUID
+    } catch (e) {
+      return errorResponseBadRequest(e.message)
     }
 
     const track = await models.Track.create(trackObj)
     console.log('track uuid', track.trackUUID)
+
     // associate matching segmentFiles from above with newly created track
-    // models.Track.addFile() is an auto-generated function from sequelize oneToMany association
     for await (const file of segmentFiles) {
-      // await track.addFile(file)
       file.trackUUID = track.trackUUID
       await file.save()
     }
@@ -181,30 +173,21 @@ module.exports = function (app) {
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
 
     // write to a new file so there's still a record of the old file
-    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer)
-
-    const coverArtFileMultihash = metadataJSON.cover_art
-    let coverArtFileUUID = null
-    if (coverArtFileMultihash) { // assumes Track.coverArtFileUUID is an optional param
-      // ensure file exists for given multihash
-      const imageFile = await models.File.findOne({
-        where: {
-          multihash: coverArtFileMultihash,
-          cnodeUserUUID: req.userId
-        }
-      })
-      if (!imageFile) {
-        return errorResponseBadRequest(`No file found for provided multihash: ${coverArtFileMultihash}`)
-      }
-      coverArtFileUUID = imageFile.fileUUID
-    }
+    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
 
     // Update the file to the new fileId and write the metadata blob in the json field
     let updateObj = {
       metadataJSON: metadataJSON,
-      metadataFileId: fileUUID
+      metadataFileUUID: fileUUID
     }
-    if (coverArtFileUUID) updateObj.coverArtFileUUID = coverArtFileUUID
+
+    // get file UUID for track cover art CID from metadata
+    try {
+      const coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_art_sizes)
+      if (coverArtFileUUID) updateObj.coverArtFileUUID = coverArtFileUUID
+    } catch (e) {
+      return errorResponseBadRequest(e.message)
+    }
 
     await track.update(updateObj)
 

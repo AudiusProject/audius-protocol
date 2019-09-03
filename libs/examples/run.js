@@ -252,7 +252,7 @@ async function addCreator (audius, handle) {
   try {
     const fileStream = fs.createReadStream(imageFilePath)
     const multihashObj = await audius.creatorNode.uploadImage(fileStream)
-    multihash = multihashObj.image_file_multihash
+    multihash = multihashObj.dirCID
     console.log(`uploaded image with path ${imageFilePath} and multihash ${multihash}`)
   } catch (e) {
     console.log('upload image failed')

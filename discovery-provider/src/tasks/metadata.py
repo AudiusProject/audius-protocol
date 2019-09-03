@@ -4,6 +4,7 @@ track_metadata_format = {
     "title": None,
     "length": 0,
     "cover_art": None,
+    "cover_art_sizes": None,
     "tags": None,
     "genre": None,
     "mood": None,
@@ -21,7 +22,9 @@ track_metadata_format = {
 # Required format for user metadata retrieved from IPFS
 user_metadata_format = {
     "profile_picture": None,
+    "profile_picture_sizes": None,
     "cover_photo": None,
+    "cover_photo_sizes": None,
     "bio": None,
     "name": None,
     "location": None
