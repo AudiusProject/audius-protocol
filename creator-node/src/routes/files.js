@@ -23,7 +23,7 @@ module.exports = function (app) {
     if (!req.body.square) return errorResponseBadRequest('Must provide square boolean param in request body')
 
     let routestart = Date.now()
-    
+
     const ipfs = req.app.get('ipfsAPI')
     const imageBufferOriginal = req.file.buffer
     let imageBuffers
@@ -94,13 +94,15 @@ module.exports = function (app) {
       await writeFile(destPath, imageBuffers[i])
 
       // Save file reference to DB
-      const dbResp = await models.File.findOrCreate({ where: {
-        cnodeUserUUID: req.userId,
-        multihash: fileResp.hash,
-        sourceFile: fileResp.path,
-        storagePath: destPath,
-        type: 'image'
-      }})
+      const dbResp = await models.File.findOrCreate({ where:
+        {
+          cnodeUserUUID: req.userId,
+          multihash: fileResp.hash,
+          sourceFile: fileResp.path,
+          storagePath: destPath,
+          type: 'image'
+        }
+      })
       const file = dbResp[0].dataValues
       req.logger.info('Added file', fileResp, file)
     }
@@ -177,7 +179,7 @@ module.exports = function (app) {
     if (!queryResults) {
       return sendResponse(req, res, errorResponseNotFound(`No file found for provided dirCID: ${dirCID}`))
     }
-    
+
     // TODO - check if file with filename is also stored in CNODE
 
     const ipfsPath = `${dirCID}/${filename}`
