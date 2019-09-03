@@ -20,8 +20,9 @@ const resizeImage = require('../resizeImage')
 module.exports = function (app) {
   /** Store image in multiple-resolutions on disk + DB and make available via IPFS */
   app.post('/image_upload', authMiddleware, nodeSyncMiddleware, upload.single('file'), handleResponse(async (req, res) => {
-    if (!req.body.square) return errorResponseBadRequest('Must provide square boolean param in request body')
-
+    if (!req.body.square || !(req.body.square === 'true' || req.body.square === 'false')) {
+      return errorResponseBadRequest('Must provide square boolean param in request body')
+    }
     let routestart = Date.now()
 
     const ipfs = req.app.get('ipfsAPI')
@@ -29,86 +30,95 @@ module.exports = function (app) {
     let imageBuffers
     let ipfsAddResp
 
-    if (req.body.square === 'true') {
-      // Resize image to desired resolutions
-      const [imageBuffer1000x1000, imageBuffer480x480, imageBuffer150x150] = await Promise.all([
-        resizeImage(req, imageBufferOriginal, 1000, true),
-        resizeImage(req, imageBufferOriginal, 480, true),
-        resizeImage(req, imageBufferOriginal, 150, true)
-      ])
-      imageBuffers = [imageBuffer1000x1000, imageBuffer480x480, imageBuffer150x150, imageBufferOriginal]
-
-      // Add directory with all images to IPFS
-      ipfsAddResp = await ipfs.add([
-        { path: path.join(req.file.originalname, '1000x1000.jpg'), content: imageBuffer1000x1000 },
-        { path: path.join(req.file.originalname, '480x480.jpg'), content: imageBuffer480x480 },
-        { path: path.join(req.file.originalname, '150x150.jpg'), content: imageBuffer150x150 },
-        { path: path.join(req.file.originalname, 'original.jpg'), content: imageBufferOriginal }
-      ], { pin: true })
-    } else if (req.body.square === 'false') {
-      // Resize image to desired resolutions
-      const [imageBuffer2000x, imageBuffer640x] = await Promise.all([
-        resizeImage(req, imageBufferOriginal, 2000, false),
-        resizeImage(req, imageBufferOriginal, 640, false)
-      ])
-      imageBuffers = [imageBuffer2000x, imageBuffer640x, imageBufferOriginal]
-
-      // Add directory with all images to IPFS
-      ipfsAddResp = await ipfs.add([
-        { path: path.join(req.file.originalname, '2000x.jpg'), content: imageBuffer2000x },
-        { path: path.join(req.file.originalname, '640x.jpg'), content: imageBuffer640x },
-        { path: path.join(req.file.originalname, 'original.jpg'), content: imageBufferOriginal }
-      ], { pin: true })
-    } else { return errorResponseBadRequest('Must provide square boolean param in request body') }
-    req.logger.info('ipfs add resp', ipfsAddResp)
-
-    // Get dir CID (last entry in returned array)
-    const dirCID = ipfsAddResp[ipfsAddResp.length - 1].hash
-    req.logger.info('dirCID', dirCID)
-
-    // Create dir in fs, and store files under this dir
-    const dirDestPath = path.join(req.app.get('storagePath'), dirCID)
+    const t = await models.sequelize.transaction()
     try {
-      await mkdir(dirDestPath)
-    } catch (e) {
-      if (e.message.indexOf('already exists') < 0) throw e
-    }
+      if (req.body.square === 'true') {
+        // Resize image to desired resolutions
+        const [imageBuffer1000x1000, imageBuffer480x480, imageBuffer150x150] = await Promise.all([
+          resizeImage(req, imageBufferOriginal, 1000, true),
+          resizeImage(req, imageBufferOriginal, 480, true),
+          resizeImage(req, imageBufferOriginal, 150, true)
+        ])
+        imageBuffers = [imageBuffer1000x1000, imageBuffer480x480, imageBuffer150x150, imageBufferOriginal]
 
-    // Save dir file reference to DB
-    const dirDBResp = await models.File.findOrCreate({ where: {
-      cnodeUserUUID: req.userId,
-      multihash: dirCID,
-      sourceFile: null,
-      storagePath: dirDestPath,
-      type: 'dir'
-    } })
-    const dir = dirDBResp[0].dataValues
+        // Add directory with all images to IPFS
+        ipfsAddResp = await ipfs.add([
+          { path: path.join(req.file.originalname, '1000x1000.jpg'), content: imageBuffer1000x1000 },
+          { path: path.join(req.file.originalname, '480x480.jpg'), content: imageBuffer480x480 },
+          { path: path.join(req.file.originalname, '150x150.jpg'), content: imageBuffer150x150 },
+          { path: path.join(req.file.originalname, 'original.jpg'), content: imageBufferOriginal }
+        ], { pin: true })
+      } else /** req.body.square == 'false' */ {
+        // Resize image to desired resolutions
+        const [imageBuffer2000x, imageBuffer640x] = await Promise.all([
+          resizeImage(req, imageBufferOriginal, 2000, false),
+          resizeImage(req, imageBufferOriginal, 640, false)
+        ])
+        imageBuffers = [imageBuffer2000x, imageBuffer640x, imageBufferOriginal]
 
-    // Save each file to disk + DB
-    for (let i = 0; i < ipfsAddResp.length - 1; i++) {
-      const fileResp = ipfsAddResp[i]
-      req.logger.info('fileResp.hash', fileResp.hash)
+        // Add directory with all images to IPFS
+        ipfsAddResp = await ipfs.add([
+          { path: path.join(req.file.originalname, '2000x.jpg'), content: imageBuffer2000x },
+          { path: path.join(req.file.originalname, '640x.jpg'), content: imageBuffer640x },
+          { path: path.join(req.file.originalname, 'original.jpg'), content: imageBufferOriginal }
+        ], { pin: true })
+      }
+      req.logger.info('ipfs add resp', ipfsAddResp)
 
-      // Save file to disk
-      const destPath = path.join(req.app.get('storagePath'), dirCID, fileResp.hash)
-      await writeFile(destPath, imageBuffers[i])
+      // Get dir CID (last entry in returned array)
+      const dirCID = ipfsAddResp[ipfsAddResp.length - 1].hash
+      req.logger.info('dirCID', dirCID)
 
-      // Save file reference to DB
-      const dbResp = await models.File.findOrCreate({ where:
-        {
+      // Create dir in fs, and store files under this dir
+      const dirDestPath = path.join(req.app.get('storagePath'), dirCID)
+      try {
+        await mkdir(dirDestPath)
+      } catch (e) {
+        // if error = 'already exists', ignore else throw
+        if (e.message.indexOf('already exists') < 0) throw e
+      }
+
+      // Save dir file reference to DB
+      const dir = (await models.File.findOrCreate({ where: {
+        cnodeUserUUID: req.userId,
+        multihash: dirCID,
+        sourceFile: null,
+        storagePath: dirDestPath,
+        type: 'dir'
+      },
+      transaction: t }))[0].dataValues
+
+      // Save each file to disk + DB
+      const ipfsFileResps = ipfsAddResp.slice(0, ipfsAddResp.length - 1)
+      await Promise.all(ipfsFileResps.map(async (fileResp, i) => {
+        req.logger.info('file CID', fileResp.hash)
+
+        // Save file to disk
+        const destPath = path.join(req.app.get('storagePath'), dirCID, fileResp.hash)
+        await writeFile(destPath, imageBuffers[i])
+
+        // Save file reference to DB
+        const file = (await models.File.findOrCreate({ where: {
           cnodeUserUUID: req.userId,
           multihash: fileResp.hash,
           sourceFile: fileResp.path,
           storagePath: destPath,
           type: 'image'
-        }
-      })
-      const file = dbResp[0].dataValues
-      req.logger.info('Added file', fileResp, file)
+        },
+        transaction: t }))[0].dataValues
+
+        req.logger.info('Added file', fileResp, file)
+      }))
+
+      req.logger.info('Added all files for dir', dir)
+      req.logger.info(`route time = ${Date.now() - routestart}`)
+
+      await t.commit()
+      return successResponse({ dirCID })
+    } catch (e) {
+      await t.rollback()
+      return errorResponseServerError(e)
     }
-    req.logger.info('Added all files for dir', dir)
-    req.logger.info(`route time = ${Date.now() - routestart}`)
-    return successResponse({ dirCID })
   }))
 
   /** upload metadata to IPFS and save in Files table */
