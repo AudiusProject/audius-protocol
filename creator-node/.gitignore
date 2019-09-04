@@ -7,3 +7,4 @@ local-config.json
 node_modules/
 npm-debug.log
 local-test/
+eth-contract-config.json

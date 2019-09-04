@@ -168,6 +168,37 @@ const config = convict({
     format: String,
     env: 'delegatePrivateKey',
     default: null
+  },
+
+  ethProviderUrl: {
+    doc: 'eth provider url',
+    format: String,
+    env: 'ethProviderUrl',
+    default: null
+  },
+  ethNetworkId: {
+    doc: 'eth network id',
+    format: String,
+    env: 'ethNetworkId',
+    default: null
+  },
+  ethTokenAddress: {
+    doc: 'eth token address',
+    format: String,
+    env: 'ethTokenAddress',
+    default: null
+  },
+  ethRegistryAddress: {
+    doc: 'eth registry address',
+    format: String,
+    env: 'ethRegistryAddress',
+    default: null
+  },
+  ethOwnerWallet: {
+    doc: 'eth owner wallet',
+    format: String,
+    env: 'ethOwnerWallet',
+    default: null
   }
 
   // unsupported options at the moment
@@ -199,10 +230,14 @@ const config = convict({
 const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
 
-// the contract-config.json file is used to load registry address locally
-// during development
-const contractConfigExists = fs.existsSync('contract-config.json')
-if (contractConfigExists) config.loadFile('contract-config.json')
+if (fs.existsSync('eth-contract-config.json')) {
+  let ethContractConfig = require('../eth-contract-config.json')
+  config.load({
+    'ethTokenAddress': ethContractConfig.audiusTokenAddress,
+    'ethRegistryAddress': ethContractConfig.registryAddress,
+    'ethOwnerWallet': ethContractConfig.ownerWallet
+  })
+}
 
 // Perform validation and error any properties are not present on schema
 config.validate()

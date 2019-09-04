@@ -35,10 +35,11 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
-const initializeApp = (port, storageDir, s3Bucket, ipfsAPI) => {
+const initializeApp = (port, storageDir, s3Bucket, ipfsAPI, audiusLibs) => {
   app.set('ipfsAPI', ipfsAPI)
   app.set('storagePath', storageDir)
   app.set('redisClient', redisClient)
+  app.set('audiusLibs', audiusLibs)
 
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 
