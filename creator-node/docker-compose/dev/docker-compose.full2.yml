@@ -22,6 +22,8 @@ services:
     volumes:
       - file_storage2:/file_storage
       - '../..:/usr/src/app'
+      # Prevent hiding node_modules on container with host volume
+      - /usr/src/app/node_modules
   redis2:
     image: redis:5.0.4
     ports:

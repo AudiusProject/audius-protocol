@@ -169,6 +169,12 @@ const config = convict({
     env: 'delegatePrivateKey',
     default: null
   },
+  spOwnerWallet: {
+    doc: 'service provider owner wallet used for on-chain registration',
+    format: String,
+    env: 'spOwnerWallet',
+    default: null
+  },
 
   ethProviderUrl: {
     doc: 'eth provider url',

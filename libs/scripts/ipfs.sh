@@ -13,7 +13,7 @@ fi
 
 if [[ "$1" == 'up' ]]; then
   if [[ -z "$2" ]]; then
-  echo "Format - ./scripts/ipfs.sh up <serviceName> <apiPort> <swarmPort>"
+  echo "Format - ./scripts/ipfs.sh up <serviceName> <apiPort> <swarmPort> <gatewayPort (optional)>"
   exit 1
   else
     CONTAINER_NAME=$2
@@ -21,21 +21,28 @@ if [[ "$1" == 'up' ]]; then
 
   if [[ -z "$3" ]]; then
   echo "Using default apiPort - $API_PORT"
-  echo "Format - ./scripts/ipfs.sh up <serviceName> <apiPort> <swarmPort>"
+  echo "Format - ./scripts/ipfs.sh up <serviceName> <apiPort> <swarmPort> <gatewayPort (optional)>"
   else
     API_PORT=$3
   fi
 
   if [[ -z "$4" ]]; then
   echo "Using default swarmPort - $SWARM_PORT"
-  echo "Format - ./scripts/ipfs.sh up <serviceName> <apiPort> <swarmPort>"
+  echo "Format - ./scripts/ipfs.sh up <serviceName> <apiPort> <swarmPort> <gatewayPort (optional)>"
   else
     SWARM_PORT=$4
   fi
-  docker run -d --name $CONTAINER_NAME -p 127.0.0.1:$API_PORT:5001 -p 127.0.0.1:$SWARM_PORT:4001  ipfs/go-ipfs:release daemon
+
+  if [[ -z "$5" ]]; then
+    docker run -d --name $CONTAINER_NAME -p 127.0.0.1:$API_PORT:5001 -p 127.0.0.1:$SWARM_PORT:4001 ipfs/go-ipfs:release daemon
+  else
+    GATEWAY_PORT=$5
+    docker run -d --name $CONTAINER_NAME -p 127.0.0.1:$API_PORT:5001 -p 127.0.0.1:$SWARM_PORT:4001 -p 127.0.0.1:$GATEWAY_PORT:8080 ipfs/go-ipfs:release daemon
+  fi
+
 elif [[ "$1" == 'down' ]]; then
   if [[ -z "$2" ]]; then
-  echo "Format - ./scripts/ipfs.sh up <serviceName> <apiPort> <swarmPort>"
+  echo "Format - ./scripts/ipfs.sh up <serviceName> <apiPort> <swarmPort> <gatewayPort (optional)>"
   exit 1
   else
     CONTAINER_NAME=$2

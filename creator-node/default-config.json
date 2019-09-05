@@ -20,8 +20,10 @@
   "serviceLatitude": "",
   "serviceLongitude": "",
   "serviceCountry": "",
+
   "delegateOwnerWallet": "",
   "delegatePrivateKey": "",
+  "spOwnerWallet": "",
 
   "ethProviderUrl": "http://docker.for.mac.localhost:8546",
   "ethNetworkId": "",

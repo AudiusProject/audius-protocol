@@ -5,13 +5,17 @@ const { saveFileForMultihash } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError, errorResponseBadRequest } = require('../apiHelpers')
 const { getNodeSyncRedisKey } = require('../redis')
 
+const syncs = {}
+const DEBOUNCE_TIME = 5000 // 30s = 30,000ms
+
 module.exports = function (app) {
-  /** Exports all db data (not files) associated with walletPublicKey[] as JSON.
-   *  Returns IPFS node ID object, so importing nodes can peer manually for optimized file transfer.
-   *  @return {
-   *    cnodeUsers Map Object containing all db data keyed on cnodeUserUUID
-   *    ipfsIDObj Object containing IPFS Node's peer ID
-   *  }
+  /**
+   * Exports all db data (not files) associated with walletPublicKey[] as JSON.
+   * Returns IPFS node ID object, so importing nodes can peer manually for optimized file transfer.
+   * @return {
+   *  cnodeUsers Map Object containing all db data keyed on cnodeUserUUID
+   *  ipfsIDObj Object containing IPFS Node's peer ID
+   * }
    */
   app.get('/export', handleResponse(async (req, res) => {
     const walletPublicKeys = req.query.wallet_public_key // array
@@ -70,23 +74,61 @@ module.exports = function (app) {
    * of all user data, update DB state accordingly, fetch all files and make them available.
    */
   app.post('/sync', handleResponse(async (req, res) => {
-    const start = Date.now()
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
-
-    // ensure access to each wallet, then acquire it for sync.
-    const redisLock = req.app.get('redisClient').lock
-    // TODO - redisKey will be inacurrate when /sync is called with more than 1 walletPublicKey
-    let redisKey
-    for (let wallet of walletPublicKeys) {
-      redisKey = getNodeSyncRedisKey(wallet)
-      let lockHeld = await redisLock.getLock(redisKey)
-      if (lockHeld) {
-        return errorResponse(423, `Cannot change state of wallet ${wallet}. Node sync currently in progress.`)
+    const immediate = (req.body.immediate == true)
+    
+    if (!immediate) {
+      // Debounce nodeysnc op
+      for (let wallet of walletPublicKeys) {
+        if (wallet in syncs) {
+          clearTimeout(syncs[wallet])
+          req.logger.info('clear timeout for', wallet, 'time', Date.now())
+        }
+        syncs[wallet] = setTimeout(
+          async () => await _nodesync(req, [wallet], creatorNodeEndpoint),
+          DEBOUNCE_TIME
+        )
+        req.logger.info('set timeout for', wallet, 'time', Date.now())
       }
-      await redisLock.setLock(redisKey)
     }
+    else {
+      await _nodesync(req, walletPublicKeys, creatorNodeEndpoint)
+    }
+    return successResponse()
+  }))
 
+  /** Checks if node sync is in progress for wallet. */
+  app.get('/sync_status/:walletPublicKey', handleResponse(async (req, res) => {
+    const walletPublicKey = req.params.walletPublicKey
+    const redisLock = req.app.get('redisClient').lock
+    const redisKey = getNodeSyncRedisKey(walletPublicKey)
+    const lockHeld = await redisLock.getLock(redisKey)
+    if (lockHeld) {
+      return errorResponse(423, `Cannot change state of wallet ${walletPublicKey}. Node sync currently in progress.`)
+    }
+    return successResponse(`No sync in progress for wallet ${walletPublicKey}.`)
+  }))
+}
+
+async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
+  const start = Date.now()
+  req.logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
+
+  // ensure access to each wallet, then acquire it for sync.
+  const redisLock = req.app.get('redisClient').lock
+  // TODO - redisKey will be inaccurate when /sync is called with more than 1 walletPublicKey
+  let redisKey
+  for (let wallet of walletPublicKeys) {
+    redisKey = getNodeSyncRedisKey(wallet)
+    let lockHeld = await redisLock.getLock(redisKey)
+    if (lockHeld) {
+      throw new Error(`Cannot change state of wallet ${wallet}. Node sync currently in progress.`)
+    }
+    await redisLock.setLock(redisKey)
+  }
+  
+  try {
     // Fetch data export from creatorNodeEndpoint for given walletPublicKeys.
     const resp = await axios({
       method: 'get',
@@ -95,31 +137,31 @@ module.exports = function (app) {
       params: { wallet_public_key: walletPublicKeys },
       responseType: 'json'
     })
-    if (resp.status !== 200) return errorResponse(resp.status, resp.data['error'])
+    if (resp.status !== 200) throw new Error(resp.data['error'])
     if (!resp.data.hasOwnProperty('cnodeUsers')) {
-      return errorResponseBadRequest(`Malformed response from ${creatorNodeEndpoint}. "cnodeUsers" property not found on response object.`)
+      throw new Error(`Malformed response from ${creatorNodeEndpoint}. "cnodeUsers" property not found on response object.`)
     }
 
     // Attempt to connect directly to target CNode's IPFS node.
     if (resp.data.hasOwnProperty('ipfsIDObj') && resp.data.ipfsIDObj.hasOwnProperty('addresses')) {
       await _initBootstrapAndRefreshPeers(req, resp.data.ipfsIDObj.addresses, redisKey)
     } else {
-      return errorResponseBadRequest(`Malformed response from ${creatorNodeEndpoint}. Malformatted or missing "ipfsIDObj" property.`)
+      throw new Error(`Malformed response from ${creatorNodeEndpoint}. Malformatted or missing "ipfsIDObj" property.`)
     }
     req.logger.info(redisKey, 'IPFS Nodes connected + data export received')
 
     // For each CNodeUser, replace local DB state with retrieved data + fetch + save missing files.
     for (const fetchedCNodeUser of Object.values(resp.data.cnodeUsers)) {
-      const t = await models.sequelize.transaction()
+        const t = await models.sequelize.transaction()
 
       // Since different nodes may assign different cnodeUserUUIDs to a given walletPublicKey,
       // retrieve local cnodeUserUUID from fetched walletPublicKey and delete all associated data.
       if (!fetchedCNodeUser.hasOwnProperty('walletPublicKey')) {
-        return errorResponseBadRequest(`Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`)
+        throw new Error(`Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`)
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
-        return errorResponseBadRequest(`Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`)
+        throw new Error(`Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`)
       }
       const fetchedCnodeUserUUID = fetchedCNodeUser.cnodeUserUUID
 
@@ -159,7 +201,9 @@ module.exports = function (app) {
         req.logger.info(redisKey, `numNonTrackFilesDeleted ${numNonTrackFilesDeleted}`)
       }
 
-      /** Populate all new data for fetched cnodeUser. */
+      /*
+       * Populate all new data for fetched cnodeUser.
+       */
 
       req.logger.info(redisKey, `beginning add ops for cnodeUserUUID ${fetchedCnodeUserUUID}`)
 
@@ -235,31 +279,22 @@ module.exports = function (app) {
         await t.rollback()
         redisKey = getNodeSyncRedisKey(fetchedWalletPublicKey)
         await redisLock.removeLock(redisKey)
-        return errorResponseServerError(e)
+        throw new Error(e)
       }
     }
+  } catch (e) {
+    req.logger.error('Sync Error', e)
+  } finally {
     for (let wallet of walletPublicKeys) {
       let redisKey = getNodeSyncRedisKey(wallet)
       await redisLock.removeLock(redisKey)
+      delete(syncs[wallet])
     }
-    req.logger.info(`DURATION SYNC NEW ${Date.now() - start}`)
-    return successResponse({ duration: Date.now() - start })
-  }))
-
-  /** Checks if node sync is in progress for wallet. */
-  app.get('/sync_status/:walletPublicKey', handleResponse(async (req, res) => {
-    const walletPublicKey = req.params.walletPublicKey
-    const redisLock = req.app.get('redisClient').lock
-    const redisKey = getNodeSyncRedisKey(walletPublicKey)
-    const lockHeld = await redisLock.getLock(redisKey)
-    if (lockHeld) {
-      return errorResponse(423, `Cannot change state of wallet ${walletPublicKey}. Node sync currently in progress.`)
-    }
-    return successResponse(`No sync in progress for wallet ${walletPublicKey}.`)
-  }))
+    req.logger.info(`DURATION SYNC ${Date.now() - start}`)
+  }
 }
 
-/** Given array of target IPFS node's peer addresses, attempt to  */
+/** Given IPFS node peer addresses, add to bootstrap peers list and manually connect. */
 async function _initBootstrapAndRefreshPeers (req, targetIPFSPeerAddresses, redisKey) {
   req.logger.info(redisKey, 'Initializing Bootstrap Peers:')
   const ipfs = req.app.get('ipfsAPI')
@@ -267,7 +302,7 @@ async function _initBootstrapAndRefreshPeers (req, targetIPFSPeerAddresses, redi
   // Get own IPFS node's peer addresses
   const ipfsID = await ipfs.id()
   if (!ipfsID.hasOwnProperty('addresses')) {
-    return errorResponseServerError('failed to retrieve ipfs node addresses')
+    throw new Error('failed to retrieve ipfs node addresses')
   }
   const ipfsPeerAddresses = ipfsID.addresses
 
