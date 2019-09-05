@@ -150,12 +150,10 @@ def search_tags():
     )
 
     users = helpers.query_result_to_list(users)
-    logger.warning(track_ids)
     # preserve order from track_ids above
     tracks = [next(t for t in tracks if t["track_id"] == track_id) for track_id in track_ids]
     # preserve order from user_ids above
     users = [next(u for u in users if u["user_id"] == user_id) for user_id in user_ids]
-
     resp = {}
     resp['tracks'] = tracks
     resp['users'] = users
