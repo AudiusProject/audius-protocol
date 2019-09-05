@@ -278,6 +278,9 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
     for cnode_url in cnode_entries:
         if cnode_url == '':
             continue
-        multiaddr = get_ipfs_info_from_cnode_endpoint(cnode_url)
-        update_task.ipfs_client.connect_peer(multiaddr)
-        redis.set(cnode_url, multiaddr, interval)
+        try:
+            multiaddr = get_ipfs_info_from_cnode_endpoint(cnode_url)
+            update_task.ipfs_client.connect_peer(multiaddr)
+            redis.set(cnode_url, multiaddr, interval)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.warning(f"Error retrieving info for {cnode_url}, {e}")
