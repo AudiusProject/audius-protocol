@@ -263,10 +263,10 @@ def get_ipfs_info_from_cnode_endpoint(url):
     id_url = urljoin(url, 'ipfs_peer_info')
     resp = requests.get(id_url, timeout=5)
     json_resp = resp.json()
-    ipfs_multiaddr_entries = json_resp['addresses']
-    for multiaddr in ipfs_multiaddr_entries:
-        if ('127.0.0.1' not in multiaddr) and ('ip6' not in multiaddr):
-            return multiaddr
+    if 'addresses' in json_resp and isinstance(json_resp['addresses'], list):
+        for multiaddr in json_resp['addresses']:
+            if ('127.0.0.1' not in multiaddr) and ('ip6' not in multiaddr):
+                return multiaddr
     raise Exception('Failed to find valid multiaddr')
 
 def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
