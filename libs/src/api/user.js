@@ -241,40 +241,42 @@ class Users extends Base {
    * This creates a record for that user on the connected creator node.
    * @param {Object} metadata
    */
-  async upgradeToCreator (metadata) {
+  async upgradeToCreator () {
     this.REQUIRES(Services.CREATOR_NODE)
-    this.IS_OBJECT(metadata)
 
-    const oldMetadata = { ...metadata }
-    this._validateUserMetadata(oldMetadata)
-
-    // for now, we only support one user per creator node / libs instance
     const user = this.userStateManager.getCurrentUser()
-    if (!user || user.is_creator) {
+    if (!user) {
       throw new Error('No current user or existing user is already a creator')
     }
+    // No-op if the user is already a creator.
+    // Consider them a creator iff they have is_creator=true AND a creator node endpoint
+    if (user.is_creator && user.creator_node_endpoint) return
+
+    const oldMetadata = { ...user }
+    this._validateUserMetadata(oldMetadata)
 
     oldMetadata.wallet = this.web3Manager.getWalletAddress()
 
     const newMetadata = { ...oldMetadata }
     newMetadata.is_creator = true
-    if (oldMetadata.creator_node_endpoint) {
-      // Force the new primary creator node to sync from the currently connected node.
-      // TODO: The currently connected node here should be a USER-ONLY node.
-      const newPrimaryCreatorNode = CreatorNodeService.getPrimary(oldMetadata.creator_node_endpoint)
-      if (newPrimaryCreatorNode !== this.creatorNode.getEndpoint()) {
-        // await this.creatorNode.forceSync(newPrimaryCreatorNode)
-        await this.creatorNode.setEndpoint(newPrimaryCreatorNode)
-      }
-      // Don't create the creator with an endpoint set, but rather update it once created.
-      // Note: The updateUserOperations only sends transactions with the diff between
-      // metadata and newMetadata, so unsetting creator_node_endpoint here is required.
-      newMetadata.creator_node_endpoint = oldMetadata.creator_node_endpoint
-      oldMetadata.creator_node_endpoint = null
-    } else {
-      // Fallback to the connected creatornode if unset.
-      newMetadata.creator_node_endpoint = this.creatorNode.getEndpoint()
-    }
+    newMetadata.creator_node_endpoint = this.creatorNode.getEndpoint()
+    // if (oldMetadata.creator_node_endpoint) {
+    // Force the new primary creator node to sync from the currently connected node.
+    // TODO: The currently connected node here should be a USER-ONLY node.
+    // const newPrimaryCreatorNode = CreatorNodeService.getPrimary(oldMetadata.creator_node_endpoint)
+    // if (newPrimaryCreatorNode !== this.creatorNode.getEndpoint()) {
+    //   // await this.creatorNode.forceSync(newPrimaryCreatorNode)
+    //   await this.creatorNode.setEndpoint(newPrimaryCreatorNode)
+    // }
+    // Don't create the creator with an endpoint set, but rather update it once created.
+    // Note: The updateUserOperations only sends transactions with the diff between
+    // metadata and newMetadata, so unsetting creator_node_endpoint here is required.
+    //   newMetadata.creator_node_endpoint = oldMetadata.creator_node_endpoint
+    //   oldMetadata.creator_node_endpoint = null
+    // } else {
+    //   // Fallback to the connected creatornode if unset.
+    //   newMetadata.creator_node_endpoint = this.creatorNode.getEndpoint()
+    // }
 
     // add creator on creatorNode
     const resp = await this.creatorNode.addCreator(newMetadata)
@@ -290,6 +292,32 @@ class Users extends Base {
     await this.creatorNode.associateAudiusUser(nodeUserId, userId, false)
     return userId
   }
+
+  // async upgradeToCreator () {
+  //   this.REQUIRES(Services.CREATOR_NODE)
+
+  //   const user = this.userStateManager.getCurrentUser()
+  //   // No-op if the user is already a creator.
+  //   // Consider them a creator iff they have is_creator=true AND a creator node endpoint
+  //   if (user.is_creator && user.creator_node_endpoint) return
+
+  //   if (user.creator_node_endpoint) {
+  //     const primary = CreatorNodeService.getPrimary(user.creator_node_endpoint)
+  //     const newMetadata = { ...user }
+  //     newMetadata.is_creator = true
+
+  //     if (primary !== this.creatorNode.getEndpoint()) {
+  //       await this.creatorNode.forceSync(primary)
+  //       await this.creatorNode.setEndpoint(primary)
+  //     }
+
+  //   } else {
+      
+  //   }
+  //   // console.log(user)
+
+  //   await Promise.race([])
+  // }
 
   /**
    * Updates a user on whether they are verified on Audius

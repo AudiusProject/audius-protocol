@@ -1,7 +1,13 @@
 const { Base, Services } = require('./base')
+const CreatorNodeService = require('../services/creatorNode/index')
 const Utils = require('../utils')
 
 class Tracks extends Base {
+  constructor (userApi, ...services) {
+    super(...services)
+
+    this.User = userApi
+  }
   /* ------- GETTERS ------- */
 
   /**
@@ -80,29 +86,47 @@ class Tracks extends Base {
    * @param {File} fileData ReadableStream from server, or File handle on client
    * @param {Object} metadata json of the track metadata with all fields, missing fields will error
    */
-  async uploadTrack (file, metadata) {
+  async uploadTrack (
+    trackFile,
+    coverArtFile,
+    metadata,
+    onProgress
+  ) {
     this.REQUIRES(Services.CREATOR_NODE)
-    this.FILE_IS_VALID(file)
+    this.FILE_IS_VALID(trackFile)
+    this.FILE_IS_VALID(coverArtFile)
     this.IS_OBJECT(metadata)
 
-    const ownerId = this.userStateManager.getCurrentUserId()
-    if (!ownerId) {
+    const owner = this.userStateManager.getCurrentUser()
+    if (!owner.user_id) {
       throw new Error('No users loaded for this wallet')
     }
-    metadata.owner_id = ownerId
+
+    metadata.owner_id = owner.user_id
     this._validateTrackMetadata(metadata)
 
-    // upload track/multihash to creator node, get back metadata multihash
-    const resp = await this.creatorNode.uploadTrack(file, metadata)
-    const multihashDecoded = Utils.decodeMultihash(resp.metadataMultihash)
+    const all = await Promise.all([
+      // Upgrade this user to a creator if they are not one.
+      this.User.upgradeToCreator(),
+      // upload track/multihash to creator node, get back metadata multihash
+      this.creatorNode.uploadTrack(
+        trackFile,
+        coverArtFile,
+        metadata,
+        onProgress
+      )
+    ])
+    const uploadTrackResp = all[1]
+    const multihashDecoded = Utils.decodeMultihash(uploadTrackResp.metadataMultihash)
+
     // write multihash to blockchain
     const trackId = await this.contracts.TrackFactoryClient.addTrack(
-      ownerId,
+      owner.user_id,
       multihashDecoded.digest,
       multihashDecoded.hashFn,
       multihashDecoded.size
     )
-    await this.creatorNode.associateTrack(resp.id, trackId)
+    await this.creatorNode.associateTrack(uploadTrackResp.id, trackId)
     return trackId
   }
 
