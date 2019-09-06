@@ -16,6 +16,11 @@ module.exports = (sequelize, DataTypes) => {
     lastLogin: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    latestBlockNumber: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: -1
     }
   }, {})
 

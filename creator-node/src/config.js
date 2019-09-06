@@ -169,12 +169,6 @@ const config = convict({
     env: 'delegatePrivateKey',
     default: null
   },
-  spOwnerWallet: {
-    doc: 'service provider owner wallet used for on-chain registration',
-    format: String,
-    env: 'spOwnerWallet',
-    default: null
-  },
 
   ethProviderUrl: {
     doc: 'eth provider url',
@@ -204,6 +198,18 @@ const config = convict({
     doc: 'eth owner wallet',
     format: String,
     env: 'ethOwnerWallet',
+    default: null
+  },
+  ethWallets: {
+    doc: 'all unlocked accounts from eth chain',
+    format: Array,
+    env: 'ethWallets',
+    default: null
+  },
+  spOwnerWalletIndex: {
+    doc: 'Index in ethWallets array of service owner wallet',
+    format: Number,
+    env: 'spOwnerWalletIndex',
     default: null
   }
 
@@ -241,7 +247,8 @@ if (fs.existsSync('eth-contract-config.json')) {
   config.load({
     'ethTokenAddress': ethContractConfig.audiusTokenAddress,
     'ethRegistryAddress': ethContractConfig.registryAddress,
-    'ethOwnerWallet': ethContractConfig.ownerWallet
+    'ethOwnerWallet': ethContractConfig.ownerWallet,
+    'ethWallets': ethContractConfig.allWallets
   })
 }
 

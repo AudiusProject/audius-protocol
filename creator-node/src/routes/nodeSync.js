@@ -77,7 +77,7 @@ module.exports = function (app) {
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
     const immediate = (req.body.immediate == true)
-    
+
     if (!immediate) {
       // Debounce nodeysnc op
       for (let wallet of walletPublicKeys) {
@@ -91,8 +91,7 @@ module.exports = function (app) {
         )
         req.logger.info('set timeout for', wallet, 'time', Date.now())
       }
-    }
-    else {
+    } else {
       await _nodesync(req, walletPublicKeys, creatorNodeEndpoint)
     }
     return successResponse()
@@ -127,7 +126,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
     }
     await redisLock.setLock(redisKey)
   }
-  
+
   try {
     // Fetch data export from creatorNodeEndpoint for given walletPublicKeys.
     const resp = await axios({
@@ -152,7 +151,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
 
     // For each CNodeUser, replace local DB state with retrieved data + fetch + save missing files.
     for (const fetchedCNodeUser of Object.values(resp.data.cnodeUsers)) {
-        const t = await models.sequelize.transaction()
+      const t = await models.sequelize.transaction()
 
       // Since different nodes may assign different cnodeUserUUIDs to a given walletPublicKey,
       // retrieve local cnodeUserUUID from fetched walletPublicKey and delete all associated data.
@@ -289,7 +288,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
     for (let wallet of walletPublicKeys) {
       let redisKey = getNodeSyncRedisKey(wallet)
       await redisLock.removeLock(redisKey)
-      delete(syncs[wallet])
+      delete (syncs[wallet])
     }
     req.logger.info(`DURATION SYNC ${Date.now() - start}`)
   }

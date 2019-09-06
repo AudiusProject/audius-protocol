@@ -62,6 +62,7 @@ const outputJsonConfigFile = async (outputFilePath) => {
     outputDictionary['audiusTokenAddress'] = audiusToken.address
     outputDictionary['registryAddress'] = registry.address
     outputDictionary['ownerWallet'] = await getDefaultAccount()
+    outputDictionary['allWallets'] = await web3.eth.getAccounts()
 
     fs.writeFile(outputFilePath, JSON.stringify(outputDictionary), (err) => {
       if(err != null){

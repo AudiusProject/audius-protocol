@@ -53,7 +53,7 @@ async function postMiddleware (req, res, next) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
   const [primary, ...secondaries] = creatorNodeEndpoints
-  
+
   // error if self is not primary
   if (serviceEndpoint !== primary) {
     return sendResponse(req, res, errorResponseUnauthorized('this node is not primary for user'))
@@ -81,8 +81,16 @@ async function postMiddleware (req, res, next) {
 /** Retrieves current FQDN registered on-chain with node's owner wallet. */
 async function _getOwnEndpoint (req) {
   const libs = req.app.get('audiusLibs')
+
+  if (!config.get('ethWallets') || !config.get('spOwnerWalletIndex') || !config.get('ethWallets').isArray() || config.get('ethWallets').length <= config.get('spOwnerWalletIndex')) {
+    throw new Error('bad')
+  }
+
+  // const ethWallets = config.get('ethWallets')
+  // const spOwnerWalletIndex = config.get('spOwnerWalletIndex')
+
   const spInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress(
-    config.get('spOwnerWallet'),
+    config.get('ethWallets')[config.get('spOwnerWalletIndex')],
     'creator-node'
   )
   // confirm on-chain endpoint exists and is valid FQDN
