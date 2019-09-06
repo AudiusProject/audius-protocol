@@ -530,14 +530,25 @@ def get_track_play_counts(track_ids):
     index = 0
     for track_id in track_ids:
         key = key_str.format(index)
-        logger.warning(key)
         index += 1
         querystring[key] = str(track_id)
     identity_tracks_endpoint = urljoin(identity_url, 'tracks/listens')
-    logger.warning(querystring)
-    logger.warning(identity_tracks_endpoint)
     resp = requests.get(identity_tracks_endpoint, params=querystring)
-    logger.warning(resp.json())
+    json_resp = resp.json()
+    keys = list(resp.json().keys())
+
+    if len(keys) != 1:
+        raise Exception('Invalid number of keys')
+
+    date_key = keys[0]
+    listen_count_json = json_resp[date_key]
+    logger.warning(date_key)
+    track_listen_counts = {}
+    if 'listenCounts' in listen_count_json:
+        for listen_info in listen_count_json['listenCounts']:
+            current_id = listen_info['trackId']
+            track_listen_counts[current_id] = listen_info['listens']
+    return track_listen_counts
 
 def get_pagination_vars():
     limit = min(

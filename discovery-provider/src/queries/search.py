@@ -170,10 +170,15 @@ def search_tags():
     followee_sorted_users = \
         sorted(users, key=lambda i: i[response_name_constants.follower_count], reverse=True)
 
-    # preserve order from user_ids above
-    users = [next(u for u in users if u["user_id"] == user_id) for user_id in user_ids]
+    for track in tracks:
+        track_id = track["track_id"]
+        track[response_name_constants.play_count] = track_play_counts.get(track_id, 0)
+
+    play_count_sorted_tracks = \
+        sorted(tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
+
     resp = {}
-    resp['tracks'] = tracks
+    resp['tracks'] = play_count_sorted_tracks
     resp['users'] = followee_sorted_users
     return api_helpers.success_response(resp)
 
