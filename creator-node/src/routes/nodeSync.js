@@ -285,6 +285,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
   } catch (e) {
     req.logger.error('Sync Error', e)
   } finally {
+    // Release all redis locks
     for (let wallet of walletPublicKeys) {
       let redisKey = getNodeSyncRedisKey(wallet)
       await redisLock.removeLock(redisKey)

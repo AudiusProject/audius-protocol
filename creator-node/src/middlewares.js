@@ -4,7 +4,6 @@ const { sendResponse, errorResponseUnauthorized, errorResponseServerError } = re
 const config = require('./config')
 
 /** Only allow writes if node is primary for wallet */
- // TODO - check discprov health_check b/c creator node is long running and discprov may be out of date
 async function preMiddleware (req, res, next) {
   if (!req.session || !req.session.wallet) {
     return sendResponse(req, res, errorResponseUnauthorized('User must be logged in'))

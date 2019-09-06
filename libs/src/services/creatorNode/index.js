@@ -302,7 +302,7 @@ class CreatorNode {
     const resp = await axios(axiosRequestObj)
     if (resp.status === 200) {
       // Sync the secondaries, but don't block on it
-      if (syncSecondaries) this._syncSecondaries()
+      // if (syncSecondaries) this._syncSecondaries()
       return resp.data
     } else {
       throw new Error(`Server returned error: ${resp.status.toString()} ${resp.data['error']}`)

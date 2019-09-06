@@ -10,6 +10,7 @@ const nodeSyncMiddleware = require('../redis').nodeSyncMiddleware
 const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
+const { preMiddleware, postMiddleware } = require('../middlewares')
 
 module.exports = function (app) {
   /**
@@ -17,7 +18,7 @@ module.exports = function (app) {
    * @dev - currently stores each segment twice, once under random file UUID & once under IPFS multihash
    *      - this should be addressed eventually
    */
-  app.post('/track_content', authMiddleware, nodeSyncMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
+  app.post('/track_content', authMiddleware, preMiddleware, nodeSyncMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
     if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
 
     // create and save track file segments to disk
@@ -58,11 +59,12 @@ module.exports = function (app) {
     return successResponse({ 'track_segments': trackSegments })
   }))
 
-  /** given track metadata object, create track and share track metadata with network
-    * - return on success: temporary ID of track
-    * - return on failure: error if linked segments have not already been created via POST /track_content
-    */
-  app.post('/tracks', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
+  /**
+   * given track metadata object, create track and share track metadata with network
+   * - return on success: temporary ID of track
+   * - return on failure: error if linked segments have not already been created via POST /track_content
+   */
+  app.post('/tracks', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
     // TODO - input validation
     const metadataJSON = req.body
 
@@ -126,7 +128,7 @@ module.exports = function (app) {
   }))
 
   /** provide track id returned from blockchain to end track creation process */
-  app.post('/tracks/associate/:id', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
+  app.post('/tracks/associate/:id', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
     const trackUUID = req.params.id
     const blockchainId = req.body.blockchainTrackId
     const cnodeUserUUID = req.userId
@@ -147,7 +149,7 @@ module.exports = function (app) {
     })
 
     return successResponse()
-  }))
+  }), postMiddleware)
 
   app.get('/tracks', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
     const tracks = await models.Track.findAll({
@@ -160,7 +162,7 @@ module.exports = function (app) {
   }))
 
   // update a track
-  app.put('/tracks/:blockchainId', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
+  app.put('/tracks/:blockchainId', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
     const blockchainId = req.params.blockchainId
     const cnodeUserUUID = req.userId
 
@@ -192,5 +194,5 @@ module.exports = function (app) {
     await track.update(updateObj)
 
     return successResponse({ 'metadataMultihash': multihash })
-  }))
+  }), postMiddleware)
 }
