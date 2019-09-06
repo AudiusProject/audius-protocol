@@ -57,9 +57,7 @@ def search_tags():
             (
                 select
                     strip(to_tsvector(tracks.tags)) as tagstrip,
-                    tags,
-                    track_id,
-                    owner_id
+                    track_id
                 from
                     tracks
                 where
@@ -113,7 +111,6 @@ def search_tags():
             "like_tags_query":like_tags_str
         }
     ).fetchall()
-
     user_ids = session.execute(
         user_res,
         {
