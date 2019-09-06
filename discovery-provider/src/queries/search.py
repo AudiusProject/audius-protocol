@@ -40,6 +40,122 @@ def search_full():
 def search_autocomplete():
     return search(True)
 
+@bp.route("/search/tags", methods=("GET",))
+def search_tags():
+    logger.warning('search tags working')
+    search_str = request.args.get("query", type=str)
+    if not search_str:
+        raise exceptions.ArgumentError("Invalid value for parameter 'query'")
+    # (limit, offset) = get_pagination_vars()
+    like_tags_str = str.format('%{}%', search_str)
+    db = get_db()
+    with db.scoped_session() as session:
+        track_res = sqlalchemy.text(
+            f"""
+            select distinct(track_id)
+            from
+            (
+                select
+                    strip(to_tsvector(tracks.tags)) as tagstrip,
+                    track_id
+                from
+                    tracks
+                where
+                    (tags like :like_tags_query)
+                    and (is_current is true)
+                    and (is_delete is false)
+                order by
+                    updated_at desc
+            ) as t
+                where
+                tagstrip @@ to_tsquery(:query);
+            """
+        )
+        user_res = sqlalchemy.text(
+            f"""
+            select * from
+            (
+		select
+                    count(track_id),
+                    owner_id
+                from
+		(
+                    select
+                        strip(to_tsvector(tracks.tags)) as tagstrip,
+                        tags,
+                        track_id,
+                        owner_id
+                    from
+			tracks
+                    where
+                        (tags like :like_tags_query)
+			and (is_current is true)
+                    order by
+			updated_at desc
+                ) as t
+                where
+                        tagstrip @@ to_tsquery(:query)
+                group by
+                        owner_id
+                order by
+                        count desc
+            ) as tmp
+            where
+                tmp.count > 1;
+            """
+        )
+    track_ids = session.execute(
+        track_res,
+        {
+            "query":search_str,
+            "like_tags_query":like_tags_str
+        }
+    ).fetchall()
+    user_ids = session.execute(
+        user_res,
+        {
+            "query":search_str,
+            "like_tags_query":like_tags_str
+        }
+    ).fetchall()
+
+    # track_ids is list of tuples - simplify to 1-D list
+    track_ids = [i[0] for i in track_ids]
+
+    # user_ids is list of tuples - simplify to 1-D list
+    user_ids = [i[1] for i in user_ids]
+
+    tracks = (
+        session.query(Track)
+        .filter(
+            Track.is_current == True,
+            Track.is_delete == False,
+            Track.track_id.in_(track_ids),
+        )
+        .all()
+    )
+    tracks = helpers.query_result_to_list(tracks)
+
+    users = (
+        session.query(User)
+        .filter(
+            User.is_current == True,
+            User.is_ready == True,
+            User.user_id.in_(user_ids)
+        )
+        .all()
+    )
+
+    users = helpers.query_result_to_list(users)
+    # preserve order from track_ids above
+    tracks = [next(t for t in tracks if t["track_id"] == track_id) for track_id in track_ids]
+    # preserve order from user_ids above
+    users = [next(u for u in users if u["user_id"] == user_id) for user_id in user_ids]
+    resp = {}
+    resp['tracks'] = tracks
+    resp['users'] = users
+    return api_helpers.success_response(resp)
+
 # SEARCH QUERIES
 # We chose to use the raw SQL instead of SQLAlchemy because we're pushing SQLAlchemy to it's
 # limit to do this query by creating new wrappers for pg functions that do not exist like
