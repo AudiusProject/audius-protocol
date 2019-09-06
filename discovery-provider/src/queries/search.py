@@ -6,12 +6,13 @@ from flask import Blueprint, request
 from src import api_helpers, exceptions
 from src.models import User, Track, RepostType, Playlist, SaveType
 from src.utils import helpers
+from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from src.queries import response_name_constants
 
 from src.queries.query_helpers import get_current_user_id, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_pagination_vars, \
-    get_followee_count_dict
+    get_followee_count_dict, get_track_play_counts
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("search_queries", __name__)
@@ -129,6 +130,7 @@ def search_tags():
 
     # track_ids is list of tuples - simplify to 1-D list
     track_ids = [i[0] for i in track_ids]
+    logger.warning(track_ids)
 
     # user_ids is list of tuples - simplify to 1-D list
     user_ids = [i[1] for i in user_ids]
@@ -145,6 +147,8 @@ def search_tags():
         .all()
     )
     tracks = helpers.query_result_to_list(tracks)
+
+    track_play_counts = get_track_play_counts(track_ids)
 
     users = (
         session.query(User)

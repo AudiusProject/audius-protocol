@@ -1,5 +1,7 @@
 import logging # pylint: disable=C0302
+import requests
 from sqlalchemy import func, desc
+from urllib.parse import urljoin
 
 from flask import request
 
@@ -7,6 +9,7 @@ from src import exceptions
 from src.queries import response_name_constants
 from src.models import Track, Repost, RepostType, Follow, Playlist, Save, SaveType
 from src.utils import helpers
+from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
 
@@ -519,6 +522,22 @@ def get_followee_count_dict(session, user_ids):
     followee_count_dict = {user_id: followee_count for (user_id, followee_count) in followee_counts}
     return followee_count_dict
 
+def get_track_play_counts(track_ids):
+    identity_url = shared_config['discprov']['identity_service_url']
+    logger.warning(identity_url)
+    querystring = {}
+    key_str = "id[{}]"
+    index = 0
+    for track_id in track_ids:
+        key = key_str.format(index)
+        logger.warning(key)
+        index += 1
+        querystring[key] = str(track_id)
+    identity_tracks_endpoint = urljoin(identity_url, 'tracks/listens')
+    logger.warning(querystring)
+    logger.warning(identity_tracks_endpoint)
+    resp = requests.get(identity_tracks_endpoint, params=querystring)
+    logger.warning(resp.json())
 
 def get_pagination_vars():
     limit = min(
