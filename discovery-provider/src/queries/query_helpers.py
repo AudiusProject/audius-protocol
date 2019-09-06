@@ -501,6 +501,25 @@ def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_id
     return save_counts_query.all()
 
 
+def get_followee_count_dict(session, user_ids):
+    # build dict of user id --> followee count
+    followee_counts = (
+        session.query(
+            Follow.follower_user_id,
+            func.count(Follow.follower_user_id)
+        )
+        .filter(
+            Follow.is_current == True,
+            Follow.is_delete == False,
+            Follow.follower_user_id.in_(user_ids)
+        )
+        .group_by(Follow.follower_user_id)
+        .all()
+    )
+    followee_count_dict = {user_id: followee_count for (user_id, followee_count) in followee_counts}
+    return followee_count_dict
+
+
 def get_pagination_vars():
     limit = min(
         max(request.args.get("limit", default=defaultLimit, type=int), minLimit),

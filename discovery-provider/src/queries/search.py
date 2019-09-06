@@ -7,9 +7,11 @@ from src import api_helpers, exceptions
 from src.models import User, Track, RepostType, Playlist, SaveType
 from src.utils import helpers
 from src.utils.db_session import get_db
+from src.queries import response_name_constants
 
 from src.queries.query_helpers import get_current_user_id, populate_user_metadata, \
-    populate_track_metadata, populate_playlist_metadata, get_pagination_vars
+    populate_track_metadata, populate_playlist_metadata, get_pagination_vars, \
+    get_followee_count_dict
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("search_queries", __name__)
@@ -46,6 +48,11 @@ def search_tags():
     search_str = request.args.get("query", type=str)
     if not search_str:
         raise exceptions.ArgumentError("Invalid value for parameter 'query'")
+
+    user_tag_count = request.args.get("user_tag_count", type=str)
+    if not user_tag_count:
+        user_tag_count = "1"
+
     # (limit, offset) = get_pagination_vars()
     like_tags_str = str.format('%{}%', search_str)
     db = get_db()
@@ -99,9 +106,9 @@ def search_tags():
                         owner_id
                 order by
                         count desc
-            ) as tmp
+            ) as usr
             where
-                tmp.count > 1;
+                usr.count > :user_tag_count;
             """
         )
     track_ids = session.execute(
@@ -115,7 +122,8 @@ def search_tags():
         user_res,
         {
             "query":search_str,
-            "like_tags_query":like_tags_str
+            "like_tags_query":like_tags_str,
+            "user_tag_count": user_tag_count
         }
     ).fetchall()
 
@@ -124,6 +132,8 @@ def search_tags():
 
     # user_ids is list of tuples - simplify to 1-D list
     user_ids = [i[1] for i in user_ids]
+
+    followee_count_dict = get_followee_count_dict(session, user_ids)
 
     tracks = (
         session.query(Track)
@@ -145,15 +155,22 @@ def search_tags():
         )
         .all()
     )
-
-    users = helpers.query_result_to_list(users)
     # preserve order from track_ids above
     tracks = [next(t for t in tracks if t["track_id"] == track_id) for track_id in track_ids]
+
+    users = helpers.query_result_to_list(users)
+    for user in users:
+        user_id = user["user_id"]
+        user[response_name_constants.follower_count] = followee_count_dict.get(user_id, 0)
+
+    followee_sorted_users = \
+        sorted(users, key=lambda i: i[response_name_constants.follower_count], reverse=True)
+
     # preserve order from user_ids above
     users = [next(u for u in users if u["user_id"] == user_id) for user_id in user_ids]
     resp = {}
     resp['tracks'] = tracks
-    resp['users'] = users
+    resp['users'] = followee_sorted_users
     return api_helpers.success_response(resp)
 
 # SEARCH QUERIES
