@@ -132,7 +132,16 @@ module.exports = function (app) {
 
   app.get('/ipfs_peer_info', handleResponse(async (req, res) => {
     const ipfs = req.app.get('ipfsAPI')
+    const ipfsClusterIP = config.get('ipfsClusterIP')
+    const ipfsClusterPort = config.get('ipfsClusterPort')
     let ipfsIDObj = await ipfs.id()
+
+    // if it's a real host and port, generate a new ipfs id and override the addresses with this value
+    if (ipfsClusterIP && ipfsClusterPort !== null && ipfsClusterIP !== '127.0.0.1' && ipfsClusterPort !== 0) {
+      const addressStr = `/ip4/${ipfsClusterIP}/tcp/${ipfsClusterPort}/ipfs/${ipfsIDObj.id}`
+      ipfsIDObj.addresses = [addressStr]
+    }
+
     return successResponse(ipfsIDObj)
   }))
 
