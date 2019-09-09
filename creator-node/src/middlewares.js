@@ -23,6 +23,7 @@ async function preMiddleware (req, res, next) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
   const primaryEndpoint = creatorNodeEndpoints[0]
+  if (!primaryEndpoint) return
 
   // error if self is not primary
   if (serviceEndpoint !== primaryEndpoint) {
@@ -53,6 +54,7 @@ async function postMiddleware (req, res, next) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
   const [primary, ...secondaries] = creatorNodeEndpoints
+  if (!primary) return
 
   // error if self is not primary
   if (serviceEndpoint !== primary) {
@@ -93,8 +95,12 @@ async function _getOwnEndpoint (req) {
     config.get('ethWallets')[config.get('spOwnerWalletIndex')],
     'creator-node'
   )
+
   // confirm on-chain endpoint exists and is valid FQDN
-  if (!spInfo || spInfo.length === 0 || !spInfo[0].hasOwnProperty('endpoint') || !_isFQDN(spInfo[0]['endpoint'])) {
+  if (!spInfo ||
+      spInfo.length === 0 ||
+      !spInfo[0].hasOwnProperty('endpoint') ||
+      (spInfo[0]['endpoint'] && !_isFQDN(spInfo[0]['endpoint']))) {
     throw new Error('fail')
   }
   return spInfo[0]['endpoint']
@@ -107,7 +113,8 @@ async function _getCreatorNodeEndpoints (req, wallet) {
   if (!user || user.length === 0 || !user[0].hasOwnProperty('creator_node_endpoint')) {
     throw new Error('Bad return data')
   }
-  return (user[0]['creator_node_endpoint'].split(','))
+  const endpoint = user[0]['creator_node_endpoint']
+  return endpoint ? endpoint.split(',') : []
 }
 
 // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2

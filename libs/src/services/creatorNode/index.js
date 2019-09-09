@@ -1,5 +1,3 @@
-const Utils = require('../../utils')
-
 const axios = require('axios')
 const FormData = require('form-data')
 
@@ -12,6 +10,12 @@ class CreatorNode {
    * @param {string} endpoints user.creator_node_endpoint
    */
   static getPrimary (endpoints) { return endpoints ? endpoints.split(',')[0] : '' }
+
+  /**
+   * Pulls off the secondary creator nodes from a creator node endpoint string.
+   * @param {string} endpoints user.creator_node_endpoint
+   */
+  static getSecondaries (endpoints) { return endpoints ? endpoints.split(',').slice(1) : [] }
 
   /* -------------- */
 
@@ -171,7 +175,7 @@ class CreatorNode {
       this.uploadTrackContent(trackFile, onTrackProgress),
       this.uploadImage(coverArtFile, onImageProgress)
     ])
-    metadata.cover_art = coverArtResp.image_file_multihash
+    metadata.cover_art_sizes = coverArtResp.dirCID
     metadata.track_segments = trackContentResp.track_segments
 
     // Creates new track entity on creator node, making track's metadata available on IPFS
@@ -220,6 +224,13 @@ class CreatorNode {
     })
   }
 
+  async getHealthy () {
+    return this._makeRequest({
+      url: '/health_check',
+      method: 'get'
+    })
+  }
+
   /**
    * Given a particular endpoint to a creator node, check whether
    * this user has a sync in progress on that node.
@@ -239,24 +250,25 @@ class CreatorNode {
   }
 
   /**
-   * Forces a secondary to sync from the current creator node.
-   * @param {string} secondary url
+   * Syncs a secondary creator node for a given user
+   * @param {string} endpoint
    */
-  async forceSync (secondary) {
-    if (!secondary || !Utils.isFQDN(secondary)) {
-      throw new Error(`Invalid secondary ${secondary}`)
-    }
+  async syncSecondary (endpoint) {
     const user = this.userStateManager.getCurrentUser()
-    const req = {
-      baseURL: secondary,
-      url: '/sync',
-      method: 'post',
-      data: {
-        wallet: [user.wallet],
-        creator_node_endpoint: this.getEndpoint()
+    const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
+    const secondaries = new Set(CreatorNode.getSecondaries(user.creator_node_endpoint))
+    if (primary && endpoint && secondaries.has(endpoint)) {
+      const req = {
+        baseURL: endpoint,
+        url: '/sync',
+        method: 'post',
+        data: {
+          wallet: [user.wallet],
+          creator_node_endpoint: primary
+        }
       }
+      return axios(req)
     }
-    return axios(req)
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
@@ -311,10 +323,8 @@ class CreatorNode {
    * @param {Object} axiosRequestObj
    * @param {bool} requiresConnection if set, the currently configured creator node
    * is connected to before the request is made.
-   * @param {bool} syncSecondaries if set, causes secondary creator nodes to sync the
-   * changes made in the primary instance.
    */
-  async _makeRequest (axiosRequestObj, requiresConnection = true, syncSecondaries = true) {
+  async _makeRequest (axiosRequestObj, requiresConnection = true) {
     if (requiresConnection) {
       await this.ensureConnected()
     }
@@ -328,36 +338,9 @@ class CreatorNode {
 
     const resp = await axios(axiosRequestObj)
     if (resp.status === 200) {
-      // Sync the secondaries, but don't block on it
-      // if (syncSecondaries) this._syncSecondaries()
       return resp.data
     } else {
       throw new Error(`Server returned error: ${resp.status.toString()} ${resp.data['error']}`)
-    }
-  }
-
-  /**
-   * Syncs the current user's (according to the user state manager) secondary creator nodes.
-   */
-  async _syncSecondaries () {
-    const user = this.userStateManager.getCurrentUser()
-    if (user && user.creator_node_endpoint) {
-      const [primary, ...secondaries] = user.creator_node_endpoint.split(',')
-      if (primary) {
-        await Promise.all(secondaries.map(secondary => {
-          if (!secondary || !Utils.isFQDN(secondary)) return
-          const req = {
-            baseURL: secondary,
-            url: '/sync',
-            method: 'post',
-            data: {
-              wallet: [user.wallet],
-              creator_node_endpoint: primary
-            }
-          }
-          return axios(req)
-        }))
-      }
     }
   }
 

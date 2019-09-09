@@ -37,6 +37,10 @@ class Utils {
     }
   }
 
+  static async wait (milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
+  }
+
   // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
   static isFQDN (url) {
     let FQDN = new RegExp(/(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm)

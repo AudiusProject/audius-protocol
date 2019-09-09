@@ -1,5 +1,4 @@
 const { Base, Services } = require('./base')
-const CreatorNodeService = require('../services/creatorNode/index')
 const Utils = require('../utils')
 
 class Tracks extends Base {
@@ -83,8 +82,10 @@ class Tracks extends Base {
    * uploads metadata, and finally returns metadata multihash
    * Wraps the stateless function in AudiusLib.
    *
-   * @param {File} fileData ReadableStream from server, or File handle on client
+   * @param {File} trackFile ReadableStream from server, or File handle on client
+   * @param {File} coverArtFile ReadableStream from server, or File handle on client
    * @param {Object} metadata json of the track metadata with all fields, missing fields will error
+   * @param {function} onProgress callback fired with (loaded, total) on byte upload progress
    */
   async uploadTrack (
     trackFile,
@@ -105,18 +106,15 @@ class Tracks extends Base {
     metadata.owner_id = owner.user_id
     this._validateTrackMetadata(metadata)
 
-    const all = await Promise.all([
-      // Upgrade this user to a creator if they are not one.
-      this.User.upgradeToCreator(),
-      // upload track/multihash to creator node, get back metadata multihash
-      this.creatorNode.uploadTrack(
-        trackFile,
-        coverArtFile,
-        metadata,
-        onProgress
-      )
-    ])
-    const uploadTrackResp = all[1]
+    // Upgrade this user to a creator if they are not one.
+    await this.User.upgradeToCreator()
+    // upload track/multihash to creator node, get back metadata multihash
+    const uploadTrackResp = await this.creatorNode.uploadTrack(
+      trackFile,
+      coverArtFile,
+      metadata,
+      onProgress
+    )
     const multihashDecoded = Utils.decodeMultihash(uploadTrackResp.metadataMultihash)
 
     // write multihash to blockchain
