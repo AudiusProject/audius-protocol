@@ -139,21 +139,19 @@ def search_tags():
     tracks = (
         session.query(Track)
         .filter(
-            Track.is_current is True,
-            Track.is_delete is False,
+            Track.is_current == True,
+            Track.is_delete == False,
             Track.track_id.in_(track_ids),
         )
         .all()
     )
     tracks = helpers.query_result_to_list(tracks)
-
     track_play_counts = get_track_play_counts(track_ids)
-
     users = (
         session.query(User)
         .filter(
-            User.is_current is True,
-            User.is_ready is True,
+            User.is_current == True,
+            User.is_ready == True,
             User.user_id.in_(user_ids)
         )
         .all()
