@@ -524,25 +524,29 @@ def get_followee_count_dict(session, user_ids):
 
 def get_track_play_counts(track_ids):
     identity_url = shared_config['discprov']['identity_service_url']
-    logger.warning(identity_url)
     querystring = {}
     key_str = "id[{}]"
     index = 0
+
+    # Generate track listen query dict with format id[0]=x, id[1]=y, etc.
     for track_id in track_ids:
         key = key_str.format(index)
         index += 1
         querystring[key] = str(track_id)
+
+    # Create and query identity service endpoint
     identity_tracks_endpoint = urljoin(identity_url, 'tracks/listens')
     resp = requests.get(identity_tracks_endpoint, params=querystring)
     json_resp = resp.json()
     keys = list(resp.json().keys())
 
+    # Scenario should never arise, since we don't impose date parameter on initial query 
     if len(keys) != 1:
         raise Exception('Invalid number of keys')
 
+    # Parse listen query results into track listen count dictionary
     date_key = keys[0]
     listen_count_json = json_resp[date_key]
-    logger.warning(date_key)
     track_listen_counts = {}
     if 'listenCounts' in listen_count_json:
         for listen_info in listen_count_json['listenCounts']:

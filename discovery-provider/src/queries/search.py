@@ -54,7 +54,7 @@ def search_tags():
     if not user_tag_count:
         user_tag_count = "1"
 
-    # (limit, offset) = get_pagination_vars()
+    (limit, offset) = get_pagination_vars()
     like_tags_str = str.format('%{}%', search_str)
     db = get_db()
     with db.scoped_session() as session:
@@ -130,7 +130,6 @@ def search_tags():
 
     # track_ids is list of tuples - simplify to 1-D list
     track_ids = [i[0] for i in track_ids]
-    logger.warning(track_ids)
 
     # user_ids is list of tuples - simplify to 1-D list
     user_ids = [i[1] for i in user_ids]
@@ -140,8 +139,8 @@ def search_tags():
     tracks = (
         session.query(Track)
         .filter(
-            Track.is_current == True,
-            Track.is_delete == False,
+            Track.is_current is True,
+            Track.is_delete is False,
             Track.track_id.in_(track_ids),
         )
         .all()
@@ -153,14 +152,14 @@ def search_tags():
     users = (
         session.query(User)
         .filter(
-            User.is_current == True,
-            User.is_ready == True,
+            User.is_current is True,
+            User.is_ready is True,
             User.user_id.in_(user_ids)
         )
         .all()
     )
     # preserve order from track_ids above
-    tracks = [next(t for t in tracks if t["track_id"] == track_id) for track_id in track_ids]
+    # tracks = [next(t for t in tracks if t["track_id"] == track_id) for track_id in track_ids]
 
     users = helpers.query_result_to_list(users)
     for user in users:
@@ -176,6 +175,10 @@ def search_tags():
 
     play_count_sorted_tracks = \
         sorted(tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
+
+    # Add pagination parameters to track results
+    play_count_sorted_tracks = \
+            play_count_sorted_tracks[slice(offset, offset + limit, 1)]
 
     resp = {}
     resp['tracks'] = play_count_sorted_tracks
