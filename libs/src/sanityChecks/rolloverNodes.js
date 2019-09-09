@@ -21,8 +21,8 @@ const checkPrimaryHealthy = async (libs, primary, tries) => {
 /** Gets new endpoints from a user's secondaries */
 const getNewEndpoints = async (libs, blocknumber, secondaries) => {
   for (const secondary of secondaries) {
-    const { nodeBlocknumber } = await libs.creatorNode.getSyncStatus(secondary)
-    if (nodeBlocknumber === blocknumber) {
+    const { latestBlockNumber } = await libs.creatorNode.getSyncStatus(secondary)
+    if (latestBlockNumber === blocknumber) {
       const index = secondaries.indexOf(secondary)
       const otherSecondaries = [...secondaries].splice(index, 1)
       return [secondary, ...otherSecondaries]
