@@ -1,5 +1,4 @@
 const { Base, Services } = require('./base')
-const CreatorNodeService = require('../services/creatorNode/index')
 const Utils = require('../utils')
 
 class Users extends Base {
@@ -124,7 +123,6 @@ class Users extends Base {
       const resp = await this.creatorNode.uploadImage(coverPhotoFile, false)
       metadata.cover_photo_sizes = resp.dirCID
     }
-    console.log('upload profile images', metadata)
     return metadata
   }
 
@@ -142,7 +140,6 @@ class Users extends Base {
 
     const result = await this.contracts.UserFactoryClient.addUser(metadata.handle)
     await this._addUserOperations(result.userId, metadata)
-    console.info(`updated user metadata to chain userId: ${result.userId}`)
     return result.userId
   }
 
@@ -160,9 +157,9 @@ class Users extends Base {
     let currentMetadata = await this.discoveryProvider.getUsers(1, 0, [userId], null, null, false, null)
     if (currentMetadata && currentMetadata[0]) {
       currentMetadata = currentMetadata[0]
-      this.userStateManager.setCurrentUser({ ...currentMetadata, ...metadata })
-
       await this._updateUserOperations(metadata, currentMetadata, userId)
+
+      this.userStateManager.setCurrentUser({ ...currentMetadata, ...metadata })
     } else {
       throw new Error(`Cannot update user because no current record exists for user id ${userId}`)
     }
@@ -222,15 +219,19 @@ class Users extends Base {
     let currentMetadata = await this.discoveryProvider.getUsers(1, 0, [userId], null, null, true, null)
     if (currentMetadata && currentMetadata[0]) {
       currentMetadata = currentMetadata[0]
-      this.userStateManager.setCurrentUser({ ...currentMetadata, ...metadata })
-
       await this._updateUserOperations(metadata, currentMetadata, userId)
+
+      if (metadata.creator_node_endpoint !== currentMetadata.creator_node_endpoint) {
+        await this._waitForCreatorNodeUpdate(metadata.user_id, metadata.creator_node_endpoint)
+      }
+      // TODO(rj): Need to wait for the user change to prop to DP if creator_node_endpoint
 
       resp = await this.creatorNode.updateCreator(userId, metadata)
       let updatedAudiusUserMultihash = Utils.decodeMultihash(resp.metadataMultihash)
       if (updatedMultihashDecoded.digest !== updatedAudiusUserMultihash.digest) {
         throw new Error(`Inconsistent multihash fields after update - ${updatedMultihashDecoded.digest} / ${updatedAudiusUserMultihash.digest}`)
       }
+      this.userStateManager.setCurrentUser({ ...currentMetadata, ...metadata })
     } else {
       throw new Error(`Cannot update creator because no current record exists for creator id ${userId}`)
     }
@@ -254,70 +255,30 @@ class Users extends Base {
 
     const oldMetadata = { ...user }
     this._validateUserMetadata(oldMetadata)
-
     oldMetadata.wallet = this.web3Manager.getWalletAddress()
 
     const newMetadata = { ...oldMetadata }
     newMetadata.is_creator = true
     newMetadata.creator_node_endpoint = this.creatorNode.getEndpoint()
-    // if (oldMetadata.creator_node_endpoint) {
-    // Force the new primary creator node to sync from the currently connected node.
-    // TODO: The currently connected node here should be a USER-ONLY node.
-    // const newPrimaryCreatorNode = CreatorNodeService.getPrimary(oldMetadata.creator_node_endpoint)
-    // if (newPrimaryCreatorNode !== this.creatorNode.getEndpoint()) {
-    //   // await this.creatorNode.forceSync(newPrimaryCreatorNode)
-    //   await this.creatorNode.setEndpoint(newPrimaryCreatorNode)
-    // }
-    // Don't create the creator with an endpoint set, but rather update it once created.
-    // Note: The updateUserOperations only sends transactions with the diff between
-    // metadata and newMetadata, so unsetting creator_node_endpoint here is required.
-    //   newMetadata.creator_node_endpoint = oldMetadata.creator_node_endpoint
-    //   oldMetadata.creator_node_endpoint = null
-    // } else {
-    //   // Fallback to the connected creatornode if unset.
-    //   newMetadata.creator_node_endpoint = this.creatorNode.getEndpoint()
-    // }
 
-    // add creator on creatorNode
+    // Upload new metadat to the creator node
     const resp = await this.creatorNode.addCreator(newMetadata)
+
     const multihashDecoded = Utils.decodeMultihash(resp.metadataMultihash)
     const nodeUserId = resp.id
-
     const userId = oldMetadata.user_id
 
+    // Update the creator account on chain
     await this.contracts.UserFactoryClient.updateMultihash(userId, multihashDecoded.digest)
-    this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
     await this._updateUserOperations(newMetadata, oldMetadata, userId)
 
+    // Associate the user in the creator node
     await this.creatorNode.associateAudiusUser(nodeUserId, userId, false)
+
+    this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
+
     return userId
   }
-
-  // async upgradeToCreator () {
-  //   this.REQUIRES(Services.CREATOR_NODE)
-
-  //   const user = this.userStateManager.getCurrentUser()
-  //   // No-op if the user is already a creator.
-  //   // Consider them a creator iff they have is_creator=true AND a creator node endpoint
-  //   if (user.is_creator && user.creator_node_endpoint) return
-
-  //   if (user.creator_node_endpoint) {
-  //     const primary = CreatorNodeService.getPrimary(user.creator_node_endpoint)
-  //     const newMetadata = { ...user }
-  //     newMetadata.is_creator = true
-
-  //     if (primary !== this.creatorNode.getEndpoint()) {
-  //       await this.creatorNode.forceSync(primary)
-  //       await this.creatorNode.setEndpoint(primary)
-  //     }
-
-  //   } else {
-      
-  //   }
-  //   // console.log(user)
-
-  //   await Promise.race([])
-  // }
 
   /**
    * Updates a user on whether they are verified on Audius
@@ -349,10 +310,18 @@ class Users extends Base {
 
   /* ------- PRIVATE  ------- */
 
+  /** Waits for a discovery provider to confirm that a creator node endpoint is updated. */
+  async _waitForCreatorNodeUpdate (userId, creatorNodeEndpoint) {
+    let isUpdated = false
+    while (!isUpdated) {
+      const user = (await this.discoveryProvider.getUsers(1, 0, [userId]))[0]
+      if (user.creator_node_endpoint === creatorNodeEndpoint) isUpdated = true
+      await Utils.wait(500)
+    }
+  }
+
   async _addUserOperations (userId, metadata) {
     let addOps = []
-
-    console.log('_addUserOperations', metadata)
 
     if (metadata['name']) {
       addOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata['name']))
@@ -389,8 +358,6 @@ class Users extends Base {
 
   async _updateUserOperations (metadata, currentMetadata, userId) {
     let updateOps = []
-
-    console.log('update user operations', metadata)
 
     // Compare the existing metadata with the new values and conditionally
     // perform update operations
