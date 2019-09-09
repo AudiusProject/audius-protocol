@@ -27,7 +27,11 @@ async function preMiddleware (req, res, next) {
 
   // error if self is not primary
   if (serviceEndpoint !== primaryEndpoint) {
-    return sendResponse(req, res, errorResponseUnauthorized('this node is not primary for user'))
+    return sendResponse(
+      req,
+      res,
+      errorResponseUnauthorized(`This node (${serviceEndpoint}) is not primary for user. Primary is: ${primaryEndpoint}`)
+    )
   }
 
   next()
