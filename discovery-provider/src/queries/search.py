@@ -170,9 +170,12 @@ def search_tags():
     play_count_sorted_tracks = \
         sorted(tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
 
-    # Add pagination parameters to track results
+    # Add pagination parameters to track and user results
     play_count_sorted_tracks = \
             play_count_sorted_tracks[slice(offset, offset + limit, 1)]
+
+    followee_sorted_users = \
+            followee_sorted_users[slice(offset, offset + limit, 1)]
 
     resp = {}
     resp['tracks'] = play_count_sorted_tracks
