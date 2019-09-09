@@ -261,7 +261,11 @@ class CreatorNode {
       return {
         status,
         userBlockNumber: user.blocknumber,
-        trackBlockNumber: user.track_blocknumber
+        trackBlockNumber: user.track_blocknumber,
+        // Whether or not the endpoint is behind in syncing
+        isBehind: status.blockNumber &&
+          status.blockNumber !== -1 &&
+          status.blockNumber < Math.max(user.userBlockNumber, user.trackBlockNumber)
       }
     }
     throw new Error(`No current user`)

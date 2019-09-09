@@ -124,6 +124,34 @@ class Utils {
       val => Promise.resolve(val)
     )
   }
+
+  /**
+  * Fetches a url and times how long it took the request to complete.
+  * @param {Object} request {id, url}
+  * @returns { request, response, millis }
+  */
+  static async timeRequest (request) {
+    // This is non-perfect because of the js event loop, but enough
+    // of a proximation. Don't use for mission-critical timing.
+    const startTime = new Date().getTime()
+    const response = await axios.get(request.url)
+    const millis = new Date().getTime() - startTime
+    return { request, response, millis }
+  }
+
+  /**
+   * Fetches multiple urls and times each request and returns the results sorted by
+   * lowest-latency.
+   * @param {Array<Object>} requests [{id, url}, {id, url}]
+   * @returns { Array<{url, response, millis}> }
+   */
+  static async timeRequests (requests) {
+    let timings = await Promise.all(requests.map(async request =>
+      Utils.timeRequest(request)
+    ))
+
+    return timings.sort((a, b) => a.millis - b.millis)
+  }
 }
 
 module.exports = Utils
