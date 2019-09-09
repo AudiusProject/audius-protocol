@@ -268,7 +268,11 @@ class CreatorNode {
         url: `/sync_status/${user.wallet}`,
         method: 'get'
       }
-      return axios(req)
+      const status = await axios(req)
+      return {
+        status,
+        userBlockNumber: user.blockNumber
+      }
     }
     throw new Error(`No current user`)
   }

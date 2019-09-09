@@ -17,10 +17,10 @@ const checkPrimaryHealthy = async (libs, primary, tries) => {
 }
 
 /** Gets new endpoints from a user's secondaries */
-const getNewEndpoints = async (libs, blocknumber, secondaries) => {
+const getNewEndpoints = async (libs, secondaries) => {
   for (const secondary of secondaries) {
-    const { nodeBlocknumber } = await libs.creatorNode.getSyncStatus(secondary)
-    if (nodeBlocknumber === blocknumber) {
+    const { status, userBlockNumber } = await libs.creatorNode.getSyncStatus(secondary)
+    if (status.blockNumber === userBlockNumber) {
       const index = secondaries.indexOf(secondary)
       const otherSecondaries = [...secondaries].splice(index, 1)
       return [secondary, ...otherSecondaries]
@@ -38,11 +38,10 @@ const rolloverNodes = async (libs) => {
   const healthy = await checkPrimaryHealthy(libs, primary, MAX_TRIES)
   if (healthy) return
 
-  const blocknumber = user.blocknumber
   const secondaries = libs.creatorNode.getSecondaries(user.creator_node_endpoint)
 
   try {
-    const newEndpoints = await getNewEndpoints(libs, blocknumber, secondaries)
+    const newEndpoints = await getNewEndpoints(libs, secondaries)
 
     await libs.creatorNode.setEndpoint(newEndpoints[0])
     const newMetadata = { ...user }
