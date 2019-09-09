@@ -90,7 +90,6 @@ def search_tags():
 		(
                     select
                         strip(to_tsvector(tracks.tags)) as tagstrip,
-                        tags,
                         track_id,
                         owner_id
                     from
