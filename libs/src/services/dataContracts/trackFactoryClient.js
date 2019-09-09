@@ -52,7 +52,10 @@ class TrackFactoryClient {
       this.contractRegistryKey,
       this.contractAddress
     )
-    return parseInt(tx.events.NewTrack.returnValues._id, 10)
+    return {
+      trackId: parseInt(tx.events.NewTrack.returnValues._id, 10),
+      txReceipt: tx
+    }
   }
 
   /** uint _trackId, uint _trackOwnerId, bytes32 _multihashDigest, uint8 _multihashHashFn, uint8 _multihashSize */
@@ -86,7 +89,11 @@ class TrackFactoryClient {
       this.contractRegistryKey,
       this.contractAddress
     )
-    return parseInt(tx.events.UpdateTrack.returnValues._trackId, 10)
+
+    return {
+      trackId: parseInt(tx.events.UpdateTrack.returnValues._trackId, 10),
+      txReceipt: tx
+    }
   }
 
   /**
@@ -111,7 +118,10 @@ class TrackFactoryClient {
       this.contractRegistryKey,
       this.contractAddress
     )
-    return parseInt(tx.events.TrackDeleted.returnValues._trackId, 10)
+    return {
+      trackId: parseInt(tx.events.TrackDeleted.returnValues._trackId, 10),
+      txReceipt: tx
+    }
   }
 }
 

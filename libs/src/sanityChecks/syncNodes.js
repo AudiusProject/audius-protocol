@@ -2,9 +2,9 @@
  * Syncs a creator node if its blocknubmer is behind the passed
  * in blocknumber.
  */
-const syncNodeIfBehind = async (libs, blocknumber, endpoint) => {
-  const { latestBlockNumber } = await libs.creatorNode.getSyncStatus(endpoint)
-  if (latestBlockNumber < blocknumber) {
+const syncNodeIfBehind = async (libs, endpoint) => {
+  const { status, userBlockNumber } = await libs.creatorNode.getSyncStatus(endpoint)
+  if (status.blockNumber < userBlockNumber) {
     await libs.creatorNode.syncSecondary(endpoint)
   }
 }
@@ -14,10 +14,8 @@ const syncNodes = async (libs) => {
 
   if (!user.is_creator) return
 
-  const blocknumber = user.blocknumber
-
   const secondaries = libs.creatorNode.getSecondaries(user.creator_node_endpoint)
-  await Promise.all(secondaries.map(secondary => syncNodeIfBehind(libs, blocknumber, secondary)))
+  await Promise.all(secondaries.map(secondary => syncNodeIfBehind(libs, secondary)))
 }
 
 module.exports = syncNodes

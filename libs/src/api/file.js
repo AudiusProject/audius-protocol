@@ -61,7 +61,7 @@ class File extends Base {
    * Uploads an image to the connected creator node.
    * @param {File} file
    */
-  async uploadImage (file, square = true) {
+  async uploadImage (file, square) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(file)
     const resp = await this.creatorNode.uploadImage(file, square)

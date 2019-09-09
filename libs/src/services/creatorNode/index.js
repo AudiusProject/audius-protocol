@@ -105,7 +105,9 @@ class CreatorNode {
     return this._makeRequest({
       url: '/audius_users',
       method: 'post',
-      data: metadata
+      data: {
+        metadata
+      }
     })
   }
 
@@ -114,11 +116,14 @@ class CreatorNode {
    * @param {number} userId
    * @param {Object} metadata
    */
-  async updateCreator (userId, metadata) {
+  async updateCreator (userId, blockNumber, metadata) {
     return this._makeRequest({
       url: `/audius_users/${userId}`,
       method: 'put',
-      data: metadata
+      data: {
+        blockNumber,
+        metadata
+      }
     })
   }
 
@@ -126,7 +131,9 @@ class CreatorNode {
     return this._makeRequest({
       url: `/metadata`,
       method: 'post',
-      data: metadata
+      data: {
+        metadata
+      }
     }, true, false)
   }
 
@@ -142,17 +149,27 @@ class CreatorNode {
    * Associates the two user IDs, completing the user creation process.
    * @param {int} nodeUserId parameter returned at creation time by createUser function
    * @param {int} audiusUserId returned by user creation on-blockchain
-   * @param {bool} syncSecondaries whether or not to sync the secondary creator nodes
+   * @param {int} blockNumber returned by user creation on-blockchain
    */
-  async associateAudiusUser (nodeUserId, audiusUserId, syncSecondaries = true) {
+  async associateAudiusUser (nodeUserId, audiusUserId, blockNumber) {
     await this._makeRequest({
       url: `/audius_users/associate/${nodeUserId}`,
       method: 'post',
-      data: { userId: audiusUserId }
-    }, true, syncSecondaries)
+      data: {
+        userId: audiusUserId,
+        blockNumber
+      }
+    }, true)
   }
 
-  async uploadTrack (trackFile, coverArtFile, metadata, onProgress) {
+  /**
+   * Uploads a track (including audio and image content) to a creator node
+   * @param {File} trackFile the audio content
+   * @param {File} coverArtFile the image content
+   * @param {object} metadata the metadata for the track
+   * @param {function?} onProgress an optional on progerss callback
+   */
+  async uploadTrack (trackFile, coverArtFile, metadata, onProgress = () => {}) {
     let loadedImageBytes = 0
     let loadedTrackBytes = 0
     let totalImageBytes = 0
@@ -177,43 +194,50 @@ class CreatorNode {
     ])
     metadata.cover_art_sizes = coverArtResp.dirCID
     metadata.track_segments = trackContentResp.track_segments
-
     // Creates new track entity on creator node, making track's metadata available on IPFS
     // @returns {Object} {cid: cid of track metadata on IPFS, id: id of track to be used with associate function}
+    this.uploadTrackMetadata(metadata)
+  }
+
+  /**
+   * Uploads track metadata to a creator node
+   * @param {object} metadata
+   */
+  async uploadTrackMetadata (metadata) {
     return this._makeRequest({
       url: '/tracks',
       method: 'post',
-      data: metadata
-    }, true, false)
+      data: {
+        metadata
+      }
+    }, true)
   }
 
   /**
    * Associates nodeTrackID (returned by createTrack) with audiusTrackId from blockchain.
    * Completes the track creation process.
-   * @param {nodeTrackId} id returned at creation time by createTrack function
-   * @param {audiusTrackId} id returned by track creation on-blockchain
+   * @param {number} nodeTrackId returned at creation time by createTrack function
+   * @param {number} audiusTrackId returned by track creation on-blockchain
+   * @param {number} blockNumber
    */
-  async associateTrack (nodeTrackId, audiusTrackId) {
+  async associateTrack (nodeTrackId, audiusTrackId, blockNumber) {
     await this._makeRequest({
       url: `/tracks/associate/${nodeTrackId}`,
       method: 'post',
-      data: { blockchainTrackId: audiusTrackId }
+      data: {
+        blockchainTrackId: audiusTrackId,
+        blockNumber
+      }
     })
   }
 
-  async updateTrack (trackId, metadata) {
+  async updateTrack (trackId, blockNumber) {
     return this._makeRequest({
       url: `/tracks/${trackId}`,
       method: 'put',
-      data: metadata
-    })
-  }
-
-  async uploadTrackMetadata (metadata) {
-    return this._makeRequest({
-      url: '/metadata',
-      method: 'post',
-      data: metadata
+      data: {
+        blockNumber
+      }
     })
   }
 
@@ -244,7 +268,11 @@ class CreatorNode {
         url: `/sync_status/${user.wallet}`,
         method: 'get'
       }
-      return axios(req)
+      const status = await axios(req)
+      return {
+        status,
+        userBlockNumber: user.blockNumber
+      }
     }
     throw new Error(`No current user`)
   }
@@ -282,7 +310,7 @@ class CreatorNode {
       url: '/users',
       method: 'post',
       data: { walletAddress }
-    }, false, false)
+    }, false)
   }
 
   /** Logs in a creator node user. */
@@ -303,7 +331,7 @@ class CreatorNode {
         data: data,
         signature: signature
       }
-    }, false, false)
+    }, false)
     this.authToken = resp.sessionToken
   }
 
@@ -314,7 +342,7 @@ class CreatorNode {
     await this._makeRequest({
       url: '/users/logout',
       method: 'post'
-    }, false, false)
+    }, false)
     this.authToken = null
   }
 

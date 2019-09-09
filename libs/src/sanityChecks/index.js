@@ -10,8 +10,8 @@ class SanityChecks {
 
   async run () {
     await isCreator(this.libs)
-    // await syncNodes(this.libs)
-    // await rolloverNodes(this.libs)
+    await syncNodes(this.libs)
+    await rolloverNodes(this.libs)
   }
 }
 
