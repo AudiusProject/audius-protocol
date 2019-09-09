@@ -18,7 +18,7 @@ module.exports = function (app) {
     const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
 
     const audiusUserObj = {
-      cnodeUserUUID: req.userId,
+      cnodeUserUUID: req.session.cnodeUserUUID,
       metadataFileUUID: fileUUID,
       metadataJSON: metadataJSON
     }
@@ -41,20 +41,28 @@ module.exports = function (app) {
   app.post('/audius_users/associate/:audiusUserUUID', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
     const audiusUserUUID = req.params.audiusUserUUID
     const blockchainId = req.body.userId
-    if (!blockchainId || !audiusUserUUID) {
-      return errorResponseBadRequest('Must include blockchainId and audius user ID')
+    const txBlockNumber = req.body.blockNumber
+    const cnodeUserUUID = req.session.cnodeUserUUID
+    
+    if (!blockchainId || !audiusUserUUID || !txBlockNumber) {
+      return errorResponseBadRequest('Must include blockchainId, audiusUserUUID, and blockNumber.')
     }
 
-    const audiusUser = await models.AudiusUser.findOne({ where: { audiusUserUUID, cnodeUserUUID: req.userId } })
-    if (!audiusUser || audiusUser.cnodeUserUUID !== req.userId) {
+    const cnodeUser = req.session.cnodeUser
+    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber >= txBlockNumber) {
+      return errorResponseBadRequest(`Invalid blockNumber param. Must be higher than previously processed blocknumber.`)
+    }
+
+    const audiusUser = await models.AudiusUser.findOne({ where: { audiusUserUUID, cnodeUserUUID: cnodeUserUUID } })
+    if (!audiusUser || audiusUser.cnodeUserUUID !== cnodeUserUUID) {
       return errorResponseBadRequest('Invalid Audius user ID')
     }
 
     // TODO: validate that provided blockchain ID is indeed associated with
     // user wallet and metadata CID
-    await audiusUser.update({
-      blockchainId: blockchainId
-    })
+    await audiusUser.update({ blockchainId: blockchainId })
+
+    await cnodeUser.update({ latestBlockNumber: txBlockNumber })
 
     return successResponse()
   }), postMiddleware)
@@ -62,8 +70,18 @@ module.exports = function (app) {
   /** Update a AudiusUser. */
   app.put('/audius_users/:blockchainId', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
     const blockchainId = req.params.blockchainId
-    const audiusUser = await models.AudiusUser.findOne({ where: { blockchainId, cnodeUserUUID: req.userId } })
+    const txBlockNumber = req.body.blockNumber
 
+    if (!blockchainId || !txBlockNumber) {
+      return errorResponseBadRequest('Must include blockchainId, and blockNumber.')
+    }
+
+    const cnodeUser = req.session.cnodeUser
+    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber >= txBlockNumber) {
+      return errorResponseBadRequest(`Invalid blockNumber param. Must be higher than previously processed blocknumber.`)
+    }
+
+    const audiusUser = await models.AudiusUser.findOne({ where: { blockchainId, cnodeUserUUID: req.session.cnodeUserUUID } })
     if (!audiusUser) {
       req.logger.error('Attempting to find AudiusUser but none found', blockchainId, audiusUser)
       return errorResponseBadRequest(`Audius User doesn't exist for that blockchainId`)
@@ -92,6 +110,8 @@ module.exports = function (app) {
     }
 
     await audiusUser.update(updateObj)
+
+    await cnodeUser.update({ latestBlockNumber: txBlockNumber })
 
     return successResponse({ 'metadataMultihash': multihash })
   }), postMiddleware)

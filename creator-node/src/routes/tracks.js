@@ -87,7 +87,7 @@ module.exports = function (app) {
       const file = await models.File.findOne({
         where: {
           multihash: segmentMultihash,
-          cnodeUserUUID: req.userId
+          cnodeUserUUID: req.session.cnodeUserUUID
         }
       })
       if (!file) {
@@ -102,7 +102,7 @@ module.exports = function (app) {
 
     // build track object for db storage
     const trackObj = {
-      cnodeUserUUID: req.userId,
+      cnodeUserUUID: req.session.cnodeUserUUID,
       metadataFileUUID: fileUUID,
       metadataJSON: metadataJSON
     }
@@ -131,40 +131,46 @@ module.exports = function (app) {
   app.post('/tracks/associate/:id', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
     const trackUUID = req.params.id
     const blockchainId = req.body.blockchainTrackId
-    const cnodeUserUUID = req.userId
+    const txBlockNumber = req.body.blockNumber
+    const cnodeUserUUID = req.session.cnodeUserUUID
 
-    if (!trackUUID || !blockchainId) {
-      return errorResponseBadRequest('Must include blockchainId and trackId')
+    if (!trackUUID || !blockchainId || !txBlockNumber) {
+      return errorResponseBadRequest('Must include blockchainId, trackId, blockNumber')
+    }
+
+    const cnodeUser = req.session.cnodeUser
+    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber >= txBlockNumber) {
+      return errorResponseBadRequest(`Invalid blockNumber param. Must be higher than previously processed blocknumber.`)
     }
 
     const track = await models.Track.findOne({ where: { trackUUID, cnodeUserUUID } })
-    if (!track || track.cnodeUserUUID !== req.userId) {
+    if (!track || track.cnodeUserUUID !== cnodeUserUUID) {
       return errorResponseBadRequest('Invalid track ID')
     }
 
     // TODO: validate that provided blockchain ID is indeed associated with
     // user wallet and metadata CID
-    await track.update({
-      blockchainId: blockchainId
-    })
+    await track.update({ blockchainId: blockchainId })
+
+    await cnodeUser.update({ latestBlockNumber: txBlockNumber })
 
     return successResponse()
   }), postMiddleware)
 
-  app.get('/tracks', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const tracks = await models.Track.findAll({
-      where: {
-        cnodeUserUUID: req.userId
-      }
-    })
-
-    return successResponse({ 'tracks': tracks })
-  }))
-
   // update a track
   app.put('/tracks/:blockchainId', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
     const blockchainId = req.params.blockchainId
-    const cnodeUserUUID = req.userId
+    const txBlockNumber = req.body.blockNumber
+    const cnodeUserUUID = req.session.cnodeUserUUID
+
+    if (!blockchainId || !txBlockNumber) {
+      return errorResponseBadRequest('Must include blockchainId and blockNumber')
+    }
+
+    const cnodeUser = req.session.cnodeUser
+    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber >= txBlockNumber) {
+      return errorResponseBadRequest(`Invalid blockNumber param. Must be higher than previously processed blocknumber.`)
+    }
 
     const track = await models.Track.findOne({ where: { blockchainId, cnodeUserUUID } })
 
@@ -193,6 +199,16 @@ module.exports = function (app) {
 
     await track.update(updateObj)
 
+    await cnodeUser.update({ latestBlockNumber: txBlockNumber })
+
     return successResponse({ 'metadataMultihash': multihash })
   }), postMiddleware)
+
+  app.get('/tracks', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
+    const tracks = await models.Track.findAll({
+      where: { cnodeUserUUID: req.session.cnodeUserUUID }
+    })
+
+    return successResponse({ 'tracks': tracks })
+  }))
 }

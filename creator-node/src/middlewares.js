@@ -23,10 +23,9 @@ async function preMiddleware (req, res, next) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
   const primaryEndpoint = creatorNodeEndpoints[0]
-  if (!primaryEndpoint) return
 
   // error if self is not primary
-  if (serviceEndpoint !== primaryEndpoint) {
+  if (primaryEndpoint && serviceEndpoint !== primaryEndpoint) {
     return sendResponse(
       req,
       res,
@@ -38,7 +37,7 @@ async function preMiddleware (req, res, next) {
 }
 
 /** Tell all secondaries to sync against self */
-async function postMiddleware (req, res, next) {
+async function postMiddleware (req, res) {
   if (!req.session || !req.session.wallet) {
     return sendResponse(req, res, errorResponseUnauthorized('User must be logged in'))
   }
@@ -80,8 +79,6 @@ async function postMiddleware (req, res, next) {
     }
     return axios(axiosReq)
   }))
-
-  next()
 }
 
 /** Retrieves current FQDN registered on-chain with node's owner wallet. */

@@ -81,7 +81,7 @@ module.exports = function (app) {
 
       // Save dir file reference to DB
       const dir = (await models.File.findOrCreate({ where: {
-        cnodeUserUUID: req.userId,
+        cnodeUserUUID: req.session.cnodeUserUUID,
         multihash: dirCID,
         sourceFile: null,
         storagePath: dirDestPath,
@@ -100,7 +100,7 @@ module.exports = function (app) {
 
         // Save file reference to DB
         const file = (await models.File.findOrCreate({ where: {
-          cnodeUserUUID: req.userId,
+          cnodeUserUUID: req.session.cnodeUserUUID,
           multihash: fileResp.hash,
           sourceFile: fileResp.path,
           storagePath: destPath,
