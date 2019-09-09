@@ -52,7 +52,7 @@ def search_tags():
 
     user_tag_count = request.args.get("user_tag_count", type=str)
     if not user_tag_count:
-        user_tag_count = "1"
+        user_tag_count = "2"
 
     (limit, offset) = get_pagination_vars()
     like_tags_str = str.format('%{}%', search_str)
