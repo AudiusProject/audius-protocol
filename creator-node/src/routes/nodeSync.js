@@ -177,8 +177,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       // Ensure imported data has higher blocknumber than already stored.
       const latestBlockNumber = cnodeUser.latestBlockNumber
       const fetchedLatestBlockNumber = fetchedCNodeUser.latestBlockNumber
-      if ((fetchedLatestBlockNumber == -1 && latestBlockNumber != -1) ||
-        (fetchedLatestBlockNumber != -1 && fetchedLatestBlockNumber <= latestBlockNumber)
+      if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
+        (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber <= latestBlockNumber)
       ) {
         throw new Error(`Imported data is outdated, will not sync.`)
       }
