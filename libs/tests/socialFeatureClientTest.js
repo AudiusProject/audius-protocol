@@ -17,7 +17,7 @@ it('Should add + delete track repost', async function () {
   // add track
   const cid = helpers.constants.trackMetadataCID
   const trackMultihashDecoded = Utils.decodeMultihash(cid)
-  const trackId = await audiusInstance.contracts.TrackFactoryClient.addTrack(
+  const { trackId } = await audiusInstance.contracts.TrackFactoryClient.addTrack(
     creatorId,
     trackMultihashDecoded.digest,
     trackMultihashDecoded.hashFn,

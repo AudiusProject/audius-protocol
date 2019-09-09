@@ -118,13 +118,13 @@ class Tracks extends Base {
     const multihashDecoded = Utils.decodeMultihash(uploadTrackResp.metadataMultihash)
 
     // write multihash to blockchain
-    const trackId = await this.contracts.TrackFactoryClient.addTrack(
+    const { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
       owner.user_id,
       multihashDecoded.digest,
       multihashDecoded.hashFn,
       multihashDecoded.size
     )
-    await this.creatorNode.associateTrack(uploadTrackResp.id, trackId)
+    await this.creatorNode.associateTrack(uploadTrackResp.id, trackId, txReceipt.blockNumber)
     return trackId
   }
 
@@ -146,17 +146,19 @@ class Tracks extends Base {
     metadata.owner_id = ownerId
     this._validateTrackMetadata(metadata)
 
-    const trackId = metadata.track_id
-    let resp = await this.creatorNode.updateTrack(trackId, metadata)
-    let multihashDecoded = Utils.decodeMultihash(resp.metadataMultihash)
+    const uploadTrackResp = await this.creatorNode.uploadTrackMetadata(metadata)
+    const multihashDecoded = Utils.decodeMultihash(uploadTrackResp.metadataMultihash)
 
-    await this.contracts.TrackFactoryClient.updateTrack(
+    const trackId = metadata.track_id
+    const { txReceipt } = await this.contracts.TrackFactoryClient.updateTrack(
       trackId,
       ownerId,
       multihashDecoded.digest,
       multihashDecoded.hashFn,
       multihashDecoded.size
     )
+    const blockNumber = txReceipt.blockNumber
+    await this.creatorNode.updateTrack(trackId, blockNumber)
     return trackId
   }
 

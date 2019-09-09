@@ -3,9 +3,7 @@ const Utils = require('../utils')
 const TEN_SECONDS = 10000
 const MAX_TRIES = 3
 
-/**
- * Check if the user's primary creator node is healthy
- */
+/** Check if the user's primary creator node is healthy */
 const checkPrimaryHealthy = async (libs, primary, tries) => {
   const healthy = await Utils.isHealthy(primary)
   if (healthy) return healthy

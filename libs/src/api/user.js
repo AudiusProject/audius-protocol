@@ -191,12 +191,13 @@ class Users extends Base {
     const multihashDecoded = Utils.decodeMultihash(resp.metadataMultihash)
     const nodeUserId = resp.id
 
-    const userId = (await this.contracts.UserFactoryClient.addUser(metadata.handle)).userId
+    const { userId, txReceipt } = await this.contracts.UserFactoryClient.addUser(metadata.handle)
 
     await this.contracts.UserFactoryClient.updateMultihash(userId, multihashDecoded.digest)
     await this._addUserOperations(userId, metadata)
 
-    await this.creatorNode.associateAudiusUser(nodeUserId, userId)
+    const blockNumber = txReceipt.blockNumber
+    await this.creatorNode.associateAudiusUser(nodeUserId, userId, blockNumber)
     return userId
   }
 
@@ -213,7 +214,7 @@ class Users extends Base {
     let resp = await this.creatorNode.uploadCreatorMetadata(metadata)
     let updatedMultihashDecoded = Utils.decodeMultihash(resp.metadataMultihash)
 
-    await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
+    const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
 
     // Retrieve the current creator metadata
     let currentMetadata = await this.discoveryProvider.getUsers(1, 0, [userId], null, null, true, null)
@@ -224,9 +225,9 @@ class Users extends Base {
       if (metadata.creator_node_endpoint !== currentMetadata.creator_node_endpoint) {
         await this._waitForCreatorNodeUpdate(metadata.user_id, metadata.creator_node_endpoint)
       }
-      // TODO(rj): Need to wait for the user change to prop to DP if creator_node_endpoint
 
-      resp = await this.creatorNode.updateCreator(userId, metadata)
+      const blockNumber = txReceipt.blockNumber
+      resp = await this.creatorNode.updateCreator(userId, metadata, blockNumber)
       let updatedAudiusUserMultihash = Utils.decodeMultihash(resp.metadataMultihash)
       if (updatedMultihashDecoded.digest !== updatedAudiusUserMultihash.digest) {
         throw new Error(`Inconsistent multihash fields after update - ${updatedMultihashDecoded.digest} / ${updatedAudiusUserMultihash.digest}`)
@@ -269,11 +270,12 @@ class Users extends Base {
     const userId = oldMetadata.user_id
 
     // Update the creator account on chain
-    await this.contracts.UserFactoryClient.updateMultihash(userId, multihashDecoded.digest)
+    const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, multihashDecoded.digest)
     await this._updateUserOperations(newMetadata, oldMetadata, userId)
 
     // Associate the user in the creator node
-    await this.creatorNode.associateAudiusUser(nodeUserId, userId, false)
+    const blockNumber = txReceipt.blockNumber
+    await this.creatorNode.associateAudiusUser(nodeUserId, userId, blockNumber)
 
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
 
