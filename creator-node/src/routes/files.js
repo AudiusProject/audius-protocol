@@ -16,7 +16,7 @@ const { logger } = require('../logging')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const resizeImage = require('../resizeImage')
-const { preMiddleware, postMiddleware } = require('../middlewares')
+const { postMiddleware } = require('../middlewares')
 
 module.exports = function (app) {
   /** Store image in multiple-resolutions on disk + DB and make available via IPFS */
@@ -81,7 +81,7 @@ module.exports = function (app) {
 
       // Save dir file reference to DB
       const dir = (await models.File.findOrCreate({ where: {
-        cnodeUserUUID: req.userId,
+        cnodeUserUUID: req.session.cnodeUserUUID,
         multihash: dirCID,
         sourceFile: null,
         storagePath: dirDestPath,
@@ -100,7 +100,7 @@ module.exports = function (app) {
 
         // Save file reference to DB
         const file = (await models.File.findOrCreate({ where: {
-          cnodeUserUUID: req.userId,
+          cnodeUserUUID: req.session.cnodeUserUUID,
           multihash: fileResp.hash,
           sourceFile: fileResp.path,
           storagePath: destPath,
@@ -123,13 +123,13 @@ module.exports = function (app) {
   }), postMiddleware)
 
   /** upload metadata to IPFS and save in Files table */
-  app.post('/metadata', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
+  app.post('/metadata', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
     const metadataJSON = req.body
     req.logger.info('metadataJSON', metadataJSON)
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const { multihash } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
     return successResponse({ 'metadataMultihash': multihash })
-  }), postMiddleware)
+  }))
 
   app.get('/ipfs_peer_info', handleResponse(async (req, res) => {
     const ipfs = req.app.get('ipfsAPI')

@@ -25,7 +25,7 @@ async function getFileUUIDForImageCID (req, imageCID) {
     } catch (e) {
       // Ensure file exists for dirCID
       const dirFile = await models.File.findOne({
-        where: { multihash: imageCID, cnodeUserUUID: req.userId, type: 'dir' }
+        where: { multihash: imageCID, cnodeUserUUID: req.session.cnodeUserUUID, type: 'dir' }
       })
       if (!dirFile) {
         throw new Error(`No file stored in DB for dir CID ${imageCID}`)
@@ -41,7 +41,7 @@ async function getFileUUIDForImageCID (req, imageCID) {
         }
 
         const imageFile = await models.File.findOne({
-          where: { multihash: fileObj.hash, cnodeUserUUID: req.userId, type: 'image' }
+          where: { multihash: fileObj.hash, cnodeUserUUID: req.session.cnodeUserUUID, type: 'image' }
         })
         if (!imageFile) {
           throw new Error(`No file ref stored in DB for CID ${fileObj.hash} in dirCID ${imageCID}`)

@@ -23,7 +23,7 @@ const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
  */
 async function saveFileFromBuffer (req, buffer, fileType) {
   // make sure user has authenticated before saving file
-  if (!req.userId) {
+  if (!req.session.cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
   }
 
@@ -41,7 +41,7 @@ async function saveFileFromBuffer (req, buffer, fileType) {
   // add reference to file to database
   const file = (await models.File.findOrCreate({ where:
     {
-      cnodeUserUUID: req.userId,
+      cnodeUserUUID: req.session.cnodeUserUUID,
       multihash: multihash,
       sourceFile: req.fileName,
       storagePath: dstPath,
@@ -61,7 +61,7 @@ async function saveFileFromBuffer (req, buffer, fileType) {
  */
 async function saveFileToIPFSFromFS (req, srcPath, fileType) {
   // make sure user has authenticated before saving file
-  if (!req.userId) throw new Error('User must be authenticated to save a file')
+  if (!req.session.cnodeUserUUID) throw new Error('User must be authenticated to save a file')
 
   const ipfs = req.app.get('ipfsAPI')
 
@@ -77,7 +77,7 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType) {
   // add reference to file to database
   const file = (await models.File.findOrCreate({ where:
     {
-      cnodeUserUUID: req.userId,
+      cnodeUserUUID: req.session.cnodeUserUUID,
       multihash: multihash,
       sourceFile: req.fileName,
       storagePath: dstPath,

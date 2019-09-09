@@ -210,6 +210,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       await models.CNodeUser.upsert({
         cnodeUserUUID: fetchedCnodeUserUUID,
         walletPublicKey: fetchedCNodeUser.walletPublicKey,
+        latestBlockNumber: fetchedCNodeUser.latestBlockNumber,
         lastLogin: fetchedCNodeUser.lastLogin
       }, { transaction: t })
       req.logger.info(redisKey, `upserted nodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)
