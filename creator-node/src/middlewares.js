@@ -83,8 +83,16 @@ async function postMiddleware (req, res, next) {
 /** Retrieves current FQDN registered on-chain with node's owner wallet. */
 async function _getOwnEndpoint (req) {
   const libs = req.app.get('audiusLibs')
+
+  if (!config.get('ethWallets') || !config.get('spOwnerWalletIndex') || !config.get('ethWallets').isArray() || config.get('ethWallets').length <= config.get('spOwnerWalletIndex')) {
+    throw new Error('bad')
+  }
+
+  // const ethWallets = config.get('ethWallets')
+  // const spOwnerWalletIndex = config.get('spOwnerWalletIndex')
+
   const spInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress(
-    config.get('spOwnerWallet'),
+    config.get('ethWallets')[config.get('spOwnerWalletIndex')],
     'creator-node'
   )
 
