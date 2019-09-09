@@ -12,7 +12,7 @@ module.exports = function (app) {
   /** Create AudiusUser from provided metadata, and make metadata available to network. */
   app.post('/audius_users', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
     // TODO: do some validation on metadata given
-    const metadataJSON = req.body
+    const metadataJSON = req.body.metadata
 
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
@@ -43,7 +43,7 @@ module.exports = function (app) {
     const blockchainId = req.body.userId
     const txBlockNumber = req.body.blockNumber
     const cnodeUserUUID = req.session.cnodeUserUUID
-    
+
     if (!blockchainId || !audiusUserUUID || !txBlockNumber) {
       return errorResponseBadRequest('Must include blockchainId, audiusUserUUID, and blockNumber.')
     }
@@ -88,7 +88,7 @@ module.exports = function (app) {
     }
 
     // TODO: do some validation on metadata given
-    const metadataJSON = req.body
+    const metadataJSON = req.body.metadata
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
 
     // write to a new file so there's still a record of the old file

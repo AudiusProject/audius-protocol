@@ -2,7 +2,7 @@ const axios = require('axios')
 
 const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
-const { handleResponse, successResponse, errorResponse, errorResponseServerError, errorResponseBadRequest } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponse } = require('../apiHelpers')
 const { getNodeSyncRedisKey } = require('../redis')
 
 const syncs = {}
@@ -76,7 +76,7 @@ module.exports = function (app) {
   app.post('/sync', handleResponse(async (req, res) => {
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
-    const immediate = (req.body.immediate == true)
+    const immediate = (req.body.immediate === true || req.body.immediate === 'true')
 
     if (!immediate) {
       // Debounce nodeysnc op
@@ -86,7 +86,7 @@ module.exports = function (app) {
           req.logger.info('clear timeout for', wallet, 'time', Date.now())
         }
         syncs[wallet] = setTimeout(
-          async () => await _nodesync(req, [wallet], creatorNodeEndpoint),
+          async () => _nodesync(req, [wallet], creatorNodeEndpoint),
           DEBOUNCE_TIME
         )
         req.logger.info('set timeout for', wallet, 'time', Date.now())
@@ -109,9 +109,8 @@ module.exports = function (app) {
 
     // Get & return latestBlockNumber for wallet
     const cnodeUser = await models.CNodeUser.findOne({ where: { walletPublicKey } })
-    req.logger.info('cnodeuser', cnodeUser)
     const latestBlockNumber = cnodeUser ? cnodeUser.latestBlockNumber : -1
-    
+
     return successResponse({ walletPublicKey, latestBlockNumber })
   }))
 }
@@ -157,8 +156,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
 
     // For each CNodeUser, replace local DB state with retrieved data + fetch + save missing files.
     for (const fetchedCNodeUser of Object.values(resp.data.cnodeUsers)) {
-      const t = await models.sequelize.transaction()
-
       // Since different nodes may assign different cnodeUserUUIDs to a given walletPublicKey,
       // retrieve local cnodeUserUUID from fetched walletPublicKey and delete all associated data.
       if (!fetchedCNodeUser.hasOwnProperty('walletPublicKey')) {
@@ -170,11 +167,23 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       }
       const fetchedCnodeUserUUID = fetchedCNodeUser.cnodeUserUUID
 
-      // Delete any previously stored data for cnodeUser in reverse table dependency order (cannot be parallelized).
+      const t = await models.sequelize.transaction()
+
       const cnodeUser = await models.CNodeUser.findOne({
         where: { walletPublicKey: fetchedWalletPublicKey },
         transaction: t
       })
+
+      // Ensure imported data has higher blocknumber than already stored.
+      const latestBlockNumber = cnodeUser.latestBlockNumber
+      const fetchedLatestBlockNumber = fetchedCNodeUser.latestBlockNumber
+      if ((fetchedLatestBlockNumber == -1 && latestBlockNumber != -1) ||
+        (fetchedLatestBlockNumber != -1 && fetchedLatestBlockNumber <= latestBlockNumber)
+      ) {
+        throw new Error(`Imported data is outdated, will not sync.`)
+      }
+
+      // Delete any previously stored data for cnodeUser in reverse table dependency order (cannot be parallelized).
       if (cnodeUser) {
         const cnodeUserUUID = cnodeUser.cnodeUserUUID
         req.logger.info(redisKey, `beginning delete ops for cnodeUserUUID ${cnodeUserUUID}`)
@@ -206,17 +215,15 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         req.logger.info(redisKey, `numNonTrackFilesDeleted ${numNonTrackFilesDeleted}`)
       }
 
-      /*
-       * Populate all new data for fetched cnodeUser.
-       */
+      /* Populate all new data for fetched cnodeUser. */
 
       req.logger.info(redisKey, `beginning add ops for cnodeUserUUID ${fetchedCnodeUserUUID}`)
 
       // Upsert cnodeUser row.
       await models.CNodeUser.upsert({
         cnodeUserUUID: fetchedCnodeUserUUID,
-        walletPublicKey: fetchedCNodeUser.walletPublicKey,
-        latestBlockNumber: fetchedCNodeUser.latestBlockNumber,
+        walletPublicKey: fetchedWalletPublicKey,
+        latestBlockNumber: fetchedLatestBlockNumber,
         lastLogin: fetchedCNodeUser.lastLogin
       }, { transaction: t })
       req.logger.info(redisKey, `upserted nodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)

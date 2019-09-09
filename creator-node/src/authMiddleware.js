@@ -21,7 +21,7 @@ async function authMiddleware (req, res, next) {
   if (!cnodeUser) {
     return sendResponse(req, res, errorResponseUnauthorized('No node user exists for provided authentication token'))
   }
-  
+
   // Attach session object to request
   req.session = {
     cnodeUser: cnodeUser,

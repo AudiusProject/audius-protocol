@@ -124,7 +124,7 @@ module.exports = function (app) {
 
   /** upload metadata to IPFS and save in Files table */
   app.post('/metadata', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const metadataJSON = req.body
+    const metadataJSON = req.body.metadata
     req.logger.info('metadataJSON', metadataJSON)
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const { multihash } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
