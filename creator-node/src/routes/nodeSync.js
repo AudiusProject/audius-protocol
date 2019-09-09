@@ -106,7 +106,13 @@ module.exports = function (app) {
     if (lockHeld) {
       return errorResponse(423, `Cannot change state of wallet ${walletPublicKey}. Node sync currently in progress.`)
     }
-    return successResponse(`No sync in progress for wallet ${walletPublicKey}.`)
+
+    // Get & return latestBlockNumber for wallet
+    const cnodeUser = await models.CNodeUser.findOne({ where: { walletPublicKey } })
+    req.logger.info('cnodeuser', cnodeUser)
+    const latestBlockNumber = cnodeUser ? cnodeUser.latestBlockNumber : -1
+    
+    return successResponse({ walletPublicKey, latestBlockNumber })
   }))
 }
 
