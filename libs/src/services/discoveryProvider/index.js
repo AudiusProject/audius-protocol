@@ -321,6 +321,22 @@ class DiscoveryProvider {
   }
 
   /**
+   * Perform a tags-only search. Returns tracks with required tag and users
+   * that have used a tag greater than a specified number of times
+   * @param {string} text search query
+   * @param {number} user_tag_count # of times a user must have used a tag to be returned
+   * @param {number} limit max # of items to return per list (for pagination)
+   * @param {number} offset offset into list to return from (for pagination)
+   */
+  async searchTags (text, user_tag_count = 2, limit = 100, offset = 0) {
+    let req = {
+      endpoint: 'search/tags',
+      queryParams: { query: text, user_tag_count, limit: limit, offset: offset }
+    }
+    return this._makeRequest(req)
+  }
+
+  /**
    * Return saved playlists for current user
    * NOTE in returned JSON, SaveType string one of track, playlist, album
    * @param {number} limit - max # of items to return

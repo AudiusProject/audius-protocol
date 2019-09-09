@@ -6,10 +6,13 @@ from flask import Blueprint, request
 from src import api_helpers, exceptions
 from src.models import User, Track, RepostType, Playlist, SaveType
 from src.utils import helpers
+from src.utils.config import shared_config
 from src.utils.db_session import get_db
+from src.queries import response_name_constants
 
 from src.queries.query_helpers import get_current_user_id, populate_user_metadata, \
-    populate_track_metadata, populate_playlist_metadata, get_pagination_vars
+    populate_track_metadata, populate_playlist_metadata, get_pagination_vars, \
+    get_followee_count_dict, get_track_play_counts
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("search_queries", __name__)
@@ -39,6 +42,145 @@ def search_full():
 @bp.route("/search/autocomplete", methods=("GET",))
 def search_autocomplete():
     return search(True)
+
+@bp.route("/search/tags", methods=("GET",))
+def search_tags():
+    logger.warning('search tags working')
+    search_str = request.args.get("query", type=str)
+    if not search_str:
+        raise exceptions.ArgumentError("Invalid value for parameter 'query'")
+
+    user_tag_count = request.args.get("user_tag_count", type=str)
+    if not user_tag_count:
+        user_tag_count = "2"
+
+    (limit, offset) = get_pagination_vars()
+    like_tags_str = str.format('%{}%', search_str)
+    db = get_db()
+    with db.scoped_session() as session:
+        track_res = sqlalchemy.text(
+            f"""
+            select distinct(track_id)
+            from
+            (
+                select
+                    strip(to_tsvector(tracks.tags)) as tagstrip,
+                    track_id
+                from
+                    tracks
+                where
+                    (tags like :like_tags_query)
+                    and (is_current is true)
+                    and (is_delete is false)
+                order by
+                    updated_at desc
+            ) as t
+                where
+                tagstrip @@ to_tsquery(:query);
+            """
+        )
+        user_res = sqlalchemy.text(
+            f"""
+            select * from
+            (
+		select
+                    count(track_id),
+                    owner_id
+                from
+		(
+                    select
+                        strip(to_tsvector(tracks.tags)) as tagstrip,
+                        track_id,
+                        owner_id
+                    from
+			tracks
+                    where
+                        (tags like :like_tags_query)
+			and (is_current is true)
+                    order by
+			updated_at desc
+                ) as t
+                where
+                        tagstrip @@ to_tsquery(:query)
+                group by
+                        owner_id
+                order by
+                        count desc
+            ) as usr
+            where
+                usr.count > :user_tag_count;
+            """
+        )
+    track_ids = session.execute(
+        track_res,
+        {
+            "query":search_str,
+            "like_tags_query":like_tags_str
+        }
+    ).fetchall()
+    user_ids = session.execute(
+        user_res,
+        {
+            "query":search_str,
+            "like_tags_query":like_tags_str,
+            "user_tag_count": user_tag_count
+        }
+    ).fetchall()
+
+    # track_ids is list of tuples - simplify to 1-D list
+    track_ids = [i[0] for i in track_ids]
+
+    # user_ids is list of tuples - simplify to 1-D list
+    user_ids = [i[1] for i in user_ids]
+
+    followee_count_dict = get_followee_count_dict(session, user_ids)
+
+    tracks = (
+        session.query(Track)
+        .filter(
+            Track.is_current == True,
+            Track.is_delete == False,
+            Track.track_id.in_(track_ids),
+        )
+        .all()
+    )
+    tracks = helpers.query_result_to_list(tracks)
+    track_play_counts = get_track_play_counts(track_ids)
+    users = (
+        session.query(User)
+        .filter(
+            User.is_current == True,
+            User.is_ready == True,
+            User.user_id.in_(user_ids)
+        )
+        .all()
+    )
+    users = helpers.query_result_to_list(users)
+    for user in users:
+        user_id = user["user_id"]
+        user[response_name_constants.follower_count] = followee_count_dict.get(user_id, 0)
+
+    followee_sorted_users = \
+        sorted(users, key=lambda i: i[response_name_constants.follower_count], reverse=True)
+
+    for track in tracks:
+        track_id = track["track_id"]
+        track[response_name_constants.play_count] = track_play_counts.get(track_id, 0)
+
+    play_count_sorted_tracks = \
+        sorted(tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
+
+    # Add pagination parameters to track and user results
+    play_count_sorted_tracks = \
+            play_count_sorted_tracks[slice(offset, offset + limit, 1)]
+
+    followee_sorted_users = \
+            followee_sorted_users[slice(offset, offset + limit, 1)]
+
+    resp = {}
+    resp['tracks'] = play_count_sorted_tracks
+    resp['users'] = followee_sorted_users
+    return api_helpers.success_response(resp)
 
 # SEARCH QUERIES
 # We chose to use the raw SQL instead of SQLAlchemy because we're pushing SQLAlchemy to it's
