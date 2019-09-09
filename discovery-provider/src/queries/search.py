@@ -158,9 +158,6 @@ def search_tags():
         )
         .all()
     )
-    # preserve order from track_ids above
-    # tracks = [next(t for t in tracks if t["track_id"] == track_id) for track_id in track_ids]
-
     users = helpers.query_result_to_list(users)
     for user in users:
         user_id = user["user_id"]
