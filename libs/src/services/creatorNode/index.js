@@ -190,7 +190,7 @@ class CreatorNode {
     }
     const [trackContentResp, coverArtResp] = await Promise.all([
       this.uploadTrackContent(trackFile, onTrackProgress),
-      this.uploadImage(coverArtFile, onImageProgress)
+      this.uploadImage(coverArtFile, true, onImageProgress)
     ])
     metadata.cover_art_sizes = coverArtResp.dirCID
     metadata.track_segments = trackContentResp.track_segments

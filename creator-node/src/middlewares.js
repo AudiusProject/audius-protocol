@@ -85,7 +85,7 @@ async function postMiddleware (req, res) {
 async function _getOwnEndpoint (req) {
   const libs = req.app.get('audiusLibs')
 
-  if (!config.get('ethWallets') || !config.get('spOwnerWalletIndex') || !config.get('ethWallets').isArray() || config.get('ethWallets').length <= config.get('spOwnerWalletIndex')) {
+  if (!config.get('ethWallets') || !config.get('spOwnerWalletIndex') || !Array.isArray(config.get('ethWallets')) || config.get('ethWallets').length <= config.get('spOwnerWalletIndex')) {
     throw new Error('bad')
   }
 

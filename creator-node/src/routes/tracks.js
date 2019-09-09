@@ -66,21 +66,19 @@ module.exports = function (app) {
    */
   app.post('/tracks', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
     // TODO - input validation
-    const metadataJSON = req.body
+    const metadataJSON = req.body.metadata
 
     if (!metadataJSON.owner_id) {
       return errorResponseBadRequest('Metadata blob must include owner_id')
     }
-
-    // get file multihashes from metadata blob; confirm each has an associated file or error
     if (!metadataJSON.track_segments) {
       return errorResponseBadRequest("Metadata blob must include list of multihashes as 'segments'")
     }
 
-    // get single file per multihash or error if DNE
+    // get file multihashes from metadata blob; confirm each has an associated file or error
     let segmentFiles = []
     for await (const segment of metadataJSON.track_segments) {
-      // TODO[SS] error check
+      // TODO error check
       //  - check if properties exist, if right format, if valid multihash, if valid duration
       const segmentMultihash = segment.multihash
 
@@ -177,7 +175,7 @@ module.exports = function (app) {
     if (!track) return errorResponseBadRequest(`Could not find track with id ${blockchainId} owned by calling user`)
 
     // TODO: do some validation on metadata given
-    const metadataJSON = req.body
+    const metadataJSON = req.body.metadata
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
 
     // write to a new file so there's still a record of the old file
