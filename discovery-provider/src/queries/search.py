@@ -129,14 +129,10 @@ def search_tags():
 
     # track_ids is list of tuples - simplify to 1-D list
     track_ids = [i[0] for i in track_ids]
-    logger.warning('track_ids')
-    logger.warning(track_ids)
-
     # user_ids is list of tuples - simplify to 1-D list
     user_ids = [i[1] for i in user_ids]
 
     followee_count_dict = get_followee_count_dict(session, user_ids)
-
     tracks = (
         session.query(Track)
         .filter(
@@ -149,15 +145,16 @@ def search_tags():
 
     tracks = helpers.query_result_to_list(tracks)
     track_play_counts = get_track_play_counts(track_ids)
-    users = (
-        session.query(User)
-        .filter(
-            User.is_current == True,
-            User.is_ready == True,
-            User.user_id.in_(user_ids)
-        )
-        .all()
+    base_user_query = session.query(User)
+    base_user_query = base_user_query.filter(
+        User.is_current == True,
+        User.is_ready == True,
+        User.user_id.in_(user_ids)
     )
+    if current_user_id:
+        base_user_query = base_user_query.filter(User.user_id != current_user_id)
+
+    users = base_user_query.all()
     users = helpers.query_result_to_list(users)
     for user in users:
         user_id = user["user_id"]
