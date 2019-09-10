@@ -108,7 +108,7 @@ def search_tags():
                         count desc
             ) as usr
             where
-                usr.count > :user_tag_count;
+                usr.count >= :user_tag_count;
             """
         )
     track_ids = session.execute(
