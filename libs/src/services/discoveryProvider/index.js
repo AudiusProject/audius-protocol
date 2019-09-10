@@ -324,7 +324,7 @@ class DiscoveryProvider {
    * Perform a tags-only search. Returns tracks with required tag and users
    * that have used a tag greater than a specified number of times
    * @param {string} text search query
-   * @param {number} user_tag_count # of times a user must have used a tag to be returned
+   * @param {number} user_tag_count min # of times a user must have used a tag to be returned
    * @param {number} limit max # of items to return per list (for pagination)
    * @param {number} offset offset into list to return from (for pagination)
    */
