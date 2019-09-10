@@ -186,18 +186,21 @@ class Users extends Base {
     metadata.is_creator = true
     metadata.creator_node_endpoint = this.creatorNode.getEndpoint()
 
-    // add creator on creatorNode
-    const resp = await this.creatorNode.addCreator(metadata)
-    const multihashDecoded = Utils.decodeMultihash(resp.metadataMultihash)
-    const nodeUserId = resp.id
-
-    const { userId, txReceipt } = await this.contracts.UserFactoryClient.addUser(metadata.handle)
-
+    // Upload metadata
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
+      metadata
+    )
+    // Write metadata to chain
+    const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
+    const { userId, txReceipt } = await this.contracts.UserFactoryClient.addUser(
+      metadata.handle
+    )
     await this.contracts.UserFactoryClient.updateMultihash(userId, multihashDecoded.digest)
     await this._addUserOperations(userId, metadata)
+    // Associate the user id with the metadata and block number
+    await this.creatorNode.createCreator(userId, metadataFileUUID, txReceipt.blockNumber)
 
-    const blockNumber = txReceipt.blockNumber
-    await this.creatorNode.associateAudiusUser(nodeUserId, userId, blockNumber)
+    this.userStateManager.setCurrentUser({ ...metadata })
     return userId
   }
 
@@ -206,36 +209,33 @@ class Users extends Base {
    * @param {number} userId
    * @param {Object} metadata
    */
-  async updateCreator (userId, metadata) {
+  async updateCreator (userId, newMetadata) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
-    this.IS_OBJECT(metadata)
-    this._validateUserMetadata(metadata)
+    this.IS_OBJECT(newMetadata)
+    this._validateUserMetadata(newMetadata)
 
-    let resp = await this.creatorNode.uploadCreatorMetadata(metadata)
-    let updatedMultihashDecoded = Utils.decodeMultihash(resp.metadataMultihash)
-
-    const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
-
-    // Retrieve the current creator metadata
-    let currentMetadata = await this.discoveryProvider.getUsers(1, 0, [userId], null, null, true, null)
-    if (currentMetadata && currentMetadata[0]) {
-      currentMetadata = currentMetadata[0]
-      await this._updateUserOperations(metadata, currentMetadata, userId)
-
-      if (metadata.creator_node_endpoint !== currentMetadata.creator_node_endpoint) {
-        await this._waitForCreatorNodeUpdate(metadata.user_id, metadata.creator_node_endpoint)
-      }
-
-      const blockNumber = txReceipt.blockNumber
-      resp = await this.creatorNode.updateCreator(userId, metadata, blockNumber)
-      let updatedAudiusUserMultihash = Utils.decodeMultihash(resp.metadataMultihash)
-      if (updatedMultihashDecoded.digest !== updatedAudiusUserMultihash.digest) {
-        throw new Error(`Inconsistent multihash fields after update - ${updatedMultihashDecoded.digest} / ${updatedAudiusUserMultihash.digest}`)
-      }
-      this.userStateManager.setCurrentUser({ ...currentMetadata, ...metadata })
-    } else {
-      throw new Error(`Cannot update creator because no current record exists for creator id ${userId}`)
+    const user = this.userStateManager.getCurrentUser()
+    if (!user) {
+      throw new Error('No current user')
     }
+    const oldMetadata = { ...user }
+
+    // Upload new metadata
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
+      newMetadata
+    )
+    // Update new metadata on chain
+    let updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
+    const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
+    await this._updateUserOperations(newMetadata, oldMetadata, userId)
+    if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
+      await this._waitForCreatorNodeUpdate(newMetadata.user_id, newMetadata.creator_node_endpoint)
+    }
+    // Re-associate the user id with the metadata and block number
+    await this.creatorNode.updateCreator(userId, metadataFileUUID, txReceipt.blockNumber)
+
+    this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
+    return userId
   }
 
   /**
@@ -248,38 +248,12 @@ class Users extends Base {
 
     const user = this.userStateManager.getCurrentUser()
     if (!user) {
-      throw new Error('No current user or existing user is already a creator')
+      throw new Error('No current user')
     }
     // No-op if the user is already a creator.
     // Consider them a creator iff they have is_creator=true AND a creator node endpoint
     if (user.is_creator && user.creator_node_endpoint) return
-
-    const oldMetadata = { ...user }
-    this._validateUserMetadata(oldMetadata)
-    oldMetadata.wallet = this.web3Manager.getWalletAddress()
-
-    const newMetadata = { ...oldMetadata }
-    newMetadata.is_creator = true
-    newMetadata.creator_node_endpoint = this.creatorNode.getEndpoint()
-
-    // Upload new metadat to the creator node
-    const resp = await this.creatorNode.addCreator(newMetadata)
-
-    const multihashDecoded = Utils.decodeMultihash(resp.metadataMultihash)
-    const nodeUserId = resp.id
-    const userId = oldMetadata.user_id
-
-    // Update the creator account on chain
-    const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, multihashDecoded.digest)
-    await this._updateUserOperations(newMetadata, oldMetadata, userId)
-
-    // Associate the user in the creator node
-    const blockNumber = txReceipt.blockNumber
-    await this.creatorNode.associateAudiusUser(nodeUserId, userId, blockNumber)
-
-    this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
-
-    return userId
+    return this.addCreator({ ...user })
   }
 
   /**
