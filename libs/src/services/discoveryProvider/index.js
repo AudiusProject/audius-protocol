@@ -16,9 +16,16 @@ class DiscoveryProvider {
     this.discoveryProviderEndpoint = endpoint
   }
 
-  autoSelectEndpoint () {
-    const endpoint = this.ethContracts.autoselectDiscoveryProvider()
-    this.setEndpoint(endpoint)
+  async autoSelectEndpoint (retries = 3) {
+    if (retries > 0) {
+      const endpoint = await this.ethContracts.autoselectDiscoveryProvider()
+      if (endpoint) {
+        this.setEndpoint(endpoint)
+        return
+      }
+      return this.autoSelectEndpoint(retries - 1)
+    }
+    throw new Error('Failed to autoselect discovery provider')
   }
 
   /**
@@ -380,7 +387,7 @@ class DiscoveryProvider {
   // queryParams - object of query params to be appended to url
   async _makeRequest (requestObj) {
     if (!this.discoveryProviderEndpoint) {
-      throw new Error('No discovery provider endpoint found')
+      await this.autoSelectEndpoint()
     }
 
     let requestUrl
