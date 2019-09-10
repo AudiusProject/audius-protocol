@@ -106,25 +106,26 @@ class Tracks extends Base {
     metadata.owner_id = owner.user_id
     this._validateTrackMetadata(metadata)
 
-    // Upgrade this user to a creator if they are not one.
+    // Upgrade this user to a creator if they are not one
     await this.User.upgradeToCreator()
-    // upload track/multihash to creator node, get back metadata multihash
-    const uploadTrackResp = await this.creatorNode.uploadTrack(
+
+    // Upload metadata
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadTrackContent(
       trackFile,
       coverArtFile,
       metadata,
       onProgress
     )
-    const multihashDecoded = Utils.decodeMultihash(uploadTrackResp.metadataMultihash)
-
-    // write multihash to blockchain
+    // Write metadata to chain
+    const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
     const { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
       owner.user_id,
       multihashDecoded.digest,
       multihashDecoded.hashFn,
       multihashDecoded.size
     )
-    await this.creatorNode.associateTrack(uploadTrackResp.id, trackId, txReceipt.blockNumber)
+    // Associate the track id with the file metadata and block number
+    await this.creatorNode.createTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
     return trackId
   }
 
@@ -146,9 +147,12 @@ class Tracks extends Base {
     metadata.owner_id = ownerId
     this._validateTrackMetadata(metadata)
 
-    const uploadTrackResp = await this.creatorNode.uploadTrackMetadata(metadata)
-    const multihashDecoded = Utils.decodeMultihash(uploadTrackResp.metadataMultihash)
-
+    // Upload new metadata
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadTrackMetadata(
+      metadata
+    )
+    // Write the new metadata to chain
+    const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
     const trackId = metadata.track_id
     const { txReceipt } = await this.contracts.TrackFactoryClient.updateTrack(
       trackId,
@@ -157,8 +161,8 @@ class Tracks extends Base {
       multihashDecoded.hashFn,
       multihashDecoded.size
     )
-    const blockNumber = txReceipt.blockNumber
-    await this.creatorNode.updateTrack(trackId, blockNumber)
+    // Re-associate the track id with the new metadata
+    await this.creatorNode.updateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
     return trackId
   }
 

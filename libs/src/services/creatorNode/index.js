@@ -86,16 +86,10 @@ class CreatorNode {
   }
 
   /**
-   * Creates a new Audius creator entity on the creator node, making the user's metadata
-   * available on IPFS.
-   * @param {Object} metadata for new user
-   * @returns {Object}
-   *  {
-   *    cid: cid of user metadata on IPFS,
-   *    id: id of user to be used with associate function
-   *  }
+   * Uploads creator content to a creator node
+   * @param {object} metadata the creator metadata
    */
-  async addCreator (metadata) {
+  async uploadCreatorContent (metadata) {
     // for now, we only support one user per creator node / libs instance
     const user = this.userStateManager.getCurrentUser()
     if (user && user.is_creator) {
@@ -103,7 +97,7 @@ class CreatorNode {
     }
 
     return this._makeRequest({
-      url: '/audius_users',
+      url: '/audius_users/metadata',
       method: 'post',
       data: {
         metadata
@@ -112,54 +106,39 @@ class CreatorNode {
   }
 
   /**
-   * Updates a creator at the provided userId.
-   * @param {number} userId
-   * @param {Object} metadata
+   * Creates a creator on the creator node, associating user id with file content
+   * @param {number} audiusUserId returned by user creation on-blockchain
+   * @param {string} metadataFileUUID unique ID for metadata file
+   * @param {number} blockNumber
    */
-  async updateCreator (userId, blockNumber, metadata) {
-    return this._makeRequest({
-      url: `/audius_users/${userId}`,
-      method: 'put',
-      data: {
-        blockNumber,
-        metadata
-      }
-    })
-  }
-
-  async uploadCreatorMetadata (metadata) {
-    return this._makeRequest({
-      url: `/metadata`,
-      method: 'post',
-      data: {
-        metadata
-      }
-    }, true, false)
-  }
-
-  async uploadImage (file, square = true, onProgress) {
-    return this._uploadFile(file, '/image_upload', onProgress, { 'square': square })
-  }
-
-  async uploadTrackContent (file, onProgress) {
-    return this._uploadFile(file, '/track_content', onProgress)
-  }
-
-  /**
-   * Associates the two user IDs, completing the user creation process.
-   * @param {int} nodeUserId parameter returned at creation time by createUser function
-   * @param {int} audiusUserId returned by user creation on-blockchain
-   * @param {int} blockNumber returned by user creation on-blockchain
-   */
-  async associateAudiusUser (nodeUserId, audiusUserId, blockNumber) {
+  async createCreator (audiusUserId, metadataFileUUID, blockNumber) {
     await this._makeRequest({
-      url: `/audius_users/associate/${nodeUserId}`,
+      url: `/audius_users`,
       method: 'post',
       data: {
-        userId: audiusUserId,
+        blockchainUserId: audiusUserId,
+        metadataFileUUID,
         blockNumber
       }
-    }, true)
+    })
+  }
+
+  /**
+   * Updates a creator on the creator node, associating user id with file content
+   * @param {number} audiusUserId returned by user creation on-blockchain
+   * @param {string} metadataFileUUID unique ID for metadata file
+   * @param {number} blockNumber
+   */
+  async updateCreator (audiusUserId, metadataFileUUID, blockNumber) {
+    await this._makeRequest({
+      url: `/audius_users`,
+      method: 'post',
+      data: {
+        blockchainUserId: audiusUserId,
+        metadataFileUUID,
+        blockNumber
+      }
+    })
   }
 
   /**
@@ -169,7 +148,7 @@ class CreatorNode {
    * @param {object} metadata the metadata for the track
    * @param {function?} onProgress an optional on progerss callback
    */
-  async uploadTrack (trackFile, coverArtFile, metadata, onProgress = () => {}) {
+  async uploadTrackContent (trackFile, coverArtFile, metadata, onProgress = () => {}) {
     let loadedImageBytes = 0
     let loadedTrackBytes = 0
     let totalImageBytes = 0
@@ -189,7 +168,7 @@ class CreatorNode {
       }
     }
     const [trackContentResp, coverArtResp] = await Promise.all([
-      this.uploadTrackContent(trackFile, onTrackProgress),
+      this.uploadTrackAudio(trackFile, onTrackProgress),
       this.uploadImage(coverArtFile, true, onImageProgress)
     ])
     metadata.cover_art_sizes = coverArtResp.dirCID
@@ -205,7 +184,7 @@ class CreatorNode {
    */
   async uploadTrackMetadata (metadata) {
     return this._makeRequest({
-      url: '/tracks',
+      url: '/tracks/metadata',
       method: 'post',
       data: {
         metadata
@@ -214,28 +193,36 @@ class CreatorNode {
   }
 
   /**
-   * Associates nodeTrackID (returned by createTrack) with audiusTrackId from blockchain.
-   * Completes the track creation process.
-   * @param {number} nodeTrackId returned at creation time by createTrack function
+   * Creates a track on the creator node, associating track id with file content
    * @param {number} audiusTrackId returned by track creation on-blockchain
+   * @param {string} metadataFileUUID unique ID for metadata file
    * @param {number} blockNumber
    */
-  async associateTrack (nodeTrackId, audiusTrackId, blockNumber) {
+  async createTrack (audiusTrackId, metadataFileUUID, blockNumber) {
     await this._makeRequest({
-      url: `/tracks/associate/${nodeTrackId}`,
+      url: `/tracks`,
       method: 'post',
       data: {
         blockchainTrackId: audiusTrackId,
+        metadataFileUUID,
         blockNumber
       }
     })
   }
 
-  async updateTrack (trackId, blockNumber) {
-    return this._makeRequest({
-      url: `/tracks/${trackId}`,
+  /**
+   * Updates a track on the creator node, associating track id with file content
+   * @param {number} audiusTrackId returned by track creation on-blockchain
+   * @param {string} metadataFileUUID unique ID for metadata file
+   * @param {number} blockNumber
+   */
+  async updateTrack (audiusTrackId, metadataFileUUID, blockNumber) {
+    await this._makeRequest({
+      url: `/tracks`,
       method: 'put',
       data: {
+        blockchainTrackId: audiusTrackId,
+        metadataFileUUID,
         blockNumber
       }
     })
@@ -246,6 +233,14 @@ class CreatorNode {
       url: '/tracks',
       method: 'get'
     })
+  }
+
+  async uploadImage (file, square = true, onProgress) {
+    return this._uploadFile(file, '/image_upload', onProgress, { 'square': square })
+  }
+
+  async uploadTrackAudio (file, onProgress) {
+    return this._uploadFile(file, '/track_content', onProgress)
   }
 
   async getHealthy () {
