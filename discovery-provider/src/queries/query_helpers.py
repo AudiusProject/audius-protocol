@@ -541,7 +541,7 @@ def get_track_play_counts(track_ids):
     keys = list(resp.json().keys())
 
     # Scenario should never arise, since we don't impose date parameter on initial query 
-    if len(keys) != 1:
+    if keys and len(keys) != 1:
         raise Exception('Invalid number of keys')
 
     # Parse listen query results into track listen count dictionary
