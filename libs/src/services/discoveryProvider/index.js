@@ -12,6 +12,15 @@ class DiscoveryProvider {
     this.userStateManager = userStateManager
   }
 
+  setEndpoint (endpoint) {
+    this.discoveryProviderEndpoint = endpoint
+  }
+
+  autoSelectEndpoint () {
+    const endpoint = this.ethContracts.autoselectDiscoveryProvider()
+    this.setEndpoint(endpoint)
+  }
+
   /**
    * get users with all relevant user data
    * can be filtered by providing an integer array of ids
@@ -389,11 +398,17 @@ class DiscoveryProvider {
     const axiosRequest = {
       url: requestUrl,
       headers: headers,
-      method: 'get'
+      method: 'get',
+      timeout: 3000
     }
 
-    const response = await axios(axiosRequest)
-    return Utils.parseDataFromResponse(response)['data']
+    try {
+      const response = await axios(axiosRequest)
+      return Utils.parseDataFromResponse(response)['data']
+    } catch (e) {
+      await this.autoSelectEndpoint()
+      return this._makeRequest(requestObj)
+    }
   }
 }
 
