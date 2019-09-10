@@ -219,12 +219,6 @@ def search_tags():
             saved_track[response_name_constants.play_count] = \
                     track_play_counts.get(saved_track_id, 0)
 
-        play_count_sorted_saved_tracks = \
-            sorted(saved_tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
-
-        play_count_sorted_saved_tracks = \
-                play_count_sorted_saved_tracks[slice(offset, offset + limit, 1)]
-
         # Query followed users that have referenced this tag
         followed_user_query = (
             session.query(Follow.followee_user_id)
@@ -251,6 +245,12 @@ def search_tags():
             user_id = followed_user["user_id"]
             followed_user[response_name_constants.follower_count] = \
                     followee_count_dict.get(user_id, 0)
+
+        play_count_sorted_saved_tracks = \
+            sorted(saved_tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
+
+        play_count_sorted_saved_tracks = \
+                play_count_sorted_saved_tracks[slice(offset, offset + limit, 1)]
 
         followed_users_followee_sorted = \
             sorted(
