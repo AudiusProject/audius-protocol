@@ -28,7 +28,6 @@ async function authMiddleware (req, res, next) {
     wallet: cnodeUser.walletPublicKey,
     cnodeUserUUID: cnodeUserUUID
   }
-
   next()
 }
 

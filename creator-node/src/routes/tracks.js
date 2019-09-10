@@ -67,25 +67,21 @@ module.exports = function (app) {
     // TODO - input validation
     const metadataJSON = req.body.metadata
 
-    if (!metadataJSON.owner_id || !metadataJSON.track_segments) {
+    if (!metadataJSON.owner_id || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
       return errorResponseBadRequest('Metadata object must include owner_id and track_segments array')
     }
 
     // Ensure each segment multihash in metadata obj has an associated file, else error.
-    for await (const segment of metadataJSON.track_segments) {
-      // TODO - check if: properties exist, right format, valid multihash, valid duration.
-      const segmentMultihash = segment.multihash
-      const file = await models.File.findOne({
-        where: {
-          multihash: segmentMultihash,
-          cnodeUserUUID: req.session.cnodeUserUUID,
-          trackUUID: null
-        }
-      })
+    await Promise.all(metadataJSON.track_segments.map(async segment => {
+      const file = await models.File.findOne({ where: {
+        multihash: segment.multihash,
+        cnodeUserUUID: req.session.cnodeUserUUID,
+        trackUUID: null
+      } })
       if (!file) {
-        return errorResponseBadRequest(`No file found for provided segment multihash: ${segmentMultihash}`)
+        return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
       }
-    }
+    }))
 
     // Store + pin metadata multihash to disk + IPFS.
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
@@ -103,8 +99,8 @@ module.exports = function (app) {
     const txBlockNumber = req.body.blockNumber
     const metadataFileUUID = req.body.metadataFileUUID
 
-    if (!blockchainId || !txBlockNumber) {
-      return errorResponseBadRequest('Must include blockchainId and blockNumber.')
+    if (!blockchainId || !txBlockNumber || !metadataFileUUID) {
+      return errorResponseBadRequest('Must include blockchainId, blockNumber, and metadataFileUUID.')
     }
 
     // Error on outdated blocknumber.
@@ -122,6 +118,9 @@ module.exports = function (app) {
     let metadataJSON
     try {
       metadataJSON = require(file.storagePath)
+      if (!metadataJSON || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
+        return errorResponseServerError(`Malformatted metadataJSON stored for metadataFileUUID ${metadataFileUUID}.`)
+      }
     } catch (e) {
       return errorResponseServerError(`No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}.`)
     }
@@ -146,24 +145,21 @@ module.exports = function (app) {
     }, { transaction: t })
 
     // Associate matching segment files on DB with newly created track.
-    for await (const segmentFile of metadataJSON.track_segments) {
-      // TODO - check if: properties exist, right format, valid multihash, valid duration.
+    await Promise.all(metadataJSON.track_segments.map(async segment => {
       // Update each segment file; error if not found.
       const numAffectedRows = await models.File.update(
         { trackUUID: track.trackUUID },
-        {
-          where: {
-            multihash: segmentFile.multihash,
-            cnodeUserUUID,
-            trackUUID: null
-          },
-          transaction: t
-        }
+        { where: {
+          multihash: segment.multihash,
+          cnodeUserUUID,
+          trackUUID: null
+        },
+        transaction: t }
       )
       if (!numAffectedRows) {
-        return errorResponseBadRequest(`No file found for provided segment multihash: ${segmentFile.multihash}`)
+        return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
       }
-    }
+    }))
 
     // Update cnodeUser's latestBlockNumber
     await cnodeUser.update({ latestBlockNumber: txBlockNumber }, { transaction: t })
@@ -186,8 +182,8 @@ module.exports = function (app) {
     const txBlockNumber = req.body.blockNumber
     const metadataFileUUID = req.body.metadataFileUUID
 
-    if (!blockchainId || !txBlockNumber) {
-      return errorResponseBadRequest('Must include blockchainId and blockNumber.')
+    if (!blockchainId || !txBlockNumber || !metadataFileUUID) {
+      return errorResponseBadRequest('Must include blockchainId, blockNumber, and metadataFileUUID.')
     }
 
     // Error on outdated blocknumber.
@@ -209,6 +205,9 @@ module.exports = function (app) {
     let metadataJSON
     try {
       metadataJSON = require(file.storagePath)
+      if (!metadataJSON || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
+        return errorResponseServerError(`Malformatted metadataJSON stored for metadataFileUUID ${metadataFileUUID}.`)
+      }
     } catch (e) {
       return errorResponseServerError(`No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}.`)
     }
@@ -231,23 +230,20 @@ module.exports = function (app) {
     }, { transaction: t })
 
     // Associate matching segment files with track.
-    for await (const segmentFile of metadataJSON.track_segments) {
-      // TODO - check if: properties exist, right format, valid multihash, valid duration.
+    await Promise.all(metadataJSON.track_segments.map(async segment => {
       // Update each segment file; error if not found.
       const numAffectedRows = await models.File.update(
         { trackUUID: track.trackUUID },
-        {
-          where: {
-            multihash: segmentFile.multihash,
-            cnodeUserUUID
-          },
-          transaction: t
-        }
+        { where: {
+          multihash: segment.multihash,
+          cnodeUserUUID
+        },
+        transaction: t }
       )
       if (!numAffectedRows) {
-        return errorResponseBadRequest(`No file found for provided segment multihash: ${segmentFile.multihash}`)
+        return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
       }
-    }
+    }))
 
     // Update cnodeUser's latestBlockNumber
     await cnodeUser.update({ latestBlockNumber: txBlockNumber }, { transaction: t })

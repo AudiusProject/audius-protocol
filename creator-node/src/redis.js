@@ -4,7 +4,6 @@ const Redis = require('ioredis')
 const { errorResponse, sendResponse } = require('./apiHelpers')
 
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
-module.exports = redisClient
 
 const EXPIRATION = 90 // seconds
 class RedisLock {
@@ -24,7 +23,6 @@ class RedisLock {
     return redisClient.del(key)
   }
 }
-module.exports.lock = RedisLock
 
 /** Ensure resource write access */
 async function nodeSyncMiddleware (req, res, next) {
@@ -40,10 +38,11 @@ async function nodeSyncMiddleware (req, res, next) {
   next()
 }
 
-module.exports.nodeSyncMiddleware = nodeSyncMiddleware
-
 function getNodeSyncRedisKey (wallet) {
   return `NODESYNC.${wallet}`
 }
 
+module.exports = redisClient
+module.exports.lock = RedisLock
+module.exports.nodeSyncMiddleware = nodeSyncMiddleware
 module.exports.getNodeSyncRedisKey = getNodeSyncRedisKey

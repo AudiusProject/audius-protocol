@@ -3,12 +3,14 @@ const request = require('supertest')
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
+const { getLibsMock } = require('./lib/libsMock')
 
 describe('test AudiusUsers', function () {
-  let app, server, session, ipfsMock
+  let app, server, session, ipfsMock, libsMock
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
-    const appInfo = await getApp(null, ipfsMock)
+    libsMock = getLibsMock()
+    const appInfo = await getApp(ipfsMock, libsMock)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser()
@@ -27,7 +29,7 @@ describe('test AudiusUsers', function () {
     request(app)
       .post('/audius_users')
       .set('X-Session-ID', session)
-      .send(metadata)
+      .send({ metadata })
       .expect(200)
       .end((err, res) => {
         if (err) {
@@ -50,7 +52,7 @@ describe('test AudiusUsers', function () {
     request(app)
       .post('/audius_users')
       .set('X-Session-ID', session)
-      .send(metadata)
+      .send({ metadata })
       .expect(200)
       .end((err, res) => {
         if (err) {
@@ -62,9 +64,9 @@ describe('test AudiusUsers', function () {
         }
 
         request(app)
-          .post('/audius_users/associate/' + res.body.id)
+          .post(`/audius_users/associate/${res.body.id}`)
           .set('X-Session-ID', session)
-          .send({ userId: 5 })
+          .send({ userId: 5, blockNumber: 20 })
           .expect(200)
           .end((err, res) => {
             if (err) {

@@ -200,6 +200,12 @@ const config = convict({
     env: 'ethOwnerWallet',
     default: null
   },
+  spOwnerWallet: {
+    doc: 'Service provider owner wallet',
+    format: String,
+    env: 'spOwnerWallet',
+    default: null
+  },
   ethWallets: {
     doc: 'all unlocked accounts from eth chain',
     format: Array,
@@ -234,9 +240,10 @@ const config = convict({
   // }
 })
 
-// if you wanted to load a file
-// this is lower precendence than env variables, so if registryAddress or ownerWallet env
-// variables are defined, they take precendence
+/*
+ * If you wanted to load a file, this is lower precendence than env variables.
+ * So if registryAddress or ownerWallet env variables are defined, they take precendence.
+ */
 
 // TODO(DM) - remove these defaults
 const defaultConfigExists = fs.existsSync('default-config.json')

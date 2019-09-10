@@ -4,14 +4,13 @@ const S3 = require('aws-sdk').S3
 const ON_DEATH = require('death')
 const ipfsClient = require('ipfs-http-client')
 const path = require('path')
+const AudiusLibs = require('@audius/libs')
 
 const initializeApp = require('./app')
 const config = require('./config')
 const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
-
-const AudiusLibs = require('@audius/libs')
 
 const initAudiusLibs = async () => {
   const ethWeb3 = await AudiusLibs.Utils.configureWeb3(

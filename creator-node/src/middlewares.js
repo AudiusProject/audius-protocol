@@ -9,12 +9,14 @@ async function preMiddleware (req, res, next) {
     return sendResponse(req, res, errorResponseUnauthorized('User must be logged in'))
   }
 
+
   let serviceEndpoint
   try {
     serviceEndpoint = await _getOwnEndpoint(req)
   } catch (e) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
+
 
   let creatorNodeEndpoints
   try {
@@ -24,6 +26,7 @@ async function preMiddleware (req, res, next) {
   }
   const primaryEndpoint = creatorNodeEndpoints[0]
 
+
   // error if self is not primary
   if (primaryEndpoint && serviceEndpoint !== primaryEndpoint) {
     return sendResponse(
@@ -32,6 +35,7 @@ async function preMiddleware (req, res, next) {
       errorResponseUnauthorized(`This node (${serviceEndpoint}) is not primary for user. Primary is: ${primaryEndpoint}`)
     )
   }
+
 
   next()
 }
@@ -85,15 +89,17 @@ async function postMiddleware (req, res) {
 async function _getOwnEndpoint (req) {
   const libs = req.app.get('audiusLibs')
 
-  if (!config.get('ethWallets') || !config.get('spOwnerWalletIndex') || !Array.isArray(config.get('ethWallets')) || config.get('ethWallets').length <= config.get('spOwnerWalletIndex')) {
+  let spOwnerWallet
+  if (config.get('spOwnerWallet')) {
+    spOwnerWallet = config.get('spOwnerWallet')
+  } else if (config.get('ethWallets') && config.get('spOwnerWalletIndex') && Array.isArray(config.get('ethWallets')) && config.get('ethWallets').length > config.get('spOwnerWalletIndex')) {
+    spOwnerWallet = config.get('ethWallets')[config.get('spOwnerWalletIndex')]
+  } else {
     throw new Error('bad')
   }
 
-  // const ethWallets = config.get('ethWallets')
-  // const spOwnerWalletIndex = config.get('spOwnerWalletIndex')
-
   const spInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress(
-    config.get('ethWallets')[config.get('spOwnerWalletIndex')],
+    spOwnerWallet,
     'creator-node'
   )
 

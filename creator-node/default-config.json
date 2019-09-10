@@ -29,5 +29,7 @@
   "ethTokenAddress": "",
   "ethRegistryAddress": "",
   "ethOwnerWallet": "",
-  "ethWallets": ""
+  "ethWallets": "",
+  "spOwnerWalletIndex": 1,
+  "spOwnerWallet": ""
 }

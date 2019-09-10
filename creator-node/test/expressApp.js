@@ -6,7 +6,7 @@ const { createStarterCNodeUser } = require('./lib/dataSeeds')
 describe('test expressApp', function () {
   let app, server, session
   beforeEach(async () => {
-    const appInfo = await getApp(null, null)
+    const appInfo = await getApp()
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser()
@@ -17,7 +17,7 @@ describe('test expressApp', function () {
 
   it('responds 404 with invalid endpoint', function (done) {
     request(app)
-      .get('/test')
+      .get('/asdf')
       .expect(404, done)
   })
 
