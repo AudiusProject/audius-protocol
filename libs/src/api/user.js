@@ -176,7 +176,7 @@ class Users extends Base {
     this.IS_OBJECT(metadata)
     this._validateUserMetadata(metadata)
 
-    // for now, we only support one user per creator node / libs instance
+    // We only support one user per creator node / libs instance
     const user = this.userStateManager.getCurrentUser()
     if (user) {
       throw new Error('User already created for creator node / libs instance')
@@ -253,7 +253,31 @@ class Users extends Base {
     // No-op if the user is already a creator.
     // Consider them a creator iff they have is_creator=true AND a creator node endpoint
     if (user.is_creator && user.creator_node_endpoint) return
-    return this.addCreator({ ...user })
+
+    const userId = user.user_id
+    const oldMetadata = { ...user }
+    const newMetadata = { ...user }
+
+    newMetadata.wallet = this.web3Manager.getWalletAddress()
+    newMetadata.is_creator = true
+    newMetadata.creator_node_endpoint = this.creatorNode.getEndpoint()
+
+    // Upload new metadata
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
+      newMetadata
+    )
+    // Update new metadata on chain
+    let updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
+    const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
+    await this._updateUserOperations(newMetadata, oldMetadata, userId)
+    if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
+      await this._waitForCreatorNodeUpdate(newMetadata.user_id, newMetadata.creator_node_endpoint)
+    }
+    // Re-associate the user id with the metadata and block number
+    await this.creatorNode.updateCreator(userId, metadataFileUUID, txReceipt.blockNumber)
+
+    this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
+    return userId
   }
 
   /**
