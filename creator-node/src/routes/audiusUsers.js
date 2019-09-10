@@ -1,5 +1,4 @@
 const { Buffer } = require('ipfs-http-client')
-const path = require('path')
 const fs = require('fs')
 
 const models = require('../models')
@@ -27,12 +26,12 @@ module.exports = function (app) {
    * and associates image file entries with audiusUser. Ends audiusUser creation process.
    */
   app.post('/audius_users', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const blockchainId = req.body.userId
+    const blockchainId = req.body.blockchainUserId
     const txBlockNumber = req.body.blockNumber
     const metadataFileUUID = req.body.metadataFileUUID
 
     if (!blockchainId || !txBlockNumber || !metadataFileUUID) {
-      return errorResponseBadRequest('Must include userId, blockNumber, and metadataFileUUID.')
+      return errorResponseBadRequest('Must include blockchainUserId, blockNumber, and metadataFileUUID.')
     }
 
     // Error on outdated blocknumber.
@@ -49,7 +48,7 @@ module.exports = function (app) {
     }
     let metadataJSON
     try {
-      metadataJSON = JSON.parse(fs.readFileSync(path.join(process.cwd(), file.storagePath)))
+      metadataJSON = JSON.parse(fs.readFileSync(file.storagePath))
     } catch (e) {
       return errorResponseServerError(`No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}.`)
     }
@@ -92,12 +91,12 @@ module.exports = function (app) {
    * and associates image file entries with audiusUser. Ends audiusUser update process.
    */
   app.put('/audius_users', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const blockchainId = req.body.userId
+    const blockchainId = req.body.blockchainUserId
     const txBlockNumber = req.body.blockNumber
     const metadataFileUUID = req.body.metadataFileUUID
 
     if (!blockchainId || !txBlockNumber || !metadataFileUUID) {
-      return errorResponseBadRequest('Must include userId, blockNumber, and metadataFileUUID.')
+      return errorResponseBadRequest('Must include blockchainUserId, blockNumber, and metadataFileUUID.')
     }
 
     // Error on outdated blocknumber.
@@ -118,7 +117,7 @@ module.exports = function (app) {
     }
     let metadataJSON
     try {
-      metadataJSON = JSON.parse(fs.readFileSync(path.join(process.cwd(), file.storagePath)))
+      metadataJSON = JSON.parse(fs.readFileSync(file.storagePath))
     } catch (e) {
       return errorResponseServerError(`No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}.`)
     }

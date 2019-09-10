@@ -142,16 +142,18 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       responseType: 'json'
     })
     if (resp.status !== 200) throw new Error(resp.data['error'])
-    if (!resp.data.hasOwnProperty('cnodeUsers')) {
-      throw new Error(`Malformed response from ${creatorNodeEndpoint}. "cnodeUsers" property not found on response object.`)
+    // TODO - explain patch
+    if (!resp.data) {
+      if (resp.request && resp.request.responseText) {
+        resp.data = JSON.parse(resp.request.responseText)
+      } else throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
+    }
+    if (!resp.data.hasOwnProperty('cnodeUsers') || !resp.data.hasOwnProperty('ipfsIDObj') || !resp.data.ipfsIDObj.hasOwnProperty('addresses')) {
+      throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
     }
 
     // Attempt to connect directly to target CNode's IPFS node.
-    if (resp.data.hasOwnProperty('ipfsIDObj') && resp.data.ipfsIDObj.hasOwnProperty('addresses')) {
-      await _initBootstrapAndRefreshPeers(req, resp.data.ipfsIDObj.addresses, redisKey)
-    } else {
-      throw new Error(`Malformed response from ${creatorNodeEndpoint}. Malformatted or missing "ipfsIDObj" property.`)
-    }
+    await _initBootstrapAndRefreshPeers(req, resp.data.ipfsIDObj.addresses, redisKey)
     req.logger.info(redisKey, 'IPFS Nodes connected + data export received')
 
     // For each CNodeUser, replace local DB state with retrieved data + fetch + save missing files.
@@ -173,18 +175,18 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         where: { walletPublicKey: fetchedWalletPublicKey },
         transaction: t
       })
-
-      // Ensure imported data has higher blocknumber than already stored.
-      const latestBlockNumber = cnodeUser.latestBlockNumber
       const fetchedLatestBlockNumber = fetchedCNodeUser.latestBlockNumber
-      if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
-        (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber <= latestBlockNumber)
-      ) {
-        throw new Error(`Imported data is outdated, will not sync.`)
-      }
 
       // Delete any previously stored data for cnodeUser in reverse table dependency order (cannot be parallelized).
       if (cnodeUser) {
+        // Ensure imported data has higher blocknumber than already stored.
+        const latestBlockNumber = cnodeUser.latestBlockNumber
+        if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
+          (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber <= latestBlockNumber)
+        ) {
+          throw new Error(`Imported data is outdated, will not sync.`)
+        }
+
         const cnodeUserUUID = cnodeUser.cnodeUserUUID
         req.logger.info(redisKey, `beginning delete ops for cnodeUserUUID ${cnodeUserUUID}`)
 

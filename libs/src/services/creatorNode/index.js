@@ -90,12 +90,6 @@ class CreatorNode {
    * @param {object} metadata the creator metadata
    */
   async uploadCreatorContent (metadata) {
-    // for now, we only support one user per creator node / libs instance
-    const user = this.userStateManager.getCurrentUser()
-    if (user && user.is_creator) {
-      throw new Error('User already created for creator node / libs instance')
-    }
-
     return this._makeRequest({
       url: '/audius_users/metadata',
       method: 'post',
@@ -132,7 +126,7 @@ class CreatorNode {
   async updateCreator (audiusUserId, metadataFileUUID, blockNumber) {
     await this._makeRequest({
       url: `/audius_users`,
-      method: 'post',
+      method: 'put',
       data: {
         blockchainUserId: audiusUserId,
         metadataFileUUID,
@@ -175,7 +169,7 @@ class CreatorNode {
     metadata.track_segments = trackContentResp.track_segments
     // Creates new track entity on creator node, making track's metadata available on IPFS
     // @returns {Object} {cid: cid of track metadata on IPFS, id: id of track to be used with associate function}
-    this.uploadTrackMetadata(metadata)
+    return this.uploadTrackMetadata(metadata)
   }
 
   /**

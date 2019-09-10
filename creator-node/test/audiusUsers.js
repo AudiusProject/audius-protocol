@@ -56,7 +56,7 @@ describe('test AudiusUsers', function () {
     await request(app)
       .post('/audius_users')
       .set('X-Session-ID', session)
-      .send({ userId: 1, blockNumber: 10, metadataFileUUID: resp.body.metadataFileUUID })
+      .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.metadataFileUUID })
       .expect(200)
   })
 })
