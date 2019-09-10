@@ -1,4 +1,5 @@
 const path = require('path')
+const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
 
 const ffmpeg = require('../ffmpeg')
@@ -91,8 +92,8 @@ module.exports = function (app) {
   }))
 
   /**
-   * Given track blockchainId, txBlockNumber, and metadataFileUUID, creates DB track entry
-   * and associates segment file entries with track. Ends track creation process.
+   * Given track blockchainId, txBlockNumber, and metadataFileUUID, creates Track DB track entry
+   * and associates segment & image file entries with track. Ends track creation process.
    */
   app.post('/tracks', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
     const blockchainId = req.body.blockchainTrackId
@@ -100,7 +101,7 @@ module.exports = function (app) {
     const metadataFileUUID = req.body.metadataFileUUID
 
     if (!blockchainId || !txBlockNumber || !metadataFileUUID) {
-      return errorResponseBadRequest('Must include blockchainId, blockNumber, and metadataFileUUID.')
+      return errorResponseBadRequest('Must include blockchainTrackId, blockNumber, and metadataFileUUID.')
     }
 
     // Error on outdated blocknumber.
@@ -110,14 +111,14 @@ module.exports = function (app) {
     }
     const cnodeUserUUID = req.session.cnodeUserUUID
 
-    // Fetch metadataJSON for metadataFileUUID
-    const file = models.File.findOne({ where: { fileUUID: metadataFileUUID, cnodeUserUUID } })
+    // Fetch metadataJSON for metadataFileUUID.
+    const file = await models.File.findOne({ where: { fileUUID: metadataFileUUID, cnodeUserUUID } })
     if (!file) {
       return errorResponseBadRequest(`No file found for provided metadataFileUUID ${metadataFileUUID}.`)
     }
     let metadataJSON
     try {
-      metadataJSON = require(file.storagePath)
+      metadataJSON = JSON.parse(fs.readFileSync(path.join(process.cwd(), file.storagePath)))
       if (!metadataJSON || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
         return errorResponseServerError(`Malformatted metadataJSON stored for metadataFileUUID ${metadataFileUUID}.`)
       }
@@ -125,7 +126,7 @@ module.exports = function (app) {
       return errorResponseServerError(`No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}.`)
     }
 
-    // Get coverArtFileUUID for multihash found in metadata object, if it exists.
+    // Get coverArtFileUUID for multihash in metadata object, if present.
     let coverArtFileUUID
     try {
       coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_art_sizes)
@@ -135,7 +136,7 @@ module.exports = function (app) {
 
     const t = await models.sequelize.transaction()
 
-    // Create track entry on db - will fail if one already exists.
+    // Create track entry on db - will fail if already present.
     const track = await models.Track.create({
       cnodeUserUUID: cnodeUserUUID,
       metadataFileUUID,
@@ -161,12 +162,12 @@ module.exports = function (app) {
       }
     }))
 
-    // Update cnodeUser's latestBlockNumber
+    // Update cnodeUser's latestBlockNumber.
     await cnodeUser.update({ latestBlockNumber: txBlockNumber }, { transaction: t })
 
     try {
       await t.commit()
-      return successResponse()
+      return successResponse({ trackUUID: track.trackUUID })
     } catch (e) {
       await t.rollback()
       return errorResponseServerError(e.message)
@@ -174,7 +175,7 @@ module.exports = function (app) {
   }), postMiddleware)
 
   /**
-   * Given track blockchainId, txBlockNumber, and metadataFileUUID, updates DB track entry
+   * Given track blockchainId, txBlockNumber, and metadataFileUUID, updates Track DB track entry
    * and associates segment file entries with track. Ends track update process.
    */
   app.put('/tracks', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
@@ -195,16 +196,16 @@ module.exports = function (app) {
 
     // Ensure track entry exists in DB.
     const track = await models.Track.findOne({ where: { blockchainId, cnodeUserUUID } })
-    if (!track) return errorResponseBadRequest(`No track found for blockchainId ${blockchainId} for User.`)
+    if (!track) return errorResponseBadRequest(`No track found for blockchainId ${blockchainId} for wallet.`)
 
     // Fetch metadataJSON for metadataFileUUID
-    const file = models.File.findOne({ where: { fileUUID: metadataFileUUID, cnodeUserUUID } })
+    const file = await models.File.findOne({ where: { fileUUID: metadataFileUUID, cnodeUserUUID } })
     if (!file) {
       return errorResponseBadRequest(`No file found for provided metadataFileUUID ${metadataFileUUID}.`)
     }
     let metadataJSON
     try {
-      metadataJSON = require(file.storagePath)
+      metadataJSON = JSON.parse(fs.readFileSync(path.join(process.cwd(), file.storagePath)))
       if (!metadataJSON || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
         return errorResponseServerError(`Malformatted metadataJSON stored for metadataFileUUID ${metadataFileUUID}.`)
       }
@@ -212,7 +213,7 @@ module.exports = function (app) {
       return errorResponseServerError(`No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}.`)
     }
 
-    // Get coverArtFileUUID for multihash found in metadata object, if it exists.
+    // Get coverArtFileUUID for multihash found in metadata object, if present.
     let coverArtFileUUID
     try {
       coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_art_sizes)
@@ -222,7 +223,7 @@ module.exports = function (app) {
 
     const t = await models.sequelize.transaction()
 
-    // Update track entry on db - will fail if does not already exist.
+    // Update track entry on db - will fail if not already present.
     await track.update({
       metadataFileUUID,
       metadataJSON,
@@ -250,7 +251,7 @@ module.exports = function (app) {
 
     try {
       await t.commit()
-      return successResponse()
+      return successResponse({ trackUUID: track.trackUUID })
     } catch (e) {
       await t.rollback()
       return errorResponseServerError(e.message)
@@ -261,7 +262,6 @@ module.exports = function (app) {
     const tracks = await models.Track.findAll({
       where: { cnodeUserUUID: req.session.cnodeUserUUID }
     })
-
     return successResponse({ 'tracks': tracks })
   }))
 }

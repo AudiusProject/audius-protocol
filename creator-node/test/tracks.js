@@ -263,8 +263,8 @@ describe('test Tracks', function () {
 
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
-    libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(2)
-    libsMock.User.getUsers.exactly(2)
+    libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(4)
+    libsMock.User.getUsers.exactly(4)
 
     const resp1 = await request(app)
       .post('/track_content')
@@ -278,7 +278,6 @@ describe('test Tracks', function () {
       throw new Error('Incorrect return values')
     }
 
-    // creates Audius user
     const metadata = {
       test: 'field1',
       track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
@@ -295,9 +294,8 @@ describe('test Tracks', function () {
       throw new Error('invalid return data')
     }
 
-    // associates track with blockchain id
-    request(app)
-      .post(`/tracks/${resp2.body.id}`)
+    await request(app)
+      .post('/tracks')
       .set('X-Session-ID', session)
       .send({ blockchainTrackId: 1, blockNumber: 10, metadataFileUUID: resp2.body.metadataFileUUID })
       .expect(200)

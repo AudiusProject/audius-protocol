@@ -1,4 +1,3 @@
-const { Buffer } = require('ipfs-http-client')
 const Redis = require('ioredis')
 const path = require('path')
 const fs = require('fs')
@@ -6,7 +5,7 @@ const { promisify } = require('util')
 const writeFile = promisify(fs.writeFile)
 const mkdir = promisify(fs.mkdir)
 
-const { saveFileFromBuffer, upload } = require('../fileManager')
+const { upload } = require('../fileManager')
 const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound } = require('../apiHelpers')
 
 const models = require('../models')
@@ -121,15 +120,6 @@ module.exports = function (app) {
       return errorResponseServerError(e)
     }
   }), postMiddleware)
-
-  /** upload metadata to IPFS and save in Files table */
-  app.post('/metadata', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const metadataJSON = req.body.metadata
-    req.logger.info('metadataJSON', metadataJSON)
-    const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
-    const { multihash } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
-    return successResponse({ 'metadataMultihash': multihash })
-  }))
 
   app.get('/ipfs_peer_info', handleResponse(async (req, res) => {
     const ipfs = req.app.get('ipfsAPI')

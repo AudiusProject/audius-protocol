@@ -39,15 +39,13 @@ async function saveFileFromBuffer (req, buffer, fileType) {
   await ipfs.pin.add(multihash)
 
   // add reference to file to database
-  const file = (await models.File.findOrCreate({ where:
-    {
-      cnodeUserUUID: req.session.cnodeUserUUID,
-      multihash: multihash,
-      sourceFile: req.fileName,
-      storagePath: dstPath,
-      type: fileType
-    }
-  }))[0].dataValues
+  const file = (await models.File.findOrCreate({ where: {
+    cnodeUserUUID: req.session.cnodeUserUUID,
+    multihash: multihash,
+    sourceFile: req.fileName,
+    storagePath: dstPath,
+    type: fileType
+  } }))[0].dataValues
 
   req.logger.info('\nAdded file:', multihash, 'file id', file.fileUUID)
   return { multihash: multihash, fileUUID: file.fileUUID }

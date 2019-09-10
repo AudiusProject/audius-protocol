@@ -19,61 +19,44 @@ describe('test AudiusUsers', function () {
     await server.close()
   })
 
-  it('creates Audius user', function (done) {
-    const metadata = {
-      test: 'field1'
-    }
+  it('creates Audius user', async function () {
+    const metadata = { test: 'field1' }
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
     ipfsMock.pin.add.once().withArgs('testCIDLink')
 
-    request(app)
-      .post('/audius_users')
+    const resp = await request(app)
+      .post('/audius_users/metadata')
       .set('X-Session-ID', session)
       .send({ metadata })
       .expect(200)
-      .end((err, res) => {
-        if (err) {
-          return done(err)
-        }
-        if (res.body.metadataMultihash !== 'testCIDLink') {
-          return done(new Error('invalid return data'))
-        }
-        done()
-      })
+
+    if (resp.body.metadataMultihash !== 'testCIDLink') {
+      throw new Error('invalid return data')
+    }
   })
 
-  it('completes Audius user creation', function (done) {
-    const metadata = {
-      test: 'field1'
-    }
+  it('completes Audius user creation', async function () {
+    const metadata = { test: 'field1' }
+
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
     ipfsMock.pin.add.once().withArgs('testCIDLink')
+    libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(2)
+    libsMock.User.getUsers.exactly(2)
 
-    request(app)
-      .post('/audius_users')
+    const resp = await request(app)
+      .post('/audius_users/metadata')
       .set('X-Session-ID', session)
       .send({ metadata })
       .expect(200)
-      .end((err, res) => {
-        if (err) {
-          return done(err)
-        }
 
-        if (res.body.metadataMultihash !== 'testCIDLink') {
-          return done(new Error('invalid return data'))
-        }
+    if (resp.body.metadataMultihash !== 'testCIDLink') {
+      throw new Error('invalid return data')
+    }
 
-        request(app)
-          .post(`/audius_users/associate/${res.body.id}`)
-          .set('X-Session-ID', session)
-          .send({ userId: 5, blockNumber: 20 })
-          .expect(200)
-          .end((err, res) => {
-            if (err) {
-              return done(err)
-            }
-            done()
-          })
-      })
+    await request(app)
+      .post('/audius_users')
+      .set('X-Session-ID', session)
+      .send({ userId: 1, blockNumber: 10, metadataFileUUID: resp.body.metadataFileUUID })
+      .expect(200)
   })
 })

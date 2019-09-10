@@ -3,12 +3,11 @@ const axios = require('axios')
 const { sendResponse, errorResponseUnauthorized, errorResponseServerError } = require('./apiHelpers')
 const config = require('./config')
 
-/** Only allow writes if node is primary for wallet */
+/** Blocks writes if node is not the primary for audiusUser associated with wallet. */
 async function preMiddleware (req, res, next) {
   if (!req.session || !req.session.wallet) {
     return sendResponse(req, res, errorResponseUnauthorized('User must be logged in'))
   }
-
 
   let serviceEndpoint
   try {
@@ -16,7 +15,6 @@ async function preMiddleware (req, res, next) {
   } catch (e) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
-
 
   let creatorNodeEndpoints
   try {
@@ -26,7 +24,6 @@ async function preMiddleware (req, res, next) {
   }
   const primaryEndpoint = creatorNodeEndpoints[0]
 
-
   // error if self is not primary
   if (primaryEndpoint && serviceEndpoint !== primaryEndpoint) {
     return sendResponse(
@@ -35,7 +32,6 @@ async function preMiddleware (req, res, next) {
       errorResponseUnauthorized(`This node (${serviceEndpoint}) is not primary for user. Primary is: ${primaryEndpoint}`)
     )
   }
-
 
   next()
 }
