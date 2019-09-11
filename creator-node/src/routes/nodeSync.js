@@ -4,6 +4,9 @@ const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError, errorResponseBadRequest } = require('../apiHelpers')
 const { getNodeSyncRedisKey } = require('../redis')
+const config = require('../config.js')
+const { getIPFSPeerId } = require('../utils')
+
 
 module.exports = function (app) {
   /** Exports all db data (not files) associated with walletPublicKey[] as JSON.
@@ -60,7 +63,7 @@ module.exports = function (app) {
 
     // Expose ipfs node's peer ID.
     const ipfs = req.app.get('ipfsAPI')
-    let ipfsIDObj = await ipfs.id()
+    let ipfsIDObj = await getIPFSPeerId(ipfs, config)
 
     return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj: ipfsIDObj })
   }))
