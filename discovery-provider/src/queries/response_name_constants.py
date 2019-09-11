@@ -12,6 +12,8 @@ playlist_count = 'playlist_count' # integer - total count of playlists created b
 album_count = 'album_count' # integer - total count of albums created by given user (0 for all non-creators)
 track_count = 'track_count' # integer - total count of tracks created by given user
 repost_count = 'repost_count' # integer - total count of reposts by given user
+track_blocknumber = 'track_blocknumber' # integer - blocknumber of latest track for user
+# current user specific
 does_current_user_follow = 'does_current_user_follow' # boolean - does current user follow given user
 current_user_followee_follow_count = 'current_user_followee_follow_count' # integer - number of followees of current user that also follow given user
 

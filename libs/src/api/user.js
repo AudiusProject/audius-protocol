@@ -22,6 +22,7 @@ class Users extends Base {
    *  {Integer} follower_count - follower count for given user
    *  {Integer} followee_count - followee count for given user
    *  {Integer} repost_count - repost count for given user
+   *  {Integer} track_blocknumber - blocknumber of latest track for user
    *  {Boolean} does_current_user_follow - does current user follow given user
    *  {Array} followee_follows - followees of current user that follow given user
    * @example

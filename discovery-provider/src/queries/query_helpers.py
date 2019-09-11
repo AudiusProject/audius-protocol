@@ -166,6 +166,22 @@ def populate_user_metadata(session, user_ids, users, current_user_id):
     )
     repost_count_dict = {user_id: repost_count for (user_id, repost_count) in repost_counts}
 
+    # build dict of user id --> track blocknumber
+    track_blocknumbers = (
+        session.query(
+            Track.owner_id,
+            func.max(Track.blocknumber)
+        )
+        .filter(
+            Track.is_current == True,
+            Track.is_delete == False,
+            Track.owner_id.in_(user_ids)
+        )
+        .group_by(Track.owner_id)
+        .all()
+    )
+    track_blocknumber_dict = {user_id: track_blocknumber for (user_id, track_blocknumber) in track_blocknumbers}
+
     current_user_followed_user_ids = {}
     current_user_followee_follow_count_dict = {}
     if current_user_id:
@@ -217,6 +233,7 @@ def populate_user_metadata(session, user_ids, users, current_user_id):
         user[response_name_constants.follower_count] = follower_count_dict.get(user_id, 0)
         user[response_name_constants.followee_count] = followee_count_dict.get(user_id, 0)
         user[response_name_constants.repost_count] = repost_count_dict.get(user_id, 0)
+        user[response_name_constants.track_blocknumber] = track_blocknumber_dict.get(user_id, -1)
         # current user specific
         user[response_name_constants.does_current_user_follow] = current_user_followed_user_ids.get(user_id, False)
         user[response_name_constants.current_user_followee_follow_count] = current_user_followee_follow_count_dict.get(user_id, 0)
