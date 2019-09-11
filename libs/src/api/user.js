@@ -140,6 +140,8 @@ class Users extends Base {
 
     const result = await this.contracts.UserFactoryClient.addUser(metadata.handle)
     await this._addUserOperations(result.userId, metadata)
+
+    this.userStateManager.setCurrentUser({ ...metadata })
     return result.userId
   }
 
@@ -154,15 +156,12 @@ class Users extends Base {
     this._validateUserMetadata(metadata)
 
     // Retrieve the current user metadata
-    let currentMetadata = await this.discoveryProvider.getUsers(1, 0, [userId], null, null, false, null)
-    if (currentMetadata && currentMetadata[0]) {
-      currentMetadata = currentMetadata[0]
-      await this._updateUserOperations(metadata, currentMetadata, userId)
+    let users = await this.discoveryProvider.getUsers(1, 0, [userId], null, null, false, null)
+    if (!users || !users[0]) throw new Error(`Cannot update user because no current record exists for user id ${userId}`)
 
-      this.userStateManager.setCurrentUser({ ...currentMetadata, ...metadata })
-    } else {
-      throw new Error(`Cannot update user because no current record exists for user id ${userId}`)
-    }
+    const oldMetadata = users[0]
+    await this._updateUserOperations(metadata, oldMetadata, userId)
+    this.userStateManager.setCurrentUser({ ...oldMetadata, ...metadata })
   }
 
   /**
