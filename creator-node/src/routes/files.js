@@ -18,7 +18,6 @@ const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const resizeImage = require('../resizeImage')
 const { getIPFSPeerId } = require('../utils')
 
-
 module.exports = function (app) {
   /** Store image in multiple-resolutions on disk + DB and make available via IPFS */
   app.post('/image_upload', authMiddleware, nodeSyncMiddleware, upload.single('file'), handleResponse(async (req, res) => {
@@ -135,7 +134,7 @@ module.exports = function (app) {
   app.get('/ipfs_peer_info', handleResponse(async (req, res) => {
     const ipfs = req.app.get('ipfsAPI')
     const ipfsIDObj = await getIPFSPeerId(ipfs, config)
-  
+
     return successResponse(ipfsIDObj)
   }))
 

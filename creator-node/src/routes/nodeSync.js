@@ -7,7 +7,6 @@ const { getNodeSyncRedisKey } = require('../redis')
 const config = require('../config.js')
 const { getIPFSPeerId } = require('../utils')
 
-
 module.exports = function (app) {
   /** Exports all db data (not files) associated with walletPublicKey[] as JSON.
    *  Returns IPFS node ID object, so importing nodes can peer manually for optimized file transfer.
