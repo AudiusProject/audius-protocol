@@ -16,6 +16,7 @@ const { logger } = require('../logging')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const resizeImage = require('../resizeImage')
+const { getIPFSPeerId } = require('../utils')
 
 module.exports = function (app) {
   /** Store image in multiple-resolutions on disk + DB and make available via IPFS */
@@ -132,15 +133,7 @@ module.exports = function (app) {
 
   app.get('/ipfs_peer_info', handleResponse(async (req, res) => {
     const ipfs = req.app.get('ipfsAPI')
-    const ipfsClusterIP = config.get('ipfsClusterIP')
-    const ipfsClusterPort = config.get('ipfsClusterPort')
-    let ipfsIDObj = await ipfs.id()
-
-    // if it's a real host and port, generate a new ipfs id and override the addresses with this value
-    if (ipfsClusterIP && ipfsClusterPort !== null && ipfsClusterIP !== '127.0.0.1' && ipfsClusterPort !== 0) {
-      const addressStr = `/ip4/${ipfsClusterIP}/tcp/${ipfsClusterPort}/ipfs/${ipfsIDObj.id}`
-      ipfsIDObj.addresses = [addressStr]
-    }
+    const ipfsIDObj = await getIPFSPeerId(ipfs, config)
 
     return successResponse(ipfsIDObj)
   }))
