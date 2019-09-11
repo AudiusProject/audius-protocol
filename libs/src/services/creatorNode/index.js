@@ -260,7 +260,8 @@ class CreatorNode {
       const status = await axios(req)
       return {
         status,
-        userBlockNumber: user.blockNumber
+        userBlockNumber: user.blocknumber,
+        trackBlockNumber: user.track_blocknumber
       }
     }
     throw new Error(`No current user`)

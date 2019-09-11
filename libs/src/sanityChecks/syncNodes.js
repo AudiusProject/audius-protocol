@@ -3,8 +3,8 @@
  * in blocknumber.
  */
 const syncNodeIfBehind = async (libs, endpoint) => {
-  const { status, userBlockNumber } = await libs.creatorNode.getSyncStatus(endpoint)
-  if (status.blockNumber < userBlockNumber) {
+  const { status, userBlockNumber, trackBlockNumber } = await libs.creatorNode.getSyncStatus(endpoint)
+  if (status.blockNumber < Math.max(userBlockNumber, trackBlockNumber)) {
     await libs.creatorNode.syncSecondary(endpoint)
   }
 }
