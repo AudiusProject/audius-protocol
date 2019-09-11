@@ -65,7 +65,7 @@ async function postMiddleware (req, res) {
   }
 
   // send sync req to all secondaries
-  await Promise.all(secondaries.map(secondary => {
+  Promise.all(secondaries.map(secondary => {
     if (!secondary || !_isFQDN(secondary)) return
     const axiosReq = {
       baseURL: secondary,

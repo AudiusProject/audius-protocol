@@ -118,7 +118,7 @@ module.exports = function (app) {
     }
     let metadataJSON
     try {
-      metadataJSON = JSON.parse(fs.readFileSync(path.join(process.cwd(), file.storagePath)))
+      metadataJSON = JSON.parse(fs.readFileSync(file.storagePath))
       if (!metadataJSON || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
         return errorResponseServerError(`Malformatted metadataJSON stored for metadataFileUUID ${metadataFileUUID}.`)
       }
@@ -205,7 +205,7 @@ module.exports = function (app) {
     }
     let metadataJSON
     try {
-      metadataJSON = JSON.parse(fs.readFileSync(path.join(process.cwd(), file.storagePath)))
+      metadataJSON = JSON.parse(fs.readFileSync(file.storagePath))
       if (!metadataJSON || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
         return errorResponseServerError(`Malformatted metadataJSON stored for metadataFileUUID ${metadataFileUUID}.`)
       }
