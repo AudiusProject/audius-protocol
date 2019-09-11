@@ -133,8 +133,6 @@ def search_tags():
     # user_ids is list of tuples - simplify to 1-D list
     user_ids = [i[1] for i in user_ids]
 
-    followee_count_dict = get_followee_count_dict(session, user_ids)
-
     tracks = (
         session.query(Track)
         .filter(
@@ -157,9 +155,10 @@ def search_tags():
         .all()
     )
     users = helpers.query_result_to_list(users)
-    for user in users:
-        user_id = user["user_id"]
-        user[response_name_constants.follower_count] = followee_count_dict.get(user_id, 0)
+
+    with db.scoped_session() as session:
+        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+        users = populate_user_metadata(session, user_ids, users, current_user_id)
 
     followee_sorted_users = \
         sorted(users, key=lambda i: i[response_name_constants.follower_count], reverse=True)
@@ -239,10 +238,16 @@ def search_tags():
             .all()
         )
         followed_users = helpers.query_result_to_list(followed_users)
-        for followed_user in followed_users:
-            user_id = followed_user["user_id"]
-            followed_user[response_name_constants.follower_count] = \
-                    followee_count_dict.get(user_id, 0)
+        with db.scoped_session() as session:
+            saved_tracks = \
+                    populate_track_metadata(session, saved_track_ids, saved_tracks, current_user_id)
+            followed_users = \
+                    populate_user_metadata(
+                        session,
+                        followed_user_ids,
+                        followed_users,
+                        current_user_id
+                    )
 
         play_count_sorted_saved_tracks = \
             sorted(saved_tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
