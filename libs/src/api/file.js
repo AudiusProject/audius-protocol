@@ -2,7 +2,7 @@ const { Base, Services } = require('./base')
 const axios = require('axios')
 const Utils = require('../utils')
 
-const DEFAULT_TIMEOUT = 250
+const DEFAULT_TIMEOUT = 500
 
 // Public gateways to send requests to, ordered by precidence.
 const publicGateways = [
@@ -24,7 +24,7 @@ async function batchRace (
       method: 'get',
       url,
       responseType: 'blob',
-      timeout
+      timeout: batchTimeout
     }).then(response => ({
       blob: response,
       url
@@ -59,12 +59,12 @@ class File extends Base {
       .concat(creatorNodeGateways)
       .concat([this.ipfsGateway])
     const urls = gateways.map(gateway => `${gateway}${cid}`)
-    
+
     try {
       return batchRace(urls, 3, DEFAULT_TIMEOUT, callback)
     } catch (e) {
       throw new Error(`Failed to retrieve ${cid}`)
-    }  
+    }
   }
 
   /**
