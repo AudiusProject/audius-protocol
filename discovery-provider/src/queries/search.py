@@ -249,6 +249,7 @@ def search_tags():
                         current_user_id
                     )
 
+        # Sort and paginate
         play_count_sorted_saved_tracks = \
             sorted(saved_tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
 
