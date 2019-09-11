@@ -4,7 +4,7 @@ import sqlalchemy
 from flask import Blueprint, request
 
 from src import api_helpers, exceptions
-from src.models import User, Track, RepostType, Playlist, SaveType
+from src.models import User, Track, RepostType, Playlist, Save, SaveType, Follow
 from src.utils import helpers
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
@@ -45,8 +45,8 @@ def search_autocomplete():
 
 @bp.route("/search/tags", methods=("GET",))
 def search_tags():
-    logger.warning('search tags working')
     search_str = request.args.get("query", type=str)
+    current_user_id = get_current_user_id(required=False)
     if not search_str:
         raise exceptions.ArgumentError("Invalid value for parameter 'query'")
 
@@ -108,7 +108,7 @@ def search_tags():
                         count desc
             ) as usr
             where
-                usr.count > :user_tag_count;
+                usr.count >= :user_tag_count;
             """
         )
     track_ids = session.execute(
@@ -133,8 +133,6 @@ def search_tags():
     # user_ids is list of tuples - simplify to 1-D list
     user_ids = [i[1] for i in user_ids]
 
-    followee_count_dict = get_followee_count_dict(session, user_ids)
-
     tracks = (
         session.query(Track)
         .filter(
@@ -144,6 +142,7 @@ def search_tags():
         )
         .all()
     )
+
     tracks = helpers.query_result_to_list(tracks)
     track_play_counts = get_track_play_counts(track_ids)
     users = (
@@ -156,9 +155,10 @@ def search_tags():
         .all()
     )
     users = helpers.query_result_to_list(users)
-    for user in users:
-        user_id = user["user_id"]
-        user[response_name_constants.follower_count] = followee_count_dict.get(user_id, 0)
+
+    with db.scoped_session() as session:
+        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+        users = populate_user_metadata(session, user_ids, users, current_user_id)
 
     followee_sorted_users = \
         sorted(users, key=lambda i: i[response_name_constants.follower_count], reverse=True)
@@ -177,9 +177,97 @@ def search_tags():
     followee_sorted_users = \
             followee_sorted_users[slice(offset, offset + limit, 1)]
 
-    resp = {}
+    resp = {
+        'tracks': [],
+        'users': [],
+        'saved_tracks': [],
+        'followed_users': []
+    }
     resp['tracks'] = play_count_sorted_tracks
     resp['users'] = followee_sorted_users
+
+    # Add personalized results for a given user
+    if current_user_id:
+        # Query saved tracks for the current user that contain this tag
+        saves_query = (
+            session.query(Save.save_item_id)
+            .filter(
+                Save.is_current == True,
+                Save.is_delete == False,
+                Save.save_type == SaveType.track,
+                Save.user_id == current_user_id,
+                Save.save_item_id.in_(track_ids)
+            )
+            .all()
+        )
+        saved_track_ids = [i[0] for i in saves_query]
+        saved_tracks = (
+            session.query(Track)
+            .filter(
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.track_id.in_(saved_track_ids),
+            )
+            .all()
+        )
+        saved_tracks = helpers.query_result_to_list(saved_tracks)
+        for saved_track in saved_tracks:
+            saved_track_id = saved_track["track_id"]
+            saved_track[response_name_constants.play_count] = \
+                    track_play_counts.get(saved_track_id, 0)
+
+        # Query followed users that have referenced this tag
+        followed_user_query = (
+            session.query(Follow.followee_user_id)
+            .filter(
+                Follow.is_current == True,
+                Follow.is_delete == False,
+                Follow.follower_user_id == current_user_id,
+                Follow.followee_user_id.in_(user_ids)
+            )
+            .all()
+        )
+        followed_user_ids = [i[0] for i in followed_user_query]
+        followed_users = (
+            session.query(User)
+            .filter(
+                User.is_current == True,
+                User.is_ready == True,
+                User.user_id.in_(followed_user_ids)
+            )
+            .all()
+        )
+        followed_users = helpers.query_result_to_list(followed_users)
+        with db.scoped_session() as session:
+            saved_tracks = \
+                    populate_track_metadata(session, saved_track_ids, saved_tracks, current_user_id)
+            followed_users = \
+                    populate_user_metadata(
+                        session,
+                        followed_user_ids,
+                        followed_users,
+                        current_user_id
+                    )
+
+        # Sort and paginate
+        play_count_sorted_saved_tracks = \
+            sorted(saved_tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
+
+        play_count_sorted_saved_tracks = \
+                play_count_sorted_saved_tracks[slice(offset, offset + limit, 1)]
+
+        followed_users_followee_sorted = \
+            sorted(
+                followed_users,
+                key=lambda i: i[response_name_constants.follower_count],
+                reverse=True)
+
+        followed_users_followee_sorted = \
+                followed_users_followee_sorted[slice(offset, offset + limit, 1)]
+
+        resp['saved_tracks'] = play_count_sorted_saved_tracks
+        resp['followed_users'] = followed_users_followee_sorted
+
     return api_helpers.success_response(resp)
 
 # SEARCH QUERIES
