@@ -1,6 +1,4 @@
-const axios = require('axios')
-
-const { sendResponse, errorResponseUnauthorized, errorResponseServerError } = require('./apiHelpers')
+const { sendResponse, errorResponseUnauthorized } = require('./apiHelpers')
 const config = require('./config')
 
 async function userNodeMiddleware (req, res, next) {
