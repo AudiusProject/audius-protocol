@@ -425,17 +425,22 @@ def refresh_peer_connections(task_context):
                 continue
 
             try:
+                logger.warning('index.py | Retrieving connection info for %s', cnode_url)
                 multiaddr_info[cnode_url] = get_ipfs_info_from_cnode_endpoint(cnode_url)
             except Exception as e:  # pylint: disable=broad-except
                 # Handle error in retrieval by not peering this node
-                logger.warning('Error retrieving info for %s, %s', cnode_url, str(e))
+                logger.warning('index.py | Error retrieving info for %s, %s', cnode_url, str(e))
                 multiaddr_info[cnode_url] = None
 
         for key in multiaddr_info:
             if multiaddr_info[key] is not None:
+                try:
                 # Peer nodes
-                ipfs_client.connect_peer(multiaddr_info[key])
-                redis.set(key, multiaddr_info[key], ex=interval)
+                    logger.warning('index.py | Connecting to %s', multiaddr_info[key])
+                    ipfs_client.connect_peer(multiaddr_info[key])
+                    redis.set(key, multiaddr_info[key], ex=interval)
+                except Exception as e: #pylint: disable=broad-except
+                    logger.warning('index.py | Error connection to %s, %s, %s', multiaddr_info[key], cnode_url, str(e))
 
 ######## CELERY TASKS ########
 @celery.task(name="update_discovery_provider", bind=True)
