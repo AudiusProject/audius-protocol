@@ -6,12 +6,10 @@ const ffmpeg = require('../ffmpeg')
 const ffprobe = require('../ffprobe')
 
 const models = require('../models')
-const authMiddleware = require('../authMiddleware')
-const nodeSyncMiddleware = require('../redis').nodeSyncMiddleware
 const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
-const { preMiddleware, postMiddleware } = require('../middlewares')
+const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
 
 module.exports = function (app) {
   /**
@@ -19,7 +17,7 @@ module.exports = function (app) {
    * @dev - currently stores each segment twice, once under random file UUID & once under IPFS multihash
    *      - this should be addressed eventually
    */
-  app.post('/track_content', authMiddleware, preMiddleware, nodeSyncMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
+  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
     if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
 
     // create and save track file segments to disk
@@ -64,7 +62,7 @@ module.exports = function (app) {
    * Given track metadata object, upload and share metadata to IPFS. Return metadata multihash if successful.
    * Error if associated track segments have not already been created and stored.
    */
-  app.post('/tracks/metadata', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
+  app.post('/tracks/metadata', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     // TODO - input validation
     const metadataJSON = req.body.metadata
 
@@ -92,21 +90,19 @@ module.exports = function (app) {
   }))
 
   /**
-   * Given track blockchainId, txBlockNumber, and metadataFileUUID, creates Track DB track entry
-   * and associates segment & image file entries with track. Ends track creation process.
+   * Given track blockchainTrackId, blockNumber, and metadataFileUUID, creates/updates Track DB track entry
+   * and associates segment & image file entries with track. Ends track creation/update process.
    */
-  app.post('/tracks', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const blockchainId = req.body.blockchainTrackId
-    const txBlockNumber = req.body.blockNumber
-    const metadataFileUUID = req.body.metadataFileUUID
+  app.post('/tracks', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
+    const { blockchainTrackId, blockNumber, metadataFileUUID } = req.body
 
-    if (!blockchainId || !txBlockNumber || !metadataFileUUID) {
+    if (!blockchainTrackId || !blockNumber || !metadataFileUUID) {
       return errorResponseBadRequest('Must include blockchainTrackId, blockNumber, and metadataFileUUID.')
     }
 
     // Error on outdated blocknumber.
     const cnodeUser = req.session.cnodeUser
-    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber >= txBlockNumber) {
+    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber >= blockNumber) {
       return errorResponseBadRequest(`Invalid blockNumber param. Must be higher than previously processed blocknumber.`)
     }
     const cnodeUserUUID = req.session.cnodeUserUUID
@@ -137,13 +133,13 @@ module.exports = function (app) {
     const t = await models.sequelize.transaction()
 
     // Create track entry on db - will fail if already present.
-    const track = await models.Track.create({
-      cnodeUserUUID: cnodeUserUUID,
+    const track = await models.Track.upsert({
+      cnodeUserUUID,
       metadataFileUUID,
       metadataJSON,
-      blockchainId,
+      blockchainId: blockchainTrackId,
       coverArtFileUUID
-    }, { transaction: t })
+    }, { transaction: t, returning: true })
 
     // Associate matching segment files on DB with newly created track.
     await Promise.all(metadataJSON.track_segments.map(async segment => {
@@ -155,7 +151,8 @@ module.exports = function (app) {
           cnodeUserUUID,
           trackUUID: null
         },
-        transaction: t }
+        transaction: t
+        }
       )
       if (!numAffectedRows) {
         return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
@@ -163,102 +160,20 @@ module.exports = function (app) {
     }))
 
     // Update cnodeUser's latestBlockNumber.
-    await cnodeUser.update({ latestBlockNumber: txBlockNumber }, { transaction: t })
+    await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
 
     try {
       await t.commit()
+      triggerSecondarySyncs(req)
       return successResponse({ trackUUID: track.trackUUID })
     } catch (e) {
       await t.rollback()
       return errorResponseServerError(e.message)
     }
-  }), postMiddleware)
+  }))
 
-  /**
-   * Given track blockchainId, txBlockNumber, and metadataFileUUID, updates Track DB track entry
-   * and associates segment file entries with track. Ends track update process.
-   */
-  app.put('/tracks', authMiddleware, preMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const blockchainId = req.body.blockchainTrackId
-    const txBlockNumber = req.body.blockNumber
-    const metadataFileUUID = req.body.metadataFileUUID
-
-    if (!blockchainId || !txBlockNumber || !metadataFileUUID) {
-      return errorResponseBadRequest('Must include blockchainId, blockNumber, and metadataFileUUID.')
-    }
-
-    // Error on outdated blocknumber.
-    const cnodeUser = req.session.cnodeUser
-    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber >= txBlockNumber) {
-      return errorResponseBadRequest(`Invalid blockNumber param. Must be higher than previously processed blocknumber.`)
-    }
-    const cnodeUserUUID = req.session.cnodeUserUUID
-
-    // Ensure track entry exists in DB.
-    const track = await models.Track.findOne({ where: { blockchainId, cnodeUserUUID } })
-    if (!track) return errorResponseBadRequest(`No track found for blockchainId ${blockchainId} for wallet.`)
-
-    // Fetch metadataJSON for metadataFileUUID
-    const file = await models.File.findOne({ where: { fileUUID: metadataFileUUID, cnodeUserUUID } })
-    if (!file) {
-      return errorResponseBadRequest(`No file found for provided metadataFileUUID ${metadataFileUUID}.`)
-    }
-    let metadataJSON
-    try {
-      metadataJSON = JSON.parse(fs.readFileSync(file.storagePath))
-      if (!metadataJSON || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
-        return errorResponseServerError(`Malformatted metadataJSON stored for metadataFileUUID ${metadataFileUUID}.`)
-      }
-    } catch (e) {
-      return errorResponseServerError(`No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}.`)
-    }
-
-    // Get coverArtFileUUID for multihash found in metadata object, if present.
-    let coverArtFileUUID
-    try {
-      coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_art_sizes)
-    } catch (e) {
-      return errorResponseServerError(e.message)
-    }
-
-    const t = await models.sequelize.transaction()
-
-    // Update track entry on db - will fail if not already present.
-    await track.update({
-      metadataFileUUID,
-      metadataJSON,
-      coverArtFileUUID
-    }, { transaction: t })
-
-    // Associate matching segment files with track.
-    await Promise.all(metadataJSON.track_segments.map(async segment => {
-      // Update each segment file; error if not found.
-      const numAffectedRows = await models.File.update(
-        { trackUUID: track.trackUUID },
-        { where: {
-          multihash: segment.multihash,
-          cnodeUserUUID
-        },
-        transaction: t }
-      )
-      if (!numAffectedRows) {
-        return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
-      }
-    }))
-
-    // Update cnodeUser's latestBlockNumber
-    await cnodeUser.update({ latestBlockNumber: txBlockNumber }, { transaction: t })
-
-    try {
-      await t.commit()
-      return successResponse({ trackUUID: track.trackUUID })
-    } catch (e) {
-      await t.rollback()
-      return errorResponseServerError(e.message)
-    }
-  }), postMiddleware)
-
-  app.get('/tracks', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
+  /** Returns all tracks for cnodeUser. */
+  app.get('/tracks', authMiddleware, handleResponse(async (req, res) => {
     const tracks = await models.Track.findAll({
       where: { cnodeUserUUID: req.session.cnodeUserUUID }
     })

@@ -31,5 +31,6 @@
   "ethOwnerWallet": "",
   "ethWallets": "",
   "spOwnerWalletIndex": 1,
-  "spOwnerWallet": ""
+  "spOwnerWallet": "",
+  "debounceTime": 30000
 }

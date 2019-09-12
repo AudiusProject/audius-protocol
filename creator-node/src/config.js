@@ -210,7 +210,7 @@ const config = convict({
     doc: 'all unlocked accounts from eth chain',
     format: Array,
     env: 'ethWallets',
-    default: null
+    default: []
   },
   spOwnerWalletIndex: {
     doc: 'Index in ethWallets array of service owner wallet',
@@ -223,6 +223,12 @@ const config = convict({
     format: Boolean,
     env: 'isUserMetadataNode',
     default: false
+  },
+  debounceTime: {
+    doc: 'sync debounce time',
+    format: 'nat',
+    env: 'debounceTime',
+    default: 30000 // 30000ms = 30s
   }
 
   // unsupported options at the moment

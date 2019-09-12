@@ -3,10 +3,10 @@ const axios = require('axios')
 const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse } = require('../apiHelpers')
-const { getNodeSyncRedisKey } = require('../redis')
+const config = require('../config')
 
-const syncs = {}
-const DEBOUNCE_TIME = 5000 // 30s = 30,000ms
+// Dictionary tracking currently queued up syncs with debounce
+const syncQueue = {}
 
 module.exports = function (app) {
   /**
@@ -79,15 +79,16 @@ module.exports = function (app) {
     const immediate = (req.body.immediate === true || req.body.immediate === 'true')
 
     if (!immediate) {
+      req.logger.info('debounce time', config.get('debounceTime'))
       // Debounce nodeysnc op
       for (let wallet of walletPublicKeys) {
-        if (wallet in syncs) {
-          clearTimeout(syncs[wallet])
+        if (wallet in syncQueue) {
+          clearTimeout(syncQueue[wallet])
           req.logger.info('clear timeout for', wallet, 'time', Date.now())
         }
-        syncs[wallet] = setTimeout(
+        syncQueue[wallet] = setTimeout(
           async () => _nodesync(req, [wallet], creatorNodeEndpoint),
-          DEBOUNCE_TIME
+          config.get('debounceTime')
         )
         req.logger.info('set timeout for', wallet, 'time', Date.now())
       }
@@ -100,9 +101,8 @@ module.exports = function (app) {
   /** Checks if node sync is in progress for wallet. */
   app.get('/sync_status/:walletPublicKey', handleResponse(async (req, res) => {
     const walletPublicKey = req.params.walletPublicKey
-    const redisLock = req.app.get('redisClient').lock
-    const redisKey = getNodeSyncRedisKey(walletPublicKey)
-    const lockHeld = await redisLock.getLock(redisKey)
+    const redisClient = req.app.get('redisClient')
+    const lockHeld = await redisClient.lock.getLock(redisClient.getNodeSyncRedisKey(walletPublicKey))
     if (lockHeld) {
       return errorResponse(423, `Cannot change state of wallet ${walletPublicKey}. Node sync currently in progress.`)
     }
@@ -120,11 +120,12 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
   req.logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
 
   // ensure access to each wallet, then acquire it for sync.
-  const redisLock = req.app.get('redisClient').lock
+  const redisClient = req.app.get('redisClient')
+  const redisLock = redisClient.lock
   // TODO - redisKey will be inaccurate when /sync is called with more than 1 walletPublicKey
   let redisKey
   for (let wallet of walletPublicKeys) {
-    redisKey = getNodeSyncRedisKey(wallet)
+    redisKey = redisClient.getNodeSyncRedisKey(wallet)
     let lockHeld = await redisLock.getLock(redisKey)
     if (lockHeld) {
       throw new Error(`Cannot change state of wallet ${wallet}. Node sync currently in progress.`)
@@ -287,12 +288,12 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       try {
         await t.commit()
         req.logger.info(redisKey, `Transaction successfully committed for cnodeUserUUID ${fetchedCnodeUserUUID}`)
-        redisKey = getNodeSyncRedisKey(fetchedWalletPublicKey)
+        redisKey = redisClient.getNodeSyncRedisKey(fetchedWalletPublicKey)
         await redisLock.removeLock(redisKey)
       } catch (e) {
         req.logger.error(redisKey, `Transaction failed for cnodeUserUUID ${fetchedCnodeUserUUID}`, e)
         await t.rollback()
-        redisKey = getNodeSyncRedisKey(fetchedWalletPublicKey)
+        redisKey = redisClient.getNodeSyncRedisKey(fetchedWalletPublicKey)
         await redisLock.removeLock(redisKey)
         throw new Error(e)
       }
@@ -302,9 +303,9 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
   } finally {
     // Release all redis locks
     for (let wallet of walletPublicKeys) {
-      let redisKey = getNodeSyncRedisKey(wallet)
+      let redisKey = redisClient.getNodeSyncRedisKey(wallet)
       await redisLock.removeLock(redisKey)
-      delete (syncs[wallet])
+      delete (syncQueue[wallet])
     }
     req.logger.info(`DURATION SYNC ${Date.now() - start}`)
   }

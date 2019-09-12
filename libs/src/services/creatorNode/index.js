@@ -126,7 +126,7 @@ class CreatorNode {
   async updateCreator (audiusUserId, metadataFileUUID, blockNumber) {
     await this._makeRequest({
       url: `/audius_users`,
-      method: 'put',
+      method: 'post',
       data: {
         blockchainUserId: audiusUserId,
         metadataFileUUID,
@@ -213,7 +213,7 @@ class CreatorNode {
   async updateTrack (audiusTrackId, metadataFileUUID, blockNumber) {
     await this._makeRequest({
       url: `/tracks`,
-      method: 'put',
+      method: 'post',
       data: {
         blockchainTrackId: audiusTrackId,
         metadataFileUUID,
@@ -259,9 +259,12 @@ class CreatorNode {
       }
       const status = await axios(req)
       return {
-        status,
+        status: status.data,
         userBlockNumber: user.blocknumber,
-        trackBlockNumber: user.track_blocknumber
+        trackBlockNumber: user.track_blocknumber,
+        // Whether or not the endpoint is behind in syncing
+        isBehind: (status.data.latestBlockNumber === -1) || (status.data.latestBlockNumber !== -1 &&
+          status.data.latestBlockNumber < Math.max(user.blocknumber, user.track_blocknumber))
       }
     }
     throw new Error(`No current user`)
