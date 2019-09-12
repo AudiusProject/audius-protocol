@@ -217,6 +217,12 @@ const config = convict({
     format: Number,
     env: 'spOwnerWalletIndex',
     default: null
+  },
+  isUserMetadataNode: {
+    doc: 'Flag indicating whether to run this node for user metadata (non creators) only',
+    format: Boolean,
+    env: 'isUserMetadataNode',
+    default: false
   }
 
   // unsupported options at the moment
