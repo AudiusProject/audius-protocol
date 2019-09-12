@@ -1,5 +1,7 @@
 import logging # pylint: disable=C0302
+import requests
 from sqlalchemy import func, desc
+from urllib.parse import urljoin
 
 from flask import request
 
@@ -7,6 +9,7 @@ from src import exceptions
 from src.queries import response_name_constants
 from src.models import Track, Repost, RepostType, Follow, Playlist, Save, SaveType
 from src.utils import helpers
+from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
 
@@ -517,6 +520,63 @@ def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_id
 
     return save_counts_query.all()
 
+
+def get_followee_count_dict(session, user_ids):
+    # build dict of user id --> followee count
+    followee_counts = (
+        session.query(
+            Follow.follower_user_id,
+            func.count(Follow.follower_user_id)
+        )
+        .filter(
+            Follow.is_current == True,
+            Follow.is_delete == False,
+            Follow.follower_user_id.in_(user_ids)
+        )
+        .group_by(Follow.follower_user_id)
+        .all()
+    )
+    followee_count_dict = {user_id: followee_count for (user_id, followee_count) in followee_counts}
+    return followee_count_dict
+
+def get_track_play_counts(track_ids):
+    identity_url = shared_config['discprov']['identity_service_url']
+    querystring = {}
+    track_listen_counts = {}
+    key_str = "id[{}]"
+    index = 0
+
+    # Generate track listen query dict with format id[0]=x, id[1]=y, etc.
+    for track_id in track_ids:
+        key = key_str.format(index)
+        index += 1
+        querystring[key] = str(track_id)
+
+    # Create and query identity service endpoint
+    identity_tracks_endpoint = urljoin(identity_url, 'tracks/listens')
+    try:
+        resp = requests.get(identity_tracks_endpoint, params=querystring)
+    except Exception as e:
+        logger.error(f'Error retrieving play count - {identity_tracks_endpoint}, {querystring}')
+        return track_listen_counts
+
+    json_resp = resp.json()
+    keys = list(resp.json().keys())
+    if not keys:
+        return track_listen_counts
+
+    # Scenario should never arise, since we don't impose date parameter on initial query
+    if len(keys) != 1:
+        raise Exception('Invalid number of keys')
+
+    # Parse listen query results into track listen count dictionary
+    date_key = keys[0]
+    listen_count_json = json_resp[date_key]
+    if 'listenCounts' in listen_count_json:
+        for listen_info in listen_count_json['listenCounts']:
+            current_id = listen_info['trackId']
+            track_listen_counts[current_id] = listen_info['listens']
+    return track_listen_counts
 
 def get_pagination_vars():
     limit = min(

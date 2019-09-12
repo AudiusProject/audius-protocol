@@ -1,4 +1,5 @@
 const axios = require('axios')
+const semver = require('semver')
 let urlJoin = require('proper-url-join')
 
 const AudiusTokenClient = require('./audiusTokenClient')
@@ -119,6 +120,20 @@ class EthContracts {
     return expectedVersions
   }
 
+  /*
+   * Determine whether major and minor versions match for two version strings
+   * Version string 2 must have equivalent major/minor versions and a patch >= version1
+   * @param {string} version string 1
+   * @param {string} version string 2
+   */
+  isValidSPVersion (version1, version2) {
+    return (
+      semver.major(version1) === semver.major(version2) &&
+      semver.minor(version1) === semver.minor(version2) &&
+      semver.patch(version2) >= semver.patch(version1)
+    )
+  }
+
   /**
    * Returns a valid service provider url with the fastest response
    * * @param {string} A service provider type: 'discovery-provider' | 'content-service' | 'creator-node'
@@ -148,15 +163,24 @@ class EthContracts {
             throw new Error(`Invalid service type: ${serviceName}. Expected ${spType}`)
           }
 
-          if (this.expectedServiceVersions[serviceName] !== serviceVersion) {
-            throw new Error(`Invalid service type: ${serviceName}. Expected ${spType}`)
+          if (!semver.valid(serviceVersion)) {
+            throw new Error(`Invalid semver version found - ${serviceVersion}`)
+          }
+
+          let expectedVersion = this.expectedServiceVersions[serviceName]
+          if (expectedVersion !== serviceVersion) {
+            let validSPVersion = this.isValidSPVersion(expectedVersion, serviceVersion)
+            if (!validSPVersion) {
+              throw new Error(`Invalid service version: ${serviceName}. Expected ${expectedVersion}, found ${serviceVersion}`)
+            }
           }
 
           return discprov.endpoint
         })
       )
     } catch (err) {
-      console.error('All discovery providers failed')
+      console.error(`All discovery providers failed for latest ${this.expectedServiceVersions[spType]}`)
+      console.error(err)
       selectedDiscoveryProvider = null
     }
     return selectedDiscoveryProvider
@@ -254,7 +278,11 @@ class EthContracts {
             continue
           }
 
-          if (pastServiceVersion === serviceVersion) {
+          if (!semver.valid(serviceVersion)) {
+            throw new Error(`Invalid semver version found - ${serviceVersion}`)
+          }
+
+          if (this.isValidSPVersion(pastServiceVersion, serviceVersion)) {
             validPastVersions.push(discProvUrl)
           }
         } catch (e) {
@@ -276,11 +304,10 @@ class EthContracts {
   }
 
   async selectDiscoveryProvider () {
-    let spTypeDiscProv = serviceType.DISCOVERY_PROVIDER
-    let discoveryProviderEndpoint = await this.selectLatestServiceProvider(spTypeDiscProv)
+    let discoveryProviderEndpoint = await this.selectLatestServiceProvider(serviceType.DISCOVERY_PROVIDER)
 
     if (discoveryProviderEndpoint == null) {
-      discoveryProviderEndpoint = await this.selectPriorServiceProvider(spTypeDiscProv)
+      discoveryProviderEndpoint = await this.selectPriorServiceProvider(serviceType.DISCOVERY_PROVIDER)
     }
 
     if (discoveryProviderEndpoint == null) {

@@ -4,6 +4,7 @@ const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse } = require('../apiHelpers')
 const config = require('../config')
+const { getIPFSPeerId } = require('../utils')
 
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
@@ -64,7 +65,7 @@ module.exports = function (app) {
 
     // Expose ipfs node's peer ID.
     const ipfs = req.app.get('ipfsAPI')
-    let ipfsIDObj = await ipfs.id()
+    let ipfsIDObj = await getIPFSPeerId(ipfs, config)
 
     return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj: ipfsIDObj })
   }))

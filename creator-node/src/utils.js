@@ -55,5 +55,22 @@ async function getFileUUIDForImageCID (req, imageCID) {
   } else return null
 }
 
+async function getIPFSPeerId (ipfs, config) {
+  const ipfsClusterIP = config.get('ipfsClusterIP')
+  const ipfsClusterPort = config.get('ipfsClusterPort')
+
+  let ipfsIDObj = await ipfs.id()
+
+  // if it's a real host and port, generate a new ipfs id and override the addresses with this value
+  // if it's local or these variables aren't passed in, just return the regular ipfs.id() result
+  if (ipfsClusterIP && ipfsClusterPort !== null && ipfsClusterIP !== '127.0.0.1' && ipfsClusterPort !== 0) {
+    const addressStr = `/ip4/${ipfsClusterIP}/tcp/${ipfsClusterPort}/ipfs/${ipfsIDObj.id}`
+    ipfsIDObj.addresses = [addressStr]
+  }
+
+  return ipfsIDObj
+}
+
 module.exports = Utils
 module.exports.getFileUUIDForImageCID = getFileUUIDForImageCID
+module.exports.getIPFSPeerId = getIPFSPeerId

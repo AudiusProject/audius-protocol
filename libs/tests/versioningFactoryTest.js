@@ -2,7 +2,7 @@ const assert = require('assert')
 const helpers = require('./helpers')
 
 const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service']
-const latestVersionStr = '0.0.1'
+const latestVersionStr = '0.1.0'
 
 const audius0 = helpers.audiusInstance
 
