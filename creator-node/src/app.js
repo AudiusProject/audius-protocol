@@ -4,6 +4,7 @@ const cors = require('cors')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
+const { userNodeMiddleware } = require('./userNodeMiddleware')
 const { userReqLimiter, trackReqLimiter, audiusUserReqLimiter, metadataReqLimiter, imageReqLimiter } = require('./reqLimiter')
 const redisClient = require('./redis')
 
@@ -12,6 +13,7 @@ const app = express()
 //  - loggingMiddleware must be first to ensure proper error handling
 app.use(loggingMiddleware)
 app.use(bodyParser.json())
+app.use(userNodeMiddleware)
 app.use(cors())
 
 // Initialize private IPFS gateway counters

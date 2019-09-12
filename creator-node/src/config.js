@@ -218,7 +218,12 @@ const config = convict({
     env: 'spOwnerWalletIndex',
     default: null
   },
-
+  isUserMetadataNode: {
+    doc: 'Flag indicating whether to run this node for user metadata (non creators) only',
+    format: Boolean,
+    env: 'isUserMetadataNode',
+    default: false
+  },
   debounceTime: {
     doc: 'sync debounce time',
     format: 'nat',
