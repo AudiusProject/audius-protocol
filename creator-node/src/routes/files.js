@@ -9,17 +9,15 @@ const { upload } = require('../fileManager')
 const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound } = require('../apiHelpers')
 
 const models = require('../models')
-const authMiddleware = require('../authMiddleware')
-const nodeSyncMiddleware = require('../redis').nodeSyncMiddleware
 const { logger } = require('../logging')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const resizeImage = require('../resizeImage')
-const { postMiddleware } = require('../middlewares')
+const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
 
 module.exports = function (app) {
   /** Store image in multiple-resolutions on disk + DB and make available via IPFS */
-  app.post('/image_upload', authMiddleware, nodeSyncMiddleware, upload.single('file'), handleResponse(async (req, res) => {
+  app.post('/image_upload', authMiddleware, syncLockMiddleware, upload.single('file'), handleResponse(async (req, res) => {
     if (!req.body.square || !(req.body.square === 'true' || req.body.square === 'false')) {
       return errorResponseBadRequest('Must provide square boolean param in request body')
     }
@@ -114,12 +112,13 @@ module.exports = function (app) {
       req.logger.info(`route time = ${Date.now() - routestart}`)
 
       await t.commit()
+      triggerSecondarySyncs(req)
       return successResponse({ dirCID })
     } catch (e) {
       await t.rollback()
       return errorResponseServerError(e)
     }
-  }), postMiddleware)
+  }))
 
   app.get('/ipfs_peer_info', handleResponse(async (req, res) => {
     const ipfs = req.app.get('ipfsAPI')

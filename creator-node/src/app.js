@@ -35,7 +35,7 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
-const initializeApp = (port, storageDir, s3Bucket, ipfsAPI, audiusLibs) => {
+const initializeApp = (port, storageDir, ipfsAPI, audiusLibs) => {
   app.set('ipfsAPI', ipfsAPI)
   app.set('storagePath', storageDir)
   app.set('redisClient', redisClient)

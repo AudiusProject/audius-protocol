@@ -1,6 +1,5 @@
 'use strict'
 
-const S3 = require('aws-sdk').S3
 const ON_DEATH = require('death')
 const ipfsClient = require('ipfs-http-client')
 const path = require('path')
@@ -33,34 +32,11 @@ const initAudiusLibs = async () => {
 
 const startApp = async () => {
   // configure file storage
-  let s3bucket = null
-  let storageDir = null
-  if (config.get('awsBucket')) {
-    logger.info('Running with AWS storage backend: ', config.get('awsBucket'))
-
-    if (!config.get('awsAccessKeyId') || !config.get('awsSecretAccessKey')) {
-      logger.error('Must set awsAccessKeyId and awsSecretAccessKey to use AWS backend')
-      process.exit(1)
-    }
-
-    s3bucket = new S3({
-      params: {
-        Bucket: config.get('awsBucket')
-      },
-      accessKeyId: config.get('awsAccessKeyId'),
-      secretAccessKey: config.get('awsSecretAccessKey')
-    })
-
-    // until we use the s3 bucket, prevent confusion when running creator node
-    console.error('AWS backend not yet supported. Please remove these configuration options and run with local storage backend.')
-    process.exit(1)
-  } else if (config.get('storagePath')) {
-    storageDir = path.resolve('./', config.get('storagePath'))
-    logger.info('Running with local storage backend: ', storageDir)
-  } else {
-    logger.error('Must set AWS bucket or file path to use for content repository; both are missing')
+  if (!config.get('storagePath')) {
+    logger.error('Must set storagePath to use for content repository.')
     process.exit(1)
   }
+  const storagePath = path.resolve('./', config.get('storagePath'))
 
   // run config
   logger.info('Configuring service...')
@@ -88,7 +64,7 @@ const startApp = async () => {
   const audiusLibs = await initAudiusLibs()
   logger.info('Initialized audius libs')
 
-  const appInfo = initializeApp(config.get('port'), storageDir, s3bucket, ipfs, audiusLibs)
+  const appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs)
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal, error) => {

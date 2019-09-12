@@ -31,7 +31,7 @@ const getNewPrimary = async (libs, secondaries) => {
 const rolloverNodes = async (libs) => {
   const user = libs.userStateManager.getCurrentUser()
 
-  if (!user.is_creator) return
+  if (!user || !user.is_creator) return
 
   const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
   const healthy = await checkPrimaryHealthy(libs, primary, MAX_TRIES)
