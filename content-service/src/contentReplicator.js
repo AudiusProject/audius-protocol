@@ -68,10 +68,28 @@ class ContentReplicator {
     return highestVal
   }
 
+  async monitorDiscoveryProviderConnection () {
+    let currentDiscProv = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
+    let retries = 5
+    while (!currentDiscProv && retries > 0) {
+      logger.info(`Reselecting discovery provider`)
+      await this.audiusLibs.init()
+      currentDiscProv = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
+      retries-- 
+    }
+    if (!currentDiscProv) {
+      throw new Exception('Failed to select valid provider...') 
+    }
+    logger.info(`Selected ${currentDiscProv}`)
+  }
+
   async replicate () {
     if (!this.replicating) {
       this.replicating = true
       try {
+        // Confirm a discovery provider connection is active, reset if not
+        await this.monitorDiscoveryProviderConnection()
+
         let start = Date.now()
         // Retrieve stored highest block values for track and user
         let currentTrackBlockNumber = await this.queryHighestBlockNumber('track')
