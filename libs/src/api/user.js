@@ -196,9 +196,9 @@ class Users extends Base {
       metadata.handle
     )
     await this.contracts.UserFactoryClient.updateMultihash(userId, multihashDecoded.digest)
-    await this._addUserOperations(userId, metadata)
+    const { latestBlockNumber } = await this._addUserOperations(userId, metadata)
     // Associate the user id with the metadata and block number
-    await this.creatorNode.createCreator(userId, metadataFileUUID, txReceipt.blockNumber)
+    await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
 
     this.userStateManager.setCurrentUser({ ...metadata })
     return userId
@@ -227,12 +227,13 @@ class Users extends Base {
     // Update new metadata on chain
     let updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
     const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
-    await this._updateUserOperations(newMetadata, oldMetadata, userId)
+    console.log('updatecreator tx', txReceipt)
+    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId)
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
       await this._waitForCreatorNodeUpdate(newMetadata.user_id, newMetadata.creator_node_endpoint)
     }
     // Re-associate the user id with the metadata and block number
-    await this.creatorNode.updateCreator(userId, metadataFileUUID, txReceipt.blockNumber)
+    await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
 
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
     return userId
@@ -269,12 +270,12 @@ class Users extends Base {
     // Update new metadata on chain
     let updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
     const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
-    await this._updateUserOperations(newMetadata, oldMetadata, userId)
+    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId)
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
       await this._waitForCreatorNodeUpdate(newMetadata.user_id, newMetadata.creator_node_endpoint)
     }
     // Re-associate the user id with the metadata and block number
-    await this.creatorNode.updateCreator(userId, metadataFileUUID, txReceipt.blockNumber)
+    await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
 
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
     return userId
@@ -353,7 +354,8 @@ class Users extends Base {
 
     // Execute update promises concurrently
     // TODO - what if one or more of these fails?
-    return Promise.all(addOps)
+    const ops = await Promise.all(addOps)
+    return {ops: ops, latestBlockNumber: Math.max(ops.map(op => op.txReceipt.blockNumber))}
   }
 
   async _updateUserOperations (metadata, currentMetadata, userId) {
@@ -393,7 +395,8 @@ class Users extends Base {
       }
     }
 
-    return Promise.all(updateOps)
+    const ops = await Promise.all(updateOps)
+    return {ops: ops, latestBlockNumber: Math.max(ops.map(op => op.txReceipt.blockNumber))}
   }
 
   _validateUserMetadata (metadata) {

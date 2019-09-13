@@ -35,8 +35,12 @@ class ServiceProvider extends Base {
     // Filter to healthy nodes
     creatorNodes = (await Promise.all(
       creatorNodes.map(async node => {
-        const { isBehind } = await this.creatorNode.getSyncStatus(node.endpoint)
-        return isBehind ? false : node.endpoint
+        try {
+          const { isBehind } = await this.creatorNode.getSyncStatus(node.endpoint)
+          return isBehind ? false : node.endpoint
+        } catch (e) {
+          return false
+        }
       })
     ))
       .filter(Boolean)

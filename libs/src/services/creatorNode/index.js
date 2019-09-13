@@ -105,25 +105,7 @@ class CreatorNode {
    * @param {string} metadataFileUUID unique ID for metadata file
    * @param {number} blockNumber
    */
-  async createCreator (audiusUserId, metadataFileUUID, blockNumber) {
-    await this._makeRequest({
-      url: `/audius_users`,
-      method: 'post',
-      data: {
-        blockchainUserId: audiusUserId,
-        metadataFileUUID,
-        blockNumber
-      }
-    })
-  }
-
-  /**
-   * Updates a creator on the creator node, associating user id with file content
-   * @param {number} audiusUserId returned by user creation on-blockchain
-   * @param {string} metadataFileUUID unique ID for metadata file
-   * @param {number} blockNumber
-   */
-  async updateCreator (audiusUserId, metadataFileUUID, blockNumber) {
+  async associateCreator (audiusUserId, metadataFileUUID, blockNumber) {
     await this._makeRequest({
       url: `/audius_users`,
       method: 'post',
@@ -192,25 +174,7 @@ class CreatorNode {
    * @param {string} metadataFileUUID unique ID for metadata file
    * @param {number} blockNumber
    */
-  async createTrack (audiusTrackId, metadataFileUUID, blockNumber) {
-    await this._makeRequest({
-      url: `/tracks`,
-      method: 'post',
-      data: {
-        blockchainTrackId: audiusTrackId,
-        metadataFileUUID,
-        blockNumber
-      }
-    })
-  }
-
-  /**
-   * Updates a track on the creator node, associating track id with file content
-   * @param {number} audiusTrackId returned by track creation on-blockchain
-   * @param {string} metadataFileUUID unique ID for metadata file
-   * @param {number} blockNumber
-   */
-  async updateTrack (audiusTrackId, metadataFileUUID, blockNumber) {
+  async associateTrack (audiusTrackId, metadataFileUUID, blockNumber) {
     await this._makeRequest({
       url: `/tracks`,
       method: 'post',
@@ -263,8 +227,8 @@ class CreatorNode {
         userBlockNumber: user.blocknumber,
         trackBlockNumber: user.track_blocknumber,
         // Whether or not the endpoint is behind in syncing
-        isBehind: (status.data.latestBlockNumber === -1) || (status.data.latestBlockNumber !== -1 &&
-          status.data.latestBlockNumber < Math.max(user.blocknumber, user.track_blocknumber))
+        isBehind: status.data.latestBlockNumber < Math.max(user.blocknumber, user.track_blocknumber),
+        isConfigured: status.data.latestBlockNumber !== -1
       }
     }
     throw new Error(`No current user`)

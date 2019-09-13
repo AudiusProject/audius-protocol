@@ -217,7 +217,7 @@ class AudiusLibs {
           endpoint = await this.ethContracts.selectDiscoveryProvider()
         }
       }
-      this.discoveryProvider = new DiscoveryProvider(endpoint, this.userStateManager)
+      this.discoveryProvider = new DiscoveryProvider(endpoint, this.userStateManager, this.ethContracts)
 
       if (this.discoveryProvider.discoveryProviderEndpoint && this.web3Manager && this.web3Manager.web3) {
         this.users = await this.discoveryProvider.getUsers(1, 0, null, this.web3Manager.getWalletAddress())

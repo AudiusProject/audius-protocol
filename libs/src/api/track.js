@@ -125,7 +125,7 @@ class Tracks extends Base {
       multihashDecoded.size
     )
     // Associate the track id with the file metadata and block number
-    await this.creatorNode.createTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
+    await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
     return trackId
   }
 
@@ -162,7 +162,7 @@ class Tracks extends Base {
       multihashDecoded.size
     )
     // Re-associate the track id with the new metadata
-    await this.creatorNode.updateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
+    await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
     return trackId
   }
 

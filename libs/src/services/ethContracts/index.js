@@ -304,6 +304,7 @@ class EthContracts {
   }
 
   async selectDiscoveryProvider () {
+    this.expectedServiceVersions = await this.getExpectedServiceVersions()
     let discoveryProviderEndpoint = await this.selectLatestServiceProvider(serviceType.DISCOVERY_PROVIDER)
 
     if (discoveryProviderEndpoint == null) {

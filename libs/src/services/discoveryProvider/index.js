@@ -7,9 +7,10 @@ let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 class DiscoveryProvider {
-  constructor (discoveryProviderEndpoint, userStateManager) {
+  constructor (discoveryProviderEndpoint, userStateManager, ethContracts) {
     this.discoveryProviderEndpoint = discoveryProviderEndpoint
     this.userStateManager = userStateManager
+    this.ethContracts = ethContracts
   }
 
   setEndpoint (endpoint) {

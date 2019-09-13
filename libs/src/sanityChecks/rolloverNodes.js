@@ -1,7 +1,7 @@
 const Utils = require('../utils')
 const CreatorNode = require('../services/creatorNode')
 
-const TEN_SECONDS = 10000
+const THREE_SECONDS = 3000
 const MAX_TRIES = 3
 
 /** Check if the user's primary creator node is healthy */
@@ -12,7 +12,7 @@ const checkPrimaryHealthy = async (libs, primary, tries) => {
     if (tries === 0) {
       return false
     }
-    await Utils.wait(TEN_SECONDS)
+    await Utils.wait(THREE_SECONDS)
     return checkPrimaryHealthy(libs, primary, tries - 1)
   }
 }
@@ -44,8 +44,9 @@ const rolloverNodes = async (libs) => {
     const newPrimary = await getNewPrimary(libs, secondaries)
     const index = secondaries.indexOf(newPrimary)
     // Get new secondaries and backfill up to 2
-    let newSecondaries = [...secondaries].splice(index, 1)
-    const autoselect = await this.serviceProvider.autoSelectCreatorNodes(
+    let newSecondaries = [...secondaries]
+    newSecondaries.splice(index, 1)
+    const autoselect = await libs.ServiceProvider.autoSelectCreatorNodes(
       2 - newSecondaries.length,
       // Exclude ones we currently have
       new Set([newPrimary, ...newSecondaries])
