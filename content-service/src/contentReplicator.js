@@ -75,10 +75,10 @@ class ContentReplicator {
       logger.info(`Reselecting discovery provider`)
       await this.audiusLibs.init()
       currentDiscProv = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
-      retries-- 
+      retries--
     }
     if (!currentDiscProv) {
-      throw new Exception('Failed to select valid provider...') 
+      throw new Error('Failed to select valid provider...')
     }
     logger.info(`Selected ${currentDiscProv}`)
   }
