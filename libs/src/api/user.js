@@ -355,7 +355,7 @@ class Users extends Base {
     // Execute update promises concurrently
     // TODO - what if one or more of these fails?
     const ops = await Promise.all(addOps)
-    return {ops: ops, latestBlockNumber: Math.max(ops.map(op => op.txReceipt.blockNumber))}
+    return { ops: ops, latestBlockNumber: Math.max(ops.map(op => op.txReceipt.blockNumber)) }
   }
 
   async _updateUserOperations (metadata, currentMetadata, userId) {
@@ -396,7 +396,7 @@ class Users extends Base {
     }
 
     const ops = await Promise.all(updateOps)
-    return {ops: ops, latestBlockNumber: Math.max(ops.map(op => op.txReceipt.blockNumber))}
+    return { ops: ops, latestBlockNumber: Math.max(ops.map(op => op.txReceipt.blockNumber)) }
   }
 
   _validateUserMetadata (metadata) {
