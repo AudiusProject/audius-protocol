@@ -8,7 +8,7 @@ module.exports = function (app) {
   app.get('/health_check', handleResponse(async (req, res) => {
     // for now we just check db connectivity
     await sequelize.query('SELECT 1', { type: sequelize.QueryTypes.SELECT })
-    return successResponse({ 'healthy': true, 'GIT_SHA': process.env.GIT_SHA })
+    return successResponse({ 'healthy': true, 'git': process.env.GIT_SHA })
   }))
 
   app.get('/balance_check', handleResponse(async (req, res) => {
