@@ -228,7 +228,7 @@ const config = convict({
     doc: 'Index in ethWallets array of service owner wallet',
     format: Number,
     env: 'spOwnerWalletIndex',
-    default: null
+    default: 0
   },
   isUserMetadataNode: {
     doc: 'Flag indicating whether to run this node for user metadata (non creators) only',
