@@ -378,7 +378,7 @@ jobs:
           name: Docker build << parameters.repo >>
           command: |
             cd << parameters.repo >>
-            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG --build-arg git_sha=$(git rev-parse HEAD) .
+            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) .
       - run:
           name: Docker push << parameters.repo >>
           command: |

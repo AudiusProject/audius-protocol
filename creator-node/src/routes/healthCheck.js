@@ -6,7 +6,7 @@ const versionInfo = require('../../.version.json')
 module.exports = function (app) {
   /** @dev TODO - Explore checking more than just DB (ex. IPFS) */
   app.get('/health_check', handleResponse(async (req, res) => {
-    return successResponse({ 'healthy': true, 'GIT_SHA': process.env.GIT_SHA })
+    return successResponse({ 'healthy': true, 'git': process.env.GIT_SHA })
   }))
 
   app.get('/db_check', handleResponse(async (req, res) => {
@@ -27,7 +27,7 @@ module.exports = function (app) {
 
     return successResponse({
       'healthy': true,
-      'GIT_SHA': process.env.GIT_SHA,
+      'git': process.env.GIT_SHA,
       numConnections,
       connectionInfo
     })

@@ -40,7 +40,7 @@ def health_check():
             },
             "db": helpers.model_to_dictionary(db_block_query[0]),
             "healthy": True,
-            "GIT_SHA": os.getenv("GIT_SHA"),
+            "git": os.getenv("GIT_SHA"),
         }
         logger.warning(health_results)
         block_difference = abs(

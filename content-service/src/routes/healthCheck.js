@@ -7,7 +7,7 @@ module.exports = function (app) {
     // for now we just check db connectivity. In future, this could / should check other
     // things (ex. IPFS)
     await sequelize.query('SELECT 1', { type: sequelize.QueryTypes.SELECT })
-    return successResponse({ 'healthy': true, 'GIT_SHA': process.env.GIT_SHA })
+    return successResponse({ 'healthy': true, 'git': process.env.GIT_SHA })
   }))
 
   app.get('/version', handleResponse(async (req, res) => {
