@@ -383,6 +383,7 @@ jobs:
           name: Docker push << parameters.repo >>
           command: |
             docker push audius/<< parameters.repo >>:$IMAGE_TAG
+            docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
 
   deploy:
     executor: aws-eks/python3
