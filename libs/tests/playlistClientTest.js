@@ -21,18 +21,18 @@ before(async function () {
 
   const cid = helpers.constants.trackMetadataCID // test metadata stored in DHT
   const trackMultihashDecoded = Utils.decodeMultihash(cid)
-  playlistTracks.push(await audiusInstance.contracts.TrackFactoryClient.addTrack(
+  playlistTracks.push((await audiusInstance.contracts.TrackFactoryClient.addTrack(
     playlistOwnerId,
     trackMultihashDecoded.digest,
     trackMultihashDecoded.hashFn,
     trackMultihashDecoded.size
-  ))
-  playlistTracks.push(await audiusInstance.contracts.TrackFactoryClient.addTrack(
+  )).trackId)
+  playlistTracks.push((await audiusInstance.contracts.TrackFactoryClient.addTrack(
     playlistOwnerId,
     trackMultihashDecoded.digest,
     trackMultihashDecoded.hashFn,
     trackMultihashDecoded.size
-  ))
+  )).trackId)
 })
 
 // TODO: Add validation to the below test cases, currently they just perform chain operations
@@ -74,7 +74,7 @@ it('should add tracks to an existing playlist', async function () {
   const trackMultihashDecoded = Utils.decodeMultihash(cid)
 
   // Add a new track
-  const trackId = await audiusInstance.contracts.TrackFactoryClient.addTrack(
+  const { trackId } = await audiusInstance.contracts.TrackFactoryClient.addTrack(
     playlistOwnerId,
     trackMultihashDecoded.digest,
     trackMultihashDecoded.hashFn,
@@ -93,24 +93,24 @@ it('should delete track from an existing playlist', async function () {
   const trackMultihashDecoded = Utils.decodeMultihash(cid)
 
   // Add a new track
-  const newTrackId = await audiusInstance.contracts.TrackFactoryClient.addTrack(
+  const { trackId } = await audiusInstance.contracts.TrackFactoryClient.addTrack(
     playlistOwnerId,
     trackMultihashDecoded.digest,
     trackMultihashDecoded.hashFn,
     trackMultihashDecoded.size
   )
-  const track = await audiusInstance.contracts.TrackFactoryClient.getTrack(newTrackId)
+  const track = await audiusInstance.contracts.TrackFactoryClient.getTrack(trackId)
   assert.strictEqual(track.multihashDigest, trackMultihashDecoded.digest)
 
   const addPlaylistTrackTx = await audiusInstance.contracts.PlaylistFactoryClient.addPlaylistTrack(
     playlistId,
-    newTrackId)
+    trackId)
 
   const deletedTimestamp = 1552008725
   // Delete the newly added track from the playlist
   const deletedPlaylistTrackTx = await audiusInstance.contracts.PlaylistFactoryClient.deletePlaylistTrack(
     playlistId,
-    newTrackId,
+    trackId,
     deletedTimestamp)
 })
 

@@ -217,7 +217,7 @@ class AudiusLibs {
           endpoint = await this.ethContracts.selectDiscoveryProvider()
         }
       }
-      this.discoveryProvider = new DiscoveryProvider(endpoint, this.userStateManager)
+      this.discoveryProvider = new DiscoveryProvider(endpoint, this.userStateManager, this.ethContracts)
 
       if (this.discoveryProvider.discoveryProviderEndpoint && this.web3Manager && this.web3Manager.web3) {
         this.users = await this.discoveryProvider.getUsers(1, 0, null, this.web3Manager.getWalletAddress())
@@ -257,7 +257,7 @@ class AudiusLibs {
     ]
     this.User = new User(...services)
     this.Account = new Account(this.User, ...services)
-    this.Track = new Track(...services)
+    this.Track = new Track(this.User, ...services)
     this.Playlist = new Playlist(...services)
     this.File = new File(...services)
     this.ServiceProvider = new ServiceProvider(...services)

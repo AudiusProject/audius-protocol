@@ -1,4 +1,5 @@
 const { Base, Services } = require('./base')
+const CreatorNodeService = require('../services/creatorNode/index')
 
 class Account extends Base {
   constructor (userApi, ...services) {
@@ -33,7 +34,7 @@ class Account extends Base {
       this.userStateManager.setCurrentUser(users[0])
       const creatorNodeEndpoint = users[0].creator_node_endpoint
       if (creatorNodeEndpoint) {
-        this.creatorNode.setEndpoint(creatorNodeEndpoint)
+        this.creatorNode.setEndpoint(CreatorNodeService.getPrimary(creatorNodeEndpoint))
       }
     }
   }

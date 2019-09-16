@@ -1,4 +1,6 @@
 const isCreator = require('./isCreator')
+const syncNodes = require('./syncNodes')
+const rolloverNodes = require('./rolloverNodes')
 
 // Checks to run at startup to ensure a user is in a good state.
 class SanityChecks {
@@ -7,9 +9,9 @@ class SanityChecks {
   }
 
   async run () {
-    await Promise.all([
-      isCreator(this.libs)
-    ])
+    await isCreator(this.libs)
+    await syncNodes(this.libs)
+    await rolloverNodes(this.libs)
   }
 }
 

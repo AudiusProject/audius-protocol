@@ -1,5 +1,3 @@
-const Utils = require('../../utils')
-
 const axios = require('axios')
 const FormData = require('form-data')
 
@@ -13,6 +11,12 @@ class CreatorNode {
    */
   static getPrimary (endpoints) { return endpoints ? endpoints.split(',')[0] : '' }
 
+  /**
+   * Pulls off the secondary creator nodes from a creator node endpoint string.
+   * @param {string} endpoints user.creator_node_endpoint
+   */
+  static getSecondaries (endpoints) { return endpoints ? endpoints.split(',').slice(1) : [] }
+
   /* -------------- */
 
   constructor (web3Manager, creatorNodeEndpoint, isServer, userStateManager, lazyConnect) {
@@ -23,7 +27,7 @@ class CreatorNode {
 
     this.lazyConnect = lazyConnect
     this.connected = false
-
+    this.connecting = false
     this.authToken = null
   }
 
@@ -36,15 +40,26 @@ class CreatorNode {
 
   /** Establishes a connection to a creator node endpoint */
   async connect () {
+    this.connecting = true
     await this._signupNodeUser(this.web3Manager.getWalletAddress())
     await this._loginNodeUser()
     this.connected = true
+    this.connecting = false
   }
 
   /** Checks if connected, otherwise establishing a connection */
   async ensureConnected () {
-    if (!this.connected) {
+    if (!this.connected && !this.connecting) {
       await this.connect()
+    } else if (this.connecting) {
+      let interval
+      // We were already connecting so wait for connection
+      await new Promise((resolve, reject) => {
+        interval = setInterval(() => {
+          if (this.connected) resolve()
+        }, 100)
+      })
+      clearInterval(interval)
     }
   }
 
@@ -71,124 +86,124 @@ class CreatorNode {
   }
 
   /**
-   * Creates a new Audius creator entity on the creator node, making the user's metadata
-   * available on IPFS.
-   * @param {Object} metadata for new user
-   * @returns {Object}
-   *  {
-   *    cid: cid of user metadata on IPFS,
-   *    id: id of user to be used with associate function
-   *  }
+   * Uploads creator content to a creator node
+   * @param {object} metadata the creator metadata
    */
-  async addCreator (metadata) {
-    // for now, we only support one user per creator node / libs instance
-    const user = this.userStateManager.getCurrentUser()
-    if (user && user.is_creator) {
-      throw new Error('User already created for creator node / libs instance')
-    }
-
+  async uploadCreatorContent (metadata) {
     return this._makeRequest({
-      url: '/audius_users',
+      url: '/audius_users/metadata',
       method: 'post',
-      data: metadata
+      data: {
+        metadata
+      }
     })
   }
 
   /**
-   * Updates a creator at the provided userId.
-   * @param {number} userId
-   * @param {Object} metadata
+   * Creates a creator on the creator node, associating user id with file content
+   * @param {number} audiusUserId returned by user creation on-blockchain
+   * @param {string} metadataFileUUID unique ID for metadata file
+   * @param {number} blockNumber
    */
-  async updateCreator (userId, metadata) {
-    return this._makeRequest({
-      url: `/audius_users/${userId}`,
-      method: 'put',
-      data: metadata
-    })
-  }
-
-  async uploadCreatorMetadata (metadata) {
-    return this._makeRequest({
-      url: `/metadata`,
-      method: 'post',
-      data: metadata
-    }, true, false)
-  }
-
-  async uploadImage (file, square = true) {
-    const resp = await this._uploadFile(file, '/image_upload', { 'square': square })
-    return resp
-  }
-
-  async uploadTrackContent (file) {
-    return this._uploadFile(file, '/track_content')
-  }
-
-  /**
-   * Associates the two user IDs, completing the user creation process.
-   * @param {int} nodeUserId parameter returned at creation time by createUser function
-   * @param {int} audiusUserId returned by user creation on-blockchain
-   * @param {bool} syncSecondaries whether or not to sync the secondary creator nodes
-   */
-  async associateAudiusUser (nodeUserId, audiusUserId, syncSecondaries = true) {
+  async associateCreator (audiusUserId, metadataFileUUID, blockNumber) {
     await this._makeRequest({
-      url: `/audius_users/associate/${nodeUserId}`,
+      url: `/audius_users`,
       method: 'post',
-      data: { userId: audiusUserId }
-    }, true, syncSecondaries)
+      data: {
+        blockchainUserId: audiusUserId,
+        metadataFileUUID,
+        blockNumber
+      }
+    })
   }
 
-  async uploadTrack (file, metadata) {
-    if (!this.userStateManager.getCurrentUserId()) {
-      throw new Error('No users loaded for this wallet')
+  /**
+   * Uploads a track (including audio and image content) to a creator node
+   * @param {File} trackFile the audio content
+   * @param {File} coverArtFile the image content
+   * @param {object} metadata the metadata for the track
+   * @param {function?} onProgress an optional on progerss callback
+   */
+  async uploadTrackContent (trackFile, coverArtFile, metadata, onProgress = () => {}) {
+    let loadedImageBytes = 0
+    let loadedTrackBytes = 0
+    let totalImageBytes = 0
+    let totalTrackBytes = 0
+    const onImageProgress = (loaded, total) => {
+      loadedImageBytes = loaded
+      if (!totalImageBytes) totalImageBytes += total
+      if (totalImageBytes && totalTrackBytes) {
+        onProgress(loadedImageBytes + loadedTrackBytes, totalImageBytes + totalTrackBytes)
+      }
     }
-    metadata.creator_id = this.userStateManager.getCurrentUserId()
-
-    const trackContentResp = await this.uploadTrackContent(file)
+    const onTrackProgress = (loaded, total) => {
+      loadedTrackBytes = loaded
+      if (!totalTrackBytes) totalTrackBytes += total
+      if (totalImageBytes && totalTrackBytes) {
+        onProgress(loadedImageBytes + loadedTrackBytes, totalImageBytes + totalTrackBytes)
+      }
+    }
+    const [trackContentResp, coverArtResp] = await Promise.all([
+      this.uploadTrackAudio(trackFile, onTrackProgress),
+      this.uploadImage(coverArtFile, true, onImageProgress)
+    ])
+    metadata.cover_art_sizes = coverArtResp.dirCID
     metadata.track_segments = trackContentResp.track_segments
-
     // Creates new track entity on creator node, making track's metadata available on IPFS
     // @returns {Object} {cid: cid of track metadata on IPFS, id: id of track to be used with associate function}
-    return this._makeRequest({
-      url: '/tracks',
-      method: 'post',
-      data: metadata
-    }, true, false)
+    return this.uploadTrackMetadata(metadata)
   }
 
   /**
-   * Associates nodeTrackID (returned by createTrack) with audiusTrackId from blockchain.
-   * Completes the track creation process.
-   * @param {nodeTrackId} id returned at creation time by createTrack function
-   * @param {audiusTrackId} id returned by track creation on-blockchain
+   * Uploads track metadata to a creator node
+   * @param {object} metadata
    */
-  async associateTrack (nodeTrackId, audiusTrackId) {
-    await this._makeRequest({
-      url: `/tracks/associate/${nodeTrackId}`,
-      method: 'post',
-      data: { blockchainTrackId: audiusTrackId }
-    })
-  }
-
-  async updateTrack (trackId, metadata) {
-    return this._makeRequest({
-      url: `/tracks/${trackId}`,
-      method: 'put',
-      data: metadata
-    })
-  }
-
   async uploadTrackMetadata (metadata) {
     return this._makeRequest({
-      url: '/metadata',
+      url: '/tracks/metadata',
       method: 'post',
-      data: metadata
+      data: {
+        metadata
+      }
+    }, true)
+  }
+
+  /**
+   * Creates a track on the creator node, associating track id with file content
+   * @param {number} audiusTrackId returned by track creation on-blockchain
+   * @param {string} metadataFileUUID unique ID for metadata file
+   * @param {number} blockNumber
+   */
+  async associateTrack (audiusTrackId, metadataFileUUID, blockNumber) {
+    await this._makeRequest({
+      url: `/tracks`,
+      method: 'post',
+      data: {
+        blockchainTrackId: audiusTrackId,
+        metadataFileUUID,
+        blockNumber
+      }
     })
   }
 
   async listTracks () {
     return this._makeRequest({
       url: '/tracks',
+      method: 'get'
+    })
+  }
+
+  async uploadImage (file, square = true, onProgress) {
+    return this._uploadFile(file, '/image_upload', onProgress, { 'square': square })
+  }
+
+  async uploadTrackAudio (file, onProgress) {
+    return this._uploadFile(file, '/track_content', onProgress)
+  }
+
+  async getHealthy () {
+    return this._makeRequest({
+      url: '/health_check',
       method: 'get'
     })
   }
@@ -206,30 +221,39 @@ class CreatorNode {
         url: `/sync_status/${user.wallet}`,
         method: 'get'
       }
-      return axios(req)
+      const status = await axios(req)
+      return {
+        status: status.data,
+        userBlockNumber: user.blocknumber,
+        trackBlockNumber: user.track_blocknumber,
+        // Whether or not the endpoint is behind in syncing
+        isBehind: status.data.latestBlockNumber < Math.max(user.blocknumber, user.track_blocknumber),
+        isConfigured: status.data.latestBlockNumber !== -1
+      }
     }
     throw new Error(`No current user`)
   }
 
   /**
-   * Forces a secondary to sync from the current creator node.
-   * @param {string} secondary url
+   * Syncs a secondary creator node for a given user
+   * @param {string} endpoint
    */
-  async forceSync (secondary) {
-    if (!secondary || !Utils.isFQDN(secondary)) {
-      throw new Error(`Invalid secondary ${secondary}`)
-    }
+  async syncSecondary (endpoint) {
     const user = this.userStateManager.getCurrentUser()
-    const req = {
-      baseURL: secondary,
-      url: '/sync',
-      method: 'post',
-      data: {
-        wallet: [user.wallet],
-        creator_node_endpoint: this.getEndpoint()
+    const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
+    const secondaries = new Set(CreatorNode.getSecondaries(user.creator_node_endpoint))
+    if (primary && endpoint && secondaries.has(endpoint)) {
+      const req = {
+        baseURL: endpoint,
+        url: '/sync',
+        method: 'post',
+        data: {
+          wallet: [user.wallet],
+          creator_node_endpoint: primary
+        }
       }
+      return axios(req)
     }
-    return axios(req)
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
@@ -243,7 +267,7 @@ class CreatorNode {
       url: '/users',
       method: 'post',
       data: { walletAddress }
-    }, false, false)
+    }, false)
   }
 
   /** Logs in a creator node user. */
@@ -264,7 +288,7 @@ class CreatorNode {
         data: data,
         signature: signature
       }
-    }, false, false)
+    }, false)
     this.authToken = resp.sessionToken
   }
 
@@ -275,7 +299,7 @@ class CreatorNode {
     await this._makeRequest({
       url: '/users/logout',
       method: 'post'
-    }, false, false)
+    }, false)
     this.authToken = null
   }
 
@@ -284,10 +308,8 @@ class CreatorNode {
    * @param {Object} axiosRequestObj
    * @param {bool} requiresConnection if set, the currently configured creator node
    * is connected to before the request is made.
-   * @param {bool} syncSecondaries if set, causes secondary creator nodes to sync the
-   * changes made in the primary instance.
    */
-  async _makeRequest (axiosRequestObj, requiresConnection = true, syncSecondaries = true) {
+  async _makeRequest (axiosRequestObj, requiresConnection = true) {
     if (requiresConnection) {
       await this.ensureConnected()
     }
@@ -301,8 +323,6 @@ class CreatorNode {
 
     const resp = await axios(axiosRequestObj)
     if (resp.status === 200) {
-      // Sync the secondaries, but don't block on it
-      if (syncSecondaries) this._syncSecondaries()
       return resp.data
     } else {
       throw new Error(`Server returned error: ${resp.status.toString()} ${resp.data['error']}`)
@@ -310,37 +330,13 @@ class CreatorNode {
   }
 
   /**
-   * Syncs the current user's (according to the user state manager) secondary creator nodes.
-   */
-  async _syncSecondaries () {
-    const user = this.userStateManager.getCurrentUser()
-    if (user && user.creator_node_endpoint) {
-      const [primary, ...secondaries] = user.creator_node_endpoint.split(',')
-      if (primary) {
-        await Promise.all(secondaries.map(secondary => {
-          if (!secondary || !Utils.isFQDN(secondary)) return
-          const req = {
-            baseURL: secondary,
-            url: '/sync',
-            method: 'post',
-            data: {
-              wallet: [user.wallet],
-              creator_node_endpoint: primary
-            }
-          }
-          return axios(req)
-        }))
-      }
-    }
-  }
-
-  /**
    * Uploads a file to the connected creator node.
    * @param {File} file
    * @param {string} route route to handle upload (image_upload, track_upload, etc.)
+   * @param {?function} onProgress called with loaded bytes and total bytes
    * @param {Object<string, any>} extraFormDataOptions extra FormData fields passed to the upload
    */
-  async _uploadFile (file, route, extraFormDataOptions = {}) {
+  async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}) {
     await this.ensureConnected()
 
     // form data is from browser, not imported npm module
@@ -350,18 +346,26 @@ class CreatorNode {
       formData.append(key, extraFormDataOptions[key])
     })
 
-    // TODO: figure out why this._makeRequest does not work with formData
     let headers = {}
     if (this.isServer) {
       headers = formData.getHeaders()
     }
     headers['X-Session-ID'] = this.authToken
 
+    let total
     const resp = await axios.post(
       this.creatorNodeEndpoint + route,
       formData,
-      { headers: headers }
+      {
+        headers: headers,
+        // Add a 10% inherit processing time for the file upload.
+        onUploadProgress: (progressEvent) => {
+          if (!total) total = progressEvent.total
+          onProgress(progressEvent.loaded, total)
+        }
+      }
     )
+    onProgress(total, total)
     return resp.data
   }
 }

@@ -1,4 +1,3 @@
-const { Buffer } = require('ipfs-http-client')
 const Redis = require('ioredis')
 const path = require('path')
 const fs = require('fs')
@@ -6,21 +5,20 @@ const { promisify } = require('util')
 const writeFile = promisify(fs.writeFile)
 const mkdir = promisify(fs.mkdir)
 
-const { saveFileFromBuffer, upload } = require('../fileManager')
+const { upload } = require('../fileManager')
 const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound } = require('../apiHelpers')
 
 const models = require('../models')
-const authMiddleware = require('../authMiddleware')
-const nodeSyncMiddleware = require('../redis').nodeSyncMiddleware
 const { logger } = require('../logging')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const resizeImage = require('../resizeImage')
+const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
 const { getIPFSPeerId } = require('../utils')
 
 module.exports = function (app) {
   /** Store image in multiple-resolutions on disk + DB and make available via IPFS */
-  app.post('/image_upload', authMiddleware, nodeSyncMiddleware, upload.single('file'), handleResponse(async (req, res) => {
+  app.post('/image_upload', authMiddleware, syncLockMiddleware, upload.single('file'), handleResponse(async (req, res) => {
     if (!req.body.square || !(req.body.square === 'true' || req.body.square === 'false')) {
       return errorResponseBadRequest('Must provide square boolean param in request body')
     }
@@ -81,7 +79,7 @@ module.exports = function (app) {
 
       // Save dir file reference to DB
       const dir = (await models.File.findOrCreate({ where: {
-        cnodeUserUUID: req.userId,
+        cnodeUserUUID: req.session.cnodeUserUUID,
         multihash: dirCID,
         sourceFile: null,
         storagePath: dirDestPath,
@@ -100,7 +98,7 @@ module.exports = function (app) {
 
         // Save file reference to DB
         const file = (await models.File.findOrCreate({ where: {
-          cnodeUserUUID: req.userId,
+          cnodeUserUUID: req.session.cnodeUserUUID,
           multihash: fileResp.hash,
           sourceFile: fileResp.path,
           storagePath: destPath,
@@ -115,20 +113,12 @@ module.exports = function (app) {
       req.logger.info(`route time = ${Date.now() - routestart}`)
 
       await t.commit()
+      triggerSecondarySyncs(req)
       return successResponse({ dirCID })
     } catch (e) {
       await t.rollback()
       return errorResponseServerError(e)
     }
-  }))
-
-  /** upload metadata to IPFS and save in Files table */
-  app.post('/metadata', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const metadataJSON = req.body
-    req.logger.info('metadataJSON', metadataJSON)
-    const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
-    const { multihash } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
-    return successResponse({ 'metadataMultihash': multihash })
   }))
 
   app.get('/ipfs_peer_info', handleResponse(async (req, res) => {

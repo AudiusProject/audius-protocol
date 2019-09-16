@@ -4,6 +4,7 @@ const cors = require('cors')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
+const { userNodeMiddleware } = require('./userNodeMiddleware')
 const { userReqLimiter, trackReqLimiter, audiusUserReqLimiter, metadataReqLimiter, imageReqLimiter } = require('./reqLimiter')
 const redisClient = require('./redis')
 
@@ -12,6 +13,7 @@ const app = express()
 //  - loggingMiddleware must be first to ensure proper error handling
 app.use(loggingMiddleware)
 app.use(bodyParser.json())
+app.use(userNodeMiddleware)
 app.use(cors())
 
 // Initialize private IPFS gateway counters
@@ -35,10 +37,11 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
-const initializeApp = (port, storageDir, s3Bucket, ipfsAPI) => {
+const initializeApp = (port, storageDir, ipfsAPI, audiusLibs) => {
   app.set('ipfsAPI', ipfsAPI)
   app.set('storagePath', storageDir)
   app.set('redisClient', redisClient)
+  app.set('audiusLibs', audiusLibs)
 
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 

@@ -1,8 +1,7 @@
 const ethereumUtils = require('ethereumjs-util')
 
 const models = require('../models')
-const authMiddleware = require('../authMiddleware')
-const nodeSyncMiddleware = require('../redis').nodeSyncMiddleware
+const { authMiddleware, syncLockMiddleware } = require('../middlewares')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const sessionManager = require('../sessionManager')
 const utils = require('../utils')
@@ -30,8 +29,7 @@ module.exports = function (app) {
   }))
 
   app.post('/users/login', handleResponse(async (req, res, next) => {
-    const signature = req.body.signature
-    const data = req.body.data
+    const { signature, data } = req.body
 
     const address = utils.verifySignature(data, signature)
     const user = await models.CNodeUser.findOne({
@@ -57,7 +55,7 @@ module.exports = function (app) {
     return successResponse({ sessionToken })
   }))
 
-  app.post('/users/logout', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res, next) => {
+  app.post('/users/logout', authMiddleware, syncLockMiddleware, handleResponse(async (req, res, next) => {
     await sessionManager.deleteSession(req.get(sessionManager.sessionTokenHeader))
     return successResponse()
   }))

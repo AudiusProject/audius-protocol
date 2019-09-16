@@ -6,15 +6,17 @@ const defaultConfig = require('../default-config.json')
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
+const { getLibsMock } = require('./lib/libsMock')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
 
 describe('test Tracks', function () {
-  let app, server, session, ipfsMock
+  let app, server, session, ipfsMock, libsMock
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
-    const appInfo = await getApp(null, ipfsMock)
+    libsMock = getLibsMock()
+    const appInfo = await getApp(ipfsMock, libsMock)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser()
@@ -42,7 +44,7 @@ describe('test Tracks', function () {
     await server.close()
 
     ipfsMock = getIPFSMock()
-    const appInfo = await getApp(null, ipfsMock)
+    const appInfo = await getApp(ipfsMock)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser()
@@ -71,7 +73,7 @@ describe('test Tracks', function () {
     // Reset app
     await server.close()
     ipfsMock = getIPFSMock()
-    const appInfo = await getApp(null, ipfsMock)
+    const appInfo = await getApp(ipfsMock)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser()
@@ -118,6 +120,8 @@ describe('test Tracks', function () {
 
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
+    libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(2)
+    libsMock.User.getUsers.exactly(2)
 
     const resp1 = await request(app)
       .post('/track_content')
@@ -127,7 +131,8 @@ describe('test Tracks', function () {
       .expect(200)
 
     if (resp1.body.track_segments[0].multihash !== 'testCIDLink' ||
-        resp1.body.track_segments.length !== 32) {
+        resp1.body.track_segments.length !== 32
+    ) {
       throw new Error('Incorrect return values')
     }
 
@@ -139,9 +144,9 @@ describe('test Tracks', function () {
     }
 
     const resp2 = await request(app)
-      .post('/tracks')
+      .post('/tracks/metadata')
       .set('X-Session-ID', session)
-      .send(metadata)
+      .send({ metadata })
       .expect(200)
 
     if (resp2.body.metadataMultihash !== 'testCIDLink') {
@@ -155,6 +160,8 @@ describe('test Tracks', function () {
 
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
+    libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(2)
+    libsMock.User.getUsers.exactly(2)
 
     const resp1 = await request(app)
       .post('/track_content')
@@ -175,9 +182,9 @@ describe('test Tracks', function () {
     }
 
     await request(app)
-      .post('/tracks')
+      .post('/tracks/metadata')
       .set('X-Session-ID', session)
-      .send(metadata)
+      .send({ metadata })
       .expect(400)
   })
 
@@ -187,6 +194,8 @@ describe('test Tracks', function () {
 
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
+    libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(2)
+    libsMock.User.getUsers.exactly(2)
 
     const resp1 = await request(app)
       .post('/track_content')
@@ -210,7 +219,7 @@ describe('test Tracks', function () {
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session)
-      .send(metadata)
+      .send({ metadata })
       .expect(400)
   })
 
@@ -220,6 +229,8 @@ describe('test Tracks', function () {
 
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
+    libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(2)
+    libsMock.User.getUsers.exactly(2)
 
     const resp1 = await request(app)
       .post('/track_content')
@@ -242,7 +253,7 @@ describe('test Tracks', function () {
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session)
-      .send(metadata)
+      .send({ metadata })
       .expect(400)
   })
 
@@ -252,6 +263,8 @@ describe('test Tracks', function () {
 
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
+    libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(4)
+    libsMock.User.getUsers.exactly(4)
 
     const resp1 = await request(app)
       .post('/track_content')
@@ -265,7 +278,6 @@ describe('test Tracks', function () {
       throw new Error('Incorrect return values')
     }
 
-    // creates Audius user
     const metadata = {
       test: 'field1',
       track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
@@ -273,20 +285,19 @@ describe('test Tracks', function () {
     }
 
     const resp2 = await request(app)
-      .post('/tracks')
+      .post('/tracks/metadata')
       .set('X-Session-ID', session)
-      .send(metadata)
+      .send({ metadata })
       .expect(200)
 
     if (resp2.body.metadataMultihash !== 'testCIDLink') {
       throw new Error('invalid return data')
     }
 
-    // associates track with blockchain id
-    request(app)
-      .post('/tracks/associate/' + resp2.body.id)
+    await request(app)
+      .post('/tracks')
       .set('X-Session-ID', session)
-      .send({ blockchainTrackId: 1 })
+      .send({ blockchainTrackId: 1, blockNumber: 10, metadataFileUUID: resp2.body.metadataFileUUID })
       .expect(200)
   })
 })

@@ -2,6 +2,11 @@ const { Base, Services } = require('./base')
 const Utils = require('../utils')
 
 class Tracks extends Base {
+  constructor (userApi, ...services) {
+    super(...services)
+
+    this.User = userApi
+  }
   /* ------- GETTERS ------- */
 
   /**
@@ -77,32 +82,50 @@ class Tracks extends Base {
    * uploads metadata, and finally returns metadata multihash
    * Wraps the stateless function in AudiusLib.
    *
-   * @param {File} fileData ReadableStream from server, or File handle on client
+   * @param {File} trackFile ReadableStream from server, or File handle on client
+   * @param {File} coverArtFile ReadableStream from server, or File handle on client
    * @param {Object} metadata json of the track metadata with all fields, missing fields will error
+   * @param {function} onProgress callback fired with (loaded, total) on byte upload progress
    */
-  async uploadTrack (file, metadata) {
+  async uploadTrack (
+    trackFile,
+    coverArtFile,
+    metadata,
+    onProgress
+  ) {
     this.REQUIRES(Services.CREATOR_NODE)
-    this.FILE_IS_VALID(file)
+    this.FILE_IS_VALID(trackFile)
+    this.FILE_IS_VALID(coverArtFile)
     this.IS_OBJECT(metadata)
 
-    const ownerId = this.userStateManager.getCurrentUserId()
-    if (!ownerId) {
+    const owner = this.userStateManager.getCurrentUser()
+    if (!owner.user_id) {
       throw new Error('No users loaded for this wallet')
     }
-    metadata.owner_id = ownerId
+
+    metadata.owner_id = owner.user_id
     this._validateTrackMetadata(metadata)
 
-    // upload track/multihash to creator node, get back metadata multihash
-    const resp = await this.creatorNode.uploadTrack(file, metadata)
-    const multihashDecoded = Utils.decodeMultihash(resp.metadataMultihash)
-    // write multihash to blockchain
-    const trackId = await this.contracts.TrackFactoryClient.addTrack(
-      ownerId,
+    // Upgrade this user to a creator if they are not one
+    await this.User.upgradeToCreator()
+
+    // Upload metadata
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadTrackContent(
+      trackFile,
+      coverArtFile,
+      metadata,
+      onProgress
+    )
+    // Write metadata to chain
+    const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
+    const { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
+      owner.user_id,
       multihashDecoded.digest,
       multihashDecoded.hashFn,
       multihashDecoded.size
     )
-    await this.creatorNode.associateTrack(resp.id, trackId)
+    // Associate the track id with the file metadata and block number
+    await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
     return trackId
   }
 
@@ -124,17 +147,22 @@ class Tracks extends Base {
     metadata.owner_id = ownerId
     this._validateTrackMetadata(metadata)
 
+    // Upload new metadata
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadTrackMetadata(
+      metadata
+    )
+    // Write the new metadata to chain
+    const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
     const trackId = metadata.track_id
-    let resp = await this.creatorNode.updateTrack(trackId, metadata)
-    let multihashDecoded = Utils.decodeMultihash(resp.metadataMultihash)
-
-    await this.contracts.TrackFactoryClient.updateTrack(
+    const { txReceipt } = await this.contracts.TrackFactoryClient.updateTrack(
       trackId,
       ownerId,
       multihashDecoded.digest,
       multihashDecoded.hashFn,
       multihashDecoded.size
     )
+    // Re-associate the track id with the new metadata
+    await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
     return trackId
   }
 

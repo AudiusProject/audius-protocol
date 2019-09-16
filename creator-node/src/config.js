@@ -180,6 +180,67 @@ const config = convict({
     format: String,
     env: 'delegatePrivateKey',
     default: null
+  },
+
+  ethProviderUrl: {
+    doc: 'eth provider url',
+    format: String,
+    env: 'ethProviderUrl',
+    default: null
+  },
+  ethNetworkId: {
+    doc: 'eth network id',
+    format: String,
+    env: 'ethNetworkId',
+    default: null
+  },
+  ethTokenAddress: {
+    doc: 'eth token address',
+    format: String,
+    env: 'ethTokenAddress',
+    default: null
+  },
+  ethRegistryAddress: {
+    doc: 'eth registry address',
+    format: String,
+    env: 'ethRegistryAddress',
+    default: null
+  },
+  ethOwnerWallet: {
+    doc: 'eth owner wallet',
+    format: String,
+    env: 'ethOwnerWallet',
+    default: null
+  },
+  spOwnerWallet: {
+    doc: 'Service provider owner wallet',
+    format: String,
+    env: 'spOwnerWallet',
+    default: null
+  },
+  ethWallets: {
+    doc: 'all unlocked accounts from eth chain',
+    format: Array,
+    env: 'ethWallets',
+    default: []
+  },
+  spOwnerWalletIndex: {
+    doc: 'Index in ethWallets array of service owner wallet',
+    format: Number,
+    env: 'spOwnerWalletIndex',
+    default: 0
+  },
+  isUserMetadataNode: {
+    doc: 'Flag indicating whether to run this node for user metadata (non creators) only',
+    format: Boolean,
+    env: 'isUserMetadataNode',
+    default: false
+  },
+  debounceTime: {
+    doc: 'sync debounce time',
+    format: 'nat',
+    env: 'debounceTime',
+    default: 30000 // 30000ms = 30s
   }
 
   // unsupported options at the moment
@@ -203,18 +264,24 @@ const config = convict({
   // }
 })
 
-// if you wanted to load a file
-// this is lower precendence than env variables, so if registryAddress or ownerWallet env
-// variables are defined, they take precendence
+/*
+ * If you wanted to load a file, this is lower precendence than env variables.
+ * So if registryAddress or ownerWallet env variables are defined, they take precendence.
+ */
 
 // TODO(DM) - remove these defaults
 const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
 
-// the contract-config.json file is used to load registry address locally
-// during development
-const contractConfigExists = fs.existsSync('contract-config.json')
-if (contractConfigExists) config.loadFile('contract-config.json')
+if (fs.existsSync('eth-contract-config.json')) {
+  let ethContractConfig = require('../eth-contract-config.json')
+  config.load({
+    'ethTokenAddress': ethContractConfig.audiusTokenAddress,
+    'ethRegistryAddress': ethContractConfig.registryAddress,
+    'ethOwnerWallet': ethContractConfig.ownerWallet,
+    'ethWallets': ethContractConfig.allWallets
+  })
+}
 
 // Perform validation and error any properties are not present on schema
 config.validate()

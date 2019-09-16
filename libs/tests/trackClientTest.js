@@ -28,12 +28,12 @@ it('should call addTrack', async function () {
   creatorId1 = (await audiusInstance.contracts.UserFactoryClient.addUser(handle)).userId
 
   if (creatorId1 && Number.isInteger(creatorId1)) {
-    trackId1 = await audiusInstance.contracts.TrackFactoryClient.addTrack(
+    trackId1 = (await audiusInstance.contracts.TrackFactoryClient.addTrack(
       creatorId1,
       trackMultihashDecoded.digest,
       trackMultihashDecoded.hashFn,
       trackMultihashDecoded.size
-    )
+    )).trackId
     let track = await audiusInstance.contracts.TrackFactoryClient.getTrack(trackId1)
     assert.strictEqual(track.multihashDigest, trackMultihashDecoded.digest)
   } else throw new Error('creatorId is not a valid integer')
@@ -47,12 +47,12 @@ it('should call updateTrack', async function () {
 
   if (creatorId2 && Number.isInteger(creatorId2)) {
     // add track
-    trackId1 = await audiusInstance.contracts.TrackFactoryClient.addTrack(
+    trackId1 = (await audiusInstance.contracts.TrackFactoryClient.addTrack(
       creatorId2,
       trackMultihashDecoded.digest,
       trackMultihashDecoded.hashFn,
       trackMultihashDecoded.size
-    )
+    )).trackId
     let track = await audiusInstance.contracts.TrackFactoryClient.getTrack(trackId1)
     assert.strictEqual(track.multihashDigest, trackMultihashDecoded.digest)
 
@@ -71,16 +71,16 @@ it('should call updateTrack', async function () {
 
 it('should call deleteTrack', async function () {
   // add track
-  trackId2 = await audiusInstance.contracts.TrackFactoryClient.addTrack(
+  trackId2 = (await audiusInstance.contracts.TrackFactoryClient.addTrack(
     creatorId2,
     trackMultihashDecoded.digest,
     trackMultihashDecoded.hashFn,
     trackMultihashDecoded.size
-  )
+  )).trackId
   let track = await audiusInstance.contracts.TrackFactoryClient.getTrack(trackId2)
   assert.strictEqual(track.multihashDigest, trackMultihashDecoded.digest)
 
   // delete track
-  let deletedTrackId = await audiusInstance.contracts.TrackFactoryClient.deleteTrack(trackId2)
-  assert.strictEqual(deletedTrackId, trackId2)
+  let { trackId } = await audiusInstance.contracts.TrackFactoryClient.deleteTrack(trackId2)
+  assert.strictEqual(trackId, trackId2)
 })

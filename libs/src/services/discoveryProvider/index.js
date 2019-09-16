@@ -7,9 +7,26 @@ let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 class DiscoveryProvider {
-  constructor (discoveryProviderEndpoint, userStateManager) {
+  constructor (discoveryProviderEndpoint, userStateManager, ethContracts) {
     this.discoveryProviderEndpoint = discoveryProviderEndpoint
     this.userStateManager = userStateManager
+    this.ethContracts = ethContracts
+  }
+
+  setEndpoint (endpoint) {
+    this.discoveryProviderEndpoint = endpoint
+  }
+
+  async autoSelectEndpoint (retries = 3) {
+    if (retries > 0) {
+      const endpoint = await this.ethContracts.autoselectDiscoveryProvider()
+      if (endpoint) {
+        this.setEndpoint(endpoint)
+        return
+      }
+      return this.autoSelectEndpoint(retries - 1)
+    }
+    throw new Error('Failed to autoselect discovery provider')
   }
 
   /**
@@ -29,6 +46,7 @@ class DiscoveryProvider {
    *  {Integer} follower_count - follower count for given user
    *  {Integer} followee_count - followee count for given user
    *  {Integer} repost_count - repost count for given user
+   *  {Integer} track_blocknumber - blocknumber of latest track for user
    *  {Boolean} does_current_user_follow - does current user follow given user
    *  {Array} followee_follows - followees of current user that follow given user
    * @example
@@ -387,7 +405,7 @@ class DiscoveryProvider {
   // queryParams - object of query params to be appended to url
   async _makeRequest (requestObj) {
     if (!this.discoveryProviderEndpoint) {
-      throw new Error('No discovery provider endpoint found')
+      await this.autoSelectEndpoint()
     }
 
     let requestUrl
@@ -405,11 +423,17 @@ class DiscoveryProvider {
     const axiosRequest = {
       url: requestUrl,
       headers: headers,
-      method: 'get'
+      method: 'get',
+      timeout: 3000
     }
 
-    const response = await axios(axiosRequest)
-    return Utils.parseDataFromResponse(response)['data']
+    try {
+      const response = await axios(axiosRequest)
+      return Utils.parseDataFromResponse(response)['data']
+    } catch (e) {
+      await this.autoSelectEndpoint()
+      return this._makeRequest(requestObj)
+    }
   }
 }
 

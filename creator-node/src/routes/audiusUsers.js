@@ -1,97 +1,85 @@
 const { Buffer } = require('ipfs-http-client')
+const fs = require('fs')
 
 const models = require('../models')
-const authMiddleware = require('../authMiddleware')
-const nodeSyncMiddleware = require('../redis').nodeSyncMiddleware
 const { saveFileFromBuffer } = require('../fileManager')
-const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
+const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
 
 module.exports = function (app) {
-  // create AudiusUser from provided metadata, and make metadata available to network
-  app.post('/audius_users', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    // TODO: do some validation on metadata given
-    const metadataJSON = req.body
+  /** Create AudiusUser from provided metadata, and make metadata available to network. */
+  app.post('/audius_users/metadata', authMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
+    // TODO - input validation
+    const metadataJSON = req.body.metadata
 
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
 
-    const audiusUserObj = {
-      cnodeUserUUID: req.userId,
-      metadataFileUUID: fileUUID,
-      metadataJSON: metadataJSON
+    return successResponse({ 'metadataMultihash': multihash, 'metadataFileUUID': fileUUID })
+  }))
+
+  /**
+   * Given audiusUser blockchainUserId, blockNumber, and metadataFileUUID, creates/updates AudiusUser DB entry
+   * and associates image file entries with audiusUser. Ends audiusUser creation/update process.
+   */
+  app.post('/audius_users', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
+    const { blockchainUserId, blockNumber, metadataFileUUID } = req.body
+
+    if (!blockchainUserId || !blockNumber || !metadataFileUUID) {
+      return errorResponseBadRequest('Must include blockchainUserId, blockNumber, and metadataFileUUID.')
     }
 
+    // Error on outdated blocknumber.
+    const cnodeUser = req.session.cnodeUser
+    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber >= blockNumber) {
+      return errorResponseBadRequest(`Invalid blockNumber param. Must be higher than previously processed blocknumber.`)
+    }
+    const cnodeUserUUID = req.session.cnodeUserUUID
+
+    // Fetch metadataJSON for metadataFileUUID.
+    const file = await models.File.findOne({ where: { fileUUID: metadataFileUUID, cnodeUserUUID } })
+    if (!file) {
+      return errorResponseBadRequest(`No file found for provided metadataFileUUID ${metadataFileUUID}.`)
+    }
+    let metadataJSON
     try {
-      const coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_photo_sizes)
-      const profilePicFileUUID = await getFileUUIDForImageCID(req, metadataJSON.profile_picture_sizes)
-      if (coverArtFileUUID) audiusUserObj.coverArtFileUUID = coverArtFileUUID
-      if (profilePicFileUUID) audiusUserObj.profilePicFileUUID = profilePicFileUUID
+      metadataJSON = JSON.parse(fs.readFileSync(file.storagePath))
+    } catch (e) {
+      return errorResponseServerError(`No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}.`)
+    }
+
+    // Get coverArtFileUUID and profilePicFileUUID for multihashes in metadata object, if present.
+    let coverArtFileUUID, profilePicFileUUID
+    try {
+      coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_photo_sizes)
+      profilePicFileUUID = await getFileUUIDForImageCID(req, metadataJSON.profile_picture_sizes)
     } catch (e) {
       return errorResponseBadRequest(e.message)
     }
 
-    const audiusUser = await models.AudiusUser.create(audiusUserObj)
+    const t = await models.sequelize.transaction()
 
-    return successResponse({ 'metadataMultihash': multihash, 'id': audiusUser.audiusUserUUID })
-  }))
+    // Insert / update audiusUser entry on db.
+    const audiusUser = await models.AudiusUser.upsert({
+      cnodeUserUUID,
+      metadataFileUUID,
+      metadataJSON,
+      blockchainId: blockchainUserId,
+      coverArtFileUUID,
+      profilePicFileUUID
+    }, { transaction: t, returning: true })
 
-  // associate AudiusUser blockchain ID with existing creatornode AudiusUser to end creation process
-  app.post('/audius_users/associate/:audiusUserUUID', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const audiusUserUUID = req.params.audiusUserUUID
-    const blockchainId = req.body.userId
-    if (!blockchainId || !audiusUserUUID) {
-      return errorResponseBadRequest('Must include blockchainId and audius user ID')
-    }
-
-    const audiusUser = await models.AudiusUser.findOne({ where: { audiusUserUUID, cnodeUserUUID: req.userId } })
-    if (!audiusUser || audiusUser.cnodeUserUUID !== req.userId) {
-      return errorResponseBadRequest('Invalid Audius user ID')
-    }
-
-    // TODO: validate that provided blockchain ID is indeed associated with
-    // user wallet and metadata CID
-    await audiusUser.update({
-      blockchainId: blockchainId
-    })
-
-    return successResponse()
-  }))
-
-  // update a AudiusUser
-  app.put('/audius_users/:blockchainId', authMiddleware, nodeSyncMiddleware, handleResponse(async (req, res) => {
-    const blockchainId = req.params.blockchainId
-    const audiusUser = await models.AudiusUser.findOne({ where: { blockchainId, cnodeUserUUID: req.userId } })
-
-    if (!audiusUser) {
-      req.logger.error('Attempting to find AudiusUser but none found', blockchainId, audiusUser)
-      return errorResponseBadRequest(`Audius User doesn't exist for that blockchainId`)
-    }
-
-    // TODO: do some validation on metadata given
-    const metadataJSON = req.body
-    const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
-
-    // write to a new file so there's still a record of the old file
-    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
-
-    // Update the file to the new fileId and write the metadata blob in the json field
-    let updateObj = {
-      metadataJSON: metadataJSON,
-      metadataFileUUID: fileUUID
-    }
+    // Update cnodeUser's latestBlockNumber.
+    await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
 
     try {
-      const coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_photo_sizes)
-      const profilePicFileUUID = await getFileUUIDForImageCID(req, metadataJSON.profile_picture_sizes)
-      if (coverArtFileUUID) updateObj.coverArtFileUUID = coverArtFileUUID
-      if (profilePicFileUUID) updateObj.profilePicFileUUID = profilePicFileUUID
+      await t.commit()
+      triggerSecondarySyncs(req)
+      return successResponse({ audiusUserUUID: audiusUser.audiusUserUUID })
     } catch (e) {
-      return errorResponseBadRequest(e.message)
+      await t.rollback()
+      return errorResponseServerError(e.message)
     }
-
-    await audiusUser.update(updateObj)
-
-    return successResponse({ 'metadataMultihash': multihash })
   }))
 }

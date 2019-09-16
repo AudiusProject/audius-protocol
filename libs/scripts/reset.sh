@@ -46,9 +46,6 @@ set -e
 npm run ganache
 npm run truffle-migrate
 
-
-#### RUN TESTS #####
-
 cd ../libs/
 
 # Migrate data & eth contracts
@@ -57,7 +54,8 @@ cd ../libs/
 # - Eth contracts config: AudiusToken contract, registry contract and owner wallet addresses
 sh ./scripts/migrate_contracts.sh
 
-# run tests
+#### RUN TESTS #####
+
 # printf '\nSTART tests:\n\n'
 #./node_modules/.bin/mocha tests/index.js
 

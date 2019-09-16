@@ -2,18 +2,21 @@ const axios = require('axios')
 
 const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
-const { handleResponse, successResponse, errorResponse, errorResponseServerError, errorResponseBadRequest } = require('../apiHelpers')
-const { getNodeSyncRedisKey } = require('../redis')
-const config = require('../config.js')
+const { handleResponse, successResponse, errorResponse } = require('../apiHelpers')
+const config = require('../config')
 const { getIPFSPeerId } = require('../utils')
 
+// Dictionary tracking currently queued up syncs with debounce
+const syncQueue = {}
+
 module.exports = function (app) {
-  /** Exports all db data (not files) associated with walletPublicKey[] as JSON.
-   *  Returns IPFS node ID object, so importing nodes can peer manually for optimized file transfer.
-   *  @return {
-   *    cnodeUsers Map Object containing all db data keyed on cnodeUserUUID
-   *    ipfsIDObj Object containing IPFS Node's peer ID
-   *  }
+  /**
+   * Exports all db data (not files) associated with walletPublicKey[] as JSON.
+   * Returns IPFS node ID object, so importing nodes can peer manually for optimized file transfer.
+   * @return {
+   *  cnodeUsers Map Object containing all db data keyed on cnodeUserUUID
+   *  ipfsIDObj Object containing IPFS Node's peer ID
+   * }
    */
   app.get('/export', handleResponse(async (req, res) => {
     const walletPublicKeys = req.query.wallet_public_key // array
@@ -72,23 +75,66 @@ module.exports = function (app) {
    * of all user data, update DB state accordingly, fetch all files and make them available.
    */
   app.post('/sync', handleResponse(async (req, res) => {
-    const start = Date.now()
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
+    const immediate = (req.body.immediate === true || req.body.immediate === 'true')
 
-    // ensure access to each wallet, then acquire it for sync.
-    const redisLock = req.app.get('redisClient').lock
-    // TODO - redisKey will be inacurrate when /sync is called with more than 1 walletPublicKey
-    let redisKey
-    for (let wallet of walletPublicKeys) {
-      redisKey = getNodeSyncRedisKey(wallet)
-      let lockHeld = await redisLock.getLock(redisKey)
-      if (lockHeld) {
-        return errorResponse(423, `Cannot change state of wallet ${wallet}. Node sync currently in progress.`)
+    if (!immediate) {
+      req.logger.info('debounce time', config.get('debounceTime'))
+      // Debounce nodeysnc op
+      for (let wallet of walletPublicKeys) {
+        if (wallet in syncQueue) {
+          clearTimeout(syncQueue[wallet])
+          req.logger.info('clear timeout for', wallet, 'time', Date.now())
+        }
+        syncQueue[wallet] = setTimeout(
+          async () => _nodesync(req, [wallet], creatorNodeEndpoint),
+          config.get('debounceTime')
+        )
+        req.logger.info('set timeout for', wallet, 'time', Date.now())
       }
-      await redisLock.setLock(redisKey)
+    } else {
+      await _nodesync(req, walletPublicKeys, creatorNodeEndpoint)
+    }
+    return successResponse()
+  }))
+
+  /** Checks if node sync is in progress for wallet. */
+  app.get('/sync_status/:walletPublicKey', handleResponse(async (req, res) => {
+    const walletPublicKey = req.params.walletPublicKey
+    const redisClient = req.app.get('redisClient')
+    const lockHeld = await redisClient.lock.getLock(redisClient.getNodeSyncRedisKey(walletPublicKey))
+    if (lockHeld) {
+      return errorResponse(423, `Cannot change state of wallet ${walletPublicKey}. Node sync currently in progress.`)
     }
 
+    // Get & return latestBlockNumber for wallet
+    const cnodeUser = await models.CNodeUser.findOne({ where: { walletPublicKey } })
+    const latestBlockNumber = cnodeUser ? cnodeUser.latestBlockNumber : -1
+
+    return successResponse({ walletPublicKey, latestBlockNumber })
+  }))
+}
+
+async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
+  const start = Date.now()
+  req.logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
+
+  // ensure access to each wallet, then acquire it for sync.
+  const redisClient = req.app.get('redisClient')
+  const redisLock = redisClient.lock
+  // TODO - redisKey will be inaccurate when /sync is called with more than 1 walletPublicKey
+  let redisKey
+  for (let wallet of walletPublicKeys) {
+    redisKey = redisClient.getNodeSyncRedisKey(wallet)
+    let lockHeld = await redisLock.getLock(redisKey)
+    if (lockHeld) {
+      throw new Error(`Cannot change state of wallet ${wallet}. Node sync currently in progress.`)
+    }
+    await redisLock.setLock(redisKey)
+  }
+
+  try {
     // Fetch data export from creatorNodeEndpoint for given walletPublicKeys.
     const resp = await axios({
       method: 'get',
@@ -97,40 +143,52 @@ module.exports = function (app) {
       params: { wallet_public_key: walletPublicKeys },
       responseType: 'json'
     })
-    if (resp.status !== 200) return errorResponse(resp.status, resp.data['error'])
-    if (!resp.data.hasOwnProperty('cnodeUsers')) {
-      return errorResponseBadRequest(`Malformed response from ${creatorNodeEndpoint}. "cnodeUsers" property not found on response object.`)
+    if (resp.status !== 200) throw new Error(resp.data['error'])
+    // TODO - explain patch
+    if (!resp.data) {
+      if (resp.request && resp.request.responseText) {
+        resp.data = JSON.parse(resp.request.responseText)
+      } else throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
+    }
+    if (!resp.data.hasOwnProperty('cnodeUsers') || !resp.data.hasOwnProperty('ipfsIDObj') || !resp.data.ipfsIDObj.hasOwnProperty('addresses')) {
+      throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
     }
 
     // Attempt to connect directly to target CNode's IPFS node.
-    if (resp.data.hasOwnProperty('ipfsIDObj') && resp.data.ipfsIDObj.hasOwnProperty('addresses')) {
-      await _initBootstrapAndRefreshPeers(req, resp.data.ipfsIDObj.addresses, redisKey)
-    } else {
-      return errorResponseBadRequest(`Malformed response from ${creatorNodeEndpoint}. Malformatted or missing "ipfsIDObj" property.`)
-    }
+    await _initBootstrapAndRefreshPeers(req, resp.data.ipfsIDObj.addresses, redisKey)
     req.logger.info(redisKey, 'IPFS Nodes connected + data export received')
 
     // For each CNodeUser, replace local DB state with retrieved data + fetch + save missing files.
     for (const fetchedCNodeUser of Object.values(resp.data.cnodeUsers)) {
-      const t = await models.sequelize.transaction()
-
       // Since different nodes may assign different cnodeUserUUIDs to a given walletPublicKey,
       // retrieve local cnodeUserUUID from fetched walletPublicKey and delete all associated data.
       if (!fetchedCNodeUser.hasOwnProperty('walletPublicKey')) {
-        return errorResponseBadRequest(`Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`)
+        throw new Error(`Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`)
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
-        return errorResponseBadRequest(`Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`)
+        throw new Error(`Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`)
       }
       const fetchedCnodeUserUUID = fetchedCNodeUser.cnodeUserUUID
 
-      // Delete any previously stored data for cnodeUser in reverse table dependency order (cannot be parallelized).
+      const t = await models.sequelize.transaction()
+
       const cnodeUser = await models.CNodeUser.findOne({
         where: { walletPublicKey: fetchedWalletPublicKey },
         transaction: t
       })
+      const fetchedLatestBlockNumber = fetchedCNodeUser.latestBlockNumber
+
+      // Delete any previously stored data for cnodeUser in reverse table dependency order (cannot be parallelized).
       if (cnodeUser) {
+        // Ensure imported data has higher blocknumber than already stored.
+        const latestBlockNumber = cnodeUser.latestBlockNumber
+        if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
+          (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber <= latestBlockNumber)
+        ) {
+          throw new Error(`Imported data is outdated, will not sync.`)
+        }
+
         const cnodeUserUUID = cnodeUser.cnodeUserUUID
         req.logger.info(redisKey, `beginning delete ops for cnodeUserUUID ${cnodeUserUUID}`)
 
@@ -161,14 +219,15 @@ module.exports = function (app) {
         req.logger.info(redisKey, `numNonTrackFilesDeleted ${numNonTrackFilesDeleted}`)
       }
 
-      /** Populate all new data for fetched cnodeUser. */
+      /* Populate all new data for fetched cnodeUser. */
 
       req.logger.info(redisKey, `beginning add ops for cnodeUserUUID ${fetchedCnodeUserUUID}`)
 
       // Upsert cnodeUser row.
       await models.CNodeUser.upsert({
         cnodeUserUUID: fetchedCnodeUserUUID,
-        walletPublicKey: fetchedCNodeUser.walletPublicKey,
+        walletPublicKey: fetchedWalletPublicKey,
+        latestBlockNumber: fetchedLatestBlockNumber,
         lastLogin: fetchedCNodeUser.lastLogin
       }, { transaction: t })
       req.logger.info(redisKey, `upserted nodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)
@@ -230,38 +289,30 @@ module.exports = function (app) {
       try {
         await t.commit()
         req.logger.info(redisKey, `Transaction successfully committed for cnodeUserUUID ${fetchedCnodeUserUUID}`)
-        redisKey = getNodeSyncRedisKey(fetchedWalletPublicKey)
+        redisKey = redisClient.getNodeSyncRedisKey(fetchedWalletPublicKey)
         await redisLock.removeLock(redisKey)
       } catch (e) {
         req.logger.error(redisKey, `Transaction failed for cnodeUserUUID ${fetchedCnodeUserUUID}`, e)
         await t.rollback()
-        redisKey = getNodeSyncRedisKey(fetchedWalletPublicKey)
+        redisKey = redisClient.getNodeSyncRedisKey(fetchedWalletPublicKey)
         await redisLock.removeLock(redisKey)
-        return errorResponseServerError(e)
+        throw new Error(e)
       }
     }
+  } catch (e) {
+    req.logger.error('Sync Error', e)
+  } finally {
+    // Release all redis locks
     for (let wallet of walletPublicKeys) {
-      let redisKey = getNodeSyncRedisKey(wallet)
+      let redisKey = redisClient.getNodeSyncRedisKey(wallet)
       await redisLock.removeLock(redisKey)
+      delete (syncQueue[wallet])
     }
-    req.logger.info(`DURATION SYNC NEW ${Date.now() - start}`)
-    return successResponse({ duration: Date.now() - start })
-  }))
-
-  /** Checks if node sync is in progress for wallet. */
-  app.get('/sync_status/:walletPublicKey', handleResponse(async (req, res) => {
-    const walletPublicKey = req.params.walletPublicKey
-    const redisLock = req.app.get('redisClient').lock
-    const redisKey = getNodeSyncRedisKey(walletPublicKey)
-    const lockHeld = await redisLock.getLock(redisKey)
-    if (lockHeld) {
-      return errorResponse(423, `Cannot change state of wallet ${walletPublicKey}. Node sync currently in progress.`)
-    }
-    return successResponse(`No sync in progress for wallet ${walletPublicKey}.`)
-  }))
+    req.logger.info(`DURATION SYNC ${Date.now() - start}`)
+  }
 }
 
-/** Given array of target IPFS node's peer addresses, attempt to  */
+/** Given IPFS node peer addresses, add to bootstrap peers list and manually connect. */
 async function _initBootstrapAndRefreshPeers (req, targetIPFSPeerAddresses, redisKey) {
   req.logger.info(redisKey, 'Initializing Bootstrap Peers:')
   const ipfs = req.app.get('ipfsAPI')
@@ -269,7 +320,7 @@ async function _initBootstrapAndRefreshPeers (req, targetIPFSPeerAddresses, redi
   // Get own IPFS node's peer addresses
   const ipfsID = await ipfs.id()
   if (!ipfsID.hasOwnProperty('addresses')) {
-    return errorResponseServerError('failed to retrieve ipfs node addresses')
+    throw new Error('failed to retrieve ipfs node addresses')
   }
   const ipfsPeerAddresses = ipfsID.addresses
 

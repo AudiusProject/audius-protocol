@@ -1,10 +1,7 @@
 const config = require('./config.js')
 const Redis = require('ioredis')
 
-const { errorResponse, sendResponse } = require('./apiHelpers')
-
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
-module.exports = redisClient
 
 const EXPIRATION = 90 // seconds
 class RedisLock {
@@ -24,26 +21,11 @@ class RedisLock {
     return redisClient.del(key)
   }
 }
-module.exports.lock = RedisLock
-
-/** Ensure resource write access */
-async function nodeSyncMiddleware (req, res, next) {
-  if (req.session && req.session.wallet) {
-    const redisKey = getNodeSyncRedisKey(req.session.wallet)
-    const lockHeld = await RedisLock.getLock(redisKey)
-    if (lockHeld) {
-      return sendResponse(req, res, errorResponse(423,
-        `Cannot change state of wallet ${req.session.wallet}. Node sync currently in progress.`
-      ))
-    }
-  }
-  next()
-}
-
-module.exports.nodeSyncMiddleware = nodeSyncMiddleware
 
 function getNodeSyncRedisKey (wallet) {
   return `NODESYNC.${wallet}`
 }
 
+module.exports = redisClient
+module.exports.lock = RedisLock
 module.exports.getNodeSyncRedisKey = getNodeSyncRedisKey

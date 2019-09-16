@@ -249,6 +249,7 @@ jobs:
             export POSTGRES_TEST_PORT=5432
             cd creator-node
             export redisPort=6379
+            export spOwnerWallet='yes'
             npm run test
 
   test-discovery-provider:

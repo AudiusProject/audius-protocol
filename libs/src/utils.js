@@ -37,6 +37,10 @@ class Utils {
     }
   }
 
+  static async wait (milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
+  }
+
   // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
   static isFQDN (url) {
     let FQDN = new RegExp(/(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm)
@@ -119,6 +123,34 @@ class Utils {
       errors => Promise.reject(errors),
       val => Promise.resolve(val)
     )
+  }
+
+  /**
+  * Fetches a url and times how long it took the request to complete.
+  * @param {Object} request {id, url}
+  * @returns { request, response, millis }
+  */
+  static async timeRequest (request) {
+    // This is non-perfect because of the js event loop, but enough
+    // of a proximation. Don't use for mission-critical timing.
+    const startTime = new Date().getTime()
+    const response = await axios.get(request.url)
+    const millis = new Date().getTime() - startTime
+    return { request, response, millis }
+  }
+
+  /**
+   * Fetches multiple urls and times each request and returns the results sorted by
+   * lowest-latency.
+   * @param {Array<Object>} requests [{id, url}, {id, url}]
+   * @returns { Array<{url, response, millis}> }
+   */
+  static async timeRequests (requests) {
+    let timings = await Promise.all(requests.map(async request =>
+      Utils.timeRequest(request)
+    ))
+
+    return timings.sort((a, b) => a.millis - b.millis)
   }
 }
 
