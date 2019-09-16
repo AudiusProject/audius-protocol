@@ -50,8 +50,8 @@ class ServiceProvider extends Base {
     creatorNodes = (await Promise.all(
       creatorNodes.map(async node => {
         try {
-          const { isBehind } = await this.creatorNode.getSyncStatus(node.endpoint)
-          return isBehind ? false : node.endpoint
+          const { isBehind, isConfigured } = await this.creatorNode.getSyncStatus(node.endpoint)
+          return isConfigured && isBehind ? false : node.endpoint
         } catch (e) {
           return false
         }
