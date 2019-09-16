@@ -28,7 +28,7 @@ const getNewPrimary = async (libs, secondaries) => {
   throw new Error(`Could not find valid secondaries for user ${secondaries}`)
 }
 
-const rolloverNodes = async (libs) => {
+const rolloverNodes = async (libs, creatorNodeWhitelist) => {
   const user = libs.userStateManager.getCurrentUser()
 
   if (!user || !user.is_creator) return
@@ -48,6 +48,7 @@ const rolloverNodes = async (libs) => {
     newSecondaries.splice(index, 1)
     const autoselect = await libs.ServiceProvider.autoSelectCreatorNodes(
       2 - newSecondaries.length,
+      creatorNodeWhitelist,
       // Exclude ones we currently have
       new Set([newPrimary, ...newSecondaries])
     )
