@@ -8,10 +8,14 @@ class SanityChecks {
     this.libs = libsInstance
   }
 
-  async run () {
+  /**
+   * Runs sanity checks
+   * @param {Set<string>} creatorNodeWhitelist
+   */
+  async run (creatorNodeWhitelist = null) {
     await isCreator(this.libs)
     await syncNodes(this.libs)
-    await rolloverNodes(this.libs)
+    await rolloverNodes(this.libs, creatorNodeWhitelist)
   }
 }
 
