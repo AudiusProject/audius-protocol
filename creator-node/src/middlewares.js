@@ -51,6 +51,8 @@ async function syncLockMiddleware (req, res, next) {
 
 /** Blocks writes if node is not the primary for audiusUser associated with wallet. */
 async function ensurePrimaryMiddleware (req, res, next) {
+  if (config.get('isUserMetadataNode')) next()
+
   if (!req.session || !req.session.wallet) {
     return sendResponse(req, res, errorResponseUnauthorized('User must be logged in'))
   }
@@ -89,6 +91,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
  * @dev - Is not a middleware so it can be run before responding to client.
  */
 async function triggerSecondarySyncs (req) {
+  if (config.get('isUserMetadataNode')) return
   try {
     if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) return
     const [primary, ...secondaries] = req.session.creatorNodeEndpoints
@@ -114,6 +117,7 @@ async function triggerSecondarySyncs (req) {
 
 /** Retrieves current FQDN registered on-chain with node's owner wallet. */
 async function _getOwnEndpoint (req) {
+  if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
   const libs = req.app.get('audiusLibs')
 
   let spOwnerWallet
@@ -142,6 +146,8 @@ async function _getOwnEndpoint (req) {
 
 /** Get all creator node endpoints for user by wallet from discprov. */
 async function _getCreatorNodeEndpoints (req, wallet) {
+  if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
+
   const libs = req.app.get('audiusLibs')
   const user = await libs.User.getUsers(1, 0, null, wallet)
   if (!user || user.length === 0 || !user[0].hasOwnProperty('creator_node_endpoint')) {
