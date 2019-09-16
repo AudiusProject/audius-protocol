@@ -186,7 +186,7 @@ def parse_user_event(
     # if profile_picture CID is of a dir, store under _sizes field instead
     if user_record.profile_picture:
         ipfs = update_task.ipfs_client._api
-        logger.warning(f"catting user profile_picture {user_record.profile_picture}")
+        logger.info(f"catting user profile_picture {user_record.profile_picture}")
         try:
             # attempt to cat single byte from CID to determine if dir or file
             ipfs.cat(user_record.profile_picture, 0, 1)
@@ -194,14 +194,13 @@ def parse_user_event(
             if "this dag node is a directory" in str(e):
                 user_record.profile_picture_sizes = user_record.profile_picture
                 user_record.profile_picture = None
-                logger.warning('Successfully processed CID')
+                logger.info('Successfully processed CID')
             else:
                 raise Exception(e)
 
     # if cover_photo CID is of a dir, store under _sizes field instead
     if user_record.cover_photo:
         ipfs = update_task.ipfs_client._api
-        logger.warning(f"catting user over_photo {user_record.cover_photo}")
         try:
             # attempt to cat single byte from CID to determine if dir or file
             ipfs.cat(user_record.cover_photo, 0, 1)
@@ -209,7 +208,7 @@ def parse_user_event(
             if "this dag node is a directory" in str(e):
                 user_record.cover_photo_sizes = user_record.cover_photo
                 user_record.cover_photo = None
-                logger.warning('Successfully processed CID')
+                logger.info('Successfully processed CID')
             else:
                 raise Exception(e)
 

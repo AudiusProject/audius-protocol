@@ -157,7 +157,7 @@ def parse_track_event(
 
         # if cover_art CID is of a dir, store under _sizes field instead
         if track_record.cover_art:
-            logger.warning(f"catting track cover_art {track_record.cover_art}")
+            logger.info(f"catting track cover_art {track_record.cover_art}")
             try:
                 # attempt to cat single byte from CID to determine if dir or file
                 ipfs.cat(track_record.cover_art, 0, 1)
@@ -198,7 +198,7 @@ def parse_track_event(
 
         # if cover_art CID is of a dir, store under _sizes field instead
         if track_record.cover_art:
-            logger.warning(f"catting track cover_art {track_record.cover_art}")
+            logger.info(f"catting track cover_art {track_record.cover_art}")
             try:
                 # attempt to cat single byte from CID to determine if dir or file
                 ipfs.cat(track_record.cover_art, 0, 1)
