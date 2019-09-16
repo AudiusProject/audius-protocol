@@ -36,7 +36,6 @@ class ServiceProvider extends Base {
     blacklist = null
   ) {
     let creatorNodes = await this.listCreatorNodes()
-    console.log(creatorNodes)
 
     // Filter whitelist
     if (whitelist) {
