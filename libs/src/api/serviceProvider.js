@@ -23,8 +23,8 @@ class ServiceProvider extends Base {
    * Fetches healthy creator nodes and autoselects a primary
    * and two secondaries
    * @param {number} numberOfNodes total number of nodes to fetch (2 secondaries means 3 total)
-   * @param {Set<string>} whitelist whether or not to include only specified nodes (default no whiltelist)
-   * @param {Set<string} blacklist whether or not to exclude any nodes (default no blacklist)
+   * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
+   * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
    * @returns { primary, secondaries, services }
    * // primary: string
    * // secondaries: Array<string>
@@ -33,7 +33,7 @@ class ServiceProvider extends Base {
   async autoSelectCreatorNodes (
     numberOfNodes = 3,
     whitelist = null,
-    blacklist = new Set([])
+    blacklist = null
   ) {
     let creatorNodes = await this.listCreatorNodes()
 
@@ -42,7 +42,7 @@ class ServiceProvider extends Base {
       creatorNodes = creatorNodes.filter(node => whitelist.has(node.endpoint))
     }
     // Filter blacklist
-    if (blacklist.size > 0) {
+    if (blacklist) {
       creatorNodes = creatorNodes.filter(node => !blacklist.has(node.endpoint))
     }
 
