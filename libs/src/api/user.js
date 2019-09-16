@@ -227,7 +227,6 @@ class Users extends Base {
     // Update new metadata on chain
     let updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
     const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
-    console.log('updatecreator tx', txReceipt)
     const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId)
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
       await this._waitForCreatorNodeUpdate(newMetadata.user_id, newMetadata.creator_node_endpoint)
@@ -355,7 +354,7 @@ class Users extends Base {
     // Execute update promises concurrently
     // TODO - what if one or more of these fails?
     const ops = await Promise.all(addOps)
-    return { ops: ops, latestBlockNumber: Math.max(ops.map(op => op.txReceipt.blockNumber)) }
+    return { ops: ops, latestBlockNumber: Math.max(...ops.map(op => op.txReceipt.blockNumber)) }
   }
 
   async _updateUserOperations (metadata, currentMetadata, userId) {
@@ -396,7 +395,7 @@ class Users extends Base {
     }
 
     const ops = await Promise.all(updateOps)
-    return { ops: ops, latestBlockNumber: Math.max(ops.map(op => op.txReceipt.blockNumber)) }
+    return { ops: ops, latestBlockNumber: Math.max(...ops.map(op => op.txReceipt.blockNumber)) }
   }
 
   _validateUserMetadata (metadata) {
