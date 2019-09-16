@@ -214,7 +214,7 @@ def parse_playlist_event(
         # if playlist_image_multihash CID is of a dir, store under _sizes field instead
         if playlist_record.playlist_image_multihash:
             ipfs = update_task.ipfs_client._api
-            logger.warning(f"catting playlist_image_multihash {playlist_record.playlist_image_multihash}")
+            logger.info(f"catting playlist_image_multihash {playlist_record.playlist_image_multihash}")
             try:
                 # attempt to cat single byte from CID to determine if dir or file
                 ipfs.cat(playlist_record.playlist_image_multihash, 0, 1)

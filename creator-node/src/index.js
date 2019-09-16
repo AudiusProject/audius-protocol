@@ -61,7 +61,7 @@ const startApp = async () => {
     process.exit(1)
   })
 
-  const audiusLibs = await initAudiusLibs()
+  const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
   logger.info('Initialized audius libs')
 
   const appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs)

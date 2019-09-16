@@ -2,10 +2,10 @@ const { sendResponse, errorResponseUnauthorized } = require('./apiHelpers')
 const config = require('./config')
 
 async function userNodeMiddleware (req, res, next) {
-  let isUserMetadataNode = config.get('isUserMetadataNode')
-  let userNodeRegex = new RegExp(/(users|version|health_check|image_upload|ipfs|export)/gm)
+  const isUserMetadataNode = config.get('isUserMetadataNode')
+  const userNodeRegex = new RegExp(/(users|version|health_check|image_upload|ipfs|export)/gm)
   if (isUserMetadataNode) {
-    let isValidUrl = userNodeRegex.test(req.url)
+    const isValidUrl = userNodeRegex.test(req.url)
     if (!isValidUrl) {
       return sendResponse(req, res, errorResponseUnauthorized('Invalid route for user metadata node'))
     }
