@@ -150,32 +150,39 @@ class EthContracts {
     try {
       selectedDiscoveryProvider = await Utils.promiseFight(
         discoveryProviders.map(async (discprov) => {
-          const {
-            data: { service: serviceName, version: serviceVersion }
-          } = await axios({ url: urlJoin(discprov.endpoint, 'version'), method: 'get' })
+          try {
+            const healthResp = await axios({ url: urlJoin(discprov.endpoint, 'health_check'), method: 'get' })
+            if (healthResp.status !== 200) throw new Error(`Discprov healthcheck failed ${discprov.endpoint}`)
 
-          // Compare chain service name
-          if (!this.expectedServiceVersions.hasOwnProperty(serviceName)) {
-            throw new Error(`Invalid service name: ${serviceName}`)
-          }
+            const {
+              data: { service: serviceName, version: serviceVersion }
+            } = await axios({ url: urlJoin(discprov.endpoint, 'version'), method: 'get' })
 
-          if (serviceName !== spType) {
-            throw new Error(`Invalid service type: ${serviceName}. Expected ${spType}`)
-          }
-
-          if (!semver.valid(serviceVersion)) {
-            throw new Error(`Invalid semver version found - ${serviceVersion}`)
-          }
-
-          let expectedVersion = this.expectedServiceVersions[serviceName]
-          if (expectedVersion !== serviceVersion) {
-            let validSPVersion = this.isValidSPVersion(expectedVersion, serviceVersion)
-            if (!validSPVersion) {
-              throw new Error(`Invalid service version: ${serviceName}. Expected ${expectedVersion}, found ${serviceVersion}`)
+            // Compare chain service name
+            if (!this.expectedServiceVersions.hasOwnProperty(serviceName)) {
+              throw new Error(`Invalid service name: ${serviceName}`)
             }
-          }
 
-          return discprov.endpoint
+            if (serviceName !== spType) {
+              throw new Error(`Invalid service type: ${serviceName}. Expected ${spType}`)
+            }
+
+            if (!semver.valid(serviceVersion)) {
+              throw new Error(`Invalid semver version found - ${serviceVersion}`)
+            }
+
+            let expectedVersion = this.expectedServiceVersions[serviceName]
+            if (expectedVersion !== serviceVersion) {
+              let validSPVersion = this.isValidSPVersion(expectedVersion, serviceVersion)
+              if (!validSPVersion) {
+                throw new Error(`Invalid service version: ${serviceName}. Expected ${expectedVersion}, found ${serviceVersion}`)
+              }
+            }
+
+            return discprov.endpoint
+          } catch (err) {
+            throw new Error(err)
+          }
         })
       )
     } catch (err) {
