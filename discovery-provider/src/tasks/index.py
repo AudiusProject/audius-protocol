@@ -416,6 +416,9 @@ def refresh_peer_connections(task_context):
                         continue
                     cnode_endpoints[cnode_url] = True
 
+        # Update creator node list
+        ipfs_client.update_cnode_urls(cnode_endpoints.keys())
+
         # Query ipfs information for each cnode endpoint
         multiaddr_info = {}
         for cnode_url in cnode_endpoints:

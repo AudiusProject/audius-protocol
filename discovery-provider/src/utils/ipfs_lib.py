@@ -15,6 +15,7 @@ class IPFSClient:
     def __init__(self, ipfs_peer_host, ipfs_peer_port, gateway_addresses):
         self._api = ipfshttpclient.connect(f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http")
         self._gateway_addresses = gateway_addresses
+        self._cnode_endpoints = None
         self._ipfsid = self._api.id()
 
     def get_metadata_from_json(self, metadata_format, resp_json):
@@ -34,6 +35,7 @@ class IPFSClient:
         retrieved_from_local_node = False
         start_time = time.time()
 
+        '''
         try:
             api_metadata = self.get_metadata_from_ipfs_node(
                 multihash, metadata_format
@@ -43,6 +45,7 @@ class IPFSClient:
             logger.error(
                 f"Failed to retrieve CID from local node, {multihash}", exc_info=True
             )
+        '''
 
         try:
             if not retrieved_from_local_node:
@@ -75,7 +78,9 @@ class IPFSClient:
     def get_metadata_from_gateway(self, multihash, metadata_format):
         # Default return initial metadata format
         gateway_metadata_json = metadata_format
-        for address in self._gateway_addresses:
+        gateway_endpoints = self._gateway_addresses + self._cnode_endpoints
+
+        for address in gateway_endpoints:
             gateway_query_address = "%s/ipfs/%s" % (address, multihash)
 
             # Skip URL if invalid
@@ -90,6 +95,12 @@ class IPFSClient:
             try:
                 logger.info(f"IPFSCLIENT | Querying {gateway_query_address}")
                 r = requests.get(gateway_query_address, timeout=20)
+
+                # Do not retrieve metadata for error code
+                if r.status_code != 200:
+                    logger.warning(f"IPFSCLIENT | {gateway_query_address} - {r.status_code}")
+                    continue
+
                 # Override with retrieved JSON value
                 gateway_metadata_json = self.get_metadata_from_json(
                     metadata_format, r.json()
@@ -109,7 +120,8 @@ class IPFSClient:
                     f"IPFSCLIENT | Unknown exception retrieving from {gateway_query_address}",
                     exc_info=True,
                 )
-                raise e
+                if "No file found" not in str(e):
+                    raise e
 
         raise Exception(
             f"IPFSCLIENT | Failed to retrieve CID {multihash} from gateway"
@@ -159,3 +171,6 @@ class IPFSClient:
         except Exception as e:
             logger.error(f"IPFSCLIENT | IPFS Failed to update peer")
             logger.error(e)
+
+    def update_cnode_urls(self, cnode_endpoints):
+        self._cnode_endpoints = cnode_endpoints
