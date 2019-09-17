@@ -2,8 +2,8 @@ import logging
 from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from src import contract_addresses
-from src.utils import multihash
-from src.models import Track, BlacklistedIPLD
+from src.utils import multihash, helpers
+from src.models import Track, User, BlacklistedIPLD
 from src.tasks.metadata import track_metadata_format
 
 logger = logging.getLogger(__name__)
@@ -143,6 +143,10 @@ def parse_track_event(
             return track_record
 
         track_record.owner_id = event_args._trackOwnerId
+
+        # Reconnect to creator nodes for this user
+        refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
+
         track_record.is_delete = False
         track_metadata = update_task.ipfs_client.get_metadata(
             track_metadata_multihash,
@@ -185,6 +189,10 @@ def parse_track_event(
 
         track_record.owner_id = event_args._trackOwnerId
         track_record.is_delete = False
+
+        # Reconnect to creator nodes for this user
+        refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
+
         track_metadata = update_task.ipfs_client.get_metadata(
             upd_track_metadata_multihash,
             track_metadata_format
@@ -243,3 +251,19 @@ def populate_track_record_metadata(track_record, track_metadata):
     track_record.iswc = track_metadata["iswc"]
     track_record.track_segments = track_metadata["track_segments"]
     return track_record
+
+def refresh_track_owner_ipfs_conn(owner_id, session, update_task):
+    owner_record = (
+        session.query(User.creator_node_endpoint)
+        .filter(
+            User.is_current == True,
+            User.is_ready == True,
+            User.user_id == owner_id)
+        .all()
+    )
+    if len(owner_record) >= 1:
+        parsed_endpoint_list = owner_record[0][0]
+        helpers.update_ipfs_peers_from_user_endpoint(
+            update_task,
+            parsed_endpoint_list
+        )

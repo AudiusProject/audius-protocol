@@ -2,9 +2,9 @@ import logging
 import json
 import time
 from urllib.parse import urlparse
-import ipfshttpclient
 import requests
 from requests.exceptions import ReadTimeout
+import ipfshttpclient
 
 logger = logging.getLogger(__name__)
 

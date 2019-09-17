@@ -3,10 +3,11 @@ from src import contract_addresses
 from src.models import Block, User, Track, Repost, Follow, Playlist, Save
 from src.tasks.celery_app import celery
 from src.tasks.tracks import track_state_update
-from src.tasks.users import user_state_update, get_ipfs_info_from_cnode_endpoint # pylint: disable=E0611,E0001
+from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.playlists import playlist_state_update
 from src.tasks.user_library import user_library_state_update
+from src.utils.helpers import get_ipfs_info_from_cnode_endpoint
 
 logger = logging.getLogger(__name__)
 
