@@ -35,7 +35,6 @@ class IPFSClient:
         retrieved_from_local_node = False
         start_time = time.time()
 
-        '''
         try:
             api_metadata = self.get_metadata_from_ipfs_node(
                 multihash, metadata_format
@@ -45,7 +44,6 @@ class IPFSClient:
             logger.error(
                 f"Failed to retrieve CID from local node, {multihash}", exc_info=True
             )
-        '''
 
         try:
             if not retrieved_from_local_node:
