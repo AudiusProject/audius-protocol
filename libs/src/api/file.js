@@ -20,11 +20,8 @@ class File extends Base {
    *  Can be used for tracking metrics on which gateways were used.
    */
   async fetchCID (cid, creatorNodeGateways, callback = null) {
-    this.REQUIRES(Services.IPFS_GATEWAY)
-
     let gateways = publicGateways
       .concat(creatorNodeGateways)
-      .concat([this.ipfsGateway])
 
     for (let i = 0; i < gateways.length; ++i) {
       const gateway = gateways[i]

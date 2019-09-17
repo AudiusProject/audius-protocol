@@ -143,7 +143,6 @@ class AudiusLibs {
     this.web3Manager = null
     this.contracts = null
     this.creatorNode = null
-    this.ipfsGateway = null
 
     // API
     this.Account = null
@@ -156,7 +155,6 @@ class AudiusLibs {
   /** Init services based on presence of a relevant config. */
   async init () {
     this.userStateManager = new UserStateManager()
-    this.ipfsGateway = this.ipfsConfig.gateway
     this.web3Config = await this.web3Config
 
     /** Identity Service */
@@ -252,8 +250,7 @@ class AudiusLibs {
       this.ethWeb3Manager,
       this.ethContracts,
       this.creatorNode,
-      this.isServer,
-      this.ipfsGateway
+      this.isServer
     ]
     this.User = new User(...services)
     this.Account = new Account(this.User, ...services)
