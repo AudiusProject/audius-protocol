@@ -424,7 +424,6 @@ def refresh_peer_connections(task_context):
                 continue
             if cnode_url == '':
                 continue
-            logger.warning(cnode_url)
 
             try:
                 logger.warning('index.py | Retrieving connection info for %s', cnode_url)
