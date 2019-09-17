@@ -236,20 +236,31 @@ class CreatorNode {
 
   /**
    * Syncs a secondary creator node for a given user
-   * @param {string} endpoint
+   * @param {string} secondary
+   * @param {string} primary specific primary to use
+   * @param {boolean} immediate whether or not this is a blocking request and handled right away
+   * @param {boolean} validate whether or not to validate the provided secondary is valid
    */
-  async syncSecondary (endpoint) {
+  async syncSecondary (
+    secondary,
+    primary = null,
+    immediate = false,
+    validate = true
+  ) {
     const user = this.userStateManager.getCurrentUser()
-    const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
+    if (!primary) {
+      primary = CreatorNode.getPrimary(user.creator_node_endpoint)
+    }
     const secondaries = new Set(CreatorNode.getSecondaries(user.creator_node_endpoint))
-    if (primary && endpoint && secondaries.has(endpoint)) {
+    if (primary && secondary && (!validate || secondaries.has(secondary))) {
       const req = {
-        baseURL: endpoint,
+        baseURL: secondary,
         url: '/sync',
         method: 'post',
         data: {
           wallet: [user.wallet],
-          creator_node_endpoint: primary
+          creator_node_endpoint: primary,
+          immediate
         }
       }
       return axios(req)

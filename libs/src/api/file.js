@@ -1,12 +1,12 @@
 const { Base, Services } = require('./base')
 const axios = require('axios')
 
-const DEFAULT_TIMEOUT = 250
+const DEFAULT_TIMEOUT = 1000
 
 // Public gateways to send requests to, ordered by precidence.
 const publicGateways = [
-  'https://ipfs.io/ipfs/',
-  'https://cloudflare-ipfs.com/ipfs/'
+  // 'https://ipfs.io/ipfs/',
+  // 'https://cloudflare-ipfs.com/ipfs/'
 ]
 
 class File extends Base {
@@ -20,6 +20,7 @@ class File extends Base {
    *  Can be used for tracking metrics on which gateways were used.
    */
   async fetchCID (cid, creatorNodeGateways, callback = null) {
+    console.log(`cid, ${cid}`, creatorNodeGateways)
     let gateways = publicGateways
       .concat(creatorNodeGateways)
 
@@ -27,6 +28,7 @@ class File extends Base {
       const gateway = gateways[i]
       if (gateway) {
         const url = `${gateway}${cid}`
+        console.log('make req', url)
         // No timeout if this is the last request.
         const timeout = i === gateways.length - 1 ? 0 : DEFAULT_TIMEOUT
         try {
@@ -36,13 +38,7 @@ class File extends Base {
             responseType: 'blob',
             timeout: timeout
           })
-          // We serve json error messages when the content on IPFS is not resolved
-          // properly. This is a stop-gap but axios will only let us retrieve the
-          // response as either blob or json and we need to pass the blob through for
-          // image/file processing.
-          if (response.data.type === 'application/json') {
-            throw new Error() // continue on to the next gateway
-          }
+          console.log('resp', url, response)
           if (callback) callback(gateway, true)
           return response
         } catch (e) {

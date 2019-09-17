@@ -257,10 +257,19 @@ class Users extends Base {
     const userId = user.user_id
     const oldMetadata = { ...user }
     const newMetadata = { ...user }
-
+    
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.is_creator = true
     newMetadata.creator_node_endpoint = this.creatorNode.getEndpoint()
+    
+    // sync from user metadata node
+    console.log(this.creatorNode.getEndpoint())
+    await this.creatorNode.syncSecondary(
+      newMetadata.creator_node_endpoint,
+      `https://usermetadata.staging.audius.co`,
+      true,
+      false
+    )
 
     // Upload new metadata
     const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
