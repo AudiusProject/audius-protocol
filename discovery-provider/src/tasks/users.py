@@ -1,8 +1,6 @@
 import logging
-from urllib.parse import urljoin
 from datetime import datetime
 from sqlalchemy.orm.session import make_transient
-import requests
 from src import contract_addresses
 from src.utils import helpers
 from src.models import User, BlacklistedIPLD

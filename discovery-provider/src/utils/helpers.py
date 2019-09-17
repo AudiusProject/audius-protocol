@@ -1,13 +1,10 @@
 import logging
 import os
 import json
-import logging
 import contextlib
 from urllib.parse import urljoin
 import requests
 from . import multihash
-
-logger = logging.getLogger(__name__)
 
 @contextlib.contextmanager
 def cd(path):
@@ -136,8 +133,7 @@ def get_ipfs_info_from_cnode_endpoint(url):
     raise Exception('Failed to find valid multiaddr')
 
 def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
-    logger.warning('from users:')
-    logger.warning(cnode_url_list)
+    logger = logging.getLogger(__name__)
     if cnode_url_list is None:
         return
     redis = update_task.redis
