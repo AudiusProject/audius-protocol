@@ -186,7 +186,7 @@ def parse_user_event(
     # if profile_picture CID is of a dir, store under _sizes field instead
     if user_record.profile_picture:
         ipfs = update_task.ipfs_client._api
-        logger.warning(f"Processing user profile_picture {user_record.profile_picture}")
+        logger.warning(f"users.py | Processing user profile_picture {user_record.profile_picture}")
         try:
             # attempt to cat single byte from CID to determine if dir or file
             ipfs.cat(user_record.profile_picture, 0, 1)
@@ -194,14 +194,14 @@ def parse_user_event(
             if "this dag node is a directory" in str(e):
                 user_record.profile_picture_sizes = user_record.profile_picture
                 user_record.profile_picture = None
-                logger.warning(f'Successfully processed CID - {user_record.profile_picture_sizes}')
+                logger.warning(f'users.py | Successfully processed CID - {user_record.profile_picture_sizes}')
             else:
                 raise Exception(e)
 
     # if cover_photo CID is of a dir, store under _sizes field instead
     if user_record.cover_photo:
         ipfs = update_task.ipfs_client._api
-        logger.warning(f"Processing user cover_photo {user_record.cover_photo}")
+        logger.warning(f"users.py | Processing user cover_photo {user_record.cover_photo}")
         try:
             # attempt to cat single byte from CID to determine if dir or file
             ipfs.cat(user_record.cover_photo, 0, 1)
@@ -209,7 +209,7 @@ def parse_user_event(
             if "this dag node is a directory" in str(e):
                 user_record.cover_photo_sizes = user_record.cover_photo
                 user_record.cover_photo = None
-                logger.warning(f'Successfully processed CID - {user_record.cover_photo_sizes}')
+                logger.warning(f'users.py | Successfully processed CID - {user_record.cover_photo_sizes}')
             else:
                 raise Exception(e)
 
@@ -221,7 +221,7 @@ def parse_user_event(
 def refresh_user_connection(user_record, update_task):
     if not user_record.is_creator and user_record.profile_picture or user_record.cover_photo:
         user_node_url = update_task.shared_config["discprov"]["user_metadata_service_url"]
-        logger.warning(f'user_metadata_service_url - {user_node_url}')
+        logger.warning(f'users.py | user_metadata_service_url - {user_node_url}')
         # Manually peer with user creator nodes
         helpers.update_ipfs_peers_from_user_endpoint(
             update_task,
@@ -265,6 +265,6 @@ def get_metadata_overrides_from_ipfs(session, update_task, user_record):
             user_record.metadata_multihash,
             user_metadata_format
         )
-        logger.warning(user_metadata)
+        logger.warning(f'users.py | {user_metadata}')
 
     return user_metadata

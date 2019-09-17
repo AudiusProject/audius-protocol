@@ -50,7 +50,7 @@ class IPFSClient:
                 api_metadata = self.get_metadata_from_gateway(multihash, metadata_format)
                 retrieved_from_gateway = api_metadata != metadata_format
         except Exception:
-            logger.info(
+            logger.error(
                 f"Failed to retrieve CID from gateway, {multihash}", exc_info=True
             )
 
