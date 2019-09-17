@@ -246,7 +246,7 @@ def get_metadata_overrides_from_ipfs(session, update_task, user_record):
             return None
 
         # Manually peer with user creator nodes
-        update_ipfs_peers_from_user_endpoint(
+        helpers.update_ipfs_peers_from_user_endpoint(
             update_task,
             user_record.creator_node_endpoint
         )
@@ -257,31 +257,3 @@ def get_metadata_overrides_from_ipfs(session, update_task, user_record):
         )
 
     return user_metadata
-
-
-def get_ipfs_info_from_cnode_endpoint(url):
-    id_url = urljoin(url, 'ipfs_peer_info')
-    resp = requests.get(id_url, timeout=5)
-    json_resp = resp.json()
-    if 'addresses' in json_resp and isinstance(json_resp['addresses'], list):
-        for multiaddr in json_resp['addresses']:
-            if ('127.0.0.1' not in multiaddr) and ('ip6' not in multiaddr):
-                return multiaddr
-    raise Exception('Failed to find valid multiaddr')
-
-
-def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
-    if cnode_url_list is None:
-        return
-    redis = update_task.redis
-    cnode_entries = cnode_url_list.split(',')
-    interval = int(update_task.shared_config["discprov"]["peer_refresh_interval"])
-    for cnode_url in cnode_entries:
-        if cnode_url == '':
-            continue
-        try:
-            multiaddr = get_ipfs_info_from_cnode_endpoint(cnode_url)
-            update_task.ipfs_client.connect_peer(multiaddr)
-            redis.set(cnode_url, multiaddr, interval)
-        except Exception as e:  # pylint: disable=broad-except
-            logger.warning(f"Error retrieving info for {cnode_url}, {e}")
