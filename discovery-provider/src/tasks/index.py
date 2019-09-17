@@ -221,7 +221,7 @@ def index_blocks(self, db, blocks_list):
                 session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict")
 
     if num_blocks > 0:
-        logger.info(f"index.py | index_blocks | Indexed {num_blocks} blocks")
+        logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
 
 
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)

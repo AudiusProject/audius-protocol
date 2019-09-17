@@ -29,7 +29,7 @@ class IPFSClient:
         """ Retrieve file from IPFS, validating metadata requirements prior to
             returning an object with no missing entries
         """
-        logger.warning(f"IPFSCLIENT get_metadata - {multihash}")
+        logger.warning(f"IPFSCLIENT | get_metadata - {multihash}")
         api_metadata = metadata_format
         retrieved_from_gateway = False
         retrieved_from_local_node = False
