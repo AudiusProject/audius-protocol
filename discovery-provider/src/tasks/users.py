@@ -181,10 +181,13 @@ def parse_user_event(
         if metadata_overrides["location"]:
             user_record.location = metadata_overrides["location"]
 
+    # Refresh connection for non-creators
+    refresh_user_connection(user_record, update_task)
+
     # if profile_picture CID is of a dir, store under _sizes field instead
     if user_record.profile_picture:
         ipfs = update_task.ipfs_client._api
-        logger.info(f"catting user profile_picture {user_record.profile_picture}")
+        logger.warning(f"catting user profile_picture {user_record.profile_picture}")
         try:
             # attempt to cat single byte from CID to determine if dir or file
             ipfs.cat(user_record.profile_picture, 0, 1)
@@ -199,6 +202,7 @@ def parse_user_event(
     # if cover_photo CID is of a dir, store under _sizes field instead
     if user_record.cover_photo:
         ipfs = update_task.ipfs_client._api
+        logger.warning(f"catting user cover_photo {user_record.profile_picture}")
         try:
             # attempt to cat single byte from CID to determine if dir or file
             ipfs.cat(user_record.cover_photo, 0, 1)
@@ -215,6 +219,15 @@ def parse_user_event(
 
     return user_record
 
+def refresh_user_connection(user_record, update_task):
+    if not user_record.is_creator and user_record.profile_picture or user_record.cover_photo:
+        user_node_url = update_task.shared_config["discprov"]["user_metadata_service_url"]
+        logger.warning(f'user_node_url {user_node_url}')
+        # Manually peer with user creator nodes
+        helpers.update_ipfs_peers_from_user_endpoint(
+            update_task,
+            user_node_url
+        )
 
 def is_user_ready(user_record):
     # if a user is already a ready, never mark them as false again

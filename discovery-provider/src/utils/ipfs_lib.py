@@ -28,27 +28,29 @@ class IPFSClient:
         """ Retrieve file from IPFS, validating metadata requirements prior to
             returning an object with no missing entries
         """
+        logger.warning(f"IPFSCLIENT get_metadata - {multihash}")
         api_metadata = metadata_format
         retrieved_from_gateway = False
         retrieved_from_local_node = False
         start_time = time.time()
-        try:
-            api_metadata = self.get_metadata_from_gateway(multihash, metadata_format)
-            retrieved_from_gateway = api_metadata != metadata_format
-        except Exception:
-            logger.info(
-                f"Failed to retrieve CID from gateway, {multihash}", exc_info=True
-            )
 
         try:
-            if not retrieved_from_gateway:
-                api_metadata = self.get_metadata_from_ipfs_node(
-                    multihash, metadata_format
-                )
-                retrieved_from_local_node = api_metadata != metadata_format
+            api_metadata = self.get_metadata_from_ipfs_node(
+                multihash, metadata_format
+            )
+            retrieved_from_local_node = api_metadata != metadata_format
         except Exception:
             logger.error(
                 f"Failed to retrieve CID from local node, {multihash}", exc_info=True
+            )
+
+        try:
+            if not retrieved_from_local_node:
+                api_metadata = self.get_metadata_from_gateway(multihash, metadata_format)
+                retrieved_from_gateway = api_metadata != metadata_format
+        except Exception:
+            logger.info(
+                f"Failed to retrieve CID from gateway, {multihash}", exc_info=True
             )
 
         retrieved_metadata = (retrieved_from_gateway or retrieved_from_local_node)
