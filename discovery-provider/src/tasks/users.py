@@ -164,7 +164,6 @@ def parse_user_event(
     )
 
     if metadata_overrides:
-        logger.warning(metadata_overrides)
         # metadata_overrides properties are defined in get_metadata_overrides_from_ipfs
         if metadata_overrides["profile_picture"]:
             user_record.profile_picture = metadata_overrides["profile_picture"]
@@ -222,7 +221,7 @@ def parse_user_event(
 def refresh_user_connection(user_record, update_task):
     if not user_record.is_creator and user_record.profile_picture or user_record.cover_photo:
         user_node_url = update_task.shared_config["discprov"]["user_metadata_service_url"]
-        logger.warning(f'user_node_url {user_node_url}')
+        logger.warning(f'user_metadata_service_url - {user_node_url}')
         # Manually peer with user creator nodes
         helpers.update_ipfs_peers_from_user_endpoint(
             update_task,
@@ -266,5 +265,6 @@ def get_metadata_overrides_from_ipfs(session, update_task, user_record):
             user_record.metadata_multihash,
             user_metadata_format
         )
+        logger.warning(user_metadata)
 
     return user_metadata
