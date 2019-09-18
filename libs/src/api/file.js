@@ -16,25 +16,35 @@ async function raceRequests (
   callback
 ) {
   const sources = []
-  const requests = urls.map(async url => {
+  const requests = urls.map(async (url, i) => {
     const source = CancelToken.source()
     sources.push(source)
 
-    return axios({
-      method: 'get',
-      url,
-      responseType: 'blob',
-      cancelToken: source.token
-    })
-      .then(response => ({
-        blob: response,
-        url
-      }))
-      .catch((thrown) => {
-        // no-op.
-        // If debugging `axios.isCancel(thrown)`
-        // can be used to check if the throw was from a cancel.
+    // Slightly offset requests by their order, so:
+    // 1. We try public gateways first
+    // 2. We give requests the opportunity to get canceled if other's are very fast
+    await Utils.wait(100 * i)
+
+    return new Promise((resolve, reject) => {
+      axios({
+        method: 'get',
+        url,
+        responseType: 'blob',
+        cancelToken: source.token
       })
+        .then(response => {
+          resolve({
+            blob: response,
+            url
+          })
+        })
+        .catch((thrown) => {
+          reject(thrown)
+          // no-op.
+          // If debugging `axios.isCancel(thrown)`
+          // can be used to check if the throw was from a cancel.
+        })
+    })
   })
   const response = await Utils.promiseFight(requests)
   sources.forEach(source => {
