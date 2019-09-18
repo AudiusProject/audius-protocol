@@ -4,12 +4,13 @@ const { Buffer } = require('ipfs-http-client')
 
 const ffmpeg = require('../ffmpeg')
 const ffprobe = require('../ffprobe')
-
 const models = require('../models')
 const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
+
+const TRACK_CONTENT_SOCKET_TIMEOUT = 1000 * 60 * 20 // Default = 1,200,000ms = 20min
 
 module.exports = function (app) {
   /**
@@ -18,6 +19,9 @@ module.exports = function (app) {
    *      - this should be addressed eventually
    */
   app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
+    // Increase serverTimeout from default 2min to ensure large files can be uploaded.
+    req.setTimeout(TRACK_CONTENT_SOCKET_TIMEOUT)
+
     if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
 
     // create and save track file segments to disk
@@ -26,7 +30,7 @@ module.exports = function (app) {
       req.logger.info(`Segmenting file ${req.fileName}...`)
       const segmentTimeStart = Date.now()
       segmentFilePaths = await ffmpeg.segmentFile(req, req.fileDir, req.fileName)
-      req.logger.info(`Segment file time: ${Date.now() - segmentTimeStart}ms`)
+      req.logger.info(`Segment file time: ${Date.now() - segmentTimeStart}ms for file ${req.fileName}`)
     } catch (err) {
       removeTrackFolder(req, req.fileDir)
       return errorResponseServerError(err)
@@ -53,7 +57,7 @@ module.exports = function (app) {
     })
     // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
     trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
-    req.logger.info(`Save segment file time: ${Date.now() - saveSegmentFileTimeStart}ms`)
+    req.logger.info(`Save segment file time: ${Date.now() - saveSegmentFileTimeStart}ms for file ${req.fileName}`)
 
     return successResponse({ 'track_segments': trackSegments })
   }))

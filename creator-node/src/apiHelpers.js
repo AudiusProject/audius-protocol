@@ -79,3 +79,7 @@ module.exports.errorResponseServerError = (message) => {
 module.exports.errorResponseNotFound = (message) => {
   return errorResponse(404, message)
 }
+
+module.exports.errorResponseSocketTimeout = (socketTimeout) => {
+  return errorResponse(500, `${socketTimeout} socket timeout exceeded for request`)
+}
