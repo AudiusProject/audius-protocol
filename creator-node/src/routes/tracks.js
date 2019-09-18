@@ -18,7 +18,7 @@ module.exports = function (app) {
    * @dev - currently stores each segment twice, once under random file UUID & once under IPFS multihash
    *      - this should be addressed eventually
    */
-  app.post('/track_content', authMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
+  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
     // Increase serverTimeout from default 2min to ensure large files can be uploaded.
     req.setTimeout(TRACK_CONTENT_SOCKET_TIMEOUT)
 
