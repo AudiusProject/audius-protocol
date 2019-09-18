@@ -17,8 +17,7 @@ class Base {
     ethWeb3Manager,
     ethContracts,
     creatorNode,
-    isServer,
-    ipfsGateway
+    isServer
   ) {
     this.userStateManager = userStateManager
     this.identityService = identityService
@@ -30,14 +29,12 @@ class Base {
     this.ethContracts = ethContracts
     this.creatorNode = creatorNode
     this.isServer = isServer
-    this.ipfsGateway = ipfsGateway
 
     this._serviceMapping = {
       [Services.IDENTITY_SERVICE]: this.identityService,
       [Services.HEDGEHOG]: this.hedgehog,
       [Services.DISCOVERY_PROVIDER]: this.discoveryProvider,
-      [Services.CREATOR_NODE]: this.creatorNode,
-      [Services.IPFS_GATEWAY]: this.ipfsGateway
+      [Services.CREATOR_NODE]: this.creatorNode
     }
   }
 
