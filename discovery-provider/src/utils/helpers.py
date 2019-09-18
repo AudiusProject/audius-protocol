@@ -141,8 +141,6 @@ def get_valid_multiaddr_from_id_json(id_json):
     return None
 
 def get_ipfs_info_from_cnode_endpoint(url, self_multiaddr):
-    logger = logging.getLogger(__name__)
-    logger.warning(self_multiaddr)
     id_url = urljoin(url, 'ipfs_peer_info')
     data = {'caller_ipfs_id' : self_multiaddr}
     resp = requests.get(
@@ -167,8 +165,6 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
         if cnode_url == '':
             continue
         try:
-            own_multiaddr = update_task.ipfs_client.ipfs_id_multiaddr()
-            logger.warning(f"self multiaddr : {own_multiaddr}")
             multiaddr = get_ipfs_info_from_cnode_endpoint(
                 cnode_url,
                 update_task.ipfs_client.ipfs_id_multiaddr()
