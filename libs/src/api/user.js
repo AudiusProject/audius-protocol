@@ -1,5 +1,6 @@
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
+const CreatorNode = require('../services/creatorNode')
 
 class Users extends Base {
   /* ------- GETTERS ------- */
@@ -241,9 +242,12 @@ class Users extends Base {
   /**
    * Upgrades a user to a creator using their metadata object.
    * This creates a record for that user on the connected creator node.
-   * @param {Object} metadata
+   * @param {string} existingEndpoint
+   * @param {string} newCreatorNodeEndpoint comma delineated
    */
-  async upgradeToCreator () {
+  async upgradeToCreator (existingEndpoint, newCreatorNodeEndpoint) {
+    if (!newCreatorNodeEndpoint) throw new Error(`No creator node endpoint provided`)
+
     this.REQUIRES(Services.CREATOR_NODE)
 
     const user = this.userStateManager.getCurrentUser()
@@ -257,19 +261,21 @@ class Users extends Base {
     const userId = user.user_id
     const oldMetadata = { ...user }
     const newMetadata = { ...user }
-    
+
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.is_creator = true
-    newMetadata.creator_node_endpoint = this.creatorNode.getEndpoint()
-    
-    // sync from user metadata node
-    console.log(this.creatorNode.getEndpoint())
+    newMetadata.creator_node_endpoint = newCreatorNodeEndpoint
+
+    const newPrimary = CreatorNode.getPrimary(newCreatorNodeEndpoint)
+    // Sync the new primary from from the node that has the user's data
     await this.creatorNode.syncSecondary(
-      newMetadata.creator_node_endpoint,
-      `https://usermetadata.staging.audius.co`,
+      newPrimary,
+      existingEndpoint,
       true,
       false
     )
+
+    await this.creatorNode.setEndpoint(newPrimary)
 
     // Upload new metadata
     const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(

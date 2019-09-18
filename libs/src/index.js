@@ -254,7 +254,7 @@ class AudiusLibs {
     ]
     this.User = new User(...services)
     this.Account = new Account(this.User, ...services)
-    this.Track = new Track(this.User, ...services)
+    this.Track = new Track(...services)
     this.Playlist = new Playlist(...services)
     this.File = new File(...services)
     this.ServiceProvider = new ServiceProvider(...services)

@@ -1,13 +1,48 @@
 const { Base, Services } = require('./base')
 const axios = require('axios')
+const Utils = require('../utils')
 
-const DEFAULT_TIMEOUT = 1000
+const CancelToken = axios.CancelToken
 
 // Public gateways to send requests to, ordered by precidence.
 const publicGateways = [
-  // 'https://ipfs.io/ipfs/',
-  // 'https://cloudflare-ipfs.com/ipfs/'
+  'https://ipfs.io/ipfs/',
+  'https://cloudflare-ipfs.com/ipfs/'
 ]
+
+// Races requests for file content
+async function raceRequests (
+  urls,
+  callback
+) {
+  const sources = []
+  const requests = urls.map(async url => {
+    const source = CancelToken.source()
+    sources.push(source)
+
+    return axios({
+      method: 'get',
+      url,
+      responseType: 'blob',
+      cancelToken: source.token
+    })
+      .then(response => ({
+        blob: response,
+        url
+      }))
+      .catch((thrown) => {
+        // no-op.
+        // If debugging `axios.isCancel(thrown)`
+        // can be used to check if the throw was from a cancel.
+      })
+  })
+  const response = await Utils.promiseFight(requests)
+  sources.forEach(source => {
+    source.cancel('Fetch already succeeded')
+  })
+  callback(response.url)
+  return response.blob
+}
 
 class File extends Base {
   /**
@@ -20,34 +55,15 @@ class File extends Base {
    *  Can be used for tracking metrics on which gateways were used.
    */
   async fetchCID (cid, creatorNodeGateways, callback = null) {
-    console.log(`cid, ${cid}`, creatorNodeGateways)
-    let gateways = publicGateways
+    const gateways = publicGateways
       .concat(creatorNodeGateways)
+    const urls = gateways.map(gateway => `${gateway}${cid}`)
 
-    for (let i = 0; i < gateways.length; ++i) {
-      const gateway = gateways[i]
-      if (gateway) {
-        const url = `${gateway}${cid}`
-        console.log('make req', url)
-        // No timeout if this is the last request.
-        const timeout = i === gateways.length - 1 ? 0 : DEFAULT_TIMEOUT
-        try {
-          const response = await axios({
-            method: 'get',
-            url: url,
-            responseType: 'blob',
-            timeout: timeout
-          })
-          console.log('resp', url, response)
-          if (callback) callback(gateway, true)
-          return response
-        } catch (e) {
-          if (callback) callback(gateway, false)
-        }
-      }
+    try {
+      return raceRequests(urls, callback)
+    } catch (e) {
+      throw new Error(`Failed to retrieve ${cid}`)
     }
-
-    throw new Error(`Failed to retrieve ${cid}`)
   }
 
   /**
