@@ -2,11 +2,6 @@ const { Base, Services } = require('./base')
 const Utils = require('../utils')
 
 class Tracks extends Base {
-  constructor (userApi, ...services) {
-    super(...services)
-
-    this.User = userApi
-  }
   /* ------- GETTERS ------- */
 
   /**
@@ -105,9 +100,6 @@ class Tracks extends Base {
 
     metadata.owner_id = owner.user_id
     this._validateTrackMetadata(metadata)
-
-    // Upgrade this user to a creator if they are not one
-    await this.User.upgradeToCreator()
 
     // Upload metadata
     const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadTrackContent(
