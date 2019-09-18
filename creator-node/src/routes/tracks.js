@@ -6,7 +6,7 @@ const ffmpeg = require('../ffmpeg')
 const ffprobe = require('../ffprobe')
 const models = require('../models')
 const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
-const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseSocketTimeout } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
 
