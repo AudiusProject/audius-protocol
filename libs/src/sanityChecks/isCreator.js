@@ -57,10 +57,8 @@ const isCreator = async (libs) => {
 
   // Upgrade the user to a creator
   if (correctNode) {
-    const newUserMetadata = { ...user }
-    newUserMetadata.creator_node_endpoint = correctNode.endpoint
     try {
-      await libs.User.upgradeToCreator(newUserMetadata)
+      await libs.User.upgradeToCreator(null, correctNode.endpoint)
     } catch (e) {
       console.error(e)
       // We were actually a creator the whole time O_O
