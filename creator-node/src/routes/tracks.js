@@ -23,6 +23,7 @@ module.exports = function (app) {
     req.setTimeout(TRACK_CONTENT_SOCKET_TIMEOUT)
 
     if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
+    const routeTimeStart = Date.now()
 
     // create and save track file segments to disk
     let segmentFilePaths
@@ -30,7 +31,7 @@ module.exports = function (app) {
       req.logger.info(`Segmenting file ${req.fileName}...`)
       const segmentTimeStart = Date.now()
       segmentFilePaths = await ffmpeg.segmentFile(req, req.fileDir, req.fileName)
-      req.logger.info(`Segment file time: ${Date.now() - segmentTimeStart}ms for file ${req.fileName}`)
+      req.logger.info(`Time taken to segment track file: ${Date.now() - segmentTimeStart}ms for file ${req.fileName}`)
     } catch (err) {
       removeTrackFolder(req, req.fileDir)
       return errorResponseServerError(err)
@@ -41,9 +42,10 @@ module.exports = function (app) {
     const saveSegmentFileTimeStart = Date.now()
     let saveFileProms = []
     let durationProms = []
+    const t = await models.sequelize.transaction()
     for (let filePath of segmentFilePaths) {
       const absolutePath = path.join(req.fileDir, 'segments', filePath)
-      const saveFileProm = saveFileToIPFSFromFS(req, absolutePath, 'track')
+      const saveFileProm = saveFileToIPFSFromFS(req, absolutePath, 'track', t)
       const durationProm = ffprobe.getTrackDuration(absolutePath)
       saveFileProms.push(saveFileProm)
       durationProms.push(durationProm)
@@ -52,12 +54,25 @@ module.exports = function (app) {
     const [saveFilePromResps, durationPromResps] = await Promise.all(
       [saveFileProms, durationProms].map(promiseArray => Promise.all(promiseArray))
     )
+
+    // Commit transaction
+    try {
+      req.logger.info(`attempting to commit tx for file ${req.fileName}`)
+      await t.commit()
+    } catch (e) {
+      req.logger.info(`failed to commit...rolling back. file ${req.fileName}`)
+      await t.rollback()
+      return errorResponseServerError(e)
+    }
+
     let trackSegments = saveFilePromResps.map((saveFileResp, i) => {
       return { 'multihash': saveFileResp.multihash, 'duration': durationPromResps[i] }
     })
     // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
     trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
-    req.logger.info(`Save segment file time: ${Date.now() - saveSegmentFileTimeStart}ms for file ${req.fileName}`)
+
+    req.logger.info(`Time taken for saving segment file to IPFS, DB and disk: ${Date.now() - saveSegmentFileTimeStart}ms for file ${req.fileName}`)
+    req.logger.info(`Time taken for full track upload route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
 
     return successResponse({ 'track_segments': trackSegments })
   }))
