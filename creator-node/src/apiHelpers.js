@@ -9,12 +9,8 @@ module.exports.handleResponse = (func) => {
         throw new Error('Invalid response returned by function')
       }
 
-      if (resp.object.error && resp.object.error.indexOf('socket timeout exceeded') >= 0) {
-        next()
-      } else {
-        sendResponse(req, res, resp)
-        next()
-      }
+      sendResponse(req, res, resp)
+      next()
     } catch (error) {
       next(error)
     }
