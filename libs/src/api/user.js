@@ -269,11 +269,13 @@ class Users extends Base {
     const newPrimary = CreatorNode.getPrimary(newCreatorNodeEndpoint)
     // Sync the new primary from from the node that has the user's data
     if (existingEndpoint) {
+      // Don't validate what we're sycing from because the user isn't
+      // a creator yet.
       await this.creatorNode.syncSecondary(
         newPrimary,
         existingEndpoint,
-        true,
-        false
+        /* immediate= */ true,
+        /* validate= */ false
       )
     }
 
