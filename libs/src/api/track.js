@@ -125,31 +125,6 @@ class Tracks extends Base {
     return trackId
   }
 
-  /*
-   * @param {number} trackFiles, array of readable streams from server or file handle on client
-   * @param {File} coverArtFile ReadableStream from server, or File handle on client
-   * @param {Object} metadata json of the track metadata with all fields, missing fields will error
-   * @param {function} onProgress callback fired with (loaded, total) on byte upload progress
-   */
-  async uploadCollection (
-    trackFiles,
-    coverArtFile,
-    onProgress
-  ) {
-    this.REQUIRES(Services.CREATOR_NODE)
-    trackFiles.map(file => this.FILE_IS_VALID(file))
-    this.FILE_IS_VALID(coverArtFile)
-    // this.IS_OBJECT(metadata)
-
-    const owner = this.userStateManager.getCurrentUser()
-    if (!owner.user_id) {
-      throw new Error('No users loaded for this wallet')
-    }
-
-    metadata.owner_id = owner.user_id
-    let coverArtResp = await this.creatorNode.uploadImage(coverArtFile, true)
-  }
-
   /**
    * Updates an existing track given metadata. This function expects that all associated files
    * such as track content, cover art are already on creator node.
