@@ -186,7 +186,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
           (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber <= latestBlockNumber)
         ) {
-          throw new Error(`Imported data is outdated, will not sync.`)
+          throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
+            ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}`)
         }
 
         const cnodeUserUUID = cnodeUser.cnodeUserUUID

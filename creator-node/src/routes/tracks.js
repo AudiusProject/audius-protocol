@@ -121,7 +121,7 @@ module.exports = function (app) {
 
     // Error on outdated blocknumber.
     const cnodeUser = req.session.cnodeUser
-    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber >= blockNumber) {
+    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber > blockNumber) {
       return errorResponseBadRequest(`Invalid blockNumber param. Must be higher than previously processed blocknumber.`)
     }
     const cnodeUserUUID = req.session.cnodeUserUUID
@@ -178,8 +178,17 @@ module.exports = function (app) {
       }
     }))
 
-    // Update cnodeUser's latestBlockNumber.
-    await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
+    // Update cnodeUser's latestBlockNumber if higher than previous latestBlockNumber.
+    // TODO - move to subquery to guarantee atomicity.
+    const updatedCNodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID }, transaction: t })
+    if (!updatedCNodeUser || !updatedCNodeUser.latestBlockNumber) {
+      return errorResponseServerError('Issue in retrieving udpatedCnodeUser')
+    }
+    req.logger.info(`cnodeuser ${cnodeUserUUID} first latestBlockNumber ${cnodeUser.latestBlockNumber} || \
+      current latestBlockNumber ${updatedCNodeUser.latestBlockNumber} || given blockNumber ${blockNumber}`)
+    if (blockNumber > updatedCNodeUser.latestBlockNumber) {
+      await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
+    }
 
     try {
       await t.commit()

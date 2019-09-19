@@ -63,6 +63,8 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, t) {
 
   const ipfs = req.app.get('ipfsAPI')
 
+  req.logger.info(`beginning saveFileToIPFSFromFS for srcPath ${srcPath}`)
+
   const multihash = (await ipfs.addFromFs(srcPath))[0].hash
   const dstPath = path.join(req.app.get('storagePath'), multihash)
 
