@@ -20,7 +20,7 @@ async function authMiddleware (req, res, next) {
   }
 
   // Ensure cnodeUser exists for session
-  const cnodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID: cnodeUserUUID } })
+  const cnodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID } })
   if (!cnodeUser) {
     return sendResponse(req, res, errorResponseUnauthorized('No node user exists for provided authentication token'))
   }

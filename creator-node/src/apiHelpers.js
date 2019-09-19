@@ -12,6 +12,7 @@ module.exports.handleResponse = (func) => {
       sendResponse(req, res, resp)
       next()
     } catch (error) {
+      console.error('HandleResponse', error)
       next(error)
     }
   }
