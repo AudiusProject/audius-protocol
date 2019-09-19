@@ -64,10 +64,14 @@ const getTrackContext = async (id: number): Promise<Context> => {
     const track = await getTrack(id)
     const user = await getUser(track.owner_id)
     const gateway = formatGateway(user.creator_node_endpoint)
+
+    const coverArt = track.cover_art_sizes
+      ? `${track.cover_art_sizes}/1000x1000.jpg`
+      : track.cover_art
     return {
       title: `${track.title} • ${user.name}`,
       description: track.description || '',
-      image: getImageUrl(track.cover_art, gateway),
+      image: getImageUrl(coverArt, gateway),
     }
   } catch (e) {
     return getDefaultContext()
@@ -79,10 +83,14 @@ const getCollectionContext = async (id: number): Promise<Context> => {
     const collection = await getCollection(id)
     const user = await getUser(collection.playlist_owner_id)
     const gateway = formatGateway(user.creator_node_endpoint)
+
+    const coverArt = collection.playlist_image_multihash_sizes
+      ? `${collection.playlist_image_multihash_sizes}/1000x1000.jpg`
+      : collection.playlist_image_multihash
     return {
       title: `${collection.playlist_name} • ${user.name}`,
       description: collection.description || '',
-      image: getImageUrl(collection.playlist_image_multihash, gateway),
+      image: getImageUrl(coverArt, gateway),
     }
   } catch (e) {
     return getDefaultContext()
@@ -93,10 +101,14 @@ const getUserContext = async (handle: string): Promise<Context> => {
   try {
     const user = await getUserByHandle(handle)
     const gateway = formatGateway(user.creator_node_endpoint)
+
+    const profilePicture = user.profile_picture_sizes
+      ? `${user.profile_picture_sizes}/1000x1000.jpg`
+      : user.profile_picture
     return {
       title: `${user.name} (@${user.handle})`,
       description: user.bio,
-      image: getImageUrl(user.profile_picture, gateway),
+      image: getImageUrl(profilePicture, gateway),
     }
   } catch (e) {
     return getDefaultContext()
