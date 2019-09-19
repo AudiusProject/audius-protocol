@@ -198,7 +198,8 @@ class AudiusLibs {
         this.discoveryProviderConfig.autoselect,
         this.discoveryProviderConfig.whitelist,
         this.userStateManager,
-        this.ethContracts
+        this.ethContracts,
+        this.web3Manager
       )
       await this.discoveryProvider.init()
     }

@@ -144,7 +144,7 @@ class EthContracts {
   async selectLatestServiceProvider (spType, whitelist = null) {
     let discoveryProviders = await this.ServiceProviderFactoryClient.getServiceProviderList(spType)
     if (whitelist) {
-      discoveryProviders.filter(d => whitelist.has(d))
+      discoveryProviders = discoveryProviders.filter(d => whitelist.has(d.endpoint))
     }
 
     // No discovery providers found.
@@ -243,6 +243,9 @@ class EthContracts {
             endpoint = latestEndpoint
           }
         }
+        if (!inWhitelist) {
+          localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
+        }
       } catch (err) {
         endpoint = await this.selectDiscoveryProvider(whitelist)
       }
@@ -264,7 +267,7 @@ class EthContracts {
     let discoveryProviders =
       await this.ServiceProviderFactoryClient.getServiceProviderList(spType)
     if (whitelist) {
-      discoveryProviders.filter(d => whitelist.has(d))
+      discoveryProviders = discoveryProviders.filter(d => whitelist.has(d.endpoint))
     }
 
     let numberOfServiceVersions =
