@@ -8,7 +8,6 @@ class Utils {
   }
 
   static async timeout (ms) {
-    console.log(`starting timeout of ${ms}`)
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 }
