@@ -39,7 +39,7 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
-    "@audius/libs": "0.10.0",
+    "@audius/libs": "0.11.10",
     "ethereumjs-tx": "^2.1.0",
     "express": "^4.17.1",
     "handlebars": "^4.1.2",
