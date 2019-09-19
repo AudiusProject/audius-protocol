@@ -1,7 +1,6 @@
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
 
-
 class Tracks extends Base {
   /* ------- GETTERS ------- */
 
