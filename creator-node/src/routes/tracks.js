@@ -182,8 +182,8 @@ module.exports = function (app) {
     // TODO - move to subquery to guarantee atomicity.
     const updatedCNodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID }, transaction: t })
     if (!updatedCNodeUser || !updatedCNodeUser.latestBlockNumber) { return errorResponseServerError('no') }
-    req.logger.info(`cnodeuser ${cnodeUserUUID} first latestBlockNumber ${cnodeUser.latestBlockNumber} ||\
-      \ current latestBlockNumber ${updatedCNodeUser.latestBlockNumber} || given blockNumber ${blockNumber}`)
+    req.logger.info(`cnodeuser ${cnodeUserUUID} first latestBlockNumber ${cnodeUser.latestBlockNumber} || \
+      current latestBlockNumber ${updatedCNodeUser.latestBlockNumber} || given blockNumber ${blockNumber}`)
     if (blockNumber > updatedCNodeUser.latestBlockNumber) {
       await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
     }
