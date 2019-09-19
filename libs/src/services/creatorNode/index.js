@@ -127,7 +127,6 @@ class CreatorNode {
    * @param {function?} onProgress an optional on progerss callback
    */
   async uploadTrackContent (trackFile, coverArtFile, metadata, onProgress = () => {}) {
-    console.error(coverArtFile)
     let loadedImageBytes = 0
     let loadedTrackBytes = 0
     let totalImageBytes = 0
