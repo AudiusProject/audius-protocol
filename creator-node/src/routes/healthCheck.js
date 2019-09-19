@@ -6,7 +6,12 @@ const versionInfo = require('../../.version.json')
 module.exports = function (app) {
   /** @dev TODO - Explore checking more than just DB (ex. IPFS) */
   app.get('/health_check', handleResponse(async (req, res) => {
-    return successResponse({ 'healthy': true, 'git': process.env.GIT_SHA })
+    const libs = req.app.get('audiusLibs')
+    return successResponse({
+      'healthy': true,
+      'git': process.env.GIT_SHA,
+      'selectedDiscoveryProvider': libs.discoveryProvider.discoveryProviderEndpoint
+    })
   }))
 
   app.get('/db_check', handleResponse(async (req, res) => {
