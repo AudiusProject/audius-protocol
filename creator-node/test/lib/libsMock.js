@@ -12,7 +12,7 @@ function getLibsMock () {
     }
   }
   libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.returns([{ 'endpoint': 'http://localhost:5000' }])
-  libsMock.User.getUsers.returns([{ 'creator_node_endpoint': 'http://localhost:5000' }])
+  libsMock.User.getUsers.returns([{ 'creator_node_endpoint': 'http://localhost:5000', 'blocknumber': 10 }])
 
   return libsMock
 }

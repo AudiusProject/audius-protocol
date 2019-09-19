@@ -10,7 +10,7 @@ fi
 
 export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_creator_node_test"
 export storagePath='./test_file_storage'
-export logLevel='error'
+export logLevel='info'
 
 # Locally, the docker-compose files set up a database named audius_creator_node. For
 # tests, we use audius_creator_node_test. The below block checks if
