@@ -241,6 +241,14 @@ const config = convict({
     format: 'nat',
     env: 'debounceTime',
     default: 30000 // 30000ms = 30s
+  },
+
+  // Service selection
+  discoveryProviderWhitelist: {
+    doc: 'Whitelisted discovery providers to select from (comma-separated)',
+    format: String,
+    env: 'discoveryProviderWhitelist',
+    default: ''
   }
 
   // unsupported options at the moment

@@ -1,4 +1,5 @@
 const axios = require('axios')
+const _ = require('lodash')
 
 const Utils = require('../../utils')
 
@@ -7,10 +8,32 @@ let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 class DiscoveryProvider {
-  constructor (discoveryProviderEndpoint, userStateManager, ethContracts) {
-    this.discoveryProviderEndpoint = discoveryProviderEndpoint
+  constructor (autoselect, whitelist, userStateManager, ethContracts) {
+    this.autoselect = autoselect
+    this.whitelist = whitelist
     this.userStateManager = userStateManager
     this.ethContracts = ethContracts
+  }
+
+  async init () {
+    let endpoint
+    if (this.autoselect) {
+      endpoint = await this.autoSelectEndpoint(this.whitelist)
+    } else {
+      if (!this.whitelist || this.whitelist.size === 0) {
+        throw new Error('No discovery providers found, no whitelist')
+      }
+      const pick = _.pick(this.whitelist)
+      const isValid = await this.ethContracts.validateDiscoveryProvider(endpoint)
+      if (isValid) {
+        endpoint = pick
+      } else {
+        endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
+      }
+    }
+    this.setEndpoint(endpoint)
+    const users = await this.discoveryProvider.getUsers(1, 0, null, this.web3Manager.getWalletAddress())
+    if (users && users[0]) this.userStateManager.setCurrentUser(this.users[0])
   }
 
   setEndpoint (endpoint) {
@@ -19,7 +42,7 @@ class DiscoveryProvider {
 
   async autoSelectEndpoint (retries = 3) {
     if (retries > 0) {
-      const endpoint = await this.ethContracts.autoselectDiscoveryProvider()
+      const endpoint = await this.ethContracts.autoselectDiscoveryProvider(this.whitelist)
       if (endpoint) {
         this.setEndpoint(endpoint)
         return
