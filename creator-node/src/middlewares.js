@@ -4,6 +4,7 @@ const { sendResponse, errorResponse, errorResponseUnauthorized, errorResponseSer
 const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
+const utils = require('./utils')
 
 /** Ensure valid cnodeUser and session exist for provided session token. */
 async function authMiddleware (req, res, next) {
@@ -147,9 +148,33 @@ async function _getOwnEndpoint (req) {
 /** Get all creator node endpoints for user by wallet from discprov. */
 async function _getCreatorNodeEndpoints (req, wallet) {
   if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
-
   const libs = req.app.get('audiusLibs')
-  const user = await libs.User.getUsers(1, 0, null, wallet)
+
+  // Poll discprov until it has indexed provided blocknumber to ensure up-to-date user data.
+  let user
+  const maxRetries = 10
+  let retries = 0
+  const { blockNumber } = req.body
+  if (blockNumber) {
+    let discprovBlockNumber = -1
+    while (discprovBlockNumber < blockNumber) {
+      try {
+        user = await libs.User.getUsers(1, 0, null, wallet)
+        if (!user || user.length === 0 || !user[0].hasOwnProperty('blocknumber')) {
+          throw new Error('Missing or malformatted user fetched from discprov.')
+        }
+        discprovBlockNumber = user.blocknumber
+      } catch (e) {
+        if (++retries >= maxRetries) {
+          throw new Error(`Failed to retrieve user from discprov after ${maxRetries} retries. Aborting.`)
+        }
+      }
+      await utils.timeout(500)
+    }
+  } else {
+    user = await libs.User.getUsers(1, 0, null, wallet)
+  }
+
   if (!user || user.length === 0 || !user[0].hasOwnProperty('creator_node_endpoint')) {
     throw new Error(`Invalid return data from discovery provider for user with wallet ${wallet}.`)
   }
