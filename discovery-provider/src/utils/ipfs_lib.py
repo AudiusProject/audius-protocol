@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 import requests
 from requests.exceptions import ReadTimeout
 import ipfshttpclient
+from src.utils.helpers import get_valid_multiaddr_from_id_json
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ class IPFSClient:
         self._gateway_addresses = gateway_addresses
         self._cnode_endpoints = None
         self._ipfsid = self._api.id()
+        self._multiaddr = get_valid_multiaddr_from_id_json(self._ipfsid)
 
     def get_metadata_from_json(self, metadata_format, resp_json):
         metadata = {}
@@ -172,3 +174,6 @@ class IPFSClient:
 
     def update_cnode_urls(self, cnode_endpoints):
         self._cnode_endpoints = cnode_endpoints
+
+    def ipfs_id_multiaddr(self):
+        return self._multiaddr
