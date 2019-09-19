@@ -23,7 +23,7 @@ class AudiusLibs {
    * Configures a discovery provider wrapper
    * @param {boolean} autoselect whether or not to autoselect a discovery provider endpoint
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
-   * - if `autoselect=true`, autoselectios are validated against the whiltelist
+   * - if `autoselect=true`, autoselections are validated against the whitelist
    * - if `autoselect=false`, selection is performed at random from the whitelist
    */
   static configDiscoveryProvider (autoselect = true, whitelist = null) {
