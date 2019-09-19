@@ -29,6 +29,7 @@ class CreatorNode {
     this.connected = false
     this.connecting = false
     this.authToken = null
+    this.maxBlockNumber = 0
   }
 
   async init () {
@@ -106,13 +107,14 @@ class CreatorNode {
    * @param {number} blockNumber
    */
   async associateCreator (audiusUserId, metadataFileUUID, blockNumber) {
+    this.maxBlockNumber = Math.max(this.maxBlockNumber, blockNumber)
     await this._makeRequest({
       url: `/audius_users`,
       method: 'post',
       data: {
         blockchainUserId: audiusUserId,
         metadataFileUUID,
-        blockNumber
+        blockNumber: this.maxBlockNumber
       }
     })
   }
@@ -139,16 +141,18 @@ class CreatorNode {
     const onTrackProgress = (loaded, total) => {
       loadedTrackBytes = loaded
       if (!totalTrackBytes) totalTrackBytes += total
-      if (totalImageBytes && totalTrackBytes) {
+      if ((!coverArtFile || totalImageBytes) && totalTrackBytes) {
         onProgress(loadedImageBytes + loadedTrackBytes, totalImageBytes + totalTrackBytes)
       }
     }
-    const [trackContentResp, coverArtResp] = await Promise.all([
-      this.uploadTrackAudio(trackFile, onTrackProgress),
-      this.uploadImage(coverArtFile, true, onImageProgress)
-    ])
-    metadata.cover_art_sizes = coverArtResp.dirCID
+
+    let uploadPromises = []
+    uploadPromises.push(this.uploadTrackAudio(trackFile, onTrackProgress))
+    if (coverArtFile) uploadPromises.push(this.uploadImage(coverArtFile, true, onImageProgress))
+
+    const [trackContentResp, coverArtResp] = await Promise.all(uploadPromises)
     metadata.track_segments = trackContentResp.track_segments
+    if (coverArtResp) metadata.cover_art_sizes = coverArtResp.dirCID
     // Creates new track entity on creator node, making track's metadata available on IPFS
     // @returns {Object} {cid: cid of track metadata on IPFS, id: id of track to be used with associate function}
     return this.uploadTrackMetadata(metadata)
@@ -175,13 +179,14 @@ class CreatorNode {
    * @param {number} blockNumber
    */
   async associateTrack (audiusTrackId, metadataFileUUID, blockNumber) {
+    this.maxBlockNumber = Math.max(this.maxBlockNumber, blockNumber)
     await this._makeRequest({
       url: `/tracks`,
       method: 'post',
       data: {
         blockchainTrackId: audiusTrackId,
         metadataFileUUID,
-        blockNumber
+        blockNumber: this.maxBlockNumber
       }
     })
   }

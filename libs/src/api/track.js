@@ -90,7 +90,9 @@ class Tracks extends Base {
   ) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(trackFile)
-    this.FILE_IS_VALID(coverArtFile)
+
+    if (coverArtFile) this.FILE_IS_VALID(coverArtFile)
+
     this.IS_OBJECT(metadata)
 
     const owner = this.userStateManager.getCurrentUser()
@@ -116,6 +118,7 @@ class Tracks extends Base {
       multihashDecoded.hashFn,
       multihashDecoded.size
     )
+
     // Associate the track id with the file metadata and block number
     await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
     return trackId
