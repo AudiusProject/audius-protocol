@@ -41,7 +41,7 @@ module.exports = function (app) {
     // run all async ops in parallel as they are not independent
     const saveSegmentFileTimeStart = Date.now()
     const t = await models.sequelize.transaction()
-    
+
     req.logger.info(`segmentFilePaths.length ${segmentFilePaths.length}`)
     let counter = 1
     const saveFilePromResps = await Promise.all(segmentFilePaths.map(async filePath => {
@@ -49,17 +49,17 @@ module.exports = function (app) {
       req.logger.info(`about to perform saveFileToIPFSFromFS #${counter++}`)
       return saveFileToIPFSFromFS(req, absolutePath, 'track', t)
     }))
-    
+
     let durationPromResps = []
     for (let i = 0; i < segmentFilePaths.length; i += 10) {
-      const slice = segmentFilePaths.slice(i, i+10)
-      req.logger.info(`about to perform ffprobe.getTrackDuration #${i}-${i+9}`)
+      const slice = segmentFilePaths.slice(i, i + 10)
+      req.logger.info(`about to perform ffprobe.getTrackDuration #${i}-${i + 9}`)
       const resp = await Promise.all(
         slice.map(filePath => {
           const absolutePath = path.join(req.fileDir, 'segments', filePath)
           return ffprobe.getTrackDuration(req, absolutePath)
         }
-      ))
+        ))
       durationPromResps = durationPromResps.concat(resp)
     }
 
