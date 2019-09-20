@@ -1,5 +1,6 @@
 const Web3 = require('web3')
 const sigUtil = require('eth-sig-util')
+const retry = require('async-retry')
 const AudiusABIDecoder = require('../ABIDecoder/index')
 let XMLHttpRequestRef
 if (typeof window === 'undefined' || window === null) {
@@ -138,7 +139,8 @@ class Web3Manager {
     contractMethod,
     contractRegistryKey,
     contractAddress,
-    gasAmount = DEFAULT_GAS_AMOUNT
+    gasAmount = DEFAULT_GAS_AMOUNT,
+    txRetries = 5
   ) {
     if (this.useExternalWeb3) {
       return contractMethod.send(
@@ -147,12 +149,28 @@ class Web3Manager {
     } else {
       const encodedABI = contractMethod.encodeABI()
 
-      const response = await this.identityService.relay(
-        contractRegistryKey,
-        contractAddress,
-        this.ownerWallet.getAddressString(),
-        encodedABI
-      )
+      // Retry function 3x by default
+      const response = await retry(async (bail, num) => {
+        return this.identityService.relay(
+          contractRegistryKey,
+          contractAddress,
+          this.ownerWallet.getAddressString(),
+          encodedABI
+        )
+      }, {
+      // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+        minTimeout: 500,
+        maxTimeout: 4000,
+        factor: 3,
+        retries: txRetries,
+        onRetry: (err, i) => {
+          if (err) {
+            // eslint-disable-next-line no-console
+            console.log('Retry error : ', err)
+          }
+        }
+      })
+
       const receipt = response['receipt']
 
       // interestingly, using contractMethod.send from Metamask's web3 (eg. like in the if
