@@ -2,8 +2,8 @@
 // name to other params
 module.exports = {
   'development': {
-    verifierAddress: null,
-    blacklisterAddress: null
+    verifierAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
+    blacklisterAddress: '0xcccc36bE44D106C6aC14199A2Ed6a29fDa25d5Ae'
   },
   'test_local': {
     verifierAddress: null,
