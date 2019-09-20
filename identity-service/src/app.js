@@ -74,8 +74,9 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
-const initializeApp = (port) => {
+const initializeApp = (port, audiusLibs) => {
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
+  app.set('audiusLibs', audiusLibs)
 
   return { app: app, server: server }
 }

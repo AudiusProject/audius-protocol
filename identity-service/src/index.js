@@ -22,9 +22,9 @@ setTimeout(async () => {
   runMigrations().then(async () => {
     logger.info('Migrations completed successfully')
 
-    await initAudiusLibs()
+    let audiusInstance = await initAudiusLibs()
 
-    appInfo = initializeApp(config.get('port'))
+    appInfo = initializeApp(config.get('port'), audiusInstance)
   }).error((err) => {
     logger.error('Error in migrations: ', err)
     process.exit(1)

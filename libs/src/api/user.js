@@ -305,7 +305,6 @@ class Users extends Base {
    * @param {boolean} isVerified
    */
   async updateIsVerified (userId, isVerified, privateKey) {
-    this.REQUIRES(Services.CONTRACTS)
     return this.contracts.UserFactoryClient.updateIsVerified(userId, isVerified, privateKey)
   }
 
