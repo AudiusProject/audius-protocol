@@ -149,7 +149,6 @@ class Web3Manager {
     } else {
       const encodedABI = contractMethod.encodeABI()
 
-      // Retry function 3x by default
       const response = await retry(async (bail, num) => {
         return this.identityService.relay(
           contractRegistryKey,
@@ -158,6 +157,7 @@ class Web3Manager {
           encodedABI
         )
       }, {
+      // Retry function 5x by default
       // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
         minTimeout: 500,
         maxTimeout: 4000,
