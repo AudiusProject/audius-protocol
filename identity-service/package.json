@@ -13,7 +13,7 @@
     "lint-fix": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
-    "@audius/libs": "^0.10.0",
+    "@audius/libs": "^0.11.14",
     "aws-sdk": "^2.313.0",
     "base64-url": "^2.2.0",
     "body-parser": "^1.18.3",
