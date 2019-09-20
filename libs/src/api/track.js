@@ -125,6 +125,77 @@ class Tracks extends Base {
   }
 
   /**
+   * Takes in a readable stream if isServer is true, or a file reference if isServer is
+   * false.
+   * WARNING: Uploads file to creator node, but does not call contracts
+   * Please pair this with the uploadTrackToChain
+   */
+  async uploadTrackContentToCreatorNode (
+    trackFile,
+    coverArtFile,
+    metadata,
+    onProgress
+  ) {
+    this.REQUIRES(Services.CREATOR_NODE)
+    this.FILE_IS_VALID(trackFile)
+
+    if (coverArtFile) this.FILE_IS_VALID(coverArtFile)
+
+    this.IS_OBJECT(metadata)
+
+    const owner = this.userStateManager.getCurrentUser()
+    if (!owner.user_id) {
+      throw new Error('No users loaded for this wallet')
+    }
+
+    metadata.owner_id = owner.user_id
+    this._validateTrackMetadata(metadata)
+
+    // Upload metadata
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadTrackContent(
+      trackFile,
+      coverArtFile,
+      metadata,
+      onProgress
+    )
+
+    return { metadataMultihash, metadataFileUUID }
+  }
+
+  /**
+   * Takes an array of [{metadataMultihash, metadataFileUUID}, {}, ]
+   * Adds tracks to chain for this user
+   * Associates tracks with user on creatorNode
+   */
+  async addTracksToChainAndCnode (trackMultihashAndUUIDList) {
+    this.REQUIRES(Services.CREATOR_NODE)
+    const owner = this.userStateManager.getCurrentUser()
+    if (!owner.user_id) {
+      throw new Error('No users loaded for this wallet')
+    }
+
+    let trackIds = (await Promise.all(
+      trackMultihashAndUUIDList.map(async trackInfo => {
+        const metadataMultihash = trackInfo.metadataMultihash
+        const metadataFileUUID = trackInfo.metadataFileUUID
+        // Write metadata to chain
+        const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
+        const { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
+          owner.user_id,
+          multihashDecoded.digest,
+          multihashDecoded.hashFn,
+          multihashDecoded.size
+        )
+        // Associate the track id with the file metadata and block number
+        await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
+        return trackId
+      })
+    ))
+
+    return trackIds
+  }
+
+  /**
    * Updates an existing track given metadata. This function expects that all associated files
    * such as track content, cover art are already on creator node.
    * @param {number} trackId id of the track from chain
