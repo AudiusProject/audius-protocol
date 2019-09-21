@@ -7,7 +7,7 @@ from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.playlists import playlist_state_update
 from src.tasks.user_library import user_library_state_update
-from src.utils.helpers import get_ipfs_info_from_cnode_endpoint
+from src.utils.helpers import get_ipfs_info_from_cnode_endpoint, latest_block_redis_key, latest_block_hash_redis_key
 
 logger = logging.getLogger(__name__)
 
@@ -86,6 +86,12 @@ def get_latest_block(db):
         logger.info(f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}")
         latest_block = update_task.web3.eth.getBlock(target_latest_block_number, True)
     return latest_block
+
+def update_latest_block_redis():
+    latest_block_from_chain = update_task.web3.eth.getBlock('latest', True)
+    redis = update_task.redis
+    redis.set(latest_block_redis_key, latest_block_from_chain.number)
+    redis.set(latest_block_hash_redis_key, latest_block_from_chain.hash.hex())
 
 def index_blocks(self, db, blocks_list):
     num_blocks = len(blocks_list)
@@ -458,6 +464,10 @@ def update_task(self):
     db = update_task.db
     web3 = update_task.web3
     redis = update_task.redis
+
+    # Update redis cache for health check queries
+    update_latest_block_redis()
+
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
