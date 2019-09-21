@@ -84,8 +84,8 @@ const getCollectionContext = async (id: number): Promise<Context> => {
     const user = await getUser(collection.playlist_owner_id)
     const gateway = formatGateway(user.creator_node_endpoint)
 
-    const coverArt = collection.playlist_image_multihash_sizes
-      ? `${collection.playlist_image_multihash_sizes}/1000x1000.jpg`
+    const coverArt = collection.playlist_image_sizes_multihash
+      ? `${collection.playlist_image_sizes_multihash}/1000x1000.jpg`
       : collection.playlist_image_multihash
     return {
       title: `${collection.playlist_name} • ${user.name}`,
