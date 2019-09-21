@@ -1,5 +1,6 @@
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
+const retry = require('async-retry')
 
 class Tracks extends Base {
   /* ------- GETTERS ------- */
@@ -128,7 +129,7 @@ class Tracks extends Base {
    * Takes in a readable stream if isServer is true, or a file reference if isServer is
    * false.
    * WARNING: Uploads file to creator node, but does not call contracts
-   * Please pair this with the uploadTrackToChain
+   * Please pair this with the addTracksToChainAndCnode
    */
   async uploadTrackContentToCreatorNode (
     trackFile,
@@ -152,13 +153,27 @@ class Tracks extends Base {
     this._validateTrackMetadata(metadata)
 
     // Upload metadata
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadTrackContent(
-      trackFile,
-      coverArtFile,
-      metadata,
-      onProgress
-    )
-
+    const { metadataMultihash, metadataFileUUID } = await retry(async (bail, num) => {
+      return this.creatorNode.uploadTrackContent(
+        trackFile,
+        coverArtFile,
+        metadata,
+        onProgress)
+    }, {
+    // Retry function 3x
+    // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+      minTimeout: 500,
+      maxTimeout: 4000,
+      factor: 3,
+      retries: 3,
+      onRetry: (err, i) => {
+        if (err) {
+          // eslint-disable-next-line no-console
+          console.log('Retry error : ', err)
+        }
+      }
+    })
+    console.error('New upload func')
     return { metadataMultihash, metadataFileUUID }
   }
 
