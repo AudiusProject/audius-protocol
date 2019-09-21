@@ -10,8 +10,6 @@ const { handleResponse, successResponse, errorResponseBadRequest, errorResponseS
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
 
-const TRACK_CONTENT_SOCKET_TIMEOUT = 1000 * 60 * 20 // Default = 1,200,000ms = 20min
-
 module.exports = function (app) {
   /**
    * upload track segment files and make avail - will later be associated with Audius track
@@ -19,9 +17,6 @@ module.exports = function (app) {
    *      - this should be addressed eventually
    */
   app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
-    // Increase serverTimeout from default 2min to ensure large files can be uploaded.
-    req.setTimeout(TRACK_CONTENT_SOCKET_TIMEOUT)
-
     if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
     const routeTimeStart = Date.now()
 
