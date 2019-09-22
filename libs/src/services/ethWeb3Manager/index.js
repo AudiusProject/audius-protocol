@@ -54,8 +54,7 @@ class EthWeb3Manager {
     }
 
     let gasPrice = parseInt(await this.web3.eth.getGasPrice())
-    let tx = contractMethod.send({ from: this.ownerWallet, gas: gasAmount, gasPrice: gasPrice })
-    return tx
+    return contractMethod.send({ from: this.ownerWallet, gas: gasAmount, gasPrice: gasPrice })
   }
 }
 
