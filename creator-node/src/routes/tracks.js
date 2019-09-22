@@ -4,6 +4,7 @@ const { Buffer } = require('ipfs-http-client')
 
 const ffmpeg = require('../ffmpeg')
 const ffprobe = require('../ffprobe')
+const ffexec = require('../ffprobe-exec')
 const models = require('../models')
 const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
@@ -40,11 +41,28 @@ module.exports = function (app) {
     req.logger.info(`segmentFilePaths.length ${segmentFilePaths.length}`)
     let counter = 1
     const saveFilePromResps = await Promise.all(segmentFilePaths.map(async filePath => {
+      req.logger.error(filePath)
       const absolutePath = path.join(req.fileDir, 'segments', filePath)
       req.logger.info(`about to perform saveFileToIPFSFromFS #${counter++}`)
-      return saveFileToIPFSFromFS(req, absolutePath, 'track', t)
+      let response = await saveFileToIPFSFromFS(req, absolutePath, 'track', t)
+      response.segmentName = filePath
+      return response
     }))
 
+    // Test code
+    saveFilePromResps.map((saveFileResp, i) => {
+      if (!saveFileResp['segmentName']) throw new Error('no segment name')
+    })
+
+    // New duration code
+    req.logger.error('!!!!!!')
+    let fileSegmentPath = path.join(req.fileDir, 'segments')
+    req.logger.error(fileSegmentPath)
+    let newSegmentDurationMap = await ffexec.getSegmentsDuration(req, fileSegmentPath)
+    req.logger.error(newSegmentDurationMap)
+    req.logger.error('!!!!!!')
+
+    // End new duration code
     let durationPromResps = []
     for (let i = 0; i < segmentFilePaths.length; i += 10) {
       const slice = segmentFilePaths.slice(i, i + 10)
@@ -68,7 +86,12 @@ module.exports = function (app) {
       return errorResponseServerError(e)
     }
 
+    req.logger.error(saveFilePromResps)
     let trackSegments = saveFilePromResps.map((saveFileResp, i) => {
+      let segmentName = saveFileResp['segmentName']
+      let duration = newSegmentDurationMap[segmentName]
+      let oldDuration = durationPromResps[i]
+      req.logger.error(`Old duration : ${oldDuration}, new duration : ${duration}`)
       return { 'multihash': saveFileResp.multihash, 'duration': durationPromResps[i] }
     })
     // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
