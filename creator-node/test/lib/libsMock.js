@@ -9,6 +9,9 @@ function getLibsMock () {
     },
     User: {
       getUsers: sinon.mock()
+    },
+    discoveryProvider: {
+      discoveryProviderEndpoint: 'http://docker.for.mac.localhost:5000'
     }
   }
   libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.returns([{ 'endpoint': 'http://localhost:5000' }])
