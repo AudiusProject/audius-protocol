@@ -25,7 +25,7 @@ class DiscoveryProvider {
         throw new Error('Must auto-select or provider whitelist.')
       }
 
-      const pick = _.sample([...this.whitelist])  // selects random element from list.
+      const pick = _.sample([...this.whitelist]) // selects random element from list.
       const isValid = await this.ethContracts.validateDiscoveryProvider(pick)
       if (isValid) {
         endpoint = pick
