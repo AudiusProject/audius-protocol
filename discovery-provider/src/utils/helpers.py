@@ -173,3 +173,6 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
             redis.set(cnode_url, multiaddr, interval)
         except Exception as e:  # pylint: disable=broad-except
             logger.warning(f"Error connecting to {cnode_url}, {e}")
+
+latest_block_redis_key = 'latest_block_from_chain'
+latest_block_hash_redis_key = 'latest_blockhash_from_chain'
