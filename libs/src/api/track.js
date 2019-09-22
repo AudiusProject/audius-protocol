@@ -190,20 +190,26 @@ class Tracks extends Base {
     }
 
     let trackIds = (await Promise.all(
-      trackMultihashAndUUIDList.map(async trackInfo => {
-        const metadataMultihash = trackInfo.metadataMultihash
-        const metadataFileUUID = trackInfo.metadataFileUUID
-        // Write metadata to chain
-        const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
-        const { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
-          owner.user_id,
-          multihashDecoded.digest,
-          multihashDecoded.hashFn,
-          multihashDecoded.size
-        )
-        // Associate the track id with the file metadata and block number
-        await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
-        return trackId
+      trackMultihashAndUUIDList.map(trackInfo => {
+        return new Promise(async (resolve, reject) => {
+          try {
+            const metadataMultihash = trackInfo.metadataMultihash
+            const metadataFileUUID = trackInfo.metadataFileUUID
+            // Write metadata to chain
+            const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
+            const { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
+              owner.user_id,
+              multihashDecoded.digest,
+              multihashDecoded.hashFn,
+              multihashDecoded.size
+            )
+            // Associate the track id with the file metadata and block number
+            await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
+            resolve(trackId)
+          } catch (e) {
+            reject(e)
+          }
+        })
       })
     ))
 
