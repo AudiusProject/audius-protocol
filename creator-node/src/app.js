@@ -8,6 +8,8 @@ const { userNodeMiddleware } = require('./userNodeMiddleware')
 const { userReqLimiter, trackReqLimiter, audiusUserReqLimiter, metadataReqLimiter, imageReqLimiter } = require('./reqLimiter')
 const redisClient = require('./redis')
 
+const TWENTY_MINUTES = 1000 * 60 * 20 // 1,200,000ms = 20min
+
 const app = express()
 // middleware functions will be run in order they are added to the app below
 //  - loggingMiddleware must be first to ensure proper error handling
@@ -44,6 +46,9 @@ const initializeApp = (port, storageDir, ipfsAPI, audiusLibs) => {
   app.set('audiusLibs', audiusLibs)
 
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
+
+  // Increase from 2min default to accommodate long-lived requests.
+  server.setTimeout(TWENTY_MINUTES)
 
   return { app: app, server: server }
 }

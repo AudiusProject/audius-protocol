@@ -10,8 +10,6 @@ const { handleResponse, successResponse, errorResponseBadRequest, errorResponseS
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
 
-const TRACK_CONTENT_SOCKET_TIMEOUT = 1000 * 60 * 20 // Default = 1,200,000ms = 20min
-
 module.exports = function (app) {
   /**
    * upload track segment files and make avail - will later be associated with Audius track
@@ -19,9 +17,6 @@ module.exports = function (app) {
    *      - this should be addressed eventually
    */
   app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
-    // Increase serverTimeout from default 2min to ensure large files can be uploaded.
-    req.setTimeout(TRACK_CONTENT_SOCKET_TIMEOUT)
-
     if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
     const routeTimeStart = Date.now()
 
@@ -40,20 +35,28 @@ module.exports = function (app) {
     // for each path, call saveFile and get back multihash; return multihash + segment duration
     // run all async ops in parallel as they are not independent
     const saveSegmentFileTimeStart = Date.now()
-    let saveFileProms = []
-    let durationProms = []
     const t = await models.sequelize.transaction()
-    for (let filePath of segmentFilePaths) {
+
+    req.logger.info(`segmentFilePaths.length ${segmentFilePaths.length}`)
+    let counter = 1
+    const saveFilePromResps = await Promise.all(segmentFilePaths.map(async filePath => {
       const absolutePath = path.join(req.fileDir, 'segments', filePath)
-      const saveFileProm = saveFileToIPFSFromFS(req, absolutePath, 'track', t)
-      const durationProm = ffprobe.getTrackDuration(absolutePath)
-      saveFileProms.push(saveFileProm)
-      durationProms.push(durationProm)
+      req.logger.info(`about to perform saveFileToIPFSFromFS #${counter++}`)
+      return saveFileToIPFSFromFS(req, absolutePath, 'track', t)
+    }))
+
+    let durationPromResps = []
+    for (let i = 0; i < segmentFilePaths.length; i += 10) {
+      const slice = segmentFilePaths.slice(i, i + 10)
+      req.logger.info(`about to perform ffprobe.getTrackDuration #${i}-${i + 9}`)
+      const resp = await Promise.all(
+        slice.map(filePath => {
+          const absolutePath = path.join(req.fileDir, 'segments', filePath)
+          return ffprobe.getTrackDuration(req, absolutePath)
+        }
+        ))
+      durationPromResps = durationPromResps.concat(resp)
     }
-    // Resolve all promises + process responses
-    const [saveFilePromResps, durationPromResps] = await Promise.all(
-      [saveFileProms, durationProms].map(promiseArray => Promise.all(promiseArray))
-    )
 
     // Commit transaction
     try {

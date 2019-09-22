@@ -4,7 +4,8 @@ var Deferred = require('deferential')
 var bl = require('bl')
 var spawn = require('child_process').spawn
 
-async function getTrackDuration (fileDir) {
+async function getTrackDuration (req, fileDir) {
+  req.logger.info(`Beginning ffprobe getTrackDuration for fileDir ${fileDir}`)
   try {
     const resp = await getInfo(fileDir, { path: ffprobeStatic.path })
     const duration = Number(resp.streams[0].duration)
