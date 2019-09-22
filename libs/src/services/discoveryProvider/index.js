@@ -22,9 +22,10 @@ class DiscoveryProvider {
       endpoint = await this.autoSelectEndpoint()
     } else {
       if (!this.whitelist || this.whitelist.size === 0) {
-        throw new Error('No discovery providers found, no whitelist')
+        throw new Error('Must auto-select or provider whitelist.')
       }
-      const pick = _.sample([...this.whitelist])
+
+      const pick = _.sample([...this.whitelist])  // selects random element from list.
       const isValid = await this.ethContracts.validateDiscoveryProvider(pick)
       if (isValid) {
         endpoint = pick
@@ -33,6 +34,8 @@ class DiscoveryProvider {
       }
     }
     this.setEndpoint(endpoint)
+
+    // Set current user if it exists
     const users = await this.getUsers(1, 0, null, this.web3Manager.getWalletAddress())
     if (users && users[0]) this.userStateManager.setCurrentUser(users[0])
   }
