@@ -173,7 +173,6 @@ class Tracks extends Base {
         }
       }
     })
-    console.error('New upload func')
     return { metadataMultihash, metadataFileUUID }
   }
 
