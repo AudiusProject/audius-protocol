@@ -1,5 +1,6 @@
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
+const retry = require('async-retry')
 
 class Tracks extends Base {
   /* ------- GETTERS ------- */
@@ -122,6 +123,90 @@ class Tracks extends Base {
     // Associate the track id with the file metadata and block number
     await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
     return trackId
+  }
+
+  /**
+   * Takes in a readable stream if isServer is true, or a file reference if isServer is
+   * false.
+   * WARNING: Uploads file to creator node, but does not call contracts
+   * Please pair this with the addTracksToChainAndCnode
+   */
+  async uploadTrackContentToCreatorNode (
+    trackFile,
+    coverArtFile,
+    metadata,
+    onProgress
+  ) {
+    this.REQUIRES(Services.CREATOR_NODE)
+    this.FILE_IS_VALID(trackFile)
+
+    if (coverArtFile) this.FILE_IS_VALID(coverArtFile)
+
+    this.IS_OBJECT(metadata)
+
+    const owner = this.userStateManager.getCurrentUser()
+    if (!owner.user_id) {
+      throw new Error('No users loaded for this wallet')
+    }
+
+    metadata.owner_id = owner.user_id
+    this._validateTrackMetadata(metadata)
+
+    // Upload metadata
+    const { metadataMultihash, metadataFileUUID } = await retry(async (bail, num) => {
+      return this.creatorNode.uploadTrackContent(
+        trackFile,
+        coverArtFile,
+        metadata,
+        onProgress)
+    }, {
+    // Retry function 3x
+    // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+      minTimeout: 500,
+      maxTimeout: 4000,
+      factor: 3,
+      retries: 3,
+      onRetry: (err, i) => {
+        if (err) {
+          // eslint-disable-next-line no-console
+          console.log('Retry error : ', err)
+        }
+      }
+    })
+    return { metadataMultihash, metadataFileUUID }
+  }
+
+  /**
+   * Takes an array of [{metadataMultihash, metadataFileUUID}, {}, ]
+   * Adds tracks to chain for this user
+   * Associates tracks with user on creatorNode
+   */
+  async addTracksToChainAndCnode (trackMultihashAndUUIDList) {
+    this.REQUIRES(Services.CREATOR_NODE)
+    const owner = this.userStateManager.getCurrentUser()
+    if (!owner.user_id) {
+      throw new Error('No users loaded for this wallet')
+    }
+
+    let trackIds = (await Promise.all(
+      trackMultihashAndUUIDList.map(async trackInfo => {
+        const metadataMultihash = trackInfo.metadataMultihash
+        const metadataFileUUID = trackInfo.metadataFileUUID
+        // Write metadata to chain
+        const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
+        const { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
+          owner.user_id,
+          multihashDecoded.digest,
+          multihashDecoded.hashFn,
+          multihashDecoded.size
+        )
+        // Associate the track id with the file metadata and block number
+        await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
+        return trackId
+      })
+    ))
+
+    return trackIds
   }
 
   /**
