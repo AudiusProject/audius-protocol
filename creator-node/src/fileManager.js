@@ -35,9 +35,6 @@ async function saveFileFromBuffer (req, buffer, fileType) {
 
   await writeFile(dstPath, buffer)
 
-  // TODO: switch to using the IPFS filestore below to avoid duplicating content
-  await ipfs.pin.add(multihash)
-
   // add reference to file to database
   const file = (await models.File.findOrCreate({ where: {
     cnodeUserUUID: req.session.cnodeUserUUID,
@@ -65,14 +62,22 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, t) {
 
   req.logger.info(`beginning saveFileToIPFSFromFS for srcPath ${srcPath}`)
 
-  const multihash = (await ipfs.addFromFs(srcPath))[0].hash
+  let codeBlockTimeStart = Date.now()
+
+  // Adding a file through js-ipfs-api pins by default
+  // Ensuring this multihash is available through garbage collection
+  const multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
+  req.logger.info(`Time takin in saveFileToIpfsFromFS to add: ${Date.now() - codeBlockTimeStart}`)
+  codeBlockTimeStart = Date.now()
   const dstPath = path.join(req.app.get('storagePath'), multihash)
 
   // store segment file copy under multihash for easy future retrieval
   fs.copyFileSync(srcPath, dstPath)
 
-  // TODO: switch to using the IPFS filestore below to avoid duplicating content
-  await ipfs.pin.add(multihash)
+  req.logger.info(`Time takin in saveFileToIpfsFromFS to copyFileSync: ${Date.now() - codeBlockTimeStart}`)
+  codeBlockTimeStart = Date.now()
+
+  req.logger.info(`Time takin in saveFileToIpfsFromFS to pin: ${Date.now() - codeBlockTimeStart}`)
 
   // add reference to file to database
   const file = (await models.File.findOrCreate({ where:
