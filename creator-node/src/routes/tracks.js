@@ -20,6 +20,7 @@ module.exports = function (app) {
   app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
     if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
     const routeTimeStart = Date.now()
+    let codeBlockTimeStart = null
 
     // create and save track file segments to disk
     let segmentFilePaths
@@ -27,7 +28,7 @@ module.exports = function (app) {
       req.logger.info(`Segmenting file ${req.fileName}...`)
       const segmentTimeStart = Date.now()
       segmentFilePaths = await ffmpeg.segmentFile(req, req.fileDir, req.fileName)
-      req.logger.info(`Time taken to segment track file: ${Date.now() - segmentTimeStart}ms for file ${req.fileName}`)
+      req.logger.info(`Time taken in /track_content to segment track file: ${Date.now() - segmentTimeStart}ms for file ${req.fileName}`)
     } catch (err) {
       removeTrackFolder(req, req.fileDir)
       return errorResponseServerError(err)
@@ -35,7 +36,7 @@ module.exports = function (app) {
 
     // for each path, call saveFile and get back multihash; return multihash + segment duration
     // run all async ops in parallel as they are not independent
-    const saveSegmentFileTimeStart = Date.now()
+    codeBlockTimeStart = Date.now()
     const t = await models.sequelize.transaction()
 
     req.logger.info(`segmentFilePaths.length ${segmentFilePaths.length}`)
@@ -48,17 +49,24 @@ module.exports = function (app) {
       response.segmentName = filePath
       return response
     }))
+    req.logger.info(`Time taken in /track_content for saving segments to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
     // Test code
     saveFilePromResps.map((saveFileResp, i) => {
       if (!saveFileResp['segmentName']) throw new Error('no segment name')
     })
 
+    codeBlockTimeStart = Date.now()
     // New duration code
     let fileSegmentPath = path.join(req.fileDir, 'segments')
     let newSegmentDurationMap = await ffexec.getSegmentsDuration(req, fileSegmentPath)
 
+    req.logger.error(newSegmentDurationMap)
+    req.logger.error('!!!!!!')
+    req.logger.info(`Time taken in /track_content to get segment duration (NEW CODE): ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
     // End new duration code
+
+    codeBlockTimeStart = Date.now()
     let durationPromResps = []
     for (let i = 0; i < segmentFilePaths.length; i += 10) {
       const slice = segmentFilePaths.slice(i, i + 10)
@@ -71,8 +79,10 @@ module.exports = function (app) {
         ))
       durationPromResps = durationPromResps.concat(resp)
     }
+    req.logger.info(`Time taken in /track_content to get segment duration (OLD CODE): ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
     // Commit transaction
+    codeBlockTimeStart = Date.now()
     try {
       req.logger.info(`attempting to commit tx for file ${req.fileName}`)
       await t.commit()
@@ -81,7 +91,9 @@ module.exports = function (app) {
       await t.rollback()
       return errorResponseServerError(e)
     }
+    req.logger.info(`Time taken in /track_content to commit tx block to db: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
+    codeBlockTimeStart = Date.now()
     let trackSegments = saveFilePromResps.map((saveFileResp, i) => {
       let segmentName = saveFileResp.segmentName
       let duration = newSegmentDurationMap[segmentName]
@@ -94,8 +106,7 @@ module.exports = function (app) {
     // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
     trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
 
-    req.logger.info(`Time taken for saving segment file to IPFS, DB and disk: ${Date.now() - saveSegmentFileTimeStart}ms for file ${req.fileName}`)
-    req.logger.info(`Time taken for full track upload route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
+    req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
 
     return successResponse({ 'track_segments': trackSegments })
   }))
