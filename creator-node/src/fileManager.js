@@ -80,9 +80,6 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, t) {
   req.logger.info(`Time takin in saveFileToIpfsFromFS to copyFileSync: ${Date.now() - codeBlockTimeStart}`)
   codeBlockTimeStart = Date.now()
 
-  // TODO: switch to using the IPFS filestore below to avoid duplicating content
-  // await ipfs.pin.add(multihash)
-
   req.logger.info(`Time takin in saveFileToIpfsFromFS to pin: ${Date.now() - codeBlockTimeStart}`)
 
   // add reference to file to database
