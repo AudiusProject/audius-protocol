@@ -55,12 +55,8 @@ module.exports = function (app) {
     })
 
     // New duration code
-    req.logger.error('!!!!!!')
     let fileSegmentPath = path.join(req.fileDir, 'segments')
-    req.logger.error(fileSegmentPath)
     let newSegmentDurationMap = await ffexec.getSegmentsDuration(req, fileSegmentPath)
-    req.logger.error(newSegmentDurationMap)
-    req.logger.error('!!!!!!')
 
     // End new duration code
     let durationPromResps = []
@@ -86,11 +82,12 @@ module.exports = function (app) {
       return errorResponseServerError(e)
     }
 
-    req.logger.error(saveFilePromResps)
     let trackSegments = saveFilePromResps.map((saveFileResp, i) => {
-      let segmentName = saveFileResp['segmentName']
+      let segmentName = saveFileResp.segmentName
       let duration = newSegmentDurationMap[segmentName]
       let oldDuration = durationPromResps[i]
+      // Test code
+      if (duration !== oldDuration) throw new Error(`Old duration : ${oldDuration}, new duration : ${duration}`)
       req.logger.error(`Old duration : ${oldDuration}, new duration : ${duration}`)
       return { 'multihash': saveFileResp.multihash, 'duration': durationPromResps[i] }
     })
