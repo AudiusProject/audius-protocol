@@ -35,9 +35,6 @@ async function saveFileFromBuffer (req, buffer, fileType) {
 
   await writeFile(dstPath, buffer)
 
-  // TODO: switch to using the IPFS filestore below to avoid duplicating content
-  await ipfs.pin.add(multihash)
-
   // add reference to file to database
   const file = (await models.File.findOrCreate({ where: {
     cnodeUserUUID: req.session.cnodeUserUUID,

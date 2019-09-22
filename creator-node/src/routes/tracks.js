@@ -40,7 +40,6 @@ module.exports = function (app) {
     req.logger.info(`segmentFilePaths.length ${segmentFilePaths.length}`)
     let counter = 1
     const saveFilePromResps = await Promise.all(segmentFilePaths.map(async filePath => {
-      req.logger.error(filePath)
       const absolutePath = path.join(req.fileDir, 'segments', filePath)
       req.logger.info(`about to perform saveFileToIPFSFromFS #${counter++}`)
       let response = await saveFileToIPFSFromFS(req, absolutePath, 'track', t)
