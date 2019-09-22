@@ -6,7 +6,9 @@ import path from 'path'
 import libs from '../../libs'
 import { MetaTagFormat } from './types'
 
-const FALLBACK_IPFS_GATEWAY = 'https://cloudflare-ipfs.com/ipfs/'
+const USER_NODE_IPFS_GATEWAY = 'https://usermetadata.audius.co/ipfs/'
+const LEGACY_USER_NODE_IPFS_GATEWAY = 'https://creatornode.audius.co/ipfs/'
+const LEGACY_USER_ID_MAX = 284
 const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/preview-image.jpg'
 
 interface Context {
@@ -43,12 +45,16 @@ const getUserByHandle = async (handle: string): Promise<any> => {
   throw new Error(`Failed to get user ${handle}`)
 }
 
-const formatGateway = (creatorNodeEndpoint: string): string =>
-  creatorNodeEndpoint ? `${creatorNodeEndpoint.split(',')[0]}/ipfs/` : ''
+const formatGateway = (creatorNodeEndpoint: string, userId: number): string =>
+  creatorNodeEndpoint
+    ? `${creatorNodeEndpoint.split(',')[0]}/ipfs/`
+    : userId > LEGACY_USER_ID_MAX
+      ? USER_NODE_IPFS_GATEWAY
+      : LEGACY_USER_NODE_IPFS_GATEWAY
 
 const getImageUrl = (cid: string, gateway: string | null): string => {
   if (!cid) return DEFAULT_IMAGE_URL
-  return gateway ? `${gateway}${cid}` : `${FALLBACK_IPFS_GATEWAY}${cid}`
+  return `${gateway}${cid}`
 }
 
 /** Routes */
@@ -63,7 +69,7 @@ const getTrackContext = async (id: number): Promise<Context> => {
   try {
     const track = await getTrack(id)
     const user = await getUser(track.owner_id)
-    const gateway = formatGateway(user.creator_node_endpoint)
+    const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
 
     const coverArt = track.cover_art_sizes
       ? `${track.cover_art_sizes}/1000x1000.jpg`
@@ -82,7 +88,7 @@ const getCollectionContext = async (id: number): Promise<Context> => {
   try {
     const collection = await getCollection(id)
     const user = await getUser(collection.playlist_owner_id)
-    const gateway = formatGateway(user.creator_node_endpoint)
+    const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
 
     const coverArt = collection.playlist_image_sizes_multihash
       ? `${collection.playlist_image_sizes_multihash}/1000x1000.jpg`
@@ -100,7 +106,7 @@ const getCollectionContext = async (id: number): Promise<Context> => {
 const getUserContext = async (handle: string): Promise<Context> => {
   try {
     const user = await getUserByHandle(handle)
-    const gateway = formatGateway(user.creator_node_endpoint)
+    const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
 
     const profilePicture = user.profile_picture_sizes
       ? `${user.profile_picture_sizes}/1000x1000.jpg`
