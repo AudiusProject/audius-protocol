@@ -23,7 +23,8 @@ async function getSegmentsDuration (req, segmentPath) {
         for (let i = 0; i < resultsArr.length - 2; i += 2) {
           let matchedResults = resultsArr[i].match(SEGMENT_REGEXP)
           if (matchedResults === null) {
-            req.logger.error(`matched results for ${resultsArr[i]} - NULL`)
+            req.logger.error(stdout)
+            req.logger.error(`NULL no matched results for ${resultsArr[i]}`)
             continue
           }
           const segmentName = (matchedResults[0])
