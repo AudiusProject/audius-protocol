@@ -60,17 +60,21 @@ class Playlists extends Base {
     let maxInitialTracks = 20
     let createInitialIdsArray = trackIds.slice(0, maxInitialTracks)
     let postInitialIdsArray = trackIds.slice(maxInitialTracks)
+    let playlistId
+    try {
+      playlistId = await this.contracts.PlaylistFactoryClient.createPlaylist(userId, playlistName, isPrivate, isAlbum, createInitialIdsArray)
 
-    let playlistId = await this.contracts.PlaylistFactoryClient.createPlaylist(userId, playlistName, isPrivate, isAlbum, createInitialIdsArray)
+      // Add remaining tracks
+      await Promise.all(postInitialIdsArray.map(trackId => {
+        return this.contracts.PlaylistFactoryClient.addPlaylistTrack(playlistId, trackId)
+      }))
 
-    // Add remaining tracks
-    await Promise.all(postInitialIdsArray.map(trackId => {
-      return this.contracts.PlaylistFactoryClient.addPlaylistTrack(playlistId, trackId)
-    }))
-
-    // Order tracks
-    await this.contracts.PlaylistFactoryClient.orderPlaylistTracks(playlistId, trackIds)
-    return playlistId
+      // Order tracks
+      await this.contracts.PlaylistFactoryClient.orderPlaylistTracks(playlistId, trackIds)
+    } catch (e) {
+      return { playlistId, error: true }
+    }
+    return { playlistId, error: false }
   }
 
   /**
