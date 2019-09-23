@@ -21,7 +21,12 @@ async function getSegmentsDuration (req, segmentPath) {
         const segmentDurations = {}
         const resultsArr = stdout.split('\n')
         for (let i = 0; i < resultsArr.length - 2; i += 2) {
-          const segmentName = (resultsArr[i].match(SEGMENT_REGEXP)[0])
+          let matchedResults = resultsArr[i].match(SEGMENT_REGEXP)
+          if (matchedResults === null) {
+            req.logger.error(`matched results for ${resultsArr[i]} - NULL`)
+            continue
+          }
+          const segmentName = (matchedResults[0])
           const duration = Number(resultsArr[i + 1])
           segmentDurations[segmentName] = duration
         }
