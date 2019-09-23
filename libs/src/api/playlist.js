@@ -72,6 +72,7 @@ class Playlists extends Base {
       // Order tracks
       await this.contracts.PlaylistFactoryClient.orderPlaylistTracks(playlistId, trackIds)
     } catch (e) {
+      console.error(e)
       return { playlistId, error: true }
     }
     return { playlistId, error: false }
