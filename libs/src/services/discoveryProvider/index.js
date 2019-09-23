@@ -1,4 +1,5 @@
 const axios = require('axios')
+const _ = require('lodash')
 
 const Utils = require('../../utils')
 
@@ -7,10 +8,38 @@ let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 class DiscoveryProvider {
-  constructor (discoveryProviderEndpoint, userStateManager, ethContracts) {
-    this.discoveryProviderEndpoint = discoveryProviderEndpoint
+  constructor (autoselect, whitelist, userStateManager, ethContracts, web3Manager) {
+    this.autoselect = autoselect
+    this.whitelist = whitelist
     this.userStateManager = userStateManager
     this.ethContracts = ethContracts
+    this.web3Manager = web3Manager
+  }
+
+  async init () {
+    let endpoint
+    if (this.autoselect) {
+      endpoint = await this.autoSelectEndpoint()
+    } else {
+      if (!this.whitelist || this.whitelist.size === 0) {
+        throw new Error('Must pass autoselect true or provide whitelist.')
+      }
+
+      const pick = _.sample([...this.whitelist]) // selects random element from list.
+      const isValid = await this.ethContracts.validateDiscoveryProvider(pick)
+      if (isValid) {
+        endpoint = pick
+      } else {
+        endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
+      }
+    }
+    this.setEndpoint(endpoint)
+
+    if (endpoint && this.web3Manager && this.web3Manager.web3) {
+      // Set current user if it exists
+      const users = await this.getUsers(1, 0, null, this.web3Manager.getWalletAddress())
+      if (users && users[0]) this.userStateManager.setCurrentUser(users[0])
+    }
   }
 
   setEndpoint (endpoint) {
@@ -19,7 +48,7 @@ class DiscoveryProvider {
 
   async autoSelectEndpoint (retries = 3) {
     if (retries > 0) {
-      const endpoint = await this.ethContracts.autoselectDiscoveryProvider()
+      const endpoint = await this.ethContracts.autoselectDiscoveryProvider(this.whitelist)
       if (endpoint) {
         this.setEndpoint(endpoint)
         return

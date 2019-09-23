@@ -32,5 +32,6 @@
   "ethWallets": "",
   "spOwnerWalletIndex": 1,
   "spOwnerWallet": "",
-  "debounceTime": 30000
+  "debounceTime": 30000,
+  "discoveryProviderWhitelist": "http://docker.for.mac.localhost:5000"
 }

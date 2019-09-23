@@ -18,16 +18,16 @@ const Playlist = require('./api/playlist')
 const File = require('./api/file')
 const ServiceProvider = require('./api/serviceProvider')
 
-const DEFAULT_IPFS_GATEWAY = 'https://creatornode.audius.co/ipfs/'
-
 class AudiusLibs {
   /**
    * Configures a discovery provider wrapper
    * @param {boolean} autoselect whether or not to autoselect a discovery provider endpoint
-   * @param {?string} url discovery provider endpoint to use
+   * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whitelist)
+   * - if `autoselect=true`, autoselections are validated against the whitelist
+   * - if `autoselect=false`, selection is performed at random from the whitelist
    */
-  static configDiscoveryProvider (autoselect, url = '') {
-    return { autoselect, url }
+  static configDiscoveryProvider (autoselect = true, whitelist = null) {
+    return { autoselect, whitelist }
   }
 
   /**
@@ -97,14 +97,6 @@ class AudiusLibs {
   }
 
   /**
-   * Configures a default IPFS gateway to use.
-   * @param {string} gateway e.g. 'https://ipfs.io/ipfs/'
-   */
-  static configIpfs (gateway = DEFAULT_IPFS_GATEWAY) {
-    return { gateway }
-  }
-
-  /**
    * Constructs an Audius Libs instance with configs.
    * Unless default-valued, all configs are optional.
    * @example
@@ -120,7 +112,6 @@ class AudiusLibs {
     identityServiceConfig,
     discoveryProviderConfig,
     creatorNodeConfig,
-    ipfsConfig = AudiusLibs.configIpfs(),
     isServer
   }) {
     this.ethWeb3Config = ethWeb3Config
@@ -128,7 +119,6 @@ class AudiusLibs {
     this.identityServiceConfig = identityServiceConfig
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
-    this.ipfsConfig = ipfsConfig
     this.isServer = isServer
 
     this.AudiusABIDecoder = AudiusABIDecoder
@@ -204,23 +194,14 @@ class AudiusLibs {
 
     /** Discovery Provider */
     if (this.discoveryProviderConfig) {
-      let endpoint
-      if (this.discoveryProviderConfig.autoselect) {
-        endpoint = await this.ethContracts.autoselectDiscoveryProvider()
-      } else if (this.discoveryProviderConfig.url) {
-        const isValidDiscProvUrl = await this.ethContracts.validateDiscoveryProvider(this.discoveryProviderConfig.url)
-        if (isValidDiscProvUrl) {
-          endpoint = this.discoveryProviderConfig.url
-        } else {
-          endpoint = await this.ethContracts.selectDiscoveryProvider()
-        }
-      }
-      this.discoveryProvider = new DiscoveryProvider(endpoint, this.userStateManager, this.ethContracts)
-
-      if (this.discoveryProvider.discoveryProviderEndpoint && this.web3Manager && this.web3Manager.web3) {
-        this.users = await this.discoveryProvider.getUsers(1, 0, null, this.web3Manager.getWalletAddress())
-        if (this.users && this.users[0]) this.userStateManager.setCurrentUser(this.users[0])
-      }
+      this.discoveryProvider = new DiscoveryProvider(
+        this.discoveryProviderConfig.autoselect,
+        this.discoveryProviderConfig.whitelist,
+        this.userStateManager,
+        this.ethContracts,
+        this.web3Manager
+      )
+      await this.discoveryProvider.init()
     }
 
     /** Creator Node */

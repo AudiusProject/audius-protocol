@@ -27,6 +27,8 @@ const VersioningFactoryRegistryKey = 'VersioningFactory'
 const ServiceProviderFactoryRegistryKey = 'ServiceProviderFactory'
 const OwnedUpgradeabilityProxyKey = 'OwnedUpgradeabilityProxy'
 
+const FIVE_MINUTES = 5 /* min */ * 60 /* seconds */ * 1000 /* millisec */
+
 const serviceType = Object.freeze({
   DISCOVERY_PROVIDER: 'discovery-provider',
   CONTENT_SERVICE: 'content-service',
@@ -136,11 +138,15 @@ class EthContracts {
 
   /**
    * Returns a valid service provider url with the fastest response
-   * * @param {string} A service provider type: 'discovery-provider' | 'content-service' | 'creator-node'
+   * @param {string} spType service provider type: 'discovery-provider' | 'content-service' | 'creator-node'
    * @return {Promise<string>} A valid service provider url with the fastest response
    */
-  async selectLatestServiceProvider (spType) {
+  async selectLatestServiceProvider (spType, whitelist = null) {
     let discoveryProviders = await this.ServiceProviderFactoryClient.getServiceProviderList(spType)
+    if (whitelist) {
+      discoveryProviders = discoveryProviders.filter(d => whitelist.has(d.endpoint))
+    }
+
     // No discovery providers found.
     if (discoveryProviders.length === 0) {
       return null
@@ -216,9 +222,10 @@ class EthContracts {
    * Checks if there is a previously used discovery provider endpoint within the last 5 min that is still valid
    * If valid then it returns the endpoint, else it autoselects the fastest responding discovery provider
    * NOTE: Side effect of starting a interval every second to record the discovery provider url & time
+   * @param {Set<string>?} whitelist optional whitelist to autoselect from
    * @return {Promise<string>} The selected discovery provider url
    */
-  async autoselectDiscoveryProvider () {
+  async autoselectDiscoveryProvider (whitelist = null) {
     let endpoint
     const DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-provider-timestamp'
     const DISCOVERY_PROVIDER_TIMESTAMP_INTERVAL = 1000
@@ -227,18 +234,24 @@ class EthContracts {
     if (discProvTimestamp) {
       try {
         const { endpoint: latestEndpoint, timestamp } = JSON.parse(discProvTimestamp)
-        if ((Date.now() - timestamp) < (5 /* min */ * 60 /* seconds */ * 1000 /* millisec */)) {
+        const inWhitelist = !whitelist || whitelist.has(latestEndpoint)
+        const isNotExpired = (Date.now() - timestamp) < FIVE_MINUTES
+
+        if (inWhitelist && isNotExpired) {
           const isValidDiscProvurl = await this.validateDiscoveryProvider(latestEndpoint)
           if (isValidDiscProvurl) {
             endpoint = latestEndpoint
           }
         }
+        if (!inWhitelist) {
+          localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
+        }
       } catch (err) {
-        endpoint = await this.selectDiscoveryProvider()
+        endpoint = await this.selectDiscoveryProvider(whitelist)
       }
     }
     if (!endpoint) {
-      endpoint = await this.selectDiscoveryProvider()
+      endpoint = await this.selectDiscoveryProvider(whitelist)
     }
     if (!this.isServer) {
       this.discProvInterval = setInterval(() => {
@@ -250,9 +263,13 @@ class EthContracts {
     return endpoint
   }
 
-  async selectPriorServiceProvider (spType) {
+  async selectPriorServiceProvider (spType, whitelist = null) {
     let discoveryProviders =
       await this.ServiceProviderFactoryClient.getServiceProviderList(spType)
+    if (whitelist) {
+      discoveryProviders = discoveryProviders.filter(d => whitelist.has(d.endpoint))
+    }
+
     let numberOfServiceVersions =
       await this.VersioningFactoryClient.getNumberOfVersions(spType)
     // Exclude the latest version when querying older versions
@@ -310,12 +327,12 @@ class EthContracts {
     return null
   }
 
-  async selectDiscoveryProvider () {
+  async selectDiscoveryProvider (whitelist = null) {
     this.expectedServiceVersions = await this.getExpectedServiceVersions()
-    let discoveryProviderEndpoint = await this.selectLatestServiceProvider(serviceType.DISCOVERY_PROVIDER)
+    let discoveryProviderEndpoint = await this.selectLatestServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
 
     if (discoveryProviderEndpoint == null) {
-      discoveryProviderEndpoint = await this.selectPriorServiceProvider(serviceType.DISCOVERY_PROVIDER)
+      discoveryProviderEndpoint = await this.selectPriorServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
     }
 
     if (discoveryProviderEndpoint == null) {

@@ -17,6 +17,10 @@ const initAudiusLibs = async () => {
     config.get('ethNetworkId'),
     /* requiresAccount */ false
   )
+  const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
+    ? new Set(config.get('discoveryProviderWhitelist').split(','))
+    : null
+
   const audiusLibs = new AudiusLibs({
     ethWeb3Config: AudiusLibs.configEthWeb3(
       config.get('ethTokenAddress'),
@@ -24,7 +28,7 @@ const initAudiusLibs = async () => {
       ethWeb3,
       config.get('ethOwnerWallet')
     ),
-    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true)
+    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true, discoveryProviderWhitelist)
   })
   await audiusLibs.init()
   return audiusLibs

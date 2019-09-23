@@ -2,11 +2,13 @@ const request = require('supertest')
 
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
+const { getLibsMock } = require('./lib/libsMock')
 
 describe('test expressApp', function () {
-  let app, server, session
+  let app, server, session, libsMock
   beforeEach(async () => {
-    const appInfo = await getApp()
+    libsMock = getLibsMock()
+    const appInfo = await getApp(null, libsMock)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser()
