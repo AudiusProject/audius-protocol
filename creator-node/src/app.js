@@ -14,7 +14,7 @@ const app = express()
 // middleware functions will be run in order they are added to the app below
 //  - loggingMiddleware must be first to ensure proper error handling
 app.use(loggingMiddleware)
-app.use(bodyParser.json())
+app.use(bodyParser.json({ limit: '1mb' }))
 app.use(userNodeMiddleware)
 app.use(cors())
 
