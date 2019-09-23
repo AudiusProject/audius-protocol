@@ -54,6 +54,8 @@ async function syncLockMiddleware (req, res, next) {
 async function ensurePrimaryMiddleware (req, res, next) {
   if (config.get('isUserMetadataNode')) next()
 
+  const start = Date.now()
+  
   if (!req.session || !req.session.wallet) {
     return sendResponse(req, res, errorResponseUnauthorized('User must be logged in'))
   }
@@ -84,6 +86,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
   req.session.nodeIsPrimary = true
   req.session.creatorNodeEndpoints = creatorNodeEndpoints
 
+  console.log(`ensurePrimaryMiddleware route time ${Date.now() - start}`)
   next()
 }
 
@@ -150,6 +153,9 @@ async function _getCreatorNodeEndpoints (req, wallet) {
   if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
   const libs = req.app.get('audiusLibs')
 
+  req.logger.info(`Starting _getCreatorNodeEndpoints for wallet ${wallet}`)
+  const start = Date.now()
+
   // Poll discprov until it has indexed provided blocknumber to ensure up-to-date user data.
   let user
   const maxRetries = 10
@@ -157,7 +163,9 @@ async function _getCreatorNodeEndpoints (req, wallet) {
   const { blockNumber } = req.body
   if (blockNumber) {
     let discprovBlockNumber = -1
+    const start2 = Date.now()
     while (discprovBlockNumber < blockNumber) {
+      req.logger.info(`_getCreatorNodeEndpoints || fetching user retry #${retries} / ${maxRetries} || time from start: ${Date.now() - start2}`)
       try {
         user = await libs.User.getUsers(1, 0, null, wallet)
         if (!user || user.length === 0 || !user[0].hasOwnProperty('blocknumber')) {
@@ -172,7 +180,9 @@ async function _getCreatorNodeEndpoints (req, wallet) {
       await utils.timeout(500)
     }
   } else {
+    req.logger.info(`_getCreatorNodeEndpoints || no blockNumber passed, fetching user without retries.`)
     user = await libs.User.getUsers(1, 0, null, wallet)
+    req.logger.info(`_getCreatorNodeEndpoints || user`, user)
   }
 
   if (!user || user.length === 0 || !user[0].hasOwnProperty('creator_node_endpoint')) {
