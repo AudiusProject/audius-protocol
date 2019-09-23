@@ -1,0 +1,19 @@
+version: '3'
+services:
+  db:
+    image: postgres:11.1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: audius_discovery
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - '5433:5432'
+  redis-server:
+    image: redis:3.0-alpine
+    command: redis-server --save '' 
+    ports:
+      - '5380:6379'
+
+volumes:
+  postgres_data:
