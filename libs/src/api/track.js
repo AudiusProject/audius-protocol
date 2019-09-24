@@ -214,12 +214,8 @@ class Tracks extends Base {
 
     // Any failures in addTrack to the blockchain will prevent further progress
     // The list of successful track uploads is returned for revert operations by caller
-    if (requestFailed) {
-      return { error: true, trackIds: addedToChain.map(x => x.trackId) }
-    }
-
-    if (addedToChain.length !== trackMultihashAndUUIDList.length) {
-      return { error: true, trackIds: addedToChain.map(x => x.trackId) }
+    if (requestFailed || (addedToChain.filter(Boolean).length !== trackMultihashAndUUIDList.length)) {
+      return { error: true, trackIds: addedToChain.filter(Boolean).map(x => x.trackId) }
     }
 
     let associatedWithCreatorNode = []
