@@ -176,7 +176,7 @@ async function _getCreatorNodeEndpoints (req, wallet) {
         if (discprovBlockNumber >= blockNumber) {
           break
         }
-      } catch (e) {
+      } catch (e) { // Ignore all errors until maxRetries exceeded.
         req.logger.info(e)
       }
       await utils.timeout(1000)
