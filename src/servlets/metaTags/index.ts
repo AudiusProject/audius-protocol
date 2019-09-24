@@ -66,6 +66,7 @@ const template = handlebars.compile(
 )
 
 const getTrackContext = async (id: number): Promise<Context> => {
+  if (!id) return getDefaultContext()
   try {
     const track = await getTrack(id)
     const user = await getUser(track.owner_id)
@@ -85,6 +86,7 @@ const getTrackContext = async (id: number): Promise<Context> => {
 }
 
 const getCollectionContext = async (id: number): Promise<Context> => {
+  if (!id) return getDefaultContext()
   try {
     const collection = await getCollection(id)
     const user = await getUser(collection.playlist_owner_id)
@@ -104,6 +106,7 @@ const getCollectionContext = async (id: number): Promise<Context> => {
 }
 
 const getUserContext = async (handle: string): Promise<Context> => {
+  if (!handle) return getDefaultContext()
   try {
     const user = await getUserByHandle(handle)
     const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
@@ -148,25 +151,30 @@ const getResponse = async (
 ) => {
   const {
     title,
-    handle
+    handle,
   } = req.params
 
   let context: Context
   const id = title ? parseInt(title.split('-').slice(-1)[0], 10) : -1
   switch (format) {
     case MetaTagFormat.Track:
+      console.log('get track', req.path, id)
       context = await getTrackContext(id)
       break
     case MetaTagFormat.Collection:
+      console.log('get collection', req.path, id)
       context = await getCollectionContext(id)
       break
     case MetaTagFormat.User:
+      console.log('get user', req.path, handle)
       context = await getUserContext(handle)
       break
     case MetaTagFormat.Upload:
+      console.log('get upload', req.path)
       context = await getUploadContext()
       break
     default:
+      console.log('get default', req.path)
       context = getDefaultContext()
   }
   const html = template(context)
