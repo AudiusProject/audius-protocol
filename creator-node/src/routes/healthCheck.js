@@ -10,7 +10,7 @@ module.exports = function (app) {
     return successResponse({
       'healthy': true,
       'git': process.env.GIT_SHA,
-      'selectedDiscoveryProvider': libs.discoveryProvider.discoveryProviderEndpoint
+      'selectedDiscoveryProvider': libs.discoveryProvider.discoveryProviderEndpoint || 'none'
     })
   }))
 

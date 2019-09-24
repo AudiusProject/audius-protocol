@@ -13,8 +13,9 @@ const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service'
 const spDiscProvType = serviceTypeList[0]
 const spCreatorNodeType = serviceTypeList[1]
 const discProvEndpoint1 = 'http://docker.for.mac.localhost:5000'
-const creatorNodeEndpoint1 = 'http://docker.for.mac.localhost:4000'
-const creatorNodeEndpoint2 = 'http://docker.for.mac.localhost:4010'
+const discProvEndpoint2 = 'http://docker.for.mac.localhost:5005'
+const creatorNodeEndpoint1 = 'http://localhost:4000'
+const creatorNodeEndpoint2 = 'http://localhost:4010'
 const versionStr = '0.1.0'
 const amountOfAuds = 100000
 
@@ -103,7 +104,14 @@ const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
 }
 
 const _registerAllSPs = async (audiusLibs, ethAccounts) => {
+  /** DISCOVERY PROVIDERS */
+
   await registerLocalService(audiusLibs, spDiscProvType, discProvEndpoint1, amountOfAuds)
+
+  let audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[3])
+  await registerLocalService(audiusLibs4, spDiscProvType, discProvEndpoint2, amountOfAuds)
+
+  /** CREATOR NODES */
 
   let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[1])
   await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint1, amountOfAuds)
@@ -114,6 +122,9 @@ const _registerAllSPs = async (audiusLibs, ethAccounts) => {
 
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
   await deregisterLocalService(audiusLibs, spDiscProvType, discProvEndpoint1)
+
+  let audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[3])
+  await deregisterLocalService(audiusLibs4, spDiscProvType, discProvEndpoint2)
 
   let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[1])
   await deregisterLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint1)
