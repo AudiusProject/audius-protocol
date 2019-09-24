@@ -32,35 +32,6 @@ class IdentityService {
   }
 
   /**
-   * Associates an audius user for auth
-   * @param {string} email
-   * @param {string} handle
-   * @param {Object} web3Manager the libs instance web3 manager,
-   * must contain a transaction sign(data) method.
-   */
-  async associate (email, handle, web3Manager) {
-    if (!web3Manager || !web3Manager.sign) {
-      throw new Error('Web3 manager required with sign method')
-    }
-    const unixTs = Math.round((new Date()).getTime() / 1000) // current unix timestamp (sec)
-    const data = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = await web3Manager.sign(data)
-
-    if (email && handle) {
-      await this._makeRequest({
-        url: '/user/associate',
-        method: 'post',
-        data: {
-          username: email,
-          handle: handle,
-          data: data,
-          signature: signature
-        }
-      })
-    } else throw new Error('Missing a field: email, handle')
-  }
-
-  /**
    * Check if an email address has been previously registered.
    * @param {string} email
    * @returns {{exists: boolean}}
@@ -237,30 +208,6 @@ class IdentityService {
       url: queryUrl,
       method: 'get',
       params: queryParams
-    })
-  }
-
-  /** returns true if needs authMigration; else false */
-  async getAuthMigrationStatus (handle) {
-    try {
-      await this._makeRequest({
-        url: '/auth_migration',
-        method: 'get',
-        params: { handle: handle }
-      })
-      // if the call succeeds, return false because we don't need to do authMigration
-      return false
-    } catch (e) {
-      if (e.message.includes('Could not find handle')) return true
-      else throw e
-    }
-  }
-
-  async setAuthMigration (email, password, authMigrationData) {
-    return this._makeRequest({
-      url: '/auth_migration',
-      method: 'post',
-      data: authMigrationData
     })
   }
 

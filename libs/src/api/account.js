@@ -65,7 +65,6 @@ class Account extends Base {
 
         userId = await this.User.addCreator(metadata)
         await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
-        await this.identityService.associate(email, metadata.handle, this.web3Manager)
       } else {
         this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE, Services.HEDGEHOG)
 
@@ -74,7 +73,6 @@ class Account extends Base {
 
         metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
         userId = await this.User.addCreator(metadata)
-        await this.identityService.associate(email, metadata.handle, this.web3Manager)
       }
     } else {
       // The creator node is not needed.
@@ -84,7 +82,6 @@ class Account extends Base {
         metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
         userId = await this.User.addUser(metadata)
         await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
-        await this.identityService.associate(email, metadata.handle, this.web3Manager)
       } else {
         this.REQUIRES(Services.IDENTITY_SERVICE, Services.HEDGEHOG)
 
@@ -93,7 +90,6 @@ class Account extends Base {
 
         metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
         userId = await this.User.addUser(metadata)
-        await this.identityService.associate(email, metadata.handle, this.web3Manager)
       }
     }
 
