@@ -55,7 +55,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
   if (config.get('isUserMetadataNode')) next()
 
   const start = Date.now()
-  
+
   if (!req.session || !req.session.wallet) {
     return sendResponse(req, res, errorResponseUnauthorized('User must be logged in'))
   }
@@ -184,7 +184,6 @@ async function _getCreatorNodeEndpoints (req, wallet) {
   } else {
     req.logger.info(`_getCreatorNodeEndpoints || no blockNumber passed, fetching user without retries.`)
     user = await libs.User.getUsers(1, 0, null, wallet)
-    req.logger.info(`_getCreatorNodeEndpoints || user`, user)
   }
 
   if (!user || user.length === 0 || !user[0].hasOwnProperty('creator_node_endpoint')) {
