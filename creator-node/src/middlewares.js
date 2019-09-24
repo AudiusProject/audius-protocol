@@ -158,7 +158,7 @@ async function _getCreatorNodeEndpoints (req, wallet) {
 
   // Poll discprov until it has indexed provided blocknumber to ensure up-to-date user data.
   let user
-  const maxRetries = 10
+  const maxRetries = 12
   let retries = 0
   const { blockNumber } = req.body
   if (blockNumber) {
@@ -178,7 +178,7 @@ async function _getCreatorNodeEndpoints (req, wallet) {
           throw new Error(`Failed to retrieve user from discprov after ${maxRetries} retries. Aborting.`)
         }
       }
-      await utils.timeout(500)
+      await utils.timeout(1000)
       req.logger.info(`_getCreatorNodeEndpoints AFTER TIMEOUT || fetched user retry #${retries} / ${maxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
     }
   } else {

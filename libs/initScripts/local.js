@@ -105,7 +105,7 @@ const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
 
 const _registerAllSPs = async (audiusLibs, ethAccounts) => {
   /** DISCOVERY PROVIDERS */
-  
+
   await registerLocalService(audiusLibs, spDiscProvType, discProvEndpoint1, amountOfAuds)
 
   let audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[3])
@@ -122,7 +122,7 @@ const _registerAllSPs = async (audiusLibs, ethAccounts) => {
 
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
   await deregisterLocalService(audiusLibs, spDiscProvType, discProvEndpoint1)
-  
+
   let audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[3])
   await deregisterLocalService(audiusLibs4, spDiscProvType, discProvEndpoint2)
 
