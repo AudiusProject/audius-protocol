@@ -163,7 +163,7 @@ async function _getCreatorNodeEndpoints (req, wallet) {
     let discprovBlockNumber = -1
     const start2 = Date.now()
 
-    const maxRetries = 12
+    const maxRetries = 30
     for (let retry = 1; retry <= maxRetries; retry++) {
       req.logger.info(`_getCreatorNodeEndpoints retry #${retry}/${maxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
       try {
@@ -179,7 +179,7 @@ async function _getCreatorNodeEndpoints (req, wallet) {
       } catch (e) { // Ignore all errors until maxRetries exceeded.
         req.logger.info(e)
       }
-      await utils.timeout(1000)
+      await utils.timeout(3000)
       req.logger.info(`_getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${maxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
     }
 
