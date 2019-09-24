@@ -2,6 +2,9 @@ import AudiusLibs from '@audius/libs'
 import Web3 from 'web3'
 
 const E = process.env
+const DISCOVERY_PROVIDER_WHITELIST = E.DISCOVERY_PROVIDER_WHITELIST
+  ? new Set(E.DISCOVERY_PROVIDER_WHITELIST.split(','))
+  : null
 
 /**
  * Singleton wrapper for Audius Libs.
@@ -14,7 +17,10 @@ const libs = new AudiusLibs({
     new Web3(new Web3.providers.HttpProvider(E.ETH_PROVIDER_URL!)),
     E.ETH_OWNER_WALLET
   ),
-  discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true)
+  discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
+    true,
+    DISCOVERY_PROVIDER_WHITELIST
+  )
 })
 
 export default libs
