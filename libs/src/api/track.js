@@ -188,25 +188,54 @@ class Tracks extends Base {
       throw new Error('No users loaded for this wallet')
     }
 
-    let trackIds = (await Promise.all(
+    let addedToChain = []
+    await Promise.all(
       trackMultihashAndUUIDList.map(async trackInfo => {
-        const metadataMultihash = trackInfo.metadataMultihash
-        const metadataFileUUID = trackInfo.metadataFileUUID
-        // Write metadata to chain
-        const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
-        const { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
-          owner.user_id,
-          multihashDecoded.digest,
-          multihashDecoded.hashFn,
-          multihashDecoded.size
-        )
-        // Associate the track id with the file metadata and block number
-        await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
-        return trackId
-      })
-    ))
+        try {
+          const metadataMultihash = trackInfo.metadataMultihash
+          const metadataFileUUID = trackInfo.metadataFileUUID
+          // Write metadata to chain
+          const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
+          let { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
+            owner.user_id,
+            multihashDecoded.digest,
+            multihashDecoded.hashFn,
+            multihashDecoded.size
+          )
 
-    return trackIds
+          addedToChain.push({ trackId, metadataFileUUID, txReceipt })
+        } catch (e) {
+          console.error(e)
+        }
+      })
+    )
+
+    // Any failures in addTrack to the blockchain will prevent further progress
+    // The list of successful track uploads is returned for revert operations by caller
+    if (addedToChain.length !== trackMultihashAndUUIDList.length) {
+      return { error: true, trackIds: addedToChain.map(x => x.trackId) }
+    }
+
+    let associatedWithCreatorNode = []
+    try {
+      await Promise.all(
+        addedToChain.map(async chainTrackInfo => {
+          const metadataFileUUID = chainTrackInfo.metadataFileUUID
+          const trackId = chainTrackInfo.trackId
+          await this.creatorNode.associateTrack(
+            trackId,
+            metadataFileUUID,
+            chainTrackInfo.txReceipt.blockNumber)
+          associatedWithCreatorNode.push(trackId)
+        })
+      )
+    } catch (e) {
+      // Any single failure to associate also prevents further progress
+      // Returning error code along with associated track ids allows caller to revert
+      return { error: true, trackIds: addedToChain.map(x => x.trackId) }
+    }
+
+    return { error: false, trackIds: addedToChain.map(x => x.trackId) }
   }
 
   /**
