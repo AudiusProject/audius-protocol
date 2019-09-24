@@ -57,7 +57,27 @@ class Playlists extends Base {
    * @param {Array<number>} trackIds
    */
   async createPlaylist (userId, playlistName, isPrivate, isAlbum, trackIds) {
-    return this.contracts.PlaylistFactoryClient.createPlaylist(userId, playlistName, isPrivate, isAlbum, trackIds)
+    let maxInitialTracks = 20
+    let createInitialIdsArray = trackIds.slice(0, maxInitialTracks)
+    let postInitialIdsArray = trackIds.slice(maxInitialTracks)
+    let playlistId
+    try {
+      playlistId = await this.contracts.PlaylistFactoryClient.createPlaylist(userId, playlistName, isPrivate, isAlbum, createInitialIdsArray)
+
+      // Add remaining tracks
+      await Promise.all(postInitialIdsArray.map(trackId => {
+        return this.contracts.PlaylistFactoryClient.addPlaylistTrack(playlistId, trackId)
+      }))
+
+      // Order tracks
+      if (postInitialIdsArray.length > 0) {
+        await this.contracts.PlaylistFactoryClient.orderPlaylistTracks(playlistId, trackIds)
+      }
+    } catch (e) {
+      console.error(e)
+      return { playlistId, error: true }
+    }
+    return { playlistId, error: false }
   }
 
   /**

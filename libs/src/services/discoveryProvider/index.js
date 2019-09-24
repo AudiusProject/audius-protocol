@@ -51,7 +51,7 @@ class DiscoveryProvider {
       const endpoint = await this.ethContracts.autoselectDiscoveryProvider(this.whitelist)
       if (endpoint) {
         this.setEndpoint(endpoint)
-        return
+        return endpoint
       }
       return this.autoSelectEndpoint(retries - 1)
     }
