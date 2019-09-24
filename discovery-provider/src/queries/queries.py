@@ -115,7 +115,7 @@ def get_tracks():
                 Track.blocknumber >= min_block_number
             )
 
-        whitelist_params = ['created_at', 'create_date', 'release_date', 'blocknumber']
+        whitelist_params = ['created_at', 'create_date', 'release_date', 'blocknumber', 'track_id']
         base_query = parse_sort_param(base_query, Track, whitelist_params)
         query_results = paginate_query(base_query).all()
         tracks = helpers.query_result_to_list(query_results)
