@@ -165,19 +165,21 @@ async function _getCreatorNodeEndpoints (req, wallet) {
     let discprovBlockNumber = -1
     const start2 = Date.now()
     while (discprovBlockNumber < blockNumber) {
-      req.logger.info(`_getCreatorNodeEndpoints || fetching user retry #${retries} / ${maxRetries} || time from start: ${Date.now() - start2}`)
+      req.logger.info(`_getCreatorNodeEndpoints || fetching user retry #${retries} / ${maxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
       try {
         user = await libs.User.getUsers(1, 0, null, wallet)
         if (!user || user.length === 0 || !user[0].hasOwnProperty('blocknumber')) {
           throw new Error('Missing or malformatted user fetched from discprov.')
         }
-        discprovBlockNumber = user.blocknumber
+        discprovBlockNumber = Math.max(user[0].blocknumber, user[0].track_blocknumber)
+        retries++
       } catch (e) {
         if (++retries >= maxRetries) {
           throw new Error(`Failed to retrieve user from discprov after ${maxRetries} retries. Aborting.`)
         }
       }
       await utils.timeout(500)
+      req.logger.info(`_getCreatorNodeEndpoints AFTER TIMEOUT || fetched user retry #${retries} / ${maxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
     }
   } else {
     req.logger.info(`_getCreatorNodeEndpoints || no blockNumber passed, fetching user without retries.`)
@@ -188,8 +190,14 @@ async function _getCreatorNodeEndpoints (req, wallet) {
   if (!user || user.length === 0 || !user[0].hasOwnProperty('creator_node_endpoint')) {
     throw new Error(`Invalid return data from discovery provider for user with wallet ${wallet}.`)
   }
+  if (Math.max(user[0].blocknumber, user[0].track_blocknumber) < blockNumber) {
+    throw new Error(`Discprov still outdated after ${maxRetries}. Discprov blocknumber ${Math.max(user[0].blocknumber, user[0].track_blocknumber)} requested blocknumber ${blockNumber}`)
+  }
   const endpoint = user[0]['creator_node_endpoint']
-  return endpoint ? endpoint.split(',') : []
+  const resp = endpoint ? endpoint.split(',') : []
+
+  req.logger.info(`_getCreatorNodeEndpoints route time ${Date.now() - start}`)
+  return resp
 }
 
 // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
