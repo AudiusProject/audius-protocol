@@ -189,9 +189,8 @@ class Tracks extends Base {
     }
 
     let addedToChain = []
-    let requestFailed = false
     await Promise.all(
-      trackMultihashAndUUIDList.map(async (trackInfo, i) => {
+      trackMultihashAndUUIDList.map(async trackInfo => {
         try {
           const metadataMultihash = trackInfo.metadataMultihash
           const metadataFileUUID = trackInfo.metadataFileUUID
@@ -204,20 +203,15 @@ class Tracks extends Base {
             multihashDecoded.size
           )
 
-          addedToChain[i] = { trackId, metadataFileUUID, txReceipt }
+          addedToChain.push({ trackId, metadataFileUUID, txReceipt })
         } catch (e) {
           console.error(e)
-          requestFailed = true
         }
       })
     )
 
     // Any failures in addTrack to the blockchain will prevent further progress
     // The list of successful track uploads is returned for revert operations by caller
-    if (requestFailed) {
-      return { error: true, trackIds: addedToChain.map(x => x.trackId) }
-    }
-
     if (addedToChain.length !== trackMultihashAndUUIDList.length) {
       return { error: true, trackIds: addedToChain.map(x => x.trackId) }
     }
