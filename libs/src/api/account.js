@@ -148,18 +148,6 @@ class Account extends Base {
     return this.identityService.lookupTwitterHandle(handle)
   }
 
-  async getAuthMigrationStatus (handle) {
-    this.REQUIRES(Services.IDENTITY_SERVICE)
-    return this.identityService.getAuthMigrationStatus(handle)
-  }
-
-  async setAuthMigration (email, password, handle) {
-    this.REQUIRES(Services.IDENTITY_SERVICE, Services.HEDGEHOG)
-
-    const authMigrationData = await this.hedgehog.getAuthMigrationData(email, password, handle)
-    this.identityService.setAuthMigration(email, password, authMigrationData)
-  }
-
   /**
    * Updates a user's creator node endpoint. Sets the connected creator node in the libs instance
    * and updates the user's metadata blob.
