@@ -210,6 +210,8 @@ class Tracks extends Base {
       })
     )
 
+    // Any failures in addTrack to the blockchain will prevent further progress
+    // The list of successful track uploads is returned for revert operations by caller
     if (addedToChain.length !== trackMultihashAndUUIDList.length) {
       return { error: true, trackIds: addedToChain.map(x => x.trackId) }
     }
@@ -220,11 +222,16 @@ class Tracks extends Base {
         addedToChain.map(async chainTrackInfo => {
           const metadataFileUUID = chainTrackInfo.metadataFileUUID
           const trackId = chainTrackInfo.trackId
-          await this.creatorNode.associateTrack(trackId, metadataFileUUID, chainTrackInfo.txReceipt.blockNumber)
+          await this.creatorNode.associateTrack(
+            trackId,
+            metadataFileUUID,
+            chainTrackInfo.txReceipt.blockNumber)
           associatedWithCreatorNode.push(trackId)
         })
       )
     } catch (e) {
+      // Any single failure to associate also prevents further progress
+      // Returning error code along with associated track ids allows caller to revert
       return { error: true, trackIds: addedToChain.map(x => x.trackId) }
     }
 
