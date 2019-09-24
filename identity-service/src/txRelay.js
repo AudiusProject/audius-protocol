@@ -14,6 +14,8 @@ const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, POA default gas price
 const HIGH_GAS_PRICE = 5 * MIN_GAS_PRICE // 5 GWei
 const GANACHE_GAS_PRICE = 39062500000 // ganache gas price is extremely high, so we hardcode a lower value (0x09184e72a0 from docs here)
 
+const DEFAULT_GAS_LIMIT = '0xf7100'
+
 // this is incremented by the code below, but will not work as expected if there are
 // multiple instances of the identity service using the same Ethereum account
 let currentRelayerAccountNonce
@@ -23,7 +25,13 @@ async function delay (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-const sendTransaction = async (contractRegistryKey, contractAddress, encodedABI, senderAddress, resetNonce = false) => {
+const sendTransaction = async (
+  contractRegistryKey,
+  contractAddress,
+  encodedABI,
+  senderAddress,
+  resetNonce = false,
+  gasLimit = null) => {
   // TODO(roneilr): this should check that in the registry, contractRegistryKey maps to
   // contractAddress, rejecting the tx if not. Also needs to maintain a whitelist of
   // contracts (eg. storage contracts, discovery service contract, should not be allowed
@@ -76,7 +84,7 @@ const sendTransaction = async (contractRegistryKey, contractAddress, encodedABI,
     const txParams = {
       nonce: web3.utils.toHex(currentNonce),
       gasPrice: gasPrice,
-      gasLimit: '0xf7100',
+      gasLimit: gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT,
       to: contractAddress,
       data: encodedABI,
       value: '0x00'
@@ -126,10 +134,10 @@ const sendTransaction = async (contractRegistryKey, contractAddress, encodedABI,
 
 const fundRelayerIfEmpty = async () => {
   let balance = await getRelayerFunds()
-  if (balance === '0') {
+  const minimumBalance = web3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
+  if (parseInt(balance) < minimumBalance) {
     logger.info('Relay account has no balance. Attempting to fund...')
     const account = (await web3.eth.getAccounts())[0]
-    const minimumBalance = web3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
     await web3.eth.sendTransaction({ from: account, to: config.get('relayerPublicKey'), value: minimumBalance })
     logger.info('Successfully funded relay account!')
     balance = await getRelayerFunds()

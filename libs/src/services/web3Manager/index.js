@@ -139,12 +139,12 @@ class Web3Manager {
     contractMethod,
     contractRegistryKey,
     contractAddress,
-    gasAmount = DEFAULT_GAS_AMOUNT,
+    gasLimit = DEFAULT_GAS_AMOUNT,
     txRetries = 5
   ) {
     if (this.useExternalWeb3) {
       return contractMethod.send(
-        { from: this.ownerWallet, gas: gasAmount }
+        { from: this.ownerWallet, gas: gasLimit }
       )
     } else {
       const encodedABI = contractMethod.encodeABI()
@@ -154,7 +154,8 @@ class Web3Manager {
           contractRegistryKey,
           contractAddress,
           this.ownerWallet.getAddressString(),
-          encodedABI
+          encodedABI,
+          gasLimit !== DEFAULT_GAS_AMOUNT ? gasLimit : null
         )
       }, {
       // Retry function 5x by default

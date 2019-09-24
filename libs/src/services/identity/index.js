@@ -286,7 +286,7 @@ class IdentityService {
     } else throw new Error('Missing a field: password')
   }
 
-  async relay (contractRegistryKey, contractAddress, senderAddress, encodedABI) {
+  async relay (contractRegistryKey, contractAddress, senderAddress, encodedABI, gasLimit) {
     return this._makeRequest({
       url: '/relay',
       method: 'post',
@@ -294,7 +294,8 @@ class IdentityService {
         contractRegistryKey,
         contractAddress,
         senderAddress,
-        encodedABI
+        encodedABI,
+        gasLimit
       }
     })
   }
