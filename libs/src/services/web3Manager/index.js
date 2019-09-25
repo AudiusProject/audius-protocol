@@ -9,7 +9,7 @@ if (typeof window === 'undefined' || window === null) {
   XMLHttpRequestRef = window.XMLHttpRequest
 }
 
-const DEFAULT_GAS_AMOUNT = 200000
+const DEFAULT_GAS_AMOUNT = 1011968
 
 /** singleton class to be instantiated and persisted with every AudiusLibs */
 class Web3Manager {
@@ -139,12 +139,12 @@ class Web3Manager {
     contractMethod,
     contractRegistryKey,
     contractAddress,
-    gasAmount = DEFAULT_GAS_AMOUNT,
+    txGasLimit = DEFAULT_GAS_AMOUNT,
     txRetries = 5
   ) {
     if (this.useExternalWeb3) {
       return contractMethod.send(
-        { from: this.ownerWallet, gas: gasAmount }
+        { from: this.ownerWallet, gas: txGasLimit }
       )
     } else {
       const encodedABI = contractMethod.encodeABI()
@@ -154,7 +154,8 @@ class Web3Manager {
           contractRegistryKey,
           contractAddress,
           this.ownerWallet.getAddressString(),
-          encodedABI
+          encodedABI,
+          txGasLimit
         )
       }, {
       // Retry function 5x by default
