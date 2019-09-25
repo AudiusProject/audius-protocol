@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     isConfigured: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false
+      defaultValue: true
     },
 
     // this is the last time we have an activity for this user

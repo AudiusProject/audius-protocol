@@ -57,4 +57,9 @@ module.exports = function (app) {
       } else return successResponse({ exists: false })
     } else return errorResponseBadRequest('Please pass in a valid email address')
   }))
+
+  /** DEPRECATED */
+  app.post('/user/associate', handleResponse(async (req, res, next) => {
+    return successResponse()
+  }))
 }

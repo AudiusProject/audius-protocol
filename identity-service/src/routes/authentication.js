@@ -24,28 +24,16 @@ module.exports = function (app) {
   app.get('/authentication', handleResponse(async (req, res, next) => {
     let queryParams = req.query
 
-    if (queryParams && queryParams.lookupKey && queryParams.username) {
-      const email = queryParams.username.toLowerCase()
+    if (queryParams && queryParams.lookupKey) {
       const existingUser = await models.Authentication.findOne({
         where: {
           lookupKey: queryParams.lookupKey
         }
       })
 
-      let userObj = await models.User.findOne({
-        where: {
-          email: email
-        }
-      })
-
-      // This is a boolean that returns to the frontend if the user has been fully configured
-      if (userObj && userObj.isConfigured && existingUser) {
-        existingUser.dataValues.isConfigured = true
-      }
-
       if (existingUser) {
         return successResponse(existingUser)
-      } else return errorResponseBadRequest('Email or password is incorrect')
-    } else return errorResponseBadRequest('Missing field: lookupKey or username')
+      } else return errorResponseBadRequest('lookupKey is incorrect')
+    } else return errorResponseBadRequest('Missing queryParam lookupKey')
   }))
 }
