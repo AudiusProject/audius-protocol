@@ -57,7 +57,7 @@ class Playlists extends Base {
    * @param {Array<number>} trackIds
    */
   async createPlaylist (userId, playlistName, isPrivate, isAlbum, trackIds) {
-    let maxInitialTracks = 20
+    let maxInitialTracks = 50
     let createInitialIdsArray = trackIds.slice(0, maxInitialTracks)
     let postInitialIdsArray = trackIds.slice(maxInitialTracks)
     let playlistId
