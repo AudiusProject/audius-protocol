@@ -2,7 +2,7 @@ const { logger } = require('./logging')
 const models = require('./models')
 
 const trackIdWindowSize = 5
-const userIdWindowSize = 5
+const userIdWindowSize = 1
 const ipfsRepoMaxUsagePercent = 90
 const config = require('./config')
 
@@ -21,6 +21,87 @@ class ContentReplicator {
       () => this.replicate(),
       this.pollInterval * 1000)
     this.peerInterval = setInterval(() => this.refreshPeers(), this.pollInterval * 10 * 1000)
+  }
+
+  async _replicateTrack (track) {
+    const trackId = track.track_id
+    try {
+      const blocknumber = parseInt(track.blocknumber)
+      let start = Date.now()
+      let numMultihashes = 0
+      if (track.cover_art) {
+        await this._replicateTrackMultihash(track.track_id, track.cover_art, true)
+        numMultihashes++
+      }
+      if (track.metadata_multihash) {
+        await this._replicateTrackMultihash(track.track_id, track.metadata_multihash, true)
+        numMultihashes++
+      }
+
+      if (track.track_segments) {
+        let segments = track.track_segments
+        logger.info(`TrackID - ${trackId} - ${segments.length} total segments`)
+        for (let i = 0; i < segments.length; i += 10) {
+          const slice = segments.slice(i, i + 10)
+          logger.info(`TrackID ${trackId} - Processing segments ${i} to ${i + 10}`)
+          await Promise.all(
+            slice.map(segment => {
+              return this._replicateTrackMultihash(trackId, segment.multihash)
+            })
+          )
+          numMultihashes += slice.length
+        }
+      }
+
+      let currentHighestTrackBlock = await this.queryHighestBlockNumber('track')
+      if (blocknumber > currentHighestTrackBlock) {
+        await models.Block.create({
+          blocknumber: blocknumber,
+          type: 'track'
+        })
+      }
+      let duration = Date.now() - start
+      logger.info(`TrackID ${trackId} - Replication complete. ${numMultihashes} multihashes in ${duration}ms`)
+    } catch (e) {
+      logger.error(`TrackID ${trackId} - ERROR PROCESSING ${e}`)
+      throw e
+    }
+  }
+
+  async _replicateUser (user) {
+    try {
+      let start = Date.now()
+      let numMultihashes = 0
+      const blocknumber = parseInt(user.blocknumber)
+      const userPinPromises = []
+      if (user.profile_picture) {
+        userPinPromises.push(this._replicateUserMultihash(user.user_id, user.profile_picture))
+        numMultihashes++
+      }
+      if (user.cover_photo) {
+        userPinPromises.push(this._replicateUserMultihash(user.user_id, user.cover_photo))
+        numMultihashes++
+      }
+      if (user.metadata_multihash) {
+        userPinPromises.push(this._replicateUserMultihash(user.user_id, user.metadata_multihash))
+        numMultihashes++
+      }
+
+      let currentHighestUserBlock = await this.queryHighestBlockNumber('user')
+      if (blocknumber > currentHighestUserBlock) {
+        await models.Block.create({
+          blocknumber: blocknumber,
+          type: 'user'
+        })
+      }
+      let duration = Date.now() - start
+      if (numMultihashes > 0) {
+        logger.info(`User ${user.user_id} - Replication complete. ${numMultihashes} multihashes in ${duration}ms`)
+      }
+    } catch (e) {
+      logger.info(`UserD ${user.user_id} - ERROR PROCESSING ${e}`)
+      throw e
+    }
   }
 
   async _replicateTrackMultihash (pinTrackId, pinMultihash) {
@@ -72,7 +153,6 @@ class ContentReplicator {
     if (!this.replicating) {
       this.replicating = true
       try {
-        let start = Date.now()
         // Retrieve stored highest block values for track and user
         let currentTrackBlockNumber = await this.queryHighestBlockNumber('track')
         let currentUserBlockNumber = await this.queryHighestBlockNumber('user')
@@ -80,6 +160,7 @@ class ContentReplicator {
         // Query track and user with blocknumber ascending
         // Sets the minimum blocknumber as the current highest blocknumber
         // Limit the number of results to configured window - by default this is set to 5
+        logger.info(`Replicate -  blocknumber db: ${currentTrackBlockNumber}, blocknumber query: ${currentTrackBlockNumber + 1}`)
         const tracks = await this.audiusLibs.Track.getTracks(
           trackIdWindowSize,
           0,
@@ -96,70 +177,18 @@ class ContentReplicator {
           null,
           null,
           currentUserBlockNumber + 1)
-
-        let numMultihashes = 0
-
+        logger.info(`Replicate - processing ${tracks.length} tracks, ${users.length} users`)
         // For each track and user, pin any associatd multihash
         // This includes track segments, cover photos, profile pictures, and metadata
         // Any record that has a higher block number is stored in the Blocks table for subsequent discovery provider queries
         await Promise.all(
           tracks.map(async (track) => {
-            const blocknumber = parseInt(track.blocknumber)
-            const trackPinPromises = []
-            if (track.track_segments) {
-              track.track_segments.forEach((segment) => {
-                if (segment.multihash) {
-                  trackPinPromises.push(this._replicateTrackMultihash(track.track_id, segment.multihash, true))
-                  numMultihashes++
-                }
-              })
-            }
-            if (track.cover_art) {
-              trackPinPromises.push(this._replicateTrackMultihash(track.track_id, track.cover_art, true))
-              numMultihashes++
-            }
-            if (track.metadata_multihash) {
-              trackPinPromises.push(this._replicateTrackMultihash(track.track_id, track.metadata_multihash, true))
-              numMultihashes++
-            }
-            await Promise.all(trackPinPromises)
-            let currentHighestTrackBlock = await this.queryHighestBlockNumber('track')
-            if (blocknumber > currentHighestTrackBlock) {
-              await models.Block.create({
-                blocknumber: blocknumber,
-                type: 'track'
-              })
-            }
+            return this._replicateTrack(track)
           }),
           users.map(async (user) => {
-            const blocknumber = parseInt(user.blocknumber)
-            let currentHighestUserBlock = await this.queryHighestBlockNumber('user')
-            const userPinPromises = []
-            if (user.profile_picture) {
-              userPinPromises.push(this._replicateUserMultihash(user.user_id, user.profile_picture))
-              numMultihashes++
-            }
-            if (user.cover_photo) {
-              userPinPromises.push(this._replicateUserMultihash(user.user_id, user.cover_photo))
-              numMultihashes++
-            }
-            if (user.metadata_multihash) {
-              userPinPromises.push(this._replicateUserMultihash(user.user_id, user.metadata_multihash))
-              numMultihashes++
-            }
-            await Promise.all(userPinPromises)
-            if (blocknumber > currentHighestUserBlock) {
-              await models.Block.create({
-                blocknumber: blocknumber,
-                type: 'user'
-              })
-            }
+            return this._replicateUser(user)
           })
         )
-
-        let end = Date.now()
-        let duration = end - start
-        logger.info(`Replication complete. ${numMultihashes} multihashes in ${duration}ms`)
       } catch (e) {
         logger.error(`ERROR IN ALL`)
         logger.error(e)
