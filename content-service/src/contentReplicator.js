@@ -2,7 +2,7 @@ const { logger } = require('./logging')
 const models = require('./models')
 
 const trackIdWindowSize = 5
-const userIdWindowSize = 1
+const userIdWindowSize = 5
 const ipfsRepoMaxUsagePercent = 90
 const config = require('./config')
 
