@@ -58,45 +58,74 @@ class Account extends Base {
   ) {
     let userId
 
-    if (isCreator) {
-      // Create the user with the creator node.
-      if (this.web3Manager.web3IsExternal()) {
-        this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
+    const phases = {
+      ADD_CREATOR: 'ADD_CREATOR',
+      CREATE_USER_RECORD: 'CREATE_USER_RECORD',
+      HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
+      UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES',
+      ADD_USER: 'ADD_USER'
+    }
 
-        userId = await this.User.addCreator(metadata)
-        await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
+    let phase = ''
+    try {
+      if (isCreator) {
+        // Create the user with the creator node.
+        if (this.web3Manager.web3IsExternal()) {
+          this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
+
+          phase = phases.ADD_CREATOR
+          userId = await this.User.addCreator(metadata)
+
+          phase = phases.CREATE_USER_RECORD
+          await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
+        } else {
+          this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE, Services.HEDGEHOG)
+
+          phase = phases.HEDGEHOG_SIGNUP
+          const ownerWallet = await this.hedgehog.signUp(email, password)
+          await this.web3Manager.setOwnerWallet(ownerWallet)
+
+          phase = phases.UPLOAD_PROFILE_IMAGES
+          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
+
+          phase = phases.ADD_CREATOR
+          userId = await this.User.addCreator(metadata)
+        }
       } else {
-        this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE, Services.HEDGEHOG)
+        // The creator node is not needed.
+        if (this.web3Manager.web3IsExternal()) {
+          this.REQUIRES(Services.IDENTITY_SERVICE)
 
-        const ownerWallet = await this.hedgehog.signUp(email, password)
-        await this.web3Manager.setOwnerWallet(ownerWallet)
+          phase = phases.UPLOAD_PROFILE_IMAGES
+          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
 
-        metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-        userId = await this.User.addCreator(metadata)
+          phase = phases.ADD_USER
+          userId = await this.User.addUser(metadata)
+
+          phase = phases.CREATE_USER_RECORD
+          await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
+        } else {
+          this.REQUIRES(Services.IDENTITY_SERVICE, Services.HEDGEHOG)
+
+          phase = phases.HEDGEHOG_SIGNUP
+          const ownerWallet = await this.hedgehog.signUp(email, password)
+          await this.web3Manager.setOwnerWallet(ownerWallet)
+
+          phase = phases.UPLOAD_PROFILE_IMAGES
+          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
+
+          phase = phases.ADD_USER
+          userId = await this.User.addUser(metadata)
+        }
       }
-    } else {
-      // The creator node is not needed.
-      if (this.web3Manager.web3IsExternal()) {
-        this.REQUIRES(Services.IDENTITY_SERVICE)
-
-        metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-        userId = await this.User.addUser(metadata)
-        await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
-      } else {
-        this.REQUIRES(Services.IDENTITY_SERVICE, Services.HEDGEHOG)
-
-        const ownerWallet = await this.hedgehog.signUp(email, password)
-        await this.web3Manager.setOwnerWallet(ownerWallet)
-
-        metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-        userId = await this.User.addUser(metadata)
-      }
+    } catch (err) {
+      return { error: err.message, phase }
     }
 
     metadata['user_id'] = userId
     this.userStateManager.setCurrentUser(metadata)
 
-    return userId
+    return { userId, error: false }
   }
 
   /**
