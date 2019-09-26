@@ -59,7 +59,16 @@ module.exports = function (app) {
   }))
 
   /** DEPRECATED */
+
   app.post('/user/associate', handleResponse(async (req, res, next) => {
+    return successResponse()
+  }))
+
+  app.get('/auth_migration', handleResponse(async (req, res, next) => {
+    return successResponse()
+  }))
+
+  app.post('/auth_migration', handleResponse(async (req, res, next) => {
     return successResponse()
   }))
 }
