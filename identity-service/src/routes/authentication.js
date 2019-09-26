@@ -24,28 +24,26 @@ module.exports = function (app) {
   app.get('/authentication', handleResponse(async (req, res, next) => {
     let queryParams = req.query
 
-    if (queryParams && queryParams.lookupKey && queryParams.username) {
-      const email = queryParams.username.toLowerCase()
-      const existingUser = await models.Authentication.findOne({
-        where: {
-          lookupKey: queryParams.lookupKey
-        }
-      })
+    if (queryParams && queryParams.lookupKey) {
+      const lookupKey = queryParams.lookupKey
+      const existingUser = await models.Authentication.findOne({ where: { lookupKey } })
 
-      let userObj = await models.User.findOne({
-        where: {
-          email: email
+      // If username (email) provided, log if not found for future reference.
+      if (queryParams.username) {
+        const email = queryParams.username.toLowerCase()
+        const userObj = await models.User.findOne({ where: { email } })
+        if (existingUser && !userObj) {
+          req.logger.warn(`No user found with email ${email} for auth record with lookupKey ${lookupKey}`)
         }
-      })
-
-      // This is a boolean that returns to the frontend if the user has been fully configured
-      if (userObj && userObj.isConfigured && existingUser) {
-        existingUser.dataValues.isConfigured = true
       }
 
       if (existingUser) {
         return successResponse(existingUser)
-      } else return errorResponseBadRequest('Email or password is incorrect')
-    } else return errorResponseBadRequest('Missing field: lookupKey or username')
+      } else {
+        return errorResponseBadRequest('No auth record found for provided lookupKey.')
+      }
+    } else {
+      return errorResponseBadRequest('Missing queryParam lookupKey.')
+    }
   }))
 }
