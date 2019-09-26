@@ -178,7 +178,8 @@ class AudiusLibs {
       this.ethContracts = new EthContracts(
         this.ethWeb3Manager,
         this.ethWeb3Config ? this.ethWeb3Config.tokenAddress : null,
-        this.ethWeb3Config ? this.ethWeb3Config.registryAddress : null
+        this.ethWeb3Config ? this.ethWeb3Config.registryAddress : null,
+        this.isServer
       )
       toInit.push(this.ethContracts.init())
     }
