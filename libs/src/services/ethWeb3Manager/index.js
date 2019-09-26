@@ -53,7 +53,8 @@ class EthWeb3Manager {
       return this.web3.eth.sendSignedTransaction(signedTx)
     }
 
-    return contractMethod.send({ from: this.ownerWallet, gas: gasAmount })
+    let gasPrice = parseInt(await this.web3.eth.getGasPrice())
+    return contractMethod.send({ from: this.ownerWallet, gas: gasAmount, gasPrice: gasPrice })
   }
 }
 
