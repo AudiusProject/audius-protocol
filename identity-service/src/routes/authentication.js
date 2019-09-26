@@ -25,15 +25,25 @@ module.exports = function (app) {
     let queryParams = req.query
 
     if (queryParams && queryParams.lookupKey) {
-      const existingUser = await models.Authentication.findOne({
-        where: {
-          lookupKey: queryParams.lookupKey
+      const lookupKey = queryParams.lookupKey
+      const existingUser = await models.Authentication.findOne({ where: { lookupKey } })
+
+      // If username (email) provided, log if not found for future reference.
+      if (queryParams.username) {
+        const email = queryParams.username.toLowerCase()
+        const userObj = await models.User.findOne({ where: { email } })
+        if (existingUser && !userObj) {
+          req.logger.warn(`No user found with email ${email} for auth record with lookupKey ${lookupKey}`)
         }
-      })
+      }
 
       if (existingUser) {
         return successResponse(existingUser)
-      } else return errorResponseBadRequest('lookupKey is incorrect')
-    } else return errorResponseBadRequest('Missing queryParam lookupKey')
+      } else {
+        return errorResponseBadRequest('No auth record found for provided lookupKey.')
+      }
+    } else {
+      return errorResponseBadRequest('Missing queryParam lookupKey.')
+    }
   }))
 }
