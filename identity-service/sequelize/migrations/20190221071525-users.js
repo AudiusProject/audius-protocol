@@ -23,7 +23,7 @@ module.exports = {
       isConfigured: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
-        defaultValue: true
+        defaultValue: false
       },
       lastSeenDate: {
         type: Sequelize.DATE,
