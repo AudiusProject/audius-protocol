@@ -38,7 +38,7 @@ const serviceTypeList = Object.values(serviceType)
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 class EthContracts {
-  constructor (ethWeb3Manager, tokenContractAddress, registryAddress) {
+  constructor (ethWeb3Manager, tokenContractAddress, registryAddress, isServer) {
     this.ethWeb3Manager = ethWeb3Manager
     this.tokenContractAddress = tokenContractAddress
     this.registryAddress = registryAddress
@@ -51,6 +51,7 @@ class EthContracts {
 
     this.clients = []
     this.getRegistryAddressForContract = this.getRegistryAddressForContract.bind(this)
+    this.isServer = isServer
   }
 
   async init () {

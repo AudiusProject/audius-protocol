@@ -57,6 +57,7 @@ const initAudiusLibs = async () => {
     }
   )
   await audiusLibs.init()
+  console.log('Initialized audiusLibs')
   return audiusLibs
 }
 
@@ -64,9 +65,8 @@ const startApp = async () => {
   const ipfs = await initIPFS()
   await runDBMigrations()
   const audiusLibs = await initAudiusLibs()
-  console.log('Initialized audius libs')
 
-  const appInfo = initializeApp(config.get('port'), ipfs)
+  const appInfo = initializeApp(config.get('port'), ipfs, audiusLibs)
 
   const contentReplicator = new ContentReplicator(ipfs, audiusLibs)
   contentReplicator.initBootstrapPeers()
