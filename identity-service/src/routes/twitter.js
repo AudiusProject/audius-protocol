@@ -112,10 +112,11 @@ module.exports = function (app) {
    */
   app.post('/twitter/associate', handleResponse(async (req, res, next) => {
     let { uuid, userId, handle } = req.body
-    let audiusLibsInstance = req.app.get('audiusLibs')
+    const audiusLibsInstance = req.app.get('audiusLibs')
 
     try {
       let twitterObj = await models.TwitterUser.findOne({ where: { uuid: uuid } })
+
       // only set blockchainUserId if not already set
       if (twitterObj && !twitterObj.blockchainUserId) {
         twitterObj.blockchainUserId = userId
@@ -127,6 +128,9 @@ module.exports = function (app) {
           )
           const contractRegKey = await audiusLibsInstance.contracts.getRegistryContractForAddress(contractAddress)
           const senderAddress = config.get('userVerifierPublicKey')
+
+          // Ensure social handle matches Twitter handle for verified accts.
+          handle = twitterObj.twitterProfile.screen_name
 
           try {
             await txRelay.sendTransaction(contractRegKey, contractAddress, encodedABI, senderAddress)

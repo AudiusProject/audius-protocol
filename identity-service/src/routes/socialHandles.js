@@ -16,12 +16,19 @@ module.exports = function (app) {
   }))
 
   app.post('/social_handles', handleResponse(async (req, res, next) => {
-    const { handle, twitterHandle, instagramHandle } = req.body
+    let { handle, twitterHandle, instagramHandle } = req.body
     if (!handle) return errorResponseBadRequest('Please provide handle')
 
     const socialHandles = await models.SocialHandles.findOne({
       where: { handle }
     })
+
+    // If twitterUser is verified, audiusHandle must match twitterHandle.
+    const twitterUser = await models.TwitterUser.findOne({ where: {
+      [ "twitterProfile.screen_name" ] : twitterHandle,
+      verified: true
+    } })
+    if (twitterUser) { handle = twitterHandle }
 
     if (socialHandles) {
       await socialHandles.update({
