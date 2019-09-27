@@ -112,10 +112,11 @@ module.exports = function (app) {
    */
   app.post('/twitter/associate', handleResponse(async (req, res, next) => {
     let { uuid, userId, handle } = req.body
-    let audiusLibsInstance = req.app.get('audiusLibs')
+    const audiusLibsInstance = req.app.get('audiusLibs')
 
     try {
       let twitterObj = await models.TwitterUser.findOne({ where: { uuid: uuid } })
+
       // only set blockchainUserId if not already set
       if (twitterObj && !twitterObj.blockchainUserId) {
         twitterObj.blockchainUserId = userId
