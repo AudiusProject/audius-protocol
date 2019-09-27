@@ -120,6 +120,12 @@ const config = convict({
     env: 'rateLimitingTwitterLimit',
     default: null
   },
+  rateLimitingListensPerTrackPerHour: {
+    doc: 'Listens per track per IP per hour',
+    format: 'nat',
+    env: 'rateLimitingListensPerTrackPerHour',
+    default: null
+  },
   minimumBalance: {
     doc: 'Minimum token balance below which /balance_check fails',
     format: Number,
