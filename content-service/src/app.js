@@ -22,8 +22,9 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
-const initializeApp = (port, ipfsAPI) => {
+const initializeApp = (port, ipfsAPI, audiusLibs) => {
   app.set('ipfsAPI', ipfsAPI)
+  app.set('audiusLibs', audiusLibs)
 
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 
