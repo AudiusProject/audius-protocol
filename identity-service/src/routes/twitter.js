@@ -129,9 +129,6 @@ module.exports = function (app) {
           const contractRegKey = await audiusLibsInstance.contracts.getRegistryContractForAddress(contractAddress)
           const senderAddress = config.get('userVerifierPublicKey')
 
-          // Ensure social handle matches Twitter handle for verified accts.
-          handle = twitterObj.twitterProfile.screen_name
-
           try {
             await txRelay.sendTransaction(contractRegKey, contractAddress, encodedABI, senderAddress)
           } catch (e) {
