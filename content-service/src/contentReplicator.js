@@ -1,31 +1,36 @@
 const { logger } = require('./logging')
 const models = require('./models')
+const config = require('./config')
 
 const trackIdWindowSize = 5
 const userIdWindowSize = 5
 const ipfsRepoMaxUsagePercent = 90
-const config = require('./config')
 
 class ContentReplicator {
-  constructor (ipfsHandle, audiusLibs, pollInterval = 5) {
-    this.ipfs = ipfsHandle
+  constructor (ipfs, audiusLibs, pollInterval = 5) {
+    this.ipfs = ipfs
     this.audiusLibs = audiusLibs
     this.replicating = false
     this.interval = null
     this.pollInterval = pollInterval
   }
 
+  /** Calls replicate() and refreshPeers() at recurring intervals */
   async start () {
     logger.info('Starting content replicator!')
     this.interval = setInterval(
       () => this.replicate(),
-      this.pollInterval * 1000)
-    this.peerInterval = setInterval(() => this.refreshPeers(), this.pollInterval * 10 * 1000)
+      this.pollInterval * 1000
+    )
+    this.peerInterval = setInterval(
+      () => this.refreshPeers(),
+      this.pollInterval * 10 * 1000
+    )
   }
 
   async _replicateTrack (track) {
-    const trackId = track.track_id
     try {
+      const trackId = track.track_id
       const blocknumber = parseInt(track.blocknumber)
       let start = Date.now()
       let numMultihashes = 0
@@ -63,14 +68,14 @@ class ContentReplicator {
       let duration = Date.now() - start
       logger.info(`TrackID ${trackId} - Replication complete. ${numMultihashes} multihashes in ${duration}ms`)
     } catch (e) {
-      logger.error(`TrackID ${trackId} - ERROR PROCESSING ${e}`)
+      logger.error(`TrackID ${track.track_id} - ERROR PROCESSING ${e}`)
       throw e
     }
   }
 
   async _replicateUser (user) {
     try {
-      let start = Date.now()
+      const start = Date.now()
       let numMultihashes = 0
       const blocknumber = parseInt(user.blocknumber)
       const userPinPromises = []
@@ -87,16 +92,15 @@ class ContentReplicator {
         numMultihashes++
       }
 
-      let currentHighestUserBlock = await this.queryHighestBlockNumber('user')
+      const currentHighestUserBlock = await this.queryHighestBlockNumber('user')
       if (blocknumber > currentHighestUserBlock) {
         await models.Block.create({
           blocknumber: blocknumber,
           type: 'user'
         })
       }
-      let duration = Date.now() - start
       if (numMultihashes > 0) {
-        logger.info(`User ${user.user_id} - Replication complete. ${numMultihashes} multihashes in ${duration}ms`)
+        logger.info(`User ${user.user_id} - Replication complete. ${numMultihashes} multihashes in ${Date.now() - start}ms`)
       }
     } catch (e) {
       logger.info(`UserD ${user.user_id} - ERROR PROCESSING ${e}`)
@@ -141,12 +145,9 @@ class ContentReplicator {
     }
   }
 
+  /** Return highest blocknumber that content service has replicated for type. */
   async queryHighestBlockNumber (type) {
-    let highestVal = await models.Block.max('blocknumber', { where: { 'type': type } })
-    if (Number.isNaN(highestVal)) {
-      highestVal = 0
-    }
-    return highestVal
+    return models.Block.max('blocknumber', { where: { 'type': type } }) || 0
   }
 
   async replicate () {
