@@ -461,7 +461,6 @@ class DiscoveryProvider {
       return Utils.parseDataFromResponse(response)['data']
     } catch (e) {
       if (retries > 0) {
-        await this.autoSelectEndpoint()
         return this._makeRequest(requestObj, retries - 1)
       }
     }
