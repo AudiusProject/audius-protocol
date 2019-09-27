@@ -27,7 +27,11 @@ const VersioningFactoryRegistryKey = 'VersioningFactory'
 const ServiceProviderFactoryRegistryKey = 'ServiceProviderFactory'
 const OwnedUpgradeabilityProxyKey = 'OwnedUpgradeabilityProxy'
 
-const FIVE_MINUTES = 5 /* min */ * 60 /* seconds */ * 1000 /* millisec */
+const DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-provider-timestamp'
+// When to time out the cached discovery provider
+const DISCOVERY_PROVIDER_RESELECT_TIMEOUT = 1 /* min */ * 60 /* seconds */ * 1000 /* millisec */
+// How often to make sure the cached discovery provider is fresh
+const DISCOVERY_PROVIDER_TIMESTAMP_INTERVAL = 5000
 
 const serviceType = Object.freeze({
   DISCOVERY_PROVIDER: 'discovery-provider',
@@ -228,15 +232,13 @@ class EthContracts {
    */
   async autoselectDiscoveryProvider (whitelist = null) {
     let endpoint
-    const DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-provider-timestamp'
-    const DISCOVERY_PROVIDER_TIMESTAMP_INTERVAL = 1000
 
     const discProvTimestamp = localStorage.getItem(DISCOVERY_PROVIDER_TIMESTAMP)
     if (discProvTimestamp) {
       try {
         const { endpoint: latestEndpoint, timestamp } = JSON.parse(discProvTimestamp)
         const inWhitelist = !whitelist || whitelist.has(latestEndpoint)
-        const isNotExpired = (Date.now() - timestamp) < FIVE_MINUTES
+        const isNotExpired = (Date.now() - timestamp) < DISCOVERY_PROVIDER_RESELECT_TIMEOUT
 
         if (inWhitelist && isNotExpired) {
           const isValidDiscProvurl = await this.validateDiscoveryProvider(latestEndpoint)
@@ -255,6 +257,7 @@ class EthContracts {
       endpoint = await this.selectDiscoveryProvider(whitelist)
     }
     if (!this.isServer) {
+      clearInterval(this.discProvInterval)
       this.discProvInterval = setInterval(() => {
         if (endpoint) {
           localStorage.setItem(DISCOVERY_PROVIDER_TIMESTAMP, JSON.stringify({ endpoint, timestamp: Date.now() }))
