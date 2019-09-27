@@ -1,6 +1,9 @@
 const { handleResponse, successResponse } = require('../apiHelpers')
 const models = require('../models')
 const versionInfo = require('../../.version.json')
+const config = require('../config')
+
+const IpfsRepoMaxUsagePercent = 90
 
 module.exports = function (app) {
   /**
@@ -25,28 +28,31 @@ module.exports = function (app) {
     const libs = req.app.get('audiusLibs')
     // TODO - get discprov highest indexed user blocknumber after API change
     const discprovLatestTracks = await libs.Track.getTracks(1, 0, null, null, 'blocknumber:desc')
-    const discprovTrackBlockNumber = (discprovLatestTracks && discprovLatestTracks[0] && discprovLatestTracks[0].blocknumber)
+    const discprovTrackBlockNumber = ((discprovLatestTracks && discprovLatestTracks[0] && discprovLatestTracks[0].blocknumber)
       ? discprovLatestTracks[0].blocknumber
       : 0
+    )
 
-    const ipfsRepoStats = await req.app.get('ipfsAPI').repo.stat()
+    const ipfs = req.app.get('ipfsAPI')
+    const ipfsRepoStats = await ipfs.repo.stat()
     const usagePercent = (ipfsRepoStats.repoSize / ipfsRepoStats.storageMax) * 100
+    const ipfsPeerAddresses = config.get('ipfsPeerAddresses').split(',').filter(Boolean)
 
     return successResponse({
       'healthy': true,
       'git': process.env.GIT_SHA,
       'user_state': {
-        'replicated_blocknumber': highestUserBlockNumber,
-        // 'discprov_latest_blocknumber': 0,
-        // 'behind_by': 0
+        'replicated_blocknumber': highestUserBlockNumber
+        // TODO - discprov_latest_blocknumber & behind_by
       },
       'track_state': {
         'replicated_blocknumber': highestTrackBlockNumber,
         'discprov_latest_blocknumber': discprovTrackBlockNumber,
         'behind_by': discprovTrackBlockNumber - highestTrackBlockNumber
       },
-      'ipfs_repo_stats': {
-        'usage_percent': `${usagePercent}% used of max ${90}%`
+      'ipfs': {
+        'repo_usage_percent': `${usagePercent}% used of max ${IpfsRepoMaxUsagePercent}%`,
+        'peer_addresses': ipfsPeerAddresses
       }
     })
   }))
