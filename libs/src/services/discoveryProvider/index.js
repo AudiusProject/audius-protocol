@@ -432,7 +432,7 @@ class DiscoveryProvider {
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
   // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj) {
+  async _makeRequest (requestObj, retries = 2) {
     if (!this.discoveryProviderEndpoint) {
       await this.autoSelectEndpoint()
     }
@@ -460,8 +460,10 @@ class DiscoveryProvider {
       const response = await axios(axiosRequest)
       return Utils.parseDataFromResponse(response)['data']
     } catch (e) {
-      await this.autoSelectEndpoint()
-      return this._makeRequest(requestObj)
+      if (retries > 0) {
+        await this.autoSelectEndpoint()
+        return this._makeRequest(requestObj, retries - 1)
+      }
     }
   }
 }
