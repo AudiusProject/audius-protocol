@@ -25,7 +25,7 @@ module.exports = function (app) {
 
     // If twitterUser is verified, audiusHandle must match twitterHandle.
     const twitterUser = await models.TwitterUser.findOne({ where: {
-      [ "twitterProfile.screen_name" ] : twitterHandle,
+      'twitterProfile.screen_name': twitterHandle,
       verified: true
     } })
     if (twitterUser) { handle = twitterHandle }
