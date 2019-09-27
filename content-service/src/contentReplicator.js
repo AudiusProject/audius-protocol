@@ -40,7 +40,7 @@ class ContentReplicator {
 
       if (track.track_segments) {
         let segments = track.track_segments
-        logger.info(`TrackID - ${trackId} - ${segments.length} total segments`)
+        logger.info(`TrackID ${trackId} - ${segments.length} total segments`)
         for (let i = 0; i < segments.length; i += 10) {
           const slice = segments.slice(i, i + 10)
           logger.info(`TrackID ${trackId} - Processing segments ${i} to ${i + 10}`)
