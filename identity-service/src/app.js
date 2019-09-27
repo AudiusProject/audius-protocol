@@ -64,6 +64,23 @@ const twitterLimiter = rateLimit({
 // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
 app.use('/twitter/', twitterLimiter)
 
+const listenCountLimiter = rateLimit({
+  store: new RedisStore({
+    client: client,
+    prefix: 'listenCountLimiter',
+    expiry: 60 * 60 // one hour in seconds
+  }),
+  max: config.get('rateLimitingListensPerTrackPerHour'), // max requests per hour
+  keyGenerator: function (req) {
+    const trackId = parseInt(req.params.id)
+    const userId = parseInt(req.body.userId)
+    return `${trackId}:::${userId}`
+  }
+})
+
+// This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
+app.use('/tracks/:id/listen', listenCountLimiter)
+
 // import routes
 require('./routes')(app)
 
