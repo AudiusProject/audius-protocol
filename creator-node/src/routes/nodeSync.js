@@ -2,7 +2,7 @@ const axios = require('axios')
 
 const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
-const { handleResponse, successResponse, errorResponse } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponse, errorResponseServerError } = require('../apiHelpers')
 const config = require('../config')
 const { getIPFSPeerId } = require('../utils')
 
@@ -22,52 +22,56 @@ module.exports = function (app) {
     const walletPublicKeys = req.query.wallet_public_key // array
 
     const t = await models.sequelize.transaction()
+    try {
+      // Fetch cnodeUser for each walletPublicKey.
+      const cnodeUsers = await models.CNodeUser.findAll({ where: { walletPublicKey: walletPublicKeys }, transaction: t })
+      const cnodeUserUUIDs = cnodeUsers.map((cnodeUser) => cnodeUser.cnodeUserUUID)
 
-    // Fetch cnodeUser for each walletPublicKey.
-    const cnodeUsers = await models.CNodeUser.findAll({ where: { walletPublicKey: walletPublicKeys }, transaction: t })
-    const cnodeUserUUIDs = cnodeUsers.map((cnodeUser) => cnodeUser.cnodeUserUUID)
+      // Fetch all data for cnodeUserUUIDs: audiusUsers, tracks, files.
+      const [audiusUsers, tracks, files] = await Promise.all([
+        models.AudiusUser.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t }),
+        models.Track.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t }),
+        models.File.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t })
+      ])
+      await t.commit()
 
-    // Fetch all data for cnodeUserUUIDs: audiusUsers, tracks, files.
-    const [audiusUsers, tracks, files] = await Promise.all([
-      models.AudiusUser.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t }),
-      models.Track.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t }),
-      models.File.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t })
-    ])
-    await t.commit()
+      /** Bundle all data into cnodeUser objects to maximize import speed. */
 
-    /** Bundle all data into cnodeUser objects to maximize import speed. */
+      const cnodeUsersDict = {}
+      cnodeUsers.forEach(cnodeUser => {
+        // Convert sequelize object to plain js object to allow adding additional fields.
+        const cnodeUserDictObj = cnodeUser.toJSON()
 
-    const cnodeUsersDict = {}
-    cnodeUsers.forEach(cnodeUser => {
-      // Convert sequelize object to plain js object to allow adding additional fields.
-      const cnodeUserDictObj = cnodeUser.toJSON()
+        // Add cnodeUserUUID data fields.
+        cnodeUserDictObj['audiusUsers'] = []
+        cnodeUserDictObj['tracks'] = []
+        cnodeUserDictObj['files'] = []
 
-      // Add cnodeUserUUID data fields.
-      cnodeUserDictObj['audiusUsers'] = []
-      cnodeUserDictObj['tracks'] = []
-      cnodeUserDictObj['files'] = []
+        cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUserDictObj
+      })
 
-      cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUserDictObj
-    })
+      audiusUsers.forEach(audiusUser => {
+        const audiusUserDictObj = audiusUser.toJSON()
+        cnodeUsersDict[audiusUserDictObj['cnodeUserUUID']]['audiusUsers'].push(audiusUserDictObj)
+      })
+      tracks.forEach(track => {
+        let trackDictObj = track.toJSON()
+        cnodeUsersDict[trackDictObj['cnodeUserUUID']]['tracks'].push(trackDictObj)
+      })
+      files.forEach(file => {
+        let fileDictObj = file.toJSON()
+        cnodeUsersDict[fileDictObj['cnodeUserUUID']]['files'].push(fileDictObj)
+      })
 
-    audiusUsers.forEach(audiusUser => {
-      const audiusUserDictObj = audiusUser.toJSON()
-      cnodeUsersDict[audiusUserDictObj['cnodeUserUUID']]['audiusUsers'].push(audiusUserDictObj)
-    })
-    tracks.forEach(track => {
-      let trackDictObj = track.toJSON()
-      cnodeUsersDict[trackDictObj['cnodeUserUUID']]['tracks'].push(trackDictObj)
-    })
-    files.forEach(file => {
-      let fileDictObj = file.toJSON()
-      cnodeUsersDict[fileDictObj['cnodeUserUUID']]['files'].push(fileDictObj)
-    })
+      // Expose ipfs node's peer ID.
+      const ipfs = req.app.get('ipfsAPI')
+      let ipfsIDObj = await getIPFSPeerId(ipfs, config)
 
-    // Expose ipfs node's peer ID.
-    const ipfs = req.app.get('ipfsAPI')
-    let ipfsIDObj = await getIPFSPeerId(ipfs, config)
-
-    return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj: ipfsIDObj })
+      return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj: ipfsIDObj })
+    } catch (e) {
+      await t.rollback()
+      return errorResponseServerError(e.message)
+    }
   }))
 
   /**
@@ -173,121 +177,121 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
 
       const t = await models.sequelize.transaction()
 
-      const cnodeUser = await models.CNodeUser.findOne({
-        where: { walletPublicKey: fetchedWalletPublicKey },
-        transaction: t
-      })
-      const fetchedLatestBlockNumber = fetchedCNodeUser.latestBlockNumber
+      try {
+        const cnodeUser = await models.CNodeUser.findOne({
+          where: { walletPublicKey: fetchedWalletPublicKey },
+          transaction: t
+        })
+        const fetchedLatestBlockNumber = fetchedCNodeUser.latestBlockNumber
 
-      // Delete any previously stored data for cnodeUser in reverse table dependency order (cannot be parallelized).
-      if (cnodeUser) {
-        // Ensure imported data has higher blocknumber than already stored.
-        const latestBlockNumber = cnodeUser.latestBlockNumber
-        if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
-          (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber <= latestBlockNumber)
-        ) {
-          throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
-            ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}`)
+        // Delete any previously stored data for cnodeUser in reverse table dependency order (cannot be parallelized).
+        if (cnodeUser) {
+          // Ensure imported data has higher blocknumber than already stored.
+          const latestBlockNumber = cnodeUser.latestBlockNumber
+          if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
+            (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber <= latestBlockNumber)
+          ) {
+            throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
+              ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}`)
+          }
+
+          const cnodeUserUUID = cnodeUser.cnodeUserUUID
+          req.logger.info(redisKey, `beginning delete ops for cnodeUserUUID ${cnodeUserUUID}`)
+
+          const numAudiusUsersDeleted = await models.AudiusUser.destroy({
+            where: { cnodeUserUUID: cnodeUserUUID },
+            transaction: t
+          })
+          req.logger.info(redisKey, `numAudiusUsersDeleted ${numAudiusUsersDeleted}`)
+          // TrackFiles must be deleted before associated Tracks can be deleted.
+          const numTrackFilesDeleted = await models.File.destroy({
+            where: {
+              cnodeUserUUID: cnodeUserUUID,
+              trackUUID: { [models.Sequelize.Op.ne]: null } // Op.ne = notequal
+            },
+            transaction: t
+          })
+          req.logger.info(redisKey, `numTrackFilesDeleted ${numTrackFilesDeleted}`)
+          const numTracksDeleted = await models.Track.destroy({
+            where: { cnodeUserUUID: cnodeUserUUID },
+            transaction: t
+          })
+          req.logger.info(redisKey, `numTracksDeleted ${numTracksDeleted}`)
+          // Delete all remaining files (image / metadata files).
+          const numNonTrackFilesDeleted = await models.File.destroy({
+            where: { cnodeUserUUID: cnodeUserUUID },
+            transaction: t
+          })
+          req.logger.info(redisKey, `numNonTrackFilesDeleted ${numNonTrackFilesDeleted}`)
         }
 
-        const cnodeUserUUID = cnodeUser.cnodeUserUUID
-        req.logger.info(redisKey, `beginning delete ops for cnodeUserUUID ${cnodeUserUUID}`)
+        /* Populate all new data for fetched cnodeUser. */
 
-        const numAudiusUsersDeleted = await models.AudiusUser.destroy({
-          where: { cnodeUserUUID: cnodeUserUUID },
-          transaction: t
-        })
-        req.logger.info(redisKey, `numAudiusUsersDeleted ${numAudiusUsersDeleted}`)
-        // TrackFiles must be deleted before associated Tracks can be deleted.
-        const numTrackFilesDeleted = await models.File.destroy({
-          where: {
-            cnodeUserUUID: cnodeUserUUID,
-            trackUUID: { [models.Sequelize.Op.ne]: null } // Op.ne = notequal
-          },
-          transaction: t
-        })
-        req.logger.info(redisKey, `numTrackFilesDeleted ${numTrackFilesDeleted}`)
-        const numTracksDeleted = await models.Track.destroy({
-          where: { cnodeUserUUID: cnodeUserUUID },
-          transaction: t
-        })
-        req.logger.info(redisKey, `numTracksDeleted ${numTracksDeleted}`)
-        // Delete all remaining files (image / metadata files).
-        const numNonTrackFilesDeleted = await models.File.destroy({
-          where: { cnodeUserUUID: cnodeUserUUID },
-          transaction: t
-        })
-        req.logger.info(redisKey, `numNonTrackFilesDeleted ${numNonTrackFilesDeleted}`)
-      }
+        req.logger.info(redisKey, `beginning add ops for cnodeUserUUID ${fetchedCnodeUserUUID}`)
 
-      /* Populate all new data for fetched cnodeUser. */
+        // Upsert cnodeUser row.
+        await models.CNodeUser.upsert({
+          cnodeUserUUID: fetchedCnodeUserUUID,
+          walletPublicKey: fetchedWalletPublicKey,
+          latestBlockNumber: fetchedLatestBlockNumber,
+          lastLogin: fetchedCNodeUser.lastLogin
+        }, { transaction: t })
+        req.logger.info(redisKey, `upserted nodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)
 
-      req.logger.info(redisKey, `beginning add ops for cnodeUserUUID ${fetchedCnodeUserUUID}`)
+        // Make list of all track Files to add after track creation.
 
-      // Upsert cnodeUser row.
-      await models.CNodeUser.upsert({
-        cnodeUserUUID: fetchedCnodeUserUUID,
-        walletPublicKey: fetchedWalletPublicKey,
-        latestBlockNumber: fetchedLatestBlockNumber,
-        lastLogin: fetchedCNodeUser.lastLogin
-      }, { transaction: t })
-      req.logger.info(redisKey, `upserted nodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)
+        // Files with trackUUIDs cannot be created until tracks have been created,
+        // but tracks cannot be created until metadata and cover art files have been created.
+        const trackFiles = fetchedCNodeUser.files.filter(file => file.trackUUID != null)
+        const nonTrackFiles = fetchedCNodeUser.files.filter(file => file.trackUUID == null)
+        await models.File.bulkCreate(nonTrackFiles.map(file => ({
+          fileUUID: file.fileUUID,
+          trackUUID: null,
+          cnodeUserUUID: fetchedCnodeUserUUID,
+          multihash: file.multihash,
+          sourceFile: file.sourceFile,
+          storagePath: file.storagePath,
+          type: file.type
+        })), { transaction: t })
+        req.logger.info(redisKey, 'created all non-track files')
 
-      // Make list of all track Files to add after track creation.
+        await models.Track.bulkCreate(fetchedCNodeUser.tracks.map(track => ({
+          trackUUID: track.trackUUID,
+          blockchainId: track.blockchainId,
+          cnodeUserUUID: fetchedCnodeUserUUID,
+          metadataJSON: track.metadataJSON,
+          metadataFileUUID: track.metadataFileUUID,
+          coverArtFileUUID: track.coverArtFileUUID
+        })), { transaction: t })
+        req.logger.info(redisKey, 'created all tracks')
 
-      // Files with trackUUIDs cannot be created until tracks have been created,
-      // but tracks cannot be created until metadata and cover art files have been created.
-      const trackFiles = fetchedCNodeUser.files.filter(file => file.trackUUID != null)
-      const nonTrackFiles = fetchedCNodeUser.files.filter(file => file.trackUUID == null)
-      await models.File.bulkCreate(nonTrackFiles.map(file => ({
-        fileUUID: file.fileUUID,
-        trackUUID: null,
-        cnodeUserUUID: fetchedCnodeUserUUID,
-        multihash: file.multihash,
-        sourceFile: file.sourceFile,
-        storagePath: file.storagePath,
-        type: file.type
-      })), { transaction: t })
-      req.logger.info(redisKey, 'created all non-track files')
+        // Save all track files to disk
+        await Promise.all(trackFiles.map(trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath)))
+        req.logger.info('save all track files to disk/ipfs')
 
-      await models.Track.bulkCreate(fetchedCNodeUser.tracks.map(track => ({
-        trackUUID: track.trackUUID,
-        blockchainId: track.blockchainId,
-        cnodeUserUUID: fetchedCnodeUserUUID,
-        metadataJSON: track.metadataJSON,
-        metadataFileUUID: track.metadataFileUUID,
-        coverArtFileUUID: track.coverArtFileUUID
-      })), { transaction: t })
-      req.logger.info(redisKey, 'created all tracks')
+        // Save all track files to db
+        await models.File.bulkCreate(trackFiles.map(trackFile => ({
+          fileUUID: trackFile.fileUUID,
+          trackUUID: trackFile.trackUUID,
+          cnodeUserUUID: fetchedCnodeUserUUID,
+          multihash: trackFile.multihash,
+          sourceFile: trackFile.sourceFile,
+          storagePath: trackFile.storagePath,
+          type: trackFile.type
+        })), { transaction: t })
+        req.logger.info('saved all track files to db')
 
-      // Save all track files to disk
-      await Promise.all(trackFiles.map(trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath)))
-      req.logger.info('save all track files to disk/ipfs')
+        await models.AudiusUser.bulkCreate(fetchedCNodeUser.audiusUsers.map(audiusUser => ({
+          audiusUserUUID: audiusUser.audiusUserUUID,
+          cnodeUserUUID: fetchedCnodeUserUUID,
+          blockchainId: audiusUser.blockchainId,
+          metadataJSON: audiusUser.metadataJSON,
+          metadataFileUUID: audiusUser.metadataFileUUID,
+          coverArtFileUUID: audiusUser.coverArtFileUUID,
+          profilePicFileUUID: audiusUser.profilePicFileUUID
+        })), { transaction: t })
+        req.logger.info('saved all audiususer data to db')
 
-      // Save all track files to db
-      await models.File.bulkCreate(trackFiles.map(trackFile => ({
-        fileUUID: trackFile.fileUUID,
-        trackUUID: trackFile.trackUUID,
-        cnodeUserUUID: fetchedCnodeUserUUID,
-        multihash: trackFile.multihash,
-        sourceFile: trackFile.sourceFile,
-        storagePath: trackFile.storagePath,
-        type: trackFile.type
-      })), { transaction: t })
-      req.logger.info('saved all track files to db')
-
-      await models.AudiusUser.bulkCreate(fetchedCNodeUser.audiusUsers.map(audiusUser => ({
-        audiusUserUUID: audiusUser.audiusUserUUID,
-        cnodeUserUUID: fetchedCnodeUserUUID,
-        blockchainId: audiusUser.blockchainId,
-        metadataJSON: audiusUser.metadataJSON,
-        metadataFileUUID: audiusUser.metadataFileUUID,
-        coverArtFileUUID: audiusUser.coverArtFileUUID,
-        profilePicFileUUID: audiusUser.profilePicFileUUID
-      })), { transaction: t })
-      req.logger.info('saved all audiususer data to db')
-
-      try {
         await t.commit()
         req.logger.info(redisKey, `Transaction successfully committed for cnodeUserUUID ${fetchedCnodeUserUUID}`)
         redisKey = redisClient.getNodeSyncRedisKey(fetchedWalletPublicKey)

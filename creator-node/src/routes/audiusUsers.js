@@ -59,21 +59,20 @@ module.exports = function (app) {
     }
 
     const t = await models.sequelize.transaction()
-
-    // Insert / update audiusUser entry on db.
-    const audiusUser = await models.AudiusUser.upsert({
-      cnodeUserUUID,
-      metadataFileUUID,
-      metadataJSON,
-      blockchainId: blockchainUserId,
-      coverArtFileUUID,
-      profilePicFileUUID
-    }, { transaction: t, returning: true })
-
-    // Update cnodeUser's latestBlockNumber.
-    await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
-
     try {
+      // Insert / update audiusUser entry on db.
+      const audiusUser = await models.AudiusUser.upsert({
+        cnodeUserUUID,
+        metadataFileUUID,
+        metadataJSON,
+        blockchainId: blockchainUserId,
+        coverArtFileUUID,
+        profilePicFileUUID
+      }, { transaction: t, returning: true })
+
+      // Update cnodeUser's latestBlockNumber.
+      await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
+
       await t.commit()
       triggerSecondarySyncs(req)
       return successResponse({ audiusUserUUID: audiusUser.audiusUserUUID })

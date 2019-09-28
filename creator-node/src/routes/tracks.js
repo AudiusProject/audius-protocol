@@ -37,25 +37,27 @@ module.exports = function (app) {
     codeBlockTimeStart = Date.now()
     const t = await models.sequelize.transaction()
 
-    req.logger.info(`segmentFilePaths.length ${segmentFilePaths.length}`)
-    let counter = 1
-    const saveFilePromResps = await Promise.all(segmentFilePaths.map(async filePath => {
-      const absolutePath = path.join(req.fileDir, 'segments', filePath)
-      req.logger.info(`about to perform saveFileToIPFSFromFS #${counter++}`)
-      let response = await saveFileToIPFSFromFS(req, absolutePath, 'track', t)
-      response.segmentName = filePath
-      return response
-    }))
-    req.logger.info(`Time taken in /track_content for saving segments to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
-
-    codeBlockTimeStart = Date.now()
-    let fileSegmentPath = path.join(req.fileDir, 'segments')
-    let segmentDurations = await ffprobeExec.getSegmentsDuration(req, fileSegmentPath)
-    req.logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
-
-    // Commit transaction
-    codeBlockTimeStart = Date.now()
+    let saveFilePromResps
+    let segmentDurations
     try {
+      req.logger.info(`segmentFilePaths.length ${segmentFilePaths.length}`)
+      let counter = 1
+      saveFilePromResps = await Promise.all(segmentFilePaths.map(async filePath => {
+        const absolutePath = path.join(req.fileDir, 'segments', filePath)
+        req.logger.info(`about to perform saveFileToIPFSFromFS #${counter++}`)
+        let response = await saveFileToIPFSFromFS(req, absolutePath, 'track', t)
+        response.segmentName = filePath
+        return response
+      }))
+      req.logger.info(`Time taken in /track_content for saving segments to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+
+      codeBlockTimeStart = Date.now()
+      let fileSegmentPath = path.join(req.fileDir, 'segments')
+      segmentDurations = await ffprobeExec.getSegmentsDuration(req, fileSegmentPath)
+      req.logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+
+      // Commit transaction
+      codeBlockTimeStart = Date.now()
       req.logger.info(`attempting to commit tx for file ${req.fileName}`)
       await t.commit()
     } catch (e) {
@@ -151,46 +153,46 @@ module.exports = function (app) {
 
     const t = await models.sequelize.transaction()
 
-    // Create track entry on db - will fail if already present.
-    const track = await models.Track.upsert({
-      cnodeUserUUID,
-      metadataFileUUID,
-      metadataJSON,
-      blockchainId: blockchainTrackId,
-      coverArtFileUUID
-    }, { transaction: t, returning: true })
-
-    // Associate matching segment files on DB with newly created track.
-    await Promise.all(metadataJSON.track_segments.map(async segment => {
-      // Update each segment file; error if not found.
-      const numAffectedRows = await models.File.update(
-        { trackUUID: track.trackUUID },
-        { where: {
-          multihash: segment.multihash,
-          cnodeUserUUID,
-          trackUUID: null
-        },
-        transaction: t
-        }
-      )
-      if (!numAffectedRows) {
-        return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
-      }
-    }))
-
-    // Update cnodeUser's latestBlockNumber if higher than previous latestBlockNumber.
-    // TODO - move to subquery to guarantee atomicity.
-    const updatedCNodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID }, transaction: t })
-    if (!updatedCNodeUser || !updatedCNodeUser.latestBlockNumber) {
-      return errorResponseServerError('Issue in retrieving udpatedCnodeUser')
-    }
-    req.logger.info(`cnodeuser ${cnodeUserUUID} first latestBlockNumber ${cnodeUser.latestBlockNumber} || \
-      current latestBlockNumber ${updatedCNodeUser.latestBlockNumber} || given blockNumber ${blockNumber}`)
-    if (blockNumber > updatedCNodeUser.latestBlockNumber) {
-      await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
-    }
-
     try {
+      // Create track entry on db - will fail if already present.
+      const track = await models.Track.upsert({
+        cnodeUserUUID,
+        metadataFileUUID,
+        metadataJSON,
+        blockchainId: blockchainTrackId,
+        coverArtFileUUID
+      }, { transaction: t, returning: true })
+
+      // Associate matching segment files on DB with newly created track.
+      await Promise.all(metadataJSON.track_segments.map(async segment => {
+        // Update each segment file; error if not found.
+        const numAffectedRows = await models.File.update(
+          { trackUUID: track.trackUUID },
+          { where: {
+            multihash: segment.multihash,
+            cnodeUserUUID,
+            trackUUID: null
+          },
+          transaction: t
+          }
+        )
+        if (!numAffectedRows) {
+          return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
+        }
+      }))
+
+      // Update cnodeUser's latestBlockNumber if higher than previous latestBlockNumber.
+      // TODO - move to subquery to guarantee atomicity.
+      const updatedCNodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID }, transaction: t })
+      if (!updatedCNodeUser || !updatedCNodeUser.latestBlockNumber) {
+        return errorResponseServerError('Issue in retrieving udpatedCnodeUser')
+      }
+      req.logger.info(`cnodeuser ${cnodeUserUUID} first latestBlockNumber ${cnodeUser.latestBlockNumber} || \
+        current latestBlockNumber ${updatedCNodeUser.latestBlockNumber} || given blockNumber ${blockNumber}`)
+      if (blockNumber > updatedCNodeUser.latestBlockNumber) {
+        await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
+      }
+
       await t.commit()
       triggerSecondarySyncs(req)
       return successResponse({ trackUUID: track.trackUUID })
