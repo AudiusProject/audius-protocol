@@ -22,7 +22,7 @@ app.set('trust proxy', true)
 
 const reqLimiter = rateLimit({
   store: new RedisStore({
-    client: client,
+    client,
     prefix: 'reqLimiter',
     expiry: 60 * 60 // one hour in seconds
   }),
@@ -36,7 +36,7 @@ app.use(reqLimiter)
 
 const authLimiter = rateLimit({
   store: new RedisStore({
-    client: client,
+    client,
     prefix: 'authLimiter',
     expiry: 60 * 60 // one hour in seconds
   }),
@@ -51,7 +51,7 @@ app.use('/authentication/', authLimiter)
 
 const twitterLimiter = rateLimit({
   store: new RedisStore({
-    client: client,
+    client,
     prefix: 'twitterLimiter',
     expiry: 60 * 60 // one hour in seconds
   }),
@@ -66,7 +66,7 @@ app.use('/twitter/', twitterLimiter)
 
 const listenCountLimiter = rateLimit({
   store: new RedisStore({
-    client: client,
+    client,
     prefix: 'listenCountLimiter',
     expiry: 60 * 60 // one hour in seconds
   }),
@@ -78,8 +78,21 @@ const listenCountLimiter = rateLimit({
   }
 })
 
+const listenCountIPLimiter = rateLimit({
+  store: new RedisStore({
+    client,
+    prefix: 'listenCountLimiter',
+    expiry: 60 * 60 // one hour in seconds
+  }),
+  max: config.get('rateLimitingListensPerIPPerHour'), // max requests per hour
+  keyGenerator: function (req) {
+    const trackId = parseInt(req.params.id)
+    return `${req.ip}:::${trackId}`
+  }
+})
+
 // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
-app.use('/tracks/:id/listen', listenCountLimiter)
+app.use('/tracks/:id/listen', listenCountLimiter, listenCountIPLimiter)
 
 // import routes
 require('./routes')(app)
