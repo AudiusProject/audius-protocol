@@ -78,6 +78,9 @@ class IPFSClient:
     def get_metadata_from_gateway(self, multihash, metadata_format):
         # Default return initial metadata format
         gateway_metadata_json = metadata_format
+        logger.warning(f"IPFSCLIENT | get_metadata_from_gateway, {multihash}")
+        logger.warning(f"IPFSCLIENT | get_metadata_from_gateway, \
+                addresses: {self._gateway_addresses} cnode_endpoints: {self._cnode_endpoints}")
         gateway_endpoints = self._gateway_addresses + self._cnode_endpoints
 
         for address in gateway_endpoints:
