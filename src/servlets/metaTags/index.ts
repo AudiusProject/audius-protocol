@@ -173,6 +173,7 @@ const getResponse = async (
       console.log('get upload', req.path)
       context = await getUploadContext()
       break
+    case MetaTagFormat.Error:
     default:
       console.log('get default', req.path)
       context = getDefaultContext()

@@ -19,6 +19,13 @@ router.get([
   }
 )
 
+router.get('/error', (
+  req: express.Request,
+  res: express.Response) => {
+    getMetaTagsResponse(MetaTagFormat.Error, req, res)
+  }
+)
+
 router.get('/:handle', (
   req: express.Request,
   res: express.Response) => {
