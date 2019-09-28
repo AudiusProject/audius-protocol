@@ -121,9 +121,15 @@ const config = convict({
     default: null
   },
   rateLimitingListensPerTrackPerHour: {
-    doc: 'Listens per track per IP per hour',
+    doc: 'Listens per track per user per hour',
     format: 'nat',
     env: 'rateLimitingListensPerTrackPerHour',
+    default: null
+  },
+  rateLimitingListensPerIPPerHour: {
+    doc: 'Listens per track per IP per hour',
+    format: 'nat',
+    env: 'rateLimitingListensPerIPPerHour',
     default: null
   },
   minimumBalance: {

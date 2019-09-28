@@ -19,5 +19,6 @@
   "rateLimitingAuthLimit": 5000,
   "rateLimitingTwitterLimit": 5000,
   "rateLimitingListensPerTrackPerHour": 5,
+  "rateLimitingListensPerIPPerHour": 10,
   "minimumBalance": 1
 }

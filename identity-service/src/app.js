@@ -78,8 +78,21 @@ const listenCountLimiter = rateLimit({
   }
 })
 
+const listenCountIPLimiter = rateLimit({
+  store: new RedisStore({
+    client: client,
+    prefix: 'listenCountLimiter',
+    expiry: 60 * 60 // one hour in seconds
+  }),
+  max: config.get('rateLimitingListensPerIPPerHour'), // max requests per hour
+  keyGenerator: function (req) {
+    const trackId = parseInt(req.params.id)
+    return `${req.ip}:::${trackId}`
+  }
+})
+
 // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
-app.use('/tracks/:id/listen', listenCountLimiter)
+app.use('/tracks/:id/listen', listenCountLimiter, listenCountIPLimiter)
 
 // import routes
 require('./routes')(app)
