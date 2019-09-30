@@ -46,7 +46,7 @@ class Web3Manager {
       web3Config.internalWeb3Config.web3ProviderEndpoint
     ) {
       // either user has external web3 but it's not configured, or doesn't have web3
-      this.web3 = new Web3(this.provider(web3Config.internalWeb3Config.web3ProviderEndpoint, 2000))
+      this.web3 = new Web3(this.provider(web3Config.internalWeb3Config.web3ProviderEndpoint, 10000))
       this.useExternalWeb3 = false
 
       // create private key pair here if it doesn't already exist
