@@ -2,9 +2,11 @@ const { handleResponse, successResponse, errorResponseServerError } = require('.
 const { sequelize } = require('../models')
 const config = require('../config.js')
 const versionInfo = require('../../.version.json')
-const disk = require('diskusage');
+const disk = require('diskusage')
 
-const HUNDRED_GB_IN_BYTES = 1000 * 1000 * 1000 * 100 // 1 kb, 1mb, 1gb * 100
+const MAX_DB_CONNECTIONS = 100
+const MAX_DISK_USAGE_BYTES = 100 /* 100gb */ * 1024 /* 1gb */ * 1024 /* 1mb */ * 1024 /* 1kb */
+const MAX_DISK_USAGE_PERCENT = 20 // 20%
 
 module.exports = function (app) {
   /** @dev TODO - Explore checking more than just DB (ex. IPFS) */
@@ -17,28 +19,47 @@ module.exports = function (app) {
     })
   }))
 
+  /**
+   * Exposes current and max db connection stats.
+   * Returns error if db connection threshold exceeded, else success.
+   */
   app.get('/db_check', handleResponse(async (req, res) => {
+    const verbose = (req.query.verbose === 'true')
+    const connectionThreshold = parseInt(req.query.threshold) || MAX_DB_CONNECTIONS
+
     let numConnections = 0
     let connectionInfo = null
+    let activeConnections = null
+    let idleConnections = null
 
+    // Get number of open DB connections
     let numConnectionsQuery = await sequelize.query("SELECT numbackends from pg_stat_database where datname = 'audius_creator_node'")
     if (numConnectionsQuery && numConnectionsQuery[0] && numConnectionsQuery[0][0] && numConnectionsQuery[0][0].numbackends) {
       numConnections = numConnectionsQuery[0][0].numbackends
     }
 
-    let connectionInfoQuery = (await sequelize.query("select datname, usename, application_name, client_addr, wait_event_type, wait_event, state, query, backend_type from pg_stat_activity where datname = 'audius_creator_node'"))
+    // Get detailed connection info
+    const connectionInfoQuery = (await sequelize.query("select wait_event_type, wait_event, state, query from pg_stat_activity where datname = 'audius_creator_node'"))
     if (connectionInfoQuery && connectionInfoQuery[0]) {
       connectionInfo = connectionInfoQuery[0]
+      activeConnections = (connectionInfo.filter(conn => conn.state === 'active')).length
+      idleConnections = (connectionInfo.filter(conn => conn.state === 'idle')).length
     }
-    req.logger.info('numConnections', numConnections)
-    req.logger.info('connectionInfo', connectionInfo)
 
-    return successResponse({
-      'healthy': true,
+    const resp = {
       'git': process.env.GIT_SHA,
-      numConnections,
-      connectionInfo
-    })
+      connectionStatus: {
+        total: numConnections,
+        active: activeConnections,
+        idle: idleConnections
+      },
+      connectionThreshold: connectionThreshold,
+      maxConnections: MAX_DB_CONNECTIONS
+    }
+
+    if (verbose) { resp.connectionInfo = connectionInfo }
+
+    return (numConnections >= connectionThreshold) ? errorResponseServerError(resp) : successResponse(resp)
   }))
 
   app.get('/version', handleResponse(async (req, res) => {
@@ -51,35 +72,39 @@ module.exports = function (app) {
     return successResponse(info)
   }))
 
+  /**
+   * Exposes current and max disk usage stats.
+   * Returns error if max disk usage exceeded, else success.
+   */
   app.get('/disk_check', handleResponse(async (req, res) => {
     const path = config.get('storagePath')
-    const { available, total } = await disk.check(path);
-    console.log(available / total)
-    
-    // if less than 20% of hard disk space is available or if
-    // if (available / total < .20 && available > HUNDRED_GB_IN_BYTES){
-      return successResponse({
-        available: _formatBytes(available),
-        total: _formatBytes(total)
-      })
-    // }
-    // else {
-    //   return errorResponseServerError({
-    //     available: _formatBytes(available),
-    //     total: _formatBytes(total)
-    //   })
-    // }
+    const { available, total } = await disk.check(path)
+    const usagePercent = Math.round((total - available) * 100 / total)
+
+    const resp = {
+      available: _formatBytes(available),
+      total: _formatBytes(total),
+      usagePercent: `${usagePercent}%`,
+      maxUsagePercent: `${MAX_DISK_USAGE_PERCENT}%`,
+      maxUsageGB: _formatBytes(MAX_DISK_USAGE_BYTES)
+    }
+
+    if (usagePercent >= MAX_DISK_USAGE_PERCENT || available >= MAX_DISK_USAGE_BYTES) {
+      return errorResponseServerError(resp)
+    } else {
+      return successResponse(resp)
+    }
   }))
 }
 
-function _formatBytes(bytes, decimals = 2) {
-  if (bytes === 0) return '0 Bytes';
+function _formatBytes (bytes, decimals = 2) {
+  if (bytes === 0) return '0 Bytes'
 
-  const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const k = 1024
+  const dm = decimals < 0 ? 0 : decimals
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
 
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }
