@@ -14,8 +14,8 @@ const spDiscProvType = serviceTypeList[0]
 const spCreatorNodeType = serviceTypeList[1]
 const discProvEndpoint1 = 'http://docker.for.mac.localhost:5000'
 const discProvEndpoint2 = 'http://docker.for.mac.localhost:5005'
-const creatorNodeEndpoint1 = 'http://localhost:4000'
-const creatorNodeEndpoint2 = 'http://localhost:4010'
+const creatorNodeEndpoint1 = 'http://docker.for.mac.localhost:4000'
+const creatorNodeEndpoint2 = 'http://docker.for.mac.localhost:4010'
 const versionStr = '0.1.0'
 const amountOfAuds = 100000
 
