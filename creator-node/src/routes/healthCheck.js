@@ -4,9 +4,8 @@ const config = require('../config.js')
 const versionInfo = require('../../.version.json')
 const disk = require('diskusage')
 
-const MAX_DB_CONNECTIONS = 100
-const MAX_DISK_USAGE_BYTES = 100 /* 100gb */ * 1024 /* 1gb */ * 1024 /* 1mb */ * 1024 /* 1kb */
-const MAX_DISK_USAGE_PERCENT = 20 // 20%
+const MAX_DB_CONNECTIONS = 90
+const MAX_DISK_USAGE_PERCENT = 90 // 90%
 
 module.exports = function (app) {
   /** @dev TODO - Explore checking more than just DB (ex. IPFS) */
@@ -25,7 +24,7 @@ module.exports = function (app) {
    */
   app.get('/db_check', handleResponse(async (req, res) => {
     const verbose = (req.query.verbose === 'true')
-    const connectionThreshold = parseInt(req.query.threshold) || MAX_DB_CONNECTIONS
+    const maxConnections = parseInt(req.query.maxConnections) || MAX_DB_CONNECTIONS
 
     let numConnections = 0
     let connectionInfo = null
@@ -53,13 +52,12 @@ module.exports = function (app) {
         active: activeConnections,
         idle: idleConnections
       },
-      connectionThreshold: connectionThreshold,
-      maxConnections: MAX_DB_CONNECTIONS
+      maxConnections: maxConnections,
     }
 
     if (verbose) { resp.connectionInfo = connectionInfo }
 
-    return (numConnections >= connectionThreshold) ? errorResponseServerError(resp) : successResponse(resp)
+    return (numConnections >= maxConnections) ? errorResponseServerError(resp) : successResponse(resp)
   }))
 
   app.get('/version', handleResponse(async (req, res) => {
@@ -77,6 +75,9 @@ module.exports = function (app) {
    * Returns error if max disk usage exceeded, else success.
    */
   app.get('/disk_check', handleResponse(async (req, res) => {
+    const maxUsageBytes = parseInt(req.query.maxUsageBytes)
+    const maxUsagePercent = parseInt(req.query.maxUsagePercent) || MAX_DISK_USAGE_PERCENT
+    
     const path = config.get('storagePath')
     const { available, total } = await disk.check(path)
     const usagePercent = Math.round((total - available) * 100 / total)
@@ -85,11 +86,14 @@ module.exports = function (app) {
       available: _formatBytes(available),
       total: _formatBytes(total),
       usagePercent: `${usagePercent}%`,
-      maxUsagePercent: `${MAX_DISK_USAGE_PERCENT}%`,
-      maxUsageGB: _formatBytes(MAX_DISK_USAGE_BYTES)
+      maxUsagePercent: `${maxUsagePercent}%`
     }
 
-    if (usagePercent >= MAX_DISK_USAGE_PERCENT || available >= MAX_DISK_USAGE_BYTES) {
+    if (maxUsageBytes) { resp.maxUsage = _formatBytes(maxUsageBytes) }
+
+    if (usagePercent >= maxUsagePercent ||
+      (maxUsageBytes && (total - available) >= maxUsageBytes)
+    ) {
       return errorResponseServerError(resp)
     } else {
       return successResponse(resp)
