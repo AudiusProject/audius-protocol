@@ -1,7 +1,10 @@
-const { handleResponse, successResponse } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { sequelize } = require('../models')
 const config = require('../config.js')
 const versionInfo = require('../../.version.json')
+const disk = require('diskusage');
+
+const HUNDRED_GB_IN_BYTES = 1000 * 1000 * 1000 * 100 // 1 kb, 1mb, 1gb * 100
 
 module.exports = function (app) {
   /** @dev TODO - Explore checking more than just DB (ex. IPFS) */
@@ -47,4 +50,36 @@ module.exports = function (app) {
     }
     return successResponse(info)
   }))
+
+  app.get('/disk_check', handleResponse(async (req, res) => {
+    const path = config.get('storagePath')
+    const { available, total } = await disk.check(path);
+    console.log(available / total)
+    
+    // if less than 20% of hard disk space is available or if
+    // if (available / total < .20 && available > HUNDRED_GB_IN_BYTES){
+      return successResponse({
+        available: _formatBytes(available),
+        total: _formatBytes(total)
+      })
+    // }
+    // else {
+    //   return errorResponseServerError({
+    //     available: _formatBytes(available),
+    //     total: _formatBytes(total)
+    //   })
+    // }
+  }))
+}
+
+function _formatBytes(bytes, decimals = 2) {
+  if (bytes === 0) return '0 Bytes';
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
