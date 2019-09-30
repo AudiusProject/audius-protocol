@@ -453,7 +453,7 @@ class DiscoveryProvider {
       url: requestUrl,
       headers: headers,
       method: 'get',
-      timeout: 3000
+      timeout: 10000
     }
 
     try {
