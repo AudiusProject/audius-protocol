@@ -21,3 +21,8 @@ current_user_followee_follow_count = 'current_user_followee_follow_count' # inte
 # feed metadata
 activity_timestamp = 'activity_timestamp' # string - timestamp of relevant activity on underlying object,
                                           # used for sorting
+
+track_owner_follower_count = 'track_owner_follower_count'
+track_owner_id = 'track_owner_id'
+track_id = 'track_id'
+listen_counts = 'listen_counts'

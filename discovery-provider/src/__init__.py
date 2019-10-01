@@ -20,7 +20,7 @@ import alembic
 import alembic.config  # pylint: disable=E0611
 
 from src import exceptions
-from src.queries import queries, search, health_check
+from src.queries import queries, search, health_check, trending
 from src.utils import helpers, config
 from src.utils.db_session import SessionManager
 from src.utils.config import config_files, shared_config, ConfigIni
@@ -234,6 +234,7 @@ def configure_flask(test_config, app, mode="app"):
 
     exceptions.register_exception_handlers(app)
     app.register_blueprint(queries.bp)
+    app.register_blueprint(trending.bp)
     app.register_blueprint(search.bp)
     app.register_blueprint(health_check.bp)
     return app
