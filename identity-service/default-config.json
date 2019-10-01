@@ -20,5 +20,9 @@
   "rateLimitingTwitterLimit": 5000,
   "rateLimitingListensPerTrackPerHour": 10,
   "rateLimitingListensPerIPPerHour": 20,
+  "rateLimitingListensPerTrackPerDay": 40,
+  "rateLimitingListensPerIPPerDay": 60,
+  "rateLimitingListensPerTrackPerWeek": 120,
+  "rateLimitingListensPerIPPerWeek": 180,
   "minimumBalance": 1
 }
