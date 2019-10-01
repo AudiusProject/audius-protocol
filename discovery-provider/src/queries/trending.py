@@ -64,8 +64,6 @@ def trending(time):
 
         # Query follower info for each track owner
         # Query each track owner
-        logger.error(track_ids)
-        logger.error(len(track_ids))
         track_owners_query = (
             session.query(Track.track_id, Track.owner_id)
             .filter
