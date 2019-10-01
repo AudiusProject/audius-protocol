@@ -14,8 +14,8 @@ const spDiscProvType = serviceTypeList[0]
 const spCreatorNodeType = serviceTypeList[1]
 const discProvEndpoint1 = 'http://docker.for.mac.localhost:5000'
 const discProvEndpoint2 = 'http://docker.for.mac.localhost:5005'
-const creatorNodeEndpoint1 = 'http://localhost:4000'
-const creatorNodeEndpoint2 = 'http://localhost:4010'
+const creatorNodeEndpoint1 = 'http://docker.for.mac.localhost:4000'
+const creatorNodeEndpoint2 = 'http://docker.for.mac.localhost:4010'
 const versionStr = '0.1.0'
 const amountOfAuds = 100000
 
@@ -69,8 +69,20 @@ const run = async () => {
         await _initAllVersions(audiusLibs)
         break
 
-      case 'register-sps':
-        await _registerAllSPs(audiusLibs, ethAccounts)
+      case 'register-discprov-1':
+        await _registerDiscProv1(audiusLibs, ethAccounts)
+        break
+
+      case 'register-discprov-2':
+        await _registerDiscProv2(audiusLibs, ethAccounts)
+        break
+
+      case 'register-cnode-1':
+        await _registerCnode1(audiusLibs, ethAccounts)
+        break
+
+      case 'register-cnode-2':
+        await _registerCnode2(audiusLibs, ethAccounts)
         break
 
       case 'deregister-sps':
@@ -99,23 +111,24 @@ run()
 const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
   await distributeTokens(audiusLibs, amountOfAuds)
   await _initAllVersions(audiusLibs)
-  await _registerAllSPs(audiusLibs, ethAccounts)
   await queryLocalServices(audiusLibs, serviceTypeList)
 }
 
-const _registerAllSPs = async (audiusLibs, ethAccounts) => {
-  /** DISCOVERY PROVIDERS */
-
+const _registerDiscProv1 = async (audiusLibs, ethAccounts) => {
   await registerLocalService(audiusLibs, spDiscProvType, discProvEndpoint1, amountOfAuds)
+}
 
+const _registerDiscProv2 = async (audiusLibs, ethAccounts) => {
   let audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[3])
   await registerLocalService(audiusLibs4, spDiscProvType, discProvEndpoint2, amountOfAuds)
+}
 
-  /** CREATOR NODES */
-
+const _registerCnode1 = async (audiusLibs, ethAccounts) => {
   let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[1])
   await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint1, amountOfAuds)
+}
 
+const _registerCnode2 = async (audiusLibs, ethAccounts) => {
   let audiusLibs3 = await initAudiusLibs(true, null, ethAccounts[2])
   await registerLocalService(audiusLibs3, spCreatorNodeType, creatorNodeEndpoint2, amountOfAuds)
 }

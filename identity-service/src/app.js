@@ -64,35 +64,13 @@ const twitterLimiter = rateLimit({
 // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
 app.use('/twitter/', twitterLimiter)
 
-const listenCountLimiter = rateLimit({
-  store: new RedisStore({
-    client,
-    prefix: 'listenCountLimiter',
-    expiry: 60 * 60 // one hour in seconds
-  }),
-  max: config.get('rateLimitingListensPerTrackPerHour'), // max requests per hour
-  keyGenerator: function (req) {
-    const trackId = parseInt(req.params.id)
-    const userId = parseInt(req.body.userId)
-    return `${trackId}:::${userId}`
-  }
-})
-
-const listenCountIPLimiter = rateLimit({
-  store: new RedisStore({
-    client,
-    prefix: 'listenCountLimiter',
-    expiry: 60 * 60 // one hour in seconds
-  }),
-  max: config.get('rateLimitingListensPerIPPerHour'), // max requests per hour
-  keyGenerator: function (req) {
-    const trackId = parseInt(req.params.id)
-    return `${req.ip}:::${trackId}`
-  }
-})
+const ONE_HOUR_IN_SECONDS = 60 * 60
+const [listenCountHourlyLimiter, listenCountHourlyIPLimiter] = _createRateLimitsForListenCounts('Hour', ONE_HOUR_IN_SECONDS)
+const [listenCountDailyLimiter, listenCountDailyIPLimiter] = _createRateLimitsForListenCounts('Day', ONE_HOUR_IN_SECONDS * 24)
+const [listenCountWeeklyLimiter, listenCountWeeklyIPLimiter] = _createRateLimitsForListenCounts('Week', ONE_HOUR_IN_SECONDS * 24 * 7)
 
 // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
-app.use('/tracks/:id/listen', listenCountLimiter, listenCountIPLimiter)
+app.use('/tracks/:id/listen', listenCountWeeklyIPLimiter, listenCountWeeklyLimiter, listenCountDailyIPLimiter, listenCountDailyLimiter, listenCountHourlyIPLimiter, listenCountHourlyLimiter)
 
 // import routes
 require('./routes')(app)
@@ -112,3 +90,35 @@ const initializeApp = (port, audiusLibs) => {
 }
 
 module.exports = initializeApp
+
+// Create rate limits for listens on a per track per user basis and per track per ip basis
+function _createRateLimitsForListenCounts (interval, timeInSeconds) {
+  const listenCountLimiter = rateLimit({
+    store: new RedisStore({
+      client,
+      prefix: `listenCountLimiter:::${interval}-track:::`,
+      expiry: timeInSeconds
+    }),
+    max: config.get(`rateLimitingListensPerTrackPer${interval}`), // max requests per interval
+    keyGenerator: function (req) {
+      const trackId = parseInt(req.params.id)
+      const userId = parseInt(req.body.userId)
+      return `${trackId}:::${userId}`
+    }
+  })
+
+  const listenCountIPLimiter = rateLimit({
+    store: new RedisStore({
+      client,
+      prefix: `listenCountLimiter:::${interval}-ip:::`,
+      expiry: timeInSeconds
+    }),
+    max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
+    keyGenerator: function (req) {
+      const trackId = parseInt(req.params.id)
+      return `${req.ip}:::${trackId}`
+    }
+  })
+
+  return [listenCountLimiter, listenCountIPLimiter]
+}

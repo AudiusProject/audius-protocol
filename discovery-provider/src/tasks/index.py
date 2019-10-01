@@ -419,6 +419,10 @@ def refresh_peer_connections(task_context):
                         continue
                     cnode_endpoints[cnode_url] = True
 
+        # Add user metadata URL to peer connection list
+        user_node_url = task_context.shared_config["discprov"]["user_metadata_service_url"]
+        cnode_endpoints[user_node_url] = True
+
         # Update creator node list
         ipfs_client.update_cnode_urls(cnode_endpoints.keys())
 
