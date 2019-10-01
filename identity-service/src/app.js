@@ -92,7 +92,7 @@ const initializeApp = (port, audiusLibs) => {
 module.exports = initializeApp
 
 // Create rate limits for listens on a per track per user basis and per track per ip basis
-function _createRateLimitsForListenCounts(interval, timeInSeconds){
+function _createRateLimitsForListenCounts (interval, timeInSeconds) {
   const listenCountLimiter = rateLimit({
     store: new RedisStore({
       client,
@@ -106,7 +106,7 @@ function _createRateLimitsForListenCounts(interval, timeInSeconds){
       return `${trackId}:::${userId}`
     }
   })
-  
+
   const listenCountIPLimiter = rateLimit({
     store: new RedisStore({
       client,
