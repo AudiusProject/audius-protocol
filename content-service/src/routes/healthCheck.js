@@ -37,6 +37,7 @@ module.exports = function (app) {
     const ipfsRepoStats = await ipfs.repo.stat()
     const usagePercent = (ipfsRepoStats.repoSize / ipfsRepoStats.storageMax) * 100
     const ipfsPeerAddresses = config.get('ipfsPeerAddresses').split(',').filter(Boolean)
+    const ipfsId = await ipfs.id()
 
     return successResponse({
       'healthy': true,
@@ -52,7 +53,8 @@ module.exports = function (app) {
       },
       'ipfs': {
         'repo_usage_percent': `${usagePercent}% used of max ${IpfsRepoMaxUsagePercent}%`,
-        'peer_addresses': ipfsPeerAddresses
+        'peer_addresses': ipfsPeerAddresses,
+        'id': ipfsId
       }
     })
   }))

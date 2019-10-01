@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 ######## HELPER FUNCTIONS ########
 
-
 default_padded_start_hash = (
     "0x0000000000000000000000000000000000000000000000000000000000000000"
 )
@@ -25,7 +24,6 @@ def get_contract_info_if_exists(self, address):
         if update_task.web3.toChecksumAddress(contract_address) == address:
             return (contract_name, contract_address)
     return None
-
 
 def initialize_blocks_table_if_necessary(db):
     target_blockhash = None
@@ -57,7 +55,6 @@ def initialize_blocks_table_if_necessary(db):
             ), "Expected SINGLE row marked as current"
 
     return target_blockhash
-
 
 def get_latest_block(db):
     latest_block = None
@@ -229,7 +226,6 @@ def index_blocks(self, db, blocks_list):
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
 
-
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
 def revert_blocks(self, db, revert_blocks_list):
     # TODO: Remove this exception once the unexpected revert scenario has been diagnosed
@@ -398,6 +394,7 @@ def revert_blocks(self, db, revert_blocks_list):
         if rebuild_user_index:
             session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict")
 
+
 ######## IPFS PEER REFRESH ########
 def refresh_peer_connections(task_context):
     db = task_context.db
@@ -454,6 +451,7 @@ def refresh_peer_connections(task_context):
                     redis.set(key, multiaddr_info[key], ex=interval)
                 except Exception as e: #pylint: disable=broad-except
                     logger.warning('index.py | Error connection to %s, %s, %s', multiaddr_info[key], cnode_url, str(e))
+
 
 ######## CELERY TASKS ########
 @celery.task(name="update_discovery_provider", bind=True)
