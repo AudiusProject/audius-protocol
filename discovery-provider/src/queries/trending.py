@@ -1,15 +1,13 @@
 import logging # pylint: disable=C0302
 import requests
 import sqlalchemy
-from sqlalchemy import func, asc, desc
-from sqlalchemy.orm import aliased
+from sqlalchemy import func
 
 from flask import Blueprint, request
 from urllib.parse import urljoin
 
-from src import api_helpers, exceptions
+from src import api_helpers
 from src.models import User, Track, RepostType, Follow, SaveType
-from src.utils import helpers
 from src.utils.db_session import get_db
 from src.utils.config import shared_config
 from src.queries import response_name_constants
