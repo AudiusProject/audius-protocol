@@ -104,8 +104,8 @@ def health_check():
 
     verbose = request.args.get("verbose", type=str) == 'true'
     if verbose:
-        # DB check
-        health_results["db"] = _get_db_conn_state()
+        # DB connections check
+        health_results["db_connections"] = _get_db_conn_state()
 
     if health_results["block_difference"] > 20:
         return jsonify(health_results), 500
