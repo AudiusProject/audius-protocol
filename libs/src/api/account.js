@@ -23,11 +23,12 @@ class Account extends Base {
    */
   async login (email, password) {
     const phases = {
-      WALLET_FOUND: 'WALLET_FOUND',
-      USER_FOUND: 'USER_FOUND'
+      FIND_WALLET: 'FIND_WALLET',
+      FIND_USER: 'FIND_USER'
     }
     let phase = ''
 
+    phase = phases.FIND_WALLET
     if (!this.web3Manager.web3IsExternal()) {
       this.REQUIRES(Services.HEDGEHOG)
 
@@ -38,8 +39,8 @@ class Account extends Base {
         return { error: e.message, phase }
       }
     }
-    phase = phases.WALLET_FOUND
 
+    phase = phases.FIND_USER
     const users = await this.discoveryProvider.getUsers(1, 0, null, this.web3Manager.getWalletAddress())
     if (users && users[0]) {
       this.userStateManager.setCurrentUser(users[0])
@@ -47,7 +48,6 @@ class Account extends Base {
       if (creatorNodeEndpoint) {
         this.creatorNode.setEndpoint(CreatorNodeService.getPrimary(creatorNodeEndpoint))
       }
-      phase = phases.USER_FOUND
       return { user: users[0], error: false, phase }
     }
     return { error: 'No user found', phase }
