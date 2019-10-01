@@ -22,13 +22,25 @@ class Account extends Base {
    * @param {string} password
    */
   async login (email, password) {
+    const phases = {
+      FIND_WALLET: 'FIND_WALLET',
+      FIND_USER: 'FIND_USER'
+    }
+    let phase = ''
+
+    phase = phases.FIND_WALLET
     if (!this.web3Manager.web3IsExternal()) {
       this.REQUIRES(Services.HEDGEHOG)
 
-      const ownerWallet = await this.hedgehog.login(email, password)
-      await this.web3Manager.setOwnerWallet(ownerWallet)
+      try {
+        const ownerWallet = await this.hedgehog.login(email, password)
+        await this.web3Manager.setOwnerWallet(ownerWallet)
+      } catch (e) {
+        return { error: e.message, phase }
+      }
     }
 
+    phase = phases.FIND_USER
     const users = await this.discoveryProvider.getUsers(1, 0, null, this.web3Manager.getWalletAddress())
     if (users && users[0]) {
       this.userStateManager.setCurrentUser(users[0])
@@ -36,7 +48,9 @@ class Account extends Base {
       if (creatorNodeEndpoint) {
         this.creatorNode.setEndpoint(CreatorNodeService.getPrimary(creatorNodeEndpoint))
       }
+      return { user: users[0], error: false, phase }
     }
+    return { error: 'No user found', phase }
   }
 
   /**
@@ -54,7 +68,8 @@ class Account extends Base {
     metadata,
     isCreator = false,
     profilePictureFile = null,
-    coverPhotoFile = null
+    coverPhotoFile = null,
+    hasWallet = false
   ) {
     let userId
 
@@ -69,8 +84,8 @@ class Account extends Base {
     let phase = ''
     try {
       if (isCreator) {
-        // Create the user with the creator node.
         if (this.web3Manager.web3IsExternal()) {
+          // Creator and external web3 (e.g. MetaMask)
           this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
 
           phase = phases.ADD_CREATOR
@@ -79,11 +94,15 @@ class Account extends Base {
           phase = phases.CREATE_USER_RECORD
           await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
         } else {
+          // Creator and identity service web3
           this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE, Services.HEDGEHOG)
 
-          phase = phases.HEDGEHOG_SIGNUP
-          const ownerWallet = await this.hedgehog.signUp(email, password)
-          await this.web3Manager.setOwnerWallet(ownerWallet)
+          // If an owner wallet already exists, don't try to recreate it
+          if (!hasWallet) {
+            phase = phases.HEDGEHOG_SIGNUP
+            const ownerWallet = await this.hedgehog.signUp(email, password)
+            await this.web3Manager.setOwnerWallet(ownerWallet)
+          }
 
           phase = phases.UPLOAD_PROFILE_IMAGES
           metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
@@ -92,8 +111,8 @@ class Account extends Base {
           userId = await this.User.addCreator(metadata)
         }
       } else {
-        // The creator node is not needed.
         if (this.web3Manager.web3IsExternal()) {
+          // Non-creator and external web3 (e.g. MetaMask)
           this.REQUIRES(Services.IDENTITY_SERVICE)
 
           phase = phases.UPLOAD_PROFILE_IMAGES
@@ -105,11 +124,15 @@ class Account extends Base {
           phase = phases.CREATE_USER_RECORD
           await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
         } else {
+          // Non-creator and identity service web3
           this.REQUIRES(Services.IDENTITY_SERVICE, Services.HEDGEHOG)
 
-          phase = phases.HEDGEHOG_SIGNUP
-          const ownerWallet = await this.hedgehog.signUp(email, password)
-          await this.web3Manager.setOwnerWallet(ownerWallet)
+          // If an owner wallet already exists, don't try to recreate it
+          if (!hasWallet) {
+            phase = phases.HEDGEHOG_SIGNUP
+            const ownerWallet = await this.hedgehog.signUp(email, password)
+            await this.web3Manager.setOwnerWallet(ownerWallet)
+          }
 
           phase = phases.UPLOAD_PROFILE_IMAGES
           metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
