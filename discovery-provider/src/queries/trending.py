@@ -39,7 +39,11 @@ def trending(time):
             f'Error retrieving trending info - {identity_trending_endpoint}, {queryparams}'
         )
         raise e
+
     json_resp = resp.json()
+    if "error" in json_resp:
+        return api_helpers.error_response(json_resp["error"], 500)
+
     listen_counts = json_resp["listenCounts"]
     # Convert trackId to snakeCase
     for track_entry in listen_counts:
