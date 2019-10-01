@@ -52,7 +52,7 @@ module.exports = function (app) {
         active: activeConnections,
         idle: idleConnections
       },
-      maxConnections: maxConnections,
+      maxConnections: maxConnections
     }
 
     if (verbose) { resp.connectionInfo = connectionInfo }
@@ -77,7 +77,7 @@ module.exports = function (app) {
   app.get('/disk_check', handleResponse(async (req, res) => {
     const maxUsageBytes = parseInt(req.query.maxUsageBytes)
     const maxUsagePercent = parseInt(req.query.maxUsagePercent) || MAX_DISK_USAGE_PERCENT
-    
+
     const path = config.get('storagePath')
     const { available, total } = await disk.check(path)
     const usagePercent = Math.round((total - available) * 100 / total)
