@@ -1,7 +1,6 @@
 const { handleResponse, successResponse } = require('../apiHelpers')
 const models = require('../models')
 const versionInfo = require('../../.version.json')
-const config = require('../config')
 
 const IpfsRepoMaxUsagePercent = 90
 
@@ -36,7 +35,6 @@ module.exports = function (app) {
     const ipfs = req.app.get('ipfsAPI')
     const ipfsRepoStats = await ipfs.repo.stat()
     const usagePercent = (ipfsRepoStats.repoSize / ipfsRepoStats.storageMax) * 100
-    const ipfsPeerAddresses = config.get('ipfsPeerAddresses').split(',').filter(Boolean)
     const ipfsId = await ipfs.id()
 
     return successResponse({
@@ -53,7 +51,7 @@ module.exports = function (app) {
       },
       'ipfs': {
         'repo_usage_percent': `${usagePercent}% used of max ${IpfsRepoMaxUsagePercent}%`,
-        'peer_addresses': ipfsPeerAddresses,
+        'repo_stats': ipfsRepoStats,
         'id': ipfsId
       }
     })

@@ -1,8 +1,9 @@
 import logging
 import os
 import redis
+import sqlalchemy
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from web3 import HTTPProvider, Web3
 from src.models import Block
@@ -23,30 +24,60 @@ redis = redis.Redis.from_url(url=redis_url)
 
 disc_prov_version = helpers.get_discovery_provider_version()
 
-@bp.route("/version", methods=["GET"])
-def version():
-    return jsonify(disc_prov_version), 200
 
-def get_db_health_check_results(latest_blocknum, latest_blockhash):
+#### INTERNAL FUNCTIONS ####
+
+# Returns DB block state & diff
+def _get_db_block_state(latest_blocknum, latest_blockhash):
     db = get_db()
     with db.scoped_session() as session:
+        # Fetch latest block from DB
         db_block_query = session.query(Block).filter(Block.is_current == True).all()
         assert len(db_block_query) == 1, "Expected SINGLE row marked as current"
+
         health_results = {
             "web": {
                 "blocknumber": latest_blocknum,
                 "blockhash": latest_blockhash,
             },
             "db": helpers.model_to_dictionary(db_block_query[0]),
-            "healthy": True,
             "git": os.getenv("GIT_SHA"),
         }
-        logger.warning(health_results)
+
         block_difference = abs(
             health_results["web"]["blocknumber"] - health_results["db"]["number"]
         )
         health_results["block_difference"] = block_difference
+
         return health_results
+
+# Returns number of and info on open db connections
+def _get_db_conn_state():
+    db = get_db()
+    with db.scoped_session() as session:
+        # Query number of open DB connections
+        num_connections = session.execute(
+            sqlalchemy.text("select sum(numbackends) from pg_stat_database;")
+        ).fetchall()
+
+        if not (num_connections and num_connections[0][0]):
+            return jsonify('pg_stat_database query failed'), 500
+        num_connections = num_connections[0][0]
+
+        # Query connection info
+        connection_info = session.execute(
+            sqlalchemy.text("select datname, state, query, wait_event_type, wait_event from pg_stat_activity where state is not null;")
+        ).fetchall()
+        connection_info = [dict(row) for row in connection_info]
+
+    return {"open_connections": num_connections, "connection_info": connection_info}
+
+
+#### ROUTES ####
+
+@bp.route("/version", methods=["GET"])
+def version():
+    return jsonify(disc_prov_version), 200
 
 # Consume cached latest block from redis
 @bp.route("/health_check", methods=["GET"])
@@ -69,7 +100,12 @@ def health_check():
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash
 
-    health_results = get_db_health_check_results(latest_block_num, latest_block_hash)
+    health_results = _get_db_block_state(latest_block_num, latest_block_hash)
+
+    verbose = request.args.get("verbose", type=str) == 'true'
+    if verbose:
+        # DB check
+        health_results["db"] = _get_db_conn_state()
 
     if health_results["block_difference"] > 20:
         return jsonify(health_results), 500
@@ -82,7 +118,7 @@ def block_check():
     latest_block = web3.eth.getBlock("latest", True)
     latest_block_num = latest_block.number
     latest_block_hash = latest_block.hash.hex()
-    health_results = get_db_health_check_results(latest_block_num, latest_block_hash)
+    health_results = _get_db_block_state(latest_block_num, latest_block_hash)
 
     if health_results["block_difference"] > 20:
         return jsonify(health_results), 500
