@@ -230,7 +230,7 @@ const trackFileUpload = multer({
   fileFilter: function (req, file, cb) {
     // the function should call `cb` with a boolean to indicate if the file should be accepted
     if (ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(getFileExtension(file.originalname).slice(1)) && AUDIO_MIME_TYPE_REGEX.test(file.mimetype)) {
-      req.logger.info(`Filetype: ${getFileExtension(file.originalname).slice(1)}`)
+      req.logger.info(`Filetype : ${getFileExtension(file.originalname).slice(1)}`)
       req.logger.info(`Mimetype: ${file.mimetype}`)
       cb(null, true)
     } else {
@@ -241,7 +241,7 @@ const trackFileUpload = multer({
 })
 
 function getFileExtension (fileName) {
-  return (fileName.lastIndexOf('.') >= 0) ? fileName.substr(fileName.lastIndexOf('.')) : ''
+  return (fileName.lastIndexOf('.') >= 0) ? fileName.substr(fileName.lastIndexOf('.')).toLowerCase() : ''
 }
 
 module.exports = { saveFileFromBuffer, saveFileToIPFSFromFS, saveFileForMultihash, removeTrackFolder, upload, trackFileUpload }
