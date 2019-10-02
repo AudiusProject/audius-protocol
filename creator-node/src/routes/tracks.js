@@ -21,8 +21,6 @@ module.exports = function (app) {
     const routeTimeStart = Date.now()
     let codeBlockTimeStart = Date.now()
 
-    req.logger.error(req)
-
     // create and save track file segments to disk
     let segmentFilePaths
     try {
