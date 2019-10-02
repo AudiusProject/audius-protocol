@@ -33,7 +33,8 @@ def get_users():
     with db.scoped_session() as session:
         # Create initial query
         base_query = session.query(User)
-        base_query = base_query.filter(User.is_current == True, User.is_ready == True)
+        # Don't return the user if they have no wallet or handle (user creation did not finish properly on chain)
+        base_query = base_query.filter(User.is_current == True, User.wallet != None, User.handle != None)
 
         # Process filters
         if "is_creator" in request.args:
