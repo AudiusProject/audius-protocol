@@ -3,7 +3,7 @@ const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
 
 const ffmpeg = require('../ffmpeg')
-const ffprobeExec = require('../ffprobe-exec')
+const { getSegmentsDuration } = require('../segmentDuration')
 const models = require('../models')
 const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
@@ -53,7 +53,11 @@ module.exports = function (app) {
 
       codeBlockTimeStart = Date.now()
       let fileSegmentPath = path.join(req.fileDir, 'segments')
-      segmentDurations = await ffprobeExec.getSegmentsDuration(req, fileSegmentPath)
+      segmentDurations = await getSegmentsDuration(
+        req,
+        fileSegmentPath,
+        req.fileName,
+        req.file.destination)
       req.logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
       // Commit transaction
