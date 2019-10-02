@@ -21,6 +21,8 @@ module.exports = function (app) {
     const routeTimeStart = Date.now()
     let codeBlockTimeStart = Date.now()
 
+    req.logger.error(req)
+
     // create and save track file segments to disk
     let segmentFilePaths
     try {
@@ -53,7 +55,11 @@ module.exports = function (app) {
 
       codeBlockTimeStart = Date.now()
       let fileSegmentPath = path.join(req.fileDir, 'segments')
-      segmentDurations = await ffprobeExec.getSegmentsDuration(req, fileSegmentPath)
+      segmentDurations = await ffprobeExec.getSegmentsDuration(
+        req,
+        fileSegmentPath,
+        req.fileName,
+        req.file.destination)
       req.logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
       // Commit transaction
