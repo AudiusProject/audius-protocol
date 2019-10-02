@@ -129,7 +129,9 @@ module.exports = function (app) {
         req.logger.info(`Connection to ${req.query.caller_ipfs_id}`)
         await ipfs.swarm.connect(req.query.caller_ipfs_id)
       } catch (e) {
-        req.logger.error(e)
+        if (!e.message.includes('dial to self')) {
+          req.logger.error(e)
+        }
       }
     }
     return successResponse(ipfsIDObj)
