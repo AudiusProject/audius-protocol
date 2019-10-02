@@ -140,11 +140,17 @@ class Users extends Base {
     metadata.wallet = this.web3Manager.getWalletAddress()
     metadata.isCreator = false
 
-    const result = await this.contracts.UserFactoryClient.addUser(metadata.handle)
-    await this._addUserOperations(result.userId, metadata)
+    let userId
+    const currentUser = this.userStateManager.getCurrentUser()
+    if (currentUser && currentUser.handle) {
+      userId = currentUser.user_id
+    } else {
+      userId = (await this.contracts.UserFactoryClient.addUser(metadata.handle)).userId
+    }
+    await this._addUserOperations(userId, metadata)
 
     this.userStateManager.setCurrentUser({ ...metadata })
-    return result.userId
+    return userId
   }
 
   /**
