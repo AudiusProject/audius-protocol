@@ -92,37 +92,62 @@ class Tracks extends Base {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(trackFile)
 
-    if (coverArtFile) this.FILE_IS_VALID(coverArtFile)
-
-    this.IS_OBJECT(metadata)
-
-    const owner = this.userStateManager.getCurrentUser()
-    if (!owner.user_id) {
-      throw new Error('No users loaded for this wallet')
+    const phases = {
+      GETTING_USER: 'GETTING_USER',
+      UPLOADING_TRACK_CONTENT: 'UPLOADING_TRACK_CONTENT',
+      ADDING_TRACK: 'ADDING_TRACK',
+      ASSOCIATING_TRACK: 'ASSOCIATING_TRACK'
     }
 
-    metadata.owner_id = owner.user_id
-    this._validateTrackMetadata(metadata)
+    let phase = phases.GETTING_USER
 
-    // Upload metadata
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadTrackContent(
-      trackFile,
-      coverArtFile,
-      metadata,
-      onProgress
-    )
-    // Write metadata to chain
-    const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
-    const { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
-      owner.user_id,
-      multihashDecoded.digest,
-      multihashDecoded.hashFn,
-      multihashDecoded.size
-    )
+    try {
+      if (coverArtFile) this.FILE_IS_VALID(coverArtFile)
 
-    // Associate the track id with the file metadata and block number
-    await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
-    return trackId
+      this.IS_OBJECT(metadata)
+
+      const owner = this.userStateManager.getCurrentUser()
+      if (!owner.user_id) {
+        return {
+          error: 'No users loaded for this wallet',
+          phase
+        }
+      }
+
+      metadata.owner_id = owner.user_id
+      this._validateTrackMetadata(metadata)
+
+      phase = phases.UPLOADING_TRACK_CONTENT
+
+      // Upload metadata
+      const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadTrackContent(
+        trackFile,
+        coverArtFile,
+        metadata,
+        onProgress
+      )
+
+      phase = phases.ADDING_TRACK
+
+      // Write metadata to chain
+      const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
+      const { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
+        owner.user_id,
+        multihashDecoded.digest,
+        multihashDecoded.hashFn,
+        multihashDecoded.size
+      )
+
+      phase = phases.ASSOCIATING_TRACK
+      // Associate the track id with the file metadata and block number
+      await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
+      return { trackId, error: false }
+    } catch (e) {
+      return {
+        error: e.message,
+        phase
+      }
+    }
   }
 
   /**
