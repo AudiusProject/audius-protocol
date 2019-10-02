@@ -1,7 +1,5 @@
-const ffprobeStatic = require('ffprobe-static')
 const path = require('path')
 const fs = require('fs')
-var exec = require('child_process').exec
 
 const SEGMENT_REGEXP = /(segment[0-9]*.ts)/
 
