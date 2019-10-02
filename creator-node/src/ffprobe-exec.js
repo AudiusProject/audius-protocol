@@ -14,7 +14,7 @@ async function getSegmentsDuration (req, segmentPath, filename, filedir) {
       let manifestContents = fs.readFileSync(manifestPath)
       let splitManifest = manifestContents.toString().split('\n')
 
-      let newSegmentDurations = {}
+      let segmentDurations = {}
       for (let i = 0; i < splitManifest.length; i += 1) {
         let matchedResults = splitManifest[i].match(SEGMENT_REGEXP)
         if (matchedResults === null) {
@@ -24,9 +24,9 @@ async function getSegmentsDuration (req, segmentPath, filename, filedir) {
         let durationString = splitManifest[i - 1]
         let durationSplit = durationString.split(':')
         let duration = parseFloat(durationSplit[1])
-        newSegmentDurations[segmentName] = duration
+        segmentDurations[segmentName] = duration
       }
-      resolve(newSegmentDurations)
+      resolve(segmentDurations)
     } catch (e) {
       reject(new Error(`Failed - ${e}`))
     }
