@@ -51,7 +51,7 @@ class Tracks extends Base {
    */
   async getTrendingTracks (time = null, idsArray = null, limit = null, offset = null) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
-    return this.identityService.getTrendingTracks(time, idsArray, limit, offset)
+    return this.discoveryProvider.getTrendingTracks(time, idsArray, limit, offset)
   }
 
   /**

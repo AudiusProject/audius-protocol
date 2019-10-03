@@ -149,6 +149,50 @@ class DiscoveryProvider {
   }
 
   /**
+   * Gets tracks trending on Audius.
+   * @param {string} timeFrame one of day, week, month, or year
+   * @param {?Array<number>} idsArray track ids
+   * @param {?number} limit
+   * @param {?number} offset
+   * @returns {{listenCounts: Array<{trackId:number, listens:number}>}}
+   */
+  async getTrendingTracks (timeFrame = null, idsArray = null, limit = null, offset = null) {
+    let queryUrl = '/trending/'
+
+    if (timeFrame != null) {
+      switch (timeFrame) {
+        case 'day':
+        case 'week':
+        case 'month':
+        case 'year':
+          break
+        default:
+          throw new Error('Invalid timeFrame value provided')
+      }
+      queryUrl += timeFrame
+    }
+
+    let queryParams = {}
+    if (idsArray !== null) {
+      queryParams['id'] = idsArray
+    }
+
+    if (limit !== null) {
+      queryParams['limit'] = limit
+    }
+
+    if (offset !== null) {
+      queryParams['offset'] = offset
+    }
+
+    return this._makeRequest({
+      endpoint: queryUrl,
+      method: 'get',
+      queryParams
+    })
+  }
+
+  /**
    * get full playlist objects, including tracks, for passed in array of playlistId
    * @param {Array} playlistId list of playlist ids
    * @param {number} targetUserId the user whose playlists we're trying to get
