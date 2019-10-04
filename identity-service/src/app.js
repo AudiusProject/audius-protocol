@@ -101,8 +101,8 @@ function _createRateLimitsForListenCounts (interval, timeInSeconds) {
     }),
     max: config.get(`rateLimitingListensPerTrackPer${interval}`), // max requests per interval
     keyGenerator: function (req) {
-      const trackId = parseInt(req.params.id)
-      const userId = parseInt(req.body.userId)
+      const trackId = req.params.id
+      const userId = req.body.userId
       return `${trackId}:::${userId}`
     }
   })
@@ -115,7 +115,7 @@ function _createRateLimitsForListenCounts (interval, timeInSeconds) {
     }),
     max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
     keyGenerator: function (req) {
-      const trackId = parseInt(req.params.id)
+      const trackId = req.params.id
       return `${req.ip}:::${trackId}`
     }
   })
