@@ -52,8 +52,20 @@ def trending(time):
 
     db = get_db()
     with db.scoped_session() as session:
+        # Filter tracks to not-deleted ones so trending order is preserved
+        not_deleted_track_ids = (
+            session.query(Track.track_id)
+            .filter(
+                Track.track_id.in_(track_ids),
+                Track.is_current == True,
+                Track.is_delete == False
+            )
+            .all()
+        )
+        not_deleted_track_ids = set([record[0] for record in not_deleted_track_ids])
+
         # Query repost counts
-        repost_counts = get_repost_counts(session, False, True, track_ids, None)
+        repost_counts = get_repost_counts(session, False, True, not_deleted_track_ids, None)
         track_repost_counts = {
             repost_item_id: repost_count
             for (repost_item_id, repost_count, repost_type) in repost_counts
@@ -67,7 +79,7 @@ def trending(time):
             .filter
             (
                 Track.is_current == True,
-                Track.track_id.in_(track_ids)
+                Track.track_id.in_(not_deleted_track_ids)
             )
             .all()
         )
@@ -94,14 +106,19 @@ def trending(time):
         follower_count_dict = \
                 {user_id: follower_count for (user_id, follower_count) in follower_counts}
 
-        save_counts = get_save_counts(session, False, True, track_ids, None)
+        save_counts = get_save_counts(session, False, True, not_deleted_track_ids, None)
         track_save_counts = {
             save_item_id: save_count
             for (save_item_id, save_count, save_type) in save_counts
             if save_type == SaveType.track
         }
 
+        trending = []
         for track_entry in listen_counts:
+            # Skip over deleted tracks
+            if (track_entry[response_name_constants.track_id] not in not_deleted_track_ids):
+                continue
+
             # Populate repost counts
             if track_entry[response_name_constants.track_id] in track_repost_counts:
                 track_entry[response_name_constants.repost_count] = \
@@ -124,7 +141,9 @@ def trending(time):
             track_entry[response_name_constants.track_owner_id] = owner_id
             track_entry[response_name_constants.track_owner_follower_count] = owner_follow_count
 
+            trending.append(track_entry)
+
     final_resp = {}
-    final_resp['listen_counts'] = listen_counts
+    final_resp['listen_counts'] = trending
     return api_helpers.success_response(final_resp)
 
