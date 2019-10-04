@@ -7,8 +7,6 @@ import libs from '../../libs'
 import { MetaTagFormat } from './types'
 
 const USER_NODE_IPFS_GATEWAY = 'https://usermetadata.audius.co/ipfs/'
-const LEGACY_USER_NODE_IPFS_GATEWAY = 'https://creatornode.audius.co/ipfs/'
-const LEGACY_USER_ID_MAX = 284
 const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/preview-image.jpg'
 
 interface Context {
@@ -48,9 +46,7 @@ const getUserByHandle = async (handle: string): Promise<any> => {
 const formatGateway = (creatorNodeEndpoint: string, userId: number): string =>
   creatorNodeEndpoint
     ? `${creatorNodeEndpoint.split(',')[0]}/ipfs/`
-    : userId > LEGACY_USER_ID_MAX
-      ? USER_NODE_IPFS_GATEWAY
-      : LEGACY_USER_NODE_IPFS_GATEWAY
+    : USER_NODE_IPFS_GATEWAY
 
 const getImageUrl = (cid: string, gateway: string | null): string => {
   if (!cid) return DEFAULT_IMAGE_URL
