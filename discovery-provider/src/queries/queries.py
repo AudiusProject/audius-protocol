@@ -656,7 +656,7 @@ def get_repost_feed_for_user(user_id):
 # followee = user that is followed; follower = user that follows
 @bp.route("/users/intersection/follow/<int:followee_user_id>/<int:follower_user_id>", methods=("GET",))
 def get_follow_intersection_users(followee_user_id, follower_user_id):
-    user_results = []
+    users = []
     db = get_db()
     with db.scoped_session() as session:
         query = (
@@ -682,10 +682,22 @@ def get_follow_intersection_users(followee_user_id, follower_user_id):
                 )
             )
         )
-        user_results = paginate_query(query).all()
-        user_results = helpers.query_result_to_list(user_results)
+        users = paginate_query(query).all()
+        users = helpers.query_result_to_list(users)
+        user_ids = [user[response_name_constants.user_id] for user in users]
 
-    return api_helpers.success_response(user_results)
+        current_user_id = get_current_user_id(required=False)
+
+        # bundle peripheral info into user results
+        users = populate_user_metadata(session, user_ids, users, current_user_id)
+
+        # order by follower_count desc
+        users.sort(
+            key=lambda user: user[response_name_constants.follower_count],
+            reverse=True
+        )
+
+    return api_helpers.success_response(users)
 
 
 # get intersection of users that have reposted repostTrackId and users that are followed by followerUserId
@@ -693,7 +705,7 @@ def get_follow_intersection_users(followee_user_id, follower_user_id):
 # repostTrackId = track that is reposted; repostUserId = user that reposted track
 @bp.route("/users/intersection/repost/track/<int:repost_track_id>/<int:follower_user_id>", methods=("GET",))
 def get_track_repost_intersection_users(repost_track_id, follower_user_id):
-    user_results = []
+    users = []
     db = get_db()
     with db.scoped_session() as session:
         # ensure track_id exists
@@ -728,10 +740,10 @@ def get_track_repost_intersection_users(repost_track_id, follower_user_id):
                 )
             )
         )
-        user_results = paginate_query(query).all()
-        user_results = helpers.query_result_to_list(user_results)
+        users = paginate_query(query).all()
+        users = helpers.query_result_to_list(users)
 
-    return api_helpers.success_response(user_results)
+    return api_helpers.success_response(users)
 
 
 # get intersection of users that have reposted repostPlaylistId and users that are followed by followerUserId
@@ -739,7 +751,7 @@ def get_track_repost_intersection_users(repost_track_id, follower_user_id):
 # repostPlaylistId = playlist that is reposted; repostUserId = user that reposted playlist
 @bp.route("/users/intersection/repost/playlist/<int:repost_playlist_id>/<int:follower_user_id>", methods=("GET",))
 def get_playlist_repost_intersection_users(repost_playlist_id, follower_user_id):
-    user_results = []
+    users = []
     db = get_db()
     with db.scoped_session() as session:
         # ensure playlist_id exists
@@ -774,10 +786,10 @@ def get_playlist_repost_intersection_users(repost_playlist_id, follower_user_id)
                 )
             )
         )
-        user_results = paginate_query(query).all()
-        user_results = helpers.query_result_to_list(user_results)
+        users = paginate_query(query).all()
+        users = helpers.query_result_to_list(users)
 
-    return api_helpers.success_response(user_results)
+    return api_helpers.success_response(users)
 
 
 # get users that follow followeeUserId, sorted by follower count descending
