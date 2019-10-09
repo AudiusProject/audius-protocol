@@ -1,66 +1,66 @@
 const Utils = require('../../utils')
+const ContractClient = require('../contracts/ContractClient')
 
-class StakingProxyClient {
+class StakingProxyClient extends ContractClient {
   constructor (ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress, audiusTokenClient) {
-    this.ethWeb3Manager = ethWeb3Manager
-    this.contractABI = contractABI
-    this.contractRegistryKey = contractRegistryKey
-    this.getRegistryAddress = getRegistryAddress
+    super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress)
     this.audiusTokenClient = audiusTokenClient
-    this.web3 = this.ethWeb3Manager.getWeb3()
-  }
-
-  async init () {
-    this.contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
-    this.StakingProxy = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
   }
 
   async getCurrentVersion (serviceType) {
-    let hexVersion = await this.StakingProxy.methods.getCurrentVersion(Utils.utf8ToHex(serviceType)).call()
+    const method = await this.getMethod('getCurrentVersion', Utils.utf8ToHex(serviceType))
+    let hexVersion = await method.call()
     return Utils.hexToUtf8(hexVersion)
   }
 
   async token () {
-    return this.StakingProxy.methods.token().call()
+    const method = await this.getMethod('token')
+    return method.call()
   }
 
   async totalStaked () {
-    return parseInt(await this.StakingProxy.methods.totalStaked().call(), 10)
+    const method = await this.getMethod('totalStaked')
+    return parseInt(await method.call(), 10)
   }
 
   async getMinStakeAmount () {
-    return parseInt(await this.StakingProxy.methods.getMinStakeAmount().call(), 10)
+    const method = await this.getMethod('getMinStakeAmount')
+    return parseInt(await method.call(), 10)
   }
 
   async getMaxStakeAmount () {
-    return parseInt(await this.StakingProxy.methods.getMaxStakeAmount().call(), 10)
+    const method = await this.getMethod('getMaxStakeAmount')
+    return parseInt(await method.call(), 10)
   }
 
   async supportsHistory () {
-    return this.StakingProxy.methods.supportsHistory().call()
+    const method = await this.getMethod('supportsHistory')
+    return method.call()
   }
 
   async totalStakedFor (account) {
-    return parseInt(await this.StakingProxy.methods.totalStakedFor(account).call(), 10)
+    const method = await this.getMethod('totalStakedFor', account)
+    return parseInt(await method.call(), 10)
   }
 
   /**
    * Funds the treasury that service providers claim from
    */
   async fundNewClaim (amount, privateKey = null) {
-    let tokenApproveTx = await this.audiusTokenClient.approve(
-      this.contractAddress,
+    const contractAddress = await this.getAddress()
+    const tokenApproveTx = await this.audiusTokenClient.approve(
+      contractAddress,
       amount,
       privateKey)
-    let contractMethod = this.StakingProxy.methods.fundNewClaim(amount)
+    const method = await this.getMethod('fundNewClaim', amount)
     let tx
     if (privateKey === null) {
-      tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
+      tx = await this.web3Manager.sendTransaction(method, 1000000)
     } else {
-      tx = await this.ethWeb3Manager.sendTransaction(
-        contractMethod,
+      tx = await this.web3Manager.sendTransaction(
+        method,
         1000000,
-        this.contractAddress,
+        contractAddress,
         privateKey)
     }
     return {
@@ -70,12 +70,14 @@ class StakingProxyClient {
   }
 
   async getLastClaimedBlockForUser () {
-    let tx = await this.StakingProxy.methods.lastClaimedFor(this.ethWeb3Manager.getWalletAddress()).call()
+    const method = await this.getMethod('lastClaimedFor', this.web3Manager.getWalletAddress())
+    let tx = await method.call()
     return tx
   }
 
   async getClaimInfo () {
-    let tx = await this.StakingProxy.methods.getClaimInfo().call()
+    const method = await this.getMethod('getClaimInfo')
+    let tx = await method.call()
     return {
       txReceipt: tx,
       claimableAmount: tx[0] / Math.pow(10, 18),
@@ -84,22 +86,22 @@ class StakingProxyClient {
   }
 
   async makeClaim () {
-    let contractMethod = this.StakingProxy.methods.makeClaim()
-    let tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
+    const method = await this.getMethod('makeClaim')
+    let tx = await this.web3Manager.sendTransaction(method, 1000000)
     return {
       txReceipt: tx
     }
   }
 
   async setMinStakeAmount (amountInWei) {
-    let contractMethod = this.StakingProxy.methods.setMinStakeAmount(amountInWei)
-    let tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
+    const method = await this.getMethod('setMinStakeAmount', amountInWei)
+    let tx = await this.web3Manager.sendTransaction(method, 1000000)
     return { txReceipt: tx }
   }
 
   async setMaxStakeAmount (amountInWei) {
-    let contractMethod = this.StakingProxy.methods.setMaxStakeAmount(amountInWei)
-    let tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
+    const method = await this.getMethod('setMaxStakeAmount', amountInWei)
+    let tx = await this.web3Manager.sendTransaction(method, 1000000)
     return { txReceipt: tx }
   }
 }

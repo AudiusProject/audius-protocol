@@ -47,33 +47,25 @@ class EthContracts {
     this.tokenContractAddress = tokenContractAddress
     this.registryAddress = registryAddress
 
+    this.RegistryClient = new RegistryClient(
+      this.ethWeb3Manager,
+      RegistryABI,
+      this.registryAddress
+    )
+    this.getRegistryAddressForContract = this.getRegistryAddressForContract.bind(this)
+
     this.AudiusTokenClient = new AudiusTokenClient(
       this.ethWeb3Manager,
       AudiusTokenABI,
       this.tokenContractAddress
     )
 
-    this.clients = []
-    this.getRegistryAddressForContract = this.getRegistryAddressForContract.bind(this)
-    this.isServer = isServer
-  }
-
-  async init () {
-    if (!this.ethWeb3Manager || !this.tokenContractAddress || !this.registryAddress) throw new Error('Failed to initialize EthContracts')
-
-    this.RegistryClient = new RegistryClient(
-      this.ethWeb3Manager,
-      RegistryABI,
-      this.registryAddress
-    )
-
     this.VersioningFactoryClient = new VersioningFactoryClient(
       this.ethWeb3Manager,
       VersioningFactoryABI,
       VersioningFactoryRegistryKey,
-      this.getRegistryAddressForContract // get contract address from registry
+      this.getRegistryAddressForContract
     )
-    this.clients.push(this.VersioningFactoryClient)
 
     this.StakingProxyClient = new StakingProxyClient(
       this.ethWeb3Manager,
@@ -82,7 +74,6 @@ class EthContracts {
       this.getRegistryAddressForContract,
       this.AudiusTokenClient
     )
-    this.clients.push(this.StakingProxyClient)
 
     this.ServiceProviderFactoryClient = new ServiceProviderFactoryClient(
       this.ethWeb3Manager,
@@ -92,9 +83,12 @@ class EthContracts {
       this.AudiusTokenClient,
       this.StakingProxyClient
     )
-    this.clients.push(this.ServiceProviderFactoryClient)
 
-    await Promise.all(this.clients.map(async c => c.init()))
+    this.isServer = isServer
+  }
+
+  async init () {
+    if (!this.ethWeb3Manager || !this.tokenContractAddress || !this.registryAddress) throw new Error('Failed to initialize EthContracts')
 
     this.expectedServiceVersions = await this.getExpectedServiceVersions()
   }
@@ -115,15 +109,13 @@ class EthContracts {
    * Determine the latest version for deployed services such as discovery provider and cache
    */
   async getExpectedServiceVersions () {
-    let expectedVersions = {}
-    for (const serviceType of serviceTypeList) {
-      try {
-        let version = await this.VersioningFactoryClient.getCurrentVersion(serviceType)
-        expectedVersions[serviceType] = version
-      } catch (e) {
-        console.log(`Error retrieving ${serviceType}`)
-      }
-    }
+    const versions = await Promise.all(
+      serviceTypeList.map(serviceType => this.VersioningFactoryClient.getCurrentVersion(serviceType))
+    )
+    const expectedVersions = serviceTypeList.reduce((map, serviceType, i) => {
+      map[serviceType] = versions[i]
+      return map
+    }, {})
     return expectedVersions
   }
 

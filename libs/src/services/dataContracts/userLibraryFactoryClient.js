@@ -1,33 +1,21 @@
+const ContractClient = require('../contracts/ContractClient')
 const signatureSchemas = require('../../../data-contracts/signatureSchemas')
 
-class UserLibraryFactoryClient {
-  constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress) {
-    this.web3Manager = web3Manager
-    this.contractABI = contractABI
-    this.contractRegistryKey = contractRegistryKey
-    this.getRegistryAddress = getRegistryAddress
-
-    this.web3 = this.web3Manager.getWeb3()
-  }
-
-  async init () {
-    this.contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
-    this.UserLibraryFactory = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
-  }
-
+class UserLibraryFactoryClient extends ContractClient {
   /* ------- SETTERS ------- */
 
   async addTrackSave (userId, trackId) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
+    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getTrackSaveRequestData(
       chainId,
-      this.contractAddress,
+      contractAddress,
       userId,
       trackId,
       nonce)
     const sig = await this.web3Manager.signTypedData(signatureData)
-    const contractMethod = this.UserLibraryFactory.methods.addTrackSave(
+    const contractMethod = await this.getMethod('addTrackSave',
       userId,
       trackId,
       nonce,
@@ -35,21 +23,22 @@ class UserLibraryFactoryClient {
     return this.web3Manager.sendTransaction(
       contractMethod,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
   }
 
   async deleteTrackSave (userId, trackId) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
+    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getDeleteTrackSaveRequestData(
       chainId,
-      this.contractAddress,
+      contractAddress,
       userId,
       trackId,
       nonce)
     const sig = await this.web3Manager.signTypedData(signatureData)
-    const contractMethod = this.UserLibraryFactory.methods.deleteTrackSave(
+    const contractMethod = await this.getMethod('deleteTrackSave',
       userId,
       trackId,
       nonce,
@@ -57,21 +46,22 @@ class UserLibraryFactoryClient {
     return this.web3Manager.sendTransaction(
       contractMethod,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
   }
 
   async addPlaylistSave (userId, playlistId) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
+    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getPlaylistSaveRequestData(
       chainId,
-      this.contractAddress,
+      contractAddress,
       userId,
       playlistId,
       nonce)
     const sig = await this.web3Manager.signTypedData(signatureData)
-    const contractMethod = this.UserLibraryFactory.methods.addPlaylistSave(
+    const contractMethod = await this.getMethod('addPlaylistSave',
       userId,
       playlistId,
       nonce,
@@ -79,21 +69,22 @@ class UserLibraryFactoryClient {
     return this.web3Manager.sendTransaction(
       contractMethod,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
   }
 
   async deletePlaylistSave (userId, playlistId) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
+    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getDeletePlaylistSaveRequestData(
       chainId,
-      this.contractAddress,
+      contractAddress,
       userId,
       playlistId,
       nonce)
     const sig = await this.web3Manager.signTypedData(signatureData)
-    const contractMethod = this.UserLibraryFactory.methods.deletePlaylistSave(
+    const contractMethod = await this.getMethod('deletePlaylistSave',
       userId,
       playlistId,
       nonce,
@@ -101,7 +92,7 @@ class UserLibraryFactoryClient {
     return this.web3Manager.sendTransaction(
       contractMethod,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
   }
 }

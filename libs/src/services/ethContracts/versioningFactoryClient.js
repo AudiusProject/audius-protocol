@@ -1,45 +1,37 @@
 const Utils = require('../../utils')
+const ContractClient = require('../contracts/ContractClient')
 const DEFAULT_GAS_AMOUNT = 200000
 
-class VersioningFactoryClient {
-  constructor (ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress) {
-    this.ethWeb3Manager = ethWeb3Manager
-    this.contractABI = contractABI
-    this.contractRegistryKey = contractRegistryKey
-    this.getRegistryAddress = getRegistryAddress
-    this.web3 = this.ethWeb3Manager.getWeb3()
-  }
-
-  async init () {
-    this.contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
-    this.VersioningFactory = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
-  }
-
+class VersioningFactoryClient extends ContractClient {
   async setServiceVersion (serviceType, serviceVersion, privateKey = null) {
-    let contractMethod = this.VersioningFactory.methods.setServiceVersion(
+    const method = await this.getMethod('setServiceVersion',
       Utils.utf8ToHex(serviceType),
       Utils.utf8ToHex(serviceVersion))
+    const contractAddress = await this.getAddress()
 
-    return this.ethWeb3Manager.sendTransaction(
-      contractMethod,
+    return this.web3Manager.sendTransaction(
+      method,
       DEFAULT_GAS_AMOUNT,
-      this.contractAddress,
+      contractAddress,
       privateKey)
   }
 
   async getCurrentVersion (serviceType) {
-    let hexVersion = await this.VersioningFactory.methods.getCurrentVersion(Utils.utf8ToHex(serviceType)).call()
+    const method = await this.getMethod('getCurrentVersion', Utils.utf8ToHex(serviceType))
+    let hexVersion = await method.call()
     return Utils.hexToUtf8(hexVersion)
   }
 
   async getVersion (serviceType, serviceTypeIndex) {
     let serviceTypeBytes32 = Utils.utf8ToHex(serviceType)
-    let version = await this.VersioningFactory.methods.getVersion(serviceTypeBytes32, serviceTypeIndex).call()
+    const method = await this.getMethod('getVersion', serviceTypeBytes32, serviceTypeIndex)
+    let version = await method.call()
     return Utils.hexToUtf8(version)
   }
 
   async getNumberOfVersions (serviceType) {
-    return this.VersioningFactory.methods.getNumberOfVersions(Utils.utf8ToHex(serviceType)).call()
+    const method = await this.getMethod('getNumberOfVersions', Utils.utf8ToHex(serviceType))
+    return method.call()
   }
 }
 

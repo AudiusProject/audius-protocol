@@ -1,27 +1,15 @@
+const ContractClient = require('../contracts/ContractClient')
 const signatureSchemas = require('../../../data-contracts/signatureSchemas')
 
-class SocialFeatureFactoryClient {
-  constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress) {
-    this.web3Manager = web3Manager
-    this.contractABI = contractABI
-    this.contractRegistryKey = contractRegistryKey
-    this.getRegistryAddress = getRegistryAddress
-
-    this.web3 = this.web3Manager.getWeb3()
-  }
-
-  async init () {
-    this.contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
-    this.SocialFeatureFactory = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
-  }
-
+class SocialFeatureFactoryClient extends ContractClient {
   async addTrackRepost (userId, trackId) {
     // generate new track repost request
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
+    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getAddTrackRepostRequestData(
       chainId,
-      this.contractAddress,
+      contractAddress,
       userId,
       trackId,
       nonce
@@ -29,16 +17,16 @@ class SocialFeatureFactoryClient {
     const sig = await this.web3Manager.signTypedData(signatureData)
 
     // add new trackRepost to chain
-    const contractMethod = this.SocialFeatureFactory.methods.addTrackRepost(
+    const method = await this.getMethod('addTrackRepost',
       userId,
       trackId,
       nonce,
       sig
     )
     return this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
   }
 
@@ -46,9 +34,10 @@ class SocialFeatureFactoryClient {
     // generate new delete track repost request
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
+    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getDeleteTrackRepostRequestData(
       chainId,
-      this.contractAddress,
+      contractAddress,
       userId,
       trackId,
       nonce
@@ -56,16 +45,16 @@ class SocialFeatureFactoryClient {
     const sig = await this.web3Manager.signTypedData(signatureData)
 
     // delete trackRepost from chain
-    const contractMethod = this.SocialFeatureFactory.methods.deleteTrackRepost(
+    const method = await this.getMethod('deleteTrackRepost',
       userId,
       trackId,
       nonce,
       sig
     )
     return this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
   }
 
@@ -73,9 +62,10 @@ class SocialFeatureFactoryClient {
     // generate new playlist repost request
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
+    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getAddPlaylistRepostRequestData(
       chainId,
-      this.contractAddress,
+      contractAddress,
       userId,
       playlistId,
       nonce
@@ -83,16 +73,16 @@ class SocialFeatureFactoryClient {
     const sig = await this.web3Manager.signTypedData(signatureData)
 
     // add new playlistRepost to chain
-    const contractMethod = this.SocialFeatureFactory.methods.addPlaylistRepost(
+    const method = await this.getMethod('addPlaylistRepost',
       userId,
       playlistId,
       nonce,
       sig
     )
     return this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
   }
 
@@ -100,9 +90,10 @@ class SocialFeatureFactoryClient {
     // generate new delete playlist repost request
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
+    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getDeletePlaylistRepostRequestData(
       chainId,
-      this.contractAddress,
+      contractAddress,
       userId,
       playlistId,
       nonce
@@ -110,16 +101,16 @@ class SocialFeatureFactoryClient {
     const sig = await this.web3Manager.signTypedData(signatureData)
 
     // delete playlistRepost from chain
-    const contractMethod = this.SocialFeatureFactory.methods.deletePlaylistRepost(
+    const method = await this.getMethod('deletePlaylistRepost',
       userId,
       playlistId,
       nonce,
       sig
     )
     return this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
   }
 
@@ -127,9 +118,10 @@ class SocialFeatureFactoryClient {
     // generate new UserFollow request
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
+    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getUserFollowRequestData(
       chainId,
-      this.contractAddress,
+      contractAddress,
       followerUserId,
       followeeUserId,
       nonce
@@ -137,16 +129,16 @@ class SocialFeatureFactoryClient {
     const sig = await this.web3Manager.signTypedData(signatureData)
 
     // add new UserFollow to chain
-    const contractMethod = this.SocialFeatureFactory.methods.addUserFollow(
+    const method = await this.getMethod('addUserFollow',
       followerUserId,
       followeeUserId,
       nonce,
       sig
     )
     return this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
   }
 
@@ -154,9 +146,10 @@ class SocialFeatureFactoryClient {
     // generate new deleteUserFollow request
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
+    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getDeleteUserFollowRequestData(
       chainId,
-      this.contractAddress,
+      contractAddress,
       followerUserId,
       followeeUserId,
       nonce
@@ -164,16 +157,16 @@ class SocialFeatureFactoryClient {
     const sig = await this.web3Manager.signTypedData(signatureData)
 
     // delete UserFollow from chain
-    const contractMethod = this.SocialFeatureFactory.methods.deleteUserFollow(
+    const method = await this.getMethod('deleteUserFollow',
       followerUserId,
       followeeUserId,
       nonce,
       sig
     )
     return this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
   }
 }

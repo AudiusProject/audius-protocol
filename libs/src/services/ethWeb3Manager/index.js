@@ -1,3 +1,4 @@
+const Web3 = require('web3')
 const EthereumTx = require('ethereumjs-tx')
 const DEFAULT_GAS_AMOUNT = 200000
 const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, POA default gas price
@@ -7,9 +8,9 @@ const GANACHE_GAS_PRICE = 39062500000 // ganache gas price is extremely high, so
 /** Singleton state-manager for Audius Eth Contracts */
 class EthWeb3Manager {
   constructor (web3Config) {
-    if (web3Config && web3Config.web3 && web3Config.ownerWallet) {
+    if (web3Config && web3Config.url && web3Config.ownerWallet) {
       this.web3Config = web3Config
-      this.web3 = web3Config.web3
+      this.web3 = new Web3(web3Config.url)
       this.ownerWallet = web3Config.ownerWallet
     } else {
       throw new Error('web3Config missing required properties')

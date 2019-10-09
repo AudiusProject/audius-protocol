@@ -1,24 +1,12 @@
+const ContractClient = require('../contracts/ContractClient')
 const signatureSchemas = require('../../../data-contracts/signatureSchemas')
 
-class TrackFactoryClient {
-  constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress) {
-    this.web3Manager = web3Manager
-    this.contractABI = contractABI
-    this.contractRegistryKey = contractRegistryKey
-    this.getRegistryAddress = getRegistryAddress
-
-    this.web3 = this.web3Manager.getWeb3()
-  }
-
-  async init () {
-    this.contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
-    this.TrackFactory = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
-  }
-
+class TrackFactoryClient extends ContractClient {
   /* -------  GETTERS ------- */
 
   async getTrack (trackId) {
-    return this.TrackFactory.methods.getTrack(trackId).call()
+    const method = await this.getMethod('getTrack', trackId)
+    return method.call()
   }
 
   /* -------  SETTERS ------- */
@@ -27,9 +15,10 @@ class TrackFactoryClient {
   async addTrack (userId, multihashDigest, multihashHashFn, multihashSize) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
+    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getAddTrackRequestData(
       chainId,
-      this.contractAddress,
+      contractAddress,
       userId,
       multihashDigest,
       multihashHashFn,
@@ -38,7 +27,7 @@ class TrackFactoryClient {
     )
 
     const sig = await this.web3Manager.signTypedData(signatureData)
-    const contractMethod = this.TrackFactory.methods.addTrack(
+    const method = await this.getMethod('addTrack',
       userId,
       multihashDigest,
       multihashHashFn,
@@ -48,9 +37,9 @@ class TrackFactoryClient {
     )
 
     const tx = await this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
     return {
       trackId: parseInt(tx.events.NewTrack.returnValues._id, 10),
@@ -62,9 +51,10 @@ class TrackFactoryClient {
   async updateTrack (trackId, trackOwnerId, multihashDigest, multihashHashFn, multihashSize) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
+    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getUpdateTrackRequestData(
       chainId,
-      this.contractAddress,
+      contractAddress,
       trackId,
       trackOwnerId,
       multihashDigest,
@@ -74,7 +64,7 @@ class TrackFactoryClient {
     )
 
     const sig = await this.web3Manager.signTypedData(signatureData)
-    const contractMethod = this.TrackFactory.methods.updateTrack(
+    const method = await this.getMethod('updateTrack',
       trackId,
       trackOwnerId,
       multihashDigest,
@@ -85,9 +75,9 @@ class TrackFactoryClient {
     )
 
     const tx = await this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
 
     return {
@@ -103,20 +93,21 @@ class TrackFactoryClient {
   async deleteTrack (trackId) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
+    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getDeleteTrackRequestData(
       chainId,
-      this.contractAddress,
+      contractAddress,
       trackId,
       nonce
     )
 
     const sig = await this.web3Manager.signTypedData(signatureData)
-    const contractMethod = this.TrackFactory.methods.deleteTrack(trackId, nonce, sig)
+    const method = await this.getMethod('deleteTrack', trackId, nonce, sig)
 
     const tx = await this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
     return {
       trackId: parseInt(tx.events.TrackDeleted.returnValues._trackId, 10),
