@@ -196,7 +196,7 @@ def parse_user_event(
                 user_record.profile_picture = None
                 logger.warning(f'users.py | Successfully processed CID - {user_record.profile_picture_sizes}')
             else:
-                raise Exception(e)
+                logger.error(f"users.py | User profile picture retrieval error - {e}")
 
     # if cover_photo CID is of a dir, store under _sizes field instead
     if user_record.cover_photo:
@@ -211,7 +211,7 @@ def parse_user_event(
                 user_record.cover_photo = None
                 logger.warning(f'users.py | Successfully processed CID - {user_record.cover_photo_sizes}')
             else:
-                raise Exception(e)
+                logger.error(f"users.py | User cover photo retrieval error - {e}")
 
     # Find out if a user is ready to query in the db. If they are, set the is_ready field
     user_record.is_ready = is_user_ready(user_record)

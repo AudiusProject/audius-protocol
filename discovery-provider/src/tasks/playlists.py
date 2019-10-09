@@ -224,7 +224,7 @@ def parse_playlist_event(
                     playlist_record.playlist_image_multihash = None
                     logger.info('Successfully processed CID')
                 else:
-                    raise Exception(e)
+                    logger.error(f"playlists.py | playlist cover photo retrieval error - {e}")
 
     if event_type == playlist_event_types_lookup["playlist_description_updated"]:
         playlist_record.description = event_args._playlistDescription

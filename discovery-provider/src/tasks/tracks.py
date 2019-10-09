@@ -171,7 +171,7 @@ def parse_track_event(
                     track_record.cover_art = None
                     logger.info('Successfully processed CID')
                 else:
-                    raise Exception(e)
+                    logger.error(f"Track cover art retrieval error - {e}")
 
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
