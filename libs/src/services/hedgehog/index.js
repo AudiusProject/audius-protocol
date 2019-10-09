@@ -63,13 +63,10 @@ class HedgehogWrapper {
     // we override the login function here because getFn needs both lookupKey and email
     // in identity service, but hedgehog only sends lookupKey
     hedgehog.login = async (email, password) => {
-      console.error('LOGIN OVERRIDE')
       let lookupKey = await WalletManager.createAuthLookupKey(email, password)
-      console.error(lookupKey)
 
       // hedgehog property is called username so being consistent instead of calling it email
       let data = await this.getFn({ lookupKey: lookupKey, username: email })
-      console.error(data)
 
       if (data && data.iv && data.cipherText) {
         const { walletObj, entropy } = await WalletManager.decryptCipherTextAndRetrieveWallet(
@@ -77,14 +74,12 @@ class HedgehogWrapper {
           data.iv,
           data.cipherText
         )
-        console.error(walletObj)
 
         // set wallet property on the class
         hedgehog.wallet = walletObj
 
         // set entropy in localStorage
         WalletManager.setEntropyInLocalStorage(entropy)
-        console.error('Returning...')
         return walletObj
       } else {
         throw new Error('No account record for user')

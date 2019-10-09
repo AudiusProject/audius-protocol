@@ -15,11 +15,17 @@ services:
       - '7379:6379'
   identity-service:
     build: ../.
+    command: sh -c '/usr/bin/wait && exec ./node_modules/.bin/nodemon src/index.js'
     env_file:
       - ./development.env
     depends_on:
       - db
       - redis
+    volumes:
+      - ..:/usr/src/app
+      # Prevent hiding node_modules on container with host volume
+      # From https://github.com/barrysteyn/node-scrypt/issues/148
+      - /usr/src/app/node_modules
     ports:
       - '7000:7000'
 

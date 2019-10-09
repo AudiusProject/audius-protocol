@@ -39,6 +39,27 @@ module.exports = function (app) {
     } else return errorResponseBadRequest('Missing one of the required fields: email, walletAddress')
   }))
 
+  /** 
+   * Query a user from the users table
+   */
+  app.get('/user', handleResponse(async (req, res, next) => {
+    let body = req.body
+    if (body.username && body.walletAddress) {
+      const email = body.username.toLowerCase()
+      const existingUser = await models.User.findOne({
+        where: {
+          email: email
+        }
+      })
+
+      if (!existingUser) {
+        return errorResponseBadRequest('User not found')
+      }
+      return successResponse('User found')
+
+    } else return errorResponseBadRequest('Missing one of the required fields: email, walletAddress') 
+  }))
+
   /**
    * Check if a email address is taken. email is passed in via query param
    */
