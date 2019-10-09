@@ -101,6 +101,8 @@ class Account extends Base {
           if (!hasWallet) {
             phase = phases.HEDGEHOG_SIGNUP
             const ownerWallet = await this.hedgehog.signUp(email, password)
+            // TODO: EMAIL THIS LINK
+            const recoveryLink = await this.generateRecoveryLink(email)
             await this.web3Manager.setOwnerWallet(ownerWallet)
           }
 
@@ -131,6 +133,8 @@ class Account extends Base {
           if (!hasWallet) {
             phase = phases.HEDGEHOG_SIGNUP
             const ownerWallet = await this.hedgehog.signUp(email, password)
+            // TODO: EMAIL THIS LINK
+            const recoveryLink = await this.generateRecoveryLink(email)
             await this.web3Manager.setOwnerWallet(ownerWallet)
           }
 
@@ -149,6 +153,30 @@ class Account extends Base {
     this.userStateManager.setCurrentUser(metadata)
 
     return { userId, error: false }
+  }
+
+  async generateRecoveryLink (email) {
+    let currentHost = window.location.origin
+    let hedgehogKey = await this.hedgehog.getEntropyFromLocalStorage()
+    let queryObj = {
+      WARNING: 'RECOVERY_DO_NOT_SHARE'
+    }
+    queryObj.login = btoa(hedgehogKey)
+    queryObj.email = email
+    let queryStr = currentHost + this.toQueryStr(queryObj)
+    return queryStr
+  }
+
+  async resetPassword (email, newpassword) {
+    let hedgehogKey = await this.hedgehog.getEntropyFromLocalStorage()
+    return this.hedgehog.resetPassword(email, newpassword, hedgehogKey)
+  }
+
+  toQueryStr (obj) {
+    return '?' +
+      Object.keys(obj).map((key) => {
+        return key + '=' + obj[key]
+      }).join('&')
   }
 
   /**

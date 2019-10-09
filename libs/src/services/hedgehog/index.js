@@ -63,10 +63,13 @@ class HedgehogWrapper {
     // we override the login function here because getFn needs both lookupKey and email
     // in identity service, but hedgehog only sends lookupKey
     hedgehog.login = async (email, password) => {
+      console.error('LOGIN OVERRIDE')
       let lookupKey = await WalletManager.createAuthLookupKey(email, password)
+      console.error(lookupKey)
 
       // hedgehog property is called username so being consistent instead of calling it email
       let data = await this.getFn({ lookupKey: lookupKey, username: email })
+      console.error(data)
 
       if (data && data.iv && data.cipherText) {
         const { walletObj, entropy } = await WalletManager.decryptCipherTextAndRetrieveWallet(
@@ -74,15 +77,63 @@ class HedgehogWrapper {
           data.iv,
           data.cipherText
         )
+        console.error(walletObj)
 
         // set wallet property on the class
         hedgehog.wallet = walletObj
 
         // set entropy in localStorage
         WalletManager.setEntropyInLocalStorage(entropy)
+        console.error('Returning...')
         return walletObj
       } else {
         throw new Error('No account record for user')
+      }
+    }
+
+    /**
+     * Generate secure credentials to allow login
+     * @param {String} username username
+     */
+    hedgehog.getEntropyFromLocalStorage = async () => {
+      let entropy = await WalletManager.getEntropyFromLocalStorage()
+      if (entropy == null) {
+        throw new Error('GenerateRecoveryInfo | Entropy missing')
+      }
+      return entropy
+    }
+
+    /**
+     * Generate new set of auth credentials to allow login
+     * @param {String} username - username
+     * @param {String} password - new password
+     * @param {String} entropy - stored entropy val
+     */
+    hedgehog.resetPassword = async (username, password, entropy) => {
+      let self = this
+      const createWalletPromise = WalletManager.createWalletObj(password, entropy)
+      const lookupKeyPromise = WalletManager.createAuthLookupKey(username, password)
+      try {
+        let result = await Promise.all([createWalletPromise, lookupKeyPromise])
+
+        const { ivHex, cipherTextHex, walletObj } = result[0]
+        const lookupKey = result[1]
+
+        // TODO: Validate this against stored val
+        // TODO: Consider how to eliminate the old value
+        // const walletAddress = walletObj.getAddressString()
+
+        const authData = {
+          iv: ivHex,
+          cipherText: cipherTextHex,
+          lookupKey: lookupKey
+        }
+
+        await self.setAuthFn(authData)
+        self.wallet = walletObj
+      } catch (e) {
+        self.logout()
+        throw e
       }
     }
 
