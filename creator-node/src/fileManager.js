@@ -66,7 +66,7 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, t) {
 
   // Adding a file through js-ipfs-api pins by default
   // Ensuring this multihash is available through garbage collection
-  const multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
+  const multihash = (await ipfs.addFromFs(srcPath, { pin: true }))[0].hash
   req.logger.info(`Time taken in saveFileToIpfsFromFS to add: ${Date.now() - codeBlockTimeStart}`)
   codeBlockTimeStart = Date.now()
   const dstPath = path.join(req.app.get('storagePath'), multihash)
