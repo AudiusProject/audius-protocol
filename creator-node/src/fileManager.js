@@ -13,6 +13,7 @@ const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Def
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
 
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
+const ALLOWED_UPLOAD_FILE_SEGMENT_EXTENSIONS = config.get('allowedUploadFileSegmentExtensions')
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 
 /**
@@ -54,7 +55,7 @@ async function saveFileFromBuffer (req, buffer, fileType) {
  * - Re-save file to disk under multihash.
  * - Save reference to file in DB.
  */
-async function saveFileToIPFSFromFS (req, srcPath, fileType, t) {
+async function saveFileToIPFSFromFS (req, fileName, srcPath, fileType, t) {
   // make sure user has authenticated before saving file
   if (!req.session.cnodeUserUUID) throw new Error('User must be authenticated to save a file')
 
@@ -81,7 +82,7 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, t) {
     {
       cnodeUserUUID: req.session.cnodeUserUUID,
       multihash: multihash,
-      sourceFile: req.fileName,
+      sourceFile: fileName,
       storagePath: dstPath,
       type: fileType
     },
@@ -229,12 +230,18 @@ const trackFileUpload = multer({
   limits: { fileSize: MAX_AUDIO_FILE_SIZE },
   fileFilter: function (req, file, cb) {
     // the function should call `cb` with a boolean to indicate if the file should be accepted
-    if (ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(getFileExtension(file.originalname).slice(1)) && AUDIO_MIME_TYPE_REGEX.test(file.mimetype)) {
+    // The file with fieldname `file` is the master track and should be checked against the allowed file extensions & mime types
+    // The file with fieldname `fileSegments` is composed of segmented master track with the m3u8 & ts files
+    if (file.fieldname === 'file' && ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(getFileExtension(file.originalname).slice(1)) && AUDIO_MIME_TYPE_REGEX.test(file.mimetype)) {
+      req.logger.info(`Filetype : ${getFileExtension(file.originalname).slice(1)}`)
+      req.logger.info(`Mimetype: ${file.mimetype}`)
+      cb(null, true)
+    } else if (file.fieldname === 'fileSegments' && ALLOWED_UPLOAD_FILE_SEGMENT_EXTENSIONS.includes(getFileExtension(file.originalname).slice(1)) && file.mimetype === 'application/octet-stream') {
       req.logger.info(`Filetype : ${getFileExtension(file.originalname).slice(1)}`)
       req.logger.info(`Mimetype: ${file.mimetype}`)
       cb(null, true)
     } else {
-      req.fileFilterError = `File type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}]`
+      req.fileFilterError = `File (${file.originalname}, ${file.mimetype}) type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}]`
       cb(null, false)
     }
   }

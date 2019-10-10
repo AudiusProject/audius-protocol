@@ -16,72 +16,93 @@ module.exports = function (app) {
    * @dev - currently stores each segment twice, once under random file UUID & once under IPFS multihash
    *      - this should be addressed eventually
    */
-  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
-    if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
-    const routeTimeStart = Date.now()
-    let codeBlockTimeStart = Date.now()
+  app.post('/track_content',
+    authMiddleware,
+    syncLockMiddleware,
+    trackFileUpload.fields([
+      { name: 'file', maxCount: 1 },
+      { name: 'fileSegments' }
+    ]),
+    handleResponse(async (req, res) => {
+      if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
+      const routeTimeStart = Date.now()
+      let codeBlockTimeStart = Date.now()
+      const { file: trackFiles, fileSegments } = req.files
+      const trackFile = trackFiles[0]
+      const trackName = trackFile.originalname
+      const dirName = path.dirname(trackFile.path)
+      let segmentFilePaths
+      let manifestFile
+      if (!fileSegments) {
+      // create and save track file segments to disk
+        try {
+          req.logger.info(`Segmenting file ${trackName}...`)
+          const ffmpegSegmentFiles = await ffmpeg.segmentFile(req, dirName, trackFile.filename, trackName)
+          segmentFilePaths = ffmpegSegmentFiles.map(file => ({
+            path: path.resolve(dirName, 'segments', file),
+            originalname: file
+          }))
+          manifestFile = path.resolve(dirName, trackName.split('.')[0] + '.m3u8')
+          req.logger.info(`Time taken in /track_content to segment track file: ${Date.now() - codeBlockTimeStart}ms for file ${trackName}`)
+        } catch (err) {
+          removeTrackFolder(req, dirName)
+          return errorResponseServerError(err)
+        }
+      } else {
+        manifestFile = fileSegments.find(file => file.originalname.endsWith('.m3u8')).path
+        segmentFilePaths = fileSegments.filter(file => file.originalname.startsWith('segment'))
+      }
 
-    // create and save track file segments to disk
-    let segmentFilePaths
-    try {
-      req.logger.info(`Segmenting file ${req.fileName}...`)
-      segmentFilePaths = await ffmpeg.segmentFile(req, req.fileDir, req.fileName)
-      req.logger.info(`Time taken in /track_content to segment track file: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
-    } catch (err) {
-      removeTrackFolder(req, req.fileDir)
-      return errorResponseServerError(err)
-    }
-
-    // for each path, call saveFile and get back multihash; return multihash + segment duration
-    // run all async ops in parallel as they are not independent
-    codeBlockTimeStart = Date.now()
-    const t = await models.sequelize.transaction()
-
-    let saveFilePromResps
-    let segmentDurations
-    try {
-      req.logger.info(`segmentFilePaths.length ${segmentFilePaths.length}`)
-      let counter = 1
-      saveFilePromResps = await Promise.all(segmentFilePaths.map(async filePath => {
-        const absolutePath = path.join(req.fileDir, 'segments', filePath)
-        req.logger.info(`about to perform saveFileToIPFSFromFS #${counter++}`)
-        let response = await saveFileToIPFSFromFS(req, absolutePath, 'track', t)
-        response.segmentName = filePath
-        return response
-      }))
-      req.logger.info(`Time taken in /track_content for saving segments to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
-
+      // for each path, call saveFile and get back multihash; return multihash + segment duration
+      // run all async ops in parallel as they are not independent
       codeBlockTimeStart = Date.now()
-      let fileSegmentPath = path.join(req.fileDir, 'segments')
-      segmentDurations = await getSegmentsDuration(
-        req,
-        fileSegmentPath,
-        req.fileName,
-        req.file.destination)
-      req.logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+      const t = await models.sequelize.transaction()
+      let saveFilePromResps
+      let segmentDurations
+      try {
+        let counter = 1
+        saveFilePromResps = await Promise.all(segmentFilePaths
+          .map(async file => {
+            const absolutePath = file.path
+            req.logger.info(`about to perform saveFileToIPFSFromFS #${counter++}`)
 
-      // Commit transaction
-      codeBlockTimeStart = Date.now()
-      req.logger.info(`attempting to commit tx for file ${req.fileName}`)
-      await t.commit()
-    } catch (e) {
-      req.logger.info(`failed to commit...rolling back. file ${req.fileName}`)
-      await t.rollback()
-      return errorResponseServerError(e)
-    }
-    req.logger.info(`Time taken in /track_content to commit tx block to db: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+            const response = await saveFileToIPFSFromFS(req, trackFile.originalname, absolutePath, 'track', t)
+            response.segmentName = file.originalname
+            return response
+          })
+        )
+        req.logger.info(`Time taken in /track_content for saving segments to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${trackName}`)
 
-    let trackSegments = saveFilePromResps.map((saveFileResp, i) => {
-      let segmentName = saveFileResp.segmentName
-      let duration = segmentDurations[segmentName]
-      return { 'multihash': saveFileResp.multihash, 'duration': duration }
-    })
+        codeBlockTimeStart = Date.now()
 
-    // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
-    trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
-    req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
-    return successResponse({ 'track_segments': trackSegments })
-  }))
+        segmentDurations = await getSegmentsDuration(manifestFile)
+        req.logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${trackName}`)
+
+        // Commit transaction
+        codeBlockTimeStart = Date.now()
+        req.logger.info(`attempting to commit tx for file ${trackName}`)
+        await t.commit()
+      } catch (e) {
+        req.logger.info(`failed to commit...rolling back. file ${trackName}`)
+        await t.rollback()
+        return errorResponseServerError(e)
+      }
+      req.logger.info(`Time taken in /track_content to commit tx block to db: ${Date.now() - codeBlockTimeStart}ms for file ${trackName}`)
+
+      let trackSegments = saveFilePromResps
+        .map((saveFileResp, i) => {
+          const segmentName = saveFileResp.segmentName
+          return {
+            multihash: saveFileResp.multihash,
+            duration: segmentDurations[segmentName]
+          }
+        })
+        // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
+        .filter(trackSegment => trackSegment.duration)
+
+      req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
+      return successResponse({ 'track_segments': trackSegments })
+    }))
 
   /**
    * Given track metadata object, upload and share metadata to IPFS. Return metadata multihash if successful.

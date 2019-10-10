@@ -356,8 +356,14 @@ class CreatorNode {
     await this.ensureConnected()
 
     // form data is from browser, not imported npm module
-    let formData = new FormData()
-    formData.append('file', file)
+    let formData
+    if (file instanceof FormData) {
+      formData = file
+    } else {
+      formData = new FormData()
+      formData.append('file', file)
+    }
+
     Object.keys(extraFormDataOptions).forEach(key => {
       formData.append(key, extraFormDataOptions[key])
     })

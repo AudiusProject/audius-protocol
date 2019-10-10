@@ -65,6 +65,12 @@ const config = convict({
       'ts', 'tsv', 'tsa'
     ]
   },
+  allowedUploadFileSegmentExtensions: {
+    doc: 'Override the default list of file segment extension allowed',
+    format: Array,
+    env: 'allowedUploadFileSegmentExtensions',
+    default: ['m3u8', 'ts']
+  },
   redisPort: {
     doc: 'Redis port',
     format: 'port',

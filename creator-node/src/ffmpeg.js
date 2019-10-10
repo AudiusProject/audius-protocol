@@ -7,7 +7,7 @@ const spawn = require('child_process').spawn
 /** Segments file into equal size chunks without re-encoding
  *  Try to segment as mp3 and error on failure
  */
-function segmentFile (req, fileDir, fileName) {
+function segmentFile (req, fileDir, fileName, trackName) {
   return new Promise((resolve, reject) => {
     const absolutePath = path.resolve(fileDir, fileName)
 
@@ -24,7 +24,7 @@ function segmentFile (req, fileDir, fileName) {
       // "-vn" flag required to allow track uploading with album art
       // https://stackoverflow.com/questions/20193065/how-to-remove-id3-audio-tag-image-or-metadata-from-mp3-with-ffmpeg
       '-vn',
-      path.resolve(fileDir, fileName.split('.')[0] + '.m3u8')
+      path.resolve(fileDir, trackName.split('.')[0] + '.m3u8')
     ]
     const proc = spawn(ffmpeg, args)
 
