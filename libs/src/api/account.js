@@ -159,7 +159,7 @@ class Account extends Base {
     let currentHost = window.location.origin
     let hedgehogKey = await this.hedgehog.getEntropyFromLocalStorage()
     let queryObj = {
-      WARNING: 'RECOVERY_DO_NOT_SHARE'
+      warning: 'RECOVERY_DO_NOT_SHARE'
     }
     queryObj.login = btoa(hedgehogKey)
     queryObj.email = email

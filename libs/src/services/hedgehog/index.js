@@ -114,10 +114,6 @@ class HedgehogWrapper {
         const { ivHex, cipherTextHex, walletObj } = result[0]
         const lookupKey = result[1]
 
-        // TODO: Validate this against stored val
-        // TODO: Consider how to eliminate the old value
-        // const walletAddress = walletObj.getAddressString()
-
         const authData = {
           iv: ivHex,
           cipherText: cipherTextHex,
