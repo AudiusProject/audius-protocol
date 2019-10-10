@@ -31,14 +31,6 @@ class IdentityService {
     })
   }
 
-  async getUserFn (obj) {
-    return this._makeRequest({
-      url: '/user',
-      method: 'get',
-      data: obj
-    })
-  }
-
   /**
    * Check if an email address has been previously registered.
    * @param {string} email
