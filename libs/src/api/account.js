@@ -156,15 +156,23 @@ class Account extends Base {
   }
 
   async generateRecoveryLink (email) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
     let currentHost = window.location.origin
     let hedgehogKey = await this.hedgehog.getEntropyFromLocalStorage()
+
     let queryObj = {
       warning: 'RECOVERY_DO_NOT_SHARE'
     }
     queryObj.login = btoa(hedgehogKey)
     queryObj.email = email
-    let queryStr = currentHost + this.toQueryStr(queryObj)
-    return queryStr
+    let recoveryLink = currentHost + this.toQueryStr(queryObj)
+    const recoveryData = {
+      email: email,
+      recoveryLink: recoveryLink
+    }
+
+    await this.identityService.sendRecoveryInfo(recoveryData)
+    return recoveryLink
   }
 
   async resetPassword (email, newpassword) {
