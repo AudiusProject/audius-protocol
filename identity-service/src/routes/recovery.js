@@ -1,7 +1,7 @@
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const models = require('../models')
 const mailgun = require('mailgun-js')
-const DOMAIN = ''
+const DOMAIN = 'mail.audius.co'
 const mg = mailgun({apiKey: '', domain: DOMAIN})
 
 function validateEmail (email) {
