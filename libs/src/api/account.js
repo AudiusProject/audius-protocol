@@ -155,21 +155,24 @@ class Account extends Base {
 
   async generateRecoveryLink (email) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
-    let recoveryLink = await this.hedgehog.generateRecoveryLink(email)
+    try {
+      let recoveryLink = await this.hedgehog.generateRecoveryLink(email)
 
-    const unixTs = Math.round((new Date()).getTime() / 1000) // current unix timestamp (sec)
-    const data = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = await this.web3Manager.sign(data)
+      const unixTs = Math.round((new Date()).getTime() / 1000) // current unix timestamp (sec)
+      const data = `Click sign to authenticate with identity service: ${unixTs}`
+      const signature = await this.web3Manager.sign(data)
 
-    const recoveryData = {
-      email: email,
-      recoveryLink: recoveryLink,
-      data: data,
-      signature: signature
+      const recoveryData = {
+        email: email,
+        recoveryLink: recoveryLink,
+        data: data,
+        signature: signature
+      }
+
+      await this.identityService.sendRecoveryInfo(recoveryData)
+    } catch (e) {
+      console.err(e)
     }
-
-    await this.identityService.sendRecoveryInfo(recoveryData)
-    return recoveryLink
   }
 
   async resetPassword (email, newpassword) {

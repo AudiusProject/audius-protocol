@@ -102,6 +102,10 @@ class HedgehogWrapper {
       if (entropy === null) {
         throw new Error('generateRecoveryLink - missing entropy')
       }
+      let btoa = window.btoa
+      if (!btoa) {
+        throw new Error('generateRecoveryLink - missing required btoa function')
+      }
       let currentHost = window.location.origin
       let queryObj = {
         warning: 'RECOVERY_DO_NOT_SHARE'
