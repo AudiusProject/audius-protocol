@@ -20,8 +20,6 @@ module.exports = function (app) {
     }
 
     let { email, recoveryLink } = req.body
-    req.logger.error(email)
-    req.logger.error(recoveryLink)
 
     if (!email || !validateEmail(email)) {
       return errorResponseBadRequest('Please provide valid email')
