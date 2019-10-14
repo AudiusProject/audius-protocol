@@ -27,6 +27,13 @@ class HedgehogWrapper {
       return this.identityService.setUserFn(obj)
     }
 
+    this.toQueryStr = (obj) => {
+      return '?' +
+        Object.keys(obj).map((key) => {
+          return key + '=' + obj[key]
+        }).join('&')
+    }
+
     const hedgehog = new Hedgehog(this.getFn, this.setAuthFn, this.setUserFn)
 
     // this is also the place we have the PBKDF2 patch until we can deprecate it
@@ -90,42 +97,18 @@ class HedgehogWrapper {
      * Generate secure credentials to allow login
      * @param {String} username username
      */
-    hedgehog.getEntropyFromLocalStorage = async () => {
+    hedgehog.generateRecoveryLink = async (email) => {
       let entropy = await WalletManager.getEntropyFromLocalStorage()
-      if (entropy == null) {
-        throw new Error('GenerateRecoveryInfo | Entropy missing')
+      if (entropy === null) {
+        throw new Error('generateRecoveryLink - missing entropy')
       }
-      return entropy
-    }
-
-    /**
-     * Generate new set of auth credentials to allow login
-     * @param {String} username - username
-     * @param {String} password - new password
-     * @param {String} entropy - stored entropy val
-     */
-    hedgehog.resetPassword = async (username, password, entropy) => {
-      let self = this
-      const createWalletPromise = WalletManager.createWalletObj(password, entropy)
-      const lookupKeyPromise = WalletManager.createAuthLookupKey(username, password)
-      try {
-        let result = await Promise.all([createWalletPromise, lookupKeyPromise])
-
-        const { ivHex, cipherTextHex, walletObj } = result[0]
-        const lookupKey = result[1]
-
-        const authData = {
-          iv: ivHex,
-          cipherText: cipherTextHex,
-          lookupKey: lookupKey
-        }
-
-        await self.setAuthFn(authData)
-        self.wallet = walletObj
-      } catch (e) {
-        self.logout()
-        throw e
+      let currentHost = window.location.origin
+      let queryObj = {
+        warning: 'RECOVERY_DO_NOT_SHARE'
       }
+      queryObj.login = btoa(entropy)
+      queryObj.email = email
+      return currentHost + this.toQueryStr(queryObj)
     }
 
     return hedgehog
