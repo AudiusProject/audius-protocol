@@ -1,6 +1,4 @@
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
-const config = require('../config.js')
-const mailgun = require('mailgun-js')
 
 function validateEmail (email) {
   const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -14,7 +12,7 @@ module.exports = function (app) {
   app.post('/recovery', handleResponse(async (req, res, next) => {
     let mg = req.app.get('mg')
     if (!mg) {
-      req.logger.error('Missing api key') 
+      req.logger.error('Missing api key')
       // Short-circuit if no api key provided, but do not error
       return successResponse({ msg: 'No mailgun API Key found', status: true })
     }
