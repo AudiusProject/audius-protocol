@@ -91,7 +91,6 @@ const initializeApp = (port, audiusLibs) => {
   // Configure mailgun instance
   let mg = null
   if (config.get('mailgunApiKey')) {
-    console.log('setting mailgun api key')
     mg = mailgun({ apiKey: config.get('mailgunApiKey'), domain: DOMAIN })
   }
   app.set('mg', mg)
