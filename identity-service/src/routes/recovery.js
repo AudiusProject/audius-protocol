@@ -1,4 +1,6 @@
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const { recoverPersonalSignature } = require('eth-sig-util')
+const models = require('../models')
 
 function validateEmail (email) {
   const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -17,7 +19,7 @@ module.exports = function (app) {
       return successResponse({ msg: 'No mailgun API Key found', status: true })
     }
 
-    let { email, recoveryLink } = req.body
+    let { email, recoveryLink, data, signature } = req.body
 
     if (!email || !validateEmail(email)) {
       return errorResponseBadRequest('Please provide valid email')
@@ -27,14 +29,32 @@ module.exports = function (app) {
       return errorResponseBadRequest('Please provide a recoveryLink')
     }
 
-    const data = {
+    if (!data || !signature) {
+      return errorResponseBadRequest('Please provide data and signature')
+    }
+
+    let walletFromSignature = recoverPersonalSignature({ data: data, sig: signature })
+    const existingUser = await models.User.findOne({
+      where: {
+        walletAddress: walletFromSignature
+      }
+    })
+    if (!existingUser) {
+      return errorResponseBadRequest('Invalid signature provided')
+    }
+    const existingEmail = existingUser.email
+    if (existingEmail !== email) {
+      return errorResponseBadRequest(`Invalid reset request - provided email does not match record for ${walletFromSignature}`)
+    }
+
+    const emailParams = {
       from: 'Audius Recovery <postmaster@mail.audius.co>',
       to: email,
       subject: 'IMPORTANT: RECOVERY INFORMATION',
       text: `${recoveryLink}`
     }
     await new Promise((resolve, reject) => {
-      mg.messages().send(data, function (error, body) {
+      mg.messages().send(emailParams, function (error, body) {
         if (error) {
           reject(error)
         }
