@@ -101,7 +101,6 @@ class Account extends Base {
           if (!hasWallet) {
             phase = phases.HEDGEHOG_SIGNUP
             const ownerWallet = await this.hedgehog.signUp(email, password)
-            // TODO: EMAIL THIS LINK
             const recoveryLink = await this.generateRecoveryLink(email)
             await this.web3Manager.setOwnerWallet(ownerWallet)
           }
@@ -133,7 +132,6 @@ class Account extends Base {
           if (!hasWallet) {
             phase = phases.HEDGEHOG_SIGNUP
             const ownerWallet = await this.hedgehog.signUp(email, password)
-            // TODO: EMAIL THIS LINK
             const recoveryLink = await this.generateRecoveryLink(email)
             await this.web3Manager.setOwnerWallet(ownerWallet)
           }
