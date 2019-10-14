@@ -13,6 +13,10 @@ module.exports = (sequelize, DataTypes) => {
     instagramHandle: {
       allowNull: true,
       type: DataTypes.STRING
+    },
+    pinnedTrackId: {
+      allowNull: true,
+      type: DataTypes.INTEGER
     }
   }, {})
 
