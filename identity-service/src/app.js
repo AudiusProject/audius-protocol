@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const rateLimit = require('express-rate-limit')
+const mailgun = require('mailgun-js')
 let config = require('./config.js')
 var RedisStore = require('rate-limit-redis')
 var Redis = require('ioredis')
@@ -9,6 +10,7 @@ var client = new Redis(config.get('redisPort'), config.get('redisHost'))
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
+const DOMAIN = 'mail.audius.co'
 
 const app = express()
 // middleware functions will be run in order they are added to the app below
@@ -85,6 +87,14 @@ app.use(errorHandler)
 const initializeApp = (port, audiusLibs) => {
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
   app.set('audiusLibs', audiusLibs)
+
+  // Configure mailgun instance
+  let mg = null
+  if (config.get('mailgunApiKey')) {
+    console.log('setting mailgun api key')
+    mg = mailgun({ apiKey: config.get('mailgunApiKey'), domain: DOMAIN })
+  }
+  app.set('mg', mg)
 
   return { app: app, server: server }
 }
