@@ -21,6 +21,7 @@ class SessionManager {
 
     const session = await models.SessionToken.create({ cnodeUserUUID, token })
     const resp = await redisClient.set(`SESSION.${token}`, session.cnodeUserUUID)
+    console.log(`createSession redisClient.set SESSION.${token} = ${session.cnodeUserUUID} response ${resp}`)
 
     return token
   }
