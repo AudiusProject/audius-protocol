@@ -46,6 +46,7 @@ class EthContracts {
     this.ethWeb3Manager = ethWeb3Manager
     this.tokenContractAddress = tokenContractAddress
     this.registryAddress = registryAddress
+    this.isServer = isServer
 
     this.RegistryClient = new RegistryClient(
       this.ethWeb3Manager,
@@ -84,13 +85,21 @@ class EthContracts {
       this.StakingProxyClient
     )
 
-    this.isServer = isServer
+    this.contractClients = [
+      this.AudiusTokenClient,
+      this.VersioningFactoryClient,
+      this.StakingProxyClient,
+      this.ServiceProviderFactoryClient
+    ]
   }
 
   async init () {
     if (!this.ethWeb3Manager || !this.tokenContractAddress || !this.registryAddress) throw new Error('Failed to initialize EthContracts')
 
     this.expectedServiceVersions = await this.getExpectedServiceVersions()
+    if (this.isServer) {
+      await Promise.all(this.contractClients.map(client => client.init()))
+    }
   }
 
   async getRegistryAddressForContract (contractName) {

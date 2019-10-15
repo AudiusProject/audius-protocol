@@ -28,9 +28,10 @@ const UserLibraryFactoryRegistryKey = 'UserLibraryFactory'
 const IPLDBlacklistFactoryRegistryKey = 'IPLDBlacklistFactory'
 
 class AudiusContracts {
-  constructor (web3Manager, registryAddress) {
+  constructor (web3Manager, registryAddress, isServer) {
     this.web3Manager = web3Manager
     this.registryAddress = registryAddress
+    this.isServer = isServer
 
     this.RegistryClient = new RegistryClient(
       this.web3Manager,
@@ -80,6 +81,21 @@ class AudiusContracts {
       IPLDBlacklistFactoryRegistryKey,
       this.getRegistryAddressForContract
     )
+
+    this.contractClients = [
+      this.UserFactoryClient,
+      this.TrackFactoryClient,
+      this.SocialFeatureFactoryClient,
+      this.PlaylistFactoryClient,
+      this.UserLibraryFactoryClient,
+      this.IPLDBlacklistFactoryClient
+    ]
+  }
+
+  async init () {
+    if (this.isServer) {
+      await Promise.all(this.contractClients.map(client => client.init()))
+    }
   }
 
   /* ------- CONTRACT META-FUNCTIONS ------- */

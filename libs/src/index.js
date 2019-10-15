@@ -171,6 +171,7 @@ class AudiusLibs {
     }
 
     /** Contracts */
+    let contractsToInit = []
     if (this.ethWeb3Manager) {
       this.ethContracts = new EthContracts(
         this.ethWeb3Manager,
@@ -178,14 +179,16 @@ class AudiusLibs {
         this.ethWeb3Config ? this.ethWeb3Config.registryAddress : null,
         this.isServer
       )
-      await this.ethContracts.init()
+      contractsToInit.push(this.ethContracts.init())
     }
-
     if (this.web3Manager) {
       this.contracts = new AudiusContracts(
         this.web3Manager,
-        this.web3Config ? this.web3Config.registryAddress : null)
+        this.web3Config ? this.web3Config.registryAddress : null,
+        this.isServer)
+      contractsToInit.push(this.contracts.init())
     }
+    await Promise.all(contractsToInit)
 
     /** Discovery Provider */
     if (this.discoveryProviderConfig) {

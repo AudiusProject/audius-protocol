@@ -1,3 +1,6 @@
+const CONTRACT_INITIALIZING_INTERVAL = 100
+const CONTRACT_INITIALIZING_TIMEOUT = 10000
+
 /*
  * Base class for instantiating contracts.
  * Performs a single init of the eth contract the first
@@ -16,29 +19,32 @@ class ContractClient {
     this._contract = null
 
     // Initialization setup
-    this._isInitted = false
-    this._isInitting = false
+    this._isInitialized = false
+    this._isInitializing = false
   }
 
   /** Inits the contract if necessary */
-  async _init () {
+  async init () {
     // No-op if we are already initted
-    if (this._isInitted) return
+    if (this._isInitialized) return
 
     // If we are already initting, wait until we are initted and return
-    if (this._isInitting) {
+    if (this._isInitializing) {
       let interval
       await new Promise((resolve, reject) => {
         interval = setInterval(() => {
-          if (this._isInitted) resolve()
-        }, 100)
+          if (this._isInitialized) resolve()
+        }, CONTRACT_INITIALIZING_INTERVAL)
+        setTimeout(() => {
+          reject(new Error('Initialization timeout'))
+        }, CONTRACT_INITIALIZING_TIMEOUT)
       })
       clearInterval(interval)
       return
     }
 
     // Perform init
-    this._isInitting = true
+    this._isInitializing = true
 
     this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
     this._contract = new this.web3.eth.Contract(
@@ -46,13 +52,13 @@ class ContractClient {
       this._contractAddress
     )
 
-    this._isInitted = false
-    this._isInitted = true
+    this._isInitialized = false
+    this._isInitialized = true
   }
 
   /** Gets the contract address and ensures that the contract has initted. */
   async getAddress () {
-    await this._init()
+    await this.init()
     return this._contractAddress
   }
 
@@ -62,7 +68,7 @@ class ContractClient {
    * @param {string} methodName the name of the contract method
    */
   async getMethod (methodName, ...args) {
-    await this._init()
+    await this.init()
     return this._contract.methods[methodName](...args)
   }
 }
