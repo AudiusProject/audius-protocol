@@ -2,12 +2,7 @@ const { handleResponse, successResponse, errorResponseBadRequest } = require('..
 const { recoverPersonalSignature } = require('eth-sig-util')
 const models = require('../models')
 
-function validateEmail (email) {
-  const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-  return re.test(String(email).toLowerCase())
-}
-
-let toQueryStr = (obj) => {
+const toQueryStr = (obj) => {
   return '?' +
     Object.keys(obj).map((key) => {
       return key + '=' + obj[key]
