@@ -93,7 +93,7 @@ const initializeApp = (port, audiusLibs) => {
   if (config.get('mailgunApiKey')) {
     mg = mailgun({ apiKey: config.get('mailgunApiKey'), domain: DOMAIN })
   }
-  app.set('mg', mg)
+  app.set('mailgun', mg)
 
   return { app: app, server: server }
 }

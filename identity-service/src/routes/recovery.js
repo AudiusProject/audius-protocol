@@ -12,7 +12,7 @@ module.exports = function (app) {
    * Send recovery information to the requested account
    */
   app.post('/recovery', handleResponse(async (req, res, next) => {
-    let mg = req.app.get('mg')
+    let mg = req.app.get('mailgun')
     if (!mg) {
       req.logger.error('Missing api key')
       // Short-circuit if no api key provided, but do not error
