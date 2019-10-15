@@ -7,6 +7,13 @@ function validateEmail (email) {
   return re.test(String(email).toLowerCase())
 }
 
+let toQueryStr = (obj) => {
+  return '?' +
+    Object.keys(obj).map((key) => {
+      return key + '=' + obj[key]
+    }).join('&')
+}
+
 module.exports = function (app) {
   /**
    * Send recovery information to the requested account
@@ -19,16 +26,14 @@ module.exports = function (app) {
       return successResponse({ msg: 'No mailgun API Key found', status: true })
     }
 
-    let { email, recoveryLink, data, signature } = req.body
+    let { host, login, data, signature } = req.body
 
-    if (!email || !validateEmail(email)) {
-      return errorResponseBadRequest('Please provide valid email')
+    if (!login) {
+      return errorResponseBadRequest('Please provide valid login information')
     }
-
-    if (!recoveryLink) {
-      return errorResponseBadRequest('Please provide a recoveryLink')
+    if (!host) {
+      return errorResponseBadRequest('Please provide valid host')
     }
-
     if (!data || !signature) {
       return errorResponseBadRequest('Please provide data and signature')
     }
@@ -39,13 +44,18 @@ module.exports = function (app) {
         walletAddress: walletFromSignature
       }
     })
+
     if (!existingUser) {
-      return errorResponseBadRequest('Invalid signature provided')
+      return errorResponseBadRequest('Invalid signature provided, no user found')
     }
-    const existingEmail = existingUser.email
-    if (existingEmail !== email) {
-      return errorResponseBadRequest(`Invalid reset request - provided email does not match record for ${walletFromSignature}`)
+
+    const email = existingUser.email
+    let recoveryParams = {
+      warning: 'RECOVERY_DO_NOT_SHARE',
+      login: login,
+      email: email
     }
+    let recoveryLink = host + toQueryStr(recoveryParams)
 
     const emailParams = {
       from: 'Audius Recovery <postmaster@mail.audius.co>',
@@ -58,7 +68,6 @@ module.exports = function (app) {
         if (error) {
           reject(error)
         }
-        console.log(body)
         resolve(body)
       })
     })

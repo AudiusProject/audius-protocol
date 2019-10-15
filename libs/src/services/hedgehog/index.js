@@ -27,13 +27,6 @@ class HedgehogWrapper {
       return this.identityService.setUserFn(obj)
     }
 
-    this.toQueryStr = (obj) => {
-      return '?' +
-        Object.keys(obj).map((key) => {
-          return key + '=' + obj[key]
-        }).join('&')
-    }
-
     const hedgehog = new Hedgehog(this.getFn, this.setAuthFn, this.setUserFn)
 
     // this is also the place we have the PBKDF2 patch until we can deprecate it
@@ -97,7 +90,7 @@ class HedgehogWrapper {
      * Generate secure credentials to allow login
      * @param {String} username username
      */
-    hedgehog.generateRecoveryLink = async (email) => {
+    hedgehog.generateRecoveryInfo = async () => {
       let entropy = await WalletManager.getEntropyFromLocalStorage()
       if (entropy === null) {
         throw new Error('generateRecoveryLink - missing entropy')
@@ -107,12 +100,10 @@ class HedgehogWrapper {
         throw new Error('generateRecoveryLink - missing required btoa function')
       }
       let currentHost = window.location.origin
-      let queryObj = {
-        warning: 'RECOVERY_DO_NOT_SHARE'
-      }
-      queryObj.login = btoa(entropy)
-      queryObj.email = email
-      return currentHost + this.toQueryStr(queryObj)
+      let recoveryInfo = {}
+      recoveryInfo.login = btoa(entropy)
+      recoveryInfo.host = currentHost
+      return recoveryInfo
     }
 
     return hedgehog
