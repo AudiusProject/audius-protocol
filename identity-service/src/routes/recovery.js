@@ -1,6 +1,15 @@
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { recoverPersonalSignature } = require('eth-sig-util')
 const models = require('../models')
+const handlebars = require('handlebars')
+const fs = require('fs')
+const path = require('path')
+
+const recoveryTemplate = handlebars.compile(
+  fs
+    .readFileSync(path.resolve(__dirname, '../recovery.html'))
+    .toString()
+)
 
 const toQueryStr = (obj) => {
   return '?' +
@@ -45,21 +54,21 @@ module.exports = function (app) {
     }
 
     const email = existingUser.email
-    let recoveryParams = {
+    const recoveryParams = {
       warning: 'RECOVERY_DO_NOT_SHARE',
       login: login,
       email: email
     }
-    let recoveryLink = host + toQueryStr(recoveryParams)
+    const recoveryLink = host + toQueryStr(recoveryParams)
+
+    const context = { recovery_link: recoveryLink }
+    const recoveryHtml = recoveryTemplate(context)
 
     const emailParams = {
       from: 'Audius Recovery <recovery@audius.co>',
       to: `${email}`,
       subject: 'Password Recovery',
-      template: 'recovery',
-      'h:X-Mailgun-Variables': JSON.stringify({
-        'recovery_link': recoveryLink
-      })
+      html: recoveryHtml
     }
     try {
       await new Promise((resolve, reject) => {
