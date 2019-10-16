@@ -5,18 +5,15 @@ class UserLibraryFactoryClient extends ContractClient {
   /* ------- SETTERS ------- */
 
   async addTrackSave (userId, trackId) {
-    console.log(userId, trackId)
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
     const contractAddress = await this.getAddress()
-    console.log(contractAddress)
     const signatureData = signatureSchemas.generators.getTrackSaveRequestData(
       chainId,
       contractAddress,
       userId,
       trackId,
       nonce)
-    console.log(signatureData)
     const sig = await this.web3Manager.signTypedData(signatureData)
     const contractMethod = await this.getMethod('addTrackSave',
       userId,
