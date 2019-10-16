@@ -133,7 +133,7 @@ class Account extends Base {
             phase = phases.HEDGEHOG_SIGNUP
             const ownerWallet = await this.hedgehog.signUp(email, password)
             await this.web3Manager.setOwnerWallet(ownerWallet)
-            await this.generateRecoveryLink(email)
+            await this.generateRecoveryLink()
           }
 
           phase = phases.UPLOAD_PROFILE_IMAGES
