@@ -1,11 +1,11 @@
-const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { recoverPersonalSignature } = require('eth-sig-util')
 const models = require('../models')
 
 const toQueryStr = (obj) => {
   return '?' +
     Object.keys(obj).map((key) => {
-      return key + '=' + obj[key]
+      return key + '=' + encodeURIComponent(obj[key])
     }).join('&')
 }
 
@@ -53,19 +53,26 @@ module.exports = function (app) {
     let recoveryLink = host + toQueryStr(recoveryParams)
 
     const emailParams = {
-      from: 'Audius Recovery <postmaster@mail.audius.co>',
-      to: email,
-      subject: 'IMPORTANT: RECOVERY INFORMATION',
-      text: `${recoveryLink}`
-    }
-    await new Promise((resolve, reject) => {
-      mg.messages().send(emailParams, function (error, body) {
-        if (error) {
-          reject(error)
-        }
-        resolve(body)
+      from: 'Audius Recovery <recovery@audius.co>',
+      to: `${email}`,
+      subject: 'Password Recovery',
+      template: 'recovery',
+      'h:X-Mailgun-Variables': JSON.stringify({
+        'recovery_link': recoveryLink
       })
-    })
-    return successResponse({ status: true })
+    }
+    try {
+      await new Promise((resolve, reject) => {
+        mg.messages().send(emailParams, (error, body) => {
+          if (error) {
+            reject(error)
+          }
+          resolve(body)
+        })
+      })
+      return successResponse({ status: true })
+    } catch (e) {
+      return errorResponseServerError(e)
+    }
   }))
 }
