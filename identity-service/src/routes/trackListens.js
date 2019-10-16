@@ -15,6 +15,107 @@ let oneWeekInMs = oneDayInMs * 7
 let oneMonthInMs = oneDayInMs * 30
 let oneYearInMs = oneMonthInMs * 12
 
+const parseTimeframe = (inputTime) => {
+  switch (inputTime) {
+    case 'day':
+    case 'week':
+    case 'month':
+    case 'year':
+    case 'millennium':
+      break
+    default:
+      inputTime = undefined
+  }
+
+  // Allow default empty value
+  if (inputTime === undefined) {
+    inputTime = 'millennium'
+  }
+  return inputTime
+}
+
+const getTrackListens = async (
+  idList,
+  timeFrame = undefined,
+  startTime = undefined,
+  endTime = undefined,
+  limit = undefined,
+  offset = undefined) => {
+  if (idList !== undefined && !Array.isArray(idList)) {
+    return errorResponseBadRequest('Invalid id list provided. Please provide an array of track IDs')
+  }
+  let boundariesRequested = false
+  try {
+    if (startTime !== undefined && endTime !== undefined) {
+      startTime = Date.parse(startTime)
+      endTime = Date.parse(endTime)
+      boundariesRequested = true
+    }
+  } catch (e) {
+    logger.error(e)
+  }
+
+  // Allow default empty value
+  if (timeFrame === undefined) {
+    timeFrame = 'millennium'
+  }
+
+  let dbQuery = {
+    attributes: [
+      [models.Sequelize.col('trackId'), 'trackId'],
+      [
+        models.Sequelize.fn('date_trunc', timeFrame, models.Sequelize.col('hour')),
+        'date'
+      ],
+      [models.Sequelize.fn('sum', models.Sequelize.col('listens')), 'listens']
+    ],
+    group: ['trackId', 'date'],
+    order: [[models.Sequelize.col('listens'), 'DESC']],
+    where: {}
+  }
+  if (idList && idList.length > 0) {
+    dbQuery.where.trackId = { [models.Sequelize.Op.in]: idList }
+  }
+
+  if (limit) {
+    dbQuery.limit = limit
+  }
+
+  if (offset) {
+    dbQuery.offset = offset
+  }
+
+  if (boundariesRequested) {
+    dbQuery.where.hour = { [models.Sequelize.Op.gte]: startTime, [models.Sequelize.Op.lte]: endTime }
+  }
+  let listenCounts = await models.TrackListenCount.findAll(dbQuery)
+  let output = {}
+  for (let i = 0; i < listenCounts.length; i++) {
+    let currentEntry = listenCounts[i]
+    let values = currentEntry.dataValues
+    let date = (values['date']).toISOString()
+    let listens = parseInt(values.listens)
+    currentEntry.dataValues.listens = listens
+    let trackId = values.trackId
+    if (!output.hasOwnProperty(date)) {
+      output[date] = {}
+      output[date]['utcMilliseconds'] = values['date'].getTime()
+      output[date]['totalListens'] = 0
+      output[date]['trackIds'] = []
+      output[date]['listenCounts'] = []
+    }
+
+    output[date]['totalListens'] += listens
+    if (!output[date]['trackIds'].includes(trackId)) {
+      output[date]['trackIds'].push(trackId)
+    }
+
+    output[date]['listenCounts'].push(currentEntry)
+    output[date]['timeFrame'] = timeFrame
+  }
+  return output
+}
+
 module.exports = function (app) {
   app.post('/tracks/:id/listen', handleResponse(async (req, res) => {
     const trackId = parseInt(req.params.id)
@@ -42,7 +143,15 @@ module.exports = function (app) {
    *    - <time> - day, week, month, year
    *    - returns all track listen info for given time period, sorted by play count
    *
-   *  query parameters (optional):
+   *  POST body parameters (optional):
+   *    limit (int) - limits number of results
+   *    offset (int) - offset results
+   *    start (string) - ISO time string, used to define the start time period for query
+   *    end (string) - ISO time string, used to define the end time period for query
+   *    start/end are BOTH required if filtering based on time
+   *    track_ids - filter results for specific track(s)
+   *
+   *  GET query parameters (optional):
    *    limit (int) - limits number of results
    *    offset (int) - offset results
    *    start (string) - ISO time string, used to define the start time period for query
@@ -50,102 +159,39 @@ module.exports = function (app) {
    *    start/end are BOTH required if filtering based on time
    *    id (array of int) - filter results for specific track(s)
    */
+  app.post('/tracks/listens/:timeframe*?', handleResponse(async (req, res, next) => {
+    let body = req.body
+    let idList = body.track_ids
+    let limit = body.limit
+    let offset = body.offset
+    let startTime = body.startTime
+    let endTime = body.endTime
+    let time = parseTimeframe(req.params.timeframe)
+    let output = await getTrackListens(
+      idList,
+      time,
+      startTime,
+      endTime,
+      limit,
+      offset
+    )
+    return successResponse(output)
+  }))
+
   app.get('/tracks/listens/:timeframe*?', handleResponse(async (req, res) => {
     let limit = req.query.limit
     let offset = req.query.offset
     let idList = req.query.id
     let startTime = req.query.start
     let endTime = req.query.end
-    let boundariesRequested = false
-
-    if (idList !== undefined && !Array.isArray(idList)) {
-      return errorResponseBadRequest('Invalid id list provided. Please provide an array of track IDs')
-    }
-
-    try {
-      if (startTime !== undefined && endTime !== undefined) {
-        startTime = Date.parse(req.query.start)
-        endTime = Date.parse(req.query.end)
-        boundariesRequested = true
-      }
-    } catch (e) {
-      logger.error(e)
-    }
-
-    let time = req.params.timeframe
-    switch (time) {
-      case 'day':
-      case 'week':
-      case 'month':
-      case 'year':
-      case 'millennium':
-        break
-      default:
-        time = undefined
-    }
-
-    // Allow default empty value
-    if (time === undefined) {
-      time = 'millennium'
-    }
-
-    let dbQuery = {
-      attributes: [
-        [models.Sequelize.col('trackId'), 'trackId'],
-        [
-          models.Sequelize.fn('date_trunc', time, models.Sequelize.col('hour')),
-          'date'
-        ],
-        [models.Sequelize.fn('sum', models.Sequelize.col('listens')), 'listens']
-      ],
-      group: ['trackId', 'date'],
-      order: [[models.Sequelize.col('listens'), 'DESC']],
-      where: {}
-    }
-
-    // If id list present, add filter
-    if (idList && idList.length > 0) {
-      dbQuery.where.trackId = { [models.Sequelize.Op.in]: idList }
-    }
-
-    if (limit) {
-      dbQuery.limit = limit
-    }
-
-    if (offset) {
-      dbQuery.offset = offset
-    }
-
-    if (boundariesRequested) {
-      dbQuery.where.hour = { [models.Sequelize.Op.gte]: startTime, [models.Sequelize.Op.lte]: endTime }
-    }
-
-    let listenCounts = await models.TrackListenCount.findAll(dbQuery)
-    let output = {}
-    for (let i = 0; i < listenCounts.length; i++) {
-      let currentEntry = listenCounts[i]
-      let values = currentEntry.dataValues
-      let date = (values['date']).toISOString()
-      let listens = parseInt(values.listens)
-      currentEntry.dataValues.listens = listens
-      let trackId = values.trackId
-      if (!output.hasOwnProperty(date)) {
-        output[date] = {}
-        output[date]['utcMilliseconds'] = values['date'].getTime()
-        output[date]['totalListens'] = 0
-        output[date]['trackIds'] = []
-        output[date]['listenCounts'] = []
-      }
-
-      output[date]['totalListens'] += listens
-      if (!output[date]['trackIds'].includes(trackId)) {
-        output[date]['trackIds'].push(trackId)
-      }
-
-      output[date]['listenCounts'].push(currentEntry)
-      output[date]['timeFrame'] = time
-    }
-
+    let time = parseTimeframe(req.params.timeframe)
+    let output = await getTrackListens(
+      idList,
+      time,
+      startTime,
+      endTime,
+      limit,
+      offset)
     return successResponse(output)
   }))
 

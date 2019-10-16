@@ -1,4 +1,5 @@
 import logging # pylint: disable=C0302
+import json
 import requests
 from sqlalchemy import func, desc
 from urllib.parse import urljoin
@@ -554,10 +555,15 @@ def get_track_play_counts(track_ids):
 
     # Create and query identity service endpoint
     identity_tracks_endpoint = urljoin(identity_url, 'tracks/listens')
+
+    post_body = {}
+    post_body['track_ids'] = track_ids
     try:
-        resp = requests.get(identity_tracks_endpoint, params=querystring)
+        resp = requests.post(identity_tracks_endpoint, json=post_body)
     except Exception as e:
-        logger.error(f'Error retrieving play count - {identity_tracks_endpoint}, {querystring}')
+        logger.error(
+            f'Error retrieving play count - {identity_tracks_endpoint}, {querystring}, {e}'
+        )
         return track_listen_counts
 
     json_resp = resp.json()
