@@ -102,6 +102,7 @@ class Account extends Base {
             phase = phases.HEDGEHOG_SIGNUP
             const ownerWallet = await this.hedgehog.signUp(email, password)
             await this.web3Manager.setOwnerWallet(ownerWallet)
+            await this.generateRecoveryLink()
           }
 
           phase = phases.UPLOAD_PROFILE_IMAGES
@@ -132,6 +133,7 @@ class Account extends Base {
             phase = phases.HEDGEHOG_SIGNUP
             const ownerWallet = await this.hedgehog.signUp(email, password)
             await this.web3Manager.setOwnerWallet(ownerWallet)
+            await this.generateRecoveryLink()
           }
 
           phase = phases.UPLOAD_PROFILE_IMAGES
@@ -149,6 +151,32 @@ class Account extends Base {
     this.userStateManager.setCurrentUser(metadata)
 
     return { userId, error: false }
+  }
+
+  async generateRecoveryLink () {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    try {
+      let recoveryInfo = await this.hedgehog.generateRecoveryInfo()
+
+      const unixTs = Math.round((new Date()).getTime() / 1000) // current unix timestamp (sec)
+      const data = `Click sign to authenticate with identity service: ${unixTs}`
+      const signature = await this.web3Manager.sign(data)
+
+      const recoveryData = {
+        login: recoveryInfo.login,
+        host: recoveryInfo.host,
+        data: data,
+        signature: signature
+      }
+
+      await this.identityService.sendRecoveryInfo(recoveryData)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  async resetPassword (email, newpassword) {
+    return this.hedgehog.resetPassword(email, newpassword)
   }
 
   /**

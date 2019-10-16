@@ -16,7 +16,7 @@
     "lint-fix": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
-    "@audius/hedgehog": "^1.0.3",
+    "@audius/hedgehog": "^1.0.5",
     "abi-decoder": "^1.2.0",
     "async-retry": "^1.2.3",
     "axios": "^0.19.0",

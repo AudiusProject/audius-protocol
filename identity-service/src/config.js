@@ -162,7 +162,12 @@ const config = convict({
     env: 'minimumBalance',
     default: null
   },
-
+  mailgunApiKey: {
+    doc: 'Mailgun API key used to send emails',
+    format: String,
+    env: 'mailgunApiKey',
+    default: null
+  },
   // loaded through contract-config.json, if an env variable declared, env var takes precendence
   registryAddress: {
     doc: 'Registry address of contracts deployed on web3Provider',
