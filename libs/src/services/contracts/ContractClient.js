@@ -69,6 +69,9 @@ class ContractClient {
    */
   async getMethod (methodName, ...args) {
     await this.init()
+    if (!(methodName in this._contract.methods)) {
+      throw new Error(`Contract method ${methodName} not found in ${Object.keys(this._contract.methods)}`)
+    }
     return this._contract.methods[methodName](...args)
   }
 }
