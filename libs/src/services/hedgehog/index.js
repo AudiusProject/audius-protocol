@@ -86,6 +86,26 @@ class HedgehogWrapper {
       }
     }
 
+    /**
+     * Generate secure credentials to allow login
+     * @param {String} username username
+     */
+    hedgehog.generateRecoveryInfo = async () => {
+      let entropy = await WalletManager.getEntropyFromLocalStorage()
+      if (entropy === null) {
+        throw new Error('generateRecoveryLink - missing entropy')
+      }
+      let btoa = window.btoa
+      if (!btoa) {
+        throw new Error('generateRecoveryLink - missing required btoa function')
+      }
+      let currentHost = window.location.origin
+      let recoveryInfo = {}
+      recoveryInfo.login = btoa(entropy)
+      recoveryInfo.host = currentHost
+      return recoveryInfo
+    }
+
     return hedgehog
   }
 }
