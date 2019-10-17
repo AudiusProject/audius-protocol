@@ -28,22 +28,17 @@ const UserLibraryFactoryRegistryKey = 'UserLibraryFactory'
 const IPLDBlacklistFactoryRegistryKey = 'IPLDBlacklistFactory'
 
 class AudiusContracts {
-  constructor (web3Manager, registryAddress) {
+  constructor (web3Manager, registryAddress, isServer) {
     this.web3Manager = web3Manager
     this.registryAddress = registryAddress
-
-    this.clients = []
-    this.getRegistryAddressForContract = this.getRegistryAddressForContract.bind(this)
-  }
-
-  async init () {
-    if (!this.web3Manager || !this.registryAddress) throw new Error('Failed to initialize DataContracts')
+    this.isServer = isServer
 
     this.RegistryClient = new RegistryClient(
       this.web3Manager,
       RegistryABI,
       this.registryAddress
     )
+    this.getRegistryAddressForContract = this.getRegistryAddressForContract.bind(this)
 
     this.UserFactoryClient = new UserFactoryClient(
       this.web3Manager,
@@ -51,7 +46,6 @@ class AudiusContracts {
       UserFactoryRegistryKey,
       this.getRegistryAddressForContract
     )
-    this.clients.push(this.UserFactoryClient)
 
     this.TrackFactoryClient = new TrackFactoryClient(
       this.web3Manager,
@@ -59,7 +53,6 @@ class AudiusContracts {
       TrackFactoryRegistryKey,
       this.getRegistryAddressForContract
     )
-    this.clients.push(this.TrackFactoryClient)
 
     this.SocialFeatureFactoryClient = new SocialFeatureFactoryClient(
       this.web3Manager,
@@ -67,7 +60,6 @@ class AudiusContracts {
       SocialFeatureFactoryRegistryKey,
       this.getRegistryAddressForContract
     )
-    this.clients.push(this.SocialFeatureFactoryClient)
 
     this.PlaylistFactoryClient = new PlaylistFactoryClient(
       this.web3Manager,
@@ -75,7 +67,6 @@ class AudiusContracts {
       PlaylistFactoryRegistryKey,
       this.getRegistryAddressForContract
     )
-    this.clients.push(this.PlaylistFactoryClient)
 
     this.UserLibraryFactoryClient = new UserLibraryFactoryClient(
       this.web3Manager,
@@ -83,7 +74,6 @@ class AudiusContracts {
       UserLibraryFactoryRegistryKey,
       this.getRegistryAddressForContract
     )
-    this.clients.push(this.UserLibraryFactoryClient)
 
     this.IPLDBlacklistFactoryClient = new IPLDBlacklistFactoryClient(
       this.web3Manager,
@@ -91,9 +81,21 @@ class AudiusContracts {
       IPLDBlacklistFactoryRegistryKey,
       this.getRegistryAddressForContract
     )
-    this.clients.push(this.IPLDBlacklistFactoryClient)
 
-    await Promise.all(this.clients.map(async c => c.init()))
+    this.contractClients = [
+      this.UserFactoryClient,
+      this.TrackFactoryClient,
+      this.SocialFeatureFactoryClient,
+      this.PlaylistFactoryClient,
+      this.UserLibraryFactoryClient,
+      this.IPLDBlacklistFactoryClient
+    ]
+  }
+
+  async init () {
+    if (this.isServer) {
+      await Promise.all(this.contractClients.map(client => client.init()))
+    }
   }
 
   /* ------- CONTRACT META-FUNCTIONS ------- */

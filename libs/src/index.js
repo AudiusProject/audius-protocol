@@ -89,11 +89,11 @@ class AudiusLibs {
    * Configures an eth web3
    * @param {string} tokenAddress
    * @param {string} registryAddress
-   * @param {object} web3
+   * @param {object} url web3 provider endpoint
    * @param {string} ownerWallet
    */
-  static configEthWeb3 (tokenAddress, registryAddress, web3, ownerWallet) {
-    return { tokenAddress, registryAddress, web3, ownerWallet }
+  static configEthWeb3 (tokenAddress, registryAddress, url, ownerWallet) {
+    return { tokenAddress, registryAddress, url, ownerWallet }
   }
 
   /**
@@ -145,7 +145,6 @@ class AudiusLibs {
   /** Init services based on presence of a relevant config. */
   async init () {
     this.userStateManager = new UserStateManager()
-    this.web3Config = await this.web3Config
 
     /** Identity Service */
     if (this.identityServiceConfig) {
@@ -171,9 +170,8 @@ class AudiusLibs {
       await this.web3Manager.init()
     }
 
-    let toInit = []
-
     /** Contracts */
+    let contractsToInit = []
     if (this.ethWeb3Manager) {
       this.ethContracts = new EthContracts(
         this.ethWeb3Manager,
@@ -181,17 +179,16 @@ class AudiusLibs {
         this.ethWeb3Config ? this.ethWeb3Config.registryAddress : null,
         this.isServer
       )
-      toInit.push(this.ethContracts.init())
+      contractsToInit.push(this.ethContracts.init())
     }
-
     if (this.web3Manager) {
       this.contracts = new AudiusContracts(
         this.web3Manager,
-        this.web3Config ? this.web3Config.registryAddress : null)
-      toInit.push(this.contracts.init())
+        this.web3Config ? this.web3Config.registryAddress : null,
+        this.isServer)
+      contractsToInit.push(this.contracts.init())
     }
-
-    await Promise.all(toInit)
+    await Promise.all(contractsToInit)
 
     /** Discovery Provider */
     if (this.discoveryProviderConfig) {

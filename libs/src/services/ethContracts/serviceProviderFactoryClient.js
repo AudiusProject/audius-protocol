@@ -1,4 +1,5 @@
 const Utils = require('../../utils')
+const ContractClient = require('../contracts/ContractClient')
 const axios = require('axios')
 const _ = require('lodash')
 const BN = require('bn.js')
@@ -6,7 +7,7 @@ const BN = require('bn.js')
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
-class ServiceProviderFactoryClient {
+class ServiceProviderFactoryClient extends ContractClient {
   constructor (
     ethWeb3Manager,
     contractABI,
@@ -15,18 +16,9 @@ class ServiceProviderFactoryClient {
     audiusTokenClient,
     stakingProxyClient
   ) {
-    this.ethWeb3Manager = ethWeb3Manager
-    this.contractABI = contractABI
-    this.contractRegistryKey = contractRegistryKey
-    this.getRegistryAddress = getRegistryAddress
+    super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress)
     this.audiusTokenClient = audiusTokenClient
     this.stakingProxyClient = stakingProxyClient
-    this.web3 = this.ethWeb3Manager.getWeb3()
-  }
-
-  async init () {
-    this.contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
-    this.ServiceProviderFactory = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
   }
 
   async registerWithDelegate (serviceType, endpoint, amount, delegateOwnerWallet) {
@@ -55,12 +47,12 @@ class ServiceProviderFactoryClient {
       amount)
 
     // Register and stake
-    let contractMethod = this.ServiceProviderFactory.methods.register(
+    let method = await this.getMethod('register',
       Utils.utf8ToHex(serviceType),
       endpoint,
       amount,
       delegateOwnerWallet)
-    let tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
+    let tx = await this.web3Manager.sendTransaction(method, 1000000)
     return {
       txReceipt: tx,
       spID: parseInt(tx.events.RegisteredServiceProvider.returnValues._spID),
@@ -76,18 +68,18 @@ class ServiceProviderFactoryClient {
       serviceType,
       endpoint,
       amount,
-      this.ethWeb3Manager.getWalletAddress())
+      this.web3Manager.getWalletAddress())
   }
 
   async increaseStake (serviceType, endpoint, amount) {
     let tx0 = await this.audiusTokenClient.approve(
       this.stakingProxyClient.contractAddress,
       amount)
-    let contractMethod = this.ServiceProviderFactory.methods.increaseServiceStake(
+    let method = await this.getMethod('increaseServiceStake',
       Utils.utf8ToHex(serviceType),
       endpoint,
       amount)
-    let tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
+    let tx = await this.web3Manager.sendTransaction(method, 1000000)
     return {
       txReceipt: tx,
       tokenApproveReceipt: tx0
@@ -95,11 +87,11 @@ class ServiceProviderFactoryClient {
   }
 
   async decreaseStake (serviceType, endpoint, amount) {
-    let contractMethod = this.ServiceProviderFactory.methods.decreaseServiceStake(
+    let method = await this.getMethod('decreaseServiceStake',
       Utils.utf8ToHex(serviceType),
       endpoint,
       amount)
-    let tx = await this.ethWeb3Manager.sendTransaction(contractMethod, 1000000)
+    let tx = await this.web3Manager.sendTransaction(method, 1000000)
     return {
       txReceipt: tx
     }
@@ -123,10 +115,10 @@ class ServiceProviderFactoryClient {
     }
     */
 
-    let contractMethod = this.ServiceProviderFactory.methods.deregister(
+    let method = await this.getMethod('deregister',
       Utils.utf8ToHex(serviceType),
       endpoint)
-    let tx = await this.ethWeb3Manager.sendTransaction(contractMethod)
+    let tx = await this.web3Manager.sendTransaction(method)
     return {
       txReceipt: tx,
       spID: parseInt(tx.events.DeregisteredServiceProvider.returnValues._spID),
@@ -137,23 +129,26 @@ class ServiceProviderFactoryClient {
   }
 
   async getTotalServiceTypeProviders (serviceType) {
-    return this.ServiceProviderFactory.methods.getTotalServiceTypeProviders(
+    const method = await this.getMethod('getTotalServiceTypeProviders',
       Utils.utf8ToHex(serviceType)
-    ).call()
+    )
+    return method.call()
   }
 
   async getServiceProviderIdFromEndpoint (endpoint) {
-    let info = await this.ServiceProviderFactory.methods.getServiceProviderIdFromEndpoint(
+    const method = await this.getMethod('getServiceProviderIdFromEndpoint',
       Utils.keccak256(endpoint)
-    ).call()
+    )
+    let info = await method.call()
     return info
   }
 
   async getServiceProviderInfo (serviceType, serviceId) {
-    let info = await this.ServiceProviderFactory.methods.getServiceProviderInfo(
+    const method = await this.getMethod('getServiceProviderInfo',
       Utils.utf8ToHex(serviceType),
       serviceId
-    ).call()
+    )
+    let info = await method.call()
     return {
       owner: info.owner,
       endpoint: info.endpoint,
@@ -179,10 +174,11 @@ class ServiceProviderFactoryClient {
   }
 
   async getServiceProviderIdFromAddress (ownerAddress, serviceType) {
-    let info = await this.ServiceProviderFactory.methods.getServiceProviderIdFromAddress(
+    const method = await this.getMethod('getServiceProviderIdFromAddress',
       ownerAddress,
       Utils.utf8ToHex(serviceType)
-    ).call()
+    )
+    let info = await method.call()
     return info
   }
 

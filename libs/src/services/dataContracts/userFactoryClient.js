@@ -1,34 +1,23 @@
+const ContractClient = require('../contracts/ContractClient')
 const signatureSchemas = require('../../../data-contracts/signatureSchemas')
 const Utils = require('../../utils')
 const sigUtil = require('eth-sig-util')
 const BufferSafe = require('safe-buffer').Buffer
 
-class UserFactoryClient {
-  constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress) {
-    this.web3Manager = web3Manager
-    this.contractABI = contractABI
-    this.contractRegistryKey = contractRegistryKey
-    this.getRegistryAddress = getRegistryAddress
-
-    this.web3 = this.web3Manager.getWeb3()
-  }
-
-  async init () {
-    this.contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
-    this.UserFactory = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
-  }
-
+class UserFactoryClient extends ContractClient {
   /* ------- GETTERS ------- */
 
   async getUser (userId) {
-    return this.UserFactory.methods.getUser(userId).call()
+    const method = await this.getMethod('getUser', userId)
+    return method.call()
   }
 
   /** valid = does not exist and meets handle requirements (defined on chain) */
   async handleIsValid (handle) {
-    return this.UserFactory.methods.handleIsValid(
+    const method = await this.getMethod('handleIsValid',
       Utils.utf8ToHex(handle)
-    ).call()
+    )
+    return method.call()
   }
 
   /* ------- SETTERS ------- */
@@ -38,15 +27,16 @@ class UserFactoryClient {
 
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
+    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getAddUserRequestData(
       chainId,
-      this.contractAddress,
+      contractAddress,
       handle,
       nonce
     )
 
     const sig = await this.web3Manager.signTypedData(signatureData)
-    const contractMethod = this.UserFactory.methods.addUser(
+    const method = await this.getMethod('addUser',
       this.web3Manager.getWalletAddress(),
       Utils.utf8ToHex(handle),
       nonce,
@@ -54,9 +44,9 @@ class UserFactoryClient {
     )
 
     const tx = await this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
     return {
       txReceipt: tx,
@@ -70,17 +60,18 @@ class UserFactoryClient {
       userId,
       multihashDigest
     )
-    const contractMethod = this.UserFactory.methods.updateMultihash(
+    const method = await this.getMethod('updateMultihash',
       userId,
       multihashDigest,
       nonce,
       sig
     )
+    const contractAddress = await this.getAddress()
 
     const tx = await this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
     return {
       txReceipt: tx,
@@ -96,17 +87,18 @@ class UserFactoryClient {
       userId,
       name
     )
-    const contractMethod = this.UserFactory.methods.updateName(
+    const method = await this.getMethod('updateName',
       userId,
       Utils.utf8ToHex(name),
       nonce,
       sig
     )
+    const contractAddress = await this.getAddress()
 
     const tx = await this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
     return {
       txReceipt: tx,
@@ -122,17 +114,18 @@ class UserFactoryClient {
       userId,
       location
     )
-    const contractMethod = this.UserFactory.methods.updateLocation(
+    const method = await this.getMethod('updateLocation',
       userId,
       Utils.utf8ToHex(location),
       nonce,
       sig
     )
+    const contractAddress = await this.getAddress()
 
     const tx = await this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
     return {
       txReceipt: tx,
@@ -146,17 +139,18 @@ class UserFactoryClient {
       userId,
       bio
     )
-    const contractMethod = this.UserFactory.methods.updateBio(
+    const method = await this.getMethod('updateBio',
       userId,
       bio,
       nonce,
       sig
     )
+    const contractAddress = await this.getAddress()
 
     const tx = await this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
     return {
       txReceipt: tx,
@@ -170,17 +164,18 @@ class UserFactoryClient {
       userId,
       profilePhotoMultihashDigest
     )
-    const contractMethod = this.UserFactory.methods.updateProfilePhoto(
+    const method = await this.getMethod('updateProfilePhoto',
       userId,
       profilePhotoMultihashDigest,
       nonce,
       sig
     )
+    const contractAddress = await this.getAddress()
 
     const tx = await this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
     return {
       txReceipt: tx,
@@ -194,17 +189,18 @@ class UserFactoryClient {
       userId,
       coverPhotoMultihashDigest
     )
-    const contractMethod = this.UserFactory.methods.updateCoverPhoto(
+    const method = await this.getMethod('updateCoverPhoto',
       userId,
       coverPhotoMultihashDigest,
       nonce,
       sig
     )
+    const contractAddress = await this.getAddress()
 
     const tx = await this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
     return {
       txReceipt: tx,
@@ -218,17 +214,18 @@ class UserFactoryClient {
       userId,
       isCreator
     )
-    const contractMethod = this.UserFactory.methods.updateIsCreator(
+    const method = await this.getMethod('updateIsCreator',
       userId,
       isCreator,
       nonce,
       sig
     )
+    const contractAddress = await this.getAddress()
 
     const tx = await this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
     return {
       txReceipt: tx,
@@ -246,20 +243,21 @@ class UserFactoryClient {
    * @param {string} privateKey 64 character hex string
    */
   async updateIsVerified (userId, isVerified, privateKey) {
+    const contractAddress = await this.getAddress()
     const [nonce, sig] = await this.getUpdateNonceAndSig(
       signatureSchemas.generators.getUpdateUserVerifiedRequestData,
       userId,
       isVerified,
       privateKey
     )
-    const contractMethod = this.UserFactory.methods.updateIsVerified(
+    const method = await this.getMethod('updateIsVerified',
       userId,
       isVerified,
       nonce,
       sig
     )
 
-    return [contractMethod.encodeABI(), this.contractAddress]
+    return [method.encodeABI(), contractAddress]
   }
 
   async updateCreatorNodeEndpoint (userId, creatorNodeEndpoint) {
@@ -268,17 +266,18 @@ class UserFactoryClient {
       userId,
       creatorNodeEndpoint
     )
-    const contractMethod = this.UserFactory.methods.updateCreatorNodeEndpoint(
+    const method = await this.getMethod('updateCreatorNodeEndpoint',
       userId,
       creatorNodeEndpoint,
       nonce,
       sig
     )
+    const contractAddress = await this.getAddress()
 
     const tx = await this.web3Manager.sendTransaction(
-      contractMethod,
+      method,
       this.contractRegistryKey,
-      this.contractAddress
+      contractAddress
     )
     return {
       txReceipt: tx,
@@ -300,7 +299,8 @@ class UserFactoryClient {
   async getUpdateNonceAndSig (generatorFn, multihashDigest, newValue, privateKey) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3Manager.getWeb3().eth.net.getId()
-    const signatureData = generatorFn(chainId, this.contractAddress, multihashDigest, newValue, nonce)
+    const contractAddress = await this.getAddress()
+    const signatureData = generatorFn(chainId, contractAddress, multihashDigest, newValue, nonce)
     let sig
     if (privateKey) {
       sig = sigUtil.signTypedData(BufferSafe.from(privateKey, 'hex'), { data: signatureData })

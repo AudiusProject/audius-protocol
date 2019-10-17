@@ -1,35 +1,22 @@
+const ContractClient = require('../contracts/ContractClient')
 const signatureSchemas = require('../../../data-contracts/signatureSchemas')
 const sigUtil = require('eth-sig-util')
 const BufferSafe = require('safe-buffer').Buffer
 
-class IPLDBlacklistFactoryClient {
-  constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress) {
-    this.web3Manager = web3Manager
-    this.contractABI = contractABI
-    this.contractRegistryKey = contractRegistryKey
-    this.getRegistryAddress = getRegistryAddress
-
-    this.web3 = this.web3Manager.getWeb3()
-  }
-
-  async init () {
-    this.contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
-    this.IPLDBlacklistFactory = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
-  }
-
+class IPLDBlacklistFactoryClient extends ContractClient {
   async addIPLDToBlacklist (multihashDigest, privateKey = null) {
     const [nonce, sig] = await this.getUpdateNonceAndSig(
       signatureSchemas.generators.addIPLDToBlacklistRequestData,
       multihashDigest,
       privateKey
     )
-    const contractMethod = this.IPLDBlacklistFactory.methods.addIPLDToBlacklist(
+    const method = await this.getMethod('addIPLDToBlacklist',
       multihashDigest,
       nonce,
       sig
     )
 
-    const receipt = await contractMethod.send({ from: this.web3Manager.getWalletAddress(), gas: 200000 })
+    const receipt = await method.send({ from: this.web3Manager.getWalletAddress(), gas: 200000 })
     return receipt
   }
 
@@ -47,7 +34,8 @@ class IPLDBlacklistFactoryClient {
   async getUpdateNonceAndSig (generatorFn, multihashDigest, privateKey) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
-    const signatureData = generatorFn(chainId, this.contractAddress, multihashDigest, nonce)
+    const contractAddress = await this.getAddress()
+    const signatureData = generatorFn(chainId, contractAddress, multihashDigest, nonce)
     let sig
     if (privateKey) {
       sig = sigUtil.signTypedData(BufferSafe.from(privateKey, 'hex'), { data: signatureData })
