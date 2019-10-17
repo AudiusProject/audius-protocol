@@ -72,6 +72,7 @@ class Users extends Base {
   /**
    * Return repost feed for requested user
    * @param {number} userId - requested user id
+   * @param {filter} string - filter by "all", "original", or "repost"
    * @param {number} limit - max # of items to return (for pagination)
    * @param {number} offset - offset into list to return from (for pagination)
    * @returns {Object} {Array of track and playlist metadata objects}
@@ -83,9 +84,9 @@ class Users extends Base {
    *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
-  async getUserRepostFeed (userId, limit = 100, offset = 0) {
+  async getUserRepostFeed (userId, filter, limit = 100, offset = 0) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getUserRepostFeed(userId, limit, offset)
+    return this.discoveryProvider.getUserRepostFeed(userId, filter, limit, offset)
   }
 
   /**

@@ -217,7 +217,7 @@ def get_feed():
     db = get_db()
 
     # filter should be one of ["all", "reposts", "original"]
-    if "filter" in request.args and request.args.get("filter") in ["all", "reposts", "original"]:
+    if "filter" in request.args and request.args.get("filter") in ["all", "repost", "original"]:
         feedFilter = request.args.get("filter")
     else:
         return api_helpers.error_response("Invalid filter provided")
@@ -301,7 +301,7 @@ def get_feed():
         created_playlist_ids = [playlist.playlist_id for playlist in created_playlists]
 
         # only grab the reposts if the user asked for them
-        if feedFilter in ["reposts", "all"]:
+        if feedFilter in ["repost", "all"]:
             # query items reposted by followees, sorted by oldest followee repost of item;
             # paginated by most recent repost timestamp
             # exclude items also created by followees to guarantee order determinism
@@ -376,7 +376,7 @@ def get_feed():
         if feedFilter == "original":
             tracks_to_process = created_tracks
             playlists_to_process = created_playlists
-        elif feedFilter == "reposts":
+        elif feedFilter == "repost":
             tracks_to_process = reposted_tracks
             playlists_to_process = reposted_playlists
         else:
@@ -384,7 +384,7 @@ def get_feed():
             playlists_to_process = created_playlists + reposted_playlists
 
         tracks = helpers.query_result_to_list(tracks_to_process)
-        playlists = helpers.query_result_to_list(created_playlists)
+        playlists = helpers.query_result_to_list(playlists_to_process)
 
         # define top level feed activity_timestamp to enable sorting
         # activity_timestamp: created_at if item created by followee, else reposted_at
