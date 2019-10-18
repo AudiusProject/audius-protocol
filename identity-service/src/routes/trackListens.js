@@ -274,7 +274,12 @@ module.exports = function (app) {
    *    - <time> - day, week, month, year
    *    - returns all tracks for given time period, sorted by play count
    *
-   *  query parameters (optional):
+   *  POST body parameters (optional):
+   *    limit (int) - limits number of results
+   *    offset (int) - offset results
+   *    track_ids (array of int) - filter results for specific track(s)
+   *
+   *  GET query parameters (optional):
    *    limit (int) - limits number of results
    *    offset (int) - offset results
    *    id (array of int) - filter results for specific track(s)
