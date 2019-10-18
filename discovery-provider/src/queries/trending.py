@@ -1,4 +1,5 @@
 import logging # pylint: disable=C0302
+import time as timelib
 import requests
 import sqlalchemy
 from sqlalchemy import func
@@ -11,7 +12,7 @@ from src.models import User, Track, RepostType, Follow, SaveType
 from src.utils.db_session import get_db
 from src.utils.config import shared_config
 from src.queries import response_name_constants
-from src.queries.query_helpers import get_repost_counts, get_pagination_vars, get_save_counts
+from src.queries.query_helpers import get_repost_counts, get_pagination_vars, get_save_counts, get_genre_list
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("trending", __name__)
@@ -34,10 +35,12 @@ def trending(time):
     genre = request.args.get("genre", default=None, type=str)
     if genre is not None:
         with db.scoped_session() as session:
+            genre_list = get_genre_list(genre)
+            logger.error(genre_list)
             genre_track_ids = (
                 session.query(Track.track_id)
                 .filter(
-                    Track.genre == genre,
+                    Track.genre.in_(genre_list),
                     Track.is_current == True,
                     Track.is_delete == False
                 )
@@ -49,7 +52,11 @@ def trending(time):
     # Query trending information from identity service
     resp = None
     try:
+        # TODO: Consider cache-ing results in redis here
+        start_time = timelib.time()
         resp = requests.post(identity_trending_endpoint, json=post_body)
+        duration = timelib.time() - start_time
+        logger.error(f"Time in POST: {duration}")
     except Exception as e:
         logger.error(
             f'Error retrieving trending info - {identity_trending_endpoint}, {post_body}'
@@ -142,7 +149,7 @@ def trending(time):
                         track_repost_counts[track_entry[response_name_constants.track_id]]
             else:
                 track_entry[response_name_constants.repost_count] = 0
-            
+
             # Populate save counts
             if track_entry[response_name_constants.track_id] in track_save_counts:
                 track_entry[response_name_constants.save_count] = \

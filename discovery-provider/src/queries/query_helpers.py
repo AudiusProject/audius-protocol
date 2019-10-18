@@ -24,6 +24,28 @@ maxLimit = 500
 defaultOffset = 0
 minOffset = 0
 
+# Used when generating genre list to special case Electronic tunes
+electronic_sub_genres = [
+  'Techno',
+  'Trap',
+  'House',
+  'Tech House',
+  'Deep House',
+  'Disco',
+  'Electro',
+  'Jungle',
+  'Progressive House',
+  'Hardstyle',
+  'Glitch Hop',
+  'Trance',
+  'Future Bass',
+  'Future House',
+  'Tropical House',
+  'Downtempo',
+  'Drum & Bass',
+  'Dubstep',
+  'Jersey Club',
+]
 
 ######## HELPERS ########
 
@@ -591,3 +613,11 @@ def paginate_query(query_obj, apply_offset=True):
     (limit, offset) = get_pagination_vars()
     query_obj = query_obj.limit(limit)
     return query_obj.offset(offset) if apply_offset else query_obj
+
+def get_genre_list(genre):
+    genre_list = []
+    genre_list.append(genre)
+    if genre == 'Electronic':
+        genre_list = genre_list + electronic_sub_genres
+    return genre_list
+
