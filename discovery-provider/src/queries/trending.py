@@ -36,7 +36,6 @@ def trending(time):
     if genre is not None:
         with db.scoped_session() as session:
             genre_list = get_genre_list(genre)
-            logger.error(genre_list)
             genre_track_ids = (
                 session.query(Track.track_id)
                 .filter(
