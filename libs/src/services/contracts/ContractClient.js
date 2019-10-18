@@ -45,15 +45,17 @@ class ContractClient {
 
     // Perform init
     this._isInitializing = true
-
-    this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
-    this._contract = new this.web3.eth.Contract(
-      this.contractABI,
-      this._contractAddress
-    )
-
-    this._isInitialized = false
-    this._isInitialized = true
+    try {
+      this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
+      this._contract = new this.web3.eth.Contract(
+        this.contractABI,
+        this._contractAddress
+      )
+      this._isInitialized = true
+    } catch (e) {
+      console.error(`Failed to initialize contract ${JSON.stringify(this.contractABI)}`, e)
+    }
+    this._isInitializing = false
   }
 
   /** Gets the contract address and ensures that the contract has initted. */
