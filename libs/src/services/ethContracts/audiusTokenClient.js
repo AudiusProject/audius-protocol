@@ -5,7 +5,7 @@ class AudiusTokenClient {
     this.contractAddress = contractAddress
 
     this.web3 = this.ethWeb3Manager.getWeb3()
-    this.AudiusTokenContract = new this.web3.eth.Contract(this.contractABI, this.contractAddress)	
+    this.AudiusTokenContract = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
   }
 
   /* ------- GETTERS ------- */

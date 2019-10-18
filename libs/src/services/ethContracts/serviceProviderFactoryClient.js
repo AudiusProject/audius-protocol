@@ -42,8 +42,9 @@ class ServiceProviderFactoryClient extends ContractClient {
     }
 
     // Approve token transfer operation
+    const contractAddress = await this.stakingProxyClient.getAddress()
     let tx0 = await this.audiusTokenClient.approve(
-      this.stakingProxyClient.contractAddress,
+      contractAddress,
       amount)
 
     // Register and stake
@@ -72,8 +73,9 @@ class ServiceProviderFactoryClient extends ContractClient {
   }
 
   async increaseStake (serviceType, endpoint, amount) {
+    const contractAddress = await this.stakingProxyClient.getAddress()
     let tx0 = await this.audiusTokenClient.approve(
-      this.stakingProxyClient.contractAddress,
+      contractAddress,
       amount)
     let method = await this.getMethod('increaseServiceStake',
       Utils.utf8ToHex(serviceType),
