@@ -30,7 +30,7 @@ module.exports = function (app) {
       return successResponse({ msg: 'No mailgun API Key found', status: true })
     }
 
-    let { host, login, data, signature } = req.body
+    let { host, login, data, signature, handle } = req.body
 
     if (!login) {
       return errorResponseBadRequest('Please provide valid login information')
@@ -40,6 +40,9 @@ module.exports = function (app) {
     }
     if (!data || !signature) {
       return errorResponseBadRequest('Please provide data and signature')
+    }
+    if (!handle) {
+      return errorResponseBadRequest('Please provide a handle')
     }
 
     let walletFromSignature = recoverPersonalSignature({ data: data, sig: signature })
@@ -61,7 +64,10 @@ module.exports = function (app) {
     }
     const recoveryLink = host + toQueryStr(recoveryParams)
 
-    const context = { recovery_link: recoveryLink }
+    const context = {
+      recovery_link: recoveryLink,
+      handle: handle
+    }
     const recoveryHtml = recoveryTemplate(context)
 
     const emailParams = {
