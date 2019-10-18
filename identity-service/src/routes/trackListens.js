@@ -116,6 +116,76 @@ const getTrackListens = async (
   return output
 }
 
+const getTrendingTracks = async (
+  idList,
+  timeFrame,
+  limit,
+  offset) => {
+  if (idList !== undefined && !Array.isArray(idList)) {
+    return errorResponseBadRequest('Invalid id list provided. Please provide an array of track IDs')
+  }
+
+  let dbQuery = {
+    attributes: ['trackId', [models.Sequelize.fn('sum', models.Sequelize.col('listens')), 'listens']],
+    group: ['trackId'],
+    order: [[models.Sequelize.col('listens'), 'DESC'], [models.Sequelize.col('trackId'), 'DESC']],
+    where: {}
+  }
+  // If id list present, add filter
+  if (idList && idList.length > 0) {
+    dbQuery.where.trackId = { [models.Sequelize.Op.in]: idList }
+  }
+
+  let currentHour = await getListenHour()
+  switch (timeFrame) {
+    case 'day':
+      let oneDayBefore = new Date(currentHour.getTime() - oneDayInMs)
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneDayBefore }
+      break
+    case 'week':
+      let oneWeekBefore = new Date(currentHour.getTime() - oneWeekInMs)
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneWeekBefore }
+      break
+    case 'month':
+      let oneMonthBefore = new Date(currentHour.getTime() - oneMonthInMs)
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneMonthBefore }
+      break
+    case 'year':
+      let oneYearBefore = new Date(currentHour.getTime() - oneYearInMs)
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneYearBefore }
+      break
+    case undefined:
+      break
+    default:
+      return errorResponseBadRequest('Invalid time parameter provided, use day/week/month/year or no parameter')
+  }
+  if (limit) {
+    dbQuery.limit = limit
+  }
+
+  if (offset) {
+    dbQuery.offset = offset
+  }
+
+  let listenCounts = await models.TrackListenCount.findAll(dbQuery)
+  let parsedListenCounts = []
+  let seenTrackIds = []
+  listenCounts.forEach((elem) => {
+    parsedListenCounts.push({ trackId: elem.trackId, listens: parseInt(elem.listens) })
+    seenTrackIds.push(elem.trackId)
+  })
+  const seenIdSet = new Set(seenTrackIds)
+  if (idList) {
+    idList.forEach((elem) => {
+      const id = parseInt(elem)
+      if (!seenIdSet.has(id)) {
+        parsedListenCounts.push({ trackId: id, listens: 0 })
+      }
+    })
+  }
+  return parsedListenCounts
+}
+
 module.exports = function (app) {
   app.post('/tracks/:id/listen', handleResponse(async (req, res) => {
     const trackId = parseInt(req.params.id)
@@ -215,74 +285,26 @@ module.exports = function (app) {
     let offset = req.query.offset
     let idList = req.query.id
 
-    if (idList !== undefined && !Array.isArray(idList)) {
-      return errorResponseBadRequest('Invalid id list provided. Please provide an array of track IDs')
-    }
+    let parsedListenCounts = await getTrendingTracks(
+      idList,
+      time,
+      limit,
+      offset)
 
-    let dbQuery = {
-      attributes: ['trackId', [models.Sequelize.fn('sum', models.Sequelize.col('listens')), 'listens']],
-      group: ['trackId'],
-      order: [[models.Sequelize.col('listens'), 'DESC'], [models.Sequelize.col('trackId'), 'DESC']],
-      where: {}
-    }
+    return successResponse({ listenCounts: parsedListenCounts })
+  }))
 
-    // If id list present, add filter
-    if (idList && idList.length > 0) {
-      dbQuery.where.trackId = { [models.Sequelize.Op.in]: idList }
-    }
-
-    let currentHour = await getListenHour()
-
-    switch (time) {
-      case 'day':
-        let oneDayBefore = new Date(currentHour.getTime() - oneDayInMs)
-        dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneDayBefore }
-        break
-      case 'week':
-        let oneWeekBefore = new Date(currentHour.getTime() - oneWeekInMs)
-        dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneWeekBefore }
-        break
-      case 'month':
-        let oneMonthBefore = new Date(currentHour.getTime() - oneMonthInMs)
-        dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneMonthBefore }
-        break
-      case 'year':
-        let oneYearBefore = new Date(currentHour.getTime() - oneYearInMs)
-        dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneYearBefore }
-        break
-      case undefined:
-        break
-      default:
-        return errorResponseBadRequest('Invalid time parameter provided, use day/week/month/year or no parameter')
-    }
-
-    if (limit) {
-      dbQuery.limit = limit
-    }
-
-    if (offset) {
-      dbQuery.offset = offset
-    }
-
-    let listenCounts = await models.TrackListenCount.findAll(dbQuery)
-
-    let parsedListenCounts = []
-    let seenTrackIds = []
-    listenCounts.forEach((elem) => {
-      parsedListenCounts.push({ trackId: elem.trackId, listens: parseInt(elem.listens) })
-      seenTrackIds.push(elem.trackId)
-    })
-
-    const seenIdSet = new Set(seenTrackIds)
-    if (idList) {
-      idList.forEach((elem) => {
-        const id = parseInt(elem)
-        if (!seenIdSet.has(id)) {
-          parsedListenCounts.push({ trackId: id, listens: 0 })
-        }
-      })
-    }
-
+  app.post('/tracks/trending/:timeframe*?', handleResponse(async (req, res) => {
+    let time = req.params.time
+    let body = req.body
+    let idList = body.track_ids
+    let limit = body.limit
+    let offset = body.offset
+    let parsedListenCounts = await getTrendingTracks(
+      idList,
+      time,
+      limit,
+      offset)
     return successResponse({ listenCounts: parsedListenCounts })
   }))
 }

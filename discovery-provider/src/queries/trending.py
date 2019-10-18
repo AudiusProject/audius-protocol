@@ -23,18 +23,36 @@ bp = Blueprint("trending", __name__)
 def trending(time):
     identity_url = shared_config['discprov']['identity_service_url']
     identity_trending_endpoint = urljoin(identity_url, f"/tracks/trending/{time}")
+    db = get_db()
 
     (limit, offset) = get_pagination_vars()
-    queryparams = {}
-    queryparams["limit"] = limit
-    queryparams["offset"] = offset
+    post_body = {}
+    post_body["limit"] = limit
+    post_body["offset"] = offset
 
+    # Retrieve genre and query all tracks if required
+    genre = request.args.get("genre", default=None, type=str)
+    if genre is not None:
+        with db.scoped_session() as session:
+            genre_track_ids = (
+                session.query(Track.track_id)
+                .filter(
+                    Track.genre == genre,
+                    Track.is_current == True,
+                    Track.is_delete == False
+                )
+                .all()
+            )
+            genre_specific_track_ids = [record[0] for record in genre_track_ids]
+            post_body["track_ids"] = genre_specific_track_ids
+
+    # Query trending information from identity service
     resp = None
     try:
-        resp = requests.get(identity_trending_endpoint, params=queryparams)
+        resp = requests.post(identity_trending_endpoint, json=post_body)
     except Exception as e:
         logger.error(
-            f'Error retrieving trending info - {identity_trending_endpoint}, {queryparams}'
+            f'Error retrieving trending info - {identity_trending_endpoint}, {post_body}'
         )
         raise e
 
@@ -50,7 +68,6 @@ def trending(time):
 
     track_ids = [track[response_name_constants.track_id] for track in listen_counts]
 
-    db = get_db()
     with db.scoped_session() as session:
         # Filter tracks to not-deleted ones so trending order is preserved
         not_deleted_track_ids = (
