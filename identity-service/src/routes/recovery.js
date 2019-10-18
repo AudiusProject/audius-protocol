@@ -67,7 +67,7 @@ module.exports = function (app) {
     const emailParams = {
       from: 'Audius Recovery <recovery@audius.co>',
       to: `${email}`,
-      subject: 'Password Recovery',
+      subject: 'Save This Email: Audius Password Recovery',
       html: recoveryHtml
     }
     try {
