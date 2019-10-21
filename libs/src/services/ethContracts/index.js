@@ -48,18 +48,17 @@ class EthContracts {
     this.registryAddress = registryAddress
     this.isServer = isServer
 
+    this.AudiusTokenClient = new AudiusTokenClient(
+      this.ethWeb3Manager,
+      AudiusTokenABI,
+      this.tokenContractAddress
+    )
     this.RegistryClient = new RegistryClient(
       this.ethWeb3Manager,
       RegistryABI,
       this.registryAddress
     )
     this.getRegistryAddressForContract = this.getRegistryAddressForContract.bind(this)
-
-    this.AudiusTokenClient = new AudiusTokenClient(
-      this.ethWeb3Manager,
-      AudiusTokenABI,
-      this.tokenContractAddress
-    )
 
     this.VersioningFactoryClient = new VersioningFactoryClient(
       this.ethWeb3Manager,
@@ -86,7 +85,6 @@ class EthContracts {
     )
 
     this.contractClients = [
-      this.AudiusTokenClient,
       this.VersioningFactoryClient,
       this.StakingProxyClient,
       this.ServiceProviderFactoryClient
@@ -114,15 +112,27 @@ class EthContracts {
     return this.contractAddresses[contractName]
   }
 
+  async getCurrentVersion (serviceType) {
+    try {
+      const version = await this.VersioningFactoryClient.getCurrentVersion(serviceType)
+      return version
+    } catch (e) {
+      console.log(`Error retrieving version for ${serviceType}`)
+      return null
+    }
+  }
+
   /*
    * Determine the latest version for deployed services such as discovery provider and cache
    */
   async getExpectedServiceVersions () {
     const versions = await Promise.all(
-      serviceTypeList.map(serviceType => this.VersioningFactoryClient.getCurrentVersion(serviceType))
+      serviceTypeList.map(serviceType => this.getCurrentVersion(serviceType))
     )
     const expectedVersions = serviceTypeList.reduce((map, serviceType, i) => {
-      map[serviceType] = versions[i]
+      if (versions[i]) {
+        map[serviceType] = versions[i]
+      }
       return map
     }, {})
     return expectedVersions
