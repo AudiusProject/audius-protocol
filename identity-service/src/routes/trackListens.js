@@ -131,6 +131,7 @@ const getTrendingTracks = async (
     order: [[models.Sequelize.col('listens'), 'DESC'], [models.Sequelize.col('trackId'), 'DESC']],
     where: {}
   }
+
   // If id list present, add filter
   if (idList && idList.length > 0) {
     dbQuery.where.trackId = { [models.Sequelize.Op.in]: idList }
@@ -174,15 +175,25 @@ const getTrendingTracks = async (
     parsedListenCounts.push({ trackId: elem.trackId, listens: parseInt(elem.listens) })
     seenTrackIds.push(elem.trackId)
   })
+
   const seenIdSet = new Set(seenTrackIds)
-  if (idList) {
-    idList.forEach((elem) => {
-      const id = parseInt(elem)
+  if (idList && seenIdSet.size < idList.length) {
+    // For any tracks in the required id list that were not listened to in the last <timeFrame>
+    // Populate empty listen counts
+    for (var i = 0; i < idList.length; i++) {
+      const id = parseInt(idList[i])
+      // Add tracks only if not already present in parsedListenCounts
       if (!seenIdSet.has(id)) {
         parsedListenCounts.push({ trackId: id, listens: 0 })
       }
-    })
+
+      // Exit if desired response limit has been met
+      if (limit && parsedListenCounts.length >= limit) {
+        break
+      }
+    }
   }
+
   return parsedListenCounts
 }
 

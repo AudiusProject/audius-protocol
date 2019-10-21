@@ -52,10 +52,7 @@ def trending(time):
     resp = None
     try:
         # TODO: Consider cache-ing results in redis here
-        start_time = timelib.time()
         resp = requests.post(identity_trending_endpoint, json=post_body)
-        duration = timelib.time() - start_time
-        logger.error(f"Time in POST: {duration}")
     except Exception as e:
         logger.error(
             f'Error retrieving trending info - {identity_trending_endpoint}, {post_body}'
@@ -66,6 +63,7 @@ def trending(time):
     if "error" in json_resp:
         return api_helpers.error_response(json_resp["error"], 500)
 
+    # logger.error(json_resp)
     listen_counts = json_resp["listenCounts"]
     # Convert trackId to snakeCase
     for track_entry in listen_counts:
@@ -74,6 +72,7 @@ def trending(time):
 
     track_ids = [track[response_name_constants.track_id] for track in listen_counts]
 
+    start_time = timelib.time()
     with db.scoped_session() as session:
         # Filter tracks to not-deleted ones so trending order is preserved
         not_deleted_track_ids = (
@@ -136,7 +135,7 @@ def trending(time):
             if save_type == SaveType.track
         }
 
-        trending = []
+        trending_tracks = []
         for track_entry in listen_counts:
             # Skip over deleted tracks
             if (track_entry[response_name_constants.track_id] not in not_deleted_track_ids):
@@ -164,9 +163,8 @@ def trending(time):
             track_entry[response_name_constants.track_owner_id] = owner_id
             track_entry[response_name_constants.track_owner_follower_count] = owner_follow_count
 
-            trending.append(track_entry)
+            trending_tracks.append(track_entry)
 
     final_resp = {}
-    final_resp['listen_counts'] = trending
+    final_resp['listen_counts'] = trending_tracks
     return api_helpers.success_response(final_resp)
-
