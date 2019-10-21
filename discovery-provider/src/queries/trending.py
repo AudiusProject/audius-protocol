@@ -1,5 +1,4 @@
 import logging # pylint: disable=C0302
-import time as timelib
 import requests
 import sqlalchemy
 from sqlalchemy import func
@@ -51,7 +50,6 @@ def trending(time):
     # Query trending information from identity service
     resp = None
     try:
-        # TODO: Consider cache-ing results in redis here
         resp = requests.post(identity_trending_endpoint, json=post_body)
     except Exception as e:
         logger.error(
@@ -63,7 +61,6 @@ def trending(time):
     if "error" in json_resp:
         return api_helpers.error_response(json_resp["error"], 500)
 
-    # logger.error(json_resp)
     listen_counts = json_resp["listenCounts"]
     # Convert trackId to snakeCase
     for track_entry in listen_counts:
@@ -72,7 +69,6 @@ def trending(time):
 
     track_ids = [track[response_name_constants.track_id] for track in listen_counts]
 
-    start_time = timelib.time()
     with db.scoped_session() as session:
         # Filter tracks to not-deleted ones so trending order is preserved
         not_deleted_track_ids = (
