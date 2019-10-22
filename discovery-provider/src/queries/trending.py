@@ -58,7 +58,6 @@ def trending(time):
             f'Error retrieving trending info - {identity_trending_endpoint}, {post_body}'
         )
         return api_helpers.error_response(e, 500)
-        raise e
 
     json_resp = resp.json()
     if "error" in json_resp:
