@@ -4,14 +4,14 @@ import sqlalchemy
 from sqlalchemy import func
 
 from flask import Blueprint, request
-from urllib.parse import urljoin
+from urllib.parse import urljoin, unquote
 
 from src import api_helpers
 from src.models import User, Track, RepostType, Follow, SaveType
 from src.utils.db_session import get_db
 from src.utils.config import shared_config
 from src.queries import response_name_constants
-from src.queries.query_helpers import get_repost_counts, get_pagination_vars, get_save_counts
+from src.queries.query_helpers import get_repost_counts, get_pagination_vars, get_save_counts, get_genre_list
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("trending", __name__)
@@ -23,20 +23,41 @@ bp = Blueprint("trending", __name__)
 def trending(time):
     identity_url = shared_config['discprov']['identity_service_url']
     identity_trending_endpoint = urljoin(identity_url, f"/tracks/trending/{time}")
+    db = get_db()
 
     (limit, offset) = get_pagination_vars()
-    queryparams = {}
-    queryparams["limit"] = limit
-    queryparams["offset"] = offset
+    post_body = {}
+    post_body["limit"] = limit
+    post_body["offset"] = offset
 
+    # Retrieve genre and query all tracks if required
+    genre = request.args.get("genre", default=None, type=str)
+    if genre is not None:
+        # Parse encoded characters, such as Hip-Hop%252FRap -> Hip-Hop/Rap
+        genre = unquote(genre)
+        with db.scoped_session() as session:
+            genre_list = get_genre_list(genre)
+            genre_track_ids = (
+                session.query(Track.track_id)
+                .filter(
+                    Track.genre.in_(genre_list),
+                    Track.is_current == True,
+                    Track.is_delete == False
+                )
+                .all()
+            )
+            genre_specific_track_ids = [record[0] for record in genre_track_ids]
+            post_body["track_ids"] = genre_specific_track_ids
+
+    # Query trending information from identity service
     resp = None
     try:
-        resp = requests.get(identity_trending_endpoint, params=queryparams)
+        resp = requests.post(identity_trending_endpoint, json=post_body)
     except Exception as e:
         logger.error(
-            f'Error retrieving trending info - {identity_trending_endpoint}, {queryparams}'
+            f'Error retrieving trending info - {identity_trending_endpoint}, {post_body}'
         )
-        raise e
+        return api_helpers.error_response(e, 500)
 
     json_resp = resp.json()
     if "error" in json_resp:
@@ -50,7 +71,6 @@ def trending(time):
 
     track_ids = [track[response_name_constants.track_id] for track in listen_counts]
 
-    db = get_db()
     with db.scoped_session() as session:
         # Filter tracks to not-deleted ones so trending order is preserved
         not_deleted_track_ids = (
@@ -113,7 +133,7 @@ def trending(time):
             if save_type == SaveType.track
         }
 
-        trending = []
+        trending_tracks = []
         for track_entry in listen_counts:
             # Skip over deleted tracks
             if (track_entry[response_name_constants.track_id] not in not_deleted_track_ids):
@@ -125,7 +145,7 @@ def trending(time):
                         track_repost_counts[track_entry[response_name_constants.track_id]]
             else:
                 track_entry[response_name_constants.repost_count] = 0
-            
+
             # Populate save counts
             if track_entry[response_name_constants.track_id] in track_save_counts:
                 track_entry[response_name_constants.save_count] = \
@@ -141,9 +161,8 @@ def trending(time):
             track_entry[response_name_constants.track_owner_id] = owner_id
             track_entry[response_name_constants.track_owner_follower_count] = owner_follow_count
 
-            trending.append(track_entry)
+            trending_tracks.append(track_entry)
 
     final_resp = {}
-    final_resp['listen_counts'] = trending
+    final_resp['listen_counts'] = trending_tracks
     return api_helpers.success_response(final_resp)
-
