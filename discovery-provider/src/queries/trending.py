@@ -4,7 +4,7 @@ import sqlalchemy
 from sqlalchemy import func
 
 from flask import Blueprint, request
-from urllib.parse import urljoin
+from urllib.parse import urljoin, unquote
 
 from src import api_helpers
 from src.models import User, Track, RepostType, Follow, SaveType
@@ -33,6 +33,8 @@ def trending(time):
     # Retrieve genre and query all tracks if required
     genre = request.args.get("genre", default=None, type=str)
     if genre is not None:
+        # Parse encoded characters, such as Hip-Hop%252FRap -> Hip-Hop/Rap
+        genre = unquote(genre)
         with db.scoped_session() as session:
             genre_list = get_genre_list(genre)
             genre_track_ids = (
