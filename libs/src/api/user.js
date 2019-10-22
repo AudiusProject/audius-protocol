@@ -92,6 +92,7 @@ class Users extends Base {
   /**
    * Return social feed for current user
    * @param {number} limit - max # of items to return
+   * @param {filter} string - filter by "all", "original", or "repost"
    * @param {number} offset - offset into list to return from (for pagination)
    * @returns {Object} {Array of track and playlist metadata objects}
    * additional metadata fields on track and playlist objects:
@@ -102,9 +103,9 @@ class Users extends Base {
    *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
-  async getSocialFeed (limit = 100, offset = 0) {
+  async getSocialFeed (filter, limit = 100, offset = 0) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getSocialFeed(limit, offset)
+    return this.discoveryProvider.getSocialFeed(filter, limit, offset)
   }
 
   /* ------- SETTERS ------- */

@@ -150,13 +150,14 @@ class DiscoveryProvider {
 
   /**
    * Gets tracks trending on Audius.
+   * @param {string} genre
    * @param {string} timeFrame one of day, week, month, or year
    * @param {?Array<number>} idsArray track ids
    * @param {?number} limit
    * @param {?number} offset
    * @returns {{listenCounts: Array<{trackId:number, listens:number}>}}
    */
-  async getTrendingTracks (timeFrame = null, idsArray = null, limit = null, offset = null) {
+  async getTrendingTracks (genre = null, timeFrame = null, idsArray = null, limit = null, offset = null) {
     let queryUrl = '/trending/'
 
     if (timeFrame != null) {
@@ -183,6 +184,10 @@ class DiscoveryProvider {
 
     if (offset !== null) {
       queryParams['offset'] = offset
+    }
+
+    if (genre !== null) {
+      queryParams['genre'] = genre
     }
 
     return this._makeRequest({
@@ -221,6 +226,7 @@ class DiscoveryProvider {
 
   /**
    * Return social feed for current user
+   * @param {filter} string - filter by "all", "original", or "repost"
    * @param {number} limit - max # of items to return
    * @param {number} offset - offset into list to return from (for pagination)
    * @returns {Object} {Array of track and playlist metadata objects}
@@ -232,10 +238,10 @@ class DiscoveryProvider {
    *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
-  async getSocialFeed (limit = 100, offset = 0) {
+  async getSocialFeed (filter, limit = 100, offset = 0) {
     let req = {
       endpoint: 'feed/',
-      queryParams: { limit: limit, offset: offset }
+      queryParams: { filter: filter, limit: limit, offset: offset }
     }
 
     return this._makeRequest(req)

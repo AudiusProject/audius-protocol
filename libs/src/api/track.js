@@ -43,15 +43,16 @@ class Tracks extends Base {
 
   /**
    * Gets tracks trending on Audius.
+   * @param {string} genre
    * @param {string} timeFrame one of day, week, month, or year
    * @param {?Array<number>} idsArray track ids
    * @param {?number} limit
    * @param {?number} offset
    * @returns {{listenCounts: Array<{trackId:number, listens:number}>}}
    */
-  async getTrendingTracks (time = null, idsArray = null, limit = null, offset = null) {
+  async getTrendingTracks (genre = null, time = null, idsArray = null, limit = null, offset = null) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
-    return this.discoveryProvider.getTrendingTracks(time, idsArray, limit, offset)
+    return this.discoveryProvider.getTrendingTracks(genre, time, idsArray, limit, offset)
   }
 
   /**
