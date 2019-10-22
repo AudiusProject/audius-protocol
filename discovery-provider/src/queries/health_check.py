@@ -24,8 +24,6 @@ redis = redis.Redis.from_url(url=redis_url)
 
 disc_prov_version = helpers.get_discovery_provider_version()
 
-HEALTHY_BLOCK_DIFF = 100
-
 
 #### INTERNAL FUNCTIONS ####
 
@@ -50,7 +48,6 @@ def _get_db_block_state(latest_blocknum, latest_blockhash):
             health_results["web"]["blocknumber"] - health_results["db"]["number"]
         )
         health_results["block_difference"] = block_difference
-        health_results["maximum_healthy_block_difference"] = HEALTHY_BLOCK_DIFF
 
         return health_results
 
@@ -110,7 +107,7 @@ def health_check():
         # DB connections check
         health_results["db_connections"] = _get_db_conn_state()
 
-    if health_results["block_difference"] > HEALTHY_BLOCK_DIFF:
+    if health_results["block_difference"] > 20:
         return jsonify(health_results), 500
 
     return jsonify(health_results), 200
@@ -123,7 +120,7 @@ def block_check():
     latest_block_hash = latest_block.hash.hex()
     health_results = _get_db_block_state(latest_block_num, latest_block_hash)
 
-    if health_results["block_difference"] > HEALTHY_BLOCK_DIFF:
+    if health_results["block_difference"] > 20:
         return jsonify(health_results), 500
 
     return jsonify(health_results), 200
