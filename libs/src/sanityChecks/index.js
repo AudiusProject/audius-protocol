@@ -1,6 +1,7 @@
 const isCreator = require('./isCreator')
 const syncNodes = require('./syncNodes')
 const rolloverNodes = require('./rolloverNodes')
+const recoveryEmail = require('./needsRecoveryEmail')
 
 // Checks to run at startup to ensure a user is in a good state.
 class SanityChecks {
@@ -16,6 +17,7 @@ class SanityChecks {
     await isCreator(this.libs)
     await syncNodes(this.libs)
     await rolloverNodes(this.libs, creatorNodeWhitelist)
+    await recoveryEmail(this.libs)
   }
 }
 

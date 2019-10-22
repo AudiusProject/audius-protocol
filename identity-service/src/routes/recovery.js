@@ -85,6 +85,14 @@ module.exports = function (app) {
           resolve(body)
         })
       })
+      await models.UserEvents.update(
+        { needsRecoveryEmail: false },
+        {
+          where: {
+            walletAddress: walletFromSignature
+          }
+        }
+      )
       return successResponse({ status: true })
     } catch (e) {
       return errorResponseServerError(e)

@@ -31,6 +31,14 @@ class IdentityService {
     })
   }
 
+  async getUserEvents (walletAddress) {
+    return this._makeRequest({
+      url: '/userEvents',
+      method: 'get',
+      params: { walletAddress }
+    })
+  }
+
   async sendRecoveryInfo (obj) {
     return this._makeRequest({
       url: '/recovery',
