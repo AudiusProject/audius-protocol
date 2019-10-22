@@ -13,6 +13,7 @@ module.exports = function (app) {
           walletAddress
         }
       })
+      if (!userEvents) throw new Error(`UserEvents for ${walletAddress} not found`)
       return successResponse(userEvents)
     } catch (e) {
       console.error(e)

@@ -56,15 +56,6 @@ module.exports = function (app) {
       return errorResponseBadRequest('Invalid signature provided, no user found')
     }
 
-    await models.UserEvents.update(
-      { needsRecoveryEmail: false },
-      {
-        where: {
-          walletAddress: walletFromSignature
-        }
-      }
-    )
-
     const email = existingUser.email
     const recoveryParams = {
       warning: 'RECOVERY_DO_NOT_SHARE',
@@ -94,6 +85,14 @@ module.exports = function (app) {
           resolve(body)
         })
       })
+      await models.UserEvents.update(
+        { needsRecoveryEmail: false },
+        {
+          where: {
+            walletAddress: walletFromSignature
+          }
+        }
+      )
       return successResponse({ status: true })
     } catch (e) {
       return errorResponseServerError(e)
