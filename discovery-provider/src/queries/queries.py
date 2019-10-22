@@ -215,6 +215,14 @@ def get_playlists():
 def get_feed():
     feed_results = []
     db = get_db()
+
+    # filter should be one of ["all", "reposts", "original"]
+    if "filter" in request.args and request.args.get("filter") in ["all", "repost", "original"]:
+        feed_filter = request.args.get("filter")
+    else:
+        return api_helpers.error_response("Invalid filter provided")
+
+
     # Current user - user for whom feed is being generated
     current_user_id = get_current_user_id()
     with db.scoped_session() as session:
@@ -230,141 +238,166 @@ def get_feed():
         )
         followee_user_ids = [f[0] for f in followee_user_ids]
 
-        # Query playlists posted by followees, sorted and paginated by created_at desc
-        created_playlists_query = (
-            session.query(Playlist)
-            .filter(
-                Playlist.is_current == True,
-                Playlist.is_private == False,
-                Playlist.playlist_owner_id.in_(followee_user_ids)
+        # Fetch followee creations if requested
+        if feed_filter in ["original", "all"]:
+            # Query playlists posted by followees, sorted and paginated by created_at desc
+            created_playlists_query = (
+                session.query(Playlist)
+                .filter(
+                    Playlist.is_current == True,
+                    Playlist.is_private == False,
+                    Playlist.playlist_owner_id.in_(followee_user_ids)
+                )
+                .order_by(desc(Playlist.created_at))
             )
-            .order_by(desc(Playlist.created_at))
-        )
-        created_playlists = paginate_query(created_playlists_query, False).all()
+            created_playlists = paginate_query(created_playlists_query, False).all()
 
-        # get track ids for all tracks in playlists
-        playlist_track_ids = set()
-        for playlist in created_playlists:
-            for track in playlist.playlist_contents["track_ids"]:
-                playlist_track_ids.add(track["track"])
+            # get track ids for all tracks in playlists
+            playlist_track_ids = set()
+            for playlist in created_playlists:
+                for track in playlist.playlist_contents["track_ids"]:
+                    playlist_track_ids.add(track["track"])
 
-        # get all track objects for track ids
-        playlist_tracks = (
-            session.query(Track)
-            .filter(
-                Track.is_current == True,
-                Track.track_id.in_(playlist_track_ids)
+            # get all track objects for track ids
+            playlist_tracks = (
+                session.query(Track)
+                .filter(
+                    Track.is_current == True,
+                    Track.track_id.in_(playlist_track_ids)
+                )
+                .all()
             )
-            .all()
-        )
-        playlist_tracks_dict = {track.track_id: track for track in playlist_tracks}
+            playlist_tracks_dict = {track.track_id: track for track in playlist_tracks}
 
-        # get all track ids that have same owner as playlist and created in "same action"
-        # "same action": track created within [x time] before playlist creation
-        tracks_to_dedupe = set()
-        for playlist in created_playlists:
-            for track_entry in playlist.playlist_contents["track_ids"]:
-                track = playlist_tracks_dict.get(track_entry["track"])
-                if not track:
-                    return api_helpers.error_response("Something caused the server to crash.")
-                max_timedelta = datetime.timedelta(minutes=trackDedupeMaxMinutes)
-                if (track.owner_id == playlist.playlist_owner_id) and \
-                    (track.created_at <= playlist.created_at) and \
-                    (playlist.created_at - track.created_at <= max_timedelta):
-                    tracks_to_dedupe.add(track.track_id)
+            # get all track ids that have same owner as playlist and created in "same action"
+            # "same action": track created within [x time] before playlist creation
+            tracks_to_dedupe = set()
+            for playlist in created_playlists:
+                for track_entry in playlist.playlist_contents["track_ids"]:
+                    track = playlist_tracks_dict.get(track_entry["track"])
+                    if not track:
+                        return api_helpers.error_response("Something caused the server to crash.")
+                    max_timedelta = datetime.timedelta(minutes=trackDedupeMaxMinutes)
+                    if (track.owner_id == playlist.playlist_owner_id) and \
+                        (track.created_at <= playlist.created_at) and \
+                        (playlist.created_at - track.created_at <= max_timedelta):
+                        tracks_to_dedupe.add(track.track_id)
 
-        tracks_to_dedupe = list(tracks_to_dedupe)
+            tracks_to_dedupe = list(tracks_to_dedupe)
 
-        # Query tracks posted by followees, sorted & paginated by created_at desc
-        # exclude tracks that were posted in "same action" as playlist
-        created_tracks_query = (
-            session.query(Track)
-            .filter(
-                Track.is_current == True,
-                Track.owner_id.in_(followee_user_ids),
-                Track.track_id.notin_(tracks_to_dedupe)
+            # Query tracks posted by followees, sorted & paginated by created_at desc
+            # exclude tracks that were posted in "same action" as playlist
+            created_tracks_query = (
+                session.query(Track)
+                .filter(
+                    Track.is_current == True,
+                    Track.owner_id.in_(followee_user_ids),
+                    Track.track_id.notin_(tracks_to_dedupe)
+                )
+                .order_by(desc(Track.created_at))
             )
-            .order_by(desc(Track.created_at))
-        )
-        created_tracks = paginate_query(created_tracks_query, False).all()
+            created_tracks = paginate_query(created_tracks_query, False).all()
 
-        # extract created_track_ids and created_playlist_ids
-        created_track_ids = [track.track_id for track in created_tracks]
-        created_playlist_ids = [playlist.playlist_id for playlist in created_playlists]
+            # extract created_track_ids and created_playlist_ids
+            created_track_ids = [track.track_id for track in created_tracks]
+            created_playlist_ids = [playlist.playlist_id for playlist in created_playlists]
 
-        # query items reposted by followees, sorted by oldest followee repost of item;
-        # paginated by most recent repost timestamp
-        # exclude items also created by followees to guarantee order determinism
-        repost_subquery = (
-            session.query(Repost)
-            .filter(
-                Repost.is_current == True,
-                Repost.is_delete == False,
-                Repost.user_id.in_(followee_user_ids),
-                or_(
-                    and_(
-                        Repost.repost_type == RepostType.track,
-                        Repost.repost_item_id.notin_(created_track_ids)
-                    ),
-                    and_(
-                        Repost.repost_type == RepostType.track,
-                        Repost.repost_item_id.notin_(created_playlist_ids)
-                    )
+        # Fetch followee reposts if requested
+        if feed_filter in ["repost", "all"]:
+            # query items reposted by followees, sorted by oldest followee repost of item;
+            # paginated by most recent repost timestamp
+            repost_subquery = (
+                session.query(Repost)
+                .filter(
+                    Repost.is_current == True,
+                    Repost.is_delete == False,
+                    Repost.user_id.in_(followee_user_ids)
                 )
             )
-            .subquery()
-        )
-        repost_query = (
-            session.query(
-                repost_subquery.c.repost_item_id,
-                repost_subquery.c.repost_type,
-                func.min(repost_subquery.c.created_at).label("min_created_at")
+            # exclude items also created by followees to guarantee order determinism, in case of "all" filter
+            if feed_filter == "all":
+                repost_subquery = (
+                    repost_subquery
+                    .filter(
+                        or_(
+                            and_(
+                                Repost.repost_type == RepostType.track,
+                                Repost.repost_item_id.notin_(created_track_ids)
+                            ),
+                            and_(
+                                Repost.repost_type != RepostType.track,
+                                Repost.repost_item_id.notin_(created_playlist_ids)
+                            )
+                        )
+                    )
+                )
+            repost_subquery = repost_subquery.subquery()
+
+            repost_query = (
+                session.query(
+                    repost_subquery.c.repost_item_id,
+                    repost_subquery.c.repost_type,
+                    func.min(repost_subquery.c.created_at).label("min_created_at")
+                )
+                .group_by(repost_subquery.c.repost_item_id, repost_subquery.c.repost_type)
+                .order_by("min_created_at desc")
             )
-            .group_by(repost_subquery.c.repost_item_id, repost_subquery.c.repost_type)
-            .order_by("min_created_at desc")
-        )
-        followee_reposts = paginate_query(repost_query, False).all()
+            followee_reposts = paginate_query(repost_query, False).all()
 
-        # build dict of track id -> oldest followee repost timestamp from followee_reposts above
-        track_repost_timestamp_dict = {}
-        playlist_repost_timestamp_dict = {}
-        for (repost_item_id, repost_type, oldest_followee_repost_timestamp) in followee_reposts:
-            if repost_type == RepostType.track:
-                track_repost_timestamp_dict[repost_item_id] = oldest_followee_repost_timestamp
-            elif repost_type in (RepostType.playlist, RepostType.album):
-                playlist_repost_timestamp_dict[repost_item_id] = oldest_followee_repost_timestamp
+            # build dict of track_id / playlist_id -> oldest followee repost timestamp from followee_reposts above
+            track_repost_timestamp_dict = {}
+            playlist_repost_timestamp_dict = {}
+            for (repost_item_id, repost_type, oldest_followee_repost_timestamp) in followee_reposts:
+                if repost_type == RepostType.track:
+                    track_repost_timestamp_dict[repost_item_id] = oldest_followee_repost_timestamp
+                elif repost_type in (RepostType.playlist, RepostType.album):
+                    playlist_repost_timestamp_dict[repost_item_id] = oldest_followee_repost_timestamp
 
-        # extract reposted_track_ids and reposted_playlist_ids
-        reposted_track_ids = list(track_repost_timestamp_dict.keys())
-        reposted_playlist_ids = list(playlist_repost_timestamp_dict.keys())
+            # extract reposted_track_ids and reposted_playlist_ids
+            reposted_track_ids = list(track_repost_timestamp_dict.keys())
+            reposted_playlist_ids = list(playlist_repost_timestamp_dict.keys())
 
-        # Query tracks reposted by followees, excluding tracks already fetched from above
-        reposted_tracks = (
-            session.query(Track)
-            .filter(
+            # Query tracks reposted by followees
+            reposted_tracks = session.query(Track).filter(
                 Track.is_current == True,
-                Track.track_id.in_(reposted_track_ids),
-                Track.track_id.notin_(created_track_ids)
+                Track.track_id.in_(reposted_track_ids)
             )
-            .order_by(desc(Track.created_at))
-            .all()
-        )
+            # exclude tracks already fetched from above, in case of "all" filter
+            if feed_filter == "all":
+                reposted_tracks = reposted_tracks.filter(
+                    Track.track_id.notin_(created_track_ids)
+                )
+            reposted_tracks = reposted_tracks.order_by(
+                desc(Track.created_at)
+            ).all()
 
-        # Query playlists reposted by followees, excluding playlists already fetched from above
-        reposted_playlists = (
-            session.query(Playlist)
-            .filter(
+            # Query playlists reposted by followees, excluding playlists already fetched from above
+            reposted_playlists = session.query(Playlist).filter(
                 Playlist.is_current == True,
                 Playlist.is_private == False,
-                Playlist.playlist_id.in_(reposted_playlist_ids),
-                Playlist.playlist_id.notin_(created_playlist_ids)
+                Playlist.playlist_id.in_(reposted_playlist_ids)
             )
-            .all()
-        )
+            # exclude playlists already fetched from above, in case of "all" filter
+            if feed_filter == "all":
+                reposted_playlists = reposted_playlists.filter(
+                    Playlist.playlist_id.notin_(created_playlist_ids)
+                )
+            reposted_playlists = reposted_playlists.order_by(
+                desc(Playlist.created_at)
+            ).all()
 
-        # Combine created + reposted track and playlist lists
-        tracks = helpers.query_result_to_list(created_tracks + reposted_tracks)
-        playlists = helpers.query_result_to_list(created_playlists + reposted_playlists)
+        if feed_filter == "original":
+            tracks_to_process = created_tracks
+            playlists_to_process = created_playlists
+        elif feed_filter == "repost":
+            tracks_to_process = reposted_tracks
+            playlists_to_process = reposted_playlists
+        else:
+            tracks_to_process = created_tracks + reposted_tracks
+            playlists_to_process = created_playlists + reposted_playlists
+
+        tracks = helpers.query_result_to_list(tracks_to_process)
+        playlists = helpers.query_result_to_list(playlists_to_process)
 
         # define top level feed activity_timestamp to enable sorting
         # activity_timestamp: created_at if item created by followee, else reposted_at
