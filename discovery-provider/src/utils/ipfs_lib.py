@@ -81,7 +81,9 @@ class IPFSClient:
         logger.warning(f"IPFSCLIENT | get_metadata_from_gateway, {multihash}")
         gateway_endpoints = self._gateway_addresses + self._cnode_endpoints
         logger.warning(f"IPFSCLIENT | get_metadata_from_gateway, \
-                combined addresses: gateway_endpoints: {gateway_endpoints}, addresses: {self._gateway_addresses}, cnode_endpoints: {self._cnode_endpoints}")
+                combined addresses: {gateway_endpoints}, \
+                addresses: {self._gateway_addresses}, \
+                cnode_endpoints: {self._cnode_endpoints}")
 
         for address in gateway_endpoints:
             gateway_query_address = "%s/ipfs/%s" % (address, multihash)

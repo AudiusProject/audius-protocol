@@ -26,7 +26,6 @@ disc_prov_version = helpers.get_discovery_provider_version()
 
 HEALTHY_BLOCK_DIFF = 100
 
-
 #### INTERNAL FUNCTIONS ####
 
 # Returns DB block state & diff
