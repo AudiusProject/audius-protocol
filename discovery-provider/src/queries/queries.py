@@ -218,7 +218,7 @@ def get_feed():
 
     # filter should be one of ["all", "reposts", "original"]
     if "filter" in request.args and request.args.get("filter") in ["all", "repost", "original"]:
-        feedFilter = request.args.get("filter")
+        feed_filter = request.args.get("filter")
     else:
         return api_helpers.error_response("Invalid filter provided")
 
@@ -239,7 +239,7 @@ def get_feed():
         followee_user_ids = [f[0] for f in followee_user_ids]
 
         # Fetch followee creations if requested
-        if feedFilter in ["original", "all"]:
+        if feed_filter in ["original", "all"]:
             # Query playlists posted by followees, sorted and paginated by created_at desc
             created_playlists_query = (
                 session.query(Playlist)
@@ -303,7 +303,7 @@ def get_feed():
             created_playlist_ids = [playlist.playlist_id for playlist in created_playlists]
 
         # Fetch followee reposts if requested
-        if feedFilter in ["repost", "all"]:
+        if feed_filter in ["repost", "all"]:
             # query items reposted by followees, sorted by oldest followee repost of item;
             # paginated by most recent repost timestamp
             repost_subquery = (
@@ -315,7 +315,7 @@ def get_feed():
                 )
             )
             # exclude items also created by followees to guarantee order determinism, in case of "all" filter
-            if feedFilter == "all":
+            if feed_filter == "all":
                 repost_subquery = (
                     repost_subquery
                     .filter(
@@ -363,7 +363,7 @@ def get_feed():
                 Track.track_id.in_(reposted_track_ids)
             )
             # exclude tracks already fetched from above, in case of "all" filter
-            if feedFilter == "all":
+            if feed_filter == "all":
                 reposted_tracks = reposted_tracks.filter(
                     Track.track_id.notin_(created_track_ids)
                 )
@@ -378,7 +378,7 @@ def get_feed():
                 Playlist.playlist_id.in_(reposted_playlist_ids)
             )
             # exclude playlists already fetched from above, in case of "all" filter
-            if feedFilter == "all":
+            if feed_filter == "all":
                 reposted_playlists = reposted_playlists.filter(
                     Playlist.playlist_id.notin_(created_playlist_ids)
                 )
@@ -386,10 +386,10 @@ def get_feed():
                 desc(Playlist.created_at)
             ).all()
 
-        if feedFilter == "original":
+        if feed_filter == "original":
             tracks_to_process = created_tracks
             playlists_to_process = created_playlists
-        elif feedFilter == "repost":
+        elif feed_filter == "repost":
             tracks_to_process = reposted_tracks
             playlists_to_process = reposted_playlists
         else:
