@@ -2,6 +2,7 @@ import logging # pylint: disable=C0302
 import sqlalchemy
 
 from flask import Blueprint, request
+from enum import Enum
 
 from src import api_helpers, exceptions
 from src.models import User, Track, RepostType, Playlist, Save, SaveType, Follow
@@ -25,6 +26,12 @@ trackTitleWeight = 0.7
 userNameWeight = 0.7
 playlistNameWeight = 0.7
 minSearchSimilarity = 0.1
+class SearchKind(Enum):
+    all = 1
+    tracks = 2
+    users = 3
+    playlists = 4
+    albums = 5
 
 
 ######## ROUTES ########
@@ -295,55 +302,62 @@ def search(isAutocomplete):
         raise exceptions.ArgumentError("Invalid value for parameter 'query'")
     searchStr = searchStr.replace('&', 'and')  # when creating query table, we substitute this too
 
+    kind = request.args.get("kind", type=str)
+    if kind:
+        try:
+            searchKind = SearchKind[kind]
+        except Exception as e:
+            raise exceptions.ArgumentError("Invalid value for parameter 'kind' must be in %s" % [k.name for k in SearchKinds])
+    else:
+        searchKind = SearchKind.all
+
     (limit, offset) = get_pagination_vars()
 
-    results = {
-        'tracks': [],
-        'users': [],
-        'playlists': [],
-        'albums': [],
-        'saved_tracks': [],
-        'followed_users': [],
-        'saved_playlists': [],
-        'saved_albums': [],
-    }
-
+    results = {}
     if searchStr:
         db = get_db()
         with db.scoped_session() as session:
-            results['tracks'] = track_search_query(session, searchStr, limit, offset, False, isAutocomplete)
-            results['users'] = user_search_query(session, searchStr, limit, offset, False, isAutocomplete)
-            results['playlists'] = playlist_search_query(
-                session,
-                searchStr,
-                limit,
-                offset,
-                False,
-                False,
-                isAutocomplete
-            )
-            results['albums'] = playlist_search_query(session, searchStr, limit, offset, True, False, isAutocomplete)
+            if (searchKind in [SearchKind.all, SearchKind.tracks]):
+                results['tracks'] = track_search_query(session, searchStr, limit, offset, False, isAutocomplete)
+            if (searchKind in [SearchKind.all, SearchKind.users]):
+                results['users'] = user_search_query(session, searchStr, limit, offset, False, isAutocomplete)
+            if (searchKind in [SearchKind.all, SearchKind.playlists]):
+                results['playlists'] = playlist_search_query(
+                    session,
+                    searchStr,
+                    limit,
+                    offset,
+                    False,
+                    False,
+                    isAutocomplete
+                )
+            if (searchKind in [SearchKind.all, SearchKind.albums]):
+                results['albums'] = playlist_search_query(session, searchStr, limit, offset, True, False, isAutocomplete)
 
-            results['saved_tracks'] = track_search_query(session, searchStr, limit, offset, True, isAutocomplete)
-            results['followed_users'] = user_search_query(session, searchStr, limit, offset, True, isAutocomplete)
-            results['saved_playlists'] = playlist_search_query(
-                session,
-                searchStr,
-                limit,
-                offset,
-                False,
-                True,
-                isAutocomplete
-            )
-            results['saved_albums'] = playlist_search_query(
-                session,
-                searchStr,
-                limit,
-                offset,
-                True,
-                True,
-                isAutocomplete
-            )
+            if (searchKind in [SearchKind.all, SearchKind.tracks]):
+                results['saved_tracks'] = track_search_query(session, searchStr, limit, offset, True, isAutocomplete)
+            if (searchKind in [SearchKind.all, SearchKind.users]):
+                results['followed_users'] = user_search_query(session, searchStr, limit, offset, True, isAutocomplete)
+            if (searchKind in [SearchKind.all, SearchKind.playlists]):
+                results['saved_playlists'] = playlist_search_query(
+                    session,
+                    searchStr,
+                    limit,
+                    offset,
+                    False,
+                    True,
+                    isAutocomplete
+                )
+            if (searchKind in [SearchKind.all, SearchKind.albums]):
+                results['saved_albums'] = playlist_search_query(
+                    session,
+                    searchStr,
+                    limit,
+                    offset,
+                    True,
+                    True,
+                    isAutocomplete
+                )
 
     return api_helpers.success_response(results)
 
