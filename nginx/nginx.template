@@ -23,6 +23,13 @@ http {
     root /var/www/html;
     index index.html index.htm index.nginx-debian.html;
 
+    # Enable Gzip compressed.
+    gzip on;
+
+    # Compress data even for clients that are connecting to us via proxies,
+    # identified by the "Via" header (required for CloudFront).
+    gzip_proxied any;
+
     location / {
       proxy_http_version 1.1;
 
