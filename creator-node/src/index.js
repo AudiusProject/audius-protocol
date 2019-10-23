@@ -78,8 +78,7 @@ const startApp = async () => {
 
   const appInfo = initializeApp(config.get('port'), storagePath, ipfs, null)
 
-  const contentBlacklister = new ContentBlacklister()
-  contentBlacklister.start()
+  ContentBlacklister.blacklist(ipfs)
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal, error) => {
