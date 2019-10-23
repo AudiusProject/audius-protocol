@@ -217,11 +217,11 @@ def get_feed():
     db = get_db()
 
     # filter should be one of ["all", "reposts", "original"]
+    # empty filter value results in "all"
     if "filter" in request.args and request.args.get("filter") in ["all", "repost", "original"]:
         feed_filter = request.args.get("filter")
     else:
-        return api_helpers.error_response("Invalid filter provided")
-
+        feed_filter = "all"
 
     # Current user - user for whom feed is being generated
     current_user_id = get_current_user_id()
