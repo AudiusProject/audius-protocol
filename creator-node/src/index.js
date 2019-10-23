@@ -10,7 +10,7 @@ const config = require('./config')
 const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
-const ContentBlacklister = require('./contentBlacklister')
+const BlacklistManager = require('./blacklistManager')
 
 const initAudiusLibs = async () => {
   const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
@@ -73,12 +73,12 @@ const startApp = async () => {
   const ipfs = await initIPFS()
   await runDBMigrations()
 
+  await BlacklistManager.blacklist(ipfs)
+
   // const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
   logger.info('Initialized audius libs')
 
-  const appInfo = initializeApp(config.get('port'), storagePath, ipfs, null)
-
-  ContentBlacklister.blacklist(ipfs)
+  const appInfo = initializeApp(config.get('port'), storagePath, ipfs, null, BlacklistManager)
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal, error) => {

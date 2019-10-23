@@ -7,10 +7,8 @@ const BlacklistInterval = 3000 // 10000ms
 
 /** TODOS
  * - move queries into transaction?
- * - maintain list of previously blacklisted content to avoid repeat processing
  */
-
-class ContentBlacklister {
+class BlacklistManager {
   /** COMMENT */
   static async blacklist (ipfs) {
     try {
@@ -19,6 +17,18 @@ class ContentBlacklister {
     } catch (e) {
       logger.error('PROCESSING ERROR ', e)
     }
+  }
+
+  static async userIdIsInBlacklist (userId) {
+    return redis.get(`BLACKLIST.USERID.${userId}`)
+  }
+
+  static async trackIdIsInBlacklist (trackId) {
+    return redis.get(`BLACKLIST.TRACKID.${trackId}`)
+  }
+
+  static async CIDIsInBlacklist (CID) {
+    return redis.get(`BLACKLIST.SEGMENT.CID.${CID}`)
   }
 }
 
@@ -56,40 +66,42 @@ async function _processBlacklist (ipfs, trackIdsToBlacklist, artistIdsToBlacklis
   // fetch all tracks from DB
   const tracks = await models.Track.findAll({ where: { blockchainId: trackIdsToBlacklist } })
 
-  const CIDsToBlacklist = new Set()
+  const segmentCIDsToBlacklist = new Set()
 
   for (const track of tracks) {
     if (!track.metadataJSON || !track.metadataJSON.track_segments) continue
 
     for (const segment of track.metadataJSON.track_segments) {
-      if (!segment.multihash) continue
+      const CID = segment.multihash
+      if (!CID) continue
       // unpin from IPFS
       try {
-        await ipfs.pin.rm(segment.multihash)
+        await ipfs.pin.rm(CID)
       }
       catch (e) {
         if (e.message.indexOf('not pinned') === -1) {
           throw new Error(e)
         }
       }
-      logger.info(`unpinned ${segment.multihash}`)
-      CIDsToBlacklist.add(segment.multihash)
+      logger.info(`unpinned ${CID}`)
+      segmentCIDsToBlacklist.add(CID)
     }
   }
 
   // Add all trackIds, artistIds, and CIDs to redis blacklist
+  // TODO - try-catch etc logic / what to do on failure
   for (const trackId of trackIdsToBlacklist) {
     const resp = await redis.set(`BLACKLIST.TRACKID.${trackId}`, true)
     logger.info(`redis resp track id ${resp}`)
   }
   for (const artistId of artistIdsToBlacklist) {
-    const resp = await redis.set(`BLACKLIST.ARTISTID.${artistId}`, true)
+    const resp = await redis.set(`BLACKLIST.USERID.${artistId}`, true)
     logger.info(`redis resp artist id ${resp}`)
   }
-  for (const CID of CIDsToBlacklist) {
-    const resp = await redis.set(`BLACKLIST.CID.${CID}`, true)
+  for (const CID of segmentCIDsToBlacklist) {
+    const resp = await redis.set(`BLACKLIST.SEGMENT.CID.${CID}`, true)
     logger.info(`redis resp CID ${resp}`)
   }
 }
 
-module.exports = ContentBlacklister
+module.exports = BlacklistManager

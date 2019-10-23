@@ -6,7 +6,7 @@ const ffmpeg = require('../ffmpeg')
 const { getSegmentsDuration } = require('../segmentDuration')
 const models = require('../models')
 const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
-const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseForbidden } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
 
@@ -97,6 +97,11 @@ module.exports = function (app) {
 
     // Ensure each segment multihash in metadata obj has an associated file, else error.
     await Promise.all(metadataJSON.track_segments.map(async segment => {
+      // Don't allow if segment CID is in blacklist
+      if (await req.app.get('blacklistManager').CIDIsInBlacklist(segment.multihash)) {
+        return errorResponseForbidden(`Segment CID ${segment.multihash} has been blacklisted by this node.`)
+      }
+      
       const file = await models.File.findOne({ where: {
         multihash: segment.multihash,
         cnodeUserUUID: req.session.cnodeUserUUID,
@@ -123,6 +128,11 @@ module.exports = function (app) {
 
     if (!blockchainTrackId || !blockNumber || !metadataFileUUID) {
       return errorResponseBadRequest('Must include blockchainTrackId, blockNumber, and metadataFileUUID.')
+    }
+
+    // Don't allow if blockchainTrackId is in blacklist
+    if (await req.app.get('blacklistManager').trackIdIsInBlacklist(blockchainTrackId)) {
+      return errorResponseForbidden(`blockchainTrackId ${blockchainTrackId} has been blacklisted by this node.`)
     }
 
     // Error on outdated blocknumber.
@@ -206,7 +216,10 @@ module.exports = function (app) {
     }
   }))
 
-  /** Returns all tracks for cnodeUser. */
+  /**
+   * Returns all tracks for cnodeUser.
+   * @notice DEPRECATED.
+   */
   app.get('/tracks', authMiddleware, handleResponse(async (req, res) => {
     const tracks = await models.Track.findAll({
       where: { cnodeUserUUID: req.session.cnodeUserUUID }

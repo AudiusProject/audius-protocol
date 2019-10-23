@@ -145,10 +145,16 @@ module.exports = function (app) {
     if (!(req.params && req.params.CID)) {
       return sendResponse(req, res, errorResponseBadRequest(`Invalid request, no CID provided`))
     }
-    req.logger.info(req.params.CID)
 
     // Do not act as a public gateway. Only serve IPFS files that are hosted by this creator node.
     const CID = req.params.CID
+
+    // Don't serve if blacklisted
+    if (await req.app.get('blacklistManager').CIDIsInBlacklist(CID)) {
+      return sendResponse(req, res, errorResponseNotFound(`No file found for provided CID: ${CID}`))
+    }
+
+    // Don't serve if not found in DB
     const queryResults = await models.File.findOne({ where: { multihash: CID } })
     if (!queryResults) {
       return sendResponse(req, res, errorResponseNotFound(`No file found for provided CID: ${CID}`))
