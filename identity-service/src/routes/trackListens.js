@@ -148,7 +148,7 @@ const getTrendingTracks = async (
   }
 
   // If id list present, add filter
-  if (idList && idList.length > 0) {
+  if (idList) {
     dbQuery.where.trackId = { [models.Sequelize.Op.in]: idList }
   }
 
