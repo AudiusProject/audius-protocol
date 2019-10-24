@@ -1,4 +1,5 @@
 const { Base, Services } = require('./base')
+const CreatorNode = require('../services/creatorNode')
 const Utils = require('../utils')
 const retry = require('async-retry')
 
@@ -67,6 +68,16 @@ class Tracks extends Base {
   async getTrackListens (timeFrame = null, idsArray = null, startTime = null, endTime = null, limit = null, offset = null) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     return this.identityService.getTrackListens(timeFrame, idsArray, startTime, endTime, limit, offset)
+  }
+
+  /**
+  * Begins a download for a trackId at the provided endpoints
+  * @param {string} endpoints user.creator_node_endpoint
+  * @param {number} trackId the id for the track to download
+  * @throws if none of the endpoints can provide a download for trackId
+  */
+  async downloadTrack (endpoints, trackId) {
+    return CreatorNode.downloadTrack(endpoints, trackId)
   }
 
   /* ------- SETTERS ------- */

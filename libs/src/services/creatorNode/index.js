@@ -17,6 +17,26 @@ class CreatorNode {
    */
   static getSecondaries (endpoints) { return endpoints ? endpoints.split(',').slice(1) : [] }
 
+  static async checkIfDownloadAvailable (endpoints, trackId) {
+    for (const endpoint in endpoints.split(',')) {
+      try {
+        const res = await axios({
+          baseURL: endpoint,
+          url: '/download/',
+          params: {
+            trackId
+          }
+        })
+        if (res.cid) return res
+      } catch (e) {
+        console.log(`Unable to download ${trackId} from ${endpoint}`)
+        // continue
+      }
+    }
+    // Download is not available, clients should display "processing"
+    return null
+  }
+
   /* -------------- */
 
   constructor (web3Manager, creatorNodeEndpoint, isServer, userStateManager, lazyConnect) {
