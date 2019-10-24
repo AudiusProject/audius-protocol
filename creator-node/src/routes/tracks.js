@@ -16,7 +16,7 @@ module.exports = function (app) {
    * @dev - currently stores each segment twice, once under random file UUID & once under IPFS multihash
    *      - this should be addressed eventually
    */
-  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
+  app.post('/track_content', authMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
     if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
     const routeTimeStart = Date.now()
     let codeBlockTimeStart = Date.now()
@@ -57,7 +57,8 @@ module.exports = function (app) {
         req,
         fileSegmentPath,
         req.fileName,
-        req.file.destination)
+        req.file.destination
+      )
       req.logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
       // Commit transaction
@@ -87,7 +88,7 @@ module.exports = function (app) {
    * Given track metadata object, upload and share metadata to IPFS. Return metadata multihash if successful.
    * Error if associated track segments have not already been created and stored.
    */
-  app.post('/tracks/metadata', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
+  app.post('/tracks/metadata', authMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     // TODO - input validation
     const metadataJSON = req.body.metadata
 
@@ -95,17 +96,32 @@ module.exports = function (app) {
       return errorResponseBadRequest('Metadata object must include owner_id and track_segments array')
     }
 
-    // Ensure each segment multihash in metadata obj has an associated file, else error.
+    /** Ensure each segment multihash in metadata obj has an associated file, else error. */
+    // Retrieve sourceFile from file DB entries for use in master file transcoding.
+    let sourceFile = null
     await Promise.all(metadataJSON.track_segments.map(async segment => {
       const file = await models.File.findOne({ where: {
         multihash: segment.multihash,
         cnodeUserUUID: req.session.cnodeUserUUID,
-        trackUUID: null
+        trackUUID: null,
+        type: 'track'
       } })
       if (!file) {
         return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
       }
+      if (sourceFile && file.sourceFile !== sourceFile) {
+        return errorResponseBadRequest(`Invalid segment multihash: ${segment.multihash}.`)
+      }
+      sourceFile = file.sourceFile
     }))
+    if (!sourceFile) {
+      return errorResponseBadRequest(`Invalid track_segments input - no matching source file found for multihashes.`)
+    }
+
+    // If track marked as downloadable, kick off transcoding process before returning (don't block on this)
+    if (metadataJSON.download && metadataJSON.download.is_downloadable) {
+      createDownloadableCopy(req, sourceFile)
+    }
 
     // Store + pin metadata multihash to disk + IPFS.
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
@@ -206,6 +222,19 @@ module.exports = function (app) {
     }
   }))
 
+  /**
+   * TODO
+   * - consider inputting trackUUID vs trackBlockchainId
+   * - middlewares?
+   */
+  app.get('/tracks/download_status/:blockchainId', handleResponse(async (req, res) => {
+    /**
+     * check if track exists for blockchain id; fail if not
+     * check if track is downloadable
+     * check if 
+     */
+  }))
+
   /** Returns all tracks for cnodeUser. */
   app.get('/tracks', authMiddleware, handleResponse(async (req, res) => {
     const tracks = await models.Track.findAll({
@@ -213,4 +242,23 @@ module.exports = function (app) {
     })
     return successResponse({ 'tracks': tracks })
   }))
+}
+
+/**
+ * transcode file to 320kbps + save to disk in same fileDir
+ * store in DB
+ * pin to IPFS
+ */
+async function createDownloadableCopy (req, sourceFile) {
+  try {
+    const start = Date.now()
+    const sourceFilePath = path.resolve(req.app.get('storagePath'), sourceFile.split('.')[0])
+    req.logger.info(`Transcoding file ${sourceFile}...`)
+    const dlCopyFilePath = await ffmpeg.transcodeFileTo320(req, sourceFilePath, sourceFile)
+    req.logger.info(`Transcoded file ${sourceFile} in ${Date.now() - start}ms.`)
+    return dlCopyFilePath
+  } catch (err) {
+    // TODO - rollback transaction
+    req.logger.error(err)
+  }
 }
