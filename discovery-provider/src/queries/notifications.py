@@ -12,6 +12,8 @@ notif_types = {
     'follow': 'follow'
 }
 
+max_block_diff = 50000
+
 def get_owner_id(session, entity_type, entity_id):
     if entity_type == 'track':
         owner_id_query = session.query(Track.owner_id).filter(
@@ -55,10 +57,15 @@ def notifications():
     if not min_block_number:
         return api_helpers.error_response({'msg': 'Missing min block number'}, 500)
 
-    # TODO: Revise below as it is not entirely correct...
-    # if not max_block_number:
-    #    max_block_number = min_block_number + 10000
+    if not max_block_number:
+        max_block_number = min_block_number + max_block_diff
+    elif (max_block_number - min_block_number) > (min_block_number + max_block_diff):
+        max_block_number = (min_block_number + max_block_diff)
 
+    notification_metadata = {
+        'min_block_number': min_block_number,
+        'max_block_number': max_block_number
+    }
     notifications = []
     with db.scoped_session() as session:
         #
@@ -68,7 +75,7 @@ def notifications():
 
         # Impose min block number restriction
         follow_query = follow_query.filter(Follow.is_current == True, Follow.is_delete == False)
-        follow_query = follow_query.filter(Follow.blocknumber >= min_block_number)
+        follow_query = follow_query.filter(Follow.blocknumber >= min_block_number, Follow.blocknumber < max_block_number)
 
         # follow_query = follow_query.filter(Follow.blocknumber < max_block_number)
 
@@ -94,7 +101,7 @@ def notifications():
         #
         favorites_query = session.query(Save)
         favorites_query = favorites_query.filter(Save.is_current == True, Save.is_delete == False)
-        favorites_query = favorites_query.filter(Save.blocknumber >= min_block_number)
+        favorites_query = favorites_query.filter(Save.blocknumber >= min_block_number, Save.blocknumber < max_block_number)
         favorite_results = favorites_query.all()
         favorite_notifications = []
 
@@ -143,7 +150,7 @@ def notifications():
         #
         repost_query = session.query(Repost)
         repost_query = repost_query.filter(Repost.is_current == True, Repost.is_delete == False)
-        repost_query = repost_query.filter(Repost.blocknumber >= min_block_number)
+        repost_query = repost_query.filter(Repost.blocknumber >= min_block_number, Repost.blocknumber < max_block_number)
         repost_results = repost_query.all()
         repost_notifications = []
         for entry in repost_results:
@@ -179,8 +186,59 @@ def notifications():
             repost_notifications.append(repost_notif)
         notifications.extend(repost_notifications)
 
+        # Query relevant created entity notification - tracks/albums/playlists
+        created_notifications = []
+        # Aggregate track notifs
+        tracks_query = session.query(Track)
+        tracks_query = tracks_query.filter(Track.is_current == True, Track.is_delete == False)
+        tracks_query = tracks_query.filter(Track.blocknumber >= min_block_number, Track.blocknumber < max_block_number)
+        tracks_query = tracks_query.filter(Track.created_at == Track.updated_at)
+        track_results = tracks_query.all()
+        for entry in track_results:
+            track_notif = {
+                const.notification_type: \
+                        const.notification_type_created_track,
+                const.notification_blocknumber: entry.blocknumber,
+                const.notification_timestamp: entry.created_at,
+                const.notification_initiator: entry.owner_id,
+                # TODO: is entity owner id necessary for tracks?
+                const.notification_metadata: {
+                    const.notification_entity_type: 'track',
+                    const.notification_entity_id: entry.track_id,
+                    const.notification_entity_owner_id: entry.owner_id
+                }
+            }
+            created_notifications.append(track_notif)
+
+        # Aggregate playlist/album notifs
+        collection_query = session.query(Playlist)
+        collection_query = collection_query.filter(Playlist.is_current == True, Playlist.is_delete == False)
+        collection_query = collection_query.filter(Playlist.blocknumber >= min_block_number, Playlist.blocknumber < max_block_number)
+        collection_query = collection_query.filter(Playlist.created_at == Playlist.updated_at)
+        collection_results = collection_query.all()
+        for entry in collection_results:
+            collection_notif = {
+                const.notification_blocknumber: entry.blocknumber,
+                const.notification_timestamp: entry.created_at,
+                const.notification_initiator: entry.playlist_owner_id
+            }
+            metadata = {
+                const.notification_entity_id: entry.playlist_id,
+                const.notification_entity_owner_id: entry.playlist_owner_id
+            }
+
+            if entry.is_album:
+                collection_notif[const.notification_type] = const.notification_type_created_album
+                metadata[const.notification_entity_type] = 'album'
+            else:
+                collection_notif[const.notification_type] = const.notification_type_created_playlist
+                metadata[const.notification_entity_type] = 'playlist'
+            collection_notif[const.notification_metadata] = metadata
+            created_notifications.append(collection_notif)
+        notifications.extend(created_notifications)
+
     # Final sort - TODO: can we sort by timestamp?
     sorted_notifications = \
             sorted(notifications, key=lambda i: i[const.notification_blocknumber], reverse=True)
 
-    return api_helpers.success_response({'tmp':sorted_notifications})
+    return api_helpers.success_response({'notifications':sorted_notifications, 'info':notification_metadata})
