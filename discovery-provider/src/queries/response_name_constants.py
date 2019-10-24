@@ -27,3 +27,20 @@ track_owner_follower_count = 'track_owner_follower_count'
 track_owner_id = 'track_owner_id'
 track_id = 'track_id'
 listen_counts = 'listen_counts'
+
+# notifications metadata
+notification_type = 'type'
+notification_type_follow = 'follow'
+notification_type_favorite = 'favorite'
+notification_type_repost = 'repost'
+notification_blocknumber = 'blocknumber'
+notification_initiator = 'initiator'
+notification_metadata = 'metadata'
+notification_timestamp = 'timestamp'
+notification_entity_type = 'entity_type'
+notification_entity_id = 'entity_id'
+notification_entity_owner_id = 'entity_owner_id'
+
+notification_follower_id = 'follower_user_id'
+notification_followee_id = 'followee_user_id'
+

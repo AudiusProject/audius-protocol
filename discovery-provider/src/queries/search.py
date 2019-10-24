@@ -167,6 +167,7 @@ def search_tags():
         track_id = track["track_id"]
         track[response_name_constants.play_count] = track_play_counts.get(track_id, 0)
 
+    logger.error(tracks)
     play_count_sorted_tracks = \
         sorted(tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
 
