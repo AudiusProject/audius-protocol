@@ -44,6 +44,7 @@ notification_timestamp = 'timestamp'
 notification_entity_type = 'entity_type'
 notification_entity_id = 'entity_id'
 notification_entity_owner_id = 'entity_owner_id'
+notification_collection_content = 'collection_content'
 
 notification_follower_id = 'follower_user_id'
 notification_followee_id = 'followee_user_id'

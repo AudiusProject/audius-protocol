@@ -190,7 +190,8 @@ def notifications():
         created_notifications = []
         # Aggregate track notifs
         tracks_query = session.query(Track)
-        tracks_query = tracks_query.filter(Track.is_current == True, Track.is_delete == False)
+        # TODO: Is it valid to use Track.is_current here? Might not be the right info...
+        tracks_query = tracks_query.filter(Track.is_delete == False)
         tracks_query = tracks_query.filter(Track.blocknumber >= min_block_number, Track.blocknumber < max_block_number)
         tracks_query = tracks_query.filter(Track.created_at == Track.updated_at)
         track_results = tracks_query.all()
@@ -212,7 +213,8 @@ def notifications():
 
         # Aggregate playlist/album notifs
         collection_query = session.query(Playlist)
-        collection_query = collection_query.filter(Playlist.is_current == True, Playlist.is_delete == False)
+        # TODO: Is it valid to use is_current here? Might not be the right info...
+        collection_query = collection_query.filter(Playlist.is_delete == False, Playlist.is_private == False)
         collection_query = collection_query.filter(Playlist.blocknumber >= min_block_number, Playlist.blocknumber < max_block_number)
         collection_query = collection_query.filter(Playlist.created_at == Playlist.updated_at)
         collection_results = collection_query.all()
@@ -224,7 +226,8 @@ def notifications():
             }
             metadata = {
                 const.notification_entity_id: entry.playlist_id,
-                const.notification_entity_owner_id: entry.playlist_owner_id
+                const.notification_entity_owner_id: entry.playlist_owner_id,
+                const.notification_collection_content: entry.playlist_contents
             }
 
             if entry.is_album:
@@ -238,6 +241,7 @@ def notifications():
         notifications.extend(created_notifications)
 
     # Final sort - TODO: can we sort by timestamp?
+    # TODO: should this be reverse or not? reverse=True - time desc., else time asc.
     sorted_notifications = \
             sorted(notifications, key=lambda i: i[const.notification_blocknumber], reverse=True)
 
