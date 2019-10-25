@@ -77,8 +77,6 @@ def notifications():
         follow_query = follow_query.filter(Follow.is_current == True, Follow.is_delete == False)
         follow_query = follow_query.filter(Follow.blocknumber >= min_block_number, Follow.blocknumber < max_block_number)
 
-        # follow_query = follow_query.filter(Follow.blocknumber < max_block_number)
-
         follow_results = follow_query.all()
         follow_notifications = []
         for entry in follow_results:
