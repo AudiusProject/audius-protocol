@@ -71,13 +71,12 @@ class Tracks extends Base {
   }
 
   /**
-  * Begins a download for a trackId at the provided endpoints
-  * @param {string} endpoints user.creator_node_endpoint
-  * @param {number} trackId the id for the track to download
-  * @throws if none of the endpoints can provide a download for trackId
-  */
-  async downloadTrack (endpoints, trackId) {
-    return CreatorNode.downloadTrack(endpoints, trackId)
+   * Checks if a download is available from provided creator node endpoints
+   * @param {string} creatorNodeEndpoints creator node endpoints
+   * @param {number} trackId
+   */
+  async checkIfDownloadAvailable (trackId, creatorNodeEndpoints) {
+    return CreatorNode.checkIfDownloadAvailable(trackId, creatorNodeEndpoints)
   }
 
   /* ------- SETTERS ------- */

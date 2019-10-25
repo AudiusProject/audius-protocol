@@ -17,6 +17,11 @@ class CreatorNode {
    */
   static getSecondaries (endpoints) { return endpoints ? endpoints.split(',').slice(1) : [] }
 
+  /**
+   * Checks if a download is available from provided creator node endpoints
+   * @param {string} endpoints creator node endpoints
+   * @param {number} trackId
+   */
   static async checkIfDownloadAvailable (endpoints, trackId) {
     for (const endpoint in endpoints.split(',')) {
       try {
@@ -27,7 +32,7 @@ class CreatorNode {
             trackId
           }
         })
-        if (res.cid) return res
+        if (res.cid) return res.cid
       } catch (e) {
         console.log(`Unable to download ${trackId} from ${endpoint}`)
         // continue
