@@ -134,7 +134,7 @@ module.exports = function (app) {
    * Given track blockchainTrackId, blockNumber, and metadataFileUUID, creates/updates Track DB track entry
    * and associates segment & image file entries with track. Ends track creation/update process.
    */
-  app.post('/tracks', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
+  app.post('/tracks', authMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     const { blockchainTrackId, blockNumber, metadataFileUUID } = req.body
 
     if (!blockchainTrackId || !blockNumber || !metadataFileUUID) {
@@ -156,6 +156,7 @@ module.exports = function (app) {
     let metadataJSON
     try {
       metadataJSON = JSON.parse(fs.readFileSync(file.storagePath))
+      req.logger.info(`${JSON.stringify(metadataJSON)}`)
       if (!metadataJSON || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
         return errorResponseServerError(`Malformatted metadataJSON stored for metadataFileUUID ${metadataFileUUID}.`)
       }
@@ -171,31 +172,43 @@ module.exports = function (app) {
       return errorResponseServerError(e.message)
     }
 
+    // Get download status from metadata object.
+    let isDownloadable = "no"
+    if (metadataJSON.download) {
+      if (metadataJSON.download.isDownloadable) {
+        isDownloadable = (metadataJSON.download.requires_follow) ? "follow" : "yes"
+      }
+    }
+
     const t = await models.sequelize.transaction()
 
     try {
-      // Create track entry on db - will fail if already present.
-      const track = await models.Track.upsert({
+      // Create / update track entry on db.
+      const track = (await models.Track.upsert({
         cnodeUserUUID,
         metadataFileUUID,
         metadataJSON,
         blockchainId: blockchainTrackId,
-        coverArtFileUUID
-      }, { transaction: t, returning: true })
+        coverArtFileUUID,
+        isDownloadable
+      }, { transaction: t, returning: true }))[0]
 
-      // Associate matching segment files on DB with newly created track.
+      // Associate matching segment files on DB with new/updated track.
       await Promise.all(metadataJSON.track_segments.map(async segment => {
         // Update each segment file; error if not found.
+        req.logger.info(`track uuid ${JSON.stringify(track)}`)
         const numAffectedRows = await models.File.update(
           { trackUUID: track.trackUUID },
           { where: {
             multihash: segment.multihash,
             cnodeUserUUID,
-            trackUUID: null
+            trackUUID: null,
+            type: 'track'
           },
           transaction: t
           }
         )
+        req.logger.info(`num affected rows ${numAffectedRows}`)
         if (!numAffectedRows) {
           return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
         }
@@ -228,11 +241,44 @@ module.exports = function (app) {
    * - middlewares?
    */
   app.get('/tracks/download_status/:blockchainId', handleResponse(async (req, res) => {
-    /**
-     * check if track exists for blockchain id; fail if not
-     * check if track is downloadable
-     * check if 
-     */
+    const blockchainId = req.params.blockchainId
+    if (!blockchainId) {
+      return errorResponseBadRequest('Please provide blockchainId.')
+    }
+
+    const track = await models.Track.findOne({ where: { blockchainId } })
+
+    if (!track) {
+      return errorResponseBadRequest(`No track found for blockchainId ${blockchainId}`)
+    }
+
+    if (!track.metadataJSON || !track.metadataJSON.download || !track.metadataJSON.download.is_downloadable) {
+      return successResponse({ isDownloadable: false, cid: null })
+    }
+
+    // If track is downloadable, find sourceFile from a segment file entry from metadataJSON
+    // if copy320 file entry exists with sourceFile, return CID else return null
+    const segmentFile = await models.File.findOne({ where: {
+      type: "track",
+      trackUUID: track.trackUUID
+    }})
+
+    copyFile = await models.File.findOne({ where: {
+      type: "copy320",
+      sourceFile: segmentFile.sourceFile
+    }})
+
+    if (!copyFile) {
+      return successResponse({ isDownloadable: true, cid: null })
+    } else {
+      // Return CID if IPFS node has pinned it, else null.
+      try {
+        await req.app.get('ipfsAPI').pin.ls(copyFile.multihash)
+        return successResponse({ isDownloadable: true, cid: copyFile.multihash })
+      } catch (e) {
+        return successResponse({ isDownloadable: true, cid: null })
+      }
+    }
   }))
 
   /** Returns all tracks for cnodeUser. */
@@ -246,8 +292,8 @@ module.exports = function (app) {
 
 /**
  * transcode file to 320kbps + save to disk in same fileDir
- * store in DB
  * pin to IPFS
+ * store in DB w/ CID
  */
 async function createDownloadableCopy (req, sourceFile) {
   try {
@@ -256,6 +302,10 @@ async function createDownloadableCopy (req, sourceFile) {
     req.logger.info(`Transcoding file ${sourceFile}...`)
     const dlCopyFilePath = await ffmpeg.transcodeFileTo320(req, sourceFilePath, sourceFile)
     req.logger.info(`Transcoded file ${sourceFile} in ${Date.now() - start}ms.`)
+
+    const resp = await saveFileToIPFSFromFS(req, dlCopyFilePath, 'copy320', null, sourceFile)
+    req.logger.info(`savefiletoipfsfromfs ${JSON.stringify(resp)}`)
+
     return dlCopyFilePath
   } catch (err) {
     // TODO - rollback transaction

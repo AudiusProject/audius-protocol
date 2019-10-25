@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(16),
       allowNull: true,
       validate: {
-        isIn: [['track', 'metadata', 'image', 'dir']]
+        isIn: [['track', 'metadata', 'image', 'dir', 'copy320']]
       }
     }
   }, {})

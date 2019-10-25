@@ -28,6 +28,13 @@ module.exports = (sequelize, DataTypes) => {
     coverArtFileUUID: {
       type: DataTypes.UUID,
       allowNull: true
+    },
+    isDownloadable: {
+      type: DataTypes.STRING(16),
+      allowNull: false,
+      validate: {
+        isIn: [["yes", "no", "follow"]]
+      }
     }
   }, {})
 

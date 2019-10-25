@@ -54,7 +54,7 @@ async function saveFileFromBuffer (req, buffer, fileType) {
  * - Re-save file to disk under multihash.
  * - Save reference to file in DB.
  */
-async function saveFileToIPFSFromFS (req, srcPath, fileType, t) {
+async function saveFileToIPFSFromFS (req, srcPath, fileType, transaction = null, sourceFile = null) {
   // make sure user has authenticated before saving file
   if (!req.session.cnodeUserUUID) throw new Error('User must be authenticated to save a file')
 
@@ -77,18 +77,17 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, t) {
   req.logger.info(`Time taken in saveFileToIpfsFromFS to copyFileSync: ${Date.now() - codeBlockTimeStart}`)
 
   // add reference to file to database
-  const file = (await models.File.findOrCreate({ where:
-    {
-      cnodeUserUUID: req.session.cnodeUserUUID,
-      multihash: multihash,
-      sourceFile: req.fileName,
-      storagePath: dstPath,
-      type: fileType
-    },
-  transaction: t
-  }))[0].dataValues
+  const queryObj = { where: {
+    cnodeUserUUID: req.session.cnodeUserUUID,
+    multihash: multihash,
+    sourceFile: req.fileName || sourceFile,
+    storagePath: dstPath,
+    type: fileType
+  }}
+  if (transaction) { queryObj.transaction = transaction }
+  const file = (await models.File.findOrCreate(queryObj))[0].dataValues
 
-  req.logger.info(`\nAdded file: ${multihash} for fileUUID ${file.fileUUID} from sourceFile ${req.fileName}`)
+  req.logger.info(`\nAdded file: ${multihash} for fileUUID ${file.fileUUID} from sourceFile ${req.fileName || sourceFile}`)
   return { multihash: multihash, fileUUID: file.fileUUID }
 }
 
