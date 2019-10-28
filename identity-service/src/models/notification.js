@@ -9,7 +9,14 @@ module.exports = (sequelize, DataTypes) => {
     },
     type: {
       type: DataTypes.ENUM({
-        values: ['Follow', 'RepostTrack', 'RepostPlaylist', 'RepostAlbum', 'FavoriteTrack']
+        values: [
+          'Follow',
+          'RepostTrack',
+          'RepostPlaylist',
+          'RepostAlbum',
+          'FavoriteTrack',
+          'FavoritePlaylist',
+          'FavoriteAlbum']
       }),
       allowNull: false
     },

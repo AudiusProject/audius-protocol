@@ -8,7 +8,14 @@ module.exports = {
         type: Sequelize.UUID
       },
       type: {
-        type: Sequelize.ENUM('Follow', 'RepostTrack', 'RepostPlaylist', 'RepostAlbum', 'FavoriteTrack')
+        type: Sequelize.ENUM(
+          'Follow',
+          'RepostTrack',
+          'RepostPlaylist',
+          'RepostAlbum',
+          'FavoriteTrack',
+          'FavoritePlaylist',
+          'FavoriteAlbum')
       },
       isRead: {
         type: Sequelize.BOOLEAN
