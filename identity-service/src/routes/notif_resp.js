@@ -15,6 +15,12 @@ const notificationTypes = {
     track: 'FavoriteTrack',
     album: 'FavoriteAlbum',
     playlist: 'FavoritePlaylist'
+  },
+  Create: {
+    base: 'Create',
+    track: 'CreateTrack',
+    album: 'CreateAlbum',
+    playlist: 'CreatePlaylist'
   }
 }
 
@@ -146,7 +152,6 @@ module.exports = function (app) {
 
       // Handle the 'favorite' notification type, track/album/playlist
       if (notif.type === notificationTypes.Favorite.base) {
-        console.log(notif)
         let favoriteType = null
         switch (notif.metadata.entity_type) {
           case 'track':
@@ -199,6 +204,26 @@ module.exports = function (app) {
             }
           })
         }
+      }
+
+      // Handle the 'create' notification type, track/album/playlist
+      if (notif.type === notificationTypes.Create.base) {
+        console.log(notif)
+        let createType = null
+        switch (notif.metadata.entity_type) {
+          case 'track':
+            createType = notificationTypes.Create.track
+            break
+          case 'album':
+            createType = notificationTypes.Create.album
+            break
+          case 'playlist':
+            createType = notificationTypes.Create.playlist
+            break
+          default:
+            throw new Error('Invalid repost type')  // TODO: gracefully handle this in try/catch
+        }
+        console.log(createType)
       }
     }
     return successResponse({})

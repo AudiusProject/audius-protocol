@@ -15,7 +15,10 @@ module.exports = {
           'RepostAlbum',
           'FavoriteTrack',
           'FavoritePlaylist',
-          'FavoriteAlbum')
+          'FavoriteAlbum',
+          'CreateTrack',
+          'CreatePlaylist',
+          'CreateAlbum')
       },
       isRead: {
         type: Sequelize.BOOLEAN

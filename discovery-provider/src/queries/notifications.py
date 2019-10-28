@@ -196,7 +196,7 @@ def notifications():
         for entry in track_results:
             track_notif = {
                 const.notification_type: \
-                        const.notification_type_created_track,
+                        const.notification_type_create,
                 const.notification_blocknumber: entry.blocknumber,
                 const.notification_timestamp: entry.created_at,
                 const.notification_initiator: entry.owner_id,
@@ -212,12 +212,18 @@ def notifications():
         # Aggregate playlist/album notifs
         collection_query = session.query(Playlist)
         # TODO: Is it valid to use is_current here? Might not be the right info...
-        collection_query = collection_query.filter(Playlist.is_delete == False, Playlist.is_private == False)
-        collection_query = collection_query.filter(Playlist.blocknumber >= min_block_number, Playlist.blocknumber < max_block_number)
+        collection_query = collection_query.filter(
+                Playlist.is_delete == False, Playlist.is_private == False)
+        collection_query = collection_query.filter(
+                Playlist.blocknumber >= min_block_number, Playlist.blocknumber < max_block_number)
+
         collection_query = collection_query.filter(Playlist.created_at == Playlist.updated_at)
+
         collection_results = collection_query.all()
         for entry in collection_results:
             collection_notif = {
+                const.notification_type: \
+                        const.notification_type_create,
                 const.notification_blocknumber: entry.blocknumber,
                 const.notification_timestamp: entry.created_at,
                 const.notification_initiator: entry.playlist_owner_id
@@ -229,10 +235,8 @@ def notifications():
             }
 
             if entry.is_album:
-                collection_notif[const.notification_type] = const.notification_type_created_album
                 metadata[const.notification_entity_type] = 'album'
             else:
-                collection_notif[const.notification_type] = const.notification_type_created_playlist
                 metadata[const.notification_entity_type] = 'playlist'
             collection_notif[const.notification_metadata] = metadata
             created_notifications.append(collection_notif)

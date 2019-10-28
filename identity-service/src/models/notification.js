@@ -16,7 +16,10 @@ module.exports = (sequelize, DataTypes) => {
           'RepostAlbum',
           'FavoriteTrack',
           'FavoritePlaylist',
-          'FavoriteAlbum']
+          'FavoriteAlbum',
+          'CreateTrack',
+          'CreatePlaylist',
+          'CreateAlbum']
       }),
       allowNull: false
     },
