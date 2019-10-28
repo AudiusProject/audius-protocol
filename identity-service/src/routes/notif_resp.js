@@ -99,9 +99,11 @@ module.exports = function (app) {
         let initiator = notif.initiator
 
         let unreadQuery = await models.Notification.findAll({
-          isRead: false,
-          userId: notificationTarget,
-          type: repostType
+          where: {
+            isRead: false,
+            userId: notificationTarget,
+            type: repostType
+          }
         })
 
         let notificationId = null
