@@ -3,7 +3,9 @@ const config = require('./config')
 const models = require('./models')
 const redis = require('./redis')
 
-const BlacklistInterval = 3000 // 10000ms
+const REDIS_SET_BLACKLIST_TRACKID_KEY = "SET.BLACKLIST.TRACKID"
+const REDIS_SET_BLACKLIST_USERID_KEY = "SET.BLACKLIST.USERID"
+const REDIS_SET_BLACKLIST_SEGMENTCID_KEY = "SET.BLACKLIST.SEGMENTCID"
 
 /** TODOS
  * - move queries into transaction?
@@ -20,15 +22,15 @@ class BlacklistManager {
   }
 
   static async userIdIsInBlacklist (userId) {
-    return redis.get(`BLACKLIST.USERID.${userId}`)
+    return redis.sismember(REDIS_SET_BLACKLIST_USERID_KEY, userId)
   }
 
   static async trackIdIsInBlacklist (trackId) {
-    return redis.get(`BLACKLIST.TRACKID.${trackId}`)
+    return redis.sismember(REDIS_SET_BLACKLIST_TRACKID_KEY, trackId)
   }
 
   static async CIDIsInBlacklist (CID) {
-    return redis.get(`BLACKLIST.SEGMENT.CID.${CID}`)
+    return redis.sismember(REDIS_SET_BLACKLIST_SEGMENTCID_KEY, CID)
   }
 }
 
@@ -88,19 +90,23 @@ async function _processBlacklist (ipfs, trackIdsToBlacklist, artistIdsToBlacklis
     }
   }
 
-  // Add all trackIds, artistIds, and CIDs to redis blacklist
-  // TODO - try-catch etc logic / what to do on failure
-  for (const trackId of trackIdsToBlacklist) {
-    const resp = await redis.set(`BLACKLIST.TRACKID.${trackId}`, true)
-    logger.info(`redis resp track id ${resp}`)
-  }
-  for (const artistId of artistIdsToBlacklist) {
-    const resp = await redis.set(`BLACKLIST.USERID.${artistId}`, true)
-    logger.info(`redis resp artist id ${resp}`)
-  }
-  for (const CID of segmentCIDsToBlacklist) {
-    const resp = await redis.set(`BLACKLIST.SEGMENT.CID.${CID}`, true)
-    logger.info(`redis resp CID ${resp}`)
+  // Add all trackIds, artistIds, and CIDs to redis blacklist sets
+  try {
+    if (trackIdsToBlacklist.length > 0) {
+      const resp = await redis.sadd('SET.BLACKLIST.TRACKID', trackIdsToBlacklist)
+      logger.info(`redis set add SET.BLACKLIST.TRACKID response: ${resp}.`)
+    }
+    if (artistIdsToBlacklist.length > 0) {
+      const resp = await redis.sadd('SET.BLACKLIST.USERID', artistIdsToBlacklist)
+      logger.info(`redis set add SET.BLACKLIST.USERID response: ${resp}.`)
+    }
+    if (segmentCIDsToBlacklist.length > 0) {
+      const resp = await redis.sadd('SET.BLACKLIST.SEGMENTCID', segmentCIDsToBlacklist)
+      logger.info(`redis set add SET.BLACKLIST.SEGMENTCID response: ${resp}.`)
+    }
+    logger.info('Completed Processing trackId, userId, and segmentCid blacklists.')
+  } catch (e) {
+    throw new Error('Failed to process blacklist.', e)
   }
 }
 

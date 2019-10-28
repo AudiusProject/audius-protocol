@@ -16,7 +16,7 @@ module.exports = function (app) {
    * @dev - currently stores each segment twice, once under random file UUID & once under IPFS multihash
    *      - this should be addressed eventually
    */
-  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
+  app.post('/track_content', authMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
     if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
     const routeTimeStart = Date.now()
     let codeBlockTimeStart = Date.now()
@@ -79,6 +79,18 @@ module.exports = function (app) {
 
     // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
     trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
+
+    // Don't allow if any segment CID is in blacklist.
+    let blacklistedSegmentFound = false
+    await Promise.all(trackSegments.map(async segmentObj => {
+      const cidIsInBlacklist = await req.app.get('blacklistManager').CIDIsInBlacklist(segmentObj.multihash)
+      if (cidIsInBlacklist) blacklistedSegmentFound = true
+    }))
+    if (blacklistedSegmentFound) {
+      // TODO - cleanup orphaned content
+      return errorResponseBadRequest('Track upload failed - part or all of this track has been blacklisted by this node.')
+    }
+
     req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
     return successResponse({ 'track_segments': trackSegments })
   }))
