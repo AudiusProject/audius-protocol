@@ -65,10 +65,10 @@ const startApp = async () => {
     process.exit(1)
   })
 
-  // const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
+  const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
   logger.info('Initialized audius libs')
 
-  const appInfo = initializeApp(config.get('port'), storagePath, ipfs, null)
+  const appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs)
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal, error) => {

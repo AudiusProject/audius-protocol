@@ -16,7 +16,7 @@ module.exports = function (app) {
    * @dev - currently stores each segment twice, once under random file UUID & once under IPFS multihash
    *      - this should be addressed eventually
    */
-  app.post('/track_content', authMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
+  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
     if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
     const routeTimeStart = Date.now()
     let codeBlockTimeStart = Date.now()
@@ -88,7 +88,7 @@ module.exports = function (app) {
    * Given track metadata object, upload and share metadata to IPFS. Return metadata multihash if successful.
    * Error if associated track segments have not already been created and stored.
    */
-  app.post('/tracks/metadata', authMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
+  app.post('/tracks/metadata', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     // TODO - input validation
     const metadataJSON = req.body.metadata
 
@@ -134,7 +134,7 @@ module.exports = function (app) {
    * Given track blockchainTrackId, blockNumber, and metadataFileUUID, creates/updates Track DB track entry
    * and associates segment & image file entries with track. Ends track creation/update process.
    */
-  app.post('/tracks', authMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
+  app.post('/tracks', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     const { blockchainTrackId, blockNumber, metadataFileUUID } = req.body
 
     if (!blockchainTrackId || !blockNumber || !metadataFileUUID) {
