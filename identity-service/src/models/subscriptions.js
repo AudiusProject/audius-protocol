@@ -7,11 +7,11 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: false,
       primaryKey: true // TODO: consider diff. pkey def.
     },
-    subscriber_id: {
+    subscriberId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    user_id: {
+    userId: {
       type: DataTypes.INTEGER,
       allowNull: false
     }

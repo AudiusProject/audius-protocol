@@ -208,7 +208,6 @@ module.exports = function (app) {
 
       // Handle the 'create' notification type, track/album/playlist
       if (notif.type === notificationTypes.Create.base) {
-        console.log(notif)
         let createType = null
         switch (notif.metadata.entity_type) {
           case 'track':
@@ -221,9 +220,14 @@ module.exports = function (app) {
             createType = notificationTypes.Create.playlist
             break
           default:
-            throw new Error('Invalid repost type')  // TODO: gracefully handle this in try/catch
+            throw new Error('Invalid repost type')// TODO: gracefully handle this in try/catch
+        }
+        if (createType !== notificationTypes.Create.track) {
+          console.log('TEMPORARY SKIP OF COLLECTIONS')
+          continue
         }
         console.log(createType)
+        console.log(notif)
       }
     }
     return successResponse({})

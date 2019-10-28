@@ -8,11 +8,11 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      subscriber_id: {
+      subscriberId: {
         type: Sequelize.INTEGER,
         allowNull: false
       },
-      user_id: {
+      userId: {
         type: Sequelize.INTEGER,
         allowNull: false
       },
