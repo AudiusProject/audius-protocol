@@ -9,7 +9,19 @@ const notificationTypes = {
     track: 'RepostTrack',
     album: 'RepostAlbum',
     playlist: 'RepostPlaylist'
+  },
+  Favorite: {
+    base: 'Favorite',
+    track: 'FavoriteTrack',
+    album: 'FavoriteAlbum',
+    playlist: 'FavoritePlaylist'
   }
+}
+
+const actionEntityTypes = {
+  User: 'User',
+  Track: 'Track',
+  Album: 'Album'
 }
 
 module.exports = function (app) {
@@ -33,7 +45,6 @@ module.exports = function (app) {
       let blocknumber = notif.blocknumber
       let timestamp = Date.parse(notif.timestamp.slice(0, -2))
 
-      /*
       // Handle the 'follow' notification type
       if (notif.type === notificationTypes.Follow) {
         let notificationTarget = notif.metadata.followee_user_id
@@ -67,19 +78,16 @@ module.exports = function (app) {
           let notifActionCreateTx = await models.NotificationAction.findOrCreate({
             where: {
               notificationId: notificationId,
-              actionEntityType: 'User',
+              actionEntityType: actionEntityTypes.User,
               actionEntityId: notificationInitiator
             }
           })
         }
       }
-      */
 
       // Handle the 'repost' notification type
       // track/album/playlist
       if (notif.type === notificationTypes.Repost.base) {
-        console.log('Repost:')
-        console.log(notif)
         let repostType = null
         switch (notif.metadata.entity_type) {
           case 'track':
@@ -96,13 +104,15 @@ module.exports = function (app) {
         }
         let notificationTarget = notif.metadata.entity_owner_id
         let notificationEntityId = notif.metadata.entity_id
-        let initiator = notif.initiator
+        let notificationInitiator = notif.initiator
 
         let unreadQuery = await models.Notification.findAll({
           where: {
             isRead: false,
+            isHidden: false,
             userId: notificationTarget,
-            type: repostType
+            type: repostType,
+            entityId: notificationEntityId
           }
         })
 
@@ -123,7 +133,72 @@ module.exports = function (app) {
           notificationId = unreadQuery[0].id
         }
 
-        console.log(`Repost notif. id ${notificationId}`)
+        if (notificationId) {
+          let notifActionCreateTx = await models.NotificationAction.findOrCreate({
+            where: {
+              notificationId: notificationId,
+              actionEntityType: actionEntityTypes.User,
+              actionEntityId: notificationInitiator
+            }
+          })
+        }
+      }
+
+      // Handle the 'favorite' notification type, track/album/playlist
+      if (notif.type === notificationTypes.Favorite.base) {
+        console.log(notif)
+        let favoriteType = null
+        switch (notif.metadata.entity_type) {
+          case 'track':
+            favoriteType = notificationTypes.Favorite.track
+            break
+          case 'album':
+            favoriteType = notificationTypes.Favorite.album
+            break
+          case 'playlist':
+            favoriteType = notificationTypes.Favorite.playlist
+            break
+          default:
+            throw new Error('Invalid repost type')  // TODO: gracefully handle this in try/catch
+        }
+        let notificationTarget = notif.metadata.entity_owner_id
+        let notificationEntityId = notif.metadata.entity_id
+        let notificationInitiator = notif.initiator
+        let unreadQuery = await models.Notification.findAll({
+          where: {
+            isRead: false,
+            isHidden: false,
+            userId: notificationTarget,
+            type: favoriteType,
+            entityId: notificationEntityId
+          }
+        })
+
+        let notificationId = null
+        if (unreadQuery.length === 0) {
+          let favoriteNotifTx = await models.Notification.create({
+            type: favoriteType,
+            isRead: false,
+            isHidden: false,
+            userId: notificationTarget,
+            entityId: notificationEntityId,
+            blocknumber,
+            timestamp
+          })
+          notificationId = favoriteNotifTx.id
+        } else {
+          notificationId = unreadQuery[0].id
+        }
+
+        if (notificationId) {
+          let notifActionCreateTx = await models.NotificationAction.findOrCreate({
+            where: {
+              notificationId: notificationId,
+              actionEntityType: actionEntityTypes.User,
+              actionEntityId: notificationInitiator
+            }
+          })
+        }
       }
     }
     return successResponse({})
