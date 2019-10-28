@@ -11,3 +11,4 @@ local-storage/
 local-test/
 contract-config.json
 eth-contract-config.json
+docker-compose/.development.env

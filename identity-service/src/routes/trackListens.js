@@ -10,10 +10,25 @@ async function getListenHour () {
   return listenDate
 }
 
-let oneDayInMs = (24 * 60 * 60 * 1000)
-let oneWeekInMs = oneDayInMs * 7
-let oneMonthInMs = oneDayInMs * 30
-let oneYearInMs = oneMonthInMs * 12
+const oneDayInMs = (24 * 60 * 60 * 1000)
+const oneWeekInMs = oneDayInMs * 7
+const oneMonthInMs = oneDayInMs * 30
+const oneYearInMs = oneMonthInMs * 12
+
+// Limit / offset related constants
+const defaultLimit = 100
+const minLimit = 1
+const maxLimit = 500
+const defaultOffset = 0
+const minOffset = 0
+
+const getPaginationVars = (limit, offset) => {
+  if (!limit) limit = defaultLimit
+  if (!offset) offset = defaultOffset
+  let boundedLimit = Math.min(Math.max(limit, minLimit), maxLimit)
+  let boundedOffset = Math.max(offset, minOffset)
+  return { limit: boundedLimit, offset: boundedOffset }
+}
 
 const parseTimeframe = (inputTime) => {
   switch (inputTime) {
@@ -116,6 +131,87 @@ const getTrackListens = async (
   return output
 }
 
+const getTrendingTracks = async (
+  idList,
+  timeFrame,
+  limit,
+  offset) => {
+  if (idList !== undefined && !Array.isArray(idList)) {
+    return errorResponseBadRequest('Invalid id list provided. Please provide an array of track IDs')
+  }
+
+  let dbQuery = {
+    attributes: ['trackId', [models.Sequelize.fn('sum', models.Sequelize.col('listens')), 'listens']],
+    group: ['trackId'],
+    order: [[models.Sequelize.col('listens'), 'DESC'], [models.Sequelize.col('trackId'), 'DESC']],
+    where: {}
+  }
+
+  // If id list present, add filter
+  if (idList) {
+    dbQuery.where.trackId = { [models.Sequelize.Op.in]: idList }
+  }
+
+  let currentHour = await getListenHour()
+  switch (timeFrame) {
+    case 'day':
+      let oneDayBefore = new Date(currentHour.getTime() - oneDayInMs)
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneDayBefore }
+      break
+    case 'week':
+      let oneWeekBefore = new Date(currentHour.getTime() - oneWeekInMs)
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneWeekBefore }
+      break
+    case 'month':
+      let oneMonthBefore = new Date(currentHour.getTime() - oneMonthInMs)
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneMonthBefore }
+      break
+    case 'year':
+      let oneYearBefore = new Date(currentHour.getTime() - oneYearInMs)
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneYearBefore }
+      break
+    case undefined:
+      break
+    default:
+      return errorResponseBadRequest('Invalid time parameter provided, use day/week/month/year or no parameter')
+  }
+  if (limit) {
+    dbQuery.limit = limit
+  }
+
+  if (offset) {
+    dbQuery.offset = offset
+  }
+
+  let listenCounts = await models.TrackListenCount.findAll(dbQuery)
+  let parsedListenCounts = []
+  let seenTrackIds = []
+  listenCounts.forEach((elem) => {
+    parsedListenCounts.push({ trackId: elem.trackId, listens: parseInt(elem.listens) })
+    seenTrackIds.push(elem.trackId)
+  })
+
+  const seenIdSet = new Set(seenTrackIds)
+  if (idList && seenIdSet.size < idList.length) {
+    // For any tracks in the required id list that were not listened to in the last <timeFrame>
+    // Populate empty listen counts
+    for (var i = 0; i < idList.length; i++) {
+      const id = parseInt(idList[i])
+      // Add tracks only if not already present in parsedListenCounts
+      if (!seenIdSet.has(id)) {
+        parsedListenCounts.push({ trackId: id, listens: 0 })
+      }
+
+      // Exit if desired response limit has been met
+      if (limit && parsedListenCounts.length >= limit) {
+        break
+      }
+    }
+  }
+
+  return parsedListenCounts
+}
+
 module.exports = function (app) {
   app.post('/tracks/:id/listen', handleResponse(async (req, res) => {
     const trackId = parseInt(req.params.id)
@@ -162,11 +258,10 @@ module.exports = function (app) {
   app.post('/tracks/listens/:timeframe*?', handleResponse(async (req, res, next) => {
     let body = req.body
     let idList = body.track_ids
-    let limit = body.limit
-    let offset = body.offset
     let startTime = body.startTime
     let endTime = body.endTime
     let time = parseTimeframe(req.params.timeframe)
+    let { limit, offset } = getPaginationVars(body.limit, body.offset)
     let output = await getTrackListens(
       idList,
       time,
@@ -179,12 +274,11 @@ module.exports = function (app) {
   }))
 
   app.get('/tracks/listens/:timeframe*?', handleResponse(async (req, res) => {
-    let limit = req.query.limit
-    let offset = req.query.offset
     let idList = req.query.id
     let startTime = req.query.start
     let endTime = req.query.end
     let time = parseTimeframe(req.params.timeframe)
+    let { limit, offset } = getPaginationVars(req.query.limit, req.query.offset)
     let output = await getTrackListens(
       idList,
       time,
@@ -204,84 +298,38 @@ module.exports = function (app) {
    *    - <time> - day, week, month, year
    *    - returns all tracks for given time period, sorted by play count
    *
-   *  query parameters (optional):
+   *  POST body parameters (optional):
+   *    limit (int) - limits number of results
+   *    offset (int) - offset results
+   *    track_ids (array of int) - filter results for specific track(s)
+   *
+   *  GET query parameters (optional):
    *    limit (int) - limits number of results
    *    offset (int) - offset results
    *    id (array of int) - filter results for specific track(s)
    */
+  app.post('/tracks/trending/:time*?', handleResponse(async (req, res) => {
+    let time = req.params.time
+    let body = req.body
+    let idList = body.track_ids
+    let { limit, offset } = getPaginationVars(body.limit, body.offset)
+    let parsedListenCounts = await getTrendingTracks(
+      idList,
+      time,
+      limit,
+      offset)
+    return successResponse({ listenCounts: parsedListenCounts })
+  }))
+
   app.get('/tracks/trending/:time*?', handleResponse(async (req, res) => {
     let time = req.params.time
-    let limit = req.query.limit
-    let offset = req.query.offset
     let idList = req.query.id
-
-    if (idList !== undefined && !Array.isArray(idList)) {
-      return errorResponseBadRequest('Invalid id list provided. Please provide an array of track IDs')
-    }
-
-    let dbQuery = {
-      attributes: ['trackId', [models.Sequelize.fn('sum', models.Sequelize.col('listens')), 'listens']],
-      group: ['trackId'],
-      order: [[models.Sequelize.col('listens'), 'DESC'], [models.Sequelize.col('trackId'), 'DESC']],
-      where: {}
-    }
-
-    // If id list present, add filter
-    if (idList && idList.length > 0) {
-      dbQuery.where.trackId = { [models.Sequelize.Op.in]: idList }
-    }
-
-    let currentHour = await getListenHour()
-
-    switch (time) {
-      case 'day':
-        let oneDayBefore = new Date(currentHour.getTime() - oneDayInMs)
-        dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneDayBefore }
-        break
-      case 'week':
-        let oneWeekBefore = new Date(currentHour.getTime() - oneWeekInMs)
-        dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneWeekBefore }
-        break
-      case 'month':
-        let oneMonthBefore = new Date(currentHour.getTime() - oneMonthInMs)
-        dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneMonthBefore }
-        break
-      case 'year':
-        let oneYearBefore = new Date(currentHour.getTime() - oneYearInMs)
-        dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneYearBefore }
-        break
-      case undefined:
-        break
-      default:
-        return errorResponseBadRequest('Invalid time parameter provided, use day/week/month/year or no parameter')
-    }
-
-    if (limit) {
-      dbQuery.limit = limit
-    }
-
-    if (offset) {
-      dbQuery.offset = offset
-    }
-
-    let listenCounts = await models.TrackListenCount.findAll(dbQuery)
-
-    let parsedListenCounts = []
-    let seenTrackIds = []
-    listenCounts.forEach((elem) => {
-      parsedListenCounts.push({ trackId: elem.trackId, listens: parseInt(elem.listens) })
-      seenTrackIds.push(elem.trackId)
-    })
-
-    const seenIdSet = new Set(seenTrackIds)
-    if (idList) {
-      idList.forEach((elem) => {
-        const id = parseInt(elem)
-        if (!seenIdSet.has(id)) {
-          parsedListenCounts.push({ trackId: id, listens: 0 })
-        }
-      })
-    }
+    let { limit, offset } = getPaginationVars(req.query.limit, req.query.offset)
+    let parsedListenCounts = await getTrendingTracks(
+      idList,
+      time,
+      limit,
+      offset)
 
     return successResponse({ listenCounts: parsedListenCounts })
   }))
