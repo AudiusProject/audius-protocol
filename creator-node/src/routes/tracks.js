@@ -280,14 +280,6 @@ module.exports = function (app) {
       }
     }
   }))
-
-  /** Returns all tracks for cnodeUser. */
-  app.get('/tracks', authMiddleware, handleResponse(async (req, res) => {
-    const tracks = await models.Track.findAll({
-      where: { cnodeUserUUID: req.session.cnodeUserUUID }
-    })
-    return successResponse({ 'tracks': tracks })
-  }))
 }
 
 /**

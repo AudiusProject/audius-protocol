@@ -191,13 +191,6 @@ class CreatorNode {
     })
   }
 
-  async listTracks () {
-    return this._makeRequest({
-      url: '/tracks',
-      method: 'get'
-    })
-  }
-
   async uploadImage (file, square = true, onProgress) {
     return this._uploadFile(file, '/image_upload', onProgress, { 'square': square })
   }
