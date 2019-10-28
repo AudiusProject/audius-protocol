@@ -262,7 +262,7 @@ class DiscoveryProvider {
    *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
-  async getUserRepostFeed (userId, filter, limit = 100, offset = 0) {
+  async getUserRepostFeed (userId, limit = 100, offset = 0) {
     let req = {
       endpoint: 'feed',
       urlParams: '/reposts/' + userId,
