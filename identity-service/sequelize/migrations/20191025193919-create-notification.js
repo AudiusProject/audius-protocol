@@ -1,12 +1,11 @@
-'use strict';
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('Notifications', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.UUID
       },
       type: {
         type: Sequelize.ENUM('Follow', 'RepostTrack', 'RepostPlaylist', 'RepostAlbum', 'FavoriteTrack')
@@ -23,14 +22,8 @@ module.exports = {
       blocknumber: {
         type: Sequelize.INTEGER
       },
-      entity_id: {
-        type: Sequelize.INTEGER
-      },
       timestamp: {
         type: Sequelize.DATE
-      },
-      metadata: {
-        type: Sequelize.ARRAY(Sequelize.JSONB)
       },
       createdAt: {
         allowNull: false,
