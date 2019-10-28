@@ -8,15 +8,15 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      notif_id: {
+      notificationId: {
         type: Sequelize.UUID,
         allowNull: false
       },
-      entity_type: {
+      actionEntityType: {
         type: Sequelize.TEXT,
         allowNull: false
       },
-      entity_id: {
+      actionEntityId: {
         type: Sequelize.INTEGER,
         allowNull: false
       },

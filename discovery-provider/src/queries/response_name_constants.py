@@ -30,12 +30,12 @@ listen_counts = 'listen_counts'
 
 # notifications metadata
 notification_type = 'type'
-notification_type_follow = 'follow'
-notification_type_favorite = 'favorite'
-notification_type_repost = 'repost'
-notification_type_created_track = 'created_track'
-notification_type_created_album = 'created_album'
-notification_type_created_playlist = 'created_playlist'
+notification_type_follow = 'Follow'
+notification_type_favorite = 'Favorite'
+notification_type_repost = 'Repost'
+notification_type_created_track = 'Created_track'
+notification_type_created_album = 'Created_album'
+notification_type_created_playlist = 'Created_playlist'
 
 notification_blocknumber = 'blocknumber'
 notification_initiator = 'initiator'

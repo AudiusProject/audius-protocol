@@ -7,15 +7,15 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
       primaryKey: true
     },
-    notif_id: {
+    notificationId: {
       type: DataTypes.UUID,
       allowNull: false // TODO: make this a foreign key
     },
-    entity_type: { // TODO: make this enum
+    actionEntityType: { // TODO: make this enum
       type: DataTypes.TEXT,
       allowNull: false
     },
-    entity_id: {
+    actionEntityId: {
       type: DataTypes.INTEGER,
       allowNull: false
     }

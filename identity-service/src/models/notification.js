@@ -4,7 +4,8 @@ module.exports = (sequelize, DataTypes) => {
     id: {
       type: DataTypes.UUID,
       allowNull: false,
-      primaryKey: true
+      primaryKey: true,
+      defaultValue: DataTypes.UUIDV4
     },
     type: {
       type: DataTypes.ENUM({
@@ -12,17 +13,25 @@ module.exports = (sequelize, DataTypes) => {
       }),
       allowNull: false
     },
-    is_read: {
+    isRead: {
       type: DataTypes.BOOLEAN,
-      allowNull: false
+      allowNull: false,
+      defaultValue: false
     },
-    is_hidden: {
+    isHidden: {
       type: DataTypes.BOOLEAN,
-      allowNull: false
+      allowNull: false,
+      defaultValue: false
     },
-    user_id: {
+    userId: {
+      // TODO: convert to camels
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    entityId: {
+      // Can be track/album/playlist/user id
+      type: DataTypes.INTEGER,
+      allowNull: true
     },
     blocknumber: {
       type: DataTypes.INTEGER,

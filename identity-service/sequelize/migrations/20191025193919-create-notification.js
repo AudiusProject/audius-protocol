@@ -10,13 +10,17 @@ module.exports = {
       type: {
         type: Sequelize.ENUM('Follow', 'RepostTrack', 'RepostPlaylist', 'RepostAlbum', 'FavoriteTrack')
       },
-      is_read: {
+      isRead: {
         type: Sequelize.BOOLEAN
       },
-      is_hidden: {
+      isHidden: {
         type: Sequelize.BOOLEAN
       },
-      user_id: {
+      userId: {
+        type: Sequelize.INTEGER
+      },
+      entityId: {
+        allowNull: true,
         type: Sequelize.INTEGER
       },
       blocknumber: {
