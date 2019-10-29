@@ -223,6 +223,8 @@ module.exports = function (app) {
           case 'playlist':
             createType = notificationTypes.Create.playlist
             actionEntityType = actionEntityTypes.Playlist
+            console.log('found playlist')
+            console.log(notif)
             break
           default:
             throw new Error('Invalid create type')// TODO: gracefully handle this in try/catch
@@ -284,37 +286,25 @@ module.exports = function (app) {
                 actionEntityId: createdActionEntityId
               }
             })
-
-            // Dedupe album notification
-            if (actionEntityType === actionEntityTypes.Album) {
-              console.log(notif)
-              let trackIdList = notif.metadata.collection_content.track_ids
-              console.log(trackIdList)
-              if (trackIdList.length > 0) {
-                for (var entry of trackIdList) {
-                  let trackId = entry.track
-                  /*
-                  console.log(trackId)
-                  let selectTx = await models.NotificationAction.findAll({
-                    where: {
-                      actionEntityType: actionEntityTypes.Track,
-                      actionEntityId: trackId
-                    }
-                  })
-                  console.log(selectTx)
-                  */
-                  let destroyTx = await models.NotificationAction.destroy({
-                    where: {
-                      actionEntityType: actionEntityTypes.Track,
-                      actionEntityId: trackId
-                    }
-                  })
-                  console.log(destroyTx)
-                }
-              }
-            }
           }
         }))
+
+        // Dedupe album /playlist notification
+        if (actionEntityType === actionEntityTypes.Album ||
+            actionEntityType === actionEntityTypes.Playlist) {
+          let trackIdList = notif.metadata.collection_content.track_ids
+          if (trackIdList.length > 0) {
+            for (var entry of trackIdList) {
+              let trackId = entry.track
+              let destroyTx = await models.NotificationAction.destroy({
+                where: {
+                  actionEntityType: actionEntityTypes.Track,
+                  actionEntityId: trackId
+                }
+              })
+            }
+          }
+        }
       }
     }
     return successResponse({})
