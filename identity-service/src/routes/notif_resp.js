@@ -218,21 +218,15 @@ module.exports = function (app) {
             break
           case 'album':
             createType = notificationTypes.Create.album
+            actionEntityType = actionEntityTypes.Album
             break
           case 'playlist':
             createType = notificationTypes.Create.playlist
+            actionEntityType = actionEntityTypes.Playlist
             break
           default:
-            throw new Error('Invalid repost type')// TODO: gracefully handle this in try/catch
+            throw new Error('Invalid create type')// TODO: gracefully handle this in try/catch
         }
-        if (createType !== notificationTypes.Create.track) {
-          // console.log('TEMPORARY SKIP OF COLLECTIONS')
-          continue
-        }
-
-        console.log(notif)
-        // Entity in Notifications table is the user who created the track
-        // console.log(notificationEntityId)
 
         // Query user IDs from subscriptions table
         // Notifications go to all users subscribing to this track uploader
@@ -241,9 +235,6 @@ module.exports = function (app) {
             userId: notif.initiator
           }
         })
-        console.log(subscribers)
-
-        let createdActionEntityId = notif.metadata.entity_id
 
         // No operation if no users subscribe to this creator
         if (subscribers.length === 0) { continue }
@@ -256,7 +247,6 @@ module.exports = function (app) {
           // The notification entity id is the uploader id
           // Each track will added to the notification actions table
           let notificationEntityId = notif.initiator
-          console.log(notificationTarget)
           let unreadQuery = await models.Notification.findAll({
             where: {
               isRead: false,
@@ -268,6 +258,7 @@ module.exports = function (app) {
           })
 
           let notificationId = null
+          // TODO: UPDATE TIMESTAMP
           if (unreadQuery.length === 0) {
             let createTrackNotifTx = await models.Notification.create({
               isRead: false,
@@ -284,13 +275,44 @@ module.exports = function (app) {
           }
 
           if (notificationId) {
+            // Action entity id can be one of album/playlist/track
+            let createdActionEntityId = notif.metadata.entity_id
             let notifActionCreateTx = await models.NotificationAction.findOrCreate({
               where: {
                 notificationId,
-                actionEntityType: actionEntityTypes.Track,
+                actionEntityType: actionEntityType,
                 actionEntityId: createdActionEntityId
               }
             })
+
+            // Dedupe album notification
+            if (actionEntityType === actionEntityTypes.Album) {
+              console.log(notif)
+              let trackIdList = notif.metadata.collection_content.track_ids
+              console.log(trackIdList)
+              if (trackIdList.length > 0) {
+                for (var entry of trackIdList) {
+                  let trackId = entry.track
+                  /*
+                  console.log(trackId)
+                  let selectTx = await models.NotificationAction.findAll({
+                    where: {
+                      actionEntityType: actionEntityTypes.Track,
+                      actionEntityId: trackId
+                    }
+                  })
+                  console.log(selectTx)
+                  */
+                  let destroyTx = await models.NotificationAction.destroy({
+                    where: {
+                      actionEntityType: actionEntityTypes.Track,
+                      actionEntityId: trackId
+                    }
+                  })
+                  console.log(destroyTx)
+                }
+              }
+            }
           }
         }))
       }

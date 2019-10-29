@@ -245,6 +245,6 @@ def notifications():
     # Final sort - TODO: can we sort by timestamp?
     # TODO: should this be reverse or not? reverse=True - time desc., else time asc.
     sorted_notifications = \
-            sorted(notifications, key=lambda i: i[const.notification_blocknumber], reverse=True)
+            sorted(notifications, key=lambda i: i[const.notification_blocknumber], reverse=False)
 
     return api_helpers.success_response({'notifications':sorted_notifications, 'info':notification_metadata})
