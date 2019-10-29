@@ -23,14 +23,11 @@ class CreatorNode {
    * @param {number} trackId
    */
   static async checkIfDownloadAvailable (endpoints, trackId) {
-    for (const endpoint in endpoints.split(',')) {
+    for await (const endpoint of endpoints.split(',')) {
       try {
         const res = await axios({
           baseURL: endpoint,
-          url: '/download/',
-          params: {
-            trackId
-          }
+          url: `tracks/download/${trackId}`,
         })
         if (res.cid) return res.cid
       } catch (e) {
