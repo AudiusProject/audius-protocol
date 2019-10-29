@@ -27,14 +27,13 @@ module.exports = function (app) {
           ['entityId', 'ASC']
         ],
         include: [{
-          model: models.NotificationAction,
-          where: { state: models.sequelize.col('Notification.id') }
+          model: models.NotificationAction
         }],
         limit,
         offset
       })
       console.log(JSON.stringify({ notifications }, null, ' '))
-      return successResponse({ message: 'success' })
+      return successResponse({ message: 'success', notifications })
     } catch (err) {
       console.log(err)
       return errorResponseBadRequest({
