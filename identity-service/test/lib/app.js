@@ -2,13 +2,15 @@ const { runMigrations, clearDatabase } = require('../../src/migrationManager')
 
 async function getApp (s3bucket, ipfsMock) {
   delete require.cache[require.resolve('../../src/app')] // force reload between each test
-  const appInfo = require('../../src/app')(8000)
+  const App = require('../../src/app')
+  const app = new App(8000)
+  const server = await app.init()
 
   // run all migrations before each test
   await clearDatabase()
   await runMigrations()
 
-  return appInfo
+  return server
 }
 
 module.exports = { getApp }
