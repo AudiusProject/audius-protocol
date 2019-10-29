@@ -87,7 +87,7 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, transaction = null,
   if (transaction) { queryObj.transaction = transaction }
   const file = (await models.File.findOrCreate(queryObj))[0].dataValues
 
-  req.logger.info(`\nAdded file: ${multihash} for fileUUID ${file.fileUUID} from sourceFile ${req.fileName || sourceFile}`)
+  req.logger.info(`Added file: ${multihash} for fileUUID ${file.fileUUID} from sourceFile ${req.fileName || sourceFile}`)
   return { multihash: multihash, fileUUID: file.fileUUID }
 }
 

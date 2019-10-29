@@ -141,6 +141,7 @@ class Track(Base):
     iswc = Column(String)
     track_segments = Column(postgresql.JSONB, nullable=False)
     metadata_multihash = Column(String)
+    is_downloadable = Column(postgresql.JSONB, nullable=True)
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
 
@@ -148,31 +149,34 @@ class Track(Base):
     PrimaryKeyConstraint(is_current, track_id, blockhash)
 
     def __repr__(self):
-        return f"<Track(blockhash={self.blockhash},\
-blocknumber={self.blocknumber},\
-track_id={self.track_id},\
-is_current={self.is_current},\
-is_delete={self.is_delete},\
-owner_id={self.owner_id},\
-title={self.title},\
-length={self.length},\
-cover_art={self.cover_art},\
-cover_art_sizes={self.cover_art_sizes},\
-tags={self.tags},\
-genre={self.genre},\
-mood={self.mood},\
-credits_splits={self.credits_splits},\
-create_date={self.create_date},\
-release_date={self.release_date},\
-file_type={self.file_type},\
-description={self.description},\
-license={self.license},\
-isrc={self.isrc},\
-iswc={self.iswc},\
-track_segments={self.track_segments},\
-metadata_multihash={self.metadata_multihash},\
-updated_at={self.updated_at},\
-created_at={self.created_at})>"
+        return f"<Track(\
+            blockhash={self.blockhash},\
+            blocknumber={self.blocknumber},\
+            track_id={self.track_id},\
+            is_current={self.is_current},\
+            is_delete={self.is_delete},\
+            owner_id={self.owner_id},\
+            title={self.title},\
+            length={self.length},\
+            cover_art={self.cover_art},\
+            cover_art_sizes={self.cover_art_sizes},\
+            tags={self.tags},\
+            genre={self.genre},\
+            mood={self.mood},\
+            credits_splits={self.credits_splits},\
+            create_date={self.create_date},\
+            release_date={self.release_date},\
+            file_type={self.file_type},\
+            description={self.description},\
+            license={self.license},\
+            isrc={self.isrc},\
+            iswc={self.iswc},\
+            track_segments={self.track_segments},\
+            metadata_multihash={self.metadata_multihash},\
+            is_downloadable={self.is_downloadable},\
+            updated_at={self.updated_at},\
+            created_at={self.created_at}\
+        )>"
 
 
 class Playlist(Base):

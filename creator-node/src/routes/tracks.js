@@ -8,7 +8,7 @@ const models = require('../models')
 const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
-const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
+const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
 
 module.exports = function (app) {
   /**
@@ -103,7 +103,6 @@ module.exports = function (app) {
       const file = await models.File.findOne({ where: {
         multihash: segment.multihash,
         cnodeUserUUID: req.session.cnodeUserUUID,
-        trackUUID: null,
         type: 'track'
       } })
       if (!file) {
@@ -175,7 +174,7 @@ module.exports = function (app) {
     // Get download status from metadata object.
     let isDownloadable = "no"
     if (metadataJSON.download) {
-      if (metadataJSON.download.isDownloadable) {
+      if (metadataJSON.download.is_downloadable) {
         isDownloadable = (metadataJSON.download.requires_follow) ? "follow" : "yes"
       }
     }
@@ -237,7 +236,6 @@ module.exports = function (app) {
 
   /**
    * TODO
-   * - consider inputting trackUUID vs trackBlockchainId
    * - middlewares?
    */
   app.get('/tracks/download_status/:blockchainId', handleResponse(async (req, res) => {
@@ -295,8 +293,7 @@ async function createDownloadableCopy (req, sourceFile) {
     const dlCopyFilePath = await ffmpeg.transcodeFileTo320(req, sourceFilePath, sourceFile)
     req.logger.info(`Transcoded file ${sourceFile} in ${Date.now() - start}ms.`)
 
-    const resp = await saveFileToIPFSFromFS(req, dlCopyFilePath, 'copy320', null, sourceFile)
-    req.logger.info(`savefiletoipfsfromfs ${JSON.stringify(resp)}`)
+    await saveFileToIPFSFromFS(req, dlCopyFilePath, 'copy320', null, sourceFile)
 
     return dlCopyFilePath
   } catch (err) {
