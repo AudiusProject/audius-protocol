@@ -42,7 +42,7 @@ module.exports = function (app) {
     // let queryParams = req.query
     let reqObj = {
       method: 'get',
-      url: 'http://docker.for.mac.localhost:5000/notifications?min_block_number=11512015'
+      url: 'http://docker.for.mac.localhost:5000/notifications?min_block_number=11520500'
     }
     let body = JSON.parse(await doRequest(reqObj))
     let notifications = body.data.notifications
@@ -223,8 +223,6 @@ module.exports = function (app) {
           case 'playlist':
             createType = notificationTypes.Create.playlist
             actionEntityType = actionEntityTypes.Playlist
-            console.log('found playlist')
-            console.log(notif)
             break
           default:
             throw new Error('Invalid create type')// TODO: gracefully handle this in try/catch
