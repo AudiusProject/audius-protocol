@@ -1,8 +1,101 @@
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const models = require('../models')
 
-module.exports = function (app) {
+const NotificationType = Object.freeze({
+  Follow: 'Follow',
+  FavoriteTrack: 'FavoriteTrack',
+  FavoritePlaylist: 'FavoritePlaylist',
+  FavoriteAlbum: 'FavoriteAlbum',
+  RepostTrack: 'RepostTrack',
+  RepostPlaylist: 'RepostPlaylist',
+  RepostAlbum: 'RepostAlbum',
+  Follow: 'Follow',
+  Follow: 'Follow'
+})
 
+const Entity = Object.freeze({
+  Track: 'Track',
+  Playlist: 'Playlist',
+  Album: 'Album',
+  User: 'User'
+})
+
+const processUserSubscriptionCollection = entityType => notification => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    entityType,
+    entityOwnerId: notification.actions[0].actionEntityId,
+    entityIds: [notification.entityId],
+    userId: notification.entityId,
+    type: 'userSubscription'
+  }
+}
+
+const processUserSubscriptionTrack = entityType => notification => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    entityType,
+    entityOwnerId: notification.entityId,
+    entityIds: notification.actions.map(action => action.actionEntityId),
+    userId: notification.entityId,
+    type: 'userSubscription'
+  }
+}
+
+const processFavorite = (entityType) => notification => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    type: 'favorite',
+    entityType,
+    entityId: notification.entityId,
+    userIds: notification.actions.map(action => action.actionEntityId)
+  }
+}
+
+const processRepost = entityType => notification => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    entityType,
+    entityId: notification.entityId,
+    type: 'repost',
+    userIds: notification.actions.map(action => action.actionEntityId)
+  }
+}
+
+const processFollow = (notification) => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    type: notification.type.toLowerCase(),
+    userIds: notification.actions.map(action => action.actionEntityId)
+  }
+}
+
+const getCommonNotificationsFields = (notification) => ({
+  id: notification.id,
+  isHidden: notification.isHidden,
+  idRead: notification.idRead,
+  timestamp: notification.timestamp
+})
+
+const notificationResponseMap = {
+  [NotificationType.Follow]: processFollow,
+  [NotificationType.FavoriteTrack]: processFavorite(Entity.Track),
+  [NotificationType.FavoritePlaylist]: processFavorite(Entity.Playlist),
+  [NotificationType.FavoriteAlbum]: processFavorite(Entity.Album),
+  [NotificationType.RepostTrack]: processRepost(Entity.Track),
+  [NotificationType.RepostPlaylist]: processRepost(Entity.Playlist),
+  [NotificationType.RepostAlbum]: processRepost(Entity.Album)
+
+}
+
+const processNotifications = (notifications) =>
+  notifications.map((notification) => {
+    if (!notification.actions) return null
+    const mapResponse = notificationResponseMap[notification.type]
+    if (mapResponse) return mapResponse(notification)
+  }).filter(Boolean)
+
+module.exports = function (app) {
   // Sets a user subscription
   app.get('/notifications', handleResponse(async (req, res, next) => {
     const userId = parseInt(req.query.userId)
@@ -27,12 +120,14 @@ module.exports = function (app) {
           ['entityId', 'ASC']
         ],
         include: [{
-          model: models.NotificationAction
+          model: models.NotificationAction,
+          as: 'actions'
         }],
         limit,
         offset
       })
-      console.log(JSON.stringify({ notifications }, null, ' '))
+      // const userNotifications = processNotifications(notifications)
+      // return successResponse({ message: 'success', notifications: userNotifications })
       return successResponse({ message: 'success', notifications })
     } catch (err) {
       console.log(err)

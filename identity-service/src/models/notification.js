@@ -56,7 +56,8 @@ module.exports = (sequelize, DataTypes) => {
   Notification.associate = function (models) {
     Notification.hasMany(models.NotificationAction, {
       sourceKey: 'id',
-      foreignKey: 'notificationId'
+      foreignKey: 'notificationId',
+      as: 'actions'
     })
   }
 

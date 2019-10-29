@@ -17,7 +17,6 @@ const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
 const DEFAULT_KEY_GENERATOR = (req) => req.ip
 
 class App {
-
   constructor (port) {
     this.port = port
     this.express = express()
@@ -43,7 +42,7 @@ class App {
     await txRelay.fundRelayerIfEmpty()
 
     logger.info(`Listening on port ${this.port}...`)
- 
+
     return { app: this.express, server }
   }
 
