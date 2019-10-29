@@ -228,6 +228,8 @@ module.exports = function (app) {
         }
         console.log(createType)
         console.log(notif)
+        // Entity in Notifications table is the user who created the track
+        let notificationEntityId = notif.initiator
       }
     }
     return successResponse({})
