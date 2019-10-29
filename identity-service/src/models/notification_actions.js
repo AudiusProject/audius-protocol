@@ -9,7 +9,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     notificationId: {
       type: DataTypes.UUID,
-      allowNull: false // TODO: make this a foreign key
+      allowNull: false,
+      onDelete: 'RESTRICT',
+      references: {
+        model: 'Notification',
+        key: 'id',
+        as: 'notificationId'
+      }
     },
     actionEntityType: { // TODO: make this enum
       type: DataTypes.TEXT,
@@ -20,5 +26,13 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     }
   }, {})
+
+  NotificationAction.associate = function (models) {
+    NotificationAction.belongsTo(models.Notification, {
+      foreignKey: 'notificationId',
+      sourceKey: 'id'
+    })
+  }
+
   return NotificationAction
 }

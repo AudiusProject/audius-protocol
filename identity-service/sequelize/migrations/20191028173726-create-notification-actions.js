@@ -10,7 +10,13 @@ module.exports = {
       },
       notificationId: {
         type: Sequelize.UUID,
-        allowNull: false
+        allowNull: false,
+        onDelete: 'RESTRICT',
+        references: {
+          model: 'Notifications',
+          key: 'id',
+          as: 'notificationId'
+        }
       },
       actionEntityType: {
         type: Sequelize.TEXT,
