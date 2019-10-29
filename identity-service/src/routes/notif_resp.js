@@ -27,7 +27,8 @@ const notificationTypes = {
 const actionEntityTypes = {
   User: 'User',
   Track: 'Track',
-  Album: 'Album'
+  Album: 'Album',
+  Playlist: 'Playlist'
 }
 
 module.exports = function (app) {
@@ -209,9 +210,11 @@ module.exports = function (app) {
       // Handle the 'create' notification type, track/album/playlist
       if (notif.type === notificationTypes.Create.base) {
         let createType = null
+        let actionEntityType = null
         switch (notif.metadata.entity_type) {
           case 'track':
             createType = notificationTypes.Create.track
+            actionEntityType = actionEntityTypes.Track
             break
           case 'album':
             createType = notificationTypes.Create.album
@@ -223,13 +226,73 @@ module.exports = function (app) {
             throw new Error('Invalid repost type')// TODO: gracefully handle this in try/catch
         }
         if (createType !== notificationTypes.Create.track) {
-          console.log('TEMPORARY SKIP OF COLLECTIONS')
+          // console.log('TEMPORARY SKIP OF COLLECTIONS')
           continue
         }
-        console.log(createType)
+
         console.log(notif)
         // Entity in Notifications table is the user who created the track
-        let notificationEntityId = notif.initiator
+        // console.log(notificationEntityId)
+
+        // Query user IDs from subscriptions table
+        // Notifications go to all users subscribing to this track uploader
+        let subscribers = await models.Subscription.findAll({
+          where: {
+            userId: notif.initiator
+          }
+        })
+        console.log(subscribers)
+
+        let createdActionEntityId = notif.metadata.entity_id
+
+        // No operation if no users subscribe to this creator
+        if (subscribers.length === 0) { continue }
+
+        await Promise.all(subscribers.map(async (s) => {
+          // Add notification for this user indicating the uploader has added a track
+          let notificationTarget = s.subscriberId
+
+          // The notification entity id is the uploader id
+          // Each track will added to the notification actions table
+          let notificationEntityId = notif.initiator
+          console.log(notificationTarget)
+          let unreadQuery = await models.Notification.findAll({
+            where: {
+              isRead: false,
+              isHidden: false,
+              userId: notificationTarget,
+              type: createType,
+              entityId: notificationEntityId
+            }
+          })
+
+          let notificationId = null
+          if (unreadQuery.length === 0) {
+            let createTrackNotifTx = await models.Notification.create({
+              isRead: false,
+              isHidden: false,
+              userId: notificationTarget,
+              type: createType,
+              entityId: notificationEntityId,
+              blocknumber,
+              timestamp
+            })
+            notificationId = createTrackNotifTx.id
+          } else {
+            notificationId = unreadQuery[0].id
+          }
+
+          if (notificationId) {
+            let notifActionCreateTx = await models.NotificationAction.findOrCreate({
+              where: {
+                notificationId,
+                actionEntityType: actionEntityTypes.Track,
+                actionEntityId: createdActionEntityId
+              
+              }
+            })
+          }
+        }))
       }
     }
     return successResponse({})
