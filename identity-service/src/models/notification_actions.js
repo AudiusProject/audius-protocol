@@ -29,8 +29,8 @@ module.exports = (sequelize, DataTypes) => {
 
   NotificationAction.associate = function (models) {
     NotificationAction.belongsTo(models.Notification, {
-      foreignKey: 'notificationId',
-      sourceKey: 'id'
+      sourceKey: 'notificationId',
+      foreignKey: 'id'
     })
   }
 

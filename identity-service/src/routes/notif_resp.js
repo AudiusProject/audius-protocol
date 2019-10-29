@@ -248,6 +248,7 @@ module.exports = function (app) {
         // No operation if no users subscribe to this creator
         if (subscribers.length === 0) { continue }
 
+        // Create notification for each user
         await Promise.all(subscribers.map(async (s) => {
           // Add notification for this user indicating the uploader has added a track
           let notificationTarget = s.subscriberId
@@ -288,7 +289,6 @@ module.exports = function (app) {
                 notificationId,
                 actionEntityType: actionEntityTypes.Track,
                 actionEntityId: createdActionEntityId
-              
               }
             })
           }
