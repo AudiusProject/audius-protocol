@@ -4,6 +4,7 @@ from src import api_helpers
 from src.queries import response_name_constants as const
 from src.models import Follow, Save, SaveType, Playlist, Track, Repost, RepostType
 from src.utils.db_session import get_db
+from sqlalchemy import desc
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
@@ -216,10 +217,9 @@ def notifications():
                 Playlist.is_delete == False, Playlist.is_private == False)
         collection_query = collection_query.filter(
                 Playlist.blocknumber >= min_block_number, Playlist.blocknumber < max_block_number)
-
         collection_query = collection_query.filter(Playlist.created_at == Playlist.updated_at)
-
         collection_results = collection_query.all()
+
         for entry in collection_results:
             collection_notif = {
                 const.notification_type: \
@@ -240,6 +240,43 @@ def notifications():
                 metadata[const.notification_entity_type] = 'playlist'
             collection_notif[const.notification_metadata] = metadata
             created_notifications.append(collection_notif)
+
+        # Playlists that were private and turned to public aka 'published'
+        # TODO: Consider switching blocknumber for updated at?
+        publish_playlists_query = session.query(Playlist)
+        publish_playlists_query = publish_playlists_query.filter(
+            Playlist.is_private == False,
+            Playlist.created_at != Playlist.updated_at,
+            Playlist.blocknumber >= min_block_number,
+            Playlist.blocknumber < max_block_number)
+        publish_playlist_results = publish_playlists_query.all()
+        for entry in publish_playlist_results:
+            prev_entry_query = (
+                session.query(Playlist)
+                .filter(
+                    Playlist.playlist_id == entry.playlist_id,
+                    Playlist.blocknumber < entry.blocknumber)
+                .order_by(desc(Playlist.blocknumber))
+            )
+            # Previous private entry indicates transition to public, triggering a notification
+            prev_entry = prev_entry_query.first()
+            if prev_entry.is_private == True:
+                publish_playlist_notif = {
+                    const.notification_type: \
+                            const.notification_type_create,
+                    const.notification_blocknumber: entry.blocknumber,
+                    const.notification_timestamp: entry.created_at,
+                    const.notification_initiator: entry.playlist_owner_id
+                }
+                metadata = {
+                    const.notification_entity_id: entry.playlist_id,
+                    const.notification_entity_owner_id: entry.playlist_owner_id,
+                    const.notification_collection_content: entry.playlist_contents,
+                    const.notification_entity_type: 'playlist'
+                }
+                publish_playlist_notif[const.notification_metadata] = metadata
+                created_notifications.append(publish_playlist_notif)
+
         notifications.extend(created_notifications)
 
     # Final sort - TODO: can we sort by timestamp?
@@ -248,3 +285,46 @@ def notifications():
             sorted(notifications, key=lambda i: i[const.notification_blocknumber], reverse=False)
 
     return api_helpers.success_response({'notifications':sorted_notifications, 'info':notification_metadata})
+
+@bp.route("/notifications2", methods=("GET",))
+def notifications2():
+    db = get_db()
+    min_block_number = request.args.get("min_block_number", type=int)
+    max_block_number = request.args.get("max_block_number", type=int)
+
+    # Max block number is not explicitly required (yet)
+    if not min_block_number:
+        return api_helpers.error_response({'msg': 'Missing min block number'}, 500)
+
+    if not max_block_number:
+        max_block_number = min_block_number + max_block_diff
+    elif (max_block_number - min_block_number) > (min_block_number + max_block_diff):
+        max_block_number = (min_block_number + max_block_diff)
+
+    notification_metadata = {
+        'min_block_number': min_block_number,
+        'max_block_number': max_block_number
+    }
+    notifications = []
+    with db.scoped_session() as session:
+        publish_playlists_query = session.query(Playlist)
+        publish_playlists_query = publish_playlists_query.filter(
+            Playlist.is_private == False,
+            Playlist.created_at != Playlist.updated_at,
+            Playlist.blocknumber >= min_block_number,
+            Playlist.blocknumber < max_block_number)
+        res = publish_playlists_query.all()
+        for entry in res:
+            prev_entry_query = (
+                session.query(Playlist)
+                .filter(Playlist.playlist_id == entry.playlist_id, Playlist.blocknumber < entry.blocknumber)
+                .order_by(desc(Playlist.blocknumber))
+            )
+            prev_entry = prev_entry_query.first()
+            if prev_entry.is_private == True:
+                logger.error('Transition found:')
+                logger.error(f'playlist: {entry.playlist_id}, old block: {prev_entry.blocknumber}, public block: {entry.blocknumber}')
+
+    return api_helpers.success_response({'info':notification_metadata})
+
+
