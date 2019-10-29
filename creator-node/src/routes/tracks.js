@@ -16,7 +16,7 @@ module.exports = function (app) {
    * @dev - currently stores each segment twice, once under random file UUID & once under IPFS multihash
    *      - this should be addressed eventually
    */
-  app.post('/track_content', authMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
+  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
     if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
     const routeTimeStart = Date.now()
     let codeBlockTimeStart = Date.now()
@@ -88,7 +88,7 @@ module.exports = function (app) {
     }))
     if (blacklistedSegmentFound) {
       // TODO - cleanup orphaned content
-      return errorResponseBadRequest('Track upload failed - part or all of this track has been blacklisted by this node.')
+      return errorResponseForbidden(`Track upload failed - part or all of this track has been blacklisted by this node.`)
     }
 
     req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
@@ -113,7 +113,7 @@ module.exports = function (app) {
       if (await req.app.get('blacklistManager').CIDIsInBlacklist(segment.multihash)) {
         return errorResponseForbidden(`Segment CID ${segment.multihash} has been blacklisted by this node.`)
       }
-      
+
       const file = await models.File.findOne({ where: {
         multihash: segment.multihash,
         cnodeUserUUID: req.session.cnodeUserUUID,

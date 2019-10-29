@@ -252,10 +252,10 @@ const config = convict({
   },
 
   /** Manual content blacklists */
-  artistBlacklist: {
-    doc: 'Comma-separated list of artist blockchain IDs that creator node should avoid serving / storing',
+  userBlacklist: {
+    doc: 'Comma-separated list of user blockchain IDs that creator node should avoid serving / storing',
     format: String,
-    env: 'artistBlacklist',
+    env: 'userBlacklist',
     default: ''
   },
   trackBlacklist: {

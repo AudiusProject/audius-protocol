@@ -3,19 +3,15 @@ const config = require('./config')
 const models = require('./models')
 const redis = require('./redis')
 
-const REDIS_SET_BLACKLIST_TRACKID_KEY = "SET.BLACKLIST.TRACKID"
-const REDIS_SET_BLACKLIST_USERID_KEY = "SET.BLACKLIST.USERID"
-const REDIS_SET_BLACKLIST_SEGMENTCID_KEY = "SET.BLACKLIST.SEGMENTCID"
+const REDIS_SET_BLACKLIST_TRACKID_KEY = 'SET.BLACKLIST.TRACKID'
+const REDIS_SET_BLACKLIST_USERID_KEY = 'SET.BLACKLIST.USERID'
+const REDIS_SET_BLACKLIST_SEGMENTCID_KEY = 'SET.BLACKLIST.SEGMENTCID'
 
-/** TODOS
- * - move queries into transaction?
- */
 class BlacklistManager {
-  /** COMMENT */
   static async blacklist (ipfs) {
     try {
-      const { trackIdsToBlacklist, artistIdsToBlacklist } = await _buildBlacklist()
-      await _processBlacklist(ipfs, trackIdsToBlacklist, artistIdsToBlacklist)
+      const { trackIdsToBlacklist, userIdsToBlacklist } = await _buildBlacklist()
+      await _processBlacklist(ipfs, trackIdsToBlacklist, userIdsToBlacklist)
     } catch (e) {
       logger.error('PROCESSING ERROR ', e)
     }
@@ -34,38 +30,39 @@ class BlacklistManager {
   }
 }
 
-/** build list of trackIds and artistIds to be blacklisted, from configs */
+/** Return list of trackIds and userIds to be blacklisted. */
 async function _buildBlacklist () {
-  const trackBlacklist = config.get('trackBlacklist') === "" ? [] : config.get('trackBlacklist').split(',')
-  const artistBlacklist = config.get('artistBlacklist') === "" ? [] : config.get('artistBlacklist').split(',')
-  
+  const trackBlacklist = config.get('trackBlacklist') === '' ? [] : config.get('trackBlacklist').split(',')
+  const userBlacklist = config.get('userBlacklist') === '' ? [] : config.get('userBlacklist').split(',')
+
   const trackIds = new Set(trackBlacklist)
 
-  // Fetch all tracks created by artists in artistBlacklist
+  // Fetch all tracks created by users in userBlacklist
   let trackBlockchainIds = []
-  if (artistBlacklist.length > 0) {
-    trackBlockchainIds = (await models.sequelize.query('\
-      select "blockchainId" from "Tracks" where "cnodeUserUUID" in (\
-        select "cnodeUserUUID" from "AudiusUsers" where "blockchainId" in (:artistBlacklist)\
-      );\
-    ', { replacements: { artistBlacklist } }
+  if (userBlacklist.length > 0) {
+    trackBlockchainIds = (await models.sequelize.query(
+      'select "blockchainId" from "Tracks" where "cnodeUserUUID" in (' +
+        'select "cnodeUserUUID" from "AudiusUsers" where "blockchainId" in (:userBlacklist)' +
+      ');'
+      , { replacements: { userBlacklist } }
     ))[0]
   }
   if (trackBlockchainIds) {
-    // todo - change to map
     for (const trackObj of trackBlockchainIds) {
-      if (!trackObj.blockchainId) {
-        throw new Error("no")
+      if (trackObj.blockchainId) {
+        trackIds.add(trackObj.blockchainId)
       }
-      trackIds.add(trackObj.blockchainId)
     }
   }
 
-  return { trackIdsToBlacklist: [...trackIds], artistIdsToBlacklist: artistBlacklist }
+  return { trackIdsToBlacklist: [...trackIds], userIdsToBlacklist: userBlacklist }
 }
 
-async function _processBlacklist (ipfs, trackIdsToBlacklist, artistIdsToBlacklist) {
-  // fetch all tracks from DB
+/**
+ * Given trackIds and userIds to blacklist, fetch all segmentCIDs and unpin from IPFS.
+ * Also add all trackIds, userIds, and segmentCIDs to redis blacklist sets to prevent future interaction.
+ */
+async function _processBlacklist (ipfs, trackIdsToBlacklist, userIdsToBlacklist) {
   const tracks = await models.Track.findAll({ where: { blockchainId: trackIdsToBlacklist } })
 
   const segmentCIDsToBlacklist = new Set()
@@ -76,11 +73,11 @@ async function _processBlacklist (ipfs, trackIdsToBlacklist, artistIdsToBlacklis
     for (const segment of track.metadataJSON.track_segments) {
       const CID = segment.multihash
       if (!CID) continue
+
       // unpin from IPFS
       try {
         await ipfs.pin.rm(CID)
-      }
-      catch (e) {
+      } catch (e) {
         if (e.message.indexOf('not pinned') === -1) {
           throw new Error(e)
         }
@@ -90,14 +87,14 @@ async function _processBlacklist (ipfs, trackIdsToBlacklist, artistIdsToBlacklis
     }
   }
 
-  // Add all trackIds, artistIds, and CIDs to redis blacklist sets
+  // Add all trackIds, userIds, and CIDs to redis blacklist sets.
   try {
     if (trackIdsToBlacklist.length > 0) {
       const resp = await redis.sadd('SET.BLACKLIST.TRACKID', trackIdsToBlacklist)
       logger.info(`redis set add SET.BLACKLIST.TRACKID response: ${resp}.`)
     }
-    if (artistIdsToBlacklist.length > 0) {
-      const resp = await redis.sadd('SET.BLACKLIST.USERID', artistIdsToBlacklist)
+    if (userIdsToBlacklist.length > 0) {
+      const resp = await redis.sadd('SET.BLACKLIST.USERID', userIdsToBlacklist)
       logger.info(`redis set add SET.BLACKLIST.USERID response: ${resp}.`)
     }
     if (segmentCIDsToBlacklist.length > 0) {

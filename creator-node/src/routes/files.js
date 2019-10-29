@@ -6,7 +6,7 @@ const writeFile = promisify(fs.writeFile)
 const mkdir = promisify(fs.mkdir)
 
 const { upload } = require('../fileManager')
-const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound } = require('../apiHelpers')
+const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound, errorResponseForbidden } = require('../apiHelpers')
 
 const models = require('../models')
 const { logger } = require('../logging')
@@ -151,7 +151,7 @@ module.exports = function (app) {
 
     // Don't serve if blacklisted
     if (await req.app.get('blacklistManager').CIDIsInBlacklist(CID)) {
-      return sendResponse(req, res, errorResponseNotFound(`No file found for provided CID: ${CID}`))
+      return sendResponse(req, res, errorResponseForbidden(`CID ${CID} has been blacklisted by this node.`))
     }
 
     // Don't serve if not found in DB

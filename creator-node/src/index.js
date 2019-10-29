@@ -75,10 +75,10 @@ const startApp = async () => {
 
   await BlacklistManager.blacklist(ipfs)
 
-  // const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
+  const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
   logger.info('Initialized audius libs')
 
-  const appInfo = initializeApp(config.get('port'), storagePath, ipfs, null, BlacklistManager)
+  const appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager)
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal, error) => {
