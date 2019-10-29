@@ -3,131 +3,164 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const rateLimit = require('express-rate-limit')
 const mailgun = require('mailgun-js')
-let config = require('./config.js')
-var RedisStore = require('rate-limit-redis')
-var Redis = require('ioredis')
-var client = new Redis(config.get('redisPort'), config.get('redisHost'))
+const RedisStore = require('rate-limit-redis')
+const Redis = require('ioredis')
+const config = require('./config.js')
+const txRelay = require('./txRelay')
+const { runMigrations } = require('./migrationManager')
+const initAudiusLibs = require('./audiusLibsInstance')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
 const DOMAIN = 'mail.audius.co'
+const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
+const DEFAULT_KEY_GENERATOR = (req) => req.ip
 
-const app = express()
-// middleware functions will be run in order they are added to the app below
-//  - loggingMiddleware must be first to ensure proper error handling
-app.use(loggingMiddleware)
-app.use(bodyParser.json())
-app.use(cors())
+class App {
 
-// https://expressjs.com/en/guide/behind-proxies.html
-app.set('trust proxy', true)
+  constructor (port) {
+    this.port = port
+    this.express = express()
+    this.redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
-const reqLimiter = rateLimit({
-  store: new RedisStore({
-    client,
-    prefix: 'reqLimiter',
-    expiry: 60 * 60 // one hour in seconds
-  }),
-  max: config.get('rateLimitingReqLimit'), // max requests per hour
-  keyGenerator: function (req) {
-    return req.ip
+    this.expressSettings()
+    this.setMiddleware()
+    this.setRateLimiters()
+    this.setRoutes()
+    this.setErrorHandler()
+    this.configureMailgun()
   }
-})
 
-app.use(reqLimiter)
+  async init () {
+    // run all migrations
+    // this is a stupid solution to a timing bug, because migrations attempt to get run when
+    // the db port is exposed, not when it's ready to accept incoming connections. the timeout
+    // attempts to wait until the db is accepting connections
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    await this.runMigrations()
+    await this.configureAudiusInstance()
+    const server = await new Promise(resolve => this.express.listen(this.port, resolve))
+    await txRelay.fundRelayerIfEmpty()
 
-const authLimiter = rateLimit({
-  store: new RedisStore({
-    client,
-    prefix: 'authLimiter',
-    expiry: 60 * 60 // one hour in seconds
-  }),
-  max: config.get('rateLimitingAuthLimit'), // max requests per hour
-  keyGenerator: function (req) {
-    return req.ip
+    logger.info(`Listening on port ${this.port}...`)
+ 
+    return { app: this.express, server }
   }
-})
 
-// This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
-app.use('/authentication/', authLimiter)
-
-const twitterLimiter = rateLimit({
-  store: new RedisStore({
-    client,
-    prefix: 'twitterLimiter',
-    expiry: 60 * 60 // one hour in seconds
-  }),
-  max: config.get('rateLimitingTwitterLimit'), // max requests per hour
-  keyGenerator: function (req) {
-    return req.ip
+  configureMailgun () {
+    // Configure mailgun instance
+    let mg = null
+    if (config.get('mailgunApiKey')) {
+      mg = mailgun({ apiKey: config.get('mailgunApiKey'), domain: DOMAIN })
+    }
+    this.express.set('mailgun', mg)
   }
-})
 
-// This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
-app.use('/twitter/', twitterLimiter)
-
-const ONE_HOUR_IN_SECONDS = 60 * 60
-const [listenCountHourlyLimiter, listenCountHourlyIPLimiter] = _createRateLimitsForListenCounts('Hour', ONE_HOUR_IN_SECONDS)
-const [listenCountDailyLimiter, listenCountDailyIPLimiter] = _createRateLimitsForListenCounts('Day', ONE_HOUR_IN_SECONDS * 24)
-const [listenCountWeeklyLimiter, listenCountWeeklyIPLimiter] = _createRateLimitsForListenCounts('Week', ONE_HOUR_IN_SECONDS * 24 * 7)
-
-// This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
-app.use('/tracks/:id/listen', listenCountWeeklyIPLimiter, listenCountWeeklyLimiter, listenCountDailyIPLimiter, listenCountDailyLimiter, listenCountHourlyIPLimiter, listenCountHourlyLimiter)
-
-// import routes
-require('./routes')(app)
-
-function errorHandler (err, req, res, next) {
-  req.logger.error('Internal server error')
-  req.logger.error(err.stack)
-  sendResponse(req, res, errorResponseServerError('Internal server error'))
-}
-app.use(errorHandler)
-
-const initializeApp = (port, audiusLibs) => {
-  const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
-  app.set('audiusLibs', audiusLibs)
-
-  // Configure mailgun instance
-  let mg = null
-  if (config.get('mailgunApiKey')) {
-    mg = mailgun({ apiKey: config.get('mailgunApiKey'), domain: DOMAIN })
+  async configureAudiusInstance () {
+    const audiusInstance = await initAudiusLibs()
+    this.express.set('audiusLibs', audiusInstance)
   }
-  app.set('mailgun', mg)
 
-  return { app: app, server: server }
-}
+  async runMigrations () {
+    logger.info('Executing database migrations...')
+    try {
+      await runMigrations()
+    } catch (err) {
+      logger.error('Error in migrations: ', err)
+      process.exit(1)
+    }
+  }
 
-module.exports = initializeApp
+  expressSettings () {
+    // https://expressjs.com/en/guide/behind-proxies.html
+    this.express.set('trust proxy', true)
+  }
 
-// Create rate limits for listens on a per track per user basis and per track per ip basis
-function _createRateLimitsForListenCounts (interval, timeInSeconds) {
-  const listenCountLimiter = rateLimit({
-    store: new RedisStore({
-      client,
+  setMiddleware () {
+    this.express.use(loggingMiddleware)
+    this.express.use(bodyParser.json())
+    this.express.use(cors())
+  }
+
+  getRateLimiter ({ prefix, max, expiry = DEFAULT_EXPIRY, keyGenerator = DEFAULT_KEY_GENERATOR }) {
+    return rateLimit({
+      store: new RedisStore({
+        client: this.redisClient,
+        prefix,
+        expiry
+      }),
+      max, // max requests per hour
+      keyGenerator
+    })
+  }
+
+  // Create rate limits for listens on a per track per user basis and per track per ip basis
+  _createRateLimitsForListenCounts (interval, timeInSeconds) {
+    const listenCountLimiter = this.getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-track:::`,
-      expiry: timeInSeconds
-    }),
-    max: config.get(`rateLimitingListensPerTrackPer${interval}`), // max requests per interval
-    keyGenerator: function (req) {
-      const trackId = req.params.id
-      const userId = req.body.userId
-      return `${trackId}:::${userId}`
-    }
-  })
+      expiry: timeInSeconds,
+      max: config.get(`rateLimitingListensPerTrackPer${interval}`), // max requests per interval
+      keyGenerator: function (req) {
+        const trackId = req.params.id
+        const userId = req.body.userId
+        return `${trackId}:::${userId}`
+      }
+    })
 
-  const listenCountIPLimiter = rateLimit({
-    store: new RedisStore({
-      client,
+    const listenCountIPLimiter = this.getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-ip:::`,
-      expiry: timeInSeconds
-    }),
-    max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
-    keyGenerator: function (req) {
-      const trackId = req.params.id
-      return `${req.ip}:::${trackId}`
-    }
-  })
+      expiry: timeInSeconds,
+      max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
+      keyGenerator: function (req) {
+        const trackId = req.params.id
+        return `${req.ip}:::${trackId}`
+      }
+    })
+    return [listenCountLimiter, listenCountIPLimiter]
+  }
 
-  return [listenCountLimiter, listenCountIPLimiter]
+  setRateLimiters () {
+    const requestRateLimiter = this.getRateLimiter({ prefix: 'reqLimiter', max: config.get('rateLimitingReqLimit') })
+    this.express.use(requestRateLimiter)
+
+    const authRequestRateLimiter = this.getRateLimiter({ prefix: 'authLimiter', max: config.get('rateLimitingAuthLimit') })
+    // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
+    this.express.use('/authentication/', authRequestRateLimiter)
+
+    const twitterRequestRateLimiter = this.getRateLimiter({ prefix: 'twitterLimiter', max: config.get('rateLimitingTwitterLimit') })
+    // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
+    this.express.use('/twitter/', twitterRequestRateLimiter)
+
+    const ONE_HOUR_IN_SECONDS = 60 * 60
+    const [listenCountHourlyLimiter, listenCountHourlyIPLimiter] = this._createRateLimitsForListenCounts('Hour', ONE_HOUR_IN_SECONDS)
+    const [listenCountDailyLimiter, listenCountDailyIPLimiter] = this._createRateLimitsForListenCounts('Day', ONE_HOUR_IN_SECONDS * 24)
+    const [listenCountWeeklyLimiter, listenCountWeeklyIPLimiter] = this._createRateLimitsForListenCounts('Week', ONE_HOUR_IN_SECONDS * 24 * 7)
+
+    // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
+    this.express.use(
+      '/tracks/:id/listen',
+      listenCountWeeklyIPLimiter,
+      listenCountWeeklyLimiter,
+      listenCountDailyIPLimiter,
+      listenCountDailyLimiter,
+      listenCountHourlyIPLimiter,
+      listenCountHourlyLimiter
+    )
+  }
+
+  setRoutes () {
+    // import routes
+    require('./routes')(this.express)
+  }
+
+  setErrorHandler () {
+    function errorHandler (err, req, res, next) {
+      req.logger.error('Internal server error')
+      req.logger.error(err.stack)
+      sendResponse(req, res, errorResponseServerError('Internal server error'))
+    }
+    this.express.use(errorHandler)
+  }
 }
+
+module.exports = App
