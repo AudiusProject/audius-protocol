@@ -38,7 +38,10 @@ class App {
     await new Promise(resolve => setTimeout(resolve, 2000))
     await this.runMigrations()
     await this.configureAudiusInstance()
-    const server = await new Promise(resolve => this.express.listen(this.port, resolve))
+    let server
+    await new Promise(resolve => {
+      server = this.express.listen(this.port, resolve)
+    })
     await txRelay.fundRelayerIfEmpty()
 
     logger.info(`Listening on port ${this.port}...`)
