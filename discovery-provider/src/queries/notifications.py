@@ -2,7 +2,7 @@ import logging # pylint: disable=C0302
 from flask import Blueprint, request
 from src import api_helpers
 from src.queries import response_name_constants as const
-from src.models import Follow, Save, SaveType, Playlist, Track, Repost, RepostType
+from src.models import Block, Follow, Save, SaveType, Playlist, Track, Repost, RepostType
 from src.utils.db_session import get_db
 from sqlalchemy import desc
 
@@ -63,20 +63,29 @@ def notifications():
     elif (max_block_number - min_block_number) > (min_block_number + max_block_diff):
         max_block_number = (min_block_number + max_block_diff)
 
+    with db.scoped_session() as session:
+        current_block_query = session.query(Block).filter_by(is_current=True)
+        current_block_query_results = current_block_query.all()
+        current_block = current_block_query_results[0]
+        current_max_block_num = current_block.number
+        if (current_max_block_num < max_block_number):
+            max_block_number = current_max_block_num
+
     notification_metadata = {
         'min_block_number': min_block_number,
         'max_block_number': max_block_number
     }
     notifications = []
     with db.scoped_session() as session:
-        #
         # Query relevant follow information
-        #
         follow_query = session.query(Follow)
 
         # Impose min block number restriction
-        follow_query = follow_query.filter(Follow.is_current == True, Follow.is_delete == False)
-        follow_query = follow_query.filter(Follow.blocknumber >= min_block_number, Follow.blocknumber < max_block_number)
+        follow_query = follow_query.filter(
+            Follow.is_current == True,
+            Follow.is_delete == False,
+            Follow.blocknumber >= min_block_number,
+            Follow.blocknumber < max_block_number)
 
         follow_results = follow_query.all()
         follow_notifications = []
@@ -95,17 +104,17 @@ def notifications():
             follow_notifications.append(follow_notif)
         notifications.extend(follow_notifications)
 
-        #
         # Query relevant favorite information
-        #
         favorites_query = session.query(Save)
-        favorites_query = favorites_query.filter(Save.is_current == True, Save.is_delete == False)
-        favorites_query = favorites_query.filter(Save.blocknumber >= min_block_number, Save.blocknumber < max_block_number)
+        favorites_query = favorites_query.filter(
+            Save.is_current == True,
+            Save.is_delete == False,
+            Save.blocknumber >= min_block_number,
+            Save.blocknumber < max_block_number)
         favorite_results = favorites_query.all()
         favorite_notifications = []
 
         for entry in favorite_results:
-            # logger.error(entry)
             favorite_notif = {
                 const.notification_type: \
                         const.notification_type_favorite,
