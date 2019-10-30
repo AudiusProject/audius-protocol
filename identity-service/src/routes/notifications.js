@@ -127,34 +127,18 @@ const notificationResponseMap = {
   [NotificationType.Announcement]: formatAnnouncement
 }
 
-const mergeAudiusAnnoucements = (annoucements, notifications) => {
-  let aIdx = 0
-  let nIdx = 0
-  const allNotifications = []
-  for (let i = 0; i < annoucements.length + notifications.length - 1; i += 1) {
-    if (aIdx >= annoucements.length - 1) {
-      allNotifications.push(notifications[nIdx])
-      nIdx += 1
-    } else if (nIdx >= notifications.length - 1) {
-      allNotifications.push(annoucements[aIdx])
-      aIdx += 1
-    } else {
-      let aDate = moment(annoucements[aIdx].datePublished)
-      let nDate = moment(notifications[nIdx].timestamp)
-      if (nDate.isAfter(aDate)) {
-        allNotifications.push(notifications[nIdx])
-        nIdx += 1
-      } else {
-        allNotifications.push(annoucements[aIdx])
-        aIdx += 1
-      }
-    }
-  }
+const mergeAudiusAnnoucements = (announcements, notifications) => {
+  const allNotifications = announcements.concat(notifications)
+  allNotifications.sort((a, b) => {
+    let aDate = moment(a.datePublished || a.timestamp)
+    let bDate = moment(b.datePublished || b.timestamp)
+    return bDate - aDate
+  })
   return allNotifications
 }
 
-const formatNotifications = (notifications, annoucements) => {
-  const userAnnouncements = [...annoucements]
+const formatNotifications = (notifications, announcements) => {
+  const userAnnouncements = [...announcements]
   const userNotifications = notifications.map((notification) => {
     const mapResponse = notificationResponseMap[notification.type]
     if (mapResponse) return mapResponse(notification, userAnnouncements)
@@ -194,6 +178,7 @@ module.exports = function (app) {
         limit,
         offset
       })
+      console.log(notifications)
       const announcements = app.get('announcements')
       const userNotifications = formatNotifications(notifications, announcements)
       return successResponse({ message: 'success', notifications: userNotifications.slice(0, limit) })

@@ -36,7 +36,10 @@
     "rate-limit-redis": "^1.6.0",
     "request": "^2.88.0",
     "sequelize": "^4.41.2",
-    "web3": "1.0.0-beta.36"
+    "web3": "1.0.0-beta.36",
+    "shortid": "^2.2.14",
+    "umzug": "^2.2.0",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "mocha": "^5.2.0",
