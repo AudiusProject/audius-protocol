@@ -53,8 +53,12 @@ class NotificationProcessor {
       // Temporary delay
       await new Promise(resolve => setTimeout(resolve, 1000))
 
-      // Index notifications
-      await this.indexNotifications()
+      try {
+        // Index notifications
+        await this.indexNotifications()
+      } catch (e) {
+        console.log(`Error indexing notifications : ${e}`)
+      }
       await this.notifQueue.add({
         type: 'notificationProcessJob'
       })
@@ -78,7 +82,8 @@ class NotificationProcessor {
     if (cachedHighestBlockNumber) {
       highestBlockNumber = cachedHighestBlockNumber
     }
-    console.log(`Highest block: ${highestBlockNumber}`)
+    let date = new Date()
+    console.log(`Highest block: ${highestBlockNumber} - ${date}`)
     return highestBlockNumber
   }
 
