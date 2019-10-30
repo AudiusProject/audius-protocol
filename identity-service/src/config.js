@@ -166,7 +166,7 @@ const config = convict({
     doc: 'Mailgun API key used to send emails',
     format: String,
     env: 'mailgunApiKey',
-    default: null
+    default: ''
   },
   // loaded through contract-config.json, if an env variable declared, env var takes precendence
   registryAddress: {
