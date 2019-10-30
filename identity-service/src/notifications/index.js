@@ -1,6 +1,7 @@
-const request = require('request')
+const Bull = require('bull')
+const config = require('../config.js')
 const models = require('../models')
-const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const request = require('request')
 
 const notificationTypes = {
   Follow: 'Follow',
@@ -31,22 +32,78 @@ const actionEntityTypes = {
   Playlist: 'Playlist'
 }
 
-module.exports = function (app) {
-  /**
-   * This signup function writes the encryption values from the user's browser(iv, cipherText, lookupKey)
-   * into the Authentications table and the email to the Users table. This is the first step in the
-   * authentication process
-   */
+// TODO - Consider making this a config? It is only used once though
+const defaultBlockNumber = 11520500
 
-  app.get('/notification_load', handleResponse(async (req, res, next) => {
-    // let queryParams = req.query
+class NotificationProcessor {
+  constructor () {
+    this.notifQueue = new Bull(
+      'notif-queue',
+      { redis:
+        { port: config.get('redisPort'), host: config.get('redisHost') }
+      })
+    this.startBlock = config.get('notificationStartBlock')
+  }
+
+  async init (audiusLibs, redis) {
+    // TODO: audiusLibs disc prov method update to include notificaitons
+    this.audiusLibs = audiusLibs
+    this.redis = redis
+    this.notifQueue.process(async (job, done) => {
+      // Temporary delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      try {
+        // Index notifications
+        await this.indexNotifications()
+      } catch (e) {
+        console.log(`Error indexing notifications : ${e}`)
+      }
+      await this.notifQueue.add({
+        type: 'notificationProcessJob'
+      })
+      done()
+    })
+
+    this.notifQueue.add({
+      type: 'notificationProcessJob'
+    })
+    await this.redis.set('highestBlockNumber', this.startBlock)
+  }
+
+  async getHighestBlockNumber () {
+    let highestBlockNumber = await models.Notification.max('blocknumber')
+    if (!highestBlockNumber) {
+      highestBlockNumber = this.startBlock
+    }
+
+    // TODO: consider whether we really need to cache highest block number like this
+    let cachedHighestBlockNumber = await this.redis.get('highestBlockNumber')
+    if (cachedHighestBlockNumber) {
+      highestBlockNumber = cachedHighestBlockNumber
+    }
+    let date = new Date()
+    console.log(`Highest block: ${highestBlockNumber} - ${date}`)
+    return highestBlockNumber
+  }
+
+  async indexNotifications () {
+    // TODO: Handle scenario where there are NO notifications returned, how do we still increment the blocknumber
+    let minBlock = await this.getHighestBlockNumber()
     let reqObj = {
       method: 'get',
-      url: 'http://docker.for.mac.localhost:5000/notifications?min_block_number=11520500'
+      url: `http://docker.for.mac.localhost:5000/notifications?min_block_number=${minBlock}`
     }
     let body = JSON.parse(await doRequest(reqObj))
-    let notifications = body.data.notifications
+    let metadata = body.data.info
+    let highestReturnedBlockNumber = metadata.max_block_number
+    let cachedHighestBlockNumber = await this.redis.get('highestBlockNumber')
+    if (!cachedHighestBlockNumber || highestReturnedBlockNumber > cachedHighestBlockNumber) {
+      await this.redis.set('highestBlockNumber', highestReturnedBlockNumber)
+    }
 
+    let notifications = body.data.notifications
+    let notificationStats = {}
     for (let notif of notifications) {
       // blocknumber + timestamp parsed for all notification types
       let blocknumber = notif.blocknumber
@@ -89,6 +146,8 @@ module.exports = function (app) {
               actionEntityId: notificationInitiator
             }
           })
+          // TODO: Handle log statements to indicate how many notifs have been processed
+          // console.log(notifActionCreateTx)
         }
       }
 
@@ -305,9 +364,10 @@ module.exports = function (app) {
         }
       }
     }
-    return successResponse({})
-  }))
+  }
 }
+
+module.exports = NotificationProcessor
 
 /**
  * TODO: Eliminate this in favor of disc prov libs call

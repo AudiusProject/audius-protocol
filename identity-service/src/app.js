@@ -11,6 +11,7 @@ const config = require('./config.js')
 const txRelay = require('./txRelay')
 const { runMigrations } = require('./migrationManager')
 const initAudiusLibs = require('./audiusLibsInstance')
+const NotificationProcessor = require('./notifications/index.js')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
@@ -30,6 +31,7 @@ class App {
     this.setRoutes()
     this.setErrorHandler()
     this.configureMailgun()
+    this.notificationProcessor = new NotificationProcessor()
   }
 
   async init () {
@@ -46,7 +48,7 @@ class App {
       server = this.express.listen(this.port, resolve)
     })
     await txRelay.fundRelayerIfEmpty()
-
+    await this.notificationProcessor.init(this.audiusLibs, this.redisClient)
     logger.info(`Listening on port ${this.port}...`)
 
     return { app: this.express, server }
@@ -62,8 +64,9 @@ class App {
   }
 
   async configureAudiusInstance () {
-    const audiusInstance = await initAudiusLibs()
-    this.express.set('audiusLibs', audiusInstance)
+    // TODO: Whitelist disc prov for identity service
+    this.audiusInstance = await initAudiusLibs()
+    this.express.set('audiusLibs', this.audiusInstance)
   }
 
   async runMigrations () {
