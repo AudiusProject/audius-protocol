@@ -1,16 +1,29 @@
 const request = require('supertest')
 const sigUtil = require('eth-sig-util')
 
+const BlacklistManager = require('../src/blacklistManager')
+
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser, testEthereumConstants } = require('./lib/dataSeeds')
+const { getIPFSMock } = require('./lib/ipfsMock')
+const { getLibsMock } = require('./lib/libsMock')
 
 describe('test Users', function () {
-  let app, server
+  let app, server, ipfsMock, libsMock
+
   beforeEach(async () => {
-    const appInfo = await getApp()
+    ipfsMock = getIPFSMock()
+    libsMock = getLibsMock()
+
+    await BlacklistManager.blacklist(ipfsMock)
+
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
+
     app = appInfo.app
     server = appInfo.server
+    // session = await createStarterCNodeUser()
   })
+
   afterEach(async () => {
     await server.close()
   })
