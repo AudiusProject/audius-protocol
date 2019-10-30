@@ -32,8 +32,7 @@ const actionEntityTypes = {
   Playlist: 'Playlist'
 }
 
-// TODO - Consider making this a config? It is only used once though
-const defaultBlockNumber = 11520500
+let notifDiscProv = config.get('notificationDiscoveryProvider')
 
 class NotificationProcessor {
   constructor () {
@@ -46,6 +45,7 @@ class NotificationProcessor {
   }
 
   async init (audiusLibs, redis) {
+    // TODO: Eliminate this in favor of disc prov libs call
     // TODO: audiusLibs disc prov method update to include notificaitons
     this.audiusLibs = audiusLibs
     this.redis = redis
@@ -92,7 +92,7 @@ class NotificationProcessor {
     let minBlock = await this.getHighestBlockNumber()
     let reqObj = {
       method: 'get',
-      url: `http://docker.for.mac.localhost:5000/notifications?min_block_number=${minBlock}`
+      url: `${notifDiscProv}/notifications?min_block_number=${minBlock}`
     }
     let body = JSON.parse(await doRequest(reqObj))
     let metadata = body.data.info
@@ -370,7 +370,6 @@ class NotificationProcessor {
 module.exports = NotificationProcessor
 
 /**
- * TODO: Eliminate this in favor of disc prov libs call
  * Since request is a callback based API, we need to wrap it in a promise to make it async/await compliant
  * @param {Object} reqObj construct request object compatible with `request` module
  */
