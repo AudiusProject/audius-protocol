@@ -55,7 +55,7 @@ def notifications():
     max_block_number = request.args.get("max_block_number", type=int)
 
     # Max block number is not explicitly required (yet)
-    if not min_block_number:
+    if not min_block_number and min_block_number != 0:
         return api_helpers.error_response({'msg': 'Missing min block number'}, 500)
 
     if not max_block_number:

@@ -174,6 +174,12 @@ const config = convict({
     format: String,
     default: null,
     env: 'registryAddress'
+  },
+  notificationStartBlock: {
+    doc: 'First block to start notification indexing from',
+    format: Number,
+    default: 0,
+    env: 'notificationStartBlock'
   }
 })
 

@@ -42,11 +42,13 @@ class NotificationProcessor {
       { redis:
         { port: config.get('redisPort'), host: config.get('redisHost') }
       })
+    this.startBlock = config.get('notificationStartBlock')
   }
 
-  async init (audiusLibs) {
+  async init (audiusLibs, redis) {
     // TODO: audiusLibs disc prov method update to include notificaitons
     this.audiusLibs = audiusLibs
+    this.redis = redis
     this.notifQueue.process(async (job, done) => {
       // Temporary delay
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -62,19 +64,39 @@ class NotificationProcessor {
     this.notifQueue.add({
       type: 'notificationProcessJob'
     })
+    await this.redis.set('highestBlockNumber', this.startBlock)
+  }
+
+  async getHighestBlockNumber () {
+    let highestBlockNumber = await models.Notification.max('blocknumber')
+    if (!highestBlockNumber) {
+      highestBlockNumber = this.startBlock
+    }
+
+    // TODO: consider whether we really need to cache highest block number like this
+    let cachedHighestBlockNumber = await this.redis.get('highestBlockNumber')
+    if (cachedHighestBlockNumber) {
+      highestBlockNumber = cachedHighestBlockNumber
+    }
+    console.log(`Highest block: ${highestBlockNumber}`)
+    return highestBlockNumber
   }
 
   async indexNotifications () {
-    let highestBlockNumber = await models.Notification.max('blocknumber')
-    if (!highestBlockNumber) {
-      highestBlockNumber = defaultBlockNumber
-    }
-    console.log('Highest blocknumber, using ' + highestBlockNumber)
+    // TODO: Handle scenario where there are NO notifications returned, how do we still increment the blocknumber
+    let minBlock = await this.getHighestBlockNumber()
     let reqObj = {
       method: 'get',
-      url: `http://docker.for.mac.localhost:5000/notifications?min_block_number=${highestBlockNumber}`
+      url: `http://docker.for.mac.localhost:5000/notifications?min_block_number=${minBlock}`
     }
     let body = JSON.parse(await doRequest(reqObj))
+    let metadata = body.data.info
+    let highestReturnedBlockNumber = metadata.max_block_number
+    let cachedHighestBlockNumber = await this.redis.get('highestBlockNumber')
+    if (!cachedHighestBlockNumber || highestReturnedBlockNumber > cachedHighestBlockNumber) {
+      await this.redis.set('highestBlockNumber', highestReturnedBlockNumber)
+    }
+
     let notifications = body.data.notifications
     let notificationStats = {}
     for (let notif of notifications) {
@@ -119,7 +141,8 @@ class NotificationProcessor {
               actionEntityId: notificationInitiator
             }
           })
-          console.log(notifActionCreateTx)
+          // TODO: Handle log statements to indicate how many notifs have been processed
+          // console.log(notifActionCreateTx)
         }
       }
 
