@@ -124,7 +124,7 @@ module.exports = function (app) {
         return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
       }
     }))
-    
+
     // Don't allow if blacklisted segment CID found
     if (blacklistedSegmentFound) return errorResponseForbidden(`One or more segment CIDs have been blacklisted by this node.`)
 

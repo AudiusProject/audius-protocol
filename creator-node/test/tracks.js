@@ -20,9 +20,8 @@ describe('test Tracks', function () {
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
 
-    await blacklistManager.blacklist(ipfsMock)
-
     const appInfo = await getApp(ipfsMock, libsMock, blacklistManager)
+    await blacklistManager.blacklist(ipfsMock)
 
     app = appInfo.app
     server = appInfo.server

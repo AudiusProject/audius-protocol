@@ -15,13 +15,11 @@ describe('test Users', function () {
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
 
-    await BlacklistManager.blacklist(ipfsMock)
-
     const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
+    await BlacklistManager.blacklist(ipfsMock)
 
     app = appInfo.app
     server = appInfo.server
-    // session = await createStarterCNodeUser()
   })
 
   afterEach(async () => {
