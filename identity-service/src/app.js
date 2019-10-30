@@ -1,5 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const axios = require('axios')
+const moment = require('moment')
 const cors = require('cors')
 const rateLimit = require('express-rate-limit')
 const mailgun = require('mailgun-js')
@@ -37,6 +39,7 @@ class App {
     // attempts to wait until the db is accepting connections
     await new Promise(resolve => setTimeout(resolve, 2000))
     await this.runMigrations()
+    await this.getAudiusAnnoucments()
     await this.configureAudiusInstance()
     let server
     await new Promise(resolve => {
@@ -162,6 +165,33 @@ class App {
       sendResponse(req, res, errorResponseServerError('Internal server error'))
     }
     this.express.use(errorHandler)
+  }
+
+  async getAudiusAnnoucments () {
+    const audiusNotificationUrl = config.get('audiusNotificationUrl')
+    try {
+      const response = await axios.get(`${audiusNotificationUrl}/index.json`)
+      if (response.data && Array.isArray(response.data.notifications)) {
+        const announcements = await Promise.all(response.data.notifications.map(async notification => {
+          const notificationResponse = await axios.get(`${audiusNotificationUrl}/${notification.id}.json`)
+          return notificationResponse.data
+        }))
+
+        announcements.sort((a, b) => {
+          let aDate = moment(a.datePublished)
+          let bDate = moment(b.datePublished)
+          return bDate - aDate
+        })
+        const announcementMap = announcements.reduce((acc, a) => {
+          acc[a.id] = a
+          return acc
+        }, {})
+        this.express.set('announcements', announcements)
+        this.express.set('announcementMap', announcementMap)
+      }
+    } catch (err) {
+      logger.error(`Error, unable to get aduius annoucnements from ${audiusNotificationUrl} \n [Err]:`, err)
+    }
   }
 }
 

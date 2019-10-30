@@ -1,17 +1,31 @@
+const moment = require('moment')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const models = require('../models')
 
 const NotificationType = Object.freeze({
   Follow: 'Follow',
+  Repost: 'Repost',
+  Favorite: 'Favorite',
   FavoriteTrack: 'FavoriteTrack',
   FavoritePlaylist: 'FavoritePlaylist',
   FavoriteAlbum: 'FavoriteAlbum',
   RepostTrack: 'RepostTrack',
   RepostPlaylist: 'RepostPlaylist',
   RepostAlbum: 'RepostAlbum',
-  Follow: 'Follow',
-  Follow: 'Follow'
+  CreateTrack: 'CreateTrack',
+  CreateAlbum: 'CreateAlbum',
+  CreatePlaylist: 'CreatePlaylist',
+  Announcement: 'Announcement',
+  UserSubscription: 'UserSubscription'
 })
+
+const ClientNotificationTypes = new Set([
+  NotificationType.Follow,
+  NotificationType.Repost,
+  NotificationType.Favorite,
+  NotificationType.Announcement,
+  NotificationType.UserSubscription
+])
 
 const Entity = Object.freeze({
   Track: 'Track',
@@ -20,80 +34,134 @@ const Entity = Object.freeze({
   User: 'User'
 })
 
-const processUserSubscriptionCollection = entityType => notification => {
+const formatUserSubscriptionCollection = entityType => notification => {
   return {
     ...getCommonNotificationsFields(notification),
     entityType,
     entityOwnerId: notification.actions[0].actionEntityId,
     entityIds: [notification.entityId],
     userId: notification.entityId,
-    type: 'userSubscription'
+    type: NotificationType.UserSubscription
   }
 }
 
-const processUserSubscriptionTrack = entityType => notification => {
+const formatUserSubscriptionTrack = notification => {
   return {
     ...getCommonNotificationsFields(notification),
-    entityType,
+    entityType: Entity.Track,
     entityOwnerId: notification.entityId,
     entityIds: notification.actions.map(action => action.actionEntityId),
     userId: notification.entityId,
-    type: 'userSubscription'
+    type: NotificationType.UserSubscription
   }
 }
 
-const processFavorite = (entityType) => notification => {
+const formatFavorite = (entityType) => notification => {
   return {
     ...getCommonNotificationsFields(notification),
-    type: 'favorite',
+    type: NotificationType.Favorite,
     entityType,
     entityId: notification.entityId,
     userIds: notification.actions.map(action => action.actionEntityId)
   }
 }
 
-const processRepost = entityType => notification => {
+const formatRepost = entityType => notification => {
   return {
     ...getCommonNotificationsFields(notification),
     entityType,
     entityId: notification.entityId,
-    type: 'repost',
+    type: NotificationType.Repost,
     userIds: notification.actions.map(action => action.actionEntityId)
   }
 }
 
-const processFollow = (notification) => {
+const formatFollow = (notification) => {
   return {
     ...getCommonNotificationsFields(notification),
-    type: notification.type.toLowerCase(),
+    type: NotificationType.Follow,
     userIds: notification.actions.map(action => action.actionEntityId)
+  }
+}
+
+const formatAnnouncement = (notification, announcements) => {
+  const announcementIdx = announcements.findIndex(a => a.id === notification.entityId)
+  if (announcementIdx === -1) return null
+  const [announcement] = announcements.splice(announcementIdx, 1)
+  return {
+    ...getCommonNotificationsFields(notification),
+    ...announcement,
+    timestamp: announcement.datePublished,
+    type: NotificationType.Announcement
+  }
+}
+
+const formatUnreadAnnouncement = (announcement) => {
+  return {
+    ...announcement,
+    isHidden: false,
+    isRead: false,
+    timestamp: announcement.datePublished,
+    type: NotificationType.Announcement
   }
 }
 
 const getCommonNotificationsFields = (notification) => ({
   id: notification.id,
   isHidden: notification.isHidden,
-  idRead: notification.idRead,
+  isRead: notification.isRead,
   timestamp: notification.timestamp
 })
 
 const notificationResponseMap = {
-  [NotificationType.Follow]: processFollow,
-  [NotificationType.FavoriteTrack]: processFavorite(Entity.Track),
-  [NotificationType.FavoritePlaylist]: processFavorite(Entity.Playlist),
-  [NotificationType.FavoriteAlbum]: processFavorite(Entity.Album),
-  [NotificationType.RepostTrack]: processRepost(Entity.Track),
-  [NotificationType.RepostPlaylist]: processRepost(Entity.Playlist),
-  [NotificationType.RepostAlbum]: processRepost(Entity.Album)
-
+  [NotificationType.Follow]: formatFollow,
+  [NotificationType.FavoriteTrack]: formatFavorite(Entity.Track),
+  [NotificationType.FavoritePlaylist]: formatFavorite(Entity.Playlist),
+  [NotificationType.FavoriteAlbum]: formatFavorite(Entity.Album),
+  [NotificationType.RepostTrack]: formatRepost(Entity.Track),
+  [NotificationType.RepostPlaylist]: formatRepost(Entity.Playlist),
+  [NotificationType.RepostAlbum]: formatRepost(Entity.Album),
+  [NotificationType.CreateTrack]: formatUserSubscriptionTrack,
+  [NotificationType.CreateAlbum]: formatUserSubscriptionCollection(Entity.Album),
+  [NotificationType.CreatePlaylist]: formatUserSubscriptionCollection(Entity.Playlist),
+  [NotificationType.Announcement]: formatAnnouncement
 }
 
-const processNotifications = (notifications) =>
-  notifications.map((notification) => {
-    if (!notification.actions) return null
+const mergeAudiusAnnoucements = (annoucements, notifications) => {
+  let aIdx = 0
+  let nIdx = 0
+  const allNotifications = []
+  for (let i = 0; i < annoucements.length + notifications.length - 1; i += 1) {
+    if (aIdx >= annoucements.length - 1) {
+      allNotifications.push(notifications[nIdx])
+      nIdx += 1
+    } else if (nIdx >= notifications.length - 1) {
+      allNotifications.push(annoucements[aIdx])
+      aIdx += 1
+    } else {
+      let aDate = moment(annoucements[aIdx].datePublished)
+      let nDate = moment(notifications[nIdx].timestamp)
+      if (nDate.isAfter(aDate)) {
+        allNotifications.push(notifications[nIdx])
+        nIdx += 1
+      } else {
+        allNotifications.push(annoucements[aIdx])
+        aIdx += 1
+      }
+    }
+  }
+  return allNotifications
+}
+
+const formatNotifications = (notifications, annoucements) => {
+  const userAnnouncements = [...annoucements]
+  const userNotifications = notifications.map((notification) => {
     const mapResponse = notificationResponseMap[notification.type]
-    if (mapResponse) return mapResponse(notification)
-  }).filter(Boolean)
+    if (mapResponse) return mapResponse(notification, userAnnouncements)
+  })
+  const unreadAnnouncements = userAnnouncements.map(formatUnreadAnnouncement)
+  return mergeAudiusAnnoucements(unreadAnnouncements, userNotifications)
+}
 
 module.exports = function (app) {
   // Sets a user subscription
@@ -126,9 +194,9 @@ module.exports = function (app) {
         limit,
         offset
       })
-      // const userNotifications = processNotifications(notifications)
-      // return successResponse({ message: 'success', notifications: userNotifications })
-      return successResponse({ message: 'success', notifications })
+      const announcements = app.get('announcements')
+      const userNotifications = formatNotifications(notifications, announcements)
+      return successResponse({ message: 'success', notifications: userNotifications.slice(0, limit) })
     } catch (err) {
       console.log(err)
       return errorResponseBadRequest({
@@ -137,10 +205,52 @@ module.exports = function (app) {
     }
   }))
 
+  // Sets a user's notifcation as read or hidden
+  app.post('/notifications', handleResponse(async (req, res, next) => {
+    let { userId, notificationId, notificationType, isRead, isHidden } = req.body
+    console.log({ userId, notificationId, notificationType, isRead, isHidden })
+    if (
+      typeof userId !== 'number' ||
+      typeof notificationId !== 'string' ||
+      typeof notificationType !== 'string' ||
+      !ClientNotificationTypes.has(notificationType) ||
+      (typeof isRead !== 'boolean' && typeof isHidden !== 'boolean')) {
+      return errorResponseBadRequest('Invalid request body')
+    }
+    // TODO Validate userID
+    try {
+      if (notificationType === NotificationType.Announcement) {
+        const announcementMap = app.get('announcementMap')
+        const announcement = announcementMap[notificationId]
+        if (!announcement) return errorResponseBadRequest('[Error] Invalid notification id')
+        await models.Notification.create({
+          type: notificationType,
+          entityId: notificationId,
+          isRead: true,
+          isHidden,
+          userId,
+          blocknumber: 0,
+          timestamp: announcement.datePublished
+        })
+        return successResponse({ message: 'success' })
+      } else {
+        await models.Notification.update(
+          { isRead: true, isHidden },
+          { where: { id: notificationId } }
+        )
+        return successResponse({ message: 'success' })
+      }
+    } catch (err) {
+      return errorResponseBadRequest({
+        message: `[Error] Unable to mark notification as read/hidden`
+      })
+    }
+  }))
+
   // Sets a user subscription
   app.post('/notifications/settings', handleResponse(async (req, res, next) => {
     let { userId, settings } = req.body
-
+    console.log({ userId, settings })
     if (typeof settings === 'undefined' || typeof userId !== 'number') {
       return errorResponseBadRequest('Invalid request body')
     }
