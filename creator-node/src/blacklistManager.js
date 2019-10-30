@@ -13,7 +13,7 @@ class BlacklistManager {
       const { trackIdsToBlacklist, userIdsToBlacklist } = await _buildBlacklist()
       await _processBlacklist(ipfs, trackIdsToBlacklist, userIdsToBlacklist)
     } catch (e) {
-      logger.error('PROCESSING ERROR ', e)
+      throw new Error(`BLACKLIST ERROR ${e}`)
     }
   }
 
@@ -65,7 +65,7 @@ async function _buildBlacklist () {
 async function _processBlacklist (ipfs, trackIdsToBlacklist, userIdsToBlacklist) {
   const tracks = await models.Track.findAll({ where: { blockchainId: trackIdsToBlacklist } })
 
-  const segmentCIDsToBlacklist = new Set()
+  let segmentCIDsToBlacklist = new Set()
 
   for (const track of tracks) {
     if (!track.metadataJSON || !track.metadataJSON.track_segments) continue
@@ -86,6 +86,7 @@ async function _processBlacklist (ipfs, trackIdsToBlacklist, userIdsToBlacklist)
       segmentCIDsToBlacklist.add(CID)
     }
   }
+  segmentCIDsToBlacklist = [...segmentCIDsToBlacklist]
 
   // Add all trackIds, userIds, and CIDs to redis blacklist sets.
   try {

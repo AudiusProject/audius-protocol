@@ -3,7 +3,7 @@ const fs = require('fs')
 
 const models = require('../models')
 const { saveFileFromBuffer } = require('../fileManager')
-const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseForbidden } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
 
@@ -28,11 +28,6 @@ module.exports = function (app) {
 
     if (!blockchainUserId || !blockNumber || !metadataFileUUID) {
       return errorResponseBadRequest('Must include blockchainUserId, blockNumber, and metadataFileUUID.')
-    }
-
-    // Don't allow if blockchainUserId in blacklist
-    if (await req.app.get('blacklistManager').userIdIsInBlacklist(blockchainUserId)) {
-      return errorResponseForbidden(`blockchainUserId ${blockchainUserId} has been blacklisted by this node.`)
     }
 
     // Error on outdated blocknumber.

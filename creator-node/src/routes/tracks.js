@@ -83,8 +83,9 @@ module.exports = function (app) {
     // Don't allow if any segment CID is in blacklist.
     let blacklistedSegmentFound = false
     await Promise.all(trackSegments.map(async segmentObj => {
-      const cidIsInBlacklist = await req.app.get('blacklistManager').CIDIsInBlacklist(segmentObj.multihash)
-      if (cidIsInBlacklist) blacklistedSegmentFound = true
+      if (await req.app.get('blacklistManager').CIDIsInBlacklist(segmentObj.multihash)) {
+        blacklistedSegmentFound = true
+      }
     }))
     if (blacklistedSegmentFound) {
       // TODO - cleanup orphaned content
@@ -108,10 +109,10 @@ module.exports = function (app) {
     }
 
     // Ensure each segment multihash in metadata obj has an associated file, else error.
+    let blacklistedSegmentFound = false
     await Promise.all(metadataJSON.track_segments.map(async segment => {
-      // Don't allow if segment CID is in blacklist
       if (await req.app.get('blacklistManager').CIDIsInBlacklist(segment.multihash)) {
-        return errorResponseForbidden(`Segment CID ${segment.multihash} has been blacklisted by this node.`)
+        blacklistedSegmentFound = true
       }
 
       const file = await models.File.findOne({ where: {
@@ -123,6 +124,9 @@ module.exports = function (app) {
         return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
       }
     }))
+    
+    // Don't allow if blacklisted segment CID found
+    if (blacklistedSegmentFound) return errorResponseForbidden(`One or more segment CIDs have been blacklisted by this node.`)
 
     // Store + pin metadata multihash to disk + IPFS.
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
@@ -140,11 +144,6 @@ module.exports = function (app) {
 
     if (!blockchainTrackId || !blockNumber || !metadataFileUUID) {
       return errorResponseBadRequest('Must include blockchainTrackId, blockNumber, and metadataFileUUID.')
-    }
-
-    // Don't allow if blockchainTrackId is in blacklist
-    if (await req.app.get('blacklistManager').trackIdIsInBlacklist(blockchainTrackId)) {
-      return errorResponseForbidden(`blockchainTrackId ${blockchainTrackId} has been blacklisted by this node.`)
     }
 
     // Error on outdated blocknumber.
