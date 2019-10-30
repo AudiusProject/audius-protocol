@@ -84,8 +84,8 @@ def notifications():
         follow_query = follow_query.filter(
             Follow.is_current == True,
             Follow.is_delete == False,
-            Follow.blocknumber >= min_block_number,
-            Follow.blocknumber < max_block_number)
+            Follow.blocknumber > min_block_number,
+            Follow.blocknumber <= max_block_number)
 
         follow_results = follow_query.all()
         follow_notifications = []
@@ -109,8 +109,8 @@ def notifications():
         favorites_query = favorites_query.filter(
             Save.is_current == True,
             Save.is_delete == False,
-            Save.blocknumber >= min_block_number,
-            Save.blocknumber < max_block_number)
+            Save.blocknumber > min_block_number,
+            Save.blocknumber <= max_block_number)
         favorite_results = favorites_query.all()
         favorite_notifications = []
 
@@ -157,8 +157,11 @@ def notifications():
         # Query relevant repost information
         #
         repost_query = session.query(Repost)
-        repost_query = repost_query.filter(Repost.is_current == True, Repost.is_delete == False)
-        repost_query = repost_query.filter(Repost.blocknumber >= min_block_number, Repost.blocknumber < max_block_number)
+        repost_query = repost_query.filter(
+                Repost.is_current == True,
+                Repost.is_delete == False,
+                Repost.blocknumber > min_block_number,
+                Repost.blocknumber <= max_block_number)
         repost_results = repost_query.all()
         repost_notifications = []
         for entry in repost_results:
@@ -199,8 +202,10 @@ def notifications():
         # Aggregate track notifs
         tracks_query = session.query(Track)
         # TODO: Is it valid to use Track.is_current here? Might not be the right info...
-        tracks_query = tracks_query.filter(Track.is_delete == False)
-        tracks_query = tracks_query.filter(Track.blocknumber >= min_block_number, Track.blocknumber < max_block_number)
+        tracks_query = tracks_query.filter(
+                Track.is_delete == False,
+                Track.blocknumber > min_block_number,
+                Track.blocknumber <= max_block_number)
         tracks_query = tracks_query.filter(Track.created_at == Track.updated_at)
         track_results = tracks_query.all()
         for entry in track_results:
@@ -223,9 +228,10 @@ def notifications():
         collection_query = session.query(Playlist)
         # TODO: Is it valid to use is_current here? Might not be the right info...
         collection_query = collection_query.filter(
-                Playlist.is_delete == False, Playlist.is_private == False)
-        collection_query = collection_query.filter(
-                Playlist.blocknumber >= min_block_number, Playlist.blocknumber < max_block_number)
+                Playlist.is_delete == False,
+                Playlist.is_private == False,
+                Playlist.blocknumber > min_block_number,
+                Playlist.blocknumber <= max_block_number)
         collection_query = collection_query.filter(Playlist.created_at == Playlist.updated_at)
         collection_results = collection_query.all()
 
@@ -256,8 +262,8 @@ def notifications():
         publish_playlists_query = publish_playlists_query.filter(
             Playlist.is_private == False,
             Playlist.created_at != Playlist.updated_at,
-            Playlist.blocknumber >= min_block_number,
-            Playlist.blocknumber < max_block_number)
+            Playlist.blocknumber > min_block_number,
+            Playlist.blocknumber <= max_block_number)
         publish_playlist_results = publish_playlists_query.all()
         for entry in publish_playlist_results:
             prev_entry_query = (
@@ -293,8 +299,10 @@ def notifications():
     sorted_notifications = \
             sorted(notifications, key=lambda i: i[const.notification_blocknumber], reverse=False)
 
-    return api_helpers.success_response({'notifications':sorted_notifications, 'info':notification_metadata})
-
+    return api_helpers.success_response(
+        {'notifications':sorted_notifications, 'info':notification_metadata}
+    )
+'''
 @bp.route("/notifications2", methods=("GET",))
 def notifications2():
     db = get_db()
@@ -335,5 +343,4 @@ def notifications2():
                 logger.error(f'playlist: {entry.playlist_id}, old block: {prev_entry.blocknumber}, public block: {entry.blocknumber}')
 
     return api_helpers.success_response({'info':notification_metadata})
-
-
+'''
