@@ -14,8 +14,7 @@
   },
   "dependencies": {
     "@audius/libs": "^0.11.38",
-    "aws-sdk": "^2.313.0",
-    "base64-url": "^2.2.0",
+    "axios": "^0.19.0",
     "body-parser": "^1.18.3",
     "bull": "^3.11.0",
     "bunyan": "^1.8.12",
@@ -31,14 +30,12 @@
     "handlebars": "^4.4.3",
     "ioredis": "^4.9.0",
     "mailgun-js": "^0.22.0",
+    "moment": "^2.24.0",
     "multer": "^1.4.0",
     "pg": "^7.6.1",
     "rate-limit-redis": "^1.6.0",
     "request": "^2.88.0",
     "sequelize": "^4.41.2",
-    "shortid": "^2.2.14",
-    "umzug": "^2.2.0",
-    "uuid": "^3.3.2",
     "web3": "1.0.0-beta.36"
   },
   "devDependencies": {

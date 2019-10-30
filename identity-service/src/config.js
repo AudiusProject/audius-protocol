@@ -175,6 +175,12 @@ const config = convict({
     default: null,
     env: 'registryAddress'
   },
+  audiusNotificationUrl: {
+    doc: 'Url of audius notifications',
+    format: String,
+    default: null,
+    env: 'audiusNotificationUrl'
+  },
   notificationStartBlock: {
     doc: 'First block to start notification indexing from',
     format: Number,
