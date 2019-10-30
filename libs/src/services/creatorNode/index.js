@@ -27,7 +27,7 @@ class CreatorNode {
       try {
         const res = await axios({
           baseURL: endpoint,
-          url: `tracks/download/${trackId}`,
+          url: `tracks/download/${trackId}`
         })
         if (res.cid) return res.cid
       } catch (e) {
