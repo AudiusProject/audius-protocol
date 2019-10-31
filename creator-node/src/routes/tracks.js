@@ -81,15 +81,19 @@ module.exports = function (app) {
     trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
 
     // Don't allow if any segment CID is in blacklist.
-    let blacklistedSegmentFound = false
-    await Promise.all(trackSegments.map(async segmentObj => {
-      if (await req.app.get('blacklistManager').CIDIsInBlacklist(segmentObj.multihash)) {
-        blacklistedSegmentFound = true
+    try {
+      await Promise.all(trackSegments.map(async segmentObj => {
+        if (await req.app.get('blacklistManager').CIDIsInBlacklist(segmentObj.multihash)) {
+          throw new Error(`Track upload failed - part or all of this track has been blacklisted by this node.`)
+        }
+      }))
+    } catch (e) {
+      if (e.message.indexOf('blacklisted') >= 0) {
+        // TODO clean up orphaned content
+        return errorResponseForbidden(`Track upload failed - part or all of this track has been blacklisted by this node.`)
+      } else {
+        return errorResponseServerError(e.message)
       }
-    }))
-    if (blacklistedSegmentFound) {
-      // TODO - cleanup orphaned content
-      return errorResponseForbidden(`Track upload failed - part or all of this track has been blacklisted by this node.`)
     }
 
     req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
@@ -109,24 +113,30 @@ module.exports = function (app) {
     }
 
     // Ensure each segment multihash in metadata obj has an associated file, else error.
-    let blacklistedSegmentFound = false
-    await Promise.all(metadataJSON.track_segments.map(async segment => {
-      if (await req.app.get('blacklistManager').CIDIsInBlacklist(segment.multihash)) {
-        blacklistedSegmentFound = true
-      }
+    try {
+      await Promise.all(metadataJSON.track_segments.map(async segment => {
+        if (await req.app.get('blacklistManager').CIDIsInBlacklist(segment.multihash)) {
+          throw new Error(`Segment CID ${segment.multihash} has been blacklisted by this node.`)
+        }
 
-      const file = await models.File.findOne({ where: {
-        multihash: segment.multihash,
-        cnodeUserUUID: req.session.cnodeUserUUID,
-        trackUUID: null
-      } })
-      if (!file) {
-        return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
+        const file = await models.File.findOne({ where: {
+          multihash: segment.multihash,
+          cnodeUserUUID: req.session.cnodeUserUUID,
+          trackUUID: null
+        } })
+        if (!file) {
+          throw new Error(`No file found for provided segment CID: ${segment.multihash}.`)
+        }
+      }))
+    } catch (e) {
+      if (e.message.indexOf('blacklisted') >= 0) {
+        return errorResponseForbidden(e.message)
+      } else if (e.message.indexOf('No file found') >= 0) {
+        return errorResponseBadRequest(e.message)
+      } else {
+        return errorResponseServerError(e.message)
       }
-    }))
-
-    // Don't allow if blacklisted segment CID found
-    if (blacklistedSegmentFound) return errorResponseForbidden(`One or more segment CIDs have been blacklisted by this node.`)
+    }
 
     // Store + pin metadata multihash to disk + IPFS.
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
