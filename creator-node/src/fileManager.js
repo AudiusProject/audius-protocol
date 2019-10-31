@@ -54,9 +54,11 @@ async function saveFileFromBuffer (req, buffer, fileType) {
  * - Re-save file to disk under multihash.
  * - Save reference to file in DB.
  */
-async function saveFileToIPFSFromFS (req, srcPath, fileType, transaction = null, sourceFile = null) {
+async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transaction = null) {
   // make sure user has authenticated before saving file
-  if (!req.session.cnodeUserUUID) throw new Error('User must be authenticated to save a file')
+  if (!req.session.cnodeUserUUID) {
+    throw new Error('User must be authenticated to save a file')
+  }
 
   const ipfs = req.app.get('ipfsAPI')
 
@@ -80,14 +82,16 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, transaction = null,
   const queryObj = { where: {
     cnodeUserUUID: req.session.cnodeUserUUID,
     multihash: multihash,
-    sourceFile: req.fileName || sourceFile,
+    sourceFile: sourceFile,
     storagePath: dstPath,
     type: fileType
   }}
-  if (transaction) { queryObj.transaction = transaction }
-  const file = (await models.File.findOrCreate(queryObj))[0].dataValues
+  if (transaction) {
+    queryObj.transaction = transaction
+  }
+  const file = ((await models.File.findOrCreate(queryObj))[0].dataValues)
 
-  req.logger.info(`Added file: ${multihash} for fileUUID ${file.fileUUID} from sourceFile ${req.fileName || sourceFile}`)
+  req.logger.info(`Added file: ${multihash} for fileUUID ${file.fileUUID} from sourceFile ${sourceFile}`)
   return { multihash: multihash, fileUUID: file.fileUUID }
 }
 

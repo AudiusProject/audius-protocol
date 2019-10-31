@@ -45,7 +45,7 @@ module.exports = function (app) {
       saveFilePromResps = await Promise.all(segmentFilePaths.map(async filePath => {
         const absolutePath = path.join(req.fileDir, 'segments', filePath)
         req.logger.info(`about to perform saveFileToIPFSFromFS #${counter++}`)
-        let response = await saveFileToIPFSFromFS(req, absolutePath, 'track', t)
+        let response = await saveFileToIPFSFromFS(req, absolutePath, 'track', req.fileName, t)
         response.segmentName = filePath
         return response
       }))
@@ -235,8 +235,7 @@ module.exports = function (app) {
   }))
 
   /**
-   * TODO
-   * - middlewares?
+   * Returns download status of track and 320kbps CID if ready + downloadable.
    */
   app.get('/tracks/download_status/:blockchainId', handleResponse(async (req, res) => {
     const blockchainId = req.params.blockchainId
@@ -254,8 +253,6 @@ module.exports = function (app) {
       return successResponse({ isDownloadable: false, cid: null })
     }
 
-    // If track is downloadable, find sourceFile from a segment file entry from metadataJSON
-    // if copy320 file entry exists with sourceFile, return CID else return null
     const segmentFile = await models.File.findOne({ where: {
       type: "track",
       trackUUID: track.trackUUID
@@ -268,8 +265,8 @@ module.exports = function (app) {
 
     if (!copyFile) {
       return successResponse({ isDownloadable: true, cid: null })
-    } else {
-      // Return CID if IPFS node has pinned it, else null.
+    }
+    else {
       try {
         await req.app.get('ipfsAPI').pin.ls(copyFile.multihash)
         return successResponse({ isDownloadable: true, cid: copyFile.multihash })
@@ -281,19 +278,18 @@ module.exports = function (app) {
 }
 
 /**
- * transcode file to 320kbps + save to disk in same fileDir
- * pin to IPFS
- * store in DB w/ CID
+ * Transcode track master file to 320kbps for downloading.
+ * Save to disk, IPFS, & DB.
  */
-async function createDownloadableCopy (req, sourceFile) {
+async function createDownloadableCopy (req, sourceFileName) {
   try {
     const start = Date.now()
-    const sourceFilePath = path.resolve(req.app.get('storagePath'), sourceFile.split('.')[0])
-    req.logger.info(`Transcoding file ${sourceFile}...`)
-    const dlCopyFilePath = await ffmpeg.transcodeFileTo320(req, sourceFilePath, sourceFile)
-    req.logger.info(`Transcoded file ${sourceFile} in ${Date.now() - start}ms.`)
+    const sourceFilePath = path.resolve(req.app.get('storagePath'), sourceFileName.split('.')[0])
+    req.logger.info(`Transcoding file ${sourceFileName}...`)
+    const dlCopyFilePath = await ffmpeg.transcodeFileTo320(req, sourceFilePath, sourceFileName)
+    req.logger.info(`Transcoded file ${sourceFileName} in ${Date.now() - start}ms.`)
 
-    await saveFileToIPFSFromFS(req, dlCopyFilePath, 'copy320', null, sourceFile)
+    await saveFileToIPFSFromFS(req, dlCopyFilePath, 'copy320', sourceFileName)
 
     return dlCopyFilePath
   } catch (err) {
