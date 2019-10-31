@@ -351,8 +351,9 @@ class NotificationProcessor {
             }
           })
 
+          // TODO: For album/playlist make entityId === playlist/albumID, NOT user
+
           let notificationId = null
-          // TODO: UPDATE TIMESTAMP
           if (unreadQuery.length === 0) {
             let createTrackNotifTx = await models.Notification.create({
               isRead: false,
