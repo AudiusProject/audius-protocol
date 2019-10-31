@@ -408,12 +408,13 @@ class NotificationProcessor {
         }))
 
         // Dedupe album /playlist notification
-        if (actionEntityType === actionEntityTypes.Album ||
-            actionEntityType === actionEntityTypes.Playlist) {
+        if (createType === notificationTypes.Create.album ||
+            createType === notificationTypes.Create.playlist) {
           let trackIdList = notif.metadata.collection_content.track_ids
           if (trackIdList.length > 0) {
             for (var entry of trackIdList) {
               let trackId = entry.track
+              console.log(`Deleting track ${trackId}`)
               let destroyTx = await models.NotificationAction.destroy({
                 where: {
                   actionEntityType: actionEntityTypes.Track,
