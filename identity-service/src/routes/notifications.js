@@ -91,6 +91,7 @@ const formatAnnouncement = (notification, announcements) => {
   return {
     ...getCommonNotificationsFields(notification),
     ...announcement,
+    id: announcement.entityId,
     timestamp: announcement.datePublished,
     type: NotificationType.Announcement
   }
@@ -99,6 +100,7 @@ const formatAnnouncement = (notification, announcements) => {
 const formatUnreadAnnouncement = (announcement) => {
   return {
     ...announcement,
+    id: announcement.entityId,
     isHidden: false,
     isRead: false,
     timestamp: announcement.datePublished,
@@ -143,8 +145,13 @@ const formatNotifications = (notifications, announcements) => {
     const mapResponse = notificationResponseMap[notification.type]
     if (mapResponse) return mapResponse(notification, userAnnouncements)
   })
+  const notifIds = userNotifications.reduce((acc, notif) => {
+    acc[notif.id] = true
+    return acc
+  }, {})
+
   const unreadAnnouncements = userAnnouncements
-    .filter(a => !userNotifications.some(notif => notif.id === a.id))
+    .filter(a => !notifIds[a.entityId])
     .map(formatUnreadAnnouncement)
   return mergeAudiusAnnoucements(unreadAnnouncements, userNotifications)
 }
@@ -196,7 +203,6 @@ module.exports = function (app) {
     let { userId, notificationId, notificationType, isRead, isHidden } = req.body
     if (
       typeof userId !== 'number' ||
-      typeof notificationId !== 'string' ||
       typeof notificationType !== 'string' ||
       !ClientNotificationTypes.has(notificationType) ||
       (typeof isRead !== 'boolean' && typeof isHidden !== 'boolean')) {

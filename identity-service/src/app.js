@@ -186,7 +186,7 @@ class App {
           return bDate - aDate
         })
         const announcementMap = announcements.reduce((acc, a) => {
-          acc[a.id] = a
+          acc[a.entityId] = a
           return acc
         }, {})
         this.express.set('announcements', announcements)
