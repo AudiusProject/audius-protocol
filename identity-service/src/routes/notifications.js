@@ -139,7 +139,7 @@ const mergeAudiusAnnoucements = (announcements, notifications) => {
   return allNotifications
 }
 
-const formatNotifications = (notifications, announcements) => {
+const formatNotifications = (notifications, announcements, unreadCount) => {
   const userAnnouncements = [...announcements]
   const userNotifications = notifications.map((notification) => {
     const mapResponse = notificationResponseMap[notification.type]
@@ -153,7 +153,12 @@ const formatNotifications = (notifications, announcements) => {
   const unreadAnnouncements = userAnnouncements
     .filter(a => !notifIds[a.entityId])
     .map(formatUnreadAnnouncement)
-  return mergeAudiusAnnoucements(unreadAnnouncements, userNotifications)
+  const totalUnread = notifications
+    .reduce((total, notif) => total + (notif.isRead ? 0 : 1), unreadAnnouncements.length)
+  return {
+    userNotifications: mergeAudiusAnnoucements(unreadAnnouncements, userNotifications),
+    totalUnread
+  }
 }
 
 module.exports = function (app) {
@@ -161,21 +166,25 @@ module.exports = function (app) {
   app.get('/notifications', handleResponse(async (req, res, next) => {
     const userId = parseInt(req.query.userId)
     const limit = parseInt(req.query.limit)
-    const offset = parseInt(req.query.offset)
-
+    const timeOffset = req.query.timeOffset ? moment(req.query.timeOffset) : moment()
     if (isNaN(userId)) {
       return errorResponseBadRequest('Invalid request body')
     }
 
-    if (isNaN(offset) || isNaN(limit) || limit > 100) {
+    if (!timeOffset.isValid() || isNaN(limit) || limit > 100) {
       return errorResponseBadRequest(
         `Limit and offset number be integers with a max limit of 100`
       )
     }
-
     try {
-      const notifications = await models.Notification.findAll({
-        where: { userId, isHidden: false },
+      const { rows: notifications, count } = await models.Notification.findAndCountAll({
+        where: {
+          userId,
+          isHidden: false,
+          timestamp: {
+            [models.Sequelize.Op.lt]: timeOffset.toDate()
+          }
+        },
         order: [
           ['timestamp', 'DESC'],
           ['entityId', 'ASC']
@@ -184,12 +193,16 @@ module.exports = function (app) {
           model: models.NotificationAction,
           as: 'actions'
         }],
-        limit,
-        offset
+        limit
       })
       const announcements = app.get('announcements')
-      const userNotifications = formatNotifications(notifications, announcements)
-      return successResponse({ message: 'success', notifications: userNotifications.slice(0, limit) })
+      const announcementsAfterFilter = announcements.filter(a => timeOffset.isAfter(moment(a.datePublished)))
+      const { userNotifications, totalUnread } = formatNotifications(notifications, announcementsAfterFilter, count)
+      return successResponse({
+        message: 'success',
+        notifications: userNotifications.slice(0, limit),
+        totalUnread
+      })
     } catch (err) {
       console.log(err)
       return errorResponseBadRequest({
@@ -265,7 +278,7 @@ module.exports = function (app) {
           attributes: ['entityId']
         })
         for (let announcementId of readAnnouncementIds) {
-          delete unreadAnnouncementIds[announcementId]
+          delete unreadAnnouncementIds[announcementId.entityId]
         }
         const unreadAnnouncements = Object.keys(unreadAnnouncementIds).map(id => announcementMap[id])
         await models.Notification.bulkCreate(
