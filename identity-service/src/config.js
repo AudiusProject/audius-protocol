@@ -190,7 +190,7 @@ const config = convict({
   notificationDiscoveryProvider: {
     doc: 'Whitelisted discovery provider to query notifications',
     format: String,
-    default: null,
+    default: 'null',
     env: 'notificationDiscoveryProvider'
   }
 })

@@ -18,7 +18,8 @@ module.exports = {
           'FavoriteAlbum',
           'CreateTrack',
           'CreatePlaylist',
-          'CreateAlbum')
+          'CreateAlbum',
+          'Announcement')
       },
       isRead: {
         type: Sequelize.BOOLEAN
