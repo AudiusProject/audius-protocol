@@ -147,7 +147,18 @@ class NotificationProcessor {
             }
           })
           // TODO: Handle log statements to indicate how many notifs have been processed
-          // console.log(notifActionCreateTx)
+          let updatePerformed = notifActionCreateTx[1]
+          if (updatePerformed) {
+            // Update Notification table timestamp
+            let newNotificationTimestamp = notifActionCreateTx[0].createdAt
+            await models.Notification.update({
+              timestamp: newNotificationTimestamp
+            }, {
+              where: { id: notificationId },
+              returning: true,
+              plain: true
+            })
+          }
         }
       }
 
@@ -207,6 +218,18 @@ class NotificationProcessor {
               actionEntityId: notificationInitiator
             }
           })
+          // Update Notification table timestamp
+          let updatePerformed = notifActionCreateTx[1]
+          if (updatePerformed) {
+            let newNotificationTimestamp = notifActionCreateTx[0].createdAt
+            await models.Notification.update({
+              timestamp: newNotificationTimestamp
+            }, {
+              where: { id: notificationId },
+              returning: true,
+              plain: true
+            })
+          }
         }
       }
 
@@ -263,6 +286,18 @@ class NotificationProcessor {
               actionEntityId: notificationInitiator
             }
           })
+          // Update Notification table timestamp
+          let updatePerformed = notifActionCreateTx[1]
+          if (updatePerformed) {
+            let newNotificationTimestamp = notifActionCreateTx[0].createdAt
+            await models.Notification.update({
+              timestamp: newNotificationTimestamp
+            }, {
+              where: { id: notificationId },
+              returning: true,
+              plain: true
+            })
+          }
         }
       }
 
@@ -343,6 +378,21 @@ class NotificationProcessor {
                 actionEntityId: createdActionEntityId
               }
             })
+            // TODO: - How to handle this here? 
+            /*
+            // Update Notification table timestamp
+            let updatePerformed = notifActionCreateTx[1]
+            if (updatePerformed) {
+              let newNotificationTimestamp = notifActionCreateTx[0].createdAt
+              await models.Notification.update({
+                timestamp: newNotificationTimestamp
+              }, {
+                where: { id: notificationId },
+                returning: true,
+                plain: true
+              })
+            }
+            */
           }
         }))
 
