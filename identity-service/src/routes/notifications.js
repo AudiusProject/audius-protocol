@@ -85,9 +85,9 @@ const formatFollow = (notification) => {
 }
 
 const formatAnnouncement = (notification, announcements) => {
-  const announcementIdx = announcements.findIndex(a => a.id === notification.entityId)
+  const announcementIdx = announcements.findIndex(a => a.entityId === notification.entityId)
   if (announcementIdx === -1) return null
-  const [announcement] = announcements.splice(announcementIdx, 1)
+  const announcement = announcements[announcementIdx]
   return {
     ...getCommonNotificationsFields(notification),
     ...announcement,
@@ -143,7 +143,9 @@ const formatNotifications = (notifications, announcements) => {
     const mapResponse = notificationResponseMap[notification.type]
     if (mapResponse) return mapResponse(notification, userAnnouncements)
   })
-  const unreadAnnouncements = userAnnouncements.map(formatUnreadAnnouncement)
+  const unreadAnnouncements = userAnnouncements
+    .filter(a => !userNotifications.some(notif => notif.id === a.id))
+    .map(formatUnreadAnnouncement)
   return mergeAudiusAnnoucements(unreadAnnouncements, userNotifications)
 }
 
@@ -178,7 +180,6 @@ module.exports = function (app) {
         limit,
         offset
       })
-      console.log(notifications)
       const announcements = app.get('announcements')
       const userNotifications = formatNotifications(notifications, announcements)
       return successResponse({ message: 'success', notifications: userNotifications.slice(0, limit) })
@@ -193,7 +194,6 @@ module.exports = function (app) {
   // Sets a user's notifcation as read or hidden
   app.post('/notifications', handleResponse(async (req, res, next) => {
     let { userId, notificationId, notificationType, isRead, isHidden } = req.body
-    console.log({ userId, notificationId, notificationType, isRead, isHidden })
     if (
       typeof userId !== 'number' ||
       typeof notificationId !== 'string' ||
@@ -210,7 +210,7 @@ module.exports = function (app) {
         if (!announcement) return errorResponseBadRequest('[Error] Invalid notification id')
         await models.Notification.create({
           type: notificationType,
-          entityId: notificationId,
+          entityId: announcement.entityId,
           isRead: true,
           isHidden,
           userId,
@@ -232,10 +232,60 @@ module.exports = function (app) {
     }
   }))
 
+  // Sets a user's notifcation as read or hidden
+  app.post('/notifications/all', handleResponse(async (req, res, next) => {
+    let { userId, isRead } = req.body
+    if (typeof userId !== 'number' || typeof isRead !== 'boolean') {
+      return errorResponseBadRequest('Invalid request body')
+    }
+    // TODO Validate userID
+    try {
+      if (typeof isRead === 'boolean') {
+        await models.Notification.update(
+          { isRead },
+          { where: { userId, isRead: !isRead } }
+        )
+
+        const announcementMap = app.get('announcementMap')
+        const unreadAnnouncementIds = Object.keys(announcementMap).reduce((acc, id) => {
+          acc[id] = false
+          return acc
+        }, {})
+        const readAnnouncementIds = await models.Notification.findAll({
+          where: {
+            type: NotificationType.Announcement,
+            userId
+          },
+          attributes: ['entityId']
+        })
+        for (let announcementId of readAnnouncementIds) {
+          delete unreadAnnouncementIds[announcementId]
+        }
+        const unreadAnnouncements = Object.keys(unreadAnnouncementIds).map(id => announcementMap[id])
+        await models.Notification.bulkCreate(
+          unreadAnnouncements.map(announcement => ({
+            type: NotificationType.Announcement,
+            entityId: announcement.entityId,
+            isRead: true,
+            isHidden: false,
+            userId,
+            blocknumber: 0,
+            timestamp: announcement.datePublished
+          }))
+        )
+      }
+      return successResponse({ message: 'success' })
+    } catch (err) {
+      console.log(err)
+      return errorResponseBadRequest({
+        message: `[Error] Unable to mark notification as read/hidden`
+      })
+    }
+  }))
+
   // Sets a user subscription
   app.post('/notifications/settings', handleResponse(async (req, res, next) => {
     let { userId, settings } = req.body
-    console.log({ userId, settings })
     if (typeof settings === 'undefined' || typeof userId !== 'number') {
       return errorResponseBadRequest('Invalid request body')
     }
