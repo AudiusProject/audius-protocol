@@ -414,7 +414,6 @@ class NotificationProcessor {
           if (trackIdList.length > 0) {
             for (var entry of trackIdList) {
               let trackId = entry.track
-              console.log(`Deleting track ${trackId}`)
               let destroyTx = await models.NotificationAction.destroy({
                 where: {
                   actionEntityType: actionEntityTypes.Track,
