@@ -40,7 +40,7 @@ const formatUserSubscriptionCollection = entityType => notification => {
     entityType,
     entityOwnerId: notification.actions[0].actionEntityId,
     entityIds: [notification.entityId],
-    userId: notification.entityId,
+    userId: notification.actions[0].actionEntityId,
     type: NotificationType.UserSubscription
   }
 }

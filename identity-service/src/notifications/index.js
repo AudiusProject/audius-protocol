@@ -312,11 +312,11 @@ class NotificationProcessor {
             break
           case 'album':
             createType = notificationTypes.Create.album
-            actionEntityType = actionEntityTypes.Album
+            actionEntityType = actionEntityTypes.User
             break
           case 'playlist':
             createType = notificationTypes.Create.playlist
-            actionEntityType = actionEntityTypes.Playlist
+            actionEntityType = actionEntityTypes.User
             break
           default:
             throw new Error('Invalid create type')// TODO: gracefully handle this in try/catch
@@ -333,14 +333,27 @@ class NotificationProcessor {
         // No operation if no users subscribe to this creator
         if (subscribers.length === 0) { continue }
 
+        // The notification entity id is the uploader id for tracks
+        // Each track will added to the notification actions table
+        // For playlist/albums, the notification entity id is the collection id itself
+        let notificationEntityId =
+          actionEntityType === actionEntityTypes.Track
+            ? notif.initiator
+            : notif.metadata.entity_id
+
+        // Action table entity is trackId for CreateTrack notifications
+        // Allowing multiple track creates to be associated w/ a single notif for your subscription
+        // For collections, the entity is the owner id, producing a distinct notif for each
+        let createdActionEntityId =
+          actionEntityType === actionEntityTypes.Track
+            ? notif.metadata.entity_id
+            : notif.metadata.entity_owner_id
+
         // Create notification for each user
         await Promise.all(subscribers.map(async (s) => {
           // Add notification for this user indicating the uploader has added a track
           let notificationTarget = s.subscriberId
 
-          // The notification entity id is the uploader id
-          // Each track will added to the notification actions table
-          let notificationEntityId = notif.initiator
           let unreadQuery = await models.Notification.findAll({
             where: {
               isRead: false,
@@ -350,8 +363,6 @@ class NotificationProcessor {
               entityId: notificationEntityId
             }
           })
-
-          // TODO: For album/playlist make entityId === playlist/albumID, NOT user
 
           let notificationId = null
           if (unreadQuery.length === 0) {
@@ -371,7 +382,6 @@ class NotificationProcessor {
 
           if (notificationId) {
             // Action entity id can be one of album/playlist/track
-            let createdActionEntityId = notif.metadata.entity_id
             let notifActionCreateTx = await models.NotificationAction.findOrCreate({
               where: {
                 notificationId,
@@ -379,7 +389,7 @@ class NotificationProcessor {
                 actionEntityId: createdActionEntityId
               }
             })
-            // TODO: - How to handle this here? 
+            // TODO: - How to handle this here?
             /*
             // Update Notification table timestamp
             let updatePerformed = notifActionCreateTx[1]
