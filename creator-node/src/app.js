@@ -39,11 +39,12 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
-const initializeApp = (port, storageDir, ipfsAPI, audiusLibs) => {
+const initializeApp = (port, storageDir, ipfsAPI, audiusLibs, blacklistManager) => {
   app.set('ipfsAPI', ipfsAPI)
   app.set('storagePath', storageDir)
   app.set('redisClient', redisClient)
   app.set('audiusLibs', audiusLibs)
+  app.set('blacklistManager', blacklistManager)
 
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 

@@ -5,7 +5,8 @@ function getIPFSMock () {
     add: sinon.mock(),
     addFromFs: sinon.mock(),
     pin: {
-      add: sinon.mock()
+      add: sinon.mock(),
+      rm: sinon.mock()
     }
   }
   ipfsMock.add.returns([{ hash: 'testCIDLink' }])
