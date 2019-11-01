@@ -131,6 +131,13 @@ const notificationResponseMap = {
   [NotificationType.Announcement]: formatAnnouncement
 }
 
+/* Merges the notifications with the user announcements in time sorted order (Most recent first).
+ *
+ * @param {Array<Notification>} notifications   Notifications return from the db query w/ the actions
+ * @param {Array<Announcement>} announcements   Announcements set on the app
+ *
+ * @return {Array<Notification|Announcement>} The merged & nsorted notificaitons/annoucnements
+ */
 const mergeAudiusAnnoucements = (announcements, notifications) => {
   const allNotifications = announcements.concat(notifications)
   allNotifications.sort((a, b) => {
@@ -141,6 +148,16 @@ const mergeAudiusAnnoucements = (announcements, notifications) => {
   return allNotifications
 }
 
+/* Merges the notifications with the user announcements in time sorted order.
+ * Formats each notification to be send to the client.
+ * Counts the total number of unread notifications
+ *
+ * @param {Array<Notification>} notifications   Notifications return from the db query w/ the actions
+ * @param {Array<Announcement>} announcements   Announcements set on the app
+ * @param {number} unreadCount                  Total number of unread notifications (Not including annoucements)
+ *
+ * @return {object} The sorted & formated notificaitons/annoucnements and the total unread count for notifs & announcements
+ */
 const formatNotifications = (notifications, announcements, unreadCount) => {
   const userAnnouncements = [...announcements]
   const userNotifications = notifications.map((notification) => {
@@ -156,21 +173,26 @@ const formatNotifications = (notifications, announcements, unreadCount) => {
   const unreadAnnouncements = userAnnouncements
     .filter(a => !notifIds[a.entityId])
     .map(formatUnreadAnnouncement)
-  const totalUnread = notifications
-    .reduce((total, notif) => total + (notif.isRead ? 0 : 1), unreadAnnouncements.length)
+
   return {
     userNotifications: mergeAudiusAnnoucements(unreadAnnouncements, userNotifications),
-    totalUnread
+    totalUnread: unreadCount + unreadAnnouncements.length
   }
 }
 
 module.exports = function (app) {
-  // Sets a user subscription
-  /* Fetches the notifications for the specified userId
-   * urlQueryParam: {number} userId The ID of the user
+  /*
+   * Fetches the notifications for the specified userId
+   * urlQueryParam: {number} userId       The ID of the user
+   * urlQueryParam: {number} limit        Max number of notifications to return, Cannot exceed 100
+   * urlQueryParam: {number?} timeOffset  A timestamp reference offset for fetch notification before this date
+   * urlQueryParam: {number} createdDate  The user's created date used to filter announcement before this date
+   *
+   * TODO: Validate userId
+   * NOTE: The `createdDate` param can/should be changed to the user sending their wallet &
+   * finding the created date from the users table
   */
   app.get('/notifications', handleResponse(async (req) => {
-    // Validate url param types
     const userId = parseInt(req.query.userId)
     const limit = parseInt(req.query.limit)
     const timeOffset = req.query.timeOffset ? moment(req.query.timeOffset) : moment()
@@ -220,7 +242,16 @@ module.exports = function (app) {
     }
   }))
 
-  // Sets a user's notifcation as read or hidden
+  /*
+   * Sets a user's notifcation as read or hidden
+   * postBody: {number} userId            The ID of the user
+   * postBody: {number?} notificationType The type of the notification to be marked as read (Only used for Announcements)
+   * postBody: {number?} notificationID   The id of the notification to be marked as read (Only used for Announcements)
+   * postBody: {number} isRead            Identitifies if the notification is to be marked as read
+   * postBody: {number} isHidden          Identitifies if the notification is to be marked as hidden
+   *
+   * TODO: Validate userId
+  */
   app.post('/notifications', handleResponse(async (req, res, next) => {
     let { userId, notificationId, notificationType, isRead, isHidden } = req.body
     if (
@@ -230,7 +261,6 @@ module.exports = function (app) {
       (typeof isRead !== 'boolean' && typeof isHidden !== 'boolean')) {
       return errorResponseBadRequest('Invalid request body')
     }
-    // TODO Validate userID
     try {
       if (notificationType === NotificationType.Announcement) {
         const announcementMap = app.get('announcementMap')
@@ -264,14 +294,20 @@ module.exports = function (app) {
     }
   }))
 
-  // Sets a user's notifcation as read or hidden
+  /*
+   * Marks all of a user's notifications as read & inserts rows for announcements
+   * postBody: {number} userId        The ID of the user
+   * postBody: {number} isRead        Identitifies if the notification is to be marked as read
+   * postBody: {number} createdDate   The user's created date used to filter announcement before this date
+   *
+   * TODO: Validate userId
+  */
   app.post('/notifications/all', handleResponse(async (req, res, next) => {
     let { userId, isRead, userCreatedDate } = req.body
     const createdDate = moment(userCreatedDate)
     if (!createdDate.isValid() || typeof userId !== 'number' || typeof isRead !== 'boolean') {
       return errorResponseBadRequest('Invalid request body')
     }
-    // TODO Validate userID
     try {
       if (typeof isRead === 'boolean') {
         await models.Notification.update(
@@ -315,7 +351,13 @@ module.exports = function (app) {
     }
   }))
 
-  // Updates fields for a user's settings
+  /*
+   * Updates fields for a user's settings (or creates the settings w/ db defaults if not created)
+   * postBody: {number} userId        The ID of the user
+   * postBody: {object} settings      Identitifies if the notification is to be marked as read
+   *
+   * TODO: Validate userId
+  */
   app.post('/notifications/settings', handleResponse(async (req, res, next) => {
     let { userId, settings } = req.body
     if (typeof settings === 'undefined' || typeof userId !== 'number') {
@@ -334,9 +376,13 @@ module.exports = function (app) {
     }
   }))
 
-  // Returns settings for a userId
+  /*
+   * Fetches the settings for a given userId
+   * urlQueryParam: {number} userId        The ID of the user
+   *
+   * TODO: TODO: Validate that the subscriberId is coming from the user w/ their wallet
+  */
   app.get('/notifications/settings', handleResponse(async (req, res, next) => {
-    // TODO: Validate that the subscriberId is coming from the user w/ their wallet
     const userId = parseInt(req.query.userId)
     if (isNaN(userId)) return errorResponseBadRequest('Invalid request parameters')
     try {
@@ -359,12 +405,17 @@ module.exports = function (app) {
     }
   }))
 
-  // Sets a user subscription
+  /*
+   * Sets or removes a user subscription
+   * postBody: {number} subscriberId    The user ID of the subscribing user
+   * postBody: {number} userId          The user ID of the subscribed to user
+   * postBody: {boolean} isSubscribed   If the user is subscribing or unsubscribing
+   *
+   * TODO: Validate that the subscriberId is comoing from the user w/ their wallet
+   * TODO: Validate that the userId is a valid userID
+  */
   app.post('/notifications/subscription', handleResponse(async (req, res, next) => {
     let { subscriberId, userId, isSubscribed } = req.body
-
-    // TODO: Validate that the subscriberId is comoing from the user w/ their wallet
-    // TODO: Validate that the userId is a valid userID
 
     if (typeof isSubscribed !== 'boolean' ||
       typeof userId !== 'number' ||
@@ -385,9 +436,14 @@ module.exports = function (app) {
     return successResponse({ message: 'success' })
   }))
 
-  // Returns true if the subscriberId user subscribes to the userId
+  /*
+   * Returns if a user subscription exists
+   * urlQueryParam: {number} subscriberId    The user ID of the subscribing user
+   * urlQueryParam: {number} userId          The user ID of the subscribed to user
+   *
+   * TODO: Validate that the subscriberId is comoing from the user w/ their wallet
+  */
   app.get('/notifications/subscription', handleResponse(async (req, res, next) => {
-    // TODO: Validate that the subscriberId is coming from the user w/ their wallet
     const subscriberId = parseInt(req.query.subscriberId)
     const userId = parseInt(req.query.userId)
 

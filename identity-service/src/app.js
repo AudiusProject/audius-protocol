@@ -24,14 +24,16 @@ class App {
     this.port = port
     this.express = express()
     this.redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
+    this.configureMailgun()
+    this.notificationProcessor = new NotificationProcessor()
 
+    // Note: The order of the following functions is IMPORTANT, as it sets the functions
+    // that process a request in the order applied
     this.expressSettings()
     this.setMiddleware()
     this.setRateLimiters()
     this.setRoutes()
     this.setErrorHandler()
-    this.configureMailgun()
-    this.notificationProcessor = new NotificationProcessor()
   }
 
   async init () {
@@ -90,7 +92,7 @@ class App {
     this.express.use(cors())
   }
 
-  getRateLimiter ({ prefix, max, expiry = DEFAULT_EXPIRY, keyGenerator = DEFAULT_KEY_GENERATOR }) {
+  _getRateLimiter ({ prefix, max, expiry = DEFAULT_EXPIRY, keyGenerator = DEFAULT_KEY_GENERATOR }) {
     return rateLimit({
       store: new RedisStore({
         client: this.redisClient,
@@ -104,7 +106,7 @@ class App {
 
   // Create rate limits for listens on a per track per user basis and per track per ip basis
   _createRateLimitsForListenCounts (interval, timeInSeconds) {
-    const listenCountLimiter = this.getRateLimiter({
+    const listenCountLimiter = this._getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-track:::`,
       expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerTrackPer${interval}`), // max requests per interval
@@ -115,7 +117,7 @@ class App {
       }
     })
 
-    const listenCountIPLimiter = this.getRateLimiter({
+    const listenCountIPLimiter = this._getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-ip:::`,
       expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
@@ -128,14 +130,14 @@ class App {
   }
 
   setRateLimiters () {
-    const requestRateLimiter = this.getRateLimiter({ prefix: 'reqLimiter', max: config.get('rateLimitingReqLimit') })
+    const requestRateLimiter = this._getRateLimiter({ prefix: 'reqLimiter', max: config.get('rateLimitingReqLimit') })
     this.express.use(requestRateLimiter)
 
-    const authRequestRateLimiter = this.getRateLimiter({ prefix: 'authLimiter', max: config.get('rateLimitingAuthLimit') })
+    const authRequestRateLimiter = this._getRateLimiter({ prefix: 'authLimiter', max: config.get('rateLimitingAuthLimit') })
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use('/authentication/', authRequestRateLimiter)
 
-    const twitterRequestRateLimiter = this.getRateLimiter({ prefix: 'twitterLimiter', max: config.get('rateLimitingTwitterLimit') })
+    const twitterRequestRateLimiter = this._getRateLimiter({ prefix: 'twitterLimiter', max: config.get('rateLimitingTwitterLimit') })
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use('/twitter/', twitterRequestRateLimiter)
 
