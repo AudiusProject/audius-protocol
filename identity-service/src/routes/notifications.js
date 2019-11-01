@@ -16,7 +16,8 @@ const NotificationType = Object.freeze({
   CreateAlbum: 'CreateAlbum',
   CreatePlaylist: 'CreatePlaylist',
   Announcement: 'Announcement',
-  UserSubscription: 'UserSubscription'
+  UserSubscription: 'UserSubscription',
+  Milestone: 'Milestone'
 })
 
 const ClientNotificationTypes = new Set([
@@ -24,7 +25,8 @@ const ClientNotificationTypes = new Set([
   NotificationType.Repost,
   NotificationType.Favorite,
   NotificationType.Announcement,
-  NotificationType.UserSubscription
+  NotificationType.UserSubscription,
+  NotificationType.Milestone
 ])
 
 const Entity = Object.freeze({
@@ -144,7 +146,8 @@ const formatNotifications = (notifications, announcements, unreadCount) => {
   const userNotifications = notifications.map((notification) => {
     const mapResponse = notificationResponseMap[notification.type]
     if (mapResponse) return mapResponse(notification, userAnnouncements)
-  })
+  }).filter(Boolean)
+
   const notifIds = userNotifications.reduce((acc, notif) => {
     acc[notif.id] = true
     return acc
@@ -163,15 +166,21 @@ const formatNotifications = (notifications, announcements, unreadCount) => {
 
 module.exports = function (app) {
   // Sets a user subscription
-  app.get('/notifications', handleResponse(async (req, res, next) => {
+  /* Fetches the notifications for the specified userId
+   * urlQueryParam: {number} userId The ID of the user
+  */
+  app.get('/notifications', handleResponse(async (req) => {
+    // Validate url param types
     const userId = parseInt(req.query.userId)
     const limit = parseInt(req.query.limit)
     const timeOffset = req.query.timeOffset ? moment(req.query.timeOffset) : moment()
-    if (isNaN(userId)) {
-      return errorResponseBadRequest('Invalid request body')
+    const createdDate = moment(req.query.userCreatedDate)
+    if (isNaN(userId)) return errorResponseBadRequest('Invalid request body')
+    if (!timeOffset.isValid() || !createdDate.isValid()) {
+      return errorResponseBadRequest(`Invalid Date params`)
     }
 
-    if (!timeOffset.isValid() || isNaN(limit) || limit > 100) {
+    if (isNaN(limit) || limit > 100) {
       return errorResponseBadRequest(
         `Limit and offset number be integers with a max limit of 100`
       )
@@ -196,7 +205,8 @@ module.exports = function (app) {
         limit
       })
       const announcements = app.get('announcements')
-      const announcementsAfterFilter = announcements.filter(a => timeOffset.isAfter(moment(a.datePublished)))
+      const announcementsAfterFilter = announcements
+        .filter(a => timeOffset.isAfter(moment(a.datePublished)) && moment(a.datePublished).isAfter(createdDate))
       const { userNotifications, totalUnread } = formatNotifications(notifications, announcementsAfterFilter, count)
       return successResponse({
         message: 'success',
@@ -204,7 +214,6 @@ module.exports = function (app) {
         totalUnread
       })
     } catch (err) {
-      console.log(err)
       return errorResponseBadRequest({
         message: `[Error] Unable to retrieve notifications for user: ${userId}`
       })
@@ -227,14 +236,18 @@ module.exports = function (app) {
         const announcementMap = app.get('announcementMap')
         const announcement = announcementMap[notificationId]
         if (!announcement) return errorResponseBadRequest('[Error] Invalid notification id')
-        await models.Notification.create({
-          type: notificationType,
-          entityId: announcement.entityId,
-          isRead: true,
-          isHidden,
-          userId,
-          blocknumber: 0,
-          timestamp: announcement.datePublished
+        await models.Notification.findOrCreate({
+          where: {
+            type: notificationType,
+            userId,
+            entityId: announcement.entityId
+          },
+          defaults: {
+            isRead: true,
+            isHidden,
+            blocknumber: 0,
+            timestamp: announcement.datePublished
+          }
         })
         return successResponse({ message: 'success' })
       } else {
@@ -253,8 +266,9 @@ module.exports = function (app) {
 
   // Sets a user's notifcation as read or hidden
   app.post('/notifications/all', handleResponse(async (req, res, next) => {
-    let { userId, isRead } = req.body
-    if (typeof userId !== 'number' || typeof isRead !== 'boolean') {
+    let { userId, isRead, userCreatedDate } = req.body
+    const createdDate = moment(userCreatedDate)
+    if (!createdDate.isValid() || typeof userId !== 'number' || typeof isRead !== 'boolean') {
       return errorResponseBadRequest('Invalid request body')
     }
     // TODO Validate userID
@@ -267,7 +281,7 @@ module.exports = function (app) {
 
         const announcementMap = app.get('announcementMap')
         const unreadAnnouncementIds = Object.keys(announcementMap).reduce((acc, id) => {
-          acc[id] = false
+          if (moment(announcementMap[id].datePublished).isAfter(createdDate)) acc[id] = false
           return acc
         }, {})
         const readAnnouncementIds = await models.Notification.findAll({
@@ -295,14 +309,13 @@ module.exports = function (app) {
       }
       return successResponse({ message: 'success' })
     } catch (err) {
-      console.log(err)
       return errorResponseBadRequest({
         message: `[Error] Unable to mark notification as read/hidden`
       })
     }
   }))
 
-  // Sets a user subscription
+  // Updates fields for a user's settings
   app.post('/notifications/settings', handleResponse(async (req, res, next) => {
     let { userId, settings } = req.body
     if (typeof settings === 'undefined' || typeof userId !== 'number') {
@@ -321,14 +334,11 @@ module.exports = function (app) {
     }
   }))
 
-  // Returns true if the subscriberId user subscribes to the userId
+  // Returns settings for a userId
   app.get('/notifications/settings', handleResponse(async (req, res, next) => {
     // TODO: Validate that the subscriberId is coming from the user w/ their wallet
     const userId = parseInt(req.query.userId)
-
-    if (isNaN(userId)) {
-      return errorResponseBadRequest('Invalid request parameters')
-    }
+    if (isNaN(userId)) return errorResponseBadRequest('Invalid request parameters')
     try {
       const [settings] = await models.UserNotificationSettings.findOrCreate({
         where: { userId },
@@ -343,7 +353,6 @@ module.exports = function (app) {
       })
       return successResponse({ settings })
     } catch (err) {
-      console.log(err)
       return errorResponseBadRequest({
         message: `[Error] Unable to retrieve notification settings for user: ${userId}`
       })

@@ -175,11 +175,11 @@ class App {
     try {
       const response = await axios.get(`${audiusNotificationUrl}/index.json`)
       if (response.data && Array.isArray(response.data.notifications)) {
-        const announcements = await Promise.all(response.data.notifications.map(async notification => {
+        const announcementsResponse = await Promise.all(response.data.notifications.map(async notification => {
           const notificationResponse = await axios.get(`${audiusNotificationUrl}/${notification.id}.json`)
           return notificationResponse.data
         }))
-
+        const announcements = announcementsResponse.filter(a => !!a.entityId)
         announcements.sort((a, b) => {
           let aDate = moment(a.datePublished)
           let bDate = moment(b.datePublished)
