@@ -6,7 +6,7 @@ const writeFile = promisify(fs.writeFile)
 const mkdir = promisify(fs.mkdir)
 
 const { upload } = require('../fileManager')
-const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound } = require('../apiHelpers')
+const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound, errorResponseForbidden } = require('../apiHelpers')
 
 const models = require('../models')
 const { logger } = require('../logging')
@@ -148,6 +148,13 @@ module.exports = function (app) {
 
     // Do not act as a public gateway. Only serve IPFS files that are hosted by this creator node.
     const CID = req.params.CID
+
+    // Don't serve if blacklisted
+    if (await req.app.get('blacklistManager').CIDIsInBlacklist(CID)) {
+      return sendResponse(req, res, errorResponseForbidden(`CID ${CID} has been blacklisted by this node.`))
+    }
+
+    // Don't serve if not found in DB
     const queryResults = await models.File.findOne({ where: { multihash: CID } })
     if (!queryResults) {
       return sendResponse(req, res, errorResponseNotFound(`No file found for provided CID: ${CID}`))
