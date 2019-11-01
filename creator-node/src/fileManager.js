@@ -85,7 +85,7 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
     sourceFile: sourceFile,
     storagePath: dstPath,
     type: fileType
-  }}
+  } }
   if (transaction) {
     queryObj.transaction = transaction
   }

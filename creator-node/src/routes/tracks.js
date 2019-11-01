@@ -137,15 +137,12 @@ module.exports = function (app) {
         }
         sourceFile = file.sourceFile
       }))
-    }
-    catch (e) {
+    } catch (e) {
       if (e.message.indexOf('blacklisted') >= 0) {
         return errorResponseForbidden(e.message)
-      }
-      else if (e.message.indexOf('No file found') >= 0 || e.message.indexOf('sourceFile') >= 0) {
+      } else if (e.message.indexOf('No file found') >= 0 || e.message.indexOf('sourceFile') >= 0) {
         return errorResponseBadRequest(e.message)
-      }
-      else {
+      } else {
         return errorResponseServerError(e.message)
       }
     }
@@ -208,10 +205,10 @@ module.exports = function (app) {
     }
 
     // Get download status from metadata object.
-    let isDownloadable = "no"
+    let isDownloadable = 'no'
     if (metadataJSON.download) {
       if (metadataJSON.download.is_downloadable) {
-        isDownloadable = (metadataJSON.download.requires_follow) ? "follow" : "yes"
+        isDownloadable = (metadataJSON.download.requires_follow) ? 'follow' : 'yes'
       }
     }
 
@@ -290,19 +287,18 @@ module.exports = function (app) {
     }
 
     const segmentFile = await models.File.findOne({ where: {
-      type: "track",
+      type: 'track',
       trackUUID: track.trackUUID
-    }})
+    } })
 
-    copyFile = await models.File.findOne({ where: {
-      type: "copy320",
+    const copyFile = await models.File.findOne({ where: {
+      type: 'copy320',
       sourceFile: segmentFile.sourceFile
-    }})
+    } })
 
     if (!copyFile) {
       return successResponse({ isDownloadable: true, cid: null })
-    }
-    else {
+    } else {
       try {
         await req.app.get('ipfsAPI').pin.ls(copyFile.multihash)
         return successResponse({ isDownloadable: true, cid: copyFile.multihash })
