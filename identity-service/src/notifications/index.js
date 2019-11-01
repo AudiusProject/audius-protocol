@@ -41,6 +41,11 @@ class NotificationProcessor {
       { redis:
         { port: config.get('redisPort'), host: config.get('redisHost') }
       })
+    this.milestoneQueue = new Bull(
+      'milestone-queue',
+      { redis:
+        { port: config.get('redisPort'), host: config.get('redisHost') }
+      })
     this.startBlock = config.get('notificationStartBlock')
   }
 
@@ -51,17 +56,45 @@ class NotificationProcessor {
     this.redis = redis
     this.notifQueue.process(async (job, done) => {
       // Temporary delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 3000))
 
       try {
         // Index notifications
-        await this.indexNotifications()
+        let userStats = await this.indexNotifications()
+        // console.log(userStats)
+
+        if (
+          userStats.followersAdded.size > 0 ||
+          userStats.repostsAdded.size > 0 ||
+          userStats.favoritesAdded.size > 0
+        ) {
+          // Add milestone processing job
+          this.milestoneQueue.add({
+            type: 'milestoneProcessJob',
+            userInfo: userStats,
+            followersAdded: Array.from(userStats.followersAdded),
+            repostsAdded: Array.from(userStats.repostsAdded),
+            favoritesAdded: Array.from(userStats.favoritesAdded)
+          })
+        }
       } catch (e) {
         console.log(`Error indexing notifications : ${e}`)
       }
+
+      console.log('Restarting notif job')
       await this.notifQueue.add({
         type: 'notificationProcessJob'
       })
+      done()
+    })
+
+    this.milestoneQueue.process(async (job, done) => {
+      console.log('In milestone queue job')
+      console.log(job.data)
+      console.log(job.data.userInfo)
+
+      // Batch requests for each milestone type
+
       done()
     })
 
@@ -103,7 +136,22 @@ class NotificationProcessor {
     }
 
     let notifications = body.data.notifications
-    let notificationStats = {}
+
+    // Track users with updates, to calculate milestones
+    let userNotificationStats = {
+      followersAdded: [], // List of user IDS who have received a follow
+      repostsAdded: {
+        track: [],
+        albums: [],
+        playlists: []
+      },
+      favoritesAdded: {
+        track: [],
+        albums: [],
+        playlists: []
+      }
+    }
+
     for (let notif of notifications) {
       // blocknumber + timestamp parsed for all notification types
       let blocknumber = notif.blocknumber
@@ -112,6 +160,14 @@ class NotificationProcessor {
       // Handle the 'follow' notification type
       if (notif.type === notificationTypes.Follow) {
         let notificationTarget = notif.metadata.followee_user_id
+        // Skip notification based on user settings
+        let userNotifSettings = await models.UserNotificationSettings.findOne(
+          { where: { userId: notificationTarget } }
+        )
+        if (userNotifSettings && !userNotifSettings.followers) {
+          continue
+        }
+
         let notificationInitiator = notif.metadata.follower_user_id
         let unreadQuery = await models.Notification.findAll({
           where: {
@@ -158,6 +214,9 @@ class NotificationProcessor {
               returning: true,
               plain: true
             })
+
+            console.log(userNotificationStats)
+            userNotificationStats.followersAdded.push(notificationTarget)
           }
         }
       }
@@ -180,6 +239,15 @@ class NotificationProcessor {
             throw new Error('Invalid repost type')  // TODO: gracefully handle this in try/catch
         }
         let notificationTarget = notif.metadata.entity_owner_id
+
+        // Skip notification based on user settings
+        let userNotifSettings = await models.UserNotificationSettings.findOne(
+          { where: { userId: notificationTarget } }
+        )
+        if (userNotifSettings && !userNotifSettings.reposts) {
+          continue
+        }
+
         let notificationEntityId = notif.metadata.entity_id
         let notificationInitiator = notif.initiator
 
@@ -229,6 +297,8 @@ class NotificationProcessor {
               returning: true,
               plain: true
             })
+            userNotificationStats.repostsAdded.add(notificationTarget)
+            console.log(userNotificationStats)
           }
         }
       }
@@ -247,9 +317,17 @@ class NotificationProcessor {
             favoriteType = notificationTypes.Favorite.playlist
             break
           default:
-            throw new Error('Invalid repost type')  // TODO: gracefully handle this in try/catch
+            throw new Error('Invalid favorite type')  // TODO: gracefully handle this in try/catch
         }
         let notificationTarget = notif.metadata.entity_owner_id
+        // Skip notification based on user settings
+        let userNotifSettings = await models.UserNotificationSettings.findOne(
+          { where: { userId: notificationTarget } }
+        )
+        if (userNotifSettings && !userNotifSettings.favorites) {
+          continue
+        }
+
         let notificationEntityId = notif.metadata.entity_id
         let notificationInitiator = notif.initiator
         let unreadQuery = await models.Notification.findAll({
@@ -425,6 +503,8 @@ class NotificationProcessor {
         }
       }
     }
+
+    return userNotificationStats
   }
 }
 
