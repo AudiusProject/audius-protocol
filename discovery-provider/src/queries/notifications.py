@@ -4,7 +4,7 @@ from src import api_helpers
 from src.queries import response_name_constants as const
 from src.models import Block, Follow, Save, SaveType, Playlist, Track, Repost, RepostType
 from src.utils.db_session import get_db
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
@@ -302,45 +302,26 @@ def notifications():
     return api_helpers.success_response(
         {'notifications':sorted_notifications, 'info':notification_metadata}
     )
-'''
-@bp.route("/notifications2", methods=("GET",))
-def notifications2():
+
+
+@bp.route("/milestones/followers", methods=("GET",))
+def milestones_followers():
     db = get_db()
-    min_block_number = request.args.get("min_block_number", type=int)
-    max_block_number = request.args.get("max_block_number", type=int)
+    if "user_id" not in request.args:
+        return api_helpers.error_response({'msg': 'Please provider user ids'}, 500)
+    return api_helpers.success_response({})
 
-    # Max block number is not explicitly required (yet)
-    if not min_block_number:
-        return api_helpers.error_response({'msg': 'Missing min block number'}, 500)
+@bp.route("/milestones/reposts", methods=("GET",))
+def milestones_reposts():
+    db = get_db()
+    if "track_id" not in request.args and "playlist_id" not in request.args:
+        return api_helpers.error_response({'msg': 'Please provider either track_id or playlist_id'}, 500)
+    return api_helpers.success_response({})
 
-    if not max_block_number:
-        max_block_number = min_block_number + max_block_diff
-    elif (max_block_number - min_block_number) > (min_block_number + max_block_diff):
-        max_block_number = (min_block_number + max_block_diff)
+@bp.route("/milestones/favorites", methods=("GET",))
+def milestones_favorites():
+    db = get_db()
+    if "track_id" not in request.args and "playlist_id" not in request.args:
+        return api_helpers.error_response({'msg': 'Please provider either track_id or playlist_id'}, 500)
+    return api_helpers.success_response({})
 
-    notification_metadata = {
-        'min_block_number': min_block_number,
-        'max_block_number': max_block_number
-    }
-    notifications = []
-    with db.scoped_session() as session:
-        publish_playlists_query = session.query(Playlist)
-        publish_playlists_query = publish_playlists_query.filter(
-            Playlist.is_private == False,
-            Playlist.created_at != Playlist.updated_at,
-            Playlist.blocknumber >= min_block_number,
-            Playlist.blocknumber < max_block_number)
-        res = publish_playlists_query.all()
-        for entry in res:
-            prev_entry_query = (
-                session.query(Playlist)
-                .filter(Playlist.playlist_id == entry.playlist_id, Playlist.blocknumber < entry.blocknumber)
-                .order_by(desc(Playlist.blocknumber))
-            )
-            prev_entry = prev_entry_query.first()
-            if prev_entry.is_private == True:
-                logger.error('Transition found:')
-                logger.error(f'playlist: {entry.playlist_id}, old block: {prev_entry.blocknumber}, public block: {entry.blocknumber}')
-
-    return api_helpers.success_response({'info':notification_metadata})
-'''
