@@ -309,7 +309,33 @@ def milestones_followers():
     db = get_db()
     if "user_id" not in request.args:
         return api_helpers.error_response({'msg': 'Please provider user ids'}, 500)
-    return api_helpers.success_response({})
+
+    try:
+        user_id_str_list = request.args.getlist("user_id")
+        user_ids = []
+        user_ids = [int(y) for y in user_id_str_list]
+    except ValueError as e:
+        logger.error("Invalid value found in user id list", esc_info=True)
+        return api_helpers.error_response({'msg': e}, 500)
+
+    with db.scoped_session() as session:
+        follower_counts = (
+            session.query(
+                Follow.followee_user_id,
+                func.count(Follow.followee_user_id)
+            )
+            .filter(
+                Follow.is_current == True,
+                Follow.is_delete == False,
+                Follow.followee_user_id.in_(user_ids)
+            )
+            .group_by(Follow.followee_user_id)
+            .all()
+        )
+        follower_count_dict = \
+                {user_id: follower_count for (user_id, follower_count) in follower_counts}
+
+    return api_helpers.success_response(follower_count_dict)
 
 @bp.route("/milestones/reposts", methods=("GET",))
 def milestones_reposts():
