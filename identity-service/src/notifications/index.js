@@ -1,7 +1,7 @@
 const Bull = require('bull')
 const config = require('../config.js')
 const models = require('../models')
-const request = require('request')
+const axios = require('axios')
 
 const notificationTypes = {
   Follow: 'Follow',
@@ -64,17 +64,12 @@ class NotificationProcessor {
         // console.log(userStats)
 
         if (
-          userStats.followersAdded.size > 0 ||
-          userStats.repostsAdded.size > 0 ||
-          userStats.favoritesAdded.size > 0
+          userStats.followersAdded.length > 0
         ) {
           // Add milestone processing job
           this.milestoneQueue.add({
             type: 'milestoneProcessJob',
-            userInfo: userStats,
-            followersAdded: Array.from(userStats.followersAdded),
-            repostsAdded: Array.from(userStats.repostsAdded),
-            favoritesAdded: Array.from(userStats.favoritesAdded)
+            userInfo: userStats
           })
         }
       } catch (e) {
@@ -127,7 +122,10 @@ class NotificationProcessor {
       method: 'get',
       url: `${notifDiscProv}/notifications?min_block_number=${minBlock}`
     }
-    let body = JSON.parse(await doRequest(reqObj))
+    // TODO: investigate why this has two .data, after axios switch
+    let body = (await axios(reqObj)).data
+    console.dir(body, { depth: 5 })
+    console.dir(body.data, { depth: 5 })
     let metadata = body.data.info
     let highestReturnedBlockNumber = metadata.max_block_number
     let cachedHighestBlockNumber = await this.redis.get('highestBlockNumber')
@@ -215,7 +213,6 @@ class NotificationProcessor {
               plain: true
             })
 
-            console.log(userNotificationStats)
             userNotificationStats.followersAdded.push(notificationTarget)
           }
         }
@@ -509,17 +506,3 @@ class NotificationProcessor {
 }
 
 module.exports = NotificationProcessor
-
-/**
- * Since request is a callback based API, we need to wrap it in a promise to make it async/await compliant
- * @param {Object} reqObj construct request object compatible with `request` module
- */
-function doRequest (reqObj) {
-  return new Promise(function (resolve, reject) {
-    request(reqObj, function (err, r, body) {
-      if (err) reject(err)
-      else resolve(body)
-    })
-  })
-}
-
