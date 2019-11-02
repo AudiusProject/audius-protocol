@@ -17,7 +17,17 @@ const NotificationType = Object.freeze({
   CreatePlaylist: 'CreatePlaylist',
   Announcement: 'Announcement',
   UserSubscription: 'UserSubscription',
-  Milestone: 'Milestone'
+  Milestone: 'Milestone',
+  MilestoneTrackRepost: 'MilestoneTrackRepost',
+  MilestonePlaylistRepost: 'MilestonePlaylistRepost',
+  MilestoneAlbumRepost: 'MilestoneAlbumRepost',
+  MilestoneTrackFavorite: 'MilestoneTrackFavorite',
+  MilestonePlaylistFavorite: 'MilestonePlaylistFavorite',
+  MilestoneAlbumFavorite: 'MilestoneAlbumFavorite',
+  MilestoneTrackListens: 'MilestoneTrackListens',
+  MilestonePlaylistListens: 'MilestonePlaylistListens',
+  MilestoneAlbumListens: 'MilestoneAlbumListens',
+  MilestoneFollows: 'MilestoneFollows',
 })
 
 const ClientNotificationTypes = new Set([
@@ -34,6 +44,14 @@ const Entity = Object.freeze({
   Playlist: 'Playlist',
   Album: 'Album',
   User: 'User'
+})
+
+const Achievement = Object.freeze({
+  Listens: 'Listens',
+  Reposts: 'Reposts',
+  Trending: 'Trending',
+  Plays: 'Plays',
+  Followers: 'Followers'
 })
 
 const formatUserSubscriptionCollection = entityType => notification => {
@@ -110,6 +128,59 @@ const formatUnreadAnnouncement = (announcement) => {
   }
 }
 
+const mapMilestone = {
+  [NotificationType.MilestoneTrackRepost]: {
+    achievement: Achievement.Reposts,
+    entityType: Entity.Track
+  },
+  [NotificationType.MilestonePlaylistRepost]: {
+    achievement: Achievement.Reposts,
+    entityType: Entity.Playlist
+  },
+  [NotificationType.MilestoneAlbumRepost]: {
+    achievement: Achievement.Reposts,
+    entityType: Entity.Album
+  },
+  [NotificationType.MilestoneTrackFavorite]: {
+    achievement: Achievement.Favorite,
+    entityType: Entity.Track
+  },
+  [NotificationType.MilestonePlaylistFavorite]: {
+    achievement: Achievement.Favorite,
+    entityType: Entity.Playlist
+  },
+  [NotificationType.MilestoneAlbumFavorite]: {
+    achievement: Achievement.Favorite,
+    entityType: Entity.Album
+  },
+  [NotificationType.MilestoneTrackListens]: {
+    achievement: Achievement.Listens,
+    entityType: Entity.Track
+  },
+  [NotificationType.MilestonePlaylistListens]: {
+    achievement: Achievement.Listens,
+    entityType: Entity.Playlist
+  },
+  [NotificationType.MilestoneAlbumListens]: {
+    achievement: Achievement.Listens,
+    entityType: Entity.Album
+  },
+  [NotificationType.MilestoneFollows]: {
+    achievement: Achievement.Follow,
+    entityType: Entity.User
+  }
+}
+
+const formatMilestone = (notification) => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    ...mapMilestone[notification.type],
+    type: NotificationType.Milestone,
+    entityId: notification.entityId,
+    value: notification.actions[0].actionEntityId
+  }
+}
+
 const getCommonNotificationsFields = (notification) => ({
   id: notification.id,
   isHidden: notification.isHidden,
@@ -128,7 +199,17 @@ const notificationResponseMap = {
   [NotificationType.CreateTrack]: formatUserSubscriptionTrack,
   [NotificationType.CreateAlbum]: formatUserSubscriptionCollection(Entity.Album),
   [NotificationType.CreatePlaylist]: formatUserSubscriptionCollection(Entity.Playlist),
-  [NotificationType.Announcement]: formatAnnouncement
+  [NotificationType.Announcement]: formatAnnouncement,
+  [NotificationType.MilestoneTrackRepost]: formatMilestone,
+  [NotificationType.MilestonePlaylistRepost]: formatMilestone,
+  [NotificationType.MilestoneAlbumRepost]: formatMilestone,
+  [NotificationType.MilestoneTrackFavorite]: formatMilestone,
+  [NotificationType.MilestonePlaylistFavorite]: formatMilestone,
+  [NotificationType.MilestoneAlbumFavorite]: formatMilestone,
+  [NotificationType.MilestoneTrackListens]: formatMilestone,
+  [NotificationType.MilestonePlaylistListens]: formatMilestone,
+  [NotificationType.MilestoneAlbumListens]: formatMilestone,
+  [NotificationType.MilestoneFollows]: formatMilestone
 }
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).
@@ -236,6 +317,7 @@ module.exports = function (app) {
         totalUnread
       })
     } catch (err) {
+      console.log(err)
       return errorResponseBadRequest({
         message: `[Error] Unable to retrieve notifications for user: ${userId}`
       })
