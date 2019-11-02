@@ -132,13 +132,14 @@ class NotificationProcessor {
     // TODO: batch requests for each milestone type
     if (userInfo.followersAdded.length > 0) {
       console.log('--START---')
-      let queryParams = []
+      let queryParams = {}
       queryParams['user_id'] = userInfo.followersAdded
       let reqObj = {
         method: 'get',
         url: `${notifDiscProv}/milestones/followers`,
         params: queryParams
       }
+      console.log(reqObj)
       let followerData = await axios(reqObj)
       console.log(followerData)
       console.log('/-----')
