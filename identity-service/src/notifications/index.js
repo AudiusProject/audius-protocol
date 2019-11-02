@@ -32,6 +32,9 @@ const actionEntityTypes = {
   Playlist: 'Playlist'
 }
 
+const notificationJobType = 'notificationProcessJob'
+const milestoneJobType = 'milestoneProcessJob'
+
 let notifDiscProv = config.get('notificationDiscoveryProvider')
 
 class NotificationProcessor {
@@ -47,7 +50,6 @@ class NotificationProcessor {
         { port: config.get('redisPort'), host: config.get('redisHost') }
       })
     this.startBlock = config.get('notificationStartBlock')
-    console.log('constructed notif proc')
   }
 
   // TODO: Add Queue diagnostic to health_check or notif_check
@@ -62,21 +64,18 @@ class NotificationProcessor {
     this.audiusLibs = audiusLibs
 
     this.notifQueue.process(async (job, done) => {
-      console.log('Processing notif...')
       // Temporary delay
       await new Promise(resolve => setTimeout(resolve, 3000))
-      console.log(job.data)
       let minBlock = job.data.minBlock
       if (!minBlock) throw new Error('no min block')
 
       try {
         // Index notifications
         let notifStats = await this.indexNotifications(minBlock)
-        // console.log(userStats)
 
         // Restart job with updated startBlock
         await this.notifQueue.add({
-          type: 'notificationProcessJob',
+          type: notificationJobType,
           minBlock: notifStats.maxBlockNumber
         })
 
@@ -85,16 +84,15 @@ class NotificationProcessor {
         ) {
           // Add milestone processing job
           this.milestoneQueue.add({
-            type: 'milestoneProcessJob',
+            type: milestoneJobType,
             userInfo: notifStats
           })
         }
       } catch (e) {
-        console.log(`Error indexing notifications : ${e}`)
-        console.log('Restarting notif job')
+        console.log(`Restarting due to error indexing notifications : ${e}`)
         // Restart job with same startBlock
         await this.notifQueue.add({
-          type: 'notificationProcessJob',
+          type: notificationJobType,
           minBlock: minBlock
         })
       }
@@ -104,19 +102,15 @@ class NotificationProcessor {
 
     this.milestoneQueue.process(async (job, done) => {
       console.log('In milestone queue job')
-      console.log(job.data)
       console.log(job.data.userInfo)
-
-      // Batch requests for each milestone type
-
+      await this.indexMilestones(job.data.userInfo)
       done()
     })
 
     let startBlock = await this.getHighestBlockNumber()
-    console.log('startBlock! ' + startBlock)
     await this.notifQueue.add({
       minBlock: startBlock,
-      type: 'notificationProcessJob'
+      type: notificationJobType
     })
   }
 
@@ -133,6 +127,9 @@ class NotificationProcessor {
   }
 
   async indexMilestones (userInfo) {
+    console.log('INDEXMILESTONES')
+    console.log(userInfo)
+    // TODO: batch requests for each milestone type
     if (userInfo.followersAdded.length > 0) {
       console.log('--START---')
       let queryParams = []
@@ -156,15 +153,13 @@ class NotificationProcessor {
     }
     // TODO: investigate why this has two .data, after axios switch
     let body = (await axios(reqObj)).data
-    console.dir(body, { depth: 5 })
-    console.dir(body.data, { depth: 5 })
     let metadata = body.data.info
     let highestReturnedBlockNumber = metadata.max_block_number
 
     let notifications = body.data.notifications
 
     // Track users with updates, to calculate milestones
-    let userNotificationStats = {
+    let notificationStats = {
       followersAdded: [], // List of user IDS who have received a follow
       repostsAdded: {
         track: [],
@@ -242,7 +237,7 @@ class NotificationProcessor {
               plain: true
             })
 
-            userNotificationStats.followersAdded.push(notificationTarget)
+            notificationStats.followersAdded.push(notificationTarget)
           }
         }
       }
@@ -323,8 +318,7 @@ class NotificationProcessor {
               returning: true,
               plain: true
             })
-            userNotificationStats.repostsAdded.add(notificationTarget)
-            console.log(userNotificationStats)
+            notificationStats.repostsAdded.add(notificationTarget)
           }
         }
       }
@@ -530,7 +524,7 @@ class NotificationProcessor {
       }
     }
 
-    return userNotificationStats
+    return notificationStats
   }
 }
 
