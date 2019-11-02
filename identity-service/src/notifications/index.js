@@ -37,7 +37,7 @@ let notifDiscProv = config.get('notificationDiscoveryProvider')
 class NotificationProcessor {
   constructor () {
     this.notifQueue = new Bull(
-      'notif-queue',
+      'notification-queue',
       { redis:
         { port: config.get('redisPort'), host: config.get('redisHost') }
       })
@@ -47,39 +47,58 @@ class NotificationProcessor {
         { port: config.get('redisPort'), host: config.get('redisHost') }
       })
     this.startBlock = config.get('notificationStartBlock')
+    console.log('constructed notif proc')
   }
 
-  async init (audiusLibs, redis) {
+  // TODO: Add Queue diagnostic to health_check or notif_check
+
+  async init (audiusLibs) {
+    // Clear any pending notif jobs
+    await this.notifQueue.empty()
+    await this.milestoneQueue.empty()
+
     // TODO: Eliminate this in favor of disc prov libs call
     // TODO: audiusLibs disc prov method update to include notificaitons
     this.audiusLibs = audiusLibs
-    this.redis = redis
+
     this.notifQueue.process(async (job, done) => {
+      console.log('Processing notif...')
       // Temporary delay
       await new Promise(resolve => setTimeout(resolve, 3000))
+      console.log(job.data)
+      let minBlock = job.data.minBlock
+      if (!minBlock) throw new Error('no min block')
 
       try {
         // Index notifications
-        let userStats = await this.indexNotifications()
+        let notifStats = await this.indexNotifications(minBlock)
         // console.log(userStats)
 
+        // Restart job with updated startBlock
+        await this.notifQueue.add({
+          type: 'notificationProcessJob',
+          minBlock: notifStats.maxBlockNumber
+        })
+
         if (
-          userStats.followersAdded.length > 0
+          notifStats.followersAdded.length > 0
         ) {
           // Add milestone processing job
           this.milestoneQueue.add({
             type: 'milestoneProcessJob',
-            userInfo: userStats
+            userInfo: notifStats
           })
         }
       } catch (e) {
         console.log(`Error indexing notifications : ${e}`)
+        console.log('Restarting notif job')
+        // Restart job with same startBlock
+        await this.notifQueue.add({
+          type: 'notificationProcessJob',
+          minBlock: minBlock
+        })
       }
 
-      console.log('Restarting notif job')
-      await this.notifQueue.add({
-        type: 'notificationProcessJob'
-      })
       done()
     })
 
@@ -93,10 +112,12 @@ class NotificationProcessor {
       done()
     })
 
-    this.notifQueue.add({
+    let startBlock = await this.getHighestBlockNumber()
+    console.log('startBlock! ' + startBlock)
+    await this.notifQueue.add({
+      minBlock: startBlock,
       type: 'notificationProcessJob'
     })
-    await this.redis.set('highestBlockNumber', this.startBlock)
   }
 
   async getHighestBlockNumber () {
@@ -106,18 +127,29 @@ class NotificationProcessor {
     }
 
     // TODO: consider whether we really need to cache highest block number like this
-    let cachedHighestBlockNumber = await this.redis.get('highestBlockNumber')
-    if (cachedHighestBlockNumber) {
-      highestBlockNumber = cachedHighestBlockNumber
-    }
     let date = new Date()
     console.log(`Highest block: ${highestBlockNumber} - ${date}`)
     return highestBlockNumber
   }
 
-  async indexNotifications () {
+  async indexMilestones (userInfo) {
+    if (userInfo.followersAdded.length > 0) {
+      console.log('--START---')
+      let queryParams = []
+      queryParams['user_id'] = userInfo.followersAdded
+      let reqObj = {
+        method: 'get',
+        url: `${notifDiscProv}/milestones/followers`,
+        params: queryParams
+      }
+      let followerData = await axios(reqObj)
+      console.log(followerData)
+      console.log('/-----')
+    }
+  }
+
+  async indexNotifications (minBlock) {
     // TODO: Handle scenario where there are NO notifications returned, how do we still increment the blocknumber
-    let minBlock = await this.getHighestBlockNumber()
     let reqObj = {
       method: 'get',
       url: `${notifDiscProv}/notifications?min_block_number=${minBlock}`
@@ -128,10 +160,6 @@ class NotificationProcessor {
     console.dir(body.data, { depth: 5 })
     let metadata = body.data.info
     let highestReturnedBlockNumber = metadata.max_block_number
-    let cachedHighestBlockNumber = await this.redis.get('highestBlockNumber')
-    if (!cachedHighestBlockNumber || highestReturnedBlockNumber > cachedHighestBlockNumber) {
-      await this.redis.set('highestBlockNumber', highestReturnedBlockNumber)
-    }
 
     let notifications = body.data.notifications
 
@@ -147,7 +175,8 @@ class NotificationProcessor {
         track: [],
         albums: [],
         playlists: []
-      }
+      },
+      maxBlockNumber: highestReturnedBlockNumber
     }
 
     for (let notif of notifications) {
