@@ -188,7 +188,6 @@ module.exports = function (app) {
     let metadataJSON
     try {
       metadataJSON = JSON.parse(fs.readFileSync(file.storagePath))
-      req.logger.info(`${JSON.stringify(metadataJSON)}`)
       if (!metadataJSON || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
         return errorResponseServerError(`Malformatted metadataJSON stored for metadataFileUUID ${metadataFileUUID}.`)
       }
@@ -204,14 +203,6 @@ module.exports = function (app) {
       return errorResponseServerError(e.message)
     }
 
-    // Get download status from metadata object.
-    let isDownloadable = 'no'
-    if (metadataJSON.download) {
-      if (metadataJSON.download.is_downloadable) {
-        isDownloadable = (metadataJSON.download.requires_follow) ? 'follow' : 'yes'
-      }
-    }
-
     const t = await models.sequelize.transaction()
 
     try {
@@ -222,13 +213,11 @@ module.exports = function (app) {
         metadataJSON,
         blockchainId: blockchainTrackId,
         coverArtFileUUID,
-        isDownloadable
       }, { transaction: t, returning: true }))[0]
 
       // Associate matching segment files on DB with new/updated track.
       await Promise.all(metadataJSON.track_segments.map(async segment => {
         // Update each segment file; error if not found.
-        req.logger.info(`track uuid ${JSON.stringify(track)}`)
         const numAffectedRows = await models.File.update(
           { trackUUID: track.trackUUID },
           { where: {
@@ -240,7 +229,6 @@ module.exports = function (app) {
           transaction: t
           }
         )
-        req.logger.info(`num affected rows ${numAffectedRows}`)
         if (!numAffectedRows) {
           return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
         }
