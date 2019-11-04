@@ -1,3 +1,5 @@
+const CURRENT_USER_EXISTS_KEY = '@audius/libs:found-user'
+
 /**
  * Singleton class to store the current user if initialized.
  * Some instances of AudiusLibs and services require a current user to
@@ -6,10 +8,16 @@
 class UserStateManager {
   constructor () {
     this.currentUser = null
+    if (window.localStorage) {
+      window.localStorage.removeItem(CURRENT_USER_EXISTS_KEY)
+    }
   }
 
   setCurrentUser (currentUser) {
     this.currentUser = currentUser
+    if (window.localStorage) {
+      window.localStorage.setItem(CURRENT_USER_EXISTS_KEY, true)
+    }
   }
 
   getCurrentUser () {
@@ -18,6 +26,13 @@ class UserStateManager {
 
   getCurrentUserId () {
     return this.currentUser ? this.currentUser.user_id : null
+  }
+
+  clearUser () {
+    this.currentUser = null
+    if (window.localStorage) {
+      window.localStorage.removeItem(CURRENT_USER_EXISTS_KEY)
+    }
   }
 }
 
