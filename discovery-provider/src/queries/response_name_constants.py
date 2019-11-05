@@ -28,6 +28,10 @@ track_owner_id = 'track_owner_id'
 track_id = 'track_id'
 listen_counts = 'listen_counts'
 
+tracks = 'tracks'
+albums = 'albums'
+playlists = 'playlists'
+
 # notifications metadata
 notification_type = 'type'
 notification_type_follow = 'Follow'
@@ -47,3 +51,5 @@ notification_collection_content = 'collection_content'
 notification_follower_id = 'follower_user_id'
 notification_followee_id = 'followee_user_id'
 
+notification_repost_counts = 'repost_counts'
+notification_favorite_counts = 'favorite_counts'
