@@ -22,7 +22,8 @@ const notificationTypes = {
     track: 'CreateTrack',
     album: 'CreateAlbum',
     playlist: 'CreatePlaylist'
-  }
+  },
+  MilestoneFollow: 'MilestoneFollow'
 }
 
 const actionEntityTypes = {
@@ -34,6 +35,13 @@ const actionEntityTypes = {
 
 const notificationJobType = 'notificationProcessJob'
 const milestoneJobType = 'milestoneProcessJob'
+
+// Temporary milestone list for followers
+// TODO: parse list from config somehow
+const followerMilestoneList = [1, 2, 4, 6, 8, 10]
+
+// Repost milestone list shared across tracks/albums/playlists
+const repostMilestoneList = [1, 2, 4, 8]
 
 let notifDiscProv = config.get('notificationDiscoveryProvider')
 
@@ -64,10 +72,8 @@ class NotificationProcessor {
     this.audiusLibs = audiusLibs
 
     this.notifQueue.process(async (job, done) => {
-      // Temporary delay
-      await new Promise(resolve => setTimeout(resolve, 3000))
       let minBlock = job.data.minBlock
-      if (!minBlock) throw new Error('no min block')
+      if (!minBlock && minBlock !== 0) throw new Error('no min block')
 
       try {
         // Index notifications
@@ -80,13 +86,16 @@ class NotificationProcessor {
         })
 
         if (
-          notifStats.followersAdded.length > 0
+          notifStats.followersAdded.length > 0 ||
+          notifStats.repostsAdded.length > 0
         ) {
           // Add milestone processing job
+          /*
           this.milestoneQueue.add({
             type: milestoneJobType,
             userInfo: notifStats
           })
+          */
         }
       } catch (e) {
         console.log(`Restarting due to error indexing notifications : ${e}`)
@@ -96,18 +105,20 @@ class NotificationProcessor {
           minBlock: minBlock
         })
       }
+      // Temporary delay
+      await new Promise(resolve => setTimeout(resolve, 3000))
 
       done()
     })
 
     this.milestoneQueue.process(async (job, done) => {
       console.log('In milestone queue job')
-      console.log(job.data.userInfo)
       await this.indexMilestones(job.data.userInfo)
       done()
     })
 
     let startBlock = await this.getHighestBlockNumber()
+    console.log(`Starting with ${startBlock}`)
     await this.notifQueue.add({
       minBlock: startBlock,
       type: notificationJobType
@@ -129,28 +140,111 @@ class NotificationProcessor {
   async indexMilestones (userInfo) {
     console.log('INDEXMILESTONES')
     console.log(userInfo)
-    // TODO: batch requests for each milestone type
+    let timestamp = new Date()
+    let blocknumber = userInfo.maxBlockNumber
+
+    // Handle follower count milestones
     if (userInfo.followersAdded.length > 0) {
-      console.log('--START---')
-      let queryParams = {}
-      queryParams['user_id'] = userInfo.followersAdded
+      console.log('Follower milestones')
+      console.log(followerMilestoneList)
+      var queryParams = new URLSearchParams()
+      userInfo.followersAdded.forEach((id) => {
+        queryParams.append('user_id', id)
+      })
+
       let reqObj = {
         method: 'get',
         url: `${notifDiscProv}/milestones/followers`,
         params: queryParams
       }
-      console.log(reqObj)
-      let followerData = await axios(reqObj)
-      console.log(followerData)
-      console.log('/-----')
+
+      // TODO: investigate why responses have two .data, after axios switch
+      try {
+        let resp = await axios(reqObj)
+        let followerCounts = resp.data.data
+        console.log(followerCounts)
+        for (var targetUser in followerCounts) {
+          if (followerCounts.hasOwnProperty(targetUser)) {
+            let currentFollowerCount = followerCounts[targetUser]
+            console.log(`User: ${targetUser} has ${currentFollowerCount} followers`)
+
+            for (var i = followerMilestoneList.length; i >= 0; i--) {
+              let milestoneValue = followerMilestoneList[i]
+              if (currentFollowerCount >= milestoneValue) {
+                console.log(`User: ${targetUser} has met milestone value ${milestoneValue}followers`)
+                // MilestoneFollow entityId is the followerCount
+                let existingFollowMilestoneQuery = await models.Notification.findAll({
+                  where: {
+                    userId: targetUser,
+                    type: notificationTypes.MilestoneFollow,
+                    entityId: milestoneValue
+                  },
+                  include: [{
+                    model: models.NotificationAction,
+                    as: 'actions'
+                  }]
+                })
+                if (existingFollowMilestoneQuery.length === 0) {
+                  let createMilestoneTx = await models.Notification.create({
+                    userId: targetUser,
+                    type: notificationTypes.MilestoneFollow,
+                    entityId: milestoneValue,
+                    blocknumber,
+                    timestamp
+                  })
+                  // Note that milestoneValue is the newly met milestone count in Notifications/NotificationActions
+                  let notificationId = createMilestoneTx.id
+                  let notifActionCreateTx = await models.NotificationAction.findOrCreate({
+                    where: {
+                      notificationId: notificationId,
+                      actionEntityType: actionEntityTypes.User,
+                      actionEntityId: milestoneValue
+                    }
+                  })
+                }
+                break
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+
+    await this.updateRepostMilestones(userInfo)
+  }
+
+  async updateRepostMilestones (userInfo) {
+    let trackReposts = userInfo.repostsAdded.filter((x) => x.repostType === notificationTypes.Repost.track)
+    if (trackReposts.length > 0) {
+      console.log(trackReposts)
+      let trackRepostIds = trackReposts.map((x) => {
+        return x.repostEntityId
+      })
+      console.log(trackRepostIds)
+      let queryParams = new URLSearchParams()
+      trackRepostIds.forEach((id) => {
+        queryParams.append('track_id', id)
+      })
+      let trackRepostCountRequest = {
+        method: 'get',
+        url: `${notifDiscProv}/reposts/tracks`,
+        params: queryParams
+      }
+      let repostInfo = await axios(trackRepostCountRequest)
+      console.log(repostInfo)
     }
   }
 
   async indexNotifications (minBlock) {
-    // TODO: Handle scenario where there are NO notifications returned, how do we still increment the blocknumber
+    let date = new Date()
+    console.log(`indexNotifications job - ${date}`)
+
     let reqObj = {
       method: 'get',
-      url: `${notifDiscProv}/notifications?min_block_number=${minBlock}`
+      url: `${notifDiscProv}/notifications?min_block_number=${minBlock}`,
+      timeout: 500 // TODO: change for prod
     }
     // TODO: investigate why this has two .data, after axios switch
     let body = (await axios(reqObj)).data
@@ -162,13 +256,9 @@ class NotificationProcessor {
     // Track users with updates, to calculate milestones
     let notificationStats = {
       followersAdded: [], // List of user IDS who have received a follow
-      repostsAdded: {
-        track: [],
-        albums: [],
-        playlists: []
-      },
+      repostsAdded: [], // List of reposts indexed here, { userId, repostType, repostEntityId }
       favoritesAdded: {
-        track: [],
+        tracks: [],
         albums: [],
         playlists: []
       },
@@ -319,7 +409,11 @@ class NotificationProcessor {
               returning: true,
               plain: true
             })
-            notificationStats.repostsAdded.add(notificationTarget)
+
+            // Append to the repostsAdded array for milestone processing
+            notificationStats.repostsAdded.push(
+              { userId: notificationTarget, repostType, repostEntityId: notificationEntityId }
+            )
           }
         }
       }
@@ -522,6 +616,8 @@ class NotificationProcessor {
             }
           }
         }
+
+        console.log('end of notifs')
       }
     }
 
