@@ -52,11 +52,6 @@ class NotificationProcessor {
       { redis:
         { port: config.get('redisPort'), host: config.get('redisHost') }
       })
-    this.milestoneQueue = new Bull(
-      'milestone-queue',
-      { redis:
-        { port: config.get('redisPort'), host: config.get('redisHost') }
-      })
     this.startBlock = config.get('notificationStartBlock')
   }
 
@@ -65,7 +60,6 @@ class NotificationProcessor {
   async init (audiusLibs) {
     // Clear any pending notif jobs
     await this.notifQueue.empty()
-    await this.milestoneQueue.empty()
 
     // TODO: Eliminate this in favor of disc prov libs call
     // TODO: audiusLibs disc prov method update to include notificaitons
@@ -84,19 +78,6 @@ class NotificationProcessor {
           type: notificationJobType,
           minBlock: notifStats.maxBlockNumber
         })
-
-        if (
-          notifStats.followersAdded.length > 0 ||
-          notifStats.repostsAdded.length > 0
-        ) {
-          // Add milestone processing job
-          /*
-          this.milestoneQueue.add({
-            type: milestoneJobType,
-            userInfo: notifStats
-          })
-          */
-        }
       } catch (e) {
         console.log(`Restarting due to error indexing notifications : ${e}`)
         // Restart job with same startBlock
@@ -108,12 +89,6 @@ class NotificationProcessor {
       // Temporary delay
       await new Promise(resolve => setTimeout(resolve, 3000))
 
-      done()
-    })
-
-    this.milestoneQueue.process(async (job, done) => {
-      console.log('In milestone queue job')
-      await this.indexMilestones(job.data.userInfo)
       done()
     })
 
@@ -249,21 +224,7 @@ class NotificationProcessor {
     // TODO: investigate why this has two .data, after axios switch
     let body = (await axios(reqObj)).data
     let metadata = body.data.info
-    let highestReturnedBlockNumber = metadata.max_block_number
-
     let notifications = body.data.notifications
-
-    // Track users with updates, to calculate milestones
-    let notificationStats = {
-      followersAdded: [], // List of user IDS who have received a follow
-      repostsAdded: [], // List of reposts indexed here, { userId, repostType, repostEntityId }
-      favoritesAdded: {
-        tracks: [],
-        albums: [],
-        playlists: []
-      },
-      maxBlockNumber: highestReturnedBlockNumber
-    }
 
     for (let notif of notifications) {
       // blocknumber + timestamp parsed for all notification types
@@ -327,8 +288,6 @@ class NotificationProcessor {
               returning: true,
               plain: true
             })
-
-            notificationStats.followersAdded.push(notificationTarget)
           }
         }
       }
@@ -409,11 +368,6 @@ class NotificationProcessor {
               returning: true,
               plain: true
             })
-
-            // Append to the repostsAdded array for milestone processing
-            notificationStats.repostsAdded.push(
-              { userId: notificationTarget, repostType, repostEntityId: notificationEntityId }
-            )
           }
         }
       }
@@ -620,8 +574,6 @@ class NotificationProcessor {
         console.log('end of notifs')
       }
     }
-
-    return notificationStats
   }
 }
 
