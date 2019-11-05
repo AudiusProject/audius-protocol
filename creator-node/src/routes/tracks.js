@@ -212,7 +212,7 @@ module.exports = function (app) {
         metadataFileUUID,
         metadataJSON,
         blockchainId: blockchainTrackId,
-        coverArtFileUUID,
+        coverArtFileUUID
       }, { transaction: t, returning: true }))[0]
 
       // Associate matching segment files on DB with new/updated track.
@@ -255,9 +255,7 @@ module.exports = function (app) {
     }
   }))
 
-  /**
-   * Returns download status of track and 320kbps CID if ready + downloadable.
-   */
+  /** Returns download status of track and 320kbps CID if ready + downloadable. */
   app.get('/tracks/download_status/:blockchainId', handleResponse(async (req, res) => {
     const blockchainId = req.params.blockchainId
     if (!blockchainId) {
@@ -265,55 +263,55 @@ module.exports = function (app) {
     }
 
     const track = await models.Track.findOne({ where: { blockchainId } })
-
     if (!track) {
       return errorResponseBadRequest(`No track found for blockchainId ${blockchainId}`)
     }
 
+    // Case: track is not marked as downloadable
     if (!track.metadataJSON || !track.metadataJSON.download || !track.metadataJSON.download.is_downloadable) {
       return successResponse({ isDownloadable: false, cid: null })
     }
 
+    // Case: track is marked as downloadable
+    // - Check if downloadable file exists. Since copyFile may or may not have trackUUID association,
+    //    fetch a segmentFile for trackUUID, and find copyFile for segmentFile's sourceFile.
     const segmentFile = await models.File.findOne({ where: {
       type: 'track',
       trackUUID: track.trackUUID
     } })
-
     const copyFile = await models.File.findOne({ where: {
       type: 'copy320',
       sourceFile: segmentFile.sourceFile
     } })
-
     if (!copyFile) {
       return successResponse({ isDownloadable: true, cid: null })
-    } else {
-      try {
-        await req.app.get('ipfsAPI').pin.ls(copyFile.multihash)
-        return successResponse({ isDownloadable: true, cid: copyFile.multihash })
-      } catch (e) {
-        return successResponse({ isDownloadable: true, cid: null })
-      }
+    }
+
+    // If copyFile exists, only return CID if it is in IPFS pinset
+    try {
+      await req.app.get('ipfsAPI').pin.ls(copyFile.multihash)
+      return successResponse({ isDownloadable: true, cid: copyFile.multihash })
+    } catch (e) {
+      return successResponse({ isDownloadable: true, cid: null })
     }
   }))
 }
 
-/**
- * Transcode track master file to 320kbps for downloading.
- * Save to disk, IPFS, & DB.
- */
+/** Transcode track master file to 320kbps for downloading. Save to disk, IPFS, & DB. */
 async function createDownloadableCopy (req, sourceFileName) {
   try {
     const start = Date.now()
-    const sourceFilePath = path.resolve(req.app.get('storagePath'), sourceFileName.split('.')[0])
     req.logger.info(`Transcoding file ${sourceFileName}...`)
+
+    const sourceFilePath = path.resolve(req.app.get('storagePath'), sourceFileName.split('.')[0])
     const dlCopyFilePath = await ffmpeg.transcodeFileTo320(req, sourceFilePath, sourceFileName)
+
     req.logger.info(`Transcoded file ${sourceFileName} in ${Date.now() - start}ms.`)
 
     await saveFileToIPFSFromFS(req, dlCopyFilePath, 'copy320', sourceFileName)
 
     return dlCopyFilePath
   } catch (err) {
-    // TODO - rollback transaction
     req.logger.error(err)
   }
 }

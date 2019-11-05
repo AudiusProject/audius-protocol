@@ -53,7 +53,7 @@ function transcodeFileTo320 (req, fileDir, fileName) {
     const sourcePath = path.resolve(fileDir, fileName)
     const targetPath = path.resolve(fileDir, fileName.split('.')[0] + '-dl.mp3')
 
-    // TODO - figure out why code breaks without this check
+    // Exit if dl-copy file already exists at target path.
     if (fs.existsSync(targetPath)) {
       req.logger.info(`exists already ${targetPath}`)
       resolve(targetPath)

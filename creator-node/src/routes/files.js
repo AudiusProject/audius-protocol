@@ -166,7 +166,10 @@ module.exports = function (app) {
     logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
     try {
-      if (req.query.filename) res.setHeader('Content-Disposition', `inline; filename*=UTF-8''${req.query.filename}`)
+      // If client has provided filename, set filename in header to be auto-populated in download prompt.
+      if (req.query.filename) {
+        res.setHeader('Content-Disposition', `inline; filename*=UTF-8''${req.query.filename}`)
+      }
       await new Promise((resolve, reject) => {
         req.app.get('ipfsAPI').catReadableStream(CID)
           .on('data', streamData => { res.write(streamData) })
