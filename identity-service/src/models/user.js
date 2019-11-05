@@ -7,6 +7,10 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
       allowNull: false
     },
+    blockchainUserId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     email: {
       type: DataTypes.STRING,
       allowNull: false,

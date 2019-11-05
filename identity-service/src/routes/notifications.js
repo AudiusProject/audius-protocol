@@ -1,6 +1,11 @@
 const moment = require('moment')
-const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const {
+  handleResponse,
+  successResponse,
+  errorResponseBadRequest
+} = require('../apiHelpers')
 const models = require('../models')
+const authMiddleware = require('../authMiddleware')
 
 const NotificationType = Object.freeze({
   Follow: 'Follow',
@@ -27,7 +32,7 @@ const NotificationType = Object.freeze({
   MilestoneTrackListens: 'MilestoneTrackListens',
   MilestonePlaylistListens: 'MilestonePlaylistListens',
   MilestoneAlbumListens: 'MilestoneAlbumListens',
-  MilestoneFollows: 'MilestoneFollows',
+  MilestoneFollows: 'MilestoneFollows'
 })
 
 const ClientNotificationTypes = new Set([
@@ -235,16 +240,15 @@ const mergeAudiusAnnoucements = (announcements, notifications) => {
  *
  * @param {Array<Notification>} notifications   Notifications return from the db query w/ the actions
  * @param {Array<Announcement>} announcements   Announcements set on the app
- * @param {number} unreadCount                  Total number of unread notifications (Not including annoucements)
  *
  * @return {object} The sorted & formated notificaitons/annoucnements and the total unread count for notifs & announcements
  */
-const formatNotifications = (notifications, announcements, unreadCount) => {
+const formatNotifications = (notifications, announcements) => {
   const userAnnouncements = [...announcements]
   const userNotifications = notifications.map((notification) => {
     const mapResponse = notificationResponseMap[notification.type]
     if (mapResponse) return mapResponse(notification, userAnnouncements)
-  }).filter(Boolean)
+  })
 
   const notifIds = userNotifications.reduce((acc, notif) => {
     acc[notif.id] = true
@@ -255,31 +259,26 @@ const formatNotifications = (notifications, announcements, unreadCount) => {
     .filter(a => !notifIds[a.entityId])
     .map(formatUnreadAnnouncement)
 
-  return {
-    userNotifications: mergeAudiusAnnoucements(unreadAnnouncements, userNotifications),
-    totalUnread: unreadCount + unreadAnnouncements.length
-  }
+  return mergeAudiusAnnoucements(unreadAnnouncements, userNotifications)
 }
 
 module.exports = function (app) {
   /*
    * Fetches the notifications for the specified userId
-   * urlQueryParam: {number} userId       The ID of the user
    * urlQueryParam: {number} limit        Max number of notifications to return, Cannot exceed 100
    * urlQueryParam: {number?} timeOffset  A timestamp reference offset for fetch notification before this date
-   * urlQueryParam: {number} createdDate  The user's created date used to filter announcement before this date
    *
    * TODO: Validate userId
    * NOTE: The `createdDate` param can/should be changed to the user sending their wallet &
    * finding the created date from the users table
   */
-  app.get('/notifications', handleResponse(async (req) => {
-    const userId = parseInt(req.query.userId)
+  app.get('/notifications', authMiddleware, handleResponse(async (req) => {
     const limit = parseInt(req.query.limit)
     const timeOffset = req.query.timeOffset ? moment(req.query.timeOffset) : moment()
-    const createdDate = moment(req.query.userCreatedDate)
-    if (isNaN(userId)) return errorResponseBadRequest('Invalid request body')
-    if (!timeOffset.isValid() || !createdDate.isValid()) {
+    const { userId, createdAt } = req.user
+    const createdDate = moment(createdAt)
+
+    if (!timeOffset.isValid()) {
       return errorResponseBadRequest(`Invalid Date params`)
     }
 
@@ -289,7 +288,7 @@ module.exports = function (app) {
       )
     }
     try {
-      const { rows: notifications, count } = await models.Notification.findAndCountAll({
+      const notifications = await models.Notification.findAll({
         where: {
           userId,
           isHidden: false,
@@ -307,17 +306,29 @@ module.exports = function (app) {
         }],
         limit
       })
+      const unreadCount = await models.Notification.count({
+        where: { userId, isRead: false, isHidden: false },
+        include: [{ model: models.NotificationAction, as: 'actions' }]
+      })
+
+      const readAnnouncementCount = await models.Notification.count({
+        where: { userId, isRead: true, type: NotificationType.Announcement }
+      })
+
       const announcements = app.get('announcements')
-      const announcementsAfterFilter = announcements
-        .filter(a => timeOffset.isAfter(moment(a.datePublished)) && moment(a.datePublished).isAfter(createdDate))
-      const { userNotifications, totalUnread } = formatNotifications(notifications, announcementsAfterFilter, count)
+      const validUserAnnouncements = announcements
+        .filter(a => moment(a.datePublished).isAfter(createdDate))
+      const announcementsAfterFilter = validUserAnnouncements
+        .filter(a => timeOffset.isAfter(moment(a.datePublished)))
+
+      const unreadAnnouncementCount = validUserAnnouncements.length - readAnnouncementCount
+      const userNotifications = formatNotifications(notifications, announcementsAfterFilter)
       return successResponse({
         message: 'success',
         notifications: userNotifications.slice(0, limit),
-        totalUnread
+        totalUnread: unreadAnnouncementCount + unreadCount
       })
     } catch (err) {
-      console.log(err)
       return errorResponseBadRequest({
         message: `[Error] Unable to retrieve notifications for user: ${userId}`
       })
@@ -326,7 +337,6 @@ module.exports = function (app) {
 
   /*
    * Sets a user's notifcation as read or hidden
-   * postBody: {number} userId            The ID of the user
    * postBody: {number?} notificationType The type of the notification to be marked as read (Only used for Announcements)
    * postBody: {number?} notificationID   The id of the notification to be marked as read (Only used for Announcements)
    * postBody: {number} isRead            Identitifies if the notification is to be marked as read
@@ -334,11 +344,11 @@ module.exports = function (app) {
    *
    * TODO: Validate userId
   */
-  app.post('/notifications', handleResponse(async (req, res, next) => {
-    let { userId, notificationId, notificationType, isRead, isHidden } = req.body
-    if (
-      typeof userId !== 'number' ||
-      typeof notificationType !== 'string' ||
+  app.post('/notifications', authMiddleware, handleResponse(async (req, res, next) => {
+    let { notificationId, notificationType, isRead, isHidden } = req.body
+    const userId = req.user.blockchainUserId
+
+    if (typeof notificationType !== 'string' ||
       !ClientNotificationTypes.has(notificationType) ||
       (typeof isRead !== 'boolean' && typeof isHidden !== 'boolean')) {
       return errorResponseBadRequest('Invalid request body')
@@ -378,16 +388,16 @@ module.exports = function (app) {
 
   /*
    * Marks all of a user's notifications as read & inserts rows for announcements
-   * postBody: {number} userId        The ID of the user
    * postBody: {number} isRead        Identitifies if the notification is to be marked as read
-   * postBody: {number} createdDate   The user's created date used to filter announcement before this date
    *
    * TODO: Validate userId
   */
-  app.post('/notifications/all', handleResponse(async (req, res, next) => {
-    let { userId, isRead, userCreatedDate } = req.body
-    const createdDate = moment(userCreatedDate)
-    if (!createdDate.isValid() || typeof userId !== 'number' || typeof isRead !== 'boolean') {
+  app.post('/notifications/all', authMiddleware, handleResponse(async (req, res, next) => {
+    let { isRead } = req.body
+    const { createdAt, userId } = req.user
+
+    const createdDate = moment(createdAt)
+    if (!createdDate.isValid() || typeof userId !== 'number' || userId < 0 || typeof isRead !== 'boolean') {
       return errorResponseBadRequest('Invalid request body')
     }
     try {
@@ -435,38 +445,34 @@ module.exports = function (app) {
 
   /*
    * Updates fields for a user's settings (or creates the settings w/ db defaults if not created)
-   * postBody: {number} userId        The ID of the user
    * postBody: {object} settings      Identitifies if the notification is to be marked as read
    *
    * TODO: Validate userId
   */
-  app.post('/notifications/settings', handleResponse(async (req, res, next) => {
-    let { userId, settings } = req.body
-    if (typeof settings === 'undefined' || typeof userId !== 'number') {
+  app.post('/notifications/settings', authMiddleware, handleResponse(async (req, res, next) => {
+    const { settings } = req.body
+    if (typeof settings === 'undefined') {
       return errorResponseBadRequest('Invalid request body')
     }
+
     try {
       await models.UserNotificationSettings.upsert({
-        userId,
+        userId: req.user.blockchainUserId,
         ...settings
       })
       return successResponse({ message: 'success' })
     } catch (err) {
       return errorResponseBadRequest({
-        message: `[Error] Unable to create/update notification settings for user: ${userId}`
+        message: `[Error] Unable to create/update notification settings for user: ${req.user.blockchainUserId}`
       })
     }
   }))
 
   /*
    * Fetches the settings for a given userId
-   * urlQueryParam: {number} userId        The ID of the user
-   *
-   * TODO: TODO: Validate that the subscriberId is coming from the user w/ their wallet
   */
-  app.get('/notifications/settings', handleResponse(async (req, res, next) => {
-    const userId = parseInt(req.query.userId)
-    if (isNaN(userId)) return errorResponseBadRequest('Invalid request parameters')
+  app.get('/notifications/settings', authMiddleware, handleResponse(async (req, res, next) => {
+    const userId = req.user.blockchainUserId
     try {
       const [settings] = await models.UserNotificationSettings.findOrCreate({
         where: { userId },
@@ -489,18 +495,16 @@ module.exports = function (app) {
 
   /*
    * Sets or removes a user subscription
-   * postBody: {number} subscriberId    The user ID of the subscribing user
    * postBody: {number} userId          The user ID of the subscribed to user
    * postBody: {boolean} isSubscribed   If the user is subscribing or unsubscribing
    *
-   * TODO: Validate that the subscriberId is comoing from the user w/ their wallet
    * TODO: Validate that the userId is a valid userID
   */
-  app.post('/notifications/subscription', handleResponse(async (req, res, next) => {
-    let { subscriberId, userId, isSubscribed } = req.body
-
-    if (typeof isSubscribed !== 'boolean' ||
-      typeof userId !== 'number' ||
+  app.post('/notifications/subscription', authMiddleware, handleResponse(async (req, res, next) => {
+    let { userId, isSubscribed } = req.body
+    const subscriberId = req.user.blockchainUserId
+    console.log({ subscriberId, userId })
+    if (typeof userId !== 'number' ||
       typeof subscriberId !== 'number' ||
       userId === subscriberId
     ) {
@@ -520,20 +524,17 @@ module.exports = function (app) {
 
   /*
    * Returns if a user subscription exists
-   * urlQueryParam: {number} subscriberId    The user ID of the subscribing user
-   * urlQueryParam: {number} userId          The user ID of the subscribed to user
+   * urlQueryParam: {number} userId       The user ID of the subscribed to user
    *
    * TODO: Validate that the subscriberId is comoing from the user w/ their wallet
   */
-  app.get('/notifications/subscription', handleResponse(async (req, res, next) => {
-    const subscriberId = parseInt(req.query.subscriberId)
+  app.get('/notifications/subscription', authMiddleware, handleResponse(async (req, res, next) => {
     const userId = parseInt(req.query.userId)
+    console.log({ subscriberId: req.user.blockchainUserId, userId })
 
-    if (isNaN(subscriberId) || isNaN(userId)) {
-      return errorResponseBadRequest('Invalid request parameters')
-    }
+    if (isNaN(userId)) return errorResponseBadRequest('Invalid request parameters')
     const subscription = await models.Subscription.findOne({
-      where: { subscriberId, userId }
+      where: { subscriberId: req.user.blockchainUserId, userId }
     })
     return successResponse({ isSubscribed: !!subscription })
   }))
