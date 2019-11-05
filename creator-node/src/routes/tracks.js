@@ -98,7 +98,7 @@ module.exports = function (app) {
     }
 
     req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
-    return successResponse({ 'track_segments': trackSegments })
+    return successResponse({ 'track_segments': trackSegments, 'source_file': req.fileName })
   }))
 
   /**
@@ -108,50 +108,59 @@ module.exports = function (app) {
   app.post('/tracks/metadata', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     // TODO - input validation
     const metadataJSON = req.body.metadata
+    const trackId = metadataJSON.track_id
+    let sourceFile = req.body.sourceFile
 
     if (!metadataJSON.owner_id || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
       return errorResponseBadRequest('Metadata object must include owner_id and track_segments array')
+    }
+
+    if (!sourceFile && !trackId) {
+      return errorResponseBadRequest('A sourceFile must be provided or the metadata object must include track_id')
     }
 
     /**
      * Ensure each segment multihash in metadata obj has an associated file & is not blacklisted, else error.
      * Retrieve sourceFile from file DB entries for use in master file transcoding.
      */
-    let sourceFile = null
     try {
       await Promise.all(metadataJSON.track_segments.map(async segment => {
         if (await req.app.get('blacklistManager').CIDIsInBlacklist(segment.multihash)) {
           throw new Error(`Segment CID ${segment.multihash} has been blacklisted by this node.`)
         }
-
-        const file = await models.File.findOne({ where: {
-          multihash: segment.multihash,
-          cnodeUserUUID: req.session.cnodeUserUUID,
-          trackUUID: null
-        } })
-        if (!file) {
-          throw new Error(`No file found for provided segment CID: ${segment.multihash}.`)
-        }
-        if (sourceFile && file.sourceFile !== sourceFile) {
-          throw new Error(`All segments must map to same sourceFile.`)
-        }
-        sourceFile = file.sourceFile
       }))
     } catch (e) {
-      if (e.message.indexOf('blacklisted') >= 0) {
-        return errorResponseForbidden(e.message)
-      } else if (e.message.indexOf('No file found') >= 0 || e.message.indexOf('sourceFile') >= 0) {
-        return errorResponseBadRequest(e.message)
-      } else {
-        return errorResponseServerError(e.message)
-      }
+      return errorResponseForbidden(e.message)
     }
+
+    // Find the sourceFile associated with the track if it wasn't provided
+    if (!sourceFile) {
+      const { trackUUID } = await models.Track.findOne({
+        attributes: ['trackUUID'],
+        where: {
+          blockchainId: trackId
+        }
+      })
+      const firstSegment = metadataJSON.track_segments[0]
+      if (!firstSegment) return errorResponseServerError('No segment found for track')
+
+      const file = await models.File.findOne({
+        attributes: ['sourceFile'],
+        where: {
+          multihash: firstSegment.multihash,
+          cnodeUserUUID: req.session.cnodeUserUUID,
+          trackUUID
+        }
+      })
+      sourceFile = file.sourceFile
+    }
+
     if (!sourceFile) {
       return errorResponseBadRequest(`Invalid track_segments input - no matching source file found for multihashes.`)
     }
 
     // If track marked as downloadable, kick off transcoding process before returning (don't block on this)
-    if (metadataJSON.download && metadataJSON.download.is_downloadable) {
+    if (metadataJSON.download && metadataJSON.download.is_downloadable && !metadataJSON.download.cid) {
       createDownloadableCopy(req, sourceFile)
     }
 

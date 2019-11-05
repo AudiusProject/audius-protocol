@@ -17,7 +17,7 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('tracks', sa.Column('is_downloadable', postgresql.JSONB(astext_type=sa.Text()), nullable=True))
+    op.add_column('tracks', sa.Column('download', postgresql.JSONB(astext_type=sa.Text()), nullable=True))
 
 def downgrade():
-    op.drop_column('tracks', 'is_downloadable')
+    op.drop_column('tracks', 'download')

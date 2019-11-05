@@ -22,18 +22,16 @@ class CreatorNode {
    * @param {string} endpoints creator node endpoints
    * @param {number} trackId
    */
-  static async checkIfDownloadAvailable (trackId, endpoints) {
-    for await (const endpoint of endpoints.split(',')) {
-      try {
-        const res = await axios({
-          baseURL: endpoint,
-          url: `tracks/download_status/${trackId}`
-        })
-        if (res.cid) return res.cid
-      } catch (e) {
-        console.log(`Unable to download ${trackId} from ${endpoint}`)
-        // continue
+  static async checkIfDownloadAvailable (endpoints, trackId) {
+    const primary = CreatorNode.getPrimary(endpoints)
+    if (primary) {
+      const req = {
+        baseURL: primary,
+        url: `/tracks/download_status/${trackId}`,
+        method: 'get'
       }
+      const res = await axios(req)
+      if (res.data.cid) return res.data.cid
     }
     // Download is not available, clients should display "processing"
     return null
@@ -174,22 +172,27 @@ class CreatorNode {
 
     const [trackContentResp, coverArtResp] = await Promise.all(uploadPromises)
     metadata.track_segments = trackContentResp.track_segments
+    const sourceFile = trackContentResp.source_file
     if (coverArtResp) metadata.cover_art_sizes = coverArtResp.dirCID
     // Creates new track entity on creator node, making track's metadata available on IPFS
     // @returns {Object} {cid: cid of track metadata on IPFS, id: id of track to be used with associate function}
-    return this.uploadTrackMetadata(metadata)
+    return this.uploadTrackMetadata(metadata, sourceFile)
   }
 
   /**
    * Uploads track metadata to a creator node
+   * The metadata object must include a `track_id` field or a
+   * source file must be provided (returned from uploading track content).
    * @param {object} metadata
+   * @param {string?} sourceFile
    */
-  async uploadTrackMetadata (metadata) {
+  async uploadTrackMetadata (metadata, sourceFile) {
     return this._makeRequest({
       url: '/tracks/metadata',
       method: 'post',
       data: {
-        metadata
+        metadata,
+        sourceFile
       }
     }, true)
   }

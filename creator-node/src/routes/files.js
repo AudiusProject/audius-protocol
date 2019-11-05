@@ -168,7 +168,7 @@ module.exports = function (app) {
     try {
       // If client has provided filename, set filename in header to be auto-populated in download prompt.
       if (req.query.filename) {
-        res.setHeader('Content-Disposition', `inline; filename*=UTF-8''${req.query.filename}`)
+        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${req.query.filename}`)
       }
       await new Promise((resolve, reject) => {
         req.app.get('ipfsAPI').catReadableStream(CID)

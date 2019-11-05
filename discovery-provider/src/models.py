@@ -141,7 +141,7 @@ class Track(Base):
     iswc = Column(String)
     track_segments = Column(postgresql.JSONB, nullable=False)
     metadata_multihash = Column(String)
-    is_downloadable = Column(postgresql.JSONB, nullable=True)
+    download = Column(postgresql.JSONB, nullable=True)
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
 
@@ -173,7 +173,7 @@ class Track(Base):
             iswc={self.iswc},\
             track_segments={self.track_segments},\
             metadata_multihash={self.metadata_multihash},\
-            is_downloadable={self.is_downloadable},\
+            download={self.download},\
             updated_at={self.updated_at},\
             created_at={self.created_at}\
         )>"

@@ -251,7 +251,6 @@ def populate_track_record_metadata(track_record, track_metadata):
     track_record.iswc = track_metadata["iswc"]
     track_record.track_segments = track_metadata["track_segments"]
 
-    logger.info(f"SID track metadata {track_metadata}")
     if "download" in track_metadata:
         track_record.download = {
             "is_downloadable": track_metadata["download"].get("is_downloadable") == True,

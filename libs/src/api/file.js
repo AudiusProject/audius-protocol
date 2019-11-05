@@ -7,11 +7,14 @@ const publicGateways = [
   'https://cloudflare-ipfs.com/ipfs/'
 ]
 
-const downloadURL = (url) => {
+const downloadURL = (url, filename) => {
   if (document) {
     const link = document.createElement('a')
     link.href = url
+    link.target = '_blank'
+    link.download = filename
     link.click()
+    return
   }
   throw new Error('No body document found')
 }
@@ -47,14 +50,17 @@ class File extends Base {
    * returning the response content.
    * @param {string} cid IPFS content identifier
    * @param {Array<string>} creatorNodeGateways fallback ipfs gateways from creator nodes
+   * @param {string?} filename optional filename for the download
+   * @param {boolean?} usePublicGateways
    */
-  async downloadCID (cid, creatorNodeGateways) {
-    const gateways = publicGateways
-      .concat(creatorNodeGateways)
-    const urls = gateways.map(gateway => `${gateway}${cid}`)
+  async downloadCID (cid, creatorNodeGateways, filename, usePublicGateways = false) {
+    const gateways = usePublicGateways ? publicGateways.concat(creatorNodeGateways) : creatorNodeGateways
+    const urls = gateways.map(gateway => `${gateway}${cid}?filename=${filename}`)
 
     try {
-      return Utils.raceRequests(urls, downloadURL, {
+      // Races requests and fires the download callback for the first endpoint to
+      // respond with a valid response to a `head` request.
+      return Utils.raceRequests(urls, (url) => downloadURL(url, filename), {
         method: 'head'
       })
     } catch (e) {
