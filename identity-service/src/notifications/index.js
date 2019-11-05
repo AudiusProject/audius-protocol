@@ -199,6 +199,7 @@ class NotificationProcessor {
 
     console.log('Tracks reposted: ' + tracksReposted)
     let albumsReposted = Object.keys(repostCounts.albums)
+    
     console.log('Albums reposted: ' + albumsReposted)
     let playlistsReposted = Object.keys(repostCounts.playlists)
     console.log('Playlists reposted: ' + playlistsReposted)
