@@ -275,7 +275,8 @@ module.exports = function (app) {
   app.get('/notifications', authMiddleware, handleResponse(async (req) => {
     const limit = parseInt(req.query.limit)
     const timeOffset = req.query.timeOffset ? moment(req.query.timeOffset) : moment()
-    const { userId, createdAt } = req.user
+    console.log(req.user)
+    const { blockchainUserId: userId, createdAt } = req.user
     const createdDate = moment(createdAt)
 
     if (!timeOffset.isValid()) {
@@ -394,7 +395,7 @@ module.exports = function (app) {
   */
   app.post('/notifications/all', authMiddleware, handleResponse(async (req, res, next) => {
     let { isRead } = req.body
-    const { createdAt, userId } = req.user
+    const { createdAt, blockchainUserId: userId } = req.user
 
     const createdDate = moment(createdAt)
     if (!createdDate.isValid() || typeof userId !== 'number' || userId < 0 || typeof isRead !== 'boolean') {
