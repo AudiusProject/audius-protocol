@@ -211,7 +211,7 @@ class NotificationProcessor {
           await this.processRepostMilestone(
             albumOwnerId,
             repostedAlbumId,
-            actionEntityTypes.Track,
+            actionEntityTypes.Album,
             milestoneValue,
             blocknumber,
             timestamp)
