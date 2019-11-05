@@ -20,7 +20,11 @@ module.exports = (sequelize, DataTypes) => {
           'CreateTrack',
           'CreatePlaylist',
           'CreateAlbum',
-          'Announcement'
+          'Announcement',
+          'MilestoneListen',
+          'MilestoneRepost',
+          'MilestoneFavorite',
+          'MilestoneFollow'
         ]
       }),
       allowNull: false
