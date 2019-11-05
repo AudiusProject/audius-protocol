@@ -177,6 +177,7 @@ class NotificationProcessor {
     console.log(blocknumber)
 
     let tracksReposted = Object.keys(repostCounts.tracks)
+    console.log('Tracks reposted: ' + tracksReposted)
     for (var repostedTrackId of tracksReposted) {
       let trackOwnerId = owners.tracks[repostedTrackId]
       let trackRepostCount = repostCounts.tracks[repostedTrackId]
@@ -197,12 +198,49 @@ class NotificationProcessor {
       }
     }
 
-    console.log('Tracks reposted: ' + tracksReposted)
     let albumsReposted = Object.keys(repostCounts.albums)
-    
     console.log('Albums reposted: ' + albumsReposted)
+    for (var repostedAlbumId of albumsReposted) {
+      let albumOwnerId = owners.albums[repostedAlbumId]
+      let albumRepostCount = repostCounts.albums[repostedAlbumId]
+      console.log(`User ${albumOwnerId}, album ${repostedAlbumId}, repost count ${albumRepostCount}`)
+      for (var j = repostMilestoneList.length; j >= 0; j--) {
+        let milestoneValue = repostMilestoneList[j]
+        if (albumRepostCount >= milestoneValue) {
+          console.log(`album ${repostedAlbumId}, repost count ${albumRepostCount} has met milestone ${milestoneValue}`)
+          await this.processRepostMilestone(
+            albumOwnerId,
+            repostedAlbumId,
+            actionEntityTypes.Track,
+            milestoneValue,
+            blocknumber,
+            timestamp)
+          break
+        }
+      }
+    }
+
     let playlistsReposted = Object.keys(repostCounts.playlists)
     console.log('Playlists reposted: ' + playlistsReposted)
+    for (var repostedPlaylistId of playlistsReposted) {
+      let playlistOwnerId = owners.albums[repostedPlaylistId]
+      let playlistRepostCount = repostCounts.playlists[repostedPlaylistId]
+      console.log(`User ${playlistOwnerId}, playlist ${repostedPlaylistId}, repost count ${playlistRepostCount}`)
+      for (var k = repostMilestoneList.length; k >= 0; k--) {
+        let milestoneValue = repostMilestoneList[k]
+        if (playlistRepostCount >= milestoneValue) {
+          console.log(`Playlist ${repostedPlaylistId}, repost count ${playlistRepostCount} has met milestone ${milestoneValue}`)
+          await this.processRepostMilestone(
+            playlistOwnerId,
+            repostedPlaylistId,
+            actionEntityTypes.Playlist,
+            milestoneValue,
+            blocknumber,
+            timestamp)
+          break
+        }
+      }
+    }
   }
 
   async processRepostMilestone (userId, entityId, entityType, milestoneValue, blocknumber, timestamp) {
@@ -256,12 +294,13 @@ class NotificationProcessor {
     let date = new Date()
     console.log(`indexNotifications job - ${date}`)
 
-    minBlock = 0
+    // minBlock = 0
     let reqObj = {
       method: 'get',
       url: `${notifDiscProv}/notifications?min_block_number=${minBlock}`,
       timeout: 500 // TODO: change for prod
     }
+    console.log(reqObj)
     // TODO: investigate why this has two .data, after axios switch
     let body = (await axios(reqObj)).data
     let metadata = body.data.info

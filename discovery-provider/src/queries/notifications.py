@@ -69,7 +69,7 @@ def notifications():
         current_block_query_results = current_block_query.all()
         current_block = current_block_query_results[0]
         current_max_block_num = current_block.number
-        if (current_max_block_num < max_block_number):
+        if current_max_block_num < max_block_number:
             max_block_number = current_max_block_num
 
     notification_metadata = {
@@ -87,7 +87,6 @@ def notifications():
         const.playlists: {}
     }
 
-    logger.error(owner_info)
     # List of notifications generated from current protocol state
     notifications = []
     with db.scoped_session() as session:
@@ -190,20 +189,27 @@ def notifications():
             favorite_notifications.append(favorite_notif)
         notifications.extend(favorite_notifications)
 
-        track_favorite_counts = \
-                get_save_counts(session, False, False, favorited_track_ids, [SaveType.track], max_block_number)
-        track_favorite_dict = \
-                {track_id: fave_count for (track_id, fave_count) in track_favorite_counts}
+        track_favorite_dict = {}
+        album_favorite_dict = {}
+        playlist_favorite_dict = {}
 
-        album_favorite_counts = \
-                get_save_counts(session, False, False, favorited_album_ids, [SaveType.album], max_block_number)
-        album_favorite_dict = \
-                {album_id: fave_count for (album_id, fave_count) in album_favorite_counts}
+        if favorited_track_ids:
+            track_favorite_counts = \
+                    get_save_counts(session, False, False, favorited_track_ids, [SaveType.track], max_block_number)
+            track_favorite_dict = \
+                    {track_id: fave_count for (track_id, fave_count) in track_favorite_counts}
 
-        playlist_favorite_counts = \
-                get_save_counts(session, False, False, favorited_playlist_ids, [SaveType.playlist], max_block_number)
-        playlist_favorite_dict = \
-                {playlist_id: fave_count for (playlist_id, fave_count) in playlist_favorite_counts}
+        if favorited_album_ids:
+            album_favorite_counts = \
+                    get_save_counts(session, False, False, favorited_album_ids, [SaveType.album], max_block_number)
+            album_favorite_dict = \
+                    {album_id: fave_count for (album_id, fave_count) in album_favorite_counts}
+
+        if favorited_playlist_ids:
+            playlist_favorite_counts = \
+                    get_save_counts(session, False, False, favorited_playlist_ids, [SaveType.playlist], max_block_number)
+            playlist_favorite_dict = \
+                    {playlist_id: fave_count for (playlist_id, fave_count) in playlist_favorite_counts}
 
         milestone_info[const.notification_favorite_counts] = {}
         milestone_info[const.notification_favorite_counts][const.tracks] = track_favorite_dict
@@ -273,31 +279,50 @@ def notifications():
         # Append repost notifications
         notifications.extend(repost_notifications)
 
+        track_repost_count_dict = {}
+        album_repost_count_dict = {}
+        playlist_repost_count_dict = {}
+
         # Aggregate repost counts for relevant fields
         # Used to notify users of entity-specific milestones
-        track_repost_counts = \
-                get_repost_counts(session, False, False, reposted_track_ids, [RepostType.track], max_block_number)
-        track_repost_count_dict = \
-                {track_id: repost_count \
-                for (track_id, repost_count) in track_repost_counts}
+        if reposted_track_ids:
+            track_repost_counts = \
+                    get_repost_counts(
+                        session,
+                        False,
+                        False,
+                        reposted_track_ids,
+                        [RepostType.track],
+                        max_block_number)
+            track_repost_count_dict = \
+                    {track_id: repost_count \
+                    for (track_id, repost_count) in track_repost_counts}
 
-        album_repost_counts = \
-                get_repost_counts(session, False, False, reposted_album_ids, [RepostType.album], max_block_number)
-        album_repost_count_dict = \
-                {album_id: repost_count \
-                for (album_id, repost_count) in album_repost_counts}
+        if reposted_album_ids:
+            album_repost_counts = \
+                    get_repost_counts(
+                        session,
+                        False,
+                        False,
+                        reposted_album_ids,
+                        [RepostType.album],
+                        max_block_number)
+            album_repost_count_dict = \
+                    {album_id: repost_count \
+                    for (album_id, repost_count) in album_repost_counts}
 
-        playlist_repost_counts = \
-                get_repost_counts(
-                    session,
-                    False,
-                    True,
-                    reposted_playlist_ids,
-                    [RepostType.playlist],
-                    max_block_number)
-        playlist_repost_count_dict = \
-                {playlist_id: repost_count \
-                for (playlist_id, repost_count) in playlist_repost_counts}
+        if reposted_playlist_ids:
+            playlist_repost_counts = \
+                    get_repost_counts(
+                        session,
+                        False,
+                        True,
+                        reposted_playlist_ids,
+                        [RepostType.playlist],
+                        max_block_number)
+            playlist_repost_count_dict = \
+                    {playlist_id: repost_count \
+                    for (playlist_id, repost_count) in playlist_repost_counts}
 
         milestone_info[const.notification_repost_counts] = {}
         milestone_info[const.notification_repost_counts][const.tracks] = track_repost_count_dict
@@ -448,33 +473,4 @@ def milestones_followers():
                 {user_id: follower_count for (user_id, follower_count) in follower_counts}
 
     return api_helpers.success_response(follower_count_dict)
-
-'''
-@bp.route("/reposts/tracks", methods=("GET",))
-def track_repost_counts():
-    db = get_db()
-    if "track_id" not in request.args:
-        return api_helpers.error_response({'msg': 'Please provider track_id'}, 500)
-    try:
-        track_id_str_list = request.args.getlist("track_id")
-        track_ids = []
-        track_ids = [int(y) for y in track_id_str_list]
-    except ValueError as e:
-        logger.error("Invalid value found in track id list", esc_info=True)
-        return api_helpers.error_response({'msg': e}, 500)
-
-    with db.scoped_session() as session:
-        track_repost_counts = get_repost_counts(session, False, True, track_ids, [RepostType.track])
-        logger.error(track_repost_counts)
-        track_repost_count_dict = \
-                {track_id: repost_count for (track_id, repost_count, repost_type) in track_repost_counts}
-    return api_helpers.success_response(track_repost_count_dict)
-'''
-
-@bp.route("/milestones/favorites", methods=("GET",))
-def milestones_favorites():
-    db = get_db()
-    if "track_id" not in request.args and "playlist_id" not in request.args:
-        return api_helpers.error_response({'msg': 'Please provider either track_id or playlist_id'}, 500)
-    return api_helpers.success_response({})
 
