@@ -23,12 +23,8 @@ const NotificationType = Object.freeze({
   Announcement: 'Announcement',
   UserSubscription: 'UserSubscription',
   Milestone: 'Milestone',
-  MilestoneTrackRepost: 'MilestoneTrackRepost',
-  MilestonePlaylistRepost: 'MilestonePlaylistRepost',
-  MilestoneAlbumRepost: 'MilestoneAlbumRepost',
-  MilestoneTrackFavorite: 'MilestoneTrackFavorite',
-  MilestonePlaylistFavorite: 'MilestonePlaylistFavorite',
-  MilestoneAlbumFavorite: 'MilestoneAlbumFavorite',
+  MilestoneRepost: 'MilestoneRepost',
+  MilestoneFavorite: 'MilestoneFavorite',
   MilestoneTrackListens: 'MilestoneTrackListens',
   MilestonePlaylistListens: 'MilestonePlaylistListens',
   MilestoneAlbumListens: 'MilestoneAlbumListens',
@@ -54,6 +50,7 @@ const Entity = Object.freeze({
 const Achievement = Object.freeze({
   Listens: 'Listens',
   Reposts: 'Reposts',
+  Favorite: 'Favorites',
   Trending: 'Trending',
   Plays: 'Plays',
   Followers: 'Followers'
@@ -134,29 +131,11 @@ const formatUnreadAnnouncement = (announcement) => {
 }
 
 const mapMilestone = {
-  [NotificationType.MilestoneTrackRepost]: {
-    achievement: Achievement.Reposts,
-    entityType: Entity.Track
+  [NotificationType.MilestoneRepost]: {
+    achievement: Achievement.Reposts
   },
-  [NotificationType.MilestonePlaylistRepost]: {
-    achievement: Achievement.Reposts,
-    entityType: Entity.Playlist
-  },
-  [NotificationType.MilestoneAlbumRepost]: {
-    achievement: Achievement.Reposts,
-    entityType: Entity.Album
-  },
-  [NotificationType.MilestoneTrackFavorite]: {
-    achievement: Achievement.Favorite,
-    entityType: Entity.Track
-  },
-  [NotificationType.MilestonePlaylistFavorite]: {
-    achievement: Achievement.Favorite,
-    entityType: Entity.Playlist
-  },
-  [NotificationType.MilestoneAlbumFavorite]: {
-    achievement: Achievement.Favorite,
-    entityType: Entity.Album
+  [NotificationType.MilestoneFavorite]: {
+    achievement: Achievement.Favorite
   },
   [NotificationType.MilestoneTrackListens]: {
     achievement: Achievement.Listens,
@@ -181,6 +160,7 @@ const formatMilestone = (notification) => {
     ...getCommonNotificationsFields(notification),
     ...mapMilestone[notification.type],
     type: NotificationType.Milestone,
+    entityType: notification.actions[0].actionEntityType,
     entityId: notification.entityId,
     value: notification.actions[0].actionEntityId
   }
@@ -205,12 +185,8 @@ const notificationResponseMap = {
   [NotificationType.CreateAlbum]: formatUserSubscriptionCollection(Entity.Album),
   [NotificationType.CreatePlaylist]: formatUserSubscriptionCollection(Entity.Playlist),
   [NotificationType.Announcement]: formatAnnouncement,
-  [NotificationType.MilestoneTrackRepost]: formatMilestone,
-  [NotificationType.MilestonePlaylistRepost]: formatMilestone,
-  [NotificationType.MilestoneAlbumRepost]: formatMilestone,
-  [NotificationType.MilestoneTrackFavorite]: formatMilestone,
-  [NotificationType.MilestonePlaylistFavorite]: formatMilestone,
-  [NotificationType.MilestoneAlbumFavorite]: formatMilestone,
+  [NotificationType.MilestoneRepost]: formatMilestone,
+  [NotificationType.MilestoneFavorite]: formatMilestone,
   [NotificationType.MilestoneTrackListens]: formatMilestone,
   [NotificationType.MilestonePlaylistListens]: formatMilestone,
   [NotificationType.MilestoneAlbumListens]: formatMilestone,
@@ -248,7 +224,7 @@ const formatNotifications = (notifications, announcements) => {
   const userNotifications = notifications.map((notification) => {
     const mapResponse = notificationResponseMap[notification.type]
     if (mapResponse) return mapResponse(notification, userAnnouncements)
-  })
+  }).filter(Boolean)
 
   const notifIds = userNotifications.reduce((acc, notif) => {
     acc[notif.id] = true
@@ -330,6 +306,7 @@ module.exports = function (app) {
         totalUnread: unreadAnnouncementCount + unreadCount
       })
     } catch (err) {
+      console.log(err)
       return errorResponseBadRequest({
         message: `[Error] Unable to retrieve notifications for user: ${userId}`
       })
