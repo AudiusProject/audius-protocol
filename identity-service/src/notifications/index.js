@@ -24,7 +24,8 @@ const notificationTypes = {
     playlist: 'CreatePlaylist'
   },
   MilestoneFollow: 'MilestoneFollow',
-  MilestoneRepost: 'MilestoneRepost'
+  MilestoneRepost: 'MilestoneRepost',
+  MilestoneFavorite: 'MilestoneFavorite'
 }
 
 const actionEntityTypes = {
@@ -42,6 +43,9 @@ const followerMilestoneList = [1, 2, 4, 6, 8, 10]
 
 // Repost milestone list shared across tracks/albums/playlists
 const repostMilestoneList = [1, 2, 4, 8]
+
+// Favorite milestone list shared across tracks/albums/playlists
+const favoriteMilestoneList = [1, 2, 4, 8]
 
 let notifDiscProv = config.get('notificationDiscoveryProvider')
 
@@ -113,6 +117,7 @@ class NotificationProcessor {
   }
 
   async indexMilestones (milestones, owners, metadata) {
+    console.log('---------------')
     console.log('INDEXMILESTONES')
     console.log(milestones)
     console.log(owners)
@@ -166,8 +171,12 @@ class NotificationProcessor {
         }
       }
     }
+
     // Index repost milestones
     await this.updateRepostMilestones(milestones.repost_counts, owners, blocknumber, timestamp)
+
+    // Index favorite milestones
+    await this.updateFavoriteMilestones(milestones.favorite_counts, owners, blocknumber, timestamp)
   }
 
   async updateRepostMilestones (repostCounts, owners, blocknumber, timestamp) {
@@ -177,6 +186,9 @@ class NotificationProcessor {
     console.log(blocknumber)
 
     let tracksReposted = Object.keys(repostCounts.tracks)
+    let albumsReposted = Object.keys(repostCounts.albums)
+    let playlistsReposted = Object.keys(repostCounts.playlists)
+
     console.log('Tracks reposted: ' + tracksReposted)
     for (var repostedTrackId of tracksReposted) {
       let trackOwnerId = owners.tracks[repostedTrackId]
@@ -198,7 +210,6 @@ class NotificationProcessor {
       }
     }
 
-    let albumsReposted = Object.keys(repostCounts.albums)
     console.log('Albums reposted: ' + albumsReposted)
     for (var repostedAlbumId of albumsReposted) {
       let albumOwnerId = owners.albums[repostedAlbumId]
@@ -220,7 +231,6 @@ class NotificationProcessor {
       }
     }
 
-    let playlistsReposted = Object.keys(repostCounts.playlists)
     console.log('Playlists reposted: ' + playlistsReposted)
     for (var repostedPlaylistId of playlistsReposted) {
       let playlistOwnerId = owners.albums[repostedPlaylistId]
@@ -241,6 +251,85 @@ class NotificationProcessor {
         }
       }
     }
+  }
+
+  async updateFavoriteMilestones (favoriteCounts, owners, blocknumber, timestamp) {
+    console.log('updateFavoriteMilestones')
+    console.log(favoriteCounts)
+    let tracksFavorited = Object.keys(favoriteCounts.tracks)
+    console.log('Tracks favorited: ' + tracksFavorited)
+    for (var favoritedTrackId of tracksFavorited) {
+      let trackOwnerId = owners.tracks[favoritedTrackId]
+      let trackFavoriteCount = favoriteCounts.tracks[favoritedTrackId]
+      console.log(`User ${trackOwnerId}, track ${favoritedTrackId}, fave count ${trackFavoriteCount}`)
+      for (var i = favoriteMilestoneList.length; i >= 0; i--) {
+        let milestoneValue = favoriteMilestoneList[i]
+        if (trackFavoriteCount >= milestoneValue) {
+          console.log(`Track ${favoritedTrackId}, favorite count ${trackFavoriteCount} has met milestone ${milestoneValue}`)
+          await this.processFavoriteMilestone(
+            trackOwnerId,
+            favoritedTrackId,
+            actionEntityTypes.Track,
+            milestoneValue,
+            blocknumber,
+            timestamp)
+          break
+        }
+      }
+    }
+
+    let albumsFavorited = Object.keys(favoriteCounts.albums)
+    for (var favoritedAlbumId of albumsFavorited) {
+      let albumOwnerId = owners.albums[favoritedAlbumId]
+      let albumFavoriteCount = favoriteCounts.albums[favoritedAlbumId]
+      console.log(`User ${albumOwnerId}, album ${favoritedAlbumId}, fave count ${albumFavoriteCount}`)
+      for (var j = favoriteMilestoneList.length; j >= 0; j--) {
+        let milestoneValue = favoriteMilestoneList[j]
+        if (albumFavoriteCount >= milestoneValue) {
+          console.log(`Album ${favoritedAlbumId}, favorite count ${albumFavoriteCount} has met milestone ${milestoneValue}`)
+          await this.processFavoriteMilestone(
+            albumOwnerId,
+            favoritedAlbumId,
+            actionEntityTypes.Album,
+            milestoneValue,
+            blocknumber,
+            timestamp)
+          break
+        }
+      }
+    }
+
+    let playlistsFavorited = Object.keys(favoriteCounts.playlists)
+    for (var favoritedPlaylistId of playlistsFavorited) {
+      let playlistOwnerId = owners.playlists[favoritedPlaylistId]
+      let playlistFavoriteCount = favoriteCounts.playlists[favoritedPlaylistId]
+      console.log(`User ${playlistOwnerId}, playlist ${favoritedPlaylistId}, fave count ${playlistFavoriteCount}`)
+      for (var k = favoriteMilestoneList.length; k >= 0; k--) {
+        let milestoneValue = favoriteMilestoneList[k]
+        if (playlistFavoriteCount >= milestoneValue) {
+          console.log(`Album ${favoritedAlbumId}, favorite count ${playlistFavoriteCount} has met milestone ${milestoneValue}`)
+          await this.processFavoriteMilestone(
+            playlistOwnerId,
+            favoritedPlaylistId,
+            actionEntityTypes.Playlist,
+            milestoneValue,
+            blocknumber,
+            timestamp)
+          break
+        }
+      }
+    }
+  }
+
+  async processFavoriteMilestone (userId, entityId, entityType, milestoneValue, blocknumber, timestamp) {
+    await this.processMilestone(
+      notificationTypes.MilestoneFavorite,
+      userId,
+      entityId,
+      entityType,
+      milestoneValue,
+      blocknumber,
+      timestamp)
   }
 
   async processRepostMilestone (userId, entityId, entityType, milestoneValue, blocknumber, timestamp) {
