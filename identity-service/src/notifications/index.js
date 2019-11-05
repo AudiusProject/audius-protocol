@@ -185,38 +185,13 @@ class NotificationProcessor {
         let milestoneValue = repostMilestoneList[i]
         if (trackRepostCount >= milestoneValue) {
           console.log(`Track ${repostedTrackId}, repost count ${trackRepostCount} has met milestone ${milestoneValue}`)
-          let existingRepostMilestoneQuery = await models.Notification.findAll({
-            where: {
-              userId: trackOwnerId,
-              type: notificationTypes.MilestoneRepost,
-              entityId: repostedTrackId
-            },
-            include: [{
-              model: models.NotificationAction,
-              as: 'actions',
-              where: {
-                actionEntityType: actionEntityTypes.Track,
-                actionEntityId: milestoneValue
-              }
-            }]
-          })
-          if (existingRepostMilestoneQuery.length === 0) {
-            let createMilestoneTx = await models.Notification.create({
-              userId: trackOwnerId,
-              type: notificationTypes.MilestoneRepost,
-              entityId: repostedTrackId,
-              blocknumber,
-              timestamp
-            })
-            let notificationId = createMilestoneTx.id
-            let notifActionCreateTx = await models.NotificationAction.findOrCreate({
-              where: {
-                notificationId,
-                actionEntityType: actionEntityTypes.Track,
-                actionEntityId: milestoneValue
-              }
-            })
-          }
+          await this.processRepostMilestone(
+            trackOwnerId,
+            repostedTrackId,
+            actionEntityTypes.Track,
+            milestoneValue,
+            blocknumber,
+            timestamp)
           break
         }
       }
@@ -227,6 +202,53 @@ class NotificationProcessor {
     console.log('Albums reposted: ' + albumsReposted)
     let playlistsReposted = Object.keys(repostCounts.playlists)
     console.log('Playlists reposted: ' + playlistsReposted)
+  }
+
+  async processRepostMilestone (userId, entityId, entityType, milestoneValue, blocknumber, timestamp) {
+    await this.processMilestone(
+      notificationTypes.MilestoneRepost,
+      userId,
+      entityId,
+      entityType,
+      milestoneValue,
+      blocknumber,
+      timestamp)
+  }
+
+  async processMilestone (milestoneType, userId, entityId, entityType, milestoneValue, blocknumber, timestamp) {
+    let existingRepostMilestoneQuery = await models.Notification.findAll({
+      where: {
+        userId: userId,
+        type: milestoneType,
+        entityId: entityId
+      },
+      include: [{
+        model: models.NotificationAction,
+        as: 'actions',
+        where: {
+          actionEntityType: entityType,
+          actionEntityId: milestoneValue
+        }
+      }]
+    })
+
+    if (existingRepostMilestoneQuery.length === 0) {
+      let createMilestoneTx = await models.Notification.create({
+        userId: userId,
+        type: milestoneType,
+        entityId: entityId,
+        blocknumber,
+        timestamp
+      })
+      let notificationId = createMilestoneTx.id
+      let notifActionCreateTx = await models.NotificationAction.findOrCreate({
+        where: {
+          notificationId,
+          actionEntityType: entityType,
+          actionEntityId: milestoneValue
+        }
+      })
+    }
   }
 
   async indexNotifications (minBlock) {
