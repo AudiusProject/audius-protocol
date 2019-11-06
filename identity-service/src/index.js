@@ -9,7 +9,7 @@ const App = require('./app')
 const start = async () => {
   const port = config.get('port')
   const app = new App(port)
-  await app.init()
+  const { server } = await app.init()
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal, error) => {
@@ -18,7 +18,7 @@ const start = async () => {
     // use the bunyan CLI.
     logger.info('Shutting down db and express app...')
     sequelize.close()
-    app.express.close()
+    server.close()
   })
 }
 
