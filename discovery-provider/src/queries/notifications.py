@@ -178,7 +178,7 @@ def notifications():
                 owner_info[const.albums][save_item_id] = owner_id
 
             elif save_type == SaveType.playlist:
-                owner_id = get_owner_id(session, 'album', save_item_id)
+                owner_id = get_owner_id(session, 'playlist', save_item_id)
                 if not owner_id:
                     continue
                 metadata[const.notification_entity_owner_id] = owner_id
@@ -316,7 +316,7 @@ def notifications():
                     get_repost_counts(
                         session,
                         False,
-                        True,
+                        False,
                         reposted_playlist_ids,
                         [RepostType.playlist],
                         max_block_number)
