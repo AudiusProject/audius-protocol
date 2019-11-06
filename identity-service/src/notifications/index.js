@@ -408,6 +408,13 @@ class NotificationProcessor {
               notificationId: milestoneToDelete.id
             }
           })
+          console.log(destroyTx)
+          destroyTx = await models.Notification.destroy({
+            where: {
+              id: milestoneToDelete.id
+            }
+          })
+          console.log(destroyTx)
         }
       }
     }
