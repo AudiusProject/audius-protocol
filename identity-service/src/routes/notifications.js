@@ -251,7 +251,6 @@ module.exports = function (app) {
   app.get('/notifications', authMiddleware, handleResponse(async (req) => {
     const limit = parseInt(req.query.limit)
     const timeOffset = req.query.timeOffset ? moment(req.query.timeOffset) : moment()
-    console.log(req.user)
     const { blockchainUserId: userId, createdAt } = req.user
     const createdDate = moment(createdAt)
 
@@ -284,10 +283,13 @@ module.exports = function (app) {
         }],
         limit
       })
-      const unreadCount = await models.Notification.count({
+      let unreadCount = await models.Notification.findAll({
         where: { userId, isRead: false, isHidden: false },
-        include: [{ model: models.NotificationAction, as: 'actions', required: true }]
+        include: [{ model: models.NotificationAction, as: 'actions', required: true, attributes: [] }],
+        attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('Notification.id')), 'total']],
+        group: ['Notification.id']
       })
+      unreadCount = unreadCount.length
 
       const readAnnouncementCount = await models.Notification.count({
         where: { userId, isRead: true, type: NotificationType.Announcement }

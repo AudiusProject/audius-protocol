@@ -117,12 +117,6 @@ class NotificationProcessor {
   }
 
   async indexMilestones (milestones, owners, metadata) {
-    console.log('---------------')
-    console.log('INDEXMILESTONES')
-    console.log(milestones)
-    console.log(owners)
-    console.log(metadata)
-
     // Index follower milestones into notifications table
     let followersAddedDictionary = milestones.follower_counts
     let timestamp = new Date()
@@ -180,16 +174,10 @@ class NotificationProcessor {
   }
 
   async updateRepostMilestones (repostCounts, owners, blocknumber, timestamp) {
-    console.log('updateRepostMilestones')
-    console.log(repostCounts)
-    console.log(owners)
-    console.log(blocknumber)
-
     let tracksReposted = Object.keys(repostCounts.tracks)
     let albumsReposted = Object.keys(repostCounts.albums)
     let playlistsReposted = Object.keys(repostCounts.playlists)
 
-    console.log('Tracks reposted: ' + tracksReposted)
     for (var repostedTrackId of tracksReposted) {
       let trackOwnerId = owners.tracks[repostedTrackId]
       let trackRepostCount = repostCounts.tracks[repostedTrackId]
@@ -210,7 +198,6 @@ class NotificationProcessor {
       }
     }
 
-    console.log('Albums reposted: ' + albumsReposted)
     for (var repostedAlbumId of albumsReposted) {
       let albumOwnerId = owners.albums[repostedAlbumId]
       let albumRepostCount = repostCounts.albums[repostedAlbumId]
@@ -231,7 +218,6 @@ class NotificationProcessor {
       }
     }
 
-    console.log('Playlists reposted: ' + playlistsReposted)
     for (var repostedPlaylistId of playlistsReposted) {
       let playlistOwnerId = owners.playlists[repostedPlaylistId]
       let playlistRepostCount = repostCounts.playlists[repostedPlaylistId]
@@ -254,13 +240,10 @@ class NotificationProcessor {
   }
 
   async updateFavoriteMilestones (favoriteCounts, owners, blocknumber, timestamp) {
-    console.log('updateFavoriteMilestones')
-    console.log(favoriteCounts)
     let tracksFavorited = Object.keys(favoriteCounts.tracks)
     let albumsFavorited = Object.keys(favoriteCounts.albums)
     let playlistsFavorited = Object.keys(favoriteCounts.playlists)
 
-    console.log('Tracks favorited: ' + tracksFavorited)
     for (var favoritedTrackId of tracksFavorited) {
       let trackOwnerId = owners.tracks[favoritedTrackId]
       let trackFavoriteCount = favoriteCounts.tracks[favoritedTrackId]
@@ -309,7 +292,7 @@ class NotificationProcessor {
       for (var k = favoriteMilestoneList.length; k >= 0; k--) {
         let milestoneValue = favoriteMilestoneList[k]
         if (playlistFavoriteCount >= milestoneValue) {
-          console.log(`Playlist ${favoritedAlbumId}, favorite count ${playlistFavoriteCount} has met milestone ${milestoneValue}`)
+          console.log(`Playlist ${favoritedPlaylistId}, favorite count ${playlistFavoriteCount} has met milestone ${milestoneValue}`)
           await this.processFavoriteMilestone(
             playlistOwnerId,
             favoritedPlaylistId,
