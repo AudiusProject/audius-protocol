@@ -25,7 +25,8 @@ const notificationTypes = {
   },
   MilestoneFollow: 'MilestoneFollow',
   MilestoneRepost: 'MilestoneRepost',
-  MilestoneFavorite: 'MilestoneFavorite'
+  MilestoneFavorite: 'MilestoneFavorite',
+  MilestoneListen: 'MilestoneListen'
 }
 
 const actionEntityTypes = {
@@ -74,6 +75,8 @@ class NotificationProcessor {
       if (!minBlock && minBlock !== 0) throw new Error('no min block')
 
       try {
+        await this.indexListenCountMilestones()
+
         // Index notifications
         let maxBlockNumber = await this.indexNotifications(minBlock)
 
@@ -114,6 +117,46 @@ class NotificationProcessor {
     let date = new Date()
     console.log(`Highest block: ${highestBlockNumber} - ${date}`)
     return highestBlockNumber
+  }
+
+  async indexListenCountMilestones () {
+    // Select last 10 distinct tracks with listens
+    let recentListenCountQuery = {
+      attributes: [[models.Sequelize.col('trackId'), 'trackId'], [models.Sequelize.fn('max', models.Sequelize.col('hour')), 'hour']],
+      order: [[models.Sequelize.col('hour'), 'DESC']],
+      group: ['trackId'],
+      limit: 10
+    }
+
+    // Distinct tracks
+    let res = await models.TrackListenCount.findAll(recentListenCountQuery)
+    let tracksListenedTo = res.map((listenEntry) => listenEntry.trackId)
+
+    // Total listens query
+    let totalListens = {
+      attributes: [
+        [models.Sequelize.col('trackId'), 'trackId'],
+        [
+          models.Sequelize.fn('date_trunc', 'millennium', models.Sequelize.col('hour')),
+          'date'
+        ],
+        [models.Sequelize.fn('sum', models.Sequelize.col('listens')), 'listens']
+      ],
+      group: ['trackId', 'date'],
+      order: [[models.Sequelize.col('listens'), 'DESC']],
+      where: {
+        trackId: { [models.Sequelize.Op.in]: tracksListenedTo }
+      }
+    }
+
+    // map of listens
+    let totalListenQuery = await models.TrackListenCount.findAll(totalListens)
+    let processedTotalListens = totalListenQuery.map((x) => {
+      return { trackId: x.trackId, listenCount: x.listens }
+    })
+
+    // TODO: Query track owners
+    console.log(processedTotalListens)
   }
 
   async indexMilestones (milestones, owners, metadata) {
@@ -383,9 +426,8 @@ class NotificationProcessor {
       })
 
       if (milestonesToBeDeleted) {
-        console.log('To be deleted milestones:')
         for (var milestoneToDelete of milestonesToBeDeleted) {
-          console.log(milestoneToDelete.id)
+          console.log(`Deleting milestone: ${milestoneToDelete.id}`)
           let destroyTx = await models.NotificationAction.destroy({
             where: {
               notificationId: milestoneToDelete.id
@@ -760,8 +802,6 @@ class NotificationProcessor {
             }
           }
         }
-
-        console.log('end of notifs')
       }
     }
 
