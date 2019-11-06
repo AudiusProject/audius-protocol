@@ -172,7 +172,10 @@ class CreatorNode {
 
     const [trackContentResp, coverArtResp] = await Promise.all(uploadPromises)
     metadata.track_segments = trackContentResp.track_segments
+
     const sourceFile = trackContentResp.source_file
+    if (!sourceFile) throw new Error('Invalid or missing sourceFile')
+
     if (coverArtResp) metadata.cover_art_sizes = coverArtResp.dirCID
     // Creates new track entity on creator node, making track's metadata available on IPFS
     // @returns {Object} {cid: cid of track metadata on IPFS, id: id of track to be used with associate function}

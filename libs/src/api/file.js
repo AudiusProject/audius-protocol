@@ -1,3 +1,4 @@
+const urlJoin = require('proper-url-join')
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
 
@@ -32,7 +33,7 @@ class File extends Base {
   async fetchCID (cid, creatorNodeGateways, callback = null) {
     const gateways = publicGateways
       .concat(creatorNodeGateways)
-    const urls = gateways.map(gateway => `${gateway}${cid}`)
+    const urls = gateways.map(gateway => urlJoin(gateway, cid))
 
     try {
       return Utils.raceRequests(urls, callback, {
@@ -55,7 +56,7 @@ class File extends Base {
    */
   async downloadCID (cid, creatorNodeGateways, filename, usePublicGateways = false) {
     const gateways = usePublicGateways ? publicGateways.concat(creatorNodeGateways) : creatorNodeGateways
-    const urls = gateways.map(gateway => `${gateway}${cid}?filename=${filename}`)
+    const urls = gateways.map(gateway => urlJoin(gateway, cid, { query: { filename } }))
 
     try {
       // Races requests and fires the download callback for the first endpoint to
