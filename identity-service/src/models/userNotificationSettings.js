@@ -11,6 +11,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: true
     },
+    milestonesAndAchievements: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
+    },
     reposts: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

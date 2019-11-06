@@ -23,6 +23,11 @@ module.exports = {
         allowNull: false,
         defaultValue: true
       },
+      milestonesAndAchievements: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+      },
       followers: {
         type: Sequelize.BOOLEAN,
         allowNull: false,

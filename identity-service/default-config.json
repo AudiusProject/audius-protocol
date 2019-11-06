@@ -25,5 +25,5 @@
   "rateLimitingListensPerIPPerDay": 60,
   "rateLimitingListensPerTrackPerWeek": 120,
   "rateLimitingListensPerIPPerWeek": 180,
-  "minimumBalance": 1
+  "minimumBalance": 10
 }
