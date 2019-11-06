@@ -409,8 +409,7 @@ class NotificationProcessor {
 
     let reqObj = {
       method: 'get',
-      url: `${notifDiscProv}/notifications?min_block_number=${minBlock}`,
-      timeout: 500 // TODO: change for prod
+      url: `${notifDiscProv}/notifications?min_block_number=${minBlock}`
     }
     // TODO: investigate why this has two .data, after axios switch
     let body = (await axios(reqObj)).data
