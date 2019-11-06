@@ -1,4 +1,5 @@
-const urlJoin = require('proper-url-join')
+let urlJoin = require('proper-url-join')
+if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
 
