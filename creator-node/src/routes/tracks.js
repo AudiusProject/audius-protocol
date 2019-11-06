@@ -106,23 +106,19 @@ module.exports = function (app) {
    * Error if associated track segments have not already been created and stored.
    */
   app.post('/tracks/metadata', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
-    // TODO - input validation
     const metadataJSON = req.body.metadata
-    const trackId = metadataJSON.track_id
     let sourceFile = req.body.sourceFile
 
-    if (!metadataJSON.owner_id || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
-      return errorResponseBadRequest('Metadata object must include owner_id and track_segments array')
+    if (!metadataJSON || !metadataJSON.owner_id || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
+      return errorResponseBadRequest('Metadata object must include owner_id and non-empty track_segments array')
     }
 
+    const trackId = metadataJSON.track_id
     if (!sourceFile && !trackId) {
       return errorResponseBadRequest('A sourceFile must be provided or the metadata object must include track_id')
     }
 
-    /**
-     * Ensure each segment multihash in metadata obj has an associated file & is not blacklisted, else error.
-     * Retrieve sourceFile from file DB entries for use in master file transcoding.
-     */
+    // Error if any of provided segment multihashes are blacklisted.
     try {
       await Promise.all(metadataJSON.track_segments.map(async segment => {
         if (await req.app.get('blacklistManager').CIDIsInBlacklist(segment.multihash)) {
@@ -133,34 +129,43 @@ module.exports = function (app) {
       return errorResponseForbidden(e.message)
     }
 
-    // Find the sourceFile associated with the track if it wasn't provided
-    if (!sourceFile) {
-      const { trackUUID } = await models.Track.findOne({
-        attributes: ['trackUUID'],
-        where: {
-          blockchainId: trackId
-        }
-      })
-      const firstSegment = metadataJSON.track_segments[0]
-      if (!firstSegment) return errorResponseServerError('No segment found for track')
-
-      const file = await models.File.findOne({
-        attributes: ['sourceFile'],
-        where: {
-          multihash: firstSegment.multihash,
-          cnodeUserUUID: req.session.cnodeUserUUID,
-          trackUUID
-        }
-      })
-      sourceFile = file.sourceFile
-    }
-
-    if (!sourceFile) {
-      return errorResponseBadRequest(`Invalid track_segments input - no matching source file found for multihashes.`)
-    }
-
-    // If track marked as downloadable, kick off transcoding process before returning (don't block on this)
+    // If track marked as downloadable, kick off transcoding process if necessary (don't block on this).
     if (metadataJSON.download && metadataJSON.download.is_downloadable && !metadataJSON.download.cid) {
+      // Find the sourceFile associated with the track if it wasn't provided, to be used in trancoding.
+      if (!sourceFile) {
+        const { trackUUID } = await models.Track.findOne({
+          attributes: ['trackUUID'],
+          where: {
+            blockchainId: trackId
+          }
+        })
+        const firstSegment = metadataJSON.track_segments[0]
+        if (!firstSegment) return errorResponseServerError('No segment found for track')
+
+        const file = await models.File.findOne({
+          attributes: ['sourceFile'],
+          where: {
+            multihash: firstSegment.multihash,
+            cnodeUserUUID: req.session.cnodeUserUUID,
+            trackUUID
+          }
+        })
+        if (!file || !file.sourceFile) {
+          return errorResponseBadRequest(`Invalid track_segments input - no matching source file found for segment CIDs.`)
+        }
+        sourceFile = file.sourceFile
+      } else {
+        // if sourceFile provided, ensure segmentFile exists with that sourceFile
+        const file = await models.File.findOne({
+          where: {
+            sourceFile
+          }
+        })
+        if (!file) {
+          return errorResponseBadRequest(`Invalid sourceFile input - no matching file entry found.`)
+        }
+      }
+
       createDownloadableCopy(req, sourceFile)
     }
 

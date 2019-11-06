@@ -55,7 +55,7 @@ function transcodeFileTo320 (req, fileDir, fileName) {
 
     // Exit if dl-copy file already exists at target path.
     if (fs.existsSync(targetPath)) {
-      req.logger.info(`exists already ${targetPath}`)
+      req.logger.info(`Downloadable copy already exists at ${targetPath}.`)
       resolve(targetPath)
     }
 
