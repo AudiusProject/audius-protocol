@@ -54,6 +54,20 @@ class Account extends Base {
   }
 
   /**
+   * Logs a user out of Audius
+   * Note: Actions will stop working at this point, but
+   * clients may wish to call window.location.reload()
+   * to show the user as logged out
+   */
+  logout () {
+    if (!this.web3Manager.web3IsExternal()) {
+      this.REQUIRES(Services.HEDGEHOG)
+      this.hedgehog.logout()
+      this.userStateManager.clearUser()
+    }
+  }
+
+  /**
    * Signs a user up for Audius
    * @param {string} email
    * @param {string} password

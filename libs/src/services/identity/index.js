@@ -192,6 +192,7 @@ class IdentityService {
         case 'week':
         case 'month':
         case 'year':
+        case 'millennium':
           break
         default:
           throw new Error('Invalid timeFrame value provided')

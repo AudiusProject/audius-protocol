@@ -6,7 +6,7 @@ const ffmpeg = require('../ffmpeg')
 const { getSegmentsDuration } = require('../segmentDuration')
 const models = require('../models')
 const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
-const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseForbidden } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
 
@@ -79,6 +79,23 @@ module.exports = function (app) {
 
     // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
     trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
+
+    // Don't allow if any segment CID is in blacklist.
+    try {
+      await Promise.all(trackSegments.map(async segmentObj => {
+        if (await req.app.get('blacklistManager').CIDIsInBlacklist(segmentObj.multihash)) {
+          throw new Error(`Track upload failed - part or all of this track has been blacklisted by this node.`)
+        }
+      }))
+    } catch (e) {
+      if (e.message.indexOf('blacklisted') >= 0) {
+        // TODO clean up orphaned content
+        return errorResponseForbidden(`Track upload failed - part or all of this track has been blacklisted by this node.`)
+      } else {
+        return errorResponseServerError(e.message)
+      }
+    }
+
     req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
     return successResponse({ 'track_segments': trackSegments })
   }))
@@ -96,16 +113,30 @@ module.exports = function (app) {
     }
 
     // Ensure each segment multihash in metadata obj has an associated file, else error.
-    await Promise.all(metadataJSON.track_segments.map(async segment => {
-      const file = await models.File.findOne({ where: {
-        multihash: segment.multihash,
-        cnodeUserUUID: req.session.cnodeUserUUID,
-        trackUUID: null
-      } })
-      if (!file) {
-        return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
+    try {
+      await Promise.all(metadataJSON.track_segments.map(async segment => {
+        if (await req.app.get('blacklistManager').CIDIsInBlacklist(segment.multihash)) {
+          throw new Error(`Segment CID ${segment.multihash} has been blacklisted by this node.`)
+        }
+
+        const file = await models.File.findOne({ where: {
+          multihash: segment.multihash,
+          cnodeUserUUID: req.session.cnodeUserUUID,
+          trackUUID: null
+        } })
+        if (!file) {
+          throw new Error(`No file found for provided segment CID: ${segment.multihash}.`)
+        }
+      }))
+    } catch (e) {
+      if (e.message.indexOf('blacklisted') >= 0) {
+        return errorResponseForbidden(e.message)
+      } else if (e.message.indexOf('No file found') >= 0) {
+        return errorResponseBadRequest(e.message)
+      } else {
+        return errorResponseServerError(e.message)
       }
-    }))
+    }
 
     // Store + pin metadata multihash to disk + IPFS.
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
@@ -206,7 +237,10 @@ module.exports = function (app) {
     }
   }))
 
-  /** Returns all tracks for cnodeUser. */
+  /**
+   * Returns all tracks for cnodeUser.
+   * @notice DEPRECATED.
+   */
   app.get('/tracks', authMiddleware, handleResponse(async (req, res) => {
     const tracks = await models.Track.findAll({
       where: { cnodeUserUUID: req.session.cnodeUserUUID }

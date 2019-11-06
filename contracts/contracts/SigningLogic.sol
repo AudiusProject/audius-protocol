@@ -1,4 +1,4 @@
-pragma solidity 0.5.0;
+pragma solidity ^0.5.0;
 
 import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
 
@@ -15,11 +15,11 @@ contract SigningLogic {
     );
 
     bytes32 domainSeparator;
-    
+
     // Signatures contain a nonce to make them unique. usedSignatures tracks which signatures
     //  have been used so they can't be replayed
     mapping (bytes32 => bool) public usedSignatures;
-    
+
     struct EIP712Domain {
         string  name;
         string  version;

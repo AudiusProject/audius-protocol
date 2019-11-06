@@ -10,6 +10,7 @@ const config = require('./config')
 const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
+const BlacklistManager = require('./blacklistManager')
 
 const initAudiusLibs = async () => {
   const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
@@ -34,41 +35,50 @@ const initAudiusLibs = async () => {
   return audiusLibs
 }
 
-const startApp = async () => {
-  // configure file storage
+const configFileStorage = () => {
   if (!config.get('storagePath')) {
     logger.error('Must set storagePath to use for content repository.')
     process.exit(1)
   }
-  const storagePath = path.resolve('./', config.get('storagePath'))
+  return (path.resolve('./', config.get('storagePath')))
+}
 
-  // run config
-  logger.info('Configuring service...')
-  config.asyncConfig().then(() => {
-    logger.info('Service configured')
-  })
-
-  // connect to IPFS
-  let ipfsAddr = config.get('ipfsHost')
+const initIPFS = async () => {
+  const ipfsAddr = config.get('ipfsHost')
   if (!ipfsAddr) {
     logger.error('Must set ipfsAddr')
     process.exit(1)
   }
-  let ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
+  const ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
+  const identity = await ipfs.id()
+  logger.info(`Current IPFS Peer ID: ${JSON.stringify(identity)}`)
+  return ipfs
+}
 
-  // run all migrations
-  logger.info('Executing database migrations...')
-  runMigrations().then(async () => {
+const runDBMigrations = async () => {
+  try {
+    logger.info('Executing database migrations...')
+    await runMigrations()
     logger.info('Migrations completed successfully')
-  }).error((err) => {
+  } catch (err) {
     logger.error('Error in migrations: ', err)
     process.exit(1)
-  })
+  }
+}
+
+const startApp = async () => {
+  logger.info('Configuring service...')
+  await config.asyncConfig()
+  const storagePath = configFileStorage()
+  const ipfs = await initIPFS()
+  await runDBMigrations()
+
+  await BlacklistManager.blacklist(ipfs)
 
   const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
   logger.info('Initialized audius libs')
 
-  const appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs)
+  const appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager)
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal, error) => {

@@ -249,6 +249,20 @@ const config = convict({
     format: String,
     env: 'discoveryProviderWhitelist',
     default: ''
+  },
+
+  /** Manual content blacklists */
+  userBlacklist: {
+    doc: 'Comma-separated list of user blockchain IDs that creator node should avoid serving / storing',
+    format: String,
+    env: 'userBlacklist',
+    default: ''
+  },
+  trackBlacklist: {
+    doc: 'Comma-separated list of track blockchain IDs that creator node should avoid serving / storing',
+    format: String,
+    env: 'trackBlacklist',
+    default: ''
   }
 
   // unsupported options at the moment
@@ -294,6 +308,7 @@ if (fs.existsSync('eth-contract-config.json')) {
 // Perform validation and error any properties are not present on schema
 config.validate()
 
+// Retrieves and populates IP info configs
 const asyncConfig = async () => {
   const ipinfo = await axios.get('https://ipinfo.io')
   const country = ipinfo.data.country

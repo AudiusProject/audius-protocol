@@ -1,8 +1,6 @@
 // Authentication import is possible but not recommended, it should only be used by advanced users
 const { Hedgehog, WalletManager } = require('@audius/hedgehog')
 
-const { createKeyPBKDF2 } = require('./hedgehogOverride')
-
 class HedgehogWrapper {
   // TODO - update this comment
 
@@ -28,37 +26,6 @@ class HedgehogWrapper {
     }
 
     const hedgehog = new Hedgehog(this.getFn, this.setAuthFn, this.setUserFn)
-
-    // this is also the place we have the PBKDF2 patch until we can deprecate it
-    hedgehog.getAuthMigrationData = async (email, password, handle) => {
-      let lookupKeyPBKDF2 = await createKeyPBKDF2(email, password)
-      let entropy = WalletManager.getEntropyFromLocalStorage()
-
-      if (!entropy) throw new Error('could not retrieve entropy from local storage')
-      const createWalletPromise = await WalletManager.createWalletObj(password, entropy)
-      const lookupKeyPromise = WalletManager.createAuthLookupKey(email, password)
-
-      try {
-        let result = await Promise.all([createWalletPromise, lookupKeyPromise])
-
-        const { ivHex, cipherTextHex } = result[0]
-        const lookupKey = result[1]
-
-        return {
-          oldValues: {
-            lookupKey: lookupKeyPBKDF2
-          },
-          newValues: {
-            iv: ivHex,
-            cipherText: cipherTextHex,
-            lookupKey: lookupKey
-          },
-          handle: handle
-        }
-      } catch (e) {
-        throw e
-      }
-    }
 
     // we override the login function here because getFn needs both lookupKey and email
     // in identity service, but hedgehog only sends lookupKey

@@ -191,24 +191,6 @@ const getTrendingTracks = async (
     seenTrackIds.push(elem.trackId)
   })
 
-  const seenIdSet = new Set(seenTrackIds)
-  if (idList && seenIdSet.size < idList.length) {
-    // For any tracks in the required id list that were not listened to in the last <timeFrame>
-    // Populate empty listen counts
-    for (var i = 0; i < idList.length; i++) {
-      const id = parseInt(idList[i])
-      // Add tracks only if not already present in parsedListenCounts
-      if (!seenIdSet.has(id)) {
-        parsedListenCounts.push({ trackId: id, listens: 0 })
-      }
-
-      // Exit if desired response limit has been met
-      if (limit && parsedListenCounts.length >= limit) {
-        break
-      }
-    }
-  }
-
   return parsedListenCounts
 }
 

@@ -1,18 +1,28 @@
 const request = require('supertest')
 
+const BlacklistManager = require('../src/blacklistManager')
+
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
+const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 
 describe('test expressApp', function () {
-  let app, server, session, libsMock
+  let app, server, session, ipfsMock, libsMock
+
   beforeEach(async () => {
+    ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
-    const appInfo = await getApp(null, libsMock)
+
+    await BlacklistManager.blacklist(ipfsMock)
+
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
+
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser()
   })
+
   afterEach(async () => {
     await server.close()
   })

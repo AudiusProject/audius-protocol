@@ -3,6 +3,8 @@ const fs = require('fs')
 const path = require('path')
 const defaultConfig = require('../default-config.json')
 
+const blacklistManager = require('../src/blacklistManager')
+
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
@@ -13,14 +15,19 @@ const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongForm
 
 describe('test Tracks', function () {
   let app, server, session, ipfsMock, libsMock
+
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
-    const appInfo = await getApp(ipfsMock, libsMock)
+
+    const appInfo = await getApp(ipfsMock, libsMock, blacklistManager)
+    await blacklistManager.blacklist(ipfsMock)
+
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser()
   })
+
   afterEach(async () => {
     await server.close()
   })
