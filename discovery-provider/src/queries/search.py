@@ -61,21 +61,16 @@ def search_tags():
     if not user_tag_count:
         user_tag_count = "2"
 
-    kind = request.args.get("kind", type=str)
-    if kind:
-        validSearchKinds = [SearchKind.all, SearchKind.tracks, SearchKind.users]
-        error = False
-        try:
-            searchKind = SearchKind[kind]
-        except Exception as e:
-            error = True
-        if (searchKind not in validSearchKinds or error):
-            raise exceptions.ArgumentError(
-                "Invalid value for parameter 'kind' must be in %s" %
-                    [k.name for k in validSearchKinds]
-            )
-    else:
-        searchKind = SearchKind.all
+    kind = request.args.get("kind", type=str, default="all")
+    validSearchKinds = [SearchKind.all, SearchKind.tracks, SearchKind.users]
+    try:
+        searchKind = SearchKind[kind]
+        if (searchKind not in validSearchKinds):
+            raise Exception
+    except Exception as e:
+        return api_helpers.error_response(
+            "Invalid value for parameter 'kind' must be in %s" % [k.name for k in validSearchKinds]
+        )
 
     results = {}
 
@@ -150,22 +145,22 @@ def search_tags():
                 f"""
                 select * from
                 (
-            select
+                    select
                         count(track_id),
                         owner_id
                     from
-            (
+                    (
                         select
                             strip(to_tsvector(tracks.tags)) as tagstrip,
                             track_id,
                             owner_id
                         from
-                tracks
+                            tracks
                         where
                             (tags like :like_tags_query)
-                and (is_current is true)
+                            and (is_current is true)
                         order by
-                updated_at desc
+                            updated_at desc
                     ) as t
                     where
                             tagstrip @@ to_tsquery(:query)
@@ -323,14 +318,12 @@ def search(isAutocomplete):
         return api_helpers.error_response("Invalid value for parameter 'query'")
     searchStr = searchStr.replace('&', 'and')  # when creating query table, we substitute this too
 
-    kind = request.args.get("kind", type=str)
-    if kind:
-        try:
-            searchKind = SearchKind[kind]
-        except Exception as e:
-            return api_helpers.error_response("Invalid value for parameter 'kind' must be in %s" % [k.name for k in SearchKind])
-    else:
-        searchKind = SearchKind.all
+    kind = request.args.get("kind", type=str, default="all")
+    if kind not in SearchKind.__members__:
+        return api_helpers.error_response(
+            "Invalid value for parameter 'kind' must be in %s" % [k.name for k in SearchKind]
+        )
+    searchKind = SearchKind[kind]
 
     (limit, offset) = get_pagination_vars()
 
@@ -340,8 +333,10 @@ def search(isAutocomplete):
         with db.scoped_session() as session:
             if (searchKind in [SearchKind.all, SearchKind.tracks]):
                 results['tracks'] = track_search_query(session, searchStr, limit, offset, False, isAutocomplete)
+                results['saved_tracks'] = track_search_query(session, searchStr, limit, offset, True, isAutocomplete)
             if (searchKind in [SearchKind.all, SearchKind.users]):
                 results['users'] = user_search_query(session, searchStr, limit, offset, False, isAutocomplete)
+                results['followed_users'] = user_search_query(session, searchStr, limit, offset, True, isAutocomplete)
             if (searchKind in [SearchKind.all, SearchKind.playlists]):
                 results['playlists'] = playlist_search_query(
                     session,
@@ -352,14 +347,6 @@ def search(isAutocomplete):
                     False,
                     isAutocomplete
                 )
-            if (searchKind in [SearchKind.all, SearchKind.albums]):
-                results['albums'] = playlist_search_query(session, searchStr, limit, offset, True, False, isAutocomplete)
-
-            if (searchKind in [SearchKind.all, SearchKind.tracks]):
-                results['saved_tracks'] = track_search_query(session, searchStr, limit, offset, True, isAutocomplete)
-            if (searchKind in [SearchKind.all, SearchKind.users]):
-                results['followed_users'] = user_search_query(session, searchStr, limit, offset, True, isAutocomplete)
-            if (searchKind in [SearchKind.all, SearchKind.playlists]):
                 results['saved_playlists'] = playlist_search_query(
                     session,
                     searchStr,
@@ -370,6 +357,7 @@ def search(isAutocomplete):
                     isAutocomplete
                 )
             if (searchKind in [SearchKind.all, SearchKind.albums]):
+                results['albums'] = playlist_search_query(session, searchStr, limit, offset, True, False, isAutocomplete)
                 results['saved_albums'] = playlist_search_query(
                     session,
                     searchStr,
