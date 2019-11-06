@@ -42,10 +42,10 @@ const notificationJobType = 'notificationProcessJob'
 const followerMilestoneList = [1, 2, 4, 6, 8, 10]
 
 // Repost milestone list shared across tracks/albums/playlists
-const repostMilestoneList = [1, 2, 4, 8]
+const repostMilestoneList = [1, 2, 3, 4, 5, 8]
 
 // Favorite milestone list shared across tracks/albums/playlists
-const favoriteMilestoneList = [1, 2, 4, 8]
+const favoriteMilestoneList = [1, 2, 3, 4, 5, 8]
 
 let notifDiscProv = config.get('notificationDiscoveryProvider')
 
@@ -233,7 +233,7 @@ class NotificationProcessor {
 
     console.log('Playlists reposted: ' + playlistsReposted)
     for (var repostedPlaylistId of playlistsReposted) {
-      let playlistOwnerId = owners.albums[repostedPlaylistId]
+      let playlistOwnerId = owners.playlists[repostedPlaylistId]
       let playlistRepostCount = repostCounts.playlists[repostedPlaylistId]
       console.log(`User ${playlistOwnerId}, playlist ${repostedPlaylistId}, repost count ${playlistRepostCount}`)
       for (var k = repostMilestoneList.length; k >= 0; k--) {
@@ -257,6 +257,9 @@ class NotificationProcessor {
     console.log('updateFavoriteMilestones')
     console.log(favoriteCounts)
     let tracksFavorited = Object.keys(favoriteCounts.tracks)
+    let albumsFavorited = Object.keys(favoriteCounts.albums)
+    let playlistsFavorited = Object.keys(favoriteCounts.playlists)
+
     console.log('Tracks favorited: ' + tracksFavorited)
     for (var favoritedTrackId of tracksFavorited) {
       let trackOwnerId = owners.tracks[favoritedTrackId]
@@ -278,7 +281,6 @@ class NotificationProcessor {
       }
     }
 
-    let albumsFavorited = Object.keys(favoriteCounts.albums)
     for (var favoritedAlbumId of albumsFavorited) {
       let albumOwnerId = owners.albums[favoritedAlbumId]
       let albumFavoriteCount = favoriteCounts.albums[favoritedAlbumId]
@@ -299,15 +301,15 @@ class NotificationProcessor {
       }
     }
 
-    let playlistsFavorited = Object.keys(favoriteCounts.playlists)
     for (var favoritedPlaylistId of playlistsFavorited) {
+      console.log(`Favorited playlist id: ${favoritedPlaylistId}`)
       let playlistOwnerId = owners.playlists[favoritedPlaylistId]
       let playlistFavoriteCount = favoriteCounts.playlists[favoritedPlaylistId]
       console.log(`User ${playlistOwnerId}, playlist ${favoritedPlaylistId}, fave count ${playlistFavoriteCount}`)
       for (var k = favoriteMilestoneList.length; k >= 0; k--) {
         let milestoneValue = favoriteMilestoneList[k]
         if (playlistFavoriteCount >= milestoneValue) {
-          console.log(`Album ${favoritedAlbumId}, favorite count ${playlistFavoriteCount} has met milestone ${milestoneValue}`)
+          console.log(`Playlist ${favoritedAlbumId}, favorite count ${playlistFavoriteCount} has met milestone ${milestoneValue}`)
           await this.processFavoriteMilestone(
             playlistOwnerId,
             favoritedPlaylistId,
@@ -344,7 +346,7 @@ class NotificationProcessor {
   }
 
   async processMilestone (milestoneType, userId, entityId, entityType, milestoneValue, blocknumber, timestamp) {
-    let existingRepostMilestoneQuery = await models.Notification.findAll({
+    let existingMilestoneQuery = await models.Notification.findAll({
       where: {
         userId: userId,
         type: milestoneType,
@@ -360,7 +362,7 @@ class NotificationProcessor {
       }]
     })
 
-    if (existingRepostMilestoneQuery.length === 0) {
+    if (existingMilestoneQuery.length === 0) {
       let createMilestoneTx = await models.Notification.create({
         userId: userId,
         type: milestoneType,
@@ -376,6 +378,38 @@ class NotificationProcessor {
           actionEntityId: milestoneValue
         }
       })
+
+      // Destroy any unread milestone notifications of this type + entity
+      let milestonesToBeDeleted = await models.Notification.findAll({
+        where: {
+          userId: userId,
+          type: milestoneType,
+          entityId: entityId,
+          isRead: false
+        },
+        include: [{
+          model: models.NotificationAction,
+          as: 'actions',
+          where: {
+            actionEntityType: entityType,
+            actionEntityId: {
+              [models.Sequelize.Op.not]: milestoneValue
+            }
+          }
+        }]
+      })
+
+      if (milestonesToBeDeleted) {
+        console.log('To be deleted milestones:')
+        for (var milestoneToDelete of milestonesToBeDeleted) {
+          console.log(milestoneToDelete.id)
+          let destroyTx = await models.NotificationAction.destroy({
+            where: {
+              notificationId: milestoneToDelete.id
+            }
+          })
+        }
+      }
     }
   }
 
@@ -383,13 +417,11 @@ class NotificationProcessor {
     let date = new Date()
     console.log(`indexNotifications job - ${date}`)
 
-    // minBlock = 0
     let reqObj = {
       method: 'get',
       url: `${notifDiscProv}/notifications?min_block_number=${minBlock}`,
       timeout: 500 // TODO: change for prod
     }
-    console.log(reqObj)
     // TODO: investigate why this has two .data, after axios switch
     let body = (await axios(reqObj)).data
     let metadata = body.data.info
@@ -707,8 +739,7 @@ class NotificationProcessor {
                 actionEntityId: createdActionEntityId
               }
             })
-            // TODO: - How to handle this here?
-            /*
+
             // Update Notification table timestamp
             let updatePerformed = notifActionCreateTx[1]
             if (updatePerformed) {
@@ -721,7 +752,6 @@ class NotificationProcessor {
                 plain: true
               })
             }
-            */
           }
         }))
 

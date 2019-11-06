@@ -28,7 +28,7 @@ const NotificationType = Object.freeze({
   MilestoneTrackListens: 'MilestoneTrackListens',
   MilestonePlaylistListens: 'MilestonePlaylistListens',
   MilestoneAlbumListens: 'MilestoneAlbumListens',
-  MilestoneFollows: 'MilestoneFollows'
+  MilestoneFollow: 'MilestoneFollow'
 })
 
 const ClientNotificationTypes = new Set([
@@ -149,8 +149,8 @@ const mapMilestone = {
     achievement: Achievement.Listens,
     entityType: Entity.Album
   },
-  [NotificationType.MilestoneFollows]: {
-    achievement: Achievement.Follow,
+  [NotificationType.MilestoneFollow]: {
+    achievement: Achievement.Followers,
     entityType: Entity.User
   }
 }
@@ -190,7 +190,7 @@ const notificationResponseMap = {
   [NotificationType.MilestoneTrackListens]: formatMilestone,
   [NotificationType.MilestonePlaylistListens]: formatMilestone,
   [NotificationType.MilestoneAlbumListens]: formatMilestone,
-  [NotificationType.MilestoneFollows]: formatMilestone
+  [NotificationType.MilestoneFollow]: formatMilestone
 }
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).
@@ -279,13 +279,14 @@ module.exports = function (app) {
         ],
         include: [{
           model: models.NotificationAction,
+          required: true,
           as: 'actions'
         }],
         limit
       })
       const unreadCount = await models.Notification.count({
         where: { userId, isRead: false, isHidden: false },
-        include: [{ model: models.NotificationAction, as: 'actions' }]
+        include: [{ model: models.NotificationAction, as: 'actions', required: true }]
       })
 
       const readAnnouncementCount = await models.Notification.count({
@@ -299,6 +300,7 @@ module.exports = function (app) {
         .filter(a => timeOffset.isAfter(moment(a.datePublished)))
 
       const unreadAnnouncementCount = validUserAnnouncements.length - readAnnouncementCount
+      console.log(`unreadAnnouncementCount: ${unreadAnnouncementCount}`)
       const userNotifications = formatNotifications(notifications, announcementsAfterFilter)
       return successResponse({
         message: 'success',
