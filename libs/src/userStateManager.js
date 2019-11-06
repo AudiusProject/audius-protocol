@@ -8,14 +8,14 @@ const CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY = require('./constants').CURRENT_USE
 class UserStateManager {
   constructor () {
     this.currentUser = null
-    if (window.localStorage) {
+    if (window && window.localStorage) {
       window.localStorage.removeItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
     }
   }
 
   setCurrentUser (currentUser) {
     this.currentUser = currentUser
-    if (window.localStorage) {
+    if (window && window.localStorage) {
       window.localStorage.setItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY, true)
     }
   }
@@ -30,7 +30,7 @@ class UserStateManager {
 
   clearUser () {
     this.currentUser = null
-    if (window.localStorage) {
+    if (window && window.localStorage) {
       window.localStorage.removeItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
     }
   }
