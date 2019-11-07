@@ -431,6 +431,7 @@ class NotificationProcessor {
     })
 
     if (existingMilestoneQuery.length === 0) {
+      console.log(`Milestone : ${milestoneType}, User: ${userId}, entity: ${entityType}, milestoneVal: ${milestoneValue}`)
       let createMilestoneTx = await models.Notification.create({
         userId: userId,
         type: milestoneType,
