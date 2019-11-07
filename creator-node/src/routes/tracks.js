@@ -8,7 +8,7 @@ const models = require('../models')
 const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseForbidden } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
-const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
+const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
 
 module.exports = function (app) {
   /**
@@ -45,7 +45,7 @@ module.exports = function (app) {
       saveFilePromResps = await Promise.all(segmentFilePaths.map(async filePath => {
         const absolutePath = path.join(req.fileDir, 'segments', filePath)
         req.logger.info(`about to perform saveFileToIPFSFromFS #${counter++}`)
-        let response = await saveFileToIPFSFromFS(req, absolutePath, 'track', t)
+        let response = await saveFileToIPFSFromFS(req, absolutePath, 'track', req.fileName, t)
         response.segmentName = filePath
         return response
       }))
@@ -57,7 +57,8 @@ module.exports = function (app) {
         req,
         fileSegmentPath,
         req.fileName,
-        req.file.destination)
+        req.file.destination
+      )
       req.logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
       // Commit transaction
@@ -97,7 +98,7 @@ module.exports = function (app) {
     }
 
     req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
-    return successResponse({ 'track_segments': trackSegments })
+    return successResponse({ 'track_segments': trackSegments, 'source_file': req.fileName })
   }))
 
   /**
@@ -105,37 +106,67 @@ module.exports = function (app) {
    * Error if associated track segments have not already been created and stored.
    */
   app.post('/tracks/metadata', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
-    // TODO - input validation
     const metadataJSON = req.body.metadata
+    let sourceFile = req.body.sourceFile
 
-    if (!metadataJSON.owner_id || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
-      return errorResponseBadRequest('Metadata object must include owner_id and track_segments array')
+    if (!metadataJSON || !metadataJSON.owner_id || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
+      return errorResponseBadRequest('Metadata object must include owner_id and non-empty track_segments array')
     }
 
-    // Ensure each segment multihash in metadata obj has an associated file, else error.
+    const trackId = metadataJSON.track_id
+    if (!sourceFile && !trackId) {
+      return errorResponseBadRequest('A sourceFile must be provided or the metadata object must include track_id')
+    }
+
+    // Error if any of provided segment multihashes are blacklisted.
     try {
       await Promise.all(metadataJSON.track_segments.map(async segment => {
         if (await req.app.get('blacklistManager').CIDIsInBlacklist(segment.multihash)) {
           throw new Error(`Segment CID ${segment.multihash} has been blacklisted by this node.`)
         }
-
-        const file = await models.File.findOne({ where: {
-          multihash: segment.multihash,
-          cnodeUserUUID: req.session.cnodeUserUUID,
-          trackUUID: null
-        } })
-        if (!file) {
-          throw new Error(`No file found for provided segment CID: ${segment.multihash}.`)
-        }
       }))
     } catch (e) {
-      if (e.message.indexOf('blacklisted') >= 0) {
-        return errorResponseForbidden(e.message)
-      } else if (e.message.indexOf('No file found') >= 0) {
-        return errorResponseBadRequest(e.message)
+      return errorResponseForbidden(e.message)
+    }
+
+    // If track marked as downloadable, kick off transcoding process if necessary (don't block on this).
+    if (metadataJSON.download && metadataJSON.download.is_downloadable && !metadataJSON.download.cid) {
+      // Find the sourceFile associated with the track if it wasn't provided, to be used in trancoding.
+      if (!sourceFile) {
+        const { trackUUID } = await models.Track.findOne({
+          attributes: ['trackUUID'],
+          where: {
+            blockchainId: trackId
+          }
+        })
+        const firstSegment = metadataJSON.track_segments[0]
+        if (!firstSegment) return errorResponseServerError('No segment found for track')
+
+        const file = await models.File.findOne({
+          attributes: ['sourceFile'],
+          where: {
+            multihash: firstSegment.multihash,
+            cnodeUserUUID: req.session.cnodeUserUUID,
+            trackUUID
+          }
+        })
+        if (!file || !file.sourceFile) {
+          return errorResponseBadRequest(`Invalid track_segments input - no matching source file found for segment CIDs.`)
+        }
+        sourceFile = file.sourceFile
       } else {
-        return errorResponseServerError(e.message)
+        // if sourceFile provided, ensure segmentFile exists with that sourceFile
+        const file = await models.File.findOne({
+          where: {
+            sourceFile
+          }
+        })
+        if (!file) {
+          return errorResponseBadRequest(`Invalid sourceFile input - no matching file entry found.`)
+        }
       }
+
+      createDownloadableCopy(req, sourceFile)
     }
 
     // Store + pin metadata multihash to disk + IPFS.
@@ -189,16 +220,16 @@ module.exports = function (app) {
     const t = await models.sequelize.transaction()
 
     try {
-      // Create track entry on db - will fail if already present.
-      const track = await models.Track.upsert({
+      // Create / update track entry on db.
+      const track = (await models.Track.upsert({
         cnodeUserUUID,
         metadataFileUUID,
         metadataJSON,
         blockchainId: blockchainTrackId,
         coverArtFileUUID
-      }, { transaction: t, returning: true })
+      }, { transaction: t, returning: true }))[0]
 
-      // Associate matching segment files on DB with newly created track.
+      // Associate matching segment files on DB with new/updated track.
       await Promise.all(metadataJSON.track_segments.map(async segment => {
         // Update each segment file; error if not found.
         const numAffectedRows = await models.File.update(
@@ -206,7 +237,8 @@ module.exports = function (app) {
           { where: {
             multihash: segment.multihash,
             cnodeUserUUID,
-            trackUUID: null
+            trackUUID: null,
+            type: 'track'
           },
           transaction: t
           }
@@ -237,14 +269,63 @@ module.exports = function (app) {
     }
   }))
 
-  /**
-   * Returns all tracks for cnodeUser.
-   * @notice DEPRECATED.
-   */
-  app.get('/tracks', authMiddleware, handleResponse(async (req, res) => {
-    const tracks = await models.Track.findAll({
-      where: { cnodeUserUUID: req.session.cnodeUserUUID }
-    })
-    return successResponse({ 'tracks': tracks })
+  /** Returns download status of track and 320kbps CID if ready + downloadable. */
+  app.get('/tracks/download_status/:blockchainId', handleResponse(async (req, res) => {
+    const blockchainId = req.params.blockchainId
+    if (!blockchainId) {
+      return errorResponseBadRequest('Please provide blockchainId.')
+    }
+
+    const track = await models.Track.findOne({ where: { blockchainId } })
+    if (!track) {
+      return errorResponseBadRequest(`No track found for blockchainId ${blockchainId}`)
+    }
+
+    // Case: track is not marked as downloadable
+    if (!track.metadataJSON || !track.metadataJSON.download || !track.metadataJSON.download.is_downloadable) {
+      return successResponse({ isDownloadable: false, cid: null })
+    }
+
+    // Case: track is marked as downloadable
+    // - Check if downloadable file exists. Since copyFile may or may not have trackUUID association,
+    //    fetch a segmentFile for trackUUID, and find copyFile for segmentFile's sourceFile.
+    const segmentFile = await models.File.findOne({ where: {
+      type: 'track',
+      trackUUID: track.trackUUID
+    } })
+    const copyFile = await models.File.findOne({ where: {
+      type: 'copy320',
+      sourceFile: segmentFile.sourceFile
+    } })
+    if (!copyFile) {
+      return successResponse({ isDownloadable: true, cid: null })
+    }
+
+    // If copyFile exists, only return CID if it is in IPFS pinset
+    try {
+      await req.app.get('ipfsAPI').pin.ls(copyFile.multihash)
+      return successResponse({ isDownloadable: true, cid: copyFile.multihash })
+    } catch (e) {
+      return successResponse({ isDownloadable: true, cid: null })
+    }
   }))
+}
+
+/** Transcode track master file to 320kbps for downloading. Save to disk, IPFS, & DB. */
+async function createDownloadableCopy (req, sourceFileName) {
+  try {
+    const start = Date.now()
+    req.logger.info(`Transcoding file ${sourceFileName}...`)
+
+    const sourceFilePath = path.resolve(req.app.get('storagePath'), sourceFileName.split('.')[0])
+    const dlCopyFilePath = await ffmpeg.transcodeFileTo320(req, sourceFilePath, sourceFileName)
+
+    req.logger.info(`Transcoded file ${sourceFileName} in ${Date.now() - start}ms.`)
+
+    await saveFileToIPFSFromFS(req, dlCopyFilePath, 'copy320', sourceFileName)
+
+    return dlCopyFilePath
+  } catch (err) {
+    req.logger.error(err)
+  }
 }

@@ -250,6 +250,20 @@ def populate_track_record_metadata(track_record, track_metadata):
     track_record.isrc = track_metadata["isrc"]
     track_record.iswc = track_metadata["iswc"]
     track_record.track_segments = track_metadata["track_segments"]
+
+    if "download" in track_metadata:
+        track_record.download = {
+            "is_downloadable": track_metadata["download"].get("is_downloadable") == True,
+            "requires_follow": track_metadata["download"].get("requires_follow") == True,
+            "cid": track_metadata["download"].get("cid", None),
+        }
+    else:
+        track_record.download = {
+            "is_downloadable": False,
+            "requires_follow": False,
+            "cid": None
+        }
+
     return track_record
 
 def refresh_track_owner_ipfs_conn(owner_id, session, update_task):

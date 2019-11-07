@@ -116,7 +116,9 @@ describe('test Tracks', function () {
       .expect(200)
 
     if (resp1.body.track_segments[0].multihash !== 'testCIDLink' ||
-        resp1.body.track_segments.length !== 32) {
+        resp1.body.track_segments.length !== 32 ||
+        !resp1.body.source_file
+    ) {
       throw new Error('Incorrect return values')
     }
   })
@@ -138,7 +140,8 @@ describe('test Tracks', function () {
       .expect(200)
 
     if (resp1.body.track_segments[0].multihash !== 'testCIDLink' ||
-        resp1.body.track_segments.length !== 32
+        resp1.body.track_segments.length !== 32 ||
+        !resp1.body.source_file
     ) {
       throw new Error('Incorrect return values')
     }
@@ -153,7 +156,7 @@ describe('test Tracks', function () {
     const resp2 = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session)
-      .send({ metadata })
+      .send({ metadata, sourceFile: resp1.body.source_file })
       .expect(200)
 
     if (resp2.body.metadataMultihash !== 'testCIDLink') {
@@ -178,7 +181,9 @@ describe('test Tracks', function () {
       .expect(200)
 
     if (resp1.body.track_segments[0].multihash !== 'testCIDLink' ||
-        resp1.body.track_segments.length !== 32) {
+        resp1.body.track_segments.length !== 32 ||
+        !resp1.body.source_file
+    ) {
       throw new Error('Incorrect return values')
     }
 
@@ -191,7 +196,7 @@ describe('test Tracks', function () {
     await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session)
-      .send({ metadata })
+      .send({ metadata, sourceFile: resp1.body.source_file })
       .expect(400)
   })
 
@@ -212,7 +217,9 @@ describe('test Tracks', function () {
       .expect(200)
 
     if (resp1.body.track_segments[0].multihash !== 'testCIDLink' ||
-        resp1.body.track_segments.length !== 32) {
+        resp1.body.track_segments.length !== 32 ||
+        !resp1.body.source_file
+    ) {
       throw new Error('Incorrect return values')
     }
 
@@ -226,7 +233,7 @@ describe('test Tracks', function () {
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session)
-      .send({ metadata })
+      .send({ metadata, sourceFile: resp1.body.source_file })
       .expect(400)
   })
 
@@ -247,7 +254,9 @@ describe('test Tracks', function () {
       .expect(200)
 
     if (resp1.body.track_segments[0].multihash !== 'testCIDLink' ||
-        resp1.body.track_segments.length !== 32) {
+        resp1.body.track_segments.length !== 32 ||
+        !resp1.body.source_file
+    ) {
       throw new Error('Incorrect return values')
     }
 
@@ -260,7 +269,7 @@ describe('test Tracks', function () {
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session)
-      .send({ metadata })
+      .send({ metadata, sourceFile: resp1.body.source_file })
       .expect(400)
   })
 
@@ -281,7 +290,9 @@ describe('test Tracks', function () {
       .expect(200)
 
     if (resp1.body.track_segments[0].multihash !== 'testCIDLink' ||
-        resp1.body.track_segments.length !== 32) {
+        resp1.body.track_segments.length !== 32 ||
+        !resp1.body.source_file
+    ) {
       throw new Error('Incorrect return values')
     }
 
@@ -294,7 +305,7 @@ describe('test Tracks', function () {
     const resp2 = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session)
-      .send({ metadata })
+      .send({ metadata, sourceFile: resp1.body.source_file })
       .expect(200)
 
     if (resp2.body.metadataMultihash !== 'testCIDLink') {
