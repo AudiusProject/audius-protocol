@@ -1,8 +1,7 @@
+let urlJoin = require('proper-url-join')
+if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 const { Base, Services } = require('./base')
-const axios = require('axios')
 const Utils = require('../utils')
-
-const CancelToken = axios.CancelToken
 
 // Public gateways to send requests to, ordered by precidence.
 const publicGateways = [
@@ -10,48 +9,16 @@ const publicGateways = [
   'https://cloudflare-ipfs.com/ipfs/'
 ]
 
-// Races requests for file content
-async function raceRequests (
-  urls,
-  callback
-) {
-  const sources = []
-  const requests = urls.map(async (url, i) => {
-    const source = CancelToken.source()
-    sources.push(source)
-
-    // Slightly offset requests by their order, so:
-    // 1. We try public gateways first
-    // 2. We give requests the opportunity to get canceled if other's are very fast
-    await Utils.wait(100 * i)
-
-    return new Promise((resolve, reject) => {
-      axios({
-        method: 'get',
-        url,
-        responseType: 'blob',
-        cancelToken: source.token
-      })
-        .then(response => {
-          resolve({
-            blob: response,
-            url
-          })
-        })
-        .catch((thrown) => {
-          reject(thrown)
-          // no-op.
-          // If debugging `axios.isCancel(thrown)`
-          // can be used to check if the throw was from a cancel.
-        })
-    })
-  })
-  const response = await Utils.promiseFight(requests)
-  sources.forEach(source => {
-    source.cancel('Fetch already succeeded')
-  })
-  callback(response.url)
-  return response.blob
+const downloadURL = (url, filename) => {
+  if (document) {
+    const link = document.createElement('a')
+    link.href = url
+    link.target = '_blank'
+    link.download = filename
+    link.click()
+    return
+  }
+  throw new Error('No body document found')
 }
 
 class File extends Base {
@@ -67,10 +34,37 @@ class File extends Base {
   async fetchCID (cid, creatorNodeGateways, callback = null) {
     const gateways = publicGateways
       .concat(creatorNodeGateways)
-    const urls = gateways.map(gateway => `${gateway}${cid}`)
+    const urls = gateways.map(gateway => urlJoin(gateway, cid))
 
     try {
-      return raceRequests(urls, callback)
+      return Utils.raceRequests(urls, callback, {
+        method: 'get',
+        responseType: 'blob'
+      })
+    } catch (e) {
+      throw new Error(`Failed to retrieve ${cid}`)
+    }
+  }
+
+  /**
+   * Fetches a file from IPFS with a given CID. Follows the same pattern
+   * as fetchCID, but resolves with a download of the file rather than
+   * returning the response content.
+   * @param {string} cid IPFS content identifier
+   * @param {Array<string>} creatorNodeGateways fallback ipfs gateways from creator nodes
+   * @param {string?} filename optional filename for the download
+   * @param {boolean?} usePublicGateways
+   */
+  async downloadCID (cid, creatorNodeGateways, filename, usePublicGateways = false) {
+    const gateways = usePublicGateways ? publicGateways.concat(creatorNodeGateways) : creatorNodeGateways
+    const urls = gateways.map(gateway => urlJoin(gateway, cid, { query: { filename } }))
+
+    try {
+      // Races requests and fires the download callback for the first endpoint to
+      // respond with a valid response to a `head` request.
+      return Utils.raceRequests(urls, (url) => downloadURL(url, filename), {
+        method: 'head'
+      })
     } catch (e) {
       throw new Error(`Failed to retrieve ${cid}`)
     }

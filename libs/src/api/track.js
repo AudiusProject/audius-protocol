@@ -1,4 +1,5 @@
 const { Base, Services } = require('./base')
+const CreatorNode = require('../services/creatorNode')
 const Utils = require('../utils')
 const retry = require('async-retry')
 
@@ -68,6 +69,15 @@ class Tracks extends Base {
   async getTrackListens (timeFrame = null, idsArray = null, startTime = null, endTime = null, limit = null, offset = null) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     return this.identityService.getTrackListens(timeFrame, idsArray, startTime, endTime, limit, offset)
+  }
+
+  /**
+   * Checks if a download is available from provided creator node endpoints
+   * @param {string} creatorNodeEndpoints creator node endpoints
+   * @param {number} trackId
+   */
+  async checkIfDownloadAvailable (trackId, creatorNodeEndpoints) {
+    return CreatorNode.checkIfDownloadAvailable(trackId, creatorNodeEndpoints)
   }
 
   /* ------- SETTERS ------- */

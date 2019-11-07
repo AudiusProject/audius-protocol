@@ -152,6 +152,59 @@ class Utils {
 
     return timings.sort((a, b) => a.millis - b.millis)
   }
+
+  // Races requests for file content
+  /**
+   * Races multiple requests
+   * @param {*} urls
+   * @param {*} callback invoked with the first successful url
+   * @param {object} axiosConfig extra axios config for each request
+   */
+  static async raceRequests (
+    urls,
+    callback,
+    axiosConfig
+  ) {
+    const CancelToken = axios.CancelToken
+
+    const sources = []
+    const requests = urls.map(async (url, i) => {
+      const source = CancelToken.source()
+      sources.push(source)
+
+      // Slightly offset requests by their order, so:
+      // 1. We try public gateways first
+      // 2. We give requests the opportunity to get canceled if other's are very fast
+      await Utils.wait(100 * i)
+
+      return new Promise((resolve, reject) => {
+        axios({
+          method: 'get',
+          url,
+          cancelToken: source.token,
+          ...axiosConfig
+        })
+          .then(response => {
+            resolve({
+              blob: response,
+              url
+            })
+          })
+          .catch((thrown) => {
+            reject(thrown)
+            // no-op.
+            // If debugging `axios.isCancel(thrown)`
+            // can be used to check if the throw was from a cancel.
+          })
+      })
+    })
+    const response = await Utils.promiseFight(requests)
+    sources.forEach(source => {
+      source.cancel('Fetch already succeeded')
+    })
+    callback(response.url)
+    return response.blob
+  }
 }
 
 module.exports = Utils

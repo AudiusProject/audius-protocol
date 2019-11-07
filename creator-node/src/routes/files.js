@@ -165,10 +165,13 @@ module.exports = function (app) {
     logger.info(`IPFS Standalone Request - ${CID}`)
     logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
-    const ipfs = req.app.get('ipfsAPI')
     try {
+      // If client has provided filename, set filename in header to be auto-populated in download prompt.
+      if (req.query.filename) {
+        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${req.query.filename}`)
+      }
       await new Promise((resolve, reject) => {
-        ipfs.catReadableStream(CID)
+        req.app.get('ipfsAPI').catReadableStream(CID)
           .on('data', streamData => { res.write(streamData) })
           .on('end', () => { res.end(); resolve() })
           .on('error', e => { reject(e) })
@@ -186,7 +189,6 @@ module.exports = function (app) {
     if (!(req.params && req.params.dirCID && req.params.filename)) {
       return sendResponse(req, res, errorResponseBadRequest(`Invalid request, no multihash provided`))
     }
-    req.logger.info(req.params.dirCID, req.params.filename)
 
     // Do not act as a public gateway. Only serve IPFS files that are tracked by this creator node.
     const dirCID = req.params.dirCID
@@ -206,10 +208,9 @@ module.exports = function (app) {
     logger.info(`IPFS Standalone Request - ${ipfsPath}`)
     logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
-    const ipfs = req.app.get('ipfsAPI')
     try {
       await new Promise((resolve, reject) => {
-        ipfs.catReadableStream(ipfsPath)
+        req.app.get('ipfsAPI').catReadableStream(ipfsPath)
           .on('data', streamData => { res.write(streamData) })
           .on('end', () => { res.end(); resolve() })
           .on('error', e => { reject(e) })
