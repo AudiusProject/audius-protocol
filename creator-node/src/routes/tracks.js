@@ -221,23 +221,22 @@ module.exports = function (app) {
 
     try {
       // Create / update track entry on db.
-      const resp = (await models.Track.upsert(
-        {
-          cnodeUserUUID,
-          metadataFileUUID,
-          metadataJSON,
-          blockchainId: blockchainTrackId,
-          coverArtFileUUID
-        },
-        { transaction: t, returning: true }
+      const resp = (await models.Track.upsert({
+        cnodeUserUUID,
+        metadataFileUUID,
+        metadataJSON,
+        blockchainId: blockchainTrackId,
+        coverArtFileUUID
+      },
+      { transaction: t, returning: true }
       ))
       const track = resp[0]
       const trackCreated = resp[1]
 
       /** Associate matching segment files on DB with new/updated track. */
-      
+
       const trackSegmentCIDs = metadataJSON.track_segments.map(segment => segment.multihash)
-      
+
       // if track created, ensure files exist with trackuuid = null and update them.
       if (trackCreated) {
         const trackFiles = await models.File.findAll({
@@ -250,25 +249,23 @@ module.exports = function (app) {
           transaction: t
         })
         if (trackFiles.length < trackSegmentCIDs.length) {
-          throw new Error('ruh roh')
+          throw new Error('Did not find files for every track segment CID.')
         }
         const numAffectedRows = await models.File.update(
           { trackUUID: track.trackUUID },
           { where: {
-              multihash: trackSegmentCIDs,
-              cnodeUserUUID,
-              trackUUID: null,
-              type: 'track'
-            },
-            transaction: t
+            multihash: trackSegmentCIDs,
+            cnodeUserUUID,
+            trackUUID: null,
+            type: 'track'
+          },
+          transaction: t
           }
         )
         if (numAffectedRows < trackSegmentCIDs.length) {
-          throw new Error('ruh roh')
+          throw new Error('Could not find all')
         }
-      }
-      // if track updated, ensure files exist with trackuuid.
-      else {
+      } else { /** If track updated, ensure files exist with trackuuid. */
         const trackFiles = await models.File.findAll({
           where: {
             multihash: trackSegmentCIDs,
@@ -279,7 +276,7 @@ module.exports = function (app) {
           transaction: t
         })
         if (trackFiles.length < trackSegmentCIDs.length) {
-          throw new Error('ruh roh')
+          throw new Error('Could not find all')
         }
       }
 
