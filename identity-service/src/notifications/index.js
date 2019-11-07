@@ -412,7 +412,7 @@ class NotificationProcessor {
     let userNotifSettings = await models.UserNotificationSettings.findOrCreate(
       { where: { userId } }
     )
-    if (!userNotifSettings.milestonesAndAchievements) { return }
+    if (!userNotifSettings[0].milestonesAndAchievements) { return }
 
     let existingMilestoneQuery = await models.Notification.findAll({
       where: {
