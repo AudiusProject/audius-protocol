@@ -221,32 +221,67 @@ module.exports = function (app) {
 
     try {
       // Create / update track entry on db.
-      const track = (await models.Track.upsert({
-        cnodeUserUUID,
-        metadataFileUUID,
-        metadataJSON,
-        blockchainId: blockchainTrackId,
-        coverArtFileUUID
-      }, { transaction: t, returning: true }))[0]
+      const resp = (await models.Track.upsert(
+        {
+          cnodeUserUUID,
+          metadataFileUUID,
+          metadataJSON,
+          blockchainId: blockchainTrackId,
+          coverArtFileUUID
+        },
+        { transaction: t, returning: true }
+      ))
+      const track = resp[0]
+      const trackCreated = resp[1]
 
-      // Associate matching segment files on DB with new/updated track.
-      await Promise.all(metadataJSON.track_segments.map(async segment => {
-        // Update each segment file; error if not found.
-        const numAffectedRows = await models.File.update(
-          { trackUUID: track.trackUUID },
-          { where: {
-            multihash: segment.multihash,
+      /** Associate matching segment files on DB with new/updated track. */
+      
+      const trackSegmentCIDs = metadataJSON.track_segments.map(segment => segment.multihash)
+      
+      // if track created, ensure files exist with trackuuid = null and update them.
+      if (trackCreated) {
+        const trackFiles = await models.File.findAll({
+          where: {
+            multihash: trackSegmentCIDs,
             cnodeUserUUID,
             trackUUID: null,
             type: 'track'
           },
           transaction: t
+        })
+        if (trackFiles.length < trackSegmentCIDs.length) {
+          throw new Error('ruh roh')
+        }
+        const numAffectedRows = await models.File.update(
+          { trackUUID: track.trackUUID },
+          { where: {
+              multihash: trackSegmentCIDs,
+              cnodeUserUUID,
+              trackUUID: null,
+              type: 'track'
+            },
+            transaction: t
           }
         )
-        if (!numAffectedRows) {
-          return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
+        if (numAffectedRows < trackSegmentCIDs.length) {
+          throw new Error('ruh roh')
         }
-      }))
+      }
+      // if track updated, ensure files exist with trackuuid.
+      else {
+        const trackFiles = await models.File.findAll({
+          where: {
+            multihash: trackSegmentCIDs,
+            cnodeUserUUID,
+            trackUUID: track.trackUUID,
+            type: 'track'
+          },
+          transaction: t
+        })
+        if (trackFiles.length < trackSegmentCIDs.length) {
+          throw new Error('ruh roh')
+        }
+      }
 
       // Update cnodeUser's latestBlockNumber if higher than previous latestBlockNumber.
       // TODO - move to subquery to guarantee atomicity.
