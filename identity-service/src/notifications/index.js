@@ -25,7 +25,8 @@ const notificationTypes = {
   },
   MilestoneFollow: 'MilestoneFollow',
   MilestoneRepost: 'MilestoneRepost',
-  MilestoneFavorite: 'MilestoneFavorite'
+  MilestoneFavorite: 'MilestoneFavorite',
+  MilestoneListen: 'MilestoneListen'
 }
 
 const actionEntityTypes = {
@@ -46,6 +47,8 @@ const repostMilestoneList = [1, 2, 3, 4, 5, 8]
 
 // Favorite milestone list shared across tracks/albums/playlists
 const favoriteMilestoneList = [1, 2, 3, 4, 5, 8]
+
+const trackListenMilestoneList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 let notifDiscProv = config.get('notificationDiscoveryProvider')
 
@@ -116,7 +119,49 @@ class NotificationProcessor {
     return highestBlockNumber
   }
 
-  async indexMilestones (milestones, owners, metadata) {
+  async calculateTrackListenMilestones () {
+    // Select last 10 distinct tracks with listens
+    let recentListenCountQuery = {
+      attributes: [[models.Sequelize.col('trackId'), 'trackId'], [models.Sequelize.fn('max', models.Sequelize.col('hour')), 'hour']],
+      order: [[models.Sequelize.col('hour'), 'DESC']],
+      group: ['trackId'],
+      limit: 10
+    }
+
+    // Distinct tracks
+    let res = await models.TrackListenCount.findAll(recentListenCountQuery)
+    let tracksListenedTo = res.map((listenEntry) => listenEntry.trackId)
+
+    // Total listens query
+    let totalListens = {
+      attributes: [
+        [models.Sequelize.col('trackId'), 'trackId'],
+        [
+          models.Sequelize.fn('date_trunc', 'millennium', models.Sequelize.col('hour')),
+          'date'
+        ],
+        [models.Sequelize.fn('sum', models.Sequelize.col('listens')), 'listens']
+      ],
+      group: ['trackId', 'date'],
+      order: [[models.Sequelize.col('listens'), 'DESC']],
+      where: {
+        trackId: { [models.Sequelize.Op.in]: tracksListenedTo }
+      }
+    }
+
+    // map of listens
+    let totalListenQuery = await models.TrackListenCount.findAll(totalListens)
+    let processedTotalListens = totalListenQuery.map((x) => {
+      return { trackId: x.trackId, listenCount: x.listens }
+    })
+
+    // TODO: Query track owners
+    return processedTotalListens
+  }
+
+  async indexMilestones (milestones, owners, metadata, listenCounts) {
+    console.log('---indexMilestones---')
+    console.log(listenCounts)
     // Index follower milestones into notifications table
     let followersAddedDictionary = milestones.follower_counts
     let timestamp = new Date()
@@ -171,6 +216,31 @@ class NotificationProcessor {
 
     // Index favorite milestones
     await this.updateFavoriteMilestones(milestones.favorite_counts, owners, blocknumber, timestamp)
+
+    // Index listens
+    await this.updateTrackListenMilestones(listenCounts, owners, blocknumber, timestamp)
+  }
+
+  async updateTrackListenMilestones (listenCounts, owners, blocknumber, timestamp) {
+    for (var entry of listenCounts) {
+      let trackListenCount = Number.parseInt(entry.listenCount)
+      for (var i = trackListenMilestoneList.length; i >= 0; i--) {
+        let milestoneValue = trackListenMilestoneList[i]
+        if (trackListenCount >= milestoneValue) {
+          let trackId = entry.trackId
+          let ownerId = entry.owner
+          await this.processListenCountMilestone(
+            ownerId,
+            trackId,
+            actionEntityTypes.Track,
+            milestoneValue,
+            blocknumber,
+            timestamp
+          )
+          break
+        }
+      }
+    }
   }
 
   async updateRepostMilestones (repostCounts, owners, blocknumber, timestamp) {
@@ -328,6 +398,17 @@ class NotificationProcessor {
       timestamp)
   }
 
+  async processListenCountMilestone (userId, entityId, entityType, milestoneValue, blocknumber, timestamp) {
+    await this.processMilestone(
+      notificationTypes.MilestoneListen,
+      userId,
+      entityId,
+      entityType,
+      milestoneValue,
+      blocknumber,
+      timestamp)
+  }
+
   async processMilestone (milestoneType, userId, entityId, entityType, milestoneValue, blocknumber, timestamp) {
     let existingMilestoneQuery = await models.Notification.findAll({
       where: {
@@ -383,9 +464,8 @@ class NotificationProcessor {
       })
 
       if (milestonesToBeDeleted) {
-        console.log('To be deleted milestones:')
         for (var milestoneToDelete of milestonesToBeDeleted) {
-          console.log(milestoneToDelete.id)
+          console.log(`Deleting milestone: ${milestoneToDelete.id}`)
           let destroyTx = await models.NotificationAction.destroy({
             where: {
               notificationId: milestoneToDelete.id
@@ -407,10 +487,26 @@ class NotificationProcessor {
     let date = new Date()
     console.log(`indexNotifications job - ${date}`)
 
+    // Query owners for tracks relevant to track listen counts
+    let listenCounts = await this.calculateTrackListenMilestones()
+    console.log(listenCounts)
+    let trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
+
+    // These track_id get parameters will be used to retrieve track owner info
+    // This is required since there is no guarantee that there are indeed notifications for this user
+    // The owner info is then used to target listenCount milestone notifications
+    let params = new URLSearchParams()
+    trackIdOwnersToRequestList.forEach((x) => { params.append('track_id', x) })
+    params.append('min_block_number', minBlock)
+
     let reqObj = {
       method: 'get',
-      url: `${notifDiscProv}/notifications?min_block_number=${minBlock}`
+      url: `${notifDiscProv}/notifications`,
+      params: params,
+      timeout: 10000
     }
+    console.log(reqObj)
+
     // TODO: investigate why this has two .data, after axios switch
     let body = (await axios(reqObj)).data
     let metadata = body.data.info
@@ -760,12 +856,19 @@ class NotificationProcessor {
             }
           }
         }
-
-        console.log('end of notifs')
       }
     }
 
-    await this.indexMilestones(milestones, owners, metadata)
+    // Populate owners
+    listenCounts = listenCounts.map((x) => {
+      return {
+        trackId: x.trackId,
+        listenCount: x.listenCount,
+        owner: owners.tracks[x.trackId]
+      }
+    })
+
+    await this.indexMilestones(milestones, owners, metadata, listenCounts)
     return metadata.max_block_number
   }
 }

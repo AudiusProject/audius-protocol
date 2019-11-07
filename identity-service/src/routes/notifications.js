@@ -25,9 +25,7 @@ const NotificationType = Object.freeze({
   Milestone: 'Milestone',
   MilestoneRepost: 'MilestoneRepost',
   MilestoneFavorite: 'MilestoneFavorite',
-  MilestoneTrackListens: 'MilestoneTrackListens',
-  MilestonePlaylistListens: 'MilestonePlaylistListens',
-  MilestoneAlbumListens: 'MilestoneAlbumListens',
+  MilestoneListen: 'MilestoneListen',
   MilestoneFollow: 'MilestoneFollow'
 })
 
@@ -137,21 +135,11 @@ const mapMilestone = {
   [NotificationType.MilestoneFavorite]: {
     achievement: Achievement.Favorite
   },
-  [NotificationType.MilestoneTrackListens]: {
-    achievement: Achievement.Listens,
-    entityType: Entity.Track
-  },
-  [NotificationType.MilestonePlaylistListens]: {
-    achievement: Achievement.Listens,
-    entityType: Entity.Playlist
-  },
-  [NotificationType.MilestoneAlbumListens]: {
-    achievement: Achievement.Listens,
-    entityType: Entity.Album
+  [NotificationType.MilestoneListen]: {
+    achievement: Achievement.Listens
   },
   [NotificationType.MilestoneFollow]: {
-    achievement: Achievement.Followers,
-    entityType: Entity.User
+    achievement: Achievement.Followers
   }
 }
 
@@ -187,9 +175,7 @@ const notificationResponseMap = {
   [NotificationType.Announcement]: formatAnnouncement,
   [NotificationType.MilestoneRepost]: formatMilestone,
   [NotificationType.MilestoneFavorite]: formatMilestone,
-  [NotificationType.MilestoneTrackListens]: formatMilestone,
-  [NotificationType.MilestonePlaylistListens]: formatMilestone,
-  [NotificationType.MilestoneAlbumListens]: formatMilestone,
+  [NotificationType.MilestoneListen]: formatMilestone,
   [NotificationType.MilestoneFollow]: formatMilestone
 }
 
