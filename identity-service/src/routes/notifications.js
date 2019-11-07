@@ -358,7 +358,6 @@ module.exports = function (app) {
    * Marks all of a user's notifications as read & inserts rows for announcements
    * postBody: {number} isRead        Identitifies if the notification is to be marked as read
    *
-   * TODO: Validate userId
   */
   app.post('/notifications/all', authMiddleware, handleResponse(async (req, res, next) => {
     let { isRead } = req.body
@@ -415,7 +414,6 @@ module.exports = function (app) {
    * Updates fields for a user's settings (or creates the settings w/ db defaults if not created)
    * postBody: {object} settings      Identitifies if the notification is to be marked as read
    *
-   * TODO: Validate userId
   */
   app.post('/notifications/settings', authMiddleware, handleResponse(async (req, res, next) => {
     const { settings } = req.body
