@@ -1,5 +1,6 @@
 const axios = require('axios')
 const { recoverPersonalSignature } = require('eth-sig-util')
+const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 
 const config = require('./config.js')
 const models = require('./models')
@@ -58,8 +59,8 @@ async function authMiddleware (req, res, next) {
       next()
     }
   } catch (err) {
-    console.log(err)
-    throw new Error('[Error]: The wallet address is not associated with a user id')
+    const errorResponse = errorResponseBadRequest('[Error]: The wallet address is not associated with a user id')
+    return sendResponse(req, res, errorResponse)
   }
 }
 
