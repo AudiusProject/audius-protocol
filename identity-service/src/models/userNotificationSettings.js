@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
     browserPushNotifications: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: true
+      defaultValue: false
     },
     emailFrequency: {
       allowNull: false,

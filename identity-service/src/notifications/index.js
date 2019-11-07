@@ -3,7 +3,7 @@ const config = require('../config.js')
 const models = require('../models')
 const axios = require('axios')
 
-const notificationTypes = {
+const notificationTypes = Object.freeze({
   Follow: 'Follow',
   Repost: {
     base: 'Repost',
@@ -27,14 +27,14 @@ const notificationTypes = {
   MilestoneRepost: 'MilestoneRepost',
   MilestoneFavorite: 'MilestoneFavorite',
   MilestoneListen: 'MilestoneListen'
-}
+})
 
-const actionEntityTypes = {
+const actionEntityTypes = Object.freeze({
   User: 'User',
   Track: 'Track',
   Album: 'Album',
   Playlist: 'Playlist'
-}
+})
 
 const notificationJobType = 'notificationProcessJob'
 
@@ -48,6 +48,7 @@ const repostMilestoneList = [1, 2, 3, 4, 5, 8]
 // Favorite milestone list shared across tracks/albums/playlists
 const favoriteMilestoneList = [1, 2, 3, 4, 5, 8]
 
+// Track listen milestone list
 const trackListenMilestoneList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 let notifDiscProv = config.get('notificationDiscoveryProvider')
@@ -113,7 +114,6 @@ class NotificationProcessor {
       highestBlockNumber = this.startBlock
     }
 
-    // TODO: consider whether we really need to cache highest block number like this
     let date = new Date()
     console.log(`Highest block: ${highestBlockNumber} - ${date}`)
     return highestBlockNumber
@@ -160,8 +160,6 @@ class NotificationProcessor {
   }
 
   async indexMilestones (milestones, owners, metadata, listenCounts) {
-    console.log('---indexMilestones---')
-    console.log(listenCounts)
     // Index follower milestones into notifications table
     let followersAddedDictionary = milestones.follower_counts
     let timestamp = new Date()
@@ -169,10 +167,6 @@ class NotificationProcessor {
     let usersWithNewFollowers = Object.keys(followersAddedDictionary)
 
     for (var targetUser of usersWithNewFollowers) {
-      let userNotifSettings = await models.UserNotificationSettings.findOne(
-        { where: { userId: targetUser } }
-      )
-      if (!userNotifSettings.milestonesAndAchievements) { continue }
       if (followersAddedDictionary.hasOwnProperty(targetUser)) {
         let currentFollowerCount = followersAddedDictionary[targetUser]
         console.log(`User: ${targetUser} has ${currentFollowerCount} followers`)
@@ -233,10 +227,7 @@ class NotificationProcessor {
         if (trackListenCount >= milestoneValue) {
           let trackId = entry.trackId
           let ownerId = entry.owner
-          let userNotifSettings = await models.UserNotificationSettings.findOne(
-            { where: { userId: ownerId } }
-          )
-          if (!userNotifSettings.milestonesAndAchievements) { continue }
+          console.log(`Track ${trackId}, Owner ${ownerId} listens: ${trackListenCount}, milestone ${milestoneValue}`)
           await this.processListenCountMilestone(
             ownerId,
             trackId,
@@ -418,6 +409,12 @@ class NotificationProcessor {
   }
 
   async processMilestone (milestoneType, userId, entityId, entityType, milestoneValue, blocknumber, timestamp) {
+    // Skip notification based on user configuration
+    let userNotifSettings = await models.UserNotificationSettings.findOrCreate(
+      { where: { userId } }
+    )
+    if (!userNotifSettings.milestonesAndAchievements) { return }
+
     let existingMilestoneQuery = await models.Notification.findAll({
       where: {
         userId: userId,
