@@ -8,6 +8,14 @@ module.exports = {
     })
       .then(() => queryInterface.addIndex('Users', ['walletAddress']))
       .then(() => queryInterface.addIndex('Users', ['blockchainUserId']))
+      .then(() => queryInterface.addColumn('Users', 'IP', {
+        type: Sequelize.String,
+        allowNull: true
+      }))
+      .then(() => queryInterface.addColumn('Users', 'timezone', {
+        type: Sequelize.String,
+        allowNull: true
+      }))
   },
 
   down: (queryInterface, Sequelize) => {

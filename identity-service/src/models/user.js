@@ -16,25 +16,29 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true
     },
-
     // allowNull is true because associate will set handle later
     handle: {
       type: DataTypes.STRING,
       allowNull: true
     },
-
+    IP: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    timezone: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     // allowNull is true because associate will set walletAddress later
     walletAddress: {
       type: DataTypes.STRING,
       allowNull: true
     },
-
     isConfigured: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
     },
-
     // this is the last time we have an activity for this user
     // could be updated whenever we relay a tx on behalf of them
     lastSeenDate: {
