@@ -557,7 +557,7 @@ class NotificationProcessor {
         let notificationInitiator = notif.metadata.follower_user_id
         let unreadQuery = await models.Notification.findAll({
           where: {
-            isRead: false,
+            isViewed: false,
             userId: notificationTarget,
             type: notificationTypes.Follow
           }
@@ -568,6 +568,7 @@ class NotificationProcessor {
         if (unreadQuery.length === 0) {
           let createNotifTx = await models.Notification.create({
             type: notificationTypes.Follow,
+            isViewed: false,
             isRead: false,
             isHidden: false,
             userId: notificationTarget,
@@ -636,8 +637,7 @@ class NotificationProcessor {
 
         let unreadQuery = await models.Notification.findAll({
           where: {
-            isRead: false,
-            isHidden: false,
+            isViewed: false,
             userId: notificationTarget,
             type: repostType,
             entityId: notificationEntityId
@@ -651,6 +651,7 @@ class NotificationProcessor {
             type: repostType,
             isRead: false,
             isHidden: false,
+            isViewed: false,
             userId: notificationTarget,
             entityId: notificationEntityId,
             blocknumber,
@@ -713,8 +714,7 @@ class NotificationProcessor {
         let notificationInitiator = notif.initiator
         let unreadQuery = await models.Notification.findAll({
           where: {
-            isRead: false,
-            isHidden: false,
+            isViewed: false,
             userId: notificationTarget,
             type: favoriteType,
             entityId: notificationEntityId
@@ -725,6 +725,7 @@ class NotificationProcessor {
         if (unreadQuery.length === 0) {
           let favoriteNotifTx = await models.Notification.create({
             type: favoriteType,
+            isViewed: false,
             isRead: false,
             isHidden: false,
             userId: notificationTarget,
@@ -815,8 +816,7 @@ class NotificationProcessor {
 
           let unreadQuery = await models.Notification.findAll({
             where: {
-              isRead: false,
-              isHidden: false,
+              isViewed: false,
               userId: notificationTarget,
               type: createType,
               entityId: notificationEntityId
@@ -826,6 +826,7 @@ class NotificationProcessor {
           let notificationId = null
           if (unreadQuery.length === 0) {
             let createTrackNotifTx = await models.Notification.create({
+              isViewed: false,
               isRead: false,
               isHidden: false,
               userId: notificationTarget,
