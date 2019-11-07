@@ -55,6 +55,13 @@ def notifications():
     min_block_number = request.args.get("min_block_number", type=int)
     max_block_number = request.args.get("max_block_number", type=int)
 
+    track_ids_to_owner = []
+    try:
+        track_ids_str_list = request.args.getlist("track_id")
+        track_ids_to_owner = [int(y) for y in track_ids_str_list]
+    except Exception as e:
+        logger.error(f'Failed to retrieve track list {e}')
+
     # Max block number is not explicitly required (yet)
     if not min_block_number and min_block_number != 0:
         return api_helpers.error_response({'msg': 'Missing min block number'}, 500)
@@ -426,8 +433,20 @@ def notifications():
 
         notifications.extend(created_notifications)
 
+        # Get additional owner info as requested for listen counts
+        tracks_owner_query = (
+            session.query(Track)
+            .filter(
+                Track.is_current == True,
+                Track.track_id.in_(track_ids_to_owner))
+        )
+        track_owner_results = tracks_owner_query.all()
+        for entry in track_owner_results:
+            owner = entry.owner_id
+            track_id = entry.track_id
+            owner_info[const.tracks][track_id] = owner
+
     # Final sort - TODO: can we sort by timestamp?
-    # TODO: should this be reverse or not? reverse=True - time desc., else time asc.
     sorted_notifications = \
             sorted(notifications, key=lambda i: i[const.notification_blocknumber], reverse=False)
 
