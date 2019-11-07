@@ -169,6 +169,10 @@ class NotificationProcessor {
     let usersWithNewFollowers = Object.keys(followersAddedDictionary)
 
     for (var targetUser of usersWithNewFollowers) {
+      let userNotifSettings = await models.UserNotificationSettings.findOne(
+        { where: { userId: targetUser } }
+      )
+      if (!userNotifSettings.milestonesAndAchievements) { continue }
       if (followersAddedDictionary.hasOwnProperty(targetUser)) {
         let currentFollowerCount = followersAddedDictionary[targetUser]
         console.log(`User: ${targetUser} has ${currentFollowerCount} followers`)
@@ -229,6 +233,10 @@ class NotificationProcessor {
         if (trackListenCount >= milestoneValue) {
           let trackId = entry.trackId
           let ownerId = entry.owner
+          let userNotifSettings = await models.UserNotificationSettings.findOne(
+            { where: { userId: ownerId } }
+          )
+          if (!userNotifSettings.milestonesAndAchievements) { continue }
           await this.processListenCountMilestone(
             ownerId,
             trackId,
