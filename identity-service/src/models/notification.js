@@ -39,8 +39,12 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: false
     },
+    isViewed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
     userId: {
-      // TODO: convert to camels
       type: DataTypes.INTEGER,
       allowNull: false
     },

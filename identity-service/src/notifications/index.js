@@ -60,6 +60,11 @@ class NotificationProcessor {
       { redis:
         { port: config.get('redisPort'), host: config.get('redisHost') }
       })
+    this.emailQueue = new Bull(
+      'email-queue',
+      { redis:
+        { port: config.get('redisPort'), host: config.get('redisHost') }
+      })
     this.startBlock = config.get('notificationStartBlock')
   }
 
@@ -69,13 +74,16 @@ class NotificationProcessor {
     // Clear any pending notif jobs
     await this.notifQueue.empty()
 
-    // TODO: Eliminate this in favor of disc prov libs call
-    // TODO: audiusLibs disc prov method update to include notificaitons
     this.audiusLibs = audiusLibs
 
+    // Notification processing job
+    // Indexes network notifications
     this.notifQueue.process(async (job, done) => {
       let minBlock = job.data.minBlock
       if (!minBlock && minBlock !== 0) throw new Error('no min block')
+
+      // TODO: remove this in favor of cron
+      this.emailQueue.add({ type: 'unreadEmailJob' })
 
       try {
         // Index notifications
@@ -99,6 +107,20 @@ class NotificationProcessor {
 
       done()
     })
+
+    this.emailQueue.process(async (job, done) => {
+      await this.processEmailNotifications()
+      done()
+    })
+
+    // TODO: Replace w/every hour cron, re-enable for final testing
+    // Every hour cron: '0 * * * *'
+    /*
+    this.emailQueue.add(
+      { type: 'unreadEmailJob' },
+      { repeat: { cron: '* * * * *' } }
+    )
+    */
 
     let startBlock = await this.getHighestBlockNumber()
     console.log(`Starting with ${startBlock}`)
@@ -226,7 +248,7 @@ class NotificationProcessor {
         if (trackListenCount >= milestoneValue) {
           let trackId = entry.trackId
           let ownerId = entry.owner
-          console.log(`Track ${trackId}, Owner ${ownerId} listens: ${trackListenCount}, milestone ${milestoneValue}`)
+          // console.log(`Track ${trackId}, Owner ${ownerId} listens: ${trackListenCount}, milestone ${milestoneValue}`)
           await this.processListenCountMilestone(
             ownerId,
             trackId,
@@ -431,7 +453,6 @@ class NotificationProcessor {
     })
 
     if (existingMilestoneQuery.length === 0) {
-      console.log(`Milestone : ${milestoneType}, User: ${userId}, entity: ${entityType}, milestoneVal: ${milestoneValue}`)
       let createMilestoneTx = await models.Notification.create({
         userId: userId,
         type: milestoneType,
@@ -873,6 +894,25 @@ class NotificationProcessor {
 
     await this.indexMilestones(milestones, owners, metadata, listenCounts)
     return metadata.max_block_number
+  }
+
+  async processEmailNotifications () {
+    try {
+      console.log('processEmailNotifications')
+      let distinctUnreadQuery = await models.Notification.findAll({
+        attributes: ['userId'],
+        where: {
+          isRead: false
+        },
+        group: ['userId']
+      })
+      let usersWithUnreadNotifs = distinctUnreadQuery.map(x => x.userId)
+      console.log('Users w/unread notifications')
+      console.log(usersWithUnreadNotifs)
+    } catch (e) {
+      console.log('Error processing email notifications')
+      console.log(e)
+    }
   }
 }
 
