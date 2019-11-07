@@ -113,7 +113,6 @@ class NotificationProcessor {
     if (!highestBlockNumber) {
       highestBlockNumber = this.startBlock
     }
-
     let date = new Date()
     console.log(`Highest block: ${highestBlockNumber} - ${date}`)
     return highestBlockNumber
@@ -149,13 +148,12 @@ class NotificationProcessor {
       }
     }
 
-    // map of listens
+    // Map of listens
     let totalListenQuery = await models.TrackListenCount.findAll(totalListens)
     let processedTotalListens = totalListenQuery.map((x) => {
       return { trackId: x.trackId, listenCount: x.listens }
     })
 
-    // TODO: Query track owners
     return processedTotalListens
   }
 
@@ -166,6 +164,7 @@ class NotificationProcessor {
     let blocknumber = metadata.max_block_number
     let usersWithNewFollowers = Object.keys(followersAddedDictionary)
 
+    // Parse follower milestones
     for (var targetUser of usersWithNewFollowers) {
       if (followersAddedDictionary.hasOwnProperty(targetUser)) {
         let currentFollowerCount = followersAddedDictionary[targetUser]
@@ -494,7 +493,6 @@ class NotificationProcessor {
 
     // Query owners for tracks relevant to track listen counts
     let listenCounts = await this.calculateTrackListenMilestones()
-    console.log(listenCounts)
     let trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
 
     // These track_id get parameters will be used to retrieve track owner info
@@ -510,7 +508,6 @@ class NotificationProcessor {
       params: params,
       timeout: 10000
     }
-    console.log(reqObj)
 
     // TODO: investigate why this has two .data, after axios switch
     let body = (await axios(reqObj)).data
