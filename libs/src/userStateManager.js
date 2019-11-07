@@ -1,5 +1,7 @@
 const CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY = require('./constants').CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY
 
+const supportsLocalStorage = () => typeof window !== 'undefined' && window && window.localStorage
+
 /**
  * Singleton class to store the current user if initialized.
  * Some instances of AudiusLibs and services require a current user to
@@ -8,14 +10,14 @@ const CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY = require('./constants').CURRENT_USE
 class UserStateManager {
   constructor () {
     this.currentUser = null
-    if (window && window.localStorage) {
+    if (supportsLocalStorage()) {
       window.localStorage.removeItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
     }
   }
 
   setCurrentUser (currentUser) {
     this.currentUser = currentUser
-    if (window && window.localStorage) {
+    if (supportsLocalStorage()) {
       window.localStorage.setItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY, true)
     }
   }
@@ -30,7 +32,7 @@ class UserStateManager {
 
   clearUser () {
     this.currentUser = null
-    if (window && window.localStorage) {
+    if (supportsLocalStorage()) {
       window.localStorage.removeItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
     }
   }
