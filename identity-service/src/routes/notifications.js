@@ -447,6 +447,7 @@ module.exports = function (app) {
         attributes: [
           'favorites',
           'reposts',
+          'milestonesAndAchievements',
           'announcements',
           'followers',
           'browserPushNotifications',
