@@ -899,15 +899,14 @@ class NotificationProcessor {
   async processEmailNotifications () {
     try {
       console.log('processEmailNotifications')
-      // return
-      let usersWithUnreadNotifications = await models.Notification.findAll({
+      let usersWithUnseeenNotifications = await models.Notification.findAll({
         attributes: ['userId'],
         where: {
-          isRead: false
+          isViewed: false
         },
         group: ['userId']
       })
-      let usersWithUnreadNotifs = usersWithUnreadNotifications.map(x => x.userId)
+      let usersWithUnreadNotifs = usersWithUnseeenNotifications.map(x => x.userId)
       let userInfo = await models.User.findAll({
         where: {
           blockchainUserId: {
@@ -952,20 +951,75 @@ class NotificationProcessor {
       for (let userToEmail of userInfo) {
         console.log('---------')
         console.log(userToEmail.email)
+        let userId = userToEmail.blockchainUserId
         let timezone = userToEmail.timezone
         if (!timezone) {
           timezone = 'America/Los_Angeles'
         }
         let userSettings = await models.UserNotificationSettings.findOrCreate(
-          { where: { userId: userToEmail.blockchainUserId } }
+          { where: { userId } }
         )
+        let frequency = userSettings[0].emailFrequency
+        if (frequency === 'off') {
+          console.log(`Bypassing email for user ${userId}`)
+          continue
+        }
         let currentUtcTime = moment.utc()
-        console.log(currentUtcTime)
         let userTime = currentUtcTime.tz(timezone)
-        console.log(userTime.format())
-        let startOfUserDay = userTime.clone().local().startOf('day')
-        console.log(startOfUserDay.format())
-        // console.log(userSettings)
+        let startOfUserDay = userTime.clone().startOf('day')
+        let difference = moment.duration(userTime.diff(startOfUserDay)).asHours()
+        // Based on this difference, schedule email for users
+        // In prod, this difference must be <1 hour or between midnight - 1am
+        let maxHourDifference = 1.5
+        maxHourDifference = 14 // TODO: RESET THIS LINE TO ABOVE
+        // Valid time found
+        if (difference < maxHourDifference) {
+          console.log(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
+          let latestUserEmail = await models.NotificationEmail.findOne({
+            where: {
+              userId
+            },
+            order: [['timestamp', 'DESC']]
+          })
+          if (!latestUserEmail) {
+            console.log(`No email history for user ${userId}`)
+            // TODO: Actually send first email here
+            await models.NotificationEmail.create({
+              userId,
+              frequency,
+              timestamp: currentUtcTime
+            })
+          } else {
+            let lastSentTimestamp = moment(latestUserEmail.timestamp)
+            let timeSinceEmail = moment.duration(currentUtcTime.diff(lastSentTimestamp)).asHours()
+            if (frequency === 'daily') {
+              // If 1 day has passed, send email
+              if (timeSinceEmail > 24) {
+                // Send email
+                console.log(`Sending DAILY email to ${userId}, last email from ${timeSinceEmail}`)
+                await models.NotificationEmail.create({
+                  userId,
+                  frequency,
+                  timestamp: currentUtcTime
+                })
+              }
+            } else if (frequency === 'weekly') {
+              // If 1 week has passed, send email
+              if (timeSinceEmail > 168) {
+                // Send email
+                console.log(`Sending WEEKLY email to ${userId}, last email from ${timeSinceEmail}`)
+                await models.NotificationEmail.create({
+                  userId,
+                  frequency,
+                  timestamp: currentUtcTime
+                })
+              }
+            }
+          }
+        } else {
+          console.log(`Invalid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
+        }
+        console.log('---------')
       }
     } catch (e) {
       console.log('Error processing email notifications')
