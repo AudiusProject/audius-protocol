@@ -38,18 +38,16 @@ const actionEntityTypes = Object.freeze({
 
 const notificationJobType = 'notificationProcessJob'
 
-// Temporary milestone list for followers
-// TODO: parse list from config somehow
-const followerMilestoneList = [1, 2, 4, 6, 8, 10]
-
+// Base milestone list shared across all types
+// Each type can be configured as needed
+const baseMilestoneList = [10, 25, 50, 100, 250, 500, 1000]
+const followerMilestoneList = baseMilestoneList
 // Repost milestone list shared across tracks/albums/playlists
-const repostMilestoneList = [1, 2, 3, 4, 5, 8]
-
+const repostMilestoneList = baseMilestoneList
 // Favorite milestone list shared across tracks/albums/playlists
-const favoriteMilestoneList = [1, 2, 3, 4, 5, 8]
-
+const favoriteMilestoneList = baseMilestoneList
 // Track listen milestone list
-const trackListenMilestoneList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+const trackListenMilestoneList = baseMilestoneList
 
 let notifDiscProv = config.get('notificationDiscoveryProvider')
 
@@ -900,16 +898,68 @@ class NotificationProcessor {
   async processEmailNotifications () {
     try {
       console.log('processEmailNotifications')
-      let distinctUnreadQuery = await models.Notification.findAll({
+      return
+      let usersWithUnreadNotifications = await models.Notification.findAll({
         attributes: ['userId'],
         where: {
           isRead: false
         },
         group: ['userId']
       })
-      let usersWithUnreadNotifs = distinctUnreadQuery.map(x => x.userId)
-      console.log('Users w/unread notifications')
-      console.log(usersWithUnreadNotifs)
+      let usersWithUnreadNotifs = usersWithUnreadNotifications.map(x => x.userId)
+      let userInfo = await models.User.findAll({
+        where: {
+          blockchainUserId: {
+            [models.Sequelize.Op.in]: usersWithUnreadNotifs
+          }
+        }
+      })
+
+      // For any users missing blockchain id, here we query from the disc prov and fill in values
+      if (userInfo.length !== usersWithUnreadNotifs.length) {
+        console.log('Missing blockchain ids')
+        let usersWithoutBlockchainId = await models.User.findAll({
+          attributes: ['walletAddress'],
+          where: { blockchainUserId: null }
+        })
+        for (let updateUser of usersWithoutBlockchainId) {
+          let walletAddress = updateUser.walletAddress
+          const response = await axios({
+            method: 'get',
+            url: `${notifDiscProv}/users`,
+            params: {
+              wallet: walletAddress
+            }
+          })
+          let missingUserId = response.data.data[0].user_id
+          await models.User.update(
+            { blockchainUserId: missingUserId },
+            { where: { walletAddress } }
+          )
+        }
+        // Refresh the userInfo values
+        userInfo = await models.User.findAll({
+          where: {
+            blockchainUserId: {
+              [models.Sequelize.Op.in]: usersWithUnreadNotifs
+            }
+          }
+        })
+      }
+
+      // For every user with pending notifications, check if they are in the right timezone
+      for (let userToEmail of userInfo) {
+        console.log('---------')
+        console.log(userToEmail)
+        let timezone = userToEmail.timezone
+        if (!timezone) {
+          timezone = ''
+        }
+        let userSettings = await models.UserNotificationSettings.findOrCreate(
+          { where: { userId: userToEmail.blockchainUserId } }
+        )
+        console.log(userSettings)
+      }
     } catch (e) {
       console.log('Error processing email notifications')
       console.log(e)
