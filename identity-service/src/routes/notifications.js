@@ -269,16 +269,16 @@ module.exports = function (app) {
         }],
         limit
       })
-      let unreadCount = await models.Notification.findAll({
-        where: { userId, isRead: false, isHidden: false },
+      let unViewedCount = await models.Notification.findAll({
+        where: { userId, isViewed: false, isRead: false, isHidden: false },
         include: [{ model: models.NotificationAction, as: 'actions', required: true, attributes: [] }],
         attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('Notification.id')), 'total']],
         group: ['Notification.id']
       })
-      unreadCount = unreadCount.length
+      unViewedCount = unViewedCount.length
 
-      const readAnnouncementCount = await models.Notification.count({
-        where: { userId, isRead: true, type: NotificationType.Announcement }
+      const viewedAnnouncementCount = await models.Notification.count({
+        where: { userId, isViewed: true, type: NotificationType.Announcement }
       })
 
       const announcements = app.get('announcements')
@@ -287,13 +287,12 @@ module.exports = function (app) {
       const announcementsAfterFilter = validUserAnnouncements
         .filter(a => timeOffset.isAfter(moment(a.datePublished)))
 
-      const unreadAnnouncementCount = validUserAnnouncements.length - readAnnouncementCount
-      console.log(`unreadAnnouncementCount: ${unreadAnnouncementCount}`)
+      const unreadAnnouncementCount = validUserAnnouncements.length - viewedAnnouncementCount
       const userNotifications = formatNotifications(notifications, announcementsAfterFilter)
       return successResponse({
         message: 'success',
         notifications: userNotifications.slice(0, limit),
-        totalUnread: unreadAnnouncementCount + unreadCount
+        totalUnread: unreadAnnouncementCount + unViewedCount
       })
     } catch (err) {
       console.log(err)
@@ -356,52 +355,56 @@ module.exports = function (app) {
 
   /*
    * Marks all of a user's notifications as read & inserts rows for announcements
-   * postBody: {number} isRead        Identitifies if the notification is to be marked as read
+   * postBody: {bool?} isRead          Identitifies if the notification is to be marked as read
+   * postBody: {bool?} isViewed        Identitifies if all notifications are to be marked viewed
    *
   */
   app.post('/notifications/all', authMiddleware, handleResponse(async (req, res, next) => {
-    let { isRead } = req.body
+    let { isRead, isViewed } = req.body
     const { createdAt, blockchainUserId: userId } = req.user
 
     const createdDate = moment(createdAt)
-    if (!createdDate.isValid() || typeof userId !== 'number' || userId < 0 || typeof isRead !== 'boolean') {
+    if (!createdDate.isValid() || (typeof isRead !== 'boolean' && typeof isViewed !== 'boolean')) {
       return errorResponseBadRequest('Invalid request body')
     }
     try {
-      if (typeof isRead === 'boolean') {
-        await models.Notification.update(
-          { isRead },
-          { where: { userId, isRead: !isRead } }
-        )
-
-        const announcementMap = app.get('announcementMap')
-        const unreadAnnouncementIds = Object.keys(announcementMap).reduce((acc, id) => {
-          if (moment(announcementMap[id].datePublished).isAfter(createdDate)) acc[id] = false
-          return acc
-        }, {})
-        const readAnnouncementIds = await models.Notification.findAll({
-          where: {
-            type: NotificationType.Announcement,
-            userId
-          },
-          attributes: ['entityId']
-        })
-        for (let announcementId of readAnnouncementIds) {
-          delete unreadAnnouncementIds[announcementId.entityId]
-        }
-        const unreadAnnouncements = Object.keys(unreadAnnouncementIds).map(id => announcementMap[id])
-        await models.Notification.bulkCreate(
-          unreadAnnouncements.map(announcement => ({
-            type: NotificationType.Announcement,
-            entityId: announcement.entityId,
-            isRead: true,
-            isHidden: false,
-            userId,
-            blocknumber: 0,
-            timestamp: announcement.datePublished
-          }))
-        )
+      const update = {
+        ...(typeof isRead !== 'undefined' ? { isRead } : {}),
+        ...(typeof isViewed !== 'undefined' ? { isViewed } : {})
       }
+
+      await models.Notification.update(
+        update,
+        { where: { userId } }
+      )
+
+      const announcementMap = app.get('announcementMap')
+      const unreadAnnouncementIds = Object.keys(announcementMap).reduce((acc, id) => {
+        if (moment(announcementMap[id].datePublished).isAfter(createdDate)) acc[id] = false
+        return acc
+      }, {})
+      const readAnnouncementIds = await models.Notification.findAll({
+        where: {
+          type: NotificationType.Announcement,
+          userId
+        },
+        attributes: ['entityId']
+      })
+      for (let announcementId of readAnnouncementIds) {
+        delete unreadAnnouncementIds[announcementId.entityId]
+      }
+      const unreadAnnouncements = Object.keys(unreadAnnouncementIds).map(id => announcementMap[id])
+      await models.Notification.bulkCreate(
+        unreadAnnouncements.map(announcement => ({
+          type: NotificationType.Announcement,
+          entityId: announcement.entityId,
+          ...update,
+          isHidden: false,
+          userId,
+          blocknumber: 0,
+          timestamp: announcement.datePublished
+        }))
+      )
       return successResponse({ message: 'success' })
     } catch (err) {
       return errorResponseBadRequest({
