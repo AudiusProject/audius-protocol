@@ -18,6 +18,10 @@ module.exports = {
           as: 'notificationId'
         }
       },
+      blocknumber: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+      },
       actionEntityType: {
         type: Sequelize.TEXT,
         allowNull: false

@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
         as: 'notificationId'
       }
     },
+    blocknumber: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
     actionEntityType: { // TODO: make this enum
       type: DataTypes.TEXT,
       allowNull: false

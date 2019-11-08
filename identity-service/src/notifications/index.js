@@ -130,7 +130,7 @@ class NotificationProcessor {
   }
 
   async getHighestBlockNumber () {
-    let highestBlockNumber = await models.Notification.max('blocknumber')
+    let highestBlockNumber = await models.NotificationAction.max('blocknumber')
     if (!highestBlockNumber) {
       highestBlockNumber = this.startBlock
     }
@@ -219,7 +219,8 @@ class NotificationProcessor {
                 where: {
                   notificationId: notificationId,
                   actionEntityType: actionEntityTypes.User,
-                  actionEntityId: milestoneValue
+                  actionEntityId: milestoneValue,
+                  blocknumber
                 }
               })
             }
@@ -464,7 +465,8 @@ class NotificationProcessor {
         where: {
           notificationId,
           actionEntityType: entityType,
-          actionEntityId: milestoneValue
+          actionEntityId: milestoneValue,
+          blocknumber
         }
       })
 
@@ -585,7 +587,8 @@ class NotificationProcessor {
             where: {
               notificationId: notificationId,
               actionEntityType: actionEntityTypes.User,
-              actionEntityId: notificationInitiator
+              actionEntityId: notificationInitiator,
+              blocknumber
             }
           })
           // TODO: Handle log statements to indicate how many notifs have been processed
@@ -666,7 +669,8 @@ class NotificationProcessor {
             where: {
               notificationId: notificationId,
               actionEntityType: actionEntityTypes.User,
-              actionEntityId: notificationInitiator
+              actionEntityId: notificationInitiator,
+              blocknumber
             }
           })
           // Update Notification table timestamp
@@ -742,7 +746,8 @@ class NotificationProcessor {
             where: {
               notificationId: notificationId,
               actionEntityType: actionEntityTypes.User,
-              actionEntityId: notificationInitiator
+              actionEntityId: notificationInitiator,
+              blocknumber
             }
           })
           // Update Notification table timestamp
@@ -845,7 +850,8 @@ class NotificationProcessor {
               where: {
                 notificationId,
                 actionEntityType: actionEntityType,
-                actionEntityId: createdActionEntityId
+                actionEntityId: createdActionEntityId,
+                blocknumber
               }
             })
 
