@@ -31,15 +31,16 @@
     "ioredis": "^4.9.0",
     "mailgun-js": "^0.22.0",
     "moment": "^2.24.0",
+    "moment-timezone": "^0.5.27",
     "multer": "^1.4.0",
     "pg": "^7.6.1",
     "rate-limit-redis": "^1.6.0",
     "request": "^2.88.0",
     "sequelize": "^4.41.2",
-    "web3": "1.0.0-beta.36",
     "shortid": "^2.2.14",
     "umzug": "^2.2.0",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "web3": "1.0.0-beta.36"
   },
   "devDependencies": {
     "mocha": "^5.2.0",

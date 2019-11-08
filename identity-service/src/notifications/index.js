@@ -2,6 +2,7 @@ const Bull = require('bull')
 const config = require('../config.js')
 const models = require('../models')
 const axios = require('axios')
+const moment = require('moment-timezone');
 
 const notificationTypes = Object.freeze({
   Follow: 'Follow',
@@ -898,7 +899,7 @@ class NotificationProcessor {
   async processEmailNotifications () {
     try {
       console.log('processEmailNotifications')
-      return
+      // return
       let usersWithUnreadNotifications = await models.Notification.findAll({
         attributes: ['userId'],
         where: {
@@ -950,15 +951,21 @@ class NotificationProcessor {
       // For every user with pending notifications, check if they are in the right timezone
       for (let userToEmail of userInfo) {
         console.log('---------')
-        console.log(userToEmail)
+        console.log(userToEmail.email)
         let timezone = userToEmail.timezone
         if (!timezone) {
-          timezone = ''
+          timezone = 'America/Los_Angeles'
         }
         let userSettings = await models.UserNotificationSettings.findOrCreate(
           { where: { userId: userToEmail.blockchainUserId } }
         )
-        console.log(userSettings)
+        let currentUtcTime = moment.utc()
+        console.log(currentUtcTime)
+        let userTime = currentUtcTime.tz(timezone)
+        console.log(userTime.format())
+        let startOfUserDay = userTime.clone().local().startOf('day')
+        console.log(startOfUserDay.format())
+        // console.log(userSettings)
       }
     } catch (e) {
       console.log('Error processing email notifications')
