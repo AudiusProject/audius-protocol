@@ -143,7 +143,6 @@ module.exports = function (app) {
         if (!firstSegment) return errorResponseServerError('No segment found for track')
 
         const file = await models.File.findOne({
-          attributes: ['sourceFile'],
           where: {
             multihash: firstSegment.multihash,
             cnodeUserUUID: req.session.cnodeUserUUID,
@@ -263,7 +262,7 @@ module.exports = function (app) {
           }
         )
         if (numAffectedRows < trackSegmentCIDs.length) {
-          throw new Error('Could not find all')
+          throw new Error('Failed to associate files for every track segment CID.')
         }
       } else { /** If track updated, ensure files exist with trackuuid. */
         const trackFiles = await models.File.findAll({
@@ -276,7 +275,7 @@ module.exports = function (app) {
           transaction: t
         })
         if (trackFiles.length < trackSegmentCIDs.length) {
-          throw new Error('Could not find all')
+          throw new Error('Did not find files for every track segment CID with trackUUID.')
         }
       }
 
@@ -284,10 +283,13 @@ module.exports = function (app) {
       // TODO - move to subquery to guarantee atomicity.
       const updatedCNodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID }, transaction: t })
       if (!updatedCNodeUser || !updatedCNodeUser.latestBlockNumber) {
-        return errorResponseServerError('Issue in retrieving udpatedCnodeUser')
+        throw new Error('Issue in retrieving udpatedCnodeUser')
       }
-      req.logger.info(`cnodeuser ${cnodeUserUUID} first latestBlockNumber ${cnodeUser.latestBlockNumber} || \
-        current latestBlockNumber ${updatedCNodeUser.latestBlockNumber} || given blockNumber ${blockNumber}`)
+      req.logger.info(
+        `cnodeuser ${cnodeUserUUID} first latestBlockNumber ${cnodeUser.latestBlockNumber} || \
+        current latestBlockNumber ${updatedCNodeUser.latestBlockNumber} || \
+        given blockNumber ${blockNumber}`
+      )
       if (blockNumber > updatedCNodeUser.latestBlockNumber) {
         await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
       }
