@@ -7,7 +7,7 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction()
 
     const tracks = (await queryInterface.sequelize.query(
-      'select "trackUUID", "metadataJSON"->\'track_segments\' as segments from "Tracks" limit 100;',
+      'select "trackUUID", "metadataJSON"->\'track_segments\' as segments from "Tracks";',
       { transaction }
     ))[0]
 
