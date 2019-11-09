@@ -23,7 +23,7 @@ class IPFSClient:
     def get_metadata_from_json(self, metadata_format, resp_json):
         metadata = {}
         for parameter, value in metadata_format.items():
-            metadata[parameter] = resp_json.get(parameter) or value
+            metadata[parameter] = resp_json.get(parameter) if resp_json.get(parameter) != None else value
         return metadata
 
     # pylint: disable=broad-except

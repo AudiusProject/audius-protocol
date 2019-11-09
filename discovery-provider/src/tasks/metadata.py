@@ -17,7 +17,9 @@ track_metadata_format = {
     "isrc": None,
     "iswc": None,
     "track_segments": [],
-    "download": {}
+    "download": {},
+    "is_unlisted": None,
+    "field_visibility": {}
 }
 
 # Required format for user metadata retrieved from IPFS
