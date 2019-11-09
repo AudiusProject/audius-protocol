@@ -144,6 +144,8 @@ class Track(Base):
     download = Column(postgresql.JSONB, nullable=True)
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
+    is_unlisted = Column(Boolean, nullable=False)
+    field_visibility = Column(postgresql.JSONB, nullable=True)
 
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, track_id, blockhash)

@@ -250,6 +250,8 @@ def populate_track_record_metadata(track_record, track_metadata):
     track_record.isrc = track_metadata["isrc"]
     track_record.iswc = track_metadata["iswc"]
     track_record.track_segments = track_metadata["track_segments"]
+    track_record.is_unlisted = track_metadata["is_unlisted"]
+    track_record.field_visibility = track_metadata["field_visibility"]
 
     if "download" in track_metadata:
         track_record.download = {
