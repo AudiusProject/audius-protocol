@@ -910,20 +910,25 @@ class NotificationProcessor {
       where: { blockchainUserId: null }
     })
     for (let updateUser of usersWithoutBlockchainId) {
-      let walletAddress = updateUser.walletAddress
-      const response = await axios({
-        method: 'get',
-        url: `${notifDiscProv}/users`,
-        params: {
-          wallet: walletAddress
-        }
-      })
-      let missingUserId = response.data.data[0].user_id
-      await models.User.update(
-        { blockchainUserId: missingUserId },
-        { where: { walletAddress } }
-      )
-      await models.UserNotificationSettings.findOrCreate({ where: { userId: missingUserId } })
+      try {
+        let walletAddress = updateUser.walletAddress
+        console.log(`Updating user with wallet ${walletAddress}`)
+        const response = await axios({
+          method: 'get',
+          url: `${notifDiscProv}/users`,
+          params: {
+            wallet: walletAddress
+          }
+        })
+        let missingUserId = response.data.data[0].user_id
+        await models.User.update(
+          { blockchainUserId: missingUserId },
+          { where: { walletAddress } }
+        )
+        await models.UserNotificationSettings.findOrCreate({ where: { userId: missingUserId } })
+      } catch (e) {
+        console.log(e)
+      }
     }
   }
 
