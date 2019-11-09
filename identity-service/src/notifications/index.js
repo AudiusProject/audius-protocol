@@ -69,11 +69,13 @@ class NotificationProcessor {
 
   // TODO: Add Queue diagnostic to health_check or notif_check
 
-  async init (audiusLibs) {
+  async init (audiusLibs, expressApp) {
     // Clear any pending notif jobs
     await this.notifQueue.empty()
 
+    this.expressApp = expressApp
     this.audiusLibs = audiusLibs
+    await this.updateBlockchainIds()
 
     // Notification processing job
     // Indexes network notifications
@@ -902,56 +904,95 @@ class NotificationProcessor {
     return metadata.max_block_number
   }
 
+  async updateBlockchainIds () {
+    // For any users missing blockchain id, here we query from the disc prov and fill in values
+    let usersWithoutBlockchainId = await models.User.findAll({
+      attributes: ['walletAddress'],
+      where: { blockchainUserId: null }
+    })
+    for (let updateUser of usersWithoutBlockchainId) {
+      let walletAddress = updateUser.walletAddress
+      const response = await axios({
+        method: 'get',
+        url: `${notifDiscProv}/users`,
+        params: {
+          wallet: walletAddress
+        }
+      })
+      let missingUserId = response.data.data[0].user_id
+      await models.User.update(
+        { blockchainUserId: missingUserId },
+        { where: { walletAddress } }
+      )
+      await models.UserNotificationSettings.findOrCreate({ where: { userId: missingUserId } })
+    }
+  }
+
   async processEmailNotifications () {
     try {
-      console.log('processEmailNotifications')
-      let usersWithUnseeenNotifications = await models.Notification.findAll({
+      // TODO: parse announcements into notifs
+      let announcementMap = {}
+      let appAnnouncements = this.expressApp.get('announcements')
+      for (var announcement of appAnnouncements) {
+        let announcementDate = announcement['datePublished']
+        let id = announcement['id']
+        announcementMap[id] = {}
+        let usersCreatedAfterNotification = await models.User.findAll({
+          attributes: ['blockchainUserId'],
+          where: {
+            createdAt: { [models.Sequelize.Op.lt]: moment(announcementDate) }
+          }
+        }).map(x => x.blockchainUserId)
+        announcementMap[id]['users'] = usersCreatedAfterNotification
+        announcementMap[id]['content'] = announcement
+      }
+      // End announcement parsing
+
+      let dailyEmailUsers = await models.UserNotificationSettings.findAll({
+        attributes: ['userId'],
+        where: { emailFrequency: 'daily' }
+      }).map(x => x.userId)
+      console.log(`Daily users: ${dailyEmailUsers}`)
+      let weeklyEmailUsers = await models.UserNotificationSettings.findAll({
+        attributes: ['userId'],
+        where: { emailFrequency: 'weekly' }
+      }).map(x => x.userId)
+      console.log(`Weekly users: ${weeklyEmailUsers}`)
+
+      let now = moment()
+      let dayAgo = now.subtract(1, 'days')
+      let weekAgo = now.subtract(7, 'days')
+      let dailyEmailUsersWithUnseeenNotifications = await models.Notification.findAll({
         attributes: ['userId'],
         where: {
-          isViewed: false
+          isViewed: false,
+          userId: { [models.Sequelize.Op.in]: dailyEmailUsers },
+          createdAt: { [models.Sequelize.Op.gt]: dayAgo }
         },
         group: ['userId']
-      })
-      let usersWithUnreadNotifs = usersWithUnseeenNotifications.map(x => x.userId)
+      }).map(x => x.userId)
+      console.log(dailyEmailUsersWithUnseeenNotifications)
+
+      let weeklyEmailUsersWithUnseeenNotifications = await models.Notification.findAll({
+        attributes: ['userId'],
+        where: {
+          isViewed: false,
+          userId: { [models.Sequelize.Op.in]: weeklyEmailUsers },
+          createdAt: { [models.Sequelize.Op.gt]: weekAgo }
+        },
+        group: ['userId']
+      }).map(x => x.userId)
+      console.log(weeklyEmailUsersWithUnseeenNotifications)
+      let allUsersWithUnseenNotifications = dailyEmailUsersWithUnseeenNotifications.concat(weeklyEmailUsersWithUnseeenNotifications)
+
+      console.log('processEmailNotifications')
       let userInfo = await models.User.findAll({
         where: {
           blockchainUserId: {
-            [models.Sequelize.Op.in]: usersWithUnreadNotifs
+            [models.Sequelize.Op.in]: allUsersWithUnseenNotifications
           }
         }
       })
-
-      // For any users missing blockchain id, here we query from the disc prov and fill in values
-      if (userInfo.length !== usersWithUnreadNotifs.length) {
-        console.log('Missing blockchain ids')
-        let usersWithoutBlockchainId = await models.User.findAll({
-          attributes: ['walletAddress'],
-          where: { blockchainUserId: null }
-        })
-        for (let updateUser of usersWithoutBlockchainId) {
-          let walletAddress = updateUser.walletAddress
-          const response = await axios({
-            method: 'get',
-            url: `${notifDiscProv}/users`,
-            params: {
-              wallet: walletAddress
-            }
-          })
-          let missingUserId = response.data.data[0].user_id
-          await models.User.update(
-            { blockchainUserId: missingUserId },
-            { where: { walletAddress } }
-          )
-        }
-        // Refresh the userInfo values
-        userInfo = await models.User.findAll({
-          where: {
-            blockchainUserId: {
-              [models.Sequelize.Op.in]: usersWithUnreadNotifs
-            }
-          }
-        })
-      }
 
       // For every user with pending notifications, check if they are in the right timezone
       for (let userToEmail of userInfo) {
@@ -977,7 +1018,7 @@ class NotificationProcessor {
         // Based on this difference, schedule email for users
         // In prod, this difference must be <1 hour or between midnight - 1am
         let maxHourDifference = 1.5
-        maxHourDifference = 14 // TODO: RESET THIS LINE TO ABOVE
+        maxHourDifference = 18 // TODO: RESET THIS LINE TO ABOVE
         // Valid time found
         if (difference < maxHourDifference) {
           console.log(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
@@ -1032,6 +1073,7 @@ class NotificationProcessor {
       console.log(e)
     }
   }
+
 }
 
 module.exports = NotificationProcessor

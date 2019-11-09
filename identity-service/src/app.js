@@ -43,14 +43,14 @@ class App {
     // attempts to wait until the db is accepting connections
     await new Promise(resolve => setTimeout(resolve, 2000))
     await this.runMigrations()
-    await this.getAudiusAnnoucments()
+    await this.getAudiusAnnouncements()
     await this.configureAudiusInstance()
     let server
     await new Promise(resolve => {
       server = this.express.listen(this.port, resolve)
     })
     await txRelay.fundRelayerIfEmpty()
-    await this.notificationProcessor.init(this.audiusLibs)
+    await this.notificationProcessor.init(this.audiusLibs, this.express)
     logger.info(`Listening on port ${this.port}...`)
 
     return { app: this.express, server }
@@ -172,7 +172,7 @@ class App {
     this.express.use(errorHandler)
   }
 
-  async getAudiusAnnoucments () {
+  async getAudiusAnnouncements () {
     const audiusNotificationUrl = config.get('audiusNotificationUrl')
     try {
       const response = await axios.get(`${audiusNotificationUrl}/index.json`)
@@ -195,7 +195,7 @@ class App {
         this.express.set('announcementMap', announcementMap)
       }
     } catch (err) {
-      logger.error(`Error, unable to get aduius annoucnements from ${audiusNotificationUrl} \n [Err]:`, err)
+      logger.error(`Error, unable to get aduius announcements from ${audiusNotificationUrl} \n [Err]:`, err)
     }
   }
 }
