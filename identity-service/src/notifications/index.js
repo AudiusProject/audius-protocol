@@ -84,7 +84,8 @@ class NotificationProcessor {
       if (!minBlock && minBlock !== 0) throw new Error('no min block')
 
       // TODO: remove this in favor of cron
-      this.emailQueue.add({ type: 'unreadEmailJob' })
+      // Re-enable for development as needed
+      // this.emailQueue.add({ type: 'unreadEmailJob' })
 
       try {
         // Index notifications
@@ -116,12 +117,10 @@ class NotificationProcessor {
 
     // TODO: Replace w/every hour cron, re-enable for final testing
     // Every hour cron: '0 * * * *'
-    /*
     this.emailQueue.add(
       { type: 'unreadEmailJob' },
       { repeat: { cron: '* * * * *' } }
     )
-    */
 
     let startBlock = await this.getHighestBlockNumber()
     console.log(`Starting with ${startBlock}`)
@@ -1073,7 +1072,6 @@ class NotificationProcessor {
       console.log(e)
     }
   }
-
 }
 
 module.exports = NotificationProcessor
