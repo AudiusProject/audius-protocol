@@ -9,6 +9,16 @@ async function initAudiusLibs () {
   if (!dataWeb3) throw new Error('Web3 incorrectly configured')
 
   let audiusInstance = new AudiusLibs({
+    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
+      /** autoSelect */ false,
+      /** whiteist */ new Set([config.get('notificationDiscoveryProvider')])
+    ),
+    ethWeb3Config: AudiusLibs.configEthWeb3(
+      config.get('ethTokenAddress'),
+      config.get('ethRegistryAddress'),
+      config.get('ethProviderUrl'),
+      config.get('ethOwnerWallet')
+    ),
     web3Config: {
       registryAddress,
       useExternalWeb3: true,

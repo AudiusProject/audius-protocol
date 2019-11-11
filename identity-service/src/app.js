@@ -19,6 +19,9 @@ const DOMAIN = 'mail.audius.co'
 const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
 const DEFAULT_KEY_GENERATOR = (req) => req.ip
 
+const sendEmail = require('./notifications/fetchNotificationMetadata')
+const renderEmail = require('./notifications/renderEmail')
+
 class App {
   constructor (port) {
     this.port = port
@@ -50,6 +53,7 @@ class App {
       server = this.express.listen(this.port, resolve)
     })
     await txRelay.fundRelayerIfEmpty()
+
     await this.notificationProcessor.init(this.audiusLibs, this.express)
     logger.info(`Listening on port ${this.port}...`)
 
