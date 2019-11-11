@@ -27,7 +27,8 @@ const notificationTypes = Object.freeze({
   MilestoneFollow: 'MilestoneFollow',
   MilestoneRepost: 'MilestoneRepost',
   MilestoneFavorite: 'MilestoneFavorite',
-  MilestoneListen: 'MilestoneListen'
+  MilestoneListen: 'MilestoneListen',
+  Announcement: 'Announcement'
 })
 
 const actionEntityTypes = Object.freeze({
@@ -38,6 +39,9 @@ const actionEntityTypes = Object.freeze({
 })
 
 const notificationJobType = 'notificationProcessJob'
+
+const dayInHours = 24
+const weekInHours = 168
 
 // Base milestone list shared across all types
 // Each type can be configured as needed
@@ -75,7 +79,8 @@ class NotificationProcessor {
 
     this.expressApp = expressApp
     this.audiusLibs = audiusLibs
-    await this.updateBlockchainIds()
+    // TODO: Expose this in a route or something else...
+    // await this.updateBlockchainIds()
 
     // Notification processing job
     // Indexes network notifications
@@ -85,7 +90,7 @@ class NotificationProcessor {
 
       // TODO: remove this in favor of cron
       // Re-enable for development as needed
-      // this.emailQueue.add({ type: 'unreadEmailJob' })
+      this.emailQueue.add({ type: 'unreadEmailJob' })
 
       try {
         // Index notifications
@@ -115,12 +120,14 @@ class NotificationProcessor {
       done()
     })
 
-    // TODO: Replace w/every hour cron, re-enable for final testing
+    // TODO: Re-enable for final testing
     // Every hour cron: '0 * * * *'
+    /*
     this.emailQueue.add(
       { type: 'unreadEmailJob' },
-      { repeat: { cron: '* * * * *' } }
+      { repeat: { cron: '0 * * * *' } }
     )
+    */
 
     let startBlock = await this.getHighestBlockNumber()
     console.log(`Starting with ${startBlock}`)
@@ -249,7 +256,7 @@ class NotificationProcessor {
         if (trackListenCount >= milestoneValue) {
           let trackId = entry.trackId
           let ownerId = entry.owner
-          // console.log(`Track ${trackId}, Owner ${ownerId} listens: ${trackListenCount}, milestone ${milestoneValue}`)
+          console.log(`Track ${trackId}, Owner ${ownerId} listens: ${trackListenCount}, milestone ${milestoneValue}`)
           await this.processListenCountMilestone(
             ownerId,
             trackId,
@@ -934,24 +941,6 @@ class NotificationProcessor {
 
   async processEmailNotifications () {
     try {
-      // TODO: parse announcements into notifs
-      let announcementMap = {}
-      let appAnnouncements = this.expressApp.get('announcements')
-      for (var announcement of appAnnouncements) {
-        let announcementDate = announcement['datePublished']
-        let id = announcement['id']
-        announcementMap[id] = {}
-        let usersCreatedAfterNotification = await models.User.findAll({
-          attributes: ['blockchainUserId'],
-          where: {
-            createdAt: { [models.Sequelize.Op.lt]: moment(announcementDate) }
-          }
-        }).map(x => x.blockchainUserId)
-        announcementMap[id]['users'] = usersCreatedAfterNotification
-        announcementMap[id]['content'] = announcement
-      }
-      // End announcement parsing
-
       let dailyEmailUsers = await models.UserNotificationSettings.findAll({
         attributes: ['userId'],
         where: { emailFrequency: 'daily' }
@@ -966,6 +955,67 @@ class NotificationProcessor {
       let now = moment()
       let dayAgo = now.subtract(1, 'days')
       let weekAgo = now.subtract(7, 'days')
+
+      // TODO: parse announcements into notifs
+      let appAnnouncements = this.expressApp.get('announcements')
+      // console.log(appAnnouncements)
+
+      // For each announcement, we generate a list of valid users
+      // Based on the user's email frequency
+      let dailyUsersWithPendingAnnouncements = []
+      let weeklyUsersWithPendingAnnouncements = []
+      let currentTime = moment.utc()
+      for (var announcement of appAnnouncements) {
+        let announcementDate = moment(announcement['datePublished'])
+        let timeSinceAnnouncement = moment.duration(currentTime.diff(announcementDate)).asHours()
+        let announcementEntityId = announcement['entityId']
+        let id = announcement['id']
+        let usersCreatedAfterNotification = await models.User.findAll({
+          attributes: ['blockchainUserId'],
+          where: {
+            createdAt: { [models.Sequelize.Op.lt]: moment(announcementDate) }
+          }
+        }).map(x => x.blockchainUserId)
+
+        for (var user of usersCreatedAfterNotification) {
+          let userNotificationQuery = await models.Notification.findOne({
+            where: {
+              isViewed: true,
+              userId: user,
+              type: notificationTypes.Announcement,
+              entityId: announcementEntityId
+            }
+          })
+          if (userNotificationQuery) {
+            console.log(`Skipping announcement ${announcementEntityId} for user ${user}`)
+            continue
+          }
+          if (dailyEmailUsers.includes(user)) {
+            console.log(`Announcements | Daily user ${user}`)
+            if (timeSinceAnnouncement < (dayInHours * 1.5)) {
+              console.log(`Announcements | Daily user ${user}, <1 day`)
+              dailyUsersWithPendingAnnouncements.append(user)
+            } else {
+              console.log(`Announcements | Daily user ${user}, >1 day`)
+            }
+          } else if (weeklyEmailUsers.includes(user)) {
+            console.log(`Announcements | Weekly user ${user}`)
+            if (timeSinceAnnouncement < (weekInHours * 1.5)) {
+              console.log(`Announcements | Weekly user ${user}, <1 week`)
+              weeklyUsersWithPendingAnnouncements.append(user)
+            } else {
+              console.log(`Announcements | Weekly user ${user}, >1 week`)
+            }
+          }
+        }
+        console.log(`Announcement - ${id}, users created after: ${usersCreatedAfterNotification}, time since ${timeSinceAnnouncement}`)
+      }
+      console.log(`processEmailNotifications - ${new Date()}`)
+
+      console.log(dailyUsersWithPendingAnnouncements)
+      console.log(weeklyUsersWithPendingAnnouncements)
+      // End announcement parsing
+
       let dailyEmailUsersWithUnseeenNotifications = await models.Notification.findAll({
         attributes: ['userId'],
         where: {
@@ -989,7 +1039,6 @@ class NotificationProcessor {
       console.log(weeklyEmailUsersWithUnseeenNotifications)
       let allUsersWithUnseenNotifications = dailyEmailUsersWithUnseeenNotifications.concat(weeklyEmailUsersWithUnseeenNotifications)
 
-      console.log('processEmailNotifications')
       let userInfo = await models.User.findAll({
         where: {
           blockchainUserId: {
@@ -1045,25 +1094,29 @@ class NotificationProcessor {
             let timeSinceEmail = moment.duration(currentUtcTime.diff(lastSentTimestamp)).asHours()
             if (frequency === 'daily') {
               // If 1 day has passed, send email
-              if (timeSinceEmail > 24) {
+              if (timeSinceEmail > dayInHours) {
                 // Send email
-                console.log(`Sending DAILY email to ${userId}, last email from ${timeSinceEmail}`)
+                console.log(`Sending DAILY email to ${userId}, last email from ${lastSentTimestamp}`)
                 await models.NotificationEmail.create({
                   userId,
                   frequency,
                   timestamp: currentUtcTime
                 })
+              } else {
+                console.log(`Skipping DAILY email to ${userId}, last email from ${lastSentTimestamp}`)
               }
             } else if (frequency === 'weekly') {
               // If 1 week has passed, send email
-              if (timeSinceEmail > 168) {
+              if (timeSinceEmail > weekInHours) {
                 // Send email
-                console.log(`Sending WEEKLY email to ${userId}, last email from ${timeSinceEmail}`)
+                console.log(`Sending WEEKLY email to ${userId}, last email from ${lastSentTimestamp}`)
                 await models.NotificationEmail.create({
                   userId,
                   frequency,
                   timestamp: currentUtcTime
                 })
+              } else {
+                console.log(`Skipping WEEKLY email to ${userId}, last email from ${lastSentTimestamp}`)
               }
             }
           }
