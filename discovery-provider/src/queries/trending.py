@@ -42,7 +42,8 @@ def trending(time):
                 .filter(
                     Track.genre.in_(genre_list),
                     Track.is_current == True,
-                    Track.is_delete == False
+                    Track.is_delete == False,
+                    Track.is_unlisted == False
                 )
                 .all()
             )
@@ -78,7 +79,8 @@ def trending(time):
             .filter(
                 Track.track_id.in_(track_ids),
                 Track.is_current == True,
-                Track.is_delete == False
+                Track.is_delete == False,
+                Track.is_unlisted == False
             )
             .all()
         )
@@ -99,6 +101,7 @@ def trending(time):
             .filter
             (
                 Track.is_current == True,
+                Track.is_unlisted == False,
                 Track.track_id.in_(not_deleted_track_ids)
             )
             .all()

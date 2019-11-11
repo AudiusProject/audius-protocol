@@ -87,7 +87,7 @@ def get_tracks():
     with db.scoped_session() as session:
         # Create initial query
         base_query = session.query(Track)
-        base_query = base_query.filter(Track.is_current == True)
+        base_query = base_query.filter(Track.is_current == True, Track.is_unlisted == False)
 
         # Conditionally process an array of tracks
         if "id" in request.args:
@@ -263,6 +263,7 @@ def get_feed():
                 session.query(Track)
                 .filter(
                     Track.is_current == True,
+                    Track.is_unlisted == False,
                     Track.track_id.in_(playlist_track_ids)
                 )
                 .all()
@@ -291,6 +292,7 @@ def get_feed():
                 session.query(Track)
                 .filter(
                     Track.is_current == True,
+                    Track.is_unlisted == False,
                     Track.owner_id.in_(followee_user_ids),
                     Track.track_id.notin_(tracks_to_dedupe)
                 )
@@ -360,6 +362,7 @@ def get_feed():
             # Query tracks reposted by followees
             reposted_tracks = session.query(Track).filter(
                 Track.is_current == True,
+                Track.is_unlisted == False,
                 Track.track_id.in_(reposted_track_ids)
             )
             # exclude tracks already fetched from above, in case of "all" filter
@@ -494,6 +497,7 @@ def get_repost_feed_for_user(user_id):
             session.query(Track)
             .filter(
                 Track.is_current == True,
+                Track.is_unlisted == False,
                 Track.track_id.in_(repost_track_ids)
             )
             .order_by(desc(Track.created_at))
