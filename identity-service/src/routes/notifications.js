@@ -186,7 +186,7 @@ const notificationResponseMap = {
  *
  * @return {Array<Notification|Announcement>} The merged & nsorted notificaitons/annoucnements
  */
-const mergeAudiusAnnoucements = (announcements, notifications) => {
+function mergeAudiusAnnoucements (announcements, notifications) {
   const allNotifications = announcements.concat(notifications)
   allNotifications.sort((a, b) => {
     let aDate = moment(a.datePublished || a.timestamp)
@@ -473,7 +473,7 @@ module.exports = function (app) {
   app.post('/notifications/subscription', authMiddleware, handleResponse(async (req, res, next) => {
     let { userId, isSubscribed } = req.body
     const subscriberId = req.user.blockchainUserId
-    console.log({ subscriberId, userId })
+
     if (typeof userId !== 'number' ||
       typeof subscriberId !== 'number' ||
       userId === subscriberId
@@ -509,3 +509,8 @@ module.exports = function (app) {
     return successResponse({ isSubscribed: !!subscription })
   }))
 }
+
+module.exports.mergeAudiusAnnoucements = mergeAudiusAnnoucements
+module.exports.mapMilestone = mapMilestone
+module.exports.NotificationType = NotificationType
+module.exports.Entity = Entity

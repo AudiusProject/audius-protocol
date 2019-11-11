@@ -190,8 +190,32 @@ const config = convict({
   notificationDiscoveryProvider: {
     doc: 'Whitelisted discovery provider to query notifications',
     format: String,
-    default: 'null',
+    default: 'http://localhost:5000',
     env: 'notificationDiscoveryProvider'
+  },
+  ethTokenAddress: {
+    doc: 'ethTokenAddress',
+    format: String,
+    default: '0x6e50590f6e97546D52F1FA5890C158B2C5a35b0a',
+    env: 'ethTokenAddress'
+  },
+  ethRegistryAddress: {
+    doc: 'ethRegistryAddress',
+    format: String,
+    default: '0xEe647984Ab2A50ad985405C0F0fF22D931511203',
+    env: 'ethRegistryAddress'
+  },
+  ethProviderUrl: {
+    doc: 'ethProviderUrl',
+    format: String,
+    default: 'http://localhost:8546',
+    env: 'ethProviderUrl'
+  },
+  ethOwnerWallet: {
+    doc: 'ethOwnerWallet',
+    format: String,
+    default: '0x2c4A05AAB768c06C50119d20941251636bD57110',
+    env: 'ethOwnerWallet'
   }
 })
 
