@@ -1,8 +1,12 @@
 const config = require('../config.js')
+const models = require('../models')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { sequelize } = require('../models')
 const { getRelayerFunds } = require('../txRelay')
 const Web3 = require('web3')
+const axios = require('axios')
+
+let notifDiscProv = config.get('notificationDiscoveryProvider')
 
 module.exports = function (app) {
   app.get('/health_check', handleResponse(async (req, res) => {
@@ -27,5 +31,27 @@ module.exports = function (app) {
         'available_balance': balance
       })
     }
+  }))
+
+  app.get('/notification_check', handleResponse(async (req, res) => {
+    let highestBlockNumber = await models.NotificationAction.max('blocknumber')
+    if (!highestBlockNumber) {
+      highestBlockNumber = config.get('notificationStartBlock')
+    }
+    let discProvHealthCheck = (await axios({
+      method: 'get',
+      url: `${notifDiscProv}/health_check`
+    })).data
+    let discProvDbHighestBlock = discProvHealthCheck['db']['number']
+    let notifBlockDiff = discProvDbHighestBlock - highestBlockNumber
+    let resp = {
+      'discProv': discProvHealthCheck,
+      'identity': highestBlockNumber,
+      'notifBlockDiff': notifBlockDiff
+    }
+    if (notifBlockDiff > 100) {
+      return errorResponseServerError(resp)
+    }
+    return successResponse(resp)
   }))
 }
