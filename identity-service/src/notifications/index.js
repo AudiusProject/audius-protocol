@@ -71,6 +71,7 @@ class NotificationProcessor {
         { port: config.get('redisPort'), host: config.get('redisHost') }
       })
     this.startBlock = config.get('notificationStartBlock')
+    this.blockchainIdsPopulated = false
   }
 
   // TODO: Add Queue diagnostic to health_check or notif_check
@@ -82,8 +83,9 @@ class NotificationProcessor {
     this.audiusLibs = audiusLibs
     this.expressApp = expressApp
     this.mg = this.expressApp.get('mailgun')
-    // TODO: Expose this in a route or something else...
-    // await this.updateBlockchainIds()
+
+    // Index all blockchain ids
+    await this.updateBlockchainIds()
 
     // Notification processing job
     // Indexes network notifications
@@ -955,13 +957,11 @@ class NotificationProcessor {
         attributes: ['userId'],
         where: { emailFrequency: 'daily' }
       }).map(x => x.userId)
-      // console.log(`Daily users: ${dailyEmailUsers}`)
 
       let weeklyEmailUsers = await models.UserNotificationSettings.findAll({
         attributes: ['userId'],
         where: { emailFrequency: 'weekly' }
       }).map(x => x.userId)
-      // console.log(`Weekly users: ${weeklyEmailUsers}`)
 
       let now = moment()
       let dayAgo = now.subtract(1, 'days')
@@ -1056,8 +1056,6 @@ class NotificationProcessor {
 
       // For every user with pending notifications, check if they are in the right timezone
       for (let userToEmail of userInfo) {
-        console.log('---------')
-        console.log(userToEmail.email)
         let userEmail = userToEmail.email
         let userId = userToEmail.blockchainUserId
         let timezone = userToEmail.timezone
@@ -1080,7 +1078,7 @@ class NotificationProcessor {
         // Based on this difference, schedule email for users
         // In prod, this difference must be <1 hour or between midnight - 1am
         let maxHourDifference = 1.5
-        maxHourDifference = 18 // TODO: RESET THIS LINE TO ABOVE
+        maxHourDifference = 21 // TODO: RESET THIS LINE TO ABOVE
         // Valid time found
         if (difference < maxHourDifference) {
           console.log(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
@@ -1091,7 +1089,6 @@ class NotificationProcessor {
             order: [['timestamp', 'DESC']]
           })
           if (!latestUserEmail) {
-            console.log(`No email history for user ${userId}`)
             let sent = await this.renderAndSendEmail(
               userId,
               userEmail,
@@ -1110,6 +1107,7 @@ class NotificationProcessor {
             if (frequency === 'daily') {
               // If 1 day has passed, send email
               if (timeSinceEmail >= dayInHours) {
+                console.log(`Sending Daily email to ${userId}, last email from ${lastSentTimestamp}`)
                 // Render email
                 let sent = await this.renderAndSendEmail(
                   userId,
@@ -1124,8 +1122,6 @@ class NotificationProcessor {
                   frequency,
                   timestamp: currentUtcTime
                 })
-              } else {
-                console.log(`Skipping DAILY email to ${userId}, last email from ${lastSentTimestamp}`)
               }
             } else if (frequency === 'weekly') {
               // If 1 week has passed, send email
@@ -1144,15 +1140,12 @@ class NotificationProcessor {
                   frequency,
                   timestamp: currentUtcTime
                 })
-              } else {
-                console.log(`Skipping WEEKLY email to ${userId}, last email from ${lastSentTimestamp}`)
               }
             }
           }
         } else {
           console.log(`Invalid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
         }
-        console.log('---------')
       }
     } catch (e) {
       console.log('Error processing email notifications')
@@ -1179,8 +1172,6 @@ class NotificationProcessor {
         renderProps['title'] = `Weekly Email - ${userEmail}`
         renderProps['subject'] = 'Unread notifications from last week'
       }
-      console.log(notificationProps)
-      console.log(renderProps)
 
       const notifHtml = renderEmail(renderProps)
 
@@ -1189,12 +1180,14 @@ class NotificationProcessor {
         to: `${userEmail}`,
         html: notifHtml
       }
+
       if (frequency === 'daily') {
         emailParams['subject'] = 'Unread notifications from yesterday'
       } else if (frequency === 'weekly') {
         emailParams['subject'] = 'Unread notifications from last week'
       }
 
+      console.log(emailParams)
       await this.sendEmail(emailParams)
       let emailParams2 = emailParams
       emailParams2['to'] = 'hareesh@audius.co'
