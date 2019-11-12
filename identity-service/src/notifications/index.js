@@ -260,7 +260,7 @@ class NotificationProcessor {
         if (trackListenCount >= milestoneValue) {
           let trackId = entry.trackId
           let ownerId = entry.owner
-          console.log(`Track ${trackId}, Owner ${ownerId} listens: ${trackListenCount}, milestone ${milestoneValue}`)
+          // console.log(`Track ${trackId}, Owner ${ownerId} listens: ${trackListenCount}, milestone ${milestoneValue}`)
           await this.processListenCountMilestone(
             ownerId,
             trackId,
@@ -481,6 +481,7 @@ class NotificationProcessor {
           blocknumber
         }
       })
+      console.log(`Process milestone ${userId}, type ${milestoneType}, entityId ${entityId}, type ${entityType}`)
 
       // Destroy any unread milestone notifications of this type + entity
       let milestonesToBeDeleted = await models.Notification.findAll({
