@@ -25,5 +25,7 @@
   "rateLimitingListensPerIPPerDay": 60,
   "rateLimitingListensPerTrackPerWeek": 120,
   "rateLimitingListensPerIPPerWeek": 180,
-  "minimumBalance": 10
+  "minimumBalance": 10,
+  "ethProviderUrl": "http://docker.for.mac.localhost:8546",
+  "mailgunApiKey": ""
 }

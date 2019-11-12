@@ -196,25 +196,25 @@ const config = convict({
   ethTokenAddress: {
     doc: 'ethTokenAddress',
     format: String,
-    default: '0x6e50590f6e97546D52F1FA5890C158B2C5a35b0a',
+    default: null,
     env: 'ethTokenAddress'
   },
   ethRegistryAddress: {
     doc: 'ethRegistryAddress',
     format: String,
-    default: '0xEe647984Ab2A50ad985405C0F0fF22D931511203',
+    default: null,
     env: 'ethRegistryAddress'
   },
   ethProviderUrl: {
     doc: 'ethProviderUrl',
     format: String,
-    default: 'http://localhost:8546',
+    default: null,
     env: 'ethProviderUrl'
   },
   ethOwnerWallet: {
     doc: 'ethOwnerWallet',
     format: String,
-    default: '0x2c4A05AAB768c06C50119d20941251636bD57110',
+    default: null,
     env: 'ethOwnerWallet'
   }
 })
@@ -226,6 +226,16 @@ const config = convict({
 // TODO(DM) - remove these defaults
 const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
+
+if (fs.existsSync('eth-contract-config.json')) {
+  let ethContractConfig = require('../eth-contract-config.json')
+  config.load({
+    'ethTokenAddress': ethContractConfig.audiusTokenAddress,
+    'ethRegistryAddress': ethContractConfig.registryAddress,
+    'ethOwnerWallet': ethContractConfig.ownerWallet,
+    'ethWallets': ethContractConfig.allWallets
+  })
+}
 
 // the contract-config.json file is used to load registry address locally
 // during development

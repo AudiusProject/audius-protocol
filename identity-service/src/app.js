@@ -54,7 +54,7 @@ class App {
     })
     await txRelay.fundRelayerIfEmpty()
 
-    await this.notificationProcessor.init(this.audiusLibs, this.express)
+    await this.notificationProcessor.init(this.audiusInstance, this.express)
     logger.info(`Listening on port ${this.port}...`)
 
     return { app: this.express, server }
