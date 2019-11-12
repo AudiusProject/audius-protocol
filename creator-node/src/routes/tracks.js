@@ -363,7 +363,7 @@ module.exports = function (app) {
       }
     })
 
-    return successResponse({ tracks: tracks })
+    return successResponse({ tracks })
   }))
 }
 
