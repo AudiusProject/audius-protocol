@@ -93,9 +93,9 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
       case NotificationType.MilestoneFavorite:
       case NotificationType.MilestoneListen: {
         if (notification.actions[0].actionEntityType === Entity.Track) {
-          trackIdsToFetch.push(notification.actions[0].actionEntityId)
+          trackIdsToFetch.push(notification.entityId)
         } else {
-          collectionIdsToFetch.push(notification.actions[0].actionEntityId)
+          collectionIdsToFetch.push(notification.entityId)
         }
         break
       }

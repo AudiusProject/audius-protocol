@@ -23,7 +23,7 @@ const AnnouncementHeader = () => (
       }}
     >
       <img
-        src={'https://download.audius.co/static-resources/email/iconAnnouncement.svg'}
+        src={'https://download.audius.co/static-resources/email/iconAnnouncement.png'}
         style={{
           height: '32px',
           width: '32px',
@@ -68,7 +68,7 @@ const OpenAudiusLink = () => (
   >
     {'Open Audius'}
     <img
-      src='https://download.audius.co/static-resources/email/arrow.svg'
+      src='https://download.audius.co/static-resources/email/iconArrow.png'
       style={{
         height: '8px',
         width: '8px',

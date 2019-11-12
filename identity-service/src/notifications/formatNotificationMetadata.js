@@ -6,7 +6,7 @@ const config = require('../config.js')
 const USER_NODE_IPFS_GATEWAY = config.get('notificationDiscoveryProvider').includes('staging') ? 'https://usermetadata.staging.audius.co/ipfs/' : 'https://usermetadata.audius.co/ipfs/'
 console.log(`USER_NODE_IPFS_GATEWAY ${USER_NODE_IPFS_GATEWAY}`)
 
-const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/iconUser.svg'
+const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/iconUser.png'
 
 const formatGateway = (creatorNodeEndpoint) =>
   creatorNodeEndpoint
