@@ -74,8 +74,6 @@ class NotificationProcessor {
     this.blockchainIdsPopulated = false
   }
 
-  // TODO: Add Queue diagnostic to health_check or notif_check
-
   async init (audiusLibs, expressApp, redis) {
     // Clear any pending notif jobs
     await this.notifQueue.empty()
@@ -231,7 +229,7 @@ class NotificationProcessor {
               })
               // Note that milestoneValue is the newly met milestone count in Notifications/NotificationActions
               let notificationId = createMilestoneTx.id
-              let notifActionCreateTx = await models.NotificationAction.findOrCreate({
+              await models.NotificationAction.findOrCreate({
                 where: {
                   notificationId: notificationId,
                   actionEntityType: actionEntityTypes.User,
@@ -477,7 +475,7 @@ class NotificationProcessor {
         timestamp
       })
       let notificationId = createMilestoneTx.id
-      let notifActionCreateTx = await models.NotificationAction.findOrCreate({
+      await models.NotificationAction.findOrCreate({
         where: {
           notificationId,
           actionEntityType: entityType,
@@ -638,7 +636,7 @@ class NotificationProcessor {
             repostType = notificationTypes.Repost.playlist
             break
           default:
-            throw new Error('Invalid repost type')  // TODO: gracefully handle this in try/catch
+            throw new Error('Invalid repost type')
         }
         let notificationTarget = notif.metadata.entity_owner_id
 
@@ -718,7 +716,7 @@ class NotificationProcessor {
             favoriteType = notificationTypes.Favorite.playlist
             break
           default:
-            throw new Error('Invalid favorite type')  // TODO: gracefully handle this in try/catch
+            throw new Error('Invalid favorite type')
         }
         let notificationTarget = notif.metadata.entity_owner_id
         // Skip notification based on user settings
@@ -893,7 +891,7 @@ class NotificationProcessor {
           if (trackIdList.length > 0) {
             for (var entry of trackIdList) {
               let trackId = entry.track
-              let destroyTx = await models.NotificationAction.destroy({
+              await models.NotificationAction.destroy({
                 where: {
                   actionEntityType: actionEntityTypes.Track,
                   actionEntityId: trackId

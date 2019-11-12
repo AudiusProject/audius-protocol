@@ -67,6 +67,10 @@
       "before",
       "describe",
       "afterEach"
+    ],
+    "ignore": [
+      "src/notifications/components/*",
+      "src/notifications/renderEmail/*"
     ]
   }
 }

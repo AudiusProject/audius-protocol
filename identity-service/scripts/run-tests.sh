@@ -8,6 +8,10 @@ if [ -z "${PG_PORT}" ]; then
 fi
 echo $PG_PORT
 
+export ethTokenAddress=''
+export ethRegistryAddress=''
+export registryAddress=''
+export ethOwnerWallet=''
 export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_identity_service_test"
 export logLevel='debug' #should be error
 

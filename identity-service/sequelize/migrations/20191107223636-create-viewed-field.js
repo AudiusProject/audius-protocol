@@ -4,17 +4,17 @@ const models = require('../../src/models')
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(async (transaction) => {
-       await queryInterface.addColumn('Notifications', 'isViewed', {
+      await queryInterface.addColumn('Notifications', 'isViewed', {
         type: Sequelize.BOOLEAN,
         allowNull: true
       },
       { transaction })
 
-      const updateNotifTx = await models.Notification.update({
+      await models.Notification.update({
         isViewed: false
-      }, { transaction, where: { isRead: { [models.Sequelize.Op.ne]:null } }})
+      }, { transaction, where: { isRead: { [models.Sequelize.Op.ne]: null } } })
 
-       await queryInterface.changeColumn('Notifications', 'isViewed', {
+      await queryInterface.changeColumn('Notifications', 'isViewed', {
         type: Sequelize.BOOLEAN,
         allowNull: false
       },
