@@ -148,6 +148,17 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
+  async getTrack (id = null, title = null) {
+    let req = {
+      endpoint: 'track',
+      queryParams: {
+        id,
+        title
+      }
+    }
+    return this._makeRequest(req)
+  }
+
   /**
    * Gets tracks trending on Audius.
    * @param {string} genre

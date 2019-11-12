@@ -31,6 +31,11 @@ class Tracks extends Base {
     return this.discoveryProvider.getTracks(limit, offset, idsArray, targetUserId, sort, minBlockNumber)
   }
 
+  async getTrack (id = null, title = null) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getTrack(id, title)
+  }
+
   /**
    * Return saved tracks for current user
    * NOTE in returned JSON, SaveType string one of track, playlist, album
