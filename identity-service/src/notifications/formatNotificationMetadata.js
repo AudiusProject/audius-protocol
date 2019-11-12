@@ -69,7 +69,7 @@ function getMilestoneEntity (notification, metadata) {
   const type = notification.actions[0].actionEntityType
   const entityId = notification.entityId
   const name = (type === Entity.Track)
-    ? metadata.tracks[entityId].track_name
+    ? metadata.tracks[entityId].title
     : metadata.collections[entityId].playlist_name
   return { type, name }
 }
