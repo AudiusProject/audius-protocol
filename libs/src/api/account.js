@@ -266,12 +266,13 @@ class Account extends Base {
    *    with optional user-specific results for each
    *  - user, track, and playlist objects have all same data as returned from standalone endpoints
    * @param {string} text search query
+   * @param {string} kind 'tracks', 'users', 'playlists', 'albums', 'all'
    * @param {number} limit max # of items to return per list (for pagination)
    * @param {number} offset offset into list to return from (for pagination)
    */
-  async searchFull (text, limit = 100, offset = 0) {
+  async searchFull (text, kind, limit = 100, offset = 0) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.searchFull(text, limit, offset)
+    return this.discoveryProvider.searchFull(text, kind, limit, offset)
   }
 
   /**
@@ -293,12 +294,13 @@ class Account extends Base {
    * that have used a tag greater than a specified number of times
    * @param {string} text search query
    * @param {number} user_tag_count min # of times a user must have used a tag to be returned
+   * @param {string} kind 'tracks', 'users', 'playlists', 'albums', 'all'
    * @param {number} limit max # of items to return per list (for pagination)
    * @param {number} offset offset into list to return from (for pagination)
    */
-  async searchTags (text, user_tag_count = 2, limit = 100, offset = 0) {
+  async searchTags (text, user_tag_count = 2, kind, limit = 100, offset = 0) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.searchTags(text, user_tag_count, limit, offset)
+    return this.discoveryProvider.searchTags(text, user_tag_count, kind, limit, offset)
   }
 }
 
