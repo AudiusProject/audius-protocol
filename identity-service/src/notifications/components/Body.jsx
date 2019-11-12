@@ -42,7 +42,7 @@ const UnreadNotifications = ({ message }) => (
 
 const Body = (props) => {
   return (
-    <body bgcolor='#FFFFFF'>
+    <body href='https://audius.co' bgcolor='#FFFFFF'>
       <center>
         <table align='center' border='0' cellpadding='0' cellspacing='0' width='100%' id='bodyTable' bgcolor='#FFFFFF' style={{ height: '100%' }}>
           <tr>

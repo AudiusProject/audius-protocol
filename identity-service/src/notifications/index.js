@@ -220,6 +220,11 @@ class NotificationProcessor {
               }]
             })
             if (existingFollowMilestoneQuery.length === 0) {
+              // MilestoneFollow
+              // userId=user achieving milestone
+              // entityId=milestoneValue, number of followers
+              // actionEntityType=User
+              // actionEntityId=milestoneValue, number of followers
               let createMilestoneTx = await models.Notification.create({
                 userId: targetUser,
                 type: notificationTypes.MilestoneFollow,
@@ -467,6 +472,11 @@ class NotificationProcessor {
     })
 
     if (existingMilestoneQuery.length === 0) {
+      // MilestoneListen/Favorite/Repost
+      // userId=user achieving milestone
+      // entityId=Entity reaching milestone, one of track/collection
+      // actionEntityType=Entity achieving milestone, can be track/collection
+      // actionEntityId=Milestone achieved
       let createMilestoneTx = await models.Notification.create({
         userId: userId,
         type: milestoneType,
@@ -580,6 +590,7 @@ class NotificationProcessor {
 
         let notificationId = null
         // Insertion into the Notification table
+        // Follow - userId = notif target, entityId=null, actionEntityId = user who followed target
         if (unreadQuery.length === 0) {
           let createNotifTx = await models.Notification.create({
             type: notificationTypes.Follow,
@@ -662,6 +673,8 @@ class NotificationProcessor {
 
         let notificationId = null
         // Insert new notification
+        // Repost - userId=notif target, entityId=track/album/repost id, actionEntityType=User actionEntityId=user who reposted
+        // As multiple users repost an entity, NotificationActions are added matching the NotificationId
         if (unreadQuery.length === 0) {
           let repostNotifTx = await models.Notification.create({
             type: repostType,
@@ -740,6 +753,8 @@ class NotificationProcessor {
 
         let notificationId = null
         if (unreadQuery.length === 0) {
+        // Favorite - userId=notif target, entityId=track/album/repost id, actionEntityType=User actionEntityId=user who favorited
+        // As multiple users favorite an entity, NotificationActions are added matching the NotificationId
           let favoriteNotifTx = await models.Notification.create({
             type: favoriteType,
             isViewed: false,
@@ -827,7 +842,7 @@ class NotificationProcessor {
             ? notif.metadata.entity_id
             : notif.metadata.entity_owner_id
 
-        // Create notification for each user
+        // Create notification for each subscriber
         await Promise.all(subscribers.map(async (s) => {
           // Add notification for this user indicating the uploader has added a track
           let notificationTarget = s.subscriberId
@@ -903,7 +918,7 @@ class NotificationProcessor {
       }
     }
 
-    // Populate owners
+    // Populate owners, used to index in milestone generation
     listenCounts = listenCounts.map((x) => {
       return {
         trackId: x.trackId,
