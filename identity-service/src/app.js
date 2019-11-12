@@ -72,7 +72,6 @@ class App {
   }
 
   async configureAudiusInstance () {
-    // TODO: Whitelist disc prov for identity service
     this.audiusInstance = await initAudiusLibs()
     this.express.set('audiusLibs', this.audiusInstance)
   }
