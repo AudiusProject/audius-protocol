@@ -1,5 +1,6 @@
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const authMiddleware = require('../authMiddleware')
 
 module.exports = function (app) {
   /**
@@ -22,13 +23,15 @@ module.exports = function (app) {
       if (existingUser) {
         return errorResponseBadRequest('Account already exists for user, try logging in')
       }
+      const IP = req.headers['x-forwarded-for'] || req.connection.remoteAddress
 
       try {
         await models.User.create({
-          email: email,
+          email,
           // Store non checksummed wallet address
           walletAddress: body.walletAddress.toLowerCase(),
-          lastSeenDate: Date.now()
+          lastSeenDate: Date.now(),
+          IP
         })
 
         return successResponse()
@@ -56,6 +59,28 @@ module.exports = function (app) {
         return successResponse({ exists: true })
       } else return successResponse({ exists: false })
     } else return errorResponseBadRequest('Please pass in a valid email address')
+  }))
+
+  /**
+   * Update User Timezone / IP
+   */
+  app.post('/users/update', authMiddleware, handleResponse(async (req, res, next) => {
+    const IP = req.headers['x-forwarded-for'] || req.connection.remoteAddress
+    const { timezone } = req.body
+    const { blockchainUserId } = req.user
+    if (timezone) {
+      try {
+        await models.User.update(
+          { IP, timezone },
+          { where: { blockchainUserId } }
+        )
+        return successResponse()
+      } catch (err) {
+        req.logger.error('Error signing up a user', err)
+        return errorResponseBadRequest('Error signing up a user')
+      }
+    }
+    return errorResponseBadRequest('Invalid route parameters')
   }))
 
   /** DEPRECATED */

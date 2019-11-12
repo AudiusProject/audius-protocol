@@ -51,6 +51,7 @@ var MultiUserHeader = function MultiUserHeader(_ref) {
         height: '32px',
         width: '32px',
         borderRadius: '50%',
+        border: '1px solid #C2C0CC',
         marginRight: '5px'
       },
       alt: user.name,
@@ -67,8 +68,8 @@ var MultiUserHeader = function MultiUserHeader(_ref) {
     style: {
       margin: '0px',
       padding: '0px',
-      height: '34px',
-      width: '34px',
+      height: '32px',
+      width: '32px',
       borderCollapse: 'separate',
       borderRadius: '50%',
       border: '1px solid #C2C0CC'

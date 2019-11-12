@@ -19,9 +19,6 @@ const DOMAIN = 'mail.audius.co'
 const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
 const DEFAULT_KEY_GENERATOR = (req) => req.ip
 
-const sendEmail = require('./notifications/fetchNotificationMetadata')
-const renderEmail = require('./notifications/renderEmail')
-
 class App {
   constructor (port) {
     this.port = port

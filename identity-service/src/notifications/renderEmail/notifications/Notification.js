@@ -7,7 +7,7 @@ exports["default"] = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
-var _Favorite = _interopRequireDefault(require("./Favorite"));
+var _NotificationBody = _interopRequireDefault(require("./NotificationBody"));
 
 var _notificaitonMap;
 
@@ -165,7 +165,7 @@ var getMessage = function getMessage(notification) {
 
 var Notification = function Notification(props) {
   var message = getMessage(props);
-  return _react["default"].createElement(_Favorite["default"], _extends({}, props, {
+  return _react["default"].createElement(_NotificationBody["default"], _extends({}, props, {
     message: message
   }));
 };

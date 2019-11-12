@@ -239,7 +239,7 @@ module.exports = function (app) {
     const timeOffset = req.query.timeOffset ? moment(req.query.timeOffset) : moment()
     const { blockchainUserId: userId, createdAt } = req.user
     const createdDate = moment(createdAt)
-
+    console.log({ createdDate })
     if (!timeOffset.isValid()) {
       return errorResponseBadRequest(`Invalid Date params`)
     }

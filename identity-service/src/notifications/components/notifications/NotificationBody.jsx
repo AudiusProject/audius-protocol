@@ -30,8 +30,8 @@ const AnnouncementHeader = () => (
           borderRadius: '50%',
           display: 'block'
         }}
-        alt='Arrow Right'
-        titile='Arrow Right'
+        alt='Announcement'
+        titile='Announcement'
       />
     </td>
     <td
@@ -68,7 +68,7 @@ const OpenAudiusLink = () => (
   >
     {'Open Audius'}
     <img
-      src='https://download.audius.co/static-resources/email/iconArrow.svg'
+      src='https://download.audius.co/static-resources/email/arrow.svg'
       style={{
         height: '8px',
         width: '8px',

@@ -54,7 +54,7 @@ var UnreadNotifications = function UnreadNotifications(_ref) {
 
 var Body = function Body(props) {
   return _react["default"].createElement("body", {
-    bgcolor: "#F3F0F7"
+    bgcolor: "#FFFFFF"
   }, _react["default"].createElement("center", null, _react["default"].createElement("table", {
     align: "center",
     border: "0",
@@ -62,6 +62,7 @@ var Body = function Body(props) {
     cellspacing: "0",
     width: "100%",
     id: "bodyTable",
+    bgcolor: "#FFFFFF",
     style: {
       height: '100%'
     }
