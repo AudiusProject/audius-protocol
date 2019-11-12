@@ -1,8 +1,11 @@
 const NotificationType = require('../routes/notifications').NotificationType
 const Entity = require('../routes/notifications').Entity
 const mapMilestone = require('../routes/notifications').mapMilestone
+const config = require('../config.js')
 
-const USER_NODE_IPFS_GATEWAY = 'https://usermetadata.audius.co/ipfs/'
+const USER_NODE_IPFS_GATEWAY = config.get('notificationDiscoveryProvider').includes('staging') ? 'https://usermetadata.staging.audius.co/ipfs/' : 'https://usermetadata.audius.co/ipfs/'
+console.log(`USER_NODE_IPFS_GATEWAY ${USER_NODE_IPFS_GATEWAY}`)
+
 const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/iconUser.svg'
 
 const formatGateway = (creatorNodeEndpoint) =>
@@ -60,7 +63,8 @@ const formatMilestone = (notification, metadata) => {
   return {
     type: NotificationType.Milestone,
     ...mapMilestone[notification.type],
-    entity: getMilestoneEntity(notification, metadata)
+    entity: getMilestoneEntity(notification, metadata),
+    value: notification.actions[0].actionEntityId
   }
 }
 

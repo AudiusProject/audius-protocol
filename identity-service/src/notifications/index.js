@@ -96,7 +96,7 @@ class NotificationProcessor {
 
       // TODO: remove this in favor of cron
       // Re-enable for development as needed
-      // this.emailQueue.add({ type: 'unreadEmailJob' })
+      this.emailQueue.add({ type: 'unreadEmailJob' })
 
       try {
         // Index notifications
