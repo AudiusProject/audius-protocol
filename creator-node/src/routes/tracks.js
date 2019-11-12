@@ -351,6 +351,20 @@ module.exports = function (app) {
       return successResponse({ isDownloadable: true, cid: null })
     }
   }))
+
+  /** List all unlisted tracks for a user */
+  app.get('/tracks/unlisted', authMiddleware, handleResponse(async (req, res) => {
+    const tracks = await models.Track.findAll({
+      where: {
+        metadataJSON: {
+          is_unlisted: true
+        },
+        cnodeUserUUID: req.session.cnodeUserUUID
+      }
+    })
+
+    return successResponse({ tracks: tracks })
+  }))
 }
 
 /** Transcode track master file to 320kbps for downloading. Save to disk, IPFS, & DB. */
