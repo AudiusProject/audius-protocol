@@ -40,8 +40,6 @@ module.exports = function (app) {
     }
     let redis = req.app.get('redis')
     let maxFromRedis = await redis.get('maxBlockNumber')
-    console.log('notifications...')
-    console.log(maxFromRedis)
     if (maxFromRedis) {
       highestBlockNumber = parseInt(maxFromRedis)
     }
