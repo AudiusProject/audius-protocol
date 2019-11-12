@@ -524,8 +524,7 @@ class NotificationProcessor {
   }
 
   async indexNotifications (minBlock) {
-    let date = new Date()
-    console.log(`indexNotifications job - ${date}`)
+    console.log(`indexNotifications job - ${new Date()}`)
 
     // Query owners for tracks relevant to track listen counts
     let listenCounts = await this.calculateTrackListenMilestones()
