@@ -1,31 +1,6 @@
 const NotificationType = require('../routes/notifications').NotificationType
 const Entity = require('../routes/notifications').Entity
 const mapMilestone = require('../routes/notifications').mapMilestone
-const config = require('../config.js')
-
-const USER_NODE_IPFS_GATEWAY = config.get('notificationDiscoveryProvider').includes('staging') ? 'https://usermetadata.staging.audius.co/ipfs/' : 'https://usermetadata.audius.co/ipfs/'
-console.log(`USER_NODE_IPFS_GATEWAY ${USER_NODE_IPFS_GATEWAY}`)
-
-const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/user.png'
-
-const formatGateway = (creatorNodeEndpoint) =>
-  creatorNodeEndpoint
-    ? `${creatorNodeEndpoint.split(',')[0]}/ipfs/`
-    : USER_NODE_IPFS_GATEWAY
-
-const getImageUrl = (cid, gateway) =>
-  cid
-    ? `${gateway}${cid}`
-    : DEFAULT_IMAGE_URL
-
-function getUserImage (user) {
-  const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
-  const profilePicture = user.profile_picture_sizes
-    ? `${user.profile_picture_sizes}/1000x1000.jpg`
-    : user.profile_picture
-
-  return getImageUrl(profilePicture, gateway)
-}
 
 const formatFavorite = (notification, metadata, entity) => {
   return {
@@ -33,7 +8,7 @@ const formatFavorite = (notification, metadata, entity) => {
     users: notification.actions.map(action => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
-      return { name: user.name, image: getUserImage(user) }
+      return { name: user.name, image: user.thumbnail }
     }),
     entity
   }
@@ -45,7 +20,7 @@ const formatRepost = (notification, metadata, entity) => {
     users: notification.actions.map(action => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
-      return { name: user.name, image: getUserImage(user) }
+      return { name: user.name, image: user.thumbnail }
     }),
     entity
   }
@@ -85,7 +60,7 @@ function formatFollow (notification, metadata) {
     users: notification.actions.map(action => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
-      return { name: user.name, image: getUserImage(user) }
+      return { name: user.name, image: user.thumbnail }
     })
   }
 }
@@ -129,7 +104,7 @@ const notificationResponseMap = {
     const track = metadata.tracks[trackId]
     const count = notification.actions.length
     let user = metadata.users[notification.entityId]
-    let users = [{ name: user.name, image: getUserImage(user) }]
+    let users = [{ name: user.name, image: user.thumbnail }]
     return formatUserSubscription(notification, metadata, { type: Entity.Track, count, name: track.title }, users)
   },
   [NotificationType.CreateAlbum]: (notification, metadata) => {
@@ -137,7 +112,7 @@ const notificationResponseMap = {
     let users = notification.actions.map(action => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
-      return { name: user.name, image: getUserImage(user) }
+      return { name: user.name, image: user.thumbnail }
     })
     return formatUserSubscription(notification, metadata, { type: Entity.Album, count: 1, name: collection.playlist_name }, users)
   },
@@ -146,7 +121,7 @@ const notificationResponseMap = {
     let users = notification.actions.map(action => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
-      return { name: user.name, image: getUserImage(user) }
+      return { name: user.name, image: user.thumbnail }
     })
     return formatUserSubscription(notification, metadata, { type: Entity.Playlist, count: 1, name: collection.playlist_name }, users)
   },

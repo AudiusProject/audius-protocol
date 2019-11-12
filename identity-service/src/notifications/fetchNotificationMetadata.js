@@ -1,9 +1,17 @@
 const moment = require('moment')
+const axios = require('axios')
 const models = require('../models')
 const NotificationType = require('../routes/notifications').NotificationType
 const Entity = require('../routes/notifications').Entity
 const mergeAudiusAnnoucements = require('../routes/notifications').mergeAudiusAnnoucements
 const formatNotificationProps = require('./formatNotificationMetadata')
+
+const config = require('../config.js')
+
+const USER_NODE_IPFS_GATEWAY = config.get('notificationDiscoveryProvider').includes('staging') ? 'https://usermetadata.staging.audius.co/ipfs/' : 'https://usermetadata.audius.co/ipfs/'
+console.log(`USER_NODE_IPFS_GATEWAY ${USER_NODE_IPFS_GATEWAY}`)
+
+const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/user.png'
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).
  *
@@ -126,11 +134,16 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
   )
   const uniqueUserIds = [...new Set(userIdsToFetch)]
 
-  const users = await audius.User.getUsers(
+  let users = await audius.User.getUsers(
     /** limit */ uniqueUserIds.length,
     /** offset */ 0,
     /** idsArray */ uniqueUserIds
   )
+
+  users = await Promise.all(users.map(async (user) => {
+    user.thumbnail = await getUserImage(user)
+    return user
+  }))
 
   const trackMap = tracks.reduce((tm, track) => {
     tm[track.track_id] = track
@@ -151,6 +164,37 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
     tracks: trackMap,
     collections: collectionMap,
     users: userMap
+  }
+}
+
+const formatGateway = (creatorNodeEndpoint) =>
+  creatorNodeEndpoint
+    ? `${creatorNodeEndpoint.split(',')[0]}/ipfs/`
+    : USER_NODE_IPFS_GATEWAY
+
+const getImageUrl = (cid, gateway) =>
+  cid
+    ? `${gateway}${cid}`
+    : DEFAULT_IMAGE_URL
+
+async function getUserImage (user) {
+  const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
+  const profilePicture = user.profile_picture_sizes
+    ? `${user.profile_picture_sizes}/1000x1000.jpg`
+    : user.profile_picture
+
+  let imageUrl = getImageUrl(profilePicture, gateway)
+  if (imageUrl === DEFAULT_IMAGE_URL) { return imageUrl }
+
+  try {
+    await axios({
+      method: 'head',
+      url: imageUrl,
+      timeout: 5000
+    })
+    return imageUrl
+  } catch (e) {
+    return DEFAULT_IMAGE_URL
   }
 }
 
