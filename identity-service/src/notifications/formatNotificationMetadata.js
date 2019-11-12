@@ -48,14 +48,10 @@ const formatRepost = (notification, metadata, entity) => {
   }
 }
 
-const formatUserSubscription = (notification, metadata, entity) => {
+const formatUserSubscription = (notification, metadata, entity, users) => {
   return {
-    type: NotificationType.Repost,
-    users: notification.actions.map(action => {
-      const userId = action.actionEntityId
-      const user = metadata.users[userId]
-      return { name: user.name, image: getUserImage(user) }
-    }),
+    type: NotificationType.UserSubscription,
+    users,
     entity
   }
 }
@@ -127,15 +123,27 @@ const notificationResponseMap = {
     const trackId = notification.actions[0].actionEntityId
     const track = metadata.tracks[trackId]
     const count = notification.actions.length
-    return formatUserSubscription(notification, metadata, { type: Entity.Track, count, name: track.title })
+    let user = metadata.users[notification.entityId]
+    let users = [{ name: user.name, image: getUserImage(user) }]
+    return formatUserSubscription(notification, metadata, { type: Entity.Track, count, name: track.title }, users)
   },
   [NotificationType.CreateAlbum]: (notification, metadata) => {
     const collection = metadata.collections[notification.entityId]
-    return formatUserSubscription(notification, metadata, { type: Entity.Album, count: 1, name: collection.playlist_name })
+    let users = notification.actions.map(action => {
+      const userId = action.actionEntityId
+      const user = metadata.users[userId]
+      return { name: user.name, image: getUserImage(user) }
+    })
+    return formatUserSubscription(notification, metadata, { type: Entity.Album, count: 1, name: collection.playlist_name }, users)
   },
   [NotificationType.CreatePlaylist]: (notification, metadata) => {
     const collection = metadata.collections[notification.entityId]
-    return formatUserSubscription(notification, metadata, { type: Entity.Playlist, count: 1, name: collection.playlist_name })
+    let users = notification.actions.map(action => {
+      const userId = action.actionEntityId
+      const user = metadata.users[userId]
+      return { name: user.name, image: getUserImage(user) }
+    })
+    return formatUserSubscription(notification, metadata, { type: Entity.Playlist, count: 1, name: collection.playlist_name }, users)
   },
   [NotificationType.Announcement]: formatAnnouncement,
   [NotificationType.MilestoneRepost]: formatMilestone,
@@ -147,6 +155,7 @@ const notificationResponseMap = {
 function formatNotificationProps (notifications, metadata) {
   const emailNotificationProps = notifications.map(notification => {
     const mapNotification = notificationResponseMap[notification.type]
+    console.log(`${notification.type} - ${mapNotification}`)
     return mapNotification(notification, metadata)
   })
   return emailNotificationProps

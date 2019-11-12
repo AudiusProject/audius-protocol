@@ -185,7 +185,7 @@ class App {
           const notificationResponse = await axios.get(`${audiusNotificationUrl}/${notification.id}.json`)
           return notificationResponse.data
         }))
-        const announcements = announcementsResponse.filter(a => !!a.entityId)
+        const announcements = announcementsResponse.filter(a => !!a.entityId).map(a => ({ ...a, type: 'Announcement' }))
         announcements.sort((a, b) => {
           let aDate = moment(a.datePublished)
           let bDate = moment(b.datePublished)

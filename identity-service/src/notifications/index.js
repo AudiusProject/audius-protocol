@@ -955,18 +955,18 @@ class NotificationProcessor {
         attributes: ['userId'],
         where: { emailFrequency: 'daily' }
       }).map(x => x.userId)
-      console.log(`Daily users: ${dailyEmailUsers}`)
+      // console.log(`Daily users: ${dailyEmailUsers}`)
+
       let weeklyEmailUsers = await models.UserNotificationSettings.findAll({
         attributes: ['userId'],
         where: { emailFrequency: 'weekly' }
       }).map(x => x.userId)
-      console.log(`Weekly users: ${weeklyEmailUsers}`)
+      // console.log(`Weekly users: ${weeklyEmailUsers}`)
 
       let now = moment()
       let dayAgo = now.subtract(1, 'days')
       let weekAgo = now.subtract(7, 'days')
 
-      // TODO: parse announcements into notifs
       let appAnnouncements = this.expressApp.get('announcements')
       // For each announcement, we generate a list of valid users
       // Based on the user's email frequency
@@ -995,27 +995,23 @@ class NotificationProcessor {
             }
           })
           if (userNotificationQuery) {
-            console.log(`Skipping announcement ${announcementEntityId} for user ${user}`)
             continue
           }
           if (dailyEmailUsers.includes(user)) {
             if (timeSinceAnnouncement < (dayInHours * 1.5)) {
               console.log(`Announcements - ${id} | Daily user ${user}, <1 day`)
               dailyUsersWithPendingAnnouncements.append(user)
-            } else {
-              console.log(`Announcements - ${id} | Daily user ${user}, >1 day`)
             }
           } else if (weeklyEmailUsers.includes(user)) {
             if (timeSinceAnnouncement < (weekInHours * 1.5)) {
               console.log(`Announcements - ${id} | Weekly user ${user}, <1 week`)
               weeklyUsersWithPendingAnnouncements.append(user)
-            } else {
-              console.log(`Announcements - ${id} | Weekly user ${user}, >1 week`)
             }
           }
         }
       }
       let pendingNotificationUsers = new Set()
+      // Add users with pending announcement notifications
       dailyUsersWithPendingAnnouncements.forEach(
         item => pendingNotificationUsers.add(item))
       weeklyUsersWithPendingAnnouncements.forEach(
@@ -1031,7 +1027,6 @@ class NotificationProcessor {
         },
         group: ['userId']
       }).map(x => x.userId)
-      console.log(dailyEmailUsersWithUnseeenNotifications)
       dailyEmailUsersWithUnseeenNotifications.forEach(item => pendingNotificationUsers.add(item))
 
       let weeklyEmailUsersWithUnseeenNotifications = await models.Notification.findAll({
@@ -1043,8 +1038,9 @@ class NotificationProcessor {
         },
         group: ['userId']
       }).map(x => x.userId)
-      console.log(weeklyEmailUsersWithUnseeenNotifications)
       weeklyEmailUsersWithUnseeenNotifications.forEach(item => pendingNotificationUsers.add(item))
+      // console.log(dailyEmailUsersWithUnseeenNotifications)
+      // console.log(weeklyEmailUsersWithUnseeenNotifications)
 
       // All users with notifications, including announcements
       let allUsersWithUnseenNotifications = [...pendingNotificationUsers]
@@ -1096,12 +1092,13 @@ class NotificationProcessor {
           })
           if (!latestUserEmail) {
             console.log(`No email history for user ${userId}`)
-            await this.renderAndSendEmail(
+            let sent = await this.renderAndSendEmail(
               userId,
               userEmail,
               appAnnouncements,
               frequency,
               frequency === 'daily' ? dayAgo : weekAgo)
+            if (!sent) { continue }
             await models.NotificationEmail.create({
               userId,
               frequency,
@@ -1114,12 +1111,13 @@ class NotificationProcessor {
               // If 1 day has passed, send email
               if (timeSinceEmail >= dayInHours) {
                 // Render email
-                await this.renderAndSendEmail(
+                let sent = await this.renderAndSendEmail(
                   userId,
                   userEmail,
                   appAnnouncements,
                   frequency,
                   dayAgo)
+                if (!sent) { continue }
 
                 await models.NotificationEmail.create({
                   userId,
@@ -1134,12 +1132,13 @@ class NotificationProcessor {
               if (timeSinceEmail >= weekInHours) {
                 console.log(`Sending WEEKLY email to ${userId}, last email from ${lastSentTimestamp}`)
                 // Render email
-                await this.renderAndSendEmail(
+                let sent = await this.renderAndSendEmail(
                   userId,
                   userEmail,
                   appAnnouncements,
                   frequency,
                   weekAgo)
+                if (!sent) { continue }
                 await models.NotificationEmail.create({
                   userId,
                   frequency,
@@ -1161,6 +1160,7 @@ class NotificationProcessor {
     }
   }
 
+  // Master function to render and send email for a given userId
   async renderAndSendEmail (userId, userEmail, announcements, frequency, startTime) {
     console.log(`renderAndSendEmail ${userId}, ${userEmail}`)
     try {
@@ -1199,8 +1199,10 @@ class NotificationProcessor {
       let emailParams2 = emailParams
       emailParams2['to'] = 'hareesh@audius.co'
       await this.sendEmail(emailParams2)
+      return true
     } catch (e) {
       console.log(`Error in renderAndSendEmail ${e}`)
+      return false
     }
   }
 
