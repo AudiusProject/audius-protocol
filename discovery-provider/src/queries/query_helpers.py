@@ -593,7 +593,6 @@ def get_follower_count_dict(session, user_ids, max_block_number=None):
 
     follower_count_dict = \
             {user_id: follower_count for (user_id, follower_count) in follower_counts}
-    logger.error(follower_count_dict)
     return follower_count_dict
 
 
