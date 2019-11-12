@@ -1043,7 +1043,7 @@ class NotificationProcessor {
 
       // All users with notifications, including announcements
       let allUsersWithUnseenNotifications = [...pendingNotificationUsers]
-      console.log(allUsersWithUnseenNotifications)
+      // console.log(allUsersWithUnseenNotifications)
 
       let userInfo = await models.User.findAll({
         where: {
