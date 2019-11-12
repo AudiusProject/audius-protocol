@@ -131,6 +131,32 @@ def get_tracks():
     return api_helpers.success_response(tracks)
 
 
+@bp.route("/track", methods=("GET",))
+def get_track():
+    track_title = request.args.get("title", type=str)
+
+    # TODO: need to decode title URL
+    if not track_title:
+        raise exceptions.ArgumentError("Invalid value for parameter 'title'")
+
+    track_id = request.args.get("id", type=int)
+    if not track_id:
+        raise exceptions.ArgumentError("Invalid value for parameter 'track_id'")
+
+    db = get_db()
+    with db.scoped_session() as session:
+        base_query = session.query(Track)
+        base_query = base_query.filter(Track.is_current == True, Track.title == track_title, Track.track_id == track_id)
+        query_results = paginate_query(base_query).all()
+        tracks = helpers.query_result_to_list(query_results)
+
+        current_user_id = get_current_user_id(required=False)
+
+        extendedTracks = populate_track_metadata(session, [track_id], tracks, current_user_id)
+
+    return api_helpers.success_response(extendedTracks)
+
+
 # Return playlist content in json form
 # optional parameters playlist owner's user_id, playlist_id = []
 @bp.route("/playlists", methods=("GET",))
