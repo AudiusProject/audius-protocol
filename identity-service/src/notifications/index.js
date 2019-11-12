@@ -76,13 +76,14 @@ class NotificationProcessor {
 
   // TODO: Add Queue diagnostic to health_check or notif_check
 
-  async init (audiusLibs, expressApp) {
+  async init (audiusLibs, expressApp, redis) {
     // Clear any pending notif jobs
     await this.notifQueue.empty()
     await this.emailQueue.empty()
 
     this.audiusLibs = audiusLibs
     this.expressApp = expressApp
+    this.redis = redis
     this.mg = this.expressApp.get('mailgun')
 
     // Index all blockchain ids
@@ -101,6 +102,9 @@ class NotificationProcessor {
       try {
         // Index notifications
         let maxBlockNumber = await this.indexNotifications(minBlock)
+
+        // Update cached max block number
+        await this.redis.set('maxBlockNumber', maxBlockNumber)
 
         // Restart job with updated startBlock
         await this.notifQueue.add({

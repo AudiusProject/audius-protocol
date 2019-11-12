@@ -38,6 +38,13 @@ module.exports = function (app) {
     if (!highestBlockNumber) {
       highestBlockNumber = config.get('notificationStartBlock')
     }
+    let redis = req.app.get('redis')
+    let maxFromRedis = await redis.get('maxBlockNumber')
+    console.log('notifications...')
+    console.log(maxFromRedis)
+    if (maxFromRedis) {
+      highestBlockNumber = parseInt(maxFromRedis)
+    }
     let discProvHealthCheck = (await axios({
       method: 'get',
       url: `${notifDiscProv}/health_check`
