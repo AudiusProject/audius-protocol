@@ -31,7 +31,7 @@ var AnnouncementHeader = function AnnouncementHeader() {
       padding: '16px 16px 0px 16px'
     }
   }, _react["default"].createElement("img", {
-    src: 'https://download.audius.co/static-resources/email/iconAnnouncement.png',
+    src: 'https://download.audius.co/static-resources/email/announcement.png',
     style: {
       height: '32px',
       width: '32px',
@@ -67,7 +67,7 @@ var OpenAudiusLink = function OpenAudiusLink() {
       lineHeight: '10px'
     }
   }, 'Open Audius', _react["default"].createElement("img", {
-    src: "https://download.audius.co/static-resources/email/iconArrow.png",
+    src: "https://download.audius.co/static-resources/email/arrow.png",
     style: {
       height: '8px',
       width: '8px',
