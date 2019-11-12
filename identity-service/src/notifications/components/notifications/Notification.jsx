@@ -109,7 +109,7 @@ const notificaitonMap = {
         <span>
           <BodyText text={`Your ${entity} `} />
           <HightlighText text={notification.entity.name} />
-          <BodyText text={` has reached over ${notification.value} ${notification.achievment}s`} />
+          <BodyText text={` has reached over ${notification.value} ${notification.achievement}s`} />
         </span>
       )
     } else {

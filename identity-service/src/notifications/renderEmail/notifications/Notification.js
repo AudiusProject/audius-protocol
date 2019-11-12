@@ -131,7 +131,7 @@ var notificaitonMap = (_notificaitonMap = {}, _defineProperty(_notificaitonMap, 
     }), _react["default"].createElement(HightlighText, {
       text: notification.entity.name
     }), _react["default"].createElement(BodyText, {
-      text: " has reached over ".concat(notification.value, " ").concat(notification.achievment, "s")
+      text: " has reached over ".concat(notification.value, " ").concat(notification.achievement, "s")
     }));
   } else {
     return _react["default"].createElement(BodyText, {

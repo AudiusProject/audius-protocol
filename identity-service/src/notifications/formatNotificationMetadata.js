@@ -59,12 +59,13 @@ const formatUserSubscription = (notification, metadata, entity, users) => {
   }
 }
 
-const formatMilestone = (notification, metadata) => {
+const formatMilestone = (achievement) => (notification, metadata) => {
   return {
     type: NotificationType.Milestone,
     ...mapMilestone[notification.type],
     entity: getMilestoneEntity(notification, metadata),
-    value: notification.actions[0].actionEntityId
+    value: notification.actions[0].actionEntityId,
+    achievement
   }
 }
 
@@ -150,10 +151,10 @@ const notificationResponseMap = {
     return formatUserSubscription(notification, metadata, { type: Entity.Playlist, count: 1, name: collection.playlist_name }, users)
   },
   [NotificationType.Announcement]: formatAnnouncement,
-  [NotificationType.MilestoneRepost]: formatMilestone,
-  [NotificationType.MilestoneFavorite]: formatMilestone,
-  [NotificationType.MilestoneListen]: formatMilestone,
-  [NotificationType.MilestoneFollow]: formatMilestone
+  [NotificationType.MilestoneRepost]: formatMilestone('Repost'),
+  [NotificationType.MilestoneFavorite]: formatMilestone('Favorite'),
+  [NotificationType.MilestoneListen]: formatMilestone('Listen'),
+  [NotificationType.MilestoneFollow]: formatMilestone('Follow')
 }
 
 function formatNotificationProps (notifications, metadata) {
