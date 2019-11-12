@@ -79,6 +79,7 @@ class NotificationProcessor {
   async init (audiusLibs, expressApp) {
     // Clear any pending notif jobs
     await this.notifQueue.empty()
+    await this.emailQueue.empty()
 
     this.audiusLibs = audiusLibs
     this.expressApp = expressApp
@@ -95,7 +96,7 @@ class NotificationProcessor {
 
       // TODO: remove this in favor of cron
       // Re-enable for development as needed
-      this.emailQueue.add({ type: 'unreadEmailJob' })
+      // this.emailQueue.add({ type: 'unreadEmailJob' })
 
       try {
         // Index notifications
@@ -127,12 +128,10 @@ class NotificationProcessor {
 
     // TODO: Re-enable for final testing
     // Every hour cron: '0 * * * *'
-    /*
     this.emailQueue.add(
       { type: 'unreadEmailJob' },
       { repeat: { cron: '0 * * * *' } }
     )
-    */
 
     let startBlock = await this.getHighestBlockNumber()
     console.log(`Starting with ${startBlock}`)
