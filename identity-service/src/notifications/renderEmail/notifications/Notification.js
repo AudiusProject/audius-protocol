@@ -9,7 +9,7 @@ var _react = _interopRequireDefault(require("react"));
 
 var _NotificationBody = _interopRequireDefault(require("./NotificationBody"));
 
-var _notificaitonMap;
+var _notificationMap;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -25,7 +25,7 @@ function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) ||
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-var NotificaionType = Object.freeze({
+var NotificationType = Object.freeze({
   Follow: 'Follow',
   Repost: 'Repost',
   Favorite: 'Favorite',
@@ -102,28 +102,28 @@ var getEntity = function getEntity(entity) {
   }
 };
 
-var notificaitonMap = (_notificaitonMap = {}, _defineProperty(_notificaitonMap, NotificaionType.Favorite, function (notification) {
+var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, NotificationType.Favorite, function (notification) {
   var user = getUsers(notification.users);
   var entity = getEntity(notification.entity);
   return _react["default"].createElement("span", null, user, _react["default"].createElement(BodyText, {
     text: " favorited your "
   }), entity);
-}), _defineProperty(_notificaitonMap, NotificaionType.Repost, function (notification) {
+}), _defineProperty(_notificationMap, NotificationType.Repost, function (notification) {
   var user = getUsers(notification.users);
   var entity = getEntity(notification.entity);
   return _react["default"].createElement("span", null, user, _react["default"].createElement(BodyText, {
     text: " reposted your "
   }), entity);
-}), _defineProperty(_notificaitonMap, NotificaionType.Follow, function (notification) {
+}), _defineProperty(_notificationMap, NotificationType.Follow, function (notification) {
   var user = getUsers(notification.users);
   return _react["default"].createElement("span", null, user, _react["default"].createElement(BodyText, {
     text: " followed you"
   }));
-}), _defineProperty(_notificaitonMap, NotificaionType.Announcement, function (notification) {
+}), _defineProperty(_notificationMap, NotificationType.Announcement, function (notification) {
   return _react["default"].createElement(BodyText, {
     text: notification.text
   });
-}), _defineProperty(_notificaitonMap, NotificaionType.Milestone, function (notification) {
+}), _defineProperty(_notificationMap, NotificationType.Milestone, function (notification) {
   if (notification.entity) {
     var entity = notification.entity.type.toLowerCase();
     return _react["default"].createElement("span", null, _react["default"].createElement(BodyText, {
@@ -138,11 +138,11 @@ var notificaitonMap = (_notificaitonMap = {}, _defineProperty(_notificaitonMap, 
       text: "Your have reached over ".concat(notification.value, " Followers ")
     });
   }
-}), _defineProperty(_notificaitonMap, NotificaionType.UserSubscription, function (notification) {
+}), _defineProperty(_notificationMap, NotificationType.UserSubscription, function (notification) {
   var _notification$users = _slicedToArray(notification.users, 1),
       user = _notification$users[0];
 
-  if (notification.entity.type === NotificaionType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
+  if (notification.entity.type === NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
     return _react["default"].createElement("span", null, _react["default"].createElement(HightlighText, {
       text: user.name
     }), _react["default"].createElement(BodyText, {
@@ -155,10 +155,10 @@ var notificaitonMap = (_notificaitonMap = {}, _defineProperty(_notificaitonMap, 
   }), _react["default"].createElement(BodyText, {
     text: " released a new ".concat(notification.entity.type, "  ").concat(notification.entity.name)
   }));
-}), _notificaitonMap);
+}), _notificationMap);
 
 var getMessage = function getMessage(notification) {
-  var getNotificationMessage = notificaitonMap[notification.type];
+  var getNotificationMessage = notificationMap[notification.type];
   if (!getNotificationMessage) return null;
   return getNotificationMessage(notification);
 };

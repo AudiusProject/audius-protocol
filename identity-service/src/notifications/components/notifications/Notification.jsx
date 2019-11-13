@@ -2,7 +2,7 @@ import React from 'react'
 
 import NotificationBody from './NotificationBody'
 
-const NotificaionType = Object.freeze({
+const NotificationType = Object.freeze({
   Follow: 'Follow',
   Repost: 'Repost',
   Favorite: 'Favorite',
@@ -72,8 +72,8 @@ const getEntity = (entity) => {
   }
 }
 
-const notificaitonMap = {
-  [NotificaionType.Favorite] (notification) {
+const notificationMap = {
+  [NotificationType.Favorite] (notification) {
     const user = getUsers(notification.users)
     const entity = getEntity(notification.entity)
     return (
@@ -82,7 +82,7 @@ const notificaitonMap = {
       </span>
     )
   },
-  [NotificaionType.Repost] (notification) {
+  [NotificationType.Repost] (notification) {
     const user = getUsers(notification.users)
     const entity = getEntity(notification.entity)
     return (
@@ -91,7 +91,7 @@ const notificaitonMap = {
       </span>
     )
   },
-  [NotificaionType.Follow] (notification) {
+  [NotificationType.Follow] (notification) {
     const user = getUsers(notification.users)
     return (
       <span>
@@ -99,10 +99,10 @@ const notificaitonMap = {
       </span>
     )
   },
-  [NotificaionType.Announcement] (notification) {
+  [NotificationType.Announcement] (notification) {
     return <BodyText text={notification.text} />
   },
-  [NotificaionType.Milestone] (notification) {
+  [NotificationType.Milestone] (notification) {
     if (notification.entity) {
       const entity = notification.entity.type.toLowerCase()
       return (
@@ -118,9 +118,9 @@ const notificaitonMap = {
       )
     }
   },
-  [NotificaionType.UserSubscription] (notification) {
+  [NotificationType.UserSubscription] (notification) {
     const [user] = notification.users
-    if (notification.entity.type === NotificaionType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
+    if (notification.entity.type === NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
       return (
         <span>
           <HightlighText text={user.name} />
@@ -138,7 +138,7 @@ const notificaitonMap = {
 }
 
 const getMessage = (notification) => {
-  const getNotificationMessage = notificaitonMap[notification.type]
+  const getNotificationMessage = notificationMap[notification.type]
   if (!getNotificationMessage) return null
   return getNotificationMessage(notification)
 }
