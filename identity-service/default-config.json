@@ -27,5 +27,11 @@
   "rateLimitingListensPerIPPerWeek": 180,
   "minimumBalance": 10,
   "ethProviderUrl": "http://docker.for.mac.localhost:8546",
-  "mailgunApiKey": ""
+  "notificationDiscoveryProvider": "http://docker.for.mac.localhost:5000",
+  "notificationStartBlock": 0,
+  "ethTokenAddress":"",
+  "ethRegistryAddress":"",
+  "ethOwnerWallet":"",
+  "mailgunApiKey": "",
+  "registryAddress": ""
 }

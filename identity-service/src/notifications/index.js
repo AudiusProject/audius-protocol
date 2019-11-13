@@ -3,6 +3,9 @@ const config = require('../config.js')
 const models = require('../models')
 const axios = require('axios')
 const moment = require('moment-timezone')
+const fs = require('fs')
+const path = require('path')
+const uuidv4 = require('uuid/v4')
 const getEmailNotifications = require('./fetchNotificationMetadata')
 const renderEmail = require('./renderEmail')
 
@@ -57,6 +60,7 @@ const favoriteMilestoneList = baseMilestoneList
 const trackListenMilestoneList = baseMilestoneList
 
 let notifDiscProv = config.get('notificationDiscoveryProvider')
+const emailCachePath = './emailCache'
 
 class NotificationProcessor {
   constructor () {
@@ -93,7 +97,6 @@ class NotificationProcessor {
       let minBlock = job.data.minBlock
       if (!minBlock && minBlock !== 0) throw new Error('no min block')
 
-      // TODO: remove this in favor of cron
       // Re-enable for development as needed
       // this.emailQueue.add({ type: 'unreadEmailJob' })
 
@@ -117,18 +120,22 @@ class NotificationProcessor {
           minBlock: minBlock
         })
       }
-      // Temporary delay
+      // Delay 3s
       await new Promise(resolve => setTimeout(resolve, 3000))
 
       done()
     })
 
+    // Email notification queue
     this.emailQueue.process(async (job, done) => {
       await this.processEmailNotifications()
       done()
     })
 
-    // TODO: Re-enable for final testing
+    if (!fs.existsSync(emailCachePath)) {
+      fs.mkdirSync(emailCachePath)
+    }
+
     // Every hour cron: '0 * * * *'
     this.emailQueue.add(
       { type: 'unreadEmailJob' },
@@ -552,7 +559,6 @@ class NotificationProcessor {
     // Use a single transaction
     const tx = await models.sequelize.transaction()
 
-    // TODO: investigate why this has two .data, after axios switch
     let body = (await axios(reqObj)).data
     let metadata = body.data.info
     let notifications = body.data.notifications
@@ -818,7 +824,7 @@ class NotificationProcessor {
               actionEntityType = actionEntityTypes.User
               break
             default:
-              throw new Error('Invalid create type')// TODO: gracefully handle this in try/catch
+              throw new Error('Invalid create type')
           }
 
           // Query user IDs from subscriptions table
@@ -1112,7 +1118,6 @@ class NotificationProcessor {
         // Based on this difference, schedule email for users
         // In prod, this difference must be <1 hour or between midnight - 1am
         let maxHourDifference = 1.5
-        maxHourDifference = 21 // TODO: RESET THIS LINE TO ABOVE
         // Valid time found
         if (difference < maxHourDifference) {
           console.log(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
@@ -1189,8 +1194,8 @@ class NotificationProcessor {
 
   // Master function to render and send email for a given userId
   async renderAndSendEmail (userId, userEmail, announcements, frequency, startTime) {
-    console.log(`renderAndSendEmail ${userId}, ${userEmail}`)
     try {
+      console.log(`renderAndSendEmail ${userId}, ${userEmail}`)
       const notificationProps = await getEmailNotifications(
         this.audiusLibs,
         userId,
@@ -1221,17 +1226,37 @@ class NotificationProcessor {
         emailParams['subject'] = 'Unread notifications from last week'
       }
 
-      console.log(emailParams)
       await this.sendEmail(emailParams)
+
       // Temporary debugging email
       let emailParams2 = emailParams
       emailParams2['to'] = 'hareesh@audius.co'
+      emailParams2['bcc'] = 'forrest@audius.co'
       await this.sendEmail(emailParams2)
+
+      // Cache on file system
+      await this.cacheEmail({ renderProps, emailParams })
+
       return true
     } catch (e) {
       console.log(`Error in renderAndSendEmail ${e}`)
       return false
     }
+  }
+
+  async cacheEmail (cacheParams) {
+    let uuid = uuidv4()
+    let timestamp = moment().valueOf()
+    let fileName = `${uuid}-${timestamp.toString()}.json`
+    let filePath = path.join(emailCachePath, fileName)
+    await new Promise((resolve, reject) => {
+      fs.writeFile(filePath, JSON.stringify(cacheParams), (err) => {
+        if (err) {
+          console.log(err)
+        }
+        resolve()
+      })
+    })
   }
 
   async sendEmail (emailParams) {
