@@ -36,6 +36,11 @@ class Tracks extends Base {
     return this.discoveryProvider.getTrack(id, title)
   }
 
+  async getUnlistedTracks () {
+    this.REQUIRES(Services.CREATOR_NODE)
+    return this.creatorNode.getUnlistedTracks()
+  }
+
   /**
    * Return saved tracks for current user
    * NOTE in returned JSON, SaveType string one of track, playlist, album

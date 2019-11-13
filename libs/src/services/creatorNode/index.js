@@ -209,7 +209,7 @@ class CreatorNode {
   async associateTrack (audiusTrackId, metadataFileUUID, blockNumber) {
     this.maxBlockNumber = Math.max(this.maxBlockNumber, blockNumber)
     await this._makeRequest({
-      url: `/tracks`,
+      url: '/tracks',
       method: 'post',
       data: {
         blockchainTrackId: audiusTrackId,
@@ -225,6 +225,20 @@ class CreatorNode {
 
   async uploadTrackAudio (file, onProgress) {
     return this._uploadFile(file, '/track_content', onProgress)
+  }
+
+  async getUnlistedTracks () {
+    const request = {
+      url: 'tracks/unlisted',
+      method: 'get'
+    }
+    const resp = await this._makeRequest(request)
+    return resp.tracks.map(t => ({
+      ...t.metadataJSON,
+      created_at: t.createdAt,
+      updated_at: t.updatedAt,
+      track_id: parseInt(t.blockchainId, 10)
+    }))
   }
 
   async getHealthy () {
