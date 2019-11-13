@@ -54,6 +54,7 @@ var UnreadNotifications = function UnreadNotifications(_ref) {
 
 var Body = function Body(props) {
   return _react["default"].createElement("body", {
+    href: "https://audius.co",
     bgcolor: "#FFFFFF"
   }, _react["default"].createElement("center", null, _react["default"].createElement("table", {
     align: "center",
