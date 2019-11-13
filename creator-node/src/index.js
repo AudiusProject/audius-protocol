@@ -66,19 +66,35 @@ const runDBMigrations = async () => {
   }
 }
 
+const getMode = () => {
+  const arg = process.argv[2]
+  const modes = ['--run-migrations', '--run-app', '--run-all']
+  if (!modes.includes(arg)) {
+    return '--run-all'
+  }
+  return arg
+}
+
 const startApp = async () => {
   logger.info('Configuring service...')
+
   await config.asyncConfig()
   const storagePath = configFileStorage()
+
   const ipfs = await initIPFS()
-  await runDBMigrations()
+  
+  const mode = getMode()
+  if (mode === '--run-migrations' || mode === '--run-all') {
+    await runDBMigrations()
+  }
+  if (mode === '--run-app' || mode === '--run-all') {
+    await BlacklistManager.blacklist(ipfs)
 
-  await BlacklistManager.blacklist(ipfs)
+    const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
+    logger.info('Initialized audius libs')
 
-  const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
-  logger.info('Initialized audius libs')
-
-  const appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager)
+    const appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager)
+  }
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal, error) => {
