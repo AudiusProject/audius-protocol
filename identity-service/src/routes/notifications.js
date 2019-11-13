@@ -525,18 +525,31 @@ module.exports = function (app) {
 
   /*
    * Returns if a user subscription exists
-   * urlQueryParam: {number} userId       The user ID of the subscribed to user
-   *
-   * TODO: Validate that the subscriberId is comoing from the user w/ their wallet
+   * urlQueryParam: {Array<number>} userId       The user ID(s) of the subscribed to user
   */
   app.get('/notifications/subscription', authMiddleware, handleResponse(async (req, res, next) => {
-    const userId = parseInt(req.query.userId)
-
-    if (isNaN(userId)) return errorResponseBadRequest('Invalid request parameters')
-    const subscription = await models.Subscription.findOne({
-      where: { subscriberId: req.user.blockchainUserId, userId }
+    const usersIdsParam = Array.isArray(req.query.userId)
+      ? req.query.userId.map(id => parseInt(id))
+      : [parseInt(req.query.userId)]
+    const usersIds = usersIdsParam.filter(id => !isNaN(id))
+    if (usersIds.length === 0) return errorResponseBadRequest('Invalid request parameters')
+    const subscriptions = await models.Subscription.findAll({
+      where: {
+        subscriberId: req.user.blockchainUserId,
+        userId: {
+          [models.Sequelize.Op.in]: usersIds
+        }
+      }
     })
-    return successResponse({ isSubscribed: !!subscription })
+    const initSubscribers = usersIds.reduce((acc, id) => {
+      acc[id] = { isSubscribed: false }
+      return acc
+    }, {})
+    const users = subscriptions.reduce((subscribers, subscription) => {
+      subscribers[subscription.userId] = { isSubscribed: true }
+      return subscribers
+    }, initSubscribers)
+    return successResponse({ users })
   }))
 }
 
