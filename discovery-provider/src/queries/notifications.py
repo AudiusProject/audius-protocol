@@ -68,7 +68,7 @@ def notifications():
 
     if not max_block_number:
         max_block_number = min_block_number + max_block_diff
-    elif (max_block_number - min_block_number) > (min_block_number + max_block_diff):
+    elif (max_block_number - min_block_number) > max_block_diff:
         max_block_number = (min_block_number + max_block_diff)
 
     with db.scoped_session() as session:
