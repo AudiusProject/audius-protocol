@@ -1,7 +1,5 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const axios = require('axios')
-const moment = require('moment')
 const cors = require('cors')
 const rateLimit = require('express-rate-limit')
 const mailgun = require('mailgun-js')
@@ -14,6 +12,7 @@ const initAudiusLibs = require('./audiusLibsInstance')
 const NotificationProcessor = require('./notifications/index.js')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
+const { fetchAnnouncements } = require('./announcements')
 const { logger, loggingMiddleware } = require('./logging')
 const DOMAIN = 'mail.audius.co'
 const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
@@ -178,28 +177,12 @@ class App {
   }
 
   async getAudiusAnnouncements () {
-    const audiusNotificationUrl = config.get('audiusNotificationUrl')
     try {
-      const response = await axios.get(`${audiusNotificationUrl}/index.json`)
-      if (response.data && Array.isArray(response.data.notifications)) {
-        const announcementsResponse = await Promise.all(response.data.notifications.map(async notification => {
-          const notificationResponse = await axios.get(`${audiusNotificationUrl}/${notification.id}.json`)
-          return notificationResponse.data
-        }))
-        const announcements = announcementsResponse.filter(a => !!a.entityId).map(a => ({ ...a, type: 'Announcement' }))
-        announcements.sort((a, b) => {
-          let aDate = moment(a.datePublished)
-          let bDate = moment(b.datePublished)
-          return bDate - aDate
-        })
-        const announcementMap = announcements.reduce((acc, a) => {
-          acc[a.entityId] = a
-          return acc
-        }, {})
-        this.express.set('announcements', announcements)
-        this.express.set('announcementMap', announcementMap)
-      }
+      let { announcements, announcementMap } = await fetchAnnouncements()
+      this.express.set('announcements', announcements)
+      this.express.set('announcementMap', announcementMap)
     } catch (err) {
+      const audiusNotificationUrl = config.get('audiusNotificationUrl')
       logger.error(`Error, unable to get aduius announcements from ${audiusNotificationUrl} \n [Err]:`, err)
     }
   }

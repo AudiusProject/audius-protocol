@@ -6,6 +6,9 @@ const {
 } = require('../apiHelpers')
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
+const config = require('../config.js')
+const axios = require('axios')
+const { fetchAnnouncements } = require('../announcements.js')
 
 const NotificationType = Object.freeze({
   Follow: 'Follow',
@@ -458,6 +461,22 @@ module.exports = function (app) {
     } catch (err) {
       return errorResponseBadRequest({
         message: `[Error] Unable to retrieve notification settings for user: ${userId}`
+      })
+    }
+  }))
+
+  /*
+   * Refreshes the announcements stored in the application
+  */
+  app.post('/announcements', handleResponse(async (req, res, next) => {
+    try {
+      let { announcements, announcementMap } = await fetchAnnouncements()
+      app.set('announcements', announcements)
+      app.set('announcementMap', announcementMap)
+      return successResponse({ msg: 'Updated announcements' })
+    } catch (err) {
+      return errorResponseBadRequest({
+        message: `Failed to update announcements - ${err}`
       })
     }
   }))

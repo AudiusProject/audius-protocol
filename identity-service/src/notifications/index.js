@@ -1223,6 +1223,7 @@ class NotificationProcessor {
 
       console.log(emailParams)
       await this.sendEmail(emailParams)
+      // Temporary debugging email
       let emailParams2 = emailParams
       emailParams2['to'] = 'hareesh@audius.co'
       await this.sendEmail(emailParams2)
