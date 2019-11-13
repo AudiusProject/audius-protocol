@@ -59,7 +59,7 @@ const favoriteMilestoneList = baseMilestoneList
 // Track listen milestone list
 const trackListenMilestoneList = baseMilestoneList
 
-let notifDiscProv = config.get('notificationDiscoveryProvider')
+const notifDiscProv = config.get('notificationDiscoveryProvider')
 const emailCachePath = './emailCache'
 
 class NotificationProcessor {
@@ -1245,18 +1245,22 @@ class NotificationProcessor {
   }
 
   async cacheEmail (cacheParams) {
-    let uuid = uuidv4()
-    let timestamp = moment().valueOf()
-    let fileName = `${uuid}-${timestamp.toString()}.json`
-    let filePath = path.join(emailCachePath, fileName)
-    await new Promise((resolve, reject) => {
-      fs.writeFile(filePath, JSON.stringify(cacheParams), (err) => {
-        if (err) {
-          console.log(err)
-        }
-        resolve()
+    try {
+      let uuid = uuidv4()
+      let timestamp = moment().valueOf()
+      let fileName = `${uuid}-${timestamp.toString()}.json`
+      let filePath = path.join(emailCachePath, fileName)
+      await new Promise((resolve, reject) => {
+        fs.writeFile(filePath, JSON.stringify(cacheParams), (error) => {
+          if (error) {
+            reject(error)
+          }
+          resolve()
+        })
       })
-    })
+    } catch (e) {
+      console.log(`Error in cacheEmail ${e}`)
+    }
   }
 
   async sendEmail (emailParams) {
