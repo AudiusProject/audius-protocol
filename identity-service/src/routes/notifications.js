@@ -276,9 +276,14 @@ module.exports = function (app) {
       })
       unViewedCount = unViewedCount.length
 
-      const viewedAnnouncementCount = await models.Notification.count({
+      const viewedAnnouncements = await models.Notification.findAll({
         where: { userId, isViewed: true, type: NotificationType.Announcement }
       })
+      const viewedAnnouncementCount = viewedAnnouncements.length
+
+      const filteredViewedAnnouncements = viewedAnnouncements
+        .filter(a => moment(a.createdAt).isAfter(createdDate))
+        .filter(a => timeOffset.isAfter(moment(a.createdAt)))
 
       const announcements = app.get('announcements')
       const validUserAnnouncements = announcements
@@ -287,7 +292,11 @@ module.exports = function (app) {
         .filter(a => timeOffset.isAfter(moment(a.datePublished)))
 
       const unreadAnnouncementCount = validUserAnnouncements.length - viewedAnnouncementCount
-      const userNotifications = formatNotifications(notifications, announcementsAfterFilter)
+      const userNotifications = formatNotifications(
+        notifications.concat(filteredViewedAnnouncements),
+        announcementsAfterFilter
+      )
+
       return successResponse({
         message: 'success',
         notifications: userNotifications.slice(0, limit),
@@ -324,7 +333,7 @@ module.exports = function (app) {
         const announcementMap = app.get('announcementMap')
         const announcement = announcementMap[notificationId]
         if (!announcement) return errorResponseBadRequest('[Error] Invalid notification id')
-        await models.Notification.findOrCreate({
+        const [notification, isCreated] = await models.Notification.findOrCreate({
           where: {
             type: notificationType,
             userId,
@@ -337,6 +346,12 @@ module.exports = function (app) {
             timestamp: announcement.datePublished
           }
         })
+        if (!isCreated && (notification.isRead !== isRead || notification.isHidden !== isHidden)) {
+          await notification.update({
+            ...(typeof isRead === 'boolean' ? { isRead } : {}),
+            ...(typeof isHidden === 'boolean' ? { isHidden } : {})
+          })
+        }
         return successResponse({ message: 'success' })
       } else {
         await models.Notification.update(
@@ -499,7 +514,6 @@ module.exports = function (app) {
   */
   app.get('/notifications/subscription', authMiddleware, handleResponse(async (req, res, next) => {
     const userId = parseInt(req.query.userId)
-    console.log({ subscriberId: req.user.blockchainUserId, userId })
 
     if (isNaN(userId)) return errorResponseBadRequest('Invalid request parameters')
     const subscription = await models.Subscription.findOne({
