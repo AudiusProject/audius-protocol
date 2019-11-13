@@ -6,8 +6,6 @@ const {
 } = require('../apiHelpers')
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
-const config = require('../config.js')
-const axios = require('axios')
 const { fetchAnnouncements } = require('../announcements.js')
 
 const NotificationType = Object.freeze({
