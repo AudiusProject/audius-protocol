@@ -107,15 +107,9 @@ module.exports = function (app) {
    */
   app.post('/tracks/metadata', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     const metadataJSON = req.body.metadata
-    let sourceFile = req.body.sourceFile
 
     if (!metadataJSON || !metadataJSON.owner_id || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
       return errorResponseBadRequest('Metadata object must include owner_id and non-empty track_segments array')
-    }
-
-    const trackId = metadataJSON.track_id
-    if (!sourceFile && !trackId) {
-      return errorResponseBadRequest('A sourceFile must be provided or the metadata object must include track_id')
     }
 
     // Error if any of provided segment multihashes are blacklisted.
@@ -131,6 +125,12 @@ module.exports = function (app) {
 
     // If track marked as downloadable, kick off transcoding process if necessary (don't block on this).
     if (metadataJSON.download && metadataJSON.download.is_downloadable && !metadataJSON.download.cid) {
+      let sourceFile = req.body.sourceFile
+      const trackId = metadataJSON.track_id
+      if (!sourceFile && !trackId) {
+        return errorResponseBadRequest('Cannot make downloadable - A sourceFile must be provided or the metadata object must include track_id')
+      }
+
       // Find the sourceFile associated with the track if it wasn't provided, to be used in trancoding.
       if (!sourceFile) {
         const { trackUUID } = await models.Track.findOne({
