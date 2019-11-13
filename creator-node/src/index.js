@@ -85,10 +85,17 @@ const startApp = async () => {
 
   const mode = getMode()
   let appInfo
-  if (mode === '--run-migrations' || mode === '--run-all') {
+  
+  if (mode === '--run-migrations') {
     await runDBMigrations()
+    process.exit(0)
   }
-  if (mode === '--run-app' || mode === '--run-all') {
+  else {
+    if (mode === '--run-all') {
+      await runDBMigrations()
+    }
+    
+    /** Run app */
     await BlacklistManager.blacklist(ipfs)
 
     const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
