@@ -131,11 +131,12 @@ def get_tracks():
     return api_helpers.success_response(tracks)
 
 
+# Get a single track, including hidden tracks.
+# Requires both title and id params
 @bp.route("/track", methods=("GET",))
 def get_track():
     track_title = request.args.get("title", type=str)
 
-    # TODO: need to decode title URL
     if not track_title:
         raise exceptions.ArgumentError("Invalid value for parameter 'title'")
 
@@ -152,9 +153,9 @@ def get_track():
 
         current_user_id = get_current_user_id(required=False)
 
-        extendedTracks = populate_track_metadata(session, [track_id], tracks, current_user_id)
+        extended_tracks = populate_track_metadata(session, [track_id], tracks, current_user_id)
 
-    return api_helpers.success_response(extendedTracks)
+    return api_helpers.success_response(extended_tracks)
 
 
 # Return playlist content in json form

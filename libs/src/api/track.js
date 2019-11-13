@@ -31,11 +31,25 @@ class Tracks extends Base {
     return this.discoveryProvider.getTracks(limit, offset, idsArray, targetUserId, sort, minBlockNumber)
   }
 
+  /**
+   * Gets a single track.
+   * Will return both listed and unlisted tracks.
+   *
+   * @param {number} id
+   * @param {string} title
+   * @returns {(Array)} track
+   */
   async getTrack (id = null, title = null) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     return this.discoveryProvider.getTrack(id, title)
   }
 
+  /**
+   * Gets all unlisted track for a user.
+   * Will only return tracks for the currently authed user.
+   *
+   * @returns {(Array)} tracks array of tracks
+   */
   async getUnlistedTracks () {
     this.REQUIRES(Services.CREATOR_NODE)
     return this.creatorNode.getUnlistedTracks()

@@ -148,6 +148,14 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
+  /**
+   * Gets a single track.
+   * Will return both listed and unlisted tracks.
+   *
+   * @param {number} id
+   * @param {string} title
+   * @returns {(Array)} track
+   */
   async getTrack (id = null, title = null) {
     let req = {
       endpoint: 'track',

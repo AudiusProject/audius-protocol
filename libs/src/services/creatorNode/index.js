@@ -227,6 +227,12 @@ class CreatorNode {
     return this._uploadFile(file, '/track_content', onProgress)
   }
 
+  /**
+   * Gets all unlisted track for a user.
+   * Will only return tracks for the currently authed user.
+   *
+   * @returns {(Array)} tracks array of tracks
+   */
   async getUnlistedTracks () {
     const request = {
       url: 'tracks/unlisted',
