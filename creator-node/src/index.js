@@ -85,16 +85,15 @@ const startApp = async () => {
 
   const mode = getMode()
   let appInfo
-  
+
   if (mode === '--run-migrations') {
     await runDBMigrations()
     process.exit(0)
-  }
-  else {
+  } else {
     if (mode === '--run-all') {
       await runDBMigrations()
     }
-    
+
     /** Run app */
     await BlacklistManager.blacklist(ipfs)
 
