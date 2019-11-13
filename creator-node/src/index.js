@@ -82,8 +82,9 @@ const startApp = async () => {
   const storagePath = configFileStorage()
 
   const ipfs = await initIPFS()
-  
+
   const mode = getMode()
+  let appInfo
   if (mode === '--run-migrations' || mode === '--run-all') {
     await runDBMigrations()
   }
@@ -93,7 +94,7 @@ const startApp = async () => {
     const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
     logger.info('Initialized audius libs')
 
-    const appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager)
+    appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager)
   }
 
   // when app terminates, close down any open DB connections gracefully
@@ -103,7 +104,7 @@ const startApp = async () => {
     // use the bunyan CLI.
     logger.info('Shutting down db and express app...')
     sequelize.close()
-    appInfo.server.close()
+    if (appInfo) { appInfo.server.close() }
   })
 }
 
