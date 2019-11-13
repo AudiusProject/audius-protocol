@@ -66,19 +66,42 @@ const runDBMigrations = async () => {
   }
 }
 
+const getMode = () => {
+  const arg = process.argv[2]
+  const modes = ['--run-migrations', '--run-app', '--run-all']
+  if (!modes.includes(arg)) {
+    return '--run-all'
+  }
+  return arg
+}
+
 const startApp = async () => {
   logger.info('Configuring service...')
+
   await config.asyncConfig()
   const storagePath = configFileStorage()
+
   const ipfs = await initIPFS()
-  await runDBMigrations()
 
-  await BlacklistManager.blacklist(ipfs)
+  const mode = getMode()
+  let appInfo
 
-  const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
-  logger.info('Initialized audius libs')
+  if (mode === '--run-migrations') {
+    await runDBMigrations()
+    process.exit(0)
+  } else {
+    if (mode === '--run-all') {
+      await runDBMigrations()
+    }
 
-  const appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager)
+    /** Run app */
+    await BlacklistManager.blacklist(ipfs)
+
+    const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
+    logger.info('Initialized audius libs')
+
+    appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager)
+  }
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal, error) => {
@@ -87,7 +110,7 @@ const startApp = async () => {
     // use the bunyan CLI.
     logger.info('Shutting down db and express app...')
     sequelize.close()
-    appInfo.server.close()
+    if (appInfo) { appInfo.server.close() }
   })
 }
 
