@@ -17,7 +17,7 @@ const EntityType = Object.freeze({
   Playlist: 'Playlist'
 })
 
-const HightlighText = ({ text }) => (
+const HighlightText = ({ text }) => (
   <span
     className={'avenir'}
     style={{
@@ -48,26 +48,26 @@ const getUsers = (users) => {
   if (users.length > 1) {
     return (
       <>
-        <HightlighText text={firstUser.name} />
+        <HighlightText text={firstUser.name} />
         <BodyText text={` and ${users.length - 1} others`} />
       </>
     )
   }
-  return <HightlighText text={firstUser.name} />
+  return <HighlightText text={firstUser.name} />
 }
 
 const getEntity = (entity) => {
   if (entity.type === EntityType.Track) {
     return (
-      <> <BodyText text={'track '} /><HightlighText text={entity.name} /> </>
+      <> <BodyText text={'track '} /><HighlightText text={entity.name} /> </>
     )
   } else if (entity.type === EntityType.Album) {
     return (
-      <> <BodyText text={'album '} /><HightlighText text={entity.name} /> </>
+      <> <BodyText text={'album '} /><HighlightText text={entity.name} /> </>
     )
   } else if (entity.type === EntityType.Playlist) {
     return (
-      <> <BodyText text={'playlist '} /><HightlighText text={entity.name} /> </>
+      <> <BodyText text={'playlist '} /><HighlightText text={entity.name} /> </>
     )
   }
 }
@@ -108,7 +108,7 @@ const notificationMap = {
       return (
         <span>
           <BodyText text={`Your ${entity} `} />
-          <HightlighText text={notification.entity.name} />
+          <HighlightText text={notification.entity.name} />
           <BodyText text={` has reached over ${notification.value} ${notification.achievement}s`} />
         </span>
       )
@@ -123,14 +123,14 @@ const notificationMap = {
     if (notification.entity.type === NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
       return (
         <span>
-          <HightlighText text={user.name} />
+          <HighlightText text={user.name} />
           <BodyText text={` released ${notification.entity.count} new ${notification.entity.type}`} />
         </span>
       )
     }
     return (
       <span>
-        <HightlighText text={user.name} />
+        <HighlightText text={user.name} />
         <BodyText text={` released a new ${notification.entity.type}  ${notification.entity.name}`} />
       </span>
     )
