@@ -4,6 +4,7 @@ module.exports = {
    * Fixes bug where track segment files were not associated with trackUUID upon track entry creation.
    */
   up: async (queryInterface, Sequelize) => {
+    const start = Date.now()
     // Set all file trackUUIDs to null before re-assigning.
     await queryInterface.sequelize.query('update "Files" set "trackUUID" = null;')
 
@@ -71,6 +72,7 @@ module.exports = {
         { replacements: { trackUUID: track.trackUUID, fileUUIDs } }
       )
     }
+    console.log(`Finished processing ${tracks.length} tracks in ${Date.now() - start}ms.`)
   },
   down: (queryInterface, Sequelize) => { }
 }

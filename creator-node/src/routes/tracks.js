@@ -164,6 +164,15 @@ module.exports = function (app) {
           return errorResponseBadRequest(`Invalid sourceFile input - no matching file entry found.`)
         }
       }
+      req.logger.info(`sourceFile: ${sourceFile}`)
+
+      // Ensure sourceFile exists on disk.
+      const fileDir = path.resolve(req.app.get('storagePath'), sourceFile.split('.')[0])
+      const filePath = path.resolve(fileDir, sourceFile)
+      if (!fs.existsSync(filePath)) {
+        req.logger.error(`SourceFile not found at ${filePath}.`)
+        return errorResponseServerError('Cannot make downloadable - no sourceFile found on disk.')
+      }
 
       createDownloadableCopy(req, sourceFile)
     }
@@ -346,17 +355,17 @@ module.exports = function (app) {
 }
 
 /** Transcode track master file to 320kbps for downloading. Save to disk, IPFS, & DB. */
-async function createDownloadableCopy (req, sourceFileName) {
+async function createDownloadableCopy (req, fileName) {
   try {
     const start = Date.now()
-    req.logger.info(`Transcoding file ${sourceFileName}...`)
+    req.logger.info(`Transcoding file ${fileName}...`)
 
-    const sourceFilePath = path.resolve(req.app.get('storagePath'), sourceFileName.split('.')[0])
-    const dlCopyFilePath = await ffmpeg.transcodeFileTo320(req, sourceFilePath, sourceFileName)
+    const fileDir = path.resolve(req.app.get('storagePath'), fileName.split('.')[0])
+    const dlCopyFilePath = await ffmpeg.transcodeFileTo320(req, fileDir, fileName)
 
-    req.logger.info(`Transcoded file ${sourceFileName} in ${Date.now() - start}ms.`)
+    req.logger.info(`Transcoded file ${fileName} in ${Date.now() - start}ms.`)
 
-    await saveFileToIPFSFromFS(req, dlCopyFilePath, 'copy320', sourceFileName)
+    await saveFileToIPFSFromFS(req, dlCopyFilePath, 'copy320', fileName)
 
     return dlCopyFilePath
   } catch (err) {
