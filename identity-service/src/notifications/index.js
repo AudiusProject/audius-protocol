@@ -203,7 +203,6 @@ class NotificationProcessor {
     for (var targetUser of usersWithNewFollowers) {
       if (followersAddedDictionary.hasOwnProperty(targetUser)) {
         let currentFollowerCount = followersAddedDictionary[targetUser]
-        console.log(`User: ${targetUser} has ${currentFollowerCount} followers`)
         for (var i = followerMilestoneList.length; i >= 0; i--) {
           let milestoneValue = followerMilestoneList[i]
           if (currentFollowerCount >= milestoneValue) {
@@ -292,7 +291,6 @@ class NotificationProcessor {
     for (var repostedTrackId of tracksReposted) {
       let trackOwnerId = owners.tracks[repostedTrackId]
       let trackRepostCount = repostCounts.tracks[repostedTrackId]
-      console.log(`User ${trackOwnerId}, track ${repostedTrackId}, repost count ${trackRepostCount}`)
       for (var i = repostMilestoneList.length; i >= 0; i--) {
         let milestoneValue = repostMilestoneList[i]
         if (trackRepostCount >= milestoneValue) {
@@ -312,11 +310,10 @@ class NotificationProcessor {
     for (var repostedAlbumId of albumsReposted) {
       let albumOwnerId = owners.albums[repostedAlbumId]
       let albumRepostCount = repostCounts.albums[repostedAlbumId]
-      console.log(`User ${albumOwnerId}, album ${repostedAlbumId}, repost count ${albumRepostCount}`)
       for (var j = repostMilestoneList.length; j >= 0; j--) {
         let milestoneValue = repostMilestoneList[j]
         if (albumRepostCount >= milestoneValue) {
-          console.log(`album ${repostedAlbumId}, repost count ${albumRepostCount} has met milestone ${milestoneValue}`)
+          console.log(`Album ${repostedAlbumId}, repost count ${albumRepostCount} has met milestone ${milestoneValue}`)
           await this.processRepostMilestone(
             albumOwnerId,
             repostedAlbumId,
@@ -332,7 +329,6 @@ class NotificationProcessor {
     for (var repostedPlaylistId of playlistsReposted) {
       let playlistOwnerId = owners.playlists[repostedPlaylistId]
       let playlistRepostCount = repostCounts.playlists[repostedPlaylistId]
-      console.log(`User ${playlistOwnerId}, playlist ${repostedPlaylistId}, repost count ${playlistRepostCount}`)
       for (var k = repostMilestoneList.length; k >= 0; k--) {
         let milestoneValue = repostMilestoneList[k]
         if (playlistRepostCount >= milestoneValue) {
@@ -358,11 +354,10 @@ class NotificationProcessor {
     for (var favoritedTrackId of tracksFavorited) {
       let trackOwnerId = owners.tracks[favoritedTrackId]
       let trackFavoriteCount = favoriteCounts.tracks[favoritedTrackId]
-      console.log(`User ${trackOwnerId}, track ${favoritedTrackId}, fave count ${trackFavoriteCount}`)
       for (var i = favoriteMilestoneList.length; i >= 0; i--) {
         let milestoneValue = favoriteMilestoneList[i]
         if (trackFavoriteCount >= milestoneValue) {
-          console.log(`Track ${favoritedTrackId}, favorite count ${trackFavoriteCount} has met milestone ${milestoneValue}`)
+          console.log(`Track ${favoritedTrackId}, User ${trackOwnerId}, favorite count ${trackFavoriteCount} has met milestone ${milestoneValue}`)
           await this.processFavoriteMilestone(
             trackOwnerId,
             favoritedTrackId,
@@ -378,11 +373,10 @@ class NotificationProcessor {
     for (var favoritedAlbumId of albumsFavorited) {
       let albumOwnerId = owners.albums[favoritedAlbumId]
       let albumFavoriteCount = favoriteCounts.albums[favoritedAlbumId]
-      console.log(`User ${albumOwnerId}, album ${favoritedAlbumId}, fave count ${albumFavoriteCount}`)
       for (var j = favoriteMilestoneList.length; j >= 0; j--) {
         let milestoneValue = favoriteMilestoneList[j]
         if (albumFavoriteCount >= milestoneValue) {
-          console.log(`Album ${favoritedAlbumId}, favorite count ${albumFavoriteCount} has met milestone ${milestoneValue}`)
+          console.log(`Album ${favoritedAlbumId}, User ${albumOwnerId} , favorite count ${albumFavoriteCount} has met milestone ${milestoneValue}`)
           await this.processFavoriteMilestone(
             albumOwnerId,
             favoritedAlbumId,
@@ -396,10 +390,8 @@ class NotificationProcessor {
     }
 
     for (var favoritedPlaylistId of playlistsFavorited) {
-      console.log(`Favorited playlist id: ${favoritedPlaylistId}`)
       let playlistOwnerId = owners.playlists[favoritedPlaylistId]
       let playlistFavoriteCount = favoriteCounts.playlists[favoritedPlaylistId]
-      console.log(`User ${playlistOwnerId}, playlist ${favoritedPlaylistId}, fave count ${playlistFavoriteCount}`)
       for (var k = favoriteMilestoneList.length; k >= 0; k--) {
         let milestoneValue = favoriteMilestoneList[k]
         if (playlistFavoriteCount >= milestoneValue) {
@@ -495,7 +487,7 @@ class NotificationProcessor {
           blocknumber
         }
       })
-      console.log(`Process milestone ${userId}, type ${milestoneType}, entityId ${entityId}, type ${entityType}`)
+      console.log(`Process milestone ${userId}, type ${milestoneType}, entityId ${entityId}, type ${entityType}, milestoneValue ${milestoneValue}`)
 
       // Destroy any unread milestone notifications of this type + entity
       let milestonesToBeDeleted = await models.Notification.findAll({
