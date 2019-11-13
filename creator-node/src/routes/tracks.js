@@ -164,7 +164,6 @@ module.exports = function (app) {
           return errorResponseBadRequest(`Invalid sourceFile input - no matching file entry found.`)
         }
       }
-      req.logger.info(`sourceFile: ${sourceFile}`)
 
       // Ensure sourceFile exists on disk.
       const fileDir = path.resolve(req.app.get('storagePath'), sourceFile.split('.')[0])
