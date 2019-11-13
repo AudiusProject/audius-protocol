@@ -163,7 +163,8 @@ class Utils {
   static async raceRequests (
     urls,
     callback,
-    axiosConfig
+    axiosConfig,
+    timeout = 3000
   ) {
     const CancelToken = axios.CancelToken
 
@@ -198,6 +199,7 @@ class Utils {
           })
       })
     })
+    requests.push(Utils.wait(timeout))
     const response = await Utils.promiseFight(requests)
     sources.forEach(source => {
       source.cancel('Fetch already succeeded')
