@@ -30,6 +30,15 @@ http {
     # identified by the "Via" header (required for CloudFront).
     gzip_proxied any;
 
+    gzip_types
+        text/css
+        text/javascript
+        text/xml
+        text/plain
+        application/javascript
+        application/x-javascript
+        application/json;
+
     location / {
       proxy_http_version 1.1;
 
