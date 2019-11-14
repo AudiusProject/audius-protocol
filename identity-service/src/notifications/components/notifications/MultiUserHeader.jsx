@@ -1,6 +1,6 @@
 import React from 'react'
 
-const MAX_USERS = 8
+const MAX_USERS = 9
 
 const MultiUserHeader = ({ users }) => {
   const hasExtra = users.length > MAX_USERS
@@ -8,6 +8,7 @@ const MultiUserHeader = ({ users }) => {
     <table
       align='center'
       border='0'
+      width='100%'
       cellpadding='0'
       cellspacing='0'
       style={{ margin: '0px', padding: '0px' }}
@@ -15,7 +16,7 @@ const MultiUserHeader = ({ users }) => {
       <tr>
         <td
           valign='top'
-          class='headerNotification'
+          className='headerNotification'
           height='100%'
           width='100%'
           style={{
@@ -28,7 +29,6 @@ const MultiUserHeader = ({ users }) => {
             border='0'
             cellpadding='0'
             cellspacing='0'
-            width='100%'
             style={{
               margin: '0px',
               padding: '0px'
@@ -44,7 +44,6 @@ const MultiUserHeader = ({ users }) => {
                       height: '32px',
                       width: '32px',
                       borderRadius: '50%',
-                      border: '1px solid #C2C0CC',
                       marginRight: '5px'
                     }}
                     alt={user.name}
@@ -63,8 +62,8 @@ const MultiUserHeader = ({ users }) => {
                     style={{
                       margin: '0px',
                       padding: '0px',
-                      height: '32px',
-                      width: '32px',
+                      height: '34px',
+                      width: '34px',
                       borderCollapse: 'separate',
                       borderRadius: '50%',
                       border: '1px solid #C2C0CC'

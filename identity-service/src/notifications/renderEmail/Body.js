@@ -54,8 +54,10 @@ var UnreadNotifications = function UnreadNotifications(_ref) {
 
 var Body = function Body(props) {
   return _react["default"].createElement("body", {
-    href: "https://audius.co",
-    bgcolor: "#FFFFFF"
+    bgcolor: "#FFFFFF",
+    style: {
+      backgroundColor: '#FFFFFF'
+    }
   }, _react["default"].createElement("center", null, _react["default"].createElement("table", {
     align: "center",
     border: "0",
@@ -65,7 +67,7 @@ var Body = function Body(props) {
     id: "bodyTable",
     bgcolor: "#FFFFFF",
     style: {
-      height: '100%'
+      backgroundColor: '#FFFFFF'
     }
   }, _react["default"].createElement("tr", null, _react["default"].createElement("td", {
     align: "center",
@@ -80,7 +82,7 @@ var Body = function Body(props) {
     valign: "top",
     id: "bodyCell"
   }, _react["default"].createElement(UnreadNotifications, {
-    message: props.unreadMessage
+    message: props.subject
   }))), _react["default"].createElement("tr", null, _react["default"].createElement("td", {
     align: "center",
     valign: "top",

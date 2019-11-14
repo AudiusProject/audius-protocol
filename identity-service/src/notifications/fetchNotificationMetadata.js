@@ -9,9 +9,8 @@ const formatNotificationProps = require('./formatNotificationMetadata')
 const config = require('../config.js')
 
 const USER_NODE_IPFS_GATEWAY = config.get('notificationDiscoveryProvider').includes('staging') ? 'https://usermetadata.staging.audius.co/ipfs/' : 'https://usermetadata.audius.co/ipfs/'
-console.log(`USER_NODE_IPFS_GATEWAY ${USER_NODE_IPFS_GATEWAY}`)
 
-const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/user.png'
+const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/imageProfilePicEmpty.png'
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).
  *

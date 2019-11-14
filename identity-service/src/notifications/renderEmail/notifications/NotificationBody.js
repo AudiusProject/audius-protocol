@@ -67,7 +67,7 @@ var OpenAudiusLink = function OpenAudiusLink() {
       lineHeight: '10px'
     }
   }, 'Open Audius', _react["default"].createElement("img", {
-    src: "https://download.audius.co/static-resources/email/arrow.png",
+    src: "https://download.audius.co/static-resources/email/iconArrow.png",
     style: {
       height: '8px',
       width: '8px',

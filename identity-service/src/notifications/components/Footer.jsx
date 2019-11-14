@@ -72,7 +72,7 @@ const Unsubscribe = () => (
     }}
   >
     {'Tired of seeing these emails? '}
-    <a href='http://mailgun/unsubscribe/%recipient.id%' class='utilityLink'>
+    <a href='https://audius.co/settings' class='utilityLink' style={{ textDecorationColor: '#858199' }}>
       <span style={{ color: '#858199' }}>
         {'Update your notification preferences'}
       </span>

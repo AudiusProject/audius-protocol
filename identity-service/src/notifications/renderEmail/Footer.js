@@ -80,8 +80,11 @@ var Unsubscribe = function Unsubscribe() {
       fontSize: '14px'
     }
   }, 'Tired of seeing these emails? ', _react["default"].createElement("a", {
-    href: "http://mailgun/unsubscribe/%recipient.id%",
-    "class": "utilityLink"
+    href: "https://audius.co/settings",
+    "class": "utilityLink",
+    style: {
+      textDecorationColor: '#858199'
+    }
   }, _react["default"].createElement("span", {
     style: {
       color: '#858199'

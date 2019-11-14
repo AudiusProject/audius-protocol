@@ -75,7 +75,6 @@ const BodyStyles = () => {
     body,
     #bodyTable,
     #bodyCell {
-      height: 100%;
       margin: 0;
       padding: 0;
       width: 100%;
@@ -300,6 +299,10 @@ const BodyStyles = () => {
     }
 
     .arrowIcon {
+      height:8px;
+      width:8px;
+      margin-left:4px;
+      display:inline-block;
       opacity: 0.5;
     }
 

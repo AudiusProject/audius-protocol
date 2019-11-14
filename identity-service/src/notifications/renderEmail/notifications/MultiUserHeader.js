@@ -9,7 +9,7 @@ var _react = _interopRequireDefault(require("react"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-var MAX_USERS = 8;
+var MAX_USERS = 9;
 
 var MultiUserHeader = function MultiUserHeader(_ref) {
   var users = _ref.users;
@@ -17,6 +17,7 @@ var MultiUserHeader = function MultiUserHeader(_ref) {
   return _react["default"].createElement("table", {
     align: "center",
     border: "0",
+    width: "100%",
     cellpadding: "0",
     cellspacing: "0",
     style: {
@@ -25,7 +26,7 @@ var MultiUserHeader = function MultiUserHeader(_ref) {
     }
   }, _react["default"].createElement("tr", null, _react["default"].createElement("td", {
     valign: "top",
-    "class": "headerNotification",
+    className: "headerNotification",
     height: "100%",
     width: "100%",
     style: {
@@ -37,7 +38,6 @@ var MultiUserHeader = function MultiUserHeader(_ref) {
     border: "0",
     cellpadding: "0",
     cellspacing: "0",
-    width: "100%",
     style: {
       margin: '0px',
       padding: '0px'
@@ -51,7 +51,6 @@ var MultiUserHeader = function MultiUserHeader(_ref) {
         height: '32px',
         width: '32px',
         borderRadius: '50%',
-        border: '1px solid #C2C0CC',
         marginRight: '5px'
       },
       alt: user.name,
@@ -68,8 +67,8 @@ var MultiUserHeader = function MultiUserHeader(_ref) {
     style: {
       margin: '0px',
       padding: '0px',
-      height: '32px',
-      width: '32px',
+      height: '34px',
+      width: '34px',
       borderCollapse: 'separate',
       borderRadius: '50%',
       border: '1px solid #C2C0CC'

@@ -68,7 +68,7 @@ const OpenAudiusLink = () => (
   >
     {'Open Audius'}
     <img
-      src='https://download.audius.co/static-resources/email/arrow.png'
+      src='https://download.audius.co/static-resources/email/iconArrow.png'
       style={{
         height: '8px',
         width: '8px',

@@ -146,7 +146,9 @@ const getMessage = (notification) => {
 const Notification = (props) => {
   const message = getMessage(props)
   return (
-    <NotificationBody {...props} message={message} />
+    <a href='https://audius.co' style={{ textDecoration: 'none' }}>
+      <NotificationBody {...props} message={message} />
+    </a>
   )
 }
 

@@ -39,7 +39,7 @@ var EntityType = Object.freeze({
   Playlist: 'Playlist'
 });
 
-var HightlighText = function HightlighText(_ref) {
+var HighlightText = function HighlightText(_ref) {
   var text = _ref.text;
   return _react["default"].createElement("span", {
     className: 'avenir',
@@ -68,14 +68,14 @@ var getUsers = function getUsers(users) {
       firstUser = _users[0];
 
   if (users.length > 1) {
-    return _react["default"].createElement(_react["default"].Fragment, null, _react["default"].createElement(HightlighText, {
+    return _react["default"].createElement(_react["default"].Fragment, null, _react["default"].createElement(HighlightText, {
       text: firstUser.name
     }), _react["default"].createElement(BodyText, {
       text: " and ".concat(users.length - 1, " others")
     }));
   }
 
-  return _react["default"].createElement(HightlighText, {
+  return _react["default"].createElement(HighlightText, {
     text: firstUser.name
   });
 };
@@ -84,19 +84,19 @@ var getEntity = function getEntity(entity) {
   if (entity.type === EntityType.Track) {
     return _react["default"].createElement(_react["default"].Fragment, null, " ", _react["default"].createElement(BodyText, {
       text: 'track '
-    }), _react["default"].createElement(HightlighText, {
+    }), _react["default"].createElement(HighlightText, {
       text: entity.name
     }), " ");
   } else if (entity.type === EntityType.Album) {
     return _react["default"].createElement(_react["default"].Fragment, null, " ", _react["default"].createElement(BodyText, {
       text: 'album '
-    }), _react["default"].createElement(HightlighText, {
+    }), _react["default"].createElement(HighlightText, {
       text: entity.name
     }), " ");
   } else if (entity.type === EntityType.Playlist) {
     return _react["default"].createElement(_react["default"].Fragment, null, " ", _react["default"].createElement(BodyText, {
       text: 'playlist '
-    }), _react["default"].createElement(HightlighText, {
+    }), _react["default"].createElement(HighlightText, {
       text: entity.name
     }), " ");
   }
@@ -128,7 +128,7 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
     var entity = notification.entity.type.toLowerCase();
     return _react["default"].createElement("span", null, _react["default"].createElement(BodyText, {
       text: "Your ".concat(entity, " ")
-    }), _react["default"].createElement(HightlighText, {
+    }), _react["default"].createElement(HighlightText, {
       text: notification.entity.name
     }), _react["default"].createElement(BodyText, {
       text: " has reached over ".concat(notification.value, " ").concat(notification.achievement, "s")
@@ -143,14 +143,14 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
       user = _notification$users[0];
 
   if (notification.entity.type === NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
-    return _react["default"].createElement("span", null, _react["default"].createElement(HightlighText, {
+    return _react["default"].createElement("span", null, _react["default"].createElement(HighlightText, {
       text: user.name
     }), _react["default"].createElement(BodyText, {
       text: " released ".concat(notification.entity.count, " new ").concat(notification.entity.type)
     }));
   }
 
-  return _react["default"].createElement("span", null, _react["default"].createElement(HightlighText, {
+  return _react["default"].createElement("span", null, _react["default"].createElement(HighlightText, {
     text: user.name
   }), _react["default"].createElement(BodyText, {
     text: " released a new ".concat(notification.entity.type, "  ").concat(notification.entity.name)
@@ -165,9 +165,14 @@ var getMessage = function getMessage(notification) {
 
 var Notification = function Notification(props) {
   var message = getMessage(props);
-  return _react["default"].createElement(_NotificationBody["default"], _extends({}, props, {
+  return _react["default"].createElement("a", {
+    href: "https://audius.co",
+    style: {
+      textDecoration: 'none'
+    }
+  }, _react["default"].createElement(_NotificationBody["default"], _extends({}, props, {
     message: message
-  }));
+  })));
 };
 
 var _default = Notification;

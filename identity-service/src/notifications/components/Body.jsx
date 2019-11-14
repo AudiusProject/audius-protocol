@@ -42,9 +42,9 @@ const UnreadNotifications = ({ message }) => (
 
 const Body = (props) => {
   return (
-    <body href='https://audius.co' bgcolor='#FFFFFF'>
+    <body bgcolor='#FFFFFF' style={{ backgroundColor: '#FFFFFF' }}>
       <center>
-        <table align='center' border='0' cellpadding='0' cellspacing='0' width='100%' id='bodyTable' bgcolor='#FFFFFF' style={{ height: '100%' }}>
+        <table align='center' border='0' cellpadding='0' cellspacing='0' width='100%' id='bodyTable' bgcolor='#FFFFFF' style={{ backgroundColor: '#FFFFFF' }}>
           <tr>
             <td align='center' valign='top' id='bodyCell'>
               <AudiusImage />
@@ -57,7 +57,7 @@ const Body = (props) => {
           </tr>
           <tr>
             <td align='center' valign='top' id='bodyCell'>
-              <UnreadNotifications message={props.unreadMessage} />
+              <UnreadNotifications message={props.subject} />
             </td>
           </tr>
           <tr>
