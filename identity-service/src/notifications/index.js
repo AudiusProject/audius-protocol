@@ -98,7 +98,7 @@ class NotificationProcessor {
       if (!minBlock && minBlock !== 0) throw new Error('no min block')
 
       // Re-enable for development as needed
-      this.emailQueue.add({ type: 'unreadEmailJob' })
+      // this.emailQueue.add({ type: 'unreadEmailJob' })
 
       try {
         // Index notifications
@@ -1122,7 +1122,7 @@ class NotificationProcessor {
 
         // Based on this difference, schedule email for users
         // In prod, this difference must be <1 hour or between midnight - 1am
-        let maxHourDifference = 18 // 1.5
+        let maxHourDifference = 1.5 // 1.5
         // Valid time found
         if (difference < maxHourDifference) {
           console.log(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
@@ -1237,9 +1237,7 @@ class NotificationProcessor {
 
       // Temporary debugging email
       let emailParams2 = emailParams
-      emailParams2['to'] = 'hareesh@audius.co'
-      emailParams2['bcc'] = 'forrest@audius.co'
-      emailParams2['bcc'] = 'julian@audius.co'
+      emailParams2['to'] = 'audius-email-test@audius.co'
       await this.sendEmail(emailParams2)
 
       // Cache on file system
