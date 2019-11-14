@@ -98,7 +98,7 @@ class NotificationProcessor {
       if (!minBlock && minBlock !== 0) throw new Error('no min block')
 
       // Re-enable for development as needed
-      // this.emailQueue.add({ type: 'unreadEmailJob' })
+      this.emailQueue.add({ type: 'unreadEmailJob' })
 
       try {
         // Index notifications
@@ -275,7 +275,6 @@ class NotificationProcessor {
         if (trackListenCount >= milestoneValue) {
           let trackId = entry.trackId
           let ownerId = entry.owner
-          // console.log(`Track ${trackId}, Owner ${ownerId} listens: ${trackListenCount}, milestone ${milestoneValue}`)
           await this.processListenCountMilestone(
             ownerId,
             trackId,
@@ -537,7 +536,7 @@ class NotificationProcessor {
   }
 
   async indexNotifications (minBlock) {
-    console.log(`indexNotifications job - ${new Date()}`)
+    console.log(`${new Date()} - indexNotifications job`)
 
     // Query owners for tracks relevant to track listen counts
     let listenCounts = await this.calculateTrackListenMilestones()
@@ -986,13 +985,14 @@ class NotificationProcessor {
 
   async processEmailNotifications () {
     try {
+      console.log(`${new Date()} - processEmailNotifications`)
+
       let mg = this.expressApp.get('mailgun')
       if (mg === null) {
         console.log('Mailgun not configured')
         return
       }
 
-      console.log(`processEmailNotifications - ${new Date()}`)
       let dailyEmailUsers = await models.UserNotificationSettings.findAll({
         attributes: ['userId'],
         where: { emailFrequency: 'daily' }
@@ -1117,7 +1117,7 @@ class NotificationProcessor {
 
         // Based on this difference, schedule email for users
         // In prod, this difference must be <1 hour or between midnight - 1am
-        let maxHourDifference = 1.5
+        let maxHourDifference = 18 // 1.5
         // Valid time found
         if (difference < maxHourDifference) {
           console.log(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
@@ -1146,7 +1146,7 @@ class NotificationProcessor {
             if (frequency === 'daily') {
               // If 1 day has passed, send email
               if (timeSinceEmail >= dayInHours) {
-                console.log(`Sending Daily email to ${userId}, last email from ${lastSentTimestamp}`)
+                console.log(`Daily email to ${userId}, last email from ${lastSentTimestamp}`)
                 // Render email
                 let sent = await this.renderAndSendEmail(
                   userId,
@@ -1165,7 +1165,7 @@ class NotificationProcessor {
             } else if (frequency === 'weekly') {
               // If 1 week has passed, send email
               if (timeSinceEmail >= weekInHours) {
-                console.log(`Sending WEEKLY email to ${userId}, last email from ${lastSentTimestamp}`)
+                console.log(`Weekly email to ${userId}, last email from ${lastSentTimestamp}`)
                 // Render email
                 let sent = await this.renderAndSendEmail(
                   userId,
@@ -1182,8 +1182,6 @@ class NotificationProcessor {
               }
             }
           }
-        } else {
-          console.log(`Invalid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
         }
       }
     } catch (e) {
@@ -1212,6 +1210,7 @@ class NotificationProcessor {
         renderProps['subject'] = 'Unread notifications from last week'
       }
 
+      console.log(renderProps)
       const notifHtml = renderEmail(renderProps)
 
       const emailParams = {
