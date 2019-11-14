@@ -25,13 +25,20 @@ module.exports = function (app) {
     const ipfs = req.app.get('ipfsAPI')
     try {
       const start = Date.now()
-      const date = (new Date()).valueOf().toString()
-      const content = Buffer.from(date)
-      const results = await ipfs.add(content, { pin: false })
+      const timestamp = start.toString()
+      const content = Buffer.from(timestamp)
+
+      // Add new buffer created from timestamp
+      const results = await ipfs.add(content)
       const hash = results[0].hash // "Qm...WW"
+
+      // Retrieve and validate hash from local node
       const ipfsResp = await ipfs.get(hash)
       const ipfsRespStr = ipfsResp[0].content.toString()
-      const isValidResponse = (ipfsRespStr === date)
+      const isValidResponse = (ipfsRespStr === timestamp)
+
+      // Unpin hash
+      await ipfs.pin.rm(hash)
       const duration = `${Date.now() - start}ms`
       return successResponse({ hash, isValidResponse, duration })
     } catch (e) {
