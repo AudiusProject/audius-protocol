@@ -1004,8 +1004,13 @@ class NotificationProcessor {
       }).map(x => x.userId)
 
       let now = moment()
-      let dayAgo = now.subtract(1, 'days')
-      let weekAgo = now.subtract(7, 'days')
+      let dayAgo = now.clone().subtract(1, 'days')
+
+      let weekAgo = now.clone().subtract(7, 'days')
+      let formattedDayAgo = dayAgo.format('MMMM Do YYYY')
+      let shortWeekAgoFormat = weekAgo.format('MMMM Do')
+      let weeklySubjectFormat = `Unread notifications from ${shortWeekAgoFormat} - ${formattedDayAgo}`
+      let dailySubjectFormat = `Unread notifications from ${formattedDayAgo}`
 
       let appAnnouncements = this.expressApp.get('announcements')
       // For each announcement, we generate a list of valid users
@@ -1133,7 +1138,8 @@ class NotificationProcessor {
               userEmail,
               appAnnouncements,
               frequency,
-              frequency === 'daily' ? dayAgo : weekAgo)
+              frequency === 'daily' ? dayAgo : weekAgo,
+              frequency === 'daily' ? dailySubjectFormat : weeklySubjectFormat)
             if (!sent) { continue }
             await models.NotificationEmail.create({
               userId,
@@ -1153,7 +1159,8 @@ class NotificationProcessor {
                   userEmail,
                   appAnnouncements,
                   frequency,
-                  dayAgo)
+                  dayAgo,
+                  dailySubjectFormat)
                 if (!sent) { continue }
 
                 await models.NotificationEmail.create({
@@ -1172,7 +1179,8 @@ class NotificationProcessor {
                   userEmail,
                   appAnnouncements,
                   frequency,
-                  weekAgo)
+                  weekAgo,
+                  weeklySubjectFormat)
                 if (!sent) { continue }
                 await models.NotificationEmail.create({
                   userId,
@@ -1191,38 +1199,38 @@ class NotificationProcessor {
   }
 
   // Master function to render and send email for a given userId
-  async renderAndSendEmail (userId, userEmail, announcements, frequency, startTime) {
+  async renderAndSendEmail (
+    userId,
+    userEmail,
+    announcements,
+    frequency,
+    startTime,
+    subject) {
     try {
       console.log(`renderAndSendEmail ${userId}, ${userEmail}`)
       const notificationProps = await getEmailNotifications(
         this.audiusLibs,
         userId,
         announcements,
-        startTime)
+        startTime,
+        5)
 
       let renderProps = {}
       renderProps['notifications'] = notificationProps
       if (frequency === 'daily') {
         renderProps['title'] = `Daily Email - ${userEmail}`
-        renderProps['subject'] = 'Unread notifications from yesterday'
       } else if (frequency === 'weekly') {
         renderProps['title'] = `Weekly Email - ${userEmail}`
-        renderProps['subject'] = 'Unread notifications from last week'
       }
-
-      console.log(renderProps)
+      renderProps['subject'] = subject
+      console.dir(renderProps, { depth: 5 })
       const notifHtml = renderEmail(renderProps)
 
       const emailParams = {
         from: 'Audius Mail <mail@audius.co>',
         to: `${userEmail}`,
-        html: notifHtml
-      }
-
-      if (frequency === 'daily') {
-        emailParams['subject'] = 'Unread notifications from yesterday'
-      } else if (frequency === 'weekly') {
-        emailParams['subject'] = 'Unread notifications from last week'
+        html: notifHtml,
+        subject
       }
 
       await this.sendEmail(emailParams)
@@ -1231,6 +1239,7 @@ class NotificationProcessor {
       let emailParams2 = emailParams
       emailParams2['to'] = 'hareesh@audius.co'
       emailParams2['bcc'] = 'forrest@audius.co'
+      emailParams2['bcc'] = 'julian@audius.co'
       await this.sendEmail(emailParams2)
 
       // Cache on file system
