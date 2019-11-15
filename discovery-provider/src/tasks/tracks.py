@@ -5,6 +5,7 @@ from src import contract_addresses
 from src.utils import multihash, helpers
 from src.models import Track, User, BlacklistedIPLD
 from src.tasks.metadata import track_metadata_format
+import sqlalchemy as sa
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +143,13 @@ def parse_track_event(
         if is_blacklisted_ipld(session, track_metadata_multihash):
             return track_record
 
-        track_record.owner_id = event_args._trackOwnerId
+        owner_id = event_args._trackOwnerId
+        user_record = (
+            session.query(User)
+            .filter(User.user_id == owner_id, User.is_current == True)
+            .first()
+        )
+        track_record.owner_id = owner_id
 
         # Reconnect to creator nodes for this user
         refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
@@ -155,7 +162,8 @@ def parse_track_event(
 
         track_record = populate_track_record_metadata(
             track_record,
-            track_metadata
+            track_metadata,
+            user_record.handle
         )
         track_record.metadata_multihash = track_metadata_multihash
 
@@ -187,7 +195,13 @@ def parse_track_event(
         if is_blacklisted_ipld(session, upd_track_metadata_multihash):
             return track_record
 
-        track_record.owner_id = event_args._trackOwnerId
+        owner_id = event_args._trackOwnerId
+        user_record = (
+            session.query(User)
+            .filter(User.user_id == owner_id, User.is_current == True)
+            .first()
+        )
+        track_record.owner_id = owner_id
         track_record.is_delete = False
 
         # Reconnect to creator nodes for this user
@@ -200,7 +214,8 @@ def parse_track_event(
 
         track_record = populate_track_record_metadata(
             track_record,
-            track_metadata
+            track_metadata,
+            user_record.handle
         )
         track_record.metadata_multihash = upd_track_metadata_multihash
 
@@ -232,7 +247,7 @@ def is_blacklisted_ipld(session, ipld_blacklist_multihash):
     )
     return ipld_blacklist_entry.count() > 0
 
-def populate_track_record_metadata(track_record, track_metadata):
+def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.title = track_metadata["title"]
     track_record.length = track_metadata["length"]
     track_record.cover_art = track_metadata["cover_art"]
@@ -266,6 +281,7 @@ def populate_track_record_metadata(track_record, track_metadata):
             "cid": None
         }
 
+    track_record.route_id = helpers.create_track_route_id(track_metadata["title"], handle)
     return track_record
 
 def refresh_track_owner_ipfs_conn(owner_id, session, update_task):

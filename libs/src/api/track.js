@@ -32,16 +32,21 @@ class Tracks extends Base {
   }
 
   /**
-   * Gets a single track.
-   * Will return both listed and unlisted tracks.
+   * @typedef {Object} getTracksIdentifier
+   * @property {string} handle
+   * @property {number} id
+   * @property {string} url_title
+   */
+
+  /**
+   * gets all tracks matching identifiers, including unlisted.
    *
-   * @param {number} id
-   * @param {string} title
+   * @param {getTracksIdentifier[]} identifiers
    * @returns {(Array)} track
    */
-  async getTrack (id = null, title = null) {
+  async getTracksIncludingUnlisted (identifiers) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getTrack(id, title)
+    return this.discoveryProvider.getTracksIncludingUnlisted(identifiers)
   }
 
   /**

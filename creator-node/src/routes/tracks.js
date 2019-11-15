@@ -363,7 +363,12 @@ module.exports = function (app) {
       }
     })
 
-    return successResponse({ tracks })
+    return successResponse({
+      tracks: tracks.map(t => ({
+        title: t.metadataJSON.title,
+        id: t.blockchainId
+      }))
+    })
   }))
 }
 

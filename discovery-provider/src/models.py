@@ -124,6 +124,7 @@ class Track(Base):
     is_current = Column(Boolean, nullable=False)
     is_delete = Column(Boolean, nullable=False)
     owner_id = Column(Integer, nullable=False)
+    route_id = Column(String, nullable=False)
     title = Column(Text)
     length = Column(Integer)
     cover_art = Column(String)
@@ -158,6 +159,7 @@ class Track(Base):
             is_current={self.is_current},\
             is_delete={self.is_delete},\
             owner_id={self.owner_id},\
+            route_id={self.route_id},\
             title={self.title},\
             length={self.length},\
             cover_art={self.cover_art},\

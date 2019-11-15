@@ -2,6 +2,7 @@
 track_metadata_format = {
     "owner_id": None,
     "title": None,
+    "route_id": None,
     "length": 0,
     "cover_art": None,
     "cover_art_sizes": None,

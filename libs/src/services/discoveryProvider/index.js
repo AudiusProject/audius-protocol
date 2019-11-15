@@ -149,19 +149,24 @@ class DiscoveryProvider {
   }
 
   /**
-   * Gets a single track.
-   * Will return both listed and unlisted tracks.
+   * @typedef {Object} getTracksIdentifier
+   * @property {string} handle
+   * @property {number} id
+   * @property {string} url_title
+   */
+
+  /**
+   * gets all tracks matching identifiers, including unlisted.
    *
-   * @param {number} id
-   * @param {string} title
+   * @param {getTracksIdentifier[]} identifiers
    * @returns {(Array)} track
    */
-  async getTrack (id = null, title = null) {
+  async getTracksIncludingUnlisted (identifiers) {
     let req = {
-      endpoint: 'track',
-      queryParams: {
-        id,
-        title
+      endpoint: 'tracksIncludingUnlisted',
+      method: 'post',
+      data: {
+        tracks: identifiers
       }
     }
     return this._makeRequest(req)
@@ -521,11 +526,18 @@ class DiscoveryProvider {
       headers['X-User-ID'] = currentUserId
     }
 
-    const axiosRequest = {
+    let axiosRequest = {
       url: requestUrl,
       headers: headers,
-      method: 'get',
+      method: (requestObj.method || 'get'),
       timeout: 10000
+    }
+
+    if (requestObj.method === 'post' && requestObj.data) {
+      axiosRequest = {
+        ...axiosRequest,
+        data: requestObj.data
+      }
     }
 
     try {

@@ -1,6 +1,7 @@
 import logging
 import os
 import json
+import re
 import contextlib
 from urllib.parse import urljoin
 import requests
@@ -176,3 +177,20 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
 
 latest_block_redis_key = 'latest_block_from_chain'
 latest_block_hash_redis_key = 'latest_blockhash_from_chain'
+
+# Constructs a track's route_id from an unsanitzied title and handle.
+# Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
+def create_track_route_id(title, handle):
+    # Strip out invalid character
+    sanitized_title = re.sub(r'!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]', '', title)
+
+    # Convert whitespaces to dashes
+    sanitized_title = re.sub(r'\s+', '-', sanitized_title)
+
+    # Convert multiple dashes to single dashes
+    sanitized_title = re.sub(r'-+', '-', sanitized_title)
+
+    # Lowercase it
+    sanitized_title = sanitized_title.lower()
+
+    return f"{handle}/{sanitized_title}"

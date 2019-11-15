@@ -239,12 +239,7 @@ class CreatorNode {
       method: 'get'
     }
     const resp = await this._makeRequest(request)
-    return resp.tracks.map(t => ({
-      ...t.metadataJSON,
-      created_at: t.createdAt,
-      updated_at: t.updatedAt,
-      track_id: parseInt(t.blockchainId, 10)
-    }))
+    return resp.tracks
   }
 
   async getHealthy () {

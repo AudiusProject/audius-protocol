@@ -131,31 +131,44 @@ def get_tracks():
     return api_helpers.success_response(tracks)
 
 
-# Get a single track, including hidden tracks.
-# Requires both title and id params
-@bp.route("/track", methods=("GET",))
-def get_track():
-    track_title = request.args.get("title", type=str)
+# Get all tracks matching a route_id and track_id.
+# Expects a JSON body of shape:
+#   { "tracks": [{ "id": number, "url_title": string, "handle": string }]}
+@bp.route("/tracksIncludingUnlisted", methods=("POST",))
+def get_tracks_including_unlisted():
+    def validateIdentifiers (identifiers):
+        if identifiers is None:
+            raise exceptions.ArgumentError("No identifiers passed to tracksIncludingUnlisted")
+        if not all([not (i["handle"] is None or i["id"] is None or i["url_title"] is None) for i in identifiers]): 
+            raise exceptions.ArgumentError("Invalid argument shape passed into tracksIncludingUnlisted")
 
-    if not track_title:
-        raise exceptions.ArgumentError("Invalid value for parameter 'title'")
-
-    track_id = request.args.get("id", type=int)
-    if not track_id:
-        raise exceptions.ArgumentError("Invalid value for parameter 'track_id'")
+    req_data = request.get_json()
+    identifiers = req_data["tracks"]
+    validateIdentifiers(identifiers)
 
     db = get_db()
     with db.scoped_session() as session:
         base_query = session.query(Track)
-        base_query = base_query.filter(Track.is_current == True, Track.title == track_title, Track.track_id == track_id)
+        filter_cond = []
+
+        # Create filter conditions as a list of `and` clauses
+        for i in identifiers:
+            route_id = f"""{i["handle"]}/{i["url_title"]}"""
+            filter_cond.append(and_(Track.is_current == True, Track.route_id == route_id, Track.track_id == i["id"]))
+
+        # Pass array of `and` clauses into an `or` clause as destrucutred *args
+        base_query = base_query.filter(or_(*filter_cond))
+
+        # Perform the query
         query_results = paginate_query(base_query).all()
         tracks = helpers.query_result_to_list(query_results)
+        track_ids = map(lambda track: track["track_id"], tracks)
 
+        # Populate metadata
         current_user_id = get_current_user_id(required=False)
+        extended_tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
-        extended_tracks = populate_track_metadata(session, [track_id], tracks, current_user_id)
-
-    return api_helpers.success_response(extended_tracks)
+    return api_helpers.success_response(tracks)
 
 
 # Return playlist content in json form
