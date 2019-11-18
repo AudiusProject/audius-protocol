@@ -107,15 +107,9 @@ module.exports = function (app) {
    */
   app.post('/tracks/metadata', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     const metadataJSON = req.body.metadata
-    let sourceFile = req.body.sourceFile
 
     if (!metadataJSON || !metadataJSON.owner_id || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
       return errorResponseBadRequest('Metadata object must include owner_id and non-empty track_segments array')
-    }
-
-    const trackId = metadataJSON.track_id
-    if (!sourceFile && !trackId) {
-      return errorResponseBadRequest('A sourceFile must be provided or the metadata object must include track_id')
     }
 
     // Error if any of provided segment multihashes are blacklisted.
@@ -131,6 +125,12 @@ module.exports = function (app) {
 
     // If track marked as downloadable, kick off transcoding process if necessary (don't block on this).
     if (metadataJSON.download && metadataJSON.download.is_downloadable && !metadataJSON.download.cid) {
+      let sourceFile = req.body.sourceFile
+      const trackId = metadataJSON.track_id
+      if (!sourceFile && !trackId) {
+        return errorResponseBadRequest('Cannot make downloadable - A sourceFile must be provided or the metadata object must include track_id')
+      }
+
       // Find the sourceFile associated with the track if it wasn't provided, to be used in trancoding.
       if (!sourceFile) {
         const { trackUUID } = await models.Track.findOne({
@@ -143,7 +143,6 @@ module.exports = function (app) {
         if (!firstSegment) return errorResponseServerError('No segment found for track')
 
         const file = await models.File.findOne({
-          attributes: ['sourceFile'],
           where: {
             multihash: firstSegment.multihash,
             cnodeUserUUID: req.session.cnodeUserUUID,
@@ -164,6 +163,14 @@ module.exports = function (app) {
         if (!file) {
           return errorResponseBadRequest(`Invalid sourceFile input - no matching file entry found.`)
         }
+      }
+
+      // Ensure sourceFile exists on disk.
+      const fileDir = path.resolve(req.app.get('storagePath'), sourceFile.split('.')[0])
+      const filePath = path.resolve(fileDir, sourceFile)
+      if (!fs.existsSync(filePath)) {
+        req.logger.error(`SourceFile not found at ${filePath}.`)
+        return errorResponseServerError('Cannot make downloadable - no sourceFile found on disk.')
       }
 
       createDownloadableCopy(req, sourceFile)
@@ -221,21 +228,40 @@ module.exports = function (app) {
 
     try {
       // Create / update track entry on db.
-      const track = (await models.Track.upsert({
+      const resp = (await models.Track.upsert({
         cnodeUserUUID,
         metadataFileUUID,
         metadataJSON,
         blockchainId: blockchainTrackId,
         coverArtFileUUID
-      }, { transaction: t, returning: true }))[0]
+      },
+      { transaction: t, returning: true }
+      ))
+      const track = resp[0]
+      const trackCreated = resp[1]
 
-      // Associate matching segment files on DB with new/updated track.
-      await Promise.all(metadataJSON.track_segments.map(async segment => {
-        // Update each segment file; error if not found.
+      /** Associate matching segment files on DB with new/updated track. */
+
+      const trackSegmentCIDs = metadataJSON.track_segments.map(segment => segment.multihash)
+
+      // if track created, ensure files exist with trackuuid = null and update them.
+      if (trackCreated) {
+        const trackFiles = await models.File.findAll({
+          where: {
+            multihash: trackSegmentCIDs,
+            cnodeUserUUID,
+            trackUUID: null,
+            type: 'track'
+          },
+          transaction: t
+        })
+        if (trackFiles.length < trackSegmentCIDs.length) {
+          throw new Error('Did not find files for every track segment CID.')
+        }
         const numAffectedRows = await models.File.update(
           { trackUUID: track.trackUUID },
           { where: {
-            multihash: segment.multihash,
+            multihash: trackSegmentCIDs,
             cnodeUserUUID,
             trackUUID: null,
             type: 'track'
@@ -243,19 +269,35 @@ module.exports = function (app) {
           transaction: t
           }
         )
-        if (!numAffectedRows) {
-          return errorResponseBadRequest(`No file found for provided segment multihash: ${segment.multihash}`)
+        if (numAffectedRows < trackSegmentCIDs.length) {
+          throw new Error('Failed to associate files for every track segment CID.')
         }
-      }))
+      } else { /** If track updated, ensure files exist with trackuuid. */
+        const trackFiles = await models.File.findAll({
+          where: {
+            multihash: trackSegmentCIDs,
+            cnodeUserUUID,
+            trackUUID: track.trackUUID,
+            type: 'track'
+          },
+          transaction: t
+        })
+        if (trackFiles.length < trackSegmentCIDs.length) {
+          throw new Error('Did not find files for every track segment CID with trackUUID.')
+        }
+      }
 
       // Update cnodeUser's latestBlockNumber if higher than previous latestBlockNumber.
       // TODO - move to subquery to guarantee atomicity.
       const updatedCNodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID }, transaction: t })
       if (!updatedCNodeUser || !updatedCNodeUser.latestBlockNumber) {
-        return errorResponseServerError('Issue in retrieving udpatedCnodeUser')
+        throw new Error('Issue in retrieving udpatedCnodeUser')
       }
-      req.logger.info(`cnodeuser ${cnodeUserUUID} first latestBlockNumber ${cnodeUser.latestBlockNumber} || \
-        current latestBlockNumber ${updatedCNodeUser.latestBlockNumber} || given blockNumber ${blockNumber}`)
+      req.logger.info(
+        `cnodeuser ${cnodeUserUUID} first latestBlockNumber ${cnodeUser.latestBlockNumber} || \
+        current latestBlockNumber ${updatedCNodeUser.latestBlockNumber} || \
+        given blockNumber ${blockNumber}`
+      )
       if (blockNumber > updatedCNodeUser.latestBlockNumber) {
         await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
       }
@@ -312,17 +354,17 @@ module.exports = function (app) {
 }
 
 /** Transcode track master file to 320kbps for downloading. Save to disk, IPFS, & DB. */
-async function createDownloadableCopy (req, sourceFileName) {
+async function createDownloadableCopy (req, fileName) {
   try {
     const start = Date.now()
-    req.logger.info(`Transcoding file ${sourceFileName}...`)
+    req.logger.info(`Transcoding file ${fileName}...`)
 
-    const sourceFilePath = path.resolve(req.app.get('storagePath'), sourceFileName.split('.')[0])
-    const dlCopyFilePath = await ffmpeg.transcodeFileTo320(req, sourceFilePath, sourceFileName)
+    const fileDir = path.resolve(req.app.get('storagePath'), fileName.split('.')[0])
+    const dlCopyFilePath = await ffmpeg.transcodeFileTo320(req, fileDir, fileName)
 
-    req.logger.info(`Transcoded file ${sourceFileName} in ${Date.now() - start}ms.`)
+    req.logger.info(`Transcoded file ${fileName} in ${Date.now() - start}ms.`)
 
-    await saveFileToIPFSFromFS(req, dlCopyFilePath, 'copy320', sourceFileName)
+    await saveFileToIPFSFromFS(req, dlCopyFilePath, 'copy320', fileName)
 
     return dlCopyFilePath
   } catch (err) {
