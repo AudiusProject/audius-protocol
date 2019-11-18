@@ -1,6 +1,7 @@
 const Redis = require('ioredis')
 const path = require('path')
 const fs = require('fs')
+var contentDisposition = require('content-disposition')
 const { promisify } = require('util')
 const writeFile = promisify(fs.writeFile)
 const mkdir = promisify(fs.mkdir)
@@ -168,7 +169,7 @@ module.exports = function (app) {
     try {
       // If client has provided filename, set filename in header to be auto-populated in download prompt.
       if (req.query.filename) {
-        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${req.query.filename}`)
+        res.setHeader('Content-Disposition', contentDisposition(`${req.query.filename}`))
       }
       await new Promise((resolve, reject) => {
         req.app.get('ipfsAPI').catReadableStream(CID)
