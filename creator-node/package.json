@@ -20,6 +20,7 @@
     "bl": "^3.0.0",
     "body-parser": "^1.18.3",
     "bunyan": "^1.8.12",
+    "content-disposition": "^0.5.3",
     "convict": "^5.1.0",
     "cors": "^2.8.4",
     "death": "^1.1.0",
