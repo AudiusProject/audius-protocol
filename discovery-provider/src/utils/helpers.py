@@ -3,10 +3,10 @@ import os
 import json
 import re
 import contextlib
-from src import exceptions
 from urllib.parse import urljoin
 from functools import reduce
 import requests
+from src import exceptions
 from . import multihash
 
 @contextlib.contextmanager
