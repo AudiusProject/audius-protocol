@@ -1,7 +1,11 @@
 import React from 'react'
 
 import Footer from './Footer'
-import Notification from './notifications/Notification'
+import Notification, {
+  NotificationType,
+  getUsers,
+  getEntity
+} from './notifications/Notification'
 
 const AudiusImage = () => {
   return (
@@ -40,9 +44,73 @@ const UnreadNotifications = ({ message }) => (
   </p>
 )
 
+const snippetMap = {
+  [NotificationType.Favorite] (notification) {
+    const user = getUsers(notification.users)
+    const entity = getEntity(notification.entity)
+    return `${user} favorited your ${entity}`
+  },
+  [NotificationType.Repost] (notification) {
+    const user = getUsers(notification.users)
+    const entity = getEntity(notification.entity)
+    return `${user} reposted your ${entity}`
+  },
+  [NotificationType.Follow] (notification) {
+    const user = getUsers(notification.users)
+    return `${user}  followed you`
+  },
+  [NotificationType.Announcement] (notification) {
+    return notification.text
+  },
+  [NotificationType.Milestone] (notification) {
+    if (notification.entity) {
+      const entity = notification.entity.type.toLowerCase()
+      return `Your ${entity} ${notification.entity.name} has reached over ${notification.value} ${notification.achievement}s`
+    } else {
+      return `Your have reached over ${notification.value} Followers `
+    }
+  },
+  [NotificationType.UserSubscription] (notification) {
+    const [user] = notification.users
+    if (notification.entity.type === NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
+      return `${user.name} released ${notification.entity.count} new ${notification.entity.type}`
+    }
+    return `${user.name} released a new ${notification.entity.type}  ${notification.entity.name}`
+  }
+}
+
+const getSnippet = (notification) => {
+  return snippetMap[notification.type](notification)
+}
+
 const Body = (props) => {
   return (
     <body bgcolor='#FFFFFF' style={{ backgroundColor: '#FFFFFF' }}>
+      <p
+        style={{
+          display: 'none',
+          fontSize: '1px',
+          color: '#333333',
+          lineHeight: '1px',
+          maxHeight: '0px',
+          maxWidth: '0px',
+          opacity: 0,
+          overflow: 'hidden'
+        }}
+        dangerouslySetInnerHTML={{ __html: `${getSnippet(props.notifications[0])}
+        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+        <wbr>
+        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+        <wbr>
+        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+        <wbr>
+        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+        <wbr>
+        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+        <wbr>
+        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+        ` }}
+      />
       <center>
         <table align='center' border='0' cellpadding='0' cellspacing='0' width='100%' id='bodyTable' bgcolor='#FFFFFF' style={{ backgroundColor: '#FFFFFF' }}>
           <tr>

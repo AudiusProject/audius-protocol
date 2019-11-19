@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
+exports["default"] = exports.NotificationType = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
@@ -33,6 +33,7 @@ var NotificationType = Object.freeze({
   UserSubscription: 'UserSubscription',
   Announcement: 'Announcement'
 });
+exports.NotificationType = NotificationType;
 var EntityType = Object.freeze({
   Track: 'Track',
   Album: 'Album',
@@ -52,9 +53,10 @@ var HighlightText = function HighlightText(_ref) {
 };
 
 var BodyText = function BodyText(_ref2) {
-  var text = _ref2.text;
+  var text = _ref2.text,
+      className = _ref2.className;
   return _react["default"].createElement("span", {
-    className: 'avenir',
+    className: "avenir ".concat(className),
     style: {
       color: '#858199',
       fontSize: '14px',
@@ -105,28 +107,37 @@ var getEntity = function getEntity(entity) {
 var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, NotificationType.Favorite, function (notification) {
   var user = getUsers(notification.users);
   var entity = getEntity(notification.entity);
-  return _react["default"].createElement("span", null, user, _react["default"].createElement(BodyText, {
+  return _react["default"].createElement("span", {
+    className: 'notificationText'
+  }, user, _react["default"].createElement(BodyText, {
     text: " favorited your "
   }), entity);
 }), _defineProperty(_notificationMap, NotificationType.Repost, function (notification) {
   var user = getUsers(notification.users);
   var entity = getEntity(notification.entity);
-  return _react["default"].createElement("span", null, user, _react["default"].createElement(BodyText, {
+  return _react["default"].createElement("span", {
+    className: 'notificationText'
+  }, user, _react["default"].createElement(BodyText, {
     text: " reposted your "
   }), entity);
 }), _defineProperty(_notificationMap, NotificationType.Follow, function (notification) {
   var user = getUsers(notification.users);
-  return _react["default"].createElement("span", null, user, _react["default"].createElement(BodyText, {
+  return _react["default"].createElement("span", {
+    className: 'notificationText'
+  }, user, _react["default"].createElement(BodyText, {
     text: " followed you"
   }));
 }), _defineProperty(_notificationMap, NotificationType.Announcement, function (notification) {
   return _react["default"].createElement(BodyText, {
+    className: 'notificationText',
     text: notification.text
   });
 }), _defineProperty(_notificationMap, NotificationType.Milestone, function (notification) {
   if (notification.entity) {
     var entity = notification.entity.type.toLowerCase();
-    return _react["default"].createElement("span", null, _react["default"].createElement(BodyText, {
+    return _react["default"].createElement("span", {
+      className: 'notificationText'
+    }, _react["default"].createElement(BodyText, {
       text: "Your ".concat(entity, " ")
     }), _react["default"].createElement(HighlightText, {
       text: notification.entity.name
@@ -135,6 +146,7 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
     }));
   } else {
     return _react["default"].createElement(BodyText, {
+      className: 'notificationText',
       text: "Your have reached over ".concat(notification.value, " Followers ")
     });
   }
@@ -143,14 +155,18 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
       user = _notification$users[0];
 
   if (notification.entity.type === NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
-    return _react["default"].createElement("span", null, _react["default"].createElement(HighlightText, {
+    return _react["default"].createElement("span", {
+      className: 'notificationText'
+    }, _react["default"].createElement(HighlightText, {
       text: user.name
     }), _react["default"].createElement(BodyText, {
       text: " released ".concat(notification.entity.count, " new ").concat(notification.entity.type)
     }));
   }
 
-  return _react["default"].createElement("span", null, _react["default"].createElement(HighlightText, {
+  return _react["default"].createElement("span", {
+    className: 'notificationText'
+  }, _react["default"].createElement(HighlightText, {
     text: user.name
   }), _react["default"].createElement(BodyText, {
     text: " released a new ".concat(notification.entity.type, "  ").concat(notification.entity.name)
@@ -165,14 +181,9 @@ var getMessage = function getMessage(notification) {
 
 var Notification = function Notification(props) {
   var message = getMessage(props);
-  return _react["default"].createElement("a", {
-    href: "https://audius.co",
-    style: {
-      textDecoration: 'none'
-    }
-  }, _react["default"].createElement(_NotificationBody["default"], _extends({}, props, {
+  return _react["default"].createElement(_NotificationBody["default"], _extends({}, props, {
     message: message
-  })));
+  }));
 };
 
 var _default = Notification;

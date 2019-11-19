@@ -1,5 +1,7 @@
 "use strict";
 
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -9,11 +11,27 @@ var _react = _interopRequireDefault(require("react"));
 
 var _Footer = _interopRequireDefault(require("./Footer"));
 
-var _Notification = _interopRequireDefault(require("./notifications/Notification"));
+var _Notification = _interopRequireWildcard(require("./notifications/Notification"));
+
+var _snippetMap;
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 var AudiusImage = function AudiusImage() {
   return _react["default"].createElement("img", {
@@ -52,13 +70,62 @@ var UnreadNotifications = function UnreadNotifications(_ref) {
   }, message);
 };
 
+var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.NotificationType.Favorite, function (notification) {
+  var user = (0, _Notification.getUsers)(notification.users);
+  var entity = (0, _Notification.getEntity)(notification.entity);
+  return "".concat(user, " favorited your ").concat(entity);
+}), _defineProperty(_snippetMap, _Notification.NotificationType.Repost, function (notification) {
+  var user = (0, _Notification.getUsers)(notification.users);
+  var entity = (0, _Notification.getEntity)(notification.entity);
+  return "".concat(user, " reposted your ").concat(entity);
+}), _defineProperty(_snippetMap, _Notification.NotificationType.Follow, function (notification) {
+  var user = (0, _Notification.getUsers)(notification.users);
+  return "".concat(user, "  followed you");
+}), _defineProperty(_snippetMap, _Notification.NotificationType.Announcement, function (notification) {
+  return notification.text;
+}), _defineProperty(_snippetMap, _Notification.NotificationType.Milestone, function (notification) {
+  if (notification.entity) {
+    var entity = notification.entity.type.toLowerCase();
+    return "Your ".concat(entity, " ").concat(notification.entity.name, " has reached over ").concat(notification.value, " ").concat(notification.achievement, "s");
+  } else {
+    return "Your have reached over ".concat(notification.value, " Followers ");
+  }
+}), _defineProperty(_snippetMap, _Notification.NotificationType.UserSubscription, function (notification) {
+  var _notification$users = _slicedToArray(notification.users, 1),
+      user = _notification$users[0];
+
+  if (notification.entity.type === _Notification.NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
+    return "".concat(user.name, " released ").concat(notification.entity.count, " new ").concat(notification.entity.type);
+  }
+
+  return "".concat(user.name, " released a new ").concat(notification.entity.type, "  ").concat(notification.entity.name);
+}), _snippetMap);
+
+var getSnippet = function getSnippet(notification) {
+  return snippetMap[notification.type](notification);
+};
+
 var Body = function Body(props) {
   return _react["default"].createElement("body", {
     bgcolor: "#FFFFFF",
     style: {
       backgroundColor: '#FFFFFF'
     }
-  }, _react["default"].createElement("center", null, _react["default"].createElement("table", {
+  }, _react["default"].createElement("p", {
+    style: {
+      display: 'none',
+      fontSize: '1px',
+      color: '#333333',
+      lineHeight: '1px',
+      maxHeight: '0px',
+      maxWidth: '0px',
+      opacity: 0,
+      overflow: 'hidden'
+    },
+    dangerouslySetInnerHTML: {
+      __html: "".concat(getSnippet(props.notifications[0]), "\n        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;\n        <wbr>\n        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;\n        <wbr>\n        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;\n        <wbr>\n        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;\n        <wbr>\n        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;\n        <wbr>\n        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;\n        ")
+    }
+  }), _react["default"].createElement("center", null, _react["default"].createElement("table", {
     align: "center",
     border: "0",
     cellpadding: "0",

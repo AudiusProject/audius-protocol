@@ -2,7 +2,7 @@ import React from 'react'
 
 import NotificationBody from './NotificationBody'
 
-const NotificationType = Object.freeze({
+export const NotificationType = Object.freeze({
   Follow: 'Follow',
   Repost: 'Repost',
   Favorite: 'Favorite',
@@ -30,9 +30,9 @@ const HighlightText = ({ text }) => (
   </span>
 )
 
-const BodyText = ({ text }) => (
+const BodyText = ({ text, className }) => (
   <span
-    className={'avenir'}
+    className={`avenir ${className}`}
     style={{
       color: '#858199',
       fontSize: '14px',
@@ -77,7 +77,7 @@ const notificationMap = {
     const user = getUsers(notification.users)
     const entity = getEntity(notification.entity)
     return (
-      <span>
+      <span className={'notificationText'}>
         {user}<BodyText text={` favorited your `} />{entity}
       </span>
     )
@@ -86,7 +86,7 @@ const notificationMap = {
     const user = getUsers(notification.users)
     const entity = getEntity(notification.entity)
     return (
-      <span>
+      <span className={'notificationText'}>
         {user}<BodyText text={` reposted your `} />{entity}
       </span>
     )
@@ -94,19 +94,19 @@ const notificationMap = {
   [NotificationType.Follow] (notification) {
     const user = getUsers(notification.users)
     return (
-      <span>
+      <span className={'notificationText'}>
         {user}<BodyText text={` followed you`} />
       </span>
     )
   },
   [NotificationType.Announcement] (notification) {
-    return <BodyText text={notification.text} />
+    return <BodyText className={'notificationText'} text={notification.text} />
   },
   [NotificationType.Milestone] (notification) {
     if (notification.entity) {
       const entity = notification.entity.type.toLowerCase()
       return (
-        <span>
+        <span className={'notificationText'}>
           <BodyText text={`Your ${entity} `} />
           <HighlightText text={notification.entity.name} />
           <BodyText text={` has reached over ${notification.value} ${notification.achievement}s`} />
@@ -114,7 +114,7 @@ const notificationMap = {
       )
     } else {
       return (
-        <BodyText text={`Your have reached over ${notification.value} Followers `} />
+        <BodyText className={'notificationText'} text={`Your have reached over ${notification.value} Followers `} />
       )
     }
   },
@@ -122,14 +122,14 @@ const notificationMap = {
     const [user] = notification.users
     if (notification.entity.type === NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
       return (
-        <span>
+        <span className={'notificationText'}>
           <HighlightText text={user.name} />
           <BodyText text={` released ${notification.entity.count} new ${notification.entity.type}`} />
         </span>
       )
     }
     return (
-      <span>
+      <span className={'notificationText'}>
         <HighlightText text={user.name} />
         <BodyText text={` released a new ${notification.entity.type}  ${notification.entity.name}`} />
       </span>
@@ -146,9 +146,7 @@ const getMessage = (notification) => {
 const Notification = (props) => {
   const message = getMessage(props)
   return (
-    <a href='https://audius.co' style={{ textDecoration: 'none' }}>
-      <NotificationBody {...props} message={message} />
-    </a>
+    <NotificationBody {...props} message={message} />
   )
 }
 

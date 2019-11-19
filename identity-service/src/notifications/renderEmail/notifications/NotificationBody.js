@@ -80,6 +80,15 @@ var OpenAudiusLink = function OpenAudiusLink() {
   }));
 };
 
+var WrapLink = function WrapLink(props) {
+  return _react["default"].createElement("a", {
+    href: "https://audius.co",
+    style: {
+      textDecoration: 'none'
+    }
+  }, props.children);
+};
+
 var Favorite = function Favorite(props) {
   var hasUsers = Array.isArray(props.users);
   var hasMultiUser = hasUsers && props.users.length > 1;
@@ -92,10 +101,19 @@ var Favorite = function Favorite(props) {
       border: '1px solid rgba(133,129,153,0.2)',
       borderColor: 'rgba(133,129,153,0.2)',
       borderRadius: '4px',
-      margin: '0px auto 8px',
       height: 'auto',
       width: '100%',
-      maxWidth: '396px'
+      maxWidth: '396px',
+      marginBottom: '8px'
+    }
+  }, _react["default"].createElement("tr", null, _react["default"].createElement("td", null, _react["default"].createElement(WrapLink, null, _react["default"].createElement("table", {
+    border: "0",
+    cellpadding: "0",
+    cellspacing: "0",
+    style: {
+      borderCollapse: 'separate',
+      height: 'auto',
+      width: '100%'
     }
   }, props.type === 'Announcement' && _react["default"].createElement("tr", null, _react["default"].createElement(AnnouncementHeader, null)), hasMultiUser && _react["default"].createElement("tr", null, _react["default"].createElement("td", {
     colspan: '12',
@@ -140,7 +158,7 @@ var Favorite = function Favorite(props) {
     style: {
       padding: '0px 16px 14px'
     }
-  }, _react["default"].createElement(OpenAudiusLink, null))));
+  }, _react["default"].createElement(OpenAudiusLink, null))))))));
 };
 
 var _default = Favorite;

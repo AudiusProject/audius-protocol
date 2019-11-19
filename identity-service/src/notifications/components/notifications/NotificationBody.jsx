@@ -82,6 +82,17 @@ const OpenAudiusLink = () => (
   </a>
 )
 
+const WrapLink = (props) => {
+  return (
+    <a
+      href='https://audius.co'
+      style={{ textDecoration: 'none' }}>
+      {props.children}
+    </a>
+
+  )
+}
+
 const Favorite = (props) => {
   const hasUsers = Array.isArray(props.users)
   const hasMultiUser = hasUsers && props.users.length > 1
@@ -96,77 +107,94 @@ const Favorite = (props) => {
         border: '1px solid rgba(133,129,153,0.2)',
         borderColor: 'rgba(133,129,153,0.2)',
         borderRadius: '4px',
-        margin: '0px auto 8px',
         height: 'auto',
         width: '100%',
-        maxWidth: '396px'
+        maxWidth: '396px',
+        marginBottom: '8px'
       }}
     >
-      {props.type === 'Announcement' && (
-        <tr>
-          <AnnouncementHeader />
-        </tr>
-      )}
-      {hasMultiUser && (
-        <tr>
-          <td
-            colspan={'12'}
-            valign='center'
-            style={{
-              padding: '16px 16px 0px',
-              paddingTop: props.type === 'Announcement' ? '8px' : '16px',
-              borderRadius: '4px'
-            }}
-          >
-            <MultiUserHeader users={props.users} />
-          </td>
-        </tr>
-      )}
       <tr>
-        {hasUsers && !hasMultiUser && (
-          <td
-            colspan={'1'}
-            valign='center'
-            style={{
-              padding: '12px 0px 8px 16px',
-              width: '60px'
-            }}
-          >
-            <UserImage user={props.users[0]} />
-          </td>
-        )}
-        <td
-          colspan={(hasUsers && !hasMultiUser) ? 11 : 12}
-          valign='center'
-          style={{
-            padding: '12px 16px 8px',
-            paddingLeft: (hasUsers && !hasMultiUser) ? '12px' : '16px',
-            width: '100%'
-          }}
-        >
-          {props.message}
-        </td>
-      </tr>
-      {props.hasReadMore && (
-        <tr>
-          <td
-            colspan={'12'}
-            valign='center'
-            className={'avenir'}
-            style={{
-              padding: '0px 16px 14px',
-              color: '#7E1BCC',
-              fontSize: '14px',
-              fontWeight: '500'
-            }}
-          >
-            {'Read More'}
-          </td>
-        </tr>
-      )}
-      <tr>
-        <td valign='center' colspan={'12'} style={{ padding: '0px 16px 14px' }}>
-          <OpenAudiusLink />
+        <td>
+          <WrapLink>
+            <table
+              border='0'
+              cellpadding='0'
+              cellspacing='0'
+              style={{
+                borderCollapse: 'separate',
+                height: 'auto',
+                width: '100%'
+              }}
+            >
+              {props.type === 'Announcement' && (
+                <tr>
+                  <AnnouncementHeader />
+                </tr>
+              )}
+              {hasMultiUser && (
+                <tr>
+                  <td
+                    colspan={'12'}
+                    valign='center'
+                    style={{
+                      padding: '16px 16px 0px',
+                      paddingTop: props.type === 'Announcement' ? '8px' : '16px',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    <MultiUserHeader users={props.users} />
+                  </td>
+                </tr>
+              )}
+              <tr>
+                {hasUsers && !hasMultiUser && (
+                  <td
+                    colspan={'1'}
+                    valign='center'
+                    style={{
+                      padding: '12px 0px 8px 16px',
+                      width: '60px'
+                    }}
+                  >
+                    <UserImage user={props.users[0]} />
+                  </td>
+                )}
+                <td
+                  colspan={(hasUsers && !hasMultiUser) ? 11 : 12}
+                  valign='center'
+                  style={{
+                    padding: '12px 16px 8px',
+                    paddingLeft: (hasUsers && !hasMultiUser) ? '12px' : '16px',
+                    width: '100%'
+                  }}
+                >
+                  {props.message}
+                </td>
+              </tr>
+              {props.hasReadMore && (
+                <tr>
+                  <td
+                    colspan={'12'}
+                    valign='center'
+                    className={'avenir'}
+                    style={{
+                      padding: '0px 16px 14px',
+                      color: '#7E1BCC',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {'Read More'}
+                  </td>
+                </tr>
+              )}
+              <tr>
+                <td valign='center' colspan={'12'} style={{ padding: '0px 16px 14px' }}>
+                  <OpenAudiusLink />
+                </td>
+              </tr>
+            </table>
+          </WrapLink>
         </td>
       </tr>
     </table>
