@@ -5,7 +5,6 @@ from src import contract_addresses
 from src.utils import multihash, helpers
 from src.models import Track, User, BlacklistedIPLD
 from src.tasks.metadata import track_metadata_format
-import sqlalchemy as sa
 
 logger = logging.getLogger(__name__)
 

@@ -3,10 +3,11 @@ import os
 import json
 import re
 import contextlib
+from src import exceptions
 from urllib.parse import urljoin
+from functools import reduce
 import requests
 from . import multihash
-from functools import reduce
 
 @contextlib.contextmanager
 def cd(path):
@@ -198,7 +199,7 @@ def create_track_route_id(title, handle):
 
 # Validates the existance of arguments within a request.
 # req_args is a map, expected_args is a list of string arguments expected to be present in the map.
-def validate_arguments (req_args, expected_args):
+def validate_arguments(req_args, expected_args):
     if req_args is None:
         raise exceptions.ArgumentError("No arguments present.")
     all_exist = reduce((lambda acc, cur: cur in req_args and acc), expected_args, True)
