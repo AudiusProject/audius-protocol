@@ -1215,7 +1215,7 @@ class NotificationProcessor {
         startTime,
         5)
       const emailSubject = `${notificationProps.notifications.length} unread notifications on Audius`
-      
+
       let renderProps = {}
       renderProps['notifications'] = notificationProps
       if (frequency === 'daily') {
@@ -1228,7 +1228,7 @@ class NotificationProcessor {
       const notifHtml = renderEmail(renderProps)
 
       const emailParams = {
-        from: 'Audius Mail <mail@audius.co>',
+        from: 'Audius <notify@audius.co>',
         to: `${userEmail}`,
         html: notifHtml,
         subject: emailSubject
