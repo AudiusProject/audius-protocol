@@ -134,17 +134,12 @@ def get_tracks():
 # Get all tracks matching a route_id and track_id.
 # Expects a JSON body of shape:
 #   { "tracks": [{ "id": number, "url_title": string, "handle": string }]}
-@bp.route("/tracksIncludingUnlisted", methods=("POST",))
+@bp.route("/tracks_including_unlisted", methods=("POST",))
 def get_tracks_including_unlisted():
-    def validateIdentifiers (identifiers):
-        if identifiers is None:
-            raise exceptions.ArgumentError("No identifiers passed to tracksIncludingUnlisted")
-        if not all([not (i["handle"] is None or i["id"] is None or i["url_title"] is None) for i in identifiers]): 
-            raise exceptions.ArgumentError("Invalid argument shape passed into tracksIncludingUnlisted")
-
     req_data = request.get_json()
     identifiers = req_data["tracks"]
-    validateIdentifiers(identifiers)
+    for i in identifiers:
+        helpers.validate_arguments(i, ["handle", "id", "url_title"])
 
     db = get_db()
     with db.scoped_session() as session:

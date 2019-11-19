@@ -144,8 +144,8 @@ def parse_track_event(
             return track_record
 
         owner_id = event_args._trackOwnerId
-        user_record = (
-            session.query(User)
+        handle = (
+            session.query(User.handle)
             .filter(User.user_id == owner_id, User.is_current == True)
             .first()
         )
@@ -163,7 +163,7 @@ def parse_track_event(
         track_record = populate_track_record_metadata(
             track_record,
             track_metadata,
-            user_record.handle
+            handle
         )
         track_record.metadata_multihash = track_metadata_multihash
 
@@ -196,8 +196,8 @@ def parse_track_event(
             return track_record
 
         owner_id = event_args._trackOwnerId
-        user_record = (
-            session.query(User)
+        handle = (
+            session.query(User.handle)
             .filter(User.user_id == owner_id, User.is_current == True)
             .first()
         )
@@ -215,7 +215,7 @@ def parse_track_event(
         track_record = populate_track_record_metadata(
             track_record,
             track_metadata,
-            user_record.handle
+            handle
         )
         track_record.metadata_multihash = upd_track_metadata_multihash
 

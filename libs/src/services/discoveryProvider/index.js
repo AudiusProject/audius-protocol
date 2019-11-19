@@ -163,7 +163,7 @@ class DiscoveryProvider {
    */
   async getTracksIncludingUnlisted (identifiers) {
     let req = {
-      endpoint: 'tracksIncludingUnlisted',
+      endpoint: 'tracks_including_unlisted',
       method: 'post',
       data: {
         tracks: identifiers
