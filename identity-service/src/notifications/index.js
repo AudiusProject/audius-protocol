@@ -213,7 +213,6 @@ class NotificationProcessor {
         for (var i = followerMilestoneList.length; i >= 0; i--) {
           let milestoneValue = followerMilestoneList[i]
           if (currentFollowerCount >= milestoneValue) {
-            console.log(`User: ${targetUser} has met milestone value ${milestoneValue} followers`)
             let existingFollowMilestoneQuery = await models.Notification.findAll({
               where: {
                 userId: targetUser,
@@ -251,6 +250,7 @@ class NotificationProcessor {
                 transaction: tx
               })
             }
+            console.log(`User: ${targetUser} has met milestone value ${milestoneValue} followers`)
             break
           }
         }
@@ -971,12 +971,18 @@ class NotificationProcessor {
             wallet: walletAddress
           }
         })
-        let missingUserId = response.data.data[0].user_id
-        await models.User.update(
-          { blockchainUserId: missingUserId },
-          { where: { walletAddress } }
-        )
-        await models.UserNotificationSettings.findOrCreate({ where: { userId: missingUserId } })
+        for (let respUser of response.data.data) {
+          // Only update if handles match
+          if (respUser.handle === updateUser.handle) {
+            let missingUserId = respUser.user_id
+            await models.User.update(
+              { blockchainUserId: missingUserId },
+              { where: { walletAddress, handle: updateUser.handle } }
+            )
+            console.log(`Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.email}, ${updateUser.handle}`)
+            await models.UserNotificationSettings.findOrCreate({ where: { userId: missingUserId } })
+          }
+        }
       } catch (e) {
         console.log(e)
       }

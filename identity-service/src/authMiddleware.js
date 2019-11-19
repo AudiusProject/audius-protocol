@@ -21,11 +21,23 @@ const queryDiscprovForUserId = async (walletAddress) => {
     }
   })
 
-  if (!Array.isArray(response.data.data) || response.data.data.length !== 1) {
+  if (!Array.isArray(response.data.data) || !(response.data.data.length >= 1)) {
     throw new Error('Unable to retrieve user from discovery provder')
   }
-  const [user] = response.data.data
-  return user
+  let usersList = response.data.data
+  if (usersList.length === 1) {
+    const [user] = response.data.data
+    return user
+  } else {
+    let userInfo = await models.User.findOne({
+      where: { walletAddress }
+    })
+    for (let respUser of usersList) {
+      if (respUser.handle === userInfo.handle) {
+        return respUser
+      }
+    }
+  }
 }
 
 /**
