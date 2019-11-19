@@ -93,6 +93,7 @@ def search_tags():
                         (tags like :like_tags_query)
                         and (is_current is true)
                         and (is_delete is false)
+                        and (is_unlisted is false)
                     order by
                         updated_at desc
                 ) as t
@@ -116,6 +117,7 @@ def search_tags():
                 .filter(
                     Track.is_current == True,
                     Track.is_delete == False,
+                    Track.is_unlisted == False,
                     Track.track_id.in_(track_ids),
                 )
                 .all()
@@ -159,6 +161,7 @@ def search_tags():
                         where
                             (tags like :like_tags_query)
                             and (is_current is true)
+                            and (is_unlisted is false)
                         order by
                             updated_at desc
                     ) as t
@@ -228,6 +231,7 @@ def search_tags():
                 .filter(
                     Track.is_current == True,
                     Track.is_delete == False,
+                    Track.is_unlisted == False,
                     Track.track_id.in_(saved_track_ids),
                 )
                 .all()
@@ -392,6 +396,7 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
                 }
                 where similarity(d."word", :query) >= :min_similarity
                 and t."is_current"=true
+                and t."is_unlisted"=false
                 {
                     "and s.save_type='track' and s.is_current=true and s.is_delete=false and s.user_id=:current_user_id"
                     if personalized and current_user_id
@@ -426,6 +431,7 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
         session.query(Track)
         .filter(
             Track.is_current == True,
+            Track.is_unlisted == False,
             Track.track_id.in_(track_ids),
         )
         .all()

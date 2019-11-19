@@ -149,6 +149,30 @@ class DiscoveryProvider {
   }
 
   /**
+   * @typedef {Object} getTracksIdentifier
+   * @property {string} handle
+   * @property {number} id
+   * @property {string} url_title
+   */
+
+  /**
+   * gets all tracks matching identifiers, including unlisted.
+   *
+   * @param {getTracksIdentifier[]} identifiers
+   * @returns {(Array)} track
+   */
+  async getTracksIncludingUnlisted (identifiers) {
+    let req = {
+      endpoint: 'tracks_including_unlisted',
+      method: 'post',
+      data: {
+        tracks: identifiers
+      }
+    }
+    return this._makeRequest(req)
+  }
+
+  /**
    * Gets tracks trending on Audius.
    * @param {string} genre
    * @param {string} timeFrame one of day, week, month, or year
@@ -502,11 +526,18 @@ class DiscoveryProvider {
       headers['X-User-ID'] = currentUserId
     }
 
-    const axiosRequest = {
+    let axiosRequest = {
       url: requestUrl,
       headers: headers,
-      method: 'get',
+      method: (requestObj.method || 'get'),
       timeout: 10000
+    }
+
+    if (requestObj.method === 'post' && requestObj.data) {
+      axiosRequest = {
+        ...axiosRequest,
+        data: requestObj.data
+      }
     }
 
     try {
