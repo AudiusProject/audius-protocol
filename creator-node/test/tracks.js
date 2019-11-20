@@ -117,7 +117,9 @@ describe('test Tracks', function () {
 
     if (resp1.body.track_segments[0].multihash !== 'testCIDLink' ||
         resp1.body.track_segments.length !== 32 ||
-        !resp1.body.source_file
+        !resp1.body.source_file ||
+        !resp1.body.transcodedTrackCID !== 'testCIDLink' ||
+        !resp1.body.transcodedTrackUUID
     ) {
       throw new Error('Incorrect return values')
     }
