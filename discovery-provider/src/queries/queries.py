@@ -148,7 +148,7 @@ def get_tracks_including_unlisted():
 
         # Create filter conditions as a list of `and` clauses
         for i in identifiers:
-            route_id = f"""{i["handle"]}/{i["url_title"]}"""
+            route_id = helpers.create_track_route_id(i["url_title"], i["handle"])
             filter_cond.append(and_(Track.is_current == True, Track.route_id == route_id, Track.track_id == i["id"]))
 
         # Pass array of `and` clauses into an `or` clause as destrucutred *args
