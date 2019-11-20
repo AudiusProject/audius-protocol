@@ -227,7 +227,7 @@ class Tracks extends Base {
     this._validateTrackMetadata(metadata)
 
     // Upload metadata
-    const { metadataMultihash, metadataFileUUID, transcodedTrackCID } = await retry(async (bail, num) => {
+    const { metadataMultihash, metadataFileUUID, transcodedTrackCID, transcodedTrackUUID } = await retry(async (bail, num) => {
       return this.creatorNode.uploadTrackContent(
         trackFile,
         coverArtFile,
@@ -247,7 +247,7 @@ class Tracks extends Base {
         }
       }
     })
-    return { metadataMultihash, metadataFileUUID, transcodedTrackCID }
+    return { metadataMultihash, metadataFileUUID, transcodedTrackCID, transcodedTrackUUID }
   }
 
   /**
