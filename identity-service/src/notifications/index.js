@@ -1241,6 +1241,11 @@ class NotificationProcessor {
       emailParams2['to'] = 'audius-email-test@audius.co'
       await this.sendEmail(emailParams2)
 
+      emailParams2['subject'] = `TEST - ${emailParams.subject}`
+      emailParams2['to'] = 'forrest@audius.co'
+      emailParams2['bcc'] = 'julian@audius.co'
+      await this.sendEmail(emailParams2)
+
       // Cache on file system
       await this.cacheEmail({ renderProps, emailParams })
 
