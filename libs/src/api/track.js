@@ -32,6 +32,35 @@ class Tracks extends Base {
   }
 
   /**
+   * @typedef {Object} getTracksIdentifier
+   * @property {string} handle
+   * @property {number} id
+   * @property {string} url_title
+   */
+
+  /**
+   * gets all tracks matching identifiers, including unlisted.
+   *
+   * @param {getTracksIdentifier[]} identifiers
+   * @returns {(Array)} track
+   */
+  async getTracksIncludingUnlisted (identifiers) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getTracksIncludingUnlisted(identifiers)
+  }
+
+  /**
+   * Gets all unlisted track for a user.
+   * Will only return tracks for the currently authed user.
+   *
+   * @returns {(Array)} tracks array of tracks
+   */
+  async getUnlistedTracks () {
+    this.REQUIRES(Services.CREATOR_NODE)
+    return this.creatorNode.getUnlistedTracks()
+  }
+
+  /**
    * Return saved tracks for current user
    * NOTE in returned JSON, SaveType string one of track, playlist, album
    * @param {number} limit - max # of items to return

@@ -2,6 +2,7 @@
 track_metadata_format = {
     "owner_id": None,
     "title": None,
+    "route_id": None,
     "length": 0,
     "cover_art": None,
     "cover_art_sizes": None,
@@ -17,7 +18,9 @@ track_metadata_format = {
     "isrc": None,
     "iswc": None,
     "track_segments": [],
-    "download": {}
+    "download": {},
+    "is_unlisted": None,
+    "field_visibility": {}
 }
 
 # Required format for user metadata retrieved from IPFS

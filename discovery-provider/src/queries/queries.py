@@ -87,7 +87,7 @@ def get_tracks():
     with db.scoped_session() as session:
         # Create initial query
         base_query = session.query(Track)
-        base_query = base_query.filter(Track.is_current == True)
+        base_query = base_query.filter(Track.is_current == True, Track.is_unlisted == False)
 
         # Conditionally process an array of tracks
         if "id" in request.args:
@@ -127,6 +127,41 @@ def get_tracks():
 
         # bundle peripheral info into track results
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+
+    return api_helpers.success_response(tracks)
+
+
+# Get all tracks matching a route_id and track_id.
+# Expects a JSON body of shape:
+#   { "tracks": [{ "id": number, "url_title": string, "handle": string }]}
+@bp.route("/tracks_including_unlisted", methods=("POST",))
+def get_tracks_including_unlisted():
+    req_data = request.get_json()
+    identifiers = req_data["tracks"]
+    for i in identifiers:
+        helpers.validate_arguments(i, ["handle", "id", "url_title"])
+
+    db = get_db()
+    with db.scoped_session() as session:
+        base_query = session.query(Track)
+        filter_cond = []
+
+        # Create filter conditions as a list of `and` clauses
+        for i in identifiers:
+            route_id = f"""{i["handle"]}/{i["url_title"]}"""
+            filter_cond.append(and_(Track.is_current == True, Track.route_id == route_id, Track.track_id == i["id"]))
+
+        # Pass array of `and` clauses into an `or` clause as destrucutred *args
+        base_query = base_query.filter(or_(*filter_cond))
+
+        # Perform the query
+        query_results = paginate_query(base_query).all()
+        tracks = helpers.query_result_to_list(query_results)
+        track_ids = map(lambda track: track["track_id"], tracks)
+
+        # Populate metadata
+        current_user_id = get_current_user_id(required=False)
+        extended_tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
     return api_helpers.success_response(tracks)
 
@@ -263,6 +298,7 @@ def get_feed():
                 session.query(Track)
                 .filter(
                     Track.is_current == True,
+                    Track.is_unlisted == False,
                     Track.track_id.in_(playlist_track_ids)
                 )
                 .all()
@@ -291,6 +327,7 @@ def get_feed():
                 session.query(Track)
                 .filter(
                     Track.is_current == True,
+                    Track.is_unlisted == False,
                     Track.owner_id.in_(followee_user_ids),
                     Track.track_id.notin_(tracks_to_dedupe)
                 )
@@ -360,6 +397,7 @@ def get_feed():
             # Query tracks reposted by followees
             reposted_tracks = session.query(Track).filter(
                 Track.is_current == True,
+                Track.is_unlisted == False,
                 Track.track_id.in_(reposted_track_ids)
             )
             # exclude tracks already fetched from above, in case of "all" filter
@@ -494,6 +532,7 @@ def get_repost_feed_for_user(user_id):
             session.query(Track)
             .filter(
                 Track.is_current == True,
+                Track.is_unlisted == False,
                 Track.track_id.in_(repost_track_ids)
             )
             .order_by(desc(Track.created_at))

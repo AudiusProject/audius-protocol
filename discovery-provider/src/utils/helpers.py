@@ -1,9 +1,12 @@
 import logging
 import os
 import json
+import re
 import contextlib
 from urllib.parse import urljoin
+from functools import reduce
 import requests
+from src import exceptions
 from . import multihash
 
 @contextlib.contextmanager
@@ -176,3 +179,29 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
 
 latest_block_redis_key = 'latest_block_from_chain'
 latest_block_hash_redis_key = 'latest_blockhash_from_chain'
+
+# Constructs a track's route_id from an unsanitized title and handle.
+# Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
+def create_track_route_id(title, handle):
+    # Strip out invalid character
+    sanitized_title = re.sub(r'!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]', '', title)
+
+    # Convert whitespaces to dashes
+    sanitized_title = re.sub(r'\s+', '-', sanitized_title)
+
+    # Convert multiple dashes to single dashes
+    sanitized_title = re.sub(r'-+', '-', sanitized_title)
+
+    # Lowercase it
+    sanitized_title = sanitized_title.lower()
+
+    return f"{handle}/{sanitized_title}"
+
+# Validates the existance of arguments within a request.
+# req_args is a map, expected_args is a list of string arguments expected to be present in the map.
+def validate_arguments(req_args, expected_args):
+    if req_args is None:
+        raise exceptions.ArgumentError("No arguments present.")
+    all_exist = reduce((lambda acc, cur: cur in req_args and acc), expected_args, True)
+    if not all_exist:
+        raise exceptions.ArgumentError("Not all required arguments exist.")
