@@ -147,8 +147,9 @@ def parse_track_event(
             session.query(User.handle)
             .filter(User.user_id == owner_id, User.is_current == True)
             .first()
-        )
+        )[0]
         track_record.owner_id = owner_id
+
 
         # Reconnect to creator nodes for this user
         refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
@@ -199,7 +200,7 @@ def parse_track_event(
             session.query(User.handle)
             .filter(User.user_id == owner_id, User.is_current == True)
             .first()
-        )
+        )[0]
         track_record.owner_id = owner_id
         track_record.is_delete = False
 
