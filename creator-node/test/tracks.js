@@ -1,6 +1,7 @@
 const request = require('supertest')
 const fs = require('fs')
 const path = require('path')
+const expect = require('chai').expect
 const defaultConfig = require('../default-config.json')
 
 const blacklistManager = require('../src/blacklistManager')
@@ -105,8 +106,8 @@ describe('test Tracks', function () {
   it('uploads file to IPFS', async function () {
     const file = fs.readFileSync(testAudioFilePath)
 
-    ipfsMock.addFromFs.exactly(32)
-    ipfsMock.pin.add.exactly(32)
+    ipfsMock.addFromFs.exactly(33)
+    ipfsMock.pin.add.exactly(33)
 
     const resp1 = await request(app)
       .post('/track_content')
@@ -115,14 +116,11 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    if (resp1.body.track_segments[0].multihash !== 'testCIDLink' ||
-        resp1.body.track_segments.length !== 32 ||
-        !resp1.body.source_file ||
-        !resp1.body.transcodedTrackCID !== 'testCIDLink' ||
-        !resp1.body.transcodedTrackUUID
-    ) {
-      throw new Error('Incorrect return values')
-    }
+    expect(resp1.body.track_segments[0].multihash).to.equal('testCIDLink')
+    expect(resp1.body.track_segments.length).to.equal(32)
+    expect(resp1.body.source_file).to.contain('.mp3')
+    expect(resp1.body.transcodedTrackCID).to.equal('testCIDLink')
+    expect(resp1.body.transcodedTrackUUID).be.a('string')
   })
 
   // depends on "upload file to IPFS"
@@ -141,12 +139,9 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    if (resp1.body.track_segments[0].multihash !== 'testCIDLink' ||
-        resp1.body.track_segments.length !== 32 ||
-        !resp1.body.source_file
-    ) {
-      throw new Error('Incorrect return values')
-    }
+    expect(resp1.body.track_segments[0].multihash).to.equal('testCIDLink')
+    expect(resp1.body.track_segments.length).to.equal(32)
+    expect(resp1.body.source_file).to.contain('.mp3')
 
     // creates Audius track
     const metadata = {
@@ -161,9 +156,7 @@ describe('test Tracks', function () {
       .send({ metadata, sourceFile: resp1.body.source_file })
       .expect(200)
 
-    if (resp2.body.metadataMultihash !== 'testCIDLink') {
-      throw new Error('invalid return data')
-    }
+    expect(resp2.body.metadataMultihash).to.equal('testCIDLink')
   })
 
   // depends on "upload file to IPFS"
@@ -182,12 +175,9 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    if (resp1.body.track_segments[0].multihash !== 'testCIDLink' ||
-        resp1.body.track_segments.length !== 32 ||
-        !resp1.body.source_file
-    ) {
-      throw new Error('Incorrect return values')
-    }
+    expect(resp1.body.track_segments[0].multihash).to.equal('testCIDLink')
+    expect(resp1.body.track_segments.length).to.equal(32)
+    expect(resp1.body.source_file).to.contain('.mp3')
 
     // creates Audius track
     const metadata = {
@@ -218,12 +208,9 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    if (resp1.body.track_segments[0].multihash !== 'testCIDLink' ||
-        resp1.body.track_segments.length !== 32 ||
-        !resp1.body.source_file
-    ) {
-      throw new Error('Incorrect return values')
-    }
+    expect(resp1.body.track_segments[0].multihash).to.equal('testCIDLink')
+    expect(resp1.body.track_segments.length).to.equal(32)
+    expect(resp1.body.source_file).to.contain('.mp3')
 
     // creates Audius track
     const metadata = {
@@ -255,12 +242,9 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    if (resp1.body.track_segments[0].multihash !== 'testCIDLink' ||
-        resp1.body.track_segments.length !== 32 ||
-        !resp1.body.source_file
-    ) {
-      throw new Error('Incorrect return values')
-    }
+    expect(resp1.body.track_segments[0].multihash).to.equal('testCIDLink')
+    expect(resp1.body.track_segments.length).to.equal(32)
+    expect(resp1.body.source_file).to.contain('.mp3')
 
     // creates Audius track
     const metadata = {
@@ -291,12 +275,9 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    if (resp1.body.track_segments[0].multihash !== 'testCIDLink' ||
-        resp1.body.track_segments.length !== 32 ||
-        !resp1.body.source_file
-    ) {
-      throw new Error('Incorrect return values')
-    }
+    expect(resp1.body.track_segments[0].multihash).to.equal('testCIDLink')
+    expect(resp1.body.track_segments.length).to.equal(32)
+    expect(resp1.body.source_file).to.contain('.mp3')
 
     const metadata = {
       test: 'field1',

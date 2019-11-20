@@ -382,6 +382,7 @@ module.exports = function (app) {
       triggerSecondarySyncs(req)
       return successResponse({ trackUUID: track.trackUUID })
     } catch (e) {
+      req.logger.error(e.message)
       await t.rollback()
       return errorResponseServerError(e.message)
     }
