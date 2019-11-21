@@ -49,7 +49,7 @@ export const getUsers = (users) => {
     return (
       <>
         <HighlightText text={firstUser.name} />
-        <BodyText text={` and ${users.length - 1} others`} />
+        <BodyText text={` and ${users.length - 1} other${users.length > 2 ? 's' : ''}`} />
       </>
     )
   }

@@ -46,18 +46,16 @@ const UnreadNotifications = ({ message }) => (
 
 const snippetMap = {
   [NotificationType.Favorite] (notification) {
-    const user = getUsers(notification.users)
-    const entity = getEntity(notification.entity)
-    return `${user} favorited your ${entity}`
+    const [user] = notification.users
+    return `${user.name} favorited your ${notification.entity.name}`
   },
   [NotificationType.Repost] (notification) {
-    const user = getUsers(notification.users)
-    const entity = getEntity(notification.entity)
-    return `${user} reposted your ${entity}`
+    const [user] = notification.users
+    return `${user.name} reposted your ${notification.entity.name}`
   },
   [NotificationType.Follow] (notification) {
-    const user = getUsers(notification.users)
-    return `${user}  followed you`
+    const [user] = notification.users
+    return `${user.name} followed you`
   },
   [NotificationType.Announcement] (notification) {
     return notification.text

@@ -1232,7 +1232,7 @@ class NotificationProcessor {
         announcements,
         startTime,
         5)
-      const emailSubject = `${notificationProps.length} unread notifications on Audius`
+      const emailSubject = `${notificationProps.length} unread notification${notificationProps.length > 1 ? 's' : ''} on Audius`
 
       let renderProps = {}
       renderProps['notifications'] = notificationProps
