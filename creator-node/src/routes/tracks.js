@@ -300,7 +300,7 @@ module.exports = function (app) {
             }
           )
           if (numAffectedRows === 0) {
-            throw new Error('Failed to associate the transcoded file for the provided CID.')
+            throw new Error('Failed to associate the transcoded file for the provided track UUID.')
           }
         }
 
@@ -344,7 +344,7 @@ module.exports = function (app) {
             transaction: t
           })
           if (!transcodedFile) {
-            throw new Error('Did not find the corresponding transcoded file for the provided CID.')
+            throw new Error('Did not find the corresponding transcoded file for the provided track UUID.')
           }
         }
 
