@@ -153,7 +153,7 @@ module.exports = function (app) {
         })
 
         // Short circuit if there is a transcoded version available
-        const { transcodedFileMultihash } = await models.File.findOne({
+        const transcodedFile = await models.File.findOne({
           attributes: ['multihash'],
           where: {
             cnodeUserUUID: req.session.cnodeUserUUID,
@@ -162,7 +162,7 @@ module.exports = function (app) {
           }
         })
         // Create a downloadable copy if one doesn't exist
-        if (!transcodedFileMultihash) {
+        if (!transcodedFile || !transcodedFile.multihash) {
           const firstSegment = metadataJSON.track_segments[0]
           if (!firstSegment) return errorResponseServerError('No segment found for track')
 
