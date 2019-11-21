@@ -10,10 +10,6 @@ from sqlalchemy import desc, func
 logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
 
-notif_types = {
-    'follow': 'follow'
-}
-
 max_block_diff = 50000
 
 def get_owner_id(session, entity_type, entity_id):
@@ -95,7 +91,7 @@ def notifications():
     }
 
     # List of notifications generated from current protocol state
-    notifications = []
+    notifications_unsorted = []
     with db.scoped_session() as session:
         # Query relevant follow information
         follow_query = session.query(Follow)
@@ -132,7 +128,7 @@ def notifications():
         follower_counts = get_follower_count_dict(session, followed_users, max_block_number)
         milestone_info['follower_counts'] = follower_counts
 
-        notifications.extend(follow_notifications)
+        notifications_unsorted.extend(follow_notifications)
 
         # Query relevant favorite information
         favorites_query = session.query(Save)
@@ -194,7 +190,7 @@ def notifications():
 
             favorite_notif[const.notification_metadata] = metadata
             favorite_notifications.append(favorite_notif)
-        notifications.extend(favorite_notifications)
+        notifications_unsorted.extend(favorite_notifications)
 
         track_favorite_dict = {}
         album_favorite_dict = {}
@@ -284,7 +280,7 @@ def notifications():
             repost_notifications.append(repost_notif)
 
         # Append repost notifications
-        notifications.extend(repost_notifications)
+        notifications_unsorted.extend(repost_notifications)
 
         track_repost_count_dict = {}
         album_repost_count_dict = {}
@@ -431,7 +427,7 @@ def notifications():
                 publish_playlist_notif[const.notification_metadata] = metadata
                 created_notifications.append(publish_playlist_notif)
 
-        notifications.extend(created_notifications)
+        notifications_unsorted.extend(created_notifications)
 
         # Get additional owner info as requested for listen counts
         tracks_owner_query = (
@@ -448,7 +444,7 @@ def notifications():
 
     # Final sort - TODO: can we sort by timestamp?
     sorted_notifications = \
-            sorted(notifications, key=lambda i: i[const.notification_blocknumber], reverse=False)
+            sorted(notifications_unsorted, key=lambda i: i[const.notification_blocknumber], reverse=False)
 
     return api_helpers.success_response(
         {
