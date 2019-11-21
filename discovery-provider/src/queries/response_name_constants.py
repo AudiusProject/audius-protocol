@@ -27,3 +27,29 @@ track_owner_follower_count = 'track_owner_follower_count'
 track_owner_id = 'track_owner_id'
 track_id = 'track_id'
 listen_counts = 'listen_counts'
+
+tracks = 'tracks'
+albums = 'albums'
+playlists = 'playlists'
+
+# notifications metadata
+notification_type = 'type'
+notification_type_follow = 'Follow'
+notification_type_favorite = 'Favorite'
+notification_type_repost = 'Repost'
+notification_type_create = 'Create'
+
+notification_blocknumber = 'blocknumber'
+notification_initiator = 'initiator'
+notification_metadata = 'metadata'
+notification_timestamp = 'timestamp'
+notification_entity_type = 'entity_type'
+notification_entity_id = 'entity_id'
+notification_entity_owner_id = 'entity_owner_id'
+notification_collection_content = 'collection_content'
+
+notification_follower_id = 'follower_user_id'
+notification_followee_id = 'followee_user_id'
+
+notification_repost_counts = 'repost_counts'
+notification_favorite_counts = 'favorite_counts'

@@ -458,7 +458,7 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
     return playlists
 
 
-def get_repost_counts(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types):
+def get_repost_counts(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, max_block_number=None):
     query_col = Repost.user_id if query_by_user_flag else Repost.repost_item_id
 
     repost_counts_query = None
@@ -498,10 +498,14 @@ def get_repost_counts(session, query_by_user_flag, query_repost_type_flag, filte
             query_col
         )
 
+    if max_block_number:
+        repost_counts_query = repost_counts_query.filter(
+            Repost.blocknumber <= max_block_number
+        )
     return repost_counts_query.all()
 
 
-def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types):
+def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number=None):
     query_col = Save.user_id if query_by_user_flag else Save.save_item_id
 
     save_counts_query = None
@@ -541,6 +545,11 @@ def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_id
             query_col
         )
 
+    if max_block_number:
+        save_counts_query = save_counts_query.filter(
+            Save.blocknumber <= max_block_number
+        )
+
     return save_counts_query.all()
 
 
@@ -561,6 +570,31 @@ def get_followee_count_dict(session, user_ids):
     )
     followee_count_dict = {user_id: followee_count for (user_id, followee_count) in followee_counts}
     return followee_count_dict
+
+def get_follower_count_dict(session, user_ids, max_block_number=None):
+    follower_counts = (
+        session.query(
+            Follow.followee_user_id,
+            func.count(Follow.followee_user_id)
+        )
+        .filter(
+            Follow.is_current == True,
+            Follow.is_delete == False,
+            Follow.followee_user_id.in_(user_ids)
+        )
+    )
+
+    if max_block_number:
+        follower_counts = follower_counts.filter(Follow.blocknumber <= max_block_number)
+
+    follower_counts = (
+        follower_counts.group_by(Follow.followee_user_id).all()
+    )
+
+    follower_count_dict = \
+            {user_id: follower_count for (user_id, follower_count) in follower_counts}
+    return follower_count_dict
+
 
 def get_track_play_counts(track_ids):
     track_listen_counts = {}
@@ -620,4 +654,5 @@ def get_genre_list(genre):
     if genre == 'Electronic':
         genre_list = genre_list + electronic_sub_genres
     return genre_list
+
 

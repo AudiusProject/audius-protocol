@@ -9,6 +9,7 @@
   "instagramAPIKey": "",
   "instagramAPISecret": "",
   "web3Provider": "http://localhost:8545/",
+  "audiusNotificationUrl": "https://download.staging.audius.co/notifications",
   "relayerPrivateKey": "34efbbc0431c7f481cdba15d65bbc9ef47196b9cf38d5c4b30afa2bcf86fafba",
   "relayerPublicKey": "0xaaaa90Fc2bfa70028D6b444BB9754066d9E2703b",
   "userVerifierPrivateKey": "ebba299e6163ff3208de4e82ce7db09cf7e434847b5bdab723af96ae7c763a0e",
@@ -24,5 +25,13 @@
   "rateLimitingListensPerIPPerDay": 60,
   "rateLimitingListensPerTrackPerWeek": 120,
   "rateLimitingListensPerIPPerWeek": 180,
-  "minimumBalance": 1
+  "minimumBalance": 10,
+  "ethProviderUrl": "http://docker.for.mac.localhost:8546",
+  "notificationDiscoveryProvider": "http://docker.for.mac.localhost:5000",
+  "notificationStartBlock": 0,
+  "ethTokenAddress":"",
+  "ethRegistryAddress":"",
+  "ethOwnerWallet":"",
+  "mailgunApiKey": "",
+  "registryAddress": ""
 }

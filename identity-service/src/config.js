@@ -166,7 +166,7 @@ const config = convict({
     doc: 'Mailgun API key used to send emails',
     format: String,
     env: 'mailgunApiKey',
-    default: null
+    default: ''
   },
   // loaded through contract-config.json, if an env variable declared, env var takes precendence
   registryAddress: {
@@ -174,6 +174,48 @@ const config = convict({
     format: String,
     default: null,
     env: 'registryAddress'
+  },
+  audiusNotificationUrl: {
+    doc: 'Url of audius notifications',
+    format: String,
+    default: null,
+    env: 'audiusNotificationUrl'
+  },
+  notificationStartBlock: {
+    doc: 'First block to start notification indexing from',
+    format: Number,
+    default: 0,
+    env: 'notificationStartBlock'
+  },
+  notificationDiscoveryProvider: {
+    doc: 'Whitelisted discovery provider to query notifications',
+    format: String,
+    default: 'http://localhost:5000',
+    env: 'notificationDiscoveryProvider'
+  },
+  ethTokenAddress: {
+    doc: 'ethTokenAddress',
+    format: String,
+    default: null,
+    env: 'ethTokenAddress'
+  },
+  ethRegistryAddress: {
+    doc: 'ethRegistryAddress',
+    format: String,
+    default: null,
+    env: 'ethRegistryAddress'
+  },
+  ethProviderUrl: {
+    doc: 'ethProviderUrl',
+    format: String,
+    default: null,
+    env: 'ethProviderUrl'
+  },
+  ethOwnerWallet: {
+    doc: 'ethOwnerWallet',
+    format: String,
+    default: null,
+    env: 'ethOwnerWallet'
   }
 })
 
@@ -184,6 +226,16 @@ const config = convict({
 // TODO(DM) - remove these defaults
 const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
+
+if (fs.existsSync('eth-contract-config.json')) {
+  let ethContractConfig = require('../eth-contract-config.json')
+  config.load({
+    'ethTokenAddress': ethContractConfig.audiusTokenAddress,
+    'ethRegistryAddress': ethContractConfig.registryAddress,
+    'ethOwnerWallet': ethContractConfig.ownerWallet,
+    'ethWallets': ethContractConfig.allWallets
+  })
+}
 
 // the contract-config.json file is used to load registry address locally
 // during development

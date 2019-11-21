@@ -15,7 +15,7 @@ services:
       - '7379:6379'
   identity-service:
     build: ../.
-    command: sh -c '/usr/bin/wait && exec ./node_modules/.bin/nodemon src/index.js'
+    command: sh -c '/usr/bin/wait && exec ./node_modules/.bin/nodemon --ignore "./emailCache" src/index.js'
     env_file:
       - ./.development.env
     depends_on:

@@ -8,15 +8,16 @@
   "license": "Apache-2.0",
   "scripts": {
     "start": "nodemon src/index.js | ./node_modules/.bin/bunyan || exit 0",
+    "render:email": "rimraf src/notifications/renderEmail && babel src/notifications/components/ -d src/notifications/renderEmail",
     "test": "./scripts/run-tests.sh",
     "lint": "./node_modules/.bin/standard",
     "lint-fix": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
-    "@audius/libs": "^0.11.14",
-    "aws-sdk": "^2.313.0",
-    "base64-url": "^2.2.0",
+    "@audius/libs": "0.11.42",
+    "axios": "^0.19.0",
     "body-parser": "^1.18.3",
+    "bull": "^3.11.0",
     "bunyan": "^1.8.12",
     "convict": "^5.1.0",
     "cors": "^2.8.4",
@@ -30,9 +31,13 @@
     "handlebars": "^4.4.3",
     "ioredis": "^4.9.0",
     "mailgun-js": "^0.22.0",
+    "moment": "^2.24.0",
+    "moment-timezone": "^0.5.27",
     "multer": "^1.4.0",
     "pg": "^7.6.1",
     "rate-limit-redis": "^1.6.0",
+    "react": "^16.11.0",
+    "react-dom": "^16.11.0",
     "request": "^2.88.0",
     "sequelize": "^4.41.2",
     "shortid": "^2.2.14",
@@ -41,8 +46,15 @@
     "web3": "1.0.0-beta.36"
   },
   "devDependencies": {
+    "@babel/cli": "^7.7.0",
+    "@babel/core": "^7.7.2",
+    "@babel/preset-env": "^7.7.1",
+    "@babel/preset-react": "^7.7.0",
+    "@babel/register": "^7.7.0",
+    "babel-preset-react": "^6.24.1",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.10",
+    "rimraf": "^3.0.0",
     "sequelize-cli": "^5.3.0",
     "sinon": "^7.0.0",
     "standard": "^12.0.1",
@@ -56,6 +68,10 @@
       "before",
       "describe",
       "afterEach"
+    ],
+    "ignore": [
+      "src/notifications/components/*",
+      "src/notifications/renderEmail/*"
     ]
   }
 }
