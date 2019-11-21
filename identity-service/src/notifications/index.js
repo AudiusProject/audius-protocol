@@ -141,6 +141,8 @@ class NotificationProcessor {
       { type: 'unreadEmailJob' },
       { repeat: { cron: '0 * * * *' } }
     )
+    let emailQueueCount = await this.emailQueue.count()
+    console.log('Email Queue Count: ' + emailQueueCount)
 
     let startBlock = await this.getHighestBlockNumber()
     console.log(`Starting with ${startBlock}`)
@@ -1084,12 +1086,12 @@ class NotificationProcessor {
         group: ['userId']
       }).map(x => x.userId)
       weeklyEmailUsersWithUnseeenNotifications.forEach(item => pendingNotificationUsers.add(item))
-      // console.log(dailyEmailUsersWithUnseeenNotifications)
-      // console.log(weeklyEmailUsersWithUnseeenNotifications)
+      console.log(`Daily Email Users: ${dailyEmailUsersWithUnseeenNotifications}`)
+      console.log(`Weekly Email Users: ${weeklyEmailUsersWithUnseeenNotifications}`)
 
       // All users with notifications, including announcements
       let allUsersWithUnseenNotifications = [...pendingNotificationUsers]
-      // console.log(allUsersWithUnseenNotifications)
+      console.log(`All Pending Email Users: ${allUsersWithUnseenNotifications}`)
 
       let userInfo = await models.User.findAll({
         where: {
@@ -1122,7 +1124,7 @@ class NotificationProcessor {
 
         // Based on this difference, schedule email for users
         // In prod, this difference must be <1 hour or between midnight - 1am
-        let maxHourDifference = 1.5 // 1.5
+        let maxHourDifference = 2 // 1.5
         // Valid time found
         if (difference < maxHourDifference) {
           console.log(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
@@ -1214,7 +1216,7 @@ class NotificationProcessor {
         announcements,
         startTime,
         5)
-      const emailSubject = `${notificationProps.notifications.length} unread notifications on Audius`
+      const emailSubject = `${notificationProps.length} unread notifications on Audius`
 
       let renderProps = {}
       renderProps['notifications'] = notificationProps
@@ -1234,7 +1236,8 @@ class NotificationProcessor {
         subject: emailSubject
       }
 
-      await this.sendEmail(emailParams)
+      // Disable emails for soft launch
+      // await this.sendEmail(emailParams)
 
       // Temporary debugging email
       let emailParams2 = emailParams

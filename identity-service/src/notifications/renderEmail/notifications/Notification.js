@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.NotificationType = void 0;
+exports["default"] = exports.getEntity = exports.getUsers = exports.NotificationType = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
@@ -82,6 +82,8 @@ var getUsers = function getUsers(users) {
   });
 };
 
+exports.getUsers = getUsers;
+
 var getEntity = function getEntity(entity) {
   if (entity.type === EntityType.Track) {
     return _react["default"].createElement(_react["default"].Fragment, null, " ", _react["default"].createElement(BodyText, {
@@ -104,6 +106,7 @@ var getEntity = function getEntity(entity) {
   }
 };
 
+exports.getEntity = getEntity;
 var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, NotificationType.Favorite, function (notification) {
   var user = getUsers(notification.users);
   var entity = getEntity(notification.entity);

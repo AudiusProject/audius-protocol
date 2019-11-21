@@ -43,7 +43,7 @@ const BodyText = ({ text, className }) => (
   </span>
 )
 
-const getUsers = (users) => {
+export const getUsers = (users) => {
   const [firstUser] = users
   if (users.length > 1) {
     return (
@@ -56,7 +56,7 @@ const getUsers = (users) => {
   return <HighlightText text={firstUser.name} />
 }
 
-const getEntity = (entity) => {
+export const getEntity = (entity) => {
   if (entity.type === EntityType.Track) {
     return (
       <> <BodyText text={'track '} /><HighlightText text={entity.name} /> </>
