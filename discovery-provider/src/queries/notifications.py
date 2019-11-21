@@ -338,6 +338,7 @@ def notifications():
         tracks_query = session.query(Track)
         # TODO: Is it valid to use Track.is_current here? Might not be the right info...
         tracks_query = tracks_query.filter(
+                Track.is_unlisted == False,
                 Track.is_delete == False,
                 Track.blocknumber > min_block_number,
                 Track.blocknumber <= max_block_number)
