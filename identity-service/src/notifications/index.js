@@ -1025,10 +1025,6 @@ class NotificationProcessor {
       let dayAgo = now.clone().subtract(1, 'days')
 
       let weekAgo = now.clone().subtract(7, 'days')
-      let formattedDayAgo = dayAgo.format('MMMM Do YYYY')
-      let shortWeekAgoFormat = weekAgo.format('MMMM Do')
-      let weeklySubjectFormat = `Unread notifications from ${shortWeekAgoFormat} - ${formattedDayAgo}`
-      let dailySubjectFormat = `Unread notifications from ${formattedDayAgo}`
 
       let appAnnouncements = this.expressApp.get('announcements')
       // For each announcement, we generate a list of valid users
@@ -1156,8 +1152,8 @@ class NotificationProcessor {
               userEmail,
               appAnnouncements,
               frequency,
-              frequency === 'daily' ? dayAgo : weekAgo,
-              frequency === 'daily' ? dailySubjectFormat : weeklySubjectFormat)
+              frequency === 'daily' ? dayAgo : weekAgo
+            )
             if (!sent) { continue }
             await models.NotificationEmail.create({
               userId,
@@ -1177,8 +1173,8 @@ class NotificationProcessor {
                   userEmail,
                   appAnnouncements,
                   frequency,
-                  dayAgo,
-                  dailySubjectFormat)
+                  dayAgo
+                )
                 if (!sent) { continue }
 
                 await models.NotificationEmail.create({
@@ -1197,8 +1193,8 @@ class NotificationProcessor {
                   userEmail,
                   appAnnouncements,
                   frequency,
-                  weekAgo,
-                  weeklySubjectFormat)
+                  weekAgo
+                )
                 if (!sent) { continue }
                 await models.NotificationEmail.create({
                   userId,
@@ -1222,8 +1218,8 @@ class NotificationProcessor {
     userEmail,
     announcements,
     frequency,
-    startTime,
-    subject) {
+    startTime
+  ) {
     try {
       console.log(`renderAndSendEmail ${userId}, ${userEmail}`)
       const notificationProps = await getEmailNotifications(
@@ -1241,6 +1237,17 @@ class NotificationProcessor {
       } else if (frequency === 'weekly') {
         renderProps['title'] = `Weekly Email - ${userEmail}`
       }
+
+      let now = moment()
+      let dayAgo = now.clone().subtract(1, 'days')
+
+      let weekAgo = now.clone().subtract(7, 'days')
+      let formattedDayAgo = dayAgo.format('MMMM Do YYYY')
+      let shortWeekAgoFormat = weekAgo.format('MMMM Do')
+      let weeklySubjectFormat = `${notificationProps.length} unread notification${notificationProps.length > 1 ? 's' : ''} from ${shortWeekAgoFormat} - ${formattedDayAgo}`
+      let dailySubjectFormat = `${notificationProps.length} unread notification${notificationProps.length > 1 ? 's' : ''} from ${formattedDayAgo}`
+
+      const subject = frequency === 'daily' ? dailySubjectFormat : weeklySubjectFormat
       renderProps['subject'] = subject
       console.dir(renderProps, { depth: 5 })
       const notifHtml = renderEmail(renderProps)
