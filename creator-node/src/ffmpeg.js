@@ -9,6 +9,7 @@ const spawn = require('child_process').spawn
  */
 function segmentFile (req, fileDir, fileName) {
   return new Promise((resolve, reject) => {
+    req.logger.info(`Segmenting file ${fileName}...`)
     const absolutePath = path.resolve(fileDir, fileName)
 
     // https://ffmpeg.org/ffmpeg-formats.html#hls-2
@@ -50,6 +51,7 @@ function segmentFile (req, fileDir, fileName) {
 /** Transcode file into 320kbps mp3 and store in same directory. */
 function transcodeFileTo320 (req, fileDir, fileName) {
   return new Promise((resolve, reject) => {
+    req.logger.info(`Transcoding file ${fileName}...`)
     const sourcePath = path.resolve(fileDir, fileName)
     const targetPath = path.resolve(fileDir, fileName.split('.')[0] + '-dl.mp3')
 

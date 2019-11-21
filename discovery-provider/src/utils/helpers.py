@@ -195,7 +195,10 @@ def create_track_route_id(title, handle):
     # Lowercase it
     sanitized_title = sanitized_title.lower()
 
-    return f"{handle}/{sanitized_title}"
+    # Lowercase the handle
+    sanitized_handle = handle.lower()
+
+    return f"{sanitized_handle}/{sanitized_title}"
 
 # Validates the existance of arguments within a request.
 # req_args is a map, expected_args is a list of string arguments expected to be present in the map.

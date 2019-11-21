@@ -160,7 +160,11 @@ class Tracks extends Base {
       phase = phases.UPLOADING_TRACK_CONTENT
 
       // Upload metadata
-      const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadTrackContent(
+      const {
+        metadataMultihash,
+        metadataFileUUID,
+        transcodedTrackUUID
+      } = await this.creatorNode.uploadTrackContent(
         trackFile,
         coverArtFile,
         metadata,
@@ -180,7 +184,12 @@ class Tracks extends Base {
 
       phase = phases.ASSOCIATING_TRACK
       // Associate the track id with the file metadata and block number
-      await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
+      await this.creatorNode.associateTrack(
+        trackId,
+        metadataFileUUID,
+        txReceipt.blockNumber,
+        transcodedTrackUUID
+      )
       return { trackId, error: false }
     } catch (e) {
       return {
@@ -218,7 +227,7 @@ class Tracks extends Base {
     this._validateTrackMetadata(metadata)
 
     // Upload metadata
-    const { metadataMultihash, metadataFileUUID } = await retry(async (bail, num) => {
+    const { metadataMultihash, metadataFileUUID, transcodedTrackCID, transcodedTrackUUID } = await retry(async (bail, num) => {
       return this.creatorNode.uploadTrackContent(
         trackFile,
         coverArtFile,
@@ -238,7 +247,7 @@ class Tracks extends Base {
         }
       }
     })
-    return { metadataMultihash, metadataFileUUID }
+    return { metadataMultihash, metadataFileUUID, transcodedTrackCID, transcodedTrackUUID }
   }
 
   /**
@@ -258,8 +267,8 @@ class Tracks extends Base {
     await Promise.all(
       trackMultihashAndUUIDList.map(async (trackInfo, i) => {
         try {
-          const metadataMultihash = trackInfo.metadataMultihash
-          const metadataFileUUID = trackInfo.metadataFileUUID
+          const { metadataMultihash, metadataFileUUID, transcodedTrackUUID } = trackInfo
+
           // Write metadata to chain
           const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
           let { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
@@ -269,7 +278,7 @@ class Tracks extends Base {
             multihashDecoded.size
           )
 
-          addedToChain[i] = { trackId, metadataFileUUID, txReceipt }
+          addedToChain[i] = { trackId, metadataFileUUID, transcodedTrackUUID, txReceipt }
         } catch (e) {
           requestFailed = true
           console.error(e)
@@ -288,11 +297,14 @@ class Tracks extends Base {
       await Promise.all(
         addedToChain.map(async chainTrackInfo => {
           const metadataFileUUID = chainTrackInfo.metadataFileUUID
+          const transcodedTrackUUID = chainTrackInfo.transcodedTrackUUID
           const trackId = chainTrackInfo.trackId
           await this.creatorNode.associateTrack(
             trackId,
             metadataFileUUID,
-            chainTrackInfo.txReceipt.blockNumber)
+            chainTrackInfo.txReceipt.blockNumber,
+            transcodedTrackUUID
+          )
           associatedWithCreatorNode.push(trackId)
         })
       )

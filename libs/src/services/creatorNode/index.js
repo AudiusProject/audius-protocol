@@ -172,6 +172,9 @@ class CreatorNode {
 
     const [trackContentResp, coverArtResp] = await Promise.all(uploadPromises)
     metadata.track_segments = trackContentResp.track_segments
+    if (metadata.download && metadata.download.is_downloadable) {
+      metadata.download.cid = trackContentResp.transcodedTrackCID
+    }
 
     const sourceFile = trackContentResp.source_file
     if (!sourceFile) throw new Error('Invalid or missing sourceFile')
@@ -179,7 +182,8 @@ class CreatorNode {
     if (coverArtResp) metadata.cover_art_sizes = coverArtResp.dirCID
     // Creates new track entity on creator node, making track's metadata available on IPFS
     // @returns {Object} {cid: cid of track metadata on IPFS, id: id of track to be used with associate function}
-    return this.uploadTrackMetadata(metadata, sourceFile)
+    const metadataResp = await this.uploadTrackMetadata(metadata, sourceFile)
+    return { ...metadataResp, ...trackContentResp }
   }
 
   /**
@@ -205,8 +209,9 @@ class CreatorNode {
    * @param {number} audiusTrackId returned by track creation on-blockchain
    * @param {string} metadataFileUUID unique ID for metadata file
    * @param {number} blockNumber
+   * @param {string?} transcodedTrackUUID the CID for the transcoded master if this is a first-time upload
    */
-  async associateTrack (audiusTrackId, metadataFileUUID, blockNumber) {
+  async associateTrack (audiusTrackId, metadataFileUUID, blockNumber, transcodedTrackUUID) {
     this.maxBlockNumber = Math.max(this.maxBlockNumber, blockNumber)
     await this._makeRequest({
       url: '/tracks',
@@ -214,7 +219,8 @@ class CreatorNode {
       data: {
         blockchainTrackId: audiusTrackId,
         metadataFileUUID,
-        blockNumber: this.maxBlockNumber
+        blockNumber: this.maxBlockNumber,
+        transcodedTrackUUID
       }
     })
   }

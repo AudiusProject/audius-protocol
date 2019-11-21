@@ -64,7 +64,7 @@ class File extends Base {
       // respond with a valid response to a `head` request.
       return Utils.raceRequests(urls, (url) => downloadURL(url, filename), {
         method: 'head'
-      })
+      }, /* timeout */ 10000)
     } catch (e) {
       throw new Error(`Failed to retrieve ${cid}`)
     }
