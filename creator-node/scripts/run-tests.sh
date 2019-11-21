@@ -30,6 +30,6 @@ mkdir -p $storagePath
 ./node_modules/.bin/standard
 
 # tests
-./node_modules/mocha/bin/mocha --timeout 10000 --exit
+./node_modules/mocha/bin/mocha --timeout 30000 --exit
 
 rm -r $storagePath

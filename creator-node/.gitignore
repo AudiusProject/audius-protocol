@@ -9,3 +9,4 @@ npm-debug.log
 local-test/
 eth-contract-config.json
 local-storage/
+test_file_storage/
