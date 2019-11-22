@@ -98,7 +98,7 @@ class NotificationProcessor {
       if (!minBlock && minBlock !== 0) throw new Error('no min block')
 
       // Re-enable for development as needed
-      this.emailQueue.add({ type: 'unreadEmailJob' })
+      // this.emailQueue.add({ type: 'unreadEmailJob' })
 
       try {
         // Index notifications
