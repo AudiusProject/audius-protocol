@@ -135,7 +135,8 @@ module.exports = function (app) {
       return errorResponseForbidden(e.message)
     }
 
-    // If track marked as downloadable, kick off transcoding process if necessary (don't block on this).
+    // If track marked as downloadable, kick off the transcoding process if there doesn't
+    // already exist a transcoded master.
     if (metadataJSON.download && metadataJSON.download.is_downloadable && !metadataJSON.download.cid) {
       let sourceFile = req.body.sourceFile
       const trackId = metadataJSON.track_id
@@ -162,10 +163,10 @@ module.exports = function (app) {
           }
         })
 
-        if (!transcodedFile || !transcodedFile.multihash) hasTranscodedMaster = true
+        if (transcodedFile && transcodedFile.multihash) hasTranscodedMaster = true
       }
 
-      // If it does not, create it fromt he source file
+      // If it does not, create it from the source file
       if (!hasTranscodedMaster) {
         if (!sourceFile) {
           // Find the source file.
