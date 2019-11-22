@@ -304,7 +304,6 @@ module.exports = function (app) {
         totalUnread: unreadAnnouncementCount + unViewedCount
       })
     } catch (err) {
-      console.log(err)
       return errorResponseBadRequest({
         message: `[Error] Unable to retrieve notifications for user: ${userId}`
       })
@@ -355,8 +354,10 @@ module.exports = function (app) {
         }
         return successResponse({ message: 'success' })
       } else {
+        const update = { isRead: true }
+        if (isHidden !== undefined) update['isHidden'] = isHidden
         await models.Notification.update(
-          { isRead: true, isHidden },
+          update,
           { where: { id: notificationId } }
         )
         return successResponse({ message: 'success' })
