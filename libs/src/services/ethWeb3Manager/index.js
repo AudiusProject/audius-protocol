@@ -8,13 +8,13 @@ const GANACHE_GAS_PRICE = 39062500000 // ganache gas price is extremely high, so
 /** Singleton state-manager for Audius Eth Contracts */
 class EthWeb3Manager {
   constructor (web3Config) {
-    if (web3Config && web3Config.url && web3Config.ownerWallet) {
-      this.web3Config = web3Config
-      this.web3 = new Web3(web3Config.url)
-      this.ownerWallet = web3Config.ownerWallet
-    } else {
-      throw new Error('web3Config missing required properties')
-    }
+    if (!web3Config) throw new Error('web3Config object not passed in')
+    if (!web3Config.url) throw new Error('missing web3Config property: url')
+    if (!web3Config.ownerWallet) throw new Error('missing web3Config property: ownerWallet')
+
+    this.web3Config = web3Config
+    this.web3 = new Web3(web3Config.url)
+    this.ownerWallet = web3Config.ownerWallet
   }
 
   getWeb3 () { return this.web3 }
