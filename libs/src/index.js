@@ -1,3 +1,5 @@
+const packageJSON = require('../package.json')
+
 const EthWeb3Manager = require('./services/ethWeb3Manager/index')
 const Web3Manager = require('./services/web3Manager/index')
 const EthContracts = require('./services/ethContracts/index')
@@ -114,6 +116,9 @@ class AudiusLibs {
     creatorNodeConfig,
     isServer
   }) {
+    // set version
+    this.version = packageJSON.version
+
     this.ethWeb3Config = ethWeb3Config
     this.web3Config = web3Config
     this.identityServiceConfig = identityServiceConfig
