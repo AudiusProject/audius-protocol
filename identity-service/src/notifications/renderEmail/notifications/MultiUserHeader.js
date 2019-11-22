@@ -7,6 +7,8 @@ exports["default"] = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
+var _utils = require("./utils");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var MAX_USERS = 9;
@@ -81,7 +83,7 @@ var MultiUserHeader = function MultiUserHeader(_ref) {
       fontSize: '11px',
       fontWeight: 'bold'
     }
-  }, "+".concat(+users.length - MAX_USERS))))))))));
+  }, "+".concat((0, _utils.formatCount)(users.length - MAX_USERS)))))))))));
 };
 
 var _default = MultiUserHeader;

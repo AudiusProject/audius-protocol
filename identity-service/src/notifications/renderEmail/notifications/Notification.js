@@ -9,6 +9,8 @@ var _react = _interopRequireDefault(require("react"));
 
 var _NotificationBody = _interopRequireDefault(require("./NotificationBody"));
 
+var _utils = require("./utils");
+
 var _notificationMap;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -73,7 +75,7 @@ var getUsers = function getUsers(users) {
     return _react["default"].createElement(_react["default"].Fragment, null, _react["default"].createElement(HighlightText, {
       text: firstUser.name
     }), _react["default"].createElement(BodyText, {
-      text: " and ".concat(users.length - 1, " other").concat(users.length > 2 ? 's' : '')
+      text: " and ".concat((0, _utils.formatCount)(users.length - 1), " other").concat(users.length > 2 ? 's' : '')
     }));
   }
 

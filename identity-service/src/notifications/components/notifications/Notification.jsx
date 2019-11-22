@@ -2,6 +2,8 @@ import React from 'react'
 
 import NotificationBody from './NotificationBody'
 
+import { formatCount } from './utils'
+
 export const NotificationType = Object.freeze({
   Follow: 'Follow',
   Repost: 'Repost',
@@ -49,7 +51,7 @@ export const getUsers = (users) => {
     return (
       <>
         <HighlightText text={firstUser.name} />
-        <BodyText text={` and ${users.length - 1} other${users.length > 2 ? 's' : ''}`} />
+        <BodyText text={` and ${formatCount(users.length - 1)} other${users.length > 2 ? 's' : ''}`} />
       </>
     )
   }
