@@ -214,7 +214,7 @@ class NotificationProcessor {
         let currentFollowerCount = followersAddedDictionary[targetUser]
         for (var i = followerMilestoneList.length; i >= 0; i--) {
           let milestoneValue = followerMilestoneList[i]
-          if (currentFollowerCount >= milestoneValue) {
+          if (currentFollowerCount === milestoneValue) {
             let existingFollowMilestoneQuery = await models.Notification.findAll({
               where: {
                 userId: targetUser,
