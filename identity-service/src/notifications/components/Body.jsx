@@ -77,8 +77,16 @@ const snippetMap = {
   }
 }
 
-const getSnippet = (notification) => {
-  return snippetMap[notification.type](notification)
+// Generate snippet for email composed of the first three notification texts,
+// but limited to 90 characters w/ an ellipsis
+const SNIPPET_ELLIPSIS_LENGTH = 90
+const getSnippet = (notifications) => {
+  const snippet = notifications.slice(0, 3).map(notification => {
+    return snippetMap[notification.type](notification)
+  }).join(', ')
+  if (snippet.length <= SNIPPET_ELLIPSIS_LENGTH) return snippet
+  const indexOfEllipsis = snippet.substring(SNIPPET_ELLIPSIS_LENGTH).indexOf(' ') + SNIPPET_ELLIPSIS_LENGTH
+  return `${snippet.substring(0, indexOfEllipsis)} ...`
 }
 
 const Body = (props) => {
@@ -95,7 +103,7 @@ const Body = (props) => {
           opacity: 0,
           overflow: 'hidden'
         }}
-        dangerouslySetInnerHTML={{ __html: `${getSnippet(props.notifications[0])}
+        dangerouslySetInnerHTML={{ __html: `${getSnippet(props.notifications)}
         &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
         <wbr>
         &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;

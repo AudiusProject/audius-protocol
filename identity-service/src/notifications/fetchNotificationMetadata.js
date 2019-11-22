@@ -38,6 +38,8 @@ async function sendUserNotifcationEmail (audius, userId, announcements = [], fro
       where: {
         userId,
         isViewed: false,
+        isRead: false,
+        isHidden: false,
         timestamp: {
           [models.Sequelize.Op.gt]: fromTime.toDate()
         }

@@ -340,6 +340,7 @@ module.exports = function (app) {
             entityId: announcement.entityId
           },
           defaults: {
+            isViewed: true,
             isRead: true,
             isHidden,
             blocknumber: 0,
@@ -348,13 +349,14 @@ module.exports = function (app) {
         })
         if (!isCreated && (notification.isRead !== isRead || notification.isHidden !== isHidden)) {
           await notification.update({
+            isViewed: true,
             ...(typeof isRead === 'boolean' ? { isRead } : {}),
             ...(typeof isHidden === 'boolean' ? { isHidden } : {})
           })
         }
         return successResponse({ message: 'success' })
       } else {
-        const update = { isRead: true }
+        const update = { isViewed: true, isRead: true }
         if (isHidden !== undefined) update['isHidden'] = isHidden
         await models.Notification.update(
           update,
@@ -370,9 +372,8 @@ module.exports = function (app) {
   }))
 
   /*
-   * Marks all of a user's notifications as read & inserts rows for announcements
+   * Marks all of a user's notifications as viewed & optionally is read & inserts rows for announcements
    * postBody: {bool?} isRead          Identitifies if the notification is to be marked as read
-   * postBody: {bool?} isViewed        Identitifies if all notifications are to be marked viewed
    *
   */
   app.post('/notifications/all', authMiddleware, handleResponse(async (req, res, next) => {
@@ -385,8 +386,8 @@ module.exports = function (app) {
     }
     try {
       const update = {
-        ...(typeof isRead !== 'undefined' ? { isRead } : {}),
-        ...(typeof isViewed !== 'undefined' ? { isViewed } : {})
+        isViewed: true,
+        ...(typeof isRead !== 'undefined' ? { isRead } : {})
       }
 
       await models.Notification.update(
