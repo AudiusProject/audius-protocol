@@ -143,15 +143,15 @@ module.exports = function (app) {
         return errorResponseBadRequest('Cannot make downloadable - A sourceFile must be provided or the metadata object must include track_id')
       }
 
-      // Find the sourceFile associated with the track if it wasn't provided, to be used in trancoding.
-      if (!sourceFile) {
+      // See if the track already has a transcoded master
+      let hasTranscodedMaster = false
+      if (trackId) {
         const { trackUUID } = await models.Track.findOne({
           attributes: ['trackUUID'],
           where: {
             blockchainId: trackId
           }
         })
-
         // Short circuit if there is a transcoded version available
         const transcodedFile = await models.File.findOne({
           attributes: ['multihash'],
@@ -161,8 +161,21 @@ module.exports = function (app) {
             trackUUID
           }
         })
-        // Create a downloadable copy if one doesn't exist
-        if (!transcodedFile || !transcodedFile.multihash) {
+
+        if (!transcodedFile || !transcodedFile.multihash) hasTranscodedMaster = true
+      }
+
+      // If it does not, create it fromt he source file
+      if (!hasTranscodedMaster) {
+        if (!sourceFile) {
+          // Find the source file.
+          const { trackUUID } = await models.Track.findOne({
+            attributes: ['trackUUID'],
+            where: {
+              blockchainId: trackId
+            }
+          })
+
           const firstSegment = metadataJSON.track_segments[0]
           if (!firstSegment) return errorResponseServerError('No segment found for track')
 
@@ -178,8 +191,8 @@ module.exports = function (app) {
           }
           sourceFile = file.sourceFile
         }
-      } else {
-        // if sourceFile provided, ensure segmentFile exists with that sourceFile
+
+        // Sanity check that the source file exists in the db.
         const file = await models.File.findOne({
           where: {
             sourceFile
@@ -188,17 +201,16 @@ module.exports = function (app) {
         if (!file) {
           return errorResponseBadRequest(`Invalid sourceFile input - no matching file entry found.`)
         }
-      }
+        // Ensure sourceFile exists on disk.
+        const fileDir = path.resolve(req.app.get('storagePath'), sourceFile.split('.')[0])
+        const filePath = path.resolve(fileDir, sourceFile)
+        if (!fs.existsSync(filePath)) {
+          req.logger.error(`SourceFile not found at ${filePath}.`)
+          return errorResponseServerError('Cannot make downloadable - no sourceFile found on disk.')
+        }
 
-      // Ensure sourceFile exists on disk.
-      const fileDir = path.resolve(req.app.get('storagePath'), sourceFile.split('.')[0])
-      const filePath = path.resolve(fileDir, sourceFile)
-      if (!fs.existsSync(filePath)) {
-        req.logger.error(`SourceFile not found at ${filePath}.`)
-        return errorResponseServerError('Cannot make downloadable - no sourceFile found on disk.')
+        createDownloadableCopy(req, sourceFile)
       }
-
-      createDownloadableCopy(req, sourceFile)
     }
 
     // Store + pin metadata multihash to disk + IPFS.
