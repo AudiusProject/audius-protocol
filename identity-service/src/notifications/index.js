@@ -141,8 +141,6 @@ class NotificationProcessor {
       { type: 'unreadEmailJob' },
       { repeat: { cron: '0 * * * *' } }
     )
-    let emailQueueCount = await this.emailQueue.count()
-    console.log('Email Queue Count: ' + emailQueueCount)
 
     let startBlock = await this.getHighestBlockNumber()
     console.log(`Starting with ${startBlock}`)
@@ -1023,7 +1021,6 @@ class NotificationProcessor {
 
       let now = moment()
       let dayAgo = now.clone().subtract(1, 'days')
-
       let weekAgo = now.clone().subtract(7, 'days')
 
       let appAnnouncements = this.expressApp.get('announcements')
@@ -1155,9 +1152,10 @@ class NotificationProcessor {
               frequency === 'daily' ? dayAgo : weekAgo
             )
             if (!sent) { continue }
+            console.log(`First email for ${userId}, ${frequency}, ${currentUtcTime}`)
             await models.NotificationEmail.create({
               userId,
-              frequency,
+              emailFrequency: frequency,
               timestamp: currentUtcTime
             })
           } else {
@@ -1179,7 +1177,7 @@ class NotificationProcessor {
 
                 await models.NotificationEmail.create({
                   userId,
-                  frequency,
+                  emailFrequency: frequency,
                   timestamp: currentUtcTime
                 })
               }
@@ -1198,7 +1196,7 @@ class NotificationProcessor {
                 if (!sent) { continue }
                 await models.NotificationEmail.create({
                   userId,
-                  frequency,
+                  emailFrequency: frequency,
                   timestamp: currentUtcTime
                 })
               }
@@ -1221,7 +1219,7 @@ class NotificationProcessor {
     startTime
   ) {
     try {
-      console.log(`renderAndSendEmail ${userId}, ${userEmail}`)
+      console.log(`renderAndSendEmail ${userId}, ${userEmail}, ${frequency}, from ${startTime}`)
       const [notificationProps, notificationCount] = await getEmailNotifications(
         this.audiusLibs,
         userId,
@@ -1240,7 +1238,6 @@ class NotificationProcessor {
 
       let now = moment()
       let dayAgo = now.clone().subtract(1, 'days')
-
       let weekAgo = now.clone().subtract(7, 'days')
       let formattedDayAgo = dayAgo.format('MMMM Do YYYY')
       let shortWeekAgoFormat = weekAgo.format('MMMM Do')
@@ -1249,7 +1246,6 @@ class NotificationProcessor {
 
       const subject = frequency === 'daily' ? dailySubjectFormat : weeklySubjectFormat
       renderProps['subject'] = subject
-      console.dir(renderProps, { depth: 5 })
       const notifHtml = renderEmail(renderProps)
 
       const emailParams = {
