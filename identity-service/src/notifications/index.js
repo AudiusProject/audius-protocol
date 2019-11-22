@@ -1256,7 +1256,6 @@ class NotificationProcessor {
         subject: emailSubject
       }
 
-      // Disable emails for soft launch
       await this.sendEmail(emailParams)
 
       // Cache on file system
