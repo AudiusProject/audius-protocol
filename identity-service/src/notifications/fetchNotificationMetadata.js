@@ -13,7 +13,7 @@ const USER_NODE_IPFS_GATEWAY = config.get('notificationDiscoveryProvider').inclu
 const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/imageProfilePicEmpty.png'
 
 // The number of users to fetch / display per notification (The displayed number of users)
-export const USER_FETCH_LIMIT = 10
+const USER_FETCH_LIMIT = 10
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).
  *
@@ -34,7 +34,7 @@ async function sendUserNotifcationEmail (audius, userId, announcements = [], fro
       attributes: ['createdAt']
     })
 
-    const { rows: notifications, count: notificationCount } = await models.Notification.findAndCountAll({
+    const { rows: notifications } = await models.Notification.findAndCountAll({
       where: {
         userId,
         isViewed: false,
@@ -54,6 +54,21 @@ async function sendUserNotifcationEmail (audius, userId, announcements = [], fro
       limit
     })
 
+    let notifCountQuery = await models.Notification.findAll({
+      where: {
+        userId,
+        isViewed: false,
+        isRead: false,
+        isHidden: false,
+        timestamp: {
+          [models.Sequelize.Op.gt]: fromTime.toDate()
+        }
+      },
+      include: [{ model: models.NotificationAction, as: 'actions', required: true, attributes: [] }],
+      attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('Notification.id')), 'total']],
+      group: ['Notification.id']
+    })
+    const notificationCount = notifCountQuery.length
     const announcementIds = new Set(announcements.map(({ entityId }) => entityId))
     const filteredNotifications = notifications.filter(({ id }) => !announcementIds.has(id))
 
