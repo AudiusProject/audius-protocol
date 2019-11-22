@@ -4,7 +4,7 @@ const mapMilestone = require('../routes/notifications').mapMilestone
 
 const formatFavorite = (notification, metadata, entity) => {
   return {
-    type: NotificationType.Follow,
+    type: NotificationType.Favorite,
     users: notification.actions.map(action => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
