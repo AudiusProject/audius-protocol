@@ -1163,7 +1163,7 @@ class NotificationProcessor {
             let timeSinceEmail = moment.duration(currentUtcTime.diff(lastSentTimestamp)).asHours()
             if (frequency === 'daily') {
               // If 1 day has passed, send email
-              if (timeSinceEmail >= dayInHours) {
+              if (timeSinceEmail >= (dayInHours - 1)) {
                 console.log(`Daily email to ${userId}, last email from ${lastSentTimestamp}`)
                 // Render email
                 let sent = await this.renderAndSendEmail(
@@ -1182,8 +1182,8 @@ class NotificationProcessor {
                 })
               }
             } else if (frequency === 'weekly') {
-              // If 1 week has passed, send email
-              if (timeSinceEmail >= weekInHours) {
+              // If ~1 week has passed, send email
+              if (timeSinceEmail >= (weekInHours - 1)) {
                 console.log(`Weekly email to ${userId}, last email from ${lastSentTimestamp}`)
                 // Render email
                 let sent = await this.renderAndSendEmail(
@@ -1251,22 +1251,13 @@ class NotificationProcessor {
       const emailParams = {
         from: 'Audius <notify@audius.co>',
         to: `${userEmail}`,
+        bcc: 'audius-email-test@audius.co',
         html: notifHtml,
         subject: emailSubject
       }
 
-      // Disable emails for soft launch
-      // await this.sendEmail(emailParams)
-
-      // Temporary debugging email
-      let emailParams2 = emailParams
-      emailParams2['to'] = 'audius-email-test@audius.co'
-      await this.sendEmail(emailParams2)
-
-      emailParams2['subject'] = `TEST - ${emailParams.subject}`
-      emailParams2['to'] = 'forrest@audius.co'
-      emailParams2['bcc'] = 'julian@audius.co'
-      await this.sendEmail(emailParams2)
+      // Send email
+      await this.sendEmail(emailParams)
 
       // Cache on file system
       await this.cacheEmail({ renderProps, emailParams })
