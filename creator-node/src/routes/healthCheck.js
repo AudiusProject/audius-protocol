@@ -10,12 +10,16 @@ const MAX_DISK_USAGE_PERCENT = 90 // 90%
 module.exports = function (app) {
   /** @dev TODO - Explore checking more than just DB (ex. IPFS) */
   app.get('/health_check', handleResponse(async (req, res) => {
-    const libs = req.app.get('audiusLibs')
-    return successResponse({
+    let response = {
       'healthy': true,
       'git': process.env.GIT_SHA,
-      'selectedDiscoveryProvider': libs.discoveryProvider.discoveryProviderEndpoint || 'none'
-    })
+      'selectedDiscoveryProvider': 'none'
+    }
+    if(req.app.get('audiusLibs')){
+      response.selectedDiscoveryProvider = req.app.get('audiusLibs').discoveryProvider.discoveryProviderEndpoint
+    }
+    
+    return successResponse(response)
   }))
 
   /**
