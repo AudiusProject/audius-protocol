@@ -101,6 +101,7 @@ def populate_user_metadata(session, user_ids, users, current_user_id):
         .filter(
             Track.is_current == True,
             Track.is_delete == False,
+            Track.is_unlisted == False,
             Track.owner_id.in_(user_ids)
         )
         .group_by(Track.owner_id)
