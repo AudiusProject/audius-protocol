@@ -1163,7 +1163,7 @@ class NotificationProcessor {
             let timeSinceEmail = moment.duration(currentUtcTime.diff(lastSentTimestamp)).asHours()
             if (frequency === 'daily') {
               // If 1 day has passed, send email
-              if (timeSinceEmail >= dayInHours) {
+              if (timeSinceEmail >= (dayInHours - 1)) {
                 console.log(`Daily email to ${userId}, last email from ${lastSentTimestamp}`)
                 // Render email
                 let sent = await this.renderAndSendEmail(
@@ -1182,8 +1182,8 @@ class NotificationProcessor {
                 })
               }
             } else if (frequency === 'weekly') {
-              // If 1 week has passed, send email
-              if (timeSinceEmail >= weekInHours) {
+              // If ~1 week has passed, send email
+              if (timeSinceEmail >= (weekInHours - 1)) {
                 console.log(`Weekly email to ${userId}, last email from ${lastSentTimestamp}`)
                 // Render email
                 let sent = await this.renderAndSendEmail(
@@ -1256,7 +1256,7 @@ class NotificationProcessor {
         subject: emailSubject
       }
 
-      // Disable emails for soft launch
+      // Send email
       await this.sendEmail(emailParams)
 
       // Cache on file system
