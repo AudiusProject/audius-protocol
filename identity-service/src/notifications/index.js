@@ -953,7 +953,7 @@ class NotificationProcessor {
   async updateBlockchainIds () {
     // For any users missing blockchain id, here we query from the disc prov and fill in values
     let usersWithoutBlockchainId = await models.User.findAll({
-      attributes: ['walletAddress'],
+      attributes: ['walletAddress', 'handle'],
       where: { blockchainUserId: null }
     })
     for (let updateUser of usersWithoutBlockchainId) {
@@ -967,16 +967,20 @@ class NotificationProcessor {
             wallet: walletAddress
           }
         })
-
         if (response.data.data.length === 1) {
           let respUser = response.data.data[0]
           let missingUserId = respUser.user_id
           let missingHandle = respUser.handle
+          let updateObject = { blockchainUserId: missingUserId }
+
+          if (updateUser.handle === null) {
+            updateObject['handle'] = missingHandle
+          }
           await models.User.update(
-            { blockchainUserId: missingUserId, handle: missingHandle },
+            updateObject,
             { where: { walletAddress } }
           )
-          console.log(`Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.email}, ${updateUser.handle}`)
+          console.log(`Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.handle}`)
           continue
         }
         for (let respUser of response.data.data) {
@@ -987,7 +991,7 @@ class NotificationProcessor {
               { blockchainUserId: missingUserId },
               { where: { walletAddress, handle: updateUser.handle } }
             )
-            console.log(`Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.email}, ${updateUser.handle}`)
+            console.log(`Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.handle}`)
             await models.UserNotificationSettings.findOrCreate({ where: { userId: missingUserId } })
           }
         }
