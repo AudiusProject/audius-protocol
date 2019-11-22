@@ -12,6 +12,9 @@ const USER_NODE_IPFS_GATEWAY = config.get('notificationDiscoveryProvider').inclu
 
 const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/imageProfilePicEmpty.png'
 
+// The number of users to fetch / display per notification (The displayed number of users)
+export const USER_FETCH_LIMIT = 10
+
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).
  *
  * @param {AudiusLibs} audius                   Audius Libs instance
@@ -82,12 +85,18 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
   for (let notification of notifications) {
     switch (notification.type) {
       case NotificationType.Follow: {
-        userIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId))
+        userIdsToFetch.push(
+          ...notification.actions
+            .map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT)
+        )
         break
       }
       case NotificationType.FavoriteTrack:
       case NotificationType.RepostTrack: {
-        userIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId))
+        userIdsToFetch.push(
+          ...notification.actions
+            .map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT)
+          )
         trackIdsToFetch.push(notification.entityId)
         break
       }
@@ -95,7 +104,7 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
       case NotificationType.FavoriteAlbum:
       case NotificationType.RepostPlaylist:
       case NotificationType.RepostAlbum: {
-        userIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId))
+        userIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT))
         collectionIdsToFetch.push(notification.entityId)
         break
       }
@@ -146,7 +155,6 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
     /** offset */ 0,
     /** idsArray */ uniqueUserIds
   )
-  console.log(uniqueUserIds)
 
   users = await Promise.all(users.map(async (user) => {
     user.thumbnail = await getUserImage(user)
