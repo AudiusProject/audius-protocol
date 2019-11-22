@@ -73,7 +73,7 @@ var getUsers = function getUsers(users) {
     return _react["default"].createElement(_react["default"].Fragment, null, _react["default"].createElement(HighlightText, {
       text: firstUser.name
     }), _react["default"].createElement(BodyText, {
-      text: " and ".concat(users.length - 1, " others")
+      text: " and ".concat(users.length - 1, " other").concat(users.length > 2 ? 's' : '')
     }));
   }
 

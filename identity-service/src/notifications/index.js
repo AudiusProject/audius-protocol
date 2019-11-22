@@ -98,7 +98,7 @@ class NotificationProcessor {
       if (!minBlock && minBlock !== 0) throw new Error('no min block')
 
       // Re-enable for development as needed
-      // this.emailQueue.add({ type: 'unreadEmailJob' })
+      this.emailQueue.add({ type: 'unreadEmailJob' })
 
       try {
         // Index notifications
@@ -139,7 +139,7 @@ class NotificationProcessor {
     // Every hour cron: '0 * * * *'
     this.emailQueue.add(
       { type: 'unreadEmailJob' },
-      { repeat: { cron: '0 * * * *' } }
+      { repeat: { cron: '* * * * *' } }
     )
     let emailQueueCount = await this.emailQueue.count()
     console.log('Email Queue Count: ' + emailQueueCount)
@@ -1037,14 +1037,14 @@ class NotificationProcessor {
         let timeSinceAnnouncement = moment.duration(currentTime.diff(announcementDate)).asHours()
         let announcementEntityId = announcement['entityId']
         let id = announcement['id']
-        let usersCreatedAfterNotification = await models.User.findAll({
+        let usersCreatedAfterAnnouncement = await models.User.findAll({
           attributes: ['blockchainUserId'],
           where: {
             createdAt: { [models.Sequelize.Op.lt]: moment(announcementDate) }
           }
         }).map(x => x.blockchainUserId)
 
-        for (var user of usersCreatedAfterNotification) {
+        for (var user of usersCreatedAfterAnnouncement) {
           let userNotificationQuery = await models.Notification.findOne({
             where: {
               isViewed: true,
@@ -1082,7 +1082,7 @@ class NotificationProcessor {
         where: {
           isViewed: false,
           userId: { [models.Sequelize.Op.in]: dailyEmailUsers },
-          createdAt: { [models.Sequelize.Op.gt]: dayAgo }
+          timestamp: { [models.Sequelize.Op.gt]: dayAgo }
         },
         group: ['userId']
       }).map(x => x.userId)
@@ -1093,7 +1093,7 @@ class NotificationProcessor {
         where: {
           isViewed: false,
           userId: { [models.Sequelize.Op.in]: weeklyEmailUsers },
-          createdAt: { [models.Sequelize.Op.gt]: weekAgo }
+          timestamp: { [models.Sequelize.Op.gt]: weekAgo }
         },
         group: ['userId']
       }).map(x => x.userId)
@@ -1136,7 +1136,7 @@ class NotificationProcessor {
 
         // Based on this difference, schedule email for users
         // In prod, this difference must be <1 hour or between midnight - 1am
-        let maxHourDifference = 2 // 1.5
+        let maxHourDifference = 22 // 1.5
         // Valid time found
         if (difference < maxHourDifference) {
           console.log(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
@@ -1222,13 +1222,13 @@ class NotificationProcessor {
   ) {
     try {
       console.log(`renderAndSendEmail ${userId}, ${userEmail}`)
-      const notificationProps = await getEmailNotifications(
+      const [notificationProps, notificationCount] = await getEmailNotifications(
         this.audiusLibs,
         userId,
         announcements,
         startTime,
         5)
-      const emailSubject = `${notificationProps.length} unread notification${notificationProps.length > 1 ? 's' : ''} on Audius`
+      const emailSubject = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''} on Audius`
 
       let renderProps = {}
       renderProps['notifications'] = notificationProps
@@ -1244,8 +1244,8 @@ class NotificationProcessor {
       let weekAgo = now.clone().subtract(7, 'days')
       let formattedDayAgo = dayAgo.format('MMMM Do YYYY')
       let shortWeekAgoFormat = weekAgo.format('MMMM Do')
-      let weeklySubjectFormat = `${notificationProps.length} unread notification${notificationProps.length > 1 ? 's' : ''} from ${shortWeekAgoFormat} - ${formattedDayAgo}`
-      let dailySubjectFormat = `${notificationProps.length} unread notification${notificationProps.length > 1 ? 's' : ''} from ${formattedDayAgo}`
+      let weeklySubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''} from ${shortWeekAgoFormat} - ${formattedDayAgo}`
+      let dailySubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''} from ${formattedDayAgo}`
 
       const subject = frequency === 'daily' ? dailySubjectFormat : weeklySubjectFormat
       renderProps['subject'] = subject

@@ -71,16 +71,20 @@ var UnreadNotifications = function UnreadNotifications(_ref) {
 };
 
 var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.NotificationType.Favorite, function (notification) {
-  var user = (0, _Notification.getUsers)(notification.users);
-  var entity = (0, _Notification.getEntity)(notification.entity);
-  return "".concat(user, " favorited your ").concat(entity);
+  var _notification$users = _slicedToArray(notification.users, 1),
+      user = _notification$users[0];
+
+  return "".concat(user.name, " favorited your ").concat(notification.entity.name);
 }), _defineProperty(_snippetMap, _Notification.NotificationType.Repost, function (notification) {
-  var user = (0, _Notification.getUsers)(notification.users);
-  var entity = (0, _Notification.getEntity)(notification.entity);
-  return "".concat(user, " reposted your ").concat(entity);
+  var _notification$users2 = _slicedToArray(notification.users, 1),
+      user = _notification$users2[0];
+
+  return "".concat(user.name, " reposted your ").concat(notification.entity.name);
 }), _defineProperty(_snippetMap, _Notification.NotificationType.Follow, function (notification) {
-  var user = (0, _Notification.getUsers)(notification.users);
-  return "".concat(user, "  followed you");
+  var _notification$users3 = _slicedToArray(notification.users, 1),
+      user = _notification$users3[0];
+
+  return "".concat(user.name, " followed you");
 }), _defineProperty(_snippetMap, _Notification.NotificationType.Announcement, function (notification) {
   return notification.text;
 }), _defineProperty(_snippetMap, _Notification.NotificationType.Milestone, function (notification) {
@@ -91,8 +95,8 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
     return "Your have reached over ".concat(notification.value, " Followers ");
   }
 }), _defineProperty(_snippetMap, _Notification.NotificationType.UserSubscription, function (notification) {
-  var _notification$users = _slicedToArray(notification.users, 1),
-      user = _notification$users[0];
+  var _notification$users4 = _slicedToArray(notification.users, 1),
+      user = _notification$users4[0];
 
   if (notification.entity.type === _Notification.NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
     return "".concat(user.name, " released ").concat(notification.entity.count, " new ").concat(notification.entity.type);

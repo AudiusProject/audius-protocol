@@ -31,7 +31,7 @@ async function sendUserNotifcationEmail (audius, userId, announcements = [], fro
       attributes: ['createdAt']
     })
 
-    const notifications = await models.Notification.findAll({
+    const { rows: notifications, count: notificationCount } = await models.Notification.findAndCountAll({
       where: {
         userId,
         isViewed: false,
@@ -57,10 +57,18 @@ async function sendUserNotifcationEmail (audius, userId, announcements = [], fro
     const validUserAnnouncements = announcements
       .filter(a => moment(a.datePublished).isAfter(user.createdAt) && moment(a.datePublished).isAfter(fromTime))
 
-    const userNotifications = mergeAudiusAnnoucements(validUserAnnouncements, filteredNotifications).slice(0, limit)
-    const metadata = await fetchNotificationMetadata(audius, userId, userNotifications)
-    const notificationsEmailProps = formatNotificationProps(userNotifications, metadata)
-    return notificationsEmailProps
+    const userNotifications = mergeAudiusAnnoucements(validUserAnnouncements, filteredNotifications)
+    let unreadAnnouncementCount = 0
+    userNotifications.forEach((notif) => {
+      if (notif.type === NotificationType.Announcement) {
+        unreadAnnouncementCount += 1
+      }
+    })
+
+    const finalUserNotifications = userNotifications.slice(0, limit)
+    const metadata = await fetchNotificationMetadata(audius, userId, finalUserNotifications)
+    const notificationsEmailProps = formatNotificationProps(finalUserNotifications, metadata)
+    return [notificationsEmailProps, notificationCount + unreadAnnouncementCount]
   } catch (err) {
     console.log(err)
   }
@@ -138,6 +146,7 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
     /** offset */ 0,
     /** idsArray */ uniqueUserIds
   )
+  console.log(uniqueUserIds)
 
   users = await Promise.all(users.map(async (user) => {
     user.thumbnail = await getUserImage(user)
