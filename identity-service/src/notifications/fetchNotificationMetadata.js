@@ -111,7 +111,7 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
         userIdsToFetch.push(
           ...notification.actions
             .map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT)
-          )
+        )
         trackIdsToFetch.push(notification.entityId)
         break
       }
