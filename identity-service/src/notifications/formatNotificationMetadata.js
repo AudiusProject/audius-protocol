@@ -8,6 +8,7 @@ const formatFavorite = (notification, metadata, entity) => {
     users: notification.actions.map(action => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
+      if (!user) return null
       return { name: user.name, image: user.thumbnail }
     }),
     entity
@@ -20,6 +21,7 @@ const formatRepost = (notification, metadata, entity) => {
     users: notification.actions.map(action => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
+      if (!user) return null
       return { name: user.name, image: user.thumbnail }
     }),
     entity
@@ -60,6 +62,7 @@ function formatFollow (notification, metadata) {
     users: notification.actions.map(action => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
+      if (!user) return null
       return { name: user.name, image: user.thumbnail }
     })
   }
@@ -135,7 +138,6 @@ const notificationResponseMap = {
 function formatNotificationProps (notifications, metadata) {
   const emailNotificationProps = notifications.map(notification => {
     const mapNotification = notificationResponseMap[notification.type]
-    console.log(`${notification.type} - ${mapNotification}`)
     return mapNotification(notification, metadata)
   })
   return emailNotificationProps

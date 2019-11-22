@@ -141,8 +141,6 @@ class NotificationProcessor {
       { type: 'unreadEmailJob' },
       { repeat: { cron: '0 * * * *' } }
     )
-    let emailQueueCount = await this.emailQueue.count()
-    console.log('Email Queue Count: ' + emailQueueCount)
 
     let startBlock = await this.getHighestBlockNumber()
     console.log(`Starting with ${startBlock}`)
@@ -214,7 +212,7 @@ class NotificationProcessor {
         let currentFollowerCount = followersAddedDictionary[targetUser]
         for (var i = followerMilestoneList.length; i >= 0; i--) {
           let milestoneValue = followerMilestoneList[i]
-          if (currentFollowerCount >= milestoneValue) {
+          if (currentFollowerCount === milestoneValue) {
             let existingFollowMilestoneQuery = await models.Notification.findAll({
               where: {
                 userId: targetUser,
@@ -274,7 +272,7 @@ class NotificationProcessor {
       let trackListenCount = Number.parseInt(entry.listenCount)
       for (var i = trackListenMilestoneList.length; i >= 0; i--) {
         let milestoneValue = trackListenMilestoneList[i]
-        if (trackListenCount >= milestoneValue) {
+        if (trackListenCount === milestoneValue || (trackListenCount >= milestoneValue && trackListenCount <= milestoneValue * 1.1)) {
           let trackId = entry.trackId
           let ownerId = entry.owner
           await this.processListenCountMilestone(
@@ -301,7 +299,7 @@ class NotificationProcessor {
       let trackRepostCount = repostCounts.tracks[repostedTrackId]
       for (var i = repostMilestoneList.length; i >= 0; i--) {
         let milestoneValue = repostMilestoneList[i]
-        if (trackRepostCount >= milestoneValue) {
+        if (trackRepostCount === milestoneValue) {
           await this.processRepostMilestone(
             trackOwnerId,
             repostedTrackId,
@@ -319,7 +317,7 @@ class NotificationProcessor {
       let albumRepostCount = repostCounts.albums[repostedAlbumId]
       for (var j = repostMilestoneList.length; j >= 0; j--) {
         let milestoneValue = repostMilestoneList[j]
-        if (albumRepostCount >= milestoneValue) {
+        if (albumRepostCount === milestoneValue) {
           await this.processRepostMilestone(
             albumOwnerId,
             repostedAlbumId,
@@ -337,7 +335,7 @@ class NotificationProcessor {
       let playlistRepostCount = repostCounts.playlists[repostedPlaylistId]
       for (var k = repostMilestoneList.length; k >= 0; k--) {
         let milestoneValue = repostMilestoneList[k]
-        if (playlistRepostCount >= milestoneValue) {
+        if (playlistRepostCount === milestoneValue) {
           await this.processRepostMilestone(
             playlistOwnerId,
             repostedPlaylistId,
@@ -361,7 +359,7 @@ class NotificationProcessor {
       let trackFavoriteCount = favoriteCounts.tracks[favoritedTrackId]
       for (var i = favoriteMilestoneList.length; i >= 0; i--) {
         let milestoneValue = favoriteMilestoneList[i]
-        if (trackFavoriteCount >= milestoneValue) {
+        if (trackFavoriteCount === milestoneValue) {
           await this.processFavoriteMilestone(
             trackOwnerId,
             favoritedTrackId,
@@ -379,7 +377,7 @@ class NotificationProcessor {
       let albumFavoriteCount = favoriteCounts.albums[favoritedAlbumId]
       for (var j = favoriteMilestoneList.length; j >= 0; j--) {
         let milestoneValue = favoriteMilestoneList[j]
-        if (albumFavoriteCount >= milestoneValue) {
+        if (albumFavoriteCount === milestoneValue) {
           await this.processFavoriteMilestone(
             albumOwnerId,
             favoritedAlbumId,
@@ -397,7 +395,7 @@ class NotificationProcessor {
       let playlistFavoriteCount = favoriteCounts.playlists[favoritedPlaylistId]
       for (var k = favoriteMilestoneList.length; k >= 0; k--) {
         let milestoneValue = favoriteMilestoneList[k]
-        if (playlistFavoriteCount >= milestoneValue) {
+        if (playlistFavoriteCount === milestoneValue) {
           await this.processFavoriteMilestone(
             playlistOwnerId,
             favoritedPlaylistId,
@@ -1023,12 +1021,7 @@ class NotificationProcessor {
 
       let now = moment()
       let dayAgo = now.clone().subtract(1, 'days')
-
       let weekAgo = now.clone().subtract(7, 'days')
-      let formattedDayAgo = dayAgo.format('MMMM Do YYYY')
-      let shortWeekAgoFormat = weekAgo.format('MMMM Do')
-      let weeklySubjectFormat = `Unread notifications from ${shortWeekAgoFormat} - ${formattedDayAgo}`
-      let dailySubjectFormat = `Unread notifications from ${formattedDayAgo}`
 
       let appAnnouncements = this.expressApp.get('announcements')
       // For each announcement, we generate a list of valid users
@@ -1041,14 +1034,14 @@ class NotificationProcessor {
         let timeSinceAnnouncement = moment.duration(currentTime.diff(announcementDate)).asHours()
         let announcementEntityId = announcement['entityId']
         let id = announcement['id']
-        let usersCreatedAfterNotification = await models.User.findAll({
+        let usersCreatedAfterAnnouncement = await models.User.findAll({
           attributes: ['blockchainUserId'],
           where: {
             createdAt: { [models.Sequelize.Op.lt]: moment(announcementDate) }
           }
         }).map(x => x.blockchainUserId)
 
-        for (var user of usersCreatedAfterNotification) {
+        for (var user of usersCreatedAfterAnnouncement) {
           let userNotificationQuery = await models.Notification.findOne({
             where: {
               isViewed: true,
@@ -1086,7 +1079,7 @@ class NotificationProcessor {
         where: {
           isViewed: false,
           userId: { [models.Sequelize.Op.in]: dailyEmailUsers },
-          createdAt: { [models.Sequelize.Op.gt]: dayAgo }
+          timestamp: { [models.Sequelize.Op.gt]: dayAgo }
         },
         group: ['userId']
       }).map(x => x.userId)
@@ -1097,7 +1090,7 @@ class NotificationProcessor {
         where: {
           isViewed: false,
           userId: { [models.Sequelize.Op.in]: weeklyEmailUsers },
-          createdAt: { [models.Sequelize.Op.gt]: weekAgo }
+          timestamp: { [models.Sequelize.Op.gt]: weekAgo }
         },
         group: ['userId']
       }).map(x => x.userId)
@@ -1156,12 +1149,13 @@ class NotificationProcessor {
               userEmail,
               appAnnouncements,
               frequency,
-              frequency === 'daily' ? dayAgo : weekAgo,
-              frequency === 'daily' ? dailySubjectFormat : weeklySubjectFormat)
+              frequency === 'daily' ? dayAgo : weekAgo
+            )
             if (!sent) { continue }
+            console.log(`First email for ${userId}, ${frequency}, ${currentUtcTime}`)
             await models.NotificationEmail.create({
               userId,
-              frequency,
+              emailFrequency: frequency,
               timestamp: currentUtcTime
             })
           } else {
@@ -1177,13 +1171,13 @@ class NotificationProcessor {
                   userEmail,
                   appAnnouncements,
                   frequency,
-                  dayAgo,
-                  dailySubjectFormat)
+                  dayAgo
+                )
                 if (!sent) { continue }
 
                 await models.NotificationEmail.create({
                   userId,
-                  frequency,
+                  emailFrequency: frequency,
                   timestamp: currentUtcTime
                 })
               }
@@ -1197,12 +1191,12 @@ class NotificationProcessor {
                   userEmail,
                   appAnnouncements,
                   frequency,
-                  weekAgo,
-                  weeklySubjectFormat)
+                  weekAgo
+                )
                 if (!sent) { continue }
                 await models.NotificationEmail.create({
                   userId,
-                  frequency,
+                  emailFrequency: frequency,
                   timestamp: currentUtcTime
                 })
               }
@@ -1222,17 +1216,17 @@ class NotificationProcessor {
     userEmail,
     announcements,
     frequency,
-    startTime,
-    subject) {
+    startTime
+  ) {
     try {
-      console.log(`renderAndSendEmail ${userId}, ${userEmail}`)
-      const notificationProps = await getEmailNotifications(
+      console.log(`renderAndSendEmail ${userId}, ${userEmail}, ${frequency}, from ${startTime}`)
+      const [notificationProps, notificationCount] = await getEmailNotifications(
         this.audiusLibs,
         userId,
         announcements,
         startTime,
         5)
-      const emailSubject = `${notificationProps.length} unread notifications on Audius`
+      const emailSubject = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''} on Audius`
 
       let renderProps = {}
       renderProps['notifications'] = notificationProps
@@ -1241,8 +1235,17 @@ class NotificationProcessor {
       } else if (frequency === 'weekly') {
         renderProps['title'] = `Weekly Email - ${userEmail}`
       }
+
+      let now = moment()
+      let dayAgo = now.clone().subtract(1, 'days')
+      let weekAgo = now.clone().subtract(7, 'days')
+      let formattedDayAgo = dayAgo.format('MMMM Do YYYY')
+      let shortWeekAgoFormat = weekAgo.format('MMMM Do')
+      let weeklySubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''} from ${shortWeekAgoFormat} - ${formattedDayAgo}`
+      let dailySubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''} from ${formattedDayAgo}`
+
+      const subject = frequency === 'daily' ? dailySubjectFormat : weeklySubjectFormat
       renderProps['subject'] = subject
-      console.dir(renderProps, { depth: 5 })
       const notifHtml = renderEmail(renderProps)
 
       const emailParams = {

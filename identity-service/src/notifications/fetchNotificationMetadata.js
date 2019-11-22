@@ -12,6 +12,9 @@ const USER_NODE_IPFS_GATEWAY = config.get('notificationDiscoveryProvider').inclu
 
 const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/imageProfilePicEmpty.png'
 
+// The number of users to fetch / display per notification (The displayed number of users)
+const USER_FETCH_LIMIT = 10
+
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).
  *
  * @param {AudiusLibs} audius                   Audius Libs instance
@@ -31,7 +34,7 @@ async function sendUserNotifcationEmail (audius, userId, announcements = [], fro
       attributes: ['createdAt']
     })
 
-    const notifications = await models.Notification.findAll({
+    const { rows: notifications } = await models.Notification.findAndCountAll({
       where: {
         userId,
         isViewed: false,
@@ -51,16 +54,39 @@ async function sendUserNotifcationEmail (audius, userId, announcements = [], fro
       limit
     })
 
+    let notifCountQuery = await models.Notification.findAll({
+      where: {
+        userId,
+        isViewed: false,
+        isRead: false,
+        isHidden: false,
+        timestamp: {
+          [models.Sequelize.Op.gt]: fromTime.toDate()
+        }
+      },
+      include: [{ model: models.NotificationAction, as: 'actions', required: true, attributes: [] }],
+      attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('Notification.id')), 'total']],
+      group: ['Notification.id']
+    })
+    const notificationCount = notifCountQuery.length
     const announcementIds = new Set(announcements.map(({ entityId }) => entityId))
     const filteredNotifications = notifications.filter(({ id }) => !announcementIds.has(id))
 
     const validUserAnnouncements = announcements
       .filter(a => moment(a.datePublished).isAfter(user.createdAt) && moment(a.datePublished).isAfter(fromTime))
 
-    const userNotifications = mergeAudiusAnnoucements(validUserAnnouncements, filteredNotifications).slice(0, limit)
-    const metadata = await fetchNotificationMetadata(audius, userId, userNotifications)
-    const notificationsEmailProps = formatNotificationProps(userNotifications, metadata)
-    return notificationsEmailProps
+    const userNotifications = mergeAudiusAnnoucements(validUserAnnouncements, filteredNotifications)
+    let unreadAnnouncementCount = 0
+    userNotifications.forEach((notif) => {
+      if (notif.type === NotificationType.Announcement) {
+        unreadAnnouncementCount += 1
+      }
+    })
+
+    const finalUserNotifications = userNotifications.slice(0, limit)
+    const metadata = await fetchNotificationMetadata(audius, userId, finalUserNotifications)
+    const notificationsEmailProps = formatNotificationProps(finalUserNotifications, metadata)
+    return [notificationsEmailProps, notificationCount + unreadAnnouncementCount]
   } catch (err) {
     console.log(err)
   }
@@ -74,12 +100,18 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
   for (let notification of notifications) {
     switch (notification.type) {
       case NotificationType.Follow: {
-        userIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId))
+        userIdsToFetch.push(
+          ...notification.actions
+            .map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT)
+        )
         break
       }
       case NotificationType.FavoriteTrack:
       case NotificationType.RepostTrack: {
-        userIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId))
+        userIdsToFetch.push(
+          ...notification.actions
+            .map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT)
+        )
         trackIdsToFetch.push(notification.entityId)
         break
       }
@@ -87,7 +119,7 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
       case NotificationType.FavoriteAlbum:
       case NotificationType.RepostPlaylist:
       case NotificationType.RepostAlbum: {
-        userIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId))
+        userIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT))
         collectionIdsToFetch.push(notification.entityId)
         break
       }

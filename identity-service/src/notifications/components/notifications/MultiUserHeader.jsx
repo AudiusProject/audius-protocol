@@ -1,4 +1,5 @@
 import React from 'react'
+import { formatCount } from './utils'
 
 const MAX_USERS = 9
 
@@ -79,8 +80,7 @@ const MultiUserHeader = ({ users }) => {
                           fontWeight: 'bold'
                         }}
                       >
-                        {`+${+users.length - MAX_USERS}`}
-
+                        {`+${formatCount(users.length - MAX_USERS)}`}
                       </td>
                     </tr>
                   </table>
