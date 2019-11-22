@@ -967,6 +967,18 @@ class NotificationProcessor {
             wallet: walletAddress
           }
         })
+
+        if (response.data.data.length === 1) {
+          let respUser = response.data.data[0]
+          let missingUserId = respUser.user_id
+          let missingHandle = respUser.handle
+          await models.User.update(
+            { blockchainUserId: missingUserId, handle: missingHandle },
+            { where: { walletAddress } }
+          )
+          console.log(`Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.email}, ${updateUser.handle}`)
+          continue
+        }
         for (let respUser of response.data.data) {
           // Only update if handles match
           if (respUser.handle === updateUser.handle) {
