@@ -98,7 +98,7 @@ class NotificationProcessor {
       if (!minBlock && minBlock !== 0) throw new Error('no min block')
 
       // Re-enable for development as needed
-      this.emailQueue.add({ type: 'unreadEmailJob' })
+      // this.emailQueue.add({ type: 'unreadEmailJob' })
 
       try {
         // Index notifications
@@ -274,7 +274,7 @@ class NotificationProcessor {
       let trackListenCount = Number.parseInt(entry.listenCount)
       for (var i = trackListenMilestoneList.length; i >= 0; i--) {
         let milestoneValue = trackListenMilestoneList[i]
-        if (trackListenCount >= milestoneValue) {
+        if (trackListenCount === milestoneValue || (trackListenCount >= milestoneValue && trackListenCount <= milestoneValue * 1.1)) {
           let trackId = entry.trackId
           let ownerId = entry.owner
           await this.processListenCountMilestone(
@@ -301,7 +301,7 @@ class NotificationProcessor {
       let trackRepostCount = repostCounts.tracks[repostedTrackId]
       for (var i = repostMilestoneList.length; i >= 0; i--) {
         let milestoneValue = repostMilestoneList[i]
-        if (trackRepostCount >= milestoneValue) {
+        if (trackRepostCount === milestoneValue) {
           await this.processRepostMilestone(
             trackOwnerId,
             repostedTrackId,
@@ -319,7 +319,7 @@ class NotificationProcessor {
       let albumRepostCount = repostCounts.albums[repostedAlbumId]
       for (var j = repostMilestoneList.length; j >= 0; j--) {
         let milestoneValue = repostMilestoneList[j]
-        if (albumRepostCount >= milestoneValue) {
+        if (albumRepostCount === milestoneValue) {
           await this.processRepostMilestone(
             albumOwnerId,
             repostedAlbumId,
@@ -337,7 +337,7 @@ class NotificationProcessor {
       let playlistRepostCount = repostCounts.playlists[repostedPlaylistId]
       for (var k = repostMilestoneList.length; k >= 0; k--) {
         let milestoneValue = repostMilestoneList[k]
-        if (playlistRepostCount >= milestoneValue) {
+        if (playlistRepostCount === milestoneValue) {
           await this.processRepostMilestone(
             playlistOwnerId,
             repostedPlaylistId,
@@ -361,7 +361,7 @@ class NotificationProcessor {
       let trackFavoriteCount = favoriteCounts.tracks[favoritedTrackId]
       for (var i = favoriteMilestoneList.length; i >= 0; i--) {
         let milestoneValue = favoriteMilestoneList[i]
-        if (trackFavoriteCount >= milestoneValue) {
+        if (trackFavoriteCount === milestoneValue) {
           await this.processFavoriteMilestone(
             trackOwnerId,
             favoritedTrackId,
@@ -379,7 +379,7 @@ class NotificationProcessor {
       let albumFavoriteCount = favoriteCounts.albums[favoritedAlbumId]
       for (var j = favoriteMilestoneList.length; j >= 0; j--) {
         let milestoneValue = favoriteMilestoneList[j]
-        if (albumFavoriteCount >= milestoneValue) {
+        if (albumFavoriteCount === milestoneValue) {
           await this.processFavoriteMilestone(
             albumOwnerId,
             favoritedAlbumId,
@@ -397,7 +397,7 @@ class NotificationProcessor {
       let playlistFavoriteCount = favoriteCounts.playlists[favoritedPlaylistId]
       for (var k = favoriteMilestoneList.length; k >= 0; k--) {
         let milestoneValue = favoriteMilestoneList[k]
-        if (playlistFavoriteCount >= milestoneValue) {
+        if (playlistFavoriteCount === milestoneValue) {
           await this.processFavoriteMilestone(
             playlistOwnerId,
             favoritedPlaylistId,
@@ -1136,7 +1136,7 @@ class NotificationProcessor {
 
         // Based on this difference, schedule email for users
         // In prod, this difference must be <1 hour or between midnight - 1am
-        let maxHourDifference = 22 // 1.5
+        let maxHourDifference = 1.5 // 1.5
         // Valid time found
         if (difference < maxHourDifference) {
           console.log(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
