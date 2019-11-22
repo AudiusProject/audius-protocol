@@ -76,6 +76,9 @@ const snippetMap = {
     return `${user.name} released a new ${notification.entity.type}  ${notification.entity.name}`
   }
 }
+
+// Generate snippet for email composed of the first three notification texts,
+// but limited to 90 characters w/ an ellipsis
 const SNIPPET_ELLIPSIS_LENGTH = 90
 const getSnippet = (notifications) => {
   const snippet = notifications.slice(0, 3).map(notification => {
