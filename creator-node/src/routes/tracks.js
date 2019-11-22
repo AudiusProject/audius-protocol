@@ -177,28 +177,28 @@ module.exports = function (app) {
             return errorResponseBadRequest(`Invalid track_segments input - no matching source file found for segment CIDs.`)
           }
           sourceFile = file.sourceFile
-        } else {
-          // if sourceFile provided, ensure segmentFile exists with that sourceFile
-          const file = await models.File.findOne({
-            where: {
-              sourceFile
-            }
-          })
-          if (!file) {
-            return errorResponseBadRequest(`Invalid sourceFile input - no matching file entry found.`)
+        }
+      } else {
+        // if sourceFile provided, ensure segmentFile exists with that sourceFile
+        const file = await models.File.findOne({
+          where: {
+            sourceFile
           }
+        })
+        if (!file) {
+          return errorResponseBadRequest(`Invalid sourceFile input - no matching file entry found.`)
         }
-
-        // Ensure sourceFile exists on disk.
-        const fileDir = path.resolve(req.app.get('storagePath'), sourceFile.split('.')[0])
-        const filePath = path.resolve(fileDir, sourceFile)
-        if (!fs.existsSync(filePath)) {
-          req.logger.error(`SourceFile not found at ${filePath}.`)
-          return errorResponseServerError('Cannot make downloadable - no sourceFile found on disk.')
-        }
-
-        createDownloadableCopy(req, sourceFile)
       }
+
+      // Ensure sourceFile exists on disk.
+      const fileDir = path.resolve(req.app.get('storagePath'), sourceFile.split('.')[0])
+      const filePath = path.resolve(fileDir, sourceFile)
+      if (!fs.existsSync(filePath)) {
+        req.logger.error(`SourceFile not found at ${filePath}.`)
+        return errorResponseServerError('Cannot make downloadable - no sourceFile found on disk.')
+      }
+
+      createDownloadableCopy(req, sourceFile)
     }
 
     // Store + pin metadata multihash to disk + IPFS.
