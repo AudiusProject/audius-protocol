@@ -103,7 +103,9 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
   }
 
   return "".concat(user.name, " released a new ").concat(notification.entity.type, "  ").concat(notification.entity.name);
-}), _snippetMap);
+}), _snippetMap); // Generate snippet for email composed of the first three notification texts,
+// but limited to 90 characters w/ an ellipsis
+
 var SNIPPET_ELLIPSIS_LENGTH = 90;
 
 var getSnippet = function getSnippet(notifications) {
