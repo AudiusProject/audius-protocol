@@ -48,10 +48,11 @@ const BodyText = ({ text, className }) => (
 export const getUsers = (users) => {
   const [firstUser] = users
   if (users.length > 1) {
+    const userCount = users.length - 1
     return (
       <>
         <HighlightText text={firstUser.name} />
-        <BodyText text={` and ${formatCount(users.length - 1)} other${users.length > 2 ? 's' : ''}`} />
+        <BodyText text={` and ${userCount.toLocaleString()} other${users.length > 2 ? 's' : ''}`} />
       </>
     )
   }
@@ -107,11 +108,13 @@ const notificationMap = {
   [NotificationType.Milestone] (notification) {
     if (notification.entity) {
       const entity = notification.entity.type.toLowerCase()
+      const highlight = notification.entity.name
+      const count = notification.value
       return (
         <span className={'notificationText'}>
           <BodyText text={`Your ${entity} `} />
-          <HighlightText text={notification.entity.name} />
-          <BodyText text={` has reached over ${notification.value} ${notification.achievement}s`} />
+          <HighlightText text={highlight} />
+          <BodyText text={` has reached over ${count.toLocaleString()} ${notification.achievement}s`} />
         </span>
       )
     } else {

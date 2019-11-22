@@ -72,10 +72,11 @@ var getUsers = function getUsers(users) {
       firstUser = _users[0];
 
   if (users.length > 1) {
+    var userCount = users.length - 1;
     return _react["default"].createElement(_react["default"].Fragment, null, _react["default"].createElement(HighlightText, {
       text: firstUser.name
     }), _react["default"].createElement(BodyText, {
-      text: " and ".concat((0, _utils.formatCount)(users.length - 1), " other").concat(users.length > 2 ? 's' : '')
+      text: " and ".concat(userCount.toLocaleString(), " other").concat(users.length > 2 ? 's' : '')
     }));
   }
 
@@ -140,14 +141,16 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
 }), _defineProperty(_notificationMap, NotificationType.Milestone, function (notification) {
   if (notification.entity) {
     var entity = notification.entity.type.toLowerCase();
+    var highlight = notification.entity.name;
+    var count = notification.value;
     return _react["default"].createElement("span", {
       className: 'notificationText'
     }, _react["default"].createElement(BodyText, {
       text: "Your ".concat(entity, " ")
     }), _react["default"].createElement(HighlightText, {
-      text: notification.entity.name
+      text: highlight
     }), _react["default"].createElement(BodyText, {
-      text: " has reached over ".concat(notification.value, " ").concat(notification.achievement, "s")
+      text: " has reached over ".concat(count.toLocaleString(), " ").concat(notification.achievement, "s")
     }));
   } else {
     return _react["default"].createElement(BodyText, {
