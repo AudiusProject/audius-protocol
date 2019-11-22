@@ -139,7 +139,7 @@ class NotificationProcessor {
     // Every hour cron: '0 * * * *'
     this.emailQueue.add(
       { type: 'unreadEmailJob' },
-      { repeat: { cron: '* * * * *' } }
+      { repeat: { cron: '0 * * * *' } }
     )
     let emailQueueCount = await this.emailQueue.count()
     console.log('Email Queue Count: ' + emailQueueCount)
@@ -1136,7 +1136,7 @@ class NotificationProcessor {
 
         // Based on this difference, schedule email for users
         // In prod, this difference must be <1 hour or between midnight - 1am
-        let maxHourDifference = 1.5 // 1.5
+        let maxHourDifference = 20 // 1.5
         // Valid time found
         if (difference < maxHourDifference) {
           console.log(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
