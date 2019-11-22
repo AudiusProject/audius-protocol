@@ -1251,22 +1251,13 @@ class NotificationProcessor {
       const emailParams = {
         from: 'Audius <notify@audius.co>',
         to: `${userEmail}`,
+        bcc: 'audius-email-test@audius.co',
         html: notifHtml,
         subject: emailSubject
       }
 
       // Disable emails for soft launch
-      // await this.sendEmail(emailParams)
-
-      // Temporary debugging email
-      let emailParams2 = emailParams
-      emailParams2['to'] = 'audius-email-test@audius.co'
-      await this.sendEmail(emailParams2)
-
-      emailParams2['subject'] = `TEST - ${emailParams.subject}`
-      emailParams2['to'] = 'forrest@audius.co'
-      emailParams2['bcc'] = 'julian@audius.co'
-      await this.sendEmail(emailParams2)
+      await this.sendEmail(emailParams)
 
       // Cache on file system
       await this.cacheEmail({ renderProps, emailParams })
