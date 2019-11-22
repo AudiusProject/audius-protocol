@@ -48,6 +48,7 @@ class App {
     await new Promise(resolve => {
       server = this.express.listen(this.port, resolve)
     })
+    logger.info(`Listening on port ${this.port}...`)
     await txRelay.fundRelayerIfEmpty()
 
     this.express.set('redis', this.redisClient)
@@ -57,7 +58,6 @@ class App {
       this.express,
       this.redisClient)
 
-    logger.info(`Listening on port ${this.port}...`)
     return { app: this.express, server }
   }
 
