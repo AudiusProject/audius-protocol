@@ -15,10 +15,10 @@ module.exports = function (app) {
       'git': process.env.GIT_SHA,
       'selectedDiscoveryProvider': 'none'
     }
-    if(req.app.get('audiusLibs')){
+    if (req.app.get('audiusLibs')) {
       response.selectedDiscoveryProvider = req.app.get('audiusLibs').discoveryProvider.discoveryProviderEndpoint
     }
-    
+
     return successResponse(response)
   }))
 
