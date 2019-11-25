@@ -393,6 +393,8 @@ jobs:
         type: string
       aws-region:
         type: string
+      deploy-args:
+        type: string
     steps:
       - add_ssh_keys
       - run:
@@ -414,10 +416,10 @@ jobs:
           background: true
           command: tiller -listen=localhost:44134 -storage=secret -logtostderr
       - run:
-          name: deploy environment [ci]
+          name: deploy environment [<< parameters.cluster-name >>]
           command: |
             cd audius-k8s
-            ./ops/scripts/deploy.sh --ci --dapp
+            ./ops/scripts/deploy.py << parameters.deploy-args >>
 
 workflows:
   # test master at midnight daily
@@ -605,5 +607,22 @@ workflows:
           filters:
             tags:
               only: /^@audius/identity-service@\d+\.\d+\.\d+/
+            branches:
+              only: master
+      # DEPLOY MASTER TO CI ENVIRONMENT
+      - deploy:
+          name: deploy-ci
+          cluster-name: audius-ci
+          aws-region: us-west-2
+          deploy-args: ci contracts-1 eth-contracts-1 discovery-1 content-1 creator-1 identity-1 --force-tag $CIRCLE_SHA1
+          requires:
+            - build-libs
+            - build-contracts
+            - build-eth-contracts
+            - build-content-service
+            - build-creator-node
+            - build-discovery-provider
+            - build-identity-service
+          filters:
             branches:
               only: master
