@@ -71,6 +71,33 @@ async function getIPFSPeerId (ipfs, config) {
   return ipfsIDObj
 }
 
+async function ensureMultihashPresent (ipfs, multihash, storagePath) {
+  // Confirm availability by catting single byte locally
+  let timeoutPromise = new Promise((resolve, reject) => {
+    let wait = setTimeout(() => {
+      clearTimeout(wait)
+      console.log(`Failed to retrieve ${multihash}`)
+      resolve('IPFS, cat timeout')
+    }, 200)
+  })
+
+  let ipfsSingleByteCat = new Promise(async (resolve, reject) => {
+    // Cat single byte
+    await ipfs.cat(multihash, { length: 1 })
+    console.log(`Retrieved ${multihash} in <200ms`)
+    resolve('IPFS, cat completed')
+  })
+
+  try {
+    await Promise.race([timeoutPromise, ipfsSingleByteCat])
+  } catch (e) {
+    // Timed out, must re-add from FS
+    let addResp = await ipfs.add(storagePath, { pin: false })
+    console.log(`Re-added ${multihash}, stg path: ${storagePath},  ${addResp}`)
+  }
+}
+
 module.exports = Utils
 module.exports.getFileUUIDForImageCID = getFileUUIDForImageCID
 module.exports.getIPFSPeerId = getIPFSPeerId
+module.exports.ensureMultihashPresent = ensureMultihashPresent
