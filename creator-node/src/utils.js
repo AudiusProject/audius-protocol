@@ -77,7 +77,7 @@ async function ensureMultihashPresent (ipfs, multihash, storagePath) {
     let wait = setTimeout(() => {
       clearTimeout(wait)
       console.log(`Failed to retrieve ${multihash}`)
-      resolve('IPFS, cat timeout')
+      reject(new Error('TIMEOUT'))
     }, 200)
   })
 
@@ -85,11 +85,13 @@ async function ensureMultihashPresent (ipfs, multihash, storagePath) {
     // Cat single byte
     await ipfs.cat(multihash, { length: 1 })
     console.log(`Retrieved ${multihash} in <200ms`)
-    resolve('IPFS, cat completed')
+    resolve('SUCCESS')
   })
 
   try {
-    await Promise.race([timeoutPromise, ipfsSingleByteCat])
+    await Promise.race([
+      timeoutPromise,
+      ipfsSingleByteCat])
   } catch (e) {
     // Timed out, must re-add from FS
     let addResp = await ipfs.add(storagePath, { pin: false })
