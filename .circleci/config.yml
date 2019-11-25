@@ -614,7 +614,7 @@ workflows:
           name: deploy-ci
           cluster-name: audius-ci
           aws-region: us-west-2
-          deploy-args: ci contracts-1 eth-contracts-1 discovery-1 content-1 creator-1 identity-1
+          deploy-args: ci contracts-1 eth-contracts-1 discovery-1 content-1 creator-1 identity-1 --force-tag $CIRCLE_SHA1
           requires:
             - build-libs
             - build-contracts
