@@ -94,7 +94,8 @@ async function ensureMultihashPresent (ipfs, multihash, storagePath) {
       ipfsSingleByteCat])
   } catch (e) {
     // Timed out, must re-add from FS
-    let addResp = await ipfs.add(storagePath, { pin: false })
+    console.log(`Re-adding ${multihash}, stg path: ${storagePath}`)
+    let addResp = await ipfs.addFromFs(storagePath, { pin: false })
     console.log(`Re-added ${multihash}, stg path: ${storagePath},  ${addResp}`)
   }
 }

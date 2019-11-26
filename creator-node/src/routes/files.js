@@ -167,7 +167,7 @@ module.exports = function (app) {
     logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
     // Conditionally re-add from filestorage to IPFS
-    await ensureMultihashPresent(req.app.get('ipfsApi'), CID, queryResults.storagePath)
+    await ensureMultihashPresent(req.app.get('ipfsAPI'), CID, queryResults.storagePath)
 
     try {
       // If client has provided filename, set filename in header to be auto-populated in download prompt.
