@@ -15,7 +15,7 @@ const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const resizeImage = require('../resizeImage')
 const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
-const { getIPFSPeerId, ensureMultihashPresent } = require('../utils')
+const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary } = require('../utils')
 
 module.exports = function (app) {
   /** Store image in multiple-resolutions on disk + DB and make available via IPFS */
@@ -167,7 +167,7 @@ module.exports = function (app) {
     logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
     // Conditionally re-add from filestorage to IPFS
-    await ensureMultihashPresent(req.app.get('ipfsAPI'), CID, queryResults.storagePath)
+    await rehydrateIpfsFromFsIfNecessary(req.app.get('ipfsAPI'), CID, queryResults.storagePath)
 
     try {
       // If client has provided filename, set filename in header to be auto-populated in download prompt.
@@ -204,7 +204,12 @@ module.exports = function (app) {
     }
 
     // Conditionally re-add from filestorage to IPFS
-    await ensureMultihashPresent(req.app.get('ipfsApi'), dirCID, queryResults.storagePath)
+    await rehydrateIpfsFromFsIfNecessary(
+      req.app.get('ipfsAPI'),
+      dirCID,
+      queryResults.storagePath,
+      true,
+      filename)
 
     // TODO - check if file with filename is also stored in CNODE
 

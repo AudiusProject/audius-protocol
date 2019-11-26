@@ -4,7 +4,7 @@ const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError } = require('../apiHelpers')
 const config = require('../config')
-const { getIPFSPeerId } = require('../utils')
+const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary } = require('../utils')
 
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
@@ -18,6 +18,7 @@ module.exports = function (app) {
    *  ipfsIDObj Object containing IPFS Node's peer ID
    * }
    */
+  // TODO: Rehydrate ALL exported files
   app.get('/export', handleResponse(async (req, res) => {
     const walletPublicKeys = req.query.wallet_public_key // array
 
@@ -67,6 +68,19 @@ module.exports = function (app) {
       const ipfs = req.app.get('ipfsAPI')
       let ipfsIDObj = await getIPFSPeerId(ipfs, config)
 
+      // Ensure all relevant files are available through IPFS at export time
+      await Promise.all(files.map(async (file) => {
+        if (file.type === 'track' || file.type === 'metadata' || file.type === 'copy320') {
+          await rehydrateIpfsFromFsIfNecessary(ipfs, file.multihash, file.storagePath)
+        } else if (file.type === 'image') {
+          await rehydrateIpfsFromFsIfNecessary(
+            ipfs,
+            file.multihash,
+            file.storagePath,
+            true,
+            file.sourceFile)
+        }
+      }))
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj: ipfsIDObj })
     } catch (e) {
       await t.rollback()

@@ -1,4 +1,5 @@
 const { recoverPersonalSignature } = require('eth-sig-util')
+const fs = require('fs')
 
 const models = require('./models')
 
@@ -71,36 +72,71 @@ async function getIPFSPeerId (ipfs, config) {
   return ipfsIDObj
 }
 
-async function ensureMultihashPresent (ipfs, multihash, storagePath) {
+async function rehydrateIpfsFromFsIfNecessary (ipfs, multihash, storagePath, isRecursive = false, filename = null) {
+  let ipfsPath = multihash
+  if (filename != null) {
+    // Indicates we are retireving a directory multihash
+    ipfsPath = `${multihash}/${filename}`
+  }
+
   // Confirm availability by catting single byte locally
   let timeoutPromise = new Promise((resolve, reject) => {
     let wait = setTimeout(() => {
       clearTimeout(wait)
-      console.log(`Failed to retrieve ${multihash}`)
+      console.log(`rehydrateIpfsFromFsIfNecessary - Failed to retrieve ${ipfsPath}`)
       reject(new Error('TIMEOUT'))
     }, 200)
   })
 
   let ipfsSingleByteCat = new Promise(async (resolve, reject) => {
     // Cat single byte
-    await ipfs.cat(multihash, { length: 1 })
-    console.log(`Retrieved ${multihash} in <200ms`)
+    await ipfs.cat(ipfsPath, { length: 1 })
+    console.log(`rehydrateIpfsFromFsIfNecessary - Retrieved ${ipfsPath} in <200ms`)
     resolve('SUCCESS')
   })
 
+  let rehydrateNecessary = false
   try {
     await Promise.race([
       timeoutPromise,
       ipfsSingleByteCat])
   } catch (e) {
-    // Timed out, must re-add from FS
-    console.log(`Re-adding ${multihash}, stg path: ${storagePath}`)
-    let addResp = await ipfs.addFromFs(storagePath, { pin: false })
-    console.log(`Re-added ${multihash}, stg path: ${storagePath},  ${addResp}`)
+    rehydrateNecessary = true
+  }
+  if (!rehydrateNecessary) return
+  // Timed out, must re-add from FS
+  if (!filename) {
+    console.log(`rehydrateIpfsFromFsIfNecessary - Re-adding ${multihash}, stg path: ${storagePath}`)
+    let addResp = await ipfs.addFromFs(storagePath, { pin: false, recursive: isRecursive })
+    console.log(`rehydrateIpfsFromFsIfNecessary - Re-added ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
+  } else {
+    console.log(`rehydrateIpfsFromFsIfNecessary - Re-adding ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`)
+    // Add entire directory to recreate original operation
+    // Required to ensure same dirCID as data store
+    let addResp = await ipfs.addFromFs(storagePath, { pin: false, recursive: isRecursive })
+    console.log(`rehydrateIpfsFromFsIfNecessary - Re-added ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
+    let findOriginalFileQuery = await models.File.findAll({
+      where: {
+        storagePath: { [models.Sequelize.Op.like]: `%${multihash}%` },
+        type: 'image'
+      }
+    })
+    let ipfsAddArray = []
+    for (var entry of findOriginalFileQuery) {
+      let sourceFilePath = entry.storagePath
+      let bufferedFile = fs.readFileSync(sourceFilePath)
+      let originalSource = entry.sourceFile
+      ipfsAddArray.push({
+        path: originalSource,
+        content: bufferedFile
+      })
+    }
+    addResp = await ipfs.add(ipfsAddArray, { pin: false })
+    console.log(`rehydrateIpfsFromFsIfNecessary - ${addResp}`)
   }
 }
 
 module.exports = Utils
 module.exports.getFileUUIDForImageCID = getFileUUIDForImageCID
 module.exports.getIPFSPeerId = getIPFSPeerId
-module.exports.ensureMultihashPresent = ensureMultihashPresent
+module.exports.rehydrateIpfsFromFsIfNecessary = rehydrateIpfsFromFsIfNecessary
