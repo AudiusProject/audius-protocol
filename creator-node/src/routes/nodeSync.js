@@ -71,14 +71,20 @@ module.exports = function (app) {
       // Ensure all relevant files are available through IPFS at export time
       await Promise.all(files.map(async (file) => {
         if (file.type === 'track' || file.type === 'metadata' || file.type === 'copy320') {
-          await rehydrateIpfsFromFsIfNecessary(ipfs, file.multihash, file.storagePath)
-        } else if (file.type === 'image') {
           await rehydrateIpfsFromFsIfNecessary(
-            ipfs,
+            req,
+            file.multihash,
+            file.storagePath)
+        } else if (file.type === 'image') {
+          let sourcePath = file.sourceFile
+          if (sourcePath.includes('blob')) {
+            sourcePath = file.sourceFile.split('/')[1]
+          }
+          await rehydrateIpfsFromFsIfNecessary(
+            req,
             file.multihash,
             file.storagePath,
-            true,
-            file.sourceFile)
+            sourcePath)
         }
       }))
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj: ipfsIDObj })

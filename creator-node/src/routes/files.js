@@ -167,7 +167,10 @@ module.exports = function (app) {
     logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
     // Conditionally re-add from filestorage to IPFS
-    await rehydrateIpfsFromFsIfNecessary(req.app.get('ipfsAPI'), CID, queryResults.storagePath)
+    await rehydrateIpfsFromFsIfNecessary(
+      req,
+      CID,
+      queryResults.storagePath)
 
     try {
       // If client has provided filename, set filename in header to be auto-populated in download prompt.
@@ -205,10 +208,9 @@ module.exports = function (app) {
 
     // Conditionally re-add from filestorage to IPFS
     await rehydrateIpfsFromFsIfNecessary(
-      req.app.get('ipfsAPI'),
+      req,
       dirCID,
       queryResults.storagePath,
-      true,
       filename)
 
     // TODO - check if file with filename is also stored in CNODE
