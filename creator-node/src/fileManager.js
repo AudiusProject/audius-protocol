@@ -119,13 +119,8 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
   // If multihash already pinned by local INode, cat file from local ipfs node
   req.logger.info(`checking if ${multihash} already pinned by local ipfs node`)
   try {
-    // TODO: RM this pin
-    const pinset = await ipfs.pin.ls(multihash)
-    if (pinset.includes(multihash)) {
-      req.logger.info(`File for ${multihash} already pinned by local ipfs node`)
-      fileBuffer = await ipfs.cat(multihash)
-      req.logger.info(`Retrieved file for ${multihash} from local ipfs node`)
-    }
+    fileBuffer = await ipfs.cat(multihash)
+    req.logger.info(`Retrieved file for ${multihash} from local ipfs node`)
   } catch (e) {
     req.logger.info(`Multihash ${multihash} is not pinned by local ipfs node`)
   }
@@ -146,11 +141,6 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
   req.logger.info(`writing file to ${storagePath}...`)
   await writeFile(storagePath, fileBuffer)
   req.logger.info(`wrote file to ${storagePath}`)
-
-  // Pin file to local INode.
-  // req.logger.info(`pinning file ${multihash}...`)
-  // await ipfs.pin.add(multihash)
-  // req.logger.info(`\nAdded file: ${multihash} at ${storagePath}`)
 
   return storagePath
 }
