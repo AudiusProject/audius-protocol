@@ -14,7 +14,7 @@
     "lint-fix": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
-    "@audius/libs": "0.11.42",
+    "@audius/libs": "0.11.46",
     "axios": "^0.19.0",
     "body-parser": "^1.18.3",
     "bull": "^3.11.0",

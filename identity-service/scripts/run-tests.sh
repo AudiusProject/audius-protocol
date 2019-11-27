@@ -12,6 +12,7 @@ export ethTokenAddress=''
 export ethRegistryAddress=''
 export registryAddress=''
 export ethOwnerWallet=''
+export isTestRun=true
 export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_identity_service_test"
 export logLevel='debug' #should be error
 
