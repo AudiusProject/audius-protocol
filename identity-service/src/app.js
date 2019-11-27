@@ -44,15 +44,6 @@ class App {
     await this.runMigrations()
     await this.getAudiusAnnouncements()
 
-    let server
-    await new Promise(resolve => {
-      server = this.express.listen(this.port, resolve)
-    })
-    logger.info(`Listening on port ${this.port}...`)
-    await txRelay.fundRelayerIfEmpty()
-
-    this.express.set('redis', this.redisClient)
-
     // exclude these init's if running tests
     if (!config.get('isTestRun')) {
       const audiusInstance = await this.configureAudiusInstance()
@@ -62,6 +53,15 @@ class App {
         this.redisClient
       )
     }
+
+    let server
+    await new Promise(resolve => {
+      server = this.express.listen(this.port, resolve)
+    })
+    logger.info(`Listening on port ${this.port}...`)
+    await txRelay.fundRelayerIfEmpty()
+
+    this.express.set('redis', this.redisClient)
 
     return { app: this.express, server }
   }
