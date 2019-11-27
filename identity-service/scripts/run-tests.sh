@@ -28,7 +28,7 @@ if [ -x "$(command -v psql)" ]; then
 fi
 
  # tests
-./node_modules/mocha/bin/mocha test/index.js --timeout 10000 --exit | bunyan
+./node_modules/mocha/bin/mocha test/index.js --timeout 10000 --exit
 
  # linter
 
