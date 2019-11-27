@@ -320,6 +320,10 @@ jobs:
       # specify the version you desire here
       - image: circleci/node:10.4
       - image: ipfs/go-ipfs:release
+      - image: trufflesuite/ganache-cli:latest
+        # https://discuss.circleci.com/t/docker-using-local-image/11581/9
+        # https://circleci.com/docs/2.0/configuration-reference/#docker
+        command: ["-l", "8000000"]
       - image: circleci/postgres:11.1
         environment:
           POSTGRES_USER: postgres
@@ -335,6 +339,16 @@ jobs:
           condition: << parameters.force >>
           steps:
             - run: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
+      # restores data-contracts
+      - restore_cache:
+          keys:
+          - data-contracts-{{ checksum "contracts/package.json" }}
+          - data-contracts-
+      - run:
+          name: contract repo init
+          command: |
+            cd contracts/
+            npm install
       # Download and cache dependencies
       - restore_cache:
           keys:
