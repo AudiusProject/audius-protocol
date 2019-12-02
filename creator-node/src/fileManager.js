@@ -122,7 +122,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
     fileBuffer = await ipfs.cat(multihash)
     req.logger.info(`Retrieved file for ${multihash} from local ipfs node`)
   } catch (e) {
-    req.logger.info(`Multihash ${multihash} is not pinned by local ipfs node`)
+    req.logger.info(`Multihash ${multihash} is not available on local ipfs node`)
   }
 
   // If file not already pinned by local INode, fetch from IPFS.
@@ -142,6 +142,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
   await writeFile(storagePath, fileBuffer)
   req.logger.info(`wrote file to ${storagePath}`)
 
+  req.logger.info(`\nAdded file: ${multihash} at ${storagePath}`)
   return storagePath
 }
 
