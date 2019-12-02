@@ -29,7 +29,7 @@ async function saveFileFromBuffer (req, buffer, fileType) {
 
   const ipfs = req.app.get('ipfsAPI')
 
-  const multihash = (await ipfs.add(buffer))[0].hash
+  const multihash = (await ipfs.add(buffer, { pin: false }))[0].hash
 
   const dstPath = path.join(req.app.get('storagePath'), multihash)
 
@@ -68,7 +68,7 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
 
   // Adding a file through js-ipfs-api pins by default
   // Ensuring this multihash is available through garbage collection
-  const multihash = (await ipfs.addFromFs(srcPath, { pin: true }))[0].hash
+  const multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
   req.logger.info(`Time taken in saveFileToIpfsFromFS to add: ${Date.now() - codeBlockTimeStart}`)
   codeBlockTimeStart = Date.now()
   const dstPath = path.join(req.app.get('storagePath'), multihash)
@@ -145,11 +145,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
   await writeFile(storagePath, fileBuffer)
   req.logger.info(`wrote file to ${storagePath}`)
 
-  // Pin file to local INode.
-  req.logger.info(`pinning file ${multihash}...`)
-  await ipfs.pin.add(multihash)
   req.logger.info(`\nAdded file: ${multihash} at ${storagePath}`)
-
   return storagePath
 }
 

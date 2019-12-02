@@ -47,7 +47,7 @@ module.exports = function (app) {
           { path: path.join(req.file.originalname, '480x480.jpg'), content: imageBuffer480x480 },
           { path: path.join(req.file.originalname, '150x150.jpg'), content: imageBuffer150x150 },
           { path: path.join(req.file.originalname, 'original.jpg'), content: imageBufferOriginal }
-        ], { pin: true })
+        ], { pin: false })
       } else /** req.body.square == 'false' */ {
         // Resize image to desired resolutions
         const [imageBuffer2000x, imageBuffer640x] = await Promise.all([
@@ -61,7 +61,7 @@ module.exports = function (app) {
           { path: path.join(req.file.originalname, '2000x.jpg'), content: imageBuffer2000x },
           { path: path.join(req.file.originalname, '640x.jpg'), content: imageBuffer640x },
           { path: path.join(req.file.originalname, 'original.jpg'), content: imageBufferOriginal }
-        ], { pin: true })
+        ], { pin: false })
       }
       req.logger.info('ipfs add resp', ipfsAddResp)
 
