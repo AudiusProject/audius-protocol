@@ -4,9 +4,13 @@ const CreatorNode = require('../services/creatorNode')
  * in blocknumber.
  */
 const syncNodeIfBehind = async (libs, endpoint) => {
-  const { isBehind, isConfigured } = await libs.creatorNode.getSyncStatus(endpoint)
-  if (isBehind || !isConfigured) {
-    await libs.creatorNode.syncSecondary(endpoint)
+  try {
+    const { isBehind, isConfigured } = await libs.creatorNode.getSyncStatus(endpoint)
+    if (isBehind || !isConfigured) {
+      await libs.creatorNode.syncSecondary(endpoint)
+    }
+  } catch (e) {
+    console.error(e)
   }
 }
 
