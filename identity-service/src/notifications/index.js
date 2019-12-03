@@ -1230,6 +1230,7 @@ class NotificationProcessor {
       const emailSubject = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''} on Audius`
       if (notificationCount === 0) {
         logger.info(`renderAndSendEmail - 0 notifications detected for user ${userId}, bypassing email`)
+        return
       }
 
       let renderProps = {}
