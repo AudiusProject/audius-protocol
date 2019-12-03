@@ -35,8 +35,8 @@ module.exports = function (app) {
       const timestamp = start.toString()
       const content = Buffer.from(timestamp)
 
-      // Add new buffer created from timestamp
-      const results = await ipfs.add(content)
+      // Add new buffer created from timestamp (without pin)
+      const results = await ipfs.add(content, { pin: false })
       const hash = results[0].hash // "Qm...WW"
 
       // Retrieve and validate hash from local node
@@ -44,8 +44,12 @@ module.exports = function (app) {
       const ipfsRespStr = ipfsResp[0].content.toString()
       const isValidResponse = (ipfsRespStr === timestamp)
 
-      // Unpin hash
-      await ipfs.pin.rm(hash)
+      // Test pin ops if requested
+      if (req.query.pin === 'true') {
+        await ipfs.pin.add(hash)
+        await ipfs.pin.rm(hash)
+      }
+
       const duration = `${Date.now() - start}ms`
       return successResponse({ hash, isValidResponse, duration })
     } catch (e) {
