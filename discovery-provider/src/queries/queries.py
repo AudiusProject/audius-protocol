@@ -163,7 +163,7 @@ def get_tracks_including_unlisted():
         current_user_id = get_current_user_id(required=False)
         extended_tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
-    return api_helpers.success_response(tracks)
+    return api_helpers.success_response(extended_tracks)
 
 
 # Return playlist content in json form
