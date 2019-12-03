@@ -16,7 +16,7 @@ module.exports = function (app) {
       if (!userEvents) throw new Error(`UserEvents for ${walletAddress} not found`)
       return successResponse(userEvents)
     } catch (e) {
-      console.error(e)
+      req.logger.error(e)
       // no-op. No user events.
       return successResponse({})
     }
