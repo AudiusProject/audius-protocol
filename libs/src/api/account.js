@@ -92,12 +92,13 @@ class Account extends Base {
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
       UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES',
-      ADD_USER: 'ADD_USER'
+      ADD_USER: 'ADD_USER',
+      ASSOCIATE_USER: 'ASSOCIATE_USER'
     }
 
     let phase = ''
     try {
-      if (isCreator) {
+      if (isCreator) { // TODO: Why is this necessary any longer?
         if (this.web3Manager.web3IsExternal()) {
           // Creator and external web3 (e.g. MetaMask)
           this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
@@ -157,6 +158,12 @@ class Account extends Base {
           userId = await this.User.addUser(metadata)
         }
       }
+      // Associate user and blockchain ID on identity service
+      phase = phases.ASSOCIATE_USER
+      await this.identityService.associateUserRecordWithBlockchainId(
+        email,
+        this.web3Manager.getWalletAddress(),
+        userId)
     } catch (err) {
       return { error: err.message, phase }
     }

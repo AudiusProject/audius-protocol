@@ -54,7 +54,6 @@ module.exports = function (app) {
           email: email
         }
       })
-
       if (existingUser) {
         return successResponse({ exists: true })
       } else return successResponse({ exists: false })
@@ -83,12 +82,31 @@ module.exports = function (app) {
     return errorResponseBadRequest('Invalid route parameters')
   }))
 
-  /** DEPRECATED */
-
+  /*
+   * Associate blockchain user id with newly created user
+   */
   app.post('/user/associate', handleResponse(async (req, res, next) => {
-    return successResponse()
+    let body = req.body
+    if (body.blockchainUserId && body.username && body.walletAddress) {
+      await models.User.update({
+        blockchainUserId: body.blockchainUserId
+      },
+      {
+        where:
+          {
+            walletAddress: body.walletAddress,
+            email: body.username
+          }
+      })
+      let successMsg = `Associated blockchainUserId ${body.blockchainUserId} with ${body.username}, ${body.walletAddress}`
+      req.logger.info(successMsg)
+      return successResponse(successMsg)
+    } else {
+      return errorResponseBadRequest('Missing one of the required field: blockchainUserId, username, walletAddress')
+    }
   }))
 
+  /** DEPRECATED */
   app.get('/auth_migration', handleResponse(async (req, res, next) => {
     return successResponse()
   }))

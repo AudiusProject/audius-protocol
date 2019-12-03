@@ -239,6 +239,18 @@ class IdentityService {
     })
   }
 
+  async associateUserRecordWithBlockchainId (email, walletAddress, blockchainUserId) {
+    return this._makeRequest({
+      url: '/user/associate',
+      method: 'post',
+      data: {
+        username: email,
+        walletAddress,
+        blockchainUserId
+      }
+    })
+  }
+
   /** Check if beta access password is valid */
   async requestBetaAccess (password) {
     if (password) {
