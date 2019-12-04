@@ -142,7 +142,6 @@ class Web3Manager {
     txGasLimit = DEFAULT_GAS_AMOUNT,
     txRetries = 5
   ) {
-    console.log(contractMethod)
     if (this.useExternalWeb3) {
       return contractMethod.send(
         { from: this.ownerWallet, gas: txGasLimit }
