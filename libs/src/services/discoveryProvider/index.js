@@ -553,11 +553,7 @@ class DiscoveryProvider {
       if ((chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF) {
         const endpoint = await this.autoSelectEndpoint()
         this.setEndpoint(endpoint)
-        throw new Error(
-          `Selected endpoint was too far behind.
-          Indexed: ${indexedBlock}
-          Chain: ${chainBlock}`
-        )
+        throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
       }
 
       return data
