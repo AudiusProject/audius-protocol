@@ -94,7 +94,6 @@ class EthContracts {
   async init () {
     if (!this.ethWeb3Manager || !this.tokenContractAddress || !this.registryAddress) throw new Error('Failed to initialize EthContracts')
 
-    this.expectedServiceVersions = await this.getExpectedServiceVersions()
     if (this.isServer) {
       await Promise.all(this.contractClients.map(client => client.init()))
     }
@@ -181,6 +180,7 @@ class EthContracts {
             } = await axios({ url: urlJoin(discprov.endpoint, 'version'), method: 'get' })
 
             // Compare chain service name
+            this.expectedServiceVersions = await this.getExpectedServiceVersions()
             if (!this.expectedServiceVersions.hasOwnProperty(serviceName)) {
               throw new Error(`Invalid service name: ${serviceName}`)
             }
@@ -307,6 +307,7 @@ class EthContracts {
           let versionInfo = response['data']
           let serviceName = versionInfo['service']
           let serviceVersion = versionInfo['version']
+          this.expectedServiceVersions = await this.getExpectedServiceVersions()
           if (!this.expectedServiceVersions.hasOwnProperty(serviceName)) {
             console.log(`Invalid service name: ${serviceName}`)
             continue
