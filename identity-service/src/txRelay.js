@@ -43,8 +43,10 @@ const sendTransaction = async (
       encodedABI: encodedABI // this should always be unique because of the nonce / sig
     }
   })
+
+  // if this transaction has already been submitted before and succeeded, send this receipt
   if (existingTx) {
-    throw new Error('Transaction has already been submitted')
+    return existingTx.receipt
   }
 
   const contractName = contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
