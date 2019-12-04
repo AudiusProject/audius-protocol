@@ -94,7 +94,6 @@ class EthContracts {
   async init () {
     if (!this.ethWeb3Manager || !this.tokenContractAddress || !this.registryAddress) throw new Error('Failed to initialize EthContracts')
 
-    // this.expectedServiceVersions = await this.getExpectedServiceVersions()
     if (this.isServer) {
       await Promise.all(this.contractClients.map(client => client.init()))
     }
