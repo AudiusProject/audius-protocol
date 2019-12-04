@@ -3,6 +3,8 @@ const _ = require('lodash')
 
 const Utils = require('../../utils')
 
+const UNHEALTHY_BLOCK_DIFF = 20
+
 // TODO - webpack workaround. find a way to do this without checkout for .default property
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
@@ -542,8 +544,25 @@ class DiscoveryProvider {
 
     try {
       const response = await axios(axiosRequest)
-      return Utils.parseDataFromResponse(response)['data']
+      const {
+        data,
+        latest_indexed_block: indexedBlock,
+        latest_chain_block: chainBlock
+      } = Utils.parseDataFromResponse(response)
+
+      if ((chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF) {
+        const endpoint = await this.autoSelectEndpoint()
+        this.setEndpoint(endpoint)
+        throw new Error(
+          `Selected endpoint was too far behind.
+          Indexed: ${indexedBlock}
+          Chain: ${chainBlock}`
+        )
+      }
+
+      return data
     } catch (e) {
+      console.error(e)
       if (retries > 0) {
         return this._makeRequest(requestObj, retries - 1)
       }
