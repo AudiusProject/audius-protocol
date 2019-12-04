@@ -45,6 +45,7 @@ def get_users():
             wallet = wallet.lower()
             if len(wallet) == 42:
                 base_query = base_query.filter_by(wallet=wallet)
+                base_query = base_query.order_by(asc(User.created_at))
             else:
                 logger.warning("Invalid wallet length")
         if "handle" in request.args:

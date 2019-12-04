@@ -12,7 +12,7 @@ const notifDiscProv = config.get('notificationDiscoveryProvider')
  * @param {string} walletAddress
  * @returns {object} User Metadata object
  */
-const queryDiscprovForUserId = async (walletAddress) => {
+const queryDiscprovForUserId = async (walletAddress, handle) => {
   const response = await axios({
     method: 'get',
     url: `${notifDiscProv}/users`,
@@ -29,11 +29,8 @@ const queryDiscprovForUserId = async (walletAddress) => {
     const [user] = response.data.data
     return user
   } else {
-    let userInfo = await models.User.findOne({
-      where: { walletAddress }
-    })
     for (let respUser of usersList) {
-      if (respUser.handle === userInfo.handle) {
+      if (respUser.handle === handle) {
         return respUser
       }
     }
@@ -50,6 +47,7 @@ async function authMiddleware (req, res, next) {
   try {
     const encodedDataMessage = req.get('Encoded-Data-Message')
     const signature = req.get('Encoded-Data-Signature')
+    const handle = req.query.handle
 
     if (!encodedDataMessage) throw new Error('[Error]: Encoded data missing')
     if (!signature) throw new Error('[Error]: Encoded data signature missing')
@@ -65,7 +63,7 @@ async function authMiddleware (req, res, next) {
       req.user = user
       next()
     } else {
-      const discprovUser = await queryDiscprovForUserId(walletAddress)
+      const discprovUser = await queryDiscprovForUserId(walletAddress, handle)
       await user.update({ blockchainUserId: discprovUser.user_id })
       req.user = user
       next()
