@@ -1,6 +1,23 @@
+const _ = require('lodash')
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
 const CreatorNode = require('../services/creatorNode')
+
+const USER_PROPS = [
+  'is_creator',
+  'is_verified',
+  'name',
+  'handle',
+  'profile_picture_sizes',
+  'cover_photo_sizes',
+  'bio',
+  'location',
+  'creator_node_endpoint'
+]
+const USER_REQUIRED_PROPS = [
+  'name',
+  'handle'
+]
 
 class Users extends Base {
   /* ------- GETTERS ------- */
@@ -137,21 +154,21 @@ class Users extends Base {
    */
   async addUser (metadata) {
     this.IS_OBJECT(metadata)
-    this._validateUserMetadata(metadata)
+    const newMetadata = this._cleanUserMetadata(metadata)
+    this._validateUserMetadata(newMetadata)
 
-    metadata.wallet = this.web3Manager.getWalletAddress()
-    metadata.isCreator = false
+    newMetadata.wallet = this.web3Manager.getWalletAddress()
 
     let userId
     const currentUser = this.userStateManager.getCurrentUser()
     if (currentUser && currentUser.handle) {
       userId = currentUser.user_id
     } else {
-      userId = (await this.contracts.UserFactoryClient.addUser(metadata.handle)).userId
+      userId = (await this.contracts.UserFactoryClient.addUser(newMetadata.handle)).userId
     }
-    await this._addUserOperations(userId, metadata)
+    await this._addUserOperations(userId, newMetadata)
 
-    this.userStateManager.setCurrentUser({ ...metadata })
+    this.userStateManager.setCurrentUser({ ...newMetadata })
     return userId
   }
 
@@ -163,15 +180,16 @@ class Users extends Base {
   async updateUser (userId, metadata) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
-    this._validateUserMetadata(metadata)
+    const newMetadata = this._cleanUserMetadata(metadata)
+    this._validateUserMetadata(newMetadata)
 
     // Retrieve the current user metadata
     let users = await this.discoveryProvider.getUsers(1, 0, [userId], null, null, false, null)
     if (!users || !users[0]) throw new Error(`Cannot update user because no current record exists for user id ${userId}`)
 
     const oldMetadata = users[0]
-    await this._updateUserOperations(metadata, oldMetadata, userId)
-    this.userStateManager.setCurrentUser({ ...oldMetadata, ...metadata })
+    await this._updateUserOperations(newMetadata, oldMetadata, userId)
+    this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
   }
 
   /**
@@ -183,7 +201,8 @@ class Users extends Base {
   async addCreator (metadata) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.IS_OBJECT(metadata)
-    this._validateUserMetadata(metadata)
+    const newMetadata = this._cleanUserMetadata(metadata)
+    this._validateUserMetadata(newMetadata)
 
     // We only support one user per creator node / libs instance
     const user = this.userStateManager.getCurrentUser()
@@ -191,25 +210,25 @@ class Users extends Base {
       throw new Error('User already created for creator node / libs instance')
     }
 
-    metadata.wallet = this.web3Manager.getWalletAddress()
-    metadata.is_creator = true
-    metadata.creator_node_endpoint = this.creatorNode.getEndpoint()
+    newMetadata.wallet = this.web3Manager.getWalletAddress()
+    newMetadata.is_creator = true
+    newMetadata.creator_node_endpoint = this.creatorNode.getEndpoint()
 
     // Upload metadata
     const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
-      metadata
+      newMetadata
     )
     // Write metadata to chain
     const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
     const { userId, txReceipt } = await this.contracts.UserFactoryClient.addUser(
-      metadata.handle
+      newMetadata.handle
     )
     await this.contracts.UserFactoryClient.updateMultihash(userId, multihashDecoded.digest)
-    const { latestBlockNumber } = await this._addUserOperations(userId, metadata)
+    const { latestBlockNumber } = await this._addUserOperations(userId, newMetadata)
     // Associate the user id with the metadata and block number
     await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
 
-    this.userStateManager.setCurrentUser({ ...metadata })
+    this.userStateManager.setCurrentUser({ ...newMetadata })
     return userId
   }
 
@@ -218,9 +237,10 @@ class Users extends Base {
    * @param {number} userId
    * @param {Object} metadata
    */
-  async updateCreator (userId, newMetadata) {
+  async updateCreator (userId, metadata) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
-    this.IS_OBJECT(newMetadata)
+    this.IS_OBJECT(metadata)
+    const newMetadata = this._cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
 
     const user = this.userStateManager.getCurrentUser()
@@ -268,7 +288,8 @@ class Users extends Base {
 
     const userId = user.user_id
     const oldMetadata = { ...user }
-    const newMetadata = { ...user }
+    const newMetadata = this._cleanUserMetadata({ ...user })
+    this._validateUserMetadata(newMetadata)
 
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.is_creator = true
@@ -425,22 +446,11 @@ class Users extends Base {
   }
 
   _validateUserMetadata (metadata) {
-    const props = [
-      'is_creator',
-      'is_verified',
-      'name',
-      'handle',
-      'profile_picture_sizes',
-      'cover_photo_sizes',
-      'bio',
-      'location',
-      'creator_node_endpoint'
-    ]
-    const requiredProps = [
-      'name',
-      'handle'
-    ]
-    this.OBJECT_HAS_PROPS(metadata, props, requiredProps)
+    this.OBJECT_HAS_PROPS(metadata, USER_PROPS, USER_REQUIRED_PROPS)
+  }
+
+  _cleanUserMetadata (metadata) {
+    return _.pick(metadata, USER_PROPS.concat('user_id'))
   }
 }
 

@@ -3,6 +3,23 @@ const CreatorNode = require('../services/creatorNode')
 const Utils = require('../utils')
 const retry = require('async-retry')
 
+const TRACK_PROPS = [
+  'owner_id',
+  'title',
+  'length',
+  'cover_art_sizes',
+  'tags',
+  'genre',
+  'mood',
+  'credits_splits',
+  'release_date',
+  'file_type'
+]
+const TRACK_REQUIRED_PROPS = [
+  'owner_id',
+  'title'
+]
+
 class Tracks extends Base {
   /* ------- GETTERS ------- */
 
@@ -412,23 +429,7 @@ class Tracks extends Base {
   /* ------- PRIVATE  ------- */
 
   _validateTrackMetadata (metadata) {
-    const props = [
-      'owner_id',
-      'title',
-      'length',
-      'cover_art_sizes',
-      'tags',
-      'genre',
-      'mood',
-      'credits_splits',
-      'release_date',
-      'file_type'
-    ]
-    const requiredProps = [
-      'owner_id',
-      'title'
-    ]
-    this.OBJECT_HAS_PROPS(metadata, props, requiredProps)
+    this.OBJECT_HAS_PROPS(metadata, TRACK_PROPS, TRACK_REQUIRED_PROPS)
   }
 }
 
