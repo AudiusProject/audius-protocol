@@ -227,9 +227,9 @@ class ContentReplicator {
     if (!file) {
       logger.info(`${type}ID ${objectID} - Adding ${multihash}...`)
       try {
-        let multihashReadableStream = await this.ipfs.catReadableStream(multihash)
-        let addResults = await this.ipfs.addReadableStream(multihashReadableStream)
-        logger.info(addResults)
+        let multihashCat = await this.ipfs.cat(multihash)
+        logger.info(`${type}ID ${objectID} - Adding ${multihash}...`)
+        await this.ipfs.add(multihashCat, { pin: false })
       } catch (e) {
         logger.error(`Error adding ${multihash} - ${e}`)
       }
