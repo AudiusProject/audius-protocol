@@ -157,7 +157,7 @@ def get_tracks_including_unlisted():
         # Perform the query
         query_results = paginate_query(base_query).all()
         tracks = helpers.query_result_to_list(query_results)
-        track_ids = map(lambda track: track["track_id"], tracks)
+        track_ids = list(map(lambda track: track["track_id"], tracks))
 
         # Populate metadata
         current_user_id = get_current_user_id(required=False)
