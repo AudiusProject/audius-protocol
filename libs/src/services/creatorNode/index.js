@@ -379,11 +379,15 @@ class CreatorNode {
 
     axiosRequestObj.baseURL = this.creatorNodeEndpoint
 
-    const resp = await axios(axiosRequestObj)
-    if (resp.status === 200) {
+    // Axios throws for non-200 responses
+    try {
+      const resp = await axios(axiosRequestObj)
       return resp.data
-    } else {
-      throw new Error(`Server returned error: ${resp.status.toString()} ${resp.data['error']}`)
+    } catch (e) {
+      if (e.response && e.response.data && e.response.data.error) {
+        throw new Error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
+      }
+      throw e
     }
   }
 

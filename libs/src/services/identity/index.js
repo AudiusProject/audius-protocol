@@ -276,19 +276,16 @@ class IdentityService {
 
   async _makeRequest (axiosRequestObj) {
     axiosRequestObj.baseURL = this.identityServiceEndpoint
+
+    // Axios throws for non-200 responses
     try {
       const resp = await axios(axiosRequestObj)
-      if (resp.status === 200) {
-        return resp.data
-      } else {
-        throw new Error(
-          `Server returned error: ${resp.status.toString()} ${resp.data['error']}`
-        )
-      }
+      return resp.data
     } catch (e) {
-      throw new Error(
-        `Server returned error: ${e.response.status.toString()} ${e.response.data['error']}`
-      )
+      if (e.response && e.response.data && e.response.data.error) {
+        throw new Error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
+      }
+      throw e
     }
   }
 }
