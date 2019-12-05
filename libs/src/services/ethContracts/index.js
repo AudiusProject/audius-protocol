@@ -27,7 +27,7 @@ const VersioningFactoryRegistryKey = 'VersioningFactory'
 const ServiceProviderFactoryRegistryKey = 'ServiceProviderFactory'
 const OwnedUpgradeabilityProxyKey = 'OwnedUpgradeabilityProxy'
 
-const DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-provider-timestamp'
+export const DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-provider-timestamp'
 // When to time out the cached discovery provider
 const DISCOVERY_PROVIDER_RESELECT_TIMEOUT = 1 /* min */ * 60 /* seconds */ * 1000 /* millisec */
 // How often to make sure the cached discovery provider is fresh
