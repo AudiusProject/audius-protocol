@@ -2,12 +2,21 @@ const axios = require('axios')
 const _ = require('lodash')
 
 const Utils = require('../../utils')
+const { DISCOVERY_PROVIDER_TIMESTAMP } = require('../ethContracts')
 
-const UNHEALTHY_BLOCK_DIFF = 20
+const UNHEALTHY_BLOCK_DIFF = 50
 
 // TODO - webpack workaround. find a way to do this without checkout for .default property
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
+
+let localStorage
+if (typeof window === 'undefined' || window === null) {
+  const LocalStorage = require('node-localstorage').LocalStorage
+  localStorage = new LocalStorage('./local-storage')
+} else {
+  localStorage = window.localStorage
+}
 
 class DiscoveryProvider {
   constructor (autoselect, whitelist, userStateManager, ethContracts, web3Manager) {
@@ -511,7 +520,7 @@ class DiscoveryProvider {
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
   // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, retries = 2) {
+  async _makeRequest (requestObj, retries = 4) {
     if (!this.discoveryProviderEndpoint) {
       await this.autoSelectEndpoint()
     }
@@ -560,6 +569,9 @@ class DiscoveryProvider {
           !indexedBlock ||
           (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
         ) {
+          // Clear any cached discprov
+          localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
+          // Select a new one
           const endpoint = await this.autoSelectEndpoint()
           this.setEndpoint(endpoint)
           throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
