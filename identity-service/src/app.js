@@ -98,7 +98,7 @@ class App {
 
   setMiddleware () {
     this.express.use(loggingMiddleware)
-    this.express.use(bodyParser.json())
+    this.express.use(bodyParser.json({ limit: '10mb' }))
     this.express.use(cors())
   }
 
