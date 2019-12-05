@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 ######## HELPER FUNCTIONS ########
 def update_trending_cache(self, db, redis, time):
-    resp = generate_trending(db, time, None, 200, 0)
+    resp = generate_trending(db, time, None, 1000, 0)
     resp_json = json.dumps(resp)
     redis_key = f"trending-{time}"
     # Cache value for 5 minutes
