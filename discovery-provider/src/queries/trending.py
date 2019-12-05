@@ -2,7 +2,6 @@ import logging # pylint: disable=C0302
 import redis
 import json
 import sqlalchemy
-from sqlalchemy import func
 
 from flask import Blueprint, request
 from urllib.parse import urljoin, unquote
@@ -38,7 +37,6 @@ def trending(time):
             json_cache = json.loads(redis_cache_value.decode('utf-8'))
             if json_cache is not None:
                 num_cached_entries = len(json_cache['listen_counts'])
-                logger.error(num_cached_entries)
                 if limit <= num_cached_entries:
                     json_cache['listen_counts'] = json_cache['listen_counts'][offset:limit]
                     logger.error(f'Returning cache for {redis_key}')
