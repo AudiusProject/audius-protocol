@@ -18,6 +18,11 @@ def success_response(response_entity=None, status=200):
     }
 
     response_dictionary['success'] = True
-    response_dictionary['latest_indexed_block'] = int(redis.get(most_recent_indexed_block_redis_key))
-    response_dictionary['latest_chain_block'] = int(redis.get(latest_block_redis_key))
+
+    latest_indexed_block = redis.get(most_recent_indexed_block_redis_key)
+    latest_chain_block = redis.get(latest_block_redis_key)
+    
+    response_dictionary['latest_indexed_block'] = (int(latest_indexed_block) if latest_indexed_block else None)
+    response_dictionary['latest_chain_block'] = (int(latest_chain_block) if latest_chain_block else None)
+    
     return jsonify(response_dictionary), status
