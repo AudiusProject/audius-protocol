@@ -544,19 +544,29 @@ class DiscoveryProvider {
 
     try {
       const response = await axios(axiosRequest)
-      const {
-        data,
-        latest_indexed_block: indexedBlock,
-        latest_chain_block: chainBlock
-      } = Utils.parseDataFromResponse(response)
+      const parsedResponse = Utils.parseDataFromResponse(response)
 
-      if ((chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF) {
-        const endpoint = await this.autoSelectEndpoint()
-        this.setEndpoint(endpoint)
-        throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
+      if (
+        'latest_indexed_block' in parsedResponse &&
+        'latest_chain_block' in parsedResponse
+      ) {
+        const {
+          latest_indexed_block: indexedBlock,
+          latest_chain_block: chainBlock
+        } = parsedResponse
+
+        if (
+          !chainBlock ||
+          !indexedBlock ||
+          (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
+        ) {
+          const endpoint = await this.autoSelectEndpoint()
+          this.setEndpoint(endpoint)
+          throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
+        }
       }
 
-      return data
+      return parsedResponse.data
     } catch (e) {
       console.error(e)
       if (retries > 0) {
