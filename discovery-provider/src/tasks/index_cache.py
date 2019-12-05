@@ -1,34 +1,37 @@
 import logging
 import json
 from src.tasks.celery_app import celery
-from src.tasks.generate_trending import generate_trending
+from src.tasks.generate_trending import generate_trending, trending_cache_hits_key, \
+        trending_cache_miss_key, trending_cache_total_key
 
 logger = logging.getLogger(__name__)
 
 
 ######## HELPER FUNCTIONS ########
-
-
 def update_trending_cache(self, db, redis, time):
-    logger.error(f"index_cache.py | Update trending cache {time}")
-    resp = generate_trending(db, time, None, 100, 0)
+    resp = generate_trending(db, time, None, 200, 0)
     resp_json = json.dumps(resp)
     redis_key = f"trending-{time}"
-    logger.error(redis_key)
-    redis.set(redis_key, resp_json)
-
-
+    # Cache value for 5 minutes
+    redis.set(redis_key, resp_json, 300)
+    logger.warning(f"index_cache.py | Updated trending cache {redis_key}")
 
 # Update cache for all trending timeframes
 def update_all_trending_cache(self, db, redis):
-    logger.error(f"index_cache.py | Update all trending cache")
+    logger.warning(f"index_cache.py | Update all trending cache")
     update_trending_cache(self, db, redis, "day")
     update_trending_cache(self, db, redis, "week")
     update_trending_cache(self, db, redis, "month")
     update_trending_cache(self, db, redis, "year")
 
-######## CELERY TASKS ########
+def print_cache_statistics(self, redis):
+    total = redis.get(trending_cache_total_key)
+    hits = redis.get(trending_cache_hits_key)
+    misses = redis.get(trending_cache_miss_key)
+    logger.warning(f"index_cache.py | Trending cache - {hits}  hits, {misses} misses, {total} total")
 
+
+######## CELERY TASKS ########
 @celery.task(name="update_discovery_cache", bind=True)
 def update_discovery_cache(self):
     # Cache custom task class properties
@@ -45,6 +48,7 @@ def update_discovery_cache(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             update_all_trending_cache(self, db, redis)
+            print_cache_statistics(self, redis)
         else:
             logger.info("index_cache.py | Failed to acquire update_discovery_lock")
     except Exception as e:

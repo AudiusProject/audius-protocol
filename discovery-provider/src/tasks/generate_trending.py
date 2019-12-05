@@ -11,6 +11,10 @@ from src.queries.query_helpers import get_repost_counts, get_save_counts, get_ge
 
 logger = logging.getLogger(__name__)
 
+trending_cache_hits_key = 'trending_cache_hits'
+trending_cache_miss_key = 'trending_cache_miss'
+trending_cache_total_key = 'trending_cache_total'
+
 def generate_trending(db, time, genre, limit, offset):
     identity_url = shared_config['discprov']['identity_service_url']
     identity_trending_endpoint = urljoin(identity_url, f"/tracks/trending/{time}")

@@ -265,7 +265,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "update_cache": {
                 "task": "update_discovery_cache",
-                "schedule": timedelta(seconds=5)
+                "schedule": timedelta(seconds=60)
             }
         },
         task_serializer="json",
