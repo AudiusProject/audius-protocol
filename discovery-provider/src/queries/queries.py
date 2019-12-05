@@ -112,6 +112,8 @@ def get_tracks():
             )
 
         # Allow filtering of deleted tracks
+        # Note: There is no standard for boolean url parameters, and any value (including 'false')
+        # will be evaluated as true, so an explicit check is made for true
         if "filter_deleted" in request.args:
             filter_deleted = request.args.get("filter_deleted")
             if (filter_deleted.lower() == 'true'):
