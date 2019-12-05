@@ -107,7 +107,8 @@ class UserFactoryClient extends ContractClient {
   }
 
   async updateLocation (userId, location) {
-    Utils.checkStrLen(location, 32, /* minLen */ 0)
+    const maxLength = 32
+    Utils.checkStrLen(location, maxLength, /* minLen */ 0)
 
     const [nonce, sig] = await this.getUpdateNonceAndSig(
       signatureSchemas.generators.getUpdateUserLocationRequestData,
@@ -116,7 +117,7 @@ class UserFactoryClient extends ContractClient {
     )
     const method = await this.getMethod('updateLocation',
       userId,
-      Utils.padRight(Utils.utf8ToHex(location)),
+      Utils.padRight(Utils.utf8ToHex(location), maxLength * 2),
       nonce,
       sig
     )

@@ -23,8 +23,8 @@ class Utils {
     return Web3.utils.utf8ToHex(utf8Str)
   }
 
-  static padRight (hexStr) {
-    return Web3.utils.padRight(hexStr, 64)
+  static padRight (hexStr, size) {
+    return Web3.utils.padRight(hexStr, size)
   }
 
   static hexToUtf8 (hexStr) {
