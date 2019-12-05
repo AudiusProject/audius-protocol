@@ -33,6 +33,9 @@ if [[ "$1" == 'up' ]]; then
     SWARM_PORT=$4
   fi
 
+  # Remove container if already present
+  docker rm $CONTAINER_NAME
+
   if [[ -z "$5" ]]; then
     docker run -d --name $CONTAINER_NAME -p 127.0.0.1:$API_PORT:5001 -p 127.0.0.1:$SWARM_PORT:4001 ipfs/go-ipfs:release daemon
   else
