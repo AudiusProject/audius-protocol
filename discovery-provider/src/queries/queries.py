@@ -113,10 +113,11 @@ def get_tracks():
 
         # Allow filtering of deleted tracks
         if "filter_deleted" in request.args:
-            base_query = base_query.filter(
-                Track.is_delete == False
-            )
-
+            filter_deleted = request.args.get("filter_deleted")
+            if (filter_deleted.lower() == 'true'):
+                base_query = base_query.filter(
+                    Track.is_delete == False
+                )
 
         if "min_block_number" in request.args:
             min_block_number = request.args.get("min_block_number", type=int)
