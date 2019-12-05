@@ -7,7 +7,8 @@ from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.playlists import playlist_state_update
 from src.tasks.user_library import user_library_state_update
-from src.utils.helpers import get_ipfs_info_from_cnode_endpoint, latest_block_redis_key, latest_block_hash_redis_key, most_recent_indexed_block_redis_key
+from src.utils.helpers import get_ipfs_info_from_cnode_endpoint, latest_block_redis_key, \
+    latest_block_hash_redis_key, most_recent_indexed_block_redis_key
 
 logger = logging.getLogger(__name__)
 
@@ -125,9 +126,6 @@ def index_blocks(self, db, blocks_list):
             former_current_block.is_current = False
             session.add(block_model)
 
-            # add the current block to redis
-            redis.set(most_recent_indexed_block_redis_key, block.number)
-
             user_factory_txs = []
             track_factory_txs = []
             social_feature_factory_txs = []
@@ -228,6 +226,9 @@ def index_blocks(self, db, blocks_list):
             if playlist_state_changed:
                 session.execute("REFRESH MATERIALIZED VIEW playlist_lexeme_dict")
                 session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict")
+            
+        # add the block number of the most recently processed block to redis
+        redis.set(most_recent_indexed_block_redis_key, block.number)
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
@@ -399,6 +400,8 @@ def revert_blocks(self, db, revert_blocks_list):
             session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict")
         if rebuild_user_index:
             session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict")
+
+    # TODO - if we enable revert, need to set the most_recent_indexed_block_redis_key key in redis 
 
 
 ######## IPFS PEER REFRESH ########
