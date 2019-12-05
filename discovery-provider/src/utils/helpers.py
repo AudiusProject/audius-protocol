@@ -177,10 +177,6 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
         except Exception as e:  # pylint: disable=broad-except
             logger.warning(f"Error connecting to {cnode_url}, {e}")
 
-latest_block_redis_key = 'latest_block_from_chain'
-latest_block_hash_redis_key = 'latest_blockhash_from_chain'
-most_recent_indexed_block_redis_key = 'most_recently_indexed_block_from_db'
-
 # Constructs a track's route_id from an unsanitized title and handle.
 # Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
 def create_track_route_id(title, handle):

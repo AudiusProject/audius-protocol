@@ -1,8 +1,7 @@
 from flask import jsonify
 import redis
 from src.utils.config import shared_config
-from src.utils.helpers import latest_block_redis_key, most_recent_indexed_block_redis_key
-
+from src.utils.redis_constants import latest_block_redis_key, most_recent_indexed_block_redis_key
 
 redis_url = shared_config["redis"]["url"]
 redis = redis.Redis.from_url(url=redis_url)
