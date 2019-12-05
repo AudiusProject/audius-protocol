@@ -3,8 +3,7 @@ const _ = require('lodash')
 
 const Utils = require('../../utils')
 
-const UNHEALTHY_BLOCK_DIFF = 50
-const DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-provider-timestamp'
+const { DISCOVERY_PROVIDER_TIMESTAMP, UNHEALTHY_BLOCK_DIFF } = require('./constants')
 
 // TODO - webpack workaround. find a way to do this without checkout for .default property
 let urlJoin = require('proper-url-join')
