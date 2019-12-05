@@ -482,6 +482,7 @@ def update_task(self):
             refresh_peer_connections(self)
 
             logger.debug(f"index.py | update_task | Acquired disc_prov_lock")
+            return # TODO: REMOVE THIS BEFORE MERGE
             initialize_blocks_table_if_necessary(db)
 
             latest_block = get_latest_block(db)
