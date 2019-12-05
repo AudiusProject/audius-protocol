@@ -27,11 +27,12 @@ const VersioningFactoryRegistryKey = 'VersioningFactory'
 const ServiceProviderFactoryRegistryKey = 'ServiceProviderFactory'
 const OwnedUpgradeabilityProxyKey = 'OwnedUpgradeabilityProxy'
 
-const DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-provider-timestamp'
-// When to time out the cached discovery provider
-const DISCOVERY_PROVIDER_RESELECT_TIMEOUT = 1 /* min */ * 60 /* seconds */ * 1000 /* millisec */
-// How often to make sure the cached discovery provider is fresh
-const DISCOVERY_PROVIDER_TIMESTAMP_INTERVAL = 5000
+const {
+  DISCOVERY_PROVIDER_TIMESTAMP,
+  UNHEALTHY_BLOCK_DIFF,
+  DISCOVERY_PROVIDER_TIMESTAMP_INTERVAL,
+  DISCOVERY_PROVIDER_RESELECT_TIMEOUT
+} = require('../discoveryProvider/constants')
 
 const serviceType = Object.freeze({
   DISCOVERY_PROVIDER: 'discovery-provider',
@@ -174,7 +175,13 @@ class EthContracts {
         discoveryProviders.map(async (discprov) => {
           try {
             const healthResp = await axios({ url: urlJoin(discprov.endpoint, 'health_check'), method: 'get' })
-            if (healthResp.status !== 200) throw new Error(`Discprov healthcheck failed ${discprov.endpoint}`)
+            const { status, block_difference: blockDiff } = healthResp
+            if (
+              status !== 200 ||
+              blockDiff > UNHEALTHY_BLOCK_DIFF
+            ) {
+              throw new Error(`Discprov healthcheck failed ${discprov.endpoint}`)
+            }
 
             const {
               data: { service: serviceName, version: serviceVersion }
