@@ -47,6 +47,7 @@ class EthContracts {
     this.tokenContractAddress = tokenContractAddress
     this.registryAddress = registryAddress
     this.isServer = isServer
+    this.expectedServiceVersions = null
 
     this.AudiusTokenClient = new AudiusTokenClient(
       this.ethWeb3Manager,
@@ -180,7 +181,9 @@ class EthContracts {
             } = await axios({ url: urlJoin(discprov.endpoint, 'version'), method: 'get' })
 
             // Compare chain service name
-            this.expectedServiceVersions = await this.getExpectedServiceVersions()
+            if (!this.expectedServiceVersions) {
+              this.expectedServiceVersions = await this.getExpectedServiceVersions()
+            }
             if (!this.expectedServiceVersions.hasOwnProperty(serviceName)) {
               throw new Error(`Invalid service name: ${serviceName}`)
             }
@@ -307,7 +310,9 @@ class EthContracts {
           let versionInfo = response['data']
           let serviceName = versionInfo['service']
           let serviceVersion = versionInfo['version']
-          this.expectedServiceVersions = await this.getExpectedServiceVersions()
+          if (!this.expectedServiceVersions) {
+            this.expectedServiceVersions = await this.getExpectedServiceVersions()
+          }
           if (!this.expectedServiceVersions.hasOwnProperty(serviceName)) {
             console.log(`Invalid service name: ${serviceName}`)
             continue
@@ -344,7 +349,9 @@ class EthContracts {
   }
 
   async selectDiscoveryProvider (whitelist = null) {
-    this.expectedServiceVersions = await this.getExpectedServiceVersions()
+    if (!this.expectedServiceVersions) {
+      this.expectedServiceVersions = await this.getExpectedServiceVersions()
+    }
     let discoveryProviderEndpoint = await this.selectLatestServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
 
     if (discoveryProviderEndpoint == null) {

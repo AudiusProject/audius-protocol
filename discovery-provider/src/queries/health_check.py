@@ -10,7 +10,7 @@ from src.models import Block
 from src.utils import helpers
 from src.utils.db_session import get_db
 from src.utils.config import shared_config
-from src.utils.helpers import latest_block_redis_key, latest_block_hash_redis_key
+from src.utils.redis_constants import latest_block_redis_key, latest_block_hash_redis_key
 
 
 logger = logging.getLogger(__name__)
