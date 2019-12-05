@@ -23,6 +23,10 @@ class Utils {
     return Web3.utils.utf8ToHex(utf8Str)
   }
 
+  static padRight (hexStr) {
+    return Web3.utils.padRight(hexStr, 64)
+  }
+
   static hexToUtf8 (hexStr) {
     return Web3.utils.hexToUtf8(hexStr)
   }
@@ -32,7 +36,7 @@ class Utils {
   }
 
   static checkStrLen (str, maxLen, minLen = 1) {
-    if (!str || str.length > maxLen || str.length < minLen) {
+    if (str === undefined || str === null || str.length > maxLen || str.length < minLen) {
       throw new Error(`String must be between ${minLen}-${maxLen} characters`)
     }
   }
