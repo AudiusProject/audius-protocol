@@ -111,6 +111,16 @@ def get_tracks():
                 Track.owner_id == user_id
             )
 
+        # Allow filtering of deleted tracks
+        # Note: There is no standard for boolean url parameters, and any value (including 'false')
+        # will be evaluated as true, so an explicit check is made for true
+        if "filter_deleted" in request.args:
+            filter_deleted = request.args.get("filter_deleted")
+            if (filter_deleted.lower() == 'true'):
+                base_query = base_query.filter(
+                    Track.is_delete == False
+                )
+
         if "min_block_number" in request.args:
             min_block_number = request.args.get("min_block_number", type=int)
             base_query = base_query.filter(

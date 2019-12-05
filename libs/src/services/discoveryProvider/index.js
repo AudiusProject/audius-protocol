@@ -116,6 +116,8 @@ class DiscoveryProvider {
    * @param {Object} idsArray
    * @param {number} targetUserId the owner of the tracks being queried
    * @param {string} sort a string of form eg. blocknumber:asc,timestamp:desc describing a sort path
+   * @param {number} minBlockNumber The min block number
+   * @param {boolean} filterDeleted If set to true, filters the deleted tracks
    * @returns {Object} {Array of track metadata Objects}
    * additional metadata fields on track objects:
    *  {Integer} repost_count - repost count for given track
@@ -127,7 +129,7 @@ class DiscoveryProvider {
    * await getTracks()
    * await getTracks(100, 0, [3,2,6]) - Invalid track ids will not be accepted
    */
-  async getTracks (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null, minBlockNumber = null) {
+  async getTracks (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null, minBlockNumber = null, filterDeleted = null) {
     let req = { endpoint: 'tracks', queryParams: { limit: limit, offset: offset } }
     if (idsArray) {
       if (!Array.isArray(idsArray)) {
@@ -143,6 +145,9 @@ class DiscoveryProvider {
     }
     if (sort) {
       req.queryParams.sort = sort
+    }
+    if (typeof filterDeleted === 'boolean') {
+      req.queryParams.filter_deleted = filterDeleted
     }
 
     return this._makeRequest(req)
