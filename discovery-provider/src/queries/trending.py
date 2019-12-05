@@ -1,5 +1,4 @@
 import logging # pylint: disable=C0302
-import requests
 import redis
 import json
 import sqlalchemy
@@ -46,4 +45,3 @@ def trending(time):
                     return api_helpers.success_response(json_cache)
     final_resp = generate_trending(get_db(), time, genre, limit, offset)
     return api_helpers.success_response(final_resp)
-

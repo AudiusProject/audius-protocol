@@ -1,9 +1,6 @@
 import logging
 import json
-from src import contract_addresses
-from src.models import IPLDBlacklistBlock, BlacklistedIPLD
 from src.tasks.celery_app import celery
-from src.tasks.ipld_blacklist import ipld_blacklist_state_update
 from src.tasks.generate_trending import generate_trending
 
 logger = logging.getLogger(__name__)

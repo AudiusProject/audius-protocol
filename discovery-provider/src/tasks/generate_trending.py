@@ -5,7 +5,6 @@ from sqlalchemy import func
 
 from src import api_helpers
 from src.models import Track, RepostType, Follow, SaveType
-from src.utils.db_session import get_db
 from src.utils.config import shared_config
 from src.queries import response_name_constants
 from src.queries.query_helpers import get_repost_counts, get_save_counts, get_genre_list
@@ -43,7 +42,7 @@ def generate_trending(db, time, genre, limit, offset):
     resp = None
     try:
         resp = requests.post(identity_trending_endpoint, json=post_body)
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
         logger.error(
             f'Error retrieving trending info - {identity_trending_endpoint}, {post_body}'
         )
@@ -73,7 +72,7 @@ def generate_trending(db, time, genre, limit, offset):
             )
             .all()
         )
-        not_deleted_track_ids = set([record[0] for record in not_deleted_track_ids])
+        not_deleted_track_ids = set([record[0] for record in not_deleted_track_ids]) # pylint: disable=R1718
 
         # Query repost counts
         repost_counts = get_repost_counts(session, False, True, not_deleted_track_ids, None)
@@ -128,7 +127,7 @@ def generate_trending(db, time, genre, limit, offset):
         trending_tracks = []
         for track_entry in listen_counts:
             # Skip over deleted tracks
-            if (track_entry[response_name_constants.track_id] not in not_deleted_track_ids):
+            if track_entry[response_name_constants.track_id] not in not_deleted_track_ids:
                 continue
 
             # Populate repost counts
@@ -158,4 +157,3 @@ def generate_trending(db, time, genre, limit, offset):
     final_resp = {}
     final_resp['listen_counts'] = trending_tracks
     return final_resp
-
