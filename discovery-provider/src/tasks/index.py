@@ -226,7 +226,7 @@ def index_blocks(self, db, blocks_list):
             if playlist_state_changed:
                 session.execute("REFRESH MATERIALIZED VIEW playlist_lexeme_dict")
                 session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict")
-            
+
         # add the block number of the most recently processed block to redis
         redis.set(most_recent_indexed_block_redis_key, block.number)
 
@@ -401,7 +401,7 @@ def revert_blocks(self, db, revert_blocks_list):
         if rebuild_user_index:
             session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict")
 
-    # TODO - if we enable revert, need to set the most_recent_indexed_block_redis_key key in redis 
+    # TODO - if we enable revert, need to set the most_recent_indexed_block_redis_key key in redis
 
 
 ######## IPFS PEER REFRESH ########
