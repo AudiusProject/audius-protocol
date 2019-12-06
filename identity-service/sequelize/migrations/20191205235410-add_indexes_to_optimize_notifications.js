@@ -9,6 +9,6 @@ module.exports = {
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.removeIndex('NotificationActions', ['notificationId'])
-    .then(() => queryInterface.removeIndex('Notifications', ['userId']))
+      .then(() => queryInterface.removeIndex('Notifications', ['userId']))
   }
 }
