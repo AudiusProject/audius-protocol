@@ -9,7 +9,6 @@ const globalConfig = require('../config')
 const basename = path.basename(__filename)
 const db = {}
 
-// TODO: set up debug-level logging of queries
 const sequelize = new Sequelize(globalConfig.get('dbUrl'), {
   logging: true,
   operatorsAliases: false,
