@@ -31,5 +31,6 @@ user_metadata_format = {
     "cover_photo_sizes": None,
     "bio": None,
     "name": None,
-    "location": None
+    "location": None,
+    "handle": None
 }

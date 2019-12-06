@@ -216,6 +216,12 @@ const config = convict({
     format: String,
     default: null,
     env: 'ethOwnerWallet'
+  },
+  isTestRun: {
+    doc: 'Sets some configs and excludes some processes if this is a test run',
+    format: Boolean,
+    default: false,
+    env: 'isTestRun'
   }
 })
 

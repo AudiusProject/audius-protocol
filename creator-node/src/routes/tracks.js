@@ -433,9 +433,10 @@ module.exports = function (app) {
       return successResponse({ isDownloadable: true, cid: null })
     }
 
-    // If copyFile exists, only return CID if it is in IPFS pinset
+    // If copyFile exists, only return CID if it is available on local IPFS node.
     try {
-      await req.app.get('ipfsAPI').pin.ls(copyFile.multihash)
+      // TODO - replace with incoming re-hydration code.
+      await req.app.get('ipfsAPI').cat(copyFile.multihash, { length: 1 })
       return successResponse({ isDownloadable: true, cid: copyFile.multihash })
     } catch (e) {
       return successResponse({ isDownloadable: true, cid: null })

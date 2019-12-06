@@ -45,6 +45,7 @@ def get_users():
             wallet = wallet.lower()
             if len(wallet) == 42:
                 base_query = base_query.filter_by(wallet=wallet)
+                base_query = base_query.order_by(asc(User.created_at))
             else:
                 logger.warning("Invalid wallet length")
         if "handle" in request.args:
@@ -110,6 +111,16 @@ def get_tracks():
                 Track.owner_id == user_id
             )
 
+        # Allow filtering of deleted tracks
+        # Note: There is no standard for boolean url parameters, and any value (including 'false')
+        # will be evaluated as true, so an explicit check is made for true
+        if "filter_deleted" in request.args:
+            filter_deleted = request.args.get("filter_deleted")
+            if (filter_deleted.lower() == 'true'):
+                base_query = base_query.filter(
+                    Track.is_delete == False
+                )
+
         if "min_block_number" in request.args:
             min_block_number = request.args.get("min_block_number", type=int)
             base_query = base_query.filter(
@@ -157,13 +168,13 @@ def get_tracks_including_unlisted():
         # Perform the query
         query_results = paginate_query(base_query).all()
         tracks = helpers.query_result_to_list(query_results)
-        track_ids = map(lambda track: track["track_id"], tracks)
+        track_ids = list(map(lambda track: track["track_id"], tracks))
 
         # Populate metadata
         current_user_id = get_current_user_id(required=False)
         extended_tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
-    return api_helpers.success_response(tracks)
+    return api_helpers.success_response(extended_tracks)
 
 
 # Return playlist content in json form

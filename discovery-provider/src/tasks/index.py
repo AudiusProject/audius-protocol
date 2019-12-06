@@ -7,7 +7,9 @@ from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.playlists import playlist_state_update
 from src.tasks.user_library import user_library_state_update
-from src.utils.helpers import get_ipfs_info_from_cnode_endpoint, latest_block_redis_key, latest_block_hash_redis_key
+from src.utils.helpers import get_ipfs_info_from_cnode_endpoint
+from src.utils.redis_constants import latest_block_redis_key, \
+    latest_block_hash_redis_key, most_recent_indexed_block_redis_key
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +93,9 @@ def update_latest_block_redis():
     redis.set(latest_block_hash_redis_key, latest_block_from_chain.hash.hex())
 
 def index_blocks(self, db, blocks_list):
+    web3 = update_task.web3
+    redis = update_task.redis
+
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     for i in block_order_range:
@@ -107,8 +112,8 @@ def index_blocks(self, db, blocks_list):
             current_block_query = session.query(Block).filter_by(is_current=True)
 
             block_model = Block(
-                blockhash=update_task.web3.toHex(block.hash),
-                parenthash=update_task.web3.toHex(block.parentHash),
+                blockhash=web3.toHex(block.hash),
+                parenthash=web3.toHex(block.parentHash),
                 number=block.number,
                 is_current=True,
             )
@@ -133,9 +138,9 @@ def index_blocks(self, db, blocks_list):
 
             # Parse tx events in each block
             for tx in sorted_txs:
-                tx_hash = update_task.web3.toHex(tx["hash"])
+                tx_hash = web3.toHex(tx["hash"])
                 tx_target_contract_address = tx["to"]
-                tx_receipt = update_task.web3.eth.getTransactionReceipt(tx_hash)
+                tx_receipt = web3.eth.getTransactionReceipt(tx_hash)
 
                 # Handle user operations
                 if tx_target_contract_address == contract_addresses["user_factory"]:
@@ -222,6 +227,9 @@ def index_blocks(self, db, blocks_list):
             if playlist_state_changed:
                 session.execute("REFRESH MATERIALIZED VIEW playlist_lexeme_dict")
                 session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict")
+
+        # add the block number of the most recently processed block to redis
+        redis.set(most_recent_indexed_block_redis_key, block.number)
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
@@ -393,6 +401,8 @@ def revert_blocks(self, db, revert_blocks_list):
             session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict")
         if rebuild_user_index:
             session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict")
+
+    # TODO - if we enable revert, need to set the most_recent_indexed_block_redis_key key in redis
 
 
 ######## IPFS PEER REFRESH ########

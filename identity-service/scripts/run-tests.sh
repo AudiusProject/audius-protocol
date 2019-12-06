@@ -12,6 +12,7 @@ export ethTokenAddress=''
 export ethRegistryAddress=''
 export registryAddress=''
 export ethOwnerWallet=''
+export isTestRun=true
 export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_identity_service_test"
 export logLevel='debug' #should be error
 
@@ -28,7 +29,7 @@ if [ -x "$(command -v psql)" ]; then
 fi
 
  # tests
-./node_modules/mocha/bin/mocha test/index.js --timeout 10000 --exit | bunyan
+./node_modules/mocha/bin/mocha test/index.js --timeout 10000 --exit
 
  # linter
 

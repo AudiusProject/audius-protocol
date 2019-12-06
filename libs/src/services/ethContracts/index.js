@@ -27,11 +27,12 @@ const VersioningFactoryRegistryKey = 'VersioningFactory'
 const ServiceProviderFactoryRegistryKey = 'ServiceProviderFactory'
 const OwnedUpgradeabilityProxyKey = 'OwnedUpgradeabilityProxy'
 
-const DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-provider-timestamp'
-// When to time out the cached discovery provider
-const DISCOVERY_PROVIDER_RESELECT_TIMEOUT = 1 /* min */ * 60 /* seconds */ * 1000 /* millisec */
-// How often to make sure the cached discovery provider is fresh
-const DISCOVERY_PROVIDER_TIMESTAMP_INTERVAL = 5000
+const {
+  DISCOVERY_PROVIDER_TIMESTAMP,
+  UNHEALTHY_BLOCK_DIFF,
+  DISCOVERY_PROVIDER_TIMESTAMP_INTERVAL,
+  DISCOVERY_PROVIDER_RESELECT_TIMEOUT
+} = require('../discoveryProvider/constants')
 
 const serviceType = Object.freeze({
   DISCOVERY_PROVIDER: 'discovery-provider',
@@ -47,6 +48,7 @@ class EthContracts {
     this.tokenContractAddress = tokenContractAddress
     this.registryAddress = registryAddress
     this.isServer = isServer
+    this.expectedServiceVersions = null
 
     this.AudiusTokenClient = new AudiusTokenClient(
       this.ethWeb3Manager,
@@ -94,7 +96,6 @@ class EthContracts {
   async init () {
     if (!this.ethWeb3Manager || !this.tokenContractAddress || !this.registryAddress) throw new Error('Failed to initialize EthContracts')
 
-    this.expectedServiceVersions = await this.getExpectedServiceVersions()
     if (this.isServer) {
       await Promise.all(this.contractClients.map(client => client.init()))
     }
@@ -174,13 +175,22 @@ class EthContracts {
         discoveryProviders.map(async (discprov) => {
           try {
             const healthResp = await axios({ url: urlJoin(discprov.endpoint, 'health_check'), method: 'get' })
-            if (healthResp.status !== 200) throw new Error(`Discprov healthcheck failed ${discprov.endpoint}`)
+            const { status, block_difference: blockDiff } = healthResp
+            if (
+              status !== 200 ||
+              blockDiff > UNHEALTHY_BLOCK_DIFF
+            ) {
+              throw new Error(`Discprov healthcheck failed ${discprov.endpoint}`)
+            }
 
             const {
               data: { service: serviceName, version: serviceVersion }
             } = await axios({ url: urlJoin(discprov.endpoint, 'version'), method: 'get' })
 
             // Compare chain service name
+            if (!this.expectedServiceVersions) {
+              this.expectedServiceVersions = await this.getExpectedServiceVersions()
+            }
             if (!this.expectedServiceVersions.hasOwnProperty(serviceName)) {
               throw new Error(`Invalid service name: ${serviceName}`)
             }
@@ -307,6 +317,9 @@ class EthContracts {
           let versionInfo = response['data']
           let serviceName = versionInfo['service']
           let serviceVersion = versionInfo['version']
+          if (!this.expectedServiceVersions) {
+            this.expectedServiceVersions = await this.getExpectedServiceVersions()
+          }
           if (!this.expectedServiceVersions.hasOwnProperty(serviceName)) {
             console.log(`Invalid service name: ${serviceName}`)
             continue
@@ -343,7 +356,9 @@ class EthContracts {
   }
 
   async selectDiscoveryProvider (whitelist = null) {
-    this.expectedServiceVersions = await this.getExpectedServiceVersions()
+    if (!this.expectedServiceVersions) {
+      this.expectedServiceVersions = await this.getExpectedServiceVersions()
+    }
     let discoveryProviderEndpoint = await this.selectLatestServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
 
     if (discoveryProviderEndpoint == null) {

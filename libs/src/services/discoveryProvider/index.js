@@ -3,9 +3,19 @@ const _ = require('lodash')
 
 const Utils = require('../../utils')
 
+const { DISCOVERY_PROVIDER_TIMESTAMP, UNHEALTHY_BLOCK_DIFF } = require('./constants')
+
 // TODO - webpack workaround. find a way to do this without checkout for .default property
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
+
+let localStorage
+if (typeof window === 'undefined' || window === null) {
+  const LocalStorage = require('node-localstorage').LocalStorage
+  localStorage = new LocalStorage('./local-storage')
+} else {
+  localStorage = window.localStorage
+}
 
 class DiscoveryProvider {
   constructor (autoselect, whitelist, userStateManager, ethContracts, web3Manager) {
@@ -116,6 +126,8 @@ class DiscoveryProvider {
    * @param {Object} idsArray
    * @param {number} targetUserId the owner of the tracks being queried
    * @param {string} sort a string of form eg. blocknumber:asc,timestamp:desc describing a sort path
+   * @param {number} minBlockNumber The min block number
+   * @param {boolean} filterDeleted If set to true, filters the deleted tracks
    * @returns {Object} {Array of track metadata Objects}
    * additional metadata fields on track objects:
    *  {Integer} repost_count - repost count for given track
@@ -127,7 +139,7 @@ class DiscoveryProvider {
    * await getTracks()
    * await getTracks(100, 0, [3,2,6]) - Invalid track ids will not be accepted
    */
-  async getTracks (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null, minBlockNumber = null) {
+  async getTracks (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null, minBlockNumber = null, filterDeleted = null) {
     let req = { endpoint: 'tracks', queryParams: { limit: limit, offset: offset } }
     if (idsArray) {
       if (!Array.isArray(idsArray)) {
@@ -143,6 +155,9 @@ class DiscoveryProvider {
     }
     if (sort) {
       req.queryParams.sort = sort
+    }
+    if (typeof filterDeleted === 'boolean') {
+      req.queryParams.filter_deleted = filterDeleted
     }
 
     return this._makeRequest(req)
@@ -509,7 +524,7 @@ class DiscoveryProvider {
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
   // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, retries = 2) {
+  async _makeRequest (requestObj, retries = 4) {
     if (!this.discoveryProviderEndpoint) {
       await this.autoSelectEndpoint()
     }
@@ -542,8 +557,34 @@ class DiscoveryProvider {
 
     try {
       const response = await axios(axiosRequest)
-      return Utils.parseDataFromResponse(response)['data']
+      const parsedResponse = Utils.parseDataFromResponse(response)
+
+      if (
+        'latest_indexed_block' in parsedResponse &&
+        'latest_chain_block' in parsedResponse
+      ) {
+        const {
+          latest_indexed_block: indexedBlock,
+          latest_chain_block: chainBlock
+        } = parsedResponse
+
+        if (
+          !chainBlock ||
+          !indexedBlock ||
+          (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
+        ) {
+          // Clear any cached discprov
+          localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
+          // Select a new one
+          const endpoint = await this.autoSelectEndpoint()
+          this.setEndpoint(endpoint)
+          throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
+        }
+      }
+
+      return parsedResponse.data
     } catch (e) {
+      console.error(e)
       if (retries > 0) {
         return this._makeRequest(requestObj, retries - 1)
       }

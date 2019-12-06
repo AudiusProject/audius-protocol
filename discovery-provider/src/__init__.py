@@ -253,7 +253,7 @@ def configure_celery(flask_app, celery, test_config=None):
 
     # Update celery configuration
     celery.conf.update(
-        imports=["src.tasks.index", "src.tasks.index_blacklist"],
+        imports=["src.tasks.index", "src.tasks.index_blacklist", "src.tasks.index_cache"],
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
@@ -262,6 +262,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_ipld_blacklist": {
                 "task": "update_ipld_blacklist",
                 "schedule": timedelta(seconds=60),
+            },
+            "update_cache": {
+                "task": "update_discovery_cache",
+                "schedule": timedelta(seconds=60)
             }
         },
         task_serializer="json",

@@ -107,7 +107,8 @@ class UserFactoryClient extends ContractClient {
   }
 
   async updateLocation (userId, location) {
-    Utils.checkStrLen(location, 32)
+    const maxLength = 32
+    Utils.checkStrLen(location, maxLength, /* minLen */ 0)
 
     const [nonce, sig] = await this.getUpdateNonceAndSig(
       signatureSchemas.generators.getUpdateUserLocationRequestData,
@@ -116,7 +117,7 @@ class UserFactoryClient extends ContractClient {
     )
     const method = await this.getMethod('updateLocation',
       userId,
-      Utils.utf8ToHex(location),
+      Utils.padRight(Utils.utf8ToHex(location), maxLength * 2),
       nonce,
       sig
     )
@@ -296,11 +297,11 @@ class UserFactoryClient extends ContractClient {
    * @param {Varies} newValue new value to set
    * @param {string} privateKey 64 character hex string
    */
-  async getUpdateNonceAndSig (generatorFn, multihashDigest, newValue, privateKey) {
+  async getUpdateNonceAndSig (generatorFn, userId, newValue, privateKey) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3Manager.getWeb3().eth.net.getId()
     const contractAddress = await this.getAddress()
-    const signatureData = generatorFn(chainId, contractAddress, multihashDigest, newValue, nonce)
+    const signatureData = generatorFn(chainId, contractAddress, userId, newValue, nonce)
     let sig
     if (privateKey) {
       sig = sigUtil.signTypedData(BufferSafe.from(privateKey, 'hex'), { data: signatureData })

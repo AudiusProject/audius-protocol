@@ -81,9 +81,9 @@ class IPFSClient:
         logger.warning(f"IPFSCLIENT | get_metadata_from_gateway, {multihash}")
         gateway_endpoints = self._gateway_addresses + self._cnode_endpoints
         logger.warning(f"IPFSCLIENT | get_metadata_from_gateway, \
-                combined addresses: {gateway_endpoints}, \
-                addresses: {self._gateway_addresses}, \
-                cnode_endpoints: {self._cnode_endpoints}")
+                \ncombined addresses: {gateway_endpoints}, \
+                \naddresses: {self._gateway_addresses}, \
+                \ncnode_endpoints: {self._cnode_endpoints}")
 
         for address in gateway_endpoints:
             gateway_query_address = "%s/ipfs/%s" % (address, multihash)
@@ -98,8 +98,8 @@ class IPFSClient:
                 continue
 
             try:
-                logger.info(f"IPFSCLIENT | Querying {gateway_query_address}")
-                r = requests.get(gateway_query_address, timeout=20)
+                logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
+                r = requests.get(gateway_query_address, timeout=10)
 
                 # Do not retrieve metadata for error code
                 if r.status_code != 200:
@@ -111,7 +111,7 @@ class IPFSClient:
                     metadata_format, r.json()
                 )
                 # Exit loop if dict is successfully retrieved
-                logger.info(
+                logger.warning(
                     f"IPFSCLIENT | Retrieved {multihash} from {gateway_query_address}"
                 )
                 return gateway_metadata_json
@@ -166,6 +166,43 @@ class IPFSClient:
         except:
             logger.error(f"IPFSCLIENT | IPFS cat timed out for CID {multihash}")
             raise  # error is of type ipfshttpclient.exceptions.TimeoutError
+
+    def multihash_is_directory(self, multihash):
+        try:
+            # attempt to cat single byte from CID to determine if dir or file
+            self._api.cat(multihash, 0, 1)
+            return False
+        except Exception as e:  # pylint: disable=W0703
+            if "this dag node is a directory" in str(e):
+                logger.warning(f'IPFSCLIENT | Found directory {multihash}')
+                return True
+
+        # Attempt to retrieve from cnode gateway endpoints
+        gateway_endpoints = self._cnode_endpoints
+        for address in gateway_endpoints:
+            gateway_query_address = "%s/ipfs/%s" % (address, multihash)
+            r = None
+            try:
+                logger.warning(f"IPFSCLIENT | Querying directory {gateway_query_address}")
+                r = requests.get(gateway_query_address, timeout=20)
+            except Exception as e:
+                logger.warning(f'Failed to query {gateway_query_address}, {e}')
+
+            if r is not None:
+                try:
+                    json_resp = r.json()
+                    if 'error' in json_resp and "this dag node is a directory" in json_resp['error']:
+                        logger.warning(f'IPFSCLIENT | Found directory {multihash}')
+                        return True
+                except Exception as e:
+                    logger.warning(f'IPFSCLIENT | Failed to deserialize json for {multihash}, {e}')
+
+                # Successful non-json response indicates image, not directory
+                if r.status_code == 200:
+                    logger.warning(f"IPFSCLIENT | Returned image at {gateway_query_address}")
+                    return False
+
+        raise Exception(f'Failed to determine multihash status, {multihash}')
 
     def connect_peer(self, peer):
         try:

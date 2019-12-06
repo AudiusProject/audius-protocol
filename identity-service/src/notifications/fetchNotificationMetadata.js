@@ -7,6 +7,7 @@ const mergeAudiusAnnoucements = require('../routes/notifications').mergeAudiusAn
 const formatNotificationProps = require('./formatNotificationMetadata')
 
 const config = require('../config.js')
+const { logger } = require('../logging')
 
 const USER_NODE_IPFS_GATEWAY = config.get('notificationDiscoveryProvider').includes('staging') ? 'https://usermetadata.staging.audius.co/ipfs/' : 'https://usermetadata.audius.co/ipfs/'
 
@@ -90,7 +91,7 @@ async function sendUserNotifcationEmail (audius, userId, announcements = [], fro
     const notificationsEmailProps = formatNotificationProps(finalUserNotifications, metadata)
     return [notificationsEmailProps, notificationCount + unreadAnnouncementCount]
   } catch (err) {
-    console.log(err)
+    logger.error(err)
   }
 }
 

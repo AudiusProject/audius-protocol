@@ -8,6 +8,7 @@ const path = require('path')
 const uuidv4 = require('uuid/v4')
 const getEmailNotifications = require('./fetchNotificationMetadata')
 const renderEmail = require('./renderEmail')
+const { logger } = require('../logging')
 
 const notificationTypes = Object.freeze({
   Follow: 'Follow',
@@ -113,7 +114,7 @@ class NotificationProcessor {
           minBlock: maxBlockNumber
         })
       } catch (e) {
-        console.log(`Restarting due to error indexing notifications : ${e}`)
+        logger.error(`Restarting due to error indexing notifications : ${e}`)
         // Restart job with same startBlock
         await this.notifQueue.add({
           type: notificationJobType,
@@ -143,7 +144,7 @@ class NotificationProcessor {
     )
 
     let startBlock = await this.getHighestBlockNumber()
-    console.log(`Starting with ${startBlock}`)
+    logger.info(`Starting with ${startBlock}`)
     await this.notifQueue.add({
       minBlock: startBlock,
       type: notificationJobType
@@ -156,7 +157,7 @@ class NotificationProcessor {
       highestBlockNumber = this.startBlock
     }
     let date = new Date()
-    console.log(`Highest block: ${highestBlockNumber} - ${date}`)
+    logger.info(`Highest block: ${highestBlockNumber} - ${date}`)
     return highestBlockNumber
   }
 
@@ -250,7 +251,7 @@ class NotificationProcessor {
                 transaction: tx
               })
             }
-            console.log(`User: ${targetUser} has met milestone value ${milestoneValue} followers`)
+            logger.info(`User: ${targetUser} has met milestone value ${milestoneValue} followers`)
             break
           }
         }
@@ -487,7 +488,7 @@ class NotificationProcessor {
           blocknumber
         }
       })
-      console.log(`Process milestone ${userId}, type ${milestoneType}, entityId ${entityId}, type ${entityType}, milestoneValue ${milestoneValue}`)
+      logger.info(`Process milestone ${userId}, type ${milestoneType}, entityId ${entityId}, type ${entityType}, milestoneValue ${milestoneValue}`)
 
       // Destroy any unread milestone notifications of this type + entity
       let milestonesToBeDeleted = await models.Notification.findAll({
@@ -511,26 +512,26 @@ class NotificationProcessor {
 
       if (milestonesToBeDeleted) {
         for (var milestoneToDelete of milestonesToBeDeleted) {
-          console.log(`Deleting milestone: ${milestoneToDelete.id}`)
+          logger.info(`Deleting milestone: ${milestoneToDelete.id}`)
           let destroyTx = await models.NotificationAction.destroy({
             where: {
               notificationId: milestoneToDelete.id
             }
           })
-          console.log(destroyTx)
+          logger.info(destroyTx)
           destroyTx = await models.Notification.destroy({
             where: {
               id: milestoneToDelete.id
             }
           })
-          console.log(destroyTx)
+          logger.info(destroyTx)
         }
       }
     }
   }
 
   async indexNotifications (minBlock) {
-    console.log(`${new Date()} - indexNotifications job`)
+    logger.info(`${new Date()} - indexNotifications job`)
 
     // Query owners for tracks relevant to track listen counts
     let listenCounts = await this.calculateTrackListenMilestones()
@@ -941,8 +942,8 @@ class NotificationProcessor {
       // Commit
       await tx.commit()
     } catch (e) {
-      console.log(`Error indexing notification ${e}`)
-      console.log(e.stack)
+      logger.error(`Error indexing notification ${e}`)
+      logger.error(e.stack)
       await tx.rollback()
     }
     return metadata.max_block_number
@@ -957,7 +958,7 @@ class NotificationProcessor {
     for (let updateUser of usersWithoutBlockchainId) {
       try {
         let walletAddress = updateUser.walletAddress
-        console.log(`Updating user with wallet ${walletAddress}`)
+        logger.info(`Updating user with wallet ${walletAddress}`)
         const response = await axios({
           method: 'get',
           url: `${notifDiscProv}/users`,
@@ -978,7 +979,7 @@ class NotificationProcessor {
             updateObject,
             { where: { walletAddress } }
           )
-          console.log(`Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.handle}`)
+          logger.info(`Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.handle}`)
           continue
         }
         for (let respUser of response.data.data) {
@@ -989,23 +990,23 @@ class NotificationProcessor {
               { blockchainUserId: missingUserId },
               { where: { walletAddress, handle: updateUser.handle } }
             )
-            console.log(`Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.handle}`)
+            logger.info(`Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.handle}`)
             await models.UserNotificationSettings.findOrCreate({ where: { userId: missingUserId } })
           }
         }
       } catch (e) {
-        console.log(e)
+        logger.error(e)
       }
     }
   }
 
   async processEmailNotifications () {
     try {
-      console.log(`${new Date()} - processEmailNotifications`)
+      logger.info(`${new Date()} - processEmailNotifications`)
 
       let mg = this.expressApp.get('mailgun')
       if (mg === null) {
-        console.log('Mailgun not configured')
+        logger.error('Mailgun not configured')
         return
       }
 
@@ -1055,12 +1056,12 @@ class NotificationProcessor {
           }
           if (dailyEmailUsers.includes(user)) {
             if (timeSinceAnnouncement < (dayInHours * 1.5)) {
-              console.log(`Announcements - ${id} | Daily user ${user}, <1 day`)
+              logger.info(`Announcements - ${id} | Daily user ${user}, <1 day`)
               dailyUsersWithPendingAnnouncements.append(user)
             }
           } else if (weeklyEmailUsers.includes(user)) {
             if (timeSinceAnnouncement < (weekInHours * 1.5)) {
-              console.log(`Announcements - ${id} | Weekly user ${user}, <1 week`)
+              logger.info(`Announcements - ${id} | Weekly user ${user}, <1 week`)
               weeklyUsersWithPendingAnnouncements.append(user)
             }
           }
@@ -1095,12 +1096,12 @@ class NotificationProcessor {
         group: ['userId']
       }).map(x => x.userId)
       weeklyEmailUsersWithUnseeenNotifications.forEach(item => pendingNotificationUsers.add(item))
-      console.log(`Daily Email Users: ${dailyEmailUsersWithUnseeenNotifications}`)
-      console.log(`Weekly Email Users: ${weeklyEmailUsersWithUnseeenNotifications}`)
+      logger.info(`Daily Email Users: ${dailyEmailUsersWithUnseeenNotifications}`)
+      logger.info(`Weekly Email Users: ${weeklyEmailUsersWithUnseeenNotifications}`)
 
       // All users with notifications, including announcements
       let allUsersWithUnseenNotifications = [...pendingNotificationUsers]
-      console.log(`All Pending Email Users: ${allUsersWithUnseenNotifications}`)
+      logger.info(`All Pending Email Users: ${allUsersWithUnseenNotifications}`)
 
       let userInfo = await models.User.findAll({
         where: {
@@ -1123,7 +1124,7 @@ class NotificationProcessor {
         )
         let frequency = userSettings[0].emailFrequency
         if (frequency === 'off') {
-          console.log(`Bypassing email for user ${userId}`)
+          logger.info(`Bypassing email for user ${userId}`)
           continue
         }
         let currentUtcTime = moment.utc()
@@ -1136,7 +1137,7 @@ class NotificationProcessor {
         let maxHourDifference = 2 // 1.5
         // Valid time found
         if (difference < maxHourDifference) {
-          console.log(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
+          logger.info(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
           let latestUserEmail = await models.NotificationEmail.findOne({
             where: {
               userId
@@ -1152,7 +1153,7 @@ class NotificationProcessor {
               frequency === 'daily' ? dayAgo : weekAgo
             )
             if (!sent) { continue }
-            console.log(`First email for ${userId}, ${frequency}, ${currentUtcTime}`)
+            logger.info(`First email for ${userId}, ${frequency}, ${currentUtcTime}`)
             await models.NotificationEmail.create({
               userId,
               emailFrequency: frequency,
@@ -1164,7 +1165,7 @@ class NotificationProcessor {
             if (frequency === 'daily') {
               // If 1 day has passed, send email
               if (timeSinceEmail >= (dayInHours - 1)) {
-                console.log(`Daily email to ${userId}, last email from ${lastSentTimestamp}`)
+                logger.info(`Daily email to ${userId}, last email from ${lastSentTimestamp}`)
                 // Render email
                 let sent = await this.renderAndSendEmail(
                   userId,
@@ -1184,7 +1185,7 @@ class NotificationProcessor {
             } else if (frequency === 'weekly') {
               // If ~1 week has passed, send email
               if (timeSinceEmail >= (weekInHours - 1)) {
-                console.log(`Weekly email to ${userId}, last email from ${lastSentTimestamp}`)
+                logger.info(`Weekly email to ${userId}, last email from ${lastSentTimestamp}`)
                 // Render email
                 let sent = await this.renderAndSendEmail(
                   userId,
@@ -1205,8 +1206,8 @@ class NotificationProcessor {
         }
       }
     } catch (e) {
-      console.log('Error processing email notifications')
-      console.log(e)
+      logger.error('Error processing email notifications')
+      logger.error(e)
     }
   }
 
@@ -1219,7 +1220,7 @@ class NotificationProcessor {
     startTime
   ) {
     try {
-      console.log(`renderAndSendEmail ${userId}, ${userEmail}, ${frequency}, from ${startTime}`)
+      logger.info(`renderAndSendEmail ${userId}, ${userEmail}, ${frequency}, from ${startTime}`)
       const [notificationProps, notificationCount] = await getEmailNotifications(
         this.audiusLibs,
         userId,
@@ -1227,6 +1228,10 @@ class NotificationProcessor {
         startTime,
         5)
       const emailSubject = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''} on Audius`
+      if (notificationCount === 0) {
+        logger.info(`renderAndSendEmail - 0 notifications detected for user ${userId}, bypassing email`)
+        return
+      }
 
       let renderProps = {}
       renderProps['notifications'] = notificationProps
@@ -1264,7 +1269,7 @@ class NotificationProcessor {
 
       return true
     } catch (e) {
-      console.log(`Error in renderAndSendEmail ${e}`)
+      logger.error(`Error in renderAndSendEmail ${e}`)
       return false
     }
   }
@@ -1284,7 +1289,7 @@ class NotificationProcessor {
         })
       })
     } catch (e) {
-      console.log(`Error in cacheEmail ${e}`)
+      logger.error(`Error in cacheEmail ${e}`)
     }
   }
 
