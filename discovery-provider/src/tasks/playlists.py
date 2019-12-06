@@ -143,7 +143,7 @@ def parse_playlist_event(
 
     if event_type == playlist_event_types_lookup["playlist_track_added"]:
         if getattr(playlist_record, 'playlist_contents') is not None:
-            print('playlist event playlist_track_added')
+            logger.warning('playlist event playlist_track_added')
             old_playlist_content_array = playlist_record.playlist_contents["track_ids"]
             new_playlist_content_array = old_playlist_content_array
             # Append new track object
@@ -155,7 +155,7 @@ def parse_playlist_event(
 
     if event_type == playlist_event_types_lookup["playlist_track_deleted"]:
         if getattr(playlist_record, 'playlist_contents') is not None:
-            print('playlist event playlist_track_deleted')
+            logger.warning('playlist event playlist_track_deleted')
             old_playlist_content_array = playlist_record.playlist_contents["track_ids"]
             new_playlist_content_array = []
             deleted_track_id = event_args._deletedTrackId
@@ -173,7 +173,7 @@ def parse_playlist_event(
 
     if event_type == playlist_event_types_lookup["playlist_tracks_ordered"]:
         if getattr(playlist_record, 'playlist_contents') is not None:
-            print('playlist event playlist_tracks_ordered')
+            logger.warning('playlist event playlist_tracks_ordered')
             old_playlist_content_array = playlist_record.playlist_contents["track_ids"]
 
             intermediate_track_time_lookup_dict = {}
@@ -213,18 +213,11 @@ def parse_playlist_event(
 
         # if playlist_image_multihash CID is of a dir, store under _sizes field instead
         if playlist_record.playlist_image_multihash:
-            ipfs = update_task.ipfs_client._api
-            logger.warning(f"catting playlist_image_multihash {playlist_record.playlist_image_multihash}")
-            try:
-                # attempt to cat single byte from CID to determine if dir or file
-                ipfs.cat(playlist_record.playlist_image_multihash, 0, 1)
-            except Exception as e:  # pylint: disable=W0703
-                if "this dag node is a directory" in str(e):
-                    playlist_record.playlist_image_sizes_multihash = playlist_record.playlist_image_multihash
-                    playlist_record.playlist_image_multihash = None
-                    logger.info('Successfully processed CID')
-                else:
-                    raise Exception(e)
+            logger.warning(f"playlists.py | Processing playlist image {playlist_record.playlist_image_multihash}")
+            is_directory = update_task.ipfs_client.multihash_is_directory(playlist_record.playlist_image_multihash)
+            if is_directory:
+                playlist_record.playlist_image_sizes_multihash = playlist_record.playlist_image_multihash
+                playlist_record.playlist_image_multihash = None
 
     if event_type == playlist_event_types_lookup["playlist_description_updated"]:
         playlist_record.description = event_args._playlistDescription
