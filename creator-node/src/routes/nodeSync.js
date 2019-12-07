@@ -4,7 +4,7 @@ const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError } = require('../apiHelpers')
 const config = require('../config')
-const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary } = require('../utils')
+const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary, rehydrateIpfsDirFromFsIfNecessary } = require('../utils')
 
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
@@ -76,15 +76,15 @@ module.exports = function (app) {
             file.multihash,
             file.storagePath)
         } else if (file.type === 'image') {
-          let sourcePath = file.sourceFile
-          if (sourcePath.includes('blob')) {
-            sourcePath = file.sourceFile.split('/')[1]
+          if (file.sourcePath === null) {
+            // Ensure pre-directory images are still exported appropriately
+            await rehydrateIpfsFromFsIfNecessary(
+              req,
+              file.multihash,
+              file.storagePath)
           }
-          await rehydrateIpfsFromFsIfNecessary(
-            req,
-            file.multihash,
-            file.storagePath,
-            sourcePath)
+        } else if (file.type === 'dir') {
+          await rehydrateIpfsDirFromFsIfNecessary(req, file.multihash)
         }
       }))
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj: ipfsIDObj })

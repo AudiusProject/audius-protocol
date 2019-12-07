@@ -72,6 +72,17 @@ async function getIPFSPeerId (ipfs, config) {
   return ipfsIDObj
 }
 
+const wait = (ms) => new Promise((resolve, reject) => setTimeout(() => reject(new Error('Timeout')), ms))
+
+const ipfsSingleByteCat = (path, req) => new Promise(async (resolve, reject) => {
+  // Cat single byte
+  const start = Date.now()
+  let ipfs = req.app.get('ipfsAPI')
+  await ipfs.cat(path, { length: 1 })
+  req.logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
+  resolve('SUCCESS')
+})
+
 async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, filename = null) {
   let ipfs = req.app.get('ipfsAPI')
   let ipfsPath = multihash
@@ -80,28 +91,11 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
     ipfsPath = `${multihash}/${filename}`
   }
 
-  // Confirm availability by catting single byte locally
-  let timeoutPromise = new Promise((resolve, reject) => {
-    let wait = setTimeout(() => {
-      clearTimeout(wait)
-      reject(new Error('TIMEOUT'))
-    }, 1000)
-  })
-
-  let ipfsSingleByteCat = new Promise(async (resolve, reject) => {
-    // Cat single byte
-    const start = Date.now()
-    await ipfs.cat(ipfsPath, { length: 1 })
-    console.log(`rehydrateIpfsFromFsIfNecessary - Retrieved ${ipfsPath} in ${Date.now() - start}ms`)
-    // retrieved = true
-    resolve('SUCCESS')
-  })
-
   let rehydrateNecessary = false
   try {
     await Promise.race([
-      timeoutPromise,
-      ipfsSingleByteCat])
+      wait(1000),
+      ipfsSingleByteCat(ipfsPath, req)])
   } catch (e) {
     rehydrateNecessary = true
     console.log(`rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
@@ -109,11 +103,11 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
   if (!rehydrateNecessary) return
   // Timed out, must re-add from FS
   if (!filename) {
-    console.log(`rehydrateIpfsFromFsIfNecessary - Re-adding file - ${multihash}, stg path: ${storagePath}`)
+    req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding file - ${multihash}, stg path: ${storagePath}`)
     let addResp = await ipfs.addFromFs(storagePath, { pin: false })
-    console.log(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
+    req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
   } else {
-    console.log(`rehydrateIpfsFromFsIfNecessary - Re-adding dir ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`)
+    req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding dir ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`)
     let findOriginalFileQuery = await models.File.findAll({
       where: {
         storagePath: { [models.Sequelize.Op.like]: `%${multihash}%` },
@@ -133,11 +127,60 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
       })
     }
     let addResp = await ipfs.add(ipfsAddArray, { pin: false })
-    console.log(`rehydrateIpfsFromFsIfNecessary - ${JSON.stringify(addResp)}`)
+    req.logger.info(`rehydrateIpfsFromFsIfNecessary - ${JSON.stringify(addResp)}`)
   }
+}
+
+async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
+  req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, dirHash: ${dirHash}`)
+  let findOriginalFileQuery = await models.File.findAll({
+    where: {
+      storagePath: { [models.Sequelize.Op.like]: `%${dirHash}%` },
+      type: 'image'
+    }
+  })
+
+  let rehydrateNecessary = false
+  for (let entry of findOriginalFileQuery) {
+    let sourcePath = entry.sourceFile
+    if (sourcePath.includes('blob')) {
+      sourcePath = sourcePath.split('/')[1]
+    }
+    let ipfsPath = `${dirHash}/${sourcePath}`
+    req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, ipfsPath: ${ipfsPath}`)
+    try {
+      await Promise.race([
+        wait(1000),
+        ipfsSingleByteCat(ipfsPath, req)])
+    } catch (e) {
+      rehydrateNecessary = true
+      console.log(`rehydrateIpfsDirFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
+      break
+    }
+  }
+
+  console.log(`rehydrateIpfsDirFromFsIfNecessary, dir=${dirHash} - required = ${rehydrateNecessary}`)
+  if (!rehydrateNecessary) return
+
+  // Add entire directory to recreate original operation
+  // Required to ensure same dirCID as data store
+  let ipfsAddArray = []
+  for (let entry of findOriginalFileQuery) {
+    let sourceFilePath = entry.storagePath
+    let bufferedFile = fs.readFileSync(sourceFilePath)
+    let originalSource = entry.sourceFile
+    ipfsAddArray.push({
+      path: originalSource,
+      content: bufferedFile
+    })
+  }
+  let ipfs = req.app.get('ipfsAPI')
+  let addResp = await ipfs.add(ipfsAddArray, { pin: false })
+  req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - ${JSON.stringify(addResp)}`)
 }
 
 module.exports = Utils
 module.exports.getFileUUIDForImageCID = getFileUUIDForImageCID
 module.exports.getIPFSPeerId = getIPFSPeerId
 module.exports.rehydrateIpfsFromFsIfNecessary = rehydrateIpfsFromFsIfNecessary
+module.exports.rehydrateIpfsDirFromFsIfNecessary = rehydrateIpfsDirFromFsIfNecessary
