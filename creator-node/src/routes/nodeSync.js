@@ -266,7 +266,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         })), { transaction: t })
         req.logger.info(redisKey, 'created all tracks')
 
-        // Save all track files to disk
+        // Save all track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
           const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
           req.logger.info(`TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit}...`)
