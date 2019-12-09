@@ -84,9 +84,7 @@ const ipfsSingleByteCat = (path, req) => new Promise(async (resolve, reject) => 
 })
 
 const parseSourcePath = (sourcePath) => {
-  if (sourcePath.includes('blob')) {
-    sourcePath = sourcePath.split('/')[1]
-  } else if (sourcePath.includes('Artwork')) {
+  if (sourcePath.includes('blob') || sourcePath.includes('Artwork')) {
     sourcePath = sourcePath.split('/')[1]
   }
   return sourcePath
