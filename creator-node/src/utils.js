@@ -83,6 +83,15 @@ const ipfsSingleByteCat = (path, req) => new Promise(async (resolve, reject) => 
   resolve('SUCCESS')
 })
 
+const parseSourcePath = (sourcePath) => {
+  if (sourcePath.includes('blob')) {
+    sourcePath = sourcePath.split('/')[1]
+  } else if (sourcePath.includes('Artwork')) {
+    sourcePath = sourcePath.split('/')[1]
+  }
+  return sourcePath
+}
+
 async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, filename = null) {
   let ipfs = req.app.get('ipfsAPI')
   let ipfsPath = multihash
@@ -98,7 +107,7 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
       ipfsSingleByteCat(ipfsPath, req)])
   } catch (e) {
     rehydrateNecessary = true
-    console.log(`rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
+    req.logger.info(`rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
   }
   if (!rehydrateNecessary) return
   // Timed out, must re-add from FS
@@ -120,7 +129,7 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
     for (var entry of findOriginalFileQuery) {
       let sourceFilePath = entry.storagePath
       let bufferedFile = fs.readFileSync(sourceFilePath)
-      let originalSource = entry.sourceFile
+      let originalSource = parseSourcePath(entry.sourceFile)
       ipfsAddArray.push({
         path: originalSource,
         content: bufferedFile
@@ -142,10 +151,7 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
 
   let rehydrateNecessary = false
   for (let entry of findOriginalFileQuery) {
-    let sourcePath = entry.sourceFile
-    if (sourcePath.includes('blob')) {
-      sourcePath = sourcePath.split('/')[1]
-    }
+    let sourcePath = parseSourcePath(entry.sourceFile)
     let ipfsPath = `${dirHash}/${sourcePath}`
     req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, ipfsPath: ${ipfsPath}`)
     try {
@@ -154,12 +160,12 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
         ipfsSingleByteCat(ipfsPath, req)])
     } catch (e) {
       rehydrateNecessary = true
-      console.log(`rehydrateIpfsDirFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
+      req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
       break
     }
   }
 
-  console.log(`rehydrateIpfsDirFromFsIfNecessary, dir=${dirHash} - required = ${rehydrateNecessary}`)
+  req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, dir=${dirHash} - required = ${rehydrateNecessary}`)
   if (!rehydrateNecessary) return
 
   // Add entire directory to recreate original operation
