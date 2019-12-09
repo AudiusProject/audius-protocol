@@ -8,7 +8,7 @@ from flask import Blueprint, jsonify, request
 from web3 import HTTPProvider, Web3
 from src.models import Block
 from src.utils import helpers
-from src.utils.db_session import get_db
+from src.utils.db_session import get_db_read_replica
 from src.utils.config import shared_config
 from src.utils.redis_constants import latest_block_redis_key, latest_block_hash_redis_key
 
@@ -30,7 +30,7 @@ HEALTHY_BLOCK_DIFF = 100
 
 # Returns DB block state & diff
 def _get_db_block_state(latest_blocknum, latest_blockhash):
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         # Fetch latest block from DB
         db_block_query = session.query(Block).filter(Block.is_current == True).all()
@@ -55,7 +55,7 @@ def _get_db_block_state(latest_blocknum, latest_blockhash):
 
 # Returns number of and info on open db connections
 def _get_db_conn_state():
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         # Query number of open DB connections
         num_connections = session.execute(

@@ -9,7 +9,7 @@ from flask import Blueprint, request
 from src import api_helpers, exceptions
 from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType
 from src.utils import helpers
-from src.utils.db_session import get_db
+from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 from src.queries.query_helpers import get_current_user_id, parse_sort_param, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_repost_counts, get_save_counts, \
@@ -29,7 +29,7 @@ trackDedupeMaxMinutes = 10
 @bp.route("/users", methods=("GET",))
 def get_users():
     users = []
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         # Create initial query
         base_query = session.query(User)
@@ -84,7 +84,7 @@ def get_users():
 @bp.route("/tracks", methods=("GET",))
 def get_tracks():
     tracks = []
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         # Create initial query
         base_query = session.query(Track)
@@ -152,7 +152,7 @@ def get_tracks_including_unlisted():
     for i in identifiers:
         helpers.validate_arguments(i, ["handle", "id", "url_title"])
 
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         base_query = session.query(Track)
         filter_cond = []
@@ -185,7 +185,7 @@ def get_playlists():
     current_user_id = get_current_user_id(required=False)
     filter_out_private_playlists = True
 
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         try:
             playlist_query = (
@@ -260,7 +260,7 @@ def get_playlists():
 @bp.route("/feed", methods=("GET",))
 def get_feed():
     feed_results = []
-    db = get_db()
+    db = get_db_read_replica()
 
     # filter should be one of ["all", "reposts", "original"]
     # empty filter value results in "all"
@@ -500,7 +500,7 @@ def get_feed():
 @bp.route("/feed/reposts/<int:user_id>", methods=("GET",))
 def get_repost_feed_for_user(user_id):
     feed_results = {}
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         # query all reposts by user
         repost_query = (
@@ -738,7 +738,7 @@ def get_repost_feed_for_user(user_id):
 @bp.route("/users/intersection/follow/<int:followee_user_id>/<int:follower_user_id>", methods=("GET",))
 def get_follow_intersection_users(followee_user_id, follower_user_id):
     users = []
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         query = (
             session.query(User)
@@ -787,7 +787,7 @@ def get_follow_intersection_users(followee_user_id, follower_user_id):
 @bp.route("/users/intersection/repost/track/<int:repost_track_id>/<int:follower_user_id>", methods=("GET",))
 def get_track_repost_intersection_users(repost_track_id, follower_user_id):
     users = []
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         # ensure track_id exists
         track_entry = session.query(Track).filter(
@@ -833,7 +833,7 @@ def get_track_repost_intersection_users(repost_track_id, follower_user_id):
 @bp.route("/users/intersection/repost/playlist/<int:repost_playlist_id>/<int:follower_user_id>", methods=("GET",))
 def get_playlist_repost_intersection_users(repost_playlist_id, follower_user_id):
     users = []
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         # ensure playlist_id exists
         playlist_entry = session.query(Playlist).filter(
@@ -876,7 +876,7 @@ def get_playlist_repost_intersection_users(repost_playlist_id, follower_user_id)
 @bp.route("/users/followers/<int:followee_user_id>", methods=("GET",))
 def get_followers_for_user(followee_user_id):
     users = []
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         # correlated subquery sqlalchemy code:
         # https://groups.google.com/forum/#!topic/sqlalchemy/WLIy8jxD7qg
@@ -948,7 +948,7 @@ def get_followers_for_user(followee_user_id):
 @bp.route("/users/followees/<int:follower_user_id>", methods=("GET",))
 def get_followees_for_user(follower_user_id):
     users = []
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         # correlated subquery sqlalchemy code:
         # https://groups.google.com/forum/#!topic/sqlalchemy/WLIy8jxD7qg
@@ -1015,7 +1015,7 @@ def get_followees_for_user(follower_user_id):
 @bp.route("/users/reposts/track/<int:repost_track_id>", methods=("GET",))
 def get_reposters_for_track(repost_track_id):
     user_results = []
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         # Ensure Track exists for provided repost_track_id.
         track_entry = session.query(Track).filter(
@@ -1079,7 +1079,7 @@ def get_reposters_for_track(repost_track_id):
 @bp.route("/users/reposts/playlist/<int:repost_playlist_id>", methods=("GET",))
 def get_reposters_for_playlist(repost_playlist_id):
     user_results = []
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         # Ensure Playlist exists for provided repost_playlist_id.
         playlist_entry = session.query(Playlist).filter(
@@ -1284,7 +1284,7 @@ def get_saves(save_type):
 
     save_results = []
     current_user_id = get_current_user_id()
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         query = (
             session.query(Save)

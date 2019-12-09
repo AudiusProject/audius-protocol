@@ -4,7 +4,7 @@ from src import api_helpers
 from src.queries import response_name_constants as const
 from src.queries.query_helpers import get_repost_counts, get_save_counts, get_follower_count_dict
 from src.models import Block, Follow, Save, SaveType, Playlist, Track, Repost, RepostType
-from src.utils.db_session import get_db
+from src.utils.db_session import get_db_read_replica
 from sqlalchemy import desc, func
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ def get_owner_id(session, entity_type, entity_id):
 
 @bp.route("/notifications", methods=("GET",))
 def notifications():
-    db = get_db()
+    db = get_db_read_replica()
     min_block_number = request.args.get("min_block_number", type=int)
     max_block_number = request.args.get("max_block_number", type=int)
 
@@ -459,7 +459,7 @@ def notifications():
 
 @bp.route("/milestones/followers", methods=("GET",))
 def milestones_followers():
-    db = get_db()
+    db = get_db_read_replica()
     if "user_id" not in request.args:
         return api_helpers.error_response({'msg': 'Please provider user ids'}, 500)
 
