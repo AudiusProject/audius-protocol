@@ -4,7 +4,7 @@ const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError } = require('../apiHelpers')
 const config = require('../config')
-const { getIPFSPeerId } = require('../utils')
+const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary, rehydrateIpfsDirFromFsIfNecessary } = require('../utils')
 
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
@@ -67,6 +67,25 @@ module.exports = function (app) {
       const ipfs = req.app.get('ipfsAPI')
       let ipfsIDObj = await getIPFSPeerId(ipfs, config)
 
+      // Ensure all relevant files are available through IPFS at export time
+      await Promise.all(files.map(async (file) => {
+        if (file.type === 'track' || file.type === 'metadata' || file.type === 'copy320') {
+          await rehydrateIpfsFromFsIfNecessary(
+            req,
+            file.multihash,
+            file.storagePath)
+        } else if (file.type === 'image') {
+          if (file.sourcePath === null) {
+            // Ensure pre-directory images are still exported appropriately
+            await rehydrateIpfsFromFsIfNecessary(
+              req,
+              file.multihash,
+              file.storagePath)
+          }
+        } else if (file.type === 'dir') {
+          await rehydrateIpfsDirFromFsIfNecessary(req, file.multihash)
+        }
+      }))
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj: ipfsIDObj })
     } catch (e) {
       await t.rollback()

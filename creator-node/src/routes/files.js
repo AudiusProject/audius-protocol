@@ -15,7 +15,7 @@ const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const resizeImage = require('../resizeImage')
 const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
-const { getIPFSPeerId } = require('../utils')
+const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary } = require('../utils')
 
 module.exports = function (app) {
   /** Store image in multiple-resolutions on disk + DB and make available via IPFS */
@@ -166,6 +166,12 @@ module.exports = function (app) {
     logger.info(`IPFS Standalone Request - ${CID}`)
     logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
+    // Conditionally re-add from filestorage to IPFS
+    await rehydrateIpfsFromFsIfNecessary(
+      req,
+      CID,
+      queryResults.storagePath)
+
     try {
       // If client has provided filename, set filename in header to be auto-populated in download prompt.
       if (req.query.filename) {
@@ -199,6 +205,13 @@ module.exports = function (app) {
     if (!queryResults) {
       return sendResponse(req, res, errorResponseNotFound(`No file found for provided dirCID: ${dirCID}`))
     }
+
+    // Conditionally re-add from filestorage to IPFS
+    await rehydrateIpfsFromFsIfNecessary(
+      req,
+      dirCID,
+      queryResults.storagePath,
+      filename)
 
     // TODO - check if file with filename is also stored in CNODE
 
