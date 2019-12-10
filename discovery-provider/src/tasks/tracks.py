@@ -169,17 +169,11 @@ def parse_track_event(
 
         # if cover_art CID is of a dir, store under _sizes field instead
         if track_record.cover_art:
-            logger.info(f"catting track cover_art {track_record.cover_art}")
-            try:
-                # attempt to cat single byte from CID to determine if dir or file
-                ipfs.cat(track_record.cover_art, 0, 1)
-            except Exception as e:  # pylint: disable=W0703
-                if "this dag node is a directory" in str(e):
-                    track_record.cover_art_sizes = track_record.cover_art
-                    track_record.cover_art = None
-                    logger.info('Successfully processed CID')
-                else:
-                    raise Exception(e)
+            logger.warning(f"tracks.py | Processing track cover art {track_record.cover_art}")
+            is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
+            if is_directory:
+                track_record.cover_art_sizes = track_record.cover_art
+                track_record.cover_art = None
 
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
@@ -221,17 +215,11 @@ def parse_track_event(
 
         # if cover_art CID is of a dir, store under _sizes field instead
         if track_record.cover_art:
-            logger.info(f"catting track cover_art {track_record.cover_art}")
-            try:
-                # attempt to cat single byte from CID to determine if dir or file
-                ipfs.cat(track_record.cover_art, 0, 1)
-            except Exception as e:  # pylint: disable=W0703
-                if "this dag node is a directory" in str(e):
-                    track_record.cover_art_sizes = track_record.cover_art
-                    track_record.cover_art = None
-                    logger.info('Successfully processed CID')
-                else:
-                    raise Exception(e)
+            logger.warning(f"tracks.py | Processing track cover art {track_record.cover_art}")
+            is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
+            if is_directory:
+                track_record.cover_art_sizes = track_record.cover_art
+                track_record.cover_art = None
 
     if event_type == track_event_types_lookup["delete_track"]:
         track_record.is_delete = True

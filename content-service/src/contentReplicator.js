@@ -6,7 +6,7 @@ const TrackIdWindowSize = 5
 const UserIdWindowSize = 5
 const IpfsRepoMaxUsagePercent = 90
 const DefaultPollInterval = 5000 // 5000ms = 5s
-const TrackPinConcurrencyLimit = 10
+const TrackAddConcurrencyLimit = 10
 const TrackType = 'track'
 const UserType = 'user'
 
@@ -103,7 +103,7 @@ class ContentReplicator {
 
       logger.info(`Beginning replication task for ${tracks.length} tracks, ${users.length} users.`)
 
-      // For each track and user, pin all associated multihashes
+      // For each track and user, add all associated multihashes
       // This includes track segments, cover photos, profile pictures, and metadata
       // Any record that has a higher block number is stored in the Blocks table for subsequent discovery provider queries
       await Promise.all(
@@ -117,7 +117,7 @@ class ContentReplicator {
       // if this does not get reset we will become stuck
       this.replicating = false
       // Query information and cleanup maximum usage of ipfs repo
-      await this._monitorDiskUsage()
+      // await this._monitorDiskUsage()
     }
   }
 
@@ -129,7 +129,7 @@ class ContentReplicator {
       logger.info(`Replicating track with trackId ${trackId} at blocknumber ${blocknumber}.`)
       let numMultihashes = 0
 
-      /** Pin all track metadata. */
+      /** Add all track metadata. */
       const pinPromises = []
       if (track.cover_art) {
         pinPromises.push(this._replicateMultihash(track.cover_art, trackId, TrackType))
@@ -141,13 +141,13 @@ class ContentReplicator {
       }
       await Promise.all(pinPromises)
 
-      /** Pin all track segments. */
+      /** Add all track segments. */
       if (track.track_segments) {
         let segments = track.track_segments
         logger.info(`TrackID ${trackId} - ${segments.length} total segments`)
-        for (let i = 0; i < segments.length; i += TrackPinConcurrencyLimit) {
-          const slice = segments.slice(i, i + TrackPinConcurrencyLimit)
-          logger.info(`TrackID ${trackId} - Processing segments ${i} to ${i + TrackPinConcurrencyLimit}`)
+        for (let i = 0; i < segments.length; i += TrackAddConcurrencyLimit) {
+          const slice = segments.slice(i, i + TrackAddConcurrencyLimit)
+          logger.info(`TrackID ${trackId} - Processing segments ${i} to ${i + TrackAddConcurrencyLimit}`)
           await Promise.all(
             slice.map(segment => {
               return this._replicateMultihash(segment.multihash, trackId, TrackType)
@@ -180,7 +180,7 @@ class ContentReplicator {
       logger.info(`Replicating user with userId ${userId} at blocknumber ${blocknumber}.`)
       let numMultihashes = 0
 
-      /** Pin all user metadata. */
+      /** Add all user metadata. */
       const pinPromises = []
       if (user.profile_picture) {
         pinPromises.push(this._replicateMultihash(user.profile_picture, userId, UserType))
@@ -211,7 +211,7 @@ class ContentReplicator {
     }
   }
 
-  /** Pin multihash to IPFS if not already pinned. */
+  /** Add multihash to IPFS if not already present. */
   async _replicateMultihash (multihash, objectID, objectType) {
     // TODO: remove outdated CIDs if no longer associated with object
     const start = Date.now()
@@ -223,15 +223,17 @@ class ContentReplicator {
         : { multihash, trackId: objectID }
     })
 
-    // If file not found in DB, pin to IPFS and store in DB.
+    // If file not found in DB, add to IPFS and store in DB.
     if (!file) {
-      logger.info(`${type}ID ${objectID} - Pinning ${multihash}...`)
+      logger.info(`${type}ID ${objectID} - Adding ${multihash}...`)
       try {
-        await this.ipfs.pin.add(multihash)
+        let multihashCat = await this.ipfs.cat(multihash)
+        logger.info(`${type}ID ${objectID} - Adding ${multihash}...`)
+        await this.ipfs.add(multihashCat, { pin: false })
       } catch (e) {
-        logger.error(`Error pinning ${multihash} - ${e}`)
+        logger.error(`Error adding ${multihash} - ${e}`)
       }
-      logger.info(`${type}ID ${objectID} - Pinned ${multihash} in ${Date.now() - start}ms.`)
+      logger.info(`${type}ID ${objectID} - Added ${multihash} in ${Date.now() - start}ms.`)
       await models.File.create(
         (type === UserType)
           ? { multihash, userId: objectID }
@@ -267,7 +269,7 @@ class ContentReplicator {
   }
 
   async _monitorDiskUsage () {
-    logger.info('Monitoring disk usage:')
+    logger.info('DISABLED - Monitoring disk usage:')
 
     // No operation necessary if usage threshold is not reached
     if (!(await this._maxUsageExceeded())) {

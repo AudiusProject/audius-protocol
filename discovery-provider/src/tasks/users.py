@@ -185,33 +185,19 @@ def parse_user_event(
 
     # if profile_picture CID is of a dir, store under _sizes field instead
     if user_record.profile_picture:
-        ipfs = update_task.ipfs_client._api
         logger.warning(f"users.py | Processing user profile_picture {user_record.profile_picture}")
-        try:
-            # attempt to cat single byte from CID to determine if dir or file
-            ipfs.cat(user_record.profile_picture, 0, 1)
-        except Exception as e:  # pylint: disable=W0703
-            if "this dag node is a directory" in str(e):
-                user_record.profile_picture_sizes = user_record.profile_picture
-                user_record.profile_picture = None
-                logger.warning(f'users.py | Successfully processed CID - {user_record.profile_picture_sizes}')
-            else:
-                raise Exception(e)
+        is_directory = update_task.ipfs_client.multihash_is_directory(user_record.profile_picture)
+        if is_directory:
+            user_record.profile_picture_sizes = user_record.profile_picture
+            user_record.profile_picture = None
 
     # if cover_photo CID is of a dir, store under _sizes field instead
     if user_record.cover_photo:
-        ipfs = update_task.ipfs_client._api
-        logger.warning(f"users.py | Processing user cover_photo {user_record.cover_photo}")
-        try:
-            # attempt to cat single byte from CID to determine if dir or file
-            ipfs.cat(user_record.cover_photo, 0, 1)
-        except Exception as e:  # pylint: disable=W0703
-            if "this dag node is a directory" in str(e):
-                user_record.cover_photo_sizes = user_record.cover_photo
-                user_record.cover_photo = None
-                logger.warning(f'users.py | Successfully processed CID - {user_record.cover_photo_sizes}')
-            else:
-                raise Exception(e)
+        logger.warning(f"users.py | Processing user cover photo {user_record.cover_photo}")
+        is_directory = update_task.ipfs_client.multihash_is_directory(user_record.cover_photo)
+        if is_directory:
+            user_record.cover_photo_sizes = user_record.cover_photo
+            user_record.cover_photo = None
 
     # Find out if a user is ready to query in the db. If they are, set the is_ready field
     user_record.is_ready = is_user_ready(user_record)
