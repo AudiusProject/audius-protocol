@@ -128,7 +128,6 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
   // If file not already pinned by local INode, fetch from IPFS.
   if (fileBuffer === null) {
     req.logger.info(`Attempting to get ${multihash} from IPFS`)
-    // TODO: consider racing below statement with known cnode addr
     const output = await ipfs.get(multihash)
     if (output.length !== 1) throw new Error('Audius track segment multihash must map to 1 file')
     fileBuffer = output[0].content

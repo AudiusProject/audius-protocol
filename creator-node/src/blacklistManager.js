@@ -76,7 +76,6 @@ async function _processBlacklist (ipfs, trackIdsToBlacklist, userIdsToBlacklist)
 
       // unpin from IPFS
       try {
-        // TODO: How should this be handled now that we no longer pin at all?
         await ipfs.pin.rm(CID)
       } catch (e) {
         if (e.message.indexOf('not pinned') === -1) {
