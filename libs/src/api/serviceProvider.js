@@ -39,7 +39,7 @@ class ServiceProvider extends Base {
       creatorNodes = creatorNodes.filter(node => !blacklist.has(node.endpoint))
     }
 
-    // Time requests and autoselect nodes
+    // Time requests and get version info
     const timings = await Utils.timeRequests(
       creatorNodes.map(node => ({
         id: node.endpoint,
