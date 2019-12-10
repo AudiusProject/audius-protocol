@@ -20,6 +20,42 @@ class ServiceProvider extends Base {
   }
 
   /**
+   * Fetches healthy creator nodes filtered down to a given whitelist and blacklist
+   * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
+   * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
+   */
+  async getSelectableCreatorNodes (
+    whitelist = null,
+    blacklist = null
+  ) {
+    let creatorNodes = await this.listCreatorNodes()
+
+    // Filter whitelist
+    if (whitelist) {
+      creatorNodes = creatorNodes.filter(node => whitelist.has(node.endpoint))
+    }
+    // Filter blacklist
+    if (blacklist) {
+      creatorNodes = creatorNodes.filter(node => !blacklist.has(node.endpoint))
+    }
+
+    // Time requests and get version info
+    const timings = await Utils.timeRequests(
+      creatorNodes.map(node => ({
+        id: node.endpoint,
+        url: `${node.endpoint}/version`
+      }))
+    )
+
+    let services = {}
+    timings.forEach(timing => {
+      services[timing.request.id] = timing.response.data
+    })
+
+    return services
+  }
+
+  /**
    * Fetches healthy creator nodes and autoselects a primary
    * and two secondaries
    * @param {number} numberOfNodes total number of nodes to fetch (2 secondaries means 3 total)
