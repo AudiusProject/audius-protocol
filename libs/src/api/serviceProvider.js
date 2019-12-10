@@ -39,7 +39,20 @@ class ServiceProvider extends Base {
       creatorNodes = creatorNodes.filter(node => !blacklist.has(node.endpoint))
     }
 
-    return creatorNodes
+    // Time requests and autoselect nodes
+    const timings = await Utils.timeRequests(
+      creatorNodes.map(node => ({
+        id: node.endpoint,
+        url: `${node.endpoint}/version`
+      }))
+    )
+
+    let services = {}
+    timings.forEach(timing => {
+      services[timing.request.id] = timing.response.data
+    })
+
+    return services
   }
 
   /**
@@ -58,7 +71,16 @@ class ServiceProvider extends Base {
     whitelist = null,
     blacklist = null
   ) {
-    let creatorNodes = await this.getSelectableCreatorNodes(whitelist, blacklist)
+    let creatorNodes = await this.listCreatorNodes()
+
+    // Filter whitelist
+    if (whitelist) {
+      creatorNodes = creatorNodes.filter(node => whitelist.has(node.endpoint))
+    }
+    // Filter blacklist
+    if (blacklist) {
+      creatorNodes = creatorNodes.filter(node => !blacklist.has(node.endpoint))
+    }
 
     // Filter to healthy nodes
     creatorNodes = (await Promise.all(
