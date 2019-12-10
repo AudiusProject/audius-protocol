@@ -18,7 +18,6 @@ module.exports = function (app) {
    *  ipfsIDObj Object containing IPFS Node's peer ID
    * }
    */
-  // TODO: Rehydrate ALL exported files
   app.get('/export', handleResponse(async (req, res) => {
     const walletPublicKeys = req.query.wallet_public_key // array
 
