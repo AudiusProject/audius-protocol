@@ -1,4 +1,3 @@
-const Sequelize = require('sequelize')
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const { logger } = require('../logging')
@@ -22,9 +21,6 @@ const minLimit = 1
 const maxLimit = 500
 const defaultOffset = 0
 const minOffset = 0
-
-// Limit the number of tracks stored in a user's track history
-const USER_TRACK_LISTEN_COUNT_LIMIT = 1000
 
 const getPaginationVars = (limit, offset) => {
   if (!limit) limit = defaultLimit
@@ -222,29 +218,6 @@ module.exports = function (app) {
     if (!created) {
       userTrackListenRecord.set('updatedAt', new Date())
       await userTrackListenRecord.save()
-    }
-
-    // Count the total number of tracks listens to by the user
-    const userTrackListenCount = await models.UserTrackListen.count({
-      where: { userId: req.body.userId }
-    })
-
-    // Remove the oldest tracks if the count is greater than the limit
-    if (userTrackListenCount > USER_TRACK_LISTEN_COUNT_LIMIT) {
-      const recordsToDelete = await models.UserTrackListen.findAll({
-        limit: userTrackListenCount - USER_TRACK_LISTEN_COUNT_LIMIT,
-        where: { userId: req.body.userId },
-        order: [[ 'updatedAt', 'ASC' ]],
-        attributes: ['id']
-      })
-
-      await models.UserTrackListen.destroy({
-        where: {
-          id: {
-            [Sequelize.Op.in]: recordsToDelete.map(record => record.id)
-          }
-        }
-      })
     }
 
     return successResponse({})
