@@ -114,6 +114,21 @@ class IdentityService {
   }
 
   /**
+   * Return listen history tracks for a given user id.
+   * @param {number} userID - User ID
+   * @param {number} limit - max # of items to return
+   * @param {number} offset - offset into list to return from (for pagination)
+   */
+  async getListenHistoryTracks (userId, limit = 100, offset = 0) {
+    let req = {
+      method: 'get',
+      url: '/tracks/history',
+      params: { userId, limit, offset }
+    }
+    return this._makeRequest(req)
+  }
+
+  /**
    * Looks up a Twitter account by handle.
    * @returns {Object} twitter API response.
    */

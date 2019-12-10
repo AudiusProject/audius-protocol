@@ -1,3 +1,4 @@
+const Sequelize = require('sequelize')
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const { logger } = require('../logging')
@@ -21,6 +22,9 @@ const minLimit = 1
 const maxLimit = 500
 const defaultOffset = 0
 const minOffset = 0
+
+// Limit the number of tracks stored in a user's track history
+const USER_TRACK_LISTEN_COUNT_LIMIT = 1000
 
 const getPaginationVars = (limit, offset) => {
   if (!limit) limit = defaultLimit
@@ -203,13 +207,78 @@ module.exports = function (app) {
     let currentHour = await getListenHour()
     let trackListenRecord = await models.TrackListenCount.findOrCreate(
       {
-        where: { hour: currentHour, trackId: req.params.id }
+        where: { hour: currentHour, trackId }
       })
     if (trackListenRecord && trackListenRecord[1]) {
       logger.info(`New track listen record inserted ${trackListenRecord}`)
     }
     await models.TrackListenCount.increment('listens', { where: { hour: currentHour, trackId: req.params.id } })
+
+    // Find / Create the record of the user listening to the track
+    const [userTrackListenRecord, created] = await models.UserTrackListen
+      .findOrCreate({ where: { userId: req.body.userId, trackId } })
+
+    // If the recrod was not created, updated the timestamp
+    if (!created) {
+      userTrackListenRecord.set('updatedAt', new Date())
+      await userTrackListenRecord.save()
+    }
+
+    // Count the total number of tracks listens to by the user
+    const userTrackListenCount = await models.UserTrackListen.count({
+      where: { userId: req.body.userId }
+    })
+
+    // Remove the oldest tracks if the count is greater than the limit
+    if (userTrackListenCount > USER_TRACK_LISTEN_COUNT_LIMIT) {
+      const recordsToDelete = await models.UserTrackListen.findAll({
+        limit: userTrackListenCount - USER_TRACK_LISTEN_COUNT_LIMIT,
+        where: { userId: req.body.userId },
+        order: [[ 'updatedAt', 'ASC' ]],
+        attributes: ['id']
+      })
+
+      await models.UserTrackListen.destroy({
+        where: {
+          id: {
+            [Sequelize.Op.in]: recordsToDelete.map(record => record.id)
+          }
+        }
+      })
+    }
+
     return successResponse({})
+  }))
+
+  /*
+   * Return listen history for a given user
+   *  tracks/history/
+   *    - tracks w/ recorded listen event sorted by date listened
+   *
+   *  GET query parameters (optional):
+   *    userId (int) - userId of the requester
+   *    limit (int) - limits number of results w/ a max of 100
+   *    offset (int) - offset results
+   */
+  app.get('/tracks/history', handleResponse(async (req, res) => {
+    const userId = parseInt(req.query.userId)
+    const limit = isNaN(req.query.limit) ? 100 : Math.min(parseInt(req.query.limit), 100)
+    const offset = isNaN(req.query.offset) ? 0 : parseInt(req.query.offset)
+    if (!userId) {
+      return errorResponseBadRequest('Must include user id')
+    }
+
+    const trackListens = await models.UserTrackListen.findAll({
+      where: { userId },
+      order: [[ 'updatedAt', 'DESC' ]],
+      attributes: ['trackId', 'updatedAt'],
+      limit,
+      offset
+    })
+
+    return successResponse({
+      tracks: trackListens.map(track => ({ trackId: track.trackId, listenDate: track.updatedAt }))
+    })
   }))
 
   /*
