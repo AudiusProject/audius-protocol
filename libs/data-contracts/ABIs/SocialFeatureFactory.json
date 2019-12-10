@@ -8,7 +8,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x41c0e1b5"
     },
     {
       "constant": false,
@@ -17,7 +18,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x715018a6"
     },
     {
       "constant": true,
@@ -31,7 +33,8 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0x8da5cb5b"
     },
     {
       "constant": true,
@@ -45,7 +48,8 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0x8f32d59b"
     },
     {
       "constant": false,
@@ -59,7 +63,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xa91ee0dc"
     },
     {
       "constant": false,
@@ -73,7 +78,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xf2fde38b"
     },
     {
       "constant": true,
@@ -92,7 +98,8 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0xf978fd61"
     },
     {
       "inputs": [
@@ -123,7 +130,8 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "constructor"
+      "type": "constructor",
+      "signature": "constructor"
     },
     {
       "anonymous": false,
@@ -140,7 +148,8 @@
         }
       ],
       "name": "TrackRepostAdded",
-      "type": "event"
+      "type": "event",
+      "signature": "0xbd0a11497d951f06825dc163a02771f38020b5bf5f188326f6ea06cfed30adf9"
     },
     {
       "anonymous": false,
@@ -157,7 +166,8 @@
         }
       ],
       "name": "TrackRepostDeleted",
-      "type": "event"
+      "type": "event",
+      "signature": "0x13d1110ef1e01d7ef85eec2610ac007e7beceab019a93bcae151c71e0e2b6b4f"
     },
     {
       "anonymous": false,
@@ -174,7 +184,8 @@
         }
       ],
       "name": "PlaylistRepostAdded",
-      "type": "event"
+      "type": "event",
+      "signature": "0xf3b7cd2924be934c41c3db1c8bdf7f663cdfe6ed1373eab2894363fc389ffcac"
     },
     {
       "anonymous": false,
@@ -191,7 +202,8 @@
         }
       ],
       "name": "PlaylistRepostDeleted",
-      "type": "event"
+      "type": "event",
+      "signature": "0xd8fb9f19681f640d18abb99c6f9e21f588e6846c5adef8eeb873db4651b5def4"
     },
     {
       "anonymous": false,
@@ -208,7 +220,8 @@
         }
       ],
       "name": "UserFollowAdded",
-      "type": "event"
+      "type": "event",
+      "signature": "0xb23f942305a4a8b398b0a0ab9f052b10b36ccf0b6d415ec63b773996fcf4a1ce"
     },
     {
       "anonymous": false,
@@ -225,7 +238,8 @@
         }
       ],
       "name": "UserFollowDeleted",
-      "type": "event"
+      "type": "event",
+      "signature": "0xeac7abbe2526179392b8eb1007ed9cd263c421c48a08a6c824737cc66721b03c"
     },
     {
       "anonymous": false,
@@ -242,7 +256,8 @@
         }
       ],
       "name": "OwnershipTransferred",
-      "type": "event"
+      "type": "event",
+      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
     },
     {
       "constant": false,
@@ -268,7 +283,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xc59faae3"
     },
     {
       "constant": false,
@@ -294,7 +310,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x50a3f9d9"
     },
     {
       "constant": false,
@@ -320,7 +337,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x55fd25ab"
     },
     {
       "constant": false,
@@ -346,7 +364,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xc0f56ad5"
     },
     {
       "constant": false,
@@ -377,7 +396,8 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xfa536c2d"
     },
     {
       "constant": false,
@@ -408,7 +428,8 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xa7ca0ba3"
     },
     {
       "constant": true,
@@ -431,7 +452,8 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0xa17fc757"
     },
     {
       "constant": true,
@@ -454,7 +476,8 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0xe764ee2d"
     }
   ]
 }
