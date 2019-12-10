@@ -17,7 +17,7 @@ const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 
 /**
  * (1) Add file to IPFS; (2) save file to disk;
- * (3) pin file via IPFS; (4) save file ref to DB
+ * (3) add file via IPFS; (4) save file ref to DB
  * @dev - only call this function when file is not already stored to disk
  *      - if it is, then use saveFileToIPFSFromFS()
  */
@@ -50,7 +50,7 @@ async function saveFileFromBuffer (req, buffer, fileType) {
 
 /**
  * Save file to IPFS given file path.
- * - Add and pin file to IPFS.
+ * - Add file to IPFS.
  * - Re-save file to disk under multihash.
  * - Save reference to file in DB.
  */
@@ -66,8 +66,6 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
 
   let codeBlockTimeStart = Date.now()
 
-  // Adding a file through js-ipfs-api pins by default
-  // Ensuring this multihash is available through garbage collection
   const multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
   req.logger.info(`Time taken in saveFileToIpfsFromFS to add: ${Date.now() - codeBlockTimeStart}`)
   codeBlockTimeStart = Date.now()
@@ -95,14 +93,14 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
   return { multihash: multihash, fileUUID: file.fileUUID }
 }
 
-/** Save file to disk given IPFS multihash, and ensure is pinned.
+/** Save file to disk given IPFS multihash, and ensure availability.
  *  Steps:
  *  - If file already stored on disk, return immediately.
  *  - If file not already stored, fetch from IPFS and store.
- *    - If multihash already pinned by local inode, retrieve file.
- *    - If multihash not already pinned, fetch file from IPFS.
+ *    - If multihash available on local inode, retrieve file.
+ *    - If multihash not available locally, fetch file from IPFS.
  *  - Write file to disk.
- *  - Pin file to local inode if not already.
+ *  - Add file to local inode if not already.
  */
 async function saveFileForMultihash (req, multihash, expectedStoragePath) {
   // If file already stored on disk, return immediately.
@@ -116,8 +114,8 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
   let fileBuffer = null
   req.logger.info(`Storing file at ${expectedStoragePath} for track multihash ${multihash}`)
 
-  // If multihash already pinned by local INode, cat file from local ipfs node
-  req.logger.info(`checking if ${multihash} already pinned by local ipfs node`)
+  // If multihash already available on local INode, cat file from local ipfs node
+  req.logger.info(`checking if ${multihash} already available on local ipfs node`)
   try {
     fileBuffer = await ipfs.cat(multihash)
     req.logger.info(`Retrieved file for ${multihash} from local ipfs node`)
@@ -125,10 +123,15 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
     req.logger.info(`Multihash ${multihash} is not available on local ipfs node`)
   }
 
-  // If file not already pinned by local INode, fetch from IPFS.
+  // If file not already available on local INode, fetch from IPFS.
   if (fileBuffer === null) {
     req.logger.info(`Attempting to get ${multihash} from IPFS`)
-    const output = await ipfs.get(multihash)
+    let output
+    try {
+      output = await ipfs.get(multihash)
+    } catch (e) {
+      throw new Error(`Failed to retrieve file for multihash ${multihash} from IPFS`)
+    }
     if (output.length !== 1) throw new Error('Audius track segment multihash must map to 1 file')
     fileBuffer = output[0].content
     req.logger.info(`retrieved file for multihash ${multihash} from path ${output[0].path}`)

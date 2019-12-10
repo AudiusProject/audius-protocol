@@ -8,6 +8,7 @@ const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary, rehydrateIpfsDirFromFsIfN
 
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
+const TrackSaveConcurrencyLimit = 10
 
 module.exports = function (app) {
   /**
@@ -284,9 +285,15 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         })), { transaction: t })
         req.logger.info(redisKey, 'created all tracks')
 
-        // Save all track files to disk
-        await Promise.all(trackFiles.map(trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath)))
-        req.logger.info('save all track files to disk/ipfs')
+        // Save all track files to disk in batches (to limit concurrent load)
+        for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
+          const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
+          req.logger.info(`TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit}...`)
+          await Promise.all(trackFilesSlice.map(
+            trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath)
+          ))
+        }
+        req.logger.info('Saved all track files to disk and ipfs.')
 
         // Save all track files to db
         await models.File.bulkCreate(trackFiles.map(trackFile => ({
