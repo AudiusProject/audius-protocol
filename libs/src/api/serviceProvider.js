@@ -20,6 +20,29 @@ class ServiceProvider extends Base {
   }
 
   /**
+   * Fetches healthy creator nodes filtered down to a given whitelist and blacklist
+   * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
+   * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
+   */
+  async getSelectableCreatorNodes (
+    whitelist = null,
+    blacklist = null
+  ) {
+    let creatorNodes = await this.listCreatorNodes()
+
+    // Filter whitelist
+    if (whitelist) {
+      creatorNodes = creatorNodes.filter(node => whitelist.has(node.endpoint))
+    }
+    // Filter blacklist
+    if (blacklist) {
+      creatorNodes = creatorNodes.filter(node => !blacklist.has(node.endpoint))
+    }
+
+    return creatorNodes
+  }
+
+  /**
    * Fetches healthy creator nodes and autoselects a primary
    * and two secondaries
    * @param {number} numberOfNodes total number of nodes to fetch (2 secondaries means 3 total)
@@ -35,23 +58,14 @@ class ServiceProvider extends Base {
     whitelist = null,
     blacklist = null
   ) {
-    let creatorNodes = await this.listCreatorNodes()
-
-    // Filter whitelist
-    if (whitelist) {
-      creatorNodes = creatorNodes.filter(node => whitelist.has(node.endpoint))
-    }
-    // Filter blacklist
-    if (blacklist) {
-      creatorNodes = creatorNodes.filter(node => !blacklist.has(node.endpoint))
-    }
+    let creatorNodes = await this.getSelectableCreatorNodes(whitelist, blacklist)
 
     // Filter to healthy nodes
     creatorNodes = (await Promise.all(
       creatorNodes.map(async node => {
         try {
-          await this.creatorNode.getSyncStatus(node.endpoint)
-          return node.endpoint
+          const { isBehind, isConfigured } = await this.creatorNode.getSyncStatus(node.endpoint)
+          return isConfigured && isBehind ? false : node.endpoint
         } catch (e) {
           return false
         }
