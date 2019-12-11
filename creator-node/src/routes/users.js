@@ -46,8 +46,8 @@ module.exports = function (app) {
     const theirTimestamp = parseInt(data.split(':')[1])
     const ourTimestamp = Math.round((new Date()).getTime() / 1000)
 
-    if (Math.abs(theirTimestamp - ourTimestamp) > 300) {
-      return errorResponseBadRequest('Timestamp too old')
+    if (Math.abs(theirTimestamp - ourTimestamp) > 3600) {
+      console.error(`Timestamp too old. User timestamp ${theirTimestamp}, Server timestamp ${ourTimestamp}`)
     }
 
     // all checks have passed! generate a new session token for the user
