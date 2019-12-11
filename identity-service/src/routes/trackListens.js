@@ -210,14 +210,18 @@ module.exports = function (app) {
     }
     await models.TrackListenCount.increment('listens', { where: { hour: currentHour, trackId: req.params.id } })
 
-    // Find / Create the record of the user listening to the track
-    const [userTrackListenRecord, created] = await models.UserTrackListen
-      .findOrCreate({ where: { userId: req.body.userId, trackId } })
+    // The client will send a randomly generated UUID for anonymous users.
+    // Those listened should NOT be recorded in the userTrackListen table
+    if (!isNaN(req.body.userId)) {
+      // Find / Create the record of the user listening to the track
+      const [userTrackListenRecord, created] = await models.UserTrackListen
+        .findOrCreate({ where: { userId: req.body.userId, trackId } })
 
-    // If the recrod was not created, updated the timestamp
-    if (!created) {
-      userTrackListenRecord.set('updatedAt', new Date())
-      await userTrackListenRecord.save()
+      // If the recrod was not created, updated the timestamp
+      if (!created) {
+        userTrackListenRecord.set('updatedAt', new Date())
+        await userTrackListenRecord.save()
+      }
     }
 
     return successResponse({})
