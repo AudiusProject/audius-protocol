@@ -157,7 +157,6 @@ class Utils {
     return timings.sort((a, b) => a.millis - b.millis)
   }
 
-  // Races requests for file content
   /**
    * Races multiple requests
    * @param {*} urls
@@ -177,9 +176,9 @@ class Utils {
       const source = CancelToken.source()
       sources.push(source)
 
-      // Slightly offset requests by their order, so:
-      // 1. We try public gateways first
-      // 2. We give requests the opportunity to get canceled if other's are very fast
+      // Slightly offset requests by their order, so they
+      // 1. can be canceled before starting
+      // 2. dont thrash the browser
       await Utils.wait(500 * i)
 
       return new Promise((resolve, reject) => {
