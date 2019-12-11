@@ -89,6 +89,7 @@ describe('test Users', function () {
       .expect(400)
   })
 
+  /*
   it('login fails on old timestamp', async function () {
     await createStarterCNodeUser()
     const ts = Math.round((new Date()).getTime() / 1000) - 305
@@ -99,6 +100,7 @@ describe('test Users', function () {
       .send({ data, signature })
       .expect(400)
   })
+  */
 
   it('logout works', async function () {
     const session = await createStarterCNodeUser()
