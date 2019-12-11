@@ -161,7 +161,8 @@ class Account extends Base {
       return { error: err.message, phase }
     }
 
-    metadata['user_id'] = userId
+    metadata.user_id = userId
+    metadata.wallet = this.web3Manager.getWalletAddress()
     this.userStateManager.setCurrentUser(metadata)
 
     return { userId, error: false }
