@@ -32,8 +32,7 @@ class File extends Base {
    *  Can be used for tracking metrics on which gateways were used.
    */
   async fetchCID (cid, creatorNodeGateways, callback = null) {
-    const gateways = publicGateways
-      .concat(creatorNodeGateways)
+    const gateways = creatorNodeGateways.concat(publicGateways)
     const urls = gateways.map(gateway => urlJoin(gateway, cid))
 
     try {

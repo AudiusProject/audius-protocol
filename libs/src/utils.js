@@ -180,7 +180,7 @@ class Utils {
       // Slightly offset requests by their order, so:
       // 1. We try public gateways first
       // 2. We give requests the opportunity to get canceled if other's are very fast
-      await Utils.wait(100 * i)
+      await Utils.wait(500 * i)
 
       return new Promise((resolve, reject) => {
         axios({
