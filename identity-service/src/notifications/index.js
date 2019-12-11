@@ -59,6 +59,8 @@ const repostMilestoneList = baseMilestoneList
 const favoriteMilestoneList = baseMilestoneList
 // Track listen milestone list
 const trackListenMilestoneList = baseMilestoneList
+// Number of tracks to fetch for new listens on each poll
+const trackListenMilestonePollCount = 100
 
 const notifDiscProv = config.get('notificationDiscoveryProvider')
 const emailCachePath = './emailCache'
@@ -167,7 +169,7 @@ class NotificationProcessor {
       attributes: [[models.Sequelize.col('trackId'), 'trackId'], [models.Sequelize.fn('max', models.Sequelize.col('hour')), 'hour']],
       order: [[models.Sequelize.col('hour'), 'DESC']],
       group: ['trackId'],
-      limit: 10
+      limit: trackListenMilestonePollCount
     }
 
     // Distinct tracks
