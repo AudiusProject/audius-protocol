@@ -203,13 +203,59 @@ module.exports = function (app) {
     let currentHour = await getListenHour()
     let trackListenRecord = await models.TrackListenCount.findOrCreate(
       {
-        where: { hour: currentHour, trackId: req.params.id }
+        where: { hour: currentHour, trackId }
       })
     if (trackListenRecord && trackListenRecord[1]) {
       logger.info(`New track listen record inserted ${trackListenRecord}`)
     }
     await models.TrackListenCount.increment('listens', { where: { hour: currentHour, trackId: req.params.id } })
+
+    // The client will send a randomly generated UUID for anonymous users.
+    // Those listened should NOT be recorded in the userTrackListen table
+    if (!isNaN(req.body.userId)) {
+      // Find / Create the record of the user listening to the track
+      const [userTrackListenRecord, created] = await models.UserTrackListen
+        .findOrCreate({ where: { userId: req.body.userId, trackId } })
+
+      // If the recrod was not created, updated the timestamp
+      if (!created) {
+        userTrackListenRecord.set('updatedAt', new Date())
+        await userTrackListenRecord.save()
+      }
+    }
+
     return successResponse({})
+  }))
+
+  /*
+   * Return listen history for a given user
+   *  tracks/history/
+   *    - tracks w/ recorded listen event sorted by date listened
+   *
+   *  GET query parameters (optional):
+   *    userId (int) - userId of the requester
+   *    limit (int) - limits number of results w/ a max of 100
+   *    offset (int) - offset results
+   */
+  app.get('/tracks/history', handleResponse(async (req, res) => {
+    const userId = parseInt(req.query.userId)
+    const limit = isNaN(req.query.limit) ? 100 : Math.min(parseInt(req.query.limit), 100)
+    const offset = isNaN(req.query.offset) ? 0 : parseInt(req.query.offset)
+    if (!userId) {
+      return errorResponseBadRequest('Must include user id')
+    }
+
+    const trackListens = await models.UserTrackListen.findAll({
+      where: { userId },
+      order: [[ 'updatedAt', 'DESC' ]],
+      attributes: ['trackId', 'updatedAt'],
+      limit,
+      offset
+    })
+
+    return successResponse({
+      tracks: trackListens.map(track => ({ trackId: track.trackId, listenDate: track.updatedAt }))
+    })
   }))
 
   /*

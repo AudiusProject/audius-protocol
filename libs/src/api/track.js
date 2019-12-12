@@ -119,6 +119,18 @@ class Tracks extends Base {
   }
 
   /**
+   * Return saved tracks for current user
+   * NOTE in returned JSON, SaveType string one of track, playlist, album
+   * @param {number} userId
+   * @param {number} limit - max # of items to return
+   * @param {number} offset - offset into list to return from (for pagination)
+   */
+  async getListenHistoryTracks (userId, limit = 100, offset = 0) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    return this.identityService.getListenHistoryTracks(userId, limit, offset)
+  }
+
+  /**
    * Checks if a download is available from provided creator node endpoints
    * @param {string} creatorNodeEndpoints creator node endpoints
    * @param {number} trackId
