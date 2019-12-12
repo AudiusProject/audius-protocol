@@ -31,7 +31,7 @@ function loggingMiddleware (req, res, next) {
     requestBlockchainUserId: req.get('user-id') ? req.get('user-id') : null
   })
 
-  res.on('finish', function(){
+  res.on('finish', function () {
     req.logger.info('Request Duration', res.get('X-Response-Time'))
   })
 
