@@ -111,8 +111,12 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
   // Timed out, must re-add from FS
   if (!filename) {
     req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding file - ${multihash}, stg path: ${storagePath}`)
-    let addResp = await ipfs.addFromFs(storagePath, { pin: false })
-    req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
+    try {
+      let addResp = await ipfs.addFromFs(storagePath, { pin: false })
+      req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
+    } catch (e) {
+      req.logger.info(`rehydrateIpfsFromFsIfNecessary - ${e},Re-adding file - ${multihash}, stg path: ${storagePath}`)
+    }
   } else {
     req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding dir ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`)
     let findOriginalFileQuery = await models.File.findAll({
@@ -126,15 +130,24 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
     let ipfsAddArray = []
     for (var entry of findOriginalFileQuery) {
       let sourceFilePath = entry.storagePath
-      let bufferedFile = fs.readFileSync(sourceFilePath)
-      let originalSource = parseSourcePath(entry.sourceFile)
-      ipfsAddArray.push({
-        path: originalSource,
-        content: bufferedFile
-      })
+      try {
+        let bufferedFile = fs.readFileSync(sourceFilePath)
+        let originalSource = parseSourcePath(entry.sourceFile)
+        ipfsAddArray.push({
+          path: originalSource,
+          content: bufferedFile
+        })
+      } catch (e) {
+        req.logger.info(`rehydrateIpfsFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`)
+      }
     }
-    let addResp = await ipfs.add(ipfsAddArray, { pin: false })
-    req.logger.info(`rehydrateIpfsFromFsIfNecessary - ${JSON.stringify(addResp)}`)
+
+    try {
+      let addResp = await ipfs.add(ipfsAddArray, { pin: false })
+      req.logger.info(`rehydrateIpfsFromFsIfNecessary - ${JSON.stringify(addResp)}`)
+    } catch (e) {
+      req.logger.info(`rehydrateIpfsFromFsIfNecessary - ERROR ${e}, ${ipfsAddArray}`)
+    }
   }
 }
 
@@ -171,16 +184,24 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
   let ipfsAddArray = []
   for (let entry of findOriginalFileQuery) {
     let sourceFilePath = entry.storagePath
-    let bufferedFile = fs.readFileSync(sourceFilePath)
-    let originalSource = entry.sourceFile
-    ipfsAddArray.push({
-      path: originalSource,
-      content: bufferedFile
-    })
+    try {
+      let bufferedFile = fs.readFileSync(sourceFilePath)
+      let originalSource = entry.sourceFile
+      ipfsAddArray.push({
+        path: originalSource,
+        content: bufferedFile
+      })
+    } catch (e) {
+      req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`)
+    }
   }
   let ipfs = req.app.get('ipfsAPI')
-  let addResp = await ipfs.add(ipfsAddArray, { pin: false })
-  req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - ${JSON.stringify(addResp)}`)
+  try {
+    let addResp = await ipfs.add(ipfsAddArray, { pin: false })
+    req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - ${JSON.stringify(addResp)}`)
+  } catch (e) {
+    req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR ADDING DIR TO IPFS ${e}, ${ipfsAddArray}`)
+  }
 }
 
 module.exports = Utils
