@@ -26,8 +26,18 @@ function loggingMiddleware (req, res, next) {
     requestID: requestID,
     requestMethod: req.method,
     requestHostname: req.hostname,
-    requestUrl: req.originalUrl
+    requestUrl: req.originalUrl,
+    requestWallet: req.get('user-wallet-addr'),
+    requestBlockchainUserId: req.get('user-id')
   })
+
+  res.on('finish', function () {
+    // header is set by response-time npm module, but it's only set
+    // when you're about to write headers, so that's why this is in
+    // finish event
+    req.logger.info('Request Duration', res.get('X-Response-Time'))
+  })
+
   if (requestNotExcludedFromLogging(req.originalUrl)) {
     req.logger.debug('Begin processing request')
   }

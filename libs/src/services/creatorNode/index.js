@@ -384,9 +384,16 @@ class CreatorNode {
       await this.ensureConnected()
     }
 
+    axiosRequestObj.headers = axiosRequestObj.headers || {}
+
     if (this.authToken) {
-      axiosRequestObj.headers = axiosRequestObj.headers || {}
       axiosRequestObj.headers['X-Session-ID'] = this.authToken
+    }
+
+    const user = this.userStateManager.getCurrentUser()
+    if (user && user.wallet && user.user_id) {
+      axiosRequestObj.headers['User-Wallet-Addr'] = user.wallet
+      axiosRequestObj.headers['User-Id'] = user.user_id
     }
 
     axiosRequestObj.baseURL = this.creatorNodeEndpoint

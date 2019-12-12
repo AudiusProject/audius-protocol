@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const responseTime = require('response-time')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
@@ -13,6 +14,7 @@ const TWENTY_MINUTES = 1000 * 60 * 20 // 1,200,000ms = 20min
 const app = express()
 // middleware functions will be run in order they are added to the app below
 //  - loggingMiddleware must be first to ensure proper error handling
+app.use(responseTime())
 app.use(loggingMiddleware)
 app.use(bodyParser.json({ limit: '1mb' }))
 app.use(userNodeMiddleware)
