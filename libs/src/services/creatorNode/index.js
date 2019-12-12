@@ -373,7 +373,7 @@ class CreatorNode {
     }
 
     axiosRequestObj.headers = axiosRequestObj.headers || {}
-    
+
     if (this.authToken) {
       axiosRequestObj.headers['X-Session-ID'] = this.authToken
     }
