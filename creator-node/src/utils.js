@@ -1,4 +1,5 @@
 const { recoverPersonalSignature } = require('eth-sig-util')
+const fs = require('fs')
 
 const models = require('./models')
 
@@ -71,6 +72,144 @@ async function getIPFSPeerId (ipfs, config) {
   return ipfsIDObj
 }
 
+const wait = (ms) => new Promise((resolve, reject) => setTimeout(() => reject(new Error('Timeout')), ms))
+
+const ipfsSingleByteCat = (path, req) => new Promise(async (resolve, reject) => {
+  // Cat single byte
+  const start = Date.now()
+  let ipfs = req.app.get('ipfsAPI')
+  await ipfs.cat(path, { length: 1 })
+  req.logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
+  resolve('SUCCESS')
+})
+
+const parseSourcePath = (sourcePath) => {
+  if (sourcePath.includes('blob') || sourcePath.includes('Artwork')) {
+    sourcePath = sourcePath.split('/')[1]
+  }
+  return sourcePath
+}
+
+async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, filename = null) {
+  let ipfs = req.app.get('ipfsAPI')
+  let ipfsPath = multihash
+  if (filename != null) {
+    // Indicates we are retrieving a directory multihash
+    ipfsPath = `${multihash}/${filename}`
+  }
+
+  let rehydrateNecessary = false
+  try {
+    await Promise.race([
+      wait(1000),
+      ipfsSingleByteCat(ipfsPath, req)])
+  } catch (e) {
+    rehydrateNecessary = true
+    req.logger.info(`rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
+  }
+  if (!rehydrateNecessary) return
+  // Timed out, must re-add from FS
+  if (!filename) {
+    req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding file - ${multihash}, stg path: ${storagePath}`)
+    try {
+      if (fs.existsSync(storagePath)) {
+        let addResp = await ipfs.addFromFs(storagePath, { pin: false })
+        req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
+      } else {
+        req.logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`)
+      }
+    } catch (e) {
+      req.logger.info(`rehydrateIpfsFromFsIfNecessary - ${e},Re-adding file - ${multihash}, stg path: ${storagePath}`)
+    }
+  } else {
+    req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding dir ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`)
+    let findOriginalFileQuery = await models.File.findAll({
+      where: {
+        storagePath: { [models.Sequelize.Op.like]: `%${multihash}%` },
+        type: 'image'
+      }
+    })
+    // Add entire directory to recreate original operation
+    // Required to ensure same dirCID as data store
+    let ipfsAddArray = []
+    for (var entry of findOriginalFileQuery) {
+      let sourceFilePath = entry.storagePath
+      try {
+        let bufferedFile = fs.readFileSync(sourceFilePath)
+        let originalSource = parseSourcePath(entry.sourceFile)
+        ipfsAddArray.push({
+          path: originalSource,
+          content: bufferedFile
+        })
+      } catch (e) {
+        req.logger.info(`rehydrateIpfsFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`)
+      }
+    }
+
+    try {
+      let addResp = await ipfs.add(ipfsAddArray, { pin: false })
+      req.logger.info(`rehydrateIpfsFromFsIfNecessary - ${JSON.stringify(addResp)}`)
+    } catch (e) {
+      req.logger.info(`rehydrateIpfsFromFsIfNecessary - ERROR ${e}, ${ipfsAddArray}`)
+    }
+  }
+}
+
+async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
+  req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, dirHash: ${dirHash}`)
+  let findOriginalFileQuery = await models.File.findAll({
+    where: {
+      storagePath: { [models.Sequelize.Op.like]: `%${dirHash}%` },
+      type: 'image'
+    }
+  })
+
+  let rehydrateNecessary = false
+  for (let entry of findOriginalFileQuery) {
+    let sourcePath = parseSourcePath(entry.sourceFile)
+    let ipfsPath = `${dirHash}/${sourcePath}`
+    req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, ipfsPath: ${ipfsPath}`)
+    try {
+      await Promise.race([
+        wait(1000),
+        ipfsSingleByteCat(ipfsPath, req)])
+    } catch (e) {
+      rehydrateNecessary = true
+      req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
+      break
+    }
+  }
+
+  req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, dir=${dirHash} - required = ${rehydrateNecessary}`)
+  if (!rehydrateNecessary) return
+
+  // Add entire directory to recreate original operation
+  // Required to ensure same dirCID as data store
+  let ipfsAddArray = []
+  for (let entry of findOriginalFileQuery) {
+    let sourceFilePath = entry.storagePath
+    try {
+      let bufferedFile = fs.readFileSync(sourceFilePath)
+      let originalSource = entry.sourceFile
+      ipfsAddArray.push({
+        path: originalSource,
+        content: bufferedFile
+      })
+    } catch (e) {
+      req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`)
+    }
+  }
+  let ipfs = req.app.get('ipfsAPI')
+  try {
+    let addResp = await ipfs.add(ipfsAddArray, { pin: false })
+    req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - ${JSON.stringify(addResp)}`)
+  } catch (e) {
+    req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR ADDING DIR TO IPFS ${e}, ${ipfsAddArray}`)
+  }
+}
+
 module.exports = Utils
 module.exports.getFileUUIDForImageCID = getFileUUIDForImageCID
 module.exports.getIPFSPeerId = getIPFSPeerId
+module.exports.rehydrateIpfsFromFsIfNecessary = rehydrateIpfsFromFsIfNecessary
+module.exports.rehydrateIpfsDirFromFsIfNecessary = rehydrateIpfsDirFromFsIfNecessary

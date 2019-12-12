@@ -4,11 +4,12 @@ const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError } = require('../apiHelpers')
 const config = require('../config')
-const { getIPFSPeerId } = require('../utils')
+const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary, rehydrateIpfsDirFromFsIfNecessary } = require('../utils')
 
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
 const TrackSaveConcurrencyLimit = 10
+const RehydrateIPFSConcurrencyLimit = 10
 
 module.exports = function (app) {
   /**
@@ -68,6 +69,33 @@ module.exports = function (app) {
       const ipfs = req.app.get('ipfsAPI')
       let ipfsIDObj = await getIPFSPeerId(ipfs, config)
 
+      for (let i = 0; i < files.length; i += RehydrateIPFSConcurrencyLimit) {
+        const exportFilesSlice = files.slice(i, i + RehydrateIPFSConcurrencyLimit)
+        req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}`)
+        // Ensure all relevant files are available through IPFS at export time
+        await Promise.all(exportFilesSlice.map(async (file) => {
+          try {
+            if (file.type === 'track' || file.type === 'metadata' || file.type === 'copy320') {
+              await rehydrateIpfsFromFsIfNecessary(
+                req,
+                file.multihash,
+                file.storagePath)
+            } else if (file.type === 'image') {
+              if (file.sourcePath === null) {
+                // Ensure pre-directory images are still exported appropriately
+                await rehydrateIpfsFromFsIfNecessary(
+                  req,
+                  file.multihash,
+                  file.storagePath)
+              }
+            } else if (file.type === 'dir') {
+              await rehydrateIpfsDirFromFsIfNecessary(req, file.multihash)
+            }
+          } catch (e) {
+            req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}, ${e}`)
+          }
+        }))
+      }
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj: ipfsIDObj })
     } catch (e) {
       await t.rollback()
