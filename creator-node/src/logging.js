@@ -32,6 +32,9 @@ function loggingMiddleware (req, res, next) {
   })
 
   res.on('finish', function () {
+    // header is set by response-time npm module, but it's only set
+    // when you're about to write headers, so that's why this is in
+    // finish event
     req.logger.info('Request Duration', res.get('X-Response-Time'))
   })
 
