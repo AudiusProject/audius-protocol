@@ -7,7 +7,7 @@ const { getSegmentsDuration } = require('../segmentDuration')
 const models = require('../models')
 const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseForbidden } = require('../apiHelpers')
-const { getFileUUIDForImageCID, rehydrateIpfsFromFsIfNecessary } = require('../utils')
+const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
 
 module.exports = function (app) {
@@ -435,11 +435,8 @@ module.exports = function (app) {
 
     // If copyFile exists, only return CID if it is available on local IPFS node.
     try {
-      // Rehydrate master copy if necessary
-      await rehydrateIpfsFromFsIfNecessary(
-        req,
-        copyFile.multihash,
-        copyFile.storagePath)
+      // TODO - replace with incoming re-hydration code.
+      await req.app.get('ipfsAPI').cat(copyFile.multihash, { length: 1 })
       return successResponse({ isDownloadable: true, cid: copyFile.multihash })
     } catch (e) {
       return successResponse({ isDownloadable: true, cid: null })
