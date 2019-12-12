@@ -112,8 +112,12 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
   if (!filename) {
     req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding file - ${multihash}, stg path: ${storagePath}`)
     try {
-      let addResp = await ipfs.addFromFs(storagePath, { pin: false })
-      req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
+      if (fs.existsSync(storagePath)) {
+        let addResp = await ipfs.addFromFs(storagePath, { pin: false })
+        req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
+      } else {
+        req.logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`)
+      }
     } catch (e) {
       req.logger.info(`rehydrateIpfsFromFsIfNecessary - ${e},Re-adding file - ${multihash}, stg path: ${storagePath}`)
     }
