@@ -27,8 +27,8 @@ function loggingMiddleware (req, res, next) {
     requestMethod: req.method,
     requestHostname: req.hostname,
     requestUrl: req.originalUrl,
-    requestWallet: req.get('user-wallet-addr') ? req.get('user-wallet-addr') : null,
-    requestBlockchainUserId: req.get('user-id') ? req.get('user-id') : null
+    requestWallet: req.get('user-wallet-addr'),
+    requestBlockchainUserId: req.get('user-id')
   })
 
   res.on('finish', function () {
