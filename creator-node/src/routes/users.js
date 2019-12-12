@@ -28,9 +28,21 @@ module.exports = function (app) {
     return successResponse()
   }))
 
+  app.get('/users/login/challenge', handleResponse(async (req, res, next) => {
+    console.log('CHALLENGE HIT')
+    const walletPublicKey = req.params.walletPublicKey
+    const redisClient = req.app.get('redisClient')
+    const challenge = (new Date()).getTime()
+    // const challengeKey = `${walletPublicKey}-${challenge}`
+    redisClient.set(walletPublicKey, challenge)
+    console.log('CHALLENGE REDIS KEY SET HIT')
+    return successResponse({ walletPublicKey, challenge })
+  }))
+
   app.post('/users/login', handleResponse(async (req, res, next) => {
     const { signature, data } = req.body
 
+    const redisClient = req.app.get('redisClient')
     const address = utils.verifySignature(data, signature)
     const user = await models.CNodeUser.findOne({
       where: {
@@ -40,6 +52,8 @@ module.exports = function (app) {
     if (!user) {
       return errorResponseBadRequest('Invalid data or signature')
     }
+    const redisValue = await redisClient.get(address)
+    console.error(`REDIS CHALLENGE - ${address} - ${redisValue}`)
 
     // signature data is valid and matches a user, proceed with verifying timestamp is
     // within time boundary
