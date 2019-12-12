@@ -26,8 +26,15 @@ function loggingMiddleware (req, res, next) {
     requestID: requestID,
     requestMethod: req.method,
     requestHostname: req.hostname,
-    requestUrl: req.originalUrl
+    requestUrl: req.originalUrl,
+    requestWallet: req.get('user-wallet-addr') ? req.get('user-wallet-addr') : null,
+    requestBlockchainUserId: req.get('user-id') ? req.get('user-id') : null
   })
+
+  res.on('finish', function(){
+    req.logger.info('Request Duration', res.get('X-Response-Time'))
+  })
+
   if (requestNotExcludedFromLogging(req.originalUrl)) {
     req.logger.debug('Begin processing request')
   }
