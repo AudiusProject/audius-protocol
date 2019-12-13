@@ -335,7 +335,6 @@ class CreatorNode {
     }
 
     let walletPublicKey = this.web3Manager.getWalletAddress()
-    console.log('Requesting challenge')
     let challengeResp = await this._makeRequest({
       url: '/users/login/challenge',
       method: 'get',
@@ -343,10 +342,8 @@ class CreatorNode {
         walletPublicKey
       }
     }, false)
-    console.log('Challenge from server:')
-    console.log(challengeResp)
 
-    const unixTs = Math.round((new Date()).getTime() / 1000) // current unix timestamp (sec)
+    const unixTs = challengeResp.challenge //  Math.round((new Date()).getTime() / 1000) // current unix timestamp (sec)
     const data = `Click sign to authenticate with creator node: ${unixTs}`
     const signature = await this.web3Manager.sign(data)
 
@@ -356,7 +353,8 @@ class CreatorNode {
       method: 'post',
       data: {
         data: data,
-        signature: signature
+        signature: signature,
+        challenge: true
       }
     }, false)
     this.authToken = resp.sessionToken
