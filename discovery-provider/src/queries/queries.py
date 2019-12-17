@@ -783,9 +783,10 @@ def get_follow_intersection_users(followee_user_id, follower_user_id):
     return api_helpers.success_response(users)
 
 
-# get intersection of users that have reposted repostTrackId and users that are followed by followerUserId
-# followee = user that is followed; follower = user that follows
-# repostTrackId = track that is reposted; repostUserId = user that reposted track
+# get intersection of users that have reposted provided repost_track_id and users that are
+# followed by follower_user_id.
+# - Followee = user that is followed. Follower = user that follows.
+# - repost_track_id = track that is reposted. repost_user_id = user that reposted track.
 @bp.route("/users/intersection/repost/track/<int:repost_track_id>/<int:follower_user_id>", methods=("GET",))
 def get_track_repost_intersection_users(repost_track_id, follower_user_id):
     users = []
@@ -829,9 +830,10 @@ def get_track_repost_intersection_users(repost_track_id, follower_user_id):
     return api_helpers.success_response(users)
 
 
-# get intersection of users that have reposted repostPlaylistId and users that are followed by followerUserId
-# followee = user that is followed; follower = user that follows
-# repostPlaylistId = playlist that is reposted; repostUserId = user that reposted playlist
+# Get intersection of users that have reposted provided repost_playlist_id and users that
+# are followed by provided follower_user_id.
+# - Followee = user that is followed. Follower = user that follows.
+# - repost_playlist_id = playlist that is reposted. repost_user_id = user that reposted playlist.
 @bp.route("/users/intersection/repost/playlist/<int:repost_playlist_id>/<int:follower_user_id>", methods=("GET",))
 def get_playlist_repost_intersection_users(repost_playlist_id, follower_user_id):
     users = []
@@ -875,7 +877,7 @@ def get_playlist_repost_intersection_users(repost_playlist_id, follower_user_id)
     return api_helpers.success_response(users)
 
 
-# get users that follow followeeUserId, sorted by follower count descending
+# Get paginated users that follow provided followee_user_id, sorted by their follower count descending.
 @bp.route("/users/followers/<int:followee_user_id>", methods=("GET",))
 def get_followers_for_user(followee_user_id):
     users = []
@@ -949,7 +951,7 @@ def get_followers_for_user(followee_user_id):
     return api_helpers.success_response(users)
 
 
-# get users that are followed by followerUserId, sorted by their follower count descending
+# Get paginated users that are followed by provided follower_user_id, sorted by their follower count descending.
 @bp.route("/users/followees/<int:follower_user_id>", methods=("GET",))
 def get_followees_for_user(follower_user_id):
     users = []
@@ -1017,13 +1019,13 @@ def get_followees_for_user(follower_user_id):
     return api_helpers.success_response(users)
 
 
-# get users that reposted repostTrackId, sorted by follower count descending
+# Get paginated users that reposted provided repost_track_id, sorted by their follower count descending.
 @bp.route("/users/reposts/track/<int:repost_track_id>", methods=("GET",))
 def get_reposters_for_track(repost_track_id):
     user_results = []
     db = get_db()
     with db.scoped_session() as session:
-        # ensure track_id exists
+        # Ensure Track exists for provided repost_track_id.
         track_entry = session.query(Track).filter(
             Track.track_id == repost_track_id,
             Track.is_current == True
@@ -1031,7 +1033,7 @@ def get_reposters_for_track(repost_track_id):
         if track_entry is None:
             return api_helpers.error_response('Resource not found for provided track id', 404)
 
-        # Subquery to get all (user_id, follower_count) entries from Follows table
+        # Subquery to get all (user_id, follower_count) entries from Follows table.
         follower_count_subquery = (
             session.query(
                 Follow.followee_user_id,
@@ -1045,19 +1047,19 @@ def get_reposters_for_track(repost_track_id):
             .subquery()
         )
 
-        # Get all Users that reposted track, ordered by follower_count desc & paginated
+        # Get all Users that reposted track, ordered by follower_count desc & paginated.
         query = (
             session.query(
                 User,
-                # Replace null values from left outer join with 0 to ensure sort works correctly
+                # Replace null values from left outer join with 0 to ensure sort works correctly.
                 (func.coalesce(follower_count_subquery.c.follower_count, 0)).label(response_name_constants.follower_count)
             )
-            # Left outer join to associate users with their follower count
+            # Left outer join to associate users with their follower count.
             .outerjoin(follower_count_subquery, follower_count_subquery.c.followee_user_id == User.user_id)
             .filter(
                 User.is_current == True,
                 User.is_ready == True,
-                # Only select users that reposted given track
+                # Only select users that reposted given track.
                 User.user_id.in_(
                     session.query(Repost.user_id)
                     .filter(
@@ -1072,7 +1074,7 @@ def get_reposters_for_track(repost_track_id):
         )
         user_results = paginate_query(query).all()
 
-        # Fix format to return only Users objects with follower_count field
+        # Fix format to return only Users objects with follower_count field.
         if user_results:
             users, follower_counts = zip(*user_results)
             user_results = helpers.query_result_to_list(users)
@@ -1082,13 +1084,13 @@ def get_reposters_for_track(repost_track_id):
     return api_helpers.success_response(user_results)
 
 
-# get users that reposted repostPlaylistId, sorted by follower count descending
+# Get paginated users that reposted provided repost_playlist_id, sorted by their follower count descending.
 @bp.route("/users/reposts/playlist/<int:repost_playlist_id>", methods=("GET",))
 def get_reposters_for_playlist(repost_playlist_id):
     user_results = []
     db = get_db()
     with db.scoped_session() as session:
-        # ensure playlist_id exists
+        # Ensure Playlist exists for provided repost_playlist_id.
         playlist_entry = session.query(Playlist).filter(
             Playlist.playlist_id == repost_playlist_id,
             Playlist.is_current == True
@@ -1096,6 +1098,7 @@ def get_reposters_for_playlist(repost_playlist_id):
         if playlist_entry is None:
             return api_helpers.error_response('Resource not found for provided playlist id', 404)
 
+        # Subquery to get all (user_id, follower_count) entries from Follows table.
         follower_count_subquery = (
             session.query(
                 Follow.followee_user_id,
@@ -1106,35 +1109,180 @@ def get_reposters_for_playlist(repost_playlist_id):
                 Follow.is_delete == False
             )
             .group_by(Follow.followee_user_id)
-            .order_by(response_name_constants.follower_count + " desc")
+            .subquery()
         )
-        follower_count_subquery = paginate_query(follower_count_subquery).subquery()
 
+        # Get all Users that reposted Playlist, ordered by follower_count desc & paginated.
         query = (
-            session.query(User, follower_count_subquery.c.follower_count)
-            .join(Repost, User.user_id == Repost.user_id)
+            session.query(
+                User,
+                # Replace null values from left outer join with 0 to ensure sort works correctly.
+                (func.coalesce(follower_count_subquery.c.follower_count, 0)).label(response_name_constants.follower_count)
+            )
+            # Left outer join to associate users with their follower count.
             .outerjoin(follower_count_subquery, follower_count_subquery.c.followee_user_id == User.user_id)
             .filter(
                 User.is_current == True,
                 User.is_ready == True,
-                Repost.repost_item_id == repost_playlist_id,
-                Repost.repost_type != RepostType.track,
-                Repost.is_current == True,
-                Repost.is_delete == False
+                # Only select users that reposted given playlist.
+                User.user_id.in_(
+                    session.query(Repost.user_id)
+                    .filter(
+                        Repost.repost_item_id == repost_playlist_id,
+                        # Select Reposts for Playlists and Albums (i.e. not Tracks).
+                        Repost.repost_type != RepostType.track,
+                        Repost.is_current == True,
+                        Repost.is_delete == False
+                    )
+                )
             )
+            .order_by(response_name_constants.follower_count + " desc")
         )
-        user_results = query.all()
+        user_results = paginate_query(query).all()
 
+        # Fix format to return only Users objects with follower_count field.
         if user_results:
             users, follower_counts = zip(*user_results)
             user_results = helpers.query_result_to_list(users)
             for i, user in enumerate(user_results):
-                user[response_name_constants.follower_count] = follower_counts[i] or 0
+                user[response_name_constants.follower_count] = follower_counts[i]
 
     return api_helpers.success_response(user_results)
 
 
-# Returns records that match save type and user id
+# Get paginated users that saved provided save_track_id, sorted by their follower count descending.
+@bp.route("/users/saves/track/<int:save_track_id>", methods=("GET",))
+def get_savers_for_track(save_track_id):
+    user_results = []
+    db = get_db()
+    with db.scoped_session() as session:
+        # Ensure Track exists for provided save_track_id.
+        track_entry = session.query(Track).filter(
+            Track.track_id == save_track_id,
+            Track.is_current == True
+        ).first()
+        logger.error(track_entry)
+        if track_entry is None:
+            return api_helpers.error_response('Resource not found for provided track id', 404)
+
+        # Subquery to get all (user_id, follower_count) entries from Follows table.
+        follower_count_subquery = (
+            session.query(
+                Follow.followee_user_id,
+                func.count(Follow.followee_user_id).label(response_name_constants.follower_count)
+            )
+            .filter(
+                Follow.is_current == True,
+                Follow.is_delete == False
+            )
+            .group_by(Follow.followee_user_id)
+            .subquery()
+        )
+
+        # Get all Users that saved track, ordered by follower_count desc & paginated.
+        query = (
+            session.query(
+                User,
+                # Replace null values from left outer join with 0 to ensure sort works correctly.
+                (func.coalesce(follower_count_subquery.c.follower_count, 0)).label(response_name_constants.follower_count)
+            )
+            # Left outer join to associate users with their follower count.
+            .outerjoin(follower_count_subquery, follower_count_subquery.c.followee_user_id == User.user_id)
+            .filter(
+                User.is_current == True,
+                User.is_ready == True,
+                # Only select users that saved given track.
+                User.user_id.in_(
+                    session.query(Save.user_id)
+                    .filter(
+                        Save.save_item_id == save_track_id,
+                        Save.save_type == SaveType.track,
+                        Save.is_current == True,
+                        Save.is_delete == False
+                    )
+                )
+            )
+            .order_by(response_name_constants.follower_count + " desc")
+        )
+        user_results = paginate_query(query).all()
+
+        # Fix format to return only Users objects with follower_count field.
+        if user_results:
+            users, follower_counts = zip(*user_results)
+            user_results = helpers.query_result_to_list(users)
+            for i, user in enumerate(user_results):
+                user[response_name_constants.follower_count] = follower_counts[i]
+
+    return api_helpers.success_response(user_results)
+
+
+# Get paginated users that saved provided save_playlist_id, sorted by their follower count descending.
+@bp.route("/users/saves/playlist/<int:save_playlist_id>", methods=("GET",))
+def get_savers_for_playlist(save_playlist_id):
+    user_results = []
+    db = get_db()
+    with db.scoped_session() as session:
+        # Ensure Playlist exists for provided save_playlist_id.
+        playlist_entry = session.query(Playlist).filter(
+            Playlist.playlist_id == save_playlist_id,
+            Playlist.is_current == True
+        ).first()
+        if playlist_entry is None:
+            return api_helpers.error_response('Resource not found for provided playlist id', 404)
+
+        # Subquery to get all (user_id, follower_count) entries from Follows table.
+        follower_count_subquery = (
+            session.query(
+                Follow.followee_user_id,
+                func.count(Follow.followee_user_id).label(response_name_constants.follower_count)
+            )
+            .filter(
+                Follow.is_current == True,
+                Follow.is_delete == False
+            )
+            .group_by(Follow.followee_user_id)
+            .subquery()
+        )
+
+        # Get all Users that saved Playlist, ordered by follower_count desc & paginated.
+        query = (
+            session.query(
+                User,
+                # Replace null values from left outer join with 0 to ensure sort works correctly.
+                (func.coalesce(follower_count_subquery.c.follower_count, 0)).label(response_name_constants.follower_count)
+            )
+            # Left outer join to associate users with their follower count.
+            .outerjoin(follower_count_subquery, follower_count_subquery.c.followee_user_id == User.user_id)
+            .filter(
+                User.is_current == True,
+                User.is_ready == True,
+                # Only select users that saved given playlist.
+                User.user_id.in_(
+                    session.query(Save.user_id)
+                    .filter(
+                        Save.save_item_id == save_playlist_id,
+                        # Select Saves for Playlists and Albums (i.e. not Tracks).
+                        Save.save_type != SaveType.track,
+                        Save.is_current == True,
+                        Save.is_delete == False
+                    )
+                )
+            )
+            .order_by(response_name_constants.follower_count + " desc")
+        )
+        user_results = paginate_query(query).all()
+
+        # Fix format to return only Users objects with follower_count field.
+        if user_results:
+            users, follower_counts = zip(*user_results)
+            user_results = helpers.query_result_to_list(users)
+            for i, user in enumerate(user_results):
+                user[response_name_constants.follower_count] = follower_counts[i]
+
+    return api_helpers.success_response(user_results)
+
+
+# Get paginated saves of provided save_type for current user.
 @bp.route("/saves/<save_type>", methods=("GET",))
 def get_saves(save_type):
     save_query_type = None
