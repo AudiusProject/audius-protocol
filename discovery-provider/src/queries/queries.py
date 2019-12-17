@@ -1161,7 +1161,6 @@ def get_savers_for_track(save_track_id):
             Track.track_id == save_track_id,
             Track.is_current == True
         ).first()
-        logger.error(track_entry)
         if track_entry is None:
             return api_helpers.error_response('Resource not found for provided track id', 404)
 
