@@ -1031,6 +1031,7 @@ def get_reposters_for_track(repost_track_id):
         if track_entry is None:
             return api_helpers.error_response('Resource not found for provided track id', 404)
 
+        # Subquery to get all (user_id, follower_count) entries from Follows table
         follower_count_subquery = (
             session.query(
                 Follow.followee_user_id,
@@ -1041,30 +1042,42 @@ def get_reposters_for_track(repost_track_id):
                 Follow.is_delete == False
             )
             .group_by(Follow.followee_user_id)
-            .order_by(response_name_constants.follower_count + " desc")
+            .subquery()
         )
-        follower_count_subquery = paginate_query(follower_count_subquery).subquery()
 
+        # Get all Users that reposted track, ordered by follower_count desc & paginated
         query = (
-            session.query(User, follower_count_subquery.c.follower_count)
-            .join(Repost, User.user_id == Repost.user_id)
+            session.query(
+                User,
+                # Replace null values from left outer join with 0 to ensure sort works correctly
+                (func.coalesce(follower_count_subquery.c.follower_count, 0)).label(response_name_constants.follower_count)
+            )
+            # Left outer join to associate users with their follower count
             .outerjoin(follower_count_subquery, follower_count_subquery.c.followee_user_id == User.user_id)
             .filter(
                 User.is_current == True,
                 User.is_ready == True,
-                Repost.repost_item_id == repost_track_id,
-                Repost.repost_type == RepostType.track,
-                Repost.is_current == True,
-                Repost.is_delete == False
+                # Only select users that reposted given track
+                User.user_id.in_(
+                    session.query(Repost.user_id)
+                    .filter(
+                        Repost.repost_item_id == repost_track_id,
+                        Repost.repost_type == RepostType.track,
+                        Repost.is_current == True,
+                        Repost.is_delete == False
+                    )
+                )
             )
+            .order_by(response_name_constants.follower_count + " desc")
         )
-        user_results = query.all()
+        user_results = paginate_query(query).all()
 
+        # Fix format to return only Users objects with follower_count field
         if user_results:
             users, follower_counts = zip(*user_results)
             user_results = helpers.query_result_to_list(users)
             for i, user in enumerate(user_results):
-                user[response_name_constants.follower_count] = follower_counts[i] or 0
+                user[response_name_constants.follower_count] = follower_counts[i]
 
     return api_helpers.success_response(user_results)
 
