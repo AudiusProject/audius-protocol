@@ -309,6 +309,7 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
     user_reposted_track_dict = {}
     user_saved_track_dict = {}
     followee_track_repost_dict = {}
+    followee_track_save_dict = {}
     if current_user_id:
         # has current user reposted any of requested track ids
         user_reposted = (
@@ -340,7 +341,7 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
         )
         user_saved_track_dict = {save[0]: True for save in user_saved_tracks_query}
 
-        # build dict of track id --> followee reposts
+        # Get current user's followees.
         followees = (
             session.query(Follow.followee_user_id)
             .filter(
@@ -349,6 +350,8 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
                 Follow.is_delete == False
             )
         )
+
+        # build dict of track id --> followee reposts
         followee_track_reposts = (
             session.query(Repost)
             .filter(
@@ -364,6 +367,23 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
             if track_repost["repost_item_id"] not in followee_track_repost_dict:
                 followee_track_repost_dict[track_repost["repost_item_id"]] = []
             followee_track_repost_dict[track_repost["repost_item_id"]].append(track_repost)
+        
+        # Build dict of track id --> followee saves.
+        followee_track_saves = (
+            session.query(Save)
+            .filter(
+                Save.is_current == True,
+                Save.is_delete == False,
+                Save.save_item_id.in_(track_ids),
+                Save.save_type == SaveType.track,
+                Save.user_id.in_(followees)
+            )
+        )
+        followee_track_saves = helpers.query_result_to_list(followee_track_saves)
+        for track_save in followee_track_saves:
+            if track_save["save_item_id"] not in followee_track_save_dict:
+                followee_track_save_dict[track_save["save_item_id"]] = []
+            followee_track_save_dict[track_save["save_item_id"]].append(track_save)
 
     for track in tracks:
         track_id = track["track_id"]
@@ -371,6 +391,7 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
         track[response_name_constants.save_count] = save_count_dict.get(track_id, 0)
         # current user specific
         track[response_name_constants.followee_reposts] = followee_track_repost_dict.get(track_id, [])
+        track[response_name_constants.followee_saves] = followee_track_save_dict.get(track_id, [])
         track[response_name_constants.has_current_user_reposted] = user_reposted_track_dict.get(track_id, False)
         track[response_name_constants.has_current_user_saved] = user_saved_track_dict.get(track['track_id'], False)
 
@@ -389,7 +410,8 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
 
     user_reposted_playlist_dict = {}
     user_saved_playlist_dict = {}
-    playlist_repost_dict = {}
+    followee_playlist_repost_dict = {}
+    followee_playlist_save_dict = {}
     if current_user_id:
         # has current user reposted any of requested playlist ids
         current_user_playlist_reposts = (
@@ -419,7 +441,7 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
         )
         user_saved_playlist_dict = {save[0]: True for save in user_saved_playlists_query}
 
-        # build dict of playlist id --> followee reposts
+        # Get current user's followees.
         followee_user_ids = (
             session.query(Follow.followee_user_id)
             .filter(
@@ -429,6 +451,8 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
             )
             .all()
         )
+        
+        # Build dict of playlist id --> followee reposts.
         followee_playlist_reposts = (
             session.query(Repost)
             .filter(
@@ -442,16 +466,35 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
         )
         followee_playlist_reposts = helpers.query_result_to_list(followee_playlist_reposts)
         for playlist_repost in followee_playlist_reposts:
-            if playlist_repost["repost_item_id"] not in playlist_repost_dict:
-                playlist_repost_dict[playlist_repost["repost_item_id"]] = []
-            playlist_repost_dict[playlist_repost["repost_item_id"]].append(playlist_repost)
+            if playlist_repost["repost_item_id"] not in followee_playlist_repost_dict:
+                followee_playlist_repost_dict[playlist_repost["repost_item_id"]] = []
+            followee_playlist_repost_dict[playlist_repost["repost_item_id"]].append(playlist_repost)
+        
+        # Build dict of playlist id --> followee saves.
+        followee_playlist_saves = (
+            session.query(Save)
+            .filter(
+                Save.is_current == True,
+                Save.is_delete == False,
+                Save.save_item_id.in_(playlist_ids),
+                Save.save_type.in_(save_types),
+                Save.user_id.in_(followee_user_ids)
+            )
+            .all()
+        )
+        followee_playlist_saves = helpers.query_result_to_list(followee_playlist_saves)
+        for playlist_save in followee_playlist_saves:
+            if playlist_save["save_item_id"] not in followee_playlist_save_dict:
+                followee_playlist_save_dict[playlist_save["save_item_id"]] = []
+            followee_playlist_save_dict[playlist_save["save_item_id"]].append(playlist_save)
 
     for playlist in playlists:
         playlist_id = playlist["playlist_id"]
         playlist[response_name_constants.repost_count] = playlist_repost_counts.get(playlist_id, 0)
         playlist[response_name_constants.save_count] = playlist_save_counts.get(playlist_id, 0)
         # current user specific
-        playlist[response_name_constants.followee_reposts] = playlist_repost_dict.get(playlist_id, [])
+        playlist[response_name_constants.followee_reposts] = followee_playlist_repost_dict.get(playlist_id, [])
+        playlist[response_name_constants.followee_saves] = followee_playlist_save_dict.get(playlist_id, [])
         playlist[response_name_constants.has_current_user_reposted] = \
             user_reposted_playlist_dict.get(playlist_id, False)
         playlist[response_name_constants.has_current_user_saved] = user_saved_playlist_dict.get(playlist_id, False)
