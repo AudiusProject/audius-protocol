@@ -4,7 +4,8 @@ save_count = 'save_count' # integer - total save count of given track/playlist
 has_current_user_reposted = 'has_current_user_reposted' # boolean - has current user reposted given track/playlist
 has_current_user_saved = 'has_current_user_saved' # boolean - has current user saved given track/playlist
 followee_reposts = 'followee_reposts' # array - followees of current user that have reposted given track/playlist
-play_count = 'play_count' # integer - total number of plays for a given track
+followee_saves = 'followee_saves' # array - followees of current user that have saved given track/playlist
+play_count = 'play_count' # integer - total number of plays for a given track/playlist
 
 # user metadata
 user_id = 'user_id' # integer - unique id of a user

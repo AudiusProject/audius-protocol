@@ -425,6 +425,42 @@ class DiscoveryProvider {
   }
 
   /**
+   * get users that saved saveTrackId, sorted by follower count descending
+   * @param {number} saveTrackId
+   * @return {Array} array of user objects
+   * additional metadata fields on user objects:
+   *  {Integer} follower_count - follower count of given user
+   * @example
+   * getSaversForTrack(100, 0, 1) - ID must be valid
+   */
+  async getSaversForTrack (limit = 100, offset = 0, saveTrackId) {
+    let req = {
+      endpoint: 'users',
+      urlParams: '/saves/track/' + saveTrackId,
+      queryParams: { limit: limit, offset: offset }
+    }
+    return this._makeRequest(req)
+  }
+
+  /**
+   * get users that saved savePlaylistId, sorted by follower count descending
+   * @param {number} savePlaylistId
+   * @return {Array} array of user objects
+   * additional metadata fields on user objects:
+   *  {Integer} follower_count - follower count of given user
+   * @example
+   * getSaversForPlaylist(100, 0, 1) - ID must be valid
+   */
+  async getSaversForPlaylist (limit = 100, offset = 0, savePlaylistId) {
+    let req = {
+      endpoint: 'users',
+      urlParams: '/saves/playlist/' + savePlaylistId,
+      queryParams: { limit: limit, offset: offset }
+    }
+    return this._makeRequest(req)
+  }
+
+  /**
    * Perform a full-text search. Returns tracks, users, playlists, albums
    *    with optional user-specific results for each
    *  - user, track, and playlist objects have all same data as returned from standalone endpoints

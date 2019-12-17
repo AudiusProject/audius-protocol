@@ -152,35 +152,37 @@ class Track(Base):
     PrimaryKeyConstraint(is_current, track_id, blockhash)
 
     def __repr__(self):
-        return f"<Track(\
-            blockhash={self.blockhash},\
-            blocknumber={self.blocknumber},\
-            track_id={self.track_id},\
-            is_current={self.is_current},\
-            is_delete={self.is_delete},\
-            owner_id={self.owner_id},\
-            route_id={self.route_id},\
-            title={self.title},\
-            length={self.length},\
-            cover_art={self.cover_art},\
-            cover_art_sizes={self.cover_art_sizes},\
-            tags={self.tags},\
-            genre={self.genre},\
-            mood={self.mood},\
-            credits_splits={self.credits_splits},\
-            create_date={self.create_date},\
-            release_date={self.release_date},\
-            file_type={self.file_type},\
-            description={self.description},\
-            license={self.license},\
-            isrc={self.isrc},\
-            iswc={self.iswc},\
-            track_segments={self.track_segments},\
-            metadata_multihash={self.metadata_multihash},\
-            download={self.download},\
-            updated_at={self.updated_at},\
-            created_at={self.created_at}\
-        )>"
+        return (
+            f"<Track("
+            f"blockhash={self.blockhash},"
+            f"blocknumber={self.blocknumber},"
+            f"track_id={self.track_id},"
+            f"is_current={self.is_current},"
+            f"is_delete={self.is_delete},"
+            f"owner_id={self.owner_id},"
+            f"route_id={self.route_id},"
+            f"title={self.title},"
+            f"length={self.length},"
+            f"cover_art={self.cover_art},"
+            f"cover_art_sizes={self.cover_art_sizes},"
+            f"tags={self.tags},"
+            f"genre={self.genre},"
+            f"mood={self.mood},"
+            f"credits_splits={self.credits_splits},"
+            f"create_date={self.create_date},"
+            f"release_date={self.release_date},"
+            f"file_type={self.file_type},"
+            f"description={self.description},"
+            f"license={self.license},"
+            f"isrc={self.isrc},"
+            f"iswc={self.iswc},"
+            f"track_segments={self.track_segments},"
+            f"metadata_multihash={self.metadata_multihash},"
+            f"download={self.download},"
+            f"updated_at={self.updated_at},"
+            f"created_at={self.created_at}"
+            ")>"
+        )
 
 
 class Playlist(Base):
@@ -286,6 +288,7 @@ class SaveType(str, enum.Enum):
 
 class Save(Base):
     __tablename__ = "saves"
+
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
     blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
     user_id = Column(Integer, nullable=False)
