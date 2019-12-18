@@ -746,7 +746,6 @@ def get_follow_intersection_users(followee_user_id, follower_user_id):
             session.query(User)
             .filter(
                 User.is_current == True,
-                User.is_ready == True,
                 User.user_id.in_(
                     session.query(Follow.follower_user_id)
                     .filter(
@@ -804,7 +803,6 @@ def get_track_repost_intersection_users(repost_track_id, follower_user_id):
             session.query(User)
             .filter(
                 User.is_current == True,
-                User.is_ready == True,
                 User.user_id.in_(
                     session.query(Repost.user_id)
                     .filter(
@@ -851,7 +849,6 @@ def get_playlist_repost_intersection_users(repost_playlist_id, follower_user_id)
             session.query(User)
             .filter(
                 User.is_current == True,
-                User.is_ready == True,
                 User.user_id.in_(
                     session.query(Repost.user_id)
                     .filter(
@@ -914,7 +911,7 @@ def get_followers_for_user(followee_user_id):
             )
             .group_by(outer_follow.follower_user_id)
             .order_by(
-                response_name_constants.follower_count + " desc",
+                desc(response_name_constants.follower_count),
                 # secondary sort to guarantee determinism as explained here:
                 # https://stackoverflow.com/questions/13580826/postgresql-repeating-rows-from-limit-offset
                 asc(outer_follow.follower_user_id)
@@ -929,7 +926,6 @@ def get_followers_for_user(followee_user_id):
             session.query(User)
             .filter(
                 User.is_current == True,
-                User.is_ready == True,
                 User.user_id.in_(user_ids)
             )
             .all()
@@ -947,7 +943,6 @@ def get_followers_for_user(followee_user_id):
             key=lambda user: (user[response_name_constants.follower_count], (user['user_id'])*(-1)),
             reverse=True
         )
-
     return api_helpers.success_response(users)
 
 
@@ -987,7 +982,7 @@ def get_followees_for_user(follower_user_id):
                 outer_follow.is_delete == False
             )
             .group_by(outer_follow.followee_user_id)
-            .order_by(response_name_constants.follower_count + " desc")
+            .order_by(desc(response_name_constants.follower_count))
         )
         followee_user_ids_by_follower_count = paginate_query(outer_select).all()
 
@@ -998,7 +993,6 @@ def get_followees_for_user(follower_user_id):
             session.query(User)
             .filter(
                 User.is_current == True,
-                User.is_ready == True,
                 User.user_id.in_(user_ids)
             )
             .all()
@@ -1058,7 +1052,6 @@ def get_reposters_for_track(repost_track_id):
             .outerjoin(follower_count_subquery, follower_count_subquery.c.followee_user_id == User.user_id)
             .filter(
                 User.is_current == True,
-                User.is_ready == True,
                 # Only select users that reposted given track.
                 User.user_id.in_(
                     session.query(Repost.user_id)
@@ -1070,7 +1063,7 @@ def get_reposters_for_track(repost_track_id):
                     )
                 )
             )
-            .order_by(response_name_constants.follower_count + " desc")
+            .order_by(desc(response_name_constants.follower_count))
         )
         user_results = paginate_query(query).all()
 
@@ -1123,7 +1116,6 @@ def get_reposters_for_playlist(repost_playlist_id):
             .outerjoin(follower_count_subquery, follower_count_subquery.c.followee_user_id == User.user_id)
             .filter(
                 User.is_current == True,
-                User.is_ready == True,
                 # Only select users that reposted given playlist.
                 User.user_id.in_(
                     session.query(Repost.user_id)
@@ -1136,7 +1128,7 @@ def get_reposters_for_playlist(repost_playlist_id):
                     )
                 )
             )
-            .order_by(response_name_constants.follower_count + " desc")
+            .order_by(desc(response_name_constants.follower_count))
         )
         user_results = paginate_query(query).all()
 
@@ -1189,7 +1181,6 @@ def get_savers_for_track(save_track_id):
             .outerjoin(follower_count_subquery, follower_count_subquery.c.followee_user_id == User.user_id)
             .filter(
                 User.is_current == True,
-                User.is_ready == True,
                 # Only select users that saved given track.
                 User.user_id.in_(
                     session.query(Save.user_id)
@@ -1201,7 +1192,7 @@ def get_savers_for_track(save_track_id):
                     )
                 )
             )
-            .order_by(response_name_constants.follower_count + " desc")
+            .order_by(desc(response_name_constants.follower_count))
         )
         user_results = paginate_query(query).all()
 
@@ -1254,7 +1245,6 @@ def get_savers_for_playlist(save_playlist_id):
             .outerjoin(follower_count_subquery, follower_count_subquery.c.followee_user_id == User.user_id)
             .filter(
                 User.is_current == True,
-                User.is_ready == True,
                 # Only select users that saved given playlist.
                 User.user_id.in_(
                     session.query(Save.user_id)
@@ -1267,7 +1257,7 @@ def get_savers_for_playlist(save_playlist_id):
                     )
                 )
             )
-            .order_by(response_name_constants.follower_count + " desc")
+            .order_by(desc(response_name_constants.follower_count))
         )
         user_results = paginate_query(query).all()
 
