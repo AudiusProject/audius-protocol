@@ -388,7 +388,7 @@ def get_feed():
                     func.min(repost_subquery.c.created_at).label("min_created_at")
                 )
                 .group_by(repost_subquery.c.repost_item_id, repost_subquery.c.repost_type)
-                .order_by("min_created_at desc")
+                .order_by(desc("min_created_at"))
             )
             followee_reposts = paginate_query(repost_query, False).all()
 
