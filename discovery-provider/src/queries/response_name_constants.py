@@ -20,9 +20,8 @@ track_blocknumber = 'track_blocknumber' # integer - blocknumber of latest track 
 does_current_user_follow = 'does_current_user_follow' # boolean - does current user follow given user
 current_user_followee_follow_count = 'current_user_followee_follow_count' # integer - number of followees of current user that also follow given user
 
-# feed metadata
-activity_timestamp = 'activity_timestamp' # string - timestamp of relevant activity on underlying object,
-                                          # used for sorting
+# feed
+activity_timestamp = 'activity_timestamp' # string - timestamp of relevant activity on underlying object, used for sorting
 
 track_owner_follower_count = 'track_owner_follower_count'
 track_owner_id = 'track_owner_id'
