@@ -277,7 +277,6 @@ def refresh_track_owner_ipfs_conn(owner_id, session, update_task):
         session.query(User.creator_node_endpoint)
         .filter(
             User.is_current == True,
-            User.is_ready == True,
             User.user_id == owner_id)
         .all()
     )
