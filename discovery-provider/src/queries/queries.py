@@ -309,7 +309,6 @@ def get_feed():
                 session.query(Track)
                 .filter(
                     Track.is_current == True,
-                    Track.is_unlisted == False,
                     Track.track_id.in_(playlist_track_ids)
                 )
                 .all()
@@ -329,7 +328,6 @@ def get_feed():
                         (track.created_at <= playlist.created_at) and \
                         (playlist.created_at - track.created_at <= max_timedelta):
                         tracks_to_dedupe.add(track.track_id)
-
             tracks_to_dedupe = list(tracks_to_dedupe)
 
             # Query tracks posted by followees, sorted & paginated by created_at desc
