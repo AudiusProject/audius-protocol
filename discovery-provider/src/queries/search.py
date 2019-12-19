@@ -192,7 +192,6 @@ def search_tags():
                 session.query(User)
                 .filter(
                     User.is_current == True,
-                    User.is_ready == True,
                     User.user_id.in_(user_ids)
                 )
                 .all()
@@ -270,7 +269,6 @@ def search_tags():
                 session.query(User)
                 .filter(
                     User.is_current == True,
-                    User.is_ready == True,
                     User.user_id.in_(followed_user_ids)
                 )
                 .all()
@@ -519,7 +517,6 @@ def user_search_query(session, searchStr, limit, offset, personalized, isAutocom
         session.query(User)
         .filter(
             User.is_current == True,
-            User.is_ready == True,
             User.user_id.in_(user_ids)
         )
         .all()
