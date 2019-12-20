@@ -119,6 +119,62 @@ class Tracks extends Base {
   }
 
   /**
+   * get users that saved saveTrackId, sorted by follower count descending
+   * @param {number} saveTrackId
+   * @return {Array} array of user objects
+   * additional metadata fields on user objects:
+   *  {Integer} follower_count - follower count of given user
+   * @example
+   * getSaversForTrack(100, 0, 1) - ID must be valid
+   */
+  async getSaversForTrack (limit = 100, offset = 0, saveTrackId) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getSaversForTrack(limit, offset, saveTrackId)
+  }
+
+  /**
+   * get users that saved savePlaylistId, sorted by follower count descending
+   * @param {number} savePlaylistId
+   * @return {Array} array of user objects
+   * additional metadata fields on user objects:
+   *  {Integer} follower_count - follower count of given user
+   * @example
+   * getSaversForPlaylist(100, 0, 1) - ID must be valid
+   */
+  async getSaversForPlaylist (limit = 100, offset = 0, savePlaylistId) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getSaversForPlaylist(limit, offset, savePlaylistId)
+  }
+
+  /**
+   * get users that reposted repostTrackId, sorted by follower count descending
+   * @param {number} repostTrackId
+   * @return {Array} array of user objects
+   * additional metadata fields on user objects:
+   *  {Integer} follower_count - follower count of given user
+   * @example
+   * getRepostersForTrack(100, 0, 1) - ID must be valid
+   */
+  async getRepostersForTrack (limit = 100, offset = 0, repostTrackId) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getRepostersForTrack(limit, offset, repostTrackId)
+  }
+
+  /**
+   * get users that reposted repostPlaylistId, sorted by follower count descending
+   * @param {number} repostPlaylistId
+   * @return {Array} array of user objects
+   * additional metadata fields on user objects:
+   *  {Integer} follower_count - follower count of given user
+   * @example
+   * getRepostersForPlaylist(100, 0, 1) - ID must be valid
+   */
+  async getRepostersForPlaylist (limit = 100, offset = 0, repostPlaylistId) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getRepostersForPlaylist(limit, offset, repostPlaylistId)
+  }
+
+  /**
    * Return saved tracks for current user
    * NOTE in returned JSON, SaveType string one of track, playlist, album
    * @param {number} userId
