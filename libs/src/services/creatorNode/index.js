@@ -394,14 +394,12 @@ class CreatorNode {
       if (e.response && e.response.data && e.response.data.error) {
         console.error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
         throw new Error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
-      }
-      else if (!e.status || !e.response) {
+      } else if (!e.status || !e.response) {
         // delete headers, may contain tokens
         if (e.config && e.config.headers) delete e.config.headers
         console.error(`Network error while making request to ${axiosRequestObj.url} ${JSON.stringify(e)}`)
         throw new Error(`Network error while making request to ${axiosRequestObj.url}`)
-      }
-      else {
+      } else {
         throw e
       }
     }
@@ -431,9 +429,10 @@ class CreatorNode {
     headers['X-Session-ID'] = this.authToken
 
     let total
+    const url = this.creatorNodeEndpoint + route
     try {
       const resp = await axios.post(
-        this.creatorNodeEndpoint + route,
+        url,
         formData,
         {
           headers: headers,
@@ -450,14 +449,12 @@ class CreatorNode {
       if (e.response && e.response.data && e.response.data.error) {
         console.error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
         throw new Error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
-      }
-      else if (!e.status || !e.response) {
+      } else if (!e.status || !e.response) {
         // delete headers, may contain tokens
         if (e.config && e.config.headers) delete e.config.headers
-        console.error(`Network error while making request to ${axiosRequestObj.url} ${JSON.stringify(e)}`)
-        throw new Error(`Network error while making request to ${axiosRequestObj.url}`)
-      }
-      else {
+        console.error(`Network error while making request to ${url} ${JSON.stringify(e)}`)
+        throw new Error(`Network error while making request to ${url}`)
+      } else {
         throw e
       }
     }
