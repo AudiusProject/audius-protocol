@@ -392,9 +392,18 @@ class CreatorNode {
       return resp.data
     } catch (e) {
       if (e.response && e.response.data && e.response.data.error) {
+        console.error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
         throw new Error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
       }
-      throw e
+      else if (!e.status || !e.response) {
+        // delete headers, may contain tokens
+        if (e.config && e.config.headers) delete e.config.headers
+        console.error(`Network error while making request to ${axiosRequestObj.url} ${JSON.stringify(e)}`)
+        throw new Error(`Network error while making request to ${axiosRequestObj.url}`)
+      }
+      else {
+        throw e
+      }
     }
   }
 
@@ -422,20 +431,36 @@ class CreatorNode {
     headers['X-Session-ID'] = this.authToken
 
     let total
-    const resp = await axios.post(
-      this.creatorNodeEndpoint + route,
-      formData,
-      {
-        headers: headers,
-        // Add a 10% inherit processing time for the file upload.
-        onUploadProgress: (progressEvent) => {
-          if (!total) total = progressEvent.total
-          onProgress(progressEvent.loaded, total)
+    try {
+      const resp = await axios.post(
+        this.creatorNodeEndpoint + route,
+        formData,
+        {
+          headers: headers,
+          // Add a 10% inherit processing time for the file upload.
+          onUploadProgress: (progressEvent) => {
+            if (!total) total = progressEvent.total
+            onProgress(progressEvent.loaded, total)
+          }
         }
+      )
+      onProgress(total, total)
+      return resp.data
+    } catch (e) {
+      if (e.response && e.response.data && e.response.data.error) {
+        console.error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
+        throw new Error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
       }
-    )
-    onProgress(total, total)
-    return resp.data
+      else if (!e.status || !e.response) {
+        // delete headers, may contain tokens
+        if (e.config && e.config.headers) delete e.config.headers
+        console.error(`Network error while making request to ${axiosRequestObj.url} ${JSON.stringify(e)}`)
+        throw new Error(`Network error while making request to ${axiosRequestObj.url}`)
+      }
+      else {
+        throw e
+      }
+    }
   }
 }
 
