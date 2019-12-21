@@ -394,7 +394,7 @@ class CreatorNode {
       if (e.response && e.response.data && e.response.data.error) {
         console.error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
         throw new Error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
-      } else if (!e.status || !e.response) {
+      } else if (!e.response) {
         // delete headers, may contain tokens
         if (e.config && e.config.headers) delete e.config.headers
         console.error(`Network error while making request to ${axiosRequestObj.url} ${JSON.stringify(e)}`)
@@ -449,7 +449,7 @@ class CreatorNode {
       if (e.response && e.response.data && e.response.data.error) {
         console.error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
         throw new Error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
-      } else if (!e.status || !e.response) {
+      } else if (!e.response) {
         // delete headers, may contain tokens
         if (e.config && e.config.headers) delete e.config.headers
         console.error(`Network error while making request to ${url} ${JSON.stringify(e)}`)
