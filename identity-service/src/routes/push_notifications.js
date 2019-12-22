@@ -57,15 +57,19 @@ module.exports = function (app) {
     const { deviceToken, userId } = req.body
     if (!deviceToken || !userId) return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
 
+    let deleted = false
     try {
       const tokenObj = await models.NotificationDeviceToken.findOne({ where: {
         userId,
         deviceToken
       } })
 
-      if (tokenObj) await tokenObj.destroy()
+      if (tokenObj) {
+        await tokenObj.destroy()
+        deleted = true
+      }
 
-      return successResponse()
+      return successResponse({ deleted })
     } catch (e) {
       req.logger.error(`Unable to deregister device token for userId: ${userId}`, e)
       return errorResponseServerError(`Unable to deregister device token for userId: ${userId}`, e.message)
