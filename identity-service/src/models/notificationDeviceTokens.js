@@ -1,18 +1,14 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
-  const notificationDeviceToken = sequelize.define('notificationDeviceToken', {
-    id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true
-    },
+  const NotificationDeviceToken = sequelize.define('NotificationDeviceToken', {
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: false
     },
     deviceToken: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      primaryKey: true
     },
     deviceType: {
       type: DataTypes.ENUM({
@@ -26,8 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     awsARN: {
       type: DataTypes.STRING,
-      allowNull: false,
-      defaultValue: true
+      allowNull: true
     },
     enabled: {
       type: DataTypes.BOOLEAN,
@@ -37,5 +32,5 @@ module.exports = (sequelize, DataTypes) => {
 
   }, {})
 
-  return notificationDeviceToken
+  return NotificationDeviceToken
 }

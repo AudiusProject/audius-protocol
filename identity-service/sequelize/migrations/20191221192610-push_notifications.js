@@ -1,7 +1,7 @@
 'use strict'
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    const userNotificationSettingsMobilePromise = queryInterface.createTable('UserNotificationSettingsMobile', {
+    const userNotificationMobileSettingsPromise = queryInterface.createTable('UserNotificationMobileSettings', {
       userId: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -22,6 +22,11 @@ module.exports = {
         allowNull: false,
         defaultValue: true
       },
+      announcements: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+      },
       followers: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
@@ -35,21 +40,17 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
-    })
+    }, {tableName: 'UserNotificationMobileSettings'})
 
-    const notificationDeviceTokensPromise = queryInterface.createTable('notificationDeviceTokens', {
-      id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        primaryKey: true
-      },
+    const notificationDeviceTokensPromise = queryInterface.createTable('NotificationDeviceTokens', {
       userId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: false
       },
       deviceToken: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        primaryKey: true
       },
       deviceType: {
         type: Sequelize.ENUM({
@@ -68,18 +69,26 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: true
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      },
+      updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE
       }
     })
 
     return Promise.all([
-      userNotificationSettingsMobilePromise,
+      userNotificationMobileSettingsPromise,
       notificationDeviceTokensPromise
     ])
   },
   down: (queryInterface, Sequelize) => {
     return Promise.all([
-      queryInterface.dropTable('UserNotificationSettingsMobile'),
-      queryInterface.dropTable('notificationDeviceTokens'),
+      queryInterface.dropTable('UserNotificationMobileSettings'),
+      queryInterface.dropTable('NotificationDeviceTokens')
     ])
   }
 }

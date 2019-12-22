@@ -1,6 +1,6 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
-  const UserNotificationSettingsMobile = sequelize.define('UserNotificationSettingsMobile', {
+  const UserNotificationMobileSettings = sequelize.define('UserNotificationMobileSettings', {
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -21,12 +21,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: true
     },
-    // TODO - does this need to be in push notifs?
-    // announcements: {
-    //   type: DataTypes.BOOLEAN,
-    //   allowNull: false,
-    //   defaultValue: true
-    // },
+    announcements: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
+    },
     followers: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -35,5 +34,5 @@ module.exports = (sequelize, DataTypes) => {
 
   }, {})
 
-  return UserNotificationSettingsMobile
+  return UserNotificationMobileSettings
 }
