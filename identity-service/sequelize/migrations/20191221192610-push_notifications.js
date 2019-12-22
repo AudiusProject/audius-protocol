@@ -40,7 +40,7 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
-    }, {tableName: 'UserNotificationMobileSettings'})
+    }, { tableName: 'UserNotificationMobileSettings' })
 
     const notificationDeviceTokensPromise = queryInterface.createTable('NotificationDeviceTokens', {
       userId: {

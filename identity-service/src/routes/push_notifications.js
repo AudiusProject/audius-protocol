@@ -12,15 +12,14 @@ module.exports = function (app) {
 
     if (!userId) return errorResponseBadRequest(`Did not pass in a valid userId`)
 
-    try{
+    try {
       await models.UserNotificationMobileSettings.upsert({
         userId,
         ...settings
       })
 
       return successResponse()
-    }
-    catch(e){
+    } catch (e) {
       req.logger.error(`Unable to create or update push notification settings for userId: ${userId}`, e)
       return errorResponseServerError(`Unable to create or update push notification settings for userId: ${userId}, Error: ${e.message}`)
     }
@@ -32,11 +31,11 @@ module.exports = function (app) {
    */
   app.post('/push_notifications/device_token', handleResponse(async (req, res, next) => {
     const { deviceToken, deviceType, userId } = req.body
-    
+
     if (!DEVICE_TYPES.has(deviceType)) return errorResponseBadRequest('Attempting to register an invalid deviceType')
     if (!deviceToken || !userId) return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
 
-    try{
+    try {
       await models.NotificationDeviceToken.upsert({
         deviceToken,
         deviceType,
@@ -44,8 +43,7 @@ module.exports = function (app) {
       })
 
       return successResponse()
-    }
-    catch(e){
+    } catch (e) {
       req.logger.error(`Unable to register device token for userId: ${userId} on ${deviceType}`, e)
       return errorResponseServerError(`Unable to register device token for userId: ${userId} on ${deviceType}, Error: ${e.message}`)
     }
@@ -59,17 +57,16 @@ module.exports = function (app) {
     const { deviceToken, userId } = req.body
     if (!deviceToken || !userId) return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
 
-    try{
-      const tokenObj = await models.NotificationDeviceToken.findOne({where: {
+    try {
+      const tokenObj = await models.NotificationDeviceToken.findOne({ where: {
         userId,
         deviceToken
-      }})
+      } })
 
-      if(tokenObj) await tokenObj.destroy()
-      
+      if (tokenObj) await tokenObj.destroy()
+
       return successResponse()
-    }
-    catch(e){
+    } catch (e) {
       req.logger.error(`Unable to deregister device token for userId: ${userId}`, e)
       return errorResponseServerError(`Unable to deregister device token for userId: ${userId}`, e.message)
     }
