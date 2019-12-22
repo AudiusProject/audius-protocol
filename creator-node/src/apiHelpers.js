@@ -36,6 +36,11 @@ const sendResponse = module.exports.sendResponse = (req, res, resp) => {
       logger.info('Error processing request:', resp.object.error)
     }
   }
+
+  // set custom CORS headers that's required if you want to response
+  // headers through axios
+  res.set('Access-Control-Expose-Headers', 'CN-Request-ID')
+  
   res.status(resp.statusCode).send(resp.object)
 }
 

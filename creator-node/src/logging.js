@@ -22,6 +22,8 @@ function requestNotExcludedFromLogging (url) {
 
 function loggingMiddleware (req, res, next) {
   const requestID = shortid.generate()
+  res.set('CN-Request-ID', requestID)
+
   req.logger = logger.child({
     requestID: requestID,
     requestMethod: req.method,

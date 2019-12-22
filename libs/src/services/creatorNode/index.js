@@ -391,17 +391,7 @@ class CreatorNode {
       const resp = await axios(axiosRequestObj)
       return resp.data
     } catch (e) {
-      if (e.response && e.response.data && e.response.data.error) {
-        console.error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
-        throw new Error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
-      } else if (!e.response) {
-        // delete headers, may contain tokens
-        if (e.config && e.config.headers) delete e.config.headers
-        console.error(`Network error while making request to ${axiosRequestObj.url} ${JSON.stringify(e)}`)
-        throw new Error(`Network error while making request to ${axiosRequestObj.url}`)
-      } else {
-        throw e
-      }
+      _handleErrorHelper(e, axiosRequestObj.url)
     }
   }
 
@@ -446,18 +436,25 @@ class CreatorNode {
       onProgress(total, total)
       return resp.data
     } catch (e) {
-      if (e.response && e.response.data && e.response.data.error) {
-        console.error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
-        throw new Error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
-      } else if (!e.response) {
-        // delete headers, may contain tokens
-        if (e.config && e.config.headers) delete e.config.headers
-        console.error(`Network error while making request to ${url} ${JSON.stringify(e)}`)
-        throw new Error(`Network error while making request to ${url}`)
-      } else {
-        throw e
-      }
+      _handleErrorHelper(e, url)
     }
+  }
+}
+
+function _handleErrorHelper (e, requestUrl) {
+  if (e.response && e.response.data && e.response.data.error) {
+    const cnRequestID = e.response.headers['cn-request-id']
+    const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error}] for request: [${cnRequestID}]`
+
+    console.error(errMessage)
+    throw new Error(errMessage)
+  } else if (!e.response) {
+    // delete headers, may contain tokens
+    if (e.config && e.config.headers) delete e.config.headers
+    console.error(`Network error while making request to ${requestUrl} ${JSON.stringify(e)}`)
+    throw new Error(`Network error while making request to ${requestUrl}`)
+  } else {
+    throw e
   }
 }
 
