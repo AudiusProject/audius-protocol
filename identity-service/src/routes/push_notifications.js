@@ -51,16 +51,15 @@ module.exports = function (app) {
 
   /**
    * Remove a device token from the device token table
-   * POST body contains {userId, deviceToken}
+   * POST body contains {deviceToken}
    */
   app.post('/push_notifications/device_token/deregister', handleResponse(async (req, res, next) => {
-    const { deviceToken, userId } = req.body
-    if (!deviceToken || !userId) return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
+    const { deviceToken } = req.body
+    if (!deviceToken) return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
 
     let deleted = false
     try {
       const tokenObj = await models.NotificationDeviceToken.findOne({ where: {
-        userId,
         deviceToken
       } })
 
