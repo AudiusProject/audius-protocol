@@ -1,14 +1,13 @@
-const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
+const {
+  handleResponse,
+  successResponse,
+  errorResponseBadRequest,
+  errorResponseServerError
+} = require('../apiHelpers')
 const models = require('../models')
 const config = require('../config')
+const { listEndpointsByPlatformApplication, createPlatformEndpoint } = require('../awsSNS')
 
-// AWS SNS init
-const AWS = require('aws-sdk')
-const sns = new AWS.SNS({
-  accessKeyId: config.get('awsAccessKeyId'),
-  secretAccessKey: config.get('awsSecretAccessKey'),
-  region: 'us-west-1'
-})
 const iOSSNSParams = {
   PlatformApplicationArn: config.get('awsSNSiOSARN')
 }
@@ -48,14 +47,21 @@ module.exports = function (app) {
   app.post('/push_notifications/device_token', handleResponse(async (req, res, next) => {
     const { deviceToken, deviceType, userId } = req.body
 
-    if (!DEVICE_TYPES.has(deviceType)) return errorResponseBadRequest('Attempting to register an invalid deviceType')
-    if (!deviceToken || !userId) return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
+    if (!DEVICE_TYPES.has(deviceType)) {
+      return errorResponseBadRequest('Attempting to register an invalid deviceType')
+    }
+    if (!deviceToken || !userId) {
+      return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
+    }
 
     try {
+      const params = { ...iOSSNSParams, Token: deviceToken }
+      const awsARN = (await createPlatformEndpoint(params))['EndpointArn']
       await models.NotificationDeviceToken.upsert({
         deviceToken,
         deviceType,
-        userId
+        userId,
+        awsARN
       })
 
       return successResponse()
@@ -71,7 +77,9 @@ module.exports = function (app) {
    */
   app.post('/push_notifications/device_token/deregister', handleResponse(async (req, res, next) => {
     const { deviceToken } = req.body
-    if (!deviceToken) return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
+    if (!deviceToken) {
+      return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
+    }
 
     let deleted = false
     try {
@@ -90,26 +98,4 @@ module.exports = function (app) {
       return errorResponseServerError(`Unable to deregister device token for deviceToken: ${deviceToken}`, e.message)
     }
   }))
-
-  app.get('/push_notifications/aws', handleResponse(async (req, res) => {
-    try {
-      // TODO(DM) - find a better way to call this
-      const data = await promisifySNS('listEndpointsByPlatformApplication', iOSSNSParams)
-      return successResponse(data)
-    } catch (e) {
-      console.error(e)
-      return errorResponseServerError(e.message)
-    }
-  }))
-}
-
-// the aws sdk doesn't like when you set the function equal to a variable and try to call it
-// eg. const func = sns.<functionname>; func() returns an error, so util.promisify doesn't work
-function promisifySNS (functionName, ...args) {
-  return new Promise(function (resolve, reject) {
-    sns[functionName](...args, function (err, data) {
-      if (err) reject(err)
-      else resolve(data)
-    })
-  })
 }
