@@ -1,4 +1,5 @@
 const config = require('./config')
+const models = require('./models')
 
 // AWS SNS init
 const AWS = require('aws-sdk')
@@ -21,10 +22,69 @@ function _promisifySNS (functionName) {
   }
 }
 
+/**
+ * Formats a push notification in a way that's compatible with SNS
+ * @param {String} title title of push notification
+ * @param {String} body body of push notification
+ * @param {String} targetARN aws arn address for device
+ *                           `arn:aws:sns:us-west-1:<id>:endpoint/APNS/<namespace>/<uuid>`
+ * @param {Boolean=True} playSound should play a sound when it's sent
+ */
+function _formatIOSMessage(message, targetARN, playSound=true){
+  let type = null
+  if (targetARN.includes('APNS_SANDBOX')) type = 'APNS_SANDBOX'
+  else if (targetARN.includes('APNS')) type = 'APNS'
+
+  const jsonMessage = {
+    "default": "You have new notifications in Audius!"
+  }
+
+  // set iphone specific properties here
+  if (type) {
+    let apnsConfig = {
+      "aps": {
+        "alert": `${message}`
+        // keeping these properties here so we can use them if we want to
+        // "alert": {
+        //   "title" : `${title}`,
+        //   "body" : `${body}`
+        // },
+        // "badge": 19
+      }
+    }
+    
+    jsonMessage[type] = JSON.stringify(apnsConfig)
+    if (playSound) jsonMessage[type].sound = 'default'
+  }
+
+  var params = {
+    Message: JSON.stringify(jsonMessage), /* required */
+    MessageStructure: 'json',
+    TargetArn: targetARN
+  };
+
+  return params
+}
+
 const listEndpointsByPlatformApplication = _promisifySNS('listEndpointsByPlatformApplication')
 const createPlatformEndpoint = _promisifySNS('createPlatformEndpoint')
+const publishPromisified = _promisifySNS('publish')
+
+async function publish (message, userId, playSound=true) {  
+  const { deviceType, awsARN } = await models.NotificationDeviceToken.findOne({where: { userId }})
+  let formattedMessage = null
+  if (deviceType === 'ios'){
+    formattedMessage = _formatIOSMessage(message, awsARN, playSound)
+  }
+  
+  if (formattedMessage) {
+    return publishPromisified(formattedMessage)
+  }
+  else return null
+}
 
 module.exports = {
   listEndpointsByPlatformApplication,
-  createPlatformEndpoint
+  createPlatformEndpoint,
+  publish
 }

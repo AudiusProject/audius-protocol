@@ -33,7 +33,7 @@ class NotificationProcessor {
   }
 
   /**
-   * Steps in init flow
+   * Initialize notification and milestone processing
    * 1. Clear the notifQueue and emailQueue
    * 2. Update all blockchainId's in the users table where blockchainId is null
    * 3. Process notif queue and recursively add notif job on queue after 3 seconds
@@ -160,7 +160,7 @@ class NotificationProcessor {
       })
       await indexNotifications(notifications, tx)
       await indexMilestones(milestones, owners, metadata, listenCountWithOwners, tx)
-
+      console.log("done processing aobut to commit..")
       // Commit
       await tx.commit()
     } catch (e) {
