@@ -6,7 +6,7 @@ const {
 } = require('../apiHelpers')
 const models = require('../models')
 const config = require('../config')
-const { listEndpointsByPlatformApplication, createPlatformEndpoint } = require('../awsSNS')
+const { createPlatformEndpoint } = require('../awsSNS')
 
 const iOSSNSParams = {
   PlatformApplicationArn: config.get('awsSNSiOSARN')
