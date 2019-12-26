@@ -3,7 +3,7 @@ const models = require('../models')
 const config = require('../config')
 const { logger } = require('../logging')
 
-// default configs 
+// default configs
 const notifDiscProv = config.get('notificationDiscoveryProvider')
 const startBlock = config.get('notificationStartBlock')
 // Number of tracks to fetch for new listens on each poll
