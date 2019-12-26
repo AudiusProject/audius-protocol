@@ -119,7 +119,7 @@ class NotificationProcessor {
 
       try {
         // Index notifications
-        let maxBlockNumber = await this.indexNotifications(minBlock)
+        let maxBlockNumber = await this.index(minBlock)
 
         // Update cached max block number
         await this.redis.set('maxBlockNumber', maxBlockNumber)
@@ -167,6 +167,35 @@ class NotificationProcessor {
     })
   }
 
+  async indexNotifications (notifications, tx) {
+    for (let notif of notifications) {
+      // blocknumber + timestamp parsed for all notification types
+      let blocknumber = notif.blocknumber
+      let timestamp = Date.parse(notif.timestamp.slice(0, -2))
+
+      // Handle the 'follow' notification type
+      if (notif.type === notificationTypes.Follow) {
+        await _processFollowNotifications(notif, blocknumber, timestamp, tx)
+      }
+
+      // Handle the 'repost' notification type
+      // track/album/playlist
+      if (notif.type === notificationTypes.Repost.base) {
+        await _processBaseRepostNotifications(notif, blocknumber, timestamp, tx)
+      }
+
+      // Handle the 'favorite' notification type, track/album/playlist
+      if (notif.type === notificationTypes.Favorite.base) {
+        await _processFavoriteNotifications(notif, blocknumber, timestamp, tx)
+      }
+
+      // Handle the 'create' notification type, track/album/playlist
+      if (notif.type === notificationTypes.Create.base) {
+        await _processCreateNotifications(notif, blocknumber, timestamp, tx)
+      }
+    }
+  }
+  
   async indexMilestones (milestones, owners, metadata, listenCounts, tx) {
     // Index follower milestones into notifications table
     let followersAddedDictionary = milestones.follower_counts
@@ -500,10 +529,11 @@ class NotificationProcessor {
   /**
    * 1. Get the total listens for the most reecently listened to tracks
    * 2. Query the discprov for new notifications starting at minBlock
+   * 3. ...
    * @param {Integer} minBlock min start block to start querying discprov for new notifications
    */
-  async indexNotifications (minBlock) {
-    logger.info(`${new Date()} - indexNotifications job`)
+  async index (minBlock) {
+    logger.info(`${new Date()} - notifications main index job`)
 
     // Query owners for tracks relevant to track listen counts
     let listenCounts = await calculateTrackListenMilestones()
@@ -532,43 +562,16 @@ class NotificationProcessor {
     let owners = body.data.owners
 
     try {
-      for (let notif of notifications) {
-        // blocknumber + timestamp parsed for all notification types
-        let blocknumber = notif.blocknumber
-        let timestamp = Date.parse(notif.timestamp.slice(0, -2))
-
-        // Handle the 'follow' notification type
-        if (notif.type === notificationTypes.Follow) {
-          await _processFollowNotifications(notif, blocknumber, timestamp, tx)
-        }
-
-        // Handle the 'repost' notification type
-        // track/album/playlist
-        if (notif.type === notificationTypes.Repost.base) {
-          await _processBaseRepostNotifications(notif, blocknumber, timestamp, tx)
-        }
-
-        // Handle the 'favorite' notification type, track/album/playlist
-        if (notif.type === notificationTypes.Favorite.base) {
-          await _processFavoriteNotifications(notif, blocknumber, timestamp, tx)
-        }
-
-        // Handle the 'create' notification type, track/album/playlist
-        if (notif.type === notificationTypes.Create.base) {
-          await _processCreateNotifications(notif, blocknumber, timestamp, tx)
-        }
-      }
-
       // Populate owners, used to index in milestone generation
-      listenCounts = listenCounts.map((x) => {
+      const listenCountWithOwners = listenCounts.map((x) => {
         return {
           trackId: x.trackId,
           listenCount: x.listenCount,
           owner: owners.tracks[x.trackId]
         }
       })
-
-      await this.indexMilestones(milestones, owners, metadata, listenCounts, tx)
+      await this.indexNotifications(notifications, tx)
+      await this.indexMilestones(milestones, owners, metadata, listenCountWithOwners, tx)
 
       // Commit
       await tx.commit()
