@@ -12,8 +12,7 @@ const {
   getHighestBlockNumber
 } = require('./utils')
 const { processEmailNotifications } = require('./sendNotificationEmails')
-
-const notificationJobType = 'notificationProcessJob'
+const { notificationJobType } = require('./constants')
 
 const notifDiscProv = config.get('notificationDiscoveryProvider')
 const emailCachePath = './emailCache'
@@ -37,10 +36,8 @@ class NotificationProcessor {
    * Steps in init flow
    * 1. Clear the notifQueue and emailQueue
    * 2. Update all blockchainId's in the users table where blockchainId is null
-   * 3. Process notif queue
-   *    1....
-   * 4. Process email queue
-   *    1....
+   * 3. Process notif queue and recursively add notif job on queue after 3 seconds
+   *    Process email queue and recursively add email job on queue after 3 seconds
    * @param {Object} audiusLibs libs instance
    * @param {Object} expressApp express app context
    * @param {Object} redis redis connection
@@ -118,7 +115,9 @@ class NotificationProcessor {
   /**
    * 1. Get the total listens for the most reecently listened to tracks
    * 2. Query the discprov for new notifications starting at minBlock
-   * 3. ...
+   * 3. Combine owner object from discprov with track listen counts
+   * 4. Process notifications
+   * 5. Process milestones
    * @param {Integer} minBlock min start block to start querying discprov for new notifications
    */
   async indexAll (minBlock) {

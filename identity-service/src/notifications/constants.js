@@ -34,10 +34,12 @@ const actionEntityTypes = Object.freeze({
 
 const dayInHours = 24
 const weekInHours = 168
+const notificationJobType = 'notificationProcessJob'
 
 module.exports = {
   notificationTypes,
   actionEntityTypes,
   dayInHours,
-  weekInHours
+  weekInHours,
+  notificationJobType
 }

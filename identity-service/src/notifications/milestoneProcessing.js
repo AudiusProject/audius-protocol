@@ -82,7 +82,7 @@ async function indexMilestones (milestones, owners, metadata, listenCounts, tx) 
   await updateFavoriteMilestones(milestones.favorite_counts, owners, blocknumber, timestamp)
 
   // Index listens
-  await updateTrackListenMilestones(listenCounts, owners, blocknumber, timestamp)
+  await updateTrackListenMilestones(listenCounts, blocknumber, timestamp)
 }
 /**
  *
@@ -244,7 +244,7 @@ async function processFavoriteMilestone (userId, entityId, entityType, milestone
  *
  */
 
-async function updateTrackListenMilestones (listenCounts, owners, blocknumber, timestamp) {
+async function updateTrackListenMilestones (listenCounts, blocknumber, timestamp) {
   for (var entry of listenCounts) {
     let trackListenCount = Number.parseInt(entry.listenCount)
     for (var i = trackListenMilestoneList.length; i >= 0; i--) {
