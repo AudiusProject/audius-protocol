@@ -160,7 +160,7 @@ class NotificationProcessor {
       })
       await indexNotifications(notifications, tx)
       await indexMilestones(milestones, owners, metadata, listenCountWithOwners, tx)
-      console.log("done processing aobut to commit..")
+      console.log('done processing aobut to commit..')
       // Commit
       await tx.commit()
     } catch (e) {

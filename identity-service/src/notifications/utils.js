@@ -121,8 +121,34 @@ async function getHighestBlockNumber () {
   return highestBlockNumber
 }
 
+/**
+ * Checks the user notification settings for both regular and push notifications and
+ * returns if they should be notified according to their settings
+ * 
+ * @param {Integer} notificationTarget userId that we want to send a notification to
+ * @param {String} prop property name in the settings object
+ * @param {Object} tx sequelize tx (optional)
+ * @returns Object { notifyWeb: Boolean, notifyMobile: Boolean}
+ */
+async function shouldNotifyUser (notificationTarget, prop, tx=null) {
+  // web
+  let webQuery = { where: { userId: notificationTarget } }
+  if (tx) webQuery.transaction = tx
+  let userNotifSettings = await models.UserNotificationSettings.findOne(webQuery)
+  const notifyWeb = (userNotifSettings && userNotifSettings[prop]) || false
+
+  // mobile
+  let mobileQuery = { where: { userId: notificationTarget } }
+  if (tx) mobileQuery.transaction = tx
+  let userNotifSettingsMobile = await models.UserNotificationMobileSettings.findOne(mobileQuery)
+  const notifyMobile = (userNotifSettingsMobile && userNotifSettingsMobile[prop]) || false
+
+  return { notifyWeb, notifyMobile }
+}
+
 module.exports = {
   updateBlockchainIds,
   calculateTrackListenMilestones,
-  getHighestBlockNumber
+  getHighestBlockNumber,
+  shouldNotifyUser
 }

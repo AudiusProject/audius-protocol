@@ -4,6 +4,7 @@ const {
   notificationTypes,
   actionEntityTypes
 } = require('./constants')
+const { shouldNotifyUser } = require('./utils')
 const { publish } = require('../awsSNS')
 
 async function indexNotifications (notifications, tx) {
@@ -38,7 +39,7 @@ async function indexNotifications (notifications, tx) {
 async function _processFollowNotifications (notif, blocknumber, timestamp, tx) {
   let notificationTarget = notif.metadata.followee_user_id
   // Skip notification based on user settings
-  const { notifyMobile, notifyWeb } = await _shouldNotifyUser(notificationTarget, 'followers', tx)
+  const { notifyMobile, notifyWeb } = await shouldNotifyUser(notificationTarget, 'followers', tx)
   console.log('notifying', notifyMobile, notifyWeb, notificationTarget)
   if (!notifyWeb && !notifyMobile) {
     return
@@ -129,7 +130,7 @@ async function _processBaseRepostNotifications (notif, blocknumber, timestamp, t
   let notificationTarget = notif.metadata.entity_owner_id
 
   // Skip notification based on user settings
-  const { notifyMobile, notifyWeb } = await _shouldNotifyUser(notificationTarget, 'reposts', tx)
+  const { notifyMobile, notifyWeb } = await shouldNotifyUser(notificationTarget, 'reposts', tx)
   if (!notifyWeb && !notifyMobile) {
     return
   }
@@ -221,7 +222,7 @@ async function _processFavoriteNotifications (notif, blocknumber, timestamp, tx)
   }
   let notificationTarget = notif.metadata.entity_owner_id
   // Skip notification based on user settings
-  const { notifyMobile, notifyWeb } = await _shouldNotifyUser(notificationTarget, 'favorites', tx)
+  const { notifyMobile, notifyWeb } = await shouldNotifyUser(notificationTarget, 'favorites', tx)
   if (!notifyWeb && !notifyMobile) {
     return
   }
@@ -403,7 +404,7 @@ async function _processCreateNotifications (notif, blocknumber, timestamp, tx) {
 
     // send push notification to each subsriber
     try {
-      await publish('Someone favorited your track on Audius!', notificationTarget, true)
+      await publish('Someone you subscribe to uploaded new content!', notificationTarget, true)
     } catch (e) {
       logger.error('Cound not send push notification for _processFollowNotifications for target user', notificationTarget, e)
     }
@@ -429,20 +430,4 @@ async function _processCreateNotifications (notif, blocknumber, timestamp, tx) {
 
 module.exports = {
   indexNotifications
-}
-
-async function _shouldNotifyUser (notificationTarget, prop, tx) {
-  // web
-  let userNotifSettings = await models.UserNotificationSettings.findOne(
-    { where: { userId: notificationTarget }, transaction: tx }
-  )
-  const notifyWeb = (userNotifSettings && userNotifSettings[prop]) || false
-
-  // mobile
-  let userNotifSettingsMobile = await models.UserNotificationMobileSettings.findOne(
-    { where: { userId: notificationTarget }, transaction: tx }
-  )
-  const notifyMobile = (userNotifSettingsMobile && userNotifSettingsMobile[prop]) || false
-
-  return { notifyWeb, notifyMobile }
 }

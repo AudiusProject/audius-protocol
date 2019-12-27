@@ -30,20 +30,20 @@ function _promisifySNS (functionName) {
  *                           `arn:aws:sns:us-west-1:<id>:endpoint/APNS/<namespace>/<uuid>`
  * @param {Boolean=True} playSound should play a sound when it's sent
  */
-function _formatIOSMessage(message, targetARN, playSound=true){
+function _formatIOSMessage (message, targetARN, playSound = true) {
   let type = null
   if (targetARN.includes('APNS_SANDBOX')) type = 'APNS_SANDBOX'
   else if (targetARN.includes('APNS')) type = 'APNS'
 
   const jsonMessage = {
-    "default": "You have new notifications in Audius!"
+    'default': 'You have new notifications in Audius!'
   }
 
   // set iphone specific properties here
   if (type) {
     let apnsConfig = {
-      "aps": {
-        "alert": `${message}`
+      'aps': {
+        'alert': `${message}`
         // keeping these properties here so we can use them if we want to
         // "alert": {
         //   "title" : `${title}`,
@@ -52,7 +52,7 @@ function _formatIOSMessage(message, targetARN, playSound=true){
         // "badge": 19
       }
     }
-    
+
     jsonMessage[type] = JSON.stringify(apnsConfig)
     if (playSound) jsonMessage[type].sound = 'default'
   }
@@ -61,7 +61,7 @@ function _formatIOSMessage(message, targetARN, playSound=true){
     Message: JSON.stringify(jsonMessage), /* required */
     MessageStructure: 'json',
     TargetArn: targetARN
-  };
+  }
 
   return params
 }
@@ -70,17 +70,19 @@ const listEndpointsByPlatformApplication = _promisifySNS('listEndpointsByPlatfor
 const createPlatformEndpoint = _promisifySNS('createPlatformEndpoint')
 const publishPromisified = _promisifySNS('publish')
 
-async function publish (message, userId, playSound=true) {  
-  const { deviceType, awsARN } = await models.NotificationDeviceToken.findOne({where: { userId }})
+async function publish (message, userId, playSound = true) {
+  const deviceInfo = await models.NotificationDeviceToken.findOne({ where: { userId } })
+  if (!deviceInfo) return
+
   let formattedMessage = null
-  if (deviceType === 'ios'){
-    formattedMessage = _formatIOSMessage(message, awsARN, playSound)
+  if (deviceInfo.deviceType === 'ios') {
+    console.log("formattedMessage", formattedMessage)
+    formattedMessage = _formatIOSMessage(message, deviceInfo.awsARN, playSound)
   }
-  
+
   if (formattedMessage) {
     return publishPromisified(formattedMessage)
-  }
-  else return null
+  } else return null
 }
 
 module.exports = {
