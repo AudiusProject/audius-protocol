@@ -1,5 +1,6 @@
 const config = require('./config')
 const models = require('./models')
+const { logger } = require('./logging')
 
 // AWS SNS init
 const AWS = require('aws-sdk')
@@ -76,7 +77,7 @@ async function publish (message, userId, playSound = true) {
 
   let formattedMessage = null
   if (deviceInfo.deviceType === 'ios') {
-    console.log("formattedMessage", formattedMessage)
+    logger.debug('formattedMessage', formattedMessage)
     formattedMessage = _formatIOSMessage(message, deviceInfo.awsARN, playSound)
   }
 

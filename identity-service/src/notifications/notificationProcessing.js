@@ -40,7 +40,6 @@ async function _processFollowNotifications (notif, blocknumber, timestamp, tx) {
   let notificationTarget = notif.metadata.followee_user_id
   // Skip notification based on user settings
   const { notifyMobile, notifyWeb } = await shouldNotifyUser(notificationTarget, 'followers', tx)
-  console.log('notifying', notifyMobile, notifyWeb, notificationTarget)
   if (!notifyWeb && !notifyMobile) {
     return
   }

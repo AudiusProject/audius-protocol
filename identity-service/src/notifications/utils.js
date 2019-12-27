@@ -124,13 +124,13 @@ async function getHighestBlockNumber () {
 /**
  * Checks the user notification settings for both regular and push notifications and
  * returns if they should be notified according to their settings
- * 
+ *
  * @param {Integer} notificationTarget userId that we want to send a notification to
  * @param {String} prop property name in the settings object
  * @param {Object} tx sequelize tx (optional)
  * @returns Object { notifyWeb: Boolean, notifyMobile: Boolean}
  */
-async function shouldNotifyUser (notificationTarget, prop, tx=null) {
+async function shouldNotifyUser (notificationTarget, prop, tx = null) {
   // web
   let webQuery = { where: { userId: notificationTarget } }
   if (tx) webQuery.transaction = tx

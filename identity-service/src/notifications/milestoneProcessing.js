@@ -50,6 +50,7 @@ async function updateFollowerMilestones (followerCounts, blocknumber, timestamp,
   for (var targetUser of usersWithNewFollowers) {
     if (followersAddedDictionary.hasOwnProperty(targetUser)) {
       let currentFollowerCount = followersAddedDictionary[targetUser]
+
       for (var i = followerMilestoneList.length; i >= 0; i--) {
         let milestoneValue = followerMilestoneList[i]
         if (currentFollowerCount === milestoneValue) {
@@ -317,7 +318,7 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
         }
       }]
     })
-  
+
     if (existingMilestoneQuery.length === 0) {
       // MilestoneListen/Favorite/Repost
       // userId=user achieving milestone
@@ -341,7 +342,7 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
         }
       })
       logger.info(`Process milestone ${userId}, type ${milestoneType}, entityId ${entityId}, type ${entityType}, milestoneValue ${milestoneValue}`)
-  
+
       // Destroy any unread milestone notifications of this type + entity
       let milestonesToBeDeleted = await models.Notification.findAll({
         where: {
@@ -361,7 +362,7 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
           }
         }]
       })
-  
+
       if (milestonesToBeDeleted) {
         for (var milestoneToDelete of milestonesToBeDeleted) {
           logger.info(`Deleting milestone: ${milestoneToDelete.id}`)
