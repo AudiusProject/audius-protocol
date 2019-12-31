@@ -1,4 +1,3 @@
-const notificationsData = require('./notificationsResponse.json')
 const assert = require('assert')
 const models = require('../src/models')
 const { clearDatabase, runMigrations } = require('./lib/app')
@@ -8,10 +7,6 @@ describe('test notificationsData', function () {
   beforeEach(async () => {
     await clearDatabase()
     await runMigrations()
-  })
-
-  it('is not null', function () {
-    assert.deepStrictEqual(typeof notificationsData.data.notifications, 'object')
   })
 
   it('should insert rows into notifications and notifications actions tables', async function () {
