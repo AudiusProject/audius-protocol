@@ -15,18 +15,36 @@ async function indexNotifications (notifications, tx) {
 
     // Handle the 'follow' notification type
     if (notif.type === notificationTypes.Follow) {
-      await _processFollowNotifications(notif, blocknumber, timestamp, tx)
+      let notificationTarget = notif.metadata.followee_user_id
+      // Skip notification based on user settings
+      const shouldNotify = await shouldNotifyUser(notificationTarget, 'followers', tx)
+      if (!shouldNotify.notifyWeb && !shouldNotify.notifyMobile) {
+        return
+      }
+      await _processFollowNotifications(notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
     }
 
     // Handle the 'repost' notification type
     // track/album/playlist
     if (notif.type === notificationTypes.Repost.base) {
-      await _processBaseRepostNotifications(notif, blocknumber, timestamp, tx)
+      let notificationTarget = notif.metadata.entity_owner_id
+      // Skip notification based on user settings
+      const shouldNotify = await shouldNotifyUser(notificationTarget, 'reposts', tx)
+      if (!shouldNotify.notifyWeb && !shouldNotify.notifyMobile) {
+        return
+      }
+      await _processBaseRepostNotifications(notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
     }
 
     // Handle the 'favorite' notification type, track/album/playlist
     if (notif.type === notificationTypes.Favorite.base) {
-      await _processFavoriteNotifications(notif, blocknumber, timestamp, tx)
+      let notificationTarget = notif.metadata.entity_owner_id
+      // Skip notification based on user settings
+      const shouldNotify = await shouldNotifyUser(notificationTarget, 'favorites', tx)
+      if (!shouldNotify.notifyWeb && !shouldNotify.notifyMobile) {
+        return
+      }
+      await _processFavoriteNotifications(notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
     }
 
     // Handle the 'create' notification type, track/album/playlist
@@ -36,14 +54,8 @@ async function indexNotifications (notifications, tx) {
   }
 }
 
-async function _processFollowNotifications (notif, blocknumber, timestamp, tx) {
-  let notificationTarget = notif.metadata.followee_user_id
-  // Skip notification based on user settings
-  const { notifyMobile, notifyWeb } = await shouldNotifyUser(notificationTarget, 'followers', tx)
-  if (!notifyWeb && !notifyMobile) {
-    return
-  }
-
+async function _processFollowNotifications (notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify) {
+  const { notifyWeb, notifyMobile } = shouldNotify
   if (notifyWeb) {
     let notificationInitiator = notif.metadata.follower_user_id
     let unreadQuery = await models.Notification.findAll({
@@ -111,8 +123,10 @@ async function _processFollowNotifications (notif, blocknumber, timestamp, tx) {
   }
 }
 
-async function _processBaseRepostNotifications (notif, blocknumber, timestamp, tx) {
+async function _processBaseRepostNotifications (notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify) {
   let repostType = null
+  const { notifyWeb, notifyMobile } = shouldNotify
+
   switch (notif.metadata.entity_type) {
     case 'track':
       repostType = notificationTypes.Repost.track
@@ -125,13 +139,6 @@ async function _processBaseRepostNotifications (notif, blocknumber, timestamp, t
       break
     default:
       throw new Error('Invalid repost type')
-  }
-  let notificationTarget = notif.metadata.entity_owner_id
-
-  // Skip notification based on user settings
-  const { notifyMobile, notifyWeb } = await shouldNotifyUser(notificationTarget, 'reposts', tx)
-  if (!notifyWeb && !notifyMobile) {
-    return
   }
 
   if (notifyWeb) {
@@ -204,8 +211,10 @@ async function _processBaseRepostNotifications (notif, blocknumber, timestamp, t
   }
 }
 
-async function _processFavoriteNotifications (notif, blocknumber, timestamp, tx) {
+async function _processFavoriteNotifications (notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify) {
   let favoriteType = null
+  const { notifyWeb, notifyMobile } = shouldNotify
+
   switch (notif.metadata.entity_type) {
     case 'track':
       favoriteType = notificationTypes.Favorite.track
@@ -218,12 +227,6 @@ async function _processFavoriteNotifications (notif, blocknumber, timestamp, tx)
       break
     default:
       throw new Error('Invalid favorite type')
-  }
-  let notificationTarget = notif.metadata.entity_owner_id
-  // Skip notification based on user settings
-  const { notifyMobile, notifyWeb } = await shouldNotifyUser(notificationTarget, 'favorites', tx)
-  if (!notifyWeb && !notifyMobile) {
-    return
   }
 
   if (notifyWeb) {
@@ -287,6 +290,7 @@ async function _processFavoriteNotifications (notif, blocknumber, timestamp, tx)
   // send push notification
   if (notifyMobile) {
     try {
+      logger.debug('about to send a push notification for favorite', notif)
       await publish('Someone favorited your track on Audius!', notificationTarget, true)
     } catch (e) {
       logger.error('Cound not send push notification for _processFollowNotifications for target user', notificationTarget, e)
@@ -428,5 +432,6 @@ async function _processCreateNotifications (notif, blocknumber, timestamp, tx) {
 }
 
 module.exports = {
-  indexNotifications
+  indexNotifications,
+  _processFollowNotifications
 }
