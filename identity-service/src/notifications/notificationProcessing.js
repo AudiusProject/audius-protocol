@@ -2,12 +2,15 @@ const models = require('../models')
 const { logger } = require('../logging')
 const {
   notificationTypes,
-  actionEntityTypes
+  actionEntityTypes,
+  pushNotificationMessagesMap
 } = require('./constants')
 const { shouldNotifyUser } = require('./utils')
 const { publish } = require('../awsSNS')
+const { fetchNotificationMetadata } = require('./fetchNotificationMetadata')
+const { notificationResponseMap } = require('./formatNotificationMetadata')
 
-async function indexNotifications (notifications, tx) {
+async function indexNotifications (notifications, tx, audiusLibs) {
   for (let notif of notifications) {
     // blocknumber + timestamp parsed for all notification types
     let blocknumber = notif.blocknumber
@@ -21,7 +24,7 @@ async function indexNotifications (notifications, tx) {
       if (!shouldNotify.notifyWeb && !shouldNotify.notifyMobile) {
         return
       }
-      await _processFollowNotifications(notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
+      await _processFollowNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
     }
 
     // Handle the 'repost' notification type
@@ -33,7 +36,7 @@ async function indexNotifications (notifications, tx) {
       if (!shouldNotify.notifyWeb && !shouldNotify.notifyMobile) {
         return
       }
-      await _processBaseRepostNotifications(notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
+      await _processBaseRepostNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
     }
 
     // Handle the 'favorite' notification type, track/album/playlist
@@ -44,7 +47,7 @@ async function indexNotifications (notifications, tx) {
       if (!shouldNotify.notifyWeb && !shouldNotify.notifyMobile) {
         return
       }
-      await _processFavoriteNotifications(notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
+      await _processFavoriteNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
     }
 
     // Handle the 'create' notification type, track/album/playlist
@@ -54,10 +57,11 @@ async function indexNotifications (notifications, tx) {
   }
 }
 
-async function _processFollowNotifications (notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify) {
+async function _processFollowNotifications (audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify) {
   const { notifyWeb, notifyMobile } = shouldNotify
+  let notificationInitiator = notif.metadata.follower_user_id
+
   if (notifyWeb) {
-    let notificationInitiator = notif.metadata.follower_user_id
     let unreadQuery = await models.Notification.findAll({
       where: {
         isViewed: false,
@@ -116,15 +120,40 @@ async function _processFollowNotifications (notif, blocknumber, timestamp, tx, n
   // send push notification
   if (notifyMobile) {
     try {
-      await publish('You have a new follower on Audius!', notificationTarget, true)
+      logger.debug('about to send a push notification for follower', notif)
+      let notifWithAddProps = {
+        ...notif,
+        actions: [{
+          actionEntityType: actionEntityTypes.User,
+          actionEntityId: notificationInitiator,
+          blocknumber
+        }]
+      }
+
+      // fetch metadata
+      const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
+
+      // map properties necessary to render push notification message
+      const mapNotification = notificationResponseMap[notificationTypes.Follow]
+      let msgGenNotif = {
+        ...notifWithAddProps,
+        ...(mapNotification(notifWithAddProps, metadata))
+      }
+      logger.debug('about to generate message for follower push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
+
+      // snippets
+      const msg = pushNotificationMessagesMap[notificationTypes.Follow](msgGenNotif)
+      await publish(msg, notificationTarget, true)
     } catch (e) {
       logger.error('Cound not send push notification for _processFollowNotifications for target user', notificationTarget, e)
     }
   }
 }
 
-async function _processBaseRepostNotifications (notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify) {
+async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify) {
   let repostType = null
+  let notificationEntityId = notif.metadata.entity_id
+  let notificationInitiator = notif.initiator
   const { notifyWeb, notifyMobile } = shouldNotify
 
   switch (notif.metadata.entity_type) {
@@ -142,9 +171,6 @@ async function _processBaseRepostNotifications (notif, blocknumber, timestamp, t
   }
 
   if (notifyWeb) {
-    let notificationEntityId = notif.metadata.entity_id
-    let notificationInitiator = notif.initiator
-
     let unreadQuery = await models.Notification.findAll({
       where: {
         isViewed: false,
@@ -204,25 +230,57 @@ async function _processBaseRepostNotifications (notif, blocknumber, timestamp, t
   // send push notification
   if (notifyMobile) {
     try {
-      await publish('Someone reposted your track on Audius!', notificationTarget, true)
+      logger.debug('about to send a push notification for repost', notif)
+      let notifWithAddProps = {
+        ...notif,
+        actions: [{
+          actionEntityType: actionEntityTypes.User,
+          actionEntityId: notificationInitiator,
+          blocknumber
+        }],
+        entityId: notificationEntityId,
+        // we're going to overwrite this property so fetchNotificationMetadata can use it
+        type: repostType
+      }
+
+      // fetch metadata
+      const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
+
+      // map properties necessary to render push notification message
+      const mapNotification = notificationResponseMap[repostType]
+      let msgGenNotif = {
+        ...notifWithAddProps,
+        ...(mapNotification(notifWithAddProps, metadata))
+      }
+      logger.debug('about to generate message for repost push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
+
+      // snippets
+      const msg = pushNotificationMessagesMap[notificationTypes.Repost.base](msgGenNotif)
+      await publish(msg, notificationTarget, true)
     } catch (e) {
-      logger.error('Cound not send push notification for _processFollowNotifications for target user', notificationTarget, e)
+      logger.error('Cound not send push notification for _processBaseRepostNotifications for target user', notificationTarget, e)
     }
   }
 }
 
-async function _processFavoriteNotifications (notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify) {
+async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify) {
   let favoriteType = null
+  let entityType = null
+  let notificationEntityId = notif.metadata.entity_id
+  let notificationInitiator = notif.initiator
   const { notifyWeb, notifyMobile } = shouldNotify
 
   switch (notif.metadata.entity_type) {
     case 'track':
+      entityType = 'track'
       favoriteType = notificationTypes.Favorite.track
       break
     case 'album':
+      entityType = 'album'
       favoriteType = notificationTypes.Favorite.album
       break
     case 'playlist':
+      entityType = 'playlist'
       favoriteType = notificationTypes.Favorite.playlist
       break
     default:
@@ -230,8 +288,6 @@ async function _processFavoriteNotifications (notif, blocknumber, timestamp, tx,
   }
 
   if (notifyWeb) {
-    let notificationEntityId = notif.metadata.entity_id
-    let notificationInitiator = notif.initiator
     let unreadQuery = await models.Notification.findAll({
       where: {
         isViewed: false,
@@ -291,9 +347,34 @@ async function _processFavoriteNotifications (notif, blocknumber, timestamp, tx,
   if (notifyMobile) {
     try {
       logger.debug('about to send a push notification for favorite', notif)
-      await publish('Someone favorited your track on Audius!', notificationTarget, true)
+      let notifWithAddProps = {
+        ...notif,
+        actions: [{
+          actionEntityType: actionEntityTypes.User,
+          actionEntityId: notificationInitiator,
+          blocknumber
+        }],
+        entityId: notificationEntityId,
+        // we're going to overwrite this property so fetchNotificationMetadata can use it
+        type: favoriteType
+      }
+
+      // fetch metadata
+      const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
+
+      // map properties necessary to render push notification message
+      const mapNotification = notificationResponseMap[favoriteType]
+      let msgGenNotif = {
+        ...notifWithAddProps,
+        ...(mapNotification(notifWithAddProps, metadata))
+      }
+      logger.debug('about to generate message for favorite push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
+
+      // snippets
+      const msg = pushNotificationMessagesMap[notificationTypes.Favorite.base](msgGenNotif)
+      await publish(msg, notificationTarget, true)
     } catch (e) {
-      logger.error('Cound not send push notification for _processFollowNotifications for target user', notificationTarget, e)
+      logger.error('Cound not send push notification for _processFavoriteNotifications for target user', notificationTarget, e)
     }
   }
 }

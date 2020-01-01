@@ -63,8 +63,9 @@ class NotificationProcessor {
       // this.emailQueue.add({ type: 'unreadEmailJob' })
 
       try {
+        const oldMaxBlockNumber = await this.redis.get('maxBlockNumber')
         // Index notifications and milestones
-        let maxBlockNumber = await this.indexAll(minBlock)
+        let maxBlockNumber = await this.indexAll(audiusLibs, minBlock, oldMaxBlockNumber)
 
         // Update cached max block number
         await this.redis.set('maxBlockNumber', maxBlockNumber)
@@ -90,6 +91,7 @@ class NotificationProcessor {
 
     // Email notification queue
     this.emailQueue.process(async (job, done) => {
+      logger.info('about to processEmailNotifications')
       await processEmailNotifications(expressApp, audiusLibs)
       done()
     })
@@ -120,8 +122,9 @@ class NotificationProcessor {
    * 5. Process milestones
    * @param {Integer} minBlock min start block to start querying discprov for new notifications
    */
-  async indexAll (minBlock) {
-    logger.info(`${new Date()} - notifications main indexAll job`)
+  async indexAll (audiusLibs, minBlock, oldMaxBlockNumber) {
+    const start = Date.now()
+    logger.info(`${new Date()} - notifications main indexAll job`, minBlock, oldMaxBlockNumber, start)
 
     // Query owners for tracks relevant to track listen counts
     let listenCounts = await calculateTrackListenMilestones()
@@ -158,11 +161,12 @@ class NotificationProcessor {
           owner: owners.tracks[x.trackId]
         }
       })
-      await indexNotifications(notifications, tx)
+      await indexNotifications(notifications, tx, audiusLibs)
       await indexMilestones(milestones, owners, metadata, listenCountWithOwners, tx)
 
       // Commit
       await tx.commit()
+      logger.info(`finished notifications main indexAll job`, minBlock, start)
     } catch (e) {
       logger.error(`Error indexing notification ${e}`)
       logger.error(e.stack)

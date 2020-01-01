@@ -77,11 +77,11 @@ async function publish (message, userId, playSound = true) {
 
   let formattedMessage = null
   if (deviceInfo.deviceType === 'ios') {
-    logger.debug('formattedMessage', formattedMessage)
     formattedMessage = _formatIOSMessage(message, deviceInfo.awsARN, playSound)
   }
 
   if (formattedMessage) {
+    logger.debug('AWS SNS formattedMessage', formattedMessage)
     return publishPromisified(formattedMessage)
   } else return null
 }

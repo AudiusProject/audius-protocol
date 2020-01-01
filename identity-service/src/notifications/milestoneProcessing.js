@@ -119,7 +119,8 @@ async function updateRepostMilestones (repostCounts, owners, blocknumber, timest
     for (var i = repostMilestoneList.length; i >= 0; i--) {
       let milestoneValue = repostMilestoneList[i]
       if (trackRepostCount === milestoneValue) {
-        await processRepostMilestone(
+        await _processMilestone(
+          notificationTypes.MilestoneRepost,
           trackOwnerId,
           repostedTrackId,
           actionEntityTypes.Track,
@@ -137,7 +138,8 @@ async function updateRepostMilestones (repostCounts, owners, blocknumber, timest
     for (var j = repostMilestoneList.length; j >= 0; j--) {
       let milestoneValue = repostMilestoneList[j]
       if (albumRepostCount === milestoneValue) {
-        await processRepostMilestone(
+        await _processMilestone(
+          notificationTypes.MilestoneRepost,
           albumOwnerId,
           repostedAlbumId,
           actionEntityTypes.Album,
@@ -155,7 +157,8 @@ async function updateRepostMilestones (repostCounts, owners, blocknumber, timest
     for (var k = repostMilestoneList.length; k >= 0; k--) {
       let milestoneValue = repostMilestoneList[k]
       if (playlistRepostCount === milestoneValue) {
-        await processRepostMilestone(
+        await _processMilestone(
+          notificationTypes.MilestoneRepost,
           playlistOwnerId,
           repostedPlaylistId,
           actionEntityTypes.Playlist,
@@ -166,17 +169,6 @@ async function updateRepostMilestones (repostCounts, owners, blocknumber, timest
       }
     }
   }
-}
-
-async function processRepostMilestone (userId, entityId, entityType, milestoneValue, blocknumber, timestamp) {
-  await _processMilestone(
-    notificationTypes.MilestoneRepost,
-    userId,
-    entityId,
-    entityType,
-    milestoneValue,
-    blocknumber,
-    timestamp)
 }
 
 /**
@@ -196,7 +188,8 @@ async function updateFavoriteMilestones (favoriteCounts, owners, blocknumber, ti
     for (var i = favoriteMilestoneList.length; i >= 0; i--) {
       let milestoneValue = favoriteMilestoneList[i]
       if (trackFavoriteCount === milestoneValue) {
-        await processFavoriteMilestone(
+        await _processMilestone(
+          notificationTypes.MilestoneFavorite,
           trackOwnerId,
           favoritedTrackId,
           actionEntityTypes.Track,
@@ -214,7 +207,8 @@ async function updateFavoriteMilestones (favoriteCounts, owners, blocknumber, ti
     for (var j = favoriteMilestoneList.length; j >= 0; j--) {
       let milestoneValue = favoriteMilestoneList[j]
       if (albumFavoriteCount === milestoneValue) {
-        await processFavoriteMilestone(
+        await _processMilestone(
+          notificationTypes.MilestoneFavorite,
           albumOwnerId,
           favoritedAlbumId,
           actionEntityTypes.Album,
@@ -232,7 +226,8 @@ async function updateFavoriteMilestones (favoriteCounts, owners, blocknumber, ti
     for (var k = favoriteMilestoneList.length; k >= 0; k--) {
       let milestoneValue = favoriteMilestoneList[k]
       if (playlistFavoriteCount === milestoneValue) {
-        await processFavoriteMilestone(
+        await _processMilestone(
+          notificationTypes.MilestoneFavorite,
           playlistOwnerId,
           favoritedPlaylistId,
           actionEntityTypes.Playlist,
@@ -243,17 +238,6 @@ async function updateFavoriteMilestones (favoriteCounts, owners, blocknumber, ti
       }
     }
   }
-}
-
-async function processFavoriteMilestone (userId, entityId, entityType, milestoneValue, blocknumber, timestamp) {
-  await _processMilestone(
-    notificationTypes.MilestoneFavorite,
-    userId,
-    entityId,
-    entityType,
-    milestoneValue,
-    blocknumber,
-    timestamp)
 }
 
 /**
@@ -270,7 +254,8 @@ async function updateTrackListenMilestones (listenCounts, blocknumber, timestamp
       if (trackListenCount === milestoneValue || (trackListenCount >= milestoneValue && trackListenCount <= milestoneValue * 1.1)) {
         let trackId = entry.trackId
         let ownerId = entry.owner
-        await processListenCountMilestone(
+        await _processMilestone(
+          notificationTypes.MilestoneListen,
           ownerId,
           trackId,
           actionEntityTypes.Track,
@@ -282,17 +267,6 @@ async function updateTrackListenMilestones (listenCounts, blocknumber, timestamp
       }
     }
   }
-}
-
-async function processListenCountMilestone (userId, entityId, entityType, milestoneValue, blocknumber, timestamp) {
-  await _processMilestone(
-    notificationTypes.MilestoneListen,
-    userId,
-    entityId,
-    entityType,
-    milestoneValue,
-    blocknumber,
-    timestamp)
 }
 
 async function _processMilestone (milestoneType, userId, entityId, entityType, milestoneValue, blocknumber, timestamp) {
