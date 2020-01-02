@@ -400,11 +400,10 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
                     if personalized and current_user_id
                     else ""
                 }
-                order by d."word" <-> :query
             ) as results
             group by track_id, title, query
         ) as results2
-        order by total_score desc
+        order by total_score desc, track_id asc
         limit :limit
         offset :offset;
         """
@@ -485,11 +484,10 @@ def user_search_query(session, searchStr, limit, offset, personalized, isAutocom
                     if personalized and current_user_id
                     else ""
                 }
-                order by d."word" <-> :query
             ) as results
             group by user_id, name, query
         ) as results2
-        order by total_score desc
+        order by total_score desc, user_id asc
         limit :limit
         offset :offset;
         """
@@ -560,11 +558,10 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
                     if personalized and current_user_id
                     else ""
                 }
-                order by d."word" <-> :query
             ) as results
             group by playlist_id, playlist_name, query
         ) as results2
-        order by total_score desc
+        order by total_score desc, playlist_id asc
         limit :limit
         offset :offset;
         """
