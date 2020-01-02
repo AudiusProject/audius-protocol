@@ -10,7 +10,9 @@ async function _insertFollowersPreRead () {
     const blocknumber = notif.blocknumber
     const timestamp = Date.parse(notif.timestamp.slice(0, -2))
     console.log(notif, notificationTarget, blocknumber, timestamp)
-    await _processFollowNotifications(notif,
+    await _processFollowNotifications(
+      {},
+      notif,
       blocknumber,
       timestamp,
       tx,
@@ -42,7 +44,9 @@ async function _insertFollowersPostRead () {
     const blocknumber = notif.blocknumber
     const timestamp = Date.parse(notif.timestamp.slice(0, -2))
     console.log(notif, notificationTarget, blocknumber, timestamp)
-    await _processFollowNotifications(notif,
+    await _processFollowNotifications(
+      {},
+      notif,
       blocknumber,
       timestamp,
       tx,

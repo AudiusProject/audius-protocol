@@ -265,22 +265,18 @@ async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, 
 
 async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify) {
   let favoriteType = null
-  let entityType = null
   let notificationEntityId = notif.metadata.entity_id
   let notificationInitiator = notif.initiator
   const { notifyWeb, notifyMobile } = shouldNotify
 
   switch (notif.metadata.entity_type) {
     case 'track':
-      entityType = 'track'
       favoriteType = notificationTypes.Favorite.track
       break
     case 'album':
-      entityType = 'album'
       favoriteType = notificationTypes.Favorite.album
       break
     case 'playlist':
-      entityType = 'playlist'
       favoriteType = notificationTypes.Favorite.playlist
       break
     default:

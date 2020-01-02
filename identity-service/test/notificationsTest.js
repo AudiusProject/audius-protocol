@@ -13,7 +13,7 @@ describe('test notificationsData', function () {
     await _insertFollowersPreRead()
   })
 
-  it.only('should insert new rows into notifications and notifications actions tables after read', async function () {
+  it('should insert new rows into notifications and notifications actions tables after read', async function () {
     const [userOne, userThree] = await _insertFollowersPreRead()
     userOne[0].isViewed = true
     await userOne[0].save()
