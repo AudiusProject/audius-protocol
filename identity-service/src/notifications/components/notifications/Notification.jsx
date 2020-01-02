@@ -119,7 +119,7 @@ const notificationMap = {
       )
     } else {
       return (
-        <BodyText className={'notificationText'} text={`Your have reached over ${notification.value} Followers `} />
+        <BodyText className={'notificationText'} text={`You have reached over ${notification.value} Followers `} />
       )
     }
   },

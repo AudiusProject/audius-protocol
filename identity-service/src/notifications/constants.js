@@ -18,6 +18,7 @@ const notificationTypes = Object.freeze({
     album: 'CreateAlbum',
     playlist: 'CreatePlaylist'
   },
+  Milestone: 'Milestone',
   MilestoneFollow: 'MilestoneFollow',
   MilestoneRepost: 'MilestoneRepost',
   MilestoneFavorite: 'MilestoneFavorite',
@@ -53,14 +54,14 @@ const pushNotificationMessagesMap = {
   [notificationTypes.Announcement.base] (notification) {
     return notification.text
   },
-  // [notificationTypes.Milestone.base] (notification) {
-  //   if (notification.entity) {
-  //     const entity = notification.entity.type.toLowerCase()
-  //     return `Your ${entity} ${notification.entity.name} has reached over ${notification.value} ${notification.achievement}s`
-  //   } else {
-  //     return `Your have reached over ${notification.value} Followers `
-  //   }
-  // },
+  [notificationTypes.Milestone] (notification) {
+    if (notification.entity) {
+      const entity = notification.entity.type.toLowerCase()
+      return `Your ${entity} ${notification.entity.name} has reached over ${notification.value} ${notification.achievement}s`
+    } else {
+      return `Your have reached over ${notification.value} Followers `
+    }
+  },
   [notificationTypes.Create.base] (notification) {
     const [user] = notification.users
     if (notification.entity.type === NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {

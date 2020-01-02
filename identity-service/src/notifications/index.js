@@ -162,7 +162,7 @@ class NotificationProcessor {
         }
       })
       await indexNotifications(notifications, tx, audiusLibs)
-      await indexMilestones(milestones, owners, metadata, listenCountWithOwners, tx)
+      await indexMilestones(milestones, owners, metadata, listenCountWithOwners, audiusLibs, tx)
 
       // Commit
       await tx.commit()
