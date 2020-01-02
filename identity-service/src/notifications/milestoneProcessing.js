@@ -13,7 +13,7 @@ const { notificationResponseMap } = require('./formatNotificationMetadata')
 
 // Base milestone list shared across all types
 // Each type can be configured as needed
-const baseMilestoneList = [10, 25, 50, 100, 250, 500, 1000]
+const baseMilestoneList = [1, 10, 25, 50, 100, 250, 500, 1000]
 const followerMilestoneList = baseMilestoneList
 // Repost milestone list shared across tracks/albums/playlists
 const repostMilestoneList = baseMilestoneList
@@ -95,7 +95,7 @@ async function updateFollowerMilestones (followerCounts, blocknumber, timestamp,
             })
 
             // send push notification
-            publish(`You have reached over ${milestoneValue} Followers`, targetUser, true)
+            await publish(`You have reached over ${milestoneValue} Followers`, targetUser, tx, true)
           }
           logger.info(`User: ${targetUser} has met milestone value ${milestoneValue} followers`)
           break
@@ -411,7 +411,7 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
     logger.debug('about to generate message for milestones push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
     const msg = pushNotificationMessagesMap[notificationTypes.Milestone](msgGenNotif)
     logger.debug(`Milestone message: ${msg}`)
-    publish(msg, userId, true)
+    await publish(msg, userId, tx, true)
   }
 }
 

@@ -13,7 +13,7 @@ const {
 } = require('./utils')
 const { processEmailNotifications } = require('./sendNotificationEmails')
 const { notificationJobType } = require('./constants')
-
+const { drainPublishedMessages } = require('../awsSNS')
 const notifDiscProv = config.get('notificationDiscoveryProvider')
 const emailCachePath = './emailCache'
 
@@ -166,6 +166,9 @@ class NotificationProcessor {
 
       // Commit
       await tx.commit()
+
+      // actually send out push notifications
+      await drainPublishedMessages()
       logger.info(`finished notifications main indexAll job`, minBlock, start)
     } catch (e) {
       logger.error(`Error indexing notification ${e}`)

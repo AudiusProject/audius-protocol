@@ -10,6 +10,9 @@ const sns = new AWS.SNS({
   region: 'us-west-1'
 })
 
+// TODO (DM) - move this into redis
+let PUSH_NOTIFICATIONS_BUFFER = []
+
 // the aws sdk doesn't like when you set the function equal to a variable and try to call it
 // eg. const func = sns.<functionname>; func() returns an error, so util.promisify doesn't work
 function _promisifySNS (functionName) {
@@ -71,8 +74,23 @@ const listEndpointsByPlatformApplication = _promisifySNS('listEndpointsByPlatfor
 const createPlatformEndpoint = _promisifySNS('createPlatformEndpoint')
 const publishPromisified = _promisifySNS('publish')
 
-async function publish (message, userId, playSound = true) {
-  const deviceInfo = await models.NotificationDeviceToken.findOne({ where: { userId } })
+// async function publish (message, userId, playSound = true) {
+//   const deviceInfo = await models.NotificationDeviceToken.findOne({ where: { userId } })
+//   if (!deviceInfo) return
+
+//   let formattedMessage = null
+//   if (deviceInfo.deviceType === 'ios') {
+//     formattedMessage = _formatIOSMessage(message, deviceInfo.awsARN, playSound)
+//   }
+
+//   if (formattedMessage) {
+//     logger.debug('AWS SNS formattedMessage', formattedMessage)
+//     return publishPromisified(formattedMessage)
+//   } else return null
+// }
+
+async function publish (message, userId, tx, playSound = true) {
+  const deviceInfo = await models.NotificationDeviceToken.findOne({ where: { userId }, transaction: tx })
   if (!deviceInfo) return
 
   let formattedMessage = null
@@ -82,12 +100,27 @@ async function publish (message, userId, playSound = true) {
 
   if (formattedMessage) {
     logger.debug('AWS SNS formattedMessage', formattedMessage)
-    return publishPromisified(formattedMessage)
+    PUSH_NOTIFICATIONS_BUFFER.push(formattedMessage)
   } else return null
+}
+
+async function drainPublishedMessages () {
+  try {
+    // TODO (DM) - batch this. DON'T DO Promise.all()
+    for (let notif of PUSH_NOTIFICATIONS_BUFFER) {
+      await publishPromisified(notif)
+    }
+
+    PUSH_NOTIFICATIONS_BUFFER = []
+  } catch (e) {
+    logger.error('Error sending push notification', e)
+    throw e
+  }
 }
 
 module.exports = {
   listEndpointsByPlatformApplication,
   createPlatformEndpoint,
-  publish
+  publish,
+  drainPublishedMessages
 }

@@ -143,7 +143,7 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Follow](msgGenNotif)
-      await publish(msg, notificationTarget, true)
+      await publish(msg, notificationTarget, tx, true)
     } catch (e) {
       logger.error('Cound not send push notification for _processFollowNotifications for target user', notificationTarget, e)
     }
@@ -256,7 +256,7 @@ async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, 
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Repost.base](msgGenNotif)
-      await publish(msg, notificationTarget, true)
+      await publish(msg, notificationTarget, tx, true)
     } catch (e) {
       logger.error('Cound not send push notification for _processBaseRepostNotifications for target user', notificationTarget, e)
     }
@@ -368,7 +368,7 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Favorite.base](msgGenNotif)
-      await publish(msg, notificationTarget, true)
+      await publish(msg, notificationTarget, tx, true)
     } catch (e) {
       logger.error('Cound not send push notification for _processFavoriteNotifications for target user', notificationTarget, e)
     }
@@ -509,7 +509,7 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Create.base](msgGenNotif)
-      await publish(msg, notificationTarget, true)
+      await publish(msg, notificationTarget, tx, true)
     } catch (e) {
       logger.error('Cound not send push notification for _processFollowNotifications for target user', notificationTarget, e)
     }
