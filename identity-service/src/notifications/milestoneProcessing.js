@@ -95,7 +95,7 @@ async function updateFollowerMilestones (followerCounts, blocknumber, timestamp,
             })
 
             // send push notification
-            publish(`You have reached over ${notification.value} Followers`, targetUser, true)
+            publish(`You have reached over ${milestoneValue} Followers`, targetUser, true)
           }
           logger.info(`User: ${targetUser} has met milestone value ${milestoneValue} followers`)
           break

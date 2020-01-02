@@ -52,7 +52,7 @@ async function indexNotifications (notifications, tx, audiusLibs) {
 
     // Handle the 'create' notification type, track/album/playlist
     if (notif.type === notificationTypes.Create.base) {
-      await _processCreateNotifications(notif, blocknumber, timestamp, tx)
+      await _processCreateNotifications(audiusLibs, notif, blocknumber, timestamp, tx)
     }
   }
 }
@@ -379,7 +379,7 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
   }
 }
 
-async function _processCreateNotifications (notif, blocknumber, timestamp, tx) {
+async function _processCreateNotifications (audiusLibs, notif, blocknumber, timestamp, tx) {
   let createType = null
   let actionEntityType = null
   switch (notif.metadata.entity_type) {
@@ -488,7 +488,32 @@ async function _processCreateNotifications (notif, blocknumber, timestamp, tx) {
 
     // send push notification to each subsriber
     try {
-      await publish('Someone you subscribe to uploaded new content!', notificationTarget, true)
+      let notifWithAddProps = {
+        ...notif,
+        actions: [{
+          actionEntityType: actionEntityType,
+          actionEntityId: createdActionEntityId,
+          blocknumber
+        }],
+        entityId: notificationEntityId,
+        // we're going to overwrite this property so fetchNotificationMetadata can use it
+        type: createType
+      }
+
+      // fetch metadata
+      const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
+
+      // map properties necessary to render push notification message
+      const mapNotification = notificationResponseMap[createType]
+      let msgGenNotif = {
+        ...notifWithAddProps,
+        ...(mapNotification(notifWithAddProps, metadata))
+      }
+      logger.debug('about to generate message for favorite push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
+
+      // snippets
+      const msg = pushNotificationMessagesMap[notificationTypes.Create.base](msgGenNotif)
+      await publish(msg, notificationTarget, true)
     } catch (e) {
       logger.error('Cound not send push notification for _processFollowNotifications for target user', notificationTarget, e)
     }

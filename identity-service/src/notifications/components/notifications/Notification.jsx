@@ -136,7 +136,7 @@ const notificationMap = {
     return (
       <span className={'notificationText'}>
         <HighlightText text={user.name} />
-        <BodyText text={` released a new ${notification.entity.type}  ${notification.entity.name}`} />
+        <BodyText text={` released a new ${notification.entity.type} ${notification.entity.name}`} />
       </span>
     )
   }

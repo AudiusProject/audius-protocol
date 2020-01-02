@@ -59,15 +59,15 @@ const pushNotificationMessagesMap = {
       const entity = notification.entity.type.toLowerCase()
       return `Your ${entity} ${notification.entity.name} has reached over ${notification.value} ${notification.achievement}s`
     } else {
-      return `Your have reached over ${notification.value} Followers `
+      return `You have reached over ${notification.value} Followers `
     }
   },
   [notificationTypes.Create.base] (notification) {
     const [user] = notification.users
-    if (notification.entity.type === NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
+    if (notification.entity.type === actionEntityTypes.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
       return `${user.name} released ${notification.entity.count} new ${notification.entity.type}`
     }
-    return `${user.name} released a new ${notification.entity.type}  ${notification.entity.name}`
+    return `${user.name} released a new ${notification.entity.type} ${notification.entity.name}`
   }
 }
 
