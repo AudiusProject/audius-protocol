@@ -13,7 +13,7 @@ const { notificationResponseMap } = require('./formatNotificationMetadata')
 
 // Base milestone list shared across all types
 // Each type can be configured as needed
-const baseMilestoneList = [1, 10, 25, 50, 100, 250, 500, 1000]
+const baseMilestoneList = [10, 25, 50, 100, 250, 500, 1000]
 const followerMilestoneList = baseMilestoneList
 // Repost milestone list shared across tracks/albums/playlists
 const repostMilestoneList = baseMilestoneList
