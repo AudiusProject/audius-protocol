@@ -18,6 +18,25 @@ const iOSSNSParams = {
 const DEVICE_TYPES = new Set(['ios', 'android'])
 
 module.exports = function (app) {
+  
+  /**
+   * Get the settings for mobile push notifications for a user
+   */
+  app.get('/push_notifications/settings', handleResponse(async (req, res, next) => {
+    const { userId } = req.query
+
+    if (!userId) return errorResponseBadRequest(`Did not pass in a valid userId`)
+
+    try {
+      const settings = await models.UserNotificationMobileSettings.findOne({ where: { userId } })
+
+      return successResponse({ settings })
+    } catch (e) {
+      req.logger.error(`Unable to find push notification settings for userId: ${userId}`, e)
+      return errorResponseServerError(`Unable to find push notification settings for userId: ${userId}, Error: ${e.message}`)
+    }
+  }))
+  
   /**
    * Create or update mobile push notification settings
    * POST body contains {userId, settings: {favorites, milestonesAndAchievements, reposts, announcements, followers}}
