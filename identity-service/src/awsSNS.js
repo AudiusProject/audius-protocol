@@ -74,6 +74,7 @@ function _formatIOSMessage (message, targetARN, playSound = true) {
 const listEndpointsByPlatformApplication = _promisifySNS('listEndpointsByPlatformApplication')
 const createPlatformEndpoint = _promisifySNS('createPlatformEndpoint')
 const publishPromisified = _promisifySNS('publish')
+const deleteEndpoint = _promisifySNS('deleteEndpoint')
 
 async function publish (message, userId, tx, playSound = true) {
   const deviceInfo = await models.NotificationDeviceToken.findOne({ where: { userId }, transaction: tx })
@@ -111,5 +112,6 @@ module.exports = {
   listEndpointsByPlatformApplication,
   createPlatformEndpoint,
   publish,
+  deleteEndpoint,
   drainPublishedMessages
 }
