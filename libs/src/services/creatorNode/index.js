@@ -391,10 +391,7 @@ class CreatorNode {
       const resp = await axios(axiosRequestObj)
       return resp.data
     } catch (e) {
-      if (e.response && e.response.data && e.response.data.error) {
-        throw new Error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
-      }
-      throw e
+      _handleErrorHelper(e, axiosRequestObj.url)
     }
   }
 
@@ -422,20 +419,42 @@ class CreatorNode {
     headers['X-Session-ID'] = this.authToken
 
     let total
-    const resp = await axios.post(
-      this.creatorNodeEndpoint + route,
-      formData,
-      {
-        headers: headers,
-        // Add a 10% inherit processing time for the file upload.
-        onUploadProgress: (progressEvent) => {
-          if (!total) total = progressEvent.total
-          onProgress(progressEvent.loaded, total)
+    const url = this.creatorNodeEndpoint + route
+    try {
+      const resp = await axios.post(
+        url,
+        formData,
+        {
+          headers: headers,
+          // Add a 10% inherit processing time for the file upload.
+          onUploadProgress: (progressEvent) => {
+            if (!total) total = progressEvent.total
+            onProgress(progressEvent.loaded, total)
+          }
         }
-      }
-    )
-    onProgress(total, total)
-    return resp.data
+      )
+      onProgress(total, total)
+      return resp.data
+    } catch (e) {
+      _handleErrorHelper(e, url)
+    }
+  }
+}
+
+function _handleErrorHelper (e, requestUrl) {
+  if (e.response && e.response.data && e.response.data.error) {
+    const cnRequestID = e.response.headers['cn-request-id']
+    const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error}] for request: [${cnRequestID}]`
+
+    console.error(errMessage)
+    throw new Error(errMessage)
+  } else if (!e.response) {
+    // delete headers, may contain tokens
+    if (e.config && e.config.headers) delete e.config.headers
+    console.error(`Network error while making request to ${requestUrl} ${JSON.stringify(e)}`)
+    throw new Error(`Network error while making request to ${requestUrl}`)
+  } else {
+    throw e
   }
 }
 
