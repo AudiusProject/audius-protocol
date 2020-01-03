@@ -64,8 +64,15 @@ class NotificationProcessor {
 
       try {
         const oldMaxBlockNumber = await this.redis.get('maxBlockNumber')
+        let maxBlockNumber = null
         // Index notifications and milestones
-        let maxBlockNumber = await this.indexAll(audiusLibs, minBlock, oldMaxBlockNumber)
+        if (minBlock < oldMaxBlockNumber) {
+          logger.debug('notification queue processing error - tried to process a minBlock < oldMaxBlockNumber', minBlock, oldMaxBlockNumber)
+          maxBlockNumber = oldMaxBlockNumber
+        }
+        else {
+          maxBlockNumber = await this.indexAll(audiusLibs, minBlock, oldMaxBlockNumber)
+        }
 
         // Update cached max block number
         await this.redis.set('maxBlockNumber', maxBlockNumber)
