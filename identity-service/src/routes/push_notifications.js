@@ -4,6 +4,7 @@ const {
   errorResponseBadRequest,
   errorResponseServerError
 } = require('../apiHelpers')
+const authMiddleware = require('../authMiddleware')
 const models = require('../models')
 const config = require('../config')
 const { createPlatformEndpoint } = require('../awsSNS')
@@ -18,12 +19,11 @@ const iOSSNSParams = {
 const DEVICE_TYPES = new Set(['ios', 'android'])
 
 module.exports = function (app) {
-  
   /**
    * Get the settings for mobile push notifications for a user
    */
-  app.get('/push_notifications/settings', handleResponse(async (req, res, next) => {
-    const { userId } = req.query
+  app.get('/push_notifications/settings', authMiddleware, handleResponse(async (req, res, next) => {
+    const userId = req.user.blockchainUserId
 
     if (!userId) return errorResponseBadRequest(`Did not pass in a valid userId`)
 
@@ -36,13 +36,14 @@ module.exports = function (app) {
       return errorResponseServerError(`Unable to find push notification settings for userId: ${userId}, Error: ${e.message}`)
     }
   }))
-  
+
   /**
    * Create or update mobile push notification settings
    * POST body contains {userId, settings: {favorites, milestonesAndAchievements, reposts, announcements, followers}}
    */
-  app.post('/push_notifications/settings', handleResponse(async (req, res, next) => {
-    const { userId, settings } = req.body
+  app.post('/push_notifications/settings', authMiddleware, handleResponse(async (req, res, next) => {
+    const userId = req.user.blockchainUserId
+    const { settings } = req.body
 
     if (!userId) return errorResponseBadRequest(`Did not pass in a valid userId`)
 
@@ -63,8 +64,9 @@ module.exports = function (app) {
    * Register a device token
    * POST body contains {deviceToken: <string>, deviceType: ios/android, userId}
    */
-  app.post('/push_notifications/device_token', handleResponse(async (req, res, next) => {
-    const { deviceToken, deviceType, userId } = req.body
+  app.post('/push_notifications/device_token', authMiddleware, handleResponse(async (req, res, next) => {
+    const userId = req.user.blockchainUserId
+    const { deviceToken, deviceType } = req.body
 
     if (!DEVICE_TYPES.has(deviceType)) {
       return errorResponseBadRequest('Attempting to register an invalid deviceType')
@@ -94,8 +96,10 @@ module.exports = function (app) {
    * Remove a device token from the device token table
    * POST body contains {deviceToken}
    */
-  app.post('/push_notifications/device_token/deregister', handleResponse(async (req, res, next) => {
+  app.post('/push_notifications/device_token/deregister', authMiddleware, handleResponse(async (req, res, next) => {
+    const userId = req.user.blockchainUserId
     const { deviceToken } = req.body
+
     if (!deviceToken) {
       return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
     }
@@ -103,7 +107,8 @@ module.exports = function (app) {
     let deleted = false
     try {
       const tokenObj = await models.NotificationDeviceToken.findOne({ where: {
-        deviceToken
+        deviceToken,
+        userId
       } })
 
       if (tokenObj) {
