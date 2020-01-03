@@ -11,6 +11,7 @@ const sns = new AWS.SNS({
 })
 
 // TODO (DM) - move this into redis
+const PUSH_NOTIFICATION_SLICE_SIZE = 20
 let PUSH_NOTIFICATIONS_BUFFER = []
 
 // the aws sdk doesn't like when you set the function equal to a variable and try to call it
@@ -74,21 +75,6 @@ const listEndpointsByPlatformApplication = _promisifySNS('listEndpointsByPlatfor
 const createPlatformEndpoint = _promisifySNS('createPlatformEndpoint')
 const publishPromisified = _promisifySNS('publish')
 
-// async function publish (message, userId, playSound = true) {
-//   const deviceInfo = await models.NotificationDeviceToken.findOne({ where: { userId } })
-//   if (!deviceInfo) return
-
-//   let formattedMessage = null
-//   if (deviceInfo.deviceType === 'ios') {
-//     formattedMessage = _formatIOSMessage(message, deviceInfo.awsARN, playSound)
-//   }
-
-//   if (formattedMessage) {
-//     logger.debug('AWS SNS formattedMessage', formattedMessage)
-//     return publishPromisified(formattedMessage)
-//   } else return null
-// }
-
 async function publish (message, userId, tx, playSound = true) {
   const deviceInfo = await models.NotificationDeviceToken.findOne({ where: { userId }, transaction: tx })
   if (!deviceInfo) return
@@ -107,8 +93,11 @@ async function publish (message, userId, tx, playSound = true) {
 async function drainPublishedMessages () {
   try {
     // TODO (DM) - batch this. DON'T DO Promise.all()
-    for (let notif of PUSH_NOTIFICATIONS_BUFFER) {
-      await publishPromisified(notif)
+    for (let i = 0; i < PUSH_NOTIFICATIONS_BUFFER.length; i += PUSH_NOTIFICATION_SLICE_SIZE) {
+      const pushNotifsSlice = PUSH_NOTIFICATIONS_BUFFER.slice(i, i + PUSH_NOTIFICATION_SLICE_SIZE)
+      await Promise.all(pushNotifsSlice.map((notification) => {
+        publishPromisified(notification)
+      }))
     }
 
     PUSH_NOTIFICATIONS_BUFFER = []
