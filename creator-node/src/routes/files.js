@@ -161,6 +161,7 @@ module.exports = function (app) {
     // Don't serve if not found in DB
     const queryResults = await models.File.findOne({ where: {
       multihash: CID,
+      // All other file types are valid and can be served through this route.
       type: { [models.Sequelize.Op.ne]: 'dir' } // Op.ne = notequal
     } })
     if (!queryResults) {
