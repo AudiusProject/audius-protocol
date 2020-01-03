@@ -23,6 +23,9 @@ module.exports = function (app) {
     if (!req.body.square || !(req.body.square === 'true' || req.body.square === 'false')) {
       return errorResponseBadRequest('Must provide square boolean param in request body')
     }
+    if (!req.file) {
+      return errorResponseBadRequest('Must provide image file in request body.')
+    }
     let routestart = Date.now()
 
     const ipfs = req.app.get('ipfsAPI')
@@ -156,9 +159,12 @@ module.exports = function (app) {
     }
 
     // Don't serve if not found in DB
-    const queryResults = await models.File.findOne({ where: { multihash: CID } })
+    const queryResults = await models.File.findOne({ where: {
+      multihash: CID,
+      type: { [models.Sequelize.Op.ne]: 'dir' } // Op.ne = notequal
+    } })
     if (!queryResults) {
-      return sendResponse(req, res, errorResponseNotFound(`No file found for provided CID: ${CID}`))
+      return sendResponse(req, res, errorResponseNotFound(`No valid file found for provided CID: ${CID}`))
     }
 
     redisClient.incr('ipfsStandaloneReqs')
@@ -201,9 +207,12 @@ module.exports = function (app) {
     const dirCID = req.params.dirCID
     const filename = req.params.filename
 
-    const queryResults = await models.File.findOne({ where: { multihash: dirCID } })
+    const queryResults = await models.File.findOne({ where: {
+      multihash: dirCID,
+      type: 'dir'
+    } })
     if (!queryResults) {
-      return sendResponse(req, res, errorResponseNotFound(`No file found for provided dirCID: ${dirCID}`))
+      return sendResponse(req, res, errorResponseNotFound(`No dir entry found for provided dirCID: ${dirCID}`))
     }
 
     // Conditionally re-add from filestorage to IPFS
