@@ -10,8 +10,8 @@ const { AudiusABIDecoder } = require('@audius/libs')
 
 const web3 = new Web3(new Web3.providers.HttpProvider(config.get('web3Provider')))
 
-const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, POA default gas price
-const HIGH_GAS_PRICE = 5 * MIN_GAS_PRICE // 5 GWei
+const MIN_GAS_PRICE = 2 * Math.pow(10, 9) // 2 GWei, POA default gas price
+const HIGH_GAS_PRICE = 2.5 * MIN_GAS_PRICE // 5 GWei
 const GANACHE_GAS_PRICE = 39062500000 // ganache gas price is extremely high, so we hardcode a lower value (0x09184e72a0 from docs here)
 
 // 1011968 is used by default
@@ -64,6 +64,8 @@ const sendTransaction = async (
     gasPrice = GANACHE_GAS_PRICE
   } else if (gasPrice === 0) {
     // If the gas is zero, the txn will likely never get mined.
+    gasPrice = MIN_GAS_PRICE
+  } else if (gasPrice < MIN_GAS_PRICE) {
     gasPrice = MIN_GAS_PRICE
   }
   gasPrice = '0x' + gasPrice.toString(16)
