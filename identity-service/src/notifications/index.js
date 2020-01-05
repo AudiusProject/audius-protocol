@@ -69,8 +69,7 @@ class NotificationProcessor {
         if (minBlock < oldMaxBlockNumber) {
           logger.debug('notification queue processing error - tried to process a minBlock < oldMaxBlockNumber', minBlock, oldMaxBlockNumber)
           maxBlockNumber = oldMaxBlockNumber
-        }
-        else {
+        } else {
           maxBlockNumber = await this.indexAll(audiusLibs, minBlock, oldMaxBlockNumber)
         }
 
