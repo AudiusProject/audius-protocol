@@ -13,4 +13,4 @@ async function getApp (s3bucket, ipfsMock) {
   return server
 }
 
-module.exports = { getApp }
+module.exports = { getApp, clearDatabase, runMigrations }

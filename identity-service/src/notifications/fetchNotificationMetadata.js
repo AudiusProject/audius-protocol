@@ -101,6 +101,7 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
   let collectionIdsToFetch = []
 
   for (let notification of notifications) {
+    logger.debug('fetchNotificationMetadata.js#notifcation', notification)
     switch (notification.type) {
       case NotificationType.Follow: {
         userIdsToFetch.push(
@@ -115,7 +116,9 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
           ...notification.actions
             .map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT)
         )
+        logger.debug('fetchNotificationMetadata.js#about to push notification.entityId onto tracks', notification.entityId)
         trackIdsToFetch.push(notification.entityId)
+        logger.debug('fetchNotificationMetadata.js#pushed notification.entityId onto tracks', notification.entityId, trackIdsToFetch)
         break
       }
       case NotificationType.FavoritePlaylist:
@@ -149,6 +152,7 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
   }
 
   const uniqueTrackIds = [...new Set(trackIdsToFetch)]
+  logger.debug('fetchNotificationMetadata.js#uniqueTrackIds', uniqueTrackIds)
   const tracks = await audius.Track.getTracks(
     /** limit */ uniqueTrackIds.length,
     /** offset */ 0,
@@ -156,6 +160,7 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
   )
 
   const uniqueCollectionIds = [...new Set(collectionIdsToFetch)]
+  logger.debug('fetchNotificationMetadata.js#uniqueCollectionIds', uniqueCollectionIds)
   const collections = await audius.Playlist.getPlaylists(
     /** limit */ uniqueCollectionIds.length,
     /** offset */ 0,
@@ -167,6 +172,7 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
     ...collections.map(({ playlist_owner_id: id }) => id)
   )
   const uniqueUserIds = [...new Set(userIdsToFetch)]
+  logger.debug('fetchNotificationMetadata.js#uniqueUserIds', uniqueUserIds)
 
   let users = await audius.User.getUsers(
     /** limit */ uniqueUserIds.length,
