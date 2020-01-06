@@ -65,7 +65,7 @@ const snippetMap = {
       const entity = notification.entity.type.toLowerCase()
       return `Your ${entity} ${notification.entity.name} has reached over ${notification.value} ${notification.achievement}s`
     } else {
-      return `Your have reached over ${notification.value} Followers `
+      return `You have reached over ${notification.value} Followers `
     }
   },
   [NotificationType.UserSubscription] (notification) {

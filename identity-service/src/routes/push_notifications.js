@@ -7,7 +7,7 @@ const {
 const authMiddleware = require('../authMiddleware')
 const models = require('../models')
 const config = require('../config')
-const { createPlatformEndpoint } = require('../awsSNS')
+const { createPlatformEndpoint, deleteEndpoint } = require('../awsSNS')
 
 const iOSSNSParams = {
   PlatformApplicationArn: config.get('awsSNSiOSARN')
@@ -104,19 +104,37 @@ module.exports = function (app) {
       return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
     }
 
-    let deleted = false
+    let tokenDeleted = false
+    let settingsDeleted = false
     try {
-      const tokenObj = await models.NotificationDeviceToken.findOne({ where: {
-        deviceToken,
-        userId
-      } })
+      // delete device token
+      const tokenObj = await models.NotificationDeviceToken.findOne({
+        where: {
+          deviceToken,
+          userId
+        }
+      })
 
       if (tokenObj) {
+        // delete the endpoint from AWS SNS
+        await deleteEndpoint({ EndpointArn: tokenObj.awsARN })
         await tokenObj.destroy()
-        deleted = true
+        tokenDeleted = true
       }
 
-      return successResponse({ deleted })
+      // delete user
+      const settingsObj = await models.UserNotificationMobileSettings.findOne({
+        where: {
+          userId
+        }
+      })
+
+      if (settingsObj) {
+        await settingsObj.destroy()
+        settingsDeleted = true
+      }
+
+      return successResponse({ tokenDeleted, settingsDeleted })
     } catch (e) {
       req.logger.error(`Unable to deregister device token for deviceToken: ${deviceToken}`, e)
       return errorResponseServerError(`Unable to deregister device token for deviceToken: ${deviceToken}`, e.message)

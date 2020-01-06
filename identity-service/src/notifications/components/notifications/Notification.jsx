@@ -119,7 +119,7 @@ const notificationMap = {
       )
     } else {
       return (
-        <BodyText className={'notificationText'} text={`Your have reached over ${notification.value} Followers `} />
+        <BodyText className={'notificationText'} text={`You have reached over ${notification.value} Followers `} />
       )
     }
   },
@@ -136,7 +136,7 @@ const notificationMap = {
     return (
       <span className={'notificationText'}>
         <HighlightText text={user.name} />
-        <BodyText text={` released a new ${notification.entity.type}  ${notification.entity.name}`} />
+        <BodyText text={` released a new ${notification.entity.type} ${notification.entity.name}`} />
       </span>
     )
   }

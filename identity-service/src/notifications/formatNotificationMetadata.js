@@ -144,3 +144,4 @@ function formatNotificationProps (notifications, metadata) {
 }
 
 module.exports = formatNotificationProps
+module.exports.notificationResponseMap = notificationResponseMap

@@ -155,7 +155,7 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
   } else {
     return _react["default"].createElement(BodyText, {
       className: 'notificationText',
-      text: "Your have reached over ".concat(notification.value, " Followers ")
+      text: "You have reached over ".concat(notification.value, " Followers ")
     });
   }
 }), _defineProperty(_notificationMap, NotificationType.UserSubscription, function (notification) {

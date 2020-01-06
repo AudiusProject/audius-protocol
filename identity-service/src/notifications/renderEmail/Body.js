@@ -92,7 +92,7 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
     var entity = notification.entity.type.toLowerCase();
     return "Your ".concat(entity, " ").concat(notification.entity.name, " has reached over ").concat(notification.value, " ").concat(notification.achievement, "s");
   } else {
-    return "Your have reached over ".concat(notification.value, " Followers ");
+    return "You have reached over ".concat(notification.value, " Followers ");
   }
 }), _defineProperty(_snippetMap, _Notification.NotificationType.UserSubscription, function (notification) {
   var _notification$users4 = _slicedToArray(notification.users, 1),
