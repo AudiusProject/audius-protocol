@@ -333,6 +333,9 @@ def search(isAutocomplete):
     if searchStr:
         db = get_db()
         with db.scoped_session() as session:
+            # Set similarity threshold to be used by % operator in queries.
+            session.execute(sqlalchemy.text(f"select set_limit({minSearchSimilarity});"))
+
             if (searchKind in [SearchKind.all, SearchKind.tracks]):
                 results['tracks'] = track_search_query(session, searchStr, limit, offset, False, isAutocomplete)
                 results['saved_tracks'] = track_search_query(session, searchStr, limit, offset, True, isAutocomplete)
@@ -384,27 +387,23 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
             select track_id, (sum(score) + (:title_weight*similarity(title, query))) as total_score from (
                 select
                     d."track_id" as track_id, d."word" as word, similarity(d."word", :query) as score,
-                    t."title" as title, :query as query
+                    d."track_title" as title, :query as query
                 from "track_lexeme_dict" d
-                inner join "tracks" t on t."track_id" = d."track_id"
                 {
                     'inner join "saves" s on s.save_item_id = d.track_id'
                     if personalized and current_user_id
                     else ""
                 }
-                where similarity(d."word", :query) >= :min_similarity
-                and t."is_current"=true
-                and t."is_unlisted"=false
+                where d."word" % :query
                 {
-                    "and s.save_type='track' and s.is_current=true and s.is_delete=false and s.user_id=:current_user_id"
+                    "and s.save_type='track' and s.is_current=true and s.is_delete=false and s.user_id = :current_user_id"
                     if personalized and current_user_id
                     else ""
                 }
-                order by d."word" <-> :query
             ) as results
             group by track_id, title, query
         ) as results2
-        order by total_score desc
+        order by total_score desc, track_id asc
         limit :limit
         offset :offset;
         """
@@ -417,7 +416,6 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
             "limit": limit,
             "offset": offset,
             "title_weight": trackTitleWeight,
-            "min_similarity": minSearchSimilarity,
             "current_user_id": current_user_id
         },
     ).fetchall()
@@ -448,7 +446,7 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
             .all()
         )
         users = helpers.query_result_to_list(users)
-        users_dict = {user["user_id"]:user for user in users}
+        users_dict = {user["user_id"]: user for user in users}
 
         # attach user objects to track objects
         for track in tracks:
@@ -470,29 +468,26 @@ def user_search_query(session, searchStr, limit, offset, personalized, isAutocom
     res = sqlalchemy.text(
         f"""
         select user_id from (
-            select user_id, (sum(score) + (:name_weight*similarity(name, query))) as total_score from (
+            select user_id, (sum(score) + (:name_weight * similarity(name, query))) as total_score from (
                 select
                     d."user_id" as user_id, d."word" as word, similarity(d."word", :query) as score,
-                    u."name" as name, :query as query
+                    d."user_name" as name, :query as query
                 from "user_lexeme_dict" d
-                inner join "users" u on u."user_id" = d."user_id"
                 {
                     'inner join "follows" f on f.followee_user_id=d.user_id'
                     if personalized and current_user_id
                     else ""
                 }
-                where similarity(d."word", :query) >= :min_similarity
-                and u."is_current"=true
+                where d."word" % :query
                 {
                     "and f.is_current=true and f.is_delete=false and f.follower_user_id=:current_user_id"
                     if personalized and current_user_id
                     else ""
                 }
-                order by d."word" <-> :query
             ) as results
             group by user_id, name, query
         ) as results2
-        order by total_score desc
+        order by total_score desc, user_id asc
         limit :limit
         offset :offset;
         """
@@ -505,7 +500,6 @@ def user_search_query(session, searchStr, limit, offset, personalized, isAutocom
             "limit": limit,
             "offset": offset,
             "name_weight": userNameWeight,
-            "min_similarity": minSearchSimilarity,
             "current_user_id": current_user_id
         },
     ).fetchall()
@@ -523,7 +517,7 @@ def user_search_query(session, searchStr, limit, offset, personalized, isAutocom
     )
     users = helpers.query_result_to_list(users)
 
-    if isAutocomplete == False:
+    if not isAutocomplete:
         # bundle peripheral info into user results
         users = populate_user_metadata(session, user_ids, users, current_user_id)
 
@@ -550,27 +544,24 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
             select playlist_id, (sum(score) + (:name_weight*similarity(playlist_name, query))) as total_score from (
                 select
                     d."playlist_id" as playlist_id, d."word" as word, similarity(d."word", :query) as score,
-                    p."playlist_name" as playlist_name, :query as query
+                    d."playlist_name" as playlist_name, :query as query
                 from "{table_name}" d
-                inner join "playlists" p on p."playlist_id" = d."playlist_id"
                 {
                     'inner join "saves" s on s.save_item_id = d.playlist_id'
                     if personalized and current_user_id
                     else ""
                 }
-                where similarity(d."word", :query) >= :min_similarity
-                and p."is_current"=true
+                where d."word" % :query
                 {
                     "and s.save_type='" + save_type +
                     "' and s.is_current=true and s.is_delete=false and s.user_id=:current_user_id"
                     if personalized and current_user_id
                     else ""
                 }
-                order by d."word" <-> :query
             ) as results
             group by playlist_id, playlist_name, query
         ) as results2
-        order by total_score desc
+        order by total_score desc, playlist_id asc
         limit :limit
         offset :offset;
         """
@@ -583,7 +574,6 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
             "limit": limit,
             "offset": offset,
             "name_weight": playlistNameWeight,
-            "min_similarity": minSearchSimilarity,
             "current_user_id": current_user_id
         },
     ).fetchall()
