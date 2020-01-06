@@ -33,5 +33,9 @@
   "ethRegistryAddress":"",
   "ethOwnerWallet":"",
   "mailgunApiKey": "",
-  "registryAddress": ""
+  "registryAddress": "",
+  "awsAccessKeyId": "",
+  "awsSecretAccessKey": "",
+  "awsSNSiOSARN": "",
+  "awsSNSAndroidARN": ""
 }
