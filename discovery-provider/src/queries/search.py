@@ -384,7 +384,7 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
     res = sqlalchemy.text(
         f"""
         select track_id from (
-            select track_id, (sum(score) + (:title_weight*similarity(title, query))) as total_score from (
+            select track_id, (sum(score) + (:title_weight * similarity(coalesce(title, ''), query))) as total_score from (
                 select
                     d."track_id" as track_id, d."word" as word, similarity(d."word", :query) as score,
                     d."track_title" as title, :query as query
@@ -468,7 +468,7 @@ def user_search_query(session, searchStr, limit, offset, personalized, isAutocom
     res = sqlalchemy.text(
         f"""
         select user_id from (
-            select user_id, (sum(score) + (:name_weight * similarity(name, query))) as total_score from (
+            select user_id, (sum(score) + (:name_weight * similarity(coalesce(name, ''), query))) as total_score from (
                 select
                     d."user_id" as user_id, d."word" as word, similarity(d."word", :query) as score,
                     d."user_name" as name, :query as query
@@ -541,7 +541,7 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
     res = sqlalchemy.text(
         f"""
         select playlist_id from (
-            select playlist_id, (sum(score) + (:name_weight*similarity(playlist_name, query))) as total_score from (
+            select playlist_id, (sum(score) + (:name_weight * similarity(coalesce(playlist_name, ''), query))) as total_score from (
                 select
                     d."playlist_id" as playlist_id, d."word" as word, similarity(d."word", :query) as score,
                     d."playlist_name" as playlist_name, :query as query
