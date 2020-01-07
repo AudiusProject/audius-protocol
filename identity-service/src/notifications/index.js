@@ -175,7 +175,7 @@ class NotificationProcessor {
 
       // actually send out push notifications
       await drainPublishedMessages()
-      logger.info(`finished notifications main indexAll job`, minBlock, start)
+      logger.info(`indexAll - finished main notification index job`, minBlock, start)
     } catch (e) {
       logger.error(`Error indexing notification ${e}`)
       logger.error(e.stack)
