@@ -39,6 +39,10 @@ http {
         application/x-javascript
         application/json;
 
+    location /apple-app-site-association {
+      proxy_pass ${APP_URL};
+    }
+
     location / {
       proxy_http_version 1.1;
 
