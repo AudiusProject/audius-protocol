@@ -120,7 +120,7 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
   // send push notification
   if (notifyMobile) {
     try {
-      logger.debug('about to send a push notification for follower', notif)
+      logger.debug('processFollowNotifications - about to send a push notification for follower', notif)
       let notifWithAddProps = {
         ...notif,
         actions: [{
@@ -139,13 +139,13 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
         ...notifWithAddProps,
         ...(mapNotification(notifWithAddProps, metadata))
       }
-      logger.debug('about to generate message for follower push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
+      logger.debug('processFollowNotifications - about to generate message for follower push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Follow](msgGenNotif)
       await publish(msg, notificationTarget, tx, true)
     } catch (e) {
-      logger.error('Cound not send push notification for _processFollowNotifications for target user', notificationTarget, e)
+      logger.error('processFollowNotifications - Could not send push notification for _processFollowNotifications for target user', notificationTarget, e)
     }
   }
 }
@@ -230,7 +230,7 @@ async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, 
   // send push notification
   if (notifyMobile) {
     try {
-      logger.debug('about to send a push notification for repost', notif)
+      logger.debug('processRepostNotification - about to send a push notification for repost', notif)
       let notifWithAddProps = {
         ...notif,
         actions: [{
@@ -252,13 +252,13 @@ async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, 
         ...notifWithAddProps,
         ...(mapNotification(notifWithAddProps, metadata))
       }
-      logger.debug('about to generate message for repost push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
+      logger.debug('processRepostNotification - About to generate message for repost push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Repost.base](msgGenNotif)
       await publish(msg, notificationTarget, tx, true)
     } catch (e) {
-      logger.error('Cound not send push notification for _processBaseRepostNotifications for target user', notificationTarget, e)
+      logger.error('processRepostNotification - Could not send push notification for _processBaseRepostNotifications for target user', notificationTarget, e)
     }
   }
 }
@@ -342,7 +342,7 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
   // send push notification
   if (notifyMobile) {
     try {
-      logger.debug('about to send a push notification for favorite', notif)
+      logger.debug('processFavoriteNotification - About to send a push notification for favorite', notif)
       let notifWithAddProps = {
         ...notif,
         actions: [{
@@ -364,13 +364,13 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
         ...notifWithAddProps,
         ...(mapNotification(notifWithAddProps, metadata))
       }
-      logger.debug('about to generate message for favorite push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
+      logger.debug('processFavoriteNotification - About to generate message for favorite push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Favorite.base](msgGenNotif)
       await publish(msg, notificationTarget, tx, true)
     } catch (e) {
-      logger.error('Cound not send push notification for _processFavoriteNotifications for target user', notificationTarget, e)
+      logger.error('processFavoriteNotification - Could not send push notification for _processFavoriteNotifications for target user', notificationTarget, e)
     }
   }
 }
@@ -505,13 +505,13 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
         ...notifWithAddProps,
         ...(mapNotification(notifWithAddProps, metadata))
       }
-      logger.debug('about to generate message for favorite push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
+      logger.debug('processCreateNotifications - about to generate message for favorite push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Create.base](msgGenNotif)
       await publish(msg, notificationTarget, tx, true)
     } catch (e) {
-      logger.error('Cound not send push notification for _processFollowNotifications for target user', notificationTarget, e)
+      logger.error('processCreateNotifications - Could not send push notification for _processFollowNotifications for target user', notificationTarget, e)
     }
   }))
 

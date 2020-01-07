@@ -135,7 +135,7 @@ async function shouldNotifyUser (notificationTarget, prop, tx = null) {
   let webQuery = { where: { userId: notificationTarget } }
   if (tx) webQuery.transaction = tx
   let userNotifSettings = await models.UserNotificationSettings.findOne(webQuery)
-  const notifyWeb = (userNotifSettings && userNotifSettings[prop]) || false
+  const notifyWeb = userNotifSettings === null || (userNotifSettings && userNotifSettings[prop]) || false
 
   // mobile
   let mobileQuery = { where: { userId: notificationTarget } }
