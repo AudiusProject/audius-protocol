@@ -48,56 +48,29 @@ async function indexMilestones (milestones, owners, metadata, listenCounts, audi
 async function updateFollowerMilestones (followerCounts, blocknumber, timestamp, audiusLibs, tx) {
   let followersAddedDictionary = followerCounts
   let usersWithNewFollowers = Object.keys(followersAddedDictionary)
-
+  const followerMilestoneNotificationType = notificationTypes.MilestoneFollow
   // Parse follower milestones
   for (var targetUser of usersWithNewFollowers) {
     if (followersAddedDictionary.hasOwnProperty(targetUser)) {
       let currentFollowerCount = followersAddedDictionary[targetUser]
-
       for (var i = followerMilestoneList.length; i >= 0; i--) {
         let milestoneValue = followerMilestoneList[i]
         if (currentFollowerCount === milestoneValue) {
-          let existingFollowMilestoneQuery = await models.Notification.findAll({
-            where: {
-              userId: targetUser,
-              type: notificationTypes.MilestoneFollow,
-              entityId: milestoneValue
-            },
-            include: [{
-              model: models.NotificationAction,
-              as: 'actions'
-            }],
-            transaction: tx
-          })
-          if (existingFollowMilestoneQuery.length === 0) {
-            // MilestoneFollow
-            // userId=user achieving milestone
-            // entityId=milestoneValue, number of followers
-            // actionEntityType=User
-            // actionEntityId=milestoneValue, number of followers
-            let createMilestoneTx = await models.Notification.create({
-              userId: targetUser,
-              type: notificationTypes.MilestoneFollow,
-              entityId: milestoneValue,
-              blocknumber,
-              timestamp
-            }, { transaction: tx })
-            // Note that milestoneValue is the newly met milestone count in Notifications/NotificationActions
-            let notificationId = createMilestoneTx.id
-            await models.NotificationAction.findOrCreate({
-              where: {
-                notificationId: notificationId,
-                actionEntityType: actionEntityTypes.User,
-                actionEntityId: milestoneValue,
-                blocknumber
-              },
-              transaction: tx
-            })
-
-            // send push notification
-            await publish(`You have reached over ${milestoneValue} Followers`, targetUser, tx, true)
-          }
-          logger.info(`User: ${targetUser} has met milestone value ${milestoneValue} followers`)
+          // MilestoneFollow
+          // userId=user achieving milestone
+          // entityId=milestoneValue, number of followers
+          // actionEntityType=User
+          // actionEntityId=milestoneValue, number of followers
+          await _processMilestone(
+            followerMilestoneNotificationType,
+            targetUser,
+            milestoneValue,
+            actionEntityTypes.User,
+            milestoneValue,
+            blocknumber,
+            timestamp,
+            audiusLibs,
+            tx)
           break
         }
       }
@@ -110,7 +83,6 @@ async function updateFollowerMilestones (followerCounts, blocknumber, timestamp,
  * Repost Milestones
  *
  */
-
 async function updateRepostMilestones (repostCounts, owners, blocknumber, timestamp, audiusLibs, tx) {
   let tracksReposted = Object.keys(repostCounts.tracks)
   let albumsReposted = Object.keys(repostCounts.albums)
@@ -189,7 +161,6 @@ async function updateRepostMilestones (repostCounts, owners, blocknumber, timest
  * Favorites Milestones
  *
  */
-
 async function updateFavoriteMilestones (favoriteCounts, owners, blocknumber, timestamp, audiusLibs, tx) {
   let tracksFavorited = Object.keys(favoriteCounts.tracks)
   let albumsFavorited = Object.keys(favoriteCounts.albums)
@@ -268,7 +239,6 @@ async function updateFavoriteMilestones (favoriteCounts, owners, blocknumber, ti
  * Listens Milestones
  *
  */
-
 async function updateTrackListenMilestones (listenCounts, blocknumber, timestamp, audiusLibs, tx) {
   const listensMilestoneNotificationType = notificationTypes.MilestoneListen
 
@@ -344,7 +314,7 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
         },
         transaction: tx
       })
-      logger.info(`Process milestone ${userId}, type ${milestoneType}, entityId ${entityId}, type ${entityType}, milestoneValue ${milestoneValue}`)
+      logger.info(`processMilestone - Process milestone ${userId}, type ${milestoneType}, entityId ${entityId}, type ${entityType}, milestoneValue ${milestoneValue}`)
 
       // Destroy any unread milestone notifications of this type + entity
       let milestonesToBeDeleted = await models.Notification.findAll({
@@ -408,9 +378,9 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
       ...notifStub,
       ...(mapNotification(notifStub, metadata))
     }
-    logger.debug('about to generate message for milestones push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
+    logger.debug('processMilestone - About to generate message for milestones push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
     const msg = pushNotificationMessagesMap[notificationTypes.Milestone](msgGenNotif)
-    logger.debug(`Milestone message: ${msg}`)
+    logger.debug(`processMilestone - message: ${msg}`)
     await publish(msg, userId, tx, true)
   }
 }
