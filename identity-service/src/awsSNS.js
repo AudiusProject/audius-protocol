@@ -48,7 +48,8 @@ function _formatIOSMessage (message, targetARN, playSound = true) {
   if (type) {
     let apnsConfig = {
       'aps': {
-        'alert': `${message}`
+        'alert': `${message}`,
+        'sound': playSound && 'default'
         // keeping these properties here so we can use them if we want to
         // "alert": {
         //   "title" : `${title}`,
@@ -59,7 +60,6 @@ function _formatIOSMessage (message, targetARN, playSound = true) {
     }
 
     jsonMessage[type] = JSON.stringify(apnsConfig)
-    if (playSound) jsonMessage[type].sound = 'default'
   }
 
   var params = {
@@ -87,25 +87,48 @@ async function publish (message, userId, tx, playSound = true) {
 
   if (formattedMessage) {
     logger.debug('AWS SNS formattedMessage', formattedMessage)
-    PUSH_NOTIFICATIONS_BUFFER.push(formattedMessage)
+    const bufferObj = {
+      metadata: { userId, deviceToken: deviceInfo.deviceToken },
+      notification: formattedMessage
+    }
+    PUSH_NOTIFICATIONS_BUFFER.push(bufferObj)
   } else return null
 }
 
 async function drainPublishedMessages () {
-  try {
-    // TODO (DM) - batch this. DON'T DO Promise.all()
-    for (let i = 0; i < PUSH_NOTIFICATIONS_BUFFER.length; i += PUSH_NOTIFICATION_SLICE_SIZE) {
-      const pushNotifsSlice = PUSH_NOTIFICATIONS_BUFFER.slice(i, i + PUSH_NOTIFICATION_SLICE_SIZE)
-      await Promise.all(pushNotifsSlice.map((notification) => {
-        publishPromisified(notification)
-      }))
+  for (let bufferObj of PUSH_NOTIFICATIONS_BUFFER) {
+    try {
+      const { notification } = bufferObj
+      await publishPromisified(notification)
+    } catch (e) {
+      if (e && e.code && (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')) {
+        try {
+          const { deviceToken, userId } = bufferObj.metadata
+          // this notification is not deliverable to this device
+          // remove from deviceTokens table and de-register from AWS
+          const tokenObj = await models.NotificationDeviceToken.findOne({
+            where: {
+              deviceToken,
+              userId
+            }
+          })
+    
+          if (tokenObj) {
+            // delete the endpoint from AWS SNS
+            await deleteEndpoint({ EndpointArn: tokenObj.awsARN })
+            await tokenObj.destroy()
+          }
+        } catch (e) {
+          logger.error('Error removing an outdated record from the NotificationDeviceToken table', e, userId, deviceToken)
+        }
+      } else {
+        logger.error('Error sending push notification to device', e)
+      }
     }
-
-    PUSH_NOTIFICATIONS_BUFFER = []
-  } catch (e) {
-    logger.error('Error sending push notification', e)
-    throw e
   }
+  
+  PUSH_NOTIFICATIONS_BUFFER = []
+  
 }
 
 module.exports = {
@@ -113,5 +136,6 @@ module.exports = {
   createPlatformEndpoint,
   publish,
   deleteEndpoint,
+  publishPromisified,
   drainPublishedMessages
 }
