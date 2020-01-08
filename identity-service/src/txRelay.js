@@ -10,8 +10,8 @@ const { AudiusABIDecoder } = require('@audius/libs')
 
 const web3 = new Web3(new Web3.providers.HttpProvider(config.get('web3Provider')))
 
-const MIN_GAS_PRICE = 2 * Math.pow(10, 9) // 2 GWei, 2 * POA default gas price
-const HIGH_GAS_PRICE = 2.5 * MIN_GAS_PRICE // 5 GWei
+const MIN_GAS_PRICE = 10 * Math.pow(10, 9) // 10 GWei, 10 * POA default gas price
+const HIGH_GAS_PRICE = 2.5 * MIN_GAS_PRICE // 25 GWei
 const GANACHE_GAS_PRICE = 39062500000 // ganache gas price is extremely high, so we hardcode a lower value (0x09184e72a0 from docs here)
 
 // 1011968 is used by default
