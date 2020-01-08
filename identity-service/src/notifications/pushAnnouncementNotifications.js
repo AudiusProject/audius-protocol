@@ -1,25 +1,30 @@
 const models = require('../models')
 const { logger } = require('../logging')
-const { publishAnnouncement } = require('../awsSNS')
+const { publishAnnouncement, drainPublishedAnnouncements } = require('../awsSNS')
 const axios = require('axios')
 const config = require('../config.js')
+const audiusNotificationUrl = config.get('audiusNotificationUrl')
 
 async function pushAnnouncementNotifications () {
   try {
-    logger.info('pushAnnouncementNotifications')
+    const requestUrl = `${audiusNotificationUrl}/index-mobile.json`
+    logger.info(`pushAnnouncementNotifications - ${requestUrl}`)
+    const response = await axios.get(requestUrl)
+
     // Read-only tx
     const tx = await models.sequelize.transaction()
-    const audiusNotificationUrl = config.get('audiusNotificationUrl')
-    logger.info(audiusNotificationUrl)
-    // TODO: move below to index-mobile.json
-    const response = await axios.get(`${audiusNotificationUrl}/index.json`)
-    logger.info(response.data)
     if (response.data && Array.isArray(response.data.notifications)) {
       // TODO: Worth slicing?
       for (var notif of response.data.notifications) {
-        processAnnouncement(notif, tx)
+        await processAnnouncement(notif, tx)
       }
     }
+
+    // Commit
+    await tx.commit()
+
+    // Drain pending announcements
+    await drainPublishedAnnouncements()
   } catch (e) {
     logger.error(`pushAnnouncementNotifications ${e}`)
   }
@@ -38,29 +43,25 @@ async function processAnnouncement (notif, tx) {
 }
 
 async function _pushAnnouncement (notif, tx) {
-  logger.info(`Sending notification ${notif.id}`)
-  logger.info(`------------------------`)
   const audiusNotificationUrl = config.get('audiusNotificationUrl')
   const notifUrl = `${audiusNotificationUrl}/${notif.id}.json`
   const response = await axios.get(notifUrl)
   const details = response.data
   const msg = details.shortDescription
-  logger.info(details)
-  logger.info(details.shortDescription)
   // Push notification to all users with a valid device token at this time
   let validDeviceRecords = await models.NotificationDeviceToken.findAll({
     where: {
       enabled: true
     }
   })
-  await Promise.all(validDeviceRecords.map((device) => {
-    logger.info(`Sending ${notif.id} to ${JSON.stringify(device)}`)
-    // TODO: PUSH  notif here
+  await Promise.all(validDeviceRecords.map(async (device) => {
+    let userId = device.userId
+    logger.info(`Sending ${notif.id} to ${userId}`)
+    await publishAnnouncement(msg, userId, tx)
   }))
 
-  logger.info(`------------------------`)
   // Update database record with notifiation id
-  // await models.PushedAnnouncementNotifications.create({ announcementId: notif.id })
+  await models.PushedAnnouncementNotifications.create({ announcementId: notif.id })
 }
 
 module.exports = { pushAnnouncementNotifications }

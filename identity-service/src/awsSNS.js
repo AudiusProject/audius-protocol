@@ -2,11 +2,14 @@ const config = require('./config')
 const models = require('./models')
 const { logger } = require('./logging')
 
+const accessKeyId = config.get('awsAccessKeyId')
+const secretAccessKey = config.get('awsSecretAccessKey')
+
 // AWS SNS init
 const AWS = require('aws-sdk')
 const sns = new AWS.SNS({
-  accessKeyId: config.get('awsAccessKeyId'),
-  secretAccessKey: config.get('awsSecretAccessKey'),
+  accessKeyId,
+  secretAccessKey,
   region: 'us-west-1'
 })
 
@@ -20,6 +23,9 @@ let PUSH_ANNOUNCEMENTS_BUFFER = []
 function _promisifySNS (functionName) {
   return function (...args) {
     return new Promise(function (resolve, reject) {
+      if (!accessKeyId || !secretAccessKey) {
+        reject(new Error('Missing SNS config'))
+      }
       sns[functionName](...args, function (err, data) {
         if (err) reject(err)
         else resolve(data)
@@ -111,37 +117,49 @@ async function bufferMessages (message, userId, tx, buffer, playSound) {
 // we want it to continue
 async function drainPublishedMessages () {
   for (let bufferObj of PUSH_NOTIFICATIONS_BUFFER) {
-    try {
-      const { notification } = bufferObj
-      await publishPromisified(notification)
-    } catch (e) {
-      if (e && e.code && (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')) {
-        try {
-          const { deviceToken, userId } = bufferObj.metadata
-          // this notification is not deliverable to this device
-          // remove from deviceTokens table and de-register from AWS
-          const tokenObj = await models.NotificationDeviceToken.findOne({
-            where: {
-              deviceToken,
-              userId
-            }
-          })
-
-          if (tokenObj) {
-            // delete the endpoint from AWS SNS
-            await deleteEndpoint({ EndpointArn: tokenObj.awsARN })
-            await tokenObj.destroy()
-          }
-        } catch (e) {
-          logger.error('Error removing an outdated record from the NotificationDeviceToken table', e, bufferObj.metadata)
-        }
-      } else {
-        logger.error('Error sending push notification to device', e)
-      }
-    }
+    await drainMessageObject(bufferObj)
   }
 
   PUSH_NOTIFICATIONS_BUFFER = []
+}
+
+async function drainPublishedAnnouncements () {
+  for (let bufferObj of PUSH_NOTIFICATIONS_BUFFER) {
+    await drainMessageObject(bufferObj)
+  }
+
+  PUSH_NOTIFICATIONS_BUFFER = []
+}
+
+async function drainMessageObject (bufferObj) {
+  try {
+    const { notification } = bufferObj
+    await publishPromisified(notification)
+  } catch (e) {
+    if (e && e.code && (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')) {
+      try {
+        const { deviceToken, userId } = bufferObj.metadata
+        // this notification is not deliverable to this device
+        // remove from deviceTokens table and de-register from AWS
+        const tokenObj = await models.NotificationDeviceToken.findOne({
+          where: {
+            deviceToken,
+            userId
+          }
+        })
+
+        if (tokenObj) {
+          // delete the endpoint from AWS SNS
+          await deleteEndpoint({ EndpointArn: tokenObj.awsARN })
+          await tokenObj.destroy()
+        }
+      } catch (e) {
+        logger.error('Error removing an outdated record from the NotificationDeviceToken table', e, bufferObj.metadata)
+      }
+    } else {
+      logger.error('Error sending push notification to device', e)
+    }
+  }
 }
 
 module.exports = {
@@ -151,5 +169,6 @@ module.exports = {
   publishAnnouncement,
   deleteEndpoint,
   publishPromisified,
-  drainPublishedMessages
+  drainPublishedMessages,
+  drainPublishedAnnouncements
 }
