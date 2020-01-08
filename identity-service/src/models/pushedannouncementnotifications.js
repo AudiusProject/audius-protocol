@@ -1,10 +1,10 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
-  const pushedAnnouncementNotifications = sequelize.define('pushedAnnouncementNotifications', {
+  const PushedAnnouncementNotifications = sequelize.define('PushedAnnouncementNotifications', {
     announcementId: DataTypes.STRING
   }, {})
-  pushedAnnouncementNotifications.associate = function (models) {
+  PushedAnnouncementNotifications.associate = function (models) {
     // associations can be defined here
   }
-  return pushedAnnouncementNotifications
+  return PushedAnnouncementNotifications
 }
