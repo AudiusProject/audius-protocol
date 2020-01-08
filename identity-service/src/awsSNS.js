@@ -123,7 +123,7 @@ async function drainPublishedMessages () {
             await tokenObj.destroy()
           }
         } catch (e) {
-          logger.error('Error removing an outdated record from the NotificationDeviceToken table', e, userId, deviceToken)
+          logger.error('Error removing an outdated record from the NotificationDeviceToken table', e, bufferObj.metadata)
         }
       } else {
         logger.error('Error sending push notification to device', e)
