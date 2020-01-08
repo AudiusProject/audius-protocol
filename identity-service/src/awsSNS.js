@@ -11,7 +11,6 @@ const sns = new AWS.SNS({
 })
 
 // TODO (DM) - move this into redis
-const PUSH_NOTIFICATION_SLICE_SIZE = 20
 let PUSH_NOTIFICATIONS_BUFFER = []
 
 // the aws sdk doesn't like when you set the function equal to a variable and try to call it
@@ -97,7 +96,7 @@ async function publish (message, userId, tx, playSound = true) {
 
 // Actually send the messages from the buffer to SNS
 // If a device token is invalid attempt to remove it
-// 
+//
 // DON'T throw errors in this function because it stops execution,
 // we want it to continue
 async function drainPublishedMessages () {
