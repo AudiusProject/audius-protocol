@@ -115,6 +115,9 @@ class SocialFeatureFactoryClient extends ContractClient {
   }
 
   async addUserFollow (followerUserId, followeeUserId) {
+    if (followerUserId === followeeUserId) {
+      throw new Error(`addUserFollow -  identical value provided for follower and followee ${followerUserId}`)
+    }
     // generate new UserFollow request
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
@@ -143,6 +146,9 @@ class SocialFeatureFactoryClient extends ContractClient {
   }
 
   async deleteUserFollow (followerUserId, followeeUserId) {
+    if (followerUserId === followeeUserId) {
+      throw new Error(`deleteUserFollow - Invalid identical value provided for follower and followee ${followerUserId}`)
+    }
     // generate new deleteUserFollow request
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
