@@ -95,6 +95,11 @@ async function publish (message, userId, tx, playSound = true) {
   } else return null
 }
 
+// Actually send the messages from the buffer to SNS
+// If a device token is invalid attempt to remove it
+// 
+// DON'T throw errors in this function because it stops execution,
+// we want it to continue
 async function drainPublishedMessages () {
   for (let bufferObj of PUSH_NOTIFICATIONS_BUFFER) {
     try {
@@ -112,7 +117,7 @@ async function drainPublishedMessages () {
               userId
             }
           })
-    
+
           if (tokenObj) {
             // delete the endpoint from AWS SNS
             await deleteEndpoint({ EndpointArn: tokenObj.awsARN })
@@ -126,9 +131,8 @@ async function drainPublishedMessages () {
       }
     }
   }
-  
+
   PUSH_NOTIFICATIONS_BUFFER = []
-  
 }
 
 module.exports = {
