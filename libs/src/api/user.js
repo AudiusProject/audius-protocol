@@ -345,6 +345,10 @@ class Users extends Base {
    * @param {number} followeeUserId who is being followed...
   */
   async addUserFollow (followerUserId, followeeUserId) {
+    if (followerUserId === followeeUserId) {
+      throw new Error(`Invalid identical value provided for follower and followee ${followerUserId}`)
+    }
+
     return this.contracts.SocialFeatureFactoryClient.addUserFollow(followerUserId, followeeUserId)
   }
 
