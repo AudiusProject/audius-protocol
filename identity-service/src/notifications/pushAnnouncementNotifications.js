@@ -41,6 +41,15 @@ async function processAnnouncement (notif) {
 async function _pushAnnouncement (notif) {
   logger.info(`Sending notification ${notif.id}`)
   // Push notification to all users with a valid device token at this time
+  let validDeviceRecords = await models.NotificationDeviceToken.findAll({
+    where: {
+      enabled: true
+    }
+  })
+  await Promise.all(validDeviceRecords.map((device) => {
+    logger.info(`Sending notif to ${device}`)
+  }))
+
   // Update database record with notifiation id
   await models.PushedAnnouncementNotifications.create({ announcementId: notif.id })
 }
