@@ -378,7 +378,7 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
       ...notifStub,
       ...(mapNotification(notifStub, metadata))
     }
-    logger.debug('processMilestone - About to generate message for milestones push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
+    logger.debug('processMilestone - About to generate message for milestones push notification', msgGenNotif, metadata)
     const msg = pushNotificationMessagesMap[notificationTypes.Milestone](msgGenNotif)
     logger.debug(`processMilestone - message: ${msg}`)
     await publish(msg, userId, tx, true)
