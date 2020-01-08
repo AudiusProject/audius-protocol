@@ -14,6 +14,8 @@ const sns = new AWS.SNS({
 const PUSH_NOTIFICATION_SLICE_SIZE = 20
 let PUSH_NOTIFICATIONS_BUFFER = []
 
+let PUSH_ANNOUNCEMENTS_BUFFER = []
+
 // the aws sdk doesn't like when you set the function equal to a variable and try to call it
 // eg. const func = sns.<functionname>; func() returns an error, so util.promisify doesn't work
 function _promisifySNS (functionName) {
@@ -77,6 +79,14 @@ const publishPromisified = _promisifySNS('publish')
 const deleteEndpoint = _promisifySNS('deleteEndpoint')
 
 async function publish (message, userId, tx, playSound = true) {
+  bufferMessages(message, userId, tx, PUSH_NOTIFICATIONS_BUFFER, playSound)
+}
+
+async function publishAnnouncement (message, userId, tx, playSound = true) {
+  bufferMessages(message, userId, tx, PUSH_ANNOUNCEMENTS_BUFFER, playSound)
+}
+
+async function bufferMessages (message, userId, tx, buffer, playSound) {
   const deviceInfo = await models.NotificationDeviceToken.findOne({ where: { userId }, transaction: tx })
   if (!deviceInfo) return
 
@@ -87,7 +97,7 @@ async function publish (message, userId, tx, playSound = true) {
 
   if (formattedMessage) {
     logger.debug('AWS SNS formattedMessage', formattedMessage)
-    PUSH_NOTIFICATIONS_BUFFER.push(formattedMessage)
+    buffer.push(formattedMessage)
   } else return null
 }
 
@@ -112,6 +122,7 @@ module.exports = {
   listEndpointsByPlatformApplication,
   createPlatformEndpoint,
   publish,
+  publishAnnouncement,
   deleteEndpoint,
   drainPublishedMessages
 }

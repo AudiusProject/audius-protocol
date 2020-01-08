@@ -1,11 +1,14 @@
 const models = require('../models')
 const { logger } = require('../logging')
+const { publishAnnouncement } = require('../awsSNS')
 const axios = require('axios')
 const config = require('../config.js')
 
 async function pushAnnouncementNotifications () {
   try {
     logger.info('pushAnnouncementNotifications')
+    // Read-only tx
+    const tx = await models.sequelize.transaction()
     const audiusNotificationUrl = config.get('audiusNotificationUrl')
     logger.info(audiusNotificationUrl)
     // TODO: move below to index-mobile.json
@@ -14,7 +17,7 @@ async function pushAnnouncementNotifications () {
     if (response.data && Array.isArray(response.data.notifications)) {
       // TODO: Worth slicing?
       for (var notif of response.data.notifications) {
-        processAnnouncement(notif)
+        processAnnouncement(notif, tx)
       }
     }
   } catch (e) {
@@ -22,7 +25,7 @@ async function pushAnnouncementNotifications () {
   }
 }
 
-async function processAnnouncement (notif) {
+async function processAnnouncement (notif, tx) {
   if (notif.type !== 'announcement') { return }
   let pushedNotifRecord = await models.PushedAnnouncementNotifications.findAll({
     where: {
@@ -31,17 +34,19 @@ async function processAnnouncement (notif) {
   })
   let pendingNotificationPush = pushedNotifRecord.length === 0
   if (!pendingNotificationPush) { return }
-  await _pushAnnouncement(notif)
+  await _pushAnnouncement(notif, tx)
 }
 
-async function _pushAnnouncement (notif) {
+async function _pushAnnouncement (notif, tx) {
   logger.info(`Sending notification ${notif.id}`)
   logger.info(`------------------------`)
   const audiusNotificationUrl = config.get('audiusNotificationUrl')
   const notifUrl = `${audiusNotificationUrl}/${notif.id}.json`
   const response = await axios.get(notifUrl)
   const details = response.data
+  const msg = details.shortDescription
   logger.info(details)
+  logger.info(details.shortDescription)
   // Push notification to all users with a valid device token at this time
   let validDeviceRecords = await models.NotificationDeviceToken.findAll({
     where: {
@@ -55,7 +60,7 @@ async function _pushAnnouncement (notif) {
 
   logger.info(`------------------------`)
   // Update database record with notifiation id
-  await models.PushedAnnouncementNotifications.create({ announcementId: notif.id })
+  // await models.PushedAnnouncementNotifications.create({ announcementId: notif.id })
 }
 
 module.exports = { pushAnnouncementNotifications }
