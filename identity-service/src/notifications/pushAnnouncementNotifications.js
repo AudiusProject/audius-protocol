@@ -48,6 +48,7 @@ async function _pushAnnouncement (notif, tx) {
   const response = await axios.get(notifUrl)
   const details = response.data
   const msg = details.shortDescription
+  const title = details.title
   // Push notification to all users with a valid device token at this time
   let validDeviceRecords = await models.NotificationDeviceToken.findAll({
     where: {
@@ -57,7 +58,7 @@ async function _pushAnnouncement (notif, tx) {
   await Promise.all(validDeviceRecords.map(async (device) => {
     let userId = device.userId
     logger.info(`Sending ${notif.id} to ${userId}`)
-    await publishAnnouncement(msg, userId, tx)
+    await publishAnnouncement(msg, userId, tx, true, title)
   }))
 
   // Update database record with notifiation id

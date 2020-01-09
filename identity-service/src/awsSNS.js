@@ -42,7 +42,7 @@ function _promisifySNS (functionName) {
  *                           `arn:aws:sns:us-west-1:<id>:endpoint/APNS/<namespace>/<uuid>`
  * @param {Boolean=True} playSound should play a sound when it's sent
  */
-function _formatIOSMessage (message, targetARN, playSound = true) {
+function _formatIOSMessage (message, targetARN, playSound = true, title = null) {
   let type = null
   if (targetARN.includes('APNS_SANDBOX')) type = 'APNS_SANDBOX'
   else if (targetARN.includes('APNS')) type = 'APNS'
@@ -57,12 +57,20 @@ function _formatIOSMessage (message, targetARN, playSound = true) {
       'aps': {
         'alert': `${message}`,
         'sound': playSound && 'default'
+        // TODO: Enable title/body for iOS, makes a much better notification
         // keeping these properties here so we can use them if we want to
         // "alert": {
         //   "title" : `${title}`,
         //   "body" : `${body}`
         // },
         // "badge": 19
+      }
+    }
+
+    if (title !== null) {
+      apnsConfig['aps']['alert'] = {
+        'title': `${title}`,
+        'body': `${message}`
       }
     }
 
@@ -87,17 +95,17 @@ async function publish (message, userId, tx, playSound = true) {
   bufferMessages(message, userId, tx, PUSH_NOTIFICATIONS_BUFFER, playSound)
 }
 
-async function publishAnnouncement (message, userId, tx, playSound = true) {
-  bufferMessages(message, userId, tx, PUSH_ANNOUNCEMENTS_BUFFER, playSound)
+async function publishAnnouncement (message, userId, tx, playSound = true, title = null) {
+  bufferMessages(message, userId, tx, PUSH_ANNOUNCEMENTS_BUFFER, playSound, title)
 }
 
-async function bufferMessages (message, userId, tx, buffer, playSound) {
+async function bufferMessages (message, userId, tx, buffer, playSound, title) {
   const deviceInfo = await models.NotificationDeviceToken.findOne({ where: { userId }, transaction: tx })
   if (!deviceInfo) return
 
   let formattedMessage = null
   if (deviceInfo.deviceType === 'ios') {
-    formattedMessage = _formatIOSMessage(message, deviceInfo.awsARN, playSound)
+    formattedMessage = _formatIOSMessage(message, deviceInfo.awsARN, playSound, title)
   }
 
   if (formattedMessage) {
