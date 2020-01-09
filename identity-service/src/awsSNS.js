@@ -124,11 +124,11 @@ async function drainPublishedMessages () {
 }
 
 async function drainPublishedAnnouncements () {
-  for (let bufferObj of PUSH_NOTIFICATIONS_BUFFER) {
+  for (let bufferObj of PUSH_ANNOUNCEMENTS_BUFFER) {
     await drainMessageObject(bufferObj)
   }
 
-  PUSH_NOTIFICATIONS_BUFFER = []
+  PUSH_ANNOUNCEMENTS_BUFFER = []
 }
 
 async function drainMessageObject (bufferObj) {
