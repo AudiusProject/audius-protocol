@@ -43,7 +43,6 @@ async function processAnnouncement (notif, tx) {
 }
 
 async function _pushAnnouncement (notif, tx) {
-  const audiusNotificationUrl = config.get('audiusNotificationUrl')
   const notifUrl = `${audiusNotificationUrl}/${notif.id}.json`
   const response = await axios.get(notifUrl)
   const details = response.data

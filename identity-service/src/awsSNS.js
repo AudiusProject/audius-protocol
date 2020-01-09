@@ -67,7 +67,7 @@ function _formatIOSMessage (message, targetARN, playSound = true, title = null) 
       }
     }
 
-    if (title !== null) {
+    if (title) {
       apnsConfig['aps']['alert'] = {
         'title': `${title}`,
         'body': `${message}`
