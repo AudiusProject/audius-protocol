@@ -36,6 +36,7 @@ const actionEntityTypes = Object.freeze({
 const dayInHours = 24
 const weekInHours = 168
 const notificationJobType = 'notificationProcessJob'
+const announcementJobType = 'pushAnnouncementsJob'
 
 // TODO (DM) - unify this with the email messages
 const pushNotificationMessagesMap = {
@@ -77,5 +78,6 @@ module.exports = {
   dayInHours,
   weekInHours,
   notificationJobType,
+  announcementJobType,
   pushNotificationMessagesMap
 }

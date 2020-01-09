@@ -12,7 +12,8 @@ const {
   getHighestBlockNumber
 } = require('./utils')
 const { processEmailNotifications } = require('./sendNotificationEmails')
-const { notificationJobType } = require('./constants')
+const { pushAnnouncementNotifications } = require('./pushAnnouncementNotifications')
+const { notificationJobType, announcementJobType } = require('./constants')
 const { drainPublishedMessages } = require('../awsSNS')
 const notifDiscProv = config.get('notificationDiscoveryProvider')
 const emailCachePath = './emailCache'
@@ -29,7 +30,11 @@ class NotificationProcessor {
       { redis:
         { port: config.get('redisPort'), host: config.get('redisHost') }
       })
-    this.blockchainIdsPopulated = false
+    this.announcementQueue = new Bull(
+      'announcement-queue',
+      { redis:
+        { port: config.get('redisPort'), host: config.get('redisHost') }
+      })
   }
 
   /**
@@ -97,8 +102,17 @@ class NotificationProcessor {
 
     // Email notification queue
     this.emailQueue.process(async (job, done) => {
-      logger.info('about to processEmailNotifications')
+      logger.info('processEmailNotifications')
       await processEmailNotifications(expressApp, audiusLibs)
+      done()
+    })
+
+    // Announcement push notifications queue
+    this.announcementQueue.process(async (job, done) => {
+      await pushAnnouncementNotifications()
+      // Delay 3s
+      await new Promise(resolve => setTimeout(resolve, 300000))
+      await this.announcementQueue.add({ type: announcementJobType })
       done()
     })
 
@@ -118,6 +132,8 @@ class NotificationProcessor {
       minBlock: startBlock,
       type: notificationJobType
     })
+
+    await this.announcementQueue.add({ type: announcementJobType })
   }
 
   /**

@@ -273,6 +273,7 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
     return
   }
 
+  let newMilestone = false
   if (notifyWeb) {
     let existingMilestoneQuery = await models.Notification.findAll({
       where: {
@@ -292,6 +293,7 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
     })
 
     if (existingMilestoneQuery.length === 0) {
+      newMilestone = true
       // MilestoneListen/Favorite/Repost
       // userId=user achieving milestone
       // entityId=Entity reaching milestone, one of track/collection
@@ -358,7 +360,8 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
     }
   }
 
-  if (notifyMobile) {
+  // Only send a milestone push notification on the first insert to the DB
+  if (notifyMobile && newMilestone) {
     const notifStub = {
       userId: userId,
       type: milestoneType,
