@@ -76,22 +76,26 @@ const publishPromisified = _promisifySNS('publish')
 const deleteEndpoint = _promisifySNS('deleteEndpoint')
 
 async function publish (message, userId, tx, playSound = true) {
-  const deviceInfo = await models.NotificationDeviceToken.findOne({ where: { userId }, transaction: tx })
-  if (!deviceInfo) return
+  const devices = await models.NotificationDeviceToken.findAll({ where: { userId }, transaction: tx })
+  // no devices registered for that user
+  if (devices.length === 0) return
 
-  let formattedMessage = null
-  if (deviceInfo.deviceType === 'ios') {
-    formattedMessage = _formatIOSMessage(message, deviceInfo.awsARN, playSound)
-  }
-
-  if (formattedMessage) {
-    logger.debug('AWS SNS formattedMessage', formattedMessage)
-    const bufferObj = {
-      metadata: { userId, deviceToken: deviceInfo.deviceToken },
-      notification: formattedMessage
+  for (let device of devices) {
+    let formattedMessage = null
+    if (device.deviceType === 'ios') {
+      formattedMessage = _formatIOSMessage(message, device.awsARN, playSound)
     }
-    PUSH_NOTIFICATIONS_BUFFER.push(bufferObj)
-  } else return null
+    // TODO add android formatting here
+
+    if (formattedMessage) {
+      logger.debug('AWS SNS formattedMessage', formattedMessage)
+      const bufferObj = {
+        metadata: { userId, deviceToken: device.deviceToken },
+        notification: formattedMessage
+      }
+      PUSH_NOTIFICATIONS_BUFFER.push(bufferObj)
+    } else return null
+  }
 }
 
 // Actually send the messages from the buffer to SNS
@@ -105,6 +109,8 @@ async function drainPublishedMessages () {
       const { notification } = bufferObj
       await publishPromisified(notification)
     } catch (e) {
+      logger.error('Error sending push notification to device', e)
+
       if (e && e.code && (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')) {
         try {
           const { deviceToken, userId } = bufferObj.metadata
@@ -125,8 +131,6 @@ async function drainPublishedMessages () {
         } catch (e) {
           logger.error('Error removing an outdated record from the NotificationDeviceToken table', e, bufferObj.metadata)
         }
-      } else {
-        logger.error('Error sending push notification to device', e)
       }
     }
   }
