@@ -27,6 +27,12 @@ const config = convict({
     env: 'web3Provider',
     default: null
   },
+  secondaryWeb3Provider: {
+    doc: 'secondary web3 provider url',
+    format: String,
+    env: 'secondaryWeb3Provider',
+    default: null
+  },
   port: {
     doc: 'Port to run service on',
     format: 'port',

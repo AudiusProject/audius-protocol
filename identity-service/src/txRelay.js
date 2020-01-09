@@ -8,7 +8,8 @@ const { logger } = require('./logging')
 
 const { AudiusABIDecoder } = require('@audius/libs')
 
-const web3 = new Web3(new Web3.providers.HttpProvider(config.get('web3Provider')))
+const primaryWeb3 = new Web3(new Web3.providers.HttpProvider(config.get('web3Provider')))
+const secondaryWeb3 = new Web3(new Web3.providers.HttpProvider(config.get('secondaryWeb3Provider')))
 
 const MIN_GAS_PRICE = 10 * Math.pow(10, 9) // 10 GWei, 10 * POA default gas price
 const HIGH_GAS_PRICE = 2.5 * MIN_GAS_PRICE // 25 GWei
@@ -26,18 +27,56 @@ async function delay (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+/** Attempt to send transaction to primary web3 provider, if that fails try secondary */
 const sendTransaction = async (
   contractRegistryKey,
   contractAddress,
   encodedABI,
   senderAddress,
   resetNonce = false,
-  txGasLimit = null) => {
-  // TODO(roneilr): this should check that in the registry, contractRegistryKey maps to
-  // contractAddress, rejecting the tx if not. Also needs to maintain a whitelist of
-  // contracts (eg. storage contracts, discovery service contract, should not be allowed
-  // to relay TXes from here but can today).
+  txGasLimit = null
+) => {
+  let resp = null
+  try {
+    resp = await sendTransactionInternal(
+      contractRegistryKey,
+      contractAddress,
+      encodedABI,
+      senderAddress,
+      primaryWeb3,
+      resetNonce,
+      txGasLimit
+    )
+  } catch (e) {
+    logger.error(`sendTransaction Error - ${e}. Retrying with secondary web3.`)
+    resp = await sendTransactionInternal(
+      contractRegistryKey,
+      contractAddress,
+      encodedABI,
+      senderAddress,
+      secondaryWeb3,
+      resetNonce,
+      txGasLimit
+    )
+  }
+  return resp
+}
 
+/**
+ * TODO(roneilr): this should check that in the registry, contractRegistryKey maps to
+ *  contractAddress, rejecting the tx if not. Also needs to maintain a whitelist of
+ *  contracts (eg. storage contracts, discovery service contract, should not be allowed
+ *  to relay TXes from here but can today).
+ */
+const sendTransactionInternal = async (
+  contractRegistryKey,
+  contractAddress,
+  encodedABI,
+  senderAddress,
+  web3,
+  resetNonce = false,
+  txGasLimit = null
+) => {
   const existingTx = await models.Transaction.findOne({
     where: {
       encodedABI: encodedABI // this should always be unique because of the nonce / sig
@@ -139,19 +178,19 @@ const sendTransaction = async (
 
 const fundRelayerIfEmpty = async () => {
   let balance = await getRelayerFunds()
-  const minimumBalance = web3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
+  const minimumBalance = primaryWeb3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
   if (parseInt(balance) < minimumBalance) {
     logger.info('Relay account below minimum expected. Attempting to fund...')
-    const account = (await web3.eth.getAccounts())[0]
-    await web3.eth.sendTransaction({ from: account, to: config.get('relayerPublicKey'), value: minimumBalance })
+    const account = (await primaryWeb3.eth.getAccounts())[0]
+    await primaryWeb3.eth.sendTransaction({ from: account, to: config.get('relayerPublicKey'), value: minimumBalance })
     logger.info('Successfully funded relay account!')
     balance = await getRelayerFunds()
   }
-  logger.info('Balance of relay account:', web3.utils.fromWei(balance, 'ether'), 'eth')
+  logger.info('Balance of relay account:', primaryWeb3.utils.fromWei(balance, 'ether'), 'eth')
 }
 
 const getRelayerFunds = async () => {
-  return web3.eth.getBalance(config.get('relayerPublicKey'))
+  return primaryWeb3.eth.getBalance(config.get('relayerPublicKey'))
 }
 
 module.exports = { sendTransaction, getRelayerFunds, fundRelayerIfEmpty }
