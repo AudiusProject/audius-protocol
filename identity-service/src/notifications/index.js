@@ -111,7 +111,7 @@ class NotificationProcessor {
     this.announcementQueue.process(async (job, done) => {
       await pushAnnouncementNotifications()
       // Delay 3s
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      await new Promise(resolve => setTimeout(resolve, 300000))
       await this.announcementQueue.add({ type: announcementJobType })
       done()
     })
