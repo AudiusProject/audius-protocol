@@ -56,15 +56,21 @@ function _formatIOSMessage (message, targetARN, playSound = true, title = null) 
     let apnsConfig = {
       'aps': {
         'alert': `${message}`,
-        'sound': playSound && 'default'
+        'sound': playSound && 'default',
+        'badge': 19
         // TODO: Enable title/body for iOS, makes a much better notification
         // keeping these properties here so we can use them if we want to
         // "alert": {
         //   "title" : `${title}`,
         //   "body" : `${body}`
         // },
-        // "badge": 19
       }
+
+    }
+    // Tmp for test
+    apnsConfig['aps']['alert'] = {
+      'title': `test-hn-local`,
+      'body': `${message}`
     }
 
     if (title) {
@@ -124,6 +130,7 @@ async function bufferMessages (message, userId, tx, buffer, playSound, title) {
 // DON'T throw errors in this function because it stops execution,
 // we want it to continue
 async function drainPublishedMessages () {
+  logger.info(`Draining published messages`)
   for (let bufferObj of PUSH_NOTIFICATIONS_BUFFER) {
     await drainMessageObject(bufferObj)
   }
@@ -142,6 +149,16 @@ async function drainPublishedAnnouncements () {
 async function drainMessageObject (bufferObj) {
   try {
     const { notification } = bufferObj
+    const { userId } = bufferObj.metadata
+    logger.debug(`Retrieving user badge count for ${userId}`)
+    const userBadgeObj = await models.PushNotificationBadgeCounts.findOrCreate({
+      where: {
+        userId
+      }
+    })
+    logger.debug(`Retrieved user badge count for ${userId}`)
+    const newBadgeCount = userBadgeObj.iosBadgeCount + 1
+    logger.debug(`Publish promisified ${notification}`)
     await publishPromisified(notification)
   } catch (e) {
     if (e && e.code && (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')) {
