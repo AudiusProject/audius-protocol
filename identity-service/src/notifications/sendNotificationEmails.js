@@ -15,11 +15,14 @@ const {
   weekInHours
 } = require('./constants')
 
+// Mailgun object
+let mg
+
 async function processEmailNotifications (expressApp, audiusLibs) {
   try {
     logger.info(`${new Date()} - processEmailNotifications`)
 
-    let mg = expressApp.get('mailgun')
+    mg = expressApp.get('mailgun')
     if (mg === null) {
       logger.error('Mailgun not configured')
       return
@@ -314,10 +317,10 @@ async function cacheEmail (cacheParams) {
 
 async function sendEmail (emailParams) {
   return new Promise((resolve, reject) => {
-    if (this.mg === null) {
+    if (mg === null) {
       resolve()
     }
-    this.mg.messages().send(emailParams, (error, body) => {
+    mg.messages().send(emailParams, (error, body) => {
       if (error) {
         reject(error)
       }
