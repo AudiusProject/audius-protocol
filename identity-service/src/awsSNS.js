@@ -92,37 +92,29 @@ const publishPromisified = _promisifySNS('publish')
 const deleteEndpoint = _promisifySNS('deleteEndpoint')
 
 async function publish (message, userId, tx, playSound = true) {
-  bufferMessages(message, userId, tx, PUSH_NOTIFICATIONS_BUFFER, playSound)
+  await addNotificationToBuffer(message, userId, tx, PUSH_NOTIFICATIONS_BUFFER, playSound)
 }
 
 async function publishAnnouncement (message, userId, tx, playSound = true, title = null) {
-  bufferMessages(message, userId, tx, PUSH_ANNOUNCEMENTS_BUFFER, playSound, title)
+  await addNotificationToBuffer(message, userId, tx, PUSH_ANNOUNCEMENTS_BUFFER, playSound, title)
 }
 
-async function bufferMessages (message, userId, tx, buffer, playSound, title) {
-  const deviceInfo = await models.NotificationDeviceToken.findOne({ where: { userId }, transaction: tx })
-  if (!deviceInfo) return
+async function addNotificationToBuffer (message, userId, tx, buffer, playSound, title) {
+  const devices = await models.NotificationDeviceToken.findAll({ where: { userId }, transaction: tx })
 
-  let formattedMessage = null
-  if (deviceInfo.deviceType === 'ios') {
-    formattedMessage = _formatIOSMessage(message, deviceInfo.awsARN, playSound, title)
-  }
+  // no devices registered for that user
+  if (devices.length === 0) return
 
-  if (formattedMessage) {
-    logger.debug('AWS SNS formattedMessage', formattedMessage)
+  for (let device of devices) {
     const bufferObj = {
-      metadata: { userId, deviceToken: deviceInfo.deviceToken },
-      notification: formattedMessage
+      device: device,
+      userId: userId,
+      notificationParams: { message, title, playSound }
     }
     buffer.push(bufferObj)
-  } else return null
+  }
 }
 
-// Actually send the messages from the buffer to SNS
-// If a device token is invalid attempt to remove it
-//
-// DON'T throw errors in this function because it stops execution,
-// we want it to continue
 async function drainPublishedMessages () {
   for (let bufferObj of PUSH_NOTIFICATIONS_BUFFER) {
     await drainMessageObject(bufferObj)
@@ -139,14 +131,29 @@ async function drainPublishedAnnouncements () {
   PUSH_ANNOUNCEMENTS_BUFFER = []
 }
 
+// Actually send the messages from the buffer to SNS
+// If a device token is invalid attempt to remove it
+//
+// DON'T throw errors in this function because it stops execution,
+// we want it to continue
 async function drainMessageObject (bufferObj) {
+  const { userId } = bufferObj
+  const { deviceType, awsARN, deviceToken } = bufferObj.device
+  const { message, title, playSound } = bufferObj.notificationParams
+
   try {
-    const { notification } = bufferObj
-    await publishPromisified(notification)
+    let formattedMessage = null
+    if (deviceType === 'ios') {
+      // TODO - add badge count here
+      formattedMessage = _formatIOSMessage(message, awsARN, playSound, title)
+    }
+
+    if (formattedMessage) {
+      await publishPromisified(formattedMessage)
+    }
   } catch (e) {
     if (e && e.code && (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')) {
       try {
-        const { deviceToken, userId } = bufferObj.metadata
         // this notification is not deliverable to this device
         // remove from deviceTokens table and de-register from AWS
         const tokenObj = await models.NotificationDeviceToken.findOne({
