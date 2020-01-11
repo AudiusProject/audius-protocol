@@ -144,6 +144,11 @@ async function drainMessageObject (bufferObj) {
   const { message, title, playSound } = bufferObj.notificationParams
 
   logger.debug(`Retrieving badge count for user ${userId}`)
+  const incrementBadgeQuery = await models.PushNotificationBadgeCounts.increment('iosBadgeCount', { where: { userId } })
+  // Parse the updated value returned from increment
+  // TODO: Is this actually the right access pattern?
+  const newBadgeCount = incrementBadgeQuery[0][0][0].iosBadgeCount
+  /*
   const userBadgeQuery = await models.PushNotificationBadgeCounts.findOrCreate({
     where: {
       userId
@@ -151,7 +156,6 @@ async function drainMessageObject (bufferObj) {
   })
   const userBadgeObj = userBadgeQuery[0]
   const newBadgeCount = userBadgeObj.dataValues.iosBadgeCount + 1
-  logger.debug(`New badge count ${newBadgeCount}`)
   const updateResp = await models.PushNotificationBadgeCounts.update(
     {
       iosBadgeCount: newBadgeCount
@@ -163,11 +167,8 @@ async function drainMessageObject (bufferObj) {
     }
   )
   logger.debug(`Updated badge count - ${updateResp}`)
-  logger.debug(await models.PushNotificationBadgeCounts.findOrCreate({
-    where: {
-      userId
-    }
-  }))
+  */
+  logger.debug(`New badge count ${newBadgeCount}`)
 
   const devices = await models.NotificationDeviceToken.findAll({ where: { userId } })
   // If no devices found, short-circuit

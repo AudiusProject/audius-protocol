@@ -140,4 +140,28 @@ module.exports = function (app) {
       return errorResponseServerError(`Unable to deregister device token for deviceToken: ${deviceToken}`, e.message)
     }
   }))
+
+  /**
+   * Clear badge counts for a given user
+   * POST body contains {userId}
+   */
+  app.post('/push_notifications/badges', authMiddleware, handleResponse(async (req, res, next) => {
+    const userId = req.user.blockchainUserId
+
+    try {
+      await models.PushNotificationBadgeCounts.update(
+        {
+          iosBadgeCount: 0
+        },
+        {
+          where: {
+            userId
+          }
+        }
+      )
+      return successResponse()
+    } catch (e) {
+      return errorResponseServerError(`Unable to clear device notification badges for userId: ${userId}, Error: ${e.message}`)
+    }
+  }))
 }
