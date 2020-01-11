@@ -6,7 +6,8 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true
     },
     iosBadgeCount: {
-      type: DataTypes.INTEGER
+      type: DataTypes.INTEGER,
+      defaultValue: 0
     }
   }, {})
   PushNotificationBadgeCounts.associate = function (models) {
