@@ -69,12 +69,6 @@ function _formatIOSMessage (message, targetARN, badgeCount, playSound = true, ti
       }
 
     }
-    // Tmp for test
-    // apnsConfig['aps']['alert'] = 'from-hn-local'
-    apnsConfig['aps']['alert'] = {
-      'title': `test-hn-local`,
-      'body': `${message}`
-    }
 
     if (title) {
       apnsConfig['aps']['alert'] = {
