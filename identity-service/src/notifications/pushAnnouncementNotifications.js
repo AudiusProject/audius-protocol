@@ -38,7 +38,10 @@ async function processAnnouncement (notif, tx) {
     }
   })
   let pendingNotificationPush = pushedNotifRecord.length === 0
-  if (!pendingNotificationPush) { return }
+  if (!pendingNotificationPush) {
+    return
+  }
+
   await _pushAnnouncement(notif, tx)
 }
 

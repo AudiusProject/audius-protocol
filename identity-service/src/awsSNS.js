@@ -27,8 +27,10 @@ function _promisifySNS (functionName) {
         reject(new Error('Missing SNS config'))
       }
       sns[functionName](...args, function (err, data) {
-        if (err) reject(err)
-        else resolve(data)
+        if (err) {
+          logger.debug(`${err}`)
+          reject(err)
+        } else resolve(data)
       })
     })
   }
@@ -42,7 +44,7 @@ function _promisifySNS (functionName) {
  *                           `arn:aws:sns:us-west-1:<id>:endpoint/APNS/<namespace>/<uuid>`
  * @param {Boolean=True} playSound should play a sound when it's sent
  */
-function _formatIOSMessage (message, targetARN, playSound = true, title = null) {
+function _formatIOSMessage (message, targetARN, badgeCount, playSound = true, title = null) {
   let type = null
   if (targetARN.includes('APNS_SANDBOX')) type = 'APNS_SANDBOX'
   else if (targetARN.includes('APNS')) type = 'APNS'
@@ -56,14 +58,14 @@ function _formatIOSMessage (message, targetARN, playSound = true, title = null) 
     let apnsConfig = {
       'aps': {
         'alert': `${message}`,
-        'sound': playSound && 'default'
+        'sound': playSound && 'default',
+        'badge': badgeCount
         // TODO: Enable title/body for iOS, makes a much better notification
         // keeping these properties here so we can use them if we want to
         // "alert": {
         //   "title" : `${title}`,
         //   "body" : `${body}`
         // },
-        // "badge": 19
       }
     }
 
@@ -100,19 +102,11 @@ async function publishAnnouncement (message, userId, tx, playSound = true, title
 }
 
 async function addNotificationToBuffer (message, userId, tx, buffer, playSound, title) {
-  const devices = await models.NotificationDeviceToken.findAll({ where: { userId }, transaction: tx })
-
-  // no devices registered for that user
-  if (devices.length === 0) return
-
-  for (let device of devices) {
-    const bufferObj = {
-      device: device,
-      userId: userId,
-      notificationParams: { message, title, playSound }
-    }
-    buffer.push(bufferObj)
+  const bufferObj = {
+    userId: userId,
+    notificationParams: { message, title, playSound }
   }
+  buffer.push(bufferObj)
 }
 
 async function drainPublishedMessages () {
@@ -138,43 +132,60 @@ async function drainPublishedAnnouncements () {
 // we want it to continue
 async function drainMessageObject (bufferObj) {
   const { userId } = bufferObj
-  const { deviceType, awsARN, deviceToken } = bufferObj.device
   const { message, title, playSound } = bufferObj.notificationParams
 
-  try {
-    let formattedMessage = null
-    if (deviceType === 'ios') {
-      // TODO - add badge count here
-      formattedMessage = _formatIOSMessage(message, awsARN, playSound, title)
+  // Ensure badge count entry exists for user
+  await models.PushNotificationBadgeCounts.findOrCreate({
+    where: {
+      userId
     }
+  })
 
-    if (formattedMessage) {
-      await publishPromisified(formattedMessage)
-    }
-  } catch (e) {
-    if (e && e.code && (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')) {
-      try {
-        // this notification is not deliverable to this device
-        // remove from deviceTokens table and de-register from AWS
-        const tokenObj = await models.NotificationDeviceToken.findOne({
-          where: {
-            deviceToken,
-            userId
-          }
-        })
+  // Increment entry
+  const incrementBadgeQuery = await models.PushNotificationBadgeCounts.increment('iosBadgeCount', { where: { userId } })
 
-        if (tokenObj) {
-          // delete the endpoint from AWS SNS
-          await deleteEndpoint({ EndpointArn: tokenObj.awsARN })
-          await tokenObj.destroy()
-        }
-      } catch (e) {
-        logger.error('Error removing an outdated record from the NotificationDeviceToken table', e, bufferObj.metadata)
+  // Parse the updated value returned from increment
+  const newBadgeCount = incrementBadgeQuery[0][0][0].iosBadgeCount
+  const devices = await models.NotificationDeviceToken.findAll({ where: { userId } })
+  // If no devices found, short-circuit
+  if (devices.length === 0) return
+  // Dispatch to all devices
+  await Promise.all(devices.map(async (device) => {
+    const { deviceType, awsARN, deviceToken } = device
+    try {
+      let formattedMessage = null
+      if (deviceType === 'ios') {
+        formattedMessage = _formatIOSMessage(message, awsARN, newBadgeCount, playSound, title)
       }
-    } else {
-      logger.error('Error sending push notification to device', e)
+
+      if (formattedMessage) {
+        await publishPromisified(formattedMessage)
+      }
+    } catch (e) {
+      if (e && e.code && (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')) {
+        try {
+          // this notification is not deliverable to this device
+          // remove from deviceTokens table and de-register from AWS
+          const tokenObj = await models.NotificationDeviceToken.findOne({
+            where: {
+              deviceToken,
+              userId
+            }
+          })
+
+          if (tokenObj) {
+            // delete the endpoint from AWS SNS
+            await deleteEndpoint({ EndpointArn: tokenObj.awsARN })
+            await tokenObj.destroy()
+          }
+        } catch (e) {
+          logger.error('Error removing an outdated record from the NotificationDeviceToken table', e, bufferObj.metadata)
+        }
+      } else {
+        logger.error('Error sending push notification to device', e)
+      }
     }
-  }
+  }))
 }
 
 module.exports = {
