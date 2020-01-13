@@ -42,7 +42,6 @@ async function processAnnouncement (notif, tx) {
     return
   }
 
-  console.log(`No record for ${notif.id}`)
   await _pushAnnouncement(notif, tx)
 }
 
