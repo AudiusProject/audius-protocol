@@ -110,7 +110,6 @@ async function addNotificationToBuffer (message, userId, tx, buffer, playSound, 
 }
 
 async function drainPublishedMessages () {
-  logger.info(`Draining published messages`)
   for (let bufferObj of PUSH_NOTIFICATIONS_BUFFER) {
     await drainMessageObject(bufferObj)
   }
