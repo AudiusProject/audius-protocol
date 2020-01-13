@@ -225,6 +225,28 @@ const formatNotifications = (notifications, announcements) => {
   return mergeAudiusAnnoucements(unreadAnnouncements, userNotifications)
 }
 
+/**
+ * Clear badge counts for a given user
+ * @param {Integer} userId
+ * @param {Object} logger
+ */
+async function clearBadgeCounts (userId, logger) {
+  try {
+    await models.PushNotificationBadgeCounts.update(
+      {
+        iosBadgeCount: 0
+      },
+      {
+        where: {
+          userId
+        }
+      }
+    )
+  } catch (e) {
+    logger.error(`Failed to clear badge counts for user ${userId}`)
+  }
+}
+
 module.exports = function (app) {
   /*
    * Fetches the notifications for the specified userId
@@ -377,7 +399,7 @@ module.exports = function (app) {
    *
   */
   app.post('/notifications/all', authMiddleware, handleResponse(async (req, res, next) => {
-    let { isRead, isViewed } = req.body
+    let { isRead, isViewed, clearBadges } = req.body
     const { createdAt, blockchainUserId: userId } = req.user
 
     const createdDate = moment(createdAt)
@@ -422,6 +444,10 @@ module.exports = function (app) {
           timestamp: announcement.datePublished
         }))
       )
+
+      if (clearBadges) {
+        await clearBadgeCounts(userId, req.logger)
+      }
       return successResponse({ message: 'success' })
     } catch (err) {
       return errorResponseBadRequest({

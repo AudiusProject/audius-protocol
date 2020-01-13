@@ -26,7 +26,6 @@ function _promisifySNS (functionName) {
       if (!accessKeyId || !secretAccessKey) {
         reject(new Error('Missing SNS config'))
       }
-      logger.debug('SNS sending...')
       sns[functionName](...args, function (err, data) {
         if (err) {
           logger.debug(`${err}`)
@@ -143,33 +142,10 @@ async function drainMessageObject (bufferObj) {
   const { userId } = bufferObj
   const { message, title, playSound } = bufferObj.notificationParams
 
-  logger.debug(`Retrieving badge count for user ${userId}`)
   const incrementBadgeQuery = await models.PushNotificationBadgeCounts.increment('iosBadgeCount', { where: { userId } })
-  // Parse the updated value returned from increment
-  // TODO: Is this actually the right access pattern?
-  const newBadgeCount = incrementBadgeQuery[0][0][0].iosBadgeCount
-  /*
-  const userBadgeQuery = await models.PushNotificationBadgeCounts.findOrCreate({
-    where: {
-      userId
-    }
-  })
-  const userBadgeObj = userBadgeQuery[0]
-  const newBadgeCount = userBadgeObj.dataValues.iosBadgeCount + 1
-  const updateResp = await models.PushNotificationBadgeCounts.update(
-    {
-      iosBadgeCount: newBadgeCount
-    },
-    {
-      where: {
-        userId
-      }
-    }
-  )
-  logger.debug(`Updated badge count - ${updateResp}`)
-  */
-  logger.debug(`New badge count ${newBadgeCount}`)
 
+  // Parse the updated value returned from increment
+  const newBadgeCount = incrementBadgeQuery[0][0][0].iosBadgeCount
   const devices = await models.NotificationDeviceToken.findAll({ where: { userId } })
   // If no devices found, short-circuit
   if (devices.length === 0) return

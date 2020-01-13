@@ -39,7 +39,6 @@ async function processAnnouncement (notif, tx) {
   })
   let pendingNotificationPush = pushedNotifRecord.length === 0
   if (!pendingNotificationPush) {
-    console.log(`Found record for ${notif.id}`)
     return
   }
 
