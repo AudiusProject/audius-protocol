@@ -157,7 +157,6 @@ async function drainMessageObject (bufferObj) {
       let formattedMessage = null
       if (deviceType === 'ios') {
         formattedMessage = _formatIOSMessage(message, awsARN, newBadgeCount, playSound, title)
-        logger.debug(`formatted message: ${formattedMessage}`)
       }
 
       if (formattedMessage) {
