@@ -156,7 +156,6 @@ async function drainMessageObject (bufferObj) {
     try {
       let formattedMessage = null
       if (deviceType === 'ios') {
-        // TODO - add badge count here
         formattedMessage = _formatIOSMessage(message, awsARN, newBadgeCount, playSound, title)
         logger.debug(`formatted message: ${formattedMessage}`)
       }
