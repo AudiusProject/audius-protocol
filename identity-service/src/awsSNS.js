@@ -67,7 +67,6 @@ function _formatIOSMessage (message, targetARN, badgeCount, playSound = true, ti
         //   "body" : `${body}`
         // },
       }
-
     }
 
     if (title) {
@@ -136,6 +135,14 @@ async function drainMessageObject (bufferObj) {
   const { userId } = bufferObj
   const { message, title, playSound } = bufferObj.notificationParams
 
+  // Ensure badge count entry exists for user
+  await models.PushNotificationBadgeCounts.findOrCreate({
+    where: {
+      userId
+    }
+  })
+
+  // Increment entry
   const incrementBadgeQuery = await models.PushNotificationBadgeCounts.increment('iosBadgeCount', { where: { userId } })
 
   // Parse the updated value returned from increment
