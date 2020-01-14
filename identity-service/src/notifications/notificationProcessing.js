@@ -8,7 +8,7 @@ const {
 const { shouldNotifyUser } = require('./utils')
 const { publish } = require('../awsSNS')
 const { fetchNotificationMetadata } = require('./fetchNotificationMetadata')
-const { notificationResponseMap } = require('./formatNotificationMetadata')
+const { notificationResponseMap, notificationResponseTitleMap } = require('./formatNotificationMetadata')
 
 async function indexNotifications (notifications, tx, audiusLibs) {
   for (let notif of notifications) {
@@ -143,7 +143,8 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Follow](msgGenNotif)
-      await publish(msg, notificationTarget, tx, true)
+      const title = notificationResponseTitleMap[notificationTypes.Follow]
+      await publish(msg, notificationTarget, tx, true, title)
     } catch (e) {
       logger.error('processFollowNotifications - Could not send push notification for _processFollowNotifications for target user', notificationTarget, e)
     }
@@ -256,7 +257,8 @@ async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, 
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Repost.base](msgGenNotif)
-      await publish(msg, notificationTarget, tx, true)
+      const title = notificationResponseTitleMap[repostType]
+      await publish(msg, notificationTarget, tx, true, title)
     } catch (e) {
       logger.error('processRepostNotification - Could not send push notification for _processBaseRepostNotifications for target user', notificationTarget, e)
     }
@@ -368,7 +370,8 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Favorite.base](msgGenNotif)
-      await publish(msg, notificationTarget, tx, true)
+      const title = notificationResponseTitleMap[favoriteType]
+      await publish(msg, notificationTarget, tx, true, title)
     } catch (e) {
       logger.error('processFavoriteNotification - Could not send push notification for _processFavoriteNotifications for target user', notificationTarget, e)
     }
@@ -509,7 +512,8 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Create.base](msgGenNotif)
-      await publish(msg, notificationTarget, tx, true)
+      const title = notificationResponseTitleMap[createType]
+      await publish(msg, notificationTarget, tx, true, title)
     } catch (e) {
       logger.error('processCreateNotifications - Could not send push notification for _processFollowNotifications for target user', notificationTarget, e)
     }

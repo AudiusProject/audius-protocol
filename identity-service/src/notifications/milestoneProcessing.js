@@ -9,7 +9,7 @@ const {
 const { publish } = require('../awsSNS')
 const { shouldNotifyUser } = require('./utils')
 const { fetchNotificationMetadata } = require('./fetchNotificationMetadata')
-const { notificationResponseMap } = require('./formatNotificationMetadata')
+const { notificationResponseMap, notificationResponseTitleMap } = require('./formatNotificationMetadata')
 
 // Base milestone list shared across all types
 // Each type can be configured as needed
@@ -384,7 +384,8 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
     logger.debug('processMilestone - About to generate message for milestones push notification', msgGenNotif, metadata)
     const msg = pushNotificationMessagesMap[notificationTypes.Milestone](msgGenNotif)
     logger.debug(`processMilestone - message: ${msg}`)
-    await publish(msg, userId, tx, true)
+    const title = notificationResponseTitleMap[notificationTypes.Milestone]
+    await publish(msg, userId, tx, true, title)
   }
 }
 

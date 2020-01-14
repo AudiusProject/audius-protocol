@@ -135,6 +135,26 @@ const notificationResponseMap = {
   [NotificationType.MilestoneFollow]: formatMilestone('Follow')
 }
 
+const NewFavoriteTitle = 'New Favorite'
+const NewRepostTitle = 'New Repost'
+const NewFollowerTitle = 'New Follower'
+const NewMilestoneTitle = 'Congratulations! 🎉'
+const NewSubscriptionUpdateTitle = 'New Artist Update'
+
+const notificationResponseTitleMap = {
+  [NotificationType.Follow]: NewFollowerTitle,
+  [NotificationType.FavoriteTrack]: NewFavoriteTitle,
+  [NotificationType.FavoritePlaylist]: NewFavoriteTitle,
+  [NotificationType.FavoriteAlbum]: NewFavoriteTitle,
+  [NotificationType.RepostTrack]: NewRepostTitle,
+  [NotificationType.RepostPlaylist]: NewRepostTitle,
+  [NotificationType.RepostAlbum]: NewRepostTitle,
+  [NotificationType.CreateTrack]: NewSubscriptionUpdateTitle,
+  [NotificationType.CreateAlbum]: NewSubscriptionUpdateTitle,
+  [NotificationType.CreatePlaylist]: NewSubscriptionUpdateTitle,
+  [NotificationType.Milestone]: NewMilestoneTitle
+}
+
 function formatNotificationProps (notifications, metadata) {
   const emailNotificationProps = notifications.map(notification => {
     const mapNotification = notificationResponseMap[notification.type]
@@ -145,3 +165,4 @@ function formatNotificationProps (notifications, metadata) {
 
 module.exports = formatNotificationProps
 module.exports.notificationResponseMap = notificationResponseMap
+module.exports.notificationResponseTitleMap = notificationResponseTitleMap

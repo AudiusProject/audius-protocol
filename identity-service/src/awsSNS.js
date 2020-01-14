@@ -93,8 +93,8 @@ const createPlatformEndpoint = _promisifySNS('createPlatformEndpoint')
 const publishPromisified = _promisifySNS('publish')
 const deleteEndpoint = _promisifySNS('deleteEndpoint')
 
-async function publish (message, userId, tx, playSound = true) {
-  await addNotificationToBuffer(message, userId, tx, PUSH_NOTIFICATIONS_BUFFER, playSound)
+async function publish (message, userId, tx, playSound = true, title = null) {
+  await addNotificationToBuffer(message, userId, tx, PUSH_NOTIFICATIONS_BUFFER, playSound, title)
 }
 
 async function publishAnnouncement (message, userId, tx, playSound = true, title = null) {
