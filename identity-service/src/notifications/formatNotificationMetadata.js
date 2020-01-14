@@ -135,18 +135,24 @@ const notificationResponseMap = {
   [NotificationType.MilestoneFollow]: formatMilestone('Follow')
 }
 
+const NewFavoriteTitle = 'New Favorite'
+const NewRepostTitle = 'New Repost'
+const NewFollowerTitle = 'New Follower'
+const NewMilestoneTitle = 'Congratulations! 🎉'
+const NewSubscriptionUpdateTitle = 'New Artist Update'
+
 const notificationResponseTitleMap = {
-  [NotificationType.Follow]: 'New Follower',
-  [NotificationType.FavoriteTrack]: 'New Track Favorite',
-  [NotificationType.FavoritePlaylist]: 'New Playlist Favorite',
-  [NotificationType.FavoriteAlbum]: 'New Album Favorite',
-  [NotificationType.RepostTrack]: 'New Track Repost',
-  [NotificationType.RepostPlaylist]: 'New Playlist Repost',
-  [NotificationType.RepostAlbum]: 'New Album Repost',
-  [NotificationType.CreateTrack]: 'New Track',
-  [NotificationType.CreateAlbum]: 'New Album',
-  [NotificationType.CreatePlaylist]: 'New Playlist',
-  [NotificationType.Milestone]: 'New Milestone'
+  [NotificationType.Follow]: NewFollowerTitle,
+  [NotificationType.FavoriteTrack]: NewFavoriteTitle,
+  [NotificationType.FavoritePlaylist]: NewFavoriteTitle,
+  [NotificationType.FavoriteAlbum]: NewFavoriteTitle,
+  [NotificationType.RepostTrack]: NewRepostTitle,
+  [NotificationType.RepostPlaylist]: NewRepostTitle,
+  [NotificationType.RepostAlbum]: NewRepostTitle,
+  [NotificationType.CreateTrack]: NewSubscriptionUpdateTitle,
+  [NotificationType.CreateAlbum]: NewSubscriptionUpdateTitle,
+  [NotificationType.CreatePlaylist]: NewSubscriptionUpdateTitle,
+  [NotificationType.Milestone]: NewMilestoneTitle
 }
 
 function formatNotificationProps (notifications, metadata) {
