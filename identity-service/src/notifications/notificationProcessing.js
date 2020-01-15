@@ -10,7 +10,12 @@ const { publish } = require('../awsSNS')
 const { fetchNotificationMetadata } = require('./fetchNotificationMetadata')
 const { notificationResponseMap, notificationResponseTitleMap } = require('./formatNotificationMetadata')
 
+let subscriberPushNotifications = []
+
 async function indexNotifications (notifications, tx, audiusLibs) {
+  // Clear subscriber push notifications
+  // subscriberPushNotifications = []
+
   for (let notif of notifications) {
     // blocknumber + timestamp parsed for all notification types
     let blocknumber = notif.blocknumber
@@ -55,6 +60,32 @@ async function indexNotifications (notifications, tx, audiusLibs) {
       await _processCreateNotifications(audiusLibs, notif, blocknumber, timestamp, tx)
     }
   }
+  logger.info(subscriberPushNotifications)
+  await _processSubscriberPushNotifications(tx)
+}
+
+async function _processSubscriberPushNotifications (tx) {
+  let currentTime = Date.now()
+  for (var i = 0; i < subscriberPushNotifications.length; i++) {
+    let entry = subscriberPushNotifications[i]
+    console.log(entry)
+    let timeSince = currentTime - entry.time
+    console.log(timeSince)
+    if (timeSince > 50000) {
+      // await publish(msg, notificationTarget, tx, true, title)
+      console.log('publishing from queue')
+      await publish(
+        entry.msg,
+        entry.notificationTarget,
+        tx,
+        true,
+        entry.title
+      )
+      subscriberPushNotifications[i] = false
+    }
+  }
+
+  subscriberPushNotifications = subscriberPushNotifications.filter(x => x.pending)
 }
 
 async function _processFollowNotifications (audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify) {
@@ -513,7 +544,16 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Create.base](msgGenNotif)
       const title = notificationResponseTitleMap[createType]
-      await publish(msg, notificationTarget, tx, true, title)
+      // await publish(msg, notificationTarget, tx, true, title)
+      subscriberPushNotifications.push({
+        msg,
+        notificationTarget,
+        title,
+        createType,
+        createdActionEntityId,
+        time: Date.now(),
+        pending: true
+      })
     } catch (e) {
       logger.error('processCreateNotifications - Could not send push notification for _processFollowNotifications for target user', notificationTarget, e)
     }
@@ -522,9 +562,14 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
   // Dedupe album /playlist notification
   if (createType === notificationTypes.Create.album ||
       createType === notificationTypes.Create.playlist) {
-    let trackIdList = notif.metadata.collection_content.track_ids
-    if (trackIdList.length > 0) {
-      for (var entry of trackIdList) {
+    let trackIdObjectList = notif.metadata.collection_content.track_ids
+    let trackIdsArray = trackIdObjectList.map(x => x.track)
+    logger.debug(`Deduping album/playlist notifs`)
+    logger.debug(trackIdObjectList)
+    logger.debug(trackIdsArray)
+    if (trackIdObjectList.length > 0) {
+      // Clear duplicate notifications from identity database
+      for (var entry of trackIdObjectList) {
         let trackId = entry.track
         await models.NotificationAction.destroy({
           where: {
@@ -532,6 +577,28 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
             actionEntityId: trackId
           }
         }, { transaction: tx })
+      }
+
+      // Clear duplicate push notifications in local queue
+      // [ { time: 1579114005, track: 6891 } ]
+      let dupeFound = false
+      for (let i = 0; i < subscriberPushNotifications.length; i++) {
+        let pushNotif = subscriberPushNotifications[i]
+        let type = pushNotif.createType
+        if (type === notificationTypes.Create.track) {
+          let pushActionEntityId = pushNotif.createdActionEntityId
+          console.log(`Found created entry type ${type}, createdActionEntityId: ${pushActionEntityId}`)
+          // Check if this pending notification includes a duplicate track
+          if (trackIdsArray.includes(pushActionEntityId)) {
+            dupeFound = true
+            subscriberPushNotifications[i].pending = false
+          }
+        }
+      }
+
+      if (dupeFound) {
+        console.log(`Clearing dupes from list!`)
+        subscriberPushNotifications = subscriberPushNotifications.filter(x => x.pending)
       }
     }
   }
