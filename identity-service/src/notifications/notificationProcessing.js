@@ -13,9 +13,6 @@ const { notificationResponseMap, notificationResponseTitleMap } = require('./for
 let subscriberPushNotifications = []
 
 async function indexNotifications (notifications, tx, audiusLibs) {
-  // Clear subscriber push notifications
-  // subscriberPushNotifications = []
-
   for (let notif of notifications) {
     // blocknumber + timestamp parsed for all notification types
     let blocknumber = notif.blocknumber
