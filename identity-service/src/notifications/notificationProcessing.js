@@ -68,12 +68,9 @@ async function _processSubscriberPushNotifications (tx) {
   let currentTime = Date.now()
   for (var i = 0; i < subscriberPushNotifications.length; i++) {
     let entry = subscriberPushNotifications[i]
-    console.log(entry)
+    logger.debug(entry)
     let timeSince = currentTime - entry.time
-    console.log(timeSince)
     if (timeSince > 50000) {
-      // await publish(msg, notificationTarget, tx, true, title)
-      console.log('publishing from queue')
       await publish(
         entry.msg,
         entry.notificationTarget,
@@ -580,16 +577,15 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
       }
 
       // Clear duplicate push notifications in local queue
-      // [ { time: 1579114005, track: 6891 } ]
       let dupeFound = false
       for (let i = 0; i < subscriberPushNotifications.length; i++) {
         let pushNotif = subscriberPushNotifications[i]
         let type = pushNotif.createType
         if (type === notificationTypes.Create.track) {
           let pushActionEntityId = pushNotif.createdActionEntityId
-          console.log(`Found created entry type ${type}, createdActionEntityId: ${pushActionEntityId}`)
           // Check if this pending notification includes a duplicate track
           if (trackIdsArray.includes(pushActionEntityId)) {
+            logger.debug(`Found dupe push notif ${type}, trackId: ${pushActionEntityId}`)
             dupeFound = true
             subscriberPushNotifications[i].pending = false
           }
@@ -597,7 +593,7 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
       }
 
       if (dupeFound) {
-        console.log(`Clearing dupes from list!`)
+        logger.debug(`Clearing dupes from list!`)
         subscriberPushNotifications = subscriberPushNotifications.filter(x => x.pending)
       }
     }
