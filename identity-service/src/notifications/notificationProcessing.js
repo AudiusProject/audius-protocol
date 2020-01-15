@@ -556,9 +556,6 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
       createType === notificationTypes.Create.playlist) {
     let trackIdObjectList = notif.metadata.collection_content.track_ids
     let trackIdsArray = trackIdObjectList.map(x => x.track)
-    logger.debug(`Deduping album/playlist notifs`)
-    logger.debug(trackIdObjectList)
-    logger.debug(trackIdsArray)
     if (trackIdObjectList.length > 0) {
       // Clear duplicate notifications from identity database
       for (var entry of trackIdObjectList) {
@@ -588,7 +585,6 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
       }
 
       if (dupeFound) {
-        logger.debug(`Clearing dupes from list!`)
         subscriberPushNotifications = subscriberPushNotifications.filter(x => x.pending)
       }
     }
