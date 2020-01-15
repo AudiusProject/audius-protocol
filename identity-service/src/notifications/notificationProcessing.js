@@ -57,7 +57,6 @@ async function indexNotifications (notifications, tx, audiusLibs) {
       await _processCreateNotifications(audiusLibs, notif, blocknumber, timestamp, tx)
     }
   }
-  logger.info(subscriberPushNotifications)
   await _processSubscriberPushNotifications(tx)
 }
 
