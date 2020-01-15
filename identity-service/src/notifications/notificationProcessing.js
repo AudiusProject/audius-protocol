@@ -541,7 +541,6 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Create.base](msgGenNotif)
       const title = notificationResponseTitleMap[createType]
-      // await publish(msg, notificationTarget, tx, true, title)
       subscriberPushNotifications.push({
         msg,
         notificationTarget,
