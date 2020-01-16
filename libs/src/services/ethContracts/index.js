@@ -193,6 +193,17 @@ class EthContracts {
         } = await axios(
           { url: urlJoin(sp.endpoint, 'version'), method: 'get' }
         )
+        // Discovery provider specific validation
+        if (spType === 'discovery-provider') {
+          const healthResp = await axios({ url: urlJoin(sp.endpoint, 'health_check'), method: 'get' })
+          const { status, block_difference: blockDiff } = healthResp
+          if (
+            status !== 200 ||
+            blockDiff > UNHEALTHY_BLOCK_DIFF
+          ) {
+            throw new Error(`Disc prov healthcheck failed ${sp.endpoint}`)
+          }
+        }
 
         if (serviceName !== spType) {
           throw new Error(`Invalid service type: ${serviceName}. Expected ${spType}`)
