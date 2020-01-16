@@ -195,7 +195,7 @@ class EthContracts {
         )
         // Discovery provider specific validation
         if (spType === 'discovery-provider') {
-          const healthResp = await axios({ url: urlJoin(sp.endpoint, 'health_check'), method: 'get' })
+          const healthResp = await axios({ url: urlJoin(sp.endpoint, 'health_check'), method: 'get', timeout: 5000 })
           const { status, block_difference: blockDiff } = healthResp
           if (
             status !== 200 ||
@@ -243,62 +243,6 @@ class EthContracts {
       selectedServiceProvider = null
     }
 
-    /*
-    try {
-      selectedServiceProvider = await Utils.promiseFight(
-        serviceProviders.map(async (sp) => {
-          try {
-            if (spType === 'discovery-provider') {
-              const healthResp = await axios({ url: urlJoin(sp.endpoint, 'health_check'), method: 'get' })
-              const { status, block_difference: blockDiff } = healthResp
-              if (
-                status !== 200 ||
-                blockDiff > UNHEALTHY_BLOCK_DIFF
-              ) {
-                throw new Error(`Disc prov healthcheck failed ${sp.endpoint}`)
-              }
-            }
-
-            const {
-              data: { service: serviceName, version: serviceVersion }
-            } = await axios({ url: urlJoin(sp.endpoint, 'version'), method: 'get' })
-
-            // Compare chain service name
-            if (!this.expectedServiceVersions) {
-              this.expectedServiceVersions = await this.getExpectedServiceVersions()
-            }
-            if (!this.expectedServiceVersions.hasOwnProperty(serviceName)) {
-              throw new Error(`Invalid service name: ${serviceName}`)
-            }
-
-            if (serviceName !== spType) {
-              throw new Error(`Invalid service type: ${serviceName}. Expected ${spType}`)
-            }
-
-            if (!semver.valid(serviceVersion)) {
-              throw new Error(`Invalid semver version found - ${serviceVersion}`)
-            }
-
-            let expectedVersion = this.expectedServiceVersions[serviceName]
-            if (expectedVersion !== serviceVersion) {
-              let validSPVersion = this.isValidSPVersion(expectedVersion, serviceVersion)
-              if (!validSPVersion) {
-                throw new Error(`Invalid service version: ${serviceName}. Expected ${expectedVersion}, found ${serviceVersion}`)
-              }
-            }
-
-            return sp.endpoint
-          } catch (err) {
-            throw new Error(err)
-          }
-        })
-      )
-    } catch (err) {
-      console.error(`All discovery providers failed for latest ${this.expectedServiceVersions[spType]}`)
-      console.error(err)
-      selectedServiceProvider = null
-    }
-    */
     console.log(`Selected ${selectedServiceProvider}`)
     return selectedServiceProvider
   }
