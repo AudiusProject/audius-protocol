@@ -576,6 +576,7 @@ class DiscoveryProvider {
     if (currentUserId) {
       headers['X-User-ID'] = currentUserId
     }
+    console.log(requestUrl)
 
     let axiosRequest = {
       url: requestUrl,
@@ -592,7 +593,9 @@ class DiscoveryProvider {
     }
 
     try {
+      console.log(axiosRequest)
       const response = await axios(axiosRequest)
+      // console.log(response)
       const parsedResponse = Utils.parseDataFromResponse(response)
 
       if (
