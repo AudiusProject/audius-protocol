@@ -56,11 +56,14 @@ class NotificationProcessor {
     this.mg = expressApp.get('mailgun')
 
     // Index all blockchain ids
-    await updateBlockchainIds()
+    this.idUpdateTask = updateBlockchainIds()
 
     // Notification processing job
     // Indexes network notifications
     this.notifQueue.process(async (job, done) => {
+      // Await blockchain IDs before indexing notifs
+      await this.idUpdateTask
+
       let minBlock = job.data.minBlock
       if (!minBlock && minBlock !== 0) throw new Error('no min block')
 
