@@ -593,7 +593,6 @@ class DiscoveryProvider {
 
     try {
       const response = await axios(axiosRequest)
-      // console.log(response)
       const parsedResponse = Utils.parseDataFromResponse(response)
 
       if (
