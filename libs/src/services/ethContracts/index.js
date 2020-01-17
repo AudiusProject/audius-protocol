@@ -185,41 +185,51 @@ class EthContracts {
       let foundVersions = new Set()
       let spVersionToEndpoint = {}
       await Promise.all(serviceProviders.map(async (sp) => {
-        const {
-          data: { service: serviceName, version: serviceVersion }
-        } = await axios(
-          { url: urlJoin(sp.endpoint, 'version'), method: 'get' }
-        )
-        // Discovery provider specific validation
-        if (spType === 'discovery-provider') {
-          await this.validateDiscoveryProviderHealth(sp.endpoint)
-        }
-
-        if (serviceName !== spType) {
-          throw new Error(`Invalid service type: ${serviceName}. Expected ${spType}`)
-        }
-
-        if (!semver.valid(serviceVersion)) {
-          throw new Error(`Invalid semver version found - ${serviceVersion}`)
-        }
-
-        if (expectedVersion !== serviceVersion) {
-          // Confirm this returned value is valid, ignoring patch version in semantic versioning
-          let validSPVersion = this.isValidSPVersion(expectedVersion, serviceVersion)
-          if (!validSPVersion) {
-            throw new Error(`Invalid latest service version: ${serviceName}. Expected ${expectedVersion}, found ${serviceVersion}`)
+        try {
+          const {
+            data: { service: serviceName, version: serviceVersion }
+          } = await axios(
+            { url: urlJoin(sp.endpoint, 'version'), method: 'get' }
+          )
+          if (serviceName !== spType) {
+            throw new Error(`Invalid service type: ${serviceName}. Expected ${spType}`)
           }
-        }
 
-        foundVersions.add(serviceVersion)
-        // Update mapping of version <-> [endpoint], creating array if needed
-        if (!spVersionToEndpoint.hasOwnProperty(serviceVersion)) {
-          spVersionToEndpoint[serviceVersion] = [sp.endpoint]
-        } else {
-          spVersionToEndpoint[serviceVersion].push(sp.endpoint)
+          if (!semver.valid(serviceVersion)) {
+            throw new Error(`Invalid semver version found - ${serviceVersion}`)
+          }
+
+          if (expectedVersion !== serviceVersion) {
+            // Confirm this returned value is valid, ignoring patch version in semantic versioning
+            let validSPVersion = this.isValidSPVersion(expectedVersion, serviceVersion)
+            if (!validSPVersion) {
+              throw new Error(`Invalid latest service version: ${serviceName}. Expected ${expectedVersion}, found ${serviceVersion}`)
+            }
+          }
+
+          // Discovery provider specific validation
+          if (spType === 'discovery-provider') {
+            await this.validateDiscoveryProviderHealth(sp.endpoint)
+          }
+
+          foundVersions.add(serviceVersion)
+          // Update mapping of version <-> [endpoint], creating array if needed
+          if (!spVersionToEndpoint.hasOwnProperty(serviceVersion)) {
+            spVersionToEndpoint[serviceVersion] = [sp.endpoint]
+          } else {
+            spVersionToEndpoint[serviceVersion].push(sp.endpoint)
+          }
+        } catch (e) {
+          // Swallow errors for a single sp endpoint to ensure others can proceed
+          console.error(`Failed to retrieve information for ${sp}`)
         }
       }))
       let foundVersionsList = Array.from(foundVersions)
+      if (foundVersionsList.length === 0) {
+        // Short-circuit processing if no valid endpoints are found
+        throw new Error(`No valid endpoints found for ${spType}`)
+      }
+
       // Sort found endpoints array by semantic version
       var highestFoundSPVersion = foundVersionsList.sort(semver.rcompare)[0]
       // Randomly select from highest found endpoints
