@@ -153,12 +153,12 @@ module.exports = function (app) {
     // Do not act as a public gateway. Only serve IPFS files that are hosted by this creator node.
     const CID = req.params.CID
 
-    // Don't serve if blacklisted
+    // Don't serve if blacklisted.
     if (await req.app.get('blacklistManager').CIDIsInBlacklist(CID)) {
       return sendResponse(req, res, errorResponseForbidden(`CID ${CID} has been blacklisted by this node.`))
     }
 
-    // Don't serve if not found in DB
+    // Don't serve if not found in DB.
     const queryResults = await models.File.findOne({ where: {
       multihash: CID,
       // All other file types are valid and can be served through this route.
@@ -173,12 +173,19 @@ module.exports = function (app) {
     logger.info(`IPFS Standalone Request - ${CID}`)
     logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
-    // Conditionally re-add from filestorage to IPFS
-    await rehydrateIpfsFromFsIfNecessary(
-      req,
-      CID,
-      queryResults.storagePath)
+    // Conditionally rehydrate from filestorage to IPFS.
+    try {
+      await rehydrateIpfsFromFsIfNecessary(
+        req,
+        CID,
+        queryResults.storagePath
+      )
+    } catch (e) {
+      // If rehydrate throws error, return 500 without attempting to stream file.
+      return sendResponse(req, res, errorResponseServerError(e.message))
+    }
 
+    // Stream file to client.
     try {
       // If client has provided filename, set filename in header to be auto-populated in download prompt.
       if (req.query.filename) {
@@ -217,11 +224,17 @@ module.exports = function (app) {
     }
 
     // Conditionally re-add from filestorage to IPFS
-    await rehydrateIpfsFromFsIfNecessary(
-      req,
-      dirCID,
-      queryResults.storagePath,
-      filename)
+    try {
+      await rehydrateIpfsFromFsIfNecessary(
+        req,
+        dirCID,
+        queryResults.storagePath,
+        filename
+      )
+    } catch (e) {
+      // If rehydrate throws error, return 500 without attempting to stream file.
+      return sendResponse(req, res, errorResponseServerError(e.message))
+    }
 
     // TODO - check if file with filename is also stored in CNODE
 

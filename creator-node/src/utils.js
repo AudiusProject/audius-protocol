@@ -74,13 +74,18 @@ async function getIPFSPeerId (ipfs, config) {
 
 const wait = (ms) => new Promise((resolve, reject) => setTimeout(() => reject(new Error('Timeout')), ms))
 
+/** Cat single byte of file at given filepath. */
 const ipfsSingleByteCat = (path, req) => new Promise(async (resolve, reject) => {
-  // Cat single byte
   const start = Date.now()
   let ipfs = req.app.get('ipfsAPI')
-  await ipfs.cat(path, { length: 1 })
-  req.logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
-  resolve('SUCCESS')
+  try {
+    await ipfs.cat(path, { length: 1 })
+    req.logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
+    resolve()
+  } catch (e) {
+    req.logger.error(`ipfsSingleByteCat - Error: ${e}`)
+    reject(e)
+  }
 })
 
 const parseSourcePath = (sourcePath) => {
@@ -102,8 +107,13 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
   try {
     await Promise.race([
       wait(1000),
-      ipfsSingleByteCat(ipfsPath, req)])
+      ipfsSingleByteCat(ipfsPath, req)]
+    )
   } catch (e) {
+    // Do not attempt to rehydrate as file, if cat() indicates CID is of a dir.
+    if (e.message.includes('this dag node is a directory')) {
+      throw new Error(e.message)
+    }
     rehydrateNecessary = true
     req.logger.info(`rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
   }
@@ -119,7 +129,7 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
         req.logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`)
       }
     } catch (e) {
-      req.logger.info(`rehydrateIpfsFromFsIfNecessary - ${e},Re-adding file - ${multihash}, stg path: ${storagePath}`)
+      req.logger.error(`rehydrateIpfsFromFsIfNecessary - failed to addFromFs ${e}, Re-adding file - ${multihash}, stg path: ${storagePath}`)
     }
   } else {
     req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding dir ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`)
@@ -148,9 +158,9 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
 
     try {
       let addResp = await ipfs.add(ipfsAddArray, { pin: false })
-      req.logger.info(`rehydrateIpfsFromFsIfNecessary - ${JSON.stringify(addResp)}`)
+      req.logger.info(`rehydrateIpfsFromFsIfNecessary - addResp ${JSON.stringify(addResp)}`)
     } catch (e) {
-      req.logger.info(`rehydrateIpfsFromFsIfNecessary - ERROR ${e}, ${ipfsAddArray}`)
+      req.logger.error(`rehydrateIpfsFromFsIfNecessary - addResp ${e}, ${ipfsAddArray}`)
     }
   }
 }
