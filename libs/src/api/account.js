@@ -72,9 +72,11 @@ class Account extends Base {
    * @param {string} email
    * @param {string} password
    * @param {Object} metadata
-   * @param {?boolean} isCreator whether or not the user is a content creator.
-   * @param {?File} profilePictureFile an optional file to upload as the profile picture
-   * @param {?File} coverPhotoFile an optional file to upload as the cover phtoo
+   * @param {?boolean} [isCreator] whether or not the user is a content creator.
+   * @param {?File} [profilePictureFile] an optional file to upload as the profile picture
+   * @param {?File} [coverPhotoFile] an optional file to upload as the cover phtoo
+   * @param {?boolean} [hasWallet]
+   * @param {?boolean} [host] The host url used for the recovery email
    */
   async signUp (
     email,
@@ -83,8 +85,10 @@ class Account extends Base {
     isCreator = false,
     profilePictureFile = null,
     coverPhotoFile = null,
-    hasWallet = false
+    hasWallet = false,
+    host = (window && window.location.origin) || null
   ) {
+    console.log(`host is ${host}`)
     let userId
 
     const phases = {
@@ -116,7 +120,7 @@ class Account extends Base {
             phase = phases.HEDGEHOG_SIGNUP
             const ownerWallet = await this.hedgehog.signUp(email, password)
             await this.web3Manager.setOwnerWallet(ownerWallet)
-            await this.generateRecoveryLink({ handle: metadata.handle })
+            await this.generateRecoveryLink({ handle: metadata.handle, host })
           }
 
           phase = phases.UPLOAD_PROFILE_IMAGES
@@ -147,7 +151,7 @@ class Account extends Base {
             phase = phases.HEDGEHOG_SIGNUP
             const ownerWallet = await this.hedgehog.signUp(email, password)
             await this.web3Manager.setOwnerWallet(ownerWallet)
-            await this.generateRecoveryLink({ handle: metadata.handle })
+            await this.generateRecoveryLink({ handle: metadata.handle, host })
           }
 
           phase = phases.UPLOAD_PROFILE_IMAGES
