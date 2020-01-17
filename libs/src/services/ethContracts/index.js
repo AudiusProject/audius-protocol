@@ -159,10 +159,7 @@ class EthContracts {
    * @return {Promise<string>} A valid service provider url with the fastest response
    */
   async selectLatestServiceProvider (spType, whitelist = null) {
-    console.log('selecting latest sp')
     let serviceProviders = await this.ServiceProviderFactoryClient.getServiceProviderList(spType)
-    console.log(serviceProviders)
-    console.log(spType)
     if (whitelist) {
       serviceProviders = serviceProviders.filter(d => whitelist.has(d.endpoint))
     }
@@ -210,7 +207,7 @@ class EthContracts {
           // Confirm this returned value is valid, ignoring patch version in semantic versioning
           let validSPVersion = this.isValidSPVersion(expectedVersion, serviceVersion)
           if (!validSPVersion) {
-            throw new Error(`Invalid service version: ${serviceName}. Expected ${expectedVersion}, found ${serviceVersion}`)
+            throw new Error(`Invalid latest service version: ${serviceName}. Expected ${expectedVersion}, found ${serviceVersion}`)
           }
         }
 
@@ -414,6 +411,7 @@ class EthContracts {
     let discoveryProviderEndpoint = await this.selectLatestServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
 
     if (discoveryProviderEndpoint == null) {
+      console.log(`Failed to select latest discovery provider, falling back to previous version`)
       discoveryProviderEndpoint = await this.selectPriorServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
     }
 
