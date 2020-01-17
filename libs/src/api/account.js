@@ -88,7 +88,6 @@ class Account extends Base {
     hasWallet = false,
     host = (window && window.location.origin) || null
   ) {
-    console.log(`host is ${host}`)
     let userId
 
     const phases = {
