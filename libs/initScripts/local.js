@@ -16,7 +16,7 @@ const discProvEndpoint1 = 'http://docker.for.mac.localhost:5000'
 const discProvEndpoint2 = 'http://docker.for.mac.localhost:5005'
 const creatorNodeEndpoint1 = 'http://docker.for.mac.localhost:4000'
 const creatorNodeEndpoint2 = 'http://docker.for.mac.localhost:4010'
-const versionStr = '0.4.0'
+const versionStr = '0.3.0'
 const amountOfAuds = 100000
 
 const throwArgError = () => {
@@ -45,7 +45,8 @@ const run = async () => {
     const ethAccounts = await ethWeb3.eth.getAccounts()
 
     switch (args[2]) {
-      case 'test':
+      case 'init':
+        console.log('initialized libs')
         break
       case 'distribute':
         console.log('distribute')
