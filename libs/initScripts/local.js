@@ -16,7 +16,7 @@ const discProvEndpoint1 = 'http://docker.for.mac.localhost:5000'
 const discProvEndpoint2 = 'http://docker.for.mac.localhost:5005'
 const creatorNodeEndpoint1 = 'http://docker.for.mac.localhost:4000'
 const creatorNodeEndpoint2 = 'http://docker.for.mac.localhost:4010'
-const versionStr = '0.3.0'
+const versionStr = '0.4.0'
 const amountOfAuds = 100000
 
 const throwArgError = () => {
@@ -40,9 +40,7 @@ if (args.length < 3) {
 
 const run = async () => {
   try {
-    console.log('init aud')
     let audiusLibs = await initAudiusLibs(true)
-    console.log('initted aud')
     let ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
     const ethAccounts = await ethWeb3.eth.getAccounts()
 

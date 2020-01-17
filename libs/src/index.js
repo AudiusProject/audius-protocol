@@ -180,7 +180,6 @@ class AudiusLibs {
     /** Contracts */
     let contractsToInit = []
     if (this.ethWeb3Manager) {
-      console.log('found eth web3man')
       this.ethContracts = new EthContracts(
         this.ethWeb3Manager,
         this.ethWeb3Config ? this.ethWeb3Config.tokenAddress : null,
@@ -188,9 +187,8 @@ class AudiusLibs {
         this.isServer
       )
       contractsToInit.push(this.ethContracts.init())
-    } else {
-      console.log('no eth web3man')
     }
+
     if (this.web3Manager) {
       this.contracts = new AudiusContracts(
         this.web3Manager,

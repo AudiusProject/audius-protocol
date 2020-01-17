@@ -195,14 +195,7 @@ class EthContracts {
         )
         // Discovery provider specific validation
         if (spType === 'discovery-provider') {
-          const healthResp = await axios({ url: urlJoin(sp.endpoint, 'health_check'), method: 'get', timeout: 5000 })
-          const { status, block_difference: blockDiff } = healthResp
-          if (
-            status !== 200 ||
-            blockDiff > UNHEALTHY_BLOCK_DIFF
-          ) {
-            throw new Error(`Disc prov healthcheck failed ${sp.endpoint}`)
-          }
+          await this.validateDiscoveryProviderHealth(sp.endpoint)
         }
 
         if (serviceName !== spType) {
@@ -223,7 +216,6 @@ class EthContracts {
 
         foundVersions.add(serviceVersion)
         // Update mapping of version <-> [endpoint], creating array if needed
-        // TODO: Is this concurrency safe? when creating array for key like below
         if (!spVersionToEndpoint.hasOwnProperty(serviceVersion)) {
           spVersionToEndpoint[serviceVersion] = [sp.endpoint]
         } else {
@@ -243,7 +235,6 @@ class EthContracts {
       selectedServiceProvider = null
     }
 
-    console.log(`Selected ${selectedServiceProvider}`)
     return selectedServiceProvider
   }
 
@@ -263,6 +254,27 @@ class EthContracts {
       return serviceName === serviceType.DISCOVERY_PROVIDER
     } catch (err) {
       return false
+    }
+  }
+
+  /**
+   * Validate that a provided url is a healthy discovery provider against the `/health_check` endpoint
+   * @param {string} discProvUrl
+   * @return {Promise<boolean>} If the discovery provider is valid
+   */
+  async validateDiscoveryProviderHealth (endpoint) {
+    const healthResp = await axios(
+      {
+        url: urlJoin(endpoint, 'health_check'),
+        method: 'get',
+        timeout: 5000 }
+    )
+    const { status, block_difference: blockDiff } = healthResp
+    if (
+      status !== 200 ||
+      blockDiff > UNHEALTHY_BLOCK_DIFF
+    ) {
+      throw new Error(`Disc prov healthcheck failed ${endpoint}`)
     }
   }
 
@@ -360,6 +372,11 @@ class EthContracts {
             throw new Error(`Invalid semver version found - ${serviceVersion}`)
           }
 
+          // Discovery provider specific validation
+          if (spType === 'discovery-provider') {
+            await this.validateDiscoveryProviderHealth(spInfo.endpoint)
+          }
+
           if (this.isValidSPVersion(pastServiceVersion, serviceVersion)) {
             // Update set
             foundVersions.add(serviceVersion)
@@ -397,7 +414,6 @@ class EthContracts {
     let discoveryProviderEndpoint = await this.selectLatestServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
 
     if (discoveryProviderEndpoint == null) {
-      console.log('Selecting prior discovery prov')
       discoveryProviderEndpoint = await this.selectPriorServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
     }
 
@@ -405,7 +421,6 @@ class EthContracts {
       console.error('No valid discovery provider found, proceeding with limited functionality')
     }
 
-    console.log('selected ' + discoveryProviderEndpoint)
     return discoveryProviderEndpoint
   }
 }
