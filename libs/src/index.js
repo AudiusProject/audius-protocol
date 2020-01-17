@@ -188,7 +188,6 @@ class AudiusLibs {
       )
       contractsToInit.push(this.ethContracts.init())
     }
-
     if (this.web3Manager) {
       this.contracts = new AudiusContracts(
         this.web3Manager,
@@ -200,8 +199,6 @@ class AudiusLibs {
 
     /** Discovery Provider */
     if (this.discoveryProviderConfig) {
-      console.log('disc prov init')
-      console.log(this.discoveryProviderConfig)
       this.discoveryProvider = new DiscoveryProvider(
         this.discoveryProviderConfig.autoselect,
         this.discoveryProviderConfig.whitelist,
