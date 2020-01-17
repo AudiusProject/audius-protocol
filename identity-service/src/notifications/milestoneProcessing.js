@@ -3,13 +3,16 @@ const { logger } = require('../logging')
 
 const {
   notificationTypes,
-  actionEntityTypes,
-  pushNotificationMessagesMap
+  actionEntityTypes
 } = require('./constants')
 const { publish } = require('../awsSNS')
 const { shouldNotifyUser } = require('./utils')
 const { fetchNotificationMetadata } = require('./fetchNotificationMetadata')
-const { notificationResponseMap, notificationResponseTitleMap } = require('./formatNotificationMetadata')
+const {
+  notificationResponseMap,
+  notificationResponseTitleMap,
+  pushNotificationMessagesMap
+} = require('./formatNotificationMetadata')
 
 // Base milestone list shared across all types
 // Each type can be configured as needed

@@ -2,13 +2,16 @@ const models = require('../models')
 const { logger } = require('../logging')
 const {
   notificationTypes,
-  actionEntityTypes,
-  pushNotificationMessagesMap
+  actionEntityTypes
 } = require('./constants')
 const { shouldNotifyUser } = require('./utils')
 const { publish } = require('../awsSNS')
 const { fetchNotificationMetadata } = require('./fetchNotificationMetadata')
-const { notificationResponseMap, notificationResponseTitleMap } = require('./formatNotificationMetadata')
+const {
+  notificationResponseMap,
+  notificationResponseTitleMap,
+  pushNotificationMessagesMap
+} = require('./formatNotificationMetadata')
 
 let subscriberPushNotifications = []
 
