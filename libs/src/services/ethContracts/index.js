@@ -311,24 +311,31 @@ class EthContracts {
   }
 
   async selectPriorServiceProvider (spType, whitelist = null) {
-    let discoveryProviders =
+    if (!this.expectedServiceVersions) {
+      this.expectedServiceVersions = await this.getExpectedServiceVersions()
+    }
+    let serviceProviders =
       await this.ServiceProviderFactoryClient.getServiceProviderList(spType)
     if (whitelist) {
-      discoveryProviders = discoveryProviders.filter(d => whitelist.has(d.endpoint))
+      serviceProviders = serviceProviders.filter(d => whitelist.has(d.endpoint))
     }
 
     let numberOfServiceVersions =
       await this.VersioningFactoryClient.getNumberOfVersions(spType)
     // Exclude the latest version when querying older versions
     // Latest index is numberOfServiceVersions - 1, so 2nd oldest version starts at numberOfServiceVersions - 2
-    let queryIndex = numberOfServiceVersions - 1
+    let queryIndex = numberOfServiceVersions - 2
     while (queryIndex >= 0) {
       let pastServiceVersion =
         await this.VersioningFactoryClient.getVersion(spType, queryIndex)
-      let validPastVersions = []
-      for (const discProvInfo of discoveryProviders) {
-        let discProvUrl = discProvInfo.endpoint
-        let requestUrl = urlJoin(discProvUrl, 'version')
+
+      // Querying all versions
+      let foundVersions = new Set()
+      let spVersionToEndpoint = {}
+
+      for (const spInfo of serviceProviders) {
+        let spEndpoint = spInfo.endpoint
+        let requestUrl = urlJoin(spEndpoint, 'version')
         const axiosRequest = {
           url: requestUrl,
           method: 'get',
@@ -339,9 +346,6 @@ class EthContracts {
           let versionInfo = response['data']
           let serviceName = versionInfo['service']
           let serviceVersion = versionInfo['version']
-          if (!this.expectedServiceVersions) {
-            this.expectedServiceVersions = await this.getExpectedServiceVersions()
-          }
           if (!this.expectedServiceVersions.hasOwnProperty(serviceName)) {
             console.log(`Invalid service name: ${serviceName}`)
             continue
@@ -357,18 +361,27 @@ class EthContracts {
           }
 
           if (this.isValidSPVersion(pastServiceVersion, serviceVersion)) {
-            validPastVersions.push(discProvUrl)
+            // Update set
+            foundVersions.add(serviceVersion)
+            // Update mapping of version <-> [endpoint], creating array if needed
+            if (!spVersionToEndpoint.hasOwnProperty(serviceVersion)) {
+              spVersionToEndpoint[serviceVersion] = [spInfo.endpoint]
+            } else {
+              spVersionToEndpoint[serviceVersion].push(spInfo.endpoint)
+            }
           }
         } catch (e) {
           console.error(e.message)
         }
       }
-      // No valid disc prov found with this version
-      if (validPastVersions.length !== 0) {
-        let randomValidDiscoveryProvider =
-          validPastVersions[Math.floor(Math.random() * validPastVersions.length)]
-        let discoveryProviderEndpoint = randomValidDiscoveryProvider
-        return discoveryProviderEndpoint
+      let foundVersionsList = Array.from(foundVersions)
+      if (foundVersionsList.length !== 0) {
+        // Sort found endpoints array by semantic version
+        var highestFoundSPVersion = foundVersionsList.sort(semver.rcompare)[0]
+        // Randomly select from highest found endpoints
+        let highestFoundSPVersionEndpoints = spVersionToEndpoint[highestFoundSPVersion]
+        var randomValidSPEndpoint = highestFoundSPVersionEndpoints[Math.floor(Math.random() * highestFoundSPVersionEndpoints.length)]
+        return randomValidSPEndpoint
       }
 
       queryIndex--
@@ -384,6 +397,7 @@ class EthContracts {
     let discoveryProviderEndpoint = await this.selectLatestServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
 
     if (discoveryProviderEndpoint == null) {
+      console.log('Selecting prior discovery prov')
       discoveryProviderEndpoint = await this.selectPriorServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
     }
 
@@ -391,6 +405,7 @@ class EthContracts {
       console.error('No valid discovery provider found, proceeding with limited functionality')
     }
 
+    console.log('selected ' + discoveryProviderEndpoint)
     return discoveryProviderEndpoint
   }
 }
