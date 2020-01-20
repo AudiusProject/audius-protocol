@@ -159,70 +159,90 @@ class EthContracts {
    * @return {Promise<string>} A valid service provider url with the fastest response
    */
   async selectLatestServiceProvider (spType, whitelist = null) {
-    let discoveryProviders = await this.ServiceProviderFactoryClient.getServiceProviderList(spType)
+    let serviceProviders = await this.ServiceProviderFactoryClient.getServiceProviderList(spType)
     if (whitelist) {
-      discoveryProviders = discoveryProviders.filter(d => whitelist.has(d.endpoint))
+      serviceProviders = serviceProviders.filter(d => whitelist.has(d.endpoint))
     }
 
     // No discovery providers found.
-    if (discoveryProviders.length === 0) {
+    if (serviceProviders.length === 0) {
       return null
     }
 
-    let selectedDiscoveryProvider
+    // Load expected version information if necessary
+    if (!this.expectedServiceVersions) {
+      this.expectedServiceVersions = await this.getExpectedServiceVersions()
+    }
+    if (!this.expectedServiceVersions.hasOwnProperty(spType)) {
+      throw new Error(`Invalid service name: ${spType}`)
+    }
+
+    let expectedVersion = this.expectedServiceVersions[spType]
+
+    let selectedServiceProvider
     try {
-      selectedDiscoveryProvider = await Utils.promiseFight(
-        discoveryProviders.map(async (discprov) => {
-          try {
-            const healthResp = await axios({ url: urlJoin(discprov.endpoint, 'health_check'), method: 'get' })
-            const { status, block_difference: blockDiff } = healthResp
-            if (
-              status !== 200 ||
-              blockDiff > UNHEALTHY_BLOCK_DIFF
-            ) {
-              throw new Error(`Discprov healthcheck failed ${discprov.endpoint}`)
-            }
-
-            const {
-              data: { service: serviceName, version: serviceVersion }
-            } = await axios({ url: urlJoin(discprov.endpoint, 'version'), method: 'get' })
-
-            // Compare chain service name
-            if (!this.expectedServiceVersions) {
-              this.expectedServiceVersions = await this.getExpectedServiceVersions()
-            }
-            if (!this.expectedServiceVersions.hasOwnProperty(serviceName)) {
-              throw new Error(`Invalid service name: ${serviceName}`)
-            }
-
-            if (serviceName !== spType) {
-              throw new Error(`Invalid service type: ${serviceName}. Expected ${spType}`)
-            }
-
-            if (!semver.valid(serviceVersion)) {
-              throw new Error(`Invalid semver version found - ${serviceVersion}`)
-            }
-
-            let expectedVersion = this.expectedServiceVersions[serviceName]
-            if (expectedVersion !== serviceVersion) {
-              let validSPVersion = this.isValidSPVersion(expectedVersion, serviceVersion)
-              if (!validSPVersion) {
-                throw new Error(`Invalid service version: ${serviceName}. Expected ${expectedVersion}, found ${serviceVersion}`)
-              }
-            }
-
-            return discprov.endpoint
-          } catch (err) {
-            throw new Error(err)
+      // Querying all versions
+      let foundVersions = new Set()
+      let spVersionToEndpoint = {}
+      await Promise.all(serviceProviders.map(async (sp) => {
+        try {
+          const {
+            data: { service: serviceName, version: serviceVersion }
+          } = await axios(
+            { url: urlJoin(sp.endpoint, 'version'), method: 'get' }
+          )
+          if (serviceName !== spType) {
+            throw new Error(`Invalid service type: ${serviceName}. Expected ${spType}`)
           }
-        })
-      )
+
+          if (!semver.valid(serviceVersion)) {
+            throw new Error(`Invalid semver version found - ${serviceVersion}`)
+          }
+
+          if (expectedVersion !== serviceVersion) {
+            // Confirm this returned value is valid, ignoring patch version in semantic versioning
+            let validSPVersion = this.isValidSPVersion(expectedVersion, serviceVersion)
+            if (!validSPVersion) {
+              throw new Error(`Invalid latest service version: ${serviceName}. Expected ${expectedVersion}, found ${serviceVersion}`)
+            }
+          }
+
+          // Discovery provider specific validation
+          if (spType === 'discovery-provider') {
+            await this.validateDiscoveryProviderHealth(sp.endpoint)
+          }
+
+          foundVersions.add(serviceVersion)
+          // Update mapping of version <-> [endpoint], creating array if needed
+          if (!spVersionToEndpoint.hasOwnProperty(serviceVersion)) {
+            spVersionToEndpoint[serviceVersion] = [sp.endpoint]
+          } else {
+            spVersionToEndpoint[serviceVersion].push(sp.endpoint)
+          }
+        } catch (e) {
+          // Swallow errors for a single sp endpoint to ensure others can proceed
+          console.error(`Failed to retrieve information for ${sp}`)
+        }
+      }))
+      let foundVersionsList = Array.from(foundVersions)
+      if (foundVersionsList.length === 0) {
+        // Short-circuit processing if no valid endpoints are found
+        throw new Error(`No valid endpoints found for ${spType}`)
+      }
+
+      // Sort found endpoints array by semantic version
+      var highestFoundSPVersion = foundVersionsList.sort(semver.rcompare)[0]
+      // Randomly select from highest found endpoints
+      let highestFoundSPVersionEndpoints = spVersionToEndpoint[highestFoundSPVersion]
+      var randomValidSPEndpoint = highestFoundSPVersionEndpoints[Math.floor(Math.random() * highestFoundSPVersionEndpoints.length)]
+      selectedServiceProvider = randomValidSPEndpoint
     } catch (err) {
       console.error(`All discovery providers failed for latest ${this.expectedServiceVersions[spType]}`)
       console.error(err)
-      selectedDiscoveryProvider = null
+      selectedServiceProvider = null
     }
-    return selectedDiscoveryProvider
+
+    return selectedServiceProvider
   }
 
   /**
@@ -241,6 +261,27 @@ class EthContracts {
       return serviceName === serviceType.DISCOVERY_PROVIDER
     } catch (err) {
       return false
+    }
+  }
+
+  /**
+   * Validate that a provided url is a healthy discovery provider against the `/health_check` endpoint
+   * @param {string} discProvUrl
+   * @return {Promise<boolean>} If the discovery provider is valid
+   */
+  async validateDiscoveryProviderHealth (endpoint) {
+    const healthResp = await axios(
+      {
+        url: urlJoin(endpoint, 'health_check'),
+        method: 'get',
+        timeout: 5000 }
+    )
+    const { status, block_difference: blockDiff } = healthResp
+    if (
+      status !== 200 ||
+      blockDiff > UNHEALTHY_BLOCK_DIFF
+    ) {
+      throw new Error(`Disc prov healthcheck failed ${endpoint}`)
     }
   }
 
@@ -289,24 +330,31 @@ class EthContracts {
   }
 
   async selectPriorServiceProvider (spType, whitelist = null) {
-    let discoveryProviders =
+    if (!this.expectedServiceVersions) {
+      this.expectedServiceVersions = await this.getExpectedServiceVersions()
+    }
+    let serviceProviders =
       await this.ServiceProviderFactoryClient.getServiceProviderList(spType)
     if (whitelist) {
-      discoveryProviders = discoveryProviders.filter(d => whitelist.has(d.endpoint))
+      serviceProviders = serviceProviders.filter(d => whitelist.has(d.endpoint))
     }
 
     let numberOfServiceVersions =
       await this.VersioningFactoryClient.getNumberOfVersions(spType)
     // Exclude the latest version when querying older versions
     // Latest index is numberOfServiceVersions - 1, so 2nd oldest version starts at numberOfServiceVersions - 2
-    let queryIndex = numberOfServiceVersions - 1
+    let queryIndex = numberOfServiceVersions - 2
     while (queryIndex >= 0) {
       let pastServiceVersion =
         await this.VersioningFactoryClient.getVersion(spType, queryIndex)
-      let validPastVersions = []
-      for (const discProvInfo of discoveryProviders) {
-        let discProvUrl = discProvInfo.endpoint
-        let requestUrl = urlJoin(discProvUrl, 'version')
+
+      // Querying all versions
+      let foundVersions = new Set()
+      let spVersionToEndpoint = {}
+
+      for (const spInfo of serviceProviders) {
+        let spEndpoint = spInfo.endpoint
+        let requestUrl = urlJoin(spEndpoint, 'version')
         const axiosRequest = {
           url: requestUrl,
           method: 'get',
@@ -317,9 +365,6 @@ class EthContracts {
           let versionInfo = response['data']
           let serviceName = versionInfo['service']
           let serviceVersion = versionInfo['version']
-          if (!this.expectedServiceVersions) {
-            this.expectedServiceVersions = await this.getExpectedServiceVersions()
-          }
           if (!this.expectedServiceVersions.hasOwnProperty(serviceName)) {
             console.log(`Invalid service name: ${serviceName}`)
             continue
@@ -334,19 +379,33 @@ class EthContracts {
             throw new Error(`Invalid semver version found - ${serviceVersion}`)
           }
 
+          // Discovery provider specific validation
+          if (spType === 'discovery-provider') {
+            await this.validateDiscoveryProviderHealth(spInfo.endpoint)
+          }
+
           if (this.isValidSPVersion(pastServiceVersion, serviceVersion)) {
-            validPastVersions.push(discProvUrl)
+            // Update set
+            foundVersions.add(serviceVersion)
+            // Update mapping of version <-> [endpoint], creating array if needed
+            if (!spVersionToEndpoint.hasOwnProperty(serviceVersion)) {
+              spVersionToEndpoint[serviceVersion] = [spInfo.endpoint]
+            } else {
+              spVersionToEndpoint[serviceVersion].push(spInfo.endpoint)
+            }
           }
         } catch (e) {
           console.error(e.message)
         }
       }
-      // No valid disc prov found with this version
-      if (validPastVersions.length !== 0) {
-        let randomValidDiscoveryProvider =
-          validPastVersions[Math.floor(Math.random() * validPastVersions.length)]
-        let discoveryProviderEndpoint = randomValidDiscoveryProvider
-        return discoveryProviderEndpoint
+      let foundVersionsList = Array.from(foundVersions)
+      if (foundVersionsList.length !== 0) {
+        // Sort found endpoints array by semantic version
+        var highestFoundSPVersion = foundVersionsList.sort(semver.rcompare)[0]
+        // Randomly select from highest found endpoints
+        let highestFoundSPVersionEndpoints = spVersionToEndpoint[highestFoundSPVersion]
+        var randomValidSPEndpoint = highestFoundSPVersionEndpoints[Math.floor(Math.random() * highestFoundSPVersionEndpoints.length)]
+        return randomValidSPEndpoint
       }
 
       queryIndex--
@@ -362,6 +421,7 @@ class EthContracts {
     let discoveryProviderEndpoint = await this.selectLatestServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
 
     if (discoveryProviderEndpoint == null) {
+      console.log(`Failed to select latest discovery provider, falling back to previous version`)
       discoveryProviderEndpoint = await this.selectPriorServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
     }
 
