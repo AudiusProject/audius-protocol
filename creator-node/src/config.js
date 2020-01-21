@@ -77,6 +77,18 @@ const config = convict({
     env: 'port',
     default: null
   },
+  keepAliveTimeout: {
+    doc: 'Server keep alive timeout',
+    format: 'nat',
+    env: 'keepAliveTimeout',
+    default: 5000 // node.js default value
+  },
+  headersTimeout: {
+    doc: 'Server headers timeout',
+    format: 'nat',
+    env: 'headersTimeout',
+    default: 60000 // node.js default value
+  },
   logLevel: {
     doc: 'Log level',
     format: ['fatal', 'error', 'warn', 'info', 'debug', 'trace'],
