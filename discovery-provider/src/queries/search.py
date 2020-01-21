@@ -8,7 +8,7 @@ from src import api_helpers, exceptions
 from src.models import User, Track, RepostType, Playlist, Save, SaveType, Follow
 from src.utils import helpers
 from src.utils.config import shared_config
-from src.utils.db_session import get_db
+from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 
 from src.queries.query_helpers import get_current_user_id, populate_user_metadata, \
@@ -76,7 +76,7 @@ def search_tags():
 
     (limit, offset) = get_pagination_vars()
     like_tags_str = str.format('%{}%', search_str)
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         if (searchKind in [SearchKind.all, SearchKind.tracks]):
             track_res = sqlalchemy.text(
@@ -331,7 +331,7 @@ def search(isAutocomplete):
 
     results = {}
     if searchStr:
-        db = get_db()
+        db = get_db_read_replica()
         with db.scoped_session() as session:
             # Set similarity threshold to be used by % operator in queries.
             session.execute(sqlalchemy.text(f"select set_limit({minSearchSimilarity});"))
