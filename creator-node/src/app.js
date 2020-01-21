@@ -55,7 +55,6 @@ const initializeApp = (port, storageDir, ipfsAPI, audiusLibs, blacklistManager) 
   server.setTimeout(TWENTY_MINUTES)
   server.keepAliveTimeout = config.get('keepAliveTimeout')
   server.headersTimeout = config.get('headersTimeout')
-  console.log(server)
 
   return { app: app, server: server }
 }
