@@ -8,6 +8,7 @@ const { logger, loggingMiddleware } = require('./logging')
 const { userNodeMiddleware } = require('./userNodeMiddleware')
 const { userReqLimiter, trackReqLimiter, audiusUserReqLimiter, metadataReqLimiter, imageReqLimiter } = require('./reqLimiter')
 const redisClient = require('./redis')
+const config = require('./config')
 
 const TWENTY_MINUTES = 1000 * 60 * 20 // 1,200,000ms = 20min
 
@@ -52,6 +53,8 @@ const initializeApp = (port, storageDir, ipfsAPI, audiusLibs, blacklistManager) 
 
   // Increase from 2min default to accommodate long-lived requests.
   server.setTimeout(TWENTY_MINUTES)
+  server.keepAliveTimeout = config.get('keepAliveTimeout')
+  server.headersTimeout = config.get('headersTimeout')
 
   return { app: app, server: server }
 }
