@@ -22,6 +22,20 @@ def get_db():
     return g.db
 
 
+def get_db_read_replica():
+    """Connect to the configured database. The connection
+    is unique for each request and will be reused if this is called
+    again.
+    """
+    if "db_read_replica" not in g:
+        g.db_read_replica = SessionManager(
+            current_app.config["db"]["url_read_replica"],
+            ast.literal_eval(current_app.config["db"]["engine_args_literal"]),
+        )
+
+    return g.db_read_replica
+
+
 class SessionManager:
     def __init__(self, db_url, db_engine_args):
         self._engine = create_engine(db_url, **db_engine_args)

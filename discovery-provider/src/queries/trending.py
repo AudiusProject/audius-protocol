@@ -8,7 +8,7 @@ from urllib.parse import urljoin, unquote
 
 from src import api_helpers
 from src.models import User, Track, RepostType, Follow, SaveType
-from src.utils.db_session import get_db
+from src.utils.db_session import get_db_read_replica
 from src.utils.config import shared_config
 from src.queries.query_helpers import get_pagination_vars
 from src.tasks.generate_trending import generate_trending, trending_cache_hits_key, \
@@ -46,5 +46,5 @@ def trending(time):
     # Increment cache miss count
     REDIS.incr(trending_cache_miss_key, 1)
     # Recalculate trending values if necessary
-    final_resp = generate_trending(get_db(), time, genre, limit, offset)
+    final_resp = generate_trending(get_db_read_replica(), time, genre, limit, offset)
     return api_helpers.success_response(final_resp)

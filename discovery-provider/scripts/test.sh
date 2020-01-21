@@ -6,10 +6,10 @@ source ./scripts/utilities.sh
 
 function cd_contracts_repo {
   # Navigate to contracts repository
-  if [ -d "../audius-contracts" ]
+  if [ -d "../contracts" ]
   then
     echo "Audius contracts repo is present"
-    cd ../audius-contracts/
+    cd ../contracts/
   else
     echo "INCORRECT REPOSITORY STRUCTURE. PLEASE FOLLOW README"
     exit 1
@@ -18,10 +18,10 @@ function cd_contracts_repo {
 
 function cd_discprov_repo {
   # Navigate to discovery provider repository
-  if [ -d "../audius-discovery-provider" ]
+  if [ -d "../discovery-provider" ]
   then
     echo "Audius discprov repo is present"
-    cd ../audius-discovery-provider/
+    cd ../discovery-provider/
   else
     echo "INCORRECT REPOSITORY STRUCTURE. PLEASE FOLLOW README"
     exit 1
@@ -37,9 +37,9 @@ set -e
 python3 scripts/lint.py
 
 # initialize virtual environment
-rm -r venv
-python3 -m venv venv
-source venv/bin/activate
+# rm -r venv
+# python3 -m venv venv
+# source venv/bin/activate
 pip3 install -r requirements.txt
 sleep 5
 set +e

@@ -64,6 +64,10 @@ class ConfigIni(configparser.ConfigParser):  # pylint: disable=too-many-ancestor
             for item in self.items(section_name):
                 self._load_item(section_name, item[0])
 
+        # Set db_read_replica url to same as db url if none provided
+        if ('url_read_replica' not in current_app.config['db']) or (not current_app.config['db']['url_read_replica']):
+            current_app.config['db']['url_read_replica'] = current_app.config['db']['url']
+
     def _load_item(self, section_name, key):
         """Load the specified item from the [flask] section. Type is
         determined by the type of the equivalent value in app.default_config
@@ -86,7 +90,6 @@ class ConfigIni(configparser.ConfigParser):  # pylint: disable=too-many-ancestor
             # because Flask expects some of them not to be unicode
             current_app.config[section_name][key] = str(self.get(section_name, key))
         env_config_update(current_app.config, section_name, key)
-
 
 shared_config = configparser.ConfigParser()
 shared_config.read(config_files)
