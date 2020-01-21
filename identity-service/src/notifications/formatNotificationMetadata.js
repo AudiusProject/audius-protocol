@@ -1,6 +1,7 @@
 const NotificationType = require('../routes/notifications').NotificationType
 const Entity = require('../routes/notifications').Entity
 const mapMilestone = require('../routes/notifications').mapMilestone
+const { actionEntityTypes, notificationTypes } = require('./constants')
 
 const formatFavorite = (notification, metadata, entity) => {
   return {
@@ -163,6 +164,44 @@ function formatNotificationProps (notifications, metadata) {
   return emailNotificationProps
 }
 
-module.exports = formatNotificationProps
-module.exports.notificationResponseMap = notificationResponseMap
-module.exports.notificationResponseTitleMap = notificationResponseTitleMap
+// TODO (DM) - unify this with the email messages
+const pushNotificationMessagesMap = {
+  [notificationTypes.Favorite.base] (notification) {
+    const [user] = notification.users
+    return `${user.name} favorited your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
+  },
+  [notificationTypes.Repost.base] (notification) {
+    const [user] = notification.users
+    return `${user.name} reposted your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
+  },
+  [notificationTypes.Follow] (notification) {
+    const [user] = notification.users
+    return `${user.name} followed you`
+  },
+  [notificationTypes.Announcement.base] (notification) {
+    return notification.text
+  },
+  [notificationTypes.Milestone] (notification) {
+    if (notification.entity) {
+      const entity = notification.entity.type.toLowerCase()
+      return `Your ${entity} ${notification.entity.name} has reached over ${notification.value} ${notification.achievement}s`
+    } else {
+      return `You have reached over ${notification.value} Followers `
+    }
+  },
+  [notificationTypes.Create.base] (notification) {
+    const [user] = notification.users
+    const type = notification.entity.type.toLowerCase()
+    if (notification.entity.type === actionEntityTypes.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
+      return `${user.name} released ${notification.entity.count} new ${type}s`
+    }
+    return `${user.name} released a new ${type} ${notification.entity.name}`
+  }
+}
+
+module.exports = {
+  formatNotificationProps,
+  notificationResponseMap,
+  notificationResponseTitleMap,
+  pushNotificationMessagesMap
+}
