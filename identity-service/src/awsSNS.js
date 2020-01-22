@@ -91,7 +91,7 @@ function _formatIOSMessage (message, targetARN, badgeCount, playSound = true, ti
 /**
  * Formats a push notification in a way that's compatible with SNS for android
  * @param {String} title title of push notification
- * @param {String} body body of push notification
+ * @param {String} message message of push notification
  * @param {String} targetARN aws arn address for device
  *                           `arn:aws:sns:us-west-1:<id>:endpoint/APNS/<namespace>/<uuid>`
  * @param {Boolean=True} playSound should play a sound when it's sent
