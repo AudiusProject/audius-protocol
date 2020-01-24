@@ -37,7 +37,7 @@ contract ServiceProviderStorage is RegistryContract {
     /** @dev - mapping of address -> sp id array */
     /** @notice - stores all the services registered by a provider. for each address,
     provides the ability to lookup by service type and see all registered services */
-    mapping(address => mapping(bytes32 => uint)) serviceProviderAddressToId;
+    mapping(address => mapping(bytes32 => uint[])) serviceProviderAddressToId;
 
     /** @dev - mapping of address -> number of service providers registered */
     /** @notice - stores the number of services registered by a provider, can never be >1 */
@@ -46,6 +46,7 @@ contract ServiceProviderStorage is RegistryContract {
     /** @dev - mapping of delegateOwnerWallet -> address */
     /** @notice - stores the current user of a delegate owner wallet, these cannot be duplicated
     between registrants */
+   // TODO: Revisit if this still works as expected, we MIGHT have to an endpoint instead as the value
    mapping(address => address) delegateOwnerWalletToServiceProvider;
 
     event TestStg(
@@ -95,7 +96,17 @@ contract ServiceProviderStorage is RegistryContract {
         serviceProviderEndpointToId[keccak256(bytes(_endpoint))] = assignedSpId;
 
         // Update address mapping
-        serviceProviderAddressToId[_owner][_serviceType] = assignedSpId;
+        // serviceProviderAddressToId[_owner][_serviceType] = assignedSpId;
+        uint spTypeLength = serviceProviderAddressToId[_owner][_serviceType].length;
+        bool idFound = false;
+        for (uint i = 0; i < spTypeLength; i++) {
+          if (serviceProviderAddressToId[_owner][_serviceType][i] == assignedSpId) {
+            idFound = true;
+          }
+        }
+        if (!idFound) {
+          serviceProviderAddressToId[_owner][_serviceType].push(assignedSpId);
+        }
 
         // Update count mapping for this address to 1
         serviceProviderAddressNumberOfEndpoints[_owner] = 1;
@@ -128,8 +139,17 @@ contract ServiceProviderStorage is RegistryContract {
         // Update info mapping
         delete serviceProviderInfo[_serviceType][deregisteredID];
 
-        // Reset id
-        serviceProviderAddressToId[_owner][_serviceType] = 0;
+        // Reset id, update array
+        uint spTypeLength = serviceProviderAddressToId[_owner][_serviceType].length;
+        for (uint i = 0; i < spTypeLength; i ++) {
+          if (serviceProviderAddressToId[_owner][_serviceType][i] == deregisteredID) {
+            // Overwrite element to be deleted with last element in array
+            serviceProviderAddressToId[_owner][_serviceType][i] = serviceProviderAddressToId[_owner][_serviceType][spTypeLength - 1];
+            // Reduce array size, exit loop
+            serviceProviderAddressToId[_owner][_serviceType].length--;
+            break;
+          }
+        }
 
         // Update count mapping to 0
         serviceProviderAddressNumberOfEndpoints[_owner] = 0;
@@ -143,10 +163,12 @@ contract ServiceProviderStorage is RegistryContract {
     function updateDelegateOwnerWallet(
       address _ownerAddress,
       bytes32 _serviceType,
+      bytes32 _endpoint,
       address _updatedDelegateOwnerWallet
     ) external returns (address) 
     {
-      uint spID = this.getServiceProviderIdFromAddress(_ownerAddress, _serviceType);
+      // uint spID = this.getServiceProviderIdFromAddress(_ownerAddress, _serviceType);
+      uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
       address oldDelegateWallet = serviceProviderInfo[_serviceType][spID].delegateOwnerWallet;
 
       require(
@@ -182,17 +204,18 @@ contract ServiceProviderStorage is RegistryContract {
     }
 
     function getServiceProviderIdFromAddress(address _ownerAddress, bytes32 _serviceType)
-    external view returns (uint spID)
+    external view returns (uint[] memory spID)
     {
         return serviceProviderAddressToId[_ownerAddress][_serviceType];
     }
     
     function getDelegateOwnerWallet(
       address _ownerAddress,
-      bytes32 _serviceType
+      bytes32 _serviceType,
+      bytes32 _endpoint
     ) external view returns (address)
     {
-      uint spID = this.getServiceProviderIdFromAddress(_ownerAddress, _serviceType);
+      uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
       ( , , , address delegateOwnerWallet) = this.getServiceProviderInfo(_serviceType, spID);
       require(
         delegateOwnerWalletToServiceProvider[delegateOwnerWallet] == _ownerAddress,
