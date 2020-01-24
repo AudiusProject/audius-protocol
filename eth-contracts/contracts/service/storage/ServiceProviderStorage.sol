@@ -219,7 +219,7 @@ contract ServiceProviderStorage is RegistryContract {
     ) external view returns (address)
     {
       uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
-      (address owner , , , address delegateOwnerWallet) = this.getServiceProviderInfo(_serviceType, spID);
+      (address owner, , , address delegateOwnerWallet) = this.getServiceProviderInfo(_serviceType, spID);
       require(
         owner == _ownerAddress,
         "Mismatched delegate owner wallet");

@@ -143,6 +143,15 @@ contract('ServiceProvider test', async (accounts) => {
     return args
   }
 
+  const serviceProviderIDRegisteredToAccount = async (account, type, id) => {
+    // Query and convert returned IDs to bignumber
+    let ids = (
+      await serviceProviderFactory.getServiceProviderIdsFromAddress(account, type)
+    ).map(x => fromBn(x))
+    let newIdFound = ids.includes(id)
+    return newIdFound
+  }
+
   describe('Registration flow', () => {
     let regTx
     const stakerAccount = accounts[1]
@@ -164,12 +173,46 @@ contract('ServiceProvider test', async (accounts) => {
       let finalBal = await getTokenBalance(token, stakerAccount)
       assert.equal(initialBal, finalBal + DEFAULT_AMOUNT, 'Expect funds to be transferred')
 
-      let spIDs = await serviceProviderFactory.getServiceProviderIdsFromAddress(stakerAccount, testServiceType)
+      let newIdFound = await serviceProviderIDRegisteredToAccount(
+        stakerAccount,
+        testServiceType,
+        regTx.spID)
+      assert.isTrue(
+        newIdFound,
+        'Expected to find newly registered ID associated with this account')
     })
 
     it('confirm registered stake', async () => {
       // Confirm staking contract has correct amt
       assert.equal(fromBn(await staking.totalStakedFor(stakerAccount)), DEFAULT_AMOUNT)
+    })
+
+    it('deregisters and unstakes', async () => {
+      // Confirm staking contract has correct amt
+      assert.equal(fromBn(await staking.totalStakedFor(stakerAccount)), DEFAULT_AMOUNT)
+
+      // deregister service provider
+      let deregTx = await deregisterServiceProvider(
+        testServiceType,
+        testEndpoint,
+        stakerAccount)
+
+      assert.equal(
+        deregTx.spID,
+        regTx.spID)
+
+      assert.equal(
+        deregTx.unstakedAmountInt,
+        DEFAULT_AMOUNT)
+
+      // Confirm no stake is remaining in staking contract
+      assert.equal(fromBn(await staking.totalStakedFor(stakerAccount)), 0)
+
+      // Test 3
+      assert.equal(
+        await getTokenBalance(token, stakerAccount),
+        INITIAL_BAL,
+        'Expect full amount returned to staker after deregistering')
     })
 
     it('fails to register duplicate endpoint w/same account', async () => {
@@ -203,11 +246,10 @@ contract('ServiceProvider test', async (accounts) => {
         (initialBal - finalBal),
         DEFAULT_AMOUNT,
         'Expected decrease in final balance')
-      // Query and convert returned IDs to bignumber
-      let ids = (
-        await serviceProviderFactory.getServiceProviderIdsFromAddress(stakerAccount, testServiceType)
-      ).map(x => fromBn(x))
-      let newIdFound = ids.includes(newSPId)
+      let newIdFound = await serviceProviderIDRegisteredToAccount(
+        stakerAccount,
+        testServiceType,
+        newSPId)
       assert.isTrue(newIdFound, 'Expected valid new ID')
     })
 
@@ -304,50 +346,5 @@ contract('ServiceProvider test', async (accounts) => {
         newDelegateFromChain,
         'Expect updated delegateOwnerWallet equivalency')
     })
-  })
-
-  // TODO: Address how approval works..? do we need to approve? doesnt seem like it exactly
-  it('deregisters and unstakes', async () => {
-    const stakerAccount = accounts[1]
-
-    // Approve staking transfer
-    await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: stakerAccount })
-
-    let regTx = await registerServiceProvider(
-      testServiceType,
-      testEndpoint,
-      DEFAULT_AMOUNT,
-      stakerAccount)
-    // Confirm event has correct amount
-    assert.equal(regTx.stakedAmountInt, DEFAULT_AMOUNT)
-
-    // Test 2
-    assert.equal(
-      await getTokenBalance(token, stakerAccount),
-      INITIAL_BAL - DEFAULT_AMOUNT,
-      'Expect decreased token balance after staking')
-
-    // Confirm staking contract has correct amt
-    assert.equal(fromBn(await staking.totalStakedFor(stakerAccount)), DEFAULT_AMOUNT)
-
-    // deregister service provider
-    let deregTx = await deregisterServiceProvider(testServiceType, testEndpoint, stakerAccount)
-
-    assert.equal(
-      deregTx.spID,
-      regTx.spID)
-
-    assert.equal(
-      deregTx.unstakedAmountInt,
-      DEFAULT_AMOUNT)
-
-    // Confirm no stake is remaining in staking contract
-    assert.equal(fromBn(await staking.totalStakedFor(stakerAccount)), 0)
-
-    // Test 3
-    assert.equal(
-      await getTokenBalance(token, stakerAccount),
-      INITIAL_BAL,
-      'Expect full amount returned to staker after deregistering')
   })
 })
