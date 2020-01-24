@@ -244,13 +244,10 @@ contract('ServiceProvider test', async (accounts) => {
     })
 
     it('updates delegateOwnerWallet', async () => {
-      console.log('hi')
-      let endpoint = web3.utils.utf8ToHex(testEndpoint)
       let currentDelegateOwner = await serviceProviderFactory.getDelegateOwnerWallet(
         testServiceType,
-        endpoint,
+        testEndpoint,
         { from: stakerAccount })
-      console.log('hi2')
       assert.equal(
         stakerAccount,
         currentDelegateOwner,
@@ -259,24 +256,22 @@ contract('ServiceProvider test', async (accounts) => {
       await _lib.assertRevert(
         serviceProviderFactory.updateDelegateOwnerWallet(
           testServiceType,
-          endpoint,
+          testEndpoint,
           accounts[7],
           { from: accounts[8] }
         ),
         'Invalid update'
       )
-      console.log('hi3')
       // Perform and validate update
       let newDelegateOwnerWallet = accounts[4]
       let tx = await serviceProviderFactory.updateDelegateOwnerWallet(
         testServiceType,
-        endpoint,
+        testEndpoint,
         newDelegateOwnerWallet,
         { from: stakerAccount })
-      console.log('hi4')
       let newDelegateFromChain = await serviceProviderFactory.getDelegateOwnerWallet(
         testServiceType,
-        endpoint,
+        testEndpoint,
         { from: stakerAccount })
       assert.equal(
         newDelegateOwnerWallet,

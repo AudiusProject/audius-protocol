@@ -163,7 +163,7 @@ contract ServiceProviderStorage is RegistryContract {
     function updateDelegateOwnerWallet(
       address _ownerAddress,
       bytes32 _serviceType,
-      bytes32 _endpoint,
+      string calldata _endpoint,
       address _updatedDelegateOwnerWallet
     ) external returns (address) 
     {
@@ -197,10 +197,10 @@ contract ServiceProviderStorage is RegistryContract {
         return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet);
     }
 
-    function getServiceProviderIdFromEndpoint(bytes32 _endpoint)
+    function getServiceProviderIdFromEndpoint(string calldata _endpoint)
     external view returns (uint spID)
     {
-        return serviceProviderEndpointToId[_endpoint];
+        return serviceProviderEndpointToId[keccak256(bytes(_endpoint))];
     }
 
     function getServiceProviderIdFromAddress(address _ownerAddress, bytes32 _serviceType)
@@ -212,7 +212,7 @@ contract ServiceProviderStorage is RegistryContract {
     function getDelegateOwnerWallet(
       address _ownerAddress,
       bytes32 _serviceType,
-      bytes32 _endpoint
+      string calldata _endpoint
     ) external view returns (address)
     {
       uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);

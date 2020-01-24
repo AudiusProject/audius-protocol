@@ -136,7 +136,7 @@ contract ServiceProviderFactory is RegistryContract {
     {
         // Confirm correct owner for this endpoint
         address owner = msg.sender;
-        uint updatedSpID = this.getServiceProviderIdFromEndpoint(keccak256(bytes(_endpoint)));
+        uint updatedSpID = this.getServiceProviderIdFromEndpoint(_endpoint);
         require(updatedSpID != 0, "Increase stake - endpoint not registered");
         (address stgOwner, , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
         require(stgOwner == owner, "Increase stake - incorrect owner");
@@ -170,7 +170,7 @@ contract ServiceProviderFactory is RegistryContract {
         address owner = msg.sender;
 
         // Confirm correct owner for this endpoint
-        uint updatedSpID = this.getServiceProviderIdFromEndpoint(keccak256(bytes(_endpoint)));
+        uint updatedSpID = this.getServiceProviderIdFromEndpoint(_endpoint);
         require(updatedSpID != 0, "Increase stake - endpoint not registered");
         (address stgOwner, , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
         require(stgOwner == owner, "Increase stake - incorrect owner");
@@ -198,7 +198,7 @@ contract ServiceProviderFactory is RegistryContract {
 
     function updateDelegateOwnerWallet(
       bytes32 _serviceType,
-      bytes32 _endpoint,
+      string calldata _endpoint,
       address _updatedDelegateOwnerWallet
     ) external returns (address)
     {
@@ -234,7 +234,7 @@ contract ServiceProviderFactory is RegistryContract {
         );
     }
 
-    function getServiceProviderIdFromEndpoint(bytes32 _endpoint)
+    function getServiceProviderIdFromEndpoint(string calldata _endpoint)
     external view returns (uint spID)
     {
         return ServiceProviderStorageInterface(
@@ -253,7 +253,7 @@ contract ServiceProviderFactory is RegistryContract {
         );
     }
 
-    function getDelegateOwnerWallet(bytes32 _serviceType, bytes32 _endpoint) external view returns (address)
+    function getDelegateOwnerWallet(bytes32 _serviceType, string calldata _endpoint) external view returns (address)
     {
       address owner = msg.sender;
       return ServiceProviderStorageInterface(
