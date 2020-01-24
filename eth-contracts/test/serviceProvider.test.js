@@ -170,19 +170,35 @@ contract('ServiceProvider test', async (accounts) => {
       assert.equal(fromBn(await staking.totalStakedFor(stakerAccount)), DEFAULT_AMOUNT)
     })
 
-    it('fails to register multiple endpoints w/same account', async () => {
+    it('fails to register duplicate endpoint w/same account', async () => {
       // Approve staking transfer
       await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: stakerAccount })
       let initialBal = await getTokenBalance(token, stakerAccount)
 
-      // Attempt to register a new endpoint with the same account
+      // Attempt to register dup endpoint with the same account
       await _lib.assertRevert(
         registerServiceProvider(
           testServiceType,
-          testEndpoint1,
+          testEndpoint,
           DEFAULT_AMOUNT,
           stakerAccount),
-      'Account already has an endpoint registered')
+        'Endpoint already registered')
+    })
+
+    it('successfully registers multiple endpoints w/same account', async () => {
+      // Approve staking transfer
+      await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: stakerAccount })
+      let initialBal = await getTokenBalance(token, stakerAccount)
+      let registerInfo = await registerServiceProvider(
+        testServiceType,
+        testEndpoint1,
+        DEFAULT_AMOUNT,
+        stakerAccount)
+      let finalBal = await getTokenBalance(token, stakerAccount)
+      assert.equal(
+        (initialBal - finalBal),
+        DEFAULT_AMOUNT,
+        'Expected decrease in final balance')
     })
 
     it('increases stake value', async () => {

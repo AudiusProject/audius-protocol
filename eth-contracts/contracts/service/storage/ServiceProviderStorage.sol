@@ -47,7 +47,7 @@ contract ServiceProviderStorage is RegistryContract {
     /** @notice - stores the current user of a delegate owner wallet, these cannot be duplicated
     between registrants */
    // TODO: Revisit if this still works as expected, we MIGHT have to an endpoint instead as the value
-   mapping(address => address) delegateOwnerWalletToServiceProvider;
+   // mapping(address => address) delegateOwnerWalletToServiceProvider;
 
     event TestStg(
       bytes32 test,
@@ -73,13 +73,16 @@ contract ServiceProviderStorage is RegistryContract {
             serviceProviderEndpointToId[keccak256(bytes(_endpoint))] == 0,
             "Endpoint already registered");
 
+            /*
         require (
           serviceProviderAddressNumberOfEndpoints[_owner] == 0,
           "Account already has an endpoint registered");
+          */
 
-        require (
+        /*require (
           delegateOwnerWalletToServiceProvider[_delegateOwnerWallet] == address(0x0),
           "Registering account is a delegate wallet");
+          */
 
         uint assignedSpId = serviceProviderTypeIDs[_serviceType] + 1;
         serviceProviderTypeIDs[_serviceType] = assignedSpId;
@@ -112,7 +115,7 @@ contract ServiceProviderStorage is RegistryContract {
         serviceProviderAddressNumberOfEndpoints[_owner] = 1;
 
         // Update delegate owner wallet mapping
-        delegateOwnerWalletToServiceProvider[_delegateOwnerWallet] = _owner;
+        // delegateOwnerWalletToServiceProvider[_delegateOwnerWallet] = _owner;
 
         return assignedSpId;
     }
@@ -155,7 +158,7 @@ contract ServiceProviderStorage is RegistryContract {
         serviceProviderAddressNumberOfEndpoints[_owner] = 0;
 
         // Update delegate owner wallet mapping
-        delegateOwnerWalletToServiceProvider[delegateOwner] = address(0x0);
+        // delegateOwnerWalletToServiceProvider[delegateOwner] = address(0x0);
 
         return deregisteredID;
     }
@@ -172,16 +175,16 @@ contract ServiceProviderStorage is RegistryContract {
       address oldDelegateWallet = serviceProviderInfo[_serviceType][spID].delegateOwnerWallet;
 
       require(
-        delegateOwnerWalletToServiceProvider[oldDelegateWallet] == _ownerAddress,
+        serviceProviderInfo[_serviceType][spID].owner == _ownerAddress,
         "Invalid update operation, wrong owner");
 
       serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
 
       // Invalidate existing mapping
-      delegateOwnerWalletToServiceProvider[oldDelegateWallet] = address(0x0);
+      // delegateOwnerWalletToServiceProvider[oldDelegateWallet] = address(0x0);
 
       // Update mapping
-      delegateOwnerWalletToServiceProvider[_updatedDelegateOwnerWallet] = _ownerAddress; 
+      // delegateOwnerWalletToServiceProvider[_updatedDelegateOwnerWallet] = _ownerAddress; 
     }
 
     function getTotalServiceTypeProviders(bytes32 _serviceType)
@@ -216,10 +219,11 @@ contract ServiceProviderStorage is RegistryContract {
     ) external view returns (address)
     {
       uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
-      ( , , , address delegateOwnerWallet) = this.getServiceProviderInfo(_serviceType, spID);
-      require(
+      (address owner , , , address delegateOwnerWallet) = this.getServiceProviderInfo(_serviceType, spID);
+      /*require(
         delegateOwnerWalletToServiceProvider[delegateOwnerWallet] == _ownerAddress,
         "Mismatched delegate owner wallet");
+      */
       return delegateOwnerWallet;
     }
 }
