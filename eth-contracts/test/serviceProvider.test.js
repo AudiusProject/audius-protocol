@@ -163,6 +163,8 @@ contract('ServiceProvider test', async (accounts) => {
       // Confirm balance updated for tokens
       let finalBal = await getTokenBalance(token, stakerAccount)
       assert.equal(initialBal, finalBal + DEFAULT_AMOUNT, 'Expect funds to be transferred')
+
+      let spIDs = await serviceProviderFactory.getServiceProviderIdsFromAddress(stakerAccount, testServiceType)
     })
 
     it('confirm registered stake', async () => {
@@ -194,11 +196,19 @@ contract('ServiceProvider test', async (accounts) => {
         testEndpoint1,
         DEFAULT_AMOUNT,
         stakerAccount)
+      let newSPId = registerInfo.spID
+      // Confirm change in token balance
       let finalBal = await getTokenBalance(token, stakerAccount)
       assert.equal(
         (initialBal - finalBal),
         DEFAULT_AMOUNT,
         'Expected decrease in final balance')
+      // Query and convert returned IDs to bignumber
+      let ids = (
+        await serviceProviderFactory.getServiceProviderIdsFromAddress(stakerAccount, testServiceType)
+      ).map(x => fromBn(x))
+      let newIdFound = ids.includes(newSPId)
+      assert.isTrue(newIdFound, 'Expected valid new ID')
     })
 
     it('increases stake value', async () => {

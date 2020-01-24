@@ -242,12 +242,12 @@ contract ServiceProviderFactory is RegistryContract {
         ).getServiceProviderIdFromEndpoint(_endpoint);
     }
 
-    function getServiceProviderIdFromAddress(address _ownerAddress, bytes32 _serviceType)
-    external view returns (uint spIds)
+    function getServiceProviderIdsFromAddress(address _ownerAddress, bytes32 _serviceType)
+    external view returns (uint[] memory spIds)
     {
         return ServiceProviderStorageInterface(
             registry.getContract(serviceProviderStorageRegistryKey)
-        ).getServiceProviderIdFromAddress(
+        ).getServiceProviderIdsFromAddress(
             _ownerAddress,
             _serviceType
         );

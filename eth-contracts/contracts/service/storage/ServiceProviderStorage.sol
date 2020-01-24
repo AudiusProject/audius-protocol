@@ -206,7 +206,7 @@ contract ServiceProviderStorage is RegistryContract {
         return serviceProviderEndpointToId[keccak256(bytes(_endpoint))];
     }
 
-    function getServiceProviderIdFromAddress(address _ownerAddress, bytes32 _serviceType)
+    function getServiceProviderIdsFromAddress(address _ownerAddress, bytes32 _serviceType)
     external view returns (uint[] memory spID)
     {
         return serviceProviderAddressToId[_ownerAddress][_serviceType];
@@ -220,10 +220,9 @@ contract ServiceProviderStorage is RegistryContract {
     {
       uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
       (address owner , , , address delegateOwnerWallet) = this.getServiceProviderInfo(_serviceType, spID);
-      /*require(
-        delegateOwnerWalletToServiceProvider[delegateOwnerWallet] == _ownerAddress,
+      require(
+        owner == _ownerAddress,
         "Mismatched delegate owner wallet");
-      */
       return delegateOwnerWallet;
     }
 }

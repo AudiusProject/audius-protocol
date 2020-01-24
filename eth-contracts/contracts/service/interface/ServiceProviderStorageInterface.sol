@@ -33,10 +33,10 @@ interface ServiceProviderStorageInterface {
     string calldata _endpoint
   ) external view returns (uint);
 
-  function getServiceProviderIdFromAddress(
+  function getServiceProviderIdsFromAddress(
     address _ownerAddress,
     bytes32 _serviceType
-  ) external view returns (uint);
+  ) external view returns (uint[] memory);
 
   function getTotalServiceTypeProviders(
     bytes32 _serviceType
