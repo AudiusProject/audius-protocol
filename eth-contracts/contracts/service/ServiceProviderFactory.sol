@@ -198,6 +198,7 @@ contract ServiceProviderFactory is RegistryContract {
 
     function updateDelegateOwnerWallet(
       bytes32 _serviceType,
+      bytes32 _endpoint,
       address _updatedDelegateOwnerWallet
     ) external returns (address)
     {
@@ -207,6 +208,7 @@ contract ServiceProviderFactory is RegistryContract {
         ).updateDelegateOwnerWallet(
             owner,
             _serviceType,
+            _endpoint,
             _updatedDelegateOwnerWallet
         ); 
     }
@@ -251,14 +253,15 @@ contract ServiceProviderFactory is RegistryContract {
         );
     }
 
-    function getDelegateOwnerWallet(bytes32 _serviceType) external view returns (address)
+    function getDelegateOwnerWallet(bytes32 _serviceType, bytes32 _endpoint) external view returns (address)
     {
       address owner = msg.sender;
       return ServiceProviderStorageInterface(
           registry.getContract(serviceProviderStorageRegistryKey)
       ).getDelegateOwnerWallet(
           owner,
-          _serviceType
+          _serviceType,
+          _endpoint
       ); 
     }
 }

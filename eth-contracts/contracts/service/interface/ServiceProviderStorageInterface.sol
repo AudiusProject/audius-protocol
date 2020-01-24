@@ -20,6 +20,7 @@ interface ServiceProviderStorageInterface {
   function updateDelegateOwnerWallet(
     address _owner,
     bytes32 _serviceType,
+    bytes32 _endpoint,
     address _updatedDelegateOwnerWallet
   ) external returns (address);
 
@@ -43,6 +44,7 @@ interface ServiceProviderStorageInterface {
   
   function getDelegateOwnerWallet(
     address _owner,
-    bytes32 _serviceType
+    bytes32 _serviceType,
+    bytes32 _endpoint
   ) external view returns (address);
 }
