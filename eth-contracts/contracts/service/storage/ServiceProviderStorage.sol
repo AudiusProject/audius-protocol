@@ -41,7 +41,7 @@ contract ServiceProviderStorage is RegistryContract {
 
     /** @dev - mapping of address -> number of service providers registered */
     /** @notice - stores the number of services registered by a provider, can never be >1 */
-    mapping(address => uint) serviceProviderAddressNumberOfEndpoints;
+    // mapping(address => uint) serviceProviderAddressNumberOfEndpoints;
 
     /** @dev - mapping of delegateOwnerWallet -> address */
     /** @notice - stores the current user of a delegate owner wallet, these cannot be duplicated
@@ -73,17 +73,6 @@ contract ServiceProviderStorage is RegistryContract {
             serviceProviderEndpointToId[keccak256(bytes(_endpoint))] == 0,
             "Endpoint already registered");
 
-            /*
-        require (
-          serviceProviderAddressNumberOfEndpoints[_owner] == 0,
-          "Account already has an endpoint registered");
-          */
-
-        /*require (
-          delegateOwnerWalletToServiceProvider[_delegateOwnerWallet] == address(0x0),
-          "Registering account is a delegate wallet");
-          */
-
         uint assignedSpId = serviceProviderTypeIDs[_serviceType] + 1;
         serviceProviderTypeIDs[_serviceType] = assignedSpId;
 
@@ -112,7 +101,7 @@ contract ServiceProviderStorage is RegistryContract {
         }
 
         // Update count mapping for this address to 1
-        serviceProviderAddressNumberOfEndpoints[_owner] = 1;
+        // serviceProviderAddressNumberOfEndpoints[_owner] = 1;
 
         // Update delegate owner wallet mapping
         // delegateOwnerWalletToServiceProvider[_delegateOwnerWallet] = _owner;
@@ -155,10 +144,7 @@ contract ServiceProviderStorage is RegistryContract {
         }
 
         // Update count mapping to 0
-        serviceProviderAddressNumberOfEndpoints[_owner] = 0;
-
-        // Update delegate owner wallet mapping
-        // delegateOwnerWalletToServiceProvider[delegateOwner] = address(0x0);
+        // serviceProviderAddressNumberOfEndpoints[_owner] = 0;
 
         return deregisteredID;
     }
