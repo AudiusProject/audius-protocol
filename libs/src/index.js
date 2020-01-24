@@ -72,6 +72,7 @@ class AudiusLibs {
       }
     }
   }
+
   /**
    * Configures an internal web3 to use (via Hedgehog)
    * @param {string} registryAddress
@@ -192,7 +193,8 @@ class AudiusLibs {
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config ? this.web3Config.registryAddress : null,
-        this.isServer)
+        this.isServer
+      )
       contractsToInit.push(this.contracts.init())
     }
     await Promise.all(contractsToInit)
@@ -221,7 +223,8 @@ class AudiusLibs {
         creatorNodeEndpoint,
         this.isServer,
         this.userStateManager,
-        this.creatorNodeConfig.lazyConnect)
+        this.creatorNodeConfig.lazyConnect
+      )
       await this.creatorNode.init()
     }
 

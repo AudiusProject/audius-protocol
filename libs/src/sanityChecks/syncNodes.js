@@ -1,6 +1,6 @@
 const CreatorNode = require('../services/creatorNode')
 /**
- * Syncs a creator node if its blocknubmer is behind the passed
+ * Syncs a creator node if its blocknumber is behind the passed
  * in blocknumber.
  */
 const syncNodeIfBehind = async (libs, endpoint) => {

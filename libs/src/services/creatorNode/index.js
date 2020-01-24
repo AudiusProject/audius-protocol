@@ -15,7 +15,7 @@ class CreatorNode {
    * Pulls off the secondary creator nodes from a creator node endpoint string.
    * @param {string} endpoints user.creator_node_endpoint
    */
-  static getSecondaries (endpoints) { return endpoints ? endpoints.split(',').slice(1) : [] }
+  static getSecondaries (endpoints) { return endpoints ? endpoints.split(',').slice(1).filter(Boolean) : [] }
 
   /**
    * Checks if a download is available from provided creator node endpoints
@@ -262,23 +262,23 @@ class CreatorNode {
    */
   async getSyncStatus (endpoint) {
     const user = this.userStateManager.getCurrentUser()
-    if (user) {
-      const req = {
-        baseURL: endpoint,
-        url: `/sync_status/${user.wallet}`,
-        method: 'get'
-      }
-      const status = await axios(req)
-      return {
-        status: status.data,
-        userBlockNumber: user.blocknumber,
-        trackBlockNumber: user.track_blocknumber,
-        // Whether or not the endpoint is behind in syncing
-        isBehind: status.data.latestBlockNumber < Math.max(user.blocknumber, user.track_blocknumber),
-        isConfigured: status.data.latestBlockNumber !== -1
-      }
+
+    if (!user) { throw new Error('No current user') }
+
+    const status = await axios({
+      baseURL: endpoint,
+      url: `/sync_status/${user.wallet}`,
+      method: 'get'
+    })
+
+    return {
+      status: status.data,
+      userBlockNumber: user.blocknumber,
+      trackBlockNumber: user.track_blocknumber,
+      // Whether or not the endpoint is behind in syncing
+      isBehind: status.data.latestBlockNumber < Math.max(user.blocknumber, user.track_blocknumber),
+      isConfigured: status.data.latestBlockNumber !== -1
     }
-    throw new Error(`No current user`)
   }
 
   /**
@@ -321,11 +321,14 @@ class CreatorNode {
    * @param {string} walletAddress
    */
   async _signupNodeUser (walletAddress) {
-    await this._makeRequest({
-      url: '/users',
-      method: 'post',
-      data: { walletAddress }
-    }, false)
+    await this._makeRequest(
+      {
+        url: '/users',
+        method: 'post',
+        data: { walletAddress }
+      },
+      false
+    )
   }
 
   /** Logs in a creator node user. */
