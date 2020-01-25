@@ -89,7 +89,7 @@ module.exports = function (app) {
     trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
 
     // error if there are no track segments
-    if(!trackSegments || !trackSegments.length) return errorResponseServerError('Track upload failed - no track segments')
+    if (!trackSegments || !trackSegments.length) return errorResponseServerError('Track upload failed - no track segments')
 
     // Don't allow if any segment CID is in blacklist.
     try {
