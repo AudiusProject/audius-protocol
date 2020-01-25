@@ -13,6 +13,7 @@ contract ServiceProviderStorage is RegistryContract {
         string endpoint;
         uint blocknumber;
         address delegateOwnerWallet;
+        uint stakeAmount;
     }
 
     bytes32 constant CALLER_REGISTRY_KEY = "ServiceProviderFactory";
@@ -39,10 +40,12 @@ contract ServiceProviderStorage is RegistryContract {
     provides the ability to lookup by service type and see all registered services */
     mapping(address => mapping(bytes32 => uint[])) serviceProviderAddressToId;
 
+    // TODO: Validate whether this is still required in some form....?
     /** @dev - mapping of address -> number of service providers registered */
     /** @notice - stores the number of services registered by a provider, can never be >1 */
     // mapping(address => uint) serviceProviderAddressNumberOfEndpoints;
 
+    // TODO: Validate whether this is still required in some form....?
     /** @dev - mapping of delegateOwnerWallet -> address */
     /** @notice - stores the current user of a delegate owner wallet, these cannot be duplicated
     between registrants */
@@ -66,7 +69,8 @@ contract ServiceProviderStorage is RegistryContract {
         bytes32 _serviceType,
         address _owner,
         string calldata _endpoint,
-        address _delegateOwnerWallet
+        address _delegateOwnerWallet,
+        uint _stakeAmount
     ) external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint spId)
     {
         require (
@@ -81,7 +85,8 @@ contract ServiceProviderStorage is RegistryContract {
             owner: _owner,
             endpoint: _endpoint,
             blocknumber: block.number,
-            delegateOwnerWallet: _delegateOwnerWallet
+            delegateOwnerWallet: _delegateOwnerWallet,
+            stakeAmount: _stakeAmount
         });
 
         // Update endpoint mapping
@@ -180,10 +185,15 @@ contract ServiceProviderStorage is RegistryContract {
     }
 
     function getServiceProviderInfo(bytes32 _serviceType, uint _serviceId)
-    external view returns (address owner, string memory endpoint, uint blocknumber, address delegateOwnerWallet)
+    external view returns (
+      address owner,
+      string memory endpoint,
+      uint blocknumber,
+      address delegateOwnerWallet,
+      uint stakeAmount)
     {
         ServiceProvider memory sp = serviceProviderInfo[_serviceType][_serviceId];
-        return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet);
+        return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet, sp.stakeAmount);
     }
 
     function getServiceProviderIdFromEndpoint(string calldata _endpoint)
@@ -205,7 +215,7 @@ contract ServiceProviderStorage is RegistryContract {
     ) external view returns (address)
     {
       uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
-      (address owner, , , address delegateOwnerWallet) = this.getServiceProviderInfo(_serviceType, spID);
+      (address owner, , , address delegateOwnerWallet, ) = this.getServiceProviderInfo(_serviceType, spID);
       require(
         owner == _ownerAddress,
         "Mismatched delegate owner wallet");

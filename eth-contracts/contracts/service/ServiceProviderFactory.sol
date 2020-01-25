@@ -80,7 +80,8 @@ contract ServiceProviderFactory is RegistryContract {
             _serviceType,
             owner,
             _endpoint,
-            _delegateOwnerWallet
+            _delegateOwnerWallet,
+            _stakeAmount
         );
 
         emit RegisteredServiceProvider(
@@ -138,7 +139,7 @@ contract ServiceProviderFactory is RegistryContract {
         address owner = msg.sender;
         uint updatedSpID = this.getServiceProviderIdFromEndpoint(_endpoint);
         require(updatedSpID != 0, "Increase stake - endpoint not registered");
-        (address stgOwner, , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
+        (address stgOwner, , , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
         require(stgOwner == owner, "Increase stake - incorrect owner");
 
         // Stake increased token amount for msg.sender
@@ -172,7 +173,7 @@ contract ServiceProviderFactory is RegistryContract {
         // Confirm correct owner for this endpoint
         uint updatedSpID = this.getServiceProviderIdFromEndpoint(_endpoint);
         require(updatedSpID != 0, "Increase stake - endpoint not registered");
-        (address stgOwner, , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
+        (address stgOwner, , , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
         require(stgOwner == owner, "Increase stake - incorrect owner");
 
         // Decrease staked token amount for msg.sender
@@ -224,7 +225,7 @@ contract ServiceProviderFactory is RegistryContract {
     }
 
     function getServiceProviderInfo(bytes32 _serviceType, uint _serviceId)
-    external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet)
+    external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet, uint stakeAmount)
     {
         return ServiceProviderStorageInterface(
             registry.getContract(serviceProviderStorageRegistryKey)
