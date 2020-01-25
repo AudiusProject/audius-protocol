@@ -123,7 +123,11 @@ module.exports = function (app) {
   app.post('/tracks/metadata', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     const metadataJSON = req.body.metadata
 
-    if (!metadataJSON || !metadataJSON.owner_id || !metadataJSON.track_segments || !metadataJSON.track_segments.length) {
+    if (!metadataJSON ||
+        !metadataJSON.owner_id ||
+        !metadataJSON.track_segments ||
+        !Array.isArray(metadataJSON.track_segments) ||
+        !metadataJSON.track_segments.length) {
       return errorResponseBadRequest('Metadata object must include owner_id and non-empty track_segments array')
     }
 
@@ -253,7 +257,10 @@ module.exports = function (app) {
     let metadataJSON
     try {
       metadataJSON = JSON.parse(fs.readFileSync(file.storagePath))
-      if (!metadataJSON || !metadataJSON.track_segments || !metadataJSON.track_segments.length) {
+      if (!metadataJSON ||
+          !metadataJSON.track_segments ||
+          !Array.isArray(metadataJSON.track_segments) ||
+          !metadataJSON.track_segments.length) {
         return errorResponseServerError(`Malformatted metadataJSON stored for metadataFileUUID ${metadataFileUUID}.`)
       }
     } catch (e) {
