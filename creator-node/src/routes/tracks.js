@@ -88,6 +88,9 @@ module.exports = function (app) {
     // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
     trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
 
+    // error if there are no track segments
+    if(!trackSegments || !trackSegments.length) return errorResponseServerError('Track upload failed - no track segments')
+
     // Don't allow if any segment CID is in blacklist.
     try {
       await Promise.all(trackSegments.map(async segmentObj => {
@@ -120,7 +123,7 @@ module.exports = function (app) {
   app.post('/tracks/metadata', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     const metadataJSON = req.body.metadata
 
-    if (!metadataJSON || !metadataJSON.owner_id || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
+    if (!metadataJSON || !metadataJSON.owner_id || !metadataJSON.track_segments || !metadataJSON.track_segments.length) {
       return errorResponseBadRequest('Metadata object must include owner_id and non-empty track_segments array')
     }
 
@@ -250,7 +253,7 @@ module.exports = function (app) {
     let metadataJSON
     try {
       metadataJSON = JSON.parse(fs.readFileSync(file.storagePath))
-      if (!metadataJSON || !metadataJSON.track_segments || !Array.isArray(metadataJSON.track_segments)) {
+      if (!metadataJSON || !metadataJSON.track_segments || !metadataJSON.track_segments.length) {
         return errorResponseServerError(`Malformatted metadataJSON stored for metadataFileUUID ${metadataFileUUID}.`)
       }
     } catch (e) {
