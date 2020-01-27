@@ -178,6 +178,51 @@ contract ServiceProviderStorage is RegistryContract {
       // delegateOwnerWalletToServiceProvider[_updatedDelegateOwnerWallet] = _ownerAddress; 
     }
 
+    function increaseStakeAmount(
+      string calldata _endpoint,
+      bytes32 _serviceType,
+      address _owner,
+      uint _increaseStakeAmount
+    ) external returns (bool)
+    {
+      uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
+      require(spID != 0, "Increase stake - endpoint not registered");
+
+      ServiceProvider memory sp = serviceProviderInfo[_serviceType][spID];
+      address owner = sp.owner;
+
+      require(
+        owner == _owner,
+        "Increase stake - incorrect owner");
+      serviceProviderInfo[_serviceType][spID].stakeAmount += _increaseStakeAmount;
+      return true;
+    }
+
+    function decreaseStakeAmount(
+      bytes32 _serviceType,
+      string calldata _endpoint,
+      uint _decreaseStakeAmount,
+      address _owner
+    ) external returns (bool)
+    {
+      uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
+      require(spID != 0, "Decrease stake - endpoint not registered");
+
+      ServiceProvider memory sp = serviceProviderInfo[_serviceType][spID];
+      address owner = sp.owner;
+
+      require(
+        owner == _owner,
+        "Decrease stake - incorrect owner");
+
+      require(
+        _decreaseStakeAmount <= serviceProviderInfo[_serviceType][spID].stakeAmount,
+        "Cannot reduce stake amount below zero"); 
+
+      serviceProviderInfo[_serviceType][spID].stakeAmount -= _decreaseStakeAmount;
+      return true;
+    }
+
     function getTotalServiceTypeProviders(bytes32 _serviceType)
     external view returns (uint numberOfProviders)
     {

@@ -53,4 +53,18 @@ interface ServiceProviderStorageInterface {
     string calldata _endpoint,
     bytes32 _serviceType
   ) external view returns (uint); 
+
+  function increaseStakeAmount(
+    bytes32 _serviceType,
+    string calldata _endpoint,
+    uint _increaseStakeAmount,
+    address _owner
+  ) external returns (bool);
+
+  function decreaseStakeAmount(
+    bytes32 _serviceType,
+    string calldata _endpoint,
+    uint _decreaseStakeAmount,
+    address _owner
+  ) external returns (bool);
 }
