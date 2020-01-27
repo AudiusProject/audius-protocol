@@ -1144,7 +1144,7 @@ def get_reposters_for_playlist(repost_playlist_id):
 @bp.route("/users/saves/track/<int:save_track_id>", methods=("GET",))
 def get_savers_for_track(save_track_id):
     user_results = []
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         # Ensure Track exists for provided save_track_id.
         track_entry = session.query(Track).filter(
@@ -1208,7 +1208,7 @@ def get_savers_for_track(save_track_id):
 @bp.route("/users/saves/playlist/<int:save_playlist_id>", methods=("GET",))
 def get_savers_for_playlist(save_playlist_id):
     user_results = []
-    db = get_db()
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         # Ensure Playlist exists for provided save_playlist_id.
         playlist_entry = session.query(Playlist).filter(
