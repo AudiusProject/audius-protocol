@@ -107,7 +107,7 @@ contract('ServiceProvider test', async (accounts) => {
     // Approve token transfer
     await token.approve(
       stakingAddress,
-      DEFAULT_AMOUNT,
+      increase,
       { from: account })
 
     let tx = await serviceProviderFactory.increaseServiceStake(
