@@ -48,4 +48,9 @@ interface ServiceProviderStorageInterface {
     bytes32 _serviceType,
     string calldata _endpoint
   ) external view returns (address);
+
+  function getStakeAmountFromEndpoint(
+    string calldata _endpoint,
+    bytes32 _serviceType
+  ) external view returns (uint); 
 }

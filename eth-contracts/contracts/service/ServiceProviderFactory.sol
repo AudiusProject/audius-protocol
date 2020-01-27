@@ -265,4 +265,12 @@ contract ServiceProviderFactory is RegistryContract {
           _endpoint
       ); 
     }
+
+    function getStakeAmountFromEndpoint(string calldata _endpoint, bytes32 _serviceType)
+    external view returns (uint spID)
+    {
+        return ServiceProviderStorageInterface(
+            registry.getContract(serviceProviderStorageRegistryKey)
+        ).getStakeAmountFromEndpoint(_endpoint, _serviceType);
+    }
 }

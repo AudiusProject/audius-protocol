@@ -131,7 +131,7 @@ contract ServiceProviderStorage is RegistryContract {
             serviceProviderInfo[_serviceType][deregisteredID].owner == _owner,
             "Invalid deregister operation");
 
-        address delegateOwner = serviceProviderInfo[_serviceType][deregisteredID].delegateOwnerWallet; 
+        // address delegateOwner = serviceProviderInfo[_serviceType][deregisteredID].delegateOwnerWallet; 
 
         // Update info mapping
         delete serviceProviderInfo[_serviceType][deregisteredID];
@@ -163,7 +163,7 @@ contract ServiceProviderStorage is RegistryContract {
     {
       // uint spID = this.getServiceProviderIdFromAddress(_ownerAddress, _serviceType);
       uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
-      address oldDelegateWallet = serviceProviderInfo[_serviceType][spID].delegateOwnerWallet;
+      // address oldDelegateWallet = serviceProviderInfo[_serviceType][spID].delegateOwnerWallet;
 
       require(
         serviceProviderInfo[_serviceType][spID].owner == _ownerAddress,
@@ -220,5 +220,13 @@ contract ServiceProviderStorage is RegistryContract {
         owner == _ownerAddress,
         "Mismatched delegate owner wallet");
       return delegateOwnerWallet;
+    }
+
+    function getStakeAmountFromEndpoint(string calldata _endpoint, bytes32 _serviceType) 
+    external view returns (uint) 
+    {
+      uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
+      ServiceProvider memory sp = serviceProviderInfo[_serviceType][spID];
+      return sp.stakeAmount;
     }
 }

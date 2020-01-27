@@ -180,6 +180,14 @@ contract('ServiceProvider test', async (accounts) => {
       assert.isTrue(
         newIdFound,
         'Expected to find newly registered ID associated with this account')
+
+      let spFactoryStakeAmountForEndpoint = await serviceProviderFactory.getStakeAmountFromEndpoint(
+        testEndpoint,
+        testServiceType)
+      assert.equal(
+        spFactoryStakeAmountForEndpoint,
+        DEFAULT_AMOUNT,
+        'Expect default stake amount')
     })
 
     it('confirm registered stake', async () => {
