@@ -142,6 +142,15 @@ contract ServiceProviderFactory is RegistryContract {
         (address stgOwner, , , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
         require(stgOwner == owner, "Increase stake - incorrect owner");
 
+        // Increase stored stake for this endpoint
+        bool increasedStake = ServiceProviderStorageInterface(
+            registry.getContract(serviceProviderStorageRegistryKey)
+        ).increaseServiceStake(
+            _serviceType,
+            _endpoint,
+            _increaseStakeAmount,
+            owner);
+
         // Stake increased token amount for msg.sender
         Staking(
             registry.getContract(stakingProxyOwnerKey)
@@ -175,6 +184,14 @@ contract ServiceProviderFactory is RegistryContract {
         require(updatedSpID != 0, "Increase stake - endpoint not registered");
         (address stgOwner, , , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
         require(stgOwner == owner, "Increase stake - incorrect owner");
+        // Decrease stored stake for this endpoint
+        bool decreasedStake = ServiceProviderStorageInterface(
+            registry.getContract(serviceProviderStorageRegistryKey)
+        ).decreaseServiceStake(
+            _serviceType,
+            _endpoint,
+            _decreaseStakeAmount,
+            owner);
 
         // Decrease staked token amount for msg.sender
         Staking(
