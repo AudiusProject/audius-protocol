@@ -41,11 +41,6 @@ contract ServiceProviderStorage is RegistryContract {
     mapping(address => mapping(bytes32 => uint[])) serviceProviderAddressToId;
 
     // TODO: Validate whether this is still required in some form....?
-    /** @dev - mapping of address -> number of service providers registered */
-    /** @notice - stores the number of services registered by a provider, can never be >1 */
-    // mapping(address => uint) serviceProviderAddressNumberOfEndpoints;
-
-    // TODO: Validate whether this is still required in some form....?
     /** @dev - mapping of delegateOwnerWallet -> address */
     /** @notice - stores the current user of a delegate owner wallet, these cannot be duplicated
     between registrants */
@@ -105,9 +100,6 @@ contract ServiceProviderStorage is RegistryContract {
           serviceProviderAddressToId[_owner][_serviceType].push(assignedSpId);
         }
 
-        // Update count mapping for this address to 1
-        // serviceProviderAddressNumberOfEndpoints[_owner] = 1;
-
         // Update delegate owner wallet mapping
         // delegateOwnerWalletToServiceProvider[_delegateOwnerWallet] = _owner;
 
@@ -147,9 +139,6 @@ contract ServiceProviderStorage is RegistryContract {
             break;
           }
         }
-
-        // Update count mapping to 0
-        // serviceProviderAddressNumberOfEndpoints[_owner] = 0;
 
         return deregisteredID;
     }
