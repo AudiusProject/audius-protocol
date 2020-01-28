@@ -76,7 +76,6 @@ contract ServiceProviderStorage is RegistryContract {
         serviceProviderEndpointToId[keccak256(bytes(_endpoint))] = assignedSpId;
 
         // Update address mapping
-        // serviceProviderAddressToId[_owner][_serviceType] = assignedSpId;
         uint spTypeLength = serviceProviderAddressToId[_owner][_serviceType].length;
         bool idFound = false;
         for (uint i = 0; i < spTypeLength; i++) {
