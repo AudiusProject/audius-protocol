@@ -15,9 +15,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     using SafeMath for uint256;
     using Checkpointing for Checkpointing.History;
     using SafeERC20 for ERC20;
-    // todo: switch back to safetransfer?
-    // This changes all 'transfer' calls to safeTransfer
-
 
     string private constant ERROR_TOKEN_NOT_CONTRACT = "STAKING_TOKEN_NOT_CONTRACT";
     string private constant ERROR_AMOUNT_ZERO = "STAKING_AMOUNT_ZERO";

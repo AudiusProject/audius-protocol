@@ -80,8 +80,7 @@ contract ServiceProviderFactory is RegistryContract {
             _serviceType,
             owner,
             _endpoint,
-            _delegateOwnerWallet,
-            _stakeAmount
+            _delegateOwnerWallet
         );
 
         emit RegisteredServiceProvider(
@@ -135,17 +134,8 @@ contract ServiceProviderFactory is RegistryContract {
         address owner = msg.sender;
         uint updatedSpID = this.getServiceProviderIdFromEndpoint(_endpoint);
         require(updatedSpID != 0, "Increase stake - endpoint not registered");
-        (address stgOwner, , , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
+        (address stgOwner, , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
         require(stgOwner == owner, "Increase stake - incorrect owner");
-
-        // Increase stored stake for this endpoint
-        bool increasedStake = ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).increaseServiceStake(
-            _serviceType,
-            _endpoint,
-            _increaseStakeAmount,
-            owner);
 
         // Stake increased token amount for msg.sender
         Staking(
@@ -178,16 +168,8 @@ contract ServiceProviderFactory is RegistryContract {
         // Confirm correct owner for this endpoint
         uint updatedSpID = this.getServiceProviderIdFromEndpoint(_endpoint);
         require(updatedSpID != 0, "Increase stake - endpoint not registered");
-        (address stgOwner, , , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
+        (address stgOwner, , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
         require(stgOwner == owner, "Increase stake - incorrect owner");
-        // Decrease stored stake for this endpoint
-        bool decreasedStake = ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).decreaseServiceStake(
-            _serviceType,
-            _endpoint,
-            _decreaseStakeAmount,
-            owner);
 
         // Decrease staked token amount for msg.sender
         Staking(
@@ -238,7 +220,7 @@ contract ServiceProviderFactory is RegistryContract {
     }
 
     function getServiceProviderInfo(bytes32 _serviceType, uint _serviceId)
-    external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet, uint stakeAmount)
+    external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet)
     {
         return ServiceProviderStorageInterface(
             registry.getContract(serviceProviderStorageRegistryKey)
@@ -277,13 +259,5 @@ contract ServiceProviderFactory is RegistryContract {
           _serviceType,
           _endpoint
       ); 
-    }
-
-    function getStakeAmountFromEndpoint(string calldata _endpoint, bytes32 _serviceType)
-    external view returns (uint spID)
-    {
-        return ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).getStakeAmountFromEndpoint(_endpoint, _serviceType);
     }
 }

@@ -13,7 +13,6 @@ contract ServiceProviderStorage is RegistryContract {
         string endpoint;
         uint blocknumber;
         address delegateOwnerWallet;
-        uint stakeAmount;
     }
 
     bytes32 constant CALLER_REGISTRY_KEY = "ServiceProviderFactory";
@@ -40,6 +39,10 @@ contract ServiceProviderStorage is RegistryContract {
     provides the ability to lookup by service type and see all registered services */
     mapping(address => mapping(bytes32 => uint[])) serviceProviderAddressToId;
 
+    /** @dev - mapping of address -> number of service providers registered */
+    /** @notice - stores the number of services registered by a provider */
+    mapping(address => uint) serviceProviderAddressNumberOfEndpoints;
+
     constructor(address _registryAddress) public {
         require(
             _registryAddress != address(0x00),
@@ -52,8 +55,7 @@ contract ServiceProviderStorage is RegistryContract {
         bytes32 _serviceType,
         address _owner,
         string calldata _endpoint,
-        address _delegateOwnerWallet,
-        uint _stakeAmount
+        address _delegateOwnerWallet
     ) external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint spId)
     {
         require (
@@ -68,8 +70,7 @@ contract ServiceProviderStorage is RegistryContract {
             owner: _owner,
             endpoint: _endpoint,
             blocknumber: block.number,
-            delegateOwnerWallet: _delegateOwnerWallet,
-            stakeAmount: _stakeAmount
+            delegateOwnerWallet: _delegateOwnerWallet
         });
 
         // Update endpoint mapping
@@ -87,11 +88,14 @@ contract ServiceProviderStorage is RegistryContract {
           serviceProviderAddressToId[_owner][_serviceType].push(assignedSpId);
         }
 
+        // Increment number of endpoints for this address
+        serviceProviderAddressNumberOfEndpoints[_owner] += 1;
+
         return assignedSpId;
     }
 
     function deregister(bytes32 _serviceType, address _owner, string calldata _endpoint)
-    external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint deregisteredSpID, uint amountToUnstake)
+    external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint deregisteredSpID)
     {
         require (
             serviceProviderEndpointToId[keccak256(bytes(_endpoint))] != 0,
@@ -108,7 +112,7 @@ contract ServiceProviderStorage is RegistryContract {
             "Invalid deregister operation");
 
         // Cache amount to unstake
-        uint unstakeAmount = serviceProviderInfo[_serviceType][deregisteredID].stakeAmount; 
+        // uint unstakeAmount = serviceProviderInfo[_serviceType][deregisteredID].stakeAmount; 
 
         // Update info mapping
         delete serviceProviderInfo[_serviceType][deregisteredID];
@@ -125,7 +129,9 @@ contract ServiceProviderStorage is RegistryContract {
           }
         }
 
-        return (deregisteredID, unstakeAmount);
+        // Decrement number of endpoints for this address
+        serviceProviderAddressNumberOfEndpoints[_owner] -= 1;
+        return (deregisteredID);
     }
 
     function updateDelegateOwnerWallet(
@@ -144,53 +150,6 @@ contract ServiceProviderStorage is RegistryContract {
       serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
     }
 
-    function increaseServiceStake(
-      bytes32 _serviceType,
-      string calldata _endpoint,
-      uint _increaseStakeAmount,
-      address _owner
-    ) external returns (bool)
-    {
-      uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
-      require(spID != 0, "Increase stake - endpoint not registered");
-
-      ServiceProvider memory sp = serviceProviderInfo[_serviceType][spID];
-      address owner = sp.owner;
-
-      // Confirm correct owner for endpoint
-      require(
-        owner == _owner,
-        "Increase stake - incorrect owner");
-      serviceProviderInfo[_serviceType][spID].stakeAmount += _increaseStakeAmount;
-      return true;
-    }
-
-    function decreaseServiceStake(
-      bytes32 _serviceType,
-      string calldata _endpoint,
-      uint _decreaseStakeAmount,
-      address _owner
-    ) external returns (bool)
-    {
-      uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
-      require(spID != 0, "Decrease stake - endpoint not registered");
-
-      ServiceProvider memory sp = serviceProviderInfo[_serviceType][spID];
-      address owner = sp.owner;
-
-      // Confirm correct owner for endpoint
-      require(
-        owner == _owner,
-        "Decrease stake - incorrect owner");
-
-      require(
-        _decreaseStakeAmount <= serviceProviderInfo[_serviceType][spID].stakeAmount,
-        "Cannot reduce stake amount below zero"); 
-
-      serviceProviderInfo[_serviceType][spID].stakeAmount -= _decreaseStakeAmount;
-      return true;
-    }
-
     function getTotalServiceTypeProviders(bytes32 _serviceType)
     external view returns (uint numberOfProviders)
     {
@@ -202,11 +161,10 @@ contract ServiceProviderStorage is RegistryContract {
       address owner,
       string memory endpoint,
       uint blocknumber,
-      address delegateOwnerWallet,
-      uint stakeAmount)
+      address delegateOwnerWallet)
     {
         ServiceProvider memory sp = serviceProviderInfo[_serviceType][_serviceId];
-        return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet, sp.stakeAmount);
+        return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet);
     }
 
     function getServiceProviderIdFromEndpoint(string calldata _endpoint)
@@ -220,7 +178,13 @@ contract ServiceProviderStorage is RegistryContract {
     {
         return serviceProviderAddressToId[_ownerAddress][_serviceType];
     }
-    
+
+    function getNumberOfEndpointsFromAddress(address _ownerAddress)
+    external view returns (uint numberOfEndpoints)
+    {
+      return serviceProviderAddressNumberOfEndpoints[_ownerAddress];
+    }
+
     function getDelegateOwnerWallet(
       address _ownerAddress,
       bytes32 _serviceType,
@@ -228,18 +192,10 @@ contract ServiceProviderStorage is RegistryContract {
     ) external view returns (address)
     {
       uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
-      (address owner, , , address delegateOwnerWallet, ) = this.getServiceProviderInfo(_serviceType, spID);
+      (address owner, , , address delegateOwnerWallet) = this.getServiceProviderInfo(_serviceType, spID);
       require(
         owner == _ownerAddress,
         "Mismatched delegate owner wallet");
       return delegateOwnerWallet;
-    }
-
-    function getStakeAmountFromEndpoint(string calldata _endpoint, bytes32 _serviceType) 
-    external view returns (uint) 
-    {
-      uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
-      ServiceProvider memory sp = serviceProviderInfo[_serviceType][spID];
-      return sp.stakeAmount;
     }
 }
