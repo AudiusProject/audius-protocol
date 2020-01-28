@@ -16,7 +16,7 @@ interface ServiceProviderStorageInterface {
     bytes32 _serviceType,
     address _owner,
     string calldata _endpoint
-  ) external returns (uint deregisteredSpID);
+  ) external returns (uint deregisteredSpID, uint amountToUnstake);
 
   function updateDelegateOwnerWallet(
     address _owner,

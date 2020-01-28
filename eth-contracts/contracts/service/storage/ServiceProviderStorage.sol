@@ -92,7 +92,7 @@ contract ServiceProviderStorage is RegistryContract {
     }
 
     function deregister(bytes32 _serviceType, address _owner, string calldata _endpoint)
-    external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint deregisteredSpID)
+    external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint deregisteredSpID, uint amountToUnstake)
     {
         require (
             serviceProviderEndpointToId[keccak256(bytes(_endpoint))] != 0,
@@ -108,7 +108,8 @@ contract ServiceProviderStorage is RegistryContract {
             serviceProviderInfo[_serviceType][deregisteredID].owner == _owner,
             "Invalid deregister operation");
 
-        // address delegateOwner = serviceProviderInfo[_serviceType][deregisteredID].delegateOwnerWallet; 
+        // Cache amount to unstake
+        uint unstakeAmount = serviceProviderInfo[_serviceType][deregisteredID].stakeAmount; 
 
         // Update info mapping
         delete serviceProviderInfo[_serviceType][deregisteredID];
@@ -125,7 +126,7 @@ contract ServiceProviderStorage is RegistryContract {
           }
         }
 
-        return deregisteredID;
+        return (deregisteredID, unstakeAmount);
     }
 
     function updateDelegateOwnerWallet(

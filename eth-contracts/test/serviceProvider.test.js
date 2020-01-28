@@ -150,11 +150,16 @@ contract('ServiceProvider test', async (accounts) => {
     return args
   }
 
-  const serviceProviderIDRegisteredToAccount = async (account, type, id) => {
+  const getServiceProviderIdsFromAddress = async (account, type) => {
     // Query and convert returned IDs to bignumber
     let ids = (
       await serviceProviderFactory.getServiceProviderIdsFromAddress(account, type)
     ).map(x => fromBn(x))
+    return ids
+  }
+
+  const serviceProviderIDRegisteredToAccount = async (account, type, id) => {
+    let ids = await getServiceProviderIdsFromAddress(account, type)
     let newIdFound = ids.includes(id)
     return newIdFound
   }
@@ -303,6 +308,42 @@ contract('ServiceProvider test', async (accounts) => {
           stakerAccount))
     })
 
+    it('updates delegateOwnerWallet', async () => {
+      let currentDelegateOwner = await serviceProviderFactory.getDelegateOwnerWallet(
+        testServiceType,
+        testEndpoint,
+        { from: stakerAccount })
+      assert.equal(
+        stakerAccount,
+        currentDelegateOwner,
+        'Expect initial delegateOwnerWallet equal to registrant')
+      // Confirm wrong owner update is rejected
+      await _lib.assertRevert(
+        serviceProviderFactory.updateDelegateOwnerWallet(
+          testServiceType,
+          testEndpoint,
+          accounts[7],
+          { from: accounts[8] }
+        ),
+        'Invalid update'
+      )
+      // Perform and validate update
+      let newDelegateOwnerWallet = accounts[4]
+      let tx = await serviceProviderFactory.updateDelegateOwnerWallet(
+        testServiceType,
+        testEndpoint,
+        newDelegateOwnerWallet,
+        { from: stakerAccount })
+      let newDelegateFromChain = await serviceProviderFactory.getDelegateOwnerWallet(
+        testServiceType,
+        testEndpoint,
+        { from: stakerAccount })
+      assert.equal(
+        newDelegateOwnerWallet,
+        newDelegateFromChain,
+        'Expect updated delegateOwnerWallet equivalency')
+    })
+
     it('successfully registers multiple endpoints w/same account', async () => {
       // Approve staking transfer
       await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: stakerAccount })
@@ -435,7 +476,7 @@ contract('ServiceProvider test', async (accounts) => {
       let firstEndpointStake = updatedSpFactoryFirstEndpointStake
       totalStakedForAccount = fromBn(await staking.totalStakedFor(stakerAccount))
 
-      // Decrease stake
+      // Decrease stake for endpoint1
       await decreaseRegisteredProviderStake(
         testServiceType,
         testEndpoint,
@@ -477,42 +518,25 @@ contract('ServiceProvider test', async (accounts) => {
         decreaseSecondStakeAmount,
         totalStakedForAccount - fromBn(await staking.totalStakedFor(stakerAccount)),
         `Expected total stake decrease for ${stakerAccount} of ${decreaseSecondStakeAmount}`)
-    })
-
-    it('updates delegateOwnerWallet', async () => {
-      let currentDelegateOwner = await serviceProviderFactory.getDelegateOwnerWallet(
+      // Deregister endpoints
+      let deregTx = await deregisterServiceProvider(
         testServiceType,
         testEndpoint,
-        { from: stakerAccount })
-      assert.equal(
-        stakerAccount,
-        currentDelegateOwner,
-        'Expect initial delegateOwnerWallet equal to registrant')
-      // Confirm wrong owner update is rejected
-      await _lib.assertRevert(
-        serviceProviderFactory.updateDelegateOwnerWallet(
-          testServiceType,
-          testEndpoint,
-          accounts[7],
-          { from: accounts[8] }
-        ),
-        'Invalid update'
-      )
-      // Perform and validate update
-      let newDelegateOwnerWallet = accounts[4]
-      let tx = await serviceProviderFactory.updateDelegateOwnerWallet(
+        stakerAccount)
+      let deregisteredId = deregTx.spID
+      let idsList = await getServiceProviderIdsFromAddress(stakerAccount, testServiceType)
+      assert.isFalse(
+        idsList.includes(deregisteredId),
+        'Expected update to array of IDs')
+      deregTx = await deregisterServiceProvider(
         testServiceType,
-        testEndpoint,
-        newDelegateOwnerWallet,
-        { from: stakerAccount })
-      let newDelegateFromChain = await serviceProviderFactory.getDelegateOwnerWallet(
-        testServiceType,
-        testEndpoint,
-        { from: stakerAccount })
-      assert.equal(
-        newDelegateOwnerWallet,
-        newDelegateFromChain,
-        'Expect updated delegateOwnerWallet equivalency')
+        testEndpoint1,
+        stakerAccount)
+      deregisteredId = deregTx.spID
+      idsList = await getServiceProviderIdsFromAddress(stakerAccount, testServiceType)
+      assert.isFalse(
+        idsList.includes(deregisteredId),
+        'Expected update to array of IDs')
     })
   })
 })

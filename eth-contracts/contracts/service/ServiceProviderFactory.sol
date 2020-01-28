@@ -102,16 +102,12 @@ contract ServiceProviderFactory is RegistryContract {
     {
         address owner = msg.sender;
 
-        (uint deregisteredID) = ServiceProviderStorageInterface(
+        (uint deregisteredID, uint unstakeAmount) = ServiceProviderStorageInterface(
             registry.getContract(serviceProviderStorageRegistryKey)
         ).deregister(
             _serviceType,
             owner,
             _endpoint);
-
-        uint unstakeAmount = Staking(
-          registry.getContract(stakingProxyOwnerKey)
-        ).totalStakedFor(owner);
 
         Staking(registry.getContract(stakingProxyOwnerKey)).unstakeFor(
           owner,
