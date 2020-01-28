@@ -120,6 +120,13 @@ contract('ServiceProvider test', async (accounts) => {
     // console.dir(args, { depth: 5 })
   }
 
+  const getStakeAmountFromEndpoint = async (endpoint, type) => {
+    let stakeAmount = await serviceProviderFactory.getStakeAmountFromEndpoint(
+      endpoint,
+      type)
+    return fromBn(stakeAmount)
+  }
+
   const decreaseRegisteredProviderStake = async (type, endpoint, increase, account) => {
     // Approve token transfer from staking contract to account
     let tx = await serviceProviderFactory.decreaseServiceStake(
@@ -238,29 +245,6 @@ contract('ServiceProvider test', async (accounts) => {
         'Endpoint already registered')
     })
 
-    it('successfully registers multiple endpoints w/same account', async () => {
-      // Approve staking transfer
-      await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: stakerAccount })
-      let initialBal = await getTokenBalance(token, stakerAccount)
-      let registerInfo = await registerServiceProvider(
-        testServiceType,
-        testEndpoint1,
-        DEFAULT_AMOUNT,
-        stakerAccount)
-      let newSPId = registerInfo.spID
-      // Confirm change in token balance
-      let finalBal = await getTokenBalance(token, stakerAccount)
-      assert.equal(
-        (initialBal - finalBal),
-        DEFAULT_AMOUNT,
-        'Expected decrease in final balance')
-      let newIdFound = await serviceProviderIDRegisteredToAccount(
-        stakerAccount,
-        testServiceType,
-        newSPId)
-      assert.isTrue(newIdFound, 'Expected valid new ID')
-    })
-
     it('increases stake value', async () => {
       // Confirm initial amount in staking contract
       assert.equal(fromBn(await staking.totalStakedFor(stakerAccount)), DEFAULT_AMOUNT)
@@ -317,6 +301,136 @@ contract('ServiceProvider test', async (accounts) => {
           testEndpoint,
           decreaseStakeAmount,
           stakerAccount))
+    })
+
+    it('successfully registers multiple endpoints w/same account', async () => {
+      // Approve staking transfer
+      await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: stakerAccount })
+      let initialBal = await getTokenBalance(token, stakerAccount)
+      let registerInfo = await registerServiceProvider(
+        testServiceType,
+        testEndpoint1,
+        DEFAULT_AMOUNT,
+        stakerAccount)
+      let newSPId = registerInfo.spID
+      // Confirm change in token balance
+      let finalBal = await getTokenBalance(token, stakerAccount)
+      assert.equal(
+        (initialBal - finalBal),
+        DEFAULT_AMOUNT,
+        'Expected decrease in final balance')
+      let newIdFound = await serviceProviderIDRegisteredToAccount(
+        stakerAccount,
+        testServiceType,
+        newSPId)
+      assert.isTrue(newIdFound, 'Expected valid new ID')
+    })
+
+    it('multiple endpoints w/same account, modify stakes', async () => {
+      // Approve staking transfer
+      let secondEndpointStakeAmount = DEFAULT_AMOUNT / 2
+      await token.approve(stakingAddress, secondEndpointStakeAmount, { from: stakerAccount })
+      let initialBal = await getTokenBalance(token, stakerAccount)
+      let registerInfo = await registerServiceProvider(
+        testServiceType,
+        testEndpoint1,
+        secondEndpointStakeAmount,
+        stakerAccount)
+
+      let newSPId = registerInfo.spID
+      // Confirm change in token balance
+      let finalBal = await getTokenBalance(token, stakerAccount)
+      assert.equal(
+        (initialBal - finalBal),
+        secondEndpointStakeAmount,
+        'Expected decrease in final balance')
+      let newIdFound = await serviceProviderIDRegisteredToAccount(
+        stakerAccount,
+        testServiceType,
+        newSPId)
+      assert.isTrue(newIdFound, 'Expected valid new ID')
+
+      let spFactoryFirstEndpointStake = await getStakeAmountFromEndpoint(testEndpoint, testServiceType)
+      let spFactorySecondEndpointStake = await getStakeAmountFromEndpoint(testEndpoint1, testServiceType)
+      assert.equal(
+        spFactorySecondEndpointStake,
+        secondEndpointStakeAmount,
+        `Expected second endpoint to have ${secondEndpointStakeAmount} staked`)
+
+      let totalStakedForAccount = fromBn(await staking.totalStakedFor(stakerAccount))
+      // Confirm sum of address in staking.sol equals total in sp factory
+      assert.equal(
+        totalStakedForAccount,
+        spFactoryFirstEndpointStake + spFactorySecondEndpointStake,
+        `Expect total Staked ${totalStakedForAccount} = ${testEndpoint}:${spFactoryFirstEndpointStake} + ${testEndpoint1}:${spFactorySecondEndpointStake}`)
+
+      // Increase first endpoint stake
+      let increaseStakeAmount = DEFAULT_AMOUNT / 4
+      await increaseRegisteredProviderStake(
+        testServiceType,
+        testEndpoint,
+        increaseStakeAmount,
+        stakerAccount)
+
+      let updatedSpFactoryFirstEndpointStake =
+        await getStakeAmountFromEndpoint(testEndpoint, testServiceType)
+      let updatedSpFactorySecondEndpointStake =
+        await getStakeAmountFromEndpoint(testEndpoint1, testServiceType)
+
+      assert.equal(
+        updatedSpFactoryFirstEndpointStake,
+        DEFAULT_AMOUNT + increaseStakeAmount,
+        'Expected increase in sp factory stake for endpoint 1')
+      assert.equal(
+        updatedSpFactorySecondEndpointStake,
+        spFactorySecondEndpointStake,
+        'No increase in sp factory stake for endpoint 1')
+
+      // Confirm sum of address in staking.sol equals total in sp factory
+      totalStakedForAccount = fromBn(await staking.totalStakedFor(stakerAccount))
+      assert.equal(
+        totalStakedForAccount,
+        updatedSpFactoryFirstEndpointStake + updatedSpFactorySecondEndpointStake,
+        `Expect total Staked ${totalStakedForAccount} = ${testEndpoint}:${updatedSpFactoryFirstEndpointStake} + ${testEndpoint1}:${updatedSpFactorySecondEndpointStake}`)
+
+      // Cache stake amount for 2nd endpoint
+      spFactorySecondEndpointStake = updatedSpFactorySecondEndpointStake
+
+      // Increase second endpoint stake
+      let increaseSecondStakeAmount = DEFAULT_AMOUNT / 8
+      await increaseRegisteredProviderStake(
+        testServiceType,
+        testEndpoint1,
+        increaseSecondStakeAmount,
+        stakerAccount)
+
+      // Confirm increase in sp factory
+      updatedSpFactorySecondEndpointStake =
+        await getStakeAmountFromEndpoint(testEndpoint1, testServiceType)
+      assert.equal(
+        updatedSpFactorySecondEndpointStake,
+        spFactorySecondEndpointStake + increaseSecondStakeAmount,
+        'Expected increase in sp factory stake for endpoint 2')
+
+      updatedSpFactoryFirstEndpointStake =
+        await getStakeAmountFromEndpoint(testEndpoint, testServiceType)
+
+      totalStakedForAccount = fromBn(await staking.totalStakedFor(stakerAccount))
+      // Confirm sum of address in staking.sol equals total in sp factory
+      assert.equal(
+        totalStakedForAccount,
+        updatedSpFactoryFirstEndpointStake + updatedSpFactorySecondEndpointStake,
+        `Expect total Staked ${totalStakedForAccount} = ${testEndpoint}:${updatedSpFactoryFirstEndpointStake} + ${testEndpoint1}:${updatedSpFactorySecondEndpointStake}`)
+      let stakerAccountBal = await getTokenBalance(token, stakerAccount)
+
+      // Confirm decreasing below current balance is rejected as expected
+      await _lib.assertRevert(
+        decreaseRegisteredProviderStake(
+          testServiceType,
+          testEndpoint1,
+          updatedSpFactorySecondEndpointStake + 10,
+          stakerAccount),
+        'Cannot reduce stake amount below zero')
     })
 
     it('updates delegateOwnerWallet', async () => {
