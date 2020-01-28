@@ -156,7 +156,8 @@ class ServiceProviderFactoryClient extends ContractClient {
       endpoint: info.endpoint,
       spID: serviceId,
       type: serviceType,
-      blocknumber: info.blocknumber
+      blocknumber: info.blocknumber,
+      stakeAmount: info.stakeAmount
     }
   }
 
@@ -175,8 +176,8 @@ class ServiceProviderFactoryClient extends ContractClient {
     return info
   }
 
-  async getServiceProviderIdFromAddress (ownerAddress, serviceType) {
-    const method = await this.getMethod('getServiceProviderIdFromAddress',
+  async getServiceProviderIdsFromAddress (ownerAddress, serviceType) {
+    const method = await this.getMethod('getServiceProviderIdsFromAddress',
       ownerAddress,
       Utils.utf8ToHex(serviceType)
     )
