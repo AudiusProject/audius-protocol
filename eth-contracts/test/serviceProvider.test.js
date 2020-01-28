@@ -372,15 +372,14 @@ contract('ServiceProvider test', async (accounts) => {
         increaseStakeAmount,
         stakerAccount)
 
-      let updatedSpFactoryFirstEndpointStake =
-        await getStakeAmountFromEndpoint(testEndpoint, testServiceType)
-      let updatedSpFactorySecondEndpointStake =
-        await getStakeAmountFromEndpoint(testEndpoint1, testServiceType)
+      let updatedSpFactoryFirstEndpointStake = await getStakeAmountFromEndpoint(testEndpoint, testServiceType)
+      let updatedSpFactorySecondEndpointStake = await getStakeAmountFromEndpoint(testEndpoint1, testServiceType)
 
       assert.equal(
         updatedSpFactoryFirstEndpointStake,
         DEFAULT_AMOUNT + increaseStakeAmount,
         'Expected increase in sp factory stake for endpoint 1')
+
       assert.equal(
         updatedSpFactorySecondEndpointStake,
         spFactorySecondEndpointStake,
@@ -412,18 +411,17 @@ contract('ServiceProvider test', async (accounts) => {
         spFactorySecondEndpointStake + increaseSecondStakeAmount,
         'Expected increase in sp factory stake for endpoint 2')
 
-      updatedSpFactoryFirstEndpointStake =
-        await getStakeAmountFromEndpoint(testEndpoint, testServiceType)
+      updatedSpFactoryFirstEndpointStake = await getStakeAmountFromEndpoint(testEndpoint, testServiceType)
 
       totalStakedForAccount = fromBn(await staking.totalStakedFor(stakerAccount))
+
       // Confirm sum of address in staking.sol equals total in sp factory
       assert.equal(
         totalStakedForAccount,
         updatedSpFactoryFirstEndpointStake + updatedSpFactorySecondEndpointStake,
         `Expect total Staked ${totalStakedForAccount} = ${testEndpoint}:${updatedSpFactoryFirstEndpointStake} + ${testEndpoint1}:${updatedSpFactorySecondEndpointStake}`)
-      let stakerAccountBal = await getTokenBalance(token, stakerAccount)
 
-      // Confirm decreasing below current balance is rejected as expected
+      // Confirm decreasing below current balance in SP Factory is rejected
       await _lib.assertRevert(
         decreaseRegisteredProviderStake(
           testServiceType,
@@ -431,6 +429,54 @@ contract('ServiceProvider test', async (accounts) => {
           updatedSpFactorySecondEndpointStake + 10,
           stakerAccount),
         'Cannot reduce stake amount below zero')
+
+      // Cache values locally
+      let decreaseFirstStakeAmount = DEFAULT_AMOUNT / 12
+      let firstEndpointStake = updatedSpFactoryFirstEndpointStake
+      totalStakedForAccount = fromBn(await staking.totalStakedFor(stakerAccount))
+
+      // Decrease stake
+      await decreaseRegisteredProviderStake(
+        testServiceType,
+        testEndpoint,
+        decreaseFirstStakeAmount,
+        stakerAccount)
+
+      // Validate state change
+      updatedSpFactoryFirstEndpointStake = await getStakeAmountFromEndpoint(testEndpoint, testServiceType)
+      assert.equal(
+        updatedSpFactoryFirstEndpointStake,
+        firstEndpointStake - decreaseFirstStakeAmount,
+        `Expected total stake decreased for ${testEndpoint} in SPFactory`)
+
+      assert.equal(
+        decreaseFirstStakeAmount,
+        totalStakedForAccount - fromBn(await staking.totalStakedFor(stakerAccount)),
+        `Expected total stake decrease for ${stakerAccount} of ${decreaseFirstStakeAmount}`)
+
+      // Cache 2nd SP values locally
+      let decreaseSecondStakeAmount = DEFAULT_AMOUNT / 10
+      let secondEndpointStake = updatedSpFactorySecondEndpointStake
+      totalStakedForAccount = fromBn(await staking.totalStakedFor(stakerAccount))
+
+      // Decrease stake
+      await decreaseRegisteredProviderStake(
+        testServiceType,
+        testEndpoint1,
+        decreaseSecondStakeAmount,
+        stakerAccount)
+
+      // Validate state change
+      updatedSpFactorySecondEndpointStake = await getStakeAmountFromEndpoint(testEndpoint1, testServiceType)
+      assert.equal(
+        updatedSpFactorySecondEndpointStake,
+        secondEndpointStake - decreaseSecondStakeAmount,
+        `Expected total stake decreased for ${testEndpoint1} in SPFactory`)
+
+      assert.equal(
+        decreaseSecondStakeAmount,
+        totalStakedForAccount - fromBn(await staking.totalStakedFor(stakerAccount)),
+        `Expected total stake decrease for ${stakerAccount} of ${decreaseSecondStakeAmount}`)
     })
 
     it('updates delegateOwnerWallet', async () => {
