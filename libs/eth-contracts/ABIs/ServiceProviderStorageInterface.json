@@ -19,6 +19,10 @@
         {
           "name": "_delegateOwnerWallet",
           "type": "address"
+        },
+        {
+          "name": "_stakeAmount",
+          "type": "uint256"
         }
       ],
       "name": "register",
@@ -53,6 +57,10 @@
         {
           "name": "deregisteredSpID",
           "type": "uint256"
+        },
+        {
+          "name": "amountToUnstake",
+          "type": "uint256"
         }
       ],
       "payable": false,
@@ -69,6 +77,10 @@
         {
           "name": "_serviceType",
           "type": "bytes32"
+        },
+        {
+          "name": "_endpoint",
+          "type": "string"
         },
         {
           "name": "_updatedDelegateOwnerWallet",
@@ -115,6 +127,10 @@
         {
           "name": "delegateOwnerWallet",
           "type": "address"
+        },
+        {
+          "name": "stakeAmount",
+          "type": "uint256"
         }
       ],
       "payable": false,
@@ -126,7 +142,7 @@
       "inputs": [
         {
           "name": "_endpoint",
-          "type": "bytes32"
+          "type": "string"
         }
       ],
       "name": "getServiceProviderIdFromEndpoint",
@@ -152,11 +168,11 @@
           "type": "bytes32"
         }
       ],
-      "name": "getServiceProviderIdFromAddress",
+      "name": "getServiceProviderIdsFromAddress",
       "outputs": [
         {
           "name": "",
-          "type": "uint256"
+          "type": "uint256[]"
         }
       ],
       "payable": false,
@@ -192,6 +208,10 @@
         {
           "name": "_serviceType",
           "type": "bytes32"
+        },
+        {
+          "name": "_endpoint",
+          "type": "string"
         }
       ],
       "name": "getDelegateOwnerWallet",
@@ -203,6 +223,91 @@
       ],
       "payable": false,
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_endpoint",
+          "type": "string"
+        },
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getStakeAmountFromEndpoint",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "name": "_endpoint",
+          "type": "string"
+        },
+        {
+          "name": "_increaseStakeAmount",
+          "type": "uint256"
+        },
+        {
+          "name": "_owner",
+          "type": "address"
+        }
+      ],
+      "name": "increaseServiceStake",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "name": "_endpoint",
+          "type": "string"
+        },
+        {
+          "name": "_decreaseStakeAmount",
+          "type": "uint256"
+        },
+        {
+          "name": "_owner",
+          "type": "address"
+        }
+      ],
+      "name": "decreaseServiceStake",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     }
   ]

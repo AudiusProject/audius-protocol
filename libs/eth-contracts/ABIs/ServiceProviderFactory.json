@@ -374,6 +374,10 @@
           "type": "bytes32"
         },
         {
+          "name": "_endpoint",
+          "type": "string"
+        },
+        {
           "name": "_updatedDelegateOwnerWallet",
           "type": "address"
         }
@@ -388,7 +392,7 @@
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0xcd2bc478"
+      "signature": "0xf615a11a"
     },
     {
       "constant": true,
@@ -439,6 +443,10 @@
         {
           "name": "delegateOwnerWallet",
           "type": "address"
+        },
+        {
+          "name": "stakeAmount",
+          "type": "uint256"
         }
       ],
       "payable": false,
@@ -451,7 +459,7 @@
       "inputs": [
         {
           "name": "_endpoint",
-          "type": "bytes32"
+          "type": "string"
         }
       ],
       "name": "getServiceProviderIdFromEndpoint",
@@ -464,7 +472,7 @@
       "payable": false,
       "stateMutability": "view",
       "type": "function",
-      "signature": "0x860dba22"
+      "signature": "0xf9b37ed3"
     },
     {
       "constant": true,
@@ -478,17 +486,17 @@
           "type": "bytes32"
         }
       ],
-      "name": "getServiceProviderIdFromAddress",
+      "name": "getServiceProviderIdsFromAddress",
       "outputs": [
         {
           "name": "spIds",
-          "type": "uint256"
+          "type": "uint256[]"
         }
       ],
       "payable": false,
       "stateMutability": "view",
       "type": "function",
-      "signature": "0x2cd6e60f"
+      "signature": "0x2bec8e16"
     },
     {
       "constant": true,
@@ -496,6 +504,10 @@
         {
           "name": "_serviceType",
           "type": "bytes32"
+        },
+        {
+          "name": "_endpoint",
+          "type": "string"
         }
       ],
       "name": "getDelegateOwnerWallet",
@@ -508,7 +520,31 @@
       "payable": false,
       "stateMutability": "view",
       "type": "function",
-      "signature": "0x59fe321f"
+      "signature": "0x95de5e83"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_endpoint",
+          "type": "string"
+        },
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getStakeAmountFromEndpoint",
+      "outputs": [
+        {
+          "name": "spID",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function",
+      "signature": "0xff006c61"
     }
   ]
 }
