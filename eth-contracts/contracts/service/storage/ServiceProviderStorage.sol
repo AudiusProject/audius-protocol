@@ -40,18 +40,6 @@ contract ServiceProviderStorage is RegistryContract {
     provides the ability to lookup by service type and see all registered services */
     mapping(address => mapping(bytes32 => uint[])) serviceProviderAddressToId;
 
-    // TODO: Validate whether this is still required in some form....?
-    /** @dev - mapping of delegateOwnerWallet -> address */
-    /** @notice - stores the current user of a delegate owner wallet, these cannot be duplicated
-    between registrants */
-   // TODO: Revisit if this still works as expected, we MIGHT have to an endpoint instead as the value
-   // mapping(address => address) delegateOwnerWalletToServiceProvider;
-
-    event TestStg(
-      bytes32 test,
-      string msg);
-
-
     constructor(address _registryAddress) public {
         require(
             _registryAddress != address(0x00),
@@ -100,9 +88,6 @@ contract ServiceProviderStorage is RegistryContract {
           serviceProviderAddressToId[_owner][_serviceType].push(assignedSpId);
         }
 
-        // Update delegate owner wallet mapping
-        // delegateOwnerWalletToServiceProvider[_delegateOwnerWallet] = _owner;
-
         return assignedSpId;
     }
 
@@ -150,21 +135,13 @@ contract ServiceProviderStorage is RegistryContract {
       address _updatedDelegateOwnerWallet
     ) external returns (address) 
     {
-      // uint spID = this.getServiceProviderIdFromAddress(_ownerAddress, _serviceType);
       uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
-      // address oldDelegateWallet = serviceProviderInfo[_serviceType][spID].delegateOwnerWallet;
 
       require(
         serviceProviderInfo[_serviceType][spID].owner == _ownerAddress,
         "Invalid update operation, wrong owner");
 
       serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
-
-      // Invalidate existing mapping
-      // delegateOwnerWalletToServiceProvider[oldDelegateWallet] = address(0x0);
-
-      // Update mapping
-      // delegateOwnerWalletToServiceProvider[_updatedDelegateOwnerWallet] = _ownerAddress; 
     }
 
     function increaseServiceStake(

@@ -79,7 +79,7 @@ contract('ServiceProvider test', async (accounts) => {
 
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)
 
-    // Permission sp factory as caller, from the proxy owner address 
+    // Permission sp factory as caller, from the proxy owner address
     // (which happens to equal treasury in this test case)
     await staking.setStakingOwnerAddress(serviceProviderFactory.address, { from: proxyOwner })
 
