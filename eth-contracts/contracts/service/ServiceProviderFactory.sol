@@ -33,10 +33,7 @@ contract ServiceProviderFactory is RegistryContract {
     );
 
     event UpdatedStakeAmount(
-      uint _spID,
-      bytes32 _serviceType,
       address _owner,
-      string _endpoint,
       uint256 _stakeAmount
     );
 
@@ -72,7 +69,9 @@ contract ServiceProviderFactory is RegistryContract {
         address owner = msg.sender;
 
         // Stake token amount from msg.sender
-        Staking(registry.getContract(stakingProxyOwnerKey)).stakeFor(owner, _stakeAmount, empty);
+        if (_stakeAmount > 0) {
+          Staking(registry.getContract(stakingProxyOwnerKey)).stakeFor(owner, _stakeAmount, empty);
+        }
 
         uint newServiceProviderID = ServiceProviderStorageInterface(
             registry.getContract(serviceProviderStorageRegistryKey)
@@ -83,12 +82,24 @@ contract ServiceProviderFactory is RegistryContract {
             _delegateOwnerWallet
         );
 
+        uint minStakeAmount = Staking(
+          registry.getContract(stakingProxyOwnerKey)
+        ).getMinStakeAmount();
+ 
+        uint currentlyStakedForOwner = Staking(
+          registry.getContract(stakingProxyOwnerKey)
+        ).totalStakedFor(owner);
+
+        require(
+          currentlyStakedForOwner >= minStakeAmount,
+          'Minimum stake amount not met');
+
         emit RegisteredServiceProvider(
             newServiceProviderID,
             _serviceType,
             owner,
             _endpoint,
-            _stakeAmount
+            currentlyStakedForOwner
         );
 
         return newServiceProviderID;
@@ -104,8 +115,8 @@ contract ServiceProviderFactory is RegistryContract {
         uint numberOfEndpoints = ServiceProviderStorageInterface(
             registry.getContract(serviceProviderStorageRegistryKey)
         ).getNumberOfEndpointsFromAddress(owner); 
-        // Unstake on deregistration if and only if this is the last service endpoint
 
+        // Unstake on deregistration if and only if this is the last service endpoint
         uint unstakeAmount = 0;
         // owned by the user
         if (numberOfEndpoints == 1) {
@@ -137,18 +148,16 @@ contract ServiceProviderFactory is RegistryContract {
         return deregisteredID;
     }
 
-    function increaseServiceStake(
-        bytes32 _serviceType,
-        string calldata _endpoint,
-        uint256 _increaseStakeAmount
-    ) external returns (uint newTotalStake)
+    // TODO: Modify increase/decrease to be account based, NOT endpoint based
+    function increaseStake(uint256 _increaseStakeAmount) external returns (uint newTotalStake)
     {
-        // Confirm correct owner for this endpoint
         address owner = msg.sender;
-        uint updatedSpID = this.getServiceProviderIdFromEndpoint(_endpoint);
-        require(updatedSpID != 0, "Increase stake - endpoint not registered");
-        (address stgOwner, , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
-        require(stgOwner == owner, "Increase stake - incorrect owner");
+
+        // Confirm owner has an endpoint
+        uint numberOfEndpoints = ServiceProviderStorageInterface(
+            registry.getContract(serviceProviderStorageRegistryKey)
+        ).getNumberOfEndpointsFromAddress(owner); 
+        require(numberOfEndpoints > 0, 'Registered endpoint required to stake');
 
         // Stake increased token amount for msg.sender
         Staking(
@@ -160,10 +169,7 @@ contract ServiceProviderFactory is RegistryContract {
         ).totalStakedFor(owner);
 
         emit UpdatedStakeAmount(
-            updatedSpID,
-            _serviceType,
             owner,
-            _endpoint,
             newStakeAmount
         );
 
@@ -195,10 +201,7 @@ contract ServiceProviderFactory is RegistryContract {
         ).totalStakedFor(owner);
 
         emit UpdatedStakeAmount(
-            updatedSpID,
-            _serviceType,
             owner,
-            _endpoint,
             newStakeAmount
         );
 

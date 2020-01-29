@@ -115,9 +115,7 @@ contract('ServiceProvider test', async (accounts) => {
       increase,
       { from: account })
 
-    let tx = await serviceProviderFactory.increaseServiceStake(
-      type,
-      endpoint,
+    let tx = await serviceProviderFactory.increaseStake(
       increase,
       { from: account })
 
@@ -176,6 +174,7 @@ contract('ServiceProvider test', async (accounts) => {
   describe('Registration flow', () => {
     let regTx
     const stakerAccount = accounts[1]
+    const stakerAccount2 = accounts[2]
     beforeEach(async () => {
       let initialBal = await getTokenBalance(token, stakerAccount)
 
@@ -247,8 +246,6 @@ contract('ServiceProvider test', async (accounts) => {
     })
 
     it('fails to register duplicate endpoint w/same account', async () => {
-      let initialBal = await getTokenBalance(token, stakerAccount)
-
       // Attempt to register dup endpoint with the same account
       await _lib.assertRevert(
         registerServiceProvider(
@@ -257,6 +254,20 @@ contract('ServiceProvider test', async (accounts) => {
           DEFAULT_AMOUNT,
           stakerAccount),
         'Endpoint already registered')
+    })
+
+    /*
+     * Attempt to register first endpoint with zero stake, expect error
+     */
+    it('fails to register endpoint w/zero stake', async () => {
+      // let initialBal = await getTokenBalance(token, stakerAccount)
+      // Attempt to register first endpoint with zero stake
+      await _lib.assertRevert(
+        registerServiceProvider(
+          testServiceType,
+          testEndpoint1,
+          0,
+          stakerAccount2))
     })
 
     it('increases stake value', async () => {
@@ -388,15 +399,15 @@ contract('ServiceProvider test', async (accounts) => {
       let registerInfo = await registerServiceProvider(
         testServiceType,
         testEndpoint1,
-        DEFAULT_AMOUNT,
+        0,
         stakerAccount)
       let newSPId = registerInfo.spID
       // Confirm change in token balance
       let finalBal = await getTokenBalance(token, stakerAccount)
       assert.equal(
         (initialBal - finalBal),
-        DEFAULT_AMOUNT,
-        'Expected decrease in final balance')
+        0,
+        'Expected no change in final balance')
       let newIdFound = await serviceProviderIDRegisteredToAccount(
         stakerAccount,
         testServiceType,
