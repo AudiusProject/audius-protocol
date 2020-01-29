@@ -80,12 +80,12 @@ contract ServiceProviderStorage is RegistryContract {
         uint spTypeLength = serviceProviderAddressToId[_owner][_serviceType].length;
         bool idFound = false;
         for (uint i = 0; i < spTypeLength; i++) {
-          if (serviceProviderAddressToId[_owner][_serviceType][i] == assignedSpId) {
-            idFound = true;
-          }
+            if (serviceProviderAddressToId[_owner][_serviceType][i] == assignedSpId) {
+                idFound = true;
+            }
         }
         if (!idFound) {
-          serviceProviderAddressToId[_owner][_serviceType].push(assignedSpId);
+            serviceProviderAddressToId[_owner][_serviceType].push(assignedSpId);
         }
 
         // Increment number of endpoints for this address
@@ -111,22 +111,19 @@ contract ServiceProviderStorage is RegistryContract {
             serviceProviderInfo[_serviceType][deregisteredID].owner == _owner,
             "Invalid deregister operation");
 
-        // Cache amount to unstake
-        // uint unstakeAmount = serviceProviderInfo[_serviceType][deregisteredID].stakeAmount; 
-
         // Update info mapping
         delete serviceProviderInfo[_serviceType][deregisteredID];
 
         // Reset id, update array
         uint spTypeLength = serviceProviderAddressToId[_owner][_serviceType].length;
         for (uint i = 0; i < spTypeLength; i ++) {
-          if (serviceProviderAddressToId[_owner][_serviceType][i] == deregisteredID) {
-            // Overwrite element to be deleted with last element in array
-            serviceProviderAddressToId[_owner][_serviceType][i] = serviceProviderAddressToId[_owner][_serviceType][spTypeLength - 1];
-            // Reduce array size, exit loop
-            serviceProviderAddressToId[_owner][_serviceType].length--;
-            break;
-          }
+            if (serviceProviderAddressToId[_owner][_serviceType][i] == deregisteredID) {
+                // Overwrite element to be deleted with last element in array
+                serviceProviderAddressToId[_owner][_serviceType][i] = serviceProviderAddressToId[_owner][_serviceType][spTypeLength - 1];
+                // Reduce array size, exit loop
+                serviceProviderAddressToId[_owner][_serviceType].length--;
+                break;
+            }
         }
 
         // Decrement number of endpoints for this address
@@ -135,19 +132,19 @@ contract ServiceProviderStorage is RegistryContract {
     }
 
     function updateDelegateOwnerWallet(
-      address _ownerAddress,
-      bytes32 _serviceType,
-      string calldata _endpoint,
-      address _updatedDelegateOwnerWallet
-    ) external returns (address) 
+        address _ownerAddress,
+        bytes32 _serviceType,
+        string calldata _endpoint,
+        address _updatedDelegateOwnerWallet
+    ) external returns (address)
     {
-      uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
+        uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
 
-      require(
-        serviceProviderInfo[_serviceType][spID].owner == _ownerAddress,
-        "Invalid update operation, wrong owner");
+        require(
+            serviceProviderInfo[_serviceType][spID].owner == _ownerAddress,
+            "Invalid update operation, wrong owner");
 
-      serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
+        serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
     }
 
     function getTotalServiceTypeProviders(bytes32 _serviceType)
@@ -182,20 +179,22 @@ contract ServiceProviderStorage is RegistryContract {
     function getNumberOfEndpointsFromAddress(address _ownerAddress)
     external view returns (uint numberOfEndpoints)
     {
-      return serviceProviderAddressNumberOfEndpoints[_ownerAddress];
+        return serviceProviderAddressNumberOfEndpoints[_ownerAddress];
     }
 
     function getDelegateOwnerWallet(
-      address _ownerAddress,
-      bytes32 _serviceType,
-      string calldata _endpoint
+        address _ownerAddress,
+        bytes32 _serviceType,
+        string calldata _endpoint
     ) external view returns (address)
     {
-      uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
-      (address owner, , , address delegateOwnerWallet) = this.getServiceProviderInfo(_serviceType, spID);
-      require(
-        owner == _ownerAddress,
-        "Mismatched delegate owner wallet");
-      return delegateOwnerWallet;
+        uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
+        (address owner, , , address delegateOwnerWallet) = this.getServiceProviderInfo(
+            _serviceType,
+            spID);
+        require(
+            owner == _ownerAddress,
+            "Mismatched delegate owner wallet");
+        return delegateOwnerWallet;
     }
 }

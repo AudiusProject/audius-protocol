@@ -41,7 +41,7 @@ interface ServiceProviderStorageInterface {
   function getTotalServiceTypeProviders(
     bytes32 _serviceType
   ) external view returns (uint);
-  
+
   function getDelegateOwnerWallet(
     address _owner,
     bytes32 _serviceType,
@@ -51,7 +51,7 @@ interface ServiceProviderStorageInterface {
   function getStakeAmountFromEndpoint(
     string calldata _endpoint,
     bytes32 _serviceType
-  ) external view returns (uint); 
+  ) external view returns (uint);
 
   function getNumberOfEndpointsFromAddress(address _ownerAddress)
   external view returns (uint);
