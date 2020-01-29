@@ -36,7 +36,7 @@ const assertRevert = async (blockOrPromise, expectedReason) => {
     return
   }
   const expectedMsgFound = error.message.indexOf(expectedReason) >= 0
-  assert.equal(expectedMsgFound, true, `Expected revert reason '${expectedReason}' not found. Found ${error.message}`)
+  assert.strictEqual(expectedMsgFound, true, `Expected revert reason '${expectedReason}' not found. Found ${error.message}`)
 }
 
 const getRandomLocalhost = () => {
@@ -59,6 +59,7 @@ const deregisterAllSPEndpoints = async (libs, account, type) => {
     assert(prevSpInfo.hasOwnProperty('type'), `Expected type, found ${JSON.stringify(prevSpInfo)}`)
     assert(prevSpInfo.hasOwnProperty('blocknumber'), `Expected blocknumber, found ${JSON.stringify(prevSpInfo)}`)
     assert(prevSpInfo.hasOwnProperty('stakeAmount'), `Expected stakeAmount, found ${JSON.stringify(prevSpInfo)}`)
+    console.log(`Deregistering for account ${prevSpInfo.owner}. ${type} - ${prevSpInfo.endpoint}`)
     let tx = await libs.ethContracts.ServiceProviderFactoryClient.deregister(
       type,
       prevSpInfo.endpoint)
@@ -231,10 +232,7 @@ describe('Staking tests', () => {
     it('increases service provider stake', async function () {
       let preIncreaseBalance = await token.balanceOf(sp1)
       let preIncreaseStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
-      let tx = await audius1.ethContracts.ServiceProviderFactoryClient.increaseStake(
-        testServiceType,
-        testEndpt,
-        defaultStake)
+      let tx = await audius1.ethContracts.ServiceProviderFactoryClient.increaseStake(defaultStake)
       //console.dir(tx, {depth:5})
 
       assert.equal(
@@ -253,10 +251,7 @@ describe('Staking tests', () => {
           testEndpt,
           defaultStake),
           "incorrect owner")
-      let tx2 = await audius1.ethContracts.ServiceProviderFactoryClient.increaseStake(
-        testServiceType,
-        testEndpt,
-        defaultStake)
+      let tx2 = await audius1.ethContracts.ServiceProviderFactoryClient.increaseStake(defaultStake)
       //console.dir(tx2, {depth: 5})
     })
 
@@ -264,10 +259,7 @@ describe('Staking tests', () => {
       let preDecreaseBal = await token.balanceOf(sp1)
       let preDecreaseStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
       let decreaseAmount = defaultStake / 2
-      let tx = await audius1.ethContracts.ServiceProviderFactoryClient.decreaseStake(
-        testServiceType,
-        testEndpt,
-        decreaseAmount)
+      let tx = await audius1.ethContracts.ServiceProviderFactoryClient.decreaseStake(decreaseAmount)
 
       assert.equal(
         preDecreaseBal + decreaseAmount,
@@ -289,11 +281,8 @@ describe('Staking tests', () => {
       // Configure amount greater than current stake to try and decrease
       let invalidDecreaseAmount = currentStake + 10
       assertRevert(
-        audius1.ethContracts.ServiceProviderFactoryClient.decreaseStake(
-          testServiceType,
-          testEndpt,
-          invalidDecreaseAmount),
-        'Cannot reduce stake amount below zero'
+        audius1.ethContracts.ServiceProviderFactoryClient.decreaseStake(invalidDecreaseAmount),
+        'Subtraction overflow'
       )
     })
 

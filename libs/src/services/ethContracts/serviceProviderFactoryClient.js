@@ -72,15 +72,12 @@ class ServiceProviderFactoryClient extends ContractClient {
       this.web3Manager.getWalletAddress())
   }
 
-  async increaseStake (serviceType, endpoint, amount) {
+  async increaseStake (amount) {
     const contractAddress = await this.stakingProxyClient.getAddress()
     let tx0 = await this.audiusTokenClient.approve(
       contractAddress,
       amount)
-    let method = await this.getMethod('increaseServiceStake',
-      Utils.utf8ToHex(serviceType),
-      endpoint,
-      amount)
+    let method = await this.getMethod('increaseStake', amount)
     let tx = await this.web3Manager.sendTransaction(method, 1000000)
     return {
       txReceipt: tx,
@@ -88,11 +85,8 @@ class ServiceProviderFactoryClient extends ContractClient {
     }
   }
 
-  async decreaseStake (serviceType, endpoint, amount) {
-    let method = await this.getMethod('decreaseServiceStake',
-      Utils.utf8ToHex(serviceType),
-      endpoint,
-      amount)
+  async decreaseStake (amount) {
+    let method = await this.getMethod('decreaseStake', amount)
     let tx = await this.web3Manager.sendTransaction(method, 1000000)
     return {
       txReceipt: tx
