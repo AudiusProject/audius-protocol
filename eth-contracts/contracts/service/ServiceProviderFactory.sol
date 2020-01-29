@@ -101,18 +101,31 @@ contract ServiceProviderFactory is RegistryContract {
     {
         address owner = msg.sender;
 
-        (uint deregisteredID, uint unstakeAmount) = ServiceProviderStorageInterface(
+        uint numberOfEndpoints = ServiceProviderStorageInterface(
+            registry.getContract(serviceProviderStorageRegistryKey)
+        ).getNumberOfEndpointsFromAddress(owner); 
+        // Unstake on deregistration if and only if this is the last service endpoint
+
+        uint unstakeAmount = 0;
+        // owned by the user
+        if (numberOfEndpoints == 1) {
+          unstakeAmount = Staking(
+            registry.getContract(stakingProxyOwnerKey)
+          ).totalStakedFor(owner);
+
+          Staking(registry.getContract(stakingProxyOwnerKey)).unstakeFor(
+            owner,
+            unstakeAmount,
+            empty
+          );
+        }
+
+        (uint deregisteredID) = ServiceProviderStorageInterface(
             registry.getContract(serviceProviderStorageRegistryKey)
         ).deregister(
             _serviceType,
             owner,
             _endpoint);
-
-        Staking(registry.getContract(stakingProxyOwnerKey)).unstakeFor(
-          owner,
-          unstakeAmount,
-          empty
-        );
 
         emit DeregisteredServiceProvider(
             deregisteredID,
