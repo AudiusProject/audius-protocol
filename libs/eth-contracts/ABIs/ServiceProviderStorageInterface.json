@@ -19,10 +19,6 @@
         {
           "name": "_delegateOwnerWallet",
           "type": "address"
-        },
-        {
-          "name": "_stakeAmount",
-          "type": "uint256"
         }
       ],
       "name": "register",
@@ -56,10 +52,6 @@
       "outputs": [
         {
           "name": "deregisteredSpID",
-          "type": "uint256"
-        },
-        {
-          "name": "amountToUnstake",
           "type": "uint256"
         }
       ],
@@ -127,10 +119,6 @@
         {
           "name": "delegateOwnerWallet",
           "type": "address"
-        },
-        {
-          "name": "stakeAmount",
-          "type": "uint256"
         }
       ],
       "payable": false,
@@ -249,65 +237,22 @@
       "type": "function"
     },
     {
-      "constant": false,
+      "constant": true,
       "inputs": [
         {
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
-          "name": "_endpoint",
-          "type": "string"
-        },
-        {
-          "name": "_increaseStakeAmount",
-          "type": "uint256"
-        },
-        {
-          "name": "_owner",
+          "name": "_ownerAddress",
           "type": "address"
         }
       ],
-      "name": "increaseServiceStake",
+      "name": "getNumberOfEndpointsFromAddress",
       "outputs": [
         {
           "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
-          "name": "_endpoint",
-          "type": "string"
-        },
-        {
-          "name": "_decreaseStakeAmount",
           "type": "uint256"
-        },
-        {
-          "name": "_owner",
-          "type": "address"
-        }
-      ],
-      "name": "decreaseServiceStake",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
         }
       ],
       "payable": false,
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     }
   ]

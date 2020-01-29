@@ -172,23 +172,8 @@
       "inputs": [
         {
           "indexed": false,
-          "name": "_spID",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
           "name": "_owner",
           "type": "address"
-        },
-        {
-          "indexed": false,
-          "name": "_endpoint",
-          "type": "string"
         },
         {
           "indexed": false,
@@ -198,43 +183,7 @@
       ],
       "name": "UpdatedStakeAmount",
       "type": "event",
-      "signature": "0x74b7febb5adb1bb0065200d3ecc2cbf299f2b30bc6bc5adff24f695b34ee2f15"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "test",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "name": "msg",
-          "type": "string"
-        }
-      ],
-      "name": "Test",
-      "type": "event",
-      "signature": "0x48912ec7290f5632f782d57553918136d1725b8af9c6f8805b18e23a35577703"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "test",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "msg",
-          "type": "string"
-        }
-      ],
-      "name": "TestUint",
-      "type": "event",
-      "signature": "0xd4c17c087be9518d1da0c156ff84c0c67887335306b81fb83520c317c3c760f9"
+      "signature": "0xfdde9d924cf1880c6aabf36fad1a7a5fba7e0cb166ae4f05fe60d6946ca6665a"
     },
     {
       "anonymous": false,
@@ -314,19 +263,11 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
-          "name": "_endpoint",
-          "type": "string"
-        },
-        {
           "name": "_increaseStakeAmount",
           "type": "uint256"
         }
       ],
-      "name": "increaseServiceStake",
+      "name": "increaseStake",
       "outputs": [
         {
           "name": "newTotalStake",
@@ -336,25 +277,17 @@
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0x7d2f7876"
+      "signature": "0xeedad66b"
     },
     {
       "constant": false,
       "inputs": [
         {
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
-          "name": "_endpoint",
-          "type": "string"
-        },
-        {
           "name": "_decreaseStakeAmount",
           "type": "uint256"
         }
       ],
-      "name": "decreaseServiceStake",
+      "name": "decreaseStake",
       "outputs": [
         {
           "name": "newTotalStake",
@@ -364,7 +297,7 @@
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0xf61f08d3"
+      "signature": "0xe8b96de1"
     },
     {
       "constant": false,
@@ -443,10 +376,6 @@
         {
           "name": "delegateOwnerWallet",
           "type": "address"
-        },
-        {
-          "name": "stakeAmount",
-          "type": "uint256"
         }
       ],
       "payable": false,
@@ -521,30 +450,6 @@
       "stateMutability": "view",
       "type": "function",
       "signature": "0x95de5e83"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "_endpoint",
-          "type": "string"
-        },
-        {
-          "name": "_serviceType",
-          "type": "bytes32"
-        }
-      ],
-      "name": "getStakeAmountFromEndpoint",
-      "outputs": [
-        {
-          "name": "spID",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function",
-      "signature": "0xff006c61"
     }
   ]
 }
