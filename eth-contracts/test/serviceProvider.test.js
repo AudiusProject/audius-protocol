@@ -36,6 +36,8 @@ contract('ServiceProvider test', async (accounts) => {
 
   const DEFAULT_AMOUNT = 120
   const INITIAL_BAL = 1000
+  const MIN_STAKE_AMOUNT = 10
+  const MAX_STAKE_AMOUNT = DEFAULT_AMOUNT * 100
 
   beforeEach(async () => {
     registry = await Registry.new()
@@ -65,7 +67,7 @@ contract('ServiceProvider test', async (accounts) => {
     stakingAddress = staking.address
 
     // Reset min for test purposes
-    await staking.setMinStakeAmount(0)
+    await staking.setMinStakeAmount(MIN_STAKE_AMOUNT)
 
     // Deploy sp storage
     serviceProviderStorage = await ServiceProviderStorage.new(registry.address)
