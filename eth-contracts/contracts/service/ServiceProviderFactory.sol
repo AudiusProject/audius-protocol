@@ -148,7 +148,6 @@ contract ServiceProviderFactory is RegistryContract {
         return deregisteredID;
     }
 
-    // TODO: Modify increase/decrease to be account based, NOT endpoint based
     function increaseStake(uint256 _increaseStakeAmount) external returns (uint newTotalStake)
     {
         address owner = msg.sender;
@@ -157,7 +156,7 @@ contract ServiceProviderFactory is RegistryContract {
         uint numberOfEndpoints = ServiceProviderStorageInterface(
             registry.getContract(serviceProviderStorageRegistryKey)
         ).getNumberOfEndpointsFromAddress(owner); 
-        require(numberOfEndpoints > 0, 'Registered endpoint required to stake');
+        require(numberOfEndpoints > 0, 'Registered endpoint required to increase stake');
 
         // Stake increased token amount for msg.sender
         Staking(
@@ -176,19 +175,24 @@ contract ServiceProviderFactory is RegistryContract {
         return newStakeAmount;
     }
 
-    function decreaseServiceStake(
-        bytes32 _serviceType,
-        string calldata _endpoint,
-        uint256 _decreaseStakeAmount
-    ) external returns (uint newTotalStake)
+    function decreaseStake(uint256 _decreaseStakeAmount) external returns (uint newTotalStake)
     {
         address owner = msg.sender;
 
-        // Confirm correct owner for this endpoint
-        uint updatedSpID = this.getServiceProviderIdFromEndpoint(_endpoint);
-        require(updatedSpID != 0, "Increase stake - endpoint not registered");
-        (address stgOwner, , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
-        require(stgOwner == owner, "Increase stake - incorrect owner");
+        // Confirm owner has an endpoint
+        uint numberOfEndpoints = ServiceProviderStorageInterface(
+            registry.getContract(serviceProviderStorageRegistryKey)
+        ).getNumberOfEndpointsFromAddress(owner); 
+        require(numberOfEndpoints > 0, 'Registered endpoint required to decrease stake');
+
+        uint currentStakeAmount = Staking(
+          registry.getContract(stakingProxyOwnerKey)
+        ).totalStakedFor(owner);
+
+        // Prohibit decreasing stake to zero without deregistering all endpoints
+        require(
+          currentStakeAmount - _decreaseStakeAmount > 0,
+          'Please deregister endpoints to remove all stake');
 
         // Decrease staked token amount for msg.sender
         Staking(

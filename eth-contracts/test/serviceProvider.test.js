@@ -134,12 +134,10 @@ contract('ServiceProvider test', async (accounts) => {
     return fromBn(await staking.totalStakedFor(account))
   }
 
-  const decreaseRegisteredProviderStake = async (type, endpoint, increase, account) => {
+  const decreaseRegisteredProviderStake = async (decrease, account) => {
     // Approve token transfer from staking contract to account
-    let tx = await serviceProviderFactory.decreaseServiceStake(
-      type,
-      endpoint,
-      increase,
+    let tx = await serviceProviderFactory.decreaseStake(
+      decrease,
       { from: account })
 
     let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
@@ -296,8 +294,6 @@ contract('ServiceProvider test', async (accounts) => {
       let decreaseStakeAmount = DEFAULT_AMOUNT / 2
 
       await decreaseRegisteredProviderStake(
-        testServiceType,
-        testEndpoint,
         decreaseStakeAmount,
         stakerAccount)
 
@@ -322,8 +318,18 @@ contract('ServiceProvider test', async (accounts) => {
       // Confirm revert
       await _lib.assertRevert(
         decreaseRegisteredProviderStake(
-          testServiceType,
-          testEndpoint,
+          decreaseStakeAmount,
+          stakerAccount))
+    })
+
+    it('fails to decrease stake to zero without deregistering SPs', async () => {
+      // Confirm initial amount in staking contract
+      let initialStake = await getStakeAmountForAccount(stakerAccount)
+      assert.equal(initialStake, DEFAULT_AMOUNT)
+      let decreaseStakeAmount = initialStake
+      // Confirm revert
+      await _lib.assertRevert(
+        decreaseRegisteredProviderStake(
           decreaseStakeAmount,
           stakerAccount))
     })
