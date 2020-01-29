@@ -261,7 +261,7 @@ contract('ServiceProvider test', async (accounts) => {
 
     it('increases stake value', async () => {
       // Confirm initial amount in staking contract
-      assert.equal(fromBn(await staking.totalStakedFor(stakerAccount)), DEFAULT_AMOUNT)
+      assert.equal(await getStakeAmountForAccount(stakerAccount), DEFAULT_AMOUNT)
 
       await increaseRegisteredProviderStake(
         testServiceType,
@@ -274,12 +274,12 @@ contract('ServiceProvider test', async (accounts) => {
         regTx.spID)
 
       // Confirm increased amount in staking contract
-      assert.equal(fromBn(await staking.totalStakedFor(stakerAccount)), DEFAULT_AMOUNT * 2)
+      assert.equal(await getStakeAmountForAccount(stakerAccount), DEFAULT_AMOUNT * 2)
     })
 
     it('decreases stake value', async () => {
       // Confirm initial amount in staking contract
-      assert.equal(fromBn(await staking.totalStakedFor(stakerAccount)), DEFAULT_AMOUNT)
+      assert.equal(await getStakeAmountForAccount(stakerAccount), DEFAULT_AMOUNT)
 
       let initialBal = await getTokenBalance(token, stakerAccount)
       let decreaseStakeAmount = DEFAULT_AMOUNT / 2
@@ -295,9 +295,9 @@ contract('ServiceProvider test', async (accounts) => {
         regTx.spID)
 
       // Confirm decreased amount in staking contract
-      assert.equal(fromBn(await staking.totalStakedFor(stakerAccount)), DEFAULT_AMOUNT / 2)
+      assert.equal(await getStakeAmountForAccount(stakerAccount), DEFAULT_AMOUNT / 2)
 
-      // Confir balance
+      // Confirm balance
       assert.equal(
         await getTokenBalance(token, stakerAccount),
         initialBal + (DEFAULT_AMOUNT / 2),
@@ -306,7 +306,7 @@ contract('ServiceProvider test', async (accounts) => {
 
     it('fails to decrease more than staked', async () => {
       // Confirm initial amount in staking contract
-      assert.equal(fromBn(await staking.totalStakedFor(stakerAccount)), DEFAULT_AMOUNT)
+      assert.equal(await getStakeAmountForAccount(stakerAccount), DEFAULT_AMOUNT)
       let decreaseStakeAmount = DEFAULT_AMOUNT + 2
       // Confirm revert
       await _lib.assertRevert(
@@ -317,6 +317,9 @@ contract('ServiceProvider test', async (accounts) => {
           stakerAccount))
     })
 
+    /*
+     * Mutate owner wallet and validate function restrictions
+     */
     it('updates delegateOwnerWallet', async () => {
       let currentDelegateOwner = await serviceProviderFactory.getDelegateOwnerWallet(
         testServiceType,
