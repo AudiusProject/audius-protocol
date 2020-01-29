@@ -207,14 +207,20 @@ contract('ServiceProvider test', async (accounts) => {
         'Expect default stake amount')
     })
 
+    /*
+     * Confirm stake exists in contract for account after basic registration
+     */
     it('confirm registered stake', async () => {
       // Confirm staking contract has correct amt
-      assert.equal(fromBn(await staking.totalStakedFor(stakerAccount)), DEFAULT_AMOUNT)
+      assert.equal(await getStakeAmountForAccount(stakerAccount), DEFAULT_AMOUNT)
     })
 
+    /*
+     * Remove endpoint and confirm transfer of staking balance to owner
+     */
     it('deregisters and unstakes', async () => {
       // Confirm staking contract has correct amt
-      assert.equal(fromBn(await staking.totalStakedFor(stakerAccount)), DEFAULT_AMOUNT)
+      assert.equal(await getStakeAmountForAccount(stakerAccount), DEFAULT_AMOUNT)
 
       // deregister service provider
       let deregTx = await deregisterServiceProvider(
@@ -347,7 +353,34 @@ contract('ServiceProvider test', async (accounts) => {
         'Expect updated delegateOwnerWallet equivalency')
     })
 
-    it('successfully registers multiple endpoints w/same account', async () => {
+    /*
+     * Register a new endpoint under the same account, adding stake to the account
+     */
+    it('multiple endpoints w/same account, increase stake', async () => {
+      let initialBal = await getTokenBalance(token, stakerAccount)
+      let registerInfo = await registerServiceProvider(
+        testServiceType,
+        testEndpoint1,
+        DEFAULT_AMOUNT,
+        stakerAccount)
+      let newSPId = registerInfo.spID
+      // Confirm change in token balance
+      let finalBal = await getTokenBalance(token, stakerAccount)
+      assert.equal(
+        (initialBal - finalBal),
+        DEFAULT_AMOUNT,
+        'Expected decrease in final balance')
+      let newIdFound = await serviceProviderIDRegisteredToAccount(
+        stakerAccount,
+        testServiceType,
+        newSPId)
+      assert.isTrue(newIdFound, 'Expected valid new ID')
+    })
+
+    /*
+     * Register a new endpoint under the same account, without adding stake to the account
+     */
+    it('multiple endpoints w/same account, static stake', async () => {
       let initialBal = await getTokenBalance(token, stakerAccount)
       let registerInfo = await registerServiceProvider(
         testServiceType,
