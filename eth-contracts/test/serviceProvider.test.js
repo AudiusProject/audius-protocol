@@ -92,6 +92,9 @@ contract('ServiceProvider test', async (accounts) => {
   /* Helper functions */
 
   const registerServiceProvider = async (type, endpoint, amount, account) => {
+    // Approve staking transfer
+    await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: account })
+
     let tx = await serviceProviderFactory.register(
       type,
       endpoint,
@@ -174,8 +177,6 @@ contract('ServiceProvider test', async (accounts) => {
     let regTx
     const stakerAccount = accounts[1]
     beforeEach(async () => {
-      // Approve staking transfer
-      await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: stakerAccount })
       let initialBal = await getTokenBalance(token, stakerAccount)
 
       regTx = await registerServiceProvider(
@@ -240,8 +241,6 @@ contract('ServiceProvider test', async (accounts) => {
     })
 
     it('fails to register duplicate endpoint w/same account', async () => {
-      // Approve staking transfer
-      await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: stakerAccount })
       let initialBal = await getTokenBalance(token, stakerAccount)
 
       // Attempt to register dup endpoint with the same account
@@ -349,8 +348,6 @@ contract('ServiceProvider test', async (accounts) => {
     })
 
     it('successfully registers multiple endpoints w/same account', async () => {
-      // Approve staking transfer
-      await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: stakerAccount })
       let initialBal = await getTokenBalance(token, stakerAccount)
       let registerInfo = await registerServiceProvider(
         testServiceType,
