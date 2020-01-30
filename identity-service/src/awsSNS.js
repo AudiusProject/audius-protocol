@@ -88,6 +88,42 @@ function _formatIOSMessage (message, targetARN, badgeCount, playSound = true, ti
   return params
 }
 
+/**
+ * Formats a push notification in a way that's compatible with SNS for android
+ * @param {String} title title of push notification
+ * @param {String} message message of push notification
+ * @param {String} targetARN aws arn address for device
+ *                           `arn:aws:sns:us-west-1:<id>:endpoint/APNS/<namespace>/<uuid>`
+ * @param {Boolean=True} playSound should play a sound when it's sent
+ * NOTE: For reference on https://firebase.google.com/docs/cloud-messaging/http-server-ref
+ */
+function _formatAndroidMessage (message, targetARN, playSound = true, title = null) {
+  let type = 'GCM'
+
+  const jsonMessage = {
+    'default': 'You have new notifications in Audius!'
+  }
+
+  if (type) {
+    let messageData = {
+      'notification': {
+        ...(title ? { title } : {}),
+        'body': message,
+        'sound': playSound && 'default'
+      }
+    }
+    jsonMessage[type] = JSON.stringify(messageData)
+  }
+
+  var params = {
+    Message: JSON.stringify(jsonMessage), /* required */
+    MessageStructure: 'json',
+    TargetArn: targetARN
+  }
+
+  return params
+}
+
 const listEndpointsByPlatformApplication = _promisifySNS('listEndpointsByPlatformApplication')
 const createPlatformEndpoint = _promisifySNS('createPlatformEndpoint')
 const publishPromisified = _promisifySNS('publish')
@@ -156,6 +192,9 @@ async function drainMessageObject (bufferObj) {
       let formattedMessage = null
       if (deviceType === 'ios') {
         formattedMessage = _formatIOSMessage(message, awsARN, newBadgeCount, playSound, title)
+      }
+      if (deviceType === 'android') {
+        formattedMessage = _formatAndroidMessage(message, awsARN, playSound, title)
       }
 
       if (formattedMessage) {

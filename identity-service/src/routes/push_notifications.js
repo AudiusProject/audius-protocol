@@ -12,11 +12,14 @@ const { createPlatformEndpoint, deleteEndpoint } = require('../awsSNS')
 const iOSSNSParams = {
   PlatformApplicationArn: config.get('awsSNSiOSARN')
 }
-// const androidSNSParams = {
-//   PlatformApplicationArn: config.get('awsSNSAndroidARN')
-// }
 
-const DEVICE_TYPES = new Set(['ios', 'android'])
+const androidSNSParams = {
+  PlatformApplicationArn: config.get('awsSNSAndroidARN')
+}
+
+const IOS = 'ios'
+const ANDROID = 'android'
+const DEVICE_TYPES = new Set([IOS, ANDROID])
 
 module.exports = function (app) {
   /**
@@ -76,7 +79,9 @@ module.exports = function (app) {
     }
 
     try {
-      const params = { ...iOSSNSParams, Token: deviceToken }
+      let params = { Token: deviceToken }
+      if (deviceType === IOS) params = { ...iOSSNSParams, ...params }
+      else if (deviceType === ANDROID) params = { ...androidSNSParams, ...params }
       const awsARN = (await createPlatformEndpoint(params))['EndpointArn']
       await models.NotificationDeviceToken.upsert({
         deviceToken,
