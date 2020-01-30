@@ -61,9 +61,9 @@ sh ./scripts/migrate_contracts.sh
 printf '\nSTART tests:\n\n'
 if [ "$#" -eq  "0" ]
  then
-  ./node_modules/.bin/mocha tests/index.js
+  ./node_modules/.bin/nyc --include src ./node_modules/.bin/mocha tests/index.js
 else
-  ./node_modules/.bin/mocha $1
+  ./node_modules/.bin/nyc --include src ./node_modules/.bin/mocha $1
 fi
 
 # run linter
