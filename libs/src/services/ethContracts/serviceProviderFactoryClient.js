@@ -133,7 +133,7 @@ class ServiceProviderFactoryClient extends ContractClient {
 
   async getServiceProviderIdFromEndpoint (endpoint) {
     const method = await this.getMethod('getServiceProviderIdFromEndpoint',
-      Utils.keccak256(endpoint)
+      (endpoint)
     )
     let info = await method.call()
     return info
@@ -148,10 +148,9 @@ class ServiceProviderFactoryClient extends ContractClient {
     return {
       owner: info.owner,
       endpoint: info.endpoint,
-      spID: serviceId,
+      spID: parseInt(serviceId),
       type: serviceType,
-      blocknumber: info.blocknumber,
-      stakeAmount: info.stakeAmount
+      blocknumber: info.blockNumber
     }
   }
 
@@ -180,7 +179,7 @@ class ServiceProviderFactoryClient extends ContractClient {
   }
 
   async getServiceProviderInfoFromAddress (ownerAddress, serviceType) {
-    let idsList = await this.getServiceProviderIdFromAddress(ownerAddress, serviceType)
+    let idsList = await this.getServiceProviderIdsFromAddress(ownerAddress, serviceType)
 
     const spsInfo = await Promise.all(
       _.range(idsList.length).map(i =>

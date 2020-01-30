@@ -18,6 +18,8 @@ let audius2
 let sp1
 let sp2
 
+const fromBn = n => parseInt(n.valueOf(), 10)
+
 const assertThrows = async (blockOrPromise, expectedErrorCode, expectedReason) => {
   try {
     (typeof blockOrPromise === 'function') ? await blockOrPromise() : await blockOrPromise
@@ -54,11 +56,10 @@ const deregisterAllSPEndpoints = async (libs, account, type) => {
       idsRegisteredToAddress)
     // Confirm expected return values
     assert(prevSpInfo.hasOwnProperty('owner'), `Expected owner, found ${JSON.stringify(prevSpInfo)}`)
-    assert(prevSpInfo.hasOwnProperty('endpoint'), `Expected endpoint, found ${JSON.stringify(prevSpInfo)}`)
-    assert(prevSpInfo.hasOwnProperty('spID'), `Expected spID, found ${JSON.stringify(prevSpInfo)}}`)
-    assert(prevSpInfo.hasOwnProperty('type'), `Expected type, found ${JSON.stringify(prevSpInfo)}`)
-    assert(prevSpInfo.hasOwnProperty('blocknumber'), `Expected blocknumber, found ${JSON.stringify(prevSpInfo)}`)
-    assert(prevSpInfo.hasOwnProperty('stakeAmount'), `Expected stakeAmount, found ${JSON.stringify(prevSpInfo)}`)
+    assert(prevSpInfo.hasOwnProperty('endpoint') && prevSpInfo['endpoint'], `Expected endpoint, found ${JSON.stringify(prevSpInfo)}`)
+    assert(prevSpInfo.hasOwnProperty('spID') && prevSpInfo['spID'], `Expected spID, found ${JSON.stringify(prevSpInfo)}}`)
+    assert(prevSpInfo.hasOwnProperty('type') && prevSpInfo['type'], `Expected type, found ${JSON.stringify(prevSpInfo)}`)
+    assert(prevSpInfo.hasOwnProperty('blocknumber') && prevSpInfo['blocknumber'], `Expected blocknumber, found ${JSON.stringify(prevSpInfo)}`)
     let tx = await libs.ethContracts.ServiceProviderFactoryClient.deregister(
       type,
       prevSpInfo.endpoint)
@@ -151,7 +152,7 @@ describe('Staking tests', () => {
       })
     )
     let currentlyStaked = await audius0.ethContracts.StakingProxyClient.totalStaked()
-    assert.equal(
+    assert.strictEqual(
       currentlyStaked,
       0,
       `Expect no stake on finish - found ${currentlyStaked}`)
@@ -161,9 +162,9 @@ describe('Staking tests', () => {
     let tokenAddr = await audius0.ethContracts.StakingProxyClient.token()
     assert(token.contractAddress, tokenAddr, 'Expect correct token address from staking proxy')
     let supportsHistory = await audius0.ethContracts.StakingProxyClient.supportsHistory()
-    assert.equal(supportsHistory, true, 'History support required')
+    assert.strictEqual(supportsHistory, true, 'History support required')
     let currentlyStaked = await audius0.ethContracts.StakingProxyClient.totalStaked()
-    assert.equal(
+    assert.strictEqual(
       currentlyStaked,
       0,
       `Expect no stake on init - found ${currentlyStaked}`)
@@ -177,7 +178,6 @@ describe('Staking tests', () => {
     let initialStake = 0
 
     beforeEach(async () => {
-
       // Clear any accounts registered w/the audius1 account
       initialSPBalance = await token.balanceOf(sp1)
 
@@ -198,32 +198,107 @@ describe('Staking tests', () => {
       // Cache stake amount prior to register
       initialStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
 
+      let preRegistrationHighestSPTypeId = fromBn(
+        await audius0.ethContracts.ServiceProviderFactoryClient.getTotalServiceTypeProviders(testServiceType)
+      )
+
       // Register
       let tx = await audius1.ethContracts.ServiceProviderFactoryClient.register(
         testServiceType,
         testEndpt,
         defaultStake
       )
-      // TOOD: validate tx
-      // console.dir(tx, {depth:5})
+
+      assert.strictEqual(
+        (preRegistrationHighestSPTypeId + 1),
+        tx.spID,
+        `Expect increase of one for service type. Initial ${preRegistrationHighestSPTypeId}. Returned ${tx.spID}`)
+
+      // Validate returned values
+      let idFromEndpoint =
+        fromBn(await audius0.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(testEndpt))
+
+      assert.strictEqual(
+        idFromEndpoint,
+        tx.spID,
+        `Id from endpoint check. Returned ${tx.spID}, queried ${idFromEndpoint}`)
     })
 
     it('register service provider + stake', async function () {
-      assert.equal(
+      // Confirm changes
+      assert.strictEqual(
         initialSPBalance - defaultStake,
         await token.balanceOf(sp1),
         'Expect decrease in bal')
-      assert.equal(
+      assert.strictEqual(
         await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1),
         initialStake + defaultStake,
         'Expect increase in stake')
+    })
+
+    it('registration failure cases', async function () {
+      // Validate error cases
+      assertThrows(
+        audius1.ethContracts.ServiceProviderFactoryClient.register(
+          testServiceType,
+          'not-fqdn-',
+          defaultStake
+        ),
+        'Not a fully qualified domain name')
+      testEndpt2 = getRandomLocalhost()
+      assertThrows(
+        audius1.ethContracts.ServiceProviderFactoryClient.register(
+          testServiceType,
+          testEndpt2,
+          'Not a number'
+        ),
+        'Invalid amount')
+      // Service mismatch
+      nock(testEndpt2)
+        .get('/version')
+        .reply(200, {
+          service: 'mismatched-type',
+          version: '0.0.1'
+        })
+      assertThrows(
+        audius1.ethContracts.ServiceProviderFactoryClient.register(
+          testServiceType,
+          testEndpt2,
+          defaultStake
+        ),
+        'mismatched service type')
+    })
+
+    it('validate query results', async function () {
+      let lastAssignedSPId = fromBn(
+        await audius0.ethContracts.ServiceProviderFactoryClient.getTotalServiceTypeProviders(testServiceType)
+      )
+      let info = await audius1.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo(testServiceType, lastAssignedSPId)
+      nock(testEndpt)
+        .get('/version')
+        .reply(200, {
+          service: testServiceType,
+          version: '0.0.1'
+        })
+      let infoFromEndpoint = await audius1.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(testEndpt)
+      assert.strict.deepEqual(
+        info,
+        infoFromEndpoint,
+        `Expect consistent response between direct query and query by endpoint. Direct ${JSON.stringify(info)}. endpoint ${JSON.stringify(infoFromEndpoint)}`)
+      let infoByAddress = await audius1.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress(sp1, testServiceType)
+      assert(
+        infoByAddress.length === 1,
+        `Expect single endpoint. Found ${infoByAddress}`)
+      assert.strict.deepEqual(
+        infoByAddress[0],
+        infoFromEndpoint,
+        `Expect consistent response between query by addr and query by endpoint. addr ${infoByAddress[0]}. endpoint ${infoFromEndpoint}`)
     })
 
     it('increases service provider stake', async function () {
       let preIncreaseBalance = await token.balanceOf(sp1)
       let preIncreaseStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
       let tx = await audius1.ethContracts.ServiceProviderFactoryClient.increaseStake(defaultStake)
-      //console.dir(tx, {depth:5})
 
       assert.equal(
         preIncreaseBalance - defaultStake,
