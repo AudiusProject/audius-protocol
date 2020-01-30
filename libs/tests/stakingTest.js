@@ -77,7 +77,6 @@ const clearAllRegisteredEndpoints = async () => {
 }
 
 describe('Staking tests', () => {
-  const addressToLibs = {}
   before(async function () {
     await audius0.init()
     token = audius0.ethContracts.AudiusTokenClient
@@ -108,10 +107,6 @@ describe('Staking tests', () => {
     // Refund test accounts
     await token.transfer(sp1, 10000)
     await token.transfer(sp2, 10000)
-
-    addressToLibs[ownerWallet] = audius0
-    addressToLibs[sp1] = audius1
-    addressToLibs[sp2] = audius2
   })
 
   beforeEach(async () => {
@@ -140,17 +135,6 @@ describe('Staking tests', () => {
     assert.strictEqual(sp1Balance, 0)
     assert.strictEqual(sp2Balance, 0)
 
-    let accounts = [ownerWallet, sp1, sp2]
-    await Promise.all(
-      accounts.map(async (x) => {
-        let account = x
-        let accountStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(account)
-        let accountLibs = addressToLibs[account]
-        let idsRegisteredToAddress = await accountLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdsFromAddress(
-          account,
-          testServiceType)
-      })
-    )
     let currentlyStaked = await audius0.ethContracts.StakingProxyClient.totalStaked()
     assert.strictEqual(
       currentlyStaked,
@@ -293,7 +277,15 @@ describe('Staking tests', () => {
         infoByAddress[0],
         infoFromEndpoint,
         `Expect consistent response between query by addr and query by endpoint. addr ${infoByAddress[0]}. endpoint ${infoFromEndpoint}`)
-    })
+      let listOfProviders = await audius0.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(testServiceType)
+      assert(
+        listOfProviders.length === 1,
+        `Expect single endpoint. Found ${listOfProviders}`)
+      assert.strict.deepEqual(
+        listOfProviders[0],
+        infoFromEndpoint,
+        `Expect consistent response between list of providers and query by endpoint. list ${listOfProviders[0]}. endpoint ${infoFromEndpoint}`)
+    }).timeout(20000)
 
     it('increases service provider stake', async function () {
       let preIncreaseBalance = await token.balanceOf(sp1)
