@@ -32,16 +32,6 @@ const copyBuildDirectory = async (outputDirPath) => {
   const dir = path.join(__dirname, '..')
   const localTarget = path.join(dir, 'build/contracts')
 
-  /* Creates libs/eth-contracts folder if folder is not present */
-  async function createEthContractsDir (dir) {
-    try {
-      await fs.ensureDir(dir)
-    } catch (err) {
-      console.log('Error with creating libs/eth-contracts folder.')
-      console.error(err)
-    }
-  }
-
   await createEthContractsDir(outputDirPath)
 
   // clean up unnecessary metadata and copy ABI
@@ -59,6 +49,15 @@ const copyBuildDirectory = async (outputDirPath) => {
       'utf-8'
     )
   })
+}
+
+/** Creates libs/eth-contracts folder if folder is not present */
+async function createEthContractsDir (dir) {
+  try {
+    await fs.ensureDir(dir)
+  } catch (err) {
+    console.log(`Error with creating libs/eth-contracts folder: ${err}`)
+  }
 }
 
 /**
@@ -92,8 +91,8 @@ module.exports = async callback => {
   const libsDirRoot = path.join(getDirectoryRoot(Libs), 'eth-contracts')
   fs.removeSync(libsDirRoot)
 
-  await copyBuildDirectory(libsDirRoot + '/ABIs')
-  outputJsonConfigFile(libsDirRoot + '/config.json')
+  await copyBuildDirectory(path.join(libsDirRoot, '/ABIs'))
+  outputJsonConfigFile(path.join(libsDirRoot, '/config.json'))
 
   // output to Identity Service
   try {

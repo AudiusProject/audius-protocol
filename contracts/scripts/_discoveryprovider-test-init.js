@@ -54,16 +54,6 @@ const copyBuildDirectory = async (outputPath) => {
   let dir = path.join(__dirname, '..')
   let localTarget = path.join(dir, 'build/contracts')
 
-  /* Creates build/contrats folder if folder is not present */
-  async function createContractsDir (dir) {
-    try {
-      await fs.ensureDir(dir)
-    } catch (err) {
-      console.log("Error with creating build/contracts folder.")
-      console.error(err)
-    }
-  }
-
   await createContractsDir(outputPath)
 
   // clean up unnecessary metadata and copy ABI
@@ -77,6 +67,15 @@ const copyBuildDirectory = async (outputPath) => {
     }
     fs.writeFileSync(path.join(outputPath, file), JSON.stringify(newAbi, null, 2), 'utf-8')
   })
+}
+
+/** Creates build/contrats folder if folder is not present */
+async function createContractsDir (dir) {
+  try {
+    await fs.ensureDir(dir)
+  } catch (err) {
+    console.log(`Error with creating build/contracts folder: ${err}`)
+  }
 }
 
 /** Copy the contents of signature_schemas to the given path */
@@ -195,9 +194,9 @@ module.exports = async callback => {
     const libsDirRoot = path.join(getDirectoryRoot(AudiusLibs), 'data-contracts')
     fs.removeSync(libsDirRoot)
     
-    await copyBuildDirectory(libsDirRoot + '/ABIs')
-    copySignatureSchemas(libsDirRoot + '/signatureSchemas.js')
-    outputJsonConfigFile(libsDirRoot + '/config.json')
+    await copyBuildDirectory(path.join(libsDirRoot, '/ABIs'))
+    copySignatureSchemas(path.join(libsDirRoot, '/signatureSchemas.js'))
+    outputJsonConfigFile(path.join(libsDirRoot, '/config.json'))
     
     // output to Identity Service
     try {
