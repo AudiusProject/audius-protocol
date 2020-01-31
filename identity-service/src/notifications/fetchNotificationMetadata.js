@@ -4,7 +4,7 @@ const models = require('../models')
 const NotificationType = require('../routes/notifications').NotificationType
 const Entity = require('../routes/notifications').Entity
 const mergeAudiusAnnoucements = require('../routes/notifications').mergeAudiusAnnoucements
-const formatNotificationProps = require('./formatNotificationMetadata')
+const { formatNotificationProps } = require('./formatNotificationMetadata')
 
 const config = require('../config.js')
 const { logger } = require('../logging')
@@ -101,7 +101,7 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
   let collectionIdsToFetch = []
 
   for (let notification of notifications) {
-    logger.debug('fetchNotificationMetadata.js#notifcation', notification)
+    logger.debug('fetchNotificationMetadata.js#notification', notification)
     switch (notification.type) {
       case NotificationType.Follow: {
         userIdsToFetch.push(

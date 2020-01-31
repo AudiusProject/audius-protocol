@@ -38,6 +38,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       where: { emailFrequency: 'weekly' }
     }).map(x => x.userId)
 
+    logger.info(`processEmailNotifications - ${dailyEmailUsers.length} daily users, ${weeklyEmailUsers.length}`)
     let now = moment()
     let dayAgo = now.clone().subtract(1, 'days')
     let weekAgo = now.clone().subtract(7, 'days')
