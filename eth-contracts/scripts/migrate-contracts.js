@@ -1,6 +1,6 @@
 const fs = require('fs-extra')
 const path = require('path')
-const os = require('os');
+const os = require('os')
 
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
@@ -28,10 +28,21 @@ const getDirectoryRoot = (dirName) => {
 }
 
 /** Copies the contents of build/contracts to the outputDirPath */
-const copyBuildDirectory = (outputDirPath) => {
+const copyBuildDirectory = async (outputDirPath) => {
   const dir = path.join(__dirname, '..')
   const localTarget = path.join(dir, 'build/contracts')
-  fs.mkdirSync(outputDirPath, {recursive: true})
+
+  /* Creates libs/eth-contracts folder if folder is not present */
+  async function createEthContractsDir (dir) {
+    try {
+      await fs.ensureDir(dir)
+    } catch (err) {
+      console.log('Error with creating libs/eth-contracts folder.')
+      console.error(err)
+    }
+  }
+
+  await createEthContractsDir(outputDirPath)
 
   // clean up unnecessary metadata and copy ABI
   const files = fs.readdirSync(localTarget)
@@ -81,7 +92,7 @@ module.exports = async callback => {
   const libsDirRoot = path.join(getDirectoryRoot(Libs), 'eth-contracts')
   fs.removeSync(libsDirRoot)
 
-  copyBuildDirectory(libsDirRoot + '/ABIs')
+  await copyBuildDirectory(libsDirRoot + '/ABIs')
   outputJsonConfigFile(libsDirRoot + '/config.json')
 
   // output to Identity Service

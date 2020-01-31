@@ -50,10 +50,21 @@ const printUsageAndThrow = () => {
 }
 
 /** Copies the contents of build/contracts to the outputPath */
-const copyBuildDirectory = (outputPath) => {
+const copyBuildDirectory = async (outputPath) => {
   let dir = path.join(__dirname, '..')
   let localTarget = path.join(dir, 'build/contracts')
-  fs.mkdirSync(outputPath, {recursive: true})
+
+  /* Creates build/contrats folder if folder is not present */
+  async function createContractsDir (dir) {
+    try {
+      await fs.ensureDir(dir)
+    } catch (err) {
+      console.log("Error with creating build/contracts folder.")
+      console.error(err)
+    }
+  }
+
+  await createContractsDir(outputPath)
 
   // clean up unnecessary metadata and copy ABI
   let files = fs.readdirSync(localTarget)
@@ -135,7 +146,7 @@ module.exports = async callback => {
       let discProvOutputPath = path.join(getDirectoryRoot(AudiusDiscoveryProvider), 'build', 'contracts')
 
       // Copy build directory
-      copyBuildDirectory(discProvOutputPath)
+      await copyBuildDirectory(discProvOutputPath)
 
       let flaskConfigPath = path.join(
         getDirectoryRoot(AudiusDiscoveryProvider),
@@ -151,7 +162,7 @@ module.exports = async callback => {
   else if (process.argv[4] === '-run-shared-lib'){
     let defaultDiscprovEndpoint = 'http://localhost:5000'
     let sharedLibOutputPath = path.join(getDirectoryRoot(AudiusSharedLibs), 'contract_abi')
-    copyBuildDirectory(sharedLibOutputPath)
+    await copyBuildDirectory(sharedLibOutputPath)
     let sharedLibSignatureSchemaOutputPath = path.join(getDirectoryRoot(AudiusSharedLibs), 'signature_schemas')
     copySignatureSchemas(sharedLibSignatureSchemaOutputPath)
 
@@ -184,7 +195,7 @@ module.exports = async callback => {
     const libsDirRoot = path.join(getDirectoryRoot(AudiusLibs), 'data-contracts')
     fs.removeSync(libsDirRoot)
     
-    copyBuildDirectory(libsDirRoot + '/ABIs')
+    await copyBuildDirectory(libsDirRoot + '/ABIs')
     copySignatureSchemas(libsDirRoot + '/signatureSchemas.js')
     outputJsonConfigFile(libsDirRoot + '/config.json')
     
