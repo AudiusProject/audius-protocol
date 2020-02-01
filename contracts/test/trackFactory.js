@@ -4,7 +4,11 @@ import {
   UserStorage,
   TrackStorage,
   UserFactory,
-  TrackFactory } from './_lib/artifacts.js'
+  TrackFactory
+} from './_lib/artifacts.js'
+import * as _constants from './utils/constants'
+import { parseTx } from './utils/parser'
+import { getTrackFromFactory } from './utils/getters'
 
 contract('TrackFactory', async (accounts) => {
   const testUserId = 1
@@ -22,13 +26,13 @@ contract('TrackFactory', async (accounts) => {
     registry = await Registry.new()
     const networkId = Registry.network_id
     userStorage = await UserStorage.new(registry.address)
-    await registry.addContract(_lib.userStorageKey, userStorage.address)
+    await registry.addContract(_constants.userStorageKey, userStorage.address)
     trackStorage = await TrackStorage.new(registry.address)
-    await registry.addContract(_lib.trackStorageKey, trackStorage.address)
-    userFactory = await UserFactory.new(registry.address, _lib.userStorageKey, networkId, accounts[5])
-    await registry.addContract(_lib.userFactoryKey, userFactory.address)
-    trackFactory = await TrackFactory.new(registry.address, _lib.trackStorageKey, _lib.userFactoryKey, networkId)
-    await registry.addContract(_lib.trackFactoryKey, trackFactory.address)
+    await registry.addContract(_constants.trackStorageKey, trackStorage.address)
+    userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, accounts[5])
+    await registry.addContract(_constants.userFactoryKey, userFactory.address)
+    trackFactory = await TrackFactory.new(registry.address, _constants.trackStorageKey, _constants.userFactoryKey, networkId)
+    await registry.addContract(_constants.trackFactoryKey, trackFactory.address)
   })
 
   it('Should add single track', async () => {
@@ -37,8 +41,8 @@ contract('TrackFactory', async (accounts) => {
       userFactory,
       testUserId,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
       true
     )
 
@@ -48,9 +52,9 @@ contract('TrackFactory', async (accounts) => {
       testTrackId1,
       accounts[0],
       testUserId,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size
     )
   })
 
@@ -60,8 +64,8 @@ contract('TrackFactory', async (accounts) => {
       userFactory,
       testUserId,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
       true
     )
 
@@ -74,9 +78,9 @@ contract('TrackFactory', async (accounts) => {
         testTrackId1,
         accounts[1],
         testUserId,
-        _lib.testMultihash.digest2,
-        _lib.testMultihash.hashFn,
-        _lib.testMultihash.size
+        _constants.testMultihash.digest2,
+        _constants.testMultihash.hashFn,
+        _constants.testMultihash.size
       )
     } catch (e) {
       // expected error
@@ -99,8 +103,8 @@ contract('TrackFactory', async (accounts) => {
       userFactory,
       testUserId,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
       true)
 
     // add two tracks
@@ -109,17 +113,17 @@ contract('TrackFactory', async (accounts) => {
       testTrackId1,
       accounts[0],
       testUserId,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size)
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size)
     await _lib.addTrackAndValidate(
       trackFactory,
       testTrackId2,
       accounts[0],
       testUserId,
-      _lib.testMultihash.digest3,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size)
+      _constants.testMultihash.digest3,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size)
   })
 
   it('Should upgrade TrackStorage used by TrackFactory', async () => {
@@ -128,8 +132,8 @@ contract('TrackFactory', async (accounts) => {
       userFactory,
       testUserId,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
       true)
 
     // add track and validate transaction
@@ -138,15 +142,15 @@ contract('TrackFactory', async (accounts) => {
       testTrackId1,
       accounts[0],
       testUserId,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size)
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size)
 
     // deploy new TrackStorage contract instance
     let trackStorage2 = await TrackStorage.new(registry.address)
 
     // upgrade registered TrackStorage
-    await registry.upgradeContract(_lib.trackStorageKey, trackStorage2.address)
+    await registry.upgradeContract(_constants.trackStorageKey, trackStorage2.address)
 
     // confirm first TrackStorage instance is dead
     _lib.assertNoContractExists(trackStorage.address)
@@ -157,23 +161,23 @@ contract('TrackFactory', async (accounts) => {
       testTrackId1,
       accounts[0],
       testUserId,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size)
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size)
   })
 
   it('Should update single track', async () => {
     // Define initial and update data
     let initialData = {
       userId: testUserId,
-      digest: _lib.testMultihash.digest1,
-      hashFn: _lib.testMultihash.hashFn,
-      size: _lib.testMultihash.size
+      digest: _constants.testMultihash.digest1,
+      hashFn: _constants.testMultihash.hashFn,
+      size: _constants.testMultihash.size
     }
 
     let updateData = {
       userId: testUserId2,
-      digest: _lib.testMultihash.digest3,
+      digest: _constants.testMultihash.digest3,
       hashFn: 32,
       size: 16
     }
@@ -184,8 +188,8 @@ contract('TrackFactory', async (accounts) => {
       initialData.userId,
       accounts[0],
       initialData.digest,
-      _lib.userHandle1,
-      _lib.isCreatorTrue)
+      _constants.userHandle1,
+      _constants.isCreatorTrue)
 
     // add 2nd user
     await _lib.addUserAndValidate(
@@ -193,8 +197,8 @@ contract('TrackFactory', async (accounts) => {
       updateData.userId,
       accounts[0],
       initialData.digest,
-      _lib.userHandle2,
-      _lib.isCreatorTrue)
+      _constants.userHandle2,
+      _constants.isCreatorTrue)
 
     // Add track
     await _lib.addTrackAndValidate(
@@ -202,9 +206,9 @@ contract('TrackFactory', async (accounts) => {
       testTrackId1,
       accounts[0],
       initialData.userId,
-      _lib.testMultihash.digest1,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size)
+      _constants.testMultihash.digest1,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size)
 
     const tx = await _lib.updateTrack(
       trackFactory,
@@ -217,14 +221,14 @@ contract('TrackFactory', async (accounts) => {
     )
 
     // Verify event contents as expected
-    let eventArgs = _lib.parseTx(tx).event.args
+    let eventArgs = parseTx(tx).event.args
     assert.isTrue(eventArgs._multihashDigest === updateData.digest, 'Event argument - expect updated digest')
     assert.isTrue(eventArgs._multihashHashFn.toNumber() === updateData.hashFn, 'Event argument - expect updated hash')
     assert.isTrue(eventArgs._multihashSize.toNumber() === updateData.size, 'Event argument - expect updated size')
     assert.isTrue(eventArgs._trackOwnerId.toNumber() === updateData.userId, 'Event argument - expect updated userId')
 
     // Verify updated contents on chain
-    let trackFromChain = await _lib.getTrackFromFactory(
+    let trackFromChain = await getTrackFromFactory(
       testTrackId1,
       trackFactory)
 
@@ -240,8 +244,8 @@ contract('TrackFactory', async (accounts) => {
       userFactory,
       testUserId,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
       true
     )
 
@@ -251,9 +255,9 @@ contract('TrackFactory', async (accounts) => {
       testTrackId1,
       accounts[0],
       testUserId,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size
     )
 
     // attempt to update track from different account
@@ -264,9 +268,9 @@ contract('TrackFactory', async (accounts) => {
         accounts[1],
         testTrackId1,
         testUserId,
-        _lib.testMultihash.digest2,
-        _lib.testMultihash.hashFn,
-        _lib.testMultihash.size
+        _constants.testMultihash.digest2,
+        _constants.testMultihash.hashFn,
+        _constants.testMultihash.size
       )
     } catch (e) {
       // expected error
@@ -279,7 +283,7 @@ contract('TrackFactory', async (accounts) => {
     }
     assert.isTrue(
       caughtError,
-      "Failed to handle case where calling address tries to update track it does not own"
+      'Failed to handle case where calling address tries to update track it does not own'
     )
   })
 
@@ -289,8 +293,8 @@ contract('TrackFactory', async (accounts) => {
       userFactory,
       testUserId,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
       true)
 
     // Add track
@@ -299,9 +303,9 @@ contract('TrackFactory', async (accounts) => {
       testTrackId1,
       accounts[0],
       testUserId,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size)
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size)
 
     // delete track
     await _lib.deleteTrackAndValidate(
@@ -316,11 +320,10 @@ contract('TrackFactory', async (accounts) => {
       userFactory,
       testUserId,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
       true
     )
-
 
     // attempt to delete non-existent track
     let caughtError = false
@@ -341,7 +344,7 @@ contract('TrackFactory', async (accounts) => {
     }
     assert.isTrue(
       caughtError,
-      "Failed to handle case where calling address tries to delete non-existent track"
+      'Failed to handle case where calling address tries to delete non-existent track'
     )
   })
 
@@ -351,8 +354,8 @@ contract('TrackFactory', async (accounts) => {
       userFactory,
       testUserId,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
       true
     )
 
@@ -362,9 +365,9 @@ contract('TrackFactory', async (accounts) => {
       testTrackId1,
       accounts[0],
       testUserId,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size
     )
 
     // attempt to delete track from different account
@@ -386,8 +389,7 @@ contract('TrackFactory', async (accounts) => {
     }
     assert.isTrue(
       caughtError,
-      "Failed to handle case where calling address tries to delete track it does not own"
+      'Failed to handle case where calling address tries to delete track it does not own'
     )
   })
-
 })
