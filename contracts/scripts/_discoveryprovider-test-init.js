@@ -69,7 +69,7 @@ const copyBuildDirectory = async (outputPath) => {
   })
 }
 
-/** Creates build/contrats folder if folder is not present */
+/** Creates build/contracts folder if folder is not present */
 async function createContractsDir (dir) {
   try {
     await fs.ensureDir(dir)
