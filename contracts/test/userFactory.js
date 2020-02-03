@@ -2,8 +2,9 @@ import * as _lib from './_lib/lib.js'
 import {
   Registry,
   UserStorage,
-  UserFactory } from './_lib/artifacts.js'
-
+  UserFactory
+} from './_lib/artifacts.js'
+import * as _constants from './utils/constants'
 
 contract('UserFactory', async (accounts) => {
   const testUserId1 = 1
@@ -18,9 +19,9 @@ contract('UserFactory', async (accounts) => {
     registry = await Registry.new()
     const networkId = Registry.network_id
     userStorage = await UserStorage.new(registry.address)
-    await registry.addContract(_lib.userStorageKey, userStorage.address)
-    userFactory = await UserFactory.new(registry.address, _lib.userStorageKey, networkId, accounts[5])
-    await registry.addContract(_lib.userFactoryKey, userFactory.address)
+    await registry.addContract(_constants.userStorageKey, userStorage.address)
+    userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, accounts[5])
+    await registry.addContract(_constants.userFactoryKey, userFactory.address)
   })
 
   it('Should add single user', async () => {
@@ -28,9 +29,9 @@ contract('UserFactory', async (accounts) => {
       userFactory,
       testUserId1,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
-      _lib.isCreatorTrue
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
+      _constants.isCreatorTrue
     )
   })
 
@@ -40,17 +41,16 @@ contract('UserFactory', async (accounts) => {
       userFactory,
       testUserId1,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
-      _lib.isCreatorTrue
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
+      _constants.isCreatorTrue
     )
 
     // attempt to update above user from different account
     let caughtError = false
     try {
       await _lib.updateUserNameAndValidate(userFactory, testUserId1, accounts[1])
-    }
-    catch (e) {
+    } catch (e) {
       // expected error
       if (e.message.indexOf('Caller does not own userId') >= 0) {
         caughtError = true
@@ -68,16 +68,16 @@ contract('UserFactory', async (accounts) => {
       userFactory,
       testUserId1,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
-      _lib.isCreatorTrue)
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
+      _constants.isCreatorTrue)
 
     await _lib.addUserAndValidate(
       userFactory,
       testUserId2,
       accounts[0],
-      _lib.testMultihash.digest2,
-      _lib.userHandle2,
+      _constants.testMultihash.digest2,
+      _constants.userHandle2,
       true)
   })
 
@@ -88,9 +88,9 @@ contract('UserFactory', async (accounts) => {
       userFactory,
       testUserId1,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandleUC,
-      _lib.isCreatorTrue)
+      _constants.testMultihash.digest1,
+      _constants.userHandleUC,
+      _constants.isCreatorTrue)
 
     // attempt to add a user with the same error and catch the error
     // Not sure this is the best way to catch this revert, but best way I could think of and backed by SO
@@ -100,8 +100,8 @@ contract('UserFactory', async (accounts) => {
         userFactory,
         testUserId2,
         accounts[0],
-        _lib.testMultihash.digest2,
-        _lib.userHandleMC,
+        _constants.testMultihash.digest2,
+        _constants.userHandleMC,
         true)
     } catch (e) {
       // expected error
@@ -125,18 +125,18 @@ contract('UserFactory', async (accounts) => {
       userFactory,
       testUserId1,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
-      _lib.isCreatorTrue
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
+      _constants.isCreatorTrue
     )
 
     await _lib.addUserAndValidate(
       userFactory,
       testUserId2,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle2,
-      _lib.isCreatorTrue
+      _constants.testMultihash.digest1,
+      _constants.userHandle2,
+      _constants.isCreatorTrue
     )
 
     let caughtError = false
@@ -145,9 +145,9 @@ contract('UserFactory', async (accounts) => {
         userFactory,
         testUserId3,
         accounts[0],
-        _lib.testMultihash.digest1,
-        _lib.userHandleBad,
-        _lib.isCreatorTrue
+        _constants.testMultihash.digest1,
+        _constants.userHandleBad,
+        _constants.isCreatorTrue
       )
     } catch (e) {
       // expected error
@@ -168,9 +168,9 @@ contract('UserFactory', async (accounts) => {
       userFactory,
       testUserId1,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
-      _lib.isCreatorTrue)
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
+      _constants.isCreatorTrue)
 
     const v1event = await _lib.markUserVerifiedAndValidate(userFactory, accounts[5], testUserId1, true)
     const v2event = await _lib.markUserVerifiedAndValidate(userFactory, accounts[5], testUserId1, false)
@@ -184,9 +184,9 @@ contract('UserFactory', async (accounts) => {
       userFactory,
       testUserId1,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
-      _lib.isCreatorTrue)
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
+      _constants.isCreatorTrue)
 
     let caughtError = false
     try {
@@ -204,15 +204,15 @@ contract('UserFactory', async (accounts) => {
       userFactory,
       testUserId1,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
-      _lib.isCreatorTrue)
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
+      _constants.isCreatorTrue)
 
     // deploy new UserStorage instance
     let userStorage2 = await UserStorage.new(registry.address)
 
     // upgrade registered UserStorage
-    await registry.upgradeContract(_lib.userStorageKey, userStorage2.address)
+    await registry.upgradeContract(_constants.userStorageKey, userStorage2.address)
 
     // confirm first UserStorage instance is dead
     _lib.assertNoContractExists(userStorage.address)
@@ -222,8 +222,8 @@ contract('UserFactory', async (accounts) => {
       userFactory,
       testUserId1,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
-      _lib.isCreatorTrue)
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
+      _constants.isCreatorTrue)
   })
 })

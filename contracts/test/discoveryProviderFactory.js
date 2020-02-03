@@ -1,4 +1,6 @@
-import * as _lib from './_lib/lib.js'
+import * as _constants from './utils/constants'
+import * as _validator from './utils/validator'
+import { getDiscprovFromFactory } from './utils/getters'
 import {
   Registry,
   DiscoveryProviderStorage,
@@ -18,9 +20,9 @@ contract('DiscoveryProviderFactory', async (accounts) => {
   beforeEach(async () => {
     registry = await Registry.new()
     discoveryProviderStorage = await DiscoveryProviderStorage.new(registry.address)
-    await registry.addContract(_lib.discoveryProviderStorageKey, discoveryProviderStorage.address)
-    discoveryProviderFactory = await DiscoveryProviderFactory.new(registry.address, _lib.discoveryProviderStorageKey)
-    await registry.addContract(_lib.discoveryProviderFactoryKey, discoveryProviderFactory.address)
+    await registry.addContract(_constants.discoveryProviderStorageKey, discoveryProviderStorage.address)
+    discoveryProviderFactory = await DiscoveryProviderFactory.new(registry.address, _constants.discoveryProviderStorageKey)
+    await registry.addContract(_constants.discoveryProviderFactoryKey, discoveryProviderFactory.address)
   })
 
   it('Should register one discovery provider', async () => {
@@ -28,13 +30,13 @@ contract('DiscoveryProviderFactory', async (accounts) => {
     let tx = await discoveryProviderFactory.register(endpoints[3])
 
     // validate event output matches transaction input
-    let event = _lib.validateDiscprovRegisterEvent(tx, discprovId, accounts[0], endpoints[3])
+    let event = _validator.validateDiscprovRegisterEvent(tx, discprovId, accounts[0], endpoints[3])
 
     // retrieve discprov from contract
-    let discprov = await _lib.getDiscprovFromFactory(event.discprovId, discoveryProviderFactory)
+    let discprov = await getDiscprovFromFactory(event.discprovId, discoveryProviderFactory)
 
     // validate retrieved discprov fields match transaction inputs
-    _lib.validateRegisteredDiscprov(discprov, accounts[0], endpoints[3])
+    _validator.validateRegisteredDiscprov(discprov, accounts[0], endpoints[3])
   })
 
   it('Should retrieve all registered discovery providers', async () => {
@@ -47,7 +49,7 @@ contract('DiscoveryProviderFactory', async (accounts) => {
 
     // validate event outputs match transaction inputs
     for (i = 0; i < endpoints.length; i++) {
-      _lib.validateDiscprovRegisterEvent(
+      _validator.validateDiscprovRegisterEvent(
         transactions[i],
         i + 1,
         accounts[0],

@@ -7,7 +7,9 @@ import {
   TrackFactory,
   PlaylistStorage,
   PlaylistFactory,
-  UserLibraryFactory } from './_lib/artifacts.js'
+  UserLibraryFactory
+} from './_lib/artifacts.js'
+import * as _constants from './utils/constants'
 
 contract('UserLibrary', async (accounts) => {
   const testUserId1 = 1
@@ -37,49 +39,49 @@ contract('UserLibrary', async (accounts) => {
     registry = await Registry.new()
     const networkId = Registry.network_id
     userStorage = await UserStorage.new(registry.address)
-    await registry.addContract(_lib.userStorageKey, userStorage.address)
+    await registry.addContract(_constants.userStorageKey, userStorage.address)
     trackStorage = await TrackStorage.new(registry.address)
-    await registry.addContract(_lib.trackStorageKey, trackStorage.address)
-    userFactory = await UserFactory.new(registry.address, _lib.userStorageKey, networkId, accounts[5])
-    await registry.addContract(_lib.userFactoryKey, userFactory.address)
-    trackFactory = await TrackFactory.new(registry.address, _lib.trackStorageKey, _lib.userFactoryKey, networkId)
-    await registry.addContract(_lib.trackFactoryKey, trackFactory.address)
+    await registry.addContract(_constants.trackStorageKey, trackStorage.address)
+    userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, accounts[5])
+    await registry.addContract(_constants.userFactoryKey, userFactory.address)
+    trackFactory = await TrackFactory.new(registry.address, _constants.trackStorageKey, _constants.userFactoryKey, networkId)
+    await registry.addContract(_constants.trackFactoryKey, trackFactory.address)
 
     // Deploy playlist related contracts
     playlistStorage = await PlaylistStorage.new(registry.address)
-    await registry.addContract(_lib.playlistStorageKey, playlistStorage.address)
+    await registry.addContract(_constants.playlistStorageKey, playlistStorage.address)
     playlistFactory = await PlaylistFactory.new(
       registry.address,
-      _lib.playlistStorageKey,
-      _lib.userFactoryKey,
-      _lib.trackFactoryKey,
+      _constants.playlistStorageKey,
+      _constants.userFactoryKey,
+      _constants.trackFactoryKey,
       networkId)
 
-    await registry.addContract(_lib.playlistFactoryKey, playlistFactory.address)
+    await registry.addContract(_constants.playlistFactoryKey, playlistFactory.address)
 
     userLibraryFactory = await UserLibraryFactory.new(
       registry.address,
-      _lib.userFactoryKey,
-      _lib.trackFactoryKey,
-      _lib.playlistFactoryKey,
+      _constants.userFactoryKey,
+      _constants.trackFactoryKey,
+      _constants.playlistFactoryKey,
       networkId)
 
-    await registry.addContract(_lib.userLibraryFactoryKey, userLibraryFactory.address)
+    await registry.addContract(_constants.userLibraryFactoryKey, userLibraryFactory.address)
 
     // Add two users
     await _lib.addUserAndValidate(
       userFactory,
       testUserId1,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
       true)
     await _lib.addUserAndValidate(
       userFactory,
       testUserId2,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle2,
+      _constants.testMultihash.digest1,
+      _constants.userHandle2,
       true)
 
     // Add 2 tracks
@@ -88,17 +90,17 @@ contract('UserLibrary', async (accounts) => {
       testTrackId1,
       accounts[0],
       testUserId1,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size)
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size)
     await _lib.addTrackAndValidate(
       trackFactory,
       testTrackId2,
       accounts[0],
       testUserId2,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size)
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size)
 
     // Add a playlist
     await _lib.addPlaylistAndValidate(
@@ -183,7 +185,7 @@ contract('UserLibrary', async (accounts) => {
       }
     }
     assert.isTrue(caughtError, 'Call succeeded unexpectedly')
-    
+
     caughtError = false
     try {
       // add playlist save with invalid playlist
@@ -417,5 +419,4 @@ contract('UserLibrary', async (accounts) => {
     }
     assert.isTrue(caughtError, 'Call succeeded unexpectedly')
   })
-
 })

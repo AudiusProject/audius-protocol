@@ -1,4 +1,7 @@
 import * as _lib from './_lib/lib.js'
+import { parseTx } from './utils/parser'
+import { toStr } from './utils/util'
+import * as _constants from './utils/constants'
 import {
   Registry,
   TestContract,
@@ -7,9 +10,11 @@ import {
   UserFactory,
   TrackFactory
 } from './_lib/artifacts.js'
+import { getUserFromFactory } from './utils/getters'
+import { validateObj } from './utils/validator'
 
 contract('Registry', async (accounts) => {
-  const contractName = _lib.strings.test
+  const contractName = _constants.strings.test
 
   let registry
 
@@ -22,11 +27,11 @@ contract('Registry', async (accounts) => {
     let testContractAddress = testContract.address
 
     let tx = await registry.addContract(contractName, testContractAddress)
-    let txInfo = _lib.parseTx(tx)
+    let txInfo = parseTx(tx)
 
     // assert event params are as expected
     assert.equal(txInfo.event.name, 'ContractAdded', 'Expected same event name')
-    assert.equal(_lib.toStr(txInfo.event.args._name), _lib.toStr(contractName), 'Expected same contract name')
+    assert.equal(toStr(txInfo.event.args._name), toStr(contractName), 'Expected same contract name')
     assert.equal(txInfo.event.args._address, testContractAddress, 'Expected same contract address')
 
     // ensure registered contract has same address as originally deployed contract
@@ -64,9 +69,9 @@ contract('Registry', async (accounts) => {
 
     // unregister contract and confirm event params as expected and registered address = 0x0
     let removeTx = await registry.removeContract(contractName)
-    let removeTxInfo = _lib.parseTx(removeTx)
+    let removeTxInfo = parseTx(removeTx)
     assert.equal(removeTxInfo.event.name, 'ContractRemoved', 'Expected same event name')
-    assert.equal(_lib.toStr(removeTxInfo.event.args._name), _lib.toStr(contractName), 'Expected same contract name')
+    assert.equal(toStr(removeTxInfo.event.args._name), toStr(contractName), 'Expected same contract name')
     assert.equal(removeTxInfo.event.args._address, regContractAddress, 'Expected same contract address')
     regContractAddress = await registry.getContract.call(contractName)
     assert.equal(parseInt(regContractAddress), 0x0, 'Expected zeroed contract address')
@@ -100,26 +105,26 @@ contract('Registry', async (accounts) => {
 
     // upgrade registered contract to testContract2 -> assert event params are as expected
     upgradeTx = await registry.upgradeContract(contractName, testContract2.address)
-    upgradeTxInfo = _lib.parseTx(upgradeTx)
+    upgradeTxInfo = parseTx(upgradeTx)
 
     regContractAddress = await registry.getContract.call(contractName)
     assert.equal(testContract2.address, regContractAddress, 'Expected same contract address')
 
     assert.equal(upgradeTxInfo.event.name, 'ContractUpgraded', 'Expected same event name')
-    assert.equal(_lib.toStr(upgradeTxInfo.event.args._name), _lib.toStr(contractName), 'Expected same contract name')
+    assert.equal(toStr(upgradeTxInfo.event.args._name), toStr(contractName), 'Expected same contract name')
     assert.equal(upgradeTxInfo.event.args._oldAddress, testContract1.address, 'Expected same contract address')
     assert.equal(upgradeTxInfo.event.args._newAddress, testContract2.address, 'Expected same contract address')
 
     // upgrade registered contract from testContract2 to testContract3 -> assert event params are as expected
     // ensures an upgraded contract can be upgraded again
     upgradeTx = await registry.upgradeContract(contractName, testContract3.address)
-    upgradeTxInfo = _lib.parseTx(upgradeTx)
+    upgradeTxInfo = parseTx(upgradeTx)
 
     regContractAddress = await registry.getContract.call(contractName)
     assert.equal(testContract3.address, regContractAddress, 'Expected same contract address')
 
     assert.equal(upgradeTxInfo.event.name, 'ContractUpgraded', 'Expected same event name')
-    assert.equal(_lib.toStr(upgradeTxInfo.event.args._name), _lib.toStr(contractName), 'Expected same contract name')
+    assert.equal(toStr(upgradeTxInfo.event.args._name), toStr(contractName), 'Expected same contract name')
     assert.equal(upgradeTxInfo.event.args._oldAddress, testContract2.address, 'Expected same contract address')
     assert.equal(upgradeTxInfo.event.args._newAddress, testContract3.address, 'Expected same contract address')
 
@@ -162,7 +167,7 @@ contract('Registry', async (accounts) => {
     // attempt to re-point testContract to new registry from different account
     let caughtError = false
     try {
-      await testContract.setRegistry(registry2.address, {from: accounts[5]})
+      await testContract.setRegistry(registry2.address, { from: accounts[5] })
       await registry2.addContract(contractName, testContract.address)
     } catch (e) {
       // handle expected error
@@ -175,7 +180,7 @@ contract('Registry', async (accounts) => {
     }
     assert.isTrue(
       caughtError,
-      "Failed to handle case where foreign account tries to re-point registry contracts to new registry"
+      'Failed to handle case where foreign account tries to re-point registry contracts to new registry'
     )
   })
 
@@ -183,13 +188,13 @@ contract('Registry', async (accounts) => {
     // deploy contracts
     const networkId = Registry.network_id
     let userStorage = await UserStorage.new(registry.address)
-    await registry.addContract(_lib.userStorageKey, userStorage.address)
+    await registry.addContract(_constants.userStorageKey, userStorage.address)
     let trackStorage = await TrackStorage.new(registry.address)
-    await registry.addContract(_lib.trackStorageKey, trackStorage.address)
-    let userFactory = await UserFactory.new(registry.address, _lib.userStorageKey, networkId, accounts[5])
-    await registry.addContract(_lib.userFactoryKey, userFactory.address)
-    let trackFactory = await TrackFactory.new(registry.address, _lib.trackStorageKey, _lib.userFactoryKey, networkId)
-    await registry.addContract(_lib.trackFactoryKey, trackFactory.address)
+    await registry.addContract(_constants.trackStorageKey, trackStorage.address)
+    let userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, accounts[5])
+    await registry.addContract(_constants.userFactoryKey, userFactory.address)
+    let trackFactory = await TrackFactory.new(registry.address, _constants.trackStorageKey, _constants.userFactoryKey, networkId)
+    await registry.addContract(_constants.trackFactoryKey, trackFactory.address)
 
     // perform expected behavior - add+validate user, add+validate track
     let userId = 1
@@ -200,8 +205,8 @@ contract('Registry', async (accounts) => {
       userFactory,
       userId,
       userWallet,
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
       true
     )
     await _lib.addTrackAndValidate(
@@ -209,9 +214,9 @@ contract('Registry', async (accounts) => {
       trackId,
       userWallet,
       userId,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size
     )
 
     // deploy 'ugraded' registry
@@ -219,26 +224,25 @@ contract('Registry', async (accounts) => {
 
     // re-point Audius contracts to new registry
     await userStorage.setRegistry(registry2.address)
-    await registry2.addContract(_lib.userStorageKey, userStorage.address)
+    await registry2.addContract(_constants.userStorageKey, userStorage.address)
     await trackStorage.setRegistry(registry2.address)
-    await registry2.addContract(_lib.trackStorageKey, trackStorage.address)
+    await registry2.addContract(_constants.trackStorageKey, trackStorage.address)
     await userFactory.setRegistry(registry2.address)
-    await registry2.addContract(_lib.userFactoryKey, userFactory.address)
+    await registry2.addContract(_constants.userFactoryKey, userFactory.address)
     await trackFactory.setRegistry(registry2.address)
-    await registry2.addContract(_lib.trackFactoryKey, trackFactory.address)
+    await registry2.addContract(_constants.trackFactoryKey, trackFactory.address)
 
     // perform expected behavior - retrieve+validate previous user; add+validate new track with previous user
-    let user = await _lib.getUserFromFactory(userId, userFactory)
-    _lib.validateUser(user, userWallet, _lib.testMultihash.digest1, _lib.userHandle1)
+    let user = await getUserFromFactory(userId, userFactory)
+    validateObj(user, { wallet: userWallet, handle: toStr(_constants.userHandle1) })
     await _lib.addTrackAndValidate(
       trackFactory,
       trackId2,
       userWallet,
       userId,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size
     )
   })
-
 })
