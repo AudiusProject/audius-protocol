@@ -48,7 +48,7 @@ const printUsageAndThrow = () => {
   console.log('')
   throw new Error('Incorrect usage')
 }
- ik
+
 /** Copies the contents of build/contracts to the outputPath */
 const copyBuildDirectory = async (outputPath) => {
   let dir = path.join(__dirname, '..')
