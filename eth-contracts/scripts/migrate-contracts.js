@@ -95,28 +95,28 @@ module.exports = async callback => {
 
   // output to Identity Service
   try {
-    outputJsonConfigFile(getDirectoryRoot(AudiusIdentityService) + '/eth-contract-config.json')
+    outputJsonConfigFile(path.join(getDirectoryRoot(AudiusIdentityService), '/eth-contract-config.json'))
   } catch (e) {
     console.log("Identity service doesn't exist, probably running via E2E setup scripts", e)
   }
 
   // output to Creator Node
   try {
-    outputJsonConfigFile(getDirectoryRoot(AudiusCreatorNode) + '/eth-contract-config.json')
+    outputJsonConfigFile(path.join(getDirectoryRoot(AudiusCreatorNode), '/eth-contract-config.json'))
   } catch (e) {
     console.log("Creator node doesn't exist, probably running via E2E setup scripts", e)
   }
 
   // special case for content service which isn't run locally for E2E test or during front end dev
   try {
-    outputJsonConfigFile(getDirectoryRoot(AudiusContentService) + '/eth-contract-config.json')
+    outputJsonConfigFile(path.join(getDirectoryRoot(AudiusContentService), '/eth-contract-config.json'))
   } catch (e) {
     console.log("Content service folder doesn't exist, probably running via E2E setup scripts", e)
   }
 
-  const dappOutput = os.homedir() + '/.audius'
+  const dappOutput = path.join(os.homedir(), './audius')
   if (!fs.existsSync(dappOutput)) {
     fs.mkdirSync(dappOutput, { recursive: true })
   }
-  outputJsonConfigFile(dappOutput + '/eth-config.json')
+  outputJsonConfigFile(path.join(dappOutput, '/eth-config.json'))
 }

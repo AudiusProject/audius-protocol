@@ -51,7 +51,7 @@ npm run ganache
 sleep 5
 
 node_modules/.bin/truffle migrate
-node_modules/.bin/truffle exec scripts/_discoveryprovider-test-init.js -run
+node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run
 cd_discprov_repo
 
 # Stop dependencies, if present

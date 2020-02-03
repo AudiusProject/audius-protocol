@@ -44,7 +44,7 @@ const getDirectoryRoot = (dirName) => {
 /** Print expected usage */
 const printUsageAndThrow = () => {
   console.log('\nIncorrect usage. Please use the following format:')
-  console.log('truffle exec _discoveryprovider-test-init.js -run')
+  console.log('truffle exec _contractsLocalSetup.js -run')
   console.log('')
   throw new Error('Incorrect usage')
 }
