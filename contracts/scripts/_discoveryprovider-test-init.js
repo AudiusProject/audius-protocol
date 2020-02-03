@@ -50,10 +50,11 @@ const printUsageAndThrow = () => {
 }
 
 /** Copies the contents of build/contracts to the outputPath */
-const copyBuildDirectory = (outputPath) => {
+const copyBuildDirectory = async (outputPath) => {
   let dir = path.join(__dirname, '..')
   let localTarget = path.join(dir, 'build/contracts')
-  fs.mkdirSync(outputPath, {recursive: true})
+
+  await createContractsDir(outputPath)
 
   // clean up unnecessary metadata and copy ABI
   let files = fs.readdirSync(localTarget)
@@ -66,6 +67,15 @@ const copyBuildDirectory = (outputPath) => {
     }
     fs.writeFileSync(path.join(outputPath, file), JSON.stringify(newAbi, null, 2), 'utf-8')
   })
+}
+
+/** Creates build/contracts folder if folder is not present */
+async function createContractsDir (dir) {
+  try {
+    await fs.ensureDir(dir)
+  } catch (err) {
+    console.log(`Error with creating build/contracts folder: ${err}`)
+  }
 }
 
 /** Copy the contents of signature_schemas to the given path */
@@ -135,7 +145,7 @@ module.exports = async callback => {
       let discProvOutputPath = path.join(getDirectoryRoot(AudiusDiscoveryProvider), 'build', 'contracts')
 
       // Copy build directory
-      copyBuildDirectory(discProvOutputPath)
+      await copyBuildDirectory(discProvOutputPath)
 
       let flaskConfigPath = path.join(
         getDirectoryRoot(AudiusDiscoveryProvider),
@@ -151,7 +161,7 @@ module.exports = async callback => {
   else if (process.argv[4] === '-run-shared-lib'){
     let defaultDiscprovEndpoint = 'http://localhost:5000'
     let sharedLibOutputPath = path.join(getDirectoryRoot(AudiusSharedLibs), 'contract_abi')
-    copyBuildDirectory(sharedLibOutputPath)
+    await copyBuildDirectory(sharedLibOutputPath)
     let sharedLibSignatureSchemaOutputPath = path.join(getDirectoryRoot(AudiusSharedLibs), 'signature_schemas')
     copySignatureSchemas(sharedLibSignatureSchemaOutputPath)
 
@@ -184,9 +194,9 @@ module.exports = async callback => {
     const libsDirRoot = path.join(getDirectoryRoot(AudiusLibs), 'data-contracts')
     fs.removeSync(libsDirRoot)
     
-    copyBuildDirectory(libsDirRoot + '/ABIs')
-    copySignatureSchemas(libsDirRoot + '/signatureSchemas.js')
-    outputJsonConfigFile(libsDirRoot + '/config.json')
+    await copyBuildDirectory(path.join(libsDirRoot, '/ABIs'))
+    copySignatureSchemas(path.join(libsDirRoot, '/signatureSchemas.js'))
+    outputJsonConfigFile(path.join(libsDirRoot, '/config.json'))
     
     // output to Identity Service
     try {
