@@ -217,29 +217,6 @@
       "constant": true,
       "inputs": [
         {
-          "name": "_endpoint",
-          "type": "string"
-        },
-        {
-          "name": "_serviceType",
-          "type": "bytes32"
-        }
-      ],
-      "name": "getStakeAmountFromEndpoint",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
           "name": "_ownerAddress",
           "type": "address"
         }
