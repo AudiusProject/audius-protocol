@@ -32,7 +32,7 @@ const copyBuildDirectory = async (outputDirPath) => {
   const dir = path.join(__dirname, '..')
   const localTarget = path.join(dir, 'build/contracts')
 
-  await createEthContractsDir(outputDirPath)
+  await createDir(outputDirPath)
 
   // clean up unnecessary metadata and copy ABI
   const files = fs.readdirSync(localTarget)
@@ -51,12 +51,12 @@ const copyBuildDirectory = async (outputDirPath) => {
   })
 }
 
-/** Creates libs/eth-contracts folder if folder is not present */
-async function createEthContractsDir (dir) {
+/** Creates directory if path does not exist */
+async function createDir (dir) {
   try {
     await fs.ensureDir(dir)
   } catch (err) {
-    console.log(`Error with creating libs/eth-contracts folder: ${err}`)
+    console.log(`Error with creating folder at path ${dir}: ${err}`)
   }
 }
 
@@ -65,7 +65,7 @@ async function createEthContractsDir (dir) {
  * config file contains deployed AudiusToken and Registry contract addresses, and ownerWallet
  */
 const outputJsonConfigFile = async (outputFilePath) => {
-  try{
+  try {
     const audiusToken = await AudiusToken.deployed()
     const registry = await Registry.deployed()
     let outputDictionary = {}
@@ -75,13 +75,12 @@ const outputJsonConfigFile = async (outputFilePath) => {
     outputDictionary['allWallets'] = await web3.eth.getAccounts()
 
     fs.writeFile(outputFilePath, JSON.stringify(outputDictionary), (err) => {
-      if(err != null){
+      if (err != null) {
         console.log(err)
       }
     })
     console.log(outputDictionary)
-  }
-  catch (e) {
+  } catch (e) {
     console.log(e)
   }
 }
@@ -96,28 +95,25 @@ module.exports = async callback => {
 
   // output to Identity Service
   try {
-    outputJsonConfigFile(getDirectoryRoot(AudiusIdentityService) + '/eth-contract-config.json') 
-  }
-  catch (e) {
+    outputJsonConfigFile(getDirectoryRoot(AudiusIdentityService) + '/eth-contract-config.json')
+  } catch (e) {
     console.log("Identity service doesn't exist, probably running via E2E setup scripts", e)
   }
 
   // output to Creator Node
   try {
     outputJsonConfigFile(getDirectoryRoot(AudiusCreatorNode) + '/eth-contract-config.json')
-  }
-  catch (e) {
+  } catch (e) {
     console.log("Creator node doesn't exist, probably running via E2E setup scripts", e)
   }
-  
+
   // special case for content service which isn't run locally for E2E test or during front end dev
   try {
     outputJsonConfigFile(getDirectoryRoot(AudiusContentService) + '/eth-contract-config.json')
-  }
-  catch (e) {
+  } catch (e) {
     console.log("Content service folder doesn't exist, probably running via E2E setup scripts", e)
   }
-  
+
   const dappOutput = os.homedir() + '/.audius'
   if (!fs.existsSync(dappOutput)) {
     fs.mkdirSync(dappOutput, { recursive: true })

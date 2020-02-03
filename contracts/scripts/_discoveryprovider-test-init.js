@@ -48,13 +48,13 @@ const printUsageAndThrow = () => {
   console.log('')
   throw new Error('Incorrect usage')
 }
-
+ ik
 /** Copies the contents of build/contracts to the outputPath */
 const copyBuildDirectory = async (outputPath) => {
   let dir = path.join(__dirname, '..')
   let localTarget = path.join(dir, 'build/contracts')
 
-  await createContractsDir(outputPath)
+  await createDir(outputPath)
 
   // clean up unnecessary metadata and copy ABI
   let files = fs.readdirSync(localTarget)
@@ -69,12 +69,12 @@ const copyBuildDirectory = async (outputPath) => {
   })
 }
 
-/** Creates build/contracts folder if folder is not present */
-async function createContractsDir (dir) {
+/** Creates directory if path does not exist */
+async function createDir (dir) {
   try {
     await fs.ensureDir(dir)
   } catch (err) {
-    console.log(`Error with creating build/contracts folder: ${err}`)
+    console.log(`Error with creating folder at path ${dir}: ${err}`)
   }
 }
 
