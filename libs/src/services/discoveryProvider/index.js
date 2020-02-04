@@ -563,7 +563,6 @@ class DiscoveryProvider {
   // urlParams - string of url params to be appended after base route
   // queryParams - object of query params to be appended to url
   async _makeRequest (requestObj, retries = 4) {
-    console.log(requestObj.endpoint)
     if (!this.discoveryProviderEndpoint) {
       await this.autoSelectEndpoint()
     }
