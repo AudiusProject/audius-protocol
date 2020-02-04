@@ -1,9 +1,5 @@
-export let web3New
-if (typeof web3 === 'undefined') {
-  web3New = require('web3')
-} else {
-  web3New = web3
-}
+import { web3New } from './web3New'
+
 export const userStorageKey = web3New.utils.utf8ToHex('UserStorage')
 export const userFactoryKey = web3New.utils.utf8ToHex('UserFactory')
 export const trackStorageKey = web3New.utils.utf8ToHex('TrackStorage')

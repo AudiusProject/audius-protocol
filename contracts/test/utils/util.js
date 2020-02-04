@@ -1,14 +1,7 @@
-/* global web3 */
+
 import * as bs58 from 'bs58'
 import * as util from 'util'
-
-/** **** FACTORY GETTERS ******/
-let web3New
-if (typeof web3 === 'undefined') {
-  web3New = require('web3')
-} else {
-  web3New = web3
-}
+import { web3New } from './web3New'
 
 /** hex to utf8
   * @param {string} arg - Raw hex-encoded string returned from contract code

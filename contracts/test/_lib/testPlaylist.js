@@ -5,13 +5,8 @@ import {
 import { getNetworkIdForContractInstance } from '../utils/getters'
 import { eth_signTypedData } from '../utils/util'
 import { validateObj } from '../utils/validator'
-/** ensures use of pre-configured web3 if provided */
-let web3New
-if (typeof web3 === 'undefined') {
-  web3New = require('web3')
-} else {
-  web3New = web3
-}
+import { web3New } from '../utils/web3New'
+
 const signatureSchemas = require('../../signature_schemas/signatureSchemas')
 export const addPlaylistAndValidate = async (playlistFactory, expectedPlaylistId, walletAddress, playlistOwnerId, playlistName, isPrivate, isAlbum, trackIds) => {
   const nonce = signatureSchemas.getNonce()

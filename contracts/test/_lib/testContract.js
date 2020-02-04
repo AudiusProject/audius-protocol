@@ -1,11 +1,5 @@
-/* global assert, web3 */
-/** ensures use of pre-configured web3 if provided */
-let web3New
-if (typeof web3 === 'undefined') {
-  web3New = require('web3')
-} else {
-  web3New = web3
-}
+/* global assert */
+import { web3New } from '../utils/web3New'
 
 export const unregisterContractAndValidate = async (registry, contractRegistryKey, contractInstanceAddress) => {
   await registry.removeContract(contractRegistryKey)
