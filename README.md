@@ -1,6 +1,6 @@
 <img src="https://user-images.githubusercontent.com/2731362/62400456-224e6280-b534-11e9-82c4-3b04175d4e01.png" alt="drawing" width="400"/>
 
-Audius frontend gateway for proxying traffic 
+# Audius frontend gateway for proxying traffic 
 
 ```
 git clone git@github.com:AudiusProject/general-admission.git
@@ -29,3 +29,12 @@ npm run start
 docker build -t ga-node .
 docker run --rm ga-node -p 8000:8000 -d
 ```
+
+## running GA locally
+
+1. Run the dapp locally
+2. `cp` `.env.prod` or `.env.stage` to `.env` in the GA directory
+3. Set `APP_URL` env var in `.env` to `http://docker.for.mac.localhost:{DAPP_PORT}`
+4. Run GA with `docker-compose up --build`
+5. ???
+6. Profit
