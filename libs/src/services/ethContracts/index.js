@@ -186,7 +186,6 @@ class EthContracts {
     if (whitelist) {
       serviceProviders = serviceProviders.filter(d => whitelist.has(d.endpoint))
     }
-    console.info('Looking latest for service provider in', serviceProviders)
 
     // No discovery providers found.
     if (serviceProviders.length === 0) {
@@ -197,6 +196,9 @@ class EthContracts {
     if (!this.expectedServiceVersions) {
       this.expectedServiceVersions = await this.getExpectedServiceVersions()
     }
+
+    console.info(`Looking latest for service provider in ${serviceProviders} with version ${this.expectedServiceVersions}`)
+
     if (!this.expectedServiceVersions.hasOwnProperty(spType)) {
       throw new Error(`Invalid service name: ${spType}`)
     }
@@ -240,11 +242,11 @@ class EthContracts {
           if (spType === 'discovery-provider') {
             const { healthy, blockDiff } = await this.validateDiscoveryProviderHealth(sp.endpoint)
             if (!healthy) {
-              throw new Error('Discovery provider is not healthy')
+              throw new Error(`Discovery provider ${sp.endpoint} is not healthy`)
             }
             if (blockDiff > UNHEALTHY_BLOCK_DIFF) {
               fallbackServiceProviders[sp.endpoint] = blockDiff
-              throw new Error('Discovery provider is too far behind, adding as a fallback')
+              throw new Error(`Discovery provider ${sp.endpoint} is too far behind, adding as a fallback`)
             }
           }
 
@@ -275,7 +277,7 @@ class EthContracts {
       selectedServiceProvider = randomValidSPEndpoint
     } catch (err) {
       console.error(err)
-      console.warn(`All discovery providers failed for latest ${this.expectedServiceVersions[spType]} with healthy block numbers`)
+      console.warn(`All ${spType} failed for latest ${this.expectedServiceVersions[spType]} with healthy block numbers`)
       console.info('Trying to choose most up-to-date discovery provider from', fallbackServiceProviders)
 
       // Pick a fallback that has the smallest block difference and signal that we are running
