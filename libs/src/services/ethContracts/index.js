@@ -27,6 +27,8 @@ const VersioningFactoryRegistryKey = 'VersioningFactory'
 const ServiceProviderFactoryRegistryKey = 'ServiceProviderFactory'
 const OwnedUpgradeabilityProxyKey = 'OwnedUpgradeabilityProxy'
 
+const TWO_MINUTES = 2 * 60 * 1000
+
 const {
   DISCOVERY_PROVIDER_TIMESTAMP,
   UNHEALTHY_BLOCK_DIFF,
@@ -91,6 +93,11 @@ class EthContracts {
       this.StakingProxyClient,
       this.ServiceProviderFactoryClient
     ]
+
+    // Whether or not we are running in `regressed` mode, meaning we were
+    // unable to select a discovery provider that was up-to-date. Clients may
+    // want to consider blocking writes.
+    this._regressedMode = false
   }
 
   async init () {
@@ -99,6 +106,22 @@ class EthContracts {
     if (this.isServer) {
       await Promise.all(this.contractClients.map(client => client.init()))
     }
+  }
+
+  /**
+   * Estabilishes that connection to discovery providers has regressed
+   */
+  enterRegressedMode () {
+    console.info('Entering regressed mode')
+    this._regressedMode = true
+    setTimeout(() => {
+      console.info('Leaving regressed mode')
+      this._regressedMode = false
+    }, TWO_MINUTES)
+  }
+
+  isInRegressedMode () {
+    return this._regressedMode
   }
 
   async getRegistryAddressForContract (contractName) {
@@ -158,11 +181,12 @@ class EthContracts {
    * @param {string} spType service provider type: 'discovery-provider' | 'content-service' | 'creator-node'
    * @return {Promise<string>} A valid service provider url with the fastest response
    */
-  async selectLatestServiceProvider (spType, whitelist = null) {
+  async selectLatestVersionServiceProvider (spType, whitelist = null) {
     let serviceProviders = await this.ServiceProviderFactoryClient.getServiceProviderList(spType)
     if (whitelist) {
       serviceProviders = serviceProviders.filter(d => whitelist.has(d.endpoint))
     }
+    console.info('Looking latest for service provider in', serviceProviders)
 
     // No discovery providers found.
     if (serviceProviders.length === 0) {
@@ -180,10 +204,15 @@ class EthContracts {
     let expectedVersion = this.expectedServiceVersions[spType]
 
     let selectedServiceProvider
+    // If no service is selectable (unhealthy or has an unhealthy block differential),
+    // fall back to the provider with the least block diff.
+    let fallbackServiceProviders = {}
+
     try {
       // Querying all versions
       let foundVersions = new Set()
       let spVersionToEndpoint = {}
+
       await Promise.all(serviceProviders.map(async (sp) => {
         try {
           const {
@@ -209,7 +238,14 @@ class EthContracts {
 
           // Discovery provider specific validation
           if (spType === 'discovery-provider') {
-            await this.validateDiscoveryProviderHealth(sp.endpoint)
+            const { healthy, blockDiff } = await this.validateDiscoveryProviderHealth(sp.endpoint)
+            if (!healthy) {
+              throw new Error('Discovery provider is not healthy')
+            }
+            if (blockDiff > UNHEALTHY_BLOCK_DIFF) {
+              fallbackServiceProviders[sp.endpoint] = blockDiff
+              throw new Error('Discovery provider is too far behind, adding as a fallback')
+            }
           }
 
           foundVersions.add(serviceVersion)
@@ -224,6 +260,7 @@ class EthContracts {
           console.error(`Failed to retrieve information for ${sp}`)
         }
       }))
+
       let foundVersionsList = Array.from(foundVersions)
       if (foundVersionsList.length === 0) {
         // Short-circuit processing if no valid endpoints are found
@@ -232,14 +269,27 @@ class EthContracts {
 
       // Sort found endpoints array by semantic version
       var highestFoundSPVersion = foundVersionsList.sort(semver.rcompare)[0]
+      console.log(spVersionToEndpoint, highestFoundSPVersion)
       // Randomly select from highest found endpoints
       let highestFoundSPVersionEndpoints = spVersionToEndpoint[highestFoundSPVersion]
+      console.log(highestFoundSPVersionEndpoints)
       var randomValidSPEndpoint = highestFoundSPVersionEndpoints[Math.floor(Math.random() * highestFoundSPVersionEndpoints.length)]
       selectedServiceProvider = randomValidSPEndpoint
     } catch (err) {
-      console.error(`All discovery providers failed for latest ${this.expectedServiceVersions[spType]}`)
       console.error(err)
-      selectedServiceProvider = null
+      console.warn(`All discovery providers failed for latest ${this.expectedServiceVersions[spType]} with healthy block numbers`)
+      console.info('Trying to choose most up-to-date discovery provider from', fallbackServiceProviders)
+
+      if (Object.keys(fallbackServiceProviders).length > 0) {
+        const sortedByBlockDiff = Object.keys(fallbackServiceProviders).sort(
+          (a, b) => fallbackServiceProviders[a] - fallbackServiceProviders[b]
+        )
+        this.enterRegressedMode()
+        console.log(sortedByBlockDiff)
+        return sortedByBlockDiff[0]
+      } else {
+        selectedServiceProvider = null
+      }
     }
 
     return selectedServiceProvider
@@ -267,21 +317,23 @@ class EthContracts {
   /**
    * Validate that a provided url is a healthy discovery provider against the `/health_check` endpoint
    * @param {string} discProvUrl
-   * @return {Promise<boolean>} If the discovery provider is valid
+   * @return {Promise<{healthy: boolean, blockDiff: number}>} If the discovery provider is valid
    */
   async validateDiscoveryProviderHealth (endpoint) {
-    const healthResp = await axios(
-      {
-        url: urlJoin(endpoint, 'health_check'),
-        method: 'get',
-        timeout: 5000 }
-    )
-    const { status, block_difference: blockDiff } = healthResp
-    if (
-      status !== 200 ||
-      blockDiff > UNHEALTHY_BLOCK_DIFF
-    ) {
-      throw new Error(`Disc prov healthcheck failed ${endpoint}`)
+    try {
+      const healthResp = await axios(
+        {
+          url: urlJoin(endpoint, 'health_check'),
+          method: 'get',
+          timeout: 5000
+        }
+      )
+      const { status, data } = healthResp
+      const { block_difference: blockDiff } = data
+      console.info(`${endpoint} responded with status ${status} and block difference ${blockDiff}`)
+      return { healthy: status === 200, blockDiff }
+    } catch (e) {
+      return { healthy: false, blockDiff: null }
     }
   }
 
@@ -329,7 +381,7 @@ class EthContracts {
     return endpoint
   }
 
-  async selectPriorServiceProvider (spType, whitelist = null) {
+  async selectPriorVersionServiceProvider (spType, whitelist = null) {
     if (!this.expectedServiceVersions) {
       this.expectedServiceVersions = await this.getExpectedServiceVersions()
     }
@@ -381,7 +433,8 @@ class EthContracts {
 
           // Discovery provider specific validation
           if (spType === 'discovery-provider') {
-            await this.validateDiscoveryProviderHealth(spInfo.endpoint)
+            const { healthy, blockDiff } = await this.validateDiscoveryProviderHealth(spInfo.endpoint)
+            if (!healthy || (blockDiff > UNHEALTHY_BLOCK_DIFF)) throw new Error(`${spInfo.endpoint} is not healthy`)
           }
 
           if (this.isValidSPVersion(pastServiceVersion, serviceVersion)) {
@@ -414,15 +467,24 @@ class EthContracts {
     return null
   }
 
+  /**
+   * Gets a discovery provider in the following precedence:
+   *  - Latest version and block diff < `UNHEALTHY_BLOCK_DIFF`
+   *  - Latest version with the smallest block diff
+   *  - Prior version with a healthy block diff
+   *  - null
+   * @param {Set<string>?} whitelist optional whitelist to autoselect from
+   */
   async selectDiscoveryProvider (whitelist = null) {
     if (!this.expectedServiceVersions) {
       this.expectedServiceVersions = await this.getExpectedServiceVersions()
     }
-    let discoveryProviderEndpoint = await this.selectLatestServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
+
+    let discoveryProviderEndpoint = await this.selectLatestVersionServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
 
     if (discoveryProviderEndpoint == null) {
       console.log(`Failed to select latest discovery provider, falling back to previous version`)
-      discoveryProviderEndpoint = await this.selectPriorServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
+      discoveryProviderEndpoint = await this.selectPriorVersionServiceProvider(serviceType.DISCOVERY_PROVIDER, whitelist)
     }
 
     if (discoveryProviderEndpoint == null) {
