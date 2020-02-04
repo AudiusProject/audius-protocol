@@ -8,7 +8,9 @@ import {
   PlaylistStorage,
   PlaylistFactory,
   SocialFeatureStorage,
-  SocialFeatureFactory } from './_lib/artifacts.js'
+  SocialFeatureFactory
+} from './_lib/artifacts.js'
+import * as _constants from './utils/constants'
 
 contract('SocialFeatureFactory', async (accounts) => {
   const testUserId1 = 1
@@ -17,7 +19,6 @@ contract('SocialFeatureFactory', async (accounts) => {
   const testTrackId1 = 1
   const testTrackId2 = 2
   const testTrackId3 = 3
-  const testTrackId4 = 4
 
   let playlistName1 = 'playlistName1'
   let playlistTracks1 = [1, 2]
@@ -41,36 +42,36 @@ contract('SocialFeatureFactory', async (accounts) => {
     const networkId = Registry.network_id
 
     userStorage = await UserStorage.new(registry.address)
-    await registry.addContract(_lib.userStorageKey, userStorage.address)
-    userFactory = await UserFactory.new(registry.address, _lib.userStorageKey, networkId, accounts[5])
-    await registry.addContract(_lib.userFactoryKey, userFactory.address)
+    await registry.addContract(_constants.userStorageKey, userStorage.address)
+    userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, accounts[5])
+    await registry.addContract(_constants.userFactoryKey, userFactory.address)
     trackStorage = await TrackStorage.new(registry.address)
-    await registry.addContract(_lib.trackStorageKey, trackStorage.address)
-    trackFactory = await TrackFactory.new(registry.address, _lib.trackStorageKey, _lib.userFactoryKey, networkId)
-    await registry.addContract(_lib.trackFactoryKey, trackFactory.address)
+    await registry.addContract(_constants.trackStorageKey, trackStorage.address)
+    trackFactory = await TrackFactory.new(registry.address, _constants.trackStorageKey, _constants.userFactoryKey, networkId)
+    await registry.addContract(_constants.trackFactoryKey, trackFactory.address)
     playlistStorage = await PlaylistStorage.new(registry.address)
-    await registry.addContract(_lib.playlistStorageKey, playlistStorage.address)
-    playlistFactory = await PlaylistFactory.new(registry.address, _lib.playlistStorageKey, _lib.userFactoryKey, _lib.trackFactoryKey, networkId)
-    await registry.addContract(_lib.playlistFactoryKey, playlistFactory.address)
+    await registry.addContract(_constants.playlistStorageKey, playlistStorage.address)
+    playlistFactory = await PlaylistFactory.new(registry.address, _constants.playlistStorageKey, _constants.userFactoryKey, _constants.trackFactoryKey, networkId)
+    await registry.addContract(_constants.playlistFactoryKey, playlistFactory.address)
     socialFeatureStorage = await SocialFeatureStorage.new(registry.address)
-    await registry.addContract(_lib.socialFeatureStorageKey, socialFeatureStorage.address)
-    socialFeatureFactory = await SocialFeatureFactory.new(registry.address, _lib.socialFeatureStorageKey, _lib.userFactoryKey, _lib.trackFactoryKey, _lib.playlistFactoryKey, networkId)
-    await registry.addContract(_lib.socialFeatureFactoryKey, socialFeatureFactory.address)
+    await registry.addContract(_constants.socialFeatureStorageKey, socialFeatureStorage.address)
+    socialFeatureFactory = await SocialFeatureFactory.new(registry.address, _constants.socialFeatureStorageKey, _constants.userFactoryKey, _constants.trackFactoryKey, _constants.playlistFactoryKey, networkId)
+    await registry.addContract(_constants.socialFeatureFactoryKey, socialFeatureFactory.address)
 
     // add users and tracks
     await _lib.addUserAndValidate(
       userFactory,
       testUserId1,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
       true)
     await _lib.addUserAndValidate(
       userFactory,
       testUserId2,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle2,
+      _constants.testMultihash.digest1,
+      _constants.userHandle2,
       true)
 
     await _lib.addTrackAndValidate(
@@ -78,17 +79,17 @@ contract('SocialFeatureFactory', async (accounts) => {
       testTrackId1,
       accounts[0],
       testUserId1,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size)
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size)
     await _lib.addTrackAndValidate(
       trackFactory,
       testTrackId2,
       accounts[0],
       testUserId1,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size)
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size)
 
     await _lib.addPlaylistAndValidate(
       playlistFactory,
@@ -425,5 +426,4 @@ contract('SocialFeatureFactory', async (accounts) => {
     }
     assert.isTrue(caughtError, 'Call succeeded unexpectedly')
   })
-
 })

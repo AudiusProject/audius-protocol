@@ -1,3 +1,5 @@
+/* global artifacts */
+
 /**
  * Contains all the contracts referenced in Audius unit tests
  */
