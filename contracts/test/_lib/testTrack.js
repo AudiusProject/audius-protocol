@@ -6,7 +6,7 @@ import { eth_signTypedData } from '../utils/util'
 import { validateObj } from '../utils/validator'
 const signatureSchemas = require('../../signature_schemas/signatureSchemas')
 
-/** **** EXTERNAL E2E FUNCTIONS ******/
+/****** EXTERNAL E2E FUNCTIONS ******/
 
 /** Adds track to blockchain using function input fields,
   *   validates emitted event and track data on-chain

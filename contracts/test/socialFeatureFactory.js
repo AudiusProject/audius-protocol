@@ -103,7 +103,7 @@ contract('SocialFeatureFactory', async (accounts) => {
     )
   })
 
-  /** ****************** TrackRepost ********************/
+  /******************** TrackRepost ********************/
   /*****************************************************/
 
   it('Should add one TrackRepost', async () => {
@@ -219,7 +219,7 @@ contract('SocialFeatureFactory', async (accounts) => {
     assert.isTrue(caughtError, 'Call succeeded unexpectedly')
   })
 
-  /** ****************** PlaylistRepost ********************/
+  /******************** PlaylistRepost ********************/
   /********************************************************/
 
   it('Should add one PlaylistRepost', async () => {
@@ -331,7 +331,7 @@ contract('SocialFeatureFactory', async (accounts) => {
     assert.isTrue(caughtError, 'Call succeeded unexpectedly')
   })
 
-  /** ****************** UserFollow ********************/
+  /******************** UserFollow ********************/
   /****************************************************/
 
   it('Should add one UserFollow', async () => {
