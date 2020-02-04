@@ -60,10 +60,13 @@ contract ServiceProviderFactory is RegistryContract {
     ) external returns (uint spID)
     {
         address owner = msg.sender;
+        Staking stakingContract = Staking(
+            registry.getContract(stakingProxyOwnerKey)
+        );
 
         // Stake token amount from msg.sender
         if (_stakeAmount > 0) {
-            Staking(registry.getContract(stakingProxyOwnerKey)).stakeFor(owner, _stakeAmount, empty);
+            stakingContract.stakeFor(owner, _stakeAmount, empty);
         }
 
         uint newServiceProviderID = ServiceProviderStorageInterface(
@@ -75,13 +78,8 @@ contract ServiceProviderFactory is RegistryContract {
             _delegateOwnerWallet
         );
 
-        uint minStakeAmount = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        ).getMinStakeAmount();
-
-        uint currentlyStakedForOwner = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        ).totalStakedFor(owner);
+        uint currentlyStakedForOwner = stakingContract.totalStakedFor(owner);
+        uint minStakeAmount = stakingContract.getMinStakeAmount();
 
         require(
             currentlyStakedForOwner >= minStakeAmount,

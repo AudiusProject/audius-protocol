@@ -257,6 +257,21 @@ contract('ServiceProvider test', async (accounts) => {
     /*
      * Attempt to register first endpoint with zero stake, expect error
      */
+    it('fails to register endpoint w/less than minimum stake', async () => {
+      // let initialBal = await getTokenBalance(token, stakerAccount)
+      // Attempt to register first endpoint with zero stake
+      await _lib.assertRevert(
+        registerServiceProvider(
+          testServiceType,
+          testEndpoint1,
+          MIN_STAKE_AMOUNT - 1,
+          stakerAccount2),
+        'Minimum stake threshold exceeded')
+    })
+
+    /*
+     * Attempt to register first endpoint with zero stake, expect error
+     */
     it('fails to register endpoint w/zero stake', async () => {
       // let initialBal = await getTokenBalance(token, stakerAccount)
       // Attempt to register first endpoint with zero stake
@@ -265,7 +280,8 @@ contract('ServiceProvider test', async (accounts) => {
           testServiceType,
           testEndpoint1,
           0,
-          stakerAccount2))
+          stakerAccount2),
+        'Minimum stake amount not met')
     })
 
     it('increases stake value', async () => {
