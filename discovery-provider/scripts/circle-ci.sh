@@ -10,7 +10,7 @@ function main {
   echo 'Migrating contracts'
   node_modules/.bin/truffle migrate
   echo 'Writing flask config'
-  node_modules/.bin/truffle exec scripts/_discoveryprovider-test-init.js -run
+  node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run
   cd_discprov_repo
   pytest -s -v --fulltrace
 }

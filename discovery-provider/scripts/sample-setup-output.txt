@@ -75,7 +75,7 @@ Saving successful migration to network...
 Saving artifacts...
 + echo '\nWriting flask config file'
 \nWriting flask config file
-+ truffle exec scripts/_discoveryprovider-test-init.js -run
++ truffle exec scripts/_contractsLocalSetup.js -run
 Using network 'development'.
 
 /Users/hareeshnagaraj/Development/audius-discovery-provider/contract_config.ini
@@ -98,7 +98,7 @@ Perform some random operations on deployed Audius contracts?  (y/n)y+ echo
 + [[ y =~ ^[Yy]$ ]]
 + echo '\nAdding 4 random creators'
 \nAdding 4 random creators
-+ truffle exec scripts/_discoveryprovider-test-init.js -test
++ truffle exec scripts/_contractsLocalSetup.js -test
 Using network 'development'.
 
 { tx:
