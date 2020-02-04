@@ -36,7 +36,7 @@ class DiscoveryProvider {
       }
 
       const pick = _.sample([...this.whitelist]) // selects random element from list.
-      const isValid = false// await this.ethContracts.validateDiscoveryProvider(pick)
+      const isValid = await this.ethContracts.validateDiscoveryProvider(pick)
       if (isValid) {
         console.info('Initial discovery provider was valid')
         endpoint = pick

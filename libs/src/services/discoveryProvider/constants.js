@@ -1,5 +1,5 @@
 module.exports.DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-provider-timestamp'
-module.exports.UNHEALTHY_BLOCK_DIFF = -1
+module.exports.UNHEALTHY_BLOCK_DIFF = 15
 
 // When to time out the cached discovery provider
 module.exports.DISCOVERY_PROVIDER_RESELECT_TIMEOUT = 1 /* min */ * 60 /* seconds */ * 1000 /* millisec */

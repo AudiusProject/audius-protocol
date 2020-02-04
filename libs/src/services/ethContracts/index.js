@@ -269,10 +269,8 @@ class EthContracts {
 
       // Sort found endpoints array by semantic version
       var highestFoundSPVersion = foundVersionsList.sort(semver.rcompare)[0]
-      console.log(spVersionToEndpoint, highestFoundSPVersion)
       // Randomly select from highest found endpoints
       let highestFoundSPVersionEndpoints = spVersionToEndpoint[highestFoundSPVersion]
-      console.log(highestFoundSPVersionEndpoints)
       var randomValidSPEndpoint = highestFoundSPVersionEndpoints[Math.floor(Math.random() * highestFoundSPVersionEndpoints.length)]
       selectedServiceProvider = randomValidSPEndpoint
     } catch (err) {
@@ -280,12 +278,13 @@ class EthContracts {
       console.warn(`All discovery providers failed for latest ${this.expectedServiceVersions[spType]} with healthy block numbers`)
       console.info('Trying to choose most up-to-date discovery provider from', fallbackServiceProviders)
 
+      // Pick a fallback that has the smallest block difference and signal that we are running
+      // in regressed mode.
       if (Object.keys(fallbackServiceProviders).length > 0) {
         const sortedByBlockDiff = Object.keys(fallbackServiceProviders).sort(
           (a, b) => fallbackServiceProviders[a] - fallbackServiceProviders[b]
         )
         this.enterRegressedMode()
-        console.log(sortedByBlockDiff)
         return sortedByBlockDiff[0]
       } else {
         selectedServiceProvider = null
@@ -471,7 +470,7 @@ class EthContracts {
    * Gets a discovery provider in the following precedence:
    *  - Latest version and block diff < `UNHEALTHY_BLOCK_DIFF`
    *  - Latest version with the smallest block diff
-   *  - Prior version with a healthy block diff
+   *  - Prior version and block diff < `UNHEALTHY_BLOCK_DIFF`
    *  - null
    * @param {Set<string>?} whitelist optional whitelist to autoselect from
    */
