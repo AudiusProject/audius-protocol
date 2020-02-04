@@ -114,3 +114,4 @@ export const parseDiscprovRegisterTx = (tx) => {
     'discprovEndpoint': tx.event.args._endpoint
   }
 }
+  

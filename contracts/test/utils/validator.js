@@ -22,3 +22,4 @@ export const validateDiscprovRegisterEvent = (tx, id, wallet, endpoint) => {
 export const validateRegisteredDiscprov = (discprov, wallet, endpoint) => {
   validateObj(discprov, { wallet, endpoint })
 }
+   
