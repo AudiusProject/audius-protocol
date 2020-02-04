@@ -1,4 +1,5 @@
 import * as _lib from './_lib/lib.js'
+import * as _constants from './utils/constants'
 import {
   Registry,
   UserStorage,
@@ -6,7 +7,8 @@ import {
   TrackStorage,
   TrackFactory,
   PlaylistStorage,
-  PlaylistFactory } from './_lib/artifacts.js'
+  PlaylistFactory
+} from './_lib/artifacts.js'
 
 contract('PlaylistFactory', async (accounts) => {
   const testUserId1 = 1
@@ -32,41 +34,41 @@ contract('PlaylistFactory', async (accounts) => {
     registry = await Registry.new()
     const networkId = Registry.network_id
     userStorage = await UserStorage.new(registry.address)
-    await registry.addContract(_lib.userStorageKey, userStorage.address)
+    await registry.addContract(_constants.userStorageKey, userStorage.address)
     trackStorage = await TrackStorage.new(registry.address)
-    await registry.addContract(_lib.trackStorageKey, trackStorage.address)
-    userFactory = await UserFactory.new(registry.address, _lib.userStorageKey, networkId, accounts[5])
-    await registry.addContract(_lib.userFactoryKey, userFactory.address)
-    trackFactory = await TrackFactory.new(registry.address, _lib.trackStorageKey, _lib.userFactoryKey, networkId)
-    await registry.addContract(_lib.trackFactoryKey, trackFactory.address)
+    await registry.addContract(_constants.trackStorageKey, trackStorage.address)
+    userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, accounts[5])
+    await registry.addContract(_constants.userFactoryKey, userFactory.address)
+    trackFactory = await TrackFactory.new(registry.address, _constants.trackStorageKey, _constants.userFactoryKey, networkId)
+    await registry.addContract(_constants.trackFactoryKey, trackFactory.address)
 
     // Deploy playlist related contracts
     playlistStorage = await PlaylistStorage.new(registry.address)
-    await registry.addContract(_lib.playlistStorageKey, playlistStorage.address)
+    await registry.addContract(_constants.playlistStorageKey, playlistStorage.address)
     playlistFactory = await PlaylistFactory.new(
       registry.address,
-      _lib.playlistStorageKey,
-      _lib.userFactoryKey,
-      _lib.trackFactoryKey,
+      _constants.playlistStorageKey,
+      _constants.userFactoryKey,
+      _constants.trackFactoryKey,
       networkId)
 
-    await registry.addContract(_lib.playlistFactoryKey, playlistFactory.address)
+    await registry.addContract(_constants.playlistFactoryKey, playlistFactory.address)
 
     // add two users
     await _lib.addUserAndValidate(
       userFactory,
       testUserId1,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle1,
+      _constants.testMultihash.digest1,
+      _constants.userHandle1,
       true)
 
     await _lib.addUserAndValidate(
       userFactory,
       testUserId2,
       accounts[0],
-      _lib.testMultihash.digest1,
-      _lib.userHandle2,
+      _constants.testMultihash.digest1,
+      _constants.userHandle2,
       true)
 
     // add two tracks
@@ -75,17 +77,17 @@ contract('PlaylistFactory', async (accounts) => {
       testTrackId1,
       accounts[0],
       testUserId1,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size)
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size)
     await _lib.addTrackAndValidate(
       trackFactory,
       testTrackId2,
       accounts[0],
       testUserId2,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size)
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size)
   })
 
   it('Should create a playlist', async () => {
@@ -107,9 +109,9 @@ contract('PlaylistFactory', async (accounts) => {
       testTrackId3,
       accounts[0],
       testUserId2,
-      _lib.testMultihash.digest2,
-      _lib.testMultihash.hashFn,
-      _lib.testMultihash.size)
+      _constants.testMultihash.digest2,
+      _constants.testMultihash.hashFn,
+      _constants.testMultihash.size)
 
     // Create playlist
     await _lib.addPlaylistAndValidate(
@@ -217,7 +219,7 @@ contract('PlaylistFactory', async (accounts) => {
       playlistFactory,
       accounts[0],
       expectedPlaylistId,
-      _lib.userMetadata.coverPhotoDigest)
+      _constants.userMetadata.coverPhotoDigest)
 
     // 5 - Update playlist description
     await _lib.updatePlaylistDescriptionAndValidate(
@@ -307,7 +309,7 @@ contract('PlaylistFactory', async (accounts) => {
     }
     assert.isTrue(
       caughtError,
-      "Failed to handle case where caller tries to create playlist with non-existent user"
+      'Failed to handle case where caller tries to create playlist with non-existent user'
     )
   })
 
@@ -335,7 +337,7 @@ contract('PlaylistFactory', async (accounts) => {
     }
     assert.isTrue(
       caughtError,
-      "Failed to handle case where caller tries to create playlist user that it does not own"
+      'Failed to handle case where caller tries to create playlist user that it does not own'
     )
   })
 
@@ -359,7 +361,7 @@ contract('PlaylistFactory', async (accounts) => {
     }
     assert.isTrue(
       caughtError,
-      "Failed to handle case where caller tries to update non-existent playlist"
+      'Failed to handle case where caller tries to update non-existent playlist'
     )
   })
 
@@ -394,7 +396,7 @@ contract('PlaylistFactory', async (accounts) => {
     }
     assert.isTrue(
       caughtError,
-      "Failed to handle case where caller tries to update playlist that caller does not own"
+      'Failed to handle case where caller tries to update playlist that caller does not own'
     )
   })
 
@@ -417,7 +419,7 @@ contract('PlaylistFactory', async (accounts) => {
     }
     assert.isTrue(
       caughtError,
-      "Failed to handle case where caller tries to delete non-existent playlist"
+      'Failed to handle case where caller tries to delete non-existent playlist'
     )
   })
 
@@ -451,8 +453,7 @@ contract('PlaylistFactory', async (accounts) => {
     }
     assert.isTrue(
       caughtError,
-      "Failed to handle case where caller tries to delete playlist that caller does not own"
+      'Failed to handle case where caller tries to delete playlist that caller does not own'
     )
   })
-  
 })
