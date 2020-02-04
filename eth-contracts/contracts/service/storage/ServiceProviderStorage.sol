@@ -136,7 +136,7 @@ contract ServiceProviderStorage is RegistryContract {
         bytes32 _serviceType,
         string calldata _endpoint,
         address _updatedDelegateOwnerWallet
-    ) external returns (address)
+    ) external onlyRegistrant(CALLER_REGISTRY_KEY) returns (address)
     {
         uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
 
