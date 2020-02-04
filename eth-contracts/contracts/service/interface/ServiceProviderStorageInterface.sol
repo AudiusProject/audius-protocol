@@ -20,6 +20,7 @@ interface ServiceProviderStorageInterface {
   function updateDelegateOwnerWallet(
     address _owner,
     bytes32 _serviceType,
+    string calldata _endpoint,
     address _updatedDelegateOwnerWallet
   ) external returns (address);
 
@@ -29,20 +30,24 @@ interface ServiceProviderStorageInterface {
   ) external view returns (address owner, string memory endpoint, uint blocknumber, address delegateOwnerWallet);
 
   function getServiceProviderIdFromEndpoint(
-    bytes32 _endpoint
+    string calldata _endpoint
   ) external view returns (uint);
 
-  function getServiceProviderIdFromAddress(
+  function getServiceProviderIdsFromAddress(
     address _ownerAddress,
     bytes32 _serviceType
-  ) external view returns (uint);
+  ) external view returns (uint[] memory);
 
   function getTotalServiceTypeProviders(
     bytes32 _serviceType
   ) external view returns (uint);
-  
+
   function getDelegateOwnerWallet(
     address _owner,
-    bytes32 _serviceType
+    bytes32 _serviceType,
+    string calldata _endpoint
   ) external view returns (address);
+
+  function getNumberOfEndpointsFromAddress(address _ownerAddress)
+  external view returns (uint);
 }

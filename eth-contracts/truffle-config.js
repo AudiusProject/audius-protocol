@@ -41,14 +41,22 @@ module.exports = {
       gasPrice: web3.utils.toWei('20', 'gwei')
     },
     development: {
-      host: '127.0.0.1',     // Localhost (default: none)
-      port: 8546,            // Standard Ethereum port (default: none)
-      network_id: '*'        // Any network (default: none)
+      host: '127.0.0.1', // Localhost (default: none)
+      port: 8546, // Standard Ethereum port (default: none)
+      network_id: '*' // Any network (default: none)
     },
     test_local: {
       host: '127.0.0.1',
       port: 8556,
       network_id: '*'
+    }
+  },
+  compilers: {
+    solc: {
+      parser: 'solcjs', // Leverages solc-js purely for speedy parsing
+      settings: {
+        evmVersion: 'byzantium'
+      }
     }
   },
   mocha: {

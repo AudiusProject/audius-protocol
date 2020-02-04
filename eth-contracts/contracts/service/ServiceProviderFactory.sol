@@ -33,19 +33,9 @@ contract ServiceProviderFactory is RegistryContract {
     );
 
     event UpdatedStakeAmount(
-      uint _spID,
-      bytes32 _serviceType,
       address _owner,
-      string _endpoint,
       uint256 _stakeAmount
     );
-
-    event Test(
-      bytes32 test,
-      string msg);
-    event TestUint(
-      uint test,
-      string msg);
 
     constructor(
       address _registryAddress,
@@ -70,9 +60,14 @@ contract ServiceProviderFactory is RegistryContract {
     ) external returns (uint spID)
     {
         address owner = msg.sender;
+        Staking stakingContract = Staking(
+            registry.getContract(stakingProxyOwnerKey)
+        );
 
         // Stake token amount from msg.sender
-        Staking(registry.getContract(stakingProxyOwnerKey)).stakeFor(owner, _stakeAmount, empty);
+        if (_stakeAmount > 0) {
+            stakingContract.stakeFor(owner, _stakeAmount, empty);
+        }
 
         uint newServiceProviderID = ServiceProviderStorageInterface(
             registry.getContract(serviceProviderStorageRegistryKey)
@@ -83,12 +78,19 @@ contract ServiceProviderFactory is RegistryContract {
             _delegateOwnerWallet
         );
 
+        uint currentlyStakedForOwner = stakingContract.totalStakedFor(owner);
+        uint minStakeAmount = stakingContract.getMinStakeAmount();
+
+        require(
+            currentlyStakedForOwner >= minStakeAmount,
+            "Minimum stake amount not met");
+
         emit RegisteredServiceProvider(
             newServiceProviderID,
             _serviceType,
             owner,
             _endpoint,
-            _stakeAmount
+            currentlyStakedForOwner
         );
 
         return newServiceProviderID;
@@ -101,22 +103,31 @@ contract ServiceProviderFactory is RegistryContract {
     {
         address owner = msg.sender;
 
+        uint numberOfEndpoints = ServiceProviderStorageInterface(
+            registry.getContract(serviceProviderStorageRegistryKey)
+        ).getNumberOfEndpointsFromAddress(owner);
+
+        // Unstake on deregistration if and only if this is the last service endpoint
+        uint unstakeAmount = 0;
+        // owned by the user
+        if (numberOfEndpoints == 1) {
+            unstakeAmount = Staking(
+                registry.getContract(stakingProxyOwnerKey)
+            ).totalStakedFor(owner);
+
+            Staking(registry.getContract(stakingProxyOwnerKey)).unstakeFor(
+                owner,
+                unstakeAmount,
+                empty
+            );
+        }
+
         (uint deregisteredID) = ServiceProviderStorageInterface(
             registry.getContract(serviceProviderStorageRegistryKey)
         ).deregister(
             _serviceType,
             owner,
             _endpoint);
-
-        uint unstakeAmount = Staking(
-          registry.getContract(stakingProxyOwnerKey)
-        ).totalStakedFor(owner);
-
-        Staking(registry.getContract(stakingProxyOwnerKey)).unstakeFor(
-          owner,
-          unstakeAmount,
-          empty
-        );
 
         emit DeregisteredServiceProvider(
             deregisteredID,
@@ -128,52 +139,49 @@ contract ServiceProviderFactory is RegistryContract {
         return deregisteredID;
     }
 
-    function increaseServiceStake(
-        bytes32 _serviceType,
-        string calldata _endpoint,
-        uint256 _increaseStakeAmount
-    ) external returns (uint newTotalStake)
-    {
-        // Confirm correct owner for this endpoint
+    function increaseStake(uint256 _increaseStakeAmount) external returns (uint newTotalStake) {
         address owner = msg.sender;
-        uint updatedSpID = this.getServiceProviderIdFromEndpoint(keccak256(bytes(_endpoint)));
-        require(updatedSpID != 0, "Increase stake - endpoint not registered");
-        (address stgOwner, , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
-        require(stgOwner == owner, "Increase stake - incorrect owner");
+
+        // Confirm owner has an endpoint
+        uint numberOfEndpoints = ServiceProviderStorageInterface(
+            registry.getContract(serviceProviderStorageRegistryKey)
+        ).getNumberOfEndpointsFromAddress(owner);
+        require(numberOfEndpoints > 0, "Registered endpoint required to increase stake");
 
         // Stake increased token amount for msg.sender
         Staking(
             registry.getContract(stakingProxyOwnerKey)
         ).stakeFor(owner, _increaseStakeAmount, empty);
- 
+
         uint newStakeAmount = Staking(
-          registry.getContract(stakingProxyOwnerKey)
+            registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(owner);
 
         emit UpdatedStakeAmount(
-            updatedSpID,
-            _serviceType,
             owner,
-            _endpoint,
             newStakeAmount
         );
 
         return newStakeAmount;
     }
 
-    function decreaseServiceStake(
-        bytes32 _serviceType,
-        string calldata _endpoint,
-        uint256 _decreaseStakeAmount
-    ) external returns (uint newTotalStake)
-    {
+    function decreaseStake(uint256 _decreaseStakeAmount) external returns (uint newTotalStake) {
         address owner = msg.sender;
 
-        // Confirm correct owner for this endpoint
-        uint updatedSpID = this.getServiceProviderIdFromEndpoint(keccak256(bytes(_endpoint)));
-        require(updatedSpID != 0, "Increase stake - endpoint not registered");
-        (address stgOwner, , ,) = this.getServiceProviderInfo(_serviceType, updatedSpID);
-        require(stgOwner == owner, "Increase stake - incorrect owner");
+        // Confirm owner has an endpoint
+        uint numberOfEndpoints = ServiceProviderStorageInterface(
+            registry.getContract(serviceProviderStorageRegistryKey)
+        ).getNumberOfEndpointsFromAddress(owner);
+        require(numberOfEndpoints > 0, "Registered endpoint required to decrease stake");
+
+        uint currentStakeAmount = Staking(
+            registry.getContract(stakingProxyOwnerKey)
+        ).totalStakedFor(owner);
+
+        // Prohibit decreasing stake to zero without deregistering all endpoints
+        require(
+            currentStakeAmount - _decreaseStakeAmount > 0,
+            "Please deregister endpoints to remove all stake");
 
         // Decrease staked token amount for msg.sender
         Staking(
@@ -182,14 +190,11 @@ contract ServiceProviderFactory is RegistryContract {
 
         // Query current stake
         uint newStakeAmount = Staking(
-          registry.getContract(stakingProxyOwnerKey)
+            registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(owner);
 
         emit UpdatedStakeAmount(
-            updatedSpID,
-            _serviceType,
             owner,
-            _endpoint,
             newStakeAmount
         );
 
@@ -197,8 +202,9 @@ contract ServiceProviderFactory is RegistryContract {
     }
 
     function updateDelegateOwnerWallet(
-      bytes32 _serviceType,
-      address _updatedDelegateOwnerWallet
+        bytes32 _serviceType,
+        string calldata _endpoint,
+        address _updatedDelegateOwnerWallet
     ) external returns (address)
     {
         address owner = msg.sender;
@@ -207,8 +213,9 @@ contract ServiceProviderFactory is RegistryContract {
         ).updateDelegateOwnerWallet(
             owner,
             _serviceType,
+            _endpoint,
             _updatedDelegateOwnerWallet
-        ); 
+        );
     }
 
     function getTotalServiceTypeProviders(bytes32 _serviceType)
@@ -232,7 +239,7 @@ contract ServiceProviderFactory is RegistryContract {
         );
     }
 
-    function getServiceProviderIdFromEndpoint(bytes32 _endpoint)
+    function getServiceProviderIdFromEndpoint(string calldata _endpoint)
     external view returns (uint spID)
     {
         return ServiceProviderStorageInterface(
@@ -240,25 +247,29 @@ contract ServiceProviderFactory is RegistryContract {
         ).getServiceProviderIdFromEndpoint(_endpoint);
     }
 
-    function getServiceProviderIdFromAddress(address _ownerAddress, bytes32 _serviceType)
-    external view returns (uint spIds)
+    function getServiceProviderIdsFromAddress(address _ownerAddress, bytes32 _serviceType)
+    external view returns (uint[] memory spIds)
     {
         return ServiceProviderStorageInterface(
             registry.getContract(serviceProviderStorageRegistryKey)
-        ).getServiceProviderIdFromAddress(
+        ).getServiceProviderIdsFromAddress(
             _ownerAddress,
             _serviceType
         );
     }
 
-    function getDelegateOwnerWallet(bytes32 _serviceType) external view returns (address)
+    function getDelegateOwnerWallet(
+        bytes32 _serviceType,
+        string calldata _endpoint
+    ) external view returns (address)
     {
-      address owner = msg.sender;
-      return ServiceProviderStorageInterface(
-          registry.getContract(serviceProviderStorageRegistryKey)
-      ).getDelegateOwnerWallet(
-          owner,
-          _serviceType
-      ); 
+        address owner = msg.sender;
+        return ServiceProviderStorageInterface(
+            registry.getContract(serviceProviderStorageRegistryKey)
+        ).getDelegateOwnerWallet(
+            owner,
+            _serviceType,
+            _endpoint
+        );
     }
 }
