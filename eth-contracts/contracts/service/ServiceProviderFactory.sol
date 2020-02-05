@@ -13,7 +13,18 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32 serviceProviderStorageRegistryKey;
     bytes32 stakingProxyOwnerKey;
 
-    address instanceAddress;
+    // TODO: Actually have a contract at governanceAddress to call
+    address governanceAddress;
+    bytes32[] validServiceTypes;
+
+    struct ServiceInstanceStakeRequirements {
+      uint minStake;
+      uint maxStake;
+    }
+
+    mapping(bytes32 => ServiceInstanceStakeRequirements) serviceTypeStakeRequirements;
+    // END Temporary data structures
+
     bytes empty;
 
     event RegisteredServiceProvider(
@@ -37,8 +48,16 @@ contract ServiceProviderFactory is RegistryContract {
       uint256 _stakeAmount
     );
 
+    modifier onlyGovernance() {
+      require(
+        msg.sender == governanceAddress,
+        "Requires msg.sender is from governance contract");
+      _;
+    }
+
     constructor(
       address _registryAddress,
+      address _governanceAddress,
       bytes32 _stakingProxyOwnerKey,
       bytes32 _serviceProviderStorageRegistryKey
     ) public
@@ -50,6 +69,22 @@ contract ServiceProviderFactory is RegistryContract {
         registry = RegistryInterface(_registryAddress);
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         serviceProviderStorageRegistryKey = _serviceProviderStorageRegistryKey;
+        governanceAddress = _governanceAddress;
+    }
+
+    function registerServiceType(
+      bytes32 _serviceType,
+      uint _minStake,
+      uint _maxStake
+    ) external onlyGovernance() returns (bool registered) 
+    {
+      require(!this.isValidServiceType(_serviceType), "Service type already registered");
+      validServiceTypes.push(_serviceType);
+      serviceTypeStakeRequirements[_serviceType] = ServiceInstanceStakeRequirements({
+        minStake: _minStake,
+        maxStake: _maxStake
+      });
+      return true;
     }
 
     function register(
@@ -271,5 +306,16 @@ contract ServiceProviderFactory is RegistryContract {
             _serviceType,
             _endpoint
         );
+    }
+
+    function isValidServiceType(bytes32 _serviceType)
+    external view returns (bool isValid) 
+    {
+      for (uint i = 0; i < validServiceTypes.length; i ++) {
+        if (validServiceTypes[i] == _serviceType) {
+          return true;
+        }
+      }
+      return false;
     }
 }

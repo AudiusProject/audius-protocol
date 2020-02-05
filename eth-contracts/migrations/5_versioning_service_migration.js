@@ -34,9 +34,11 @@ module.exports = (deployer, network, accounts) => {
     await deployer.deploy(ServiceProviderStorage, Registry.address)
     await registry.addContract(serviceProviderStorageKey, ServiceProviderStorage.address)
 
+    let tmpGovernanceAddress = treasuryAddress
     let serviceProviderFactory = await deployer.deploy(
       ServiceProviderFactory,
       Registry.address,
+      tmpGovernanceAddress,
       ownedUpgradeabilityProxyKey,
       serviceProviderStorageKey)
 
