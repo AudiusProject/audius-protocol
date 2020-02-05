@@ -114,7 +114,7 @@ module.exports = async callback => {
     console.log("Content service folder doesn't exist, probably running via E2E setup scripts", e)
   }
 
-  const dappOutput = path.join(os.homedir(), './audius')
+  const dappOutput = path.join(os.homedir(), '/.audius')
   if (!fs.existsSync(dappOutput)) {
     fs.mkdirSync(dappOutput, { recursive: true })
   }
