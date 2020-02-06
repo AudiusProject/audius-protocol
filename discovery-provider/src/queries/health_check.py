@@ -113,7 +113,6 @@ def health_check():
 
     # Return error on unhealthy block diff if requested.
     enforce_block_diff = request.args.get("enforce_block_diff", type=str) == 'true'
-    health_results["block_difference"] = 200
     if enforce_block_diff and health_results["block_difference"] > HEALTHY_BLOCK_DIFF:
         return jsonify(health_results), 500
 
