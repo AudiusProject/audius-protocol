@@ -1,7 +1,7 @@
 import logging
 import json
 import time
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 import requests
 from requests.exceptions import ReadTimeout
 import ipfshttpclient
@@ -182,11 +182,11 @@ class IPFSClient:
         gateway_endpoints = self._cnode_endpoints
         for address in gateway_endpoints:
             # First, query as dir.
-            gateway_query_address = "%s/ipfs/%s/150x150.jpg" % (address, multihash)
+            gateway_query_address = urljoin(address, f"/ipfs/{multihash}/150x150.jpg")
             r = None
             try:
                 logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
-                r = requests.get(gateway_query_address, timeout=20)
+                r = requests.get(gateway_query_address, timeout=10)
             except Exception as e:
                 logger.warning(f"Failed to query {gateway_query_address} with error {e}")
 
@@ -205,11 +205,11 @@ class IPFSClient:
                     return True
 
             # Else, query as non-dir image
-            gateway_query_address = "%s/ipfs/%s" % (address, multihash)
+            gateway_query_address = urljoin(address, f"/ipfs/{multihash}")
             r = None
             try:
                 logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
-                r = requests.get(gateway_query_address, timeout=20)
+                r = requests.get(gateway_query_address, timeout=10)
             except Exception as e:
                 logger.warning(f"Failed to query {gateway_query_address}, {e}")
 
