@@ -13,13 +13,38 @@ const fromBn = n => parseInt(n.valueOf(), 10)
 const getTokenBalance = async (token, account) => fromBn(await token.balanceOf(account))
 const claimBlockDiff = 46000
 
+const toWei = (aud) => {
+  let amountInAudWei = web3.utils.toWei(
+    aud.toString(),
+    'ether'
+  )
+
+  let amountInAudWeiBN = web3.utils.toBN(amountInAudWei)
+  return amountInAudWeiBN
+}
+
+const fromWei = (wei) => {
+  return web3.utils.fromWei(wei)
+}
+
+const getTokenBalance2 = async (token, account) => fromWei(await token.balanceOf(account))
+
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 
-const testServiceType = web3.utils.utf8ToHex('test-service')
+const testServiceType = web3.utils.utf8ToHex('discovery-provider')
+const testServiceType2 = web3.utils.utf8ToHex('creator-node')
 const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'
+
+const MIN_STAKE_AMOUNT = 10
+const DEFAULT_AMOUNT = 120
+const MAX_STAKE_AMOUNT = DEFAULT_AMOUNT * 100
+
+// 1000 AUD converted to AUDWei, multiplying by 10^18
+const INITIAL_BAL = toWei(1000)
+console.log(INITIAL_BAL)
 
 contract('ServiceProvider test', async (accounts) => {
   let treasuryAddress = accounts[0]
@@ -34,11 +59,6 @@ contract('ServiceProvider test', async (accounts) => {
   let serviceProviderStorage
   let serviceProviderFactory
 
-  const DEFAULT_AMOUNT = 120
-  const INITIAL_BAL = 1000
-  const MIN_STAKE_AMOUNT = 10
-  const MAX_STAKE_AMOUNT = DEFAULT_AMOUNT * 100
-
   beforeEach(async () => {
     registry = await Registry.new()
 
@@ -49,6 +69,9 @@ contract('ServiceProvider test', async (accounts) => {
 
     token = await AudiusToken.new({ from: treasuryAddress })
     tokenAddress = token.address
+    // console.log(`AudiusToken Address : ${tokenAddress}`)
+    let initialTokenBal = fromBn(await token.balanceOf(accounts[0]))
+    // console.log(`AudiusToken Balance: ${initialTokenBal}`)
     impl0 = await Staking.new()
 
     // Create initialization data
@@ -66,6 +89,7 @@ contract('ServiceProvider test', async (accounts) => {
     staking = await Staking.at(proxy.address)
     stakingAddress = staking.address
 
+    // 1 TAUD = 1 * 10^18
     // Reset min for test purposes
     await staking.setMinStakeAmount(MIN_STAKE_AMOUNT)
 
@@ -79,6 +103,23 @@ contract('ServiceProvider test', async (accounts) => {
       ownedUpgradeabilityProxyKey,
       serviceProviderStorageKey)
 
+    // Query types
+    /*
+    let types = await serviceProviderFactory.getValidServiceTypes()
+    await Promise.all(
+      types.map(
+        async (t) => {
+          let info = await serviceProviderFactory.getServiceStakeInfo(t)
+          console.log(info)
+          let minStake = fromBn(info[0])
+          let maxStake = fromBn(info[1])
+          console.log(fromWei(info[0]))
+          console.log(fromWei(info[1]))
+        }
+      )
+    )
+    */
+
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)
 
     // Permission sp factory as caller, from the proxy owner address
@@ -86,14 +127,17 @@ contract('ServiceProvider test', async (accounts) => {
     await staking.setStakingOwnerAddress(serviceProviderFactory.address, { from: proxyOwner })
 
     // Transfer 1000 tokens to accounts[1]
+    // console.log(`Transferring to ${accounts[1]}`)
     await token.transfer(accounts[1], INITIAL_BAL, { from: treasuryAddress })
+    // let accountBal = await token.balanceOf(accounts[1])
+    // console.log(`${accounts[1]} - ${fromWei(accountBal)} AUD`)
   })
 
   /* Helper functions */
 
   const registerServiceProvider = async (type, endpoint, amount, account) => {
     // Approve staking transfer
-    await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: account })
+    await token.approve(stakingAddress, amount, { from: account })
 
     let tx = await serviceProviderFactory.register(
       type,
@@ -393,19 +437,31 @@ contract('ServiceProvider test', async (accounts) => {
      * Register a new endpoint under the same account, adding stake to the account
      */
     it('multiple endpoints w/same account, increase stake', async () => {
-      let initialBal = await getTokenBalance(token, stakerAccount)
+      let increaseAmt = toWei(DEFAULT_AMOUNT)
+      let initialBal = await token.balanceOf(stakerAccount)
+      let initialStake = await getStakeAmountForAccount(stakerAccount)
+
       let registerInfo = await registerServiceProvider(
         testServiceType,
         testEndpoint1,
-        DEFAULT_AMOUNT,
+        increaseAmt,
         stakerAccount)
       let newSPId = registerInfo.spID
+
       // Confirm change in token balance
-      let finalBal = await getTokenBalance(token, stakerAccount)
+      let finalBal = await token.balanceOf(stakerAccount)
+      let finalStake = await getStakeAmountForAccount(stakerAccount)
+
       assert.equal(
         (initialBal - finalBal),
-        DEFAULT_AMOUNT,
+        increaseAmt,
         'Expected decrease in final balance')
+
+      assert.equal(
+        (finalStake - initialStake),
+        increaseAmt,
+        'Expected increase in total stake')
+
       let newIdFound = await serviceProviderIDRegisteredToAccount(
         stakerAccount,
         testServiceType,

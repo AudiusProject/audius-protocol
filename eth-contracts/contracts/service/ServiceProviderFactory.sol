@@ -13,8 +13,6 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32 serviceProviderStorageRegistryKey;
     bytes32 stakingProxyOwnerKey;
 
-    // TODO: Actually have a contract at governanceAddress to call
-    address governanceAddress;
     bytes32[] validServiceTypes;
 
     struct ServiceInstanceStakeRequirements {
@@ -26,6 +24,9 @@ contract ServiceProviderFactory is RegistryContract {
     // END Temporary data structures
 
     bytes empty;
+
+    // standard - imitates relationship between Ether and Wei
+    uint8 private constant DECIMALS = 18;
 
     event RegisteredServiceProvider(
       uint _spID,
@@ -48,16 +49,8 @@ contract ServiceProviderFactory is RegistryContract {
       uint256 _stakeAmount
     );
 
-    modifier onlyGovernance() {
-      require(
-        msg.sender == governanceAddress,
-        "Requires msg.sender is from governance contract");
-      _;
-    }
-
     constructor(
       address _registryAddress,
-      address _governanceAddress,
       bytes32 _stakingProxyOwnerKey,
       bytes32 _serviceProviderStorageRegistryKey
     ) public
@@ -69,22 +62,25 @@ contract ServiceProviderFactory is RegistryContract {
         registry = RegistryInterface(_registryAddress);
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         serviceProviderStorageRegistryKey = _serviceProviderStorageRegistryKey;
-        governanceAddress = _governanceAddress;
-    }
 
-    function registerServiceType(
-      bytes32 _serviceType,
-      uint _minStake,
-      uint _maxStake
-    ) external onlyGovernance() returns (bool registered) 
-    {
-      require(!this.isValidServiceType(_serviceType), "Service type already registered");
-      validServiceTypes.push(_serviceType);
-      serviceTypeStakeRequirements[_serviceType] = ServiceInstanceStakeRequirements({
-        minStake: _minStake,
-        maxStake: _maxStake
-      });
-      return true;
+        // Hardcoded values for development.
+        // Note that all token mins/maxes are in AudWEI not actual AUD 
+        // discovery-provider, 0x646973636f766572792d70726f7669646572
+        bytes32 discoveryProvider = hex"646973636f766572792d70726f7669646572";
+        validServiceTypes.push(discoveryProvider);
+        // All min/max values are in AUD and require conversion
+        serviceTypeStakeRequirements[discoveryProvider] = ServiceInstanceStakeRequirements({
+          minStake: 5 * 10**uint256(DECIMALS),
+          maxStake: 1000 * 10**uint256(DECIMALS)
+        });
+
+        // creator-node 0x63726561746f722d6e6f6465
+        bytes32 creatorNode  = hex"63726561746f722d6e6f6465";
+        validServiceTypes.push(creatorNode);
+        serviceTypeStakeRequirements[creatorNode] = ServiceInstanceStakeRequirements({
+          minStake: 10 * 10**uint256(DECIMALS),
+          maxStake: 1000 * 10**uint256(DECIMALS)
+        });
     }
 
     function register(
@@ -94,6 +90,10 @@ contract ServiceProviderFactory is RegistryContract {
         address _delegateOwnerWallet
     ) external returns (uint spID)
     {
+        require(
+          this.isValidServiceType(_serviceType),
+          "Valid service type required");
+
         address owner = msg.sender;
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
@@ -317,5 +317,17 @@ contract ServiceProviderFactory is RegistryContract {
         }
       }
       return false;
+    }
+
+    function getValidServiceTypes()
+    external view returns (bytes32[] memory types) 
+    {
+      return validServiceTypes;
+    }
+
+    function getServiceStakeInfo(bytes32 _serviceType) 
+    external view returns (uint min, uint max)
+    {
+      return (serviceTypeStakeRequirements[_serviceType].minStake, serviceTypeStakeRequirements[_serviceType].maxStake);
     }
 }
