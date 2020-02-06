@@ -1,7 +1,7 @@
 import logging
 import json
 import time
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 import requests
 from requests.exceptions import ReadTimeout
 import ipfshttpclient
@@ -168,41 +168,58 @@ class IPFSClient:
             raise  # error is of type ipfshttpclient.exceptions.TimeoutError
 
     def multihash_is_directory(self, multihash):
+        # First attempt to cat multihash locally.
         try:
-            # attempt to cat single byte from CID to determine if dir or file
+            # If cat successful, multihash is not directory.
             self._api.cat(multihash, 0, 1)
             return False
         except Exception as e:  # pylint: disable=W0703
             if "this dag node is a directory" in str(e):
-                logger.warning(f'IPFSCLIENT | Found directory {multihash}')
+                logger.warning(f"IPFSCLIENT | Found directory {multihash}")
                 return True
 
-        # Attempt to retrieve from cnode gateway endpoints
+        # Attempt to retrieve from cnode gateway endpoints.
         gateway_endpoints = self._cnode_endpoints
         for address in gateway_endpoints:
-            gateway_query_address = "%s/ipfs/%s" % (address, multihash)
+            # First, query as dir.
+            gateway_query_address = urljoin(address, f"/ipfs/{multihash}/150x150.jpg")
             r = None
             try:
-                logger.warning(f"IPFSCLIENT | Querying directory {gateway_query_address}")
-                r = requests.get(gateway_query_address, timeout=20)
+                logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
+                r = requests.get(gateway_query_address, timeout=10)
             except Exception as e:
-                logger.warning(f'Failed to query {gateway_query_address}, {e}')
+                logger.warning(f"Failed to query {gateway_query_address} with error {e}")
 
             if r is not None:
                 try:
                     json_resp = r.json()
-                    if 'error' in json_resp and "this dag node is a directory" in json_resp['error']:
-                        logger.warning(f'IPFSCLIENT | Found directory {multihash}')
+                    # Gateway will return "no link named" error if dir  but no file named 150x150.jpg exists in dir.
+                    if 'error' in json_resp and 'no link named' in json_resp['error']:
+                        logger.warning(f"IPFSCLIENT | Found directory {gateway_query_address}")
                         return True
                 except Exception as e:
-                    logger.warning(f'IPFSCLIENT | Failed to deserialize json for {multihash}, {e}')
+                    logger.warning(f"IPFSCLIENT | Failed to deserialize json for {multihash} for error {e}")
 
-                # Successful non-json response indicates image, not directory
+                # Success non-json response indicates image in dir
                 if r.status_code == 200:
                     logger.warning(f"IPFSCLIENT | Returned image at {gateway_query_address}")
-                    return False
+                    return True
 
-        raise Exception(f'Failed to determine multihash status, {multihash}')
+            # Else, query as non-dir image
+            gateway_query_address = urljoin(address, f"/ipfs/{multihash}")
+            r = None
+            try:
+                logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
+                r = requests.get(gateway_query_address, timeout=10)
+            except Exception as e:
+                logger.warning(f"Failed to query {gateway_query_address}, {e}")
+
+            # Successful non-json response indicates image, not directory
+            if r is not None and r.status_code == 200:
+                logger.warning(f"IPFSCLIENT | Returned image at {gateway_query_address}")
+                return False
+
+        raise Exception(f"Failed to determine multihash status, {multihash}")
 
     def connect_peer(self, peer):
         try:
