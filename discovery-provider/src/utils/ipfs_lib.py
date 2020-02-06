@@ -193,6 +193,7 @@ class IPFSClient:
             if r is not None:
                 try:
                     json_resp = r.json()
+                    # Gateway will return "no link named" error if dir  but no file named 150x150.jpg exists in dir.
                     if 'error' in json_resp and 'no link named' in json_resp['error']:
                         logger.warning(f"IPFSCLIENT | Found directory {gateway_query_address}")
                         return True
