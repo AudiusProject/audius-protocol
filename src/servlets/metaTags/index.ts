@@ -5,9 +5,16 @@ import path from 'path'
 
 import libs from '../../libs'
 import { MetaTagFormat } from './types'
+import {
+  getTrack,
+  getUser,
+  formatGateway,
+  getImageUrl,
+  getCollection,
+  getUserByHandle
+} from '../utils/helpers'
+import { DEFAULT_IMAGE_URL } from '../utils/constants'
 
-const USER_NODE_IPFS_GATEWAY = 'https://usermetadata.audius.co/ipfs/'
-const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/preview-image.jpg'
 
 interface Context {
   title: string,
@@ -17,41 +24,6 @@ interface Context {
   thumbnail?: boolean,
 }
 
-/** Helpers */
-
-const getTrack = async (id: number): Promise<any> => {
-  const t = await libs.Track.getTracks(1, 0, [id])
-  if (t && t[0]) return t[0]
-  throw new Error(`Failed to get track ${id}`)
-}
-
-const getCollection = async (id: number): Promise<any> => {
-  const c = await libs.Playlist.getPlaylists(1, 0, [id])
-  if (c && c[0]) return c[0]
-  throw new Error(`Failed to get collection ${id}`)
-}
-
-const getUser = async (id: number): Promise<any> => {
-  const u = await libs.User.getUsers(1, 0, [id])
-  if (u && u[0]) return u[0]
-  throw new Error(`Failed to get user ${id}`)
-}
-
-const getUserByHandle = async (handle: string): Promise<any> => {
-  const u = await libs.User.getUsers(1, 0, null, null, handle)
-  if (u && u[0]) return u[0]
-  throw new Error(`Failed to get user ${handle}`)
-}
-
-const formatGateway = (creatorNodeEndpoint: string, userId: number): string =>
-  creatorNodeEndpoint
-    ? `${creatorNodeEndpoint.split(',')[0]}/ipfs/`
-    : USER_NODE_IPFS_GATEWAY
-
-const getImageUrl = (cid: string, gateway: string | null): string => {
-  if (!cid) return DEFAULT_IMAGE_URL
-  return `${gateway}${cid}`
-}
 
 /** Routes */
 

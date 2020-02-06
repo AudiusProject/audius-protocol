@@ -39,10 +39,25 @@ http {
         application/x-javascript
         application/json;
 
+    # apple-app-site-association passthrough for universal links
     location /apple-app-site-association {
       proxy_pass ${APP_URL};
     }
 
+    # Bedtime API routes.
+    location /embed/api {
+      proxy_pass http://node:8000;
+    }
+
+    # Proxy bedtime player
+    # strips off `embed` portion of the URI
+    # before forwarding to the BEDTIME_URL
+    location /embed {
+      rewrite ^/embed(/.*)$ $1 break;
+      proxy_pass ${BEDTIME_URL};
+    }
+
+    # metadata/dapp passthrough
     location / {
       proxy_http_version 1.1;
 
