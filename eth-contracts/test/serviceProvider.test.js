@@ -90,7 +90,7 @@ contract('ServiceProvider test', async (accounts) => {
 
     // 1 TAUD = 1 * 10^18
     // Reset min for test purposes
-    await staking.setMinStakeAmount(MIN_STAKE_AMOUNT)
+    // await staking.setMinStakeAmount(MIN_STAKE_AMOUNT)
 
     // Deploy sp storage
     serviceProviderStorage = await ServiceProviderStorage.new(registry.address)
@@ -318,7 +318,11 @@ contract('ServiceProvider test', async (accounts) => {
      * Attempt to register first endpoint with zero stake, expect error
      */
     it('fails to register endpoint w/less than minimum stake', async () => {
-      // let initialBal = await getTokenBalance(token, stakerAccount)
+      await token.transfer(
+        stakerAccount2,
+        MIN_STAKE_AMOUNT - 1,
+        { from: treasuryAddress })
+
       // Attempt to register first endpoint with zero stake
       await _lib.assertRevert(
         registerServiceProvider(
@@ -341,7 +345,7 @@ contract('ServiceProvider test', async (accounts) => {
           testEndpoint1,
           0,
           stakerAccount2),
-        'Minimum stake amount not met')
+        'Minimum stake threshold exceeded')
     })
 
     it('increases stake value', async () => {
@@ -370,7 +374,7 @@ contract('ServiceProvider test', async (accounts) => {
       let decreaseStakeAmount = DEFAULT_AMOUNT / 2
 
       await decreaseRegisteredProviderStake(
-        decreaseStakeAmount,
+        web3.utils.toBN(decreaseStakeAmount),
         stakerAccount)
 
       let readStorageValues = await serviceProviderFactory.getServiceProviderInfo(
@@ -400,14 +404,15 @@ contract('ServiceProvider test', async (accounts) => {
 
     it('fails to decrease stake to zero without deregistering SPs', async () => {
       // Confirm initial amount in staking contract
-      let initialStake = await getStakeAmountForAccount(stakerAccount)
-      assert.equal(initialStake, DEFAULT_AMOUNT)
+      let initialStake = await staking.totalStakedFor(stakerAccount) //  await getStakeAmountForAccount(stakerAccount)
+      assert.equal(fromBn(initialStake), DEFAULT_AMOUNT)
       let decreaseStakeAmount = initialStake
       // Confirm revert
       await _lib.assertRevert(
         decreaseRegisteredProviderStake(
           decreaseStakeAmount,
-          stakerAccount))
+          stakerAccount),
+        'Please deregister endpoints to remove all stake') // Confirm this is the right behavior?
     })
 
     /*
@@ -453,7 +458,7 @@ contract('ServiceProvider test', async (accounts) => {
      * Register a new endpoint under the same account, adding stake to the account
      */
     it('multiple endpoints w/same account, increase stake', async () => {
-      let increaseAmt = toWei(DEFAULT_AMOUNT)
+      let increaseAmt = DEFAULT_AMOUNT
       let initialBal = await token.balanceOf(stakerAccount)
       let initialStake = await getStakeAmountForAccount(stakerAccount)
 

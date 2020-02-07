@@ -48,6 +48,9 @@ contract ServiceProviderFactory is RegistryContract {
       address _owner,
       uint256 _stakeAmount
     );
+    event Test(
+      bytes32 test,
+      string msg);
 
     constructor(
       address _registryAddress,
@@ -118,7 +121,7 @@ contract ServiceProviderFactory is RegistryContract {
 
         require(
             currentlyStakedForOwner >= minStakeAmount,
-            "Minimum stake amount not met");
+            "Minimum stake threshold exceeded");
 
         require(
             currentlyStakedForOwner < maxStakeAmount,

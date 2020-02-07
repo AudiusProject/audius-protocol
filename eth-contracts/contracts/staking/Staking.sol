@@ -25,9 +25,10 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     uint8 private constant DECIMALS = 18;
 
     // Default minimum stake 
-    uint256 internal minStakeAmount = 0;
+    // uint256 internal minStakeAmount = 0;
+
     // Default maximum stake 
-    // uint256 internal maxStakeAmount = 0;
+    uint256 internal maxStakeAmount = 0;
 
     // Reward tracking info
     uint256 internal currentClaimBlock;
@@ -68,7 +69,8 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         currentClaimBlock = 0;
         currentClaimableAmount = 0;
         // Default min stake amount is 100 AUD tokens
-        minStakeAmount = 100 * 10**uint256(DECIMALS);
+        // minStakeAmount = 100 * 10**uint256(DECIMALS);
+
         // Default max stake amount is 100 million AUD tokens
         maxStakeAmount = 100000000 * 10**uint256(DECIMALS);
     }
@@ -163,10 +165,12 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
       * Controlled by treasury
       */
      // NOTE that _amounts are in wei throughout
+     /*
     function setMinStakeAmount(uint256 _amount) external isInitialized {
         require(msg.sender == treasuryAddress, "Stake amount manipulation limited to treasury owner");
         minStakeAmount = _amount; 
     }
+    */
 
     /** 
       * @notice Sets the max stake possible
@@ -320,10 +324,10 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     /**
      * @notice Return the minimum stake configuration
      * @return min stake
-     */
     function getMinStakeAmount() external view returns (uint256) {
       return minStakeAmount; 
     }
+     */
 
     /**
      * @notice Return the maximum stake configuration
@@ -402,7 +406,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // Confirm stake is within configured bounds for non-treasury addresses
         if (_accountAddress != treasuryAddress) {
           require(newStake <= maxStakeAmount, 'Maximum stake threshold exceeded');
-          require(newStake > minStakeAmount || newStake == 0, 'Minimum stake threshold exceeded');
+          // require(newStake > minStakeAmount || newStake == 0, 'Minimum stake threshold exceeded');
         }
 
         // add new value to account history
