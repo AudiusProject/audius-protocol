@@ -66,20 +66,20 @@ contract ServiceProviderFactory is RegistryContract {
         // Hardcoded values for development.
         // Note that all token mins/maxes are in AudWEI not actual AUD 
         // discovery-provider, 0x646973636f766572792d70726f7669646572
+        // creator-node 0x63726561746f722d6e6f6465
         bytes32 discoveryProvider = hex"646973636f766572792d70726f7669646572";
+        bytes32 creatorNode  = hex"63726561746f722d6e6f6465";
         validServiceTypes.push(discoveryProvider);
+        validServiceTypes.push(creatorNode);
+
         // All min/max values are in AUD and require conversion
         serviceTypeStakeRequirements[discoveryProvider] = ServiceInstanceStakeRequirements({
           minStake: 5 * 10**uint256(DECIMALS),
-          maxStake: 1000 * 10**uint256(DECIMALS)
+          maxStake: 100000 * 10**uint256(DECIMALS)
         });
-
-        // creator-node 0x63726561746f722d6e6f6465
-        bytes32 creatorNode  = hex"63726561746f722d6e6f6465";
-        validServiceTypes.push(creatorNode);
         serviceTypeStakeRequirements[creatorNode] = ServiceInstanceStakeRequirements({
           minStake: 10 * 10**uint256(DECIMALS),
-          maxStake: 1000 * 10**uint256(DECIMALS)
+          maxStake: 100000 * 10**uint256(DECIMALS)
         });
     }
 
@@ -114,11 +114,15 @@ contract ServiceProviderFactory is RegistryContract {
         );
 
         uint currentlyStakedForOwner = stakingContract.totalStakedFor(owner);
-        uint minStakeAmount = stakingContract.getMinStakeAmount();
+        (uint minStakeAmount, uint maxStakeAmount) = this.getAccountStakeBounds(owner);
 
         require(
             currentlyStakedForOwner >= minStakeAmount,
             "Minimum stake amount not met");
+
+        require(
+            currentlyStakedForOwner < maxStakeAmount,
+            "Maximum stake amount exceeded");
 
         emit RegisteredServiceProvider(
             newServiceProviderID,
@@ -329,5 +333,21 @@ contract ServiceProviderFactory is RegistryContract {
     external view returns (uint min, uint max)
     {
       return (serviceTypeStakeRequirements[_serviceType].minStake, serviceTypeStakeRequirements[_serviceType].maxStake);
+    }
+
+    function getAccountStakeBounds(address sp)
+    external view returns (uint min, uint max) 
+    {
+      uint minStake = 0;
+      uint maxStake = 0;
+      uint validTypesLength = validServiceTypes.length;
+      for (uint i = 0; i < validTypesLength; i++) {
+        bytes32 serviceType = validServiceTypes[i];
+        (uint typeMin, uint typeMax) = this.getServiceStakeInfo(serviceType); 
+        uint numberOfEndpoints = this.getServiceProviderIdsFromAddress(sp, serviceType).length; 
+        minStake += (typeMin * numberOfEndpoints); 
+        maxStake += (typeMax * numberOfEndpoints); 
+      }
+      return (minStake, maxStake);
     }
 }

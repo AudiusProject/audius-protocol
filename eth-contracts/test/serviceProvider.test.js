@@ -39,12 +39,11 @@ const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'
 
 const MIN_STAKE_AMOUNT = 10
-const DEFAULT_AMOUNT = 120
-const MAX_STAKE_AMOUNT = DEFAULT_AMOUNT * 100
 
 // 1000 AUD converted to AUDWei, multiplying by 10^18
 const INITIAL_BAL = toWei(1000)
-console.log(INITIAL_BAL)
+const DEFAULT_AMOUNT = toWei(120)
+const MAX_STAKE_AMOUNT = DEFAULT_AMOUNT * 100
 
 contract('ServiceProvider test', async (accounts) => {
   let treasuryAddress = accounts[0]
@@ -218,7 +217,7 @@ contract('ServiceProvider test', async (accounts) => {
     const stakerAccount = accounts[1]
     const stakerAccount2 = accounts[2]
     beforeEach(async () => {
-      let initialBal = await getTokenBalance(token, stakerAccount)
+      let initialBal = await token.balanceOf(stakerAccount)
 
       regTx = await registerServiceProvider(
         testServiceType,
@@ -230,8 +229,8 @@ contract('ServiceProvider test', async (accounts) => {
       assert.equal(regTx.stakedAmountInt, DEFAULT_AMOUNT)
 
       // Confirm balance updated for tokens
-      let finalBal = await getTokenBalance(token, stakerAccount)
-      assert.equal(initialBal, finalBal + DEFAULT_AMOUNT, 'Expect funds to be transferred')
+      let finalBal = await token.balanceOf(stakerAccount)
+      assert.isTrue(initialBal.eq(finalBal.add(DEFAULT_AMOUNT)), 'Expect funds to be transferred')
 
       let newIdFound = await serviceProviderIDRegisteredToAccount(
         stakerAccount,
@@ -246,6 +245,23 @@ contract('ServiceProvider test', async (accounts) => {
         stakedAmount,
         DEFAULT_AMOUNT,
         'Expect default stake amount')
+
+      let spTypeInfo = await serviceProviderFactory.getServiceStakeInfo(testServiceType)
+      let typeMin = fromWei(spTypeInfo[0])
+      let typeMax = fromWei(spTypeInfo[1])
+
+      // Validate min stake requirements
+      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
+      let accountMin = fromWei(bounds[0])
+      let accountMax = fromWei(bounds[1])
+      assert.equal(
+        typeMin,
+        accountMin,
+        'Expect account min to equal sp type 1 min')
+      assert.equal(
+        typeMax,
+        accountMax,
+        'Expect account max to equal sp type 1 max')
     })
 
     /*

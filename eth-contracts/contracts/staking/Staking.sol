@@ -27,7 +27,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     // Default minimum stake 
     uint256 internal minStakeAmount = 0;
     // Default maximum stake 
-    uint256 internal maxStakeAmount = 0;
+    // uint256 internal maxStakeAmount = 0;
 
     // Reward tracking info
     uint256 internal currentClaimBlock;
