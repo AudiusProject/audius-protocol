@@ -68,7 +68,7 @@ contract('Upgrade proxy test', async (accounts) => {
       await proxy.upgradeToAndCall(impl0.address, initializeData, { from: proxyOwner })
 
       // Reset min for test purposes
-      await staking0.setMinStakeAmount(0)
+      // await staking0.setMinStakeAmount(0)
 
       // Permission test address as caller
       await staking0.setStakingOwnerAddress(testStakingCallerAddress, { from: treasuryAddress })

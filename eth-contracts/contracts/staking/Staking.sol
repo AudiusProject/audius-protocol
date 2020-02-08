@@ -28,7 +28,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     // uint256 internal minStakeAmount = 0;
 
     // Default maximum stake 
-    uint256 internal maxStakeAmount = 0;
+    // uint256 internal maxStakeAmount = 0;
 
     // Reward tracking info
     uint256 internal currentClaimBlock;
@@ -72,7 +72,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // minStakeAmount = 100 * 10**uint256(DECIMALS);
 
         // Default max stake amount is 100 million AUD tokens
-        maxStakeAmount = 100000000 * 10**uint256(DECIMALS);
+        // maxStakeAmount = 100000000 * 10**uint256(DECIMALS);
     }
 
     /* External functions */
@@ -176,10 +176,12 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
       * @notice Sets the max stake possible
       * Controlled by treasury
       */
+      /*
     function setMaxStakeAmount(uint256 _amount) external isInitialized {
         require(msg.sender == treasuryAddress, "Stake amount manipulation limited to treasury owner");
         maxStakeAmount = _amount; 
     }
+    */
 
     /**
      * @notice Stakes `_amount` tokens, transferring them from `msg.sender`
@@ -329,14 +331,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     }
      */
 
-    /**
-     * @notice Return the maximum stake configuration
-     * @return max stake
-     */
-    function getMaxStakeAmount() external view returns (uint256) {
-      return maxStakeAmount; 
-    }
-
     /* Public functions */
 
     /**
@@ -405,7 +399,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
 
         // Confirm stake is within configured bounds for non-treasury addresses
         if (_accountAddress != treasuryAddress) {
-          require(newStake <= maxStakeAmount, 'Maximum stake threshold exceeded');
+          // require(newStake <= maxStakeAmount, 'Maximum stake threshold exceeded');
           // require(newStake > minStakeAmount || newStake == 0, 'Minimum stake threshold exceeded');
         }
 
