@@ -92,7 +92,6 @@ contract('Staking test', async (accounts) => {
 
     staking = await Staking.at(proxy.address)
     // Reset min for test purposes
-    await staking.setMinStakeAmount(0)
 
     stakingAddress = staking.address
 
@@ -167,22 +166,6 @@ contract('Staking test', async (accounts) => {
     assert.equal(await staking.supportsHistory(), true, 'It should support History')
   })
 
-  it('configures staking bounds', async () => {
-    let newMin = 10000
-    await staking.setMinStakeAmount(newMin)
-    let newMax = 3000000
-    await staking.setMaxStakeAmount(newMax)
-
-    let finalMin = await staking.getMinStakeAmount()
-    let finalMax = await staking.getMaxStakeAmount()
-    assert.equal(newMin, finalMin, 'Expect updated min stake')
-    assert.equal(newMax, finalMax, 'Expect updated min stake')
-
-    // Confirm non-treasury address call reverts
-    _lib.assertRevert(staking.setMinStakeAmount(newMin + 10, { from: accounts[3] }))
-    _lib.assertRevert(staking.setMaxStakeAmount(newMax + 10, { from: accounts[3] }))
-  })
-
   it('stake with multiple accounts', async () => {
     // Transfer 1000 tokens to accounts[1]
     await token.transfer(accounts[1], 1000, { from: treasuryAddress })
@@ -205,9 +188,6 @@ contract('Staking test', async (accounts) => {
   })
 
   it('slash functioning as expected', async () => {
-    // Set min stake to 0 for testing
-    await staking.setMinStakeAmount(0)
-
     // Transfer 1000 tokens to accounts[1]
     // Transfer 1000 tokens to accounts[2]
     await token.transfer(accounts[1], 1000, { from: treasuryAddress })
