@@ -15,8 +15,6 @@ contract ServiceProviderFactory is RegistryContract {
 
     bytes32[] validServiceTypes;
 
-    uint tmp;
-
     struct ServiceInstanceStakeRequirements {
       uint minStake;
       uint maxStake;
@@ -86,7 +84,6 @@ contract ServiceProviderFactory is RegistryContract {
           minStake: 10 * 10**uint256(DECIMALS),
           maxStake: 100000 * 10**uint256(DECIMALS)
         });
-        tmp = 0;
     }
 
     function register(
