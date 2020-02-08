@@ -198,6 +198,8 @@ contract ServiceProviderFactory is RegistryContract {
             newStakeAmount
         );
 
+        validateAccountStakeBalances(owner);
+
         return newStakeAmount;
     }
 
@@ -233,6 +235,8 @@ contract ServiceProviderFactory is RegistryContract {
             owner,
             newStakeAmount
         );
+
+        validateAccountStakeBalances(owner);
 
         return newStakeAmount;
     }
