@@ -16,8 +16,14 @@ const router = express.Router()
 router.get('/embed/api/tracks/:id', (
   req: express.Request,
   res: express.Response) => {
-    console.log('Hitting embed')
     getBedtimeResponse(BedtimeFormat.TRACK, req, res)
+  }
+)
+
+router.get('/embed/api/collections/:id', (
+  req: express.Request,
+  res: express.Response) => {
+    getBedtimeResponse(BedtimeFormat.COLLECTION, req, res)
   }
 )
 
