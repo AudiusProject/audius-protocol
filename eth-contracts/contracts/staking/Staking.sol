@@ -21,15 +21,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     string private constant ERROR_TOKEN_TRANSFER = "STAKING_TOKEN_TRANSFER";
     string private constant ERROR_NOT_ENOUGH_BALANCE = "STAKING_NOT_ENOUGH_BALANCE";
 
-    // standard - imitates relationship between Ether and Wei
-    uint8 private constant DECIMALS = 18;
-
-    // Default minimum stake 
-    // uint256 internal minStakeAmount = 0;
-
-    // Default maximum stake 
-    // uint256 internal maxStakeAmount = 0;
-
     // Reward tracking info
     uint256 internal currentClaimBlock;
     uint256 internal currentClaimableAmount;
@@ -51,10 +42,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
       address to
     );
 
-    event Test(
-    uint256 test,
-    string msg);
-
     event Claimed(
       address claimaint,
       uint256 amountClaimed
@@ -68,11 +55,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // Initialize claim values to zero, disabling claim prior to initial funding
         currentClaimBlock = 0;
         currentClaimableAmount = 0;
-        // Default min stake amount is 100 AUD tokens
-        // minStakeAmount = 100 * 10**uint256(DECIMALS);
-
-        // Default max stake amount is 100 million AUD tokens
-        // maxStakeAmount = 100000000 * 10**uint256(DECIMALS);
     }
 
     /* External functions */
@@ -159,29 +141,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         require(msg.sender == treasuryAddress, "Slashing functionality locked to treasury owner");
         stakingOwnerAddress = _stakeCaller;
     }
-
-    /** 
-      * @notice Sets the minimum stake possible
-      * Controlled by treasury
-      */
-     // NOTE that _amounts are in wei throughout
-     /*
-    function setMinStakeAmount(uint256 _amount) external isInitialized {
-        require(msg.sender == treasuryAddress, "Stake amount manipulation limited to treasury owner");
-        minStakeAmount = _amount; 
-    }
-    */
-
-    /** 
-      * @notice Sets the max stake possible
-      * Controlled by treasury
-      */
-      /*
-    function setMaxStakeAmount(uint256 _amount) external isInitialized {
-        require(msg.sender == treasuryAddress, "Stake amount manipulation limited to treasury owner");
-        maxStakeAmount = _amount; 
-    }
-    */
 
     /**
      * @notice Stakes `_amount` tokens, transferring them from `msg.sender`
@@ -323,14 +282,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         return totalStakedHistory.get(_blockNumber);
     }
 
-    /**
-     * @notice Return the minimum stake configuration
-     * @return min stake
-    function getMinStakeAmount() external view returns (uint256) {
-      return minStakeAmount; 
-    }
-     */
-
     /* Public functions */
 
     /**
@@ -395,12 +346,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
             newStake = currentStake.add(_by);
         } else {
             newStake = currentStake.sub(_by);
-        }
-
-        // Confirm stake is within configured bounds for non-treasury addresses
-        if (_accountAddress != treasuryAddress) {
-          // require(newStake <= maxStakeAmount, 'Maximum stake threshold exceeded');
-          // require(newStake > minStakeAmount || newStake == 0, 'Minimum stake threshold exceeded');
         }
 
         // add new value to account history

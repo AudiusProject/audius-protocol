@@ -13,6 +13,7 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32 serviceProviderStorageRegistryKey;
     bytes32 stakingProxyOwnerKey;
 
+    // START Temporary data structures
     bytes32[] validServiceTypes;
 
     struct ServiceInstanceStakeRequirements {
@@ -76,13 +77,15 @@ contract ServiceProviderFactory is RegistryContract {
         validServiceTypes.push(creatorNode);
 
         // All min/max values are in AUD and require conversion
+        // discovery-provider, MIN=5 AUD   MAX=10,000,000 AUD
+        // creator-node,       MIN=10 AUD  MAX=10,000,000 AUD
         serviceTypeStakeRequirements[discoveryProvider] = ServiceInstanceStakeRequirements({
           minStake: 5 * 10**uint256(DECIMALS),
-          maxStake: 100000 * 10**uint256(DECIMALS)
+          maxStake: 10000000 * 10**uint256(DECIMALS)
         });
         serviceTypeStakeRequirements[creatorNode] = ServiceInstanceStakeRequirements({
           minStake: 10 * 10**uint256(DECIMALS),
-          maxStake: 100000 * 10**uint256(DECIMALS)
+          maxStake: 10000000 * 10**uint256(DECIMALS)
         });
     }
 
