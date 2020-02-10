@@ -1,7 +1,8 @@
 import express from 'express'
 import path from 'path'
 import getMetaTagsResponse from './servlets/metaTags'
-import { getBedtimeResponse, BedtimeFormat } from './servlets/bedtime'
+import { BedtimeFormat } from './servlets/bedtime/types'
+import { getBedtimeResponse } from './servlets/bedtime'
 
 import libs from './libs'
 import { MetaTagFormat } from './servlets/metaTags/types'
