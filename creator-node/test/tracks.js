@@ -320,7 +320,6 @@ describe('test Tracks', function () {
 
     expect(resp1.body.track_segments[0].multihash).to.equal('testCIDLink')
     expect(resp1.body.track_segments.length).to.equal(32)
-    // expect(resp1.body.source_file).to.contain('.mp3')
 
     // creates a downloadable Audius track with no track_id and no source_file
     const metadata = {
