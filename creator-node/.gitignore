@@ -11,3 +11,4 @@ eth-contract-config.json
 local-storage/
 test_file_storage/
 coverage/
+.nyc_output/
