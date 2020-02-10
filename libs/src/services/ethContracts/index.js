@@ -240,7 +240,7 @@ class EthContracts {
 
           // Discovery provider specific validation
           if (spType === 'discovery-provider') {
-            const { healthy, blockDiff } = await this.validateDiscoveryProviderHealth(sp.endpoint)
+            const { healthy, blockDiff, duration } = await this.validateDiscoveryProviderHealth(sp.endpoint)
             if (!healthy) {
               throw new Error(`Discovery provider ${sp.endpoint} is not healthy`)
             }
@@ -253,9 +253,9 @@ class EthContracts {
           foundVersions.add(serviceVersion)
           // Update mapping of version <-> [endpoint], creating array if needed
           if (!spVersionToEndpoint.hasOwnProperty(serviceVersion)) {
-            spVersionToEndpoint[serviceVersion] = [sp.endpoint]
+            spVersionToEndpoint[serviceVersion] = [{endpoint: sp.endpoint, duration: duration}]
           } else {
-            spVersionToEndpoint[serviceVersion].push(sp.endpoint)
+            spVersionToEndpoint[serviceVersion].push({endpoint: sp.endpoint, duration: duration})
           }
         } catch (e) {
           // Swallow errors for a single sp endpoint to ensure others can proceed
@@ -273,8 +273,15 @@ class EthContracts {
       var highestFoundSPVersion = foundVersionsList.sort(semver.rcompare)[0]
       // Randomly select from highest found endpoints
       let highestFoundSPVersionEndpoints = spVersionToEndpoint[highestFoundSPVersion]
-      var randomValidSPEndpoint = highestFoundSPVersionEndpoints[Math.floor(Math.random() * highestFoundSPVersionEndpoints.length)]
-      selectedServiceProvider = randomValidSPEndpoint
+      
+      // Sort by duration ASC so quickest responding discovery providers come first
+      highestFoundSPVersionEndpoints.sort((a, b) => {
+        if (a.duration < b.duration) return -1
+        else return 1
+      })
+      
+      // Pick the first result
+      selectedServiceProvider = highestFoundSPVersionEndpoints[0].endpoint
     } catch (err) {
       console.error(err)
       console.warn(`All ${spType} failed for latest ${this.expectedServiceVersions[spType]} with healthy block numbers`)
@@ -322,6 +329,7 @@ class EthContracts {
    */
   async validateDiscoveryProviderHealth (endpoint) {
     try {
+      const startTime = Date.now()
       const healthResp = await axios(
         {
           url: urlJoin(endpoint, 'health_check'),
@@ -329,12 +337,13 @@ class EthContracts {
           timeout: 5000
         }
       )
+      const duration = Math.round(Date.now()/1000)
       const { status, data } = healthResp
       const { block_difference: blockDiff } = data
       console.info(`${endpoint} responded with status ${status} and block difference ${blockDiff}`)
-      return { healthy: status === 200, blockDiff }
+      return { healthy: status === 200, blockDiff, duration }
     } catch (e) {
-      return { healthy: false, blockDiff: null }
+      return { healthy: false, blockDiff: null, duration: null }
     }
   }
 
