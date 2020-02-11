@@ -249,7 +249,7 @@ contract('ServiceProvider test', async (accounts) => {
         'Expect account max to equal sp type 1 max')
     })
 
-    const workingFunc = async (increaseStake = true) => {
+    const multipleEndpointScenario = async (increaseStake = true) => {
       let increaseAmt = DEFAULT_AMOUNT
       let initialBal = await token.balanceOf(stakerAccount)
       let initialStake = await getStakeAmountForAccount(stakerAccount)
@@ -564,7 +564,7 @@ contract('ServiceProvider test', async (accounts) => {
     })
 
     it('multiple endpoints w/multiple accounts varying stake', async () => {
-      await workingFunc(true)
+      await multipleEndpointScenario(true)
     })
 
     /*
