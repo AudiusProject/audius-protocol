@@ -253,9 +253,9 @@ class EthContracts {
           foundVersions.add(serviceVersion)
           // Update mapping of version <-> [endpoint], creating array if needed
           if (!spVersionToEndpoint.hasOwnProperty(serviceVersion)) {
-            spVersionToEndpoint[serviceVersion] = [{ endpoint: sp.endpoint }]
+            spVersionToEndpoint[serviceVersion] = [sp.endpoint]
           } else {
-            spVersionToEndpoint[serviceVersion].push({ endpoint: sp.endpoint })
+            spVersionToEndpoint[serviceVersion].push(sp.endpoint)
           }
         } catch (e) {
           // Swallow errors for a single sp endpoint to ensure others can proceed
@@ -330,9 +330,9 @@ class EthContracts {
       const { status, data } = healthResp
       const { block_difference: blockDiff } = data
       console.info(`${endpoint} responded with status ${status} and block difference ${blockDiff}`)
-      return { healthy: status === 200, blockDiff, duration }
+      return { healthy: status === 200, blockDiff }
     } catch (e) {
-      return { healthy: false, blockDiff: null, duration: null }
+      return { healthy: false, blockDiff: null }
     }
   }
 
