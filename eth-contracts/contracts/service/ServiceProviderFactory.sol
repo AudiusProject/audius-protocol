@@ -49,6 +49,7 @@ contract ServiceProviderFactory is RegistryContract {
       address _owner,
       uint256 _stakeAmount
     );
+
     event Test(
       bytes32 test,
       string msg);
