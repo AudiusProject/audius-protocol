@@ -50,10 +50,6 @@ contract ServiceProviderFactory is RegistryContract {
       uint256 _stakeAmount
     );
 
-    event Test(
-      bytes32 test,
-      string msg);
-
     constructor(
       address _registryAddress,
       bytes32 _stakingProxyOwnerKey,
