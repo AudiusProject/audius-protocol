@@ -298,6 +298,8 @@ contract('ServiceProvider test', async (accounts) => {
       stakedAmount = await staking.totalStakedFor(stakerAccount)
 
       let testEndpoint = 'https://localhost:4000'
+      let testEndpoint2 = 'https://localhost:4001'
+
       let cnTypeInfo = await serviceProviderFactory.getServiceStakeInfo(testCreatorNodeType)
       let cnTypeMin = cnTypeInfo[0]
       let cnTypeMax = cnTypeInfo[1]
@@ -320,6 +322,7 @@ contract('ServiceProvider test', async (accounts) => {
         testEndpoint,
         cnTypeMin,
         stakerAccount)
+
       let testDiscProvs = await getServiceProviderIdsFromAddress(stakerAccount, testDiscProvType)
       let testCnodes = await getServiceProviderIdsFromAddress(stakerAccount, testCreatorNodeType)
       let cnodeMinStake = cnTypeMin * testCnodes.length
@@ -334,7 +337,41 @@ contract('ServiceProvider test', async (accounts) => {
       accountMax = fromWei(bounds[1])
       assert.equal(stakedAmountWei, accountMin, 'Expect min staked with total endpoints')
 
-      // TODO: MAX BOUND VALIDATRION
+      accountDiff = accountMax - stakedAmountWei
+      // Generate BNjs value
+      let transferAmount = web3.utils.toBN(
+        accountDiff
+      ).add(
+          web3.utils.toBN(fromWei(cnTypeMax))
+      ).add(
+          web3.utils.toBN(200)
+      )
+
+      // Transfer greater than max tokens
+      await token.transfer(stakerAccount, toWei(transferAmount), { from: treasuryAddress })
+
+      // Attempt to register, expect max stake bounds to be exceeded
+      await _lib.assertRevert(
+        registerServiceProvider(
+          testCreatorNodeType,
+          testEndpoint2,
+          toWei(transferAmount),
+          stakerAccount),
+        'Maximum stake'
+      )
+
+      let numCnodes = await getServiceProviderIdsFromAddress(stakerAccount, testCreatorNodeType)
+
+      registerInfo2 = await registerServiceProvider(
+        testCreatorNodeType,
+        testEndpoint2,
+        cnTypeMin,
+        stakerAccount)
+
+      assert.equal(
+        numCnodes.length + 1,
+        (await getServiceProviderIdsFromAddress(stakerAccount, testCreatorNodeType)).length,
+        'Expect increase in number of endpoints')
     }
 
     /*
