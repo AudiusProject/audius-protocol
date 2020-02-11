@@ -99,7 +99,7 @@ class IPFSClient:
 
             try:
                 logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
-                r = requests.get(gateway_query_address, timeout=10)
+                r = requests.get(gateway_query_address, timeout=8)
 
                 # Do not retrieve metadata for error code
                 if r.status_code != 200:
@@ -161,7 +161,7 @@ class IPFSClient:
 
     def cat(self, multihash):
         try:
-            res = self._api.cat(multihash, timeout=20)
+            res = self._api.cat(multihash, timeout=8)
             return res
         except:
             logger.error(f"IPFSCLIENT | IPFS cat timed out for CID {multihash}")
@@ -186,7 +186,7 @@ class IPFSClient:
             r = None
             try:
                 logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
-                r = requests.get(gateway_query_address, timeout=10)
+                r = requests.get(gateway_query_address, timeout=8)
             except Exception as e:
                 logger.warning(f"Failed to query {gateway_query_address} with error {e}")
 
@@ -210,7 +210,7 @@ class IPFSClient:
             r = None
             try:
                 logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
-                r = requests.get(gateway_query_address, timeout=10)
+                r = requests.get(gateway_query_address, timeout=8)
             except Exception as e:
                 logger.warning(f"Failed to query {gateway_query_address}, {e}")
 
