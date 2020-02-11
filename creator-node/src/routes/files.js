@@ -142,7 +142,8 @@ module.exports = function (app) {
   }))
 
   /**
-   * Serve IPFS data hosted by creator node.
+   * Serve IPFS data hosted by creator node and create download route using query string pattern
+   * `...?filename=<file_name.mp3>`.
    * @dev This route does not handle responses by design, so we can pipe the response to client.
    */
   app.get('/ipfs/:CID', async (req, res) => {

@@ -301,4 +301,90 @@ describe('test Tracks', function () {
       .send({ blockchainTrackId: 1, blockNumber: 10, metadataFileUUID: resp2.body.metadataFileUUID })
       .expect(200)
   })
+
+  // depends on "upload file to IPFS"
+  it('fails to create downloadable track with no track_id and no source_id present', async function () {
+    const file = fs.readFileSync(testAudioFilePath)
+
+    ipfsMock.addFromFs.exactly(34)
+    ipfsMock.pin.add.exactly(34)
+    libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(2)
+    libsMock.User.getUsers.exactly(2)
+
+    const resp1 = await request(app)
+      .post('/track_content')
+      .attach('file', file, { filename: 'fname.mp3' })
+      .set('Content-Type', 'multipart/form-data')
+      .set('X-Session-ID', session)
+      .expect(200)
+
+    expect(resp1.body.track_segments[0].multihash).to.equal('testCIDLink')
+    expect(resp1.body.track_segments.length).to.equal(32)
+
+    // creates a downloadable Audius track with no track_id and no source_file
+    const metadata = {
+      test: 'field1',
+      owner_id: 1,
+      track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
+      download: {
+        is_downloadable: true,
+        requires_follow: false
+      }
+    }
+
+    await request(app)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', session)
+      .send({ metadata })
+      .expect(400)
+  })
+
+  // depends on "upload file to IPFS" and "creates Audius user" tests
+  it('creates a downloadable track', async function () {
+    const file = fs.readFileSync(testAudioFilePath)
+
+    ipfsMock.addFromFs.exactly(34)
+    ipfsMock.pin.add.exactly(34)
+    libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(4)
+    libsMock.User.getUsers.exactly(4)
+
+    const resp1 = await request(app)
+      .post('/track_content')
+      .attach('file', file, { filename: 'fname.mp3' })
+      .set('Content-Type', 'multipart/form-data')
+      .set('X-Session-ID', session)
+      .expect(200)
+
+    expect(resp1.body.track_segments[0].multihash).to.equal('testCIDLink')
+    expect(resp1.body.track_segments.length).to.equal(32)
+    expect(resp1.body.source_file).to.contain('.mp3')
+
+    // needs debugging as to why this 'cid' key is needed for test to work
+    const metadata = {
+      test: 'field1',
+      track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
+      owner_id: 1,
+      download: {
+        'is_downloadable': true,
+        'requires_follow': false,
+        'cid': 'testCIDLink'
+      }
+    }
+
+    const resp2 = await request(app)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', session)
+      .send({ metadata, sourceFile: resp1.body.source_file })
+      .expect(200)
+
+    if (resp2.body.metadataMultihash !== 'testCIDLink') {
+      throw new Error('invalid return data')
+    }
+
+    await request(app)
+      .post('/tracks')
+      .set('X-Session-ID', session)
+      .send({ blockchainTrackId: 1, blockNumber: 10, metadataFileUUID: resp2.body.metadataFileUUID })
+      .expect(200)
+  })
 })

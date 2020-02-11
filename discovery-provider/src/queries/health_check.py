@@ -81,11 +81,13 @@ def _get_db_conn_state():
 def version():
     return jsonify(disc_prov_version), 200
 
-# Consume cached latest block from redis
+# Health check for server, db, and redis. Consumes latest block data from redis instead of chain.
+# Optional boolean "verbose" flag to output db connection info.
+# Optional boolean "enforce_block_diff" flag to error on unhealthy blockdiff.
+# NOTE - can extend this in future to include ganache connectivity, how recently a block
+#   has been added (ex. if it's been more than 30 minutes since last block), etc.
 @bp.route("/health_check", methods=["GET"])
 def health_check():
-    # can extend this in future to include ganache connectivity, how recently a block
-    # has been added (ex. if it's been more than 30 minutes since last block), etc.
     latest_block_num = None
     latest_block_hash = None
 
@@ -109,12 +111,14 @@ def health_check():
         # DB connections check
         health_results["db_connections"] = _get_db_conn_state()
 
-    if health_results["block_difference"] > HEALTHY_BLOCK_DIFF:
+    # Return error on unhealthy block diff if requested.
+    enforce_block_diff = request.args.get("enforce_block_diff", type=str) == 'true'
+    if enforce_block_diff and health_results["block_difference"] > HEALTHY_BLOCK_DIFF:
         return jsonify(health_results), 500
 
     return jsonify(health_results), 200
 
-# Query latest block from web3 provider
+# Health check for block diff between DB and chain.
 @bp.route("/block_check", methods=["GET"])
 def block_check():
     latest_block = web3.eth.getBlock("latest", True)

@@ -38,8 +38,10 @@ class DiscoveryProvider {
       const pick = _.sample([...this.whitelist]) // selects random element from list.
       const isValid = await this.ethContracts.validateDiscoveryProvider(pick)
       if (isValid) {
+        console.info('Initial discovery provider was valid')
         endpoint = pick
       } else {
+        console.info('Initial discovery provider was invalid, searching for a new one')
         endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
       }
     }
@@ -596,6 +598,7 @@ class DiscoveryProvider {
       const parsedResponse = Utils.parseDataFromResponse(response)
 
       if (
+        !this.ethContracts.isInRegressedMode() &&
         'latest_indexed_block' in parsedResponse &&
         'latest_chain_block' in parsedResponse
       ) {
@@ -612,6 +615,7 @@ class DiscoveryProvider {
           // Clear any cached discprov
           localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
           // Select a new one
+          console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
           const endpoint = await this.autoSelectEndpoint()
           this.setEndpoint(endpoint)
           throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
