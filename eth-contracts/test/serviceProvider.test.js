@@ -34,7 +34,7 @@ const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 
 const testServiceType = web3.utils.utf8ToHex('discovery-provider')
-const testServiceType2 = web3.utils.utf8ToHex('creator-node')
+const testCreatorNodeType = web3.utils.utf8ToHex('creator-node')
 const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'
 
@@ -216,9 +216,12 @@ contract('ServiceProvider test', async (accounts) => {
     let regTx
     const stakerAccount = accounts[1]
     const stakerAccount2 = accounts[2]
+
     beforeEach(async () => {
       let initialBal = await token.balanceOf(stakerAccount)
 
+      // 1st endpoint for stakerAccount = https://localhost:5000
+      // Total Stake = 120 AUD
       regTx = await registerServiceProvider(
         testServiceType,
         testEndpoint,
@@ -251,6 +254,7 @@ contract('ServiceProvider test', async (accounts) => {
       let typeMax = fromWei(spTypeInfo[1])
 
       // Validate min stake requirements
+      // Both current account bounds and single testServiceType bounds expected to be equal 
       let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
       let accountMin = fromWei(bounds[0])
       let accountMax = fromWei(bounds[1])
@@ -263,6 +267,85 @@ contract('ServiceProvider test', async (accounts) => {
         accountMax,
         'Expect account max to equal sp type 1 max')
     })
+
+    const workingFunc = async (increaseStake = true) => {
+      let increaseAmt = DEFAULT_AMOUNT
+      let initialBal = await token.balanceOf(stakerAccount)
+      let initialStake = await getStakeAmountForAccount(stakerAccount)
+
+      // 2nd endpoint for stakerAccount = https://localhost:5001
+      // Total Stake = 240 AUD
+      let registerInfo = await registerServiceProvider(
+        testServiceType,
+        testEndpoint1,
+        increaseAmt,
+        stakerAccount)
+      let newSPId = registerInfo.spID
+
+      // Confirm change in token balance
+      let finalBal = await token.balanceOf(stakerAccount)
+      let finalStake = await getStakeAmountForAccount(stakerAccount)
+
+      assert.equal(
+        (initialBal - finalBal),
+        increaseAmt,
+        'Expected decrease in final balance')
+
+      assert.equal(
+        (finalStake - initialStake),
+        increaseAmt,
+        'Expected increase in total stake')
+
+      let newIdFound = await serviceProviderIDRegisteredToAccount(
+        stakerAccount,
+        testServiceType,
+        newSPId)
+      assert.isTrue(newIdFound, 'Expected valid new ID')
+
+      // 3rd endpoint for stakerAccount
+      console.log(`midBal:${finalBal} for ${stakerAccount}`)
+      // Transfer 1000 tokens to staker for test
+      await token.transfer(stakerAccount, INITIAL_BAL, { from: treasuryAddress })
+
+      let stakedAmount = await staking.totalStakedFor(stakerAccount)
+      console.log(`staked Amt: ${stakedAmount}, `)
+      console.log(`staked Amt: ${fromWei(stakedAmount)}, `)
+      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
+      let accountMin = fromWei(bounds[0])
+      let accountMax = fromWei(bounds[1])
+
+      console.log(`acct min: ${accountMin}, acct max: ${accountMax}`)
+      let accountDiff = fromWei(stakedAmount) - accountMin
+      console.log(`resetting account by ${accountDiff} `)
+
+      await decreaseRegisteredProviderStake(toWei(accountDiff), stakerAccount)
+      stakedAmount = await staking.totalStakedFor(stakerAccount)
+      console.log(`staked Amt after reset: ${stakedAmount}, `)
+      let testEndpoint = 'https://localhost:4000'
+      let cnTypeInfo = await serviceProviderFactory.getServiceStakeInfo(testCreatorNodeType)
+      let cnTypeMin = cnTypeInfo[0]
+      let cnTypeMax = cnTypeInfo[1]
+      console.log(`cn type min: ${cnTypeMin}, cn type max: ${cnTypeMax}`)
+
+      // 3rd endpoint for stakerAccount = https://localhost:4001
+      // Total Stake = 240 AUD <-- Expect failure
+      await _lib.assertRevert(
+        registerServiceProvider(
+          testCreatorNodeType,
+          testEndpoint,
+          0,
+          stakerAccount),
+        'Minimum stake threshold')
+
+      let registerInfo2 = await registerServiceProvider(
+        testCreatorNodeType,
+        testEndpoint,
+        cnTypeMin,
+        stakerAccount)
+      console.log('expect success')
+      console.dir(registerInfo2)
+
+    }
 
     /*
      * Confirm stake exists in contract for account after basic registration
@@ -488,6 +571,10 @@ contract('ServiceProvider test', async (accounts) => {
         testServiceType,
         newSPId)
       assert.isTrue(newIdFound, 'Expected valid new ID')
+    })
+
+    it('multiple endpoints w/multiple accounts varying stake', async () => {
+      await workingFunc(true)
     })
 
     /*
