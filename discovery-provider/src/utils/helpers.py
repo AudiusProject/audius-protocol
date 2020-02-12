@@ -170,7 +170,7 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
         try:
             multiaddr = get_ipfs_info_from_cnode_endpoint(
                 cnode_url,
-                update_task.ipfs_client.ipfs_id_multiaddr()
+                None # update_task.ipfs_client.ipfs_id_multiaddr()
             )
             update_task.ipfs_client.connect_peer(multiaddr)
             redis.set(cnode_url, multiaddr, interval)
