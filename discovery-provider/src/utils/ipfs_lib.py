@@ -33,33 +33,29 @@ class IPFSClient:
         """
         logger.warning(f"IPFSCLIENT | get_metadata - {multihash}")
         api_metadata = metadata_format
-        retrieved_from_gateway = False
         retrieved_from_local_node = False
+        retrieved_from_gateway = False
         start_time = time.time()
 
+        # First try to retrieve from local ipfs node.
         try:
-            api_metadata = self.get_metadata_from_ipfs_node(
-                multihash, metadata_format
-            )
-            retrieved_from_local_node = api_metadata != metadata_format
+            api_metadata = self.get_metadata_from_ipfs_node(multihash, metadata_format)
+            retrieved_from_local_node = (api_metadata != metadata_format)
         except Exception:
-            logger.error(
-                f"Failed to retrieve CID from local node, {multihash}", exc_info=True
-            )
+            logger.error(f"Failed to retrieve CID from local node, {multihash}", exc_info=True)
 
-        try:
-            if not retrieved_from_local_node:
+        # Else, try to retrieve from gateways.
+        if not retrieved_from_local_node:
+            try:
                 api_metadata = self.get_metadata_from_gateway(multihash, metadata_format)
-                retrieved_from_gateway = api_metadata != metadata_format
-        except Exception:
-            logger.error(
-                f"Failed to retrieve CID from gateway, {multihash}", exc_info=True
-            )
+                retrieved_from_gateway = (api_metadata != metadata_format)
+            except Exception:
+                logger.error(f"Failed to retrieve CID from gateway, {multihash}", exc_info=True)
 
         retrieved_metadata = (retrieved_from_gateway or retrieved_from_local_node)
 
-        # Raise error if metadata is not retrieved
-        # Ensure default values aren not written into database
+        # Raise error if metadata is not retrieved.
+        # Ensure default values are not written into database.
         if not retrieved_metadata:
             logger.error(
                 f"IPFSCLIENT | Retrieved metadata: {retrieved_metadata}. "
@@ -79,11 +75,11 @@ class IPFSClient:
         # Default return initial metadata format
         gateway_metadata_json = metadata_format
         logger.warning(f"IPFSCLIENT | get_metadata_from_gateway, {multihash}")
-        gateway_endpoints = self._gateway_addresses + self._cnode_endpoints
+        gateway_endpoints = self._cnode_endpoints
         logger.warning(f"IPFSCLIENT | get_metadata_from_gateway, \
                 \ncombined addresses: {gateway_endpoints}, \
-                \naddresses: {self._gateway_addresses}, \
-                \ncnode_endpoints: {self._cnode_endpoints}")
+                \ncnode_endpoints: {self._cnode_endpoints}, \
+                \naddresses: {self._gateway_addresses}")
 
         for address in gateway_endpoints:
             gateway_query_address = "%s/ipfs/%s" % (address, multihash)

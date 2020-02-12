@@ -163,9 +163,12 @@ async function _getCreatorNodeEndpoints (req, wallet) {
     let discprovBlockNumber = -1
     const start2 = Date.now()
 
-    const maxRetries = 20
-    for (let retry = 1; retry <= maxRetries; retry++) {
-      req.logger.info(`_getCreatorNodeEndpoints retry #${retry}/${maxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
+    // In total, will try for 200 seconds.
+    const MaxRetries = 40
+    const RetryTimeout = 5000 // 5 seconds
+    await utils.timeout(1000)
+    for (let retry = 1; retry <= MaxRetries; retry++) {
+      req.logger.info(`_getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
       try {
         const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
         if (!fetchedUser || fetchedUser.length === 0 || !fetchedUser[0].hasOwnProperty('blocknumber') || !fetchedUser[0].hasOwnProperty('track_blocknumber')) {
@@ -176,18 +179,18 @@ async function _getCreatorNodeEndpoints (req, wallet) {
         if (discprovBlockNumber >= blockNumber) {
           break
         }
-      } catch (e) { // Ignore all errors until maxRetries exceeded.
+      } catch (e) { // Ignore all errors until MaxRetries exceeded.
         req.logger.info(e)
       }
-      await utils.timeout(3000)
-      req.logger.info(`_getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${maxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
+      await utils.timeout(RetryTimeout)
+      req.logger.info(`_getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
     }
 
     if (discprovBlockNumber < blockNumber) {
-      throw new Error(`Discprov still outdated after ${maxRetries}. Discprov blocknumber ${discprovBlockNumber} requested blocknumber ${blockNumber}`)
+      throw new Error(`Discprov still outdated after ${MaxRetries}. Discprov blocknumber ${discprovBlockNumber} requested blocknumber ${blockNumber}`)
     }
     if (!user) {
-      throw new Error(`Failed to retrieve user from discprov after ${maxRetries} retries. Aborting.`)
+      throw new Error(`Failed to retrieve user from discprov after ${MaxRetries} retries. Aborting.`)
     }
   } else {
     req.logger.info(`_getCreatorNodeEndpoints || no blockNumber passed, fetching user without retries.`)
