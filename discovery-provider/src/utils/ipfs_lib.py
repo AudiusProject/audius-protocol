@@ -167,7 +167,7 @@ class IPFSClient:
         # First attempt to cat multihash locally.
         try:
             # If cat successful, multihash is not directory.
-            self._api.cat(multihash, 0, 1)
+            self._api.cat(multihash, 0, 1, timeout=3)
             return False
         except Exception as e:  # pylint: disable=W0703
             if "this dag node is a directory" in str(e):
