@@ -449,7 +449,7 @@ def refresh_peer_connections(task_context):
                 logger.warning('index.py | Retrieving connection info for %s', cnode_url)
                 multiaddr_info[cnode_url] = get_ipfs_info_from_cnode_endpoint(
                     cnode_url,
-                    ipfs_client.ipfs_id_multiaddr()
+                    None
                 )
             except Exception as e:  # pylint: disable=broad-except
                 # Handle error in retrieval by not peering this node
