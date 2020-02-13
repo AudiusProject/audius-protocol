@@ -380,15 +380,20 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
 
     const metadata = await fetchNotificationMetadata(audiusLibs, milestoneValue, [notifStub])
     const mapNotification = notificationResponseMap[milestoneType]
-    let msgGenNotif = {
-      ...notifStub,
-      ...(mapNotification(notifStub, metadata))
+    try {
+      let msgGenNotif = {
+        ...notifStub,
+        ...(mapNotification(notifStub, metadata))
+      }
+      logger.debug('processMilestone - About to generate message for milestones push notification', msgGenNotif, metadata)
+      const msg = pushNotificationMessagesMap[notificationTypes.Milestone](msgGenNotif)
+      logger.debug(`processMilestone - message: ${msg}`)
+      const title = notificationResponseTitleMap[notificationTypes.Milestone]
+      await publish(msg, userId, tx, true, title)
+    } catch (e) {
+      // Log on error instead of failing
+      logger.info(`Error sending push notification ${e}. notifStub ${notifStub}`)
     }
-    logger.debug('processMilestone - About to generate message for milestones push notification', msgGenNotif, metadata)
-    const msg = pushNotificationMessagesMap[notificationTypes.Milestone](msgGenNotif)
-    logger.debug(`processMilestone - message: ${msg}`)
-    const title = notificationResponseTitleMap[notificationTypes.Milestone]
-    await publish(msg, userId, tx, true, title)
   }
 }
 
