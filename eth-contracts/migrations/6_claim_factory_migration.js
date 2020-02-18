@@ -14,34 +14,49 @@ module.exports = (deployer, network, accounts) => {
       AudiusToken.address,
       stakingAddress)
 
-    let factory = await ClaimFactory.deployed()
+    let claimFactory = await ClaimFactory.deployed()
 
     // Replace AudiusToken artifact with AudiusToken.at('0x...') if needed
     let audiusToken = await AudiusToken.at(AudiusToken.address)
+    console.log(AudiusToken.address)
 
     // Register ClaimFactory as minter
     // Note that by default this is called from accounts[0] in ganache
     // During an actual migration, this step should be run independently
     let tokenDeployerAcct = accounts[0]
-    await audiusToken.addMinter(factory.address, { from: tokenDeployerAcct })
+    await audiusToken.addMinter(claimFactory.address, { from: tokenDeployerAcct })
 
     console.log('trying 2')
     try {
-      console.log(await audiusToken.balanceOf(factory.address))
+      console.log(await audiusToken.balanceOf(claimFactory.address))
     } catch (e) {
       console.log(e)
     }
 
     console.log('trying 3')
     try {
-      console.log(await factory.getAddress())
+      console.log(await claimFactory.getAddress())
+    } catch (e) {
+      console.log(e)
+    }
+
+    console.log('trying 4')
+    try {
+      console.log(await claimFactory.getClaimInformation())
     } catch (e) {
       console.log(e)
     }
 
     console.log('trying new method')
     try {
-      console.log(await factory.getClaimFactoryTokens())
+      console.log(await claimFactory.getClaimFactoryTokens())
+    } catch (e) {
+      console.log(e)
+    }
+
+    console.log('trying new method 2')
+    try {
+      console.log(await claimFactory.getTotalSupply())
     } catch (e) {
       console.log(e)
     }

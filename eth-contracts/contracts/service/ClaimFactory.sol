@@ -20,7 +20,7 @@ contract ClaimFactory {
   uint fundingAmount = 100 * 10*uint256(DECIMALS); 
 
   // Staking contract ref
-  ERC20 internal audiusToken;
+  ERC20Mintable internal audiusToken;
 
   constructor(
     address _tokenAddress, 
@@ -28,7 +28,11 @@ contract ClaimFactory {
   ) public {
     tokenAddress = _tokenAddress;
     stakingAddress = _stakingAddress;
-    audiusToken = ERC20(stakingAddress);
+    audiusToken = ERC20Mintable(tokenAddress);
+  }
+
+  function getStakingAddress() external view returns (address addr) {
+    return tokenAddress;
   }
 
   function getClaimInformation() 
@@ -40,6 +44,12 @@ contract ClaimFactory {
   function getClaimFactoryTokens()
   public view returns (uint tokens) {
     uint numTokens = audiusToken.balanceOf(address(this));
+    return numTokens;
+  }
+
+  function getTotalSupply()
+  external view returns (uint supply) {
+    uint numTokens = audiusToken.totalSupply();
     return numTokens;
   }
 
