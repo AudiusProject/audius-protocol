@@ -25,40 +25,5 @@ module.exports = (deployer, network, accounts) => {
     // During an actual migration, this step should be run independently
     let tokenDeployerAcct = accounts[0]
     await audiusToken.addMinter(claimFactory.address, { from: tokenDeployerAcct })
-
-    console.log('trying 2')
-    try {
-      console.log(await audiusToken.balanceOf(claimFactory.address))
-    } catch (e) {
-      console.log(e)
-    }
-
-    console.log('trying 3')
-    try {
-      console.log(await claimFactory.getAddress())
-    } catch (e) {
-      console.log(e)
-    }
-
-    console.log('trying 4')
-    try {
-      console.log(await claimFactory.getClaimInformation())
-    } catch (e) {
-      console.log(e)
-    }
-
-    console.log('trying new method')
-    try {
-      console.log(await claimFactory.getClaimFactoryTokens())
-    } catch (e) {
-      console.log(e)
-    }
-
-    console.log('trying new method 2')
-    try {
-      console.log(await claimFactory.getTotalSupply())
-    } catch (e) {
-      console.log(e)
-    }
   })
 }
