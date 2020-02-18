@@ -53,7 +53,8 @@ contract ClaimFactory {
     return numTokens;
   }
 
-  function getAddress() external view returns (address contractAddress) {
-    return address(this);
+  // Mint amount for claim factory address 
+  function mint(uint amount) external returns (bool minted) {
+    return audiusToken.mint(address(this), amount);
   }
 }

@@ -18,7 +18,6 @@ module.exports = (deployer, network, accounts) => {
 
     // Replace AudiusToken artifact with AudiusToken.at('0x...') if needed
     let audiusToken = await AudiusToken.at(AudiusToken.address)
-    console.log(AudiusToken.address)
 
     // Register ClaimFactory as minter
     // Note that by default this is called from accounts[0] in ganache
