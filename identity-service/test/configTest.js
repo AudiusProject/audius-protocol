@@ -1,10 +1,16 @@
 const assert = require('assert')
 const config = require('../src/config')
-const { generateRandomUUID, generateRandomPort, generateRandomNaturalNumber, generateRandomBoolean, generateRandomLogLevel } = require('./lib/generateRandomValues')
+const {
+  generateRandomUUID,
+  generateRandomPort,
+  generateRandomNaturalNumber,
+  generateRandomBoolean,
+  generateRandomLogLevel
+} = require('./lib/generateRandomValues')
 const convict = require('convict')
 
-describe('test txRelay functions', function () {
-  it('env key and object key names are equal', function () {
+describe('convict configuration test', function () {
+  it('Env key and object key names are equal', function () {
     const schema = config.getSchema().properties
 
     for (var key in schema) {
@@ -28,6 +34,7 @@ describe('test txRelay functions', function () {
 
     assert(c.get('randomKey') === '123')
 
+    // Calling validate() should not throw an error. If an error is thrown, call assert.fail() to fail test
     try {
       c.validate()
     } catch (e) {
@@ -50,6 +57,7 @@ describe('test txRelay functions', function () {
 
     assert(c.get('randomKey') === 123)
 
+    // Calling validate() should not throw an error. If an error is thrown, call assert.fail() to fail test
     try {
       c.validate()
     } catch (e) {
@@ -62,15 +70,14 @@ describe('test txRelay functions', function () {
 
     for (var key in schema) {
       let oldValue = config.get(key)
-      let newValue
 
       let format = schema[key].format.toString()
 
       // setting invalid values
-      newValue = getBadValue(format, newValue)
+      const invalidValue = getInvalidConfigValue(format)
 
-      if (newValue) {
-        setAndValidateEnvVar(key, newValue)
+      if (invalidValue) {
+        setAndValidateEnvVar(key, invalidValue)
 
         // Reload config to grab env vars
         config.load({})
@@ -81,64 +88,68 @@ describe('test txRelay functions', function () {
         }, Error)
       }
 
-      newValue = getValidValue(format, newValue)
+      const validValue = getValidConfigValue(format)
 
-      setAndValidateEnvVar(key, newValue)
+      setAndValidateEnvVar(key, validValue)
 
       config.load({})
 
       // convict js converts env vars to its proper type
-      assert(config.get(key) === newValue, `The config with format type '${schema[key].format}' is still retaining its
-        old value of '${oldValue}' instead of '${newValue}'`)
+      assert(
+        config.get(key) === validValue,
+        `The config with format type '${schema[key].format}' is still retaining its old value of '${oldValue}' instead of '${newValue}'`)
     }
   })
 })
 
 // Retrieves proper values for validation tests
-function getValidValue (format, newValue) {
+function getValidConfigValue (format) {
+  let validValue
+
   switch (format) {
     case 'fatal,error,warn,info,debug,trace':
-      newValue = generateRandomLogLevel()
+      validValue = generateRandomLogLevel()
       break
     case 'string':
-      newValue = generateRandomUUID()
+      validValue = generateRandomUUID()
       break
     case 'number':
     case 'nat':
-      newValue = generateRandomNaturalNumber()
+      validValue = generateRandomNaturalNumber()
       break
-    // port types in convict are converted to strings
     case 'port':
-      newValue = generateRandomPort()
+      validValue = generateRandomPort()
       break
     case 'boolean':
-      newValue = generateRandomBoolean()
+      validValue = generateRandomBoolean()
   }
-  return newValue
+  return validValue
 }
 
 // Retrieves bad values for validation tests
-function getBadValue (format, newValue) {
+function getInvalidConfigValue (format) {
+  let invalidValue
+
   switch (format) {
     case 'fatal,error,warn,info,debug,trace':
-      newValue = generateRandomNaturalNumber()
+      invalidValue = generateRandomNaturalNumber()
       break
     case 'nat':
-      newValue = generateRandomUUID()
+      invalidValue = generateRandomUUID()
       break
     case 'port':
-      newValue = generateRandomUUID()
+      invalidValue = generateRandomUUID()
       break
-    // A format of type string will convert any newValue to its string value
-    // A format of type boolean will convert any newValue to its t/f value
-    // A format of type number will convert any newValue to NaN, which is a type of number
+    // A format of type string will convert any new value to its string value
+    // A format of type boolean will convert any new value to its t/f value
+    // A format of type number will convert any new value to NaN, which is a type of number
     case 'string':
     case 'boolean':
     case 'number':
-      console.log('Skipping....')
+      invalidValue = null
       break
   }
-  return newValue
+  return invalidValue
 }
 
 // Sets and validates env var

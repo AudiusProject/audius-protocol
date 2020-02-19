@@ -17,7 +17,6 @@ const generateRandomPort = () =>
 // Randomly generates 0 or 1, then returns its converted boolean value
 const generateRandomBoolean = () => {
   const zeroOrOne = Math.floor(Math.random() * 2)
-
   return Boolean(zeroOrOne)
 }
 
@@ -25,7 +24,6 @@ const generateRandomBoolean = () => {
 const generateRandomLogLevel = () => {
   const logLevels = ['fatal', 'error', 'warn', 'info', 'debug', 'trace']
   const zeroThroughFive = Math.floor(Math.random() * 5)
-
   return logLevels[zeroThroughFive]
 }
 
