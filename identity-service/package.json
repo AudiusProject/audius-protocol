@@ -43,7 +43,7 @@
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "request": "^2.88.0",
-    "sequelize": "^4.41.2",
+    "sequelize": "^5.15.1",
     "shortid": "^2.2.14",
     "umzug": "^2.2.0",
     "uuid": "^3.3.2",
