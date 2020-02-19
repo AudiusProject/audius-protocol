@@ -57,15 +57,13 @@ class Users extends Base {
   /**
    * get intersection of users that follow followeeUserId and users that are followed by followerUserId
    * @param {number} followeeUserId user that is followed
-   * @param {number} followerUserId user that follows
    * @example
-   * getFollowIntersectionUsers(100, 0, 1, 1) - IDs must be valid
+   * getMutualFollowers(100, 0, 1, 1) - IDs must be valid
    */
-  async getFollowIntersectionUsers (limit = 100, offset = 0, followeeUserId) {
-    const account = this.userStateManager.getCurrentUser()
-    if (account) {
-      const followerUserId = account.user_id
-      this.REQUIRES(Services.DISCOVERY_PROVIDER)
+  async getMutualFollowers (limit = 100, offset = 0, followeeUserId) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    const followerUserId = this.userStateManager.getCurrentUserId()
+    if (followerUserId) {
       return this.discoveryProvider.getFollowIntersectionUsers(limit, offset, followeeUserId, followerUserId)
     }
     return []
@@ -128,9 +126,9 @@ class Users extends Base {
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
   async getSocialFeed (filter, limit = 100, offset = 0) {
-    const ownerId = this.userStateManager.getCurrentUser()
-    if (ownerId) {
-      this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    const owner = this.userStateManager.getCurrentUser()
+    if (owner) {
       return this.discoveryProvider.getSocialFeed(filter, limit, offset)
     }
 
