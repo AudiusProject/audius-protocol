@@ -58,6 +58,10 @@ contract ClaimFactory {
     // - Add function based on last recorded claim block
     // - Reject based on block diff
     // - Expose pending claim info
+    require(
+      block.number - lastClaimBlock > claimBlockDiff,
+      'Required block difference not met');
+
     bool minted = audiusToken.mint(address(this), fundingAmount);
     require(minted, 'New tokens must be minted');
 

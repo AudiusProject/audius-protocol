@@ -64,3 +64,18 @@ export const assertRevert = async (blockOrPromise, expectedReason) => {
   const expectedMsgFound = error.message.indexOf(expectedReason) >= 0
   assert.isTrue(expectedMsgFound, `Expected revert reason not found. Expected '${expectedReason}'. Found '${error.message}'`)
 }
+
+export const advanceBlock = (web3) => {
+  return new Promise((resolve, reject) => {
+    web3.currentProvider.send({
+      jsonrpc: '2.0',
+      method: 'evm_mine',
+      id: new Date().getTime()
+    }, (err, result) => {
+      if (err) { return reject(err) }
+      const newBlockHash = web3.eth.getBlock('latest').hash
+
+      return resolve(newBlockHash)
+    })
+  })
+}
