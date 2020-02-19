@@ -36,8 +36,8 @@ contract ClaimFactory {
   }
 
   function getClaimInformation() 
-  external view returns (uint lastClaimedBlock, uint blocksPerClaim, uint fundingPerClaim) {
-    return (lastClaimBlock, blocksPerClaim, fundingAmount);
+  external view returns (uint lastClaimedBlock, uint claimBlockDifference, uint fundingPerClaim) {
+    return (lastClaimBlock, claimBlockDiff, fundingAmount);
   }
 
   // TODO: Figure out why this isn't working...
@@ -53,8 +53,21 @@ contract ClaimFactory {
     return numTokens;
   }
 
-  // Mint amount for claim factory address 
-  function mint(uint amount) external returns (bool minted) {
-    return audiusToken.mint(address(this), amount);
+  function initiateClaim() external {
+    // TODO: Update
+    // - Add function based on last recorded claim block
+    // - Reject based on block diff
+    // - Expose pending claim info
+    bool minted = audiusToken.mint(address(this), fundingAmount);
+    require(minted, 'New tokens must be minted');
+
+    // Approve token transfer
+    audiusToken.approve(stakingAddress, fundingAmount);
+
+    // Fund staking contract with proceeds
+    Staking stakingContract = Staking(stakingAddress);
+    stakingContract.fundNewClaim(fundingAmount);
+
+    lastClaimBlock = block.number;
   }
 }
