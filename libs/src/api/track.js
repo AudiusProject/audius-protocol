@@ -450,12 +450,26 @@ class Tracks extends Base {
     return this.identityService.logTrackListen(trackId, userId)
   }
 
+  // async logTrackListen2 (trackId) {
+  //   this.REQUIRES(Services.IDENTITY_SERVICE)
+
+  //   return this.identityService.logTrackListen(trackId, this.userStateManager.getCurrentUser())
+  // }
+
   /**
    * Adds a repost for a given user and track
    * @param {number} user who reposted the track
    * @param {number} track being reposted
    */
-  async addTrackRepost (userId, trackId) {
+  // async addTrackRepost (userId, trackId) {
+  //   return this.contracts.SocialFeatureFactoryClient.addTrackRepost(userId, trackId)
+  // }
+
+  /** Adds a repost for a given user and track
+  * @param {number} track being reposted
+  */
+  async addTrackRepost (trackId) {
+    const userId = this.userStateManager.getCurrentUser().user_id
     return this.contracts.SocialFeatureFactoryClient.addTrackRepost(userId, trackId)
   }
 
