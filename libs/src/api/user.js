@@ -61,9 +61,14 @@ class Users extends Base {
    * @example
    * getFollowIntersectionUsers(100, 0, 1, 1) - IDs must be valid
    */
-  async getFollowIntersectionUsers (limit = 100, offset = 0, followeeUserId, followerUserId) {
-    this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getFollowIntersectionUsers(limit, offset, followeeUserId, followerUserId)
+  async getFollowIntersectionUsers (limit = 100, offset = 0, followeeUserId) {
+    const account = this.userStateManager.getCurrentUser()
+    if (account) {
+      const followerUserId = account.user_id
+      this.REQUIRES(Services.DISCOVERY_PROVIDER)
+      return this.discoveryProvider.getFollowIntersectionUsers(limit, offset, followeeUserId, followerUserId)
+    }
+    return []
   }
 
   /**
@@ -123,8 +128,13 @@ class Users extends Base {
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
   async getSocialFeed (filter, limit = 100, offset = 0) {
-    this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getSocialFeed(filter, limit, offset)
+    const ownerId = this.userStateManager.getCurrentUser()
+    if (ownerId) {
+      this.REQUIRES(Services.DISCOVERY_PROVIDER)
+      return this.discoveryProvider.getSocialFeed(filter, limit, offset)
+    }
+
+    return []
   }
 
   /* ------- SETTERS ------- */
@@ -344,7 +354,8 @@ class Users extends Base {
    * @param {number} followerUserId who is following
    * @param {number} followeeUserId who is being followed...
   */
-  async addUserFollow (followerUserId, followeeUserId) {
+  async addUserFollow (followeeUserId) {
+    const followerUserId = this.userStateManager.getCurrentUserId()
     return this.contracts.SocialFeatureFactoryClient.addUserFollow(followerUserId, followeeUserId)
   }
 
@@ -353,7 +364,8 @@ class Users extends Base {
    * @param {number} followerUserId who is no longer following
    * @param {number} followeeUserId who is no longer being followed...
   */
-  async deleteUserFollow (followerUserId, followeeUserId) {
+  async deleteUserFollow (followeeUserId) {
+    const followerUserId = this.userStateManager.getCurrentUserId()
     return this.contracts.SocialFeatureFactoryClient.deleteUserFollow(followerUserId, followeeUserId)
   }
 
