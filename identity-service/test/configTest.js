@@ -97,7 +97,7 @@ describe('convict configuration test', function () {
       // convict js converts env vars to its proper type
       assert(
         config.get(key) === validValue,
-        `The config with format type '${schema[key].format}' is still retaining its old value of '${oldValue}' instead of '${newValue}'`)
+        `The config with format type '${schema[key].format}' is still retaining its old value of '${oldValue}' instead of '${validValue}'`)
     }
   })
 })
