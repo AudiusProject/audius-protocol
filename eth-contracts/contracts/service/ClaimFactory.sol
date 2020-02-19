@@ -17,7 +17,7 @@ contract ClaimFactory {
   uint lastClaimBlock = 0;
 
   // 100 AUD
-  uint fundingAmount = 100 * 10*uint256(DECIMALS); 
+  uint fundingAmount = 100 * 10**uint256(DECIMALS); 
 
   // Staking contract ref
   ERC20Mintable internal audiusToken;
@@ -29,28 +29,33 @@ contract ClaimFactory {
     tokenAddress = _tokenAddress;
     stakingAddress = _stakingAddress;
     audiusToken = ERC20Mintable(tokenAddress);
+    // Allow a claim to be funded initially by subtracting the configured difference
+    lastClaimBlock = block.number - claimBlockDiff;
   }
 
   function getStakingAddress() external view returns (address addr) {
     return tokenAddress;
   }
 
-  function getClaimInformation() 
-  external view returns (uint lastClaimedBlock, uint claimBlockDifference, uint fundingPerClaim) {
-    return (lastClaimBlock, claimBlockDiff, fundingAmount);
+  function getClaimBlockDifference() 
+  external view returns (uint claimBlockDifference) {
+    return (claimBlockDiff);
   }
 
-  // TODO: Figure out why this isn't working...
-  function getClaimFactoryTokens()
-  public view returns (uint tokens) {
-    uint numTokens = audiusToken.balanceOf(address(this));
-    return numTokens;
+  function getLastClaimedBlock()
+  external view returns (uint lastClaimedBlock) {
+    return (lastClaimBlock);
   }
 
-  function getTotalSupply()
-  external view returns (uint supply) {
-    uint numTokens = audiusToken.totalSupply();
-    return numTokens;
+  function getFundsPerClaim()
+  external view returns (uint amount) {
+    return (fundingAmount);
+  }
+
+  function getNumberOfPendingClaims()
+  external view returns (uint numClaims) 
+  {
+    return ((block.number - lastClaimBlock) / claimBlockDiff); 
   }
 
   function initiateClaim() external {
@@ -65,13 +70,15 @@ contract ClaimFactory {
     bool minted = audiusToken.mint(address(this), fundingAmount);
     require(minted, 'New tokens must be minted');
 
-    // Approve token transfer
+    // Approve token transfer to staking contract address
     audiusToken.approve(stakingAddress, fundingAmount);
 
     // Fund staking contract with proceeds
     Staking stakingContract = Staking(stakingAddress);
     stakingContract.fundNewClaim(fundingAmount);
 
-    lastClaimBlock = block.number;
+    // Increment by claim difference
+    // Ensures funding of claims is repeatable given the right block difference
+    lastClaimBlock = lastClaimBlock + claimBlockDiff;
   }
 }

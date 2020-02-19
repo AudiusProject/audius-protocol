@@ -10,15 +10,17 @@ contract('ClaimFactory', async (accounts) => {
   // Local web3, injected by truffle
   let treasuryAddress = accounts[0]
   let proxyOwner = treasuryAddress
-  let token
   let claimFactory
+  let token
 
+  let staking
   let proxy
   let impl0
+  let BN = web3.utils.BN
+
 
   const getLatestBlock = async () => {
-    let block = await web3.eth.getBlock('latest')
-    return block.number
+    return web3.eth.getBlock('latest')
   }
 
   beforeEach(async () => {
@@ -38,7 +40,7 @@ contract('ClaimFactory', async (accounts) => {
       initializeData,
       { from: proxyOwner })
 
-    let staking = await Staking.at(proxy.address)
+    staking = await Staking.at(proxy.address)
 
     // Reset min for test purposes
     await staking.setMinStakeAmount(0)
@@ -53,25 +55,82 @@ contract('ClaimFactory', async (accounts) => {
     await token.addMinter(claimFactory.address, { from: accounts[0] })
   })
 
-  it('Initiates a claim', async () => {
-    // Mint tokens
-    let info = await claimFactory.getClaimInformation()
-    console.log(info)
-    console.log(info.lastClaimedBlock.toNumber())
+  it('Initiate a claim', async () => {
+    // Get amount staked for treasury
+    let stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
+    assert.isTrue(
+      stakedForTreasury.isZero(),
+      'Expect zero treasury stake prior to claim funding')
+
+    // Get funds per claim
+    let fundsPerClaim = await claimFactory.getFundsPerClaim()
 
     await claimFactory.initiateClaim()
-    // let claimFactoryBalance = await token.balanceOf(claimFactory.address)
+    stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
 
-    info = await claimFactory.getClaimInformation()
-    let claimBlockDiff = info.claimBlockDifference.toNumber()
-    let currentLatestBlock = await getLatestBlock()
-    let minimumNextBlock = currentLatestBlock + claimBlockDiff
-    console.log(`Claim block diff - ${claimBlockDiff}`)
-    console.log(currentLatestBlock)
-    console.log(`Minimum next block - ${minimumNextBlock}`)
+    assert.isTrue(
+      stakedForTreasury.eq(fundsPerClaim),
+      'Expect single round of funding staked for treasury at this time')
 
+    // Confirm another claim cannot be immediately funded
     await _lib.assertRevert(
       claimFactory.initiateClaim(),
       'Required block difference not met')
+  })
+
+  it('Initiate multiple claims', async () => {
+    // Get amount staked for treasury
+    let stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
+    assert.isTrue(
+      stakedForTreasury.isZero(),
+      'Expect zero treasury stake prior to claim funding')
+
+    // Get funds per claim
+    let fundsPerClaim = await claimFactory.getFundsPerClaim()
+    let twiceClaimAmt = fundsPerClaim.mul(new BN('2'))
+    console.log(twiceClaimAmt)
+
+    // Initiate claim
+    await claimFactory.initiateClaim()
+    stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
+
+    assert.isTrue(
+      stakedForTreasury.eq(fundsPerClaim),
+      'Expect single round of funding staked for treasury at this time')
+
+    // Confirm another claim cannot be immediately funded
+    await _lib.assertRevert(
+      claimFactory.initiateClaim(),
+      'Required block difference not met')
+
+    let currentBlock = await getLatestBlock()
+    let currentBlockNum = currentBlock.number
+    console.log(`Current ${currentBlockNum}`)
+    let lastClaimBlock = await claimFactory.getLastClaimedBlock()
+    let claimDiff = await claimFactory.getClaimBlockDifference()
+    console.log(`Last claimed ${lastClaimBlock}`)
+    console.log(`Claim diff ${claimDiff}`)
+    let nextClaimBlock = lastClaimBlock.add(claimDiff)
+    console.log(`Next claim ${nextClaimBlock}`)
+
+    // Advance blocks to the next valid claim
+    while (currentBlockNum < nextClaimBlock) {
+      await _lib.advanceBlock(web3)
+      currentBlock = await getLatestBlock()
+      currentBlockNum = currentBlock.number
+    }
+
+    stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
+    assert.isTrue(
+      stakedForTreasury.eq(fundsPerClaim),
+      'Expect treasury stake equal to single fund amount')
+
+    // Initiate another claim
+    await claimFactory.initiateClaim()
+    let treasuryStakeSecondClaim = await staking.totalStakedFor(treasuryAddress)
+
+    assert.isTrue(
+      treasuryStakeSecondClaim.eq(stakedForTreasury.mul(new BN('2'))),
+      'Expect 2 rounds of funding staked for treasury at this time')
   })
 })
