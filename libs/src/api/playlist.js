@@ -185,7 +185,8 @@ class Playlists extends Base {
    * @param {number} userId
    * @param {number} playlistId
    */
-  async addPlaylistRepost (userId, playlistId) {
+  async addPlaylistRepost (playlistId) {
+    const userId = this.userStateManager.getCurrentUserId()
     return this.contracts.SocialFeatureFactoryClient.addPlaylistRepost(userId, playlistId)
   }
 
@@ -194,7 +195,8 @@ class Playlists extends Base {
    * @param {number} userId
    * @param {number} playlistId
    */
-  async deletePlaylistRepost (userId, playlistId) {
+  async deletePlaylistRepost (playlistId) {
+    const userId = this.userStateManager.getCurrentUserId()
     return this.contracts.SocialFeatureFactoryClient.deletePlaylistRepost(userId, playlistId)
   }
 
@@ -214,7 +216,8 @@ class Playlists extends Base {
    * @param {number} userId
    * @param {number} playlistId
    */
-  async addPlaylistSave (userId, playlistId) {
+  async addPlaylistSave (playlistId) {
+    const userId = this.userStateManager.getCurrentUserId()
     return this.contracts.UserLibraryFactoryClient.addPlaylistSave(userId, playlistId)
   }
 
@@ -223,7 +226,8 @@ class Playlists extends Base {
    * @param {number} userId
    * @param {number} playlistId
    */
-  async deletePlaylistSave (userId, playlistId) {
+  async deletePlaylistSave (playlistId) {
+    const userId = this.userStateManager.getCurrentUserId()
     return this.contracts.UserLibraryFactoryClient.deletePlaylistSave(userId, playlistId)
   }
 
