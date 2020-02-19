@@ -11,14 +11,11 @@ const { AudiusABIDecoder } = require('@audius/libs')
 const primaryWeb3 = new Web3(new Web3.providers.HttpProvider(config.get('web3Provider')))
 const secondaryWeb3 = new Web3(new Web3.providers.HttpProvider(config.get('secondaryWeb3Provider')))
 
-const MIN_GAS_PRICE = 10 * Math.pow(10, 9) // 10 GWei, 10 * POA default gas price
-const HIGH_GAS_PRICE = 2.5 * MIN_GAS_PRICE // 25 GWei
-const GANACHE_GAS_PRICE = 39062500000 // ganache gas price is extremely high, so we hardcode a lower value (0x09184e72a0 from docs here)
+const MIN_GAS_PRICE = config.get('minGasPrice')
+const HIGH_GAS_PRICE = config.get('highGasPrice')
+const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
+const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
 
-// 1011968 is used by default
-const DEFAULT_GAS_LIMIT = '0xf7100'
-
-// this is incremented by the code below, but will not work as expected if there are
 // multiple instances of the identity service using the same Ethereum account
 let currentRelayerAccountNonce
 let nonceLocked = false
