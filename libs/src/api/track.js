@@ -177,12 +177,12 @@ class Tracks extends Base {
   /**
    * Return saved tracks for current user
    * NOTE in returned JSON, SaveType string one of track, playlist, album
-   * @param {number} userId
    * @param {number} limit - max # of items to return
    * @param {number} offset - offset into list to return from (for pagination)
    */
-  async getListenHistoryTracks (userId, limit = 100, offset = 0) {
+  async getListenHistoryTracks (limit = 100, offset = 0) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
+    const userId = this.userStateManager.getCurrentUserId()
     return this.identityService.getListenHistoryTracks(userId, limit, offset)
   }
 
@@ -232,15 +232,15 @@ class Tracks extends Base {
 
       this.IS_OBJECT(metadata)
 
-      const owner = this.userStateManager.getCurrentUser()
-      if (!owner.user_id) {
+      const ownerId = this.userStateManager.getCurrentUserId()
+      if (!ownerId) {
         return {
           error: 'No users loaded for this wallet',
           phase
         }
       }
 
-      metadata.owner_id = owner.user_id
+      metadata.owner_id = ownerId
       this._validateTrackMetadata(metadata)
 
       phase = phases.UPLOADING_TRACK_CONTENT
@@ -262,7 +262,7 @@ class Tracks extends Base {
       // Write metadata to chain
       const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
       const { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
-        owner.user_id,
+        ownerId,
         multihashDecoded.digest,
         multihashDecoded.hashFn,
         multihashDecoded.size
@@ -304,12 +304,12 @@ class Tracks extends Base {
 
     this.IS_OBJECT(metadata)
 
-    const owner = this.userStateManager.getCurrentUser()
-    if (!owner.user_id) {
+    const ownerId = this.userStateManager.getCurrentUserId()
+    if (!ownerId) {
       throw new Error('No users loaded for this wallet')
     }
 
-    metadata.owner_id = owner.user_id
+    metadata.owner_id = ownerId
     this._validateTrackMetadata(metadata)
 
     // Upload metadata
@@ -343,8 +343,8 @@ class Tracks extends Base {
    */
   async addTracksToChainAndCnode (trackMultihashAndUUIDList) {
     this.REQUIRES(Services.CREATOR_NODE)
-    const owner = this.userStateManager.getCurrentUser()
-    if (!owner.user_id) {
+    const ownerId = this.userStateManager.getCurrentUserId()
+    if (!ownerId) {
       throw new Error('No users loaded for this wallet')
     }
 
@@ -358,7 +358,7 @@ class Tracks extends Base {
           // Write metadata to chain
           const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
           let { txReceipt, trackId } = await this.contracts.TrackFactoryClient.addTrack(
-            owner.user_id,
+            ownerId,
             multihashDecoded.digest,
             multihashDecoded.hashFn,
             multihashDecoded.size
@@ -406,15 +406,14 @@ class Tracks extends Base {
   /**
    * Updates an existing track given metadata. This function expects that all associated files
    * such as track content, cover art are already on creator node.
-   * @param {number} trackId id of the track from chain
-   * @param {number} trackOwnerId id of the owner of the track from chain
    * @param {Object} metadata json of the track metadata with all fields, missing fields will error
    */
-  async updateTrack (metadata, newOwnerId = null) {
+  async updateTrack (metadata) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.IS_OBJECT(metadata)
 
-    const ownerId = newOwnerId || this.userStateManager.getCurrentUserId()
+    const ownerId = this.userStateManager.getCurrentUserId()
+
     if (!ownerId) {
       throw new Error('No users loaded for this wallet')
     }
@@ -442,47 +441,49 @@ class Tracks extends Base {
 
   /**
    * Logs a track listen for a given user id.
-   * @param {number} trackId
-   * @param {number} userId
+   * @param {string} unauthUuid account for those not logged in
+   * @param {number} trackId listened to
    */
-  async logTrackListen (trackId, userId) {
+  async logTrackListen (trackId, unauthUuid) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
+    const accountId = this.userStateManager.getCurrentUser()
+
+    const userId = accountId || unauthUuid
     return this.identityService.logTrackListen(trackId, userId)
   }
 
-  /**
-   * Adds a repost for a given user and track
-   * @param {number} user who reposted the track
-   * @param {number} track being reposted
-   */
-  async addTrackRepost (userId, trackId) {
+  /** Adds a repost for a given user and track
+  * @param {number} trackId track being reposted
+  */
+  async addTrackRepost (trackId) {
+    const userId = this.userStateManager.getCurrentUserId()
     return this.contracts.SocialFeatureFactoryClient.addTrackRepost(userId, trackId)
   }
 
   /**
    * Deletes a repost for a given user and track
-   * @param {number} user who created the now deleted repost
    * @param {number} track id of deleted repost
    */
-  async deleteTrackRepost (userId, trackId) {
+  async deleteTrackRepost (trackId) {
+    const userId = this.userStateManager.getCurrentUserId()
     return this.contracts.SocialFeatureFactoryClient.deleteTrackRepost(userId, trackId)
   }
 
   /**
    * Adds a track save for a given user and track
-   * @param {number} user saving track
-   * @param {number} track being saved
+   * @param {number} trackId track being saved
    */
-  async addTrackSave (userId, trackId) {
+  async addTrackSave (trackId) {
+    const userId = this.userStateManager.getCurrentUserId()
     return this.contracts.UserLibraryFactoryClient.addTrackSave(userId, trackId)
   }
 
   /**
    * Delete a track save for a given user and track
-   * @param {number} user deleting track save
    * @param {number} track save being removed
    */
-  async deleteTrackSave (userId, trackId) {
+  async deleteTrackSave (trackId) {
+    const userId = this.userStateManager.getCurrentUserId()
     return this.contracts.UserLibraryFactoryClient.deleteTrackSave(userId, trackId)
   }
 

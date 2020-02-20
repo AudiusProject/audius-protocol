@@ -10,6 +10,8 @@
     "start": "nodemon src/index.js | ./node_modules/.bin/bunyan || exit 0",
     "render:email": "rimraf src/notifications/renderEmail && babel src/notifications/components/ -d src/notifications/renderEmail",
     "test": "./scripts/run-tests.sh",
+    "coverage": "nyc npm run test",
+    "report": "nyc report --reporter=html",
     "lint": "./node_modules/.bin/standard",
     "lint-fix": "./node_modules/.bin/standard --fix"
   },
@@ -56,11 +58,18 @@
     "babel-preset-react": "^6.24.1",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.10",
+    "nyc": "^15.0.0",
     "rimraf": "^3.0.0",
     "sequelize-cli": "^5.3.0",
     "sinon": "^7.0.0",
     "standard": "^12.0.1",
     "supertest": "^3.3.0"
+  },
+  "//": {
+    "scriptsComments": {
+      "coverage": "Runs nyc on tests/ dir and outputs results in ./nyc_output. Can be used for vscode extensions.",
+      "report": "Generates static html files representing code coverage per test file and outputs them into /coverage."
+    }
   },
   "standard": {
     "globals": [

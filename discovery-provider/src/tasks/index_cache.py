@@ -14,7 +14,7 @@ def update_trending_cache(self, db, redis, time):
     redis_key = f"trending-{time}"
     # Cache value for 5 minutes
     redis.set(redis_key, resp_json, 300)
-    logger.warning(f"index_cache.py | Updated trending cache {redis_key}")
+    logger.info(f"index_cache.py | Updated trending cache {redis_key}")
 
 # Update cache for all trending timeframes
 def update_all_trending_cache(self, db, redis):
