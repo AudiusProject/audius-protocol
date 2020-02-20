@@ -83,7 +83,6 @@ def generate_trending(db, time, genre, limit, offset):
         }
 
         not_deleted_track_ids = set([record[0] for record in not_deleted_track_ids]) # pylint: disable=R1718
-        
         # Query repost counts
         repost_counts = get_repost_counts(session, False, True, not_deleted_track_ids, None)
         track_repost_counts = {
