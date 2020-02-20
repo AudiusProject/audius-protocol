@@ -4,7 +4,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 // WORKING CONTRACT
-// Designed to automate claim funding, and move
+// Designed to automate claim funding, minting tokens as necessary
 contract ClaimFactory {
   // standard - imitates relationship between Ether and Wei
   uint8 private constant DECIMALS = 18;
@@ -59,10 +59,6 @@ contract ClaimFactory {
   }
 
   function initiateClaim() external {
-    // TODO: Update
-    // - Add function based on last recorded claim block
-    // - Reject based on block diff
-    // - Expose pending claim info
     require(
       block.number - lastClaimBlock > claimBlockDiff,
       'Required block difference not met');
