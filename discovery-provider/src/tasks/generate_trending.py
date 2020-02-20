@@ -67,30 +67,22 @@ def generate_trending(db, time, genre, limit, offset):
     with db.scoped_session() as session:
         # Filter tracks to not-deleted ones so trending order is preserved
         not_deleted_track_ids = (
-            session.query(Track.track_id)
+            session.query(Track.track_id, Track.created_at)
             .filter(
                 Track.track_id.in_(track_ids),
                 Track.is_current == True,
                 Track.is_delete == False,
-                Track.is_unlisted == False
-            )
-            .all()
-        )
-        not_deleted_track_ids = set([record[0] for record in not_deleted_track_ids]) # pylint: disable=R1718
-
-        track_created_at = (
-            session.query(Track.track_id, Track.created_at)
-            .filter
-            (
-                Track.created_at != None,
-                Track.track_id.in_(not_deleted_track_ids)
+                Track.is_unlisted == False,
+                Track.created_at != None
             )
             .all()
         )
 
         track_created_at_dict = {
-            track[0]: track[1] for track in track_created_at
+            record[0]: record[1] for record in not_deleted_track_ids
         }
+
+        not_deleted_track_ids = set([record[0] for record in not_deleted_track_ids]) # pylint: disable=R1718
         
         # Query repost counts
         repost_counts = get_repost_counts(session, False, True, not_deleted_track_ids, None)
@@ -172,7 +164,8 @@ def generate_trending(db, time, genre, limit, offset):
 
             # Populate created at timestamps
             if track_entry[response_name_constants.track_id] in track_created_at_dict:
-                track_entry[response_name_constants.track_created_at] = track_created_at_dict[track_entry[response_name_constants.track_id]]
+                track_entry[response_name_constants.track_created_at] = \
+                        track_created_at_dict[track_entry[response_name_constants.track_id]]
             else:
                 track_entry[response_name_constants.track_created_at] = ""
 
