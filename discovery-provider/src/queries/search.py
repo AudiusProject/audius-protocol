@@ -416,7 +416,8 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
             "limit": limit,
             "offset": offset,
             "title_weight": trackTitleWeight,
-            "current_user_id": current_user_id
+            "current_user_id": current_user_id,
+            "is_delete": False
         },
     ).fetchall()
 
@@ -427,7 +428,6 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
         session.query(Track)
         .filter(
             Track.is_current == True,
-            Track.is_delete == False,
             Track.is_unlisted == False,
             Track.track_id.in_(track_ids),
         )
@@ -575,7 +575,8 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
             "limit": limit,
             "offset": offset,
             "name_weight": playlistNameWeight,
-            "current_user_id": current_user_id
+            "current_user_id": current_user_id,
+            "is_delete": False
         },
     ).fetchall()
 
@@ -586,7 +587,6 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
         session.query(Playlist)
         .filter(
             Playlist.is_current == True,
-            Playlist.is_delete == False,
             Playlist.is_album == is_album,
             Playlist.playlist_id.in_(playlist_ids)
         )
