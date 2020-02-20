@@ -72,8 +72,7 @@ def generate_trending(db, time, genre, limit, offset):
                 Track.track_id.in_(track_ids),
                 Track.is_current == True,
                 Track.is_delete == False,
-                Track.is_unlisted == False,
-                Track.created_at != None
+                Track.is_unlisted == False
             )
             .all()
         )
@@ -166,7 +165,7 @@ def generate_trending(db, time, genre, limit, offset):
                 track_entry[response_name_constants.track_created_at] = \
                         track_created_at_dict[track_entry[response_name_constants.track_id]]
             else:
-                track_entry[response_name_constants.track_created_at] = ""
+                track_entry[response_name_constants.track_created_at] = None
 
             trending_tracks.append(track_entry)
 

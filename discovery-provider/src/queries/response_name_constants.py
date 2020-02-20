@@ -14,7 +14,7 @@ followee_count = 'followee_count' # integer - total followee count of given user
 playlist_count = 'playlist_count' # integer - total count of playlists created by given user
 album_count = 'album_count' # integer - total count of albums created by given user (0 for all non-creators)
 track_count = 'track_count' # integer - total count of tracks created by given user
-track_created_at = 'track_created_at' # datetime - time track was created
+created_at = 'created_at' # datetime - time track was created
 repost_count = 'repost_count' # integer - total count of reposts by given user
 track_blocknumber = 'track_blocknumber' # integer - blocknumber of latest track for user
 # current user specific
