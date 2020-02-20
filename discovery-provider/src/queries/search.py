@@ -416,8 +416,7 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
             "limit": limit,
             "offset": offset,
             "title_weight": trackTitleWeight,
-            "current_user_id": current_user_id,
-            "is_delete": False
+            "current_user_id": current_user_id
         },
     ).fetchall()
 
@@ -575,8 +574,7 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
             "limit": limit,
             "offset": offset,
             "name_weight": playlistNameWeight,
-            "current_user_id": current_user_id,
-            "is_delete": False
+            "current_user_id": current_user_id
         },
     ).fetchall()
 
