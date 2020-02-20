@@ -111,10 +111,10 @@ def get_tracks():
                 Track.owner_id == user_id
             )
 
-        # Allow filtering of deleted tracks
+        # Filter deleted tracks if we are not querying by track ids or we've explicitly said to filter deletes
         # Note: There is no standard for boolean url parameters, and any value (including 'false')
         # will be evaluated as true, so an explicit check is made for true
-        if "filter_deleted" in request.args:
+        if ("id" not in request.args) or ("filter_deleted" in request.args):
             filter_deleted = request.args.get("filter_deleted")
             if (filter_deleted.lower() == 'true'):
                 base_query = base_query.filter(
@@ -160,7 +160,12 @@ def get_tracks_including_unlisted():
         # Create filter conditions as a list of `and` clauses
         for i in identifiers:
             route_id = helpers.create_track_route_id(i["url_title"], i["handle"])
-            filter_cond.append(and_(Track.is_current == True, Track.route_id == route_id, Track.track_id == i["id"]))
+            filter_cond.append(and_(
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.route_id == route_id,
+                Track.track_id == i["id"]
+            ))
 
         # Pass array of `and` clauses into an `or` clause as destrucutred *args
         base_query = base_query.filter(or_(*filter_cond))
@@ -219,6 +224,12 @@ def get_playlists():
             if filter_out_private_playlists:
                 playlist_query = playlist_query.filter(
                     Playlist.is_private == False
+                )
+
+            # Filter out deletes unless we're fetching explicitly by id
+            if "playlist_id" not in request.args:
+                playlist_query = playlist_query.filter(
+                    Playlist.is_delete == False
                 )
 
             playlist_query = playlist_query.order_by(desc(Playlist.created_at))
@@ -291,6 +302,7 @@ def get_feed():
                 session.query(Playlist)
                 .filter(
                     Playlist.is_current == True,
+                    Playlist.is_delete == False,
                     Playlist.is_private == False,
                     Playlist.playlist_owner_id.in_(followee_user_ids)
                 )
@@ -336,6 +348,7 @@ def get_feed():
                 session.query(Track)
                 .filter(
                     Track.is_current == True,
+                    Track.is_delete == False,
                     Track.is_unlisted == False,
                     Track.owner_id.in_(followee_user_ids),
                     Track.track_id.notin_(tracks_to_dedupe)
@@ -406,6 +419,7 @@ def get_feed():
             # Query tracks reposted by followees
             reposted_tracks = session.query(Track).filter(
                 Track.is_current == True,
+                Track.is_delete == False,
                 Track.is_unlisted == False,
                 Track.track_id.in_(reposted_track_ids)
             )
@@ -421,6 +435,7 @@ def get_feed():
             # Query playlists reposted by followees, excluding playlists already fetched from above
             reposted_playlists = session.query(Playlist).filter(
                 Playlist.is_current == True,
+                Playlist.is_delete == False,
                 Playlist.is_private == False,
                 Playlist.playlist_id.in_(reposted_playlist_ids)
             )
@@ -541,6 +556,7 @@ def get_repost_feed_for_user(user_id):
             session.query(Track)
             .filter(
                 Track.is_current == True,
+                Track.is_delete == False,
                 Track.is_unlisted == False,
                 Track.track_id.in_(repost_track_ids)
             )
@@ -557,6 +573,7 @@ def get_repost_feed_for_user(user_id):
             session.query(Playlist)
             .filter(
                 Playlist.is_current == True,
+                Playlist.is_delete == False,
                 Playlist.is_private == False,
                 Playlist.playlist_id.in_(repost_playlist_ids)
             )

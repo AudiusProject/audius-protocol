@@ -427,6 +427,7 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
         session.query(Track)
         .filter(
             Track.is_current == True,
+            Track.is_delete == False,
             Track.is_unlisted == False,
             Track.track_id.in_(track_ids),
         )
@@ -585,6 +586,7 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
         session.query(Playlist)
         .filter(
             Playlist.is_current == True,
+            Playlist.is_delete == False,
             Playlist.is_album == is_album,
             Playlist.playlist_id.in_(playlist_ids)
         )
