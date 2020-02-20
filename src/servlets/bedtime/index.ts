@@ -9,7 +9,8 @@ const DELETED_MESSAGE = 'DELETED'
 const getTrackMetadata = async (trackId: number, ownerId: number): Promise<GetTracksResponse> => {
   try {
     const track = await getTrack(trackId)
-    if (track.is_delete) return Promise.reject(DELETED_MESSAGE)
+    if (track.is_delete) return Promise.reject(new Error(DELETED_MESSAGE))
+    if (track.owner_id !== ownerId) return Promise.reject(new Error('OwnerIds do not match'))
 
     const user  = await getUser(ownerId)
     const coverArt = getCoverArt(track, user)
@@ -73,8 +74,8 @@ const getCollectionMetadata = async (collectionId: number, ownerId: number): Pro
   try {
     const [collection, ownerUser] = await Promise.all([getCollection(collectionId), getUser(ownerId)])
 
-    if (collection.playlist_owner_id !== ownerUser.user_id) return Promise.reject('OwnerIds do not match')
-    if (collection.is_delete) return Promise.reject(DELETED_MESSAGE)
+    if (collection.playlist_owner_id !== ownerUser.user_id) return Promise.reject(new Error('OwnerIds do not match'))
+    if (collection.is_delete) return Promise.reject(new Error(DELETED_MESSAGE))
 
     // Get tracks & covert art in parallel
     const [tracks, coverArt] = await Promise.all([getTracksFromCollection(collection, ownerUser), getCoverArt(collection, ownerUser)])
