@@ -12,6 +12,8 @@ from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, 
 from src.utils import helpers
 from src.utils.config import shared_config
 
+from datetime import datetime, timedelta
+
 logger = logging.getLogger(__name__)
 
 
@@ -501,8 +503,7 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
 
     return playlists
 
-
-def get_repost_counts(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, max_block_number=None):
+def get_repost_counts_query(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, max_block_number=None):
     query_col = Repost.user_id if query_by_user_flag else Repost.repost_item_id
 
     repost_counts_query = None
@@ -546,8 +547,30 @@ def get_repost_counts(session, query_by_user_flag, query_repost_type_flag, filte
         repost_counts_query = repost_counts_query.filter(
             Repost.blocknumber <= max_block_number
         )
+
+    return repost_counts_query
+
+def get_repost_counts(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, max_block_number=None):
+    repost_counts_query = get_repost_counts_query(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types)
     return repost_counts_query.all()
 
+def get_repost_counts_for_past_n_days(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, days, max_block_number=None):
+    repost_counts_query = get_repost_counts_query(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types)
+    repost_counts_query = repost_counts_query.filter(
+                Repost.created_at >= datetime.now() - timedelta(days=days)
+            )
+
+    return repost_counts_query.all()
+
+def get_repost_counts_with_time(time, session, filter_ids):
+    switcher = {
+        'day': get_repost_counts_for_past_n_days(session, False, True, filter_ids, None, 1),
+        'week': get_repost_counts_for_past_n_days(session, False, True, filter_ids, None, 7),
+        'month': get_repost_counts_for_past_n_days(session, False, True, filter_ids, None, 30),
+        'year': get_repost_counts_for_past_n_days(session, False, True, filter_ids, None, 365),
+        'millennium': get_repost_counts(session, False, True, filter_ids, None)
+    }
+    return switcher.get(time, 'Invalid time')
 
 def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number=None):
     query_col = Save.user_id if query_by_user_flag else Save.save_item_id

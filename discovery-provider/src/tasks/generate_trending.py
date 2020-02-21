@@ -7,7 +7,7 @@ from src import api_helpers
 from src.models import Track, RepostType, Follow, SaveType
 from src.utils.config import shared_config
 from src.queries import response_name_constants
-from src.queries.query_helpers import get_repost_counts, get_save_counts, get_genre_list
+from src.queries.query_helpers import get_repost_counts, get_save_counts, get_genre_list, get_repost_counts_with_time
 
 logger = logging.getLogger(__name__)
 
@@ -85,9 +85,17 @@ def generate_trending(db, time, genre, limit, offset):
         not_deleted_track_ids = set([record[0] for record in not_deleted_track_ids]) # pylint: disable=R1718
         # Query repost counts
         repost_counts = get_repost_counts(session, False, True, not_deleted_track_ids, None)
+
+        track_repost_counts_with_time = get_repost_counts_with_time(time, session, not_deleted_track_ids)
         track_repost_counts = {
             repost_item_id: repost_count
             for (repost_item_id, repost_count, repost_type) in repost_counts
+            if repost_type == RepostType.track
+        }
+
+        track_repost_counts_with_time = {
+            repost_item_id: repost_count
+            for (repost_item_id, repost_count, repost_type) in track_repost_counts_with_time
             if repost_type == RepostType.track
         }
 
@@ -146,6 +154,13 @@ def generate_trending(db, time, genre, limit, offset):
             else:
                 track_entry[response_name_constants.repost_count] = 0
 
+            # Populate repost counts with respect to time
+            time_key = get_repost_time_key(time) + "_repost_count"
+            if track_entry[response_name_constants.track_id] in track_repost_counts_with_time:
+                track_entry[time_key] = track_repost_counts_with_time[track_entry[response_name_constants.track_id]]
+            else:
+                track_entry[time_key] = 0
+
             # Populate save counts
             if track_entry[response_name_constants.track_id] in track_save_counts:
                 track_entry[response_name_constants.save_count] = \
@@ -173,3 +188,15 @@ def generate_trending(db, time, genre, limit, offset):
     final_resp = {}
     final_resp['listen_counts'] = trending_tracks
     return final_resp
+
+def get_repost_time_key(time):
+    switcher = {
+        'day': response_name_constants.daily,
+        'week': response_name_constants.weekly,
+        'month': response_name_constants.monthly,
+        'year': response_name_constants.yearly,
+        'millenium': response_name_constants.all_time
+    }
+
+    return switcher.get(time, 'Invalid time')
+
