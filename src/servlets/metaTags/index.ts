@@ -18,7 +18,7 @@ import { DEFAULT_IMAGE_URL } from '../utils/constants'
 const E = process.env
 
 const getEmbedUrl = (type: Playable, id: number, ownerId: number) => {
-  return `${E.PUBLIC_URL}/embed/${type}?id=${id}&ownerId=${ownerId}&flavor=card`
+  return `${E.PUBLIC_URL}/embed/${type}?id=${id}&ownerId=${ownerId}&flavor=card&twitter=true`
 }
 
 /** Routes */
