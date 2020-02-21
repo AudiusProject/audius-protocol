@@ -52,12 +52,6 @@ contract ClaimFactory {
     return (fundingAmount);
   }
 
-  function getNumberOfPendingClaims()
-  external view returns (uint numClaims) 
-  {
-    return ((block.number - lastClaimBlock) / claimBlockDiff); 
-  }
-
   function initiateClaim() external {
     require(
       block.number - lastClaimBlock > claimBlockDiff,

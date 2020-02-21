@@ -6,7 +6,6 @@ module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
     let proxy = await OwnedUpgradeabilityProxy.deployed()
     let stakingAddress = proxy.address
-    // let staking = await Staking.at(proxy.address)
 
     // Deploy new ClaimFactory
     await deployer.deploy(
