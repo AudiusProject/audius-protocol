@@ -199,4 +199,3 @@ def get_repost_time_key(time):
     }
 
     return switcher.get(time, 'Invalid time')
-
