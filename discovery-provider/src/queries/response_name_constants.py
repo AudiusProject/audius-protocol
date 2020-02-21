@@ -24,6 +24,8 @@ track_count = 'track_count' # integer - total count of tracks created by given u
 created_at = 'created_at' # datetime - time track was created
 repost_count = 'repost_count' # integer - total count of reposts by given user
 track_blocknumber = 'track_blocknumber' # integer - blocknumber of latest track for user
+windowed_repost_count = 'windowed_repost_count'
+
 # current user specific
 does_current_user_follow = 'does_current_user_follow' # boolean - does current user follow given user
 current_user_followee_follow_count = 'current_user_followee_follow_count' # integer - number of followees of current user that also follow given user
