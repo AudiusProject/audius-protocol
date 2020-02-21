@@ -77,6 +77,7 @@ def generate_trending(db, time, genre, limit, offset):
             .all()
         )
 
+        # Generate track -> created_at date
         track_created_at_dict = {
             record[0]: record[1] for record in not_deleted_track_ids
         }
