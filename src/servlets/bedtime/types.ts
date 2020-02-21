@@ -4,6 +4,7 @@ export enum BedtimeFormat {
 }
 
 export type TrackResponse = {
+  id: number
   title: string
   handle: string
   userName: string
