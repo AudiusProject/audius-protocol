@@ -4,7 +4,7 @@ import handlebars from 'handlebars'
 import path from 'path'
 
 import libs from '../../libs'
-import { MetaTagFormat } from './types'
+import { MetaTagFormat, Playable, Context } from './types'
 import {
   getTrack,
   getUser,
@@ -15,15 +15,11 @@ import {
 } from '../utils/helpers'
 import { DEFAULT_IMAGE_URL } from '../utils/constants'
 
+const E = process.env
 
-interface Context {
-  title: string,
-  description: string,
-  image: string,
-  // Whether or not the image shows as a small thumbnail version
-  thumbnail?: boolean,
+const getEmbedUrl = (type: Playable, id: number, ownerId: number) => {
+  return `${E.PUBLIC_URL}/embed/${type}?id=${id}&ownerId=${ownerId}&flavor=card`
 }
-
 
 /** Routes */
 
@@ -47,6 +43,8 @@ const getTrackContext = async (id: number): Promise<Context> => {
       title: `${track.title} • ${user.name}`,
       description: track.description || '',
       image: getImageUrl(coverArt, gateway),
+      embed: true,
+      embedUrl: getEmbedUrl(Playable.TRACK, track.track_id, track.owner_id)
     }
   } catch (e) {
     return getDefaultContext()
@@ -67,6 +65,12 @@ const getCollectionContext = async (id: number): Promise<Context> => {
       title: `${collection.playlist_name} • ${user.name}`,
       description: collection.description || '',
       image: getImageUrl(coverArt, gateway),
+      embed: true,
+      embedUrl: getEmbedUrl(
+        collection.is_album ? Playable.ALBUM : Playable.PLAYLIST,
+        collection.playlist_id,
+        collection.playlist_owner_id
+      )
     }
   } catch (e) {
     return getDefaultContext()

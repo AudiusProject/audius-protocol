@@ -11,25 +11,34 @@
     <meta property="og:site_name" content="Audius"/ >
     <meta property="og:description" content="{{description}}" />
     {{#if thumbnail}}
-    <meta property="og:image" content="{{image}}" />
+      <meta property="og:image" content="{{image}}" />
     {{else}}
-    <meta property="og:image" content="{{image}}" />
-    <meta property="og:image:width" content="1000"/ >
-    <meta property="og:image:height" content="1000"/ >
+      <meta property="og:image" content="{{image}}" />
+      <meta property="og:image:width" content="1000"/ >
+      <meta property="og:image:height" content="1000"/ >
     {{/if}}
     <meta property="og:type" content="website"/>
     <meta property="fb:app_id" content="123553997750078" />
 
     <meta name="twitter:title" content="{{title}}" />
     <meta name="twitter:description" content="{{description}}" />
+
     <meta name="twitter:image" content="{{image}}" />
     <meta name="twitter:image:alt" content="{{title}}" />
+    <meta name="twitter:site" content="@AudiusProject" />
+
     {{#if thumbnail}}
-    <meta name="twitter:card" content="summary"/ >
+      <meta name="twitter:card" content="summary"/ >
     {{else}}
-    <meta name="twitter:card" content="summary_large_image"/ >
+      {{#if embed}}
+        <meta name="twitter:card" content="player"/ >
+        <meta name="twitter:player" content="{{embedUrl}}" />
+        <meta name="twitter:player:width" content="480" />
+	      <meta name="twitter:player:height" content="480" />
+      {{else}}
+        <meta name="twitter:card" content="summary_large_image"/ >
+      {{/if}}
     {{/if}}
-    <meta name="twitter:site" content="@AudiusProject"/ >
   </head>
   <body>
     <div>{{title}}</div>
