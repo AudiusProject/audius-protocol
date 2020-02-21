@@ -9,7 +9,7 @@ http {
   proxy_ssl_server_name on;
   proxy_ssl_name audius.co;
 
-  proxy_set_header  Host              $host;
+  # proxy_set_header  Host              $host;
   proxy_set_header  X-Real-IP         $remote_addr;
   proxy_set_header  X-Forwarded-For   $proxy_add_x_forwarded_for;
   proxy_set_header  X-Forwarded-Proto $scheme;
@@ -46,15 +46,16 @@ http {
 
     # Bedtime API routes.
     location /embed/api {
+      add_header 'Access-Control-Allow-Origin' '*' always;
+      add_header 'Access-Control-Allow-Methods' 'GET';
       proxy_pass http://node:8000;
     }
 
     # Proxy bedtime player
     # strips off `embed` portion of the URI
     # before forwarding to the BEDTIME_URL
-    location /embed {
-      rewrite ^/embed(/.*)$ $1 break;
-      proxy_pass ${BEDTIME_URL};
+    location /embed/ {
+      proxy_pass https://di2033imt2ldz.cloudfront.net/;
     }
 
     # metadata/dapp passthrough
