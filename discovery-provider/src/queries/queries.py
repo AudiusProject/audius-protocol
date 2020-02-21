@@ -13,7 +13,7 @@ from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 from src.queries.query_helpers import get_current_user_id, parse_sort_param, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_repost_counts, get_save_counts, \
-    get_pagination_vars, paginate_query
+    get_pagination_vars, paginate_query, get_users_by_id
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("queries", __name__)
@@ -139,6 +139,14 @@ def get_tracks():
         # bundle peripheral info into track results
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
+        if "with_users" in request.args and request.args.get("with_users") != 'false':
+            user_id_list = list(set(map(lambda track: int(track["owner_id"]), tracks)))
+            users = get_users_by_id(session, user_id_list)
+            for track in tracks:
+                user = users[track['owner_id']]
+                if user:
+                    track['user'] = user
+
     return api_helpers.success_response(tracks)
 
 
@@ -239,6 +247,14 @@ def get_playlists():
                 [SaveType.playlist, SaveType.album],
                 current_user_id
             )
+
+            if "with_users" in request.args and request.args.get("with_users") != 'false':
+                user_id_list = list(set(map(lambda track: int(track["playlist_owner_id"]), playlists)))
+                users = get_users_by_id(session, user_id_list)
+                for playlist in playlists:
+                    user = users[playlist['playlist_owner_id']]
+                    if user:
+                        playlist['user'] = user
 
         except sqlalchemy.orm.exc.NoResultFound:
             pass
@@ -487,6 +503,19 @@ def get_feed():
         (limit, _) = get_pagination_vars()
         feed_results = sorted_feed[0:limit]
 
+        if "with_users" in request.args and request.args.get("with_users") != 'false':
+            user_id_list = list(set(map(lambda result: int(result["playlist_owner_id"]) if 'playlist_id' in result else int(result["owner_id"]), feed_results)))
+            users = get_users_by_id(session, user_id_list)
+            for result in feed_results:
+                if 'playlist_owner_id' in result:
+                    user = users[result['playlist_owner_id']]
+                    if user:
+                        result['user'] = user
+                elif 'owner_id' in result:
+                    user = users[result['owner_id']]
+                    if user:
+                        result['user'] = user
+
     return api_helpers.success_response(feed_results)
 
 
@@ -728,6 +757,19 @@ def get_repost_feed_for_user(user_id):
         # sort feed by repost timestamp desc
         feed_results = sorted(
             unsorted_feed, key=lambda entry: entry[response_name_constants.activity_timestamp], reverse=True)
+
+        if "with_users" in request.args and request.args.get("with_users") != 'false':
+            user_id_list = list(set(map(lambda result: int(result["playlist_owner_id"]) if 'playlist_id' in result else int(result["owner_id"]), feed_results)))
+            users = get_users_by_id(session, user_id_list)
+            for result in feed_results:
+                if 'playlist_owner_id' in result:
+                    user = users[result['playlist_owner_id']]
+                    if user:
+                        result['user'] = user
+                elif 'owner_id' in result:
+                    user = users[result['owner_id']]
+                    if user:
+                        result['user'] = user
 
     return api_helpers.success_response(feed_results)
 
@@ -1325,4 +1367,5 @@ def get_saves(save_type):
 
         query_results = paginate_query(query).all()
         save_results = helpers.query_result_to_list(query_results)
+
     return api_helpers.success_response(save_results)
