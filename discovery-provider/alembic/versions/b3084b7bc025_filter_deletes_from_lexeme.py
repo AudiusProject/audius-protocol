@@ -17,6 +17,8 @@ depends_on = None
 
 
 # Filter out deleted items from lexeme dictionary
+# The client filters these out and can show incorrect counts of search results
+# because of it.
 def upgrade():
     connection = op.get_bind()
     connection.execute('''
