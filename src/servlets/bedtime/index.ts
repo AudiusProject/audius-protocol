@@ -54,7 +54,7 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
   const users = await getUsers(Array.from(idsToFetch))
 
   // make a map of all users, including the owner
-  const userMap = users.reduce((acc: any, u: any) => ({ ...acc, [u.user_id]: u}), { [ownerUser.userId]: ownerUser })
+  const userMap = users.reduce((acc: any, u: any) => ({ ...acc, [u.user_id]: u}), { [ownerUser.user_id]: ownerUser })
 
   // Create tracks and filter out deletes
   const parsedTracks: TrackResponse[] = tracks.map((t: any) => ({
