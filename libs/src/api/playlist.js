@@ -19,9 +19,9 @@ class Playlists extends Base {
    *  {Boolean} has_current_user_reposted - has current user reposted given playlist
    *  {Boolean} has_current_user_saved - has current user saved given playlist
    */
-  async getPlaylists (limit = 100, offset = 0, idsArray = null, targetUserId = null) {
+  async getPlaylists (limit = 100, offset = 0, idsArray = null, targetUserId = null, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getPlaylists(limit, offset, idsArray, targetUserId)
+    return this.discoveryProvider.getPlaylists(limit, offset, idsArray, targetUserId, withUsers)
   }
 
   /**
@@ -30,9 +30,9 @@ class Playlists extends Base {
    * @param {number} limit - max # of items to return
    * @param {number} offset - offset into list to return from (for pagination)
    */
-  async getSavedPlaylists (limit = 100, offset = 0) {
+  async getSavedPlaylists (limit = 100, offset = 0, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getSavedPlaylists(limit, offset)
+    return this.discoveryProvider.getSavedPlaylists(limit, offset, withUsers)
   }
 
   /**
@@ -41,9 +41,9 @@ class Playlists extends Base {
    * @param {number} limit - max # of items to return
    * @param {number} offset - offset into list to return from (for pagination)
    */
-  async getSavedAlbums (limit = 100, offset = 0) {
+  async getSavedAlbums (limit = 100, offset = 0, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getSavedAlbums(limit, offset)
+    return this.discoveryProvider.getSavedAlbums(limit, offset, withUsers)
   }
 
   /* ------- SETTERS ------- */

@@ -103,9 +103,9 @@ class Users extends Base {
    *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
-  async getUserRepostFeed (userId, filter, limit = 100, offset = 0) {
+  async getUserRepostFeed (userId, filter, limit = 100, offset = 0, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getUserRepostFeed(userId, filter, limit, offset)
+    return this.discoveryProvider.getUserRepostFeed(userId, filter, limit, offset, withUsers)
   }
 
   /**
@@ -122,9 +122,9 @@ class Users extends Base {
    *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
-  async getSocialFeed (filter, limit = 100, offset = 0) {
+  async getSocialFeed (filter, limit = 100, offset = 0, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getSocialFeed(filter, limit, offset)
+    return this.discoveryProvider.getSocialFeed(filter, limit, offset, withUsers)
   }
 
   /* ------- SETTERS ------- */

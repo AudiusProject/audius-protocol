@@ -139,7 +139,7 @@ class DiscoveryProvider {
    * await getTracks()
    * await getTracks(100, 0, [3,2,6]) - Invalid track ids will not be accepted
    */
-  async getTracks (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null, minBlockNumber = null, filterDeleted = null) {
+  async getTracks (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null, minBlockNumber = null, filterDeleted = null, withUsers = false) {
     let req = { endpoint: 'tracks', queryParams: { limit: limit, offset: offset } }
     if (idsArray) {
       if (!Array.isArray(idsArray)) {
@@ -158,6 +158,9 @@ class DiscoveryProvider {
     }
     if (typeof filterDeleted === 'boolean') {
       req.queryParams.filter_deleted = filterDeleted
+    }
+    if (withUsers) {
+      req.queryParams.with_users = true
     }
 
     return this._makeRequest(req)
@@ -196,7 +199,7 @@ class DiscoveryProvider {
    * @param {?number} offset
    * @returns {{listenCounts: Array<{trackId:number, listens:number}>}}
    */
-  async getTrendingTracks (genre = null, timeFrame = null, idsArray = null, limit = null, offset = null) {
+  async getTrendingTracks (genre = null, timeFrame = null, idsArray = null, limit = null, offset = null, withUsers = false) {
     let queryUrl = '/trending/'
 
     if (timeFrame != null) {
@@ -227,6 +230,10 @@ class DiscoveryProvider {
 
     if (genre !== null) {
       queryParams['genre'] = genre
+    }
+
+    if (withUsers) {
+      queryParams['with_users'] = withUsers
     }
 
     return this._makeRequest({
@@ -277,10 +284,10 @@ class DiscoveryProvider {
    *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
-  async getSocialFeed (filter, limit = 100, offset = 0) {
+  async getSocialFeed (filter, limit = 100, offset = 0, withUsers = false) {
     let req = {
       endpoint: 'feed/',
-      queryParams: { filter: filter, limit: limit, offset: offset }
+      queryParams: { filter: filter, limit: limit, offset: offset, with_users: withUsers }
     }
 
     return this._makeRequest(req)
@@ -301,11 +308,11 @@ class DiscoveryProvider {
    *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
-  async getUserRepostFeed (userId, limit = 100, offset = 0) {
+  async getUserRepostFeed (userId, limit = 100, offset = 0, withUsers = false) {
     let req = {
       endpoint: 'feed',
       urlParams: '/reposts/' + userId,
-      queryParams: { limit: limit, offset: offset }
+      queryParams: { limit: limit, offset: offset, with_users: withUsers }
     }
     return this._makeRequest(req)
   }
@@ -517,10 +524,10 @@ class DiscoveryProvider {
    * @param {number} limit - max # of items to return
    * @param {number} offset - offset into list to return from (for pagination)
    */
-  async getSavedPlaylists (limit = 100, offset = 0) {
+  async getSavedPlaylists (limit = 100, offset = 0, withUsers = false) {
     let req = {
       endpoint: 'saves/playlists',
-      queryParams: { limit: limit, offset: offset }
+      queryParams: { limit: limit, offset: offset, with_users: withUsers }
     }
     return this._makeRequest(req)
   }
@@ -531,10 +538,10 @@ class DiscoveryProvider {
    * @param {number} limit - max # of items to return
    * @param {number} offset - offset into list to return from (for pagination)
    */
-  async getSavedAlbums (limit = 100, offset = 0) {
+  async getSavedAlbums (limit = 100, offset = 0, withUsers = false) {
     let req = {
       endpoint: 'saves/albums',
-      queryParams: { limit: limit, offset: offset }
+      queryParams: { limit: limit, offset: offset, with_users: withUsers }
     }
     return this._makeRequest(req)
   }
@@ -545,10 +552,10 @@ class DiscoveryProvider {
    * @param {number} limit - max # of items to return
    * @param {number} offset - offset into list to return from (for pagination)
    */
-  async getSavedTracks (limit = 100, offset = 0) {
+  async getSavedTracks (limit = 100, offset = 0, withUsers = false) {
     let req = {
       endpoint: 'saves/tracks',
-      queryParams: { limit: limit, offset: offset }
+      queryParams: { limit: limit, offset: offset, with_users: withUsers }
     }
     return this._makeRequest(req)
   }
