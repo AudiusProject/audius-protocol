@@ -12,7 +12,6 @@ daily = 'daily'
 weekly = 'weekly'
 monthly = 'monthly'
 yearly = 'yearly'
-all_time = 'all_time'
 
 # user metadata
 user_id = 'user_id' # integer - unique id of a user

@@ -1,7 +1,7 @@
 import logging # pylint: disable=C0302
 import json
 import requests
-from sqlalchemy import func, desc
+from sqlalchemy import func, desc, text
 from urllib.parse import urljoin
 
 from flask import request
@@ -554,23 +554,16 @@ def get_repost_counts(session, query_by_user_flag, query_repost_type_flag, filte
     repost_counts_query = get_repost_counts_query(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types)
     return repost_counts_query.all()
 
-def get_repost_counts_for_past_n_days(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, days, max_block_number=None):
+
+def get_repost_counts_with_time(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, time, max_block_number=None):
     repost_counts_query = get_repost_counts_query(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types)
+    interval = "NOW() - interval '1 {}'".format(time)
     repost_counts_query = repost_counts_query.filter(
-                Repost.created_at >= datetime.now() - timedelta(days=days)
+                Repost.created_at >= text(interval)
             )
 
     return repost_counts_query.all()
 
-def get_repost_counts_with_time(time, session, filter_ids):
-    switcher = {
-        'day': get_repost_counts_for_past_n_days(session, False, True, filter_ids, None, 1),
-        'week': get_repost_counts_for_past_n_days(session, False, True, filter_ids, None, 7),
-        'month': get_repost_counts_for_past_n_days(session, False, True, filter_ids, None, 30),
-        'year': get_repost_counts_for_past_n_days(session, False, True, filter_ids, None, 365),
-        'millennium': get_repost_counts(session, False, True, filter_ids, None)
-    }
-    return switcher.get(time, 'Invalid time')
 
 def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number=None):
     query_col = Save.user_id if query_by_user_flag else Save.save_item_id

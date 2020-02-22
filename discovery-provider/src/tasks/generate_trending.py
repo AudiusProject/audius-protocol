@@ -86,7 +86,8 @@ def generate_trending(db, time, genre, limit, offset):
         # Query repost counts
         repost_counts = get_repost_counts(session, False, True, not_deleted_track_ids, None)
 
-        track_repost_counts_with_time = get_repost_counts_with_time(time, session, not_deleted_track_ids)
+        track_repost_counts_with_time = \
+            get_repost_counts_with_time(session, False, True, not_deleted_track_ids, None, time)
         track_repost_counts = {
             repost_item_id: repost_count
             for (repost_item_id, repost_count, repost_type) in repost_counts
@@ -156,7 +157,8 @@ def generate_trending(db, time, genre, limit, offset):
 
             # Populate repost counts with respect to time
             if track_entry[response_name_constants.track_id] in track_repost_counts_with_time:
-                track_entry[response_name_constants.windowed_repost_count] = track_repost_counts_with_time[track_entry[response_name_constants.track_id]]
+                track_entry[response_name_constants.windowed_repost_count] = \
+                    track_repost_counts_with_time[track_entry[response_name_constants.track_id]]
             else:
                 track_entry[response_name_constants.windowed_repost_count] = 0
 
