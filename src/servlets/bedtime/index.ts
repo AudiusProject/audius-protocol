@@ -23,7 +23,8 @@ const getTrackMetadata = async (trackId: number, ownerId: number): Promise<GetTr
       segments: track.track_segments,
       isVerified: user.is_verified,
       coverArt,
-      urlPath
+      urlPath,
+      id: track.track_id
     }
   } catch (e) {
     const error = `Failed to get track for ID [${trackId}] with error: [${e.message}]`
@@ -62,7 +63,8 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
     handle: userMap[t.owner_id].handle,
     userName: userMap[t.owner_id].name,
     segments: t.track_segments,
-    urlPath: getTrackPath({ routeId: t.route_id, trackId: t.track_id })
+    urlPath: getTrackPath({ routeId: t.route_id, trackId: t.track_id }),
+    id: t.track_id
   })).filter((t: any) => !t.is_delete)
 
   return parsedTracks
