@@ -7,12 +7,6 @@ followee_reposts = 'followee_reposts' # array - followees of current user that h
 followee_saves = 'followee_saves' # array - followees of current user that have saved given track/playlist
 play_count = 'play_count' # integer - total number of plays for a given track/playlist
 
-# time adverbs
-daily = 'daily'
-weekly = 'weekly'
-monthly = 'monthly'
-yearly = 'yearly'
-
 # user metadata
 user_id = 'user_id' # integer - unique id of a user
 follower_count = 'follower_count' # integer - total follower count of given user
