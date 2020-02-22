@@ -86,14 +86,15 @@ def generate_trending(db, time, genre, limit, offset):
         # Query repost counts
         repost_counts = get_repost_counts(session, False, True, not_deleted_track_ids, None)
 
-        track_repost_counts_with_time = \
-            get_repost_counts_with_time(session, False, True, not_deleted_track_ids, None, time)
         track_repost_counts = {
             repost_item_id: repost_count
             for (repost_item_id, repost_count, repost_type) in repost_counts
             if repost_type == RepostType.track
         }
 
+        # Query repost count with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
+        track_repost_counts_with_time = \
+            get_repost_counts_with_time(session, False, True, not_deleted_track_ids, None, time)
         track_repost_counts_with_time = {
             repost_item_id: repost_count
             for (repost_item_id, repost_count, repost_type) in track_repost_counts_with_time
