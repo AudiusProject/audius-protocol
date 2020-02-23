@@ -8,7 +8,7 @@ export const getCoverArtCID = (trackOrPlaylist: any) => (
 
 export const getCoverArt = (trackOrPlaylist: any, user: any) => {
   const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
-  const coverArtCID = getCoverArtCID(getCoverArtCID)
+  const coverArtCID = getCoverArtCID(trackOrPlaylist)
   return getImageUrl(coverArtCID, gateway)
 }
 
