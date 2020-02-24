@@ -88,10 +88,6 @@ contract('ServiceProvider test', async (accounts) => {
     staking = await Staking.at(proxy.address)
     stakingAddress = staking.address
 
-    // 1 TAUD = 1 * 10^18
-    // Reset min for test purposes
-    // await staking.setMinStakeAmount(MIN_STAKE_AMOUNT)
-
     // Deploy sp storage
     serviceProviderStorage = await ServiceProviderStorage.new(registry.address)
     await registry.addContract(serviceProviderStorageKey, serviceProviderStorage.address)

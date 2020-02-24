@@ -330,6 +330,8 @@ contract ServiceProviderFactory is RegistryContract {
         return validServiceTypes;
     }
 
+    /// @notice Get min and max stake for a given service type
+    /// @return min/max stake for type
     function getServiceStakeInfo(bytes32 _serviceType)
     external view returns (uint min, uint max)
     {
@@ -338,6 +340,7 @@ contract ServiceProviderFactory is RegistryContract {
         );
     }
 
+    /// @notice Calculate the stake for an account based on total number of registered services
     function getAccountStakeBounds(address sp)
     external view returns (uint min, uint max)
     {
@@ -354,6 +357,7 @@ contract ServiceProviderFactory is RegistryContract {
         return (minStake, maxStake);
     }
 
+    /// @notice Validate that the service provider is between the min and max stakes for all their registered services
     function validateAccountStakeBalances(address sp) internal view {
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
