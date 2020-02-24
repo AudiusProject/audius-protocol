@@ -116,9 +116,8 @@ contract ServiceProviderFactory is RegistryContract {
             _delegateOwnerWallet
         );
 
-        validateAccountStakeBalances(owner);
+        uint currentlyStakedForOwner = validateAccountStakeBalances(owner);
 
-        uint currentlyStakedForOwner = stakingContract.totalStakedFor(owner);
         emit RegisteredServiceProvider(
             newServiceProviderID,
             _serviceType,
@@ -358,7 +357,9 @@ contract ServiceProviderFactory is RegistryContract {
     }
 
     /// @notice Validate that the service provider is between the min and max stakes for all their registered services
-    function validateAccountStakeBalances(address sp) internal view {
+    function validateAccountStakeBalances(address sp)
+    internal view returns (uint stakedForOwner)
+    {
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
@@ -372,5 +373,6 @@ contract ServiceProviderFactory is RegistryContract {
         require(
             currentlyStakedForOwner <= maxStakeAmount,
             "Maximum stake amount exceeded");
+        return currentlyStakedForOwner;
     }
 }
