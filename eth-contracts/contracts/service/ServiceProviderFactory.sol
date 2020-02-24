@@ -17,8 +17,8 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32[] validServiceTypes;
 
     struct ServiceInstanceStakeRequirements {
-      uint minStake;
-      uint maxStake;
+        uint minStake;
+        uint maxStake;
     }
 
     mapping(bytes32 => ServiceInstanceStakeRequirements) serviceTypeStakeRequirements;
@@ -65,11 +65,11 @@ contract ServiceProviderFactory is RegistryContract {
         serviceProviderStorageRegistryKey = _serviceProviderStorageRegistryKey;
 
         // Hardcoded values for development.
-        // Note that all token mins/maxes are in AudWEI not actual AUD 
+        // Note that all token mins/maxes are in AudWEI not actual AUD
         // discovery-provider, 0x646973636f766572792d70726f7669646572
         // creator-node 0x63726561746f722d6e6f6465
         bytes32 discoveryProvider = hex"646973636f766572792d70726f7669646572";
-        bytes32 creatorNode  = hex"63726561746f722d6e6f6465";
+        bytes32 creatorNode = hex"63726561746f722d6e6f6465";
         validServiceTypes.push(discoveryProvider);
         validServiceTypes.push(creatorNode);
 
@@ -77,12 +77,12 @@ contract ServiceProviderFactory is RegistryContract {
         // discovery-provider, MIN=5 AUD   MAX=10,000,000 AUD
         // creator-node,       MIN=10 AUD  MAX=10,000,000 AUD
         serviceTypeStakeRequirements[discoveryProvider] = ServiceInstanceStakeRequirements({
-          minStake: 5 * 10**uint256(DECIMALS),
-          maxStake: 10000000 * 10**uint256(DECIMALS)
+            minStake: 5 * 10**uint256(DECIMALS),
+            maxStake: 10000000 * 10**uint256(DECIMALS)
         });
         serviceTypeStakeRequirements[creatorNode] = ServiceInstanceStakeRequirements({
-          minStake: 10 * 10**uint256(DECIMALS),
-          maxStake: 10000000 * 10**uint256(DECIMALS)
+            minStake: 10 * 10**uint256(DECIMALS),
+            maxStake: 10000000 * 10**uint256(DECIMALS)
         });
     }
 
@@ -94,8 +94,8 @@ contract ServiceProviderFactory is RegistryContract {
     ) external returns (uint spID)
     {
         require(
-          this.isValidServiceType(_serviceType),
-          "Valid service type required");
+            this.isValidServiceType(_serviceType),
+            "Valid service type required");
 
         address owner = msg.sender;
         Staking stakingContract = Staking(
@@ -314,58 +314,59 @@ contract ServiceProviderFactory is RegistryContract {
     }
 
     function isValidServiceType(bytes32 _serviceType)
-    external view returns (bool isValid) 
+    external view returns (bool isValid)
     {
-      for (uint i = 0; i < validServiceTypes.length; i ++) {
-        if (validServiceTypes[i] == _serviceType) {
-          return true;
+        for (uint i = 0; i < validServiceTypes.length; i ++) {
+            if (validServiceTypes[i] == _serviceType) {
+                return true;
+            }
         }
-      }
-      return false;
+        return false;
     }
 
     function getValidServiceTypes()
-    external view returns (bytes32[] memory types) 
+    external view returns (bytes32[] memory types)
     {
-      return validServiceTypes;
+        return validServiceTypes;
     }
 
-    function getServiceStakeInfo(bytes32 _serviceType) 
+    function getServiceStakeInfo(bytes32 _serviceType)
     external view returns (uint min, uint max)
     {
-      return (serviceTypeStakeRequirements[_serviceType].minStake, serviceTypeStakeRequirements[_serviceType].maxStake);
+        return (
+            serviceTypeStakeRequirements[_serviceType].minStake, serviceTypeStakeRequirements[_serviceType].maxStake
+        );
     }
 
     function getAccountStakeBounds(address sp)
-    external view returns (uint min, uint max) 
+    external view returns (uint min, uint max)
     {
-      uint minStake = 0;
-      uint maxStake = 0;
-      uint validTypesLength = validServiceTypes.length;
-      for (uint i = 0; i < validTypesLength; i++) {
-        bytes32 serviceType = validServiceTypes[i];
-        (uint typeMin, uint typeMax) = this.getServiceStakeInfo(serviceType); 
-        uint numberOfEndpoints = this.getServiceProviderIdsFromAddress(sp, serviceType).length; 
-        minStake += (typeMin * numberOfEndpoints); 
-        maxStake += (typeMax * numberOfEndpoints); 
-      }
-      return (minStake, maxStake);
+        uint minStake = 0;
+        uint maxStake = 0;
+        uint validTypesLength = validServiceTypes.length;
+        for (uint i = 0; i < validTypesLength; i++) {
+            bytes32 serviceType = validServiceTypes[i];
+            (uint typeMin, uint typeMax) = this.getServiceStakeInfo(serviceType);
+            uint numberOfEndpoints = this.getServiceProviderIdsFromAddress(sp, serviceType).length;
+            minStake += (typeMin * numberOfEndpoints);
+            maxStake += (typeMax * numberOfEndpoints);
+        }
+        return (minStake, maxStake);
     }
 
-    function validateAccountStakeBalances(address sp) internal view
-    {
-      Staking stakingContract = Staking(
-          registry.getContract(stakingProxyOwnerKey)
-      );
-      uint currentlyStakedForOwner = stakingContract.totalStakedFor(sp);
-      (uint minStakeAmount, uint maxStakeAmount) = this.getAccountStakeBounds(sp);
+    function validateAccountStakeBalances(address sp) internal view {
+        Staking stakingContract = Staking(
+            registry.getContract(stakingProxyOwnerKey)
+        );
+        uint currentlyStakedForOwner = stakingContract.totalStakedFor(sp);
+        (uint minStakeAmount, uint maxStakeAmount) = this.getAccountStakeBounds(sp);
 
-      require(
-          currentlyStakedForOwner >= minStakeAmount,
-          "Minimum stake threshold exceeded");
+        require(
+            currentlyStakedForOwner >= minStakeAmount,
+            "Minimum stake threshold exceeded");
 
-      require(
-          currentlyStakedForOwner <= maxStakeAmount,
-          "Maximum stake amount exceeded");
+        require(
+            currentlyStakedForOwner <= maxStakeAmount,
+            "Maximum stake amount exceeded");
     }
 }
