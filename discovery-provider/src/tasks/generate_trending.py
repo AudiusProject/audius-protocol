@@ -67,7 +67,7 @@ def generate_trending(db, time, genre, limit, offset):
     with db.scoped_session() as session:
         # Filter tracks to not-deleted ones so trending order is preserved
         not_deleted_track_ids = (
-            session.query(Track.track_id)
+            session.query(Track.track_id, Track.created_at)
             .filter(
                 Track.track_id.in_(track_ids),
                 Track.is_current == True,
@@ -76,8 +76,13 @@ def generate_trending(db, time, genre, limit, offset):
             )
             .all()
         )
-        not_deleted_track_ids = set([record[0] for record in not_deleted_track_ids]) # pylint: disable=R1718
 
+        # Generate track -> created_at date
+        track_created_at_dict = {
+            record[0]: record[1] for record in not_deleted_track_ids
+        }
+
+        not_deleted_track_ids = set([record[0] for record in not_deleted_track_ids]) # pylint: disable=R1718
         # Query repost counts
         repost_counts = get_repost_counts(session, False, True, not_deleted_track_ids, None)
         track_repost_counts = {
@@ -155,6 +160,13 @@ def generate_trending(db, time, genre, limit, offset):
                 owner_follow_count = follower_count_dict[owner_id]
             track_entry[response_name_constants.track_owner_id] = owner_id
             track_entry[response_name_constants.track_owner_follower_count] = owner_follow_count
+
+            # Populate created at timestamps
+            if track_entry[response_name_constants.track_id] in track_created_at_dict:
+                track_entry[response_name_constants.created_at] = \
+                        track_created_at_dict[track_entry[response_name_constants.track_id]]
+            else:
+                track_entry[response_name_constants.created_at] = None
 
             trending_tracks.append(track_entry)
 
