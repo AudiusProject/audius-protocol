@@ -7,7 +7,8 @@ from src import api_helpers
 from src.models import Track, RepostType, Follow, SaveType
 from src.utils.config import shared_config
 from src.queries import response_name_constants
-from src.queries.query_helpers import get_repost_counts, get_save_counts, get_genre_list, get_repost_counts_with_time
+from src.queries.query_helpers import \
+    get_repost_counts, get_save_counts, get_genre_list, get_repost_counts_with_time, get_save_counts_with_time
 
 logger = logging.getLogger(__name__)
 
@@ -137,9 +138,15 @@ def generate_trending(db, time, genre, limit, offset):
                 {user_id: follower_count for (user_id, follower_count) in follower_counts}
 
         save_counts = get_save_counts(session, False, True, not_deleted_track_ids, None)
+        save_counts_with_time = get_save_counts_with_time(session, False, True, not_deleted_track_ids, None, time)
         track_save_counts = {
             save_item_id: save_count
             for (save_item_id, save_count, save_type) in save_counts
+            if save_type == SaveType.track
+        }
+        track_save_counts_with_time = {
+            save_item_id: save_count
+            for (save_item_id, save_count, save_type) in save_counts_with_time
             if save_type == SaveType.track
         }
 
@@ -169,6 +176,13 @@ def generate_trending(db, time, genre, limit, offset):
                         track_save_counts[track_entry[response_name_constants.track_id]]
             else:
                 track_entry[response_name_constants.save_count] = 0
+
+            # Populate save counts with respect to time
+            if track_entry[response_name_constants.track_id] in track_save_counts_with_time:
+                track_entry[response_name_constants.windowed_save_count] = \
+                        track_save_counts_with_time[track_entry[response_name_constants.track_id]]
+            else:
+                track_entry[response_name_constants.windowed_save_count] = 0
 
             # Populate listen counts
             owner_id = track_owner_dict[track_entry[response_name_constants.track_id]]
