@@ -13,8 +13,21 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32 serviceProviderStorageRegistryKey;
     bytes32 stakingProxyOwnerKey;
 
-    address instanceAddress;
+    // START Temporary data structures
+    bytes32[] validServiceTypes;
+
+    struct ServiceInstanceStakeRequirements {
+        uint minStake;
+        uint maxStake;
+    }
+
+    mapping(bytes32 => ServiceInstanceStakeRequirements) serviceTypeStakeRequirements;
+    // END Temporary data structures
+
     bytes empty;
+
+    // standard - imitates relationship between Ether and Wei
+    uint8 private constant DECIMALS = 18;
 
     event RegisteredServiceProvider(
       uint _spID,
@@ -50,6 +63,27 @@ contract ServiceProviderFactory is RegistryContract {
         registry = RegistryInterface(_registryAddress);
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         serviceProviderStorageRegistryKey = _serviceProviderStorageRegistryKey;
+
+        // Hardcoded values for development.
+        // Note that all token mins/maxes are in AudWEI not actual AUD
+        // discovery-provider, 0x646973636f766572792d70726f7669646572
+        // creator-node 0x63726561746f722d6e6f6465
+        bytes32 discoveryProvider = hex"646973636f766572792d70726f7669646572";
+        bytes32 creatorNode = hex"63726561746f722d6e6f6465";
+        validServiceTypes.push(discoveryProvider);
+        validServiceTypes.push(creatorNode);
+
+        // All min/max values are in AUD and require conversion
+        // discovery-provider, MIN=5 AUD   MAX=10,000,000 AUD
+        // creator-node,       MIN=10 AUD  MAX=10,000,000 AUD
+        serviceTypeStakeRequirements[discoveryProvider] = ServiceInstanceStakeRequirements({
+            minStake: 5 * 10**uint256(DECIMALS),
+            maxStake: 10000000 * 10**uint256(DECIMALS)
+        });
+        serviceTypeStakeRequirements[creatorNode] = ServiceInstanceStakeRequirements({
+            minStake: 10 * 10**uint256(DECIMALS),
+            maxStake: 10000000 * 10**uint256(DECIMALS)
+        });
     }
 
     function register(
@@ -59,6 +93,10 @@ contract ServiceProviderFactory is RegistryContract {
         address _delegateOwnerWallet
     ) external returns (uint spID)
     {
+        require(
+            this.isValidServiceType(_serviceType),
+            "Valid service type required");
+
         address owner = msg.sender;
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
@@ -78,12 +116,7 @@ contract ServiceProviderFactory is RegistryContract {
             _delegateOwnerWallet
         );
 
-        uint currentlyStakedForOwner = stakingContract.totalStakedFor(owner);
-        uint minStakeAmount = stakingContract.getMinStakeAmount();
-
-        require(
-            currentlyStakedForOwner >= minStakeAmount,
-            "Minimum stake amount not met");
+        uint currentlyStakedForOwner = validateAccountStakeBalances(owner);
 
         emit RegisteredServiceProvider(
             newServiceProviderID,
@@ -136,6 +169,8 @@ contract ServiceProviderFactory is RegistryContract {
             _endpoint,
             unstakeAmount);
 
+        validateAccountStakeBalances(owner);
+
         return deregisteredID;
     }
 
@@ -161,6 +196,8 @@ contract ServiceProviderFactory is RegistryContract {
             owner,
             newStakeAmount
         );
+
+        validateAccountStakeBalances(owner);
 
         return newStakeAmount;
     }
@@ -197,6 +234,8 @@ contract ServiceProviderFactory is RegistryContract {
             owner,
             newStakeAmount
         );
+
+        validateAccountStakeBalances(owner);
 
         return newStakeAmount;
     }
@@ -271,5 +310,69 @@ contract ServiceProviderFactory is RegistryContract {
             _serviceType,
             _endpoint
         );
+    }
+
+    function isValidServiceType(bytes32 _serviceType)
+    external view returns (bool isValid)
+    {
+        for (uint i = 0; i < validServiceTypes.length; i ++) {
+            if (validServiceTypes[i] == _serviceType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function getValidServiceTypes()
+    external view returns (bytes32[] memory types)
+    {
+        return validServiceTypes;
+    }
+
+    /// @notice Get min and max stake for a given service type
+    /// @return min/max stake for type
+    function getServiceStakeInfo(bytes32 _serviceType)
+    external view returns (uint min, uint max)
+    {
+        return (
+            serviceTypeStakeRequirements[_serviceType].minStake, serviceTypeStakeRequirements[_serviceType].maxStake
+        );
+    }
+
+    /// @notice Calculate the stake for an account based on total number of registered services
+    function getAccountStakeBounds(address sp)
+    external view returns (uint min, uint max)
+    {
+        uint minStake = 0;
+        uint maxStake = 0;
+        uint validTypesLength = validServiceTypes.length;
+        for (uint i = 0; i < validTypesLength; i++) {
+            bytes32 serviceType = validServiceTypes[i];
+            (uint typeMin, uint typeMax) = this.getServiceStakeInfo(serviceType);
+            uint numberOfEndpoints = this.getServiceProviderIdsFromAddress(sp, serviceType).length;
+            minStake += (typeMin * numberOfEndpoints);
+            maxStake += (typeMax * numberOfEndpoints);
+        }
+        return (minStake, maxStake);
+    }
+
+    /// @notice Validate that the service provider is between the min and max stakes for all their registered services
+    function validateAccountStakeBalances(address sp)
+    internal view returns (uint stakedForOwner)
+    {
+        Staking stakingContract = Staking(
+            registry.getContract(stakingProxyOwnerKey)
+        );
+        uint currentlyStakedForOwner = stakingContract.totalStakedFor(sp);
+        (uint minStakeAmount, uint maxStakeAmount) = this.getAccountStakeBounds(sp);
+
+        require(
+            currentlyStakedForOwner >= minStakeAmount,
+            "Minimum stake threshold exceeded");
+
+        require(
+            currentlyStakedForOwner <= maxStakeAmount,
+            "Maximum stake amount exceeded");
+        return currentlyStakedForOwner;
     }
 }
