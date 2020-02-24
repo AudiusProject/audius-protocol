@@ -12,6 +12,7 @@ contract AudiusToken is ERC20, ERC20Detailed, ERC20Mintable, ERC20Pausable {
     // standard - imitates relationship between Ether and Wei
     uint8 constant DECIMALS = 18;
     // 10^27 = 1 billion tokens, 18 decimal places
+    // 1 TAUD = 1 * 10^18
     uint256 constant INITIAL_SUPPLY = 1000000000 * 10**uint256(DECIMALS);
 
     constructor()

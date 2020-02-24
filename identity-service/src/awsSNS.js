@@ -142,6 +142,13 @@ async function addNotificationToBuffer (message, userId, tx, buffer, playSound, 
     userId: userId,
     notificationParams: { message, title, playSound }
   }
+  let existingEntriesCheck = buffer.filter(
+    entry => (
+      (entry.userId === userId) && (entry.notificationParams.message === message)
+    )
+  )
+  // Ensure no dups are added
+  if (existingEntriesCheck.length > 0) return
   buffer.push(bufferObj)
 }
 

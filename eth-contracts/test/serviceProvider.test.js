@@ -13,13 +13,37 @@ const fromBn = n => parseInt(n.valueOf(), 10)
 const getTokenBalance = async (token, account) => fromBn(await token.balanceOf(account))
 const claimBlockDiff = 46000
 
+const toWei = (aud) => {
+  let amountInAudWei = web3.utils.toWei(
+    aud.toString(),
+    'ether'
+  )
+
+  let amountInAudWeiBN = web3.utils.toBN(amountInAudWei)
+  return amountInAudWeiBN
+}
+
+const fromWei = (wei) => {
+  return web3.utils.fromWei(wei)
+}
+
+const getTokenBalance2 = async (token, account) => fromWei(await token.balanceOf(account))
+
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 
-const testServiceType = web3.utils.utf8ToHex('test-service')
+const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
+const testCreatorNodeType = web3.utils.utf8ToHex('creator-node')
 const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'
+
+const MIN_STAKE_AMOUNT = 10
+
+// 1000 AUD converted to AUDWei, multiplying by 10^18
+const INITIAL_BAL = toWei(1000)
+const DEFAULT_AMOUNT = toWei(120)
+const MAX_STAKE_AMOUNT = DEFAULT_AMOUNT * 100
 
 contract('ServiceProvider test', async (accounts) => {
   let treasuryAddress = accounts[0]
@@ -34,11 +58,6 @@ contract('ServiceProvider test', async (accounts) => {
   let serviceProviderStorage
   let serviceProviderFactory
 
-  const DEFAULT_AMOUNT = 120
-  const INITIAL_BAL = 1000
-  const MIN_STAKE_AMOUNT = 10
-  const MAX_STAKE_AMOUNT = DEFAULT_AMOUNT * 100
-
   beforeEach(async () => {
     registry = await Registry.new()
 
@@ -49,6 +68,9 @@ contract('ServiceProvider test', async (accounts) => {
 
     token = await AudiusToken.new({ from: treasuryAddress })
     tokenAddress = token.address
+    // console.log(`AudiusToken Address : ${tokenAddress}`)
+    let initialTokenBal = fromBn(await token.balanceOf(accounts[0]))
+    // console.log(`AudiusToken Balance: ${initialTokenBal}`)
     impl0 = await Staking.new()
 
     // Create initialization data
@@ -65,9 +87,6 @@ contract('ServiceProvider test', async (accounts) => {
 
     staking = await Staking.at(proxy.address)
     stakingAddress = staking.address
-
-    // Reset min for test purposes
-    await staking.setMinStakeAmount(MIN_STAKE_AMOUNT)
 
     // Deploy sp storage
     serviceProviderStorage = await ServiceProviderStorage.new(registry.address)
@@ -87,13 +106,14 @@ contract('ServiceProvider test', async (accounts) => {
 
     // Transfer 1000 tokens to accounts[1]
     await token.transfer(accounts[1], INITIAL_BAL, { from: treasuryAddress })
+    // let accountBal = await token.balanceOf(accounts[1])
   })
 
   /* Helper functions */
 
   const registerServiceProvider = async (type, endpoint, amount, account) => {
     // Approve staking transfer
-    await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: account })
+    await token.approve(stakingAddress, amount, { from: account })
 
     let tx = await serviceProviderFactory.register(
       type,
@@ -173,11 +193,14 @@ contract('ServiceProvider test', async (accounts) => {
     let regTx
     const stakerAccount = accounts[1]
     const stakerAccount2 = accounts[2]
-    beforeEach(async () => {
-      let initialBal = await getTokenBalance(token, stakerAccount)
 
+    beforeEach(async () => {
+      let initialBal = await token.balanceOf(stakerAccount)
+
+      // 1st endpoint for stakerAccount = https://localhost:5000
+      // Total Stake = 120 AUD
       regTx = await registerServiceProvider(
-        testServiceType,
+        testDiscProvType,
         testEndpoint,
         DEFAULT_AMOUNT,
         stakerAccount)
@@ -186,12 +209,12 @@ contract('ServiceProvider test', async (accounts) => {
       assert.equal(regTx.stakedAmountInt, DEFAULT_AMOUNT)
 
       // Confirm balance updated for tokens
-      let finalBal = await getTokenBalance(token, stakerAccount)
-      assert.equal(initialBal, finalBal + DEFAULT_AMOUNT, 'Expect funds to be transferred')
+      let finalBal = await token.balanceOf(stakerAccount)
+      assert.isTrue(initialBal.eq(finalBal.add(DEFAULT_AMOUNT)), 'Expect funds to be transferred')
 
       let newIdFound = await serviceProviderIDRegisteredToAccount(
         stakerAccount,
-        testServiceType,
+        testDiscProvType,
         regTx.spID)
       assert.isTrue(
         newIdFound,
@@ -202,7 +225,150 @@ contract('ServiceProvider test', async (accounts) => {
         stakedAmount,
         DEFAULT_AMOUNT,
         'Expect default stake amount')
+
+      let spTypeInfo = await serviceProviderFactory.getServiceStakeInfo(testDiscProvType)
+      let typeMin = fromWei(spTypeInfo[0])
+      let typeMax = fromWei(spTypeInfo[1])
+
+      // Validate min stake requirements
+      // Both current account bounds and single testDiscProvType bounds expected to be equal 
+      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
+      let accountMin = fromWei(bounds[0])
+      let accountMax = fromWei(bounds[1])
+      assert.equal(
+        typeMin,
+        accountMin,
+        'Expect account min to equal sp type 1 min')
+      assert.equal(
+        typeMax,
+        accountMax,
+        'Expect account max to equal sp type 1 max')
     })
+
+    const multipleEndpointScenario = async (increaseStake = true) => {
+      let increaseAmt = DEFAULT_AMOUNT
+      let initialBal = await token.balanceOf(stakerAccount)
+      let initialStake = await getStakeAmountForAccount(stakerAccount)
+
+      // 2nd endpoint for stakerAccount = https://localhost:5001
+      // Total Stake = 240 AUD
+      let registerInfo = await registerServiceProvider(
+        testDiscProvType,
+        testEndpoint1,
+        increaseAmt,
+        stakerAccount)
+      let newSPId = registerInfo.spID
+
+      // Confirm change in token balance
+      let finalBal = await token.balanceOf(stakerAccount)
+      let finalStake = await getStakeAmountForAccount(stakerAccount)
+
+      assert.equal(
+        (initialBal - finalBal),
+        increaseAmt,
+        'Expected decrease in final balance')
+
+      assert.equal(
+        (finalStake - initialStake),
+        increaseAmt,
+        'Expected increase in total stake')
+
+      let newIdFound = await serviceProviderIDRegisteredToAccount(
+        stakerAccount,
+        testDiscProvType,
+        newSPId)
+      assert.isTrue(newIdFound, 'Expected valid new ID')
+
+      // 3rd endpoint for stakerAccount
+      // Transfer 1000 tokens to staker for test
+      await token.transfer(stakerAccount, INITIAL_BAL, { from: treasuryAddress })
+
+      let stakedAmount = await staking.totalStakedFor(stakerAccount)
+      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
+      let accountMin = fromWei(bounds[0])
+      let accountMax = fromWei(bounds[1])
+
+      let accountDiff = fromWei(stakedAmount) - accountMin
+
+      await decreaseRegisteredProviderStake(toWei(accountDiff), stakerAccount)
+      stakedAmount = await staking.totalStakedFor(stakerAccount)
+
+      let testEndpoint = 'https://localhost:4000'
+      let testEndpoint2 = 'https://localhost:4001'
+
+      let cnTypeInfo = await serviceProviderFactory.getServiceStakeInfo(testCreatorNodeType)
+      let cnTypeMin = cnTypeInfo[0]
+      let cnTypeMax = cnTypeInfo[1]
+      let dpTypeInfo = await serviceProviderFactory.getServiceStakeInfo(testDiscProvType)
+      let dpTypeMin = dpTypeInfo[0]
+      let dpTypeMax = dpTypeInfo[1]
+
+      // 3rd endpoint for stakerAccount = https://localhost:4001
+      // Total Stake = 240 AUD <-- Expect failure
+      await _lib.assertRevert(
+        registerServiceProvider(
+          testCreatorNodeType,
+          testEndpoint,
+          0,
+          stakerAccount),
+        'Minimum stake threshold')
+
+      let registerInfo2 = await registerServiceProvider(
+        testCreatorNodeType,
+        testEndpoint,
+        cnTypeMin,
+        stakerAccount)
+
+      let testDiscProvs = await getServiceProviderIdsFromAddress(stakerAccount, testDiscProvType)
+      let testCnodes = await getServiceProviderIdsFromAddress(stakerAccount, testCreatorNodeType)
+      let cnodeMinStake = cnTypeMin * testCnodes.length
+      let dpMinStake = dpTypeMin * testDiscProvs.length
+
+      stakedAmount = await staking.totalStakedFor(stakerAccount)
+      assert.equal(stakedAmount, dpMinStake + cnodeMinStake, 'Expect min staked with total endpoints')
+
+      bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
+      let stakedAmountWei = fromWei(stakedAmount)
+      accountMin = fromWei(bounds[0])
+      accountMax = fromWei(bounds[1])
+      assert.equal(stakedAmountWei, accountMin, 'Expect min staked with total endpoints')
+
+      accountDiff = accountMax - stakedAmountWei
+      // Generate BNjs value
+      let transferAmount = web3.utils.toBN(
+        accountDiff
+      ).add(
+          web3.utils.toBN(fromWei(cnTypeMax))
+      ).add(
+          web3.utils.toBN(200)
+      )
+
+      // Transfer greater than max tokens
+      await token.transfer(stakerAccount, toWei(transferAmount), { from: treasuryAddress })
+
+      // Attempt to register, expect max stake bounds to be exceeded
+      await _lib.assertRevert(
+        registerServiceProvider(
+          testCreatorNodeType,
+          testEndpoint2,
+          toWei(transferAmount),
+          stakerAccount),
+        'Maximum stake'
+      )
+
+      let numCnodes = await getServiceProviderIdsFromAddress(stakerAccount, testCreatorNodeType)
+
+      registerInfo2 = await registerServiceProvider(
+        testCreatorNodeType,
+        testEndpoint2,
+        cnTypeMin,
+        stakerAccount)
+
+      assert.equal(
+        numCnodes.length + 1,
+        (await getServiceProviderIdsFromAddress(stakerAccount, testCreatorNodeType)).length,
+        'Expect increase in number of endpoints')
+    }
 
     /*
      * Confirm stake exists in contract for account after basic registration
@@ -221,7 +387,7 @@ contract('ServiceProvider test', async (accounts) => {
 
       // deregister service provider
       let deregTx = await deregisterServiceProvider(
-        testServiceType,
+        testDiscProvType,
         testEndpoint,
         stakerAccount)
 
@@ -247,7 +413,7 @@ contract('ServiceProvider test', async (accounts) => {
       // Attempt to register dup endpoint with the same account
       await _lib.assertRevert(
         registerServiceProvider(
-          testServiceType,
+          testDiscProvType,
           testEndpoint,
           DEFAULT_AMOUNT,
           stakerAccount),
@@ -258,11 +424,15 @@ contract('ServiceProvider test', async (accounts) => {
      * Attempt to register first endpoint with zero stake, expect error
      */
     it('fails to register endpoint w/less than minimum stake', async () => {
-      // let initialBal = await getTokenBalance(token, stakerAccount)
+      await token.transfer(
+        stakerAccount2,
+        MIN_STAKE_AMOUNT - 1,
+        { from: treasuryAddress })
+
       // Attempt to register first endpoint with zero stake
       await _lib.assertRevert(
         registerServiceProvider(
-          testServiceType,
+          testDiscProvType,
           testEndpoint1,
           MIN_STAKE_AMOUNT - 1,
           stakerAccount2),
@@ -277,11 +447,11 @@ contract('ServiceProvider test', async (accounts) => {
       // Attempt to register first endpoint with zero stake
       await _lib.assertRevert(
         registerServiceProvider(
-          testServiceType,
+          testDiscProvType,
           testEndpoint1,
           0,
           stakerAccount2),
-        'Minimum stake amount not met')
+        'Minimum stake threshold exceeded')
     })
 
     it('increases stake value', async () => {
@@ -289,13 +459,13 @@ contract('ServiceProvider test', async (accounts) => {
       assert.equal(await getStakeAmountForAccount(stakerAccount), DEFAULT_AMOUNT)
 
       await increaseRegisteredProviderStake(
-        testServiceType,
+        testDiscProvType,
         testEndpoint,
         DEFAULT_AMOUNT,
         stakerAccount)
 
       let readStorageValues = await serviceProviderFactory.getServiceProviderInfo(
-        testServiceType,
+        testDiscProvType,
         regTx.spID)
 
       // Confirm increased amount in staking contract
@@ -310,11 +480,11 @@ contract('ServiceProvider test', async (accounts) => {
       let decreaseStakeAmount = DEFAULT_AMOUNT / 2
 
       await decreaseRegisteredProviderStake(
-        decreaseStakeAmount,
+        web3.utils.toBN(decreaseStakeAmount),
         stakerAccount)
 
       let readStorageValues = await serviceProviderFactory.getServiceProviderInfo(
-        testServiceType,
+        testDiscProvType,
         regTx.spID)
 
       // Confirm decreased amount in staking contract
@@ -340,14 +510,15 @@ contract('ServiceProvider test', async (accounts) => {
 
     it('fails to decrease stake to zero without deregistering SPs', async () => {
       // Confirm initial amount in staking contract
-      let initialStake = await getStakeAmountForAccount(stakerAccount)
-      assert.equal(initialStake, DEFAULT_AMOUNT)
+      let initialStake = await staking.totalStakedFor(stakerAccount) //  await getStakeAmountForAccount(stakerAccount)
+      assert.equal(fromBn(initialStake), DEFAULT_AMOUNT)
       let decreaseStakeAmount = initialStake
       // Confirm revert
       await _lib.assertRevert(
         decreaseRegisteredProviderStake(
           decreaseStakeAmount,
-          stakerAccount))
+          stakerAccount),
+        'Please deregister endpoints to remove all stake') // Confirm this is the right behavior?
     })
 
     /*
@@ -355,7 +526,7 @@ contract('ServiceProvider test', async (accounts) => {
      */
     it('updates delegateOwnerWallet', async () => {
       let currentDelegateOwner = await serviceProviderFactory.getDelegateOwnerWallet(
-        testServiceType,
+        testDiscProvType,
         testEndpoint,
         { from: stakerAccount })
       assert.equal(
@@ -365,7 +536,7 @@ contract('ServiceProvider test', async (accounts) => {
       // Confirm wrong owner update is rejected
       await _lib.assertRevert(
         serviceProviderFactory.updateDelegateOwnerWallet(
-          testServiceType,
+          testDiscProvType,
           testEndpoint,
           accounts[7],
           { from: accounts[8] }
@@ -375,12 +546,12 @@ contract('ServiceProvider test', async (accounts) => {
       // Perform and validate update
       let newDelegateOwnerWallet = accounts[4]
       let tx = await serviceProviderFactory.updateDelegateOwnerWallet(
-        testServiceType,
+        testDiscProvType,
         testEndpoint,
         newDelegateOwnerWallet,
         { from: stakerAccount })
       let newDelegateFromChain = await serviceProviderFactory.getDelegateOwnerWallet(
-        testServiceType,
+        testDiscProvType,
         testEndpoint,
         { from: stakerAccount })
       assert.equal(
@@ -393,24 +564,40 @@ contract('ServiceProvider test', async (accounts) => {
      * Register a new endpoint under the same account, adding stake to the account
      */
     it('multiple endpoints w/same account, increase stake', async () => {
-      let initialBal = await getTokenBalance(token, stakerAccount)
+      let increaseAmt = DEFAULT_AMOUNT
+      let initialBal = await token.balanceOf(stakerAccount)
+      let initialStake = await getStakeAmountForAccount(stakerAccount)
+
       let registerInfo = await registerServiceProvider(
-        testServiceType,
+        testDiscProvType,
         testEndpoint1,
-        DEFAULT_AMOUNT,
+        increaseAmt,
         stakerAccount)
       let newSPId = registerInfo.spID
+
       // Confirm change in token balance
-      let finalBal = await getTokenBalance(token, stakerAccount)
+      let finalBal = await token.balanceOf(stakerAccount)
+      let finalStake = await getStakeAmountForAccount(stakerAccount)
+
       assert.equal(
         (initialBal - finalBal),
-        DEFAULT_AMOUNT,
+        increaseAmt,
         'Expected decrease in final balance')
+
+      assert.equal(
+        (finalStake - initialStake),
+        increaseAmt,
+        'Expected increase in total stake')
+
       let newIdFound = await serviceProviderIDRegisteredToAccount(
         stakerAccount,
-        testServiceType,
+        testDiscProvType,
         newSPId)
       assert.isTrue(newIdFound, 'Expected valid new ID')
+    })
+
+    it('multiple endpoints w/multiple accounts varying stake', async () => {
+      await multipleEndpointScenario(true)
     })
 
     /*
@@ -419,7 +606,7 @@ contract('ServiceProvider test', async (accounts) => {
     it('multiple endpoints w/same account, static stake', async () => {
       let initialBal = await getTokenBalance(token, stakerAccount)
       let registerInfo = await registerServiceProvider(
-        testServiceType,
+        testDiscProvType,
         testEndpoint1,
         0,
         stakerAccount)
@@ -432,7 +619,7 @@ contract('ServiceProvider test', async (accounts) => {
         'Expected no change in final balance')
       let newIdFound = await serviceProviderIDRegisteredToAccount(
         stakerAccount,
-        testServiceType,
+        testDiscProvType,
         newSPId)
       assert.isTrue(newIdFound, 'Expected valid new ID')
     })
