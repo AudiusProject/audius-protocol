@@ -713,3 +713,14 @@ def get_users_by_id(session, user_ids):
 
     return user_map
 
+# Given an array of tracks and/or playlists, return an array of unique user ids
+def get_users_ids(results):
+    user_ids = []
+    for result in results:
+        if 'playlist_owner_id' in result:
+            user_ids.append(int(result["playlist_owner_id"]))
+        elif 'owner_id' in result:
+            user_ids.append(int(result['owner_id']))
+    # Remove duplicate user ids
+    user_ids = list(set(user_ids))
+    return user_ids

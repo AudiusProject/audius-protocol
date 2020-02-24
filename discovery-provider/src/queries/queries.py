@@ -13,7 +13,7 @@ from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 from src.queries.query_helpers import get_current_user_id, parse_sort_param, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_repost_counts, get_save_counts, \
-    get_pagination_vars, paginate_query, get_users_by_id
+    get_pagination_vars, paginate_query, get_users_by_id, get_users_ids
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("queries", __name__)
@@ -140,7 +140,7 @@ def get_tracks():
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
         if "with_users" in request.args and request.args.get("with_users") != 'false':
-            user_id_list = list(set(map(lambda track: int(track["owner_id"]), tracks)))
+            user_id_list = get_users_ids(tracks)
             users = get_users_by_id(session, user_id_list)
             for track in tracks:
                 user = users[track['owner_id']]
@@ -249,7 +249,7 @@ def get_playlists():
             )
 
             if "with_users" in request.args and request.args.get("with_users") != 'false':
-                user_id_list = list(set(map(lambda track: int(track["playlist_owner_id"]), playlists)))
+                user_id_list = get_users_ids(playlists)
                 users = get_users_by_id(session, user_id_list)
                 for playlist in playlists:
                     user = users[playlist['playlist_owner_id']]
@@ -504,7 +504,7 @@ def get_feed():
         feed_results = sorted_feed[0:limit]
 
         if "with_users" in request.args and request.args.get("with_users") != 'false':
-            user_id_list = list(set(map(lambda result: int(result["playlist_owner_id"]) if 'playlist_id' in result else int(result["owner_id"]), feed_results)))
+            user_id_list = get_users_ids(feed_results)
             users = get_users_by_id(session, user_id_list)
             for result in feed_results:
                 if 'playlist_owner_id' in result:
@@ -759,7 +759,7 @@ def get_repost_feed_for_user(user_id):
             unsorted_feed, key=lambda entry: entry[response_name_constants.activity_timestamp], reverse=True)
 
         if "with_users" in request.args and request.args.get("with_users") != 'false':
-            user_id_list = list(set(map(lambda result: int(result["playlist_owner_id"]) if 'playlist_id' in result else int(result["owner_id"]), feed_results)))
+            user_id_list = get_users_ids(feed_results)
             users = get_users_by_id(session, user_id_list)
             for result in feed_results:
                 if 'playlist_owner_id' in result:
