@@ -43,7 +43,7 @@ contract('ClaimFactory', async (accounts) => {
     staking = await Staking.at(proxy.address)
 
     // Reset min for test purposes
-    await staking.setMinStakeAmount(0)
+    // await staking.setMinStakeAmount(0)
 
     // Create new claim factory instance
     claimFactory = await ClaimFactory.new(
