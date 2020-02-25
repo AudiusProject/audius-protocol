@@ -1338,7 +1338,6 @@ def get_saves(save_type):
             query = query.filter(
                 Save.save_item_id.in_(
                     session.query(Track.track_id).filter(
-                        Track.is_delete == False,
                         Track.is_current == True
                     )
                 )
