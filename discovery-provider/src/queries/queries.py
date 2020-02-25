@@ -103,6 +103,10 @@ def get_tracks():
             except ValueError as e:
                 logger.error("Invalid value found in track id list", exc_info=True)
                 raise e
+        else:
+            base_query = base_query.filter(
+                Track.is_delete == False
+            )
 
         # Allow filtering of tracks by a certain creator
         if "user_id" in request.args:
@@ -320,6 +324,7 @@ def get_feed():
             playlist_tracks = (
                 session.query(Track)
                 .filter(
+                    # Track.is_delete == False, # ? do we want to show the tombstone
                     Track.is_current == True,
                     Track.track_id.in_(playlist_track_ids)
                 )
@@ -347,6 +352,7 @@ def get_feed():
             created_tracks_query = (
                 session.query(Track)
                 .filter(
+                    Track.is_delete == False,
                     Track.is_current == True,
                     Track.is_delete == False,
                     Track.is_unlisted == False,
@@ -418,6 +424,7 @@ def get_feed():
 
             # Query tracks reposted by followees
             reposted_tracks = session.query(Track).filter(
+                Track.is_delete == False,
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False,
@@ -555,6 +562,7 @@ def get_repost_feed_for_user(user_id):
         track_query = (
             session.query(Track)
             .filter(
+                Track.is_delete == False,
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False,
@@ -808,6 +816,7 @@ def get_track_repost_intersection_users(repost_track_id, follower_user_id):
     with db.scoped_session() as session:
         # ensure track_id exists
         track_entry = session.query(Track).filter(
+            Track.is_delete == False,
             Track.track_id == repost_track_id,
             Track.is_current == True
         ).first()
@@ -1036,6 +1045,7 @@ def get_reposters_for_track(repost_track_id):
     with db.scoped_session() as session:
         # Ensure Track exists for provided repost_track_id.
         track_entry = session.query(Track).filter(
+            Track.is_delete == False,
             Track.track_id == repost_track_id,
             Track.is_current == True
         ).first()
@@ -1165,6 +1175,7 @@ def get_savers_for_track(save_track_id):
     with db.scoped_session() as session:
         # Ensure Track exists for provided save_track_id.
         track_entry = session.query(Track).filter(
+            Track.is_delete == False,
             Track.track_id == save_track_id,
             Track.is_current == True
         ).first()
@@ -1335,6 +1346,7 @@ def get_saves(save_type):
             query = query.filter(
                 Save.save_item_id.in_(
                     session.query(Track.track_id).filter(
+                        Track.is_delete == False,
                         Track.is_current == True
                     )
                 )
