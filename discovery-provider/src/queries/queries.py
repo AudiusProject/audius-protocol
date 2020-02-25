@@ -347,7 +347,6 @@ def get_feed():
             created_tracks_query = (
                 session.query(Track)
                 .filter(
-                    Track.is_delete == False,
                     Track.is_current == True,
                     Track.is_delete == False,
                     Track.is_unlisted == False,
@@ -419,7 +418,6 @@ def get_feed():
 
             # Query tracks reposted by followees
             reposted_tracks = session.query(Track).filter(
-                Track.is_delete == False,
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False,
@@ -557,7 +555,6 @@ def get_repost_feed_for_user(user_id):
         track_query = (
             session.query(Track)
             .filter(
-                Track.is_delete == False,
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False,

@@ -71,7 +71,7 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
 def lookup_track_record(update_task, session, entry, event_track_id, block_number, block_hash):
     # Check if track record exists
     track_exists = (
-        session.query(Track).filter_by(Track.is_delete == False, track_id=event_track_id).count() > 0
+        session.query(Track).filter_by(track_id=event_track_id).count() > 0
     )
 
     track_record = None
@@ -101,7 +101,7 @@ def lookup_track_record(update_task, session, entry, event_track_id, block_numbe
 
 def invalidate_old_track(session, track_id):
     track_exists = (
-        session.query(Track).filter_by(Track.is_delete == False, track_id=track_id).count() > 0
+        session.query(Track).filter_by(track_id=track_id).count() > 0
     )
 
     if not track_exists:
