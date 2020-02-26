@@ -13,7 +13,7 @@ from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 from src.queries.query_helpers import get_current_user_id, parse_sort_param, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_repost_counts, get_save_counts, \
-    get_pagination_vars, paginate_query
+    get_pagination_vars, paginate_query, get_users_by_id, get_users_ids
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("queries", __name__)
@@ -111,10 +111,10 @@ def get_tracks():
                 Track.owner_id == user_id
             )
 
-        # Allow filtering of deleted tracks
+        # Filter deleted tracks if we are not querying by track ids or we've explicitly said to filter deletes
         # Note: There is no standard for boolean url parameters, and any value (including 'false')
         # will be evaluated as true, so an explicit check is made for true
-        if "filter_deleted" in request.args:
+        if ("id" not in request.args) or ("filter_deleted" in request.args):
             filter_deleted = request.args.get("filter_deleted")
             if (filter_deleted.lower() == 'true'):
                 base_query = base_query.filter(
@@ -139,6 +139,14 @@ def get_tracks():
         # bundle peripheral info into track results
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
+        if "with_users" in request.args and request.args.get("with_users") != 'false':
+            user_id_list = get_users_ids(tracks)
+            users = get_users_by_id(session, user_id_list)
+            for track in tracks:
+                user = users[track['owner_id']]
+                if user:
+                    track['user'] = user
+
     return api_helpers.success_response(tracks)
 
 
@@ -160,7 +168,12 @@ def get_tracks_including_unlisted():
         # Create filter conditions as a list of `and` clauses
         for i in identifiers:
             route_id = helpers.create_track_route_id(i["url_title"], i["handle"])
-            filter_cond.append(and_(Track.is_current == True, Track.route_id == route_id, Track.track_id == i["id"]))
+            filter_cond.append(and_(
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.route_id == route_id,
+                Track.track_id == i["id"]
+            ))
 
         # Pass array of `and` clauses into an `or` clause as destrucutred *args
         base_query = base_query.filter(or_(*filter_cond))
@@ -221,6 +234,12 @@ def get_playlists():
                     Playlist.is_private == False
                 )
 
+            # Filter out deletes unless we're fetching explicitly by id
+            if "playlist_id" not in request.args:
+                playlist_query = playlist_query.filter(
+                    Playlist.is_delete == False
+                )
+
             playlist_query = playlist_query.order_by(desc(Playlist.created_at))
             playlists = paginate_query(playlist_query).all()
             playlists = helpers.query_result_to_list(playlists)
@@ -239,6 +258,14 @@ def get_playlists():
                 [SaveType.playlist, SaveType.album],
                 current_user_id
             )
+
+            if "with_users" in request.args and request.args.get("with_users") != 'false':
+                user_id_list = get_users_ids(playlists)
+                users = get_users_by_id(session, user_id_list)
+                for playlist in playlists:
+                    user = users[playlist['playlist_owner_id']]
+                    if user:
+                        playlist['user'] = user
 
         except sqlalchemy.orm.exc.NoResultFound:
             pass
@@ -291,6 +318,7 @@ def get_feed():
                 session.query(Playlist)
                 .filter(
                     Playlist.is_current == True,
+                    Playlist.is_delete == False,
                     Playlist.is_private == False,
                     Playlist.playlist_owner_id.in_(followee_user_ids)
                 )
@@ -336,6 +364,7 @@ def get_feed():
                 session.query(Track)
                 .filter(
                     Track.is_current == True,
+                    Track.is_delete == False,
                     Track.is_unlisted == False,
                     Track.owner_id.in_(followee_user_ids),
                     Track.track_id.notin_(tracks_to_dedupe)
@@ -406,6 +435,7 @@ def get_feed():
             # Query tracks reposted by followees
             reposted_tracks = session.query(Track).filter(
                 Track.is_current == True,
+                Track.is_delete == False,
                 Track.is_unlisted == False,
                 Track.track_id.in_(reposted_track_ids)
             )
@@ -421,6 +451,7 @@ def get_feed():
             # Query playlists reposted by followees, excluding playlists already fetched from above
             reposted_playlists = session.query(Playlist).filter(
                 Playlist.is_current == True,
+                Playlist.is_delete == False,
                 Playlist.is_private == False,
                 Playlist.playlist_id.in_(reposted_playlist_ids)
             )
@@ -487,6 +518,19 @@ def get_feed():
         (limit, _) = get_pagination_vars()
         feed_results = sorted_feed[0:limit]
 
+        if "with_users" in request.args and request.args.get("with_users") != 'false':
+            user_id_list = get_users_ids(feed_results)
+            users = get_users_by_id(session, user_id_list)
+            for result in feed_results:
+                if 'playlist_owner_id' in result:
+                    user = users[result['playlist_owner_id']]
+                    if user:
+                        result['user'] = user
+                elif 'owner_id' in result:
+                    user = users[result['owner_id']]
+                    if user:
+                        result['user'] = user
+
     return api_helpers.success_response(feed_results)
 
 
@@ -541,6 +585,7 @@ def get_repost_feed_for_user(user_id):
             session.query(Track)
             .filter(
                 Track.is_current == True,
+                Track.is_delete == False,
                 Track.is_unlisted == False,
                 Track.track_id.in_(repost_track_ids)
             )
@@ -557,6 +602,7 @@ def get_repost_feed_for_user(user_id):
             session.query(Playlist)
             .filter(
                 Playlist.is_current == True,
+                Playlist.is_delete == False,
                 Playlist.is_private == False,
                 Playlist.playlist_id.in_(repost_playlist_ids)
             )
@@ -728,6 +774,19 @@ def get_repost_feed_for_user(user_id):
         # sort feed by repost timestamp desc
         feed_results = sorted(
             unsorted_feed, key=lambda entry: entry[response_name_constants.activity_timestamp], reverse=True)
+
+        if "with_users" in request.args and request.args.get("with_users") != 'false':
+            user_id_list = get_users_ids(feed_results)
+            users = get_users_by_id(session, user_id_list)
+            for result in feed_results:
+                if 'playlist_owner_id' in result:
+                    user = users[result['playlist_owner_id']]
+                    if user:
+                        result['user'] = user
+                elif 'owner_id' in result:
+                    user = users[result['owner_id']]
+                    if user:
+                        result['user'] = user
 
     return api_helpers.success_response(feed_results)
 
@@ -1325,4 +1384,5 @@ def get_saves(save_type):
 
         query_results = paginate_query(query).all()
         save_results = helpers.query_result_to_list(query_results)
+
     return api_helpers.success_response(save_results)

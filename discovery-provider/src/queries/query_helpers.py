@@ -8,7 +8,7 @@ from flask import request
 
 from src import exceptions
 from src.queries import response_name_constants
-from src.models import Track, Repost, RepostType, Follow, Playlist, Save, SaveType
+from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType
 from src.utils import helpers
 from src.utils.config import shared_config
 
@@ -699,4 +699,28 @@ def get_genre_list(genre):
         genre_list = genre_list + electronic_sub_genres
     return genre_list
 
+def get_users_by_id(session, user_ids):
+    user_query = session.query(User).filter(User.is_current == True, User.wallet != None, User.handle != None)
+    users_results = user_query.filter(User.user_id.in_(user_ids)).all()
+    users = helpers.query_result_to_list(users_results)
 
+    current_user_id = get_current_user_id(required=False)
+    # bundle peripheral info into user results
+    populated_users = populate_user_metadata(session, user_ids, users, current_user_id)
+    user_map = {}
+    for user in populated_users:
+        user_map[user['user_id']] = user
+
+    return user_map
+
+# Given an array of tracks and/or playlists, return an array of unique user ids
+def get_users_ids(results):
+    user_ids = []
+    for result in results:
+        if 'playlist_owner_id' in result:
+            user_ids.append(int(result["playlist_owner_id"]))
+        elif 'owner_id' in result:
+            user_ids.append(int(result['owner_id']))
+    # Remove duplicate user ids
+    user_ids = list(set(user_ids))
+    return user_ids
