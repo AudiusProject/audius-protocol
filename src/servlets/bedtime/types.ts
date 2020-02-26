@@ -8,12 +8,12 @@ export type TrackResponse = {
   title: string
   handle: string
   userName: string
+  isVerified: boolean
   segments: { duration: number, multihash: string }[]
   urlPath: string
 }
 
 export type GetTracksResponse = TrackResponse & {
-  isVerified: boolean,
   coverArt: string
 }
 
@@ -24,5 +24,6 @@ export type GetCollectionResponse = {
   collectionURLPath: string
   tracks: TrackResponse[]
   coverArt: string
+  isVerified: boolean
 }
 

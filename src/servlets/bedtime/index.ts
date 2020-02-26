@@ -11,6 +11,7 @@ const getTrackMetadata = async (trackId: number, ownerId: number): Promise<GetTr
     const track = await getTrack(trackId)
     if (track.is_delete) return Promise.reject(new Error(DELETED_MESSAGE))
     if (track.owner_id !== ownerId) return Promise.reject(new Error('OwnerIds do not match'))
+    if (track.is_unlisted) return Promise.reject(new Error('Attempted to embed a hidden track'))
 
     const user  = await getUser(ownerId)
     const coverArt = getCoverArt(track, user)
@@ -33,7 +34,6 @@ const getTrackMetadata = async (trackId: number, ownerId: number): Promise<GetTr
   }
 }
 
-// TODO: add collection type
 const getTracksFromCollection = async (collection: any, ownerUser: any): Promise<TrackResponse[]> => {
 
   const trackIds: number[] = collection.playlist_contents.track_ids.map((t: {time: number, track: number }) => t.track)
@@ -64,14 +64,17 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
     userName: userMap[t.owner_id].name,
     segments: t.track_segments,
     urlPath: getTrackPath({ routeId: t.route_id, trackId: t.track_id }),
-    id: t.track_id
+    id: t.track_id,
+    isVerified: userMap[t.owner_id].is_verified
   })).filter((t: any) => !t.is_delete)
 
   return parsedTracks
 }
 
 
-// TODO: add comment explaining the parlalliezation logic here
+// We do a bit of parallelization here.
+// We first grab the collection and owner user in parallel. Once both of thes complete, we
+// then grab the tracks and cover art in parallel, both of which require the fetched collection and owner user.
 const getCollectionMetadata = async (collectionId: number, ownerId: number): Promise<GetCollectionResponse> => {
   try {
     const [collection, ownerUser] = await Promise.all([getCollection(collectionId), getUser(ownerId)])
@@ -96,7 +99,8 @@ const getCollectionMetadata = async (collectionId: number, ownerId: number): Pro
       collectionURLPath,
       ownerHandle: ownerUser.handle,
       tracks,
-      coverArt
+      coverArt,
+      isVerified: ownerUser.is_verified
     }
   } catch (e) {
     const error = `Failed to get collection for ID [${collectionId}] with error: [${e.message}]`
