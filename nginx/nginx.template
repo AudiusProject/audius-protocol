@@ -54,7 +54,7 @@ http {
     # strips off `embed` portion of the URI
     # before forwarding to the BEDTIME_URL
     location /embed/ {
-      proxy_pass https://di2033imt2ldz.cloudfront.net/;
+      proxy_pass ${BEDTIME_URL};
     }
 
     # metadata/dapp passthrough

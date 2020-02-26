@@ -73,7 +73,7 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
 
 
 // We do a bit of parallelization here.
-// We first grab the collection and owner user in parallel. Once both of thes complete, we
+// We first grab the collection and owner user in parallel. Once both are completed, we
 // then grab the tracks and cover art in parallel, both of which require the fetched collection and owner user.
 const getCollectionMetadata = async (collectionId: number, ownerId: number): Promise<GetCollectionResponse> => {
   try {
