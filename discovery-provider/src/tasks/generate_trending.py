@@ -86,7 +86,7 @@ def generate_trending(db, time, genre, limit, offset):
         not_deleted_track_ids = set([record[0] for record in not_deleted_track_ids]) # pylint: disable=R1718
         # Query repost counts
         repost_counts = get_repost_counts(session, False, True, not_deleted_track_ids, None)
-
+         # Generate track_id --> repost_count mapping
         track_repost_counts = {
             repost_item_id: repost_count
             for (repost_item_id, repost_count, repost_type) in repost_counts
@@ -96,6 +96,7 @@ def generate_trending(db, time, genre, limit, offset):
         # Query repost count with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
         track_repost_counts_with_time = \
             get_repost_counts_with_time(session, False, True, not_deleted_track_ids, None, time)
+        # Generate track_id --> windowed_save_count mapping
         track_repost_counts_with_time = {
             repost_item_id: repost_count
             for (repost_item_id, repost_count, repost_type) in track_repost_counts_with_time
@@ -137,13 +138,18 @@ def generate_trending(db, time, genre, limit, offset):
         follower_count_dict = \
                 {user_id: follower_count for (user_id, follower_count) in follower_counts}
 
+        # Query save counts
         save_counts = get_save_counts(session, False, True, not_deleted_track_ids, None)
-        save_counts_with_time = get_save_counts_with_time(session, False, True, not_deleted_track_ids, None, time)
+        # Generate track_id --> save_count mapping
         track_save_counts = {
             save_item_id: save_count
             for (save_item_id, save_count, save_type) in save_counts
             if save_type == SaveType.track
         }
+
+        # Query save counts with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
+        save_counts_with_time = get_save_counts_with_time(session, False, True, not_deleted_track_ids, None, time)
+         # Generate track_id --> windowed_save_count mapping
         track_save_counts_with_time = {
             save_item_id: save_count
             for (save_item_id, save_count, save_type) in save_counts_with_time

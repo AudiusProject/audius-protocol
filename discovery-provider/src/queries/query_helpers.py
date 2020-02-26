@@ -564,20 +564,6 @@ def get_repost_counts_with_time(session, query_by_user_flag, query_repost_type_f
 
     return repost_counts_query.all()
 
-
-def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number=None):
-    save_counts_query = get_save_counts_query(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types)
-    return save_counts_query.all()
-
-def get_save_counts_with_time(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, time, max_block_number=None):
-    save_counts_query = get_save_counts_query(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types)
-    interval = "NOW() - interval '1 {}'".format(time)
-    save_counts_query = save_counts_query.filter(
-                Save.created_at >= text(interval)
-            )
-            
-    return save_counts_query.all()
-
 def get_save_counts_query(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number=None):
     query_col = Save.user_id if query_by_user_flag else Save.save_item_id
 
@@ -624,6 +610,19 @@ def get_save_counts_query(session, query_by_user_flag, query_save_type_flag, fil
         )
 
     return save_counts_query
+
+def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number=None):
+    save_counts_query = get_save_counts_query(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types)
+    return save_counts_query.all()
+
+def get_save_counts_with_time(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, time, max_block_number=None):
+    save_counts_query = get_save_counts_query(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types)
+    interval = "NOW() - interval '1 {}'".format(time)
+    save_counts_query = save_counts_query.filter(
+                Save.created_at >= text(interval)
+            )
+            
+    return save_counts_query.all()
 
 def get_followee_count_dict(session, user_ids):
     # build dict of user id --> followee count
