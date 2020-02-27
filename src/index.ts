@@ -2,13 +2,35 @@ import express from 'express'
 import path from 'path'
 import getMetaTagsResponse from './servlets/metaTags'
 
-import libs from './libs'
+import { BedtimeFormat } from './servlets/bedtime/types'
 import { MetaTagFormat } from './servlets/metaTags/types'
+
+import { getBedtimeResponse } from './servlets/bedtime'
+
+import libs from './libs'
 
 const PORT = 8000
 
 const app = express()
 const router = express.Router()
+
+/** Bedtime Routes */
+
+router.get('/embed/api/tracks/:id', (
+  req: express.Request,
+  res: express.Response) => {
+    getBedtimeResponse(BedtimeFormat.TRACK, req, res)
+  }
+)
+
+router.get('/embed/api/collections/:id', (
+  req: express.Request,
+  res: express.Response) => {
+    getBedtimeResponse(BedtimeFormat.COLLECTION, req, res)
+  }
+)
+
+/** Metatag Routes */
 
 router.get([
   '/upload',

@@ -3,54 +3,14 @@ import fs from 'fs'
 import handlebars from 'handlebars'
 import path from 'path'
 
-import libs from '../../libs'
-import { MetaTagFormat } from './types'
+import { DEFAULT_IMAGE_URL } from '../utils/constants'
+import { formatGateway, getCollection, getImageUrl, getTrack, getUser, getUserByHandle } from '../utils/helpers'
+import { Context, MetaTagFormat, Playable } from './types'
 
-const USER_NODE_IPFS_GATEWAY = 'https://usermetadata.audius.co/ipfs/'
-const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/preview-image.jpg'
+const E = process.env
 
-interface Context {
-  title: string,
-  description: string,
-  image: string,
-  // Whether or not the image shows as a small thumbnail version
-  thumbnail?: boolean,
-}
-
-/** Helpers */
-
-const getTrack = async (id: number): Promise<any> => {
-  const t = await libs.Track.getTracks(1, 0, [id])
-  if (t && t[0]) return t[0]
-  throw new Error(`Failed to get track ${id}`)
-}
-
-const getCollection = async (id: number): Promise<any> => {
-  const c = await libs.Playlist.getPlaylists(1, 0, [id])
-  if (c && c[0]) return c[0]
-  throw new Error(`Failed to get collection ${id}`)
-}
-
-const getUser = async (id: number): Promise<any> => {
-  const u = await libs.User.getUsers(1, 0, [id])
-  if (u && u[0]) return u[0]
-  throw new Error(`Failed to get user ${id}`)
-}
-
-const getUserByHandle = async (handle: string): Promise<any> => {
-  const u = await libs.User.getUsers(1, 0, null, null, handle)
-  if (u && u[0]) return u[0]
-  throw new Error(`Failed to get user ${handle}`)
-}
-
-const formatGateway = (creatorNodeEndpoint: string, userId: number): string =>
-  creatorNodeEndpoint
-    ? `${creatorNodeEndpoint.split(',')[0]}/ipfs/`
-    : USER_NODE_IPFS_GATEWAY
-
-const getImageUrl = (cid: string, gateway: string | null): string => {
-  if (!cid) return DEFAULT_IMAGE_URL
-  return `${gateway}${cid}`
+const getEmbedUrl = (type: Playable, id: number, ownerId: number) => {
+  return `${E.PUBLIC_URL}/embed/${type}?id=${id}&ownerId=${ownerId}&flavor=card&twitter=true`
 }
 
 /** Routes */
@@ -75,6 +35,8 @@ const getTrackContext = async (id: number): Promise<Context> => {
       title: `${track.title} • ${user.name}`,
       description: track.description || '',
       image: getImageUrl(coverArt, gateway),
+      embed: true,
+      embedUrl: getEmbedUrl(Playable.TRACK, track.track_id, track.owner_id)
     }
   } catch (e) {
     return getDefaultContext()
@@ -95,6 +57,12 @@ const getCollectionContext = async (id: number): Promise<Context> => {
       title: `${collection.playlist_name} • ${user.name}`,
       description: collection.description || '',
       image: getImageUrl(coverArt, gateway),
+      embed: true,
+      embedUrl: getEmbedUrl(
+        collection.is_album ? Playable.ALBUM : Playable.PLAYLIST,
+        collection.playlist_id,
+        collection.playlist_owner_id
+      )
     }
   } catch (e) {
     return getDefaultContext()
