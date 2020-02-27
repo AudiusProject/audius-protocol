@@ -8,7 +8,7 @@ from src.models import Track, RepostType, Follow, SaveType
 from src.utils.config import shared_config
 from src.queries import response_name_constants
 from src.queries.query_helpers import \
-    get_repost_counts, get_save_counts, get_genre_list, get_repost_counts_with_time, get_save_counts_with_time
+    get_repost_counts, get_save_counts, get_genre_list
 
 logger = logging.getLogger(__name__)
 
@@ -94,12 +94,12 @@ def generate_trending(db, time, genre, limit, offset):
         }
 
         # Query repost count with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
-        track_repost_counts_with_time = \
-            get_repost_counts_with_time(session, False, True, not_deleted_track_ids, None, time)
+        track_repost_counts_for_time = \
+            get_repost_counts(session, False, True, not_deleted_track_ids, None, None, time)
         # Generate track_id --> windowed_save_count mapping
-        track_repost_counts_with_time = {
+        track_repost_counts_for_time = {
             repost_item_id: repost_count
-            for (repost_item_id, repost_count, repost_type) in track_repost_counts_with_time
+            for (repost_item_id, repost_count, repost_type) in track_repost_counts_for_time
             if repost_type == RepostType.track
         }
 
@@ -148,11 +148,11 @@ def generate_trending(db, time, genre, limit, offset):
         }
 
         # Query save counts with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
-        save_counts_with_time = get_save_counts_with_time(session, False, True, not_deleted_track_ids, None, time)
+        save_counts_for_time = get_save_counts(session, False, True, not_deleted_track_ids, None, None, time)
          # Generate track_id --> windowed_save_count mapping
-        track_save_counts_with_time = {
+        track_save_counts_for_time = {
             save_item_id: save_count
-            for (save_item_id, save_count, save_type) in save_counts_with_time
+            for (save_item_id, save_count, save_type) in save_counts_for_time
             if save_type == SaveType.track
         }
 
@@ -170,9 +170,9 @@ def generate_trending(db, time, genre, limit, offset):
                 track_entry[response_name_constants.repost_count] = 0
 
             # Populate repost counts with respect to time
-            if track_entry[response_name_constants.track_id] in track_repost_counts_with_time:
+            if track_entry[response_name_constants.track_id] in track_repost_counts_for_time:
                 track_entry[response_name_constants.windowed_repost_count] = \
-                    track_repost_counts_with_time[track_entry[response_name_constants.track_id]]
+                    track_repost_counts_for_time[track_entry[response_name_constants.track_id]]
             else:
                 track_entry[response_name_constants.windowed_repost_count] = 0
 
@@ -184,9 +184,9 @@ def generate_trending(db, time, genre, limit, offset):
                 track_entry[response_name_constants.save_count] = 0
 
             # Populate save counts with respect to time
-            if track_entry[response_name_constants.track_id] in track_save_counts_with_time:
+            if track_entry[response_name_constants.track_id] in track_save_counts_for_time:
                 track_entry[response_name_constants.windowed_save_count] = \
-                        track_save_counts_with_time[track_entry[response_name_constants.track_id]]
+                        track_save_counts_for_time[track_entry[response_name_constants.track_id]]
             else:
                 track_entry[response_name_constants.windowed_save_count] = 0
 

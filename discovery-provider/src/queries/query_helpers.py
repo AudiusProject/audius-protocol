@@ -550,18 +550,16 @@ def get_repost_counts_query(session, query_by_user_flag, query_repost_type_flag,
 
     return repost_counts_query
 
-def get_repost_counts(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, max_block_number=None):
-    repost_counts_query = get_repost_counts_query(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types)
-    return repost_counts_query.all()
+# Gets the repost count for users or tracks with the filters specified in the params. 
+# The time param {day, week, month, year} is used in generate_trending to create a windowed time frame for repost counts
+def get_repost_counts(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, max_block_number=None, time=None):
+    repost_counts_query = get_repost_counts_query(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, max_block_number)
 
-
-def get_repost_counts_with_time(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, time, max_block_number=None):
-    repost_counts_query = get_repost_counts_query(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types)
-    interval = "NOW() - interval '1 {}'".format(time)
-    repost_counts_query = repost_counts_query.filter(
+    if time is not None:
+        interval = "NOW() - interval '1 {}'".format(time)
+        repost_counts_query = repost_counts_query.filter(
                 Repost.created_at >= text(interval)
             )
-
     return repost_counts_query.all()
 
 def get_save_counts_query(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number=None):
@@ -611,17 +609,16 @@ def get_save_counts_query(session, query_by_user_flag, query_save_type_flag, fil
 
     return save_counts_query
 
-def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number=None):
-    save_counts_query = get_save_counts_query(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types)
-    return save_counts_query.all()
-
-def get_save_counts_with_time(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, time, max_block_number=None):
-    save_counts_query = get_save_counts_query(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types)
-    interval = "NOW() - interval '1 {}'".format(time)
-    save_counts_query = save_counts_query.filter(
+# Gets the save count for users or tracks with the filters specified in the params. 
+# The time param {day, week, month, year} is used in generate_trending to create a windowed time frame for save counts
+def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number=None, time=None):
+    save_counts_query = get_save_counts_query(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number)
+    
+    if time is not None:
+        interval = "NOW() - interval '1 {}'".format(time)
+        save_counts_query = save_counts_query.filter(
                 Save.created_at >= text(interval)
             )
-            
     return save_counts_query.all()
 
 def get_followee_count_dict(session, user_ids):
