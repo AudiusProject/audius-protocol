@@ -1,11 +1,13 @@
 import express from 'express'
 import path from 'path'
 import getMetaTagsResponse from './servlets/metaTags'
+
 import { BedtimeFormat } from './servlets/bedtime/types'
+import { MetaTagFormat } from './servlets/metaTags/types'
+
 import { getBedtimeResponse } from './servlets/bedtime'
 
 import libs from './libs'
-import { MetaTagFormat } from './servlets/metaTags/types'
 
 const PORT = 8000
 

@@ -3,17 +3,9 @@ import fs from 'fs'
 import handlebars from 'handlebars'
 import path from 'path'
 
-import libs from '../../libs'
-import { MetaTagFormat, Playable, Context } from './types'
-import {
-  getTrack,
-  getUser,
-  formatGateway,
-  getImageUrl,
-  getCollection,
-  getUserByHandle
-} from '../utils/helpers'
 import { DEFAULT_IMAGE_URL } from '../utils/constants'
+import { formatGateway, getCollection, getImageUrl, getTrack, getUser, getUserByHandle } from '../utils/helpers'
+import { Context, MetaTagFormat, Playable } from './types'
 
 const E = process.env
 

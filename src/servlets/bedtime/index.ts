@@ -1,7 +1,8 @@
 import express from 'express'
-import { getTrack, getUser, getCollection, getTracks, getUsers } from '../utils/helpers'
-import { getCoverArt, getTrackPath, getCollectionPath } from './helpers'
-import { BedtimeFormat, TrackResponse, GetTracksResponse, GetCollectionResponse } from './types'
+
+import { getCollection, getTrack, getTracks, getUser, getUsers } from '../utils/helpers'
+import { getCollectionPath, getCoverArt, getTrackPath } from './helpers'
+import { BedtimeFormat, GetCollectionResponse, GetTracksResponse, TrackResponse } from './types'
 
 // Error Messages
 const DELETED_MESSAGE = 'DELETED'
@@ -71,7 +72,6 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
   return parsedTracks
 }
 
-
 // We do a bit of parallelization here.
 // We first grab the collection and owner user in parallel. Once both are completed, we
 // then grab the tracks and cover art in parallel, both of which require the fetched collection and owner user.
@@ -83,7 +83,10 @@ const getCollectionMetadata = async (collectionId: number, ownerId: number): Pro
     if (collection.is_delete) return Promise.reject(new Error(DELETED_MESSAGE))
 
     // Get tracks & covert art in parallel
-    const [tracks, coverArt] = await Promise.all([getTracksFromCollection(collection, ownerUser), getCoverArt(collection, ownerUser)])
+    const [tracks, coverArt] = await Promise.all([
+      getTracksFromCollection(collection, ownerUser),
+      getCoverArt(collection, ownerUser)
+    ])
 
     // Create URL path
     const collectionURLPath = getCollectionPath({
@@ -127,7 +130,7 @@ export const getBedtimeResponse = async (
   }
 
   try {
-    const [parsedId, parsedOwnerId] = [parseInt(id), parseInt(ownerId)]
+    const [parsedId, parsedOwnerId] = [parseInt(id, 10), parseInt(ownerId, 10)]
     let resp = null
     switch (format) {
       case BedtimeFormat.TRACK:
@@ -137,6 +140,8 @@ export const getBedtimeResponse = async (
       case BedtimeFormat.COLLECTION:
         console.debug(`Embed collection: [${id}]`)
         resp = await getCollectionMetadata(parsedId, parsedOwnerId)
+        break
+      default:
         break
     }
     return res.send(resp)

@@ -19,7 +19,13 @@ export const getCoverArt = (trackOrPlaylist: any, user: any) => {
   return getImageUrl(coverArtCID, gateway)
 }
 
-export const getTrackPath = ({ routeId, trackId }: { routeId: string, trackId: number }) => (encodeURI(`${routeId}-${trackId}`))
+export const getTrackPath = ({
+  routeId,
+  trackId
+}: {
+  routeId: string,
+  trackId: number
+}) => (encodeURI(`${routeId}-${trackId}`))
 
 export const getCollectionPath = ({ ownerHandle, isAlbum, name, id }: {
   ownerHandle: string,

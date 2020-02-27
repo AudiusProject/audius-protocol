@@ -9,7 +9,7 @@ export type TrackResponse = {
   handle: string
   userName: string
   isVerified: boolean
-  segments: { duration: number, multihash: string }[]
+  segments: Array<{ duration: number, multihash: string }>
   urlPath: string
 }
 
@@ -26,4 +26,3 @@ export type GetCollectionResponse = {
   coverArt: string
   isVerified: boolean
 }
-

@@ -1,5 +1,5 @@
-import { USER_NODE_IPFS_GATEWAY, DEFAULT_IMAGE_URL } from './constants'
 import libs from '../../libs'
+import { DEFAULT_IMAGE_URL, USER_NODE_IPFS_GATEWAY } from './constants'
 
 export const getTrack = async (id: number): Promise<any> => {
   const t = await libs.Track.getTracks(1, 0, [id])
