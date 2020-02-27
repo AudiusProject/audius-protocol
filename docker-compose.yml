@@ -12,6 +12,9 @@ services:
     depends_on:
       - node
     command: sh -c /home/nginx/nginx.sh
+    logging:
+      options:
+        max-size: 1g
 
   node:
     image: nodejs:alpine
@@ -22,3 +25,6 @@ services:
       dockerfile: Dockerfile
     container_name: node
     restart: unless-stopped
+    logging:
+      options:
+        max-size: 1g
