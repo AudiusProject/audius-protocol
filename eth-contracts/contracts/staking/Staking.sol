@@ -104,7 +104,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
 
         uint256 claimedValue = (claimantStakeAtClaimBlock.mul(currentClaimableAmount)).div(totalServiceProviderStakeAtClaimBlock);
 
-        // Transfer value from treasury to claimant if >0 is claimed
+        // Transfer value from treasury to claimant if > 0 is claimed
         if (claimedValue > 0) {
             _transfer(treasuryAddress, msg.sender, claimedValue);
         }
