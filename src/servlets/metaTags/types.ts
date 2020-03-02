@@ -20,6 +20,8 @@ export interface Context {
   // Whether or not the image shows as a small thumbnail version
   thumbnail?: boolean,
 
+  // Url to the app (for deep-linking)
+  appUrl?: string,
   // Whether or not to show an embed player
   embed?: boolean,
   // Bedtime player url

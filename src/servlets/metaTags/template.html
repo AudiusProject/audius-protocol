@@ -26,18 +26,27 @@
     <meta name="twitter:image" content="{{image}}" />
     <meta name="twitter:image:alt" content="{{title}}" />
     <meta name="twitter:site" content="@AudiusProject" />
+    <meta name="twitter:app:name:iphone" content="Audius Music">
+    <meta name="twitter:app:id:iphone" content="1491270519">
+    <meta name="twitter:app:url:iphone" content="{{appUrl}}">
+    <meta name="twitter:app:name:ipad" content="Audius Music">
+    <meta name="twitter:app:id:ipad" content="1491270519">
+    <meta name="twitter:app:url:ipad" content="{{appUrl}}">
+    <meta name="twitter:app:name:googleplay" content="Audius Music">
+    <meta name="twitter:app:id:googleplay" content="co.audius.app">
+    <meta name="twitter:app:url:googleplay" content="{{appUrl}}">
 
     {{#if thumbnail}}
       <meta name="twitter:card" content="summary"/ >
     {{else}}
-      <!-- {{#if embed}}
+      {{#if embed}}
         <meta name="twitter:card" content="player"/ >
         <meta name="twitter:player" content="{{embedUrl}}" />
         <meta name="twitter:player:width" content="480" />
         <meta name="twitter:player:height" content="480" />
-      {{else}} -->
+      {{else}}
       <meta name="twitter:card" content="summary_large_image"/ >
-      <!-- {{/if}} -->
+      {{/if}}
     {{/if}}
   </head>
   <body>

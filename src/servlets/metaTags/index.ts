@@ -119,6 +119,7 @@ const getResponse = async (
   } = req.params
 
   let context: Context
+
   const id = title ? parseInt(title.split('-').slice(-1)[0], 10) : -1
   switch (format) {
     case MetaTagFormat.Track:
@@ -142,6 +143,9 @@ const getResponse = async (
       console.log('get default', req.path)
       context = getDefaultContext()
   }
+
+  context.appUrl = `audius:/${req.url}`
+
   const html = template(context)
   return res.send(html)
 }
