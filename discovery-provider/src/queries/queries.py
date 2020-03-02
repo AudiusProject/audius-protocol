@@ -167,10 +167,8 @@ def get_tracks_including_unlisted():
 
         # Create filter conditions as a list of `and` clauses
         for i in identifiers:
-            route_id = helpers.create_track_route_id(i["url_title"], i["handle"])
             filter_cond.append(and_(
                 Track.is_current == True,
-                Track.route_id == route_id,
                 Track.track_id == i["id"]
             ))
 
@@ -196,7 +194,19 @@ def get_tracks_including_unlisted():
         current_user_id = get_current_user_id(required=False)
         extended_tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
-    return api_helpers.success_response(extended_tracks)
+        filtered_extended_tracks = []
+
+        def check_unlisted_track_for_proper_route_id(track):
+            if track["is_unlisted"] and track["route_id"] != helpers.create_track_route_id(i["url_title"], i["handle"]):
+                return False
+            
+            return True
+
+        # If the track is unlisted and the generated route_id does not match the route_id in db,
+        # filter track out from response
+        filtered_extended_tracks = [track for track in extended_tracks if check_unlisted_track_for_proper_route_id(track)]
+
+    return api_helpers.success_response(filtered_extended_tracks)
 
 
 # Return playlist content in json form
