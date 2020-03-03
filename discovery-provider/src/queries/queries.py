@@ -186,27 +186,24 @@ def get_tracks_including_unlisted():
                 )
 
         # Perform the query
+        # TODO: pagination is broken with unlisted tracks
         query_results = paginate_query(base_query).all()
         tracks = helpers.query_result_to_list(query_results)
+
+        # Mapping of track_id -> track; used to check route_id when iterating through identifiers
+        track_map = {t["track_id"]: t for t in tracks}
+
+        # If the track is unlisted and the generated route_id does not match the route_id in db,
+        # filter track out from response
+        tracks = [track_map[i["id"]] for i in identifiers if not (track_map[i["id"]]["is_unlisted"] and \
+                    track_map[i["id"]]["route_id"] != helpers.create_track_route_id(i["url_title"], i["handle"]))]
         track_ids = list(map(lambda track: track["track_id"], tracks))
 
         # Populate metadata
         current_user_id = get_current_user_id(required=False)
         extended_tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
-        filtered_extended_tracks = []
-
-        def check_unlisted_track_for_proper_route_id(track):
-            if track["is_unlisted"] and track["route_id"] != helpers.create_track_route_id(i["url_title"], i["handle"]):
-                return False
-            
-            return True
-
-        # If the track is unlisted and the generated route_id does not match the route_id in db,
-        # filter track out from response
-        filtered_extended_tracks = [track for track in extended_tracks if check_unlisted_track_for_proper_route_id(track)]
-
-    return api_helpers.success_response(filtered_extended_tracks)
+    return api_helpers.success_response(extended_tracks)
 
 
 # Return playlist content in json form
