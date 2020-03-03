@@ -167,10 +167,8 @@ def get_tracks_including_unlisted():
 
         # Create filter conditions as a list of `and` clauses
         for i in identifiers:
-            route_id = helpers.create_track_route_id(i["url_title"], i["handle"])
             filter_cond.append(and_(
                 Track.is_current == True,
-                Track.route_id == route_id,
                 Track.track_id == i["id"]
             ))
 
@@ -188,8 +186,25 @@ def get_tracks_including_unlisted():
                 )
 
         # Perform the query
+        # TODO: pagination is broken with unlisted tracks
         query_results = paginate_query(base_query).all()
         tracks = helpers.query_result_to_list(query_results)
+
+        # Mapping of track_id -> track object from request;
+        # used to check route_id when iterating through identifiers
+        identifiers_map = {track["id"]: track for track in identifiers}
+
+        # If the track is unlisted and the generated route_id does not match the route_id in db,
+        # filter track out from response
+        def filter_fn(track):
+            input_track = identifiers_map[track["track_id"]]
+            route_id = helpers.create_track_route_id(input_track["url_title"], \
+                        input_track["handle"])
+
+            return not track["is_unlisted"] or track["route_id"] == route_id
+
+        tracks = list(filter(filter_fn, tracks))
+
         track_ids = list(map(lambda track: track["track_id"], tracks))
 
         # Populate metadata
