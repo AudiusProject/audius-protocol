@@ -446,7 +446,7 @@ class Tracks extends Base {
    */
   async logTrackListen (trackId, unauthUuid) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
-    const accountId = this.userStateManager.getCurrentUser()
+    const accountId = this.userStateManager.getCurrentUserId()
 
     const userId = accountId || unauthUuid
     return this.identityService.logTrackListen(trackId, userId)
