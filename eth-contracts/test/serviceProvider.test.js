@@ -189,6 +189,15 @@ contract('ServiceProvider test', async (accounts) => {
     return newIdFound
   }
 
+  const updateServiceProviderEndpoint = async (type, oldEndpoint, newEndpoint) => {
+    let spID = await serviceProviderFactory.updateEndpoint(
+      type,
+      oldEndpoint,
+      newEndpoint
+    )
+    return spID
+  }
+
   describe('Registration flow', () => {
     let regTx
     const stakerAccount = accounts[1]
