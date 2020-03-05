@@ -21,7 +21,7 @@ async function getFileUUIDForImageCID (req, imageCID) {
     let cidIsFile = false
     try {
       const chunks = []
-      for await (const chunk of ipfsLatest.cat(imageCID, { length: 1, timeout: 5000 })) {
+      for await (const chunk of ipfsLatest.cat(imageCID, { length: 1, timeout: 1000 })) {
         chunks.push(chunk)
       }
 
