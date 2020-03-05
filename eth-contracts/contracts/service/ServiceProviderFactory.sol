@@ -129,6 +129,19 @@ contract ServiceProviderFactory is RegistryContract {
         return newServiceProviderID;
     }
 
+    function updateEndpoint(
+        bytes32 _serviceType,
+        string calldata _oldEndpoint,
+        string calldata _newEndpoint
+    ) external returns (uint spId){
+        address owner = msg.sender;
+        uint updatedSpId = ServiceProviderStorageInterface(
+            registry.getContract(serviceProviderStorageRegistryKey)
+        ).updateEndpoint(owner, _serviceType, _oldEndpoint, _newEndpoint);
+        require(spId == updatedSpId, "Service Provider ids don't match");
+        return spId;
+    }
+
     function deregister(
         bytes32 _serviceType,
         string calldata _endpoint

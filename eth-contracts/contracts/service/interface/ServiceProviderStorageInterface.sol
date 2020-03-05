@@ -24,6 +24,13 @@ interface ServiceProviderStorageInterface {
     address _updatedDelegateOwnerWallet
   ) external returns (address);
 
+  function updateEndpoint(
+    address _owner,
+    bytes32 _serviceType,
+    string calldata _oldEndpoint,
+    string calldata _newEndpoint
+  ) external returns (uint);
+
   function getServiceProviderInfo(
     bytes32 _serviceType,
     uint _serviceId
