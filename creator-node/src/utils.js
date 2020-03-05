@@ -20,7 +20,11 @@ async function getFileUUIDForImageCID (req, imageCID) {
     // Ensure CID points to a dir, not file
     let cidIsFile = false
     try {
-      await ipfs.cat(imageCID, { length: 1 })
+      const chunks = []
+      for await (const chunk of ipfsLatest.cat(imageCID, { length: 1, timeout: 5000 })) {
+        chunks.push(chunk)
+      }
+
       cidIsFile = true
     } catch (e) {
       // Ensure file exists for dirCID
@@ -107,6 +111,7 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
   }
 
   let rehydrateNecessary = false
+  // Race condition to either let 1s pass or fetch a single byte from ipfs
   try {
     await ipfsSingleByteCat(ipfsPath, req)
   } catch (e) {
