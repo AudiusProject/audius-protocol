@@ -16,12 +16,17 @@ class Utils {
 
 async function getFileUUIDForImageCID (req, imageCID) {
   const ipfs = req.app.get('ipfsAPI')
+  const ipfsLatest = req.app.get('ipfsLatestAPI')
 
   if (imageCID) { // assumes imageCIDs are optional params
     // Ensure CID points to a dir, not file
     let cidIsFile = false
     try {
-      await ipfs.cat(imageCID, { length: 1 })
+      const chunks = []
+      for await (const chunk of ipfsLatest.cat(imageCID, { length: 1, timeout: 5000 })) {
+        chunks.push(chunk)
+      }
+
       cidIsFile = true
     } catch (e) {
       // Ensure file exists for dirCID
@@ -77,9 +82,13 @@ const wait = (ms) => new Promise((resolve, reject) => setTimeout(() => reject(ne
 /** Cat single byte of file at given filepath. */
 const ipfsSingleByteCat = (path, req) => new Promise(async (resolve, reject) => {
   const start = Date.now()
-  let ipfs = req.app.get('ipfsAPI')
+  let ipfs = req.app.get('ipfsLatestAPI')
+
   try {
-    await ipfs.cat(path, { length: 1 })
+    const chunks = []
+    for await (const chunk of ipfs.cat(path, { length: 1, timeout: 5000 })) {
+      chunks.push(chunk)
+    }
     req.logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
     resolve()
   } catch (e) {
@@ -104,11 +113,9 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
   }
 
   let rehydrateNecessary = false
+  // Race condition to either let 1s pass or fetch a single byte from ipfs
   try {
-    await Promise.race([
-      wait(1000),
-      ipfsSingleByteCat(ipfsPath, req)]
-    )
+    await ipfsSingleByteCat(ipfsPath, req)
   } catch (e) {
     // Do not attempt to rehydrate as file, if cat() indicates CID is of a dir.
     if (e.message.includes('this dag node is a directory')) {
