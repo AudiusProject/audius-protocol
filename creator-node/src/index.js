@@ -105,7 +105,6 @@ const startApp = async () => {
 
     /** Run app */
     await BlacklistManager.blacklist(ipfs)
-    await BlacklistManager.blacklist(ipfsLatest)
 
     const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
     logger.info('Initialized audius libs')
