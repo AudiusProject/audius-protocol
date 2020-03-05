@@ -16,7 +16,7 @@ const getTrackMetadata = async (trackId: number, ownerId: number): Promise<GetTr
 
     const user  = await getUser(ownerId)
     const coverArt = getCoverArt(track, user)
-    const urlPath = getTrackPath({ routeId: track.route_id, trackId: track.track_id })
+    const urlPath = getTrackPath({ ownerHandle: user.handle, title: track.title, id: track.track_id })
 
     return {
       title: track.title,
@@ -64,7 +64,7 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
     handle: userMap[t.owner_id].handle,
     userName: userMap[t.owner_id].name,
     segments: t.track_segments,
-    urlPath: getTrackPath({ routeId: t.route_id, trackId: t.track_id }),
+    urlPath: getTrackPath({ ownerHandle: userMap[t.owner_id].handle, title: t.title, id: t.track_id }),
     id: t.track_id,
     isVerified: userMap[t.owner_id].is_verified
   })).filter((t: any) => !t.is_delete)
