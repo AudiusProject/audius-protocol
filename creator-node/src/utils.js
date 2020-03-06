@@ -86,7 +86,7 @@ const ipfsSingleByteCat = (path, req) => new Promise(async (resolve, reject) => 
 
   try {
     const chunks = []
-    for await (const chunk of ipfs.cat(path, { length: 1, timeout: 5000 })) {
+    for await (const chunk of ipfs.cat(path, { length: 1, timeout: 1000 })) {
       chunks.push(chunk)
     }
     req.logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
