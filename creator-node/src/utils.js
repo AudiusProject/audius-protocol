@@ -113,7 +113,6 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
   }
 
   let rehydrateNecessary = false
-  // Race condition to either let 1s pass or fetch a single byte from ipfs
   try {
     await ipfsSingleByteCat(ipfsPath, req)
   } catch (e) {
