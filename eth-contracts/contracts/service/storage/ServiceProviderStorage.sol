@@ -94,35 +94,30 @@ contract ServiceProviderStorage is RegistryContract {
         return assignedSpId;
     }
 
-    // TODO (DM) - how to verify that this is called by the person who actually registered the sp
     function updateEndpoint(
         address _owner,
         bytes32 _serviceType,
         string calldata _oldEndpoint,
         string calldata _newEndpoint
-    ) external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint spId)
+    ) external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint spID)
     {
-        uint spID = this.getServiceProviderIdFromEndpoint(_oldEndpoint);
+        uint spId = this.getServiceProviderIdFromEndpoint(_oldEndpoint);
 
         require(
-            serviceProviderInfo[_serviceType][spID].owner == _owner,
+            serviceProviderInfo[_serviceType][spId].owner == _owner,
             "Invalid update operation, wrong owner");
 
-        ServiceProvider memory sp = serviceProviderInfo[_serviceType][spID];
+        ServiceProvider memory sp = serviceProviderInfo[_serviceType][spId];
 
         // invalidate old endpoint
         serviceProviderEndpointToId[keccak256(bytes(_oldEndpoint))] = 0;
 
         // update to new endpoint
         sp.endpoint = _newEndpoint;
-        serviceProviderInfo[_serviceType][spID] = sp;
+        serviceProviderInfo[_serviceType][spId] = sp;
         serviceProviderEndpointToId[keccak256(bytes(_newEndpoint))] = spId;
 
-        // update to new endpoint
-
-        // update serviceProviderEndpointToId
-        // update serviceProviderAddressToId, UPDATE - not necessary cause it doesn't change spID?
-        // create a new ServiceProvider object and update in serviceProviderInfo
+        return spId;
     }
 
     function deregister(bytes32 _serviceType, address _owner, string calldata _endpoint)
