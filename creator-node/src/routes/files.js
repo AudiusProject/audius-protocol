@@ -192,17 +192,96 @@ module.exports = function (app) {
       if (req.query.filename) {
         res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
       }
+
+      let ipfsTime = Date.now()
       await new Promise((resolve, reject) => {
         req.app.get('ipfsAPI').catReadableStream(CID)
           .on('data', streamData => { res.write(streamData) })
           .on('end', () => { res.end(); resolve() })
           .on('error', e => { reject(e) })
       })
+      ipfsTime = Date.now() - ipfsTime
+      logger.info(`Time taken to stream file from IPFS: ${ipfsTime}`)
     } catch (e) {
+      if (e.message.includes('no such file or directory')) {
+        return sendResponse(req, res, errorResponseServerError(`Cannot find file to stream for provided CID: ${CID}`))
+      }
+
       return sendResponse(req, res, errorResponseServerError(e.message))
     }
   })
 
+  /**
+   * Same functionality as `/ipfs/:CID` route, but instead fetches desired file from
+   * file system rather than ipfs.
+   */
+  app.get('/ipfs_fs/:CID', async (req, res) => {
+    if (!(req.params && req.params.CID)) {
+      return sendResponse(req, res, errorResponseBadRequest(`Invalid request, no CID provided`))
+    }
+
+    // Do not act as a public gateway. Only serve IPFS files that are hosted by this creator node.
+    const CID = req.params.CID
+
+    // Don't serve if blacklisted.
+    if (await req.app.get('blacklistManager').CIDIsInBlacklist(CID)) {
+      return sendResponse(req, res, errorResponseForbidden(`CID ${CID} has been blacklisted by this node.`))
+    }
+
+    // Don't serve if not found in DB.
+    const queryResults = await models.File.findOne({ where: {
+      multihash: CID,
+      // All other file types are valid and can be served through this route.
+      type: { [models.Sequelize.Op.ne]: 'dir' } // Op.ne = notequal
+    } })
+    if (!queryResults) {
+      return sendResponse(req, res, errorResponseNotFound(`No valid file found for provided CID: ${CID}`))
+    }
+
+    redisClient.incr('ipfsStandaloneReqs')
+    const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
+    logger.info(`IPFS Standalone Request - ${CID}`)
+    logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
+
+    try {
+      await rehydrateIpfsFromFsIfNecessary(
+        req,
+        CID,
+        queryResults.storagePath
+      )
+    } catch (e) {
+      // If rehydrate throws error, return 500 without attempting to stream file.
+      return sendResponse(req, res, errorResponseServerError(e.message))
+    }
+
+    // Stream file to client.
+    try {
+      // If client has provided filename, set filename in header to be auto-populated in download prompt.
+      if (req.query.filename) {
+        res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
+      }
+
+      // Grab file from file storage and return it as reƒsponse
+      const fileStream = fs.createReadStream(queryResults.storagePath)
+
+      let fsTime = Date.now()
+      await new Promise((resolve, reject) => {
+        fileStream
+          .on('open', () => fileStream.pipe(res))
+          .on('end', () => { res.end(); resolve() })
+          .on('error', e => { reject(e) })
+      })
+      fsTime = Date.now() - fsTime
+
+      logger.info(`Time taken to stream file from file system: ${fsTime}`)
+    } catch (e) {
+      if (e.message.includes('no such file or directory')) {
+        return sendResponse(req, res, errorResponseServerError(`Cannot find file to stream for provided CID: ${CID}`))
+      }
+
+      return sendResponse(req, res, errorResponseServerError(e.message))
+    }
+  })
   /**
    * Serve images hosted by creator node on IPFS.
    * @dev This route does not handle responses by design, so we can pipe the gateway response.
