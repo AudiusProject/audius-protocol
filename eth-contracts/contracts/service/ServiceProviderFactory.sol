@@ -137,19 +137,6 @@ contract ServiceProviderFactory is RegistryContract {
         return newServiceProviderID;
     }
 
-    function updateEndpoint(
-        bytes32 _serviceType,
-        string calldata _oldEndpoint,
-        string calldata _newEndpoint
-    ) external returns (uint spID){
-        address owner = msg.sender;
-        uint spId = ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).updateEndpoint(owner, _serviceType, _oldEndpoint, _newEndpoint);
-        emit UpdateEndpoint(_serviceType, owner, _oldEndpoint, _newEndpoint, spId);
-        return spId;
-    }
-
     function deregister(
         bytes32 _serviceType,
         string calldata _endpoint
@@ -276,6 +263,19 @@ contract ServiceProviderFactory is RegistryContract {
             _endpoint,
             _updatedDelegateOwnerWallet
         );
+    }
+
+    function updateEndpoint(
+        bytes32 _serviceType,
+        string calldata _oldEndpoint,
+        string calldata _newEndpoint
+    ) external returns (uint spID){
+        address owner = msg.sender;
+        uint spId = ServiceProviderStorageInterface(
+            registry.getContract(serviceProviderStorageRegistryKey)
+        ).updateEndpoint(owner, _serviceType, _oldEndpoint, _newEndpoint);
+        emit UpdateEndpoint(_serviceType, owner, _oldEndpoint, _newEndpoint, spId);
+        return spId;
     }
 
     function getTotalServiceTypeProviders(bytes32 _serviceType)

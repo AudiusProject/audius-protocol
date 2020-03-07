@@ -189,15 +189,6 @@ contract('ServiceProvider test', async (accounts) => {
     return newIdFound
   }
 
-  const updateServiceProviderEndpoint = async (type, oldEndpoint, newEndpoint) => {
-    let spID = await serviceProviderFactory.updateEndpoint(
-      type,
-      oldEndpoint,
-      newEndpoint
-    )
-    return spID
-  }
-
   describe('Registration flow', () => {
     let regTx
     const stakerAccount = accounts[1]
@@ -646,6 +637,14 @@ contract('ServiceProvider test', async (accounts) => {
       // it should replace the service provider in place so spId should be consistent
       const spIdNew = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint1)
       assert.isTrue(spId.eq(spIdNew))
+    })
+
+    it('will fail to modify the dns endpoint for the wrong owner', async () => {
+      // will try to update the endpoint from the incorrect account
+      await _lib.assertRevert(
+        serviceProviderFactory.updateEndpoint(testDiscProvType, testEndpoint, testEndpoint1),
+        'Invalid update endpoint operation, wrong owner'
+      )
     })
   })
 })

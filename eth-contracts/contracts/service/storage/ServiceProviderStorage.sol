@@ -94,32 +94,6 @@ contract ServiceProviderStorage is RegistryContract {
         return assignedSpId;
     }
 
-    function updateEndpoint(
-        address _owner,
-        bytes32 _serviceType,
-        string calldata _oldEndpoint,
-        string calldata _newEndpoint
-    ) external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint spID)
-    {
-        uint spId = this.getServiceProviderIdFromEndpoint(_oldEndpoint);
-
-        require(
-            serviceProviderInfo[_serviceType][spId].owner == _owner,
-            "Invalid update operation, wrong owner");
-
-        ServiceProvider memory sp = serviceProviderInfo[_serviceType][spId];
-
-        // invalidate old endpoint
-        serviceProviderEndpointToId[keccak256(bytes(_oldEndpoint))] = 0;
-
-        // update to new endpoint
-        sp.endpoint = _newEndpoint;
-        serviceProviderInfo[_serviceType][spId] = sp;
-        serviceProviderEndpointToId[keccak256(bytes(_newEndpoint))] = spId;
-
-        return spId;
-    }
-
     function deregister(bytes32 _serviceType, address _owner, string calldata _endpoint)
     external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint deregisteredSpID)
     {
@@ -171,6 +145,32 @@ contract ServiceProviderStorage is RegistryContract {
             "Invalid update operation, wrong owner");
 
         serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
+    }
+
+    function updateEndpoint(
+        address _owner,
+        bytes32 _serviceType,
+        string calldata _oldEndpoint,
+        string calldata _newEndpoint
+    ) external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint spID)
+    {
+        uint spId = this.getServiceProviderIdFromEndpoint(_oldEndpoint);
+
+        require(
+            serviceProviderInfo[_serviceType][spId].owner == _owner,
+            "Invalid update endpoint operation, wrong owner");
+
+        ServiceProvider memory sp = serviceProviderInfo[_serviceType][spId];
+
+        // invalidate old endpoint
+        serviceProviderEndpointToId[keccak256(bytes(_oldEndpoint))] = 0;
+
+        // update to new endpoint
+        sp.endpoint = _newEndpoint;
+        serviceProviderInfo[_serviceType][spId] = sp;
+        serviceProviderEndpointToId[keccak256(bytes(_newEndpoint))] = spId;
+
+        return spId;
     }
 
     function getTotalServiceTypeProviders(bytes32 _serviceType)
