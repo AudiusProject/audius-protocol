@@ -163,7 +163,7 @@ contract ServiceProviderStorage is RegistryContract {
         ServiceProvider memory sp = serviceProviderInfo[_serviceType][spId];
 
         // invalidate old endpoint
-        serviceProviderEndpointToId[keccak256(bytes(_oldEndpoint))] = 0;
+        serviceProviderEndpointToId[keccak256(bytes(sp.endpoint))] = 0;
 
         // update to new endpoint
         sp.endpoint = _newEndpoint;
