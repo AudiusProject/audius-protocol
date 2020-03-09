@@ -194,11 +194,9 @@ module.exports = function (app) {
         res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
       }
 
-      const queryStringObj = url.parse(req.url, true).query
-
       // If query strings define to stream file from fs, do so
       // Explicit value must be 'true' and not random string
-      if (queryStringObj.fs_stream && queryStringObj.fs_stream === 'true') {
+      if (req.query.system_stream && req.query.system_stream === 'true') {
       // Grab file from file storage and return it as response
         const fileStream = fs.createReadStream(queryResults.storagePath)
 
