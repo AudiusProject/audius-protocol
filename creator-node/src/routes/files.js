@@ -5,7 +5,6 @@ var contentDisposition = require('content-disposition')
 const { promisify } = require('util')
 const writeFile = promisify(fs.writeFile)
 const mkdir = promisify(fs.mkdir)
-const url = require('url')
 
 const { upload } = require('../fileManager')
 const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound, errorResponseForbidden } = require('../apiHelpers')
