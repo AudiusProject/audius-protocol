@@ -55,6 +55,7 @@ const initIPFS = async () => {
 
   // initialize ipfs here
   const identity = await ipfs.id()
+  // Pretty print the JSON obj with no filter fn (e.g. filter by string or number) and spacing of size 2
   logger.info(`Current IPFS Peer ID: ${JSON.stringify(identity, null, 2)}`)
 
   // init latest version of ipfs

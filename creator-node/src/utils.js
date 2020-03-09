@@ -22,6 +22,7 @@ async function getFileUUIDForImageCID (req, imageCID) {
     // Ensure CID points to a dir, not file
     let cidIsFile = false
     try {
+      /* eslint-disable-next-line no-unused-vars */
       for await (const chunk of ipfsLatest.cat(imageCID, { length: 1, timeout: 1000 })) {
         continue
       }
@@ -82,6 +83,7 @@ const ipfsSingleByteCat = (path, req) => new Promise(async (resolve, reject) => 
   let ipfs = req.app.get('ipfsLatestAPI')
 
   try {
+    /* eslint-disable-next-line no-unused-vars */
     for await (const chunk of ipfs.cat(path, { length: 1, timeout: 1000 })) {
       continue
     }
