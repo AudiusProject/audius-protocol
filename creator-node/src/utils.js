@@ -22,9 +22,8 @@ async function getFileUUIDForImageCID (req, imageCID) {
     // Ensure CID points to a dir, not file
     let cidIsFile = false
     try {
-      const chunks = []
       for await (const chunk of ipfsLatest.cat(imageCID, { length: 1, timeout: 1000 })) {
-        chunks.push(chunk)
+        continue
       }
 
       cidIsFile = true
@@ -77,17 +76,14 @@ async function getIPFSPeerId (ipfs, config) {
   return ipfsIDObj
 }
 
-const wait = (ms) => new Promise((resolve, reject) => setTimeout(() => reject(new Error('Timeout')), ms))
-
 /** Cat single byte of file at given filepath. */
 const ipfsSingleByteCat = (path, req) => new Promise(async (resolve, reject) => {
   const start = Date.now()
   let ipfs = req.app.get('ipfsLatestAPI')
 
   try {
-    const chunks = []
     for await (const chunk of ipfs.cat(path, { length: 1, timeout: 1000 })) {
-      chunks.push(chunk)
+      continue
     }
     req.logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
     resolve()
@@ -186,9 +182,7 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
     let ipfsPath = `${dirHash}/${sourcePath}`
     req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, ipfsPath: ${ipfsPath}`)
     try {
-      await Promise.race([
-        wait(1000),
-        ipfsSingleByteCat(ipfsPath, req)])
+      ipfsSingleByteCat(ipfsPath, req)
     } catch (e) {
       rehydrateNecessary = true
       req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
