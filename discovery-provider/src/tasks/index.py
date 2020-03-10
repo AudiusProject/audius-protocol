@@ -611,4 +611,3 @@ def update_task(self):
     finally:
         if have_lock:
             update_lock.release()
-            logger.info(f"index.py | update_task | Released update_lock")
