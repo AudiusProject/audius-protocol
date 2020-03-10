@@ -16,17 +16,11 @@ class Utils {
 
 async function getFileUUIDForImageCID (req, imageCID) {
   const ipfs = req.app.get('ipfsAPI')
-  const ipfsLatest = req.app.get('ipfsLatestAPI')
-
   if (imageCID) { // assumes imageCIDs are optional params
     // Ensure CID points to a dir, not file
     let cidIsFile = false
     try {
-      /* eslint-disable-next-line no-unused-vars */
-      for await (const chunk of ipfsLatest.cat(imageCID, { length: 1, timeout: 1000 })) {
-        continue
-      }
-
+      await ipfs.cat(imageCID, { length: 1 })
       cidIsFile = true
     } catch (e) {
       // Ensure file exists for dirCID
