@@ -35,6 +35,8 @@ async function getFileUUIDForImageCID (req, imageCID) {
       const dirContents = await ipfs.ls(imageCID)
       req.logger.info(dirContents)
 
+      // Iterates through directory contents but returns upon first iteration
+      // TODO: refactor to remove for-loop
       for (let fileObj of dirContents) {
         if (!fileObj.hasOwnProperty('hash') || !fileObj.hash) {
           throw new Error(`Malformatted dir contents for dirCID ${imageCID}. Cannot process.`)
