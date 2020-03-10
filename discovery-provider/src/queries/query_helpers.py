@@ -195,7 +195,7 @@ def populate_user_metadata(session, user_ids, users, current_user_id):
     )
     repost_count_dict = {user_id: repost_count for (user_id, repost_count) in repost_counts}
 
-    # build dict of user id --> repost count
+    # build dict of user id --> track save count
     track_save_counts = (
         session.query(
             Save.user_id,

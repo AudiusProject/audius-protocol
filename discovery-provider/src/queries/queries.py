@@ -1452,7 +1452,7 @@ def get_users_account():
             Save.user_id == user_id,
             Save.is_current == True,
             Save.is_delete == False,
-            or_(Save.save_type == SaveType.playlist,Save.save_type == SaveType.album),
+            or_(Save.save_type == SaveType.playlist, Save.save_type == SaveType.album),
             Save.save_item_id.in_(
                 session.query(Playlist.playlist_id).filter(
                     Playlist.is_current == True,
@@ -1486,18 +1486,18 @@ def get_users_account():
         users = helpers.query_result_to_list(users)
         user_map = {}
 
-        collections = []
-        # Map the users to the collections
-        for collection_user in users:
-             user_map[collection_user['user_id']] = collection_user
+        stripped_playlists = []
+        # Map the users to the playlists/albums
+        for playlist_owner in users:
+             user_map[playlist_owner['user_id']] = playlist_owner
         for playlist in playlists:
-            collection_owner = user_map[playlist['playlist_owner_id']]
-            collections.append({
+            playlist_owner = user_map[playlist['playlist_owner_id']]
+            stripped_playlists.append({
                 'id': playlist['playlist_id'],
                 'name': playlist['playlist_name'],
                 'is_album': playlist['is_album'],
-                'user': { 'id': collection_owner['user_id'], 'handle': collection_owner['handle'] }
+                'user': { 'id': playlist_owner['user_id'], 'handle': playlist_owner['handle'] }
             })
-        user['collections'] = collections
+        user['playlists'] = stripped_playlists
 
     return api_helpers.success_response(user)
