@@ -483,7 +483,7 @@ def update_task(self):
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock("disc_prov_lock", timeout=7200)
+    update_lock = redis.lock("disc_prov_lock", timeout=25, blocking_timeout=25)
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
@@ -491,7 +491,7 @@ def update_task(self):
             # Refresh all IPFS peer connections
             refresh_peer_connections(self)
 
-            logger.debug(f"index.py | update_task | Acquired disc_prov_lock")
+            logger.info(f"index.py | update_task | Acquired disc_prov_lock")
             initialize_blocks_table_if_necessary(db)
 
             latest_block = get_latest_block(db)
@@ -604,7 +604,7 @@ def update_task(self):
             # Perform indexing operations
             index_blocks(self, db, index_blocks_list)
         else:
-            logger.info("index.py | update_task | Failed to acquire disc_prov_lock")
+            logger.error("index.py | update_task | Failed to acquire disc_prov_lock")
     except Exception as e:
         logger.error("Fatal error in main loop", exc_info=True)
         raise e
