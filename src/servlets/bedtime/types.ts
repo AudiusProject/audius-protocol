@@ -18,6 +18,7 @@ export type GetTracksResponse = TrackResponse & {
 }
 
 export type GetCollectionResponse = {
+  id: number
   name: string
   ownerHandle: string
   ownerName: string

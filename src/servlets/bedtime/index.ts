@@ -103,7 +103,8 @@ const getCollectionMetadata = async (collectionId: number, ownerId: number): Pro
       ownerHandle: ownerUser.handle,
       tracks,
       coverArt,
-      isVerified: ownerUser.is_verified
+      isVerified: ownerUser.is_verified,
+      id: collection.playlist_id
     }
   } catch (e) {
     const error = `Failed to get collection for ID [${collectionId}] with error: [${e.message}]`
