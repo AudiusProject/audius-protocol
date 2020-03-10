@@ -111,10 +111,10 @@ def get_tracks():
                 Track.owner_id == user_id
             )
 
-        # Filter deleted tracks if we are not querying by track ids or we've explicitly said to filter deletes
+        # Allow filtering of deletes
         # Note: There is no standard for boolean url parameters, and any value (including 'false')
         # will be evaluated as true, so an explicit check is made for true
-        if ("id" not in request.args) or ("filter_deleted" in request.args):
+        if ("filter_deleted" in request.args):
             filter_deleted = request.args.get("filter_deleted")
             if (filter_deleted.lower() == 'true'):
                 base_query = base_query.filter(
@@ -167,20 +167,44 @@ def get_tracks_including_unlisted():
 
         # Create filter conditions as a list of `and` clauses
         for i in identifiers:
-            route_id = helpers.create_track_route_id(i["url_title"], i["handle"])
             filter_cond.append(and_(
                 Track.is_current == True,
-                Track.is_delete == False,
-                Track.route_id == route_id,
                 Track.track_id == i["id"]
             ))
 
-        # Pass array of `and` clauses into an `or` clause as destrucutred *args
+        # Pass array of `and` clauses into an `or` clause as destructured *args
         base_query = base_query.filter(or_(*filter_cond))
 
+        # Allow filtering of deletes
+        # Note: There is no standard for boolean url parameters, and any value (including 'false')
+        # will be evaluated as true, so an explicit check is made for true
+        if ("filter_deleted" in request.args):
+            filter_deleted = request.args.get("filter_deleted")
+            if (filter_deleted.lower() == 'true'):
+                base_query = base_query.filter(
+                    Track.is_delete == False
+                )
+
         # Perform the query
+        # TODO: pagination is broken with unlisted tracks
         query_results = paginate_query(base_query).all()
         tracks = helpers.query_result_to_list(query_results)
+
+        # Mapping of track_id -> track object from request;
+        # used to check route_id when iterating through identifiers
+        identifiers_map = {track["id"]: track for track in identifiers}
+
+        # If the track is unlisted and the generated route_id does not match the route_id in db,
+        # filter track out from response
+        def filter_fn(track):
+            input_track = identifiers_map[track["track_id"]]
+            route_id = helpers.create_track_route_id(input_track["url_title"], \
+                        input_track["handle"])
+
+            return not track["is_unlisted"] or track["route_id"] == route_id
+
+        tracks = list(filter(filter_fn, tracks))
+
         track_ids = list(map(lambda track: track["track_id"], tracks))
 
         # Populate metadata

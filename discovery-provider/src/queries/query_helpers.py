@@ -1,7 +1,7 @@
 import logging # pylint: disable=C0302
 import json
 import requests
-from sqlalchemy import func, desc
+from sqlalchemy import func, desc, text
 from urllib.parse import urljoin
 
 from flask import request
@@ -11,6 +11,8 @@ from src.queries import response_name_constants
 from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType
 from src.utils import helpers
 from src.utils.config import shared_config
+
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -501,8 +503,7 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
 
     return playlists
 
-
-def get_repost_counts(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, max_block_number=None):
+def get_repost_counts_query(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, max_block_number=None):
     query_col = Repost.user_id if query_by_user_flag else Repost.repost_item_id
 
     repost_counts_query = None
@@ -546,10 +547,22 @@ def get_repost_counts(session, query_by_user_flag, query_repost_type_flag, filte
         repost_counts_query = repost_counts_query.filter(
             Repost.blocknumber <= max_block_number
         )
+
+    return repost_counts_query
+
+# Gets the repost count for users or tracks with the filters specified in the params. 
+# The time param {day, week, month, year} is used in generate_trending to create a windowed time frame for repost counts
+def get_repost_counts(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, max_block_number=None, time=None):
+    repost_counts_query = get_repost_counts_query(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, max_block_number)
+
+    if time is not None:
+        interval = "NOW() - interval '1 {}'".format(time)
+        repost_counts_query = repost_counts_query.filter(
+                Repost.created_at >= text(interval)
+            )
     return repost_counts_query.all()
 
-
-def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number=None):
+def get_save_counts_query(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number=None):
     query_col = Save.user_id if query_by_user_flag else Save.save_item_id
 
     save_counts_query = None
@@ -594,8 +607,19 @@ def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_id
             Save.blocknumber <= max_block_number
         )
 
-    return save_counts_query.all()
+    return save_counts_query
 
+# Gets the save count for users or tracks with the filters specified in the params. 
+# The time param {day, week, month, year} is used in generate_trending to create a windowed time frame for save counts
+def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number=None, time=None):
+    save_counts_query = get_save_counts_query(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number)
+    
+    if time is not None:
+        interval = "NOW() - interval '1 {}'".format(time)
+        save_counts_query = save_counts_query.filter(
+                Save.created_at >= text(interval)
+            )
+    return save_counts_query.all()
 
 def get_followee_count_dict(session, user_ids):
     # build dict of user id --> followee count

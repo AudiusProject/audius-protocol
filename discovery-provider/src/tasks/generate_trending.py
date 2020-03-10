@@ -7,7 +7,8 @@ from src import api_helpers
 from src.models import Track, RepostType, Follow, SaveType
 from src.utils.config import shared_config
 from src.queries import response_name_constants
-from src.queries.query_helpers import get_repost_counts, get_save_counts, get_genre_list
+from src.queries.query_helpers import \
+    get_repost_counts, get_save_counts, get_genre_list
 
 logger = logging.getLogger(__name__)
 
@@ -85,9 +86,20 @@ def generate_trending(db, time, genre, limit, offset):
         not_deleted_track_ids = set([record[0] for record in not_deleted_track_ids]) # pylint: disable=R1718
         # Query repost counts
         repost_counts = get_repost_counts(session, False, True, not_deleted_track_ids, None)
+         # Generate track_id --> repost_count mapping
         track_repost_counts = {
             repost_item_id: repost_count
             for (repost_item_id, repost_count, repost_type) in repost_counts
+            if repost_type == RepostType.track
+        }
+
+        # Query repost count with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
+        track_repost_counts_for_time = \
+            get_repost_counts(session, False, True, not_deleted_track_ids, None, None, time)
+        # Generate track_id --> windowed_save_count mapping
+        track_repost_counts_for_time = {
+            repost_item_id: repost_count
+            for (repost_item_id, repost_count, repost_type) in track_repost_counts_for_time
             if repost_type == RepostType.track
         }
 
@@ -126,10 +138,21 @@ def generate_trending(db, time, genre, limit, offset):
         follower_count_dict = \
                 {user_id: follower_count for (user_id, follower_count) in follower_counts}
 
+        # Query save counts
         save_counts = get_save_counts(session, False, True, not_deleted_track_ids, None)
+        # Generate track_id --> save_count mapping
         track_save_counts = {
             save_item_id: save_count
             for (save_item_id, save_count, save_type) in save_counts
+            if save_type == SaveType.track
+        }
+
+        # Query save counts with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
+        save_counts_for_time = get_save_counts(session, False, True, not_deleted_track_ids, None, None, time)
+         # Generate track_id --> windowed_save_count mapping
+        track_save_counts_for_time = {
+            save_item_id: save_count
+            for (save_item_id, save_count, save_type) in save_counts_for_time
             if save_type == SaveType.track
         }
 
@@ -146,12 +169,26 @@ def generate_trending(db, time, genre, limit, offset):
             else:
                 track_entry[response_name_constants.repost_count] = 0
 
+            # Populate repost counts with respect to time
+            if track_entry[response_name_constants.track_id] in track_repost_counts_for_time:
+                track_entry[response_name_constants.windowed_repost_count] = \
+                    track_repost_counts_for_time[track_entry[response_name_constants.track_id]]
+            else:
+                track_entry[response_name_constants.windowed_repost_count] = 0
+
             # Populate save counts
             if track_entry[response_name_constants.track_id] in track_save_counts:
                 track_entry[response_name_constants.save_count] = \
                         track_save_counts[track_entry[response_name_constants.track_id]]
             else:
                 track_entry[response_name_constants.save_count] = 0
+
+            # Populate save counts with respect to time
+            if track_entry[response_name_constants.track_id] in track_save_counts_for_time:
+                track_entry[response_name_constants.windowed_save_count] = \
+                        track_save_counts_for_time[track_entry[response_name_constants.track_id]]
+            else:
+                track_entry[response_name_constants.windowed_save_count] = 0
 
             # Populate listen counts
             owner_id = track_owner_dict[track_entry[response_name_constants.track_id]]
@@ -173,3 +210,4 @@ def generate_trending(db, time, genre, limit, offset):
     final_resp = {}
     final_resp['listen_counts'] = trending_tracks
     return final_resp
+    
