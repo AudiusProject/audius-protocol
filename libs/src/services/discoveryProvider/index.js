@@ -565,7 +565,10 @@ class DiscoveryProvider {
   /**
    * Return user collections (saved & uploaded) along w/ users for those collections
    */
-  async getUserAccount (wallet = '') {
+  async getUserAccount (wallet) {
+    if (wallet === undefined) {
+      throw new Error('Expected wallet to get user account')
+    }
     let req = {
       endpoint: 'users/account',
       queryParams: { wallet }

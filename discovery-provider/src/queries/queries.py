@@ -1412,6 +1412,8 @@ def get_saves(save_type):
     return api_helpers.success_response(save_results)
 
 # Get the user saved collections & uploaded collections along with the collection user owners
+# NOTE: This is a one off endpoint for retrieving a user's collections/associated user and should
+# be consolidated later in the client
 @bp.route("/users/account", methods=("GET",))
 def get_users_account():
 
@@ -1422,55 +1424,41 @@ def get_users_account():
         # Don't return the user if they have no wallet or handle (user creation did not finish properly on chain)
         base_query = base_query.filter(User.is_current == True, User.wallet != None, User.handle != None)
 
-        if "wallet" in request.args:
-            wallet = request.args.get("wallet")
-            wallet = wallet.lower()
-            if len(wallet) == 42:
-                base_query = base_query.filter_by(wallet=wallet)
-                base_query = base_query.order_by(asc(User.created_at))
-            else:
-                logger.warning("Invalid wallet length")
-        if "handle" in request.args:
-            handle = request.args.get("handle").lower()
-            base_query = base_query.filter_by(handle_lc=handle)
-        if "id" in request.args:
-            id = int(request.args.get("id"))
-            base_query = base_query.filter_by(user_id=id)
+        if "wallet" not in request.args:
+            return api_helpers.error_response('Missing wallet param', 404)
 
-        users = base_query.all()
-        users = helpers.query_result_to_list(users)
+        wallet = request.args.get("wallet")
+        wallet = wallet.lower()
+        if len(wallet) == 42:
+            base_query = base_query.filter_by(wallet=wallet)
+            base_query = base_query.order_by(asc(User.created_at))
+        else:
+            return api_helpers.error_response('Invalid wallet length', 404)
 
-        user = users[0]
+        user = base_query.one()
+        user = helpers.model_to_dictionary(user)
         user_id = user['user_id']
 
         # bundle peripheral info into user results
-        users = populate_user_metadata(session, [user_id], users, user_id)
+        users = populate_user_metadata(session, [user_id], [user], user_id, True)
         user = users[0]
 
         # Get saved playlists / albums ids
-        saved_query = session.query(Save).filter(
+        saved_query = session.query(Save.save_item_id).filter(
             Save.user_id == user_id,
             Save.is_current == True,
             Save.is_delete == False,
-            or_(Save.save_type == SaveType.playlist, Save.save_type == SaveType.album),
-            Save.save_item_id.in_(
-                session.query(Playlist.playlist_id).filter(
-                    Playlist.is_current == True,
-                    Playlist.is_delete == False,
-                    Playlist.is_private == False
-                )
-            )
+            or_(Save.save_type == SaveType.playlist, Save.save_type == SaveType.album)
         )
  
         saved_query_results = saved_query.all()
-        save_collections = helpers.query_result_to_list(saved_query_results)
-        save_collection_ids = [item['save_item_id'] for item in save_collections]
+        save_collection_ids = [item[0] for item in saved_query_results]
 
         # Get Playlist/Albums saved or owned by the user
         playlist_query = session.query(Playlist).filter(
                 or_(
                     and_(Playlist.is_current == True, Playlist.is_delete == False, Playlist.playlist_owner_id == user_id),
-                    and_(Playlist.is_current == True, Playlist.playlist_id.in_(save_collection_ids))
+                    and_(Playlist.is_current == True, Playlist.is_delete == False, Playlist.playlist_id.in_(save_collection_ids))
                 )
             ).order_by(desc(Playlist.created_at))
         playlists = playlist_query.all()
