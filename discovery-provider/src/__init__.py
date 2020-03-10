@@ -288,7 +288,7 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst = redis.Redis.from_url(url=redis_url)
 
     # Clear existing lock if present
-    redis.del("disc_prov_lock")
+    redis_inst.delete("disc_prov_lock")
 
     # Initialize custom task context with database object
     class DatabaseTask(Task):
