@@ -20,11 +20,7 @@ async function getFileUUIDForImageCID (req, imageCID) {
     // Ensure CID points to a dir, not file
     let cidIsFile = false
     try {
-      const chunks = []
-      for await (const chunk of ipfsLatest.cat(imageCID, { length: 1, timeout: 1000 })) {
-        chunks.push(chunk)
-      }
-
+      await ipfs.cat(imageCID, { length: 1 })
       cidIsFile = true
     } catch (e) {
       // Ensure file exists for dirCID
