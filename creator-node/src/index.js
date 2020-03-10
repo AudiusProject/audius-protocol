@@ -2,6 +2,7 @@
 
 const ON_DEATH = require('death')
 const ipfsClient = require('ipfs-http-client')
+const ipfsClientLatest = require('ipfs-http-client-latest')
 const path = require('path')
 const AudiusLibs = require('@audius/libs')
 
@@ -50,9 +51,18 @@ const initIPFS = async () => {
     process.exit(1)
   }
   const ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
+  const ipfsLatest = ipfsClientLatest({ host: ipfsAddr, port: config.get('ipfsPort'), protocol: 'http' })
+
+  // initialize ipfs here
   const identity = await ipfs.id()
-  logger.info(`Current IPFS Peer ID: ${JSON.stringify(identity)}`)
-  return ipfs
+  // Pretty print the JSON obj with no filter fn (e.g. filter by string or number) and spacing of size 2
+  logger.info(`Current IPFS Peer ID: ${JSON.stringify(identity, null, 2)}`)
+
+  // init latest version of ipfs
+  const identityLatest = await ipfsLatest.id()
+  logger.info(`Current IPFS Peer ID (using latest version of ipfs client): ${JSON.stringify(identityLatest, null, 2)}`)
+
+  return { ipfs, ipfsLatest }
 }
 
 const runDBMigrations = async () => {
@@ -81,7 +91,7 @@ const startApp = async () => {
   await config.asyncConfig()
   const storagePath = configFileStorage()
 
-  const ipfs = await initIPFS()
+  const { ipfs, ipfsLatest } = await initIPFS()
 
   const mode = getMode()
   let appInfo
@@ -100,7 +110,7 @@ const startApp = async () => {
     const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
     logger.info('Initialized audius libs')
 
-    appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager)
+    appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager, ipfsLatest)
   }
 
   // when app terminates, close down any open DB connections gracefully

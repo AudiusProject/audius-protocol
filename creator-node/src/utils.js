@@ -16,7 +16,6 @@ class Utils {
 
 async function getFileUUIDForImageCID (req, imageCID) {
   const ipfs = req.app.get('ipfsAPI')
-
   if (imageCID) { // assumes imageCIDs are optional params
     // Ensure CID points to a dir, not file
     let cidIsFile = false
@@ -36,6 +35,8 @@ async function getFileUUIDForImageCID (req, imageCID) {
       const dirContents = await ipfs.ls(imageCID)
       req.logger.info(dirContents)
 
+      // Iterates through directory contents but returns upon first iteration
+      // TODO: refactor to remove for-loop
       for (let fileObj of dirContents) {
         if (!fileObj.hasOwnProperty('hash') || !fileObj.hash) {
           throw new Error(`Malformatted dir contents for dirCID ${imageCID}. Cannot process.`)
@@ -72,14 +73,16 @@ async function getIPFSPeerId (ipfs, config) {
   return ipfsIDObj
 }
 
-const wait = (ms) => new Promise((resolve, reject) => setTimeout(() => reject(new Error('Timeout')), ms))
-
 /** Cat single byte of file at given filepath. */
 const ipfsSingleByteCat = (path, req) => new Promise(async (resolve, reject) => {
   const start = Date.now()
-  let ipfs = req.app.get('ipfsAPI')
+  let ipfs = req.app.get('ipfsLatestAPI')
+
   try {
-    await ipfs.cat(path, { length: 1 })
+    /* eslint-disable-next-line no-unused-vars */
+    for await (const chunk of ipfs.cat(path, { length: 1, timeout: 1000 })) {
+      continue
+    }
     req.logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
     resolve()
   } catch (e) {
@@ -105,10 +108,7 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
 
   let rehydrateNecessary = false
   try {
-    await Promise.race([
-      wait(1000),
-      ipfsSingleByteCat(ipfsPath, req)]
-    )
+    await ipfsSingleByteCat(ipfsPath, req)
   } catch (e) {
     // Do not attempt to rehydrate as file, if cat() indicates CID is of a dir.
     if (e.message.includes('this dag node is a directory')) {
@@ -180,9 +180,7 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
     let ipfsPath = `${dirHash}/${sourcePath}`
     req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, ipfsPath: ${ipfsPath}`)
     try {
-      await Promise.race([
-        wait(1000),
-        ipfsSingleByteCat(ipfsPath, req)])
+      ipfsSingleByteCat(ipfsPath, req)
     } catch (e) {
       rehydrateNecessary = true
       req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
