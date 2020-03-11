@@ -111,10 +111,10 @@ def get_tracks():
                 Track.owner_id == user_id
             )
 
-        # Filter deleted tracks if we are not querying by track ids or we've explicitly said to filter deletes
+        # Allow filtering of deletes
         # Note: There is no standard for boolean url parameters, and any value (including 'false')
         # will be evaluated as true, so an explicit check is made for true
-        if ("id" not in request.args) or ("filter_deleted" in request.args):
+        if ("filter_deleted" in request.args):
             filter_deleted = request.args.get("filter_deleted")
             if (filter_deleted.lower() == 'true'):
                 base_query = base_query.filter(
@@ -167,20 +167,44 @@ def get_tracks_including_unlisted():
 
         # Create filter conditions as a list of `and` clauses
         for i in identifiers:
-            route_id = helpers.create_track_route_id(i["url_title"], i["handle"])
             filter_cond.append(and_(
                 Track.is_current == True,
-                Track.is_delete == False,
-                Track.route_id == route_id,
                 Track.track_id == i["id"]
             ))
 
-        # Pass array of `and` clauses into an `or` clause as destrucutred *args
+        # Pass array of `and` clauses into an `or` clause as destructured *args
         base_query = base_query.filter(or_(*filter_cond))
 
+        # Allow filtering of deletes
+        # Note: There is no standard for boolean url parameters, and any value (including 'false')
+        # will be evaluated as true, so an explicit check is made for true
+        if ("filter_deleted" in request.args):
+            filter_deleted = request.args.get("filter_deleted")
+            if (filter_deleted.lower() == 'true'):
+                base_query = base_query.filter(
+                    Track.is_delete == False
+                )
+
         # Perform the query
+        # TODO: pagination is broken with unlisted tracks
         query_results = paginate_query(base_query).all()
         tracks = helpers.query_result_to_list(query_results)
+
+        # Mapping of track_id -> track object from request;
+        # used to check route_id when iterating through identifiers
+        identifiers_map = {track["id"]: track for track in identifiers}
+
+        # If the track is unlisted and the generated route_id does not match the route_id in db,
+        # filter track out from response
+        def filter_fn(track):
+            input_track = identifiers_map[track["track_id"]]
+            route_id = helpers.create_track_route_id(input_track["url_title"], \
+                        input_track["handle"])
+
+            return not track["is_unlisted"] or track["route_id"] == route_id
+
+        tracks = list(filter(filter_fn, tracks))
+
         track_ids = list(map(lambda track: track["track_id"], tracks))
 
         # Populate metadata
@@ -1386,3 +1410,82 @@ def get_saves(save_type):
         save_results = helpers.query_result_to_list(query_results)
 
     return api_helpers.success_response(save_results)
+
+# Get the user saved collections & uploaded collections along with the collection user owners
+# NOTE: This is a one off endpoint for retrieving a user's collections/associated user and should
+# be consolidated later in the client
+@bp.route("/users/account", methods=("GET",))
+def get_users_account():
+
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        # Create initial query
+        base_query = session.query(User)
+        # Don't return the user if they have no wallet or handle (user creation did not finish properly on chain)
+        base_query = base_query.filter(User.is_current == True, User.wallet != None, User.handle != None)
+
+        if "wallet" not in request.args:
+            return api_helpers.error_response('Missing wallet param', 404)
+
+        wallet = request.args.get("wallet")
+        wallet = wallet.lower()
+        if len(wallet) == 42:
+            base_query = base_query.filter_by(wallet=wallet)
+            base_query = base_query.order_by(asc(User.created_at))
+        else:
+            return api_helpers.error_response('Invalid wallet length', 400)
+
+        user = base_query.one()
+        user = helpers.model_to_dictionary(user)
+        user_id = user['user_id']
+
+        # bundle peripheral info into user results
+        users = populate_user_metadata(session, [user_id], [user], user_id, True)
+        user = users[0]
+
+        # Get saved playlists / albums ids
+        saved_query = session.query(Save.save_item_id).filter(
+            Save.user_id == user_id,
+            Save.is_current == True,
+            Save.is_delete == False,
+            or_(Save.save_type == SaveType.playlist, Save.save_type == SaveType.album)
+        )
+ 
+        saved_query_results = saved_query.all()
+        save_collection_ids = [item[0] for item in saved_query_results]
+
+        # Get Playlist/Albums saved or owned by the user
+        playlist_query = session.query(Playlist).filter(
+                or_(
+                    and_(Playlist.is_current == True, Playlist.is_delete == False, Playlist.playlist_owner_id == user_id),
+                    and_(Playlist.is_current == True, Playlist.is_delete == False, Playlist.playlist_id.in_(save_collection_ids))
+                )
+            ).order_by(desc(Playlist.created_at))
+        playlists = playlist_query.all()
+        playlists = helpers.query_result_to_list(playlists)
+
+        playlist_owner_ids = list(set([playlist['playlist_owner_id'] for playlist in playlists]))
+
+        # Get Users for the Playlist/Albums
+        user_query = session.query(User).filter(
+                and_(User.is_current == True, User.user_id.in_(playlist_owner_ids))
+            )
+        users = user_query.all()
+        users = helpers.query_result_to_list(users)
+        user_map = {}
+
+        stripped_playlists = []
+        # Map the users to the playlists/albums
+        for playlist_owner in users:
+             user_map[playlist_owner['user_id']] = playlist_owner
+        for playlist in playlists:
+            playlist_owner = user_map[playlist['playlist_owner_id']]
+            stripped_playlists.append({
+                'id': playlist['playlist_id'],
+                'name': playlist['playlist_name'],
+                'is_album': playlist['is_album'],
+                'user': { 'id': playlist_owner['user_id'], 'handle': playlist_owner['handle'] }
+            })
+        user['playlists'] = stripped_playlists
+
+    return api_helpers.success_response(user)

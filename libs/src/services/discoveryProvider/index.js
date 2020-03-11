@@ -49,8 +49,8 @@ class DiscoveryProvider {
 
     if (endpoint && this.web3Manager && this.web3Manager.web3) {
       // Set current user if it exists
-      const users = await this.getUsers(1, 0, null, this.web3Manager.getWalletAddress())
-      if (users && users[0]) this.userStateManager.setCurrentUser(users[0])
+      const userAccount = await this.getUserAccount(this.web3Manager.getWalletAddress())
+      if (userAccount) this.userStateManager.setCurrentUser(userAccount)
     }
   }
 
@@ -558,6 +558,20 @@ class DiscoveryProvider {
     let req = {
       endpoint: 'saves/tracks',
       queryParams: { limit: limit, offset: offset, with_users: withUsers }
+    }
+    return this._makeRequest(req)
+  }
+
+  /**
+   * Return user collections (saved & uploaded) along w/ users for those collections
+   */
+  async getUserAccount (wallet) {
+    if (wallet === undefined) {
+      throw new Error('Expected wallet to get user account')
+    }
+    let req = {
+      endpoint: 'users/account',
+      queryParams: { wallet }
     }
     return this._makeRequest(req)
   }

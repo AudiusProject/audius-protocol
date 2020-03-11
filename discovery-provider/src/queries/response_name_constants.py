@@ -14,9 +14,13 @@ followee_count = 'followee_count' # integer - total followee count of given user
 playlist_count = 'playlist_count' # integer - total count of playlists created by given user
 album_count = 'album_count' # integer - total count of albums created by given user (0 for all non-creators)
 track_count = 'track_count' # integer - total count of tracks created by given user
+track_save_count = 'track_save_count' # integer - total count of tracks saves created by given user
 created_at = 'created_at' # datetime - time track was created
 repost_count = 'repost_count' # integer - total count of reposts by given user
 track_blocknumber = 'track_blocknumber' # integer - blocknumber of latest track for user
+windowed_repost_count = 'windowed_repost_count'
+windowed_save_count = 'windowed_save_count'
+
 # current user specific
 does_current_user_follow = 'does_current_user_follow' # boolean - does current user follow given user
 current_user_followee_follow_count = 'current_user_followee_follow_count' # integer - number of followees of current user that also follow given user
