@@ -28,6 +28,8 @@ class DiscoveryProvider {
 
   async init () {
     let endpoint
+    let pick
+
     if (this.autoselect) {
       endpoint = await this.autoSelectEndpoint()
     } else {
@@ -35,7 +37,18 @@ class DiscoveryProvider {
         throw new Error('Must pass autoselect true or provide whitelist.')
       }
 
-      const pick = _.sample([...this.whitelist]) // selects random element from list.
+      
+      const picks = await Utils.timeRequests([...this.whitelist].map(discprov => {
+        return {
+          url: urlJoin(discprov, 'version'),
+          baseUrl: discprov,
+          method: 'get'
+        }
+      }))
+
+      if (picks && picks[0] && picks[0].request && picks[0].request.baseUrl) pick = picks[0].request.baseUrl
+      else pick = _.sample([...this.whitelist]) // selects random element from list.
+
       const isValid = await this.ethContracts.validateDiscoveryProvider(pick)
       if (isValid) {
         console.info('Initial discovery provider was valid')
