@@ -205,6 +205,14 @@ def get_tracks_including_unlisted():
 
         tracks = list(filter(filter_fn, tracks))
 
+        if "with_users" in request.args and request.args.get("with_users") != 'false':
+            user_id_list = get_users_ids(tracks)
+            users = get_users_by_id(session, user_id_list)
+            for track in tracks:
+                user = users[track['owner_id']]
+                if user:
+                    track['user'] = user
+
         track_ids = list(map(lambda track: track["track_id"], tracks))
 
         # Populate metadata
