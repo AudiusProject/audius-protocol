@@ -201,7 +201,7 @@ def generate_trending(db, time, genre, limit, offset):
             # Populate created at timestamps
             if track_entry[response_name_constants.track_id] in track_created_at_dict:
                 track_entry[response_name_constants.created_at] = \
-                        track_created_at_dict[track_entry[response_name_constants.track_id]]
+                        track_created_at_dict[track_entry[response_name_constants.track_id]].isoformat(timespec='seconds')
             else:
                 track_entry[response_name_constants.created_at] = None
 
