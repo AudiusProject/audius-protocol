@@ -93,7 +93,7 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
 # given list of user ids and corresponding users, populates each user object with:
 #   track_count, playlist_count, album_count, follower_count, followee_count, repost_count
 #   if current_user_id available, populates does_current_user_follow, followee_follows
-def populate_user_metadata(session, user_ids, users, current_user_id):
+def populate_user_metadata(session, user_ids, users, current_user_id, with_track_save_count = False):
     # build dict of user id --> track count
     track_counts = (
         session.query(
@@ -194,6 +194,24 @@ def populate_user_metadata(session, user_ids, users, current_user_id):
         .all()
     )
     repost_count_dict = {user_id: repost_count for (user_id, repost_count) in repost_counts}
+    track_save_count_dict = {}
+    if with_track_save_count : 
+        # build dict of user id --> track save count
+        track_save_counts = (
+            session.query(
+                Save.user_id,
+                func.count(Save.user_id)
+            )
+            .filter(
+                Save.is_current == True,
+                Save.is_delete == False,
+                Save.save_type == SaveType.track,
+                Save.user_id.in_(user_ids)
+            )
+            .group_by(Save.user_id)
+            .all()
+        )
+        track_save_count_dict = {user_id: user_track_save_count for (user_id, user_track_save_count) in track_save_counts}
 
     # build dict of user id --> track blocknumber
     track_blocknumbers = (
@@ -263,6 +281,8 @@ def populate_user_metadata(session, user_ids, users, current_user_id):
         user[response_name_constants.followee_count] = followee_count_dict.get(user_id, 0)
         user[response_name_constants.repost_count] = repost_count_dict.get(user_id, 0)
         user[response_name_constants.track_blocknumber] = track_blocknumber_dict.get(user_id, -1)
+        if with_track_save_count:
+            user[response_name_constants.track_save_count] = track_save_count_dict.get(user_id, 0)
         # current user specific
         user[response_name_constants.does_current_user_follow] = current_user_followed_user_ids.get(user_id, False)
         user[response_name_constants.current_user_followee_follow_count] = current_user_followee_follow_count_dict.get(user_id, 0)
