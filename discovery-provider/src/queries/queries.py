@@ -1433,7 +1433,7 @@ def get_users_account():
             base_query = base_query.filter_by(wallet=wallet)
             base_query = base_query.order_by(asc(User.created_at))
         else:
-            return api_helpers.error_response('Invalid wallet length', 404)
+            return api_helpers.error_response('Invalid wallet length', 400)
 
         user = base_query.one()
         user = helpers.model_to_dictionary(user)
