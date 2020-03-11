@@ -202,7 +202,6 @@ def generate_trending(db, time, genre, limit, offset):
             if track_entry[response_name_constants.track_id] in track_created_at_dict:
                 # datetime needs to be in isoformat for json.dumps() in `update_trending_cache()` to
                 # properly process the dp response and add to redis cache
-
                 # timespec = specifies additional components of the time to include
                 track_entry[response_name_constants.created_at] = \
                         track_created_at_dict[track_entry[response_name_constants.track_id]] \
