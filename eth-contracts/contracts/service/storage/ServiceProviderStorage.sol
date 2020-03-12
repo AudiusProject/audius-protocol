@@ -156,11 +156,22 @@ contract ServiceProviderStorage is RegistryContract {
     {
         uint spId = this.getServiceProviderIdFromEndpoint(_oldEndpoint);
 
-        require(
-            serviceProviderInfo[_serviceType][spId].owner == _owner,
-            "Invalid update endpoint operation, wrong owner");
+        require (
+            spId != 0,
+            "Could not find service provider with that endpoint"
+        );
 
         ServiceProvider memory sp = serviceProviderInfo[_serviceType][spId];
+
+        require(
+            sp.owner == _owner,
+            "Invalid update endpoint operation, wrong owner"
+        );
+
+        require(
+            keccak256(bytes(sp.endpoint)) == keccak256(bytes(_oldEndpoint)),
+            "Old endpoint doesn't match what's registered for the service provider"
+        );
 
         // invalidate old endpoint
         serviceProviderEndpointToId[keccak256(bytes(sp.endpoint))] = 0;

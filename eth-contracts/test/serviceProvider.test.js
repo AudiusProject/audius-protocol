@@ -646,5 +646,14 @@ contract('ServiceProvider test', async (accounts) => {
         'Invalid update endpoint operation, wrong owner'
       )
     })
+    
+    it('will fail to modify the dns endpoint if the dns endpoint doesnt exist', async () => {
+      // will try to update the endpoint from the incorrect account
+      const fakeEndpoint = 'https://does.not.exist.com'
+      await _lib.assertRevert(
+        serviceProviderFactory.updateEndpoint(testDiscProvType, fakeEndpoint, testEndpoint1),
+        'Could not find service provider with that endpoint'
+      )
+    })
   })
 })
