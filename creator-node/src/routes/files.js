@@ -15,7 +15,6 @@ const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const resizeImage = require('../resizeImage')
 const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
-const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary } = require('../utils')
 const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary, ipfsSingleByteCat } = require('../utils')
 
 module.exports = function (app) {
