@@ -207,7 +207,7 @@ module.exports = function (app) {
       // ipfsCatSingleByte took over 500ms, try streaming from file system
       // If file cannot be found on disk nor ipfs, throw error
       if (!fs.existsSync(queryResults.storagePath)) {
-        throw new Error('File could not be found on disk.')
+        return sendResponse(req, res, errorResponseServerError('File could not be found on disk.'))
       }
 
       // Stream file from file system if cat one byte takes over 500ms or errs out
