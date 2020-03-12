@@ -37,7 +37,6 @@ class DiscoveryProvider {
         throw new Error('Must pass autoselect true or provide whitelist.')
       }
 
-      
       const picks = await Utils.timeRequests([...this.whitelist].map(discprov => {
         return {
           url: urlJoin(discprov, 'version'),
