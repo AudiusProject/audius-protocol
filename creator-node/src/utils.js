@@ -221,3 +221,4 @@ module.exports.getFileUUIDForImageCID = getFileUUIDForImageCID
 module.exports.getIPFSPeerId = getIPFSPeerId
 module.exports.rehydrateIpfsFromFsIfNecessary = rehydrateIpfsFromFsIfNecessary
 module.exports.rehydrateIpfsDirFromFsIfNecessary = rehydrateIpfsDirFromFsIfNecessary
+module.exports.ipfsSingleByteCat = ipfsSingleByteCat

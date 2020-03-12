@@ -16,6 +16,7 @@ const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const resizeImage = require('../resizeImage')
 const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
 const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary } = require('../utils')
+const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary, ipfsSingleByteCat } = require('../utils')
 
 module.exports = function (app) {
   /** Store image in multiple-resolutions on disk + DB and make available via IPFS */
@@ -192,6 +193,11 @@ module.exports = function (app) {
       if (req.query.filename) {
         res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
       }
+
+      // Determine if cat one byte of ipfs CID takes over 500ms
+      await ipfsSingleByteCat(CID, req, 500)
+
+      // Stream file from ipfs if cat one byte takes under 500ms
       await new Promise((resolve, reject) => {
         req.app.get('ipfsAPI').catReadableStream(CID)
           .on('data', streamData => { res.write(streamData) })
@@ -199,6 +205,22 @@ module.exports = function (app) {
           .on('error', e => { reject(e) })
       })
     } catch (e) {
+      // ipfsCatSingleByte took over 500ms, try streaming from file system
+      // If file cannot be found on disk nor ipfs, throw error
+      if (!fs.existsSync(queryResults.storagePath)) {
+        throw new Error('File could not be found on disk.')
+      }
+
+      // Stream file from file system if cat one byte takes over 500ms or errs out
+      const fileStream = fs.createReadStream(queryResults.storagePath)
+
+      await new Promise((resolve, reject) => {
+        fileStream
+          .on('open', () => fileStream.pipe(res))
+          .on('end', () => { res.end(); resolve() })
+          .on('error', e => { reject(e) })
+      })
+
       return sendResponse(req, res, errorResponseServerError(e.message))
     }
   })
