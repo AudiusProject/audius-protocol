@@ -74,13 +74,13 @@ async function getIPFSPeerId (ipfs, config) {
 }
 
 /** Cat single byte of file at given filepath. */
-const ipfsSingleByteCat = (path, req) => new Promise(async (resolve, reject) => {
+const ipfsSingleByteCat = (path, req, timeout = 1000) => new Promise(async (resolve, reject) => {
   const start = Date.now()
   let ipfs = req.app.get('ipfsLatestAPI')
 
   try {
     /* eslint-disable-next-line no-unused-vars */
-    for await (const chunk of ipfs.cat(path, { length: 1, timeout: 1000 })) {
+    for await (const chunk of ipfs.cat(path, { length: 1, timeout })) {
       continue
     }
     req.logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
