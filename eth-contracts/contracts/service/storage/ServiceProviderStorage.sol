@@ -147,6 +147,43 @@ contract ServiceProviderStorage is RegistryContract {
         serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
     }
 
+    function updateEndpoint(
+        address _owner,
+        bytes32 _serviceType,
+        string calldata _oldEndpoint,
+        string calldata _newEndpoint
+    ) external onlyRegistrant(CALLER_REGISTRY_KEY) returns (uint spID)
+    {
+        uint spId = this.getServiceProviderIdFromEndpoint(_oldEndpoint);
+
+        require (
+            spId != 0,
+            "Could not find service provider with that endpoint"
+        );
+
+        ServiceProvider memory sp = serviceProviderInfo[_serviceType][spId];
+
+        require(
+            sp.owner == _owner,
+            "Invalid update endpoint operation, wrong owner"
+        );
+
+        require(
+            keccak256(bytes(sp.endpoint)) == keccak256(bytes(_oldEndpoint)),
+            "Old endpoint doesn't match what's registered for the service provider"
+        );
+
+        // invalidate old endpoint
+        serviceProviderEndpointToId[keccak256(bytes(sp.endpoint))] = 0;
+
+        // update to new endpoint
+        sp.endpoint = _newEndpoint;
+        serviceProviderInfo[_serviceType][spId] = sp;
+        serviceProviderEndpointToId[keccak256(bytes(_newEndpoint))] = spId;
+
+        return spId;
+    }
+
     function getTotalServiceTypeProviders(bytes32 _serviceType)
     external view returns (uint numberOfProviders)
     {
