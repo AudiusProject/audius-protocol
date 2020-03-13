@@ -39,9 +39,9 @@ class DiscoveryProvider {
 
       // use this as a lookup between health_check endpoint and base url
       const whitelistMap = {}
-      ;[...this.whitelist].map(url => {
+      for(let url of this.whitelist){
         whitelistMap[urlJoin(url, '/version')] = url
-      })
+      }
 
       let resp = await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
         pick = whitelistMap[url]
