@@ -37,7 +37,7 @@ class DiscoveryProvider {
         throw new Error('Must pass autoselect true or provide whitelist.')
       }
 
-      // use this as a lookup between health_check endpoint and base url
+      // use this as a lookup between version endpoint and base url
       const whitelistMap = {}
       for (let url of this.whitelist) {
         whitelistMap[urlJoin(url, '/version')] = url
