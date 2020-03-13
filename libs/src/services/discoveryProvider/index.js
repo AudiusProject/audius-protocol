@@ -1,6 +1,7 @@
 const axios = require('axios')
 
 const Utils = require('../../utils')
+const { serviceType } = require('../ethContracts/index')
 
 const { DISCOVERY_PROVIDER_TIMESTAMP, UNHEALTHY_BLOCK_DIFF } = require('./constants')
 
@@ -39,14 +40,14 @@ class DiscoveryProvider {
       // use this as a lookup between health_check endpoint and base url
       const whitelistMap = {}
       ;[...this.whitelist].map(url => {
-        whitelistMap[urlJoin(url, '/health_check')] = url
+        whitelistMap[urlJoin(url, '/version')] = url
       })
 
-      await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
+      let resp = await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
         pick = whitelistMap[url]
       }, {})
 
-      const isValid = await this.ethContracts.validateDiscoveryProvider(pick)
+      const isValid = pick && resp.data.service && (resp.data.service === serviceType.DISCOVERY_PROVIDER)
       if (isValid) {
         console.info('Initial discovery provider was valid')
         endpoint = pick
