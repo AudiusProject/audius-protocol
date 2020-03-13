@@ -1,5 +1,4 @@
 const axios = require('axios')
-const _ = require('lodash')
 
 const Utils = require('../../utils')
 
@@ -37,16 +36,15 @@ class DiscoveryProvider {
         throw new Error('Must pass autoselect true or provide whitelist.')
       }
 
-      const picks = await Utils.timeRequests([...this.whitelist].map(discprov => {
-        return {
-          url: urlJoin(discprov, 'version'),
-          baseUrl: discprov,
-          method: 'get'
-        }
-      }))
+      // use this as a lookup between health_check endpoint and base url
+      const whitelistMap = {}
+      ;[...this.whitelist].map(url => {
+        whitelistMap[urlJoin(url, '/health_check')] = url
+      })
 
-      if (picks && picks[0] && picks[0].request && picks[0].request.baseUrl) pick = picks[0].request.baseUrl
-      else pick = _.sample([...this.whitelist]) // selects random element from list.
+      await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
+        pick = whitelistMap[url]
+      }, {})
 
       const isValid = await this.ethContracts.validateDiscoveryProvider(pick)
       if (isValid) {
