@@ -426,6 +426,7 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
     tracks = (
         session.query(Track)
         .filter(
+            Track.is_delete == False,
             Track.is_current == True,
             Track.is_unlisted == False,
             Track.track_id.in_(track_ids),

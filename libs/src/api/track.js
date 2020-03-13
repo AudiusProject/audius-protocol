@@ -44,9 +44,9 @@ class Tracks extends Base {
    * await getTracks()
    * await getTracks(100, 0, [3,2,6]) - Invalid track ids will not be accepted
    */
-  async getTracks (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null, minBlockNumber = null, filterDeleted = null) {
+  async getTracks (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null, minBlockNumber = null, filterDeleted = null, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getTracks(limit, offset, idsArray, targetUserId, sort, minBlockNumber, filterDeleted)
+    return this.discoveryProvider.getTracks(limit, offset, idsArray, targetUserId, sort, minBlockNumber, filterDeleted, withUsers)
   }
 
   /**
@@ -84,9 +84,9 @@ class Tracks extends Base {
    * @param {number} limit - max # of items to return
    * @param {number} offset - offset into list to return from (for pagination)
    */
-  async getSavedTracks (limit = 100, offset = 0) {
+  async getSavedTracks (limit = 100, offset = 0, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getSavedTracks(limit, offset)
+    return this.discoveryProvider.getSavedTracks(limit, offset, withUsers)
   }
 
   /**
@@ -98,7 +98,7 @@ class Tracks extends Base {
    * @param {?number} offset
    * @returns {{listenCounts: Array<{trackId:number, listens:number}>}}
    */
-  async getTrendingTracks (genre = null, time = null, idsArray = null, limit = null, offset = null) {
+  async getTrendingTracks (genre = null, time = null, idsArray = null, limit = null, offset = null, withUsers = false) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     return this.discoveryProvider.getTrendingTracks(genre, time, idsArray, limit, offset)
   }
@@ -446,7 +446,7 @@ class Tracks extends Base {
    */
   async logTrackListen (trackId, unauthUuid) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
-    const accountId = this.userStateManager.getCurrentUser()
+    const accountId = this.userStateManager.getCurrentUserId()
 
     const userId = accountId || unauthUuid
     return this.identityService.logTrackListen(trackId, userId)

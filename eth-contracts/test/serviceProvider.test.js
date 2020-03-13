@@ -623,5 +623,37 @@ contract('ServiceProvider test', async (accounts) => {
         newSPId)
       assert.isTrue(newIdFound, 'Expected valid new ID')
     })
+
+    it('will modify the dns endpoint for an existing service', async () => {
+      const spId = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint)
+      const { endpoint } = await serviceProviderFactory.getServiceProviderInfo(testDiscProvType, spId)
+      assert.equal(testEndpoint, endpoint)
+      
+      // update the endpoint from testEndpoint to testEndpoint1
+      await serviceProviderFactory.updateEndpoint(testDiscProvType, testEndpoint, testEndpoint1, { from: stakerAccount })
+      const { endpoint: endpointAfter } = await serviceProviderFactory.getServiceProviderInfo(testDiscProvType, spId)
+      assert.equal(testEndpoint1, endpointAfter)
+
+      // it should replace the service provider in place so spId should be consistent
+      const spIdNew = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint1)
+      assert.isTrue(spId.eq(spIdNew))
+    })
+
+    it('will fail to modify the dns endpoint for the wrong owner', async () => {
+      // will try to update the endpoint from the incorrect account
+      await _lib.assertRevert(
+        serviceProviderFactory.updateEndpoint(testDiscProvType, testEndpoint, testEndpoint1),
+        'Invalid update endpoint operation, wrong owner'
+      )
+    })
+    
+    it('will fail to modify the dns endpoint if the dns endpoint doesnt exist', async () => {
+      // will try to update the endpoint from the incorrect account
+      const fakeEndpoint = 'https://does.not.exist.com'
+      await _lib.assertRevert(
+        serviceProviderFactory.updateEndpoint(testDiscProvType, fakeEndpoint, testEndpoint1),
+        'Could not find service provider with that endpoint'
+      )
+    })
   })
 })
