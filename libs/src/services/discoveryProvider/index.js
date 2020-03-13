@@ -39,7 +39,7 @@ class DiscoveryProvider {
 
       // use this as a lookup between health_check endpoint and base url
       const whitelistMap = {}
-      for(let url of this.whitelist){
+      for (let url of this.whitelist) {
         whitelistMap[urlJoin(url, '/version')] = url
       }
 
