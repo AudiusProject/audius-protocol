@@ -33,10 +33,6 @@ contract ClaimFactory {
     lastClaimBlock = block.number - claimBlockDiff;
   }
 
-  function getStakingAddress() external view returns (address addr) {
-    return tokenAddress;
-  }
-
   function getClaimBlockDifference() 
   external view returns (uint claimBlockDifference) {
     return (claimBlockDiff);
