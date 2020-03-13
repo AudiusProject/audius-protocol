@@ -1,7 +1,7 @@
 const axios = require('axios')
-const _ = require('lodash')
 
 const Utils = require('../../utils')
+const { serviceType } = require('../ethContracts/index')
 
 const { DISCOVERY_PROVIDER_TIMESTAMP, UNHEALTHY_BLOCK_DIFF } = require('./constants')
 
@@ -28,6 +28,8 @@ class DiscoveryProvider {
 
   async init () {
     let endpoint
+    let pick
+
     if (this.autoselect) {
       endpoint = await this.autoSelectEndpoint()
     } else {
@@ -35,8 +37,17 @@ class DiscoveryProvider {
         throw new Error('Must pass autoselect true or provide whitelist.')
       }
 
-      const pick = _.sample([...this.whitelist]) // selects random element from list.
-      const isValid = await this.ethContracts.validateDiscoveryProvider(pick)
+      // use this as a lookup between version endpoint and base url
+      const whitelistMap = {}
+      this.whitelist.forEach((url) => {
+        whitelistMap[urlJoin(url, '/version')] = url
+      })
+
+      let resp = await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
+        pick = whitelistMap[url]
+      }, {})
+
+      const isValid = pick && resp.data.service && (resp.data.service === serviceType.DISCOVERY_PROVIDER)
       if (isValid) {
         console.info('Initial discovery provider was valid')
         endpoint = pick
