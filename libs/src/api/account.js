@@ -41,14 +41,14 @@ class Account extends Base {
     }
 
     phase = phases.FIND_USER
-    const users = await this.discoveryProvider.getUsers(1, 0, null, this.web3Manager.getWalletAddress())
-    if (users && users[0]) {
-      this.userStateManager.setCurrentUser(users[0])
-      const creatorNodeEndpoint = users[0].creator_node_endpoint
+    const userAccount = await this.discoveryProvider.getUserAccount(this.web3Manager.getWalletAddress())
+    if (userAccount) {
+      this.userStateManager.setCurrentUser(userAccount)
+      const creatorNodeEndpoint = userAccount.creator_node_endpoint
       if (creatorNodeEndpoint) {
         this.creatorNode.setEndpoint(CreatorNodeService.getPrimary(creatorNodeEndpoint))
       }
-      return { user: users[0], error: false, phase }
+      return { user: userAccount, error: false, phase }
     }
     return { error: 'No user found', phase }
   }

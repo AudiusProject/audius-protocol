@@ -205,6 +205,14 @@ def get_tracks_including_unlisted():
 
         tracks = list(filter(filter_fn, tracks))
 
+        if "with_users" in request.args and request.args.get("with_users") != 'false':
+            user_id_list = get_users_ids(tracks)
+            users = get_users_by_id(session, user_id_list)
+            for track in tracks:
+                user = users[track['owner_id']]
+                if user:
+                    track['user'] = user
+
         track_ids = list(map(lambda track: track["track_id"], tracks))
 
         # Populate metadata
@@ -578,8 +586,9 @@ def get_repost_feed_for_user(user_id):
                 Repost.is_delete == False,
                 Repost.user_id == user_id
             )
-            .order_by(desc(Repost.created_at))
+            .order_by(desc(Repost.created_at), desc(Repost.repost_item_id), desc(Repost.repost_type))
         )
+
         reposts = paginate_query(repost_query).all()
 
         # get track reposts from above
@@ -615,7 +624,7 @@ def get_repost_feed_for_user(user_id):
             )
             .order_by(desc(Track.created_at))
         )
-        tracks = paginate_query(track_query).all()
+        tracks = track_query.all()
         tracks = helpers.query_result_to_list(tracks)
 
         # get track ids
@@ -632,7 +641,7 @@ def get_repost_feed_for_user(user_id):
             )
             .order_by(desc(Playlist.created_at))
         )
-        playlists = paginate_query(playlist_query).all()
+        playlists = playlist_query.all()
         playlists = helpers.query_result_to_list(playlists)
 
         # get playlist ids
