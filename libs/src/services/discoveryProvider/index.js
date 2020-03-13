@@ -39,9 +39,9 @@ class DiscoveryProvider {
 
       // use this as a lookup between version endpoint and base url
       const whitelistMap = {}
-      for (let url of this.whitelist) {
+      this.whitelist.forEach((url) => {
         whitelistMap[urlJoin(url, '/version')] = url
-      }
+      })
 
       let resp = await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
         pick = whitelistMap[url]
