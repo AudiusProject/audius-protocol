@@ -2,6 +2,7 @@ const { recoverPersonalSignature } = require('eth-sig-util')
 const fs = require('fs')
 
 const models = require('./models')
+const { saveFileFromURL } = require('./fileManager')
 
 class Utils {
   static verifySignature (data, signature) {
@@ -126,7 +127,9 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
         let addResp = await ipfs.addFromFs(storagePath, { pin: false })
         req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
       } else {
-        req.logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`)
+        // doesn't exist in our file system, we should try to get it from a different node
+        const wasAdded = await fetchCIDFromOtherCreatorNodes(req, multihash, storagePath)
+        if (!wasAdded) req.logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`)
       }
     } catch (e) {
       req.logger.error(`rehydrateIpfsFromFsIfNecessary - failed to addFromFs ${e}, Re-adding file - ${multihash}, stg path: ${storagePath}`)
@@ -152,6 +155,7 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
           content: bufferedFile
         })
       } catch (e) {
+        // TODO - check if file doesn't exist in file system and call fetchCIDFromOtherCreatorNodes
         req.logger.info(`rehydrateIpfsFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`)
       }
     }
@@ -216,8 +220,28 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
   }
 }
 
+async function fetchCIDFromOtherCreatorNodes (req, multihash, expectedStoragePath) {
+  const libs = req.app.get('audiusLibs')
+  const nodes = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('creator-node')
+  const endpoints = nodes.map((obj) => obj.endpoint)
+  let foundCID = false
+
+  for (let endpoint of endpoints) {
+    try {
+      await saveFileFromURL(req, endpoint, multihash, expectedStoragePath)
+      foundCID = true
+      break
+    } catch (e) {
+      continue
+    }
+  }
+
+  return foundCID
+}
+
 module.exports = Utils
 module.exports.getFileUUIDForImageCID = getFileUUIDForImageCID
 module.exports.getIPFSPeerId = getIPFSPeerId
 module.exports.rehydrateIpfsFromFsIfNecessary = rehydrateIpfsFromFsIfNecessary
 module.exports.rehydrateIpfsDirFromFsIfNecessary = rehydrateIpfsDirFromFsIfNecessary
+module.exports.fetchCIDFromOtherCreatorNodes = fetchCIDFromOtherCreatorNodes

@@ -5,6 +5,7 @@ const { promisify } = require('util')
 const writeFile = promisify(fs.writeFile)
 const multer = require('multer')
 const getUuid = require('uuid/v4')
+const axios = require('axios')
 
 const config = require('./config')
 const models = require('./models')
@@ -148,6 +149,34 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
   return storagePath
 }
 
+/** Fetch a file from a URL, like another creator node gateway and save it to the file system */
+async function saveFileFromURL (req, baseURL, multihash, expectedStoragePath) {
+  // If file already stored on disk, return immediately.
+  if (fs.existsSync(expectedStoragePath)) {
+    req.logger.info(`saveFileFromURL - File already stored at ${expectedStoragePath} for ${multihash}`)
+    return expectedStoragePath
+  }
+
+  req.logger.info(`saveFileFromURL - retrieving multihash ${multihash} from gateway ${baseURL}`)
+  // If file not already stored, fetch from URL and store at storagePath.
+  let axiosConfig = {
+    method: 'get',
+    baseURL: baseURL,
+    url: `/ipfs/${multihash}`,
+    responseType: 'stream',
+    timeout: 3000
+  }
+
+  const response = await axios(axiosConfig)
+
+  // Write file to disk.
+  const storagePath = path.join(req.app.get('storagePath'), multihash)
+  assert.strictEqual(storagePath, expectedStoragePath)
+  req.logger.info(`saveFileFromURL - writing file to ${storagePath}...`)
+  await response.data.pipe(fs.createWriteStream(storagePath))
+  req.logger.info(`saveFileFromURL - wrote file to ${storagePath}`)
+}
+
 /** (1) Remove all files in requested fileDir
  *  (2) Confirm the only subdirectory is 'fileDir/segments'
  *  (3) Remove all files in 'fileDir/segments' - throw if any subdirectories found
@@ -242,4 +271,4 @@ function getFileExtension (fileName) {
   return (fileName.lastIndexOf('.') >= 0) ? fileName.substr(fileName.lastIndexOf('.')).toLowerCase() : ''
 }
 
-module.exports = { saveFileFromBuffer, saveFileToIPFSFromFS, saveFileForMultihash, removeTrackFolder, upload, trackFileUpload }
+module.exports = { saveFileFromBuffer, saveFileToIPFSFromFS, saveFileForMultihash, saveFileFromURL, removeTrackFolder, upload, trackFileUpload }
