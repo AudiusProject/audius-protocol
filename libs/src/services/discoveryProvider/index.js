@@ -192,13 +192,17 @@ class DiscoveryProvider {
    * @param {getTracksIdentifier[]} identifiers
    * @returns {(Array)} track
    */
-  async getTracksIncludingUnlisted (identifiers) {
+  async getTracksIncludingUnlisted (identifiers, withUsers = false) {
     let req = {
       endpoint: 'tracks_including_unlisted',
       method: 'post',
       data: {
         tracks: identifiers
-      }
+      },
+      queryParams: {}
+    }
+    if (withUsers) {
+      req.queryParams.with_users = true
     }
     return this._makeRequest(req)
   }
@@ -584,7 +588,7 @@ class DiscoveryProvider {
       endpoint: 'users/account',
       queryParams: { wallet }
     }
-    return this._makeRequest(req)
+    return this._makeRequest(req, 0, true)
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
@@ -594,7 +598,7 @@ class DiscoveryProvider {
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
   // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, retries = 4) {
+  async _makeRequest (requestObj, retries = 4, silent = false) {
     if (!this.discoveryProviderEndpoint) {
       await this.autoSelectEndpoint()
     }
@@ -656,7 +660,10 @@ class DiscoveryProvider {
 
       return parsedResponse.data
     } catch (e) {
-      console.error(e)
+      if (!silent) {
+        console.error(e)
+      }
+
       if (retries > 0) {
         return this._makeRequest(requestObj, retries - 1)
       }
