@@ -30,6 +30,13 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         Checkpointing.History claimHistory;
     }
 
+    // Multiplier used to increase funds
+    Checkpointing.History stakeMultiplier;
+
+    // Internal multiplier
+    // TODO: Confirm this is necessary
+    // uint256 internalStakeMultiplier;
+
     ERC20 internal stakingToken;
     mapping (address => Account) internal accounts;
     Checkpointing.History internal totalStakedHistory;
@@ -52,9 +59,16 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         initialized();
         stakingToken = ERC20(_stakingToken);
         treasuryAddress = _treasuryAddress;
+
         // Initialize claim values to zero, disabling claim prior to initial funding
         currentClaimBlock = 0;
         currentClaimableAmount = 0;
+
+        // Initialize multiplier history value
+        stakeMultiplier.add64(getBlockNumber64(), 1000);
+
+        // Initialize internal multiplier
+        // internalStakeMultiplier = 1000;
     }
 
     /* External functions */
@@ -238,6 +252,15 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         return true;
     }
 
+
+    // WORKING 
+
+    function getCurrentStakeMultiplier() public view isInitialized returns (uint256) {
+      return stakeMultiplier.getLatestValue();
+    }
+
+    // END WORKING
+
     /**
      * @notice Get last time `_accountAddress` modified its staked balance
      * @param _accountAddress Account requesting for
@@ -291,7 +314,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      */
     function totalStakedFor(address _accountAddress) public view returns (uint256) {
         // we assume it's not possible to stake in the future
-        return accounts[_accountAddress].stakedHistory.getLatestValue();
+        return (accounts[_accountAddress].stakedHistory.getLatestValue()).mul(stakeMultiplier.getLatestValue());
     }
 
     /**
@@ -302,14 +325,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // we assume it's not possible to stake in the future
         return totalStakedHistory.getLatestValue();
     }
-
-    /*
-    function multicall(bytes[] _calls) public {
-        for(uint i = 0; i < _calls.length; i++) {
-            require(address(this).delegatecall(_calls[i]), ERROR_MULTICALL_DELEGATECALL);
-        }
-    }
-    */
 
     /* Internal functions */
 
@@ -322,8 +337,11 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // staking 0 tokens is invalid
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
-        // checkpoint updated staking balance
-        _modifyStakeBalance(_stakeAccount, _amount, true);
+        // Adjust amount by internal stake multiplier
+        uint internalStakeAmount = _amount.div(stakeMultiplier.getLatestValue());
+
+        // Checkpoint updated staking balance
+        _modifyStakeBalance(_stakeAccount, internalStakeAmount, true);
 
         // checkpoint total supply
         _modifyTotalStaked(_amount, true);
