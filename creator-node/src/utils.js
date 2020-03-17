@@ -73,12 +73,16 @@ async function getIPFSPeerId (ipfs, config) {
   return ipfsIDObj
 }
 
-/** Cat single byte of file at given filepath. */
+/** Cat single byte of file at given filepath. If ipfs.cat() call takes longer than the timeout time or
+ * something goes wrong, an error will be thrown.
+*/
 const ipfsSingleByteCat = (path, req, timeout = 1000) => new Promise(async (resolve, reject) => {
   const start = Date.now()
   let ipfs = req.app.get('ipfsLatestAPI')
 
   try {
+    // ipfs.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
+    // don't keep track of the results as this call is a proof-of-concept that the file exists in ipfs
     /* eslint-disable-next-line no-unused-vars */
     for await (const chunk of ipfs.cat(path, { length: 1, timeout })) {
       continue
