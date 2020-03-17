@@ -108,6 +108,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      */
     function makeClaim() external isInitialized {
         require(false, 'Disabled for dev');
+
         require(msg.sender != treasuryAddress, "Treasury cannot claim staking reward");
         require(accounts[msg.sender].stakedHistory.history.length > 0, "Stake required to claim");
 
@@ -154,9 +155,12 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // unstaking 0 tokens is not allowed
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
+        // Adjust amount by internal stake multiplier
+        uint internalSlashAmount = _amount.div(stakeMultiplier.getLatestValue());
+
         // transfer slashed funds to treasury address
         // reduce stake balance for address being slashed
-        _transfer(_slashAddress, treasuryAddress, _amount);
+        _transfer(_slashAddress, treasuryAddress, internalSlashAmount);
     }
 
     /**
@@ -206,8 +210,11 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // unstaking 0 tokens is not allowed
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
+        // Adjust amount by internal stake multiplier
+        uint internalStakeAmount = _amount.div(stakeMultiplier.getLatestValue());
+
         // checkpoint updated staking balance
-        _modifyStakeBalance(msg.sender, _amount, false);
+        _modifyStakeBalance(msg.sender, internalStakeAmount, false);
 
         // checkpoint total supply
         _modifyTotalStaked(_amount, false);
@@ -232,8 +239,11 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // unstaking 0 tokens is not allowed
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
+        // Adjust amount by internal stake multiplier
+        uint internalStakeAmount = _amount.div(stakeMultiplier.getLatestValue());
+
         // checkpoint updated staking balance
-        _modifyStakeBalance(_accountAddress, _amount, false);
+        _modifyStakeBalance(_accountAddress, internalStakeAmount, false);
 
         // checkpoint total supply
         _modifyTotalStaked(_amount, false);
@@ -368,14 +378,19 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
             _data);
     }
 
+    // Note that _by value has been adjusted for the stake multiplier prior to getting passed in 
     function _modifyStakeBalance(address _accountAddress, uint256 _by, bool _increase) internal {
-        uint256 currentStake = totalStakedFor(_accountAddress);
+        // currentInternalStake represents the internal stake value, without multiplier adjustment
+        uint256 currentInternalStake = accounts[_accountAddress].stakedHistory.getLatestValue();
 
         uint256 newStake;
         if (_increase) {
-            newStake = currentStake.add(_by);
+            newStake = currentInternalStake.add(_by);
         } else {
-            newStake = currentStake.sub(_by);
+            require(
+              currentInternalStake >= _by,
+              'Cannot decrease greater than current balance');
+            newStake = currentInternalStake.sub(_by);
         }
 
         // add new value to account history
