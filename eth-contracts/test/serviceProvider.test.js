@@ -106,7 +106,6 @@ contract('ServiceProvider test', async (accounts) => {
 
     // Transfer 1000 tokens to accounts[1]
     await token.transfer(accounts[1], INITIAL_BAL, { from: treasuryAddress })
-    // let accountBal = await token.balanceOf(accounts[1])
   })
 
   /* Helper functions */
@@ -375,13 +374,7 @@ contract('ServiceProvider test', async (accounts) => {
      */
     it('confirm registered stake', async () => {
       // Confirm staking contract has correct amt
-      let multiplier = await staking.getCurrentStakeMultiplier()
-      console.log(fromBn(multiplier))
-      console.log('----')
-
       let returnedValue = await getStakeAmountForAccount(stakerAccount)
-      console.log(returnedValue)
-      console.log('----')
       assert.equal(returnedValue, DEFAULT_AMOUNT)
     })
 
@@ -417,7 +410,6 @@ contract('ServiceProvider test', async (accounts) => {
     })
 
     it('fails to register duplicate endpoint w/same account', async () => {
-      process.exit()
       // Attempt to register dup endpoint with the same account
       await _lib.assertRevert(
         registerServiceProvider(
