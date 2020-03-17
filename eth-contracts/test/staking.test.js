@@ -56,14 +56,6 @@ contract('Staking test', async (accounts) => {
     return receipt
   }
 
-  const claimStakingReward = async (from) => {
-    let tx = await staking.makeClaim({ from })
-    let claimArgs = tx.logs.find(log => log.event === 'Claimed').args
-    claimArgs.amountClaimedInt = claimArgs.amountClaimed.toNumber()
-    claimArgs.blockNumber = tx.receipt.blockNumber
-    return claimArgs
-  }
-
   const getLatestBlock = async () => {
     let block = await web3.eth.getBlock('latest')
     // console.log(`Latest block: ${block.number}`)
@@ -247,62 +239,6 @@ contract('Staking test', async (accounts) => {
       await staking.totalStaked(),
       'Total amount unchanged')
   })
-
-  /*
-  it('new fund cycle resets block difference', async () => {
-    // Stake initial treasury amount from treasury address
-    const spAccount1 = accounts[1]
-    const spAccount2 = accounts[2]
-    const spAccount3 = accounts[3]
-    const funderAccount = accounts[4]
-
-    let initialStake = DEFAULT_AMOUNT
-
-    // Transfer tokens to accounts 1, 2, 3
-    await token.transfer(spAccount1, DEFAULT_AMOUNT, { from: treasuryAddress })
-    await token.transfer(spAccount2, DEFAULT_AMOUNT, { from: treasuryAddress })
-    await token.transfer(spAccount3, DEFAULT_AMOUNT, { from: treasuryAddress })
-
-    // Transfer 100,000 tokens to funder
-    await token.transfer(funderAccount, 10000, { from: treasuryAddress })
-
-    // Stake with accounts 1, 2, 3
-    await approveAndStake(DEFAULT_AMOUNT, spAccount1)
-    await approveAndStake(DEFAULT_AMOUNT, spAccount2)
-    await approveAndStake(DEFAULT_AMOUNT, spAccount3)
-
-    const INITIAL_FUNDING = toWei(5000)
-    await approveAndFundNewClaim(INITIAL_FUNDING, funderAccount)
-
-    // Claim for acct 1
-    let claimResult1 = await claimStakingReward(spAccount1)
-    // console.dir(claimResult1, { depth: 5 })
-    let block1 = claimResult1.blockNumber
-
-    // Confirm claim without block diff reached reverts
-    _lib.assertRevert(claimStakingReward(spAccount1))
-
-    let block2 = await getLatestBlock()
-    assert.isTrue(
-      (block2 - block1) < claimBlockDiff,
-      'Block difference not yet met')
-
-    // Re-fund claim
-    await approveAndFundNewClaim(INITIAL_FUNDING, funderAccount)
-
-    // Confirm claim works despite block difference not being met, due to new funding
-    let claimResult2 = await claimStakingReward(spAccount1)
-    let block3 = claimResult2.blockNumber
-
-    assert.isTrue(
-      (block3 - block1) < claimBlockDiff,
-      'Claim block difference not met')
-
-    assert.isTrue(
-      claimResult2.amountClaimedInt > 0,
-      'Expect successful claim after re-funding')
-  })
-  */
 
   it('multiple claims, single fund cycle', async () => {
     // Stake initial treasury amount from treasury address
