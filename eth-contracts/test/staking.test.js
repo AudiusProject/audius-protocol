@@ -35,18 +35,15 @@ contract('Staking test', async (accounts) => {
   const EMPTY_STRING = ''
 
   const approveAndStake = async (amount, staker) => {
-    // console.log(`approving ${amount} - ${staker}`)
     let tokenBal = await token.balanceOf(staker)
     // allow Staking app to move owner tokens
     await token.approve(stakingAddress, amount, { from: staker })
     // stake tokens
-    // console.log(`staking ${amount} - ${staker}, ${tokenBal} tokens`)
-    let tx = await staking.stakeFor(
+    await staking.stakeFor(
       staker,
       amount,
       web3.utils.utf8ToHex(EMPTY_STRING),
       { from: testStakingCallerAddress })
-    // console.log(`staked ${amount} - ${staker}`)
   }
 
   const approveAndFundNewClaim = async (amount, from) => {
@@ -128,9 +125,6 @@ contract('Staking test', async (accounts) => {
 
     // total stake
     assert.equal((await staking.totalStaked()).toString(), DEFAULT_AMOUNT, 'Total stake should match')
-
-    // unstake half of current value
-    let unstakeAmount = DEFAULT_AMOUNT.div(web3.utils.toBN(2))
 
     // Unstake default amount
     await staking.unstake(
