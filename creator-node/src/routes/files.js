@@ -186,17 +186,20 @@ module.exports = function (app) {
       return sendResponse(req, res, errorResponseServerError(e.message))
     }
 
+    // If client has provided filename, set filename in header to be auto-populated in download prompt.
+    if (req.query.filename) {
+      res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
+    }
+
     // Stream file to client.
     try {
-      // If client has provided filename, set filename in header to be auto-populated in download prompt.
-      if (req.query.filename) {
-        res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
-      }
-
-      // Determine if cat one byte of ipfs CID takes over 500ms
+      // Cat 1 byte of CID in ipfs to determine if file exists
+      // If the request takes under 500ms, stream the file from ipfs
+      // else if the request takes over 500ms, throw an error and stream the file from file system
       await ipfsSingleByteCat(CID, req, 500)
 
       // Stream file from ipfs if cat one byte takes under 500ms
+      // If catReadableStream() promise is rejected, throw an error and stream from file system
       await new Promise((resolve, reject) => {
         req.app.get('ipfsAPI').catReadableStream(CID)
           .on('data', streamData => { res.write(streamData) })
@@ -204,25 +207,33 @@ module.exports = function (app) {
           .on('error', e => { reject(e) })
       })
     } catch (e) {
-      // ipfsCatSingleByte took over 500ms, try streaming from file system
-      // If file cannot be found on disk nor ipfs, throw error
-      if (!fs.existsSync(queryResults.storagePath)) {
+      // ipfsCatSingleByte took over 500ms, try streaming from file system and
+      // return the response from helper method
+      return streamFromFileSystem(req, res, queryResults.storagePath)
+    }
+  })
+
+  // Helper method to stream file from file system on creator node
+  const streamFromFileSystem = async (req, res, path) => {
+    try {
+      // If file cannot be found on disk, throw error
+      if (!fs.existsSync(path)) {
         return sendResponse(req, res, errorResponseServerError('File could not be found on disk.'))
       }
 
-      // Stream file from file system if cat one byte takes over 500ms or errs out
-      const fileStream = fs.createReadStream(queryResults.storagePath)
-
+      // Stream file from file system
+      const fileStream = fs.createReadStream(path)
       await new Promise((resolve, reject) => {
         fileStream
           .on('open', () => fileStream.pipe(res))
           .on('end', () => { res.end(); resolve() })
           .on('error', e => { reject(e) })
       })
-
+    } catch (e) {
+      // Unable to stream from file system. Throw a server error message
       return sendResponse(req, res, errorResponseServerError(e.message))
     }
-  })
+  }
 
   /**
    * Serve images hosted by creator node on IPFS.
