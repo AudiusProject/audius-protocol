@@ -94,9 +94,9 @@ def health_check():
 
     # If the value given is not a valid int, will default to None
     qs_healthy_block_diff = request.args.get("healthy_block_diff", type=int)
-    # If healthy block diff is given in url, override config value
+    # If healthy block diff is given in url and positive, override config value
     healthy_block_diff = qs_healthy_block_diff if qs_healthy_block_diff is not None \
-        else default_healthy_block_diff
+        and qs_healthy_block_diff >= 0 else default_healthy_block_diff
 
     latest_block_num = None
     latest_block_hash = None
@@ -131,9 +131,9 @@ def health_check():
 def block_check():
     # If the value given is not a valid int, will default to None
     qs_healthy_block_diff = request.args.get("healthy_block_diff", type=int)
-    # If healthy block diff is given in url, override config value
+    # If healthy block diff is given in url and positive, override config value
     healthy_block_diff = qs_healthy_block_diff if qs_healthy_block_diff is not None \
-        else default_healthy_block_diff
+        and qs_healthy_block_diff >= 0 else default_healthy_block_diff
 
     latest_block = web3.eth.getBlock("latest", True)
     latest_block_num = latest_block.number
