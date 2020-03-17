@@ -21,6 +21,9 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     string private constant ERROR_TOKEN_TRANSFER = "STAKING_TOKEN_TRANSFER";
     string private constant ERROR_NOT_ENOUGH_BALANCE = "STAKING_NOT_ENOUGH_BALANCE";
 
+    // standard - imitates relationship between Ether and Wei
+    uint8 private constant DECIMALS = 18;
+
     // Reward tracking info
     uint256 internal currentClaimBlock;
     uint256 internal currentClaimableAmount;
@@ -64,8 +67,9 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         currentClaimBlock = 0;
         currentClaimableAmount = 0;
 
+        uint256 initialMultiplier = 10**uint256(DECIMALS);
         // Initialize multiplier history value
-        stakeMultiplier.add64(getBlockNumber64(), 1000);
+        stakeMultiplier.add64(getBlockNumber64(), initialMultiplier);
     }
 
     /* External functions */
