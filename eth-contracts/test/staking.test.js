@@ -333,9 +333,6 @@ contract('Staking test', async (accounts) => {
       expectedTotalStake,
       'Final stake amount must be 2x default stake')
 
-    // Confirm claim can not be made prior to claim funded
-    _lib.assertRevert(claimStakingReward(spAccount1))
-
     let FIRST_CLAIM_FUND = toWei(120)
 
     // Transfer 120AUD tokens to staking contract
@@ -348,7 +345,6 @@ contract('Staking test', async (accounts) => {
     let expectedValueAfterFirstFund = DEFAULT_AMOUNT.add(FIRST_CLAIM_FUND.div(web3.utils.toBN(2)))
 
     // Confirm value added to account 1
-    // let claimResult1 = await claimStakingReward(spAccount1)
     let acct1StakeAfterFund = await getStakedAmountForAcct(spAccount1)
     assert.isTrue(
       expectedValueAfterFirstFund.eq(
