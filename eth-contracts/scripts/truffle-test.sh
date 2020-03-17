@@ -47,5 +47,5 @@ else
 fi
 
 # tear down
-docker rm -f audius_ganache_cli_eth_contracts_test
-rm -rf ./build/
+# docker rm -f audius_ganache_cli_eth_contracts_test
+# rm -rf ./build/

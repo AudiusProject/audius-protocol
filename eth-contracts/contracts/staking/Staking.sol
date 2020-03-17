@@ -54,6 +54,10 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
       uint256 amountClaimed
     );
 
+    event Test(
+      uint256 test,
+      string msg);
+
     function initialize(address _stakingToken, address _treasuryAddress) external onlyInit {
         require(isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         initialized();
@@ -81,21 +85,29 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // Stake tokens for msg.sender from treasuryAddress
         // Transfer tokens from msg.sender to current contract
         // Increase treasuryAddress stake value
-        _stakeFor(
-            treasuryAddress,
-            msg.sender,
-            _amount,
-            bytes(""));
 
-        // Update current claim information
-        currentClaimBlock = getBlockNumber();
-        currentClaimableAmount = totalStakedFor(treasuryAddress);
+        // Update multiplier
+        // Update total stake
+        uint256 currentMultiplier = stakeMultiplier.getLatestValue();
+        uint256 totalStake = totalStakedHistory.getLatestValue();
+
+        // Calculate and distribute funds by updating multiplier
+        uint256 multiplierDifference = (currentMultiplier.mul(_amount)).div(totalStake); 
+        uint256 newMultiplier = currentMultiplier.add(multiplierDifference);
+        stakeMultiplier.add64(getBlockNumber64(), newMultiplier);
+
+        // pull tokens into Staking contract from caller
+        stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
+
+        // Increase total supply by input amount
+        _modifyTotalStaked(_amount, true);
     }
 
     /**
      * @notice Allows reward claiming for service providers
      */
     function makeClaim() external isInitialized {
+        require(false, 'Disabled for dev');
         require(msg.sender != treasuryAddress, "Treasury cannot claim staking reward");
         require(accounts[msg.sender].stakedHistory.history.length > 0, "Stake required to claim");
 
@@ -293,7 +305,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @return The amount of tokens staked by the account at the given block number
      */
     function totalStakedForAt(address _accountAddress, uint256 _blockNumber) external view returns (uint256) {
-        return accounts[_accountAddress].stakedHistory.get(_blockNumber);
+        return (accounts[_accountAddress].stakedHistory.get(_blockNumber)).mul(stakeMultiplier.get(_blockNumber));
     }
 
     /**
