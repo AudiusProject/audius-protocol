@@ -35,7 +35,6 @@ contract('Staking test', async (accounts) => {
   const EMPTY_STRING = ''
 
   const approveAndStake = async (amount, staker) => {
-    let tokenBal = await token.balanceOf(staker)
     // allow Staking app to move owner tokens
     await token.approve(stakingAddress, amount, { from: staker })
     // stake tokens
@@ -107,39 +106,6 @@ contract('Staking test', async (accounts) => {
     assert.equal(await staking.supportsHistory(), true, 'history support should match')
   })
 
-  it('unstakes', async () => {
-    const staker = accounts[2]
-    // Transfer default tokens to account[2]
-    await token.transfer(staker, DEFAULT_AMOUNT, { from: treasuryAddress })
-
-    const initialOwnerBalance = await getTokenBalance(token, staker)
-    const initialStakingBalance = await getTokenBalance(token, stakingAddress)
-
-    await approveAndStake(DEFAULT_AMOUNT, staker)
-
-    const tmpOwnerBalance = await getTokenBalance(token, staker)
-    const tmpStakingBalance = await getTokenBalance(token, stakingAddress)
-    assert.equal(tmpOwnerBalance, initialOwnerBalance - DEFAULT_AMOUNT, 'staker balance should match')
-    assert.equal(tmpStakingBalance, initialStakingBalance + DEFAULT_AMOUNT, 'Staking app balance should match')
-    assert.equal(fromBn(await staking.totalStakedFor(staker)), DEFAULT_AMOUNT, 'staked value should match')
-
-    // total stake
-    assert.equal((await staking.totalStaked()).toString(), DEFAULT_AMOUNT, 'Total stake should match')
-
-    // Unstake default amount
-    await staking.unstake(
-      DEFAULT_AMOUNT,
-      web3.utils.utf8ToHex(EMPTY_STRING),
-      { from: staker }
-    )
-
-    const finalOwnerBalance = await getTokenBalance(token, staker)
-    const finalStakingBalance = await getTokenBalance(token, stakingAddress)
-
-    assert.equal(finalOwnerBalance, initialOwnerBalance, 'initial and final staker balance should match')
-    assert.equal(finalStakingBalance, initialStakingBalance, 'initial and final staking balance should match')
-  })
-
   it('fails staking 0 amount', async () => {
     await token.approve(stakingAddress, 1)
     await _lib.assertRevert(staking.stake(0, web3.utils.utf8ToHex(EMPTY_STRING)))
@@ -181,6 +147,39 @@ contract('Staking test', async (accounts) => {
       fromBn(await staking.totalStakedFor(staker)),
       DEFAULT_AMOUNT,
       'Account stake value should match default stake')
+  })
+
+  it('unstakes', async () => {
+    const staker = accounts[2]
+    // Transfer default tokens to account[2]
+    await token.transfer(staker, DEFAULT_AMOUNT, { from: treasuryAddress })
+
+    const initialOwnerBalance = await getTokenBalance(token, staker)
+    const initialStakingBalance = await getTokenBalance(token, stakingAddress)
+
+    await approveAndStake(DEFAULT_AMOUNT, staker)
+
+    const tmpOwnerBalance = await getTokenBalance(token, staker)
+    const tmpStakingBalance = await getTokenBalance(token, stakingAddress)
+    assert.equal(tmpOwnerBalance, initialOwnerBalance - DEFAULT_AMOUNT, 'staker balance should match')
+    assert.equal(tmpStakingBalance, initialStakingBalance + DEFAULT_AMOUNT, 'Staking app balance should match')
+    assert.equal(fromBn(await staking.totalStakedFor(staker)), DEFAULT_AMOUNT, 'staked value should match')
+
+    // total stake
+    assert.equal((await staking.totalStaked()).toString(), DEFAULT_AMOUNT, 'Total stake should match')
+
+    // Unstake default amount
+    await staking.unstake(
+      DEFAULT_AMOUNT,
+      web3.utils.utf8ToHex(EMPTY_STRING),
+      { from: staker }
+    )
+
+    const finalOwnerBalance = await getTokenBalance(token, staker)
+    const finalStakingBalance = await getTokenBalance(token, stakingAddress)
+
+    assert.equal(finalOwnerBalance, initialOwnerBalance, 'initial and final staker balance should match')
+    assert.equal(finalStakingBalance, initialStakingBalance, 'initial and final staking balance should match')
   })
 
   it('stake with multiple accounts', async () => {
