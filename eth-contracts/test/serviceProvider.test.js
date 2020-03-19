@@ -68,9 +68,9 @@ contract('ServiceProvider test', async (accounts) => {
 
     token = await AudiusToken.new({ from: treasuryAddress })
     tokenAddress = token.address
-    // console.log(`AudiusToken Address : ${tokenAddress}`)
+
     let initialTokenBal = fromBn(await token.balanceOf(accounts[0]))
-    // console.log(`AudiusToken Balance: ${initialTokenBal}`)
+
     impl0 = await Staking.new()
 
     // Create initialization data

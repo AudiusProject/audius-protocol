@@ -67,12 +67,14 @@ contract('Staking test', async (accounts) => {
     let initializeData = encodeCall(
       'initialize',
       ['address', 'address'],
-      [token.address, treasuryAddress])
+      [token.address, treasuryAddress]
+    )
 
     await proxy.upgradeToAndCall(
       impl0.address,
       initializeData,
-      { from: proxyOwner })
+      { from: proxyOwner }
+    )
 
     staking = await Staking.at(proxy.address)
     // Reset min for test purposes
