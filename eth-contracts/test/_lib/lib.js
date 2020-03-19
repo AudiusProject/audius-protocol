@@ -24,6 +24,11 @@ export const strings = {
   return web3New.utils.hexToUtf8(arg)
 }
 
+/** TODO - change all duplicate func declarations to reference this */
+export const getLatestBlock = async (web3) => {
+  return web3.eth.getBlock('latest')
+}
+
 /** Returns formatted transaction receipt object with event and arg info
  * @param {object} txReceipt - transaction receipt object
  * @returns {object} w/event + args array from txReceipt
@@ -45,6 +50,7 @@ export const parseTx = (txReceipt) => {
   }
 }
 
+/**  */
 export const assertThrows = async (blockOrPromise, expectedErrorCode, expectedReason) => {
   try {
     (typeof blockOrPromise === 'function') ? await blockOrPromise() : await blockOrPromise
@@ -56,6 +62,7 @@ export const assertThrows = async (blockOrPromise, expectedErrorCode, expectedRe
   assert(false, `Expected "${expectedErrorCode}"${expectedReason ? ` (with reason: "${expectedReason}")` : ''} but it did not fail`)
 }
 
+/**  */
 export const assertRevert = async (blockOrPromise, expectedReason) => {
   const error = await assertThrows(blockOrPromise, 'revert', expectedReason)
   if (!expectedReason) {
@@ -65,6 +72,7 @@ export const assertRevert = async (blockOrPromise, expectedReason) => {
   assert.isTrue(expectedMsgFound, `Expected revert reason not found. Expected '${expectedReason}'. Found '${error.message}'`)
 }
 
+/**  */
 export const advanceBlock = (web3) => {
   return new Promise((resolve, reject) => {
     web3.currentProvider.send({
