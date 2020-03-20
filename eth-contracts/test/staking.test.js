@@ -268,7 +268,7 @@ contract('Staking test', async (accounts) => {
     await token.transfer(funderAccount, FIRST_CLAIM_FUND, { from: treasuryAddress })
 
     // Transfer funds for claiming to contract
-    await approveAndFundNewClaim(FIRST_CLAIM_FUND, funderAccount)
+    const claimTx = _lib.parseTx(await approveAndFundNewClaim(FIRST_CLAIM_FUND, funderAccount))
 
     // Initial val should be first claim fund / 2
     let expectedValueAfterFirstFund = DEFAULT_AMOUNT.add(FIRST_CLAIM_FUND.div(web3.utils.toBN(2)))
@@ -294,5 +294,46 @@ contract('Staking test', async (accounts) => {
       DEFAULT_AMOUNT.eq(
         web3.utils.toBN(acct3Stake)),
       'Expected stake increase for acct 2')
+
+    // test FundsDistributed event emitted for ERC-2222
+    assert.equal(claimTx.event.name, 'FundsDistributed')
+    assert.equal(fromBn(claimTx.event.args[1]), FIRST_CLAIM_FUND)
+  })
+
+  it('stake with multiple accounts and test ERC-2222', async () => {
+    // Transfer 1000 tokens to accounts[1], accounts[2]
+    await token.transfer(accounts[1], DEFAULT_AMOUNT, { from: treasuryAddress })
+    await token.transfer(accounts[2], DEFAULT_AMOUNT, { from: treasuryAddress })
+
+    let initialTotalStaked = await staking.totalStaked()
+
+    // Stake w/both accounts
+    await approveAndStake(DEFAULT_AMOUNT, accounts[1])
+    await approveAndStake(DEFAULT_AMOUNT, accounts[2])
+
+    let withdrawableFundsForUserBefore = await staking.withdrawableFundsOf(accounts[1])
+    assert.equal(
+      fromBn(withdrawableFundsForUserBefore),
+      DEFAULT_AMOUNT,
+      'Account stake value should match default stake'
+    )
+
+    let finalTotalStaked = parseInt(await staking.totalStaked())
+    let expectedFinalStake = parseInt(initialTotalStaked + (DEFAULT_AMOUNT * 2))
+    assert.equal(
+      finalTotalStaked,
+      expectedFinalStake,
+      'Final stake amount must be 2x default stake'
+    )
+
+    // withdraw stake for staker1
+    const withdrawTx = _lib.parseTx(await staking.withdrawFunds({ from: accounts[1] }))
+    assert.equal(withdrawTx.event.name, 'FundsWithdrawn')
+    assert.equal(fromBn(withdrawTx.event.args[1]), DEFAULT_AMOUNT)
+
+    const stakedForUserAfter = await staking.totalStakedFor(accounts[1])
+    const withdrawableFundsForUserAfter = await staking.withdrawableFundsOf(accounts[1])
+    assert.equal(fromBn(stakedForUserAfter), 0, 'Amount staked for user after should be 0')
+    assert.equal(fromBn(withdrawableFundsForUserAfter), 0, 'Withdrawable funds for user after should be 0')
   })
 })
