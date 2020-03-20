@@ -24,6 +24,16 @@ contract ServiceProviderFactory is RegistryContract {
     mapping(bytes32 => ServiceInstanceStakeRequirements) serviceTypeStakeRequirements;
     // END Temporary data structures
 
+    /*
+      Maps directly staked amount by SP, not including delegators
+    */
+    mapping(address => uint) spDeployerStake;
+
+    /*
+      % Cut of delegator tokens assigned to sp deployer
+    */
+    mapping(address => uint) spDeployerCut; 
+
     bytes empty;
 
     // standard - imitates relationship between Ether and Wei
@@ -124,6 +134,9 @@ contract ServiceProviderFactory is RegistryContract {
             _delegateOwnerWallet
         );
 
+        // Update deployer total
+        spDeployerStake[owner] += _stakeAmount;
+
         uint currentlyStakedForOwner = validateAccountStakeBalances(owner);
 
         emit RegisteredServiceProvider(
@@ -161,6 +174,9 @@ contract ServiceProviderFactory is RegistryContract {
                 unstakeAmount,
                 empty
             );
+
+          // Update deployer total
+          spDeployerStake[owner] -= unstakeAmount;
         }
 
         (uint deregisteredID) = ServiceProviderStorageInterface(
@@ -207,6 +223,9 @@ contract ServiceProviderFactory is RegistryContract {
 
         validateAccountStakeBalances(owner);
 
+        // Update deployer total
+        spDeployerStake[owner] += _increaseStakeAmount;
+
         return newStakeAmount;
     }
 
@@ -244,6 +263,9 @@ contract ServiceProviderFactory is RegistryContract {
         );
 
         validateAccountStakeBalances(owner);
+
+        // Update deployer total
+        spDeployerStake[owner] -= _decreaseStakeAmount;
 
         return newStakeAmount;
     }
@@ -284,6 +306,28 @@ contract ServiceProviderFactory is RegistryContract {
         );
         return spId;
     }
+
+    /*
+       Update service provider balance
+       TODO: Called by delegate manager contract only 
+    */
+   function updateServiceProviderStake(
+       address _serviceProvider,
+       uint _amount
+   ) external 
+   {
+        spDeployerStake[_serviceProvider] = _amount;
+   }
+
+    /*
+       Represents amount direclty staked by service provider
+    */
+    function getServiceProviderStake(address _address)
+    external view returns (uint stake)
+    {
+        return spDeployerStake[_address];
+    }
+
 
     function getTotalServiceTypeProviders(bytes32 _serviceType)
     external view returns (uint numberOfProviders)
