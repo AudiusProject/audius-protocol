@@ -173,8 +173,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract, IF
             _amount,
             totalStakedFor(msg.sender),
             _data);
-
-        // TODO ERC-2222 emit FundsWithdrawn
     }
 
     /**
