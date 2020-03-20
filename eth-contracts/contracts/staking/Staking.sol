@@ -5,13 +5,14 @@ import "./Checkpointing.sol";
 
 import "./res/Autopetrified.sol";
 import "./res/IsContract.sol";
+import "./res/IFundsDistributionToken.sol";
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 
-contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
+contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract, IFundsDistributionToken {
     using SafeMath for uint256;
     using Checkpointing for Checkpointing.History;
     using SafeERC20 for ERC20;
@@ -55,7 +56,8 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
 
     event Test(
       uint256 test,
-      string msg);
+      string msg
+    );
 
     function initialize(address _stakingToken, address _treasuryAddress) external onlyInit {
         require(isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
@@ -85,7 +87,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         uint256 totalStake = totalStakedHistory.getLatestValue();
 
         // Calculate and distribute funds by updating multiplier
-        uint256 multiplierDifference = (currentMultiplier.mul(_amount)).div(totalStake); 
+        uint256 multiplierDifference = (currentMultiplier.mul(_amount)).div(totalStake);
         uint256 newMultiplier = currentMultiplier.add(multiplierDifference);
         stakeMultiplier.add64(getBlockNumber64(), newMultiplier);
 
@@ -94,6 +96,9 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
 
         // Increase total supply by input amount
         _modifyTotalStaked(_amount, true);
+
+        // emitted for ERC-2222
+        emit FundsDistributed(msg.sender, _amount);
     }
 
     /**
@@ -161,26 +166,15 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @param _data Used in Unstaked event, to add signalling information in more complex staking applications
      */
     function unstake(uint256 _amount, bytes calldata _data) external isInitialized {
-        // unstaking 0 tokens is not allowed
-        require(_amount > 0, ERROR_AMOUNT_ZERO);
-
-        // Adjust amount by internal stake multiplier
-        uint internalStakeAmount = _amount.div(stakeMultiplier.getLatestValue());
-
-        // checkpoint updated staking balance
-        _modifyStakeBalance(msg.sender, internalStakeAmount, false);
-
-        // checkpoint total supply
-        _modifyTotalStaked(_amount, false);
-
-        // transfer tokens
-        stakingToken.safeTransfer(msg.sender, _amount);
+        _unstakeInternal(_amount);
 
         emit Unstaked(
             msg.sender,
             _amount,
             totalStakedFor(msg.sender),
             _data);
+
+        // TODO ERC-2222 emit FundsWithdrawn
     }
 
     /**
@@ -232,7 +226,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @return Current stake multiplier
      */
     function getCurrentStakeMultiplier() public view isInitialized returns (uint256) {
-      return stakeMultiplier.getLatestValue();
+        return stakeMultiplier.getLatestValue();
     }
 
     /**
@@ -330,7 +324,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
             _data);
     }
 
-    // Note that _by value has been adjusted for the stake multiplier prior to getting passed in 
+    // Note that _by value has been adjusted for the stake multiplier prior to getting passed in
     function _modifyStakeBalance(address _accountAddress, uint256 _by, bool _increase) internal {
         // currentInternalStake represents the internal stake value, without multiplier adjustment
         uint256 currentInternalStake = accounts[_accountAddress].stakedHistory.getLatestValue();
@@ -340,8 +334,9 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
             newStake = currentInternalStake.add(_by);
         } else {
             require(
-              currentInternalStake >= _by,
-              'Cannot decrease greater than current balance');
+                currentInternalStake >= _by,
+                "Cannot decrease greater than current balance"
+            );
             newStake = currentInternalStake.sub(_by);
         }
 
@@ -372,5 +367,41 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         _modifyStakeBalance(_to, _amount, true);
 
         emit StakeTransferred(_from,_amount, _to);
+    }
+
+    function _unstakeInternal(uint256 _amount) internal {
+      // unstaking 0 tokens is not allowed
+        require(_amount > 0, ERROR_AMOUNT_ZERO);
+
+        // Adjust amount by internal stake multiplier
+        uint internalStakeAmount = _amount.div(stakeMultiplier.getLatestValue());
+
+        // checkpoint updated staking balance
+        _modifyStakeBalance(msg.sender, internalStakeAmount, false);
+
+        // checkpoint total supply
+        _modifyTotalStaked(_amount, false);
+
+        // transfer tokens
+        stakingToken.safeTransfer(msg.sender, _amount);
+
+        // emitted for ERC-2222
+        emit FundsWithdrawn(msg.sender,  _amount);
+    }
+
+
+    /**
+      ERC-2222 compatibility functions
+      Specification in IFundsDistributionToken.sol
+    */
+
+
+    function withdrawableFundsOf(address owner) external view returns (uint256) {
+        return totalStakedFor(owner);
+    }
+
+    function withdrawFunds() external {
+        uint256 totalStake = totalStakedFor(msg.sender);
+        _unstakeInternal(totalStake);
     }
 }
