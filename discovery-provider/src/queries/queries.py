@@ -1503,11 +1503,13 @@ def get_users_account():
 @bp.route("/latest/<type>", methods=("GET",))
 def get_max_id(type):
     if not type:
-        return api_helpers.error_response("Invalid type provided, must be one of 'track', 'playlist', 'user'", 400)
+        return api_helpers.error_response(
+            "Invalid type provided, must be one of 'track', 'playlist', 'user'", 400
+        )
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        if (type) == 'track':
+        if type == 'track':
             query_results = (
                 session
                 .query(Track)
@@ -1517,7 +1519,7 @@ def get_max_id(type):
             )
             res = helpers.query_result_to_list(query_results)
             return api_helpers.success_response(res[0])
-        elif (type) == 'playlist':
+        elif type == 'playlist':
             query_results = (
                 session
                 .query(Playlist)
@@ -1527,7 +1529,7 @@ def get_max_id(type):
             )
             res = helpers.query_result_to_list(query_results)
             return api_helpers.success_response(res[0])
-        elif (type) == 'user':
+        elif type == 'user':
             query_results = (
                 session
                 .query(User)
