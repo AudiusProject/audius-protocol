@@ -33,27 +33,31 @@ class DiscoveryProvider {
     if (this.autoselect) {
       endpoint = await this.autoSelectEndpoint()
     } else {
-      if (!this.whitelist || this.whitelist.size === 0) {
-        throw new Error('Must pass autoselect true or provide whitelist.')
-      }
-
-      // use this as a lookup between version endpoint and base url
-      const whitelistMap = {}
-      this.whitelist.forEach((url) => {
-        whitelistMap[urlJoin(url, '/version')] = url
-      })
-
-      let resp = await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
-        pick = whitelistMap[url]
-      }, {})
-
-      const isValid = pick && resp.data.service && (resp.data.service === serviceType.DISCOVERY_PROVIDER)
-      if (isValid) {
-        console.info('Initial discovery provider was valid')
-        endpoint = pick
+      if (typeof this.whitelist === 'string') {
+        endpoint = this.whitelist
       } else {
-        console.info('Initial discovery provider was invalid, searching for a new one')
-        endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
+        if (!this.whitelist || this.whitelist.size === 0) {
+          throw new Error('Must pass autoselect true or provide whitelist.')
+        }
+
+        // use this as a lookup between version endpoint and base url
+        const whitelistMap = {}
+        this.whitelist.forEach((url) => {
+          whitelistMap[urlJoin(url, '/version')] = url
+        })
+
+        let resp = await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
+          pick = whitelistMap[url]
+        }, {})
+
+        const isValid = pick && resp.data.service && (resp.data.service === serviceType.DISCOVERY_PROVIDER)
+        if (isValid) {
+          console.info('Initial discovery provider was valid')
+          endpoint = pick
+        } else {
+          console.info('Initial discovery provider was invalid, searching for a new one')
+          endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
+        }
       }
     }
     this.setEndpoint(endpoint)
@@ -634,6 +638,7 @@ class DiscoveryProvider {
       const parsedResponse = Utils.parseDataFromResponse(response)
 
       if (
+        this.ethContracts &&
         !this.ethContracts.isInRegressedMode() &&
         'latest_indexed_block' in parsedResponse &&
         'latest_chain_block' in parsedResponse
