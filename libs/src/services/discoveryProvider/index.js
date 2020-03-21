@@ -51,7 +51,7 @@ class DiscoveryProvider {
           let resp = await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
             pick = whitelistMap[url]
           }, {})
-  
+
           isValid = pick && resp.data.service && (resp.data.service === serviceType.DISCOVERY_PROVIDER)
           if (isValid) {
             console.info('Initial discovery provider was valid')
