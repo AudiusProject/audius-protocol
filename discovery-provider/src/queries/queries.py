@@ -1510,33 +1510,24 @@ def get_max_id(type):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         if type == 'track':
-            query_results = (
+            latest = (
                 session
-                .query(Track)
-                .order_by(desc(Track.track_id))
-                .limit(1)
-                .all()
+                .query(func.max(Track.track_id))
+                .scalar()
             )
-            res = helpers.query_result_to_list(query_results)
-            return api_helpers.success_response(res[0])
+            return api_helpers.success_response(latest)
         elif type == 'playlist':
-            query_results = (
+            latest = (
                 session
-                .query(Playlist)
-                .order_by(desc(Playlist.playlist_id))
-                .limit(1)
-                .all()
+                .query(func.max(Playlist.playlist_id))
+                .scalar()
             )
-            res = helpers.query_result_to_list(query_results)
-            return api_helpers.success_response(res[0])
+            return api_helpers.success_response(latest)
         elif type == 'user':
-            query_results = (
+            latest = (
                 session
-                .query(User)
-                .order_by(desc(User.user_id))
-                .limit(1)
-                .all()
+                .query(func.max(User.user_id))
+                .scalar()
             )
-            res = helpers.query_result_to_list(query_results)
-            return api_helpers.success_response(res[0])
+            return api_helpers.success_response(latest)
     return api_helpers.error_response("Unable to compute latest", 400)
