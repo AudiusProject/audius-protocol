@@ -24,7 +24,9 @@ const amountOfAuds = 100000
 const versionStr = '0.3.2' //fallback
 let serviceVersions = {}
 try {
-  serviceTypeList.forEach((type) => serviceVersions[type] = (require(`../../${type}/.version.json`)['version']))
+  serviceTypeList.forEach((type) => {
+    serviceVersions[type] = (require(`../../${type}/.version.json`)['version'])
+  })
 } catch (e) {
   console.log("couldn't dynamically figure out service versions, falling back to using hardcoded version")
 }
