@@ -52,7 +52,7 @@ async function initAudiusLibs (useExternalWeb3, ownerWalletOverride = null, ethO
   // in that case, handle that error and continue so we're unblocking scripts that depend on this libs instance for other functionality
   try {
     await audiusLibs.init()
-  } catch(e) {
+  } catch (e) {
     console.error(`Couldn't init libs`, e)
   }
   return audiusLibs
