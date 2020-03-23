@@ -61,7 +61,7 @@ class DiscoveryProvider {
             endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
           }
         } catch (e) {
-          console.error('Could not select a discprov from the whitelist', e)
+          throw new Error('Could not select a discprov from the whitelist', e)
         }
       }
     }
