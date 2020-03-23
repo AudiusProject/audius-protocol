@@ -21,7 +21,7 @@ const creatorNodeEndpoint4 = 'http://docker.for.mac.localhost:4030'
 const amountOfAuds = 100000
 
 // try to dynamically get versions from .version.json, or use versionStr as a fallback
-const versionStr = '0.3.2' //fallback
+const versionStr = '0.3.2' // fallback
 let serviceVersions = {}
 try {
   serviceTypeList.forEach((type) => {
