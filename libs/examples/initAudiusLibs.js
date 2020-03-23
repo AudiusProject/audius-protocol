@@ -48,7 +48,13 @@ async function initAudiusLibs (useExternalWeb3, ownerWalletOverride = null, ethO
   }
   let audiusLibs = new AudiusLibs(audiusLibsConfig)
 
-  await audiusLibs.init()
+  // we need this try/catch because sometimes we call init before a discprov has been brought up
+  // in that case, handle that error and continue so we're unblocking scripts that depend on this libs instance for other functionality
+  try {
+    await audiusLibs.init()
+  } catch (e) {
+    console.error(`Couldn't init libs`, e)
+  }
   return audiusLibs
 }
 

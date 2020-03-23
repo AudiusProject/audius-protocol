@@ -29,6 +29,7 @@ class DiscoveryProvider {
   async init () {
     let endpoint
     let pick
+    let isValid = null
 
     if (this.autoselect) {
       endpoint = await this.autoSelectEndpoint()
@@ -46,17 +47,21 @@ class DiscoveryProvider {
           whitelistMap[urlJoin(url, '/version')] = url
         })
 
-        let resp = await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
-          pick = whitelistMap[url]
-        }, {})
+        try {
+          let resp = await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
+            pick = whitelistMap[url]
+          }, {})
 
-        const isValid = pick && resp.data.service && (resp.data.service === serviceType.DISCOVERY_PROVIDER)
-        if (isValid) {
-          console.info('Initial discovery provider was valid')
-          endpoint = pick
-        } else {
-          console.info('Initial discovery provider was invalid, searching for a new one')
-          endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
+          isValid = pick && resp.data.service && (resp.data.service === serviceType.DISCOVERY_PROVIDER)
+          if (isValid) {
+            console.info('Initial discovery provider was valid')
+            endpoint = pick
+          } else {
+            console.info('Initial discovery provider was invalid, searching for a new one')
+            endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
+          }
+        } catch (e) {
+          throw new Error('Could not select a discprov from the whitelist', e)
         }
       }
     }
