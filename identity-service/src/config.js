@@ -296,6 +296,18 @@ const config = convict({
     format: String,
     default: '',
     env: 'browserPushVapidPrivateKey'
+  },
+  apnKeyId: {
+    doc: 'APN Key ID for safari browser push notifications',
+    format: String,
+    default: '',
+    env: 'apnKeyId'
+  },
+  apnTeamId: {
+    doc: 'APN Team ID for safari browser push notifications',
+    format: String,
+    default: '',
+    env: 'apnTeamId'
   }
 })
 

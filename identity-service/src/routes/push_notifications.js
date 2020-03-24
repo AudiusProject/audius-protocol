@@ -24,8 +24,11 @@ const ANDROID = 'android'
 const SAFARI = 'safari'
 const DEVICE_TYPES = new Set([IOS, ANDROID, SAFARI])
 
+// A signed Push Pacakge zip is required for safari browser push notifications
+const pushPackagePath = path.join(__dirname, '../notifications/browserPush/pushPackage.zip')
+
 /**
- * Checks is a browser subscription is valid for notifications
+ * Checks if a browser Push API subscription is valid for notifications
  * @params {Object} subscription
  */
 const isValidBrowserSubscription = (subscription) => {
@@ -213,7 +216,7 @@ module.exports = function (app) {
   }))
 
   /*
-  * Returns if a user subscription exists
+  * Returns if a user browser subscription exists and is enabled
   */
   app.get('/push_notifications/browser/enabled', authMiddleware, handleResponse(async (req, res, next) => {
     const userId = req.user.blockchainUserId
@@ -237,7 +240,7 @@ module.exports = function (app) {
   }))
 
   /*
-  * Creates/Updates a user subscription exists
+  * Creates/Updates a user browser notification bscription exists
   */
   app.post('/push_notifications/browser/register', authMiddleware, handleResponse(async (req, res, next) => {
     const { subscription, enabled = true } = req.body
@@ -287,7 +290,6 @@ module.exports = function (app) {
   * Downloads the signed safari web push package for authentication.
   */
   app.post('/push_notifications/safari/:version/pushPackages/:websitePushID', (req, res) => {
-    const pushPackagePath = path.join(__dirname, '../notifications/browserPush/pushPackage.zip')
     try {
       res.writeHead(200, {
         'Content-Type': 'application/zip'

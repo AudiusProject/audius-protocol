@@ -1,23 +1,38 @@
 const webpush = require('web-push')
 const config = require('./config')
 const models = require('./models')
+const apn = require('apn')
+const fs = require('fs')
+const path = require('path')
+const { logger } = require('./logging')
 
-const browserPushGCMAPIKey = config.get('browserPushGCMAPIKey')
-const browserPushVapidPublicKey = config.get('browserPushVapidPublicKey')
-const browserPushVapidPrivateKey = config.get('browserPushVapidPrivateKey')
-
+// Configure webpush for browser push to Push API enabled browsers
 const vapidKeys = {
-  publicKey: browserPushVapidPublicKey,
-  privateKey: browserPushVapidPrivateKey
+  publicKey: config.get('browserPushVapidPublicKey'),
+  privateKey: config.get('browserPushVapidPrivateKey')
 }
-webpush.setGCMAPIKey(browserPushGCMAPIKey)
-webpush.setVapidDetails(
-  'mailto:contact@audius.co',
-  vapidKeys.publicKey,
-  vapidKeys.privateKey
-)
+const browserPushGCMAPIKey = config.get('browserPushGCMAPIKey')
+let webPushIsConfigured = false
 
+if (vapidKeys.publicKey && vapidKeys.privateKey && browserPushGCMAPIKey) {
+  webpush.setGCMAPIKey(browserPushGCMAPIKey)
+  webpush.setVapidDetails(
+    'mailto:contact@audius.co',
+    vapidKeys.publicKey,
+    vapidKeys.privateKey
+  )
+  webPushIsConfigured = true
+} else {
+  logger.warn('Web Push is not configured. Browser Push API Notifs will NOT be sent')
+}
+
+/**
+ * Sends a browser push notification using Google Cloud Messaging
+ * Each browser subscribed to the notification will be sent a message
+ * If there is an error sending b/c of an invalid token/endpoint, delete the subscription
+*/
 const sendBrowserNotification = async ({ userId, notificationParams }) => {
+  if (!webPushIsConfigured) return
   const { message, title } = notificationParams
   const notificationBrowsers = await models.NotificationBrowserSubscription.findAll({ where: { userId, enabled: true } })
   await Promise.all(notificationBrowsers.map(async (notificationBrowser) => {
@@ -38,25 +53,30 @@ const sendBrowserNotification = async ({ userId, notificationParams }) => {
   }))
 }
 
-// TODO: implement w/ correct options and configuration
-const sendSafariNotification = async () => {}
-
-/*
-// Send notif to safari
-var apn = require('apn')
-
-var options = {
+// Configure APN for browser push notifs to safari
+const apnConfig = {
   token: {
     key: path.resolve(__dirname, './notifications/browserPush/audius.pushpackage/AuthKey_JF59JDH2B2.p8'),
-    keyId: 'JF59JDH2B2',
-    teamId: 'LRFCG93S85'
+    keyId: config.get('apnKeyId'),
+    teamId: config.get('apnTeamId')
   },
   production: true
 }
 
-const apnProvider = new apn.Provider(options)
+let apnProvider
+if (apnConfig.token.keyId && apnConfig.token.teamId && fs.existsSync(apnConfig.token.key)) {
+  apnProvider = new apn.Provider(apnConfig)
+} else {
+  logger.warn('APN Provider is not configured. Safari Push Notifs will NOT be sent')
+}
 
+/**
+ * Sends a safari browser push notification using APNs
+ * Each browser subscribed to the notification will be sent a message
+ * If there is a BadTokenDevice error, remove the browser devicetoken
+*/
 const sendSafariNotification = async ({ userId, notificationParams }) => {
+  if (!apnProvider) return
   const note = new apn.Notification()
 
   const { message, title } = notificationParams
@@ -94,6 +114,6 @@ const sendSafariNotification = async ({ userId, notificationParams }) => {
     }
   }))
 }
-*/
+
 module.exports.sendBrowserNotification = sendBrowserNotification
 module.exports.sendSafariNotification = sendSafariNotification
