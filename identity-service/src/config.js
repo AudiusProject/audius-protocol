@@ -278,6 +278,24 @@ const config = convict({
     format: String,
     default: '0xf7100',
     env: 'defaultGasLimit'
+  },
+  browserPushGCMAPIKey: {
+    doc: 'Google Cloud Messaging Browser Push Key',
+    format: String,
+    default: '',
+    env: 'browserPushGCMAPIKey'
+  },
+  browserPushVapidPublicKey: {
+    doc: 'Vapid Public Key for browser push notification',
+    format: String,
+    default: '',
+    env: 'browserPushVapidPublicKey'
+  },
+  browserPushVapidPrivateKey: {
+    doc: 'Vapid Private Key for browser push notifications',
+    format: String,
+    default: '',
+    env: 'browserPushVapidPrivateKey'
   }
 })
 
