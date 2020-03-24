@@ -83,20 +83,20 @@ const sendSafariNotification = async ({ userId, notificationParams }) => {
   try {
     if (!apnProvider) return
     const note = new apn.Notification()
-  
+
     const { message, title } = notificationParams
-  
+
     note.topic = 'web.co.audius' // Required: The destination topic for the notification.
     note.pushType = 'alert' // Required: alert or background
     note.expiry = Math.floor(Date.now() / 1000) + 3600 // Expires 1 hour from now.
     note.alert = { title, body: message }
     note.urlArgs = ['']
     note.payload = {}
-  
+
     const notifcationDevices = await models.NotificationDeviceToken.findAll({
       where: { userId, enabled: true, deviceType: 'safari' }
     })
-  
+
     await Promise.all(notifcationDevices.map(async (notificationDevice) => {
       try {
         const result = await apnProvider.send(note, notificationDevice.deviceToken)

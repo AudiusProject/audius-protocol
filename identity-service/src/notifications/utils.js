@@ -131,7 +131,6 @@ async function getHighestBlockNumber () {
  * @returns Object { notifyWeb: Boolean, notifyMobile: Boolean}
  */
 async function shouldNotifyUser (notificationTarget, prop, tx = null) {
-
   // mobile
   let mobileQuery = { where: { userId: notificationTarget } }
   if (tx) mobileQuery.transaction = tx

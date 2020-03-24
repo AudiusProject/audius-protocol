@@ -302,7 +302,6 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
       throw new Error('Invalid favorite type')
   }
 
-
   let unreadQuery = await models.Notification.findAll({
     where: {
       isViewed: false,
