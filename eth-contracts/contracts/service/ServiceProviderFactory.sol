@@ -24,20 +24,20 @@ contract ServiceProviderFactory is RegistryContract {
     mapping(bytes32 => ServiceInstanceStakeRequirements) serviceTypeStakeRequirements;
     // END Temporary data structures
 
-    /*
-      Maps directly staked amount by SP, not including delegators
-    */
+    // Maps directly staked amount by SP, not including delegators
     mapping(address => uint) spDeployerStake;
 
-    /*
-      % Cut of delegator tokens assigned to sp deployer
-    */
+    // % Cut of delegator tokens assigned to sp deployer
     mapping(address => uint) spDeployerCut; 
 
     bytes empty;
 
     // standard - imitates relationship between Ether and Wei
     uint8 private constant DECIMALS = 18;
+
+    // denominator for deployer cut calculations
+    // user values are intended to be x/DEPLOYER_CUT_BASE
+    uint private constant DEPLOYER_CUT_BASE = 100;
 
     event RegisteredServiceProvider(
       uint _spID,
@@ -307,10 +307,10 @@ contract ServiceProviderFactory is RegistryContract {
         return spId;
     }
 
-    /*
-       Update service provider balance
-       TODO: Called by delegate manager contract only 
-    */
+  /**
+   * @notice Update service provider balance
+   * TODO: Permission to only delegatemanager
+   */
    function updateServiceProviderStake(
        address _serviceProvider,
        uint _amount
@@ -319,15 +319,51 @@ contract ServiceProviderFactory is RegistryContract {
         spDeployerStake[_serviceProvider] = _amount;
    }
 
-    /*
-       Represents amount direclty staked by service provider
-    */
+  /**
+   * @notice Update service provider cut
+   * SPs will interact with this value as a percent, value translation done client side 
+   */
+   function updateServiceProviderCut(
+        address _serviceProvider,
+        uint _cut
+    ) external
+    {
+      require(
+        msg.sender == _serviceProvider,
+        'Service Provider cut update operation restricted to deployer');
+
+      require(
+        _cut <= DEPLOYER_CUT_BASE,
+        'Service Provider cut cannot exceed base value');
+        spDeployerCut[_serviceProvider] = _cut;
+    }
+
+  /**
+   * @notice Represents amount directly staked by service provider
+   */
     function getServiceProviderStake(address _address)
     external view returns (uint stake)
     {
         return spDeployerStake[_address];
     }
 
+  /**
+   * @notice Represents % taken by sp deployer of rewards
+   */
+    function getServiceProviderDeployerCut(address _address) 
+    external view returns (uint cut)
+    {
+      return spDeployerCut[_address];
+    }
+
+  /**
+   * @notice Denominator for deployer cut calculations
+   */
+    function getServiceProviderDeployerCutBase()
+    external pure returns (uint base)
+    {
+      return DEPLOYER_CUT_BASE;
+    }
 
     function getTotalServiceTypeProviders(bytes32 _serviceType)
     external view returns (uint numberOfProviders)

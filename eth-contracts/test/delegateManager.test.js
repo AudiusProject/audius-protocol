@@ -250,7 +250,7 @@ contract('DelegateManager', async (accounts) => {
     })
     */
 
-    it('single delegator', async () => {
+    it('single delegator operations', async () => {
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
 

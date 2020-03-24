@@ -12,7 +12,8 @@ import "./ServiceProviderFactory.sol";
 // WORKING CONTRACT
 // Designed to manage delegation to staking contract
 contract DelegateManager is RegistryContract {
-    RegistryInterface registry = RegistryInterface(0);
+  using SafeMath for uint256;
+  RegistryInterface registry = RegistryInterface(0);
   // standard - imitates relationship between Ether and Wei
   // uint8 private constant DECIMALS = 18;
 
@@ -27,7 +28,7 @@ contract DelegateManager is RegistryContract {
 
   // Service provider address -> list of delegators
   // TODO: Bounded list
-  mapping (address => address[]) serviceProviderDelegates;
+  mapping (address => address[]) spDelegates;
 
   // Total staked for a given delegator
   mapping (address => uint) delegatorStakeTotal;
@@ -115,48 +116,99 @@ contract DelegateManager is RegistryContract {
     // Update total delegated stake
     delegatorStakeTotal[delegator] -= _amount;
 
+    // Remove from delegators list if no delegated stake remaining
+    if (delegateInfo[delegator][_target] == 0) {
+      bool foundDelegator;
+      uint delegatorIndex;
+      for (uint i = 0; i < spDelegates[_target].length; i++) {
+        if (spDelegates[_target][i] == delegator) {
+          foundDelegator = true;
+          delegatorIndex = i;
+        }
+      }
+
+      // Overwrite and shrink delegators list
+      spDelegates[_target][delegatorIndex] = spDelegates[_target][spDelegates[_target].length - 1];
+      spDelegates[_target].length--;
+    }
+
     // Return new total
     return delegateInfo[delegator][_target];
   }
 
   function makeClaim() external {
-    address claimer = msg.sender;
-    Staking stakingContract = Staking(
-        registry.getContract(stakingProxyOwnerKey)
-    );
+    // address claimer = msg.sender;
     ServiceProviderFactory spFactory = ServiceProviderFactory(
         registry.getContract(serviceProviderFactoryKey)
     );
 
     // Amount stored in staking contract for owner
-    uint totalBalanceInStaking = stakingContract.totalStakedFor(claimer);
+    uint totalBalanceInStaking = Staking(
+        registry.getContract(stakingProxyOwnerKey)
+    ).totalStakedFor(msg.sender);
     require(totalBalanceInStaking > 0, 'Stake required for claim');
-    // Amount in sp factory for user
-    uint totalBalanceInSPFactory = spFactory.getServiceProviderStake(claimer);
+
+    // Amount in sp factory for claimer
+    uint totalBalanceInSPFactory = spFactory.getServiceProviderStake(msg.sender);
     require(totalBalanceInSPFactory > 0, 'Service Provider stake required');
 
+    // Amount in delegate manager staked to service provider
+    // TODO: Consider caching this value
+    uint totalBalanceInDelegateManager = 0;
+    for (uint i = 0; i < spDelegates[msg.sender].length; i++)
+    {
+      address delegator = spDelegates[msg.sender][i];
+      uint delegateStakeToSP = delegateInfo[delegator][msg.sender]; 
+      totalBalanceInDelegateManager += delegateStakeToSP;
+    }
+
+    uint totalBalanceOutsideStaking = totalBalanceInSPFactory + totalBalanceInDelegateManager;
+
     // Require claim availability
-    require(totalBalanceInStaking > totalBalanceInSPFactory, 'No stake available to claim');
+    require(totalBalanceInStaking > totalBalanceOutsideStaking, 'No stake available to claim');
 
-    uint totalRewards = totalBalanceInStaking - totalBalanceInSPFactory;
+    // Total rewards
+    // Equal to (balance in staking) - ((balance in sp factory) + (balance in delegate manager))
+    uint totalRewards = totalBalanceInStaking - totalBalanceOutsideStaking;
 
-    // TODO: Distribute rewards cut to delegates, add more to 
-    uint newSpBalance = totalBalanceInSPFactory + totalRewards;
+    uint deployerCut = spFactory.getServiceProviderDeployerCut(msg.sender);
+    uint deployerCutBase = spFactory.getServiceProviderDeployerCutBase();
+    uint spDeployerCutRewards = 0;
 
-    spFactory.updateServiceProviderStake(claimer, newSpBalance);
+    // Traverse all delegates and calculate their rewards
+    for (uint i = 0; i < spDelegates[msg.sender].length; i++)
+    {
+      address delegator = spDelegates[msg.sender][i];
+      uint delegateStakeToSP = delegateInfo[delegator][msg.sender]; 
+      // Calculate rewards by ((delegateStakeToSP / totalBalanceOutsideStaking) * totalRewards)
+      uint rewardsPriorToSPCut = (delegateStakeToSP.mul(totalRewards)).div(totalBalanceOutsideStaking); 
+      // Multiply by deployer cut fraction to calculate reward for SP
+      uint spDeployerCut = (rewardsPriorToSPCut.mul(deployerCut)).div(deployerCutBase);
+      spDeployerCutRewards += spDeployerCut; 
+      // Increase total delegate reward in DelegateManager
+      // Subtract SP reward from rewards to calculate delegate reward
+      // delegateReward = rewardsPriorToSPCut - spDeployerCut;
+      delegateInfo[delegator][msg.sender] += (rewardsPriorToSPCut - spDeployerCut);
+      delegatorStakeTotal[delegator] += (rewardsPriorToSPCut - spDeployerCut);
+    }
+
+    // TODO: Validate below with test cases
+    uint spRewardShare = (totalBalanceInSPFactory.mul(totalRewards)).div(totalBalanceOutsideStaking);
+    uint newSpBalance = totalBalanceInSPFactory + spRewardShare + spDeployerCutRewards;
+    spFactory.updateServiceProviderStake(msg.sender, newSpBalance);
   }
 
   function updateServiceProviderDelegatorsIfNecessary (
     address _delegator,
     address _serviceProvider
   ) internal returns (bool exists) {
-    for (uint i = 0; i < serviceProviderDelegates[_serviceProvider].length; i++) {
-      if (serviceProviderDelegates[_serviceProvider][i] == _delegator) {
+    for (uint i = 0; i < spDelegates[_serviceProvider].length; i++) {
+      if (spDelegates[_serviceProvider][i] == _delegator) {
         return true;
       }
     }
     // If not found, update list of delegates
-    serviceProviderDelegates[_serviceProvider].push(_delegator);
+    spDelegates[_serviceProvider].push(_delegator);
     return false;
   }
 }
