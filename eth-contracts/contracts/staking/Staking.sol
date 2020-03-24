@@ -172,6 +172,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
 
     /**
      * @notice Unstakes `_amount` tokens, returning them to the desired account.
+     * @param _accountAddress Account unstaked for, and token recipient 
      * @param _amount Number of tokens staked
      * @param _data Used in Unstaked event, to add signalling information in more complex staking applications
      */
@@ -193,10 +194,37 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @param _amount Number of tokens staked
      * @param _data Used in Staked event, to add signalling information in more complex staking applications
      */
-    function delegateStakeFor(address _accountAddress, address _delegatorAddress, uint256 _amount, bytes calldata _data) external isInitialized {
+    function delegateStakeFor(
+      address _accountAddress,
+      address _delegatorAddress,
+      uint256 _amount,
+      bytes calldata _data
+    ) external isInitialized {
         // TODO: permission to contract addresses via registry contract instead of 'stakingOwnerAddress'  
         // require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
         _stakeFor(
+            _accountAddress,
+            _delegatorAddress,
+            _amount,
+            _data);
+    }
+
+    /**
+     * @notice Stakes `_amount` tokens, transferring them from caller, and assigns them to `_accountAddress`
+     * @param _accountAddress The staker of the tokens
+     * @param _delegatorAddress Address from which to transfer tokens
+     * @param _amount Number of tokens unstaked
+     * @param _data Used in Staked event, to add signalling information in more complex staking applications
+     */
+    function undelegateStakeFor(
+      address _accountAddress,
+      address _delegatorAddress,
+      uint256 _amount,
+      bytes calldata _data
+    ) external isInitialized {
+        // TODO: permission to contract addresses via registry contract instead of 'stakingOwnerAddress'  
+        // require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
+        _unstakeFor(
             _accountAddress,
             _delegatorAddress,
             _amount,

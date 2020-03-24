@@ -103,8 +103,9 @@ contract DelegateManager is RegistryContract {
       'Cannot decrease greater than currently staked for this ServiceProvider');
 
     // Stake on behalf of target service provider 
-    stakingContract.unstakeFor(
+    stakingContract.undelegateStakeFor(
       _target,
+      delegator,
       _amount,
       empty);
 
