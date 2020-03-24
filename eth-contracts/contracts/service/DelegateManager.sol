@@ -40,6 +40,10 @@ contract DelegateManager is RegistryContract {
   // TODO: Evaluate whether this is necessary
   bytes empty;
 
+  event Test(
+    uint256 test,
+    string msg);
+
   constructor(
     address _tokenAddress, 
     address _registryAddress,
@@ -197,6 +201,7 @@ contract DelegateManager is RegistryContract {
     uint spRewardShare = (totalBalanceInSPFactory.mul(totalRewards)).div(totalBalanceOutsideStaking);
     uint newSpBalance = totalBalanceInSPFactory + spRewardShare + spDeployerCutRewards;
     spFactory.updateServiceProviderStake(msg.sender, newSpBalance);
+    // require(false, 'tmp fail');
   }
 
   /**
@@ -215,6 +220,15 @@ contract DelegateManager is RegistryContract {
   external view returns (uint amount) 
   {
     return delegatorStakeTotal[_delegator];  
+  }
+
+  /**
+   * @notice Total currently staked for a delegator, for a given service provider
+   */
+  function getDelegatorStakeForServiceProvider(address _delegator, address _serviceProvider) 
+  external view returns (uint amount)
+  {
+    return delegateInfo[_delegator][_serviceProvider]; 
   }
 
   function updateServiceProviderDelegatorsIfNecessary (
