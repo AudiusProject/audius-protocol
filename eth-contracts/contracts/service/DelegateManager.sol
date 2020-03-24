@@ -176,6 +176,7 @@ contract DelegateManager is RegistryContract {
     uint spDeployerCutRewards = 0;
 
     // Traverse all delegates and calculate their rewards
+    // As each delegate reward is calculated, increment SP cut reward accordingly
     for (uint i = 0; i < spDelegates[msg.sender].length; i++)
     {
       address delegator = spDelegates[msg.sender][i];
@@ -196,6 +197,24 @@ contract DelegateManager is RegistryContract {
     uint spRewardShare = (totalBalanceInSPFactory.mul(totalRewards)).div(totalBalanceOutsideStaking);
     uint newSpBalance = totalBalanceInSPFactory + spRewardShare + spDeployerCutRewards;
     spFactory.updateServiceProviderStake(msg.sender, newSpBalance);
+  }
+
+  /**
+   * @notice List of delegators for a given service provider
+   */
+  function getDelegatorsList(address _sp)
+  external view returns (address[] memory dels) 
+  {
+    return spDelegates[_sp]; 
+  }
+
+  /**
+   * @notice Total currently staked for a delegator, across service providers
+   */
+  function getTotalDelegatorStake(address _delegator)
+  external view returns (uint amount) 
+  {
+    return delegatorStakeTotal[_delegator];  
   }
 
   function updateServiceProviderDelegatorsIfNecessary (
