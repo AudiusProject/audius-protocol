@@ -32,25 +32,29 @@ if (vapidKeys.publicKey && vapidKeys.privateKey && browserPushGCMAPIKey) {
  * If there is an error sending b/c of an invalid token/endpoint, delete the subscription
 */
 const sendBrowserNotification = async ({ userId, notificationParams }) => {
-  if (!webPushIsConfigured) return
-  const { message, title } = notificationParams
-  const notificationBrowsers = await models.NotificationBrowserSubscription.findAll({ where: { userId, enabled: true } })
-  await Promise.all(notificationBrowsers.map(async (notificationBrowser) => {
-    const pushSubscription = {
-      'endpoint': notificationBrowser.endpoint,
-      'keys': {
-        'p256dh': notificationBrowser.p256dhKey,
-        'auth': notificationBrowser.authKey
+  try {
+    if (!webPushIsConfigured) return
+    const { message, title } = notificationParams
+    const notificationBrowsers = await models.NotificationBrowserSubscription.findAll({ where: { userId, enabled: true } })
+    await Promise.all(notificationBrowsers.map(async (notificationBrowser) => {
+      const pushSubscription = {
+        'endpoint': notificationBrowser.endpoint,
+        'keys': {
+          'p256dh': notificationBrowser.p256dhKey,
+          'auth': notificationBrowser.authKey
+        }
       }
-    }
-    try {
-      await webpush.sendNotification(pushSubscription, JSON.stringify({ message, title }))
-    } catch (err) {
-      // If the send Notification response was not successful
-      // delete the browser subscription as it is no longer valid
-      await notificationBrowser.destroy()
-    }
-  }))
+      try {
+        await webpush.sendNotification(pushSubscription, JSON.stringify({ message, title }))
+      } catch (err) {
+        // If the send Notification response was not successful
+        // delete the browser subscription as it is no longer valid
+        await notificationBrowser.destroy()
+      }
+    }))
+  } catch (err) {
+    logger.error(`Error in sending Push API browser notifications`)
+  }
 }
 
 // Configure APN for browser push notifs to safari
@@ -76,43 +80,47 @@ if (apnConfig.token.keyId && apnConfig.token.teamId && fs.existsSync(apnConfig.t
  * If there is a BadTokenDevice error, remove the browser devicetoken
 */
 const sendSafariNotification = async ({ userId, notificationParams }) => {
-  if (!apnProvider) return
-  const note = new apn.Notification()
-
-  const { message, title } = notificationParams
-
-  note.topic = 'web.co.audius' // Required: The destination topic for the notification.
-  note.pushType = 'alert' // Required: alert or background
-  note.expiry = Math.floor(Date.now() / 1000) + 3600 // Expires 1 hour from now.
-  note.alert = { title, body: message }
-  note.urlArgs = ['']
-  note.payload = {}
-
-  const notifcationDevices = await models.NotificationDeviceToken.findAll({
-    where: { userId, enabled: true, deviceType: 'safari' }
-  })
-
-  await Promise.all(notifcationDevices.map(async (notificationDevice) => {
-    try {
-      const result = await apnProvider.send(note, notificationDevice.deviceToken)
-      if (result.failed && result.failed.length > 0) {
-        for (let failed of result.failed) {
-          if (failed.response && failed.response.reason === 'BadDeviceToken') {
-            // TODO: Remove device token
-            await models.NotificationDeviceToken.destroy({
-              where: {
-                userId,
-                deviceToken: notificationDevice.deviceToken,
-                deviceType: 'safari'
-              }
-            })
+  try {
+    if (!apnProvider) return
+    const note = new apn.Notification()
+  
+    const { message, title } = notificationParams
+  
+    note.topic = 'web.co.audius' // Required: The destination topic for the notification.
+    note.pushType = 'alert' // Required: alert or background
+    note.expiry = Math.floor(Date.now() / 1000) + 3600 // Expires 1 hour from now.
+    note.alert = { title, body: message }
+    note.urlArgs = ['']
+    note.payload = {}
+  
+    const notifcationDevices = await models.NotificationDeviceToken.findAll({
+      where: { userId, enabled: true, deviceType: 'safari' }
+    })
+  
+    await Promise.all(notifcationDevices.map(async (notificationDevice) => {
+      try {
+        const result = await apnProvider.send(note, notificationDevice.deviceToken)
+        if (result.failed && result.failed.length > 0) {
+          for (let failed of result.failed) {
+            if (failed.response && failed.response.reason === 'BadDeviceToken') {
+              // TODO: Remove device token
+              await models.NotificationDeviceToken.destroy({
+                where: {
+                  userId,
+                  deviceToken: notificationDevice.deviceToken,
+                  deviceType: 'safari'
+                }
+              })
+            }
           }
         }
+      } catch (err) {
+        logger.error(`Error sending browser notification to APNs w/ device token: ${notificationDevice.deviceToken}`)
       }
-    } catch (err) {
-      logger.error(`Error sending browser notification to APNs w/ device token: ${notificationDevice.deviceToken}`)
-    }
-  }))
+    }))
+  } catch (err) {
+    logger.error(`Error in sending safari push notifications`)
+  }
 }
 
 module.exports.sendBrowserNotification = sendBrowserNotification
