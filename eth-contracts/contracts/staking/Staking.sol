@@ -147,7 +147,8 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @param _data Used in Staked event, to add signalling information in more complex staking applications
      */
     function stakeFor(address _accountAddress, uint256 _amount, bytes calldata _data) external isInitialized {
-        require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
+        // TODO: permission to contract addresses via registry contract instead of 'stakingOwnerAddress'  
+        // require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
         _stakeFor(
             _accountAddress,
             _accountAddress,
@@ -160,27 +161,13 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @param _amount Number of tokens staked
      * @param _data Used in Unstaked event, to add signalling information in more complex staking applications
      */
+     // TODO: Convert to internal model w/transfer address and account address
     function unstake(uint256 _amount, bytes calldata _data) external isInitialized {
-        // unstaking 0 tokens is not allowed
-        require(_amount > 0, ERROR_AMOUNT_ZERO);
-
-        // Adjust amount by internal stake multiplier
-        uint internalStakeAmount = _amount.div(stakeMultiplier.getLatestValue());
-
-        // checkpoint updated staking balance
-        _modifyStakeBalance(msg.sender, internalStakeAmount, false);
-
-        // checkpoint total supply
-        _modifyTotalStaked(_amount, false);
-
-        // transfer tokens
-        stakingToken.safeTransfer(msg.sender, _amount);
-
-        emit Unstaked(
-            msg.sender,
-            _amount,
-            totalStakedFor(msg.sender),
-            _data);
+        _unstakeFor(
+          msg.sender,
+          msg.sender,
+          _amount,
+          _data);
     }
 
     /**
@@ -189,26 +176,30 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @param _data Used in Unstaked event, to add signalling information in more complex staking applications
      */
     function unstakeFor(address _accountAddress, uint256 _amount, bytes calldata _data) external isInitialized {
-        require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
+        // TODO: permission to contract addresses via registry contract instead of 'stakingOwnerAddress'  
+        // require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
         // unstaking 0 tokens is not allowed
-        require(_amount > 0, ERROR_AMOUNT_ZERO);
+        _unstakeFor(
+          _accountAddress,
+          _accountAddress,
+          _amount,
+          _data);
+    }
 
-        // Adjust amount by internal stake multiplier
-        uint internalStakeAmount = _amount.div(stakeMultiplier.getLatestValue());
-
-        // checkpoint updated staking balance
-        _modifyStakeBalance(_accountAddress, internalStakeAmount, false);
-
-        // checkpoint total supply
-        _modifyTotalStaked(_amount, false);
-
-        // transfer tokens
-        stakingToken.safeTransfer(_accountAddress, _amount);
-
-        emit Unstaked(
+    /**
+     * @notice Stakes `_amount` tokens, transferring them from caller, and assigns them to `_accountAddress`
+     * @param _accountAddress The final staker of the tokens
+     * @param _delegatorAddress Address from which to transfer tokens
+     * @param _amount Number of tokens staked
+     * @param _data Used in Staked event, to add signalling information in more complex staking applications
+     */
+    function delegateStakeFor(address _accountAddress, address _delegatorAddress, uint256 _amount, bytes calldata _data) external isInitialized {
+        // TODO: permission to contract addresses via registry contract instead of 'stakingOwnerAddress'  
+        // require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
+        _stakeFor(
             _accountAddress,
+            _delegatorAddress,
             _amount,
-            totalStakedFor(_accountAddress),
             _data);
     }
 
@@ -324,6 +315,32 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         stakingToken.safeTransferFrom(_transferAccount, address(this), _amount);
 
         emit Staked(
+            _stakeAccount,
+            _amount,
+            totalStakedFor(_stakeAccount),
+            _data);
+    }
+
+    function _unstakeFor(
+      address _stakeAccount,
+      address _transferAccount,
+      uint256 _amount,
+      bytes memory _data) internal
+    {
+        require(_amount > 0, ERROR_AMOUNT_ZERO);
+        // Adjust amount by internal stake multiplier
+        uint internalStakeAmount = _amount.div(stakeMultiplier.getLatestValue());
+
+        // checkpoint updated staking balance
+        _modifyStakeBalance(_stakeAccount, internalStakeAmount, false);
+
+        // checkpoint total supply
+        _modifyTotalStaked(_amount, false);
+
+        // transfer tokens
+        stakingToken.safeTransfer(_transferAccount, _amount);
+
+        emit Unstaked(
             _stakeAccount,
             _amount,
             totalStakedFor(_stakeAccount),

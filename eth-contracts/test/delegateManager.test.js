@@ -65,6 +65,9 @@ contract('DelegateManager', async (accounts) => {
   let claimFactory
   let delegateManager
 
+  const stakerAccount = accounts[1]
+  const delegatorAccount1 = accounts[2]
+
   beforeEach(async () => {
     registry = await Registry.new()
 
@@ -107,9 +110,6 @@ contract('DelegateManager', async (accounts) => {
     // Permission sp factory as caller, from the proxy owner address
     // (which happens to equal treasury in this test case)
     await staking.setStakingOwnerAddress(serviceProviderFactory.address, { from: proxyOwner })
-
-    // Transfer 1000 tokens to accounts[1]
-    await token.transfer(accounts[1], INITIAL_BAL, { from: treasuryAddress })
 
     // Create new claim factory instance
     claimFactory = await ClaimFactory.new(
@@ -202,10 +202,10 @@ contract('DelegateManager', async (accounts) => {
 
   describe('Delegation flow', () => {
     let regTx
-    const stakerAccount = accounts[1]
-    const stakerAccount2 = accounts[2]
-
     beforeEach(async () => {
+      // Transfer 1000 tokens to staker
+      await token.transfer(stakerAccount, INITIAL_BAL, { from: treasuryAddress })
+
       let initialBal = await token.balanceOf(stakerAccount)
 
       // 1st endpoint for stakerAccount = https://localhost:5000
@@ -224,7 +224,9 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(initialBal.eq(finalBal.add(DEFAULT_AMOUNT)), 'Expect funds to be transferred')
     })
 
-    it('sandbox', async () => {
+    /*
+    it('initial state', async () => {
+      // Validate basic claim w/SP path
       console.log('configured')
       let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       console.log(`SP Factory Stake: ${fromBn(spStake)}`)
@@ -245,7 +247,33 @@ contract('DelegateManager', async (accounts) => {
       console.log(`Total Stake for Account: ${totalStakedForAccount}`)
       spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       console.log(`SP Factory Stake 2: ${fromBn(spStake)}`)
+    })
+    */
 
+    it('single delegator', async () => {
+      // Transfer 1000 tokens to delegator
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
+
+      let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
+      console.log(`Total Stake for SP: ${totalStakedForSP}`)
+
+      let initialDelegateAmount = toWei(60)
+
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      await delegateManager.increaseDelegatedStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      totalStakedForSP = await staking.totalStakedFor(stakerAccount)
+      console.log(`Total Stake for SP - after delegation: ${totalStakedForSP}`)
+
+      return true
     })
   })
 })
