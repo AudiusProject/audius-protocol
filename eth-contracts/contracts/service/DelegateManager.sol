@@ -99,7 +99,7 @@ contract DelegateManager is RegistryContract {
 
     uint currentlyDelegatedToSP = delegateInfo[delegator][_target];
     require(
-      _amount < currentlyDelegatedToSP,
+      _amount <= currentlyDelegatedToSP,
       'Cannot decrease greater than currently staked for this ServiceProvider');
 
     // Stake on behalf of target service provider 

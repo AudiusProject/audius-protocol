@@ -278,6 +278,8 @@ contract('DelegateManager', async (accounts) => {
         initialDelegateAmount,
         { from: delegatorAccount1 })
 
+      totalStakedForSP = await staking.totalStakedFor(stakerAccount)
+      console.log(`Total Stake for SP - after rm delegation: ${totalStakedForSP}`)
       return true
     })
   })
