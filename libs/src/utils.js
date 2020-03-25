@@ -209,7 +209,7 @@ class Utils {
       source.cancel('Fetch already succeeded')
     })
 
-    if (response.url && response.blob) {
+    if (response && response.url && response.blob) {
       callback(response.url)
       return response.blob
     }
