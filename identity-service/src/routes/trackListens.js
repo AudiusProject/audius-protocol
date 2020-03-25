@@ -1,3 +1,5 @@
+const Sequelize = require('sequelize')
+
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const { logger } = require('../logging')
@@ -214,11 +216,12 @@ module.exports = function (app) {
     // Those listened should NOT be recorded in the userTrackListen table
     if (!isNaN(req.body.userId)) {
       // Find / Create the record of the user listening to the track
-      const [userTrackListenRecord, created] = await models.UserTrackListen
+      const [userTrackListenRecord, created] = await models.UserTrackListens
         .findOrCreate({ where: { userId: req.body.userId, trackId } })
 
       // If the recrod was not created, updated the timestamp
       if (!created) {
+        userTrackListenRecord.increment('count')
         userTrackListenRecord.set('updatedAt', new Date())
         await userTrackListenRecord.save()
       }
@@ -245,7 +248,7 @@ module.exports = function (app) {
       return errorResponseBadRequest('Must include user id')
     }
 
-    const trackListens = await models.UserTrackListen.findAll({
+    const trackListens = await models.UserTrackListens.findAll({
       where: { userId },
       order: [[ 'updatedAt', 'DESC' ]],
       attributes: ['trackId', 'updatedAt'],
@@ -360,5 +363,78 @@ module.exports = function (app) {
       offset)
 
     return successResponse({ listenCounts: parsedListenCounts })
+  }))
+
+  /*
+   * Gets the tracks and listen counts for a user.
+   * Useful for populating views like "Heavy Rotation" which
+   * require sorted lists of track listens for a given user.
+   *
+   * GET query parameters:
+   *  userId: The user id to query for
+   *  limit: (optional) The number of tracks to fetch
+   */
+  app.get('/users/listens/top', handleResponse(async (req, res) => {
+    const { userId, limit = 25 } = req.query
+    if (!userId) return errorResponseBadRequest('Please provide a userId')
+
+    const listens = await models.UserTrackListens.findAll({
+      where: {
+        userId: {
+          [Sequelize.Op.eq]: userId
+        }
+      },
+      order: [
+        [ 'count', 'DESC' ]
+      ],
+      limit
+    })
+
+    return successResponse({
+      listens
+    })
+  }))
+
+  /**
+   * Gets whether or not tracks have been listened to by a target user.
+   * Useful in filtering out tracks that a user has already listened to.
+   *
+   * GET query parameters:
+   *  userId: The id of the user to query for
+   *  trackIdList: The ids of tracks to check
+   */
+  app.get('/users/listens', handleResponse(async (req, res) => {
+    const { userId, trackIdList } = req.query
+
+    if (!userId) return errorResponseBadRequest('Please provide a userId')
+    if (!trackIdList || !Array.isArray(trackIdList)) {
+      return errorResponseBadRequest('Please provid an array of track ids')
+    }
+
+    const listens = await models.UserTrackListens.findAll({
+      where: {
+        userId: {
+          [Sequelize.Op.eq]: userId
+        },
+        trackId: {
+          [Sequelize.Op.in]: trackIdList
+        }
+      }
+    })
+
+    const listenMap = listens.reduce((acc, listen) => {
+      console.log(listen.dataValues.trackId)
+      acc[listen.dataValues.trackId] = listen.dataValues.count
+      return acc
+    }, {})
+    trackIdList.forEach(id => {
+      if (!(id in listenMap)) {
+        listenMap[id] = 0
+      }
+    })
+
+    return successResponse({
+      listenMap
+    })
   }))
 }
