@@ -27,6 +27,7 @@ contract('Governance test', async (accounts) => {
   let governanceC
 
   const votingPeriod = 10
+  const votingQuorum = 1
   const defaultStake = audToWei(1000)
 
   const Outcome = Object.freeze({
@@ -100,6 +101,7 @@ contract('Governance test', async (accounts) => {
       registryC.address,
       ownedUpgradeabilityProxyKey,
       votingPeriod,
+      votingQuorum,
       { from: protocolOwnerAddress }
     )
   })
@@ -128,10 +130,6 @@ contract('Governance test', async (accounts) => {
     assert.isTrue(parseInt(txParsed.event.args.startBlockNumber) > lastBlock, 'Expected event.args.startBlockNumber > lastBlock')
     assert.equal(txParsed.event.args.target, target, 'Expected same event.args.target')
     assert.equal(parseInt(txParsed.event.args.slashAmount), slashAmount, 'Expected same event.args.slashAmount')
-    assert.equal(txParsed.event.args.outcome, Outcome.InProgress, 'Expected same event.args.outcome')
-    assert.equal(parseInt(txParsed.event.args.voteMagnitudeYes), 0, 'Expected same event.args.voteMagnitudeYes')
-    assert.equal(parseInt(txParsed.event.args.voteMagnitudeNo), 0, 'Expected same event.args.voteMagnitudeNo')
-    assert.equal(parseInt(txParsed.event.args.numVotes), 0, 'Expected same event.args.numVotes')
 
     // Call getSlashProposalById() and confirm same values
     const proposal = await governanceC.getSlashProposalById.call(proposalId)
@@ -160,6 +158,8 @@ contract('Governance test', async (accounts) => {
     const vote = Vote.No
     const defaultVote = Vote.None
     const slashAmount = 1
+
+    const lastBlock = (await _lib.getLatestBlock(web3)).number
     
     await governanceC.submitSlashProposal(target, slashAmount, { from: proposer })
 
@@ -174,6 +174,18 @@ contract('Governance test', async (accounts) => {
     assert.equal(parseInt(txParsed.event.args.vote), vote, 'Expected same event.args.vote')
     assert.equal((parseInt(txParsed.event.args.voterStake)), fromBn(defaultStake), 'Expected same event.args.voterStake')
     assert.equal(parseInt(txParsed.event.args.previousVote), defaultVote, 'Expected same event.args.previousVote')
+
+    // Call getSlashProposalById() and confirm same values
+    const proposal = await governanceC.getSlashProposalById.call(proposalId)
+    assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
+    assert.equal(proposal.proposer, proposer, 'Expected same proposer')
+    assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
+    assert.equal(proposal.target, target, 'Expected same target')
+    assert.equal(parseInt(proposal.slashAmount), slashAmount, 'Expected same slashAmount')
+    assert.equal(proposal.outcome, Outcome.InProgress, 'Expected same outcome')
+    assert.equal(parseInt(proposal.voteMagnitudeYes), 0, 'Expected same voteMagnitudeYes')
+    assert.equal(parseInt(proposal.voteMagnitudeNo), defaultStake, 'Expected same voteMagnitudeNo')
+    assert.equal(parseInt(proposal.numVotes), 1, 'Expected same numVotes')
 
     // Confirm all vote states - Vote.No for Voter, Vote.None for all others
     for (const account of accounts) {
