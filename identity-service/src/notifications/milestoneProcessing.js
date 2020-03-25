@@ -384,7 +384,9 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
       const msg = pushNotificationMessagesMap[notificationTypes.Milestone](msgGenNotif)
       logger.debug(`processMilestone - message: ${msg}`)
       const title = notificationResponseTitleMap[notificationTypes.Milestone]
-      const types = [].concat(notifyMobile ? ['mobile'] : []).concat(notifyBrowserPush ? ['browser'] : [])
+      let types = []
+      if (notifyMobile) types.push('mobile')
+      if (notifyBrowserPush) types.push('browser')
       await publish(msg, userId, tx, true, title, types)
     } catch (e) {
       // Log on error instead of failing

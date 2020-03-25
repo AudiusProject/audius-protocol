@@ -97,9 +97,12 @@ module.exports = function (app) {
     }
 
     try {
+      // Build the aws sns platform params based on device type
       let params = { Token: deviceToken }
       if (deviceType === IOS) params = { ...iOSSNSParams, ...params }
       else if (deviceType === ANDROID) params = { ...androidSNSParams, ...params }
+
+      // If native moblie (ios/android), register the device with aws sns
       if (deviceType !== SAFARI) {
         const awsARN = (await createPlatformEndpoint(params))['EndpointArn']
         await models.NotificationDeviceToken.upsert({
@@ -155,7 +158,7 @@ module.exports = function (app) {
         tokenDeleted = true
       }
 
-      // delete user
+      // Delete user mobile notification settings if device type is mobile (android or ios)
       if (deleteUserNotificationSettings) {
         const settingsObj = await models.UserNotificationMobileSettings.findOne({
           where: {

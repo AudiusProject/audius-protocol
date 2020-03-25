@@ -161,7 +161,9 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Follow](msgGenNotif)
       const title = notificationResponseTitleMap[notificationTypes.Follow]
-      const types = [].concat(notifyMobile ? ['mobile'] : []).concat(notifyBrowserPush ? ['browser'] : [])
+      let types = []
+      if (notifyMobile) types.push('mobile')
+      if (notifyBrowserPush) types.push('browser')
       await publish(msg, notificationTarget, tx, true, title, types)
     } catch (e) {
       logger.error('processFollowNotifications - Could not send push notification for _processFollowNotifications for target user', notificationTarget, e)
@@ -274,7 +276,9 @@ async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Repost.base](msgGenNotif)
       const title = notificationResponseTitleMap[repostType]
-      const types = [].concat(notifyMobile ? ['mobile'] : []).concat(notifyBrowserPush ? ['browser'] : [])
+      let types = []
+      if (notifyMobile) types.push('mobile')
+      if (notifyBrowserPush) types.push('browser')
       await publish(msg, notificationTarget, tx, true, title, types)
     } catch (e) {
       logger.error('processRepostNotification - Could not send push notification for _processBaseRepostNotifications for target user', notificationTarget, e)
@@ -386,7 +390,9 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Favorite.base](msgGenNotif)
       const title = notificationResponseTitleMap[favoriteType]
-      const types = [].concat(notifyMobile ? ['mobile'] : []).concat(notifyBrowserPush ? ['browser'] : [])
+      let types = []
+      if (notifyMobile) types.push('mobile')
+      if (notifyBrowserPush) types.push('browser')
       await publish(msg, notificationTarget, tx, true, title, types)
     } catch (e) {
       logger.error('processFavoriteNotification - Could not send push notification for _processFavoriteNotifications for target user', notificationTarget, e)
