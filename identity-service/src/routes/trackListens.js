@@ -395,7 +395,7 @@ module.exports = function (app) {
     })
   }))
 
-  /**
+  /*
    * Gets whether or not tracks have been listened to by a target user.
    * Useful in filtering out tracks that a user has already listened to.
    *
