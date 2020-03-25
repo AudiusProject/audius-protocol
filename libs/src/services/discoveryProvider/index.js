@@ -1,7 +1,7 @@
 const axios = require('axios')
-const _ = require('lodash')
 
 const Utils = require('../../utils')
+const { serviceType } = require('../ethContracts/index')
 
 const { DISCOVERY_PROVIDER_TIMESTAMP, UNHEALTHY_BLOCK_DIFF } = require('./constants')
 
@@ -28,21 +28,41 @@ class DiscoveryProvider {
 
   async init () {
     let endpoint
+    let pick
+    let isValid = null
+
     if (this.autoselect) {
       endpoint = await this.autoSelectEndpoint()
     } else {
-      if (!this.whitelist || this.whitelist.size === 0) {
-        throw new Error('Must pass autoselect true or provide whitelist.')
-      }
-
-      const pick = _.sample([...this.whitelist]) // selects random element from list.
-      const isValid = await this.ethContracts.validateDiscoveryProvider(pick)
-      if (isValid) {
-        console.info('Initial discovery provider was valid')
-        endpoint = pick
+      if (typeof this.whitelist === 'string') {
+        endpoint = this.whitelist
       } else {
-        console.info('Initial discovery provider was invalid, searching for a new one')
-        endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
+        if (!this.whitelist || this.whitelist.size === 0) {
+          throw new Error('Must pass autoselect true or provide whitelist.')
+        }
+
+        // use this as a lookup between version endpoint and base url
+        const whitelistMap = {}
+        this.whitelist.forEach((url) => {
+          whitelistMap[urlJoin(url, '/version')] = url
+        })
+
+        try {
+          let resp = await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
+            pick = whitelistMap[url]
+          }, {})
+
+          isValid = pick && resp.data.service && (resp.data.service === serviceType.DISCOVERY_PROVIDER)
+          if (isValid) {
+            console.info('Initial discovery provider was valid')
+            endpoint = pick
+          } else {
+            console.info('Initial discovery provider was invalid, searching for a new one')
+            endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
+          }
+        } catch (e) {
+          throw new Error('Could not select a discprov from the whitelist', e)
+        }
       }
     }
     this.setEndpoint(endpoint)
@@ -181,13 +201,17 @@ class DiscoveryProvider {
    * @param {getTracksIdentifier[]} identifiers
    * @returns {(Array)} track
    */
-  async getTracksIncludingUnlisted (identifiers) {
+  async getTracksIncludingUnlisted (identifiers, withUsers = false) {
     let req = {
       endpoint: 'tracks_including_unlisted',
       method: 'post',
       data: {
         tracks: identifiers
-      }
+      },
+      queryParams: {}
+    }
+    if (withUsers) {
+      req.queryParams.with_users = true
     }
     return this._makeRequest(req)
   }
@@ -573,7 +597,7 @@ class DiscoveryProvider {
       endpoint: 'users/account',
       queryParams: { wallet }
     }
-    return this._makeRequest(req)
+    return this._makeRequest(req, 0, true)
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
@@ -583,7 +607,7 @@ class DiscoveryProvider {
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
   // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, retries = 4) {
+  async _makeRequest (requestObj, retries = 4, silent = false) {
     if (!this.discoveryProviderEndpoint) {
       await this.autoSelectEndpoint()
     }
@@ -619,6 +643,7 @@ class DiscoveryProvider {
       const parsedResponse = Utils.parseDataFromResponse(response)
 
       if (
+        this.ethContracts &&
         !this.ethContracts.isInRegressedMode() &&
         'latest_indexed_block' in parsedResponse &&
         'latest_chain_block' in parsedResponse
@@ -645,7 +670,10 @@ class DiscoveryProvider {
 
       return parsedResponse.data
     } catch (e) {
-      console.error(e)
+      if (!silent) {
+        console.error(e)
+      }
+
       if (retries > 0) {
         return this._makeRequest(requestObj, retries - 1)
       }

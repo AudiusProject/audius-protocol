@@ -1498,3 +1498,36 @@ def get_users_account():
         user['playlists'] = stripped_playlists
 
     return api_helpers.success_response(user)
+
+# Gets the max id for tracks, playlists, or users.
+@bp.route("/latest/<type>", methods=("GET",))
+def get_max_id(type):
+    if not type:
+        return api_helpers.error_response(
+            "Invalid type provided, must be one of 'track', 'playlist', 'user'", 400
+        )
+
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        if type == 'track':
+            latest = (
+                session
+                .query(func.max(Track.track_id))
+                .scalar()
+            )
+            return api_helpers.success_response(latest)
+        elif type == 'playlist':
+            latest = (
+                session
+                .query(func.max(Playlist.playlist_id))
+                .scalar()
+            )
+            return api_helpers.success_response(latest)
+        elif type == 'user':
+            latest = (
+                session
+                .query(func.max(User.user_id))
+                .scalar()
+            )
+            return api_helpers.success_response(latest)
+    return api_helpers.error_response("Unable to compute latest", 400)
