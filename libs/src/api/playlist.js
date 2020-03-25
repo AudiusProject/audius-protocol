@@ -10,6 +10,7 @@ class Playlists extends Base {
    * get full playlist objects, including tracks, for passed in array of playlistId
    * @param {Array} playlistId list of playlist ids
    * @param {number} targetUserId the user whose playlists we're trying to get
+   * @param {boolean} withUsers whether to return users nested within the collection objects
    * @returns {Array} array of playlist objects
    * additional metadata fields on playlist objects:
    *  {Integer} repost_count - repost count for given playlist

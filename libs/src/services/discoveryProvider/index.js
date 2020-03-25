@@ -273,6 +273,7 @@ class DiscoveryProvider {
    * get full playlist objects, including tracks, for passed in array of playlistId
    * @param {Array} playlistId list of playlist ids
    * @param {number} targetUserId the user whose playlists we're trying to get
+   * @param {boolean} withUsers whether to return users nested within the collection objects
    * @returns {Array} array of playlist objects
    * additional metadata fields on playlist objects:
    *  {Integer} repost_count - repost count for given playlist
@@ -282,7 +283,7 @@ class DiscoveryProvider {
    *  {Boolean} has_current_user_reposted - has current user reposted given playlist
    *  {Boolean} has_current_user_saved - has current user saved given playlist
    */
-  async getPlaylists (limit = 100, offset = 0, idsArray = null, targetUserId = null) {
+  async getPlaylists (limit = 100, offset = 0, idsArray = null, targetUserId = null, withUsers = false) {
     let req = { endpoint: 'playlists', queryParams: { limit: limit, offset: offset } }
     if (idsArray != null) {
       if (!Array.isArray(idsArray)) {
@@ -292,6 +293,9 @@ class DiscoveryProvider {
     }
     if (targetUserId) {
       req.queryParams.user_id = targetUserId
+    }
+    if (withUsers) {
+      req.queryParams.with_users = true
     }
     return this._makeRequest(req)
   }
