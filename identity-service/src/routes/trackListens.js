@@ -423,7 +423,6 @@ module.exports = function (app) {
     })
 
     const listenMap = listens.reduce((acc, listen) => {
-      console.log(listen.dataValues.trackId)
       acc[listen.dataValues.trackId] = listen.dataValues.count
       return acc
     }, {})
