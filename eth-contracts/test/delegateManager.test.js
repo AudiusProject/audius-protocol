@@ -224,6 +224,7 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(initialBal.eq(finalBal.add(DEFAULT_AMOUNT)), 'Expect funds to be transferred')
     })
 
+    /*
     it('initial state + claim', async () => {
       // Validate basic claim w/SP path
       let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
@@ -322,7 +323,7 @@ contract('DelegateManager', async (accounts) => {
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       let delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
 
-      // Update SP Deployer Cut
+      // Update SP Deployer Cut to 10%
       await serviceProviderFactory.updateServiceProviderCut(stakerAccount, 10, { from: stakerAccount })
       let deployerCut = await serviceProviderFactory.getServiceProviderDeployerCut(stakerAccount)
       let deployerCutBase = await serviceProviderFactory.getServiceProviderDeployerCutBase()
@@ -350,6 +351,66 @@ contract('DelegateManager', async (accounts) => {
 
       assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
       assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
+    })
+      */
+
+    it('single delegator + claim + slash', async () => {
+      // TODO: Validate all
+      // Transfer 1000 tokens to delegator
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
+
+      let delegatedStake
+      let spFactoryStake
+      let totalInStakingContract
+
+      totalInStakingContract = await staking.totalStakedFor(stakerAccount)
+      let initialDelegateAmount = toWei(60)
+
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      await delegateManager.increaseDelegatedStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      totalInStakingContract = await staking.totalStakedFor(stakerAccount)
+      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+
+      spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      totalInStakingContract = await staking.totalStakedFor(stakerAccount)
+      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Staking: ${totalInStakingContract}`)
+
+      // Update SP Deployer Cut to 10%
+      await serviceProviderFactory.updateServiceProviderCut(stakerAccount, 10, { from: stakerAccount })
+      // Fund new claim
+      await claimFactory.initiateClaim()
+
+      // Perform claim
+      await delegateManager.makeClaim({ from: stakerAccount })
+
+      // let finalSpStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      // let finalDelegateStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+
+      spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      totalInStakingContract = await staking.totalStakedFor(stakerAccount)
+      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Staking: ${totalInStakingContract}`)
+
+      // Perform slash functions
+      let slashAmount = toWei(100)
+      await delegateManager.slash(slashAmount, stakerAccount);
+
+      spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      totalInStakingContract = await staking.totalStakedFor(stakerAccount)
+      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Staking: ${totalInStakingContract}`)
+      // assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
+      // assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
     })
 
     // 2 service providers, 1 claim, no delegation

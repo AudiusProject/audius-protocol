@@ -204,6 +204,51 @@ contract DelegateManager is RegistryContract {
     // require(false, 'tmp fail');
   }
 
+  // TODO: Permission to governance contract only
+  function slash(uint _amount, address _slashAddress)
+  external
+  {
+    Staking stakingContract = Staking(
+        registry.getContract(stakingProxyOwnerKey)
+    );
+
+    ServiceProviderFactory spFactory = ServiceProviderFactory(
+        registry.getContract(serviceProviderFactoryKey)
+    );
+
+    // Amount stored in staking contract for owner
+    // TODO: See whether totalBalanceOutsideOfStaking is better than val in staking
+    // Benefit of this value is no need to recompute total value outside of staking
+    uint totalBalanceInStaking = stakingContract.totalStakedFor(_slashAddress);
+    require(totalBalanceInStaking > 0, 'Stake required prior to slash');
+    require(totalBalanceInStaking > _amount, 'Cannot slash more than total currently staked');
+
+    // Amount in sp factory for slash target
+    uint totalBalanceInSPFactory = spFactory.getServiceProviderStake(_slashAddress);
+    require(totalBalanceInSPFactory > 0, 'Service Provider stake required');
+
+    // For each delegator and deployer
+    // newStakeAmount = stakeAmount - (slashAmount * (stakeAmount / totalStakeAmount))
+    for (uint i = 0; i < spDelegates[_slashAddress].length; i++)
+    {
+      address delegator = spDelegates[_slashAddress][i];
+      uint delegateStakeToSP = delegateInfo[delegator][_slashAddress]; 
+      uint slashAmountForDelegator = (delegateStakeToSP.mul(_amount)).div(totalBalanceInStaking); 
+
+      // Subtract slashed amount from delegator balances
+      delegateInfo[delegator][_slashAddress] -= (slashAmountForDelegator);
+      delegatorStakeTotal[delegator] -= (slashAmountForDelegator);
+    }
+
+    // Substract proportional amount from ServiceProviderFactory
+    uint spSlashAmount = (totalBalanceInSPFactory.mul(_amount)).div(totalBalanceInStaking);
+    uint newSpBalance = totalBalanceInSPFactory - spSlashAmount; 
+    spFactory.updateServiceProviderStake(_slashAddress, newSpBalance);
+
+    // Decrease value in Staking contract
+    stakingContract.slash(_amount, _slashAddress);
+  }
+
   /**
    * @notice List of delegators for a given service provider
    */
