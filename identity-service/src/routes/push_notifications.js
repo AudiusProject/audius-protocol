@@ -83,7 +83,7 @@ module.exports = function (app) {
 
   /**
    * Register a device token
-   * POST body contains {deviceToken: <string>, deviceType: ios/android, userId}
+   * POST body contains {deviceToken: <string>, deviceType: ios/android/safari }
    */
   app.post('/push_notifications/device_token', authMiddleware, handleResponse(async (req, res, next) => {
     const userId = req.user.blockchainUserId
@@ -172,6 +172,35 @@ module.exports = function (app) {
     } catch (e) {
       req.logger.error(`Unable to deregister device token for deviceToken: ${deviceToken}`, e)
       return errorResponseServerError(`Unable to deregister device token for deviceToken: ${deviceToken}`, e.message)
+    }
+  }))
+
+  /**
+   * Checks if a device token/type exists for a userId
+   * Get query must include {deviceToken: <string>, deviceType: ios/android/safari }
+   */
+  app.get('/push_notifications/device_token/enabled', authMiddleware, handleResponse(async (req, res, next) => {
+    const userId = req.user.blockchainUserId
+    const { deviceToken, deviceType } = req.query
+    console.log(JSON.stringify(req.query, null, ' '))
+    if (!DEVICE_TYPES.has(deviceType)) {
+      return errorResponseBadRequest('Attempting to check for an invalid deviceType')
+    }
+    if (!deviceToken || !userId) {
+      return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token check')
+    }
+
+    try {
+      const notificationDeviceToken = await models.NotificationDeviceToken.findOne({
+        deviceToken,
+        deviceType,
+        userId
+      })
+      const enabled = (notificationDeviceToken && notificationDeviceToken.enabled) || false
+      return successResponse({ enabled })
+    } catch (e) {
+      req.logger.error(`Unable to register device token for userId: ${userId} on ${deviceType}`, e)
+      return errorResponseServerError(`Unable to register device token for userId: ${userId} on ${deviceType}, Error: ${e.message}`)
     }
   }))
 
