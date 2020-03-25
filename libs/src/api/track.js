@@ -62,9 +62,9 @@ class Tracks extends Base {
    * @param {getTracksIdentifier[]} identifiers
    * @returns {(Array)} track
    */
-  async getTracksIncludingUnlisted (identifiers) {
+  async getTracksIncludingUnlisted (identifiers, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getTracksIncludingUnlisted(identifiers)
+    return this.discoveryProvider.getTracksIncludingUnlisted(identifiers, withUsers)
   }
 
   /**

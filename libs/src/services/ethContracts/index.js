@@ -497,3 +497,4 @@ class EthContracts {
 }
 
 module.exports = EthContracts
+module.exports.serviceType = serviceType

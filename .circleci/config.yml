@@ -187,20 +187,20 @@ jobs:
           steps:
             - run: ./diff.sh content-service || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - content-service-{{ checksum "content-service/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - content-service-
+      # - restore_cache:
+      #     keys:
+      #     - content-service-{{ checksum "content-service/package.json" }}
+      #     # fallback to using the latest cache if no exact match is found
+      #     - content-service-
       - run:
           name: configure content service
           command: |
             cd content-service/
             npm install
-      - save_cache:
-          paths:
-            - content-service/node_modules
-          key: content-service-{{ checksum "content-service/package.json" }}
+      # - save_cache:
+      #     paths:
+      #       - content-service/node_modules
+      #     key: content-service-{{ checksum "content-service/package.json" }}
       - run:
           name: run tests
           command: |

@@ -85,6 +85,13 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         uint256 totalStake = totalStakedHistory.getLatestValue();
 
         // Calculate and distribute funds by updating multiplier
+        // Proportionally increases multiplier equivalent to incoming token value
+        // newMultiplier = currentMultiplier + ((multiplier * _amount) / total) 
+        // Ex:
+        // multiplier = 1.0, total = 200,000, address1 = 200,000 * 1.0 (has all value)
+        // Incoming claim fund of 100,000
+        // newMultiplier = 1.0 + ((1.0 * 100,000) / 200,000) = 1.5
+        // address1 = 200,000 * 1.5 = 300,000 <-- Total value increased by fundAmount, with newMultiplier
         uint256 multiplierDifference = (currentMultiplier.mul(_amount)).div(totalStake); 
         uint256 newMultiplier = currentMultiplier.add(multiplierDifference);
         stakeMultiplier.add64(getBlockNumber64(), newMultiplier);
