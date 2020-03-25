@@ -41,17 +41,17 @@ class App {
     // the db port is exposed, not when it's ready to accept incoming connections. the timeout
     // attempts to wait until the db is accepting connections
     await new Promise(resolve => setTimeout(resolve, 2000))
-    // await this.runMigrations()
+    await this.runMigrations()
     await this.getAudiusAnnouncements()
 
     // exclude these init's if running tests
     if (!config.get('isTestRun')) {
       const audiusInstance = await this.configureAudiusInstance()
-      // await this.notificationProcessor.init(
-      //   audiusInstance,
-      //   this.express,
-      //   this.redisClient
-      // )
+      await this.notificationProcessor.init(
+        audiusInstance,
+        this.express,
+        this.redisClient
+      )
     }
 
     let server

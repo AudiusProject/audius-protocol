@@ -371,7 +371,6 @@ module.exports = function (app) {
    * require sorted lists of track listens for a given user.
    *
    * GET query parameters:
-<<<<<<< HEAD
    *  limit: (optional) The number of tracks to fetch
    */
   app.get('/users/listens/top', authMiddleware, handleResponse(async (req, res) => {
@@ -379,16 +378,6 @@ module.exports = function (app) {
     const { limit = 25 } = req.query
 
     const listens = await models.UserTrackListen.findAll({
-=======
-   *  userId: The user id to query for
-   *  limit: (optional) The number of tracks to fetch
-   */
-  app.get('/users/listens/top', handleResponse(async (req, res) => {
-    const { userId, limit = 25 } = req.query
-    if (!userId) return errorResponseBadRequest('Please provide a userId')
-
-    const listens = await models.UserTrackListens.findAll({
->>>>>>> Add user listen info and routes to identity service
       where: {
         userId: {
           [Sequelize.Op.eq]: userId
@@ -405,7 +394,6 @@ module.exports = function (app) {
     })
   }))
 
-<<<<<<< HEAD
   /*
    * Gets whether or not tracks have been listened to by a target user.
    * Useful in filtering out tracks that a user has already listened to.
@@ -418,29 +406,11 @@ module.exports = function (app) {
     const { blockchainUserId: userId } = req.user
     const { trackIdList } = req.query
 
-=======
-  /**
-   * Gets whether or not tracks have been listened to by a target user.
-   * Useful in filtering out tracks that a user has already listened to.
-   *
-   * GET query parameters:
-   *  userId: The id of the user to query for
-   *  trackIdList: The ids of tracks to check
-   */
-  app.get('/users/listens', handleResponse(async (req, res) => {
-    const { userId, trackIdList } = req.query
-
-    if (!userId) return errorResponseBadRequest('Please provide a userId')
->>>>>>> Add user listen info and routes to identity service
     if (!trackIdList || !Array.isArray(trackIdList)) {
       return errorResponseBadRequest('Please provid an array of track ids')
     }
 
-<<<<<<< HEAD
     const listens = await models.UserTrackListen.findAll({
-=======
-    const listens = await models.UserTrackListens.findAll({
->>>>>>> Add user listen info and routes to identity service
       where: {
         userId: {
           [Sequelize.Op.eq]: userId
@@ -452,13 +422,10 @@ module.exports = function (app) {
     })
 
     const listenMap = listens.reduce((acc, listen) => {
-<<<<<<< HEAD
-=======
-      console.log(listen.dataValues.trackId)
->>>>>>> Add user listen info and routes to identity service
       acc[listen.dataValues.trackId] = listen.dataValues.count
       return acc
     }, {})
+
     trackIdList.forEach(id => {
       if (!(id in listenMap)) {
         listenMap[id] = 0
