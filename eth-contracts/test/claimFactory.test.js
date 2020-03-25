@@ -6,6 +6,20 @@ const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const encodeCall = require('./encodeCall')
 
+const fromBn = n => parseInt(n.valueOf(), 10)
+
+const toWei = (aud) => {
+  let amountInAudWei = web3.utils.toWei(
+    aud.toString(),
+    'ether'
+  )
+
+  let amountInAudWeiBN = web3.utils.toBN(amountInAudWei)
+  return amountInAudWeiBN
+}
+
+const DEFAULT_AMOUNT = toWei(120)
+
 contract('ClaimFactory', async (accounts) => {
   // Local web3, injected by truffle
   let treasuryAddress = accounts[0]
@@ -17,10 +31,24 @@ contract('ClaimFactory', async (accounts) => {
   let proxy
   let impl0
   let BN = web3.utils.BN
+  let testStakingCallerAddress = accounts[6] // Dummy stand in for sp factory in actual deployment
 
 
   const getLatestBlock = async () => {
     return web3.eth.getBlock('latest')
+  }
+
+  const approveTransferAndStake = async (amount, staker) => {
+    // Transfer default tokens to
+    await token.transfer(staker, amount, { from: treasuryAddress })
+    // Allow Staking app to move owner tokens
+    await token.approve(staking.address, amount, { from: staker })
+    // Stake tokens
+    await staking.stakeFor(
+      staker,
+      amount,
+      web3.utils.utf8ToHex(''),
+      { from: testStakingCallerAddress })
   }
 
   beforeEach(async () => {
@@ -50,24 +78,31 @@ contract('ClaimFactory', async (accounts) => {
 
     // Register new contract as a minter, from the same address that deployed the contract
     await token.addMinter(claimFactory.address, { from: accounts[0] })
+
+    // Permission test address as caller
+    await staking.setStakingOwnerAddress(testStakingCallerAddress, { from: treasuryAddress })
   })
 
   it('Initiate a claim', async () => {
-    // Get amount staked for treasury
-    let stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
+    // Get amount staked
+    let totalStaked = await staking.totalStaked()
     assert.isTrue(
-      stakedForTreasury.isZero(),
+      totalStaked.isZero(),
       'Expect zero treasury stake prior to claim funding')
+
+    // Stake default amount
+    let staker = accounts[2]
+    await approveTransferAndStake(DEFAULT_AMOUNT, staker)
 
     // Get funds per claim
     let fundsPerClaim = await claimFactory.getFundsPerClaim()
 
     await claimFactory.initiateClaim()
-    stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
+    totalStaked = await staking.totalStaked()
 
     assert.isTrue(
-      stakedForTreasury.eq(fundsPerClaim),
-      'Expect single round of funding staked for treasury at this time')
+      totalStaked.eq(fundsPerClaim.add(DEFAULT_AMOUNT)),
+      'Expect single round of funding + initial stake at this time')
 
     // Confirm another claim cannot be immediately funded
     await _lib.assertRevert(
@@ -76,22 +111,26 @@ contract('ClaimFactory', async (accounts) => {
   })
 
   it('Initiate multiple claims after 1x claim block diff', async () => {
-    // Get amount staked for treasury
-    let stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
+    // Get amount staked
+    let totalStaked = await staking.totalStaked()
     assert.isTrue(
-      stakedForTreasury.isZero(),
-      'Expect zero treasury stake prior to claim funding')
+      totalStaked.isZero(),
+      'Expect zero stake prior to claim funding')
+
+    // Stake default amount
+    let staker = accounts[2]
+    await approveTransferAndStake(DEFAULT_AMOUNT, staker)
 
     // Get funds per claim
     let fundsPerClaim = await claimFactory.getFundsPerClaim()
 
     // Initiate claim
     await claimFactory.initiateClaim()
-    stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
+    totalStaked = await staking.totalStaked()
 
     assert.isTrue(
-      stakedForTreasury.eq(fundsPerClaim),
-      'Expect single round of funding staked for treasury at this time')
+      totalStaked.eq(fundsPerClaim.add(DEFAULT_AMOUNT)),
+      'Expect single round of funding + initial stake at this time')
 
     // Confirm another claim cannot be immediately funded
     await _lib.assertRevert(
@@ -111,78 +150,39 @@ contract('ClaimFactory', async (accounts) => {
       currentBlockNum = currentBlock.number
     }
 
-    stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
+    // No change expected after block diff
+    totalStaked = await staking.totalStaked()
     assert.isTrue(
-      stakedForTreasury.eq(fundsPerClaim),
-      'Expect treasury stake equal to single fund amount')
+      totalStaked.eq(fundsPerClaim.add(DEFAULT_AMOUNT)),
+      'Expect single round of funding + initial stake at this time')
+
+    let accountStakeBeforeSecondClaim = await staking.totalStakedFor(staker)
 
     // Initiate another claim
     await claimFactory.initiateClaim()
-    let treasuryStakeSecondClaim = await staking.totalStakedFor(treasuryAddress)
+    totalStaked = await staking.totalStaked()
+    let finalAcctStake = await staking.totalStakedFor(staker)
+    let expectedFinalValue = accountStakeBeforeSecondClaim.add(fundsPerClaim)
 
-    assert.isTrue(
-      treasuryStakeSecondClaim.eq(stakedForTreasury.mul(new BN('2'))),
-      'Expect 2 rounds of funding staked for treasury at this time')
-  })
-
-  it('Initiate multiple claims after 1x claim block diff', async () => {
-    // Get amount staked for treasury
-    let stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
-    assert.isTrue(
-      stakedForTreasury.isZero(),
-      'Expect zero treasury stake prior to claim funding')
-
-    // Get funds per claim
-    let fundsPerClaim = await claimFactory.getFundsPerClaim()
-
-    // Initiate claim
-    await claimFactory.initiateClaim()
-    stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
-
-    assert.isTrue(
-      stakedForTreasury.eq(fundsPerClaim),
-      'Expect single round of funding staked for treasury at this time')
-
-    // Confirm another claim cannot be immediately funded
-    await _lib.assertRevert(
-      claimFactory.initiateClaim(),
-      'Required block difference not met')
-
-    let currentBlock = await getLatestBlock()
-    let currentBlockNum = currentBlock.number
-    let lastClaimBlock = await claimFactory.getLastClaimedBlock()
-    let claimDiff = await claimFactory.getClaimBlockDifference()
-    let nextClaimBlock = lastClaimBlock.add(claimDiff)
-
-    // Advance blocks to the next valid claim
-    while (currentBlockNum < nextClaimBlock) {
-      await _lib.advanceBlock(web3)
-      currentBlock = await getLatestBlock()
-      currentBlockNum = currentBlock.number
-    }
-
-    stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
-    assert.isTrue(
-      stakedForTreasury.eq(fundsPerClaim),
-      'Expect treasury stake equal to single fund amount')
-
-    // Initiate another claim
-    await claimFactory.initiateClaim()
-    let treasuryStakeSecondClaim = await staking.totalStakedFor(treasuryAddress)
-
-    assert.isTrue(
-      treasuryStakeSecondClaim.eq(stakedForTreasury.mul(new BN('2'))),
-      'Expect 2 rounds of funding staked for treasury at this time')
+    // Note - we convert ouf of BN format here to handle infinitesimal precision loss
+    assert.equal(
+      fromBn(finalAcctStake),
+      fromBn(expectedFinalValue),
+      'Expect additional increase in stake after 2nd claim')
   })
 
   it('Initiate multiple claims consecutively after 2x claim block diff', async () => {
     // Get funds per claim
     let fundsPerClaim = await claimFactory.getFundsPerClaim()
-    // Get amount staked for treasury
-    let stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
+    // Get amount staked
+    let totalStaked = await staking.totalStaked()
     assert.isTrue(
-      stakedForTreasury.isZero(),
-      'Expect zero treasury stake prior to claim funding')
+      totalStaked.isZero(),
+      'Expect zero stake prior to claim funding')
+
+    // Stake default amount
+    let staker = accounts[2]
+    await approveTransferAndStake(DEFAULT_AMOUNT, staker)
 
     let currentBlock = await getLatestBlock()
     let currentBlockNum = currentBlock.number
@@ -200,24 +200,25 @@ contract('ClaimFactory', async (accounts) => {
 
     // Initiate claim
     await claimFactory.initiateClaim()
-    stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
+    totalStaked = await staking.totalStaked()
 
     assert.isTrue(
-      stakedForTreasury.eq(fundsPerClaim),
-      'Expect single round of funding staked for treasury at this time')
+      totalStaked.eq(fundsPerClaim.add(DEFAULT_AMOUNT)),
+      'Expect single round of funding + initial stake at this time')
 
-    stakedForTreasury = await staking.totalStakedFor(treasuryAddress)
-    assert.isTrue(
-      stakedForTreasury.eq(fundsPerClaim),
-      'Expect treasury stake equal to single fund amount')
+    let accountStakeBeforeSecondClaim = await staking.totalStakedFor(staker)
 
     // Initiate another claim
     await claimFactory.initiateClaim()
-    let treasuryStakeSecondClaim = await staking.totalStakedFor(treasuryAddress)
+    totalStaked = await staking.totalStaked()
+    let finalAcctStake = await staking.totalStakedFor(staker)
+    let expectedFinalValue = accountStakeBeforeSecondClaim.add(fundsPerClaim)
 
-    assert.isTrue(
-      treasuryStakeSecondClaim.eq(stakedForTreasury.mul(new BN('2'))),
-      'Expect 2 rounds of funding staked for treasury at this time')
+    // Note - we convert ouf of BN format here to handle infinitesimal precision loss
+    assert.equal(
+      fromBn(finalAcctStake),
+      fromBn(expectedFinalValue),
+      'Expect additional increase in stake after 2nd claim')
 
     // Confirm another claim cannot be immediately funded
     await _lib.assertRevert(

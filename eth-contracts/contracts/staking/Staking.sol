@@ -21,6 +21,9 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     string private constant ERROR_TOKEN_TRANSFER = "STAKING_TOKEN_TRANSFER";
     string private constant ERROR_NOT_ENOUGH_BALANCE = "STAKING_NOT_ENOUGH_BALANCE";
 
+    // standard - imitates relationship between Ether and Wei
+    uint8 private constant DECIMALS = 18;
+
     // Reward tracking info
     uint256 internal currentClaimBlock;
     uint256 internal currentClaimableAmount;
@@ -29,6 +32,9 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         Checkpointing.History stakedHistory;
         Checkpointing.History claimHistory;
     }
+
+    // Multiplier used to increase funds
+    Checkpointing.History stakeMultiplier;
 
     ERC20 internal stakingToken;
     mapping (address => Account) internal accounts;
@@ -52,9 +58,14 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         initialized();
         stakingToken = ERC20(_stakingToken);
         treasuryAddress = _treasuryAddress;
+
         // Initialize claim values to zero, disabling claim prior to initial funding
         currentClaimBlock = 0;
         currentClaimableAmount = 0;
+
+        uint256 initialMultiplier = 10**uint256(DECIMALS);
+        // Initialize multiplier history value
+        stakeMultiplier.add64(getBlockNumber64(), initialMultiplier);
     }
 
     /* External functions */
@@ -64,55 +75,28 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      */
     function fundNewClaim(uint256 _amount) external isInitialized {
         // TODO: Add additional require statements here...
-        // Stake tokens for msg.sender from treasuryAddress
-        // Transfer tokens from msg.sender to current contract
-        // Increase treasuryAddress stake value
-        _stakeFor(
-            treasuryAddress,
-            msg.sender,
-            _amount,
-            bytes(""));
 
-        // Update current claim information
-        currentClaimBlock = getBlockNumber();
-        currentClaimableAmount = totalStakedFor(treasuryAddress);
-    }
+        // Update multiplier, total stake
+        uint256 currentMultiplier = stakeMultiplier.getLatestValue();
+        uint256 totalStake = totalStakedHistory.getLatestValue();
 
-    /**
-     * @notice Allows reward claiming for service providers
-     */
-    function makeClaim() external isInitialized {
-        require(msg.sender != treasuryAddress, "Treasury cannot claim staking reward");
-        require(accounts[msg.sender].stakedHistory.history.length > 0, "Stake required to claim");
+        // Calculate and distribute funds by updating multiplier
+        // Proportionally increases multiplier equivalent to incoming token value
+        // newMultiplier = currentMultiplier + ((multiplier * _amount) / total) 
+        // Ex:
+        // multiplier = 1.0, total = 200,000, address1 = 200,000 * 1.0 (has all value)
+        // Incoming claim fund of 100,000
+        // newMultiplier = 1.0 + ((1.0 * 100,000) / 200,000) = 1.5
+        // address1 = 200,000 * 1.5 = 300,000 <-- Total value increased by fundAmount, with newMultiplier
+        uint256 multiplierDifference = (currentMultiplier.mul(_amount)).div(totalStake); 
+        uint256 newMultiplier = currentMultiplier.add(multiplierDifference);
+        stakeMultiplier.add64(getBlockNumber64(), newMultiplier);
 
-        require(currentClaimBlock > 0, "Claim block must be initialized");
-        require(currentClaimableAmount > 0, "Claimable amount must be initialized");
+        // pull tokens into Staking contract from caller
+        stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
 
-        if (accounts[msg.sender].claimHistory.history.length > 0) {
-            uint256 lastClaimedBlock = accounts[msg.sender].claimHistory.lastUpdated();
-            // Require a minimum block difference alloted to be ~1 week of blocks
-            // Note that a new claim funding after the latest claim for this staker overrides the minimum block difference
-            require(
-                lastClaimedBlock < currentClaimBlock,
-                "Minimum block difference not met");
-        }
-
-        uint256 claimBlockTotalStake = totalStakedHistory.get(currentClaimBlock);
-        uint256 treasuryStakeAtClaimBlock = accounts[treasuryAddress].stakedHistory.get(currentClaimBlock);
-        uint256 claimantStakeAtClaimBlock = accounts[msg.sender].stakedHistory.get(currentClaimBlock);
-        uint256 totalServiceProviderStakeAtClaimBlock = claimBlockTotalStake.sub(treasuryStakeAtClaimBlock);
-
-        uint256 claimedValue = (claimantStakeAtClaimBlock.mul(currentClaimableAmount)).div(totalServiceProviderStakeAtClaimBlock);
-
-        // Transfer value from treasury to claimant if > 0 is claimed
-        if (claimedValue > 0) {
-            _transfer(treasuryAddress, msg.sender, claimedValue);
-        }
-
-        // Update claim history even if no value claimed
-        accounts[msg.sender].claimHistory.add64(getBlockNumber64(), claimedValue);
-
-        emit Claimed(msg.sender, claimedValue);
+        // Increase total supply by input amount
+        _modifyTotalStaked(_amount, true);
     }
 
     /**
@@ -128,9 +112,12 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // unstaking 0 tokens is not allowed
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
+        // Adjust amount by internal stake multiplier
+        uint internalSlashAmount = _amount.div(stakeMultiplier.getLatestValue());
+
         // transfer slashed funds to treasury address
         // reduce stake balance for address being slashed
-        _transfer(_slashAddress, treasuryAddress, _amount);
+        _transfer(_slashAddress, treasuryAddress, internalSlashAmount);
     }
 
     /**
@@ -180,8 +167,11 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // unstaking 0 tokens is not allowed
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
+        // Adjust amount by internal stake multiplier
+        uint internalStakeAmount = _amount.div(stakeMultiplier.getLatestValue());
+
         // checkpoint updated staking balance
-        _modifyStakeBalance(msg.sender, _amount, false);
+        _modifyStakeBalance(msg.sender, internalStakeAmount, false);
 
         // checkpoint total supply
         _modifyTotalStaked(_amount, false);
@@ -206,8 +196,11 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // unstaking 0 tokens is not allowed
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
+        // Adjust amount by internal stake multiplier
+        uint internalStakeAmount = _amount.div(stakeMultiplier.getLatestValue());
+
         // checkpoint updated staking balance
-        _modifyStakeBalance(_accountAddress, _amount, false);
+        _modifyStakeBalance(_accountAddress, internalStakeAmount, false);
 
         // checkpoint total supply
         _modifyTotalStaked(_amount, false);
@@ -236,6 +229,13 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      */
     function supportsHistory() external pure returns (bool) {
         return true;
+    }
+
+    /**
+     * @return Current stake multiplier
+     */
+    function getCurrentStakeMultiplier() public view isInitialized returns (uint256) {
+      return stakeMultiplier.getLatestValue();
     }
 
     /**
@@ -270,7 +270,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @return The amount of tokens staked by the account at the given block number
      */
     function totalStakedForAt(address _accountAddress, uint256 _blockNumber) external view returns (uint256) {
-        return accounts[_accountAddress].stakedHistory.get(_blockNumber);
+        return (accounts[_accountAddress].stakedHistory.get(_blockNumber)).mul(stakeMultiplier.get(_blockNumber));
     }
 
     /**
@@ -291,7 +291,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      */
     function totalStakedFor(address _accountAddress) public view returns (uint256) {
         // we assume it's not possible to stake in the future
-        return accounts[_accountAddress].stakedHistory.getLatestValue();
+        return (accounts[_accountAddress].stakedHistory.getLatestValue()).mul(stakeMultiplier.getLatestValue());
     }
 
     /**
@@ -302,14 +302,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // we assume it's not possible to stake in the future
         return totalStakedHistory.getLatestValue();
     }
-
-    /*
-    function multicall(bytes[] _calls) public {
-        for(uint i = 0; i < _calls.length; i++) {
-            require(address(this).delegatecall(_calls[i]), ERROR_MULTICALL_DELEGATECALL);
-        }
-    }
-    */
 
     /* Internal functions */
 
@@ -322,8 +314,11 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // staking 0 tokens is invalid
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
-        // checkpoint updated staking balance
-        _modifyStakeBalance(_stakeAccount, _amount, true);
+        // Adjust amount by internal stake multiplier
+        uint internalStakeAmount = _amount.div(stakeMultiplier.getLatestValue());
+
+        // Checkpoint updated staking balance
+        _modifyStakeBalance(_stakeAccount, internalStakeAmount, true);
 
         // checkpoint total supply
         _modifyTotalStaked(_amount, true);
@@ -338,14 +333,19 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
             _data);
     }
 
+    // Note that _by value has been adjusted for the stake multiplier prior to getting passed in 
     function _modifyStakeBalance(address _accountAddress, uint256 _by, bool _increase) internal {
-        uint256 currentStake = totalStakedFor(_accountAddress);
+        // currentInternalStake represents the internal stake value, without multiplier adjustment
+        uint256 currentInternalStake = accounts[_accountAddress].stakedHistory.getLatestValue();
 
         uint256 newStake;
         if (_increase) {
-            newStake = currentStake.add(_by);
+            newStake = currentInternalStake.add(_by);
         } else {
-            newStake = currentStake.sub(_by);
+            require(
+              currentInternalStake >= _by,
+              'Cannot decrease greater than current balance');
+            newStake = currentInternalStake.sub(_by);
         }
 
         // add new value to account history

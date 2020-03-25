@@ -106,7 +106,6 @@ contract('ServiceProvider test', async (accounts) => {
 
     // Transfer 1000 tokens to accounts[1]
     await token.transfer(accounts[1], INITIAL_BAL, { from: treasuryAddress })
-    // let accountBal = await token.balanceOf(accounts[1])
   })
 
   /* Helper functions */
@@ -375,7 +374,8 @@ contract('ServiceProvider test', async (accounts) => {
      */
     it('confirm registered stake', async () => {
       // Confirm staking contract has correct amt
-      assert.equal(await getStakeAmountForAccount(stakerAccount), DEFAULT_AMOUNT)
+      let returnedValue = await getStakeAmountForAccount(stakerAccount)
+      assert.equal(returnedValue, DEFAULT_AMOUNT)
     })
 
     /*

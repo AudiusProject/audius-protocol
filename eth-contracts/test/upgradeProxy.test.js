@@ -6,6 +6,19 @@ const Staking = artifacts.require('Staking')
 const StakingTest = artifacts.require('StakingTest')
 const AudiusToken = artifacts.require('AudiusToken')
 
+const fromBn = n => parseInt(n.valueOf(), 10)
+
+const toWei = (aud) => {
+  let amountInAudWei = web3.utils.toWei(
+    aud.toString(),
+    'ether'
+  )
+
+  let amountInAudWeiBN = web3.utils.toBN(amountInAudWei)
+  return amountInAudWeiBN
+}
+const DEFAULT_AMOUNT = toWei(120)
+
 contract('Upgrade proxy test', async (accounts) => {
   let treasuryAddress = accounts[0]
   let testStakingCallerAddress = accounts[6] // Dummy stand in for sp factory in actual deployment
@@ -19,6 +32,8 @@ contract('Upgrade proxy test', async (accounts) => {
   let staking1
 
   const approveAndStake = async (amount, staker, staking) => {
+    // Transfer default tokens to
+    await token.transfer(staker, amount, { from: treasuryAddress })
     // allow Staking app to move owner tokens
     await token.approve(staking.address, amount, { from: staker })
     // stake tokens
@@ -94,22 +109,21 @@ contract('Upgrade proxy test', async (accounts) => {
     })
 
     it('successfully upgrades contract and transfers state', async () => {
-      let testInitialStake = 100
-      await approveAndStake(testInitialStake, accounts[1], staking0)
+      await approveAndStake(DEFAULT_AMOUNT, accounts[1], staking0)
       await proxy.upgradeTo(impl1.address, { from: proxyOwner })
 
       let tx = await staking1.testFunction()
       let testEventCheck = tx.logs.find(log => log.event === 'TestEvent').args
       assert.isTrue(testEventCheck.msg.length > 0, 'Expect TestEvent to be fired')
 
-      assert.equal(
-        (await staking1.totalStaked()).valueOf(),
-        testInitialStake,
+      let totalStakedAfterUpgrade = await staking1.totalStaked()
+      assert.isTrue(
+        DEFAULT_AMOUNT.eq(totalStakedAfterUpgrade),
         'total staked amount should transfer after upgrade')
 
-      assert.equal(
-        (await staking1.totalStakedFor(accounts[1]).valueOf()),
-        testInitialStake,
+      let accountStakeAfterUpgrade = await staking1.totalStakedFor(accounts[1])
+      assert.isTrue(
+        DEFAULT_AMOUNT.eq(accountStakeAfterUpgrade),
         'total staked for accounts[1] should match after upgrade')
     })
   })
