@@ -2,6 +2,7 @@ let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
+const FETCH_CID_TIMEOUT_MS = 10 /* sec */ * 1000 /* millis */
 
 // Public gateways to send requests to, ordered by precidence.
 const publicGateways = [
@@ -40,7 +41,7 @@ class File extends Base {
       return Utils.raceRequests(urls, callback, {
         method: 'get',
         responseType: 'blob'
-      })
+      }, FETCH_CID_TIMEOUT_MS)
     } catch (e) {
       throw new Error(`Failed to retrieve ${cid}`)
     }
