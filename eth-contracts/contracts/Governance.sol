@@ -5,13 +5,11 @@ import "./staking/Staking.sol";
 import "./service/interface/registry/RegistryInterface.sol";
 
 contract Governance {
-  RegistryInterface registry = RegistryInterface(0);
+  RegistryInterface registry;
   bytes32 stakingProxyOwnerKey;
 
-  // 48hr * 60 min/hr * 60 sec/min / ~15 sec/block = 11520 blocks
-  uint256 votingPeriod = 11520;
-
-  uint256 votingQuorum = 1;
+  uint256 votingPeriod;
+  uint256 votingQuorum;
 
   /***** Enums *****/
   enum Outcome {InProgress, No, Yes, Invalid}
@@ -32,7 +30,7 @@ contract Governance {
   }
 
   /***** SlashProposal storage *****/
-  uint256 lastProposalId;
+  uint256 lastProposalId = 0;
   mapping(uint256 => SlashProposal) slashProposals;
 
   /***** Events *****/
@@ -41,11 +39,7 @@ contract Governance {
     address proposer,
     uint256 startBlockNumber,
     address indexed target,
-    uint256 indexed slashAmount,
-    Outcome outcome,
-    uint256 voteMagnitudeYes,
-    uint256 voteMagnitudeNo,
-    uint256 numVotes
+    uint256 indexed slashAmount
   );
   event SlashProposalVoteSubmitted(
     uint256 indexed proposalId,
@@ -65,16 +59,19 @@ contract Governance {
   constructor(
     address _registryAddress,
     bytes32 _stakingProxyOwnerKey,
-    uint256 _votingPeriod
+    uint256 _votingPeriod,
+    uint256 _votingQuorum
   ) public {
     require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
     registry = RegistryInterface(_registryAddress);
+
     stakingProxyOwnerKey = _stakingProxyOwnerKey;
 
     require(_votingPeriod > 0, "Requires non-zero _votingPeriod");
     votingPeriod = _votingPeriod;
 
-    lastProposalId = 0;
+    require(_votingQuorum > 0, "Requires non-zero _votingQuorum");
+    votingQuorum = _votingQuorum;
   }
 
   // ========================================= Governance Actions =========================================
@@ -121,11 +118,7 @@ contract Governance {
       proposer,
       block.number,
       _target,
-      _amount,
-      Outcome.InProgress,
-      0,  // voteMagnitudeYes
-      0,  // voteMagnitudeNo
-      0   // numVotes
+      _amount
     );
 
     lastProposalId += 1;
