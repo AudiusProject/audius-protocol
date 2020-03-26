@@ -399,16 +399,24 @@ contract('DelegateManager', async (accounts) => {
       spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       totalInStakingContract = await staking.totalStakedFor(stakerAccount)
       delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-      console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Staking: ${totalInStakingContract}`)
-
-      // Perform slash functions
+      let outsideStake = spFactoryStake.add(delegatedStake)
       let slashAmount = toWei(100)
+
+      let currentMultiplier = await staking.getCurrentStakeMultiplier()
+      console.log(`Slash amount: ${slashAmount}, stake multiplier: ${currentMultiplier}`)
+      console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside stake: ${outsideStake},  Staking: ${totalInStakingContract}`)
+
+      console.log('Slashing...')
+      // Perform slash functions
       await delegateManager.slash(slashAmount, stakerAccount);
 
       spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       totalInStakingContract = await staking.totalStakedFor(stakerAccount)
       delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-      console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Staking: ${totalInStakingContract}`)
+      outsideStake = spFactoryStake.add(delegatedStake)
+      console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside stake: ${outsideStake},  Staking: ${totalInStakingContract}`)
+      let stakeDiscrepancy = totalInStakingContract.sub(spFactoryStake)
+      console.log(`Stake discrepancy: ${stakeDiscrepancy}`)
       // assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
       // assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
     })
