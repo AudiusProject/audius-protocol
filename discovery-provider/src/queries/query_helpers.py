@@ -1,7 +1,7 @@
 import logging # pylint: disable=C0302
 import json
 import requests
-from sqlalchemy import func, desc, text
+from sqlalchemy import func, desc, text, Integer
 from urllib.parse import urljoin
 
 from flask import request
@@ -768,3 +768,126 @@ def get_users_ids(results):
     # Remove duplicate user ids
     user_ids = list(set(user_ids))
     return user_ids
+
+def create_save_repost_count_subquery(session, type):
+    """
+    Creates a subquery for `type` that represents a combined save + repost count.
+
+    Args:
+        session: SqlALchemy session.
+        type: (string) The type of save/repost (album, playlist, track)
+
+    Returns: A subquery with two fields `id` and `count`.
+    """
+    reposts_count_subquery = (
+        session.query(
+            Repost.repost_item_id,
+        )
+        .filter(
+            Repost.is_current == True,
+            Repost.is_delete == False,
+            Repost.repost_type == type,
+        )
+        .subquery()
+    )
+    subquery = (
+        session.query(
+            Save.save_item_id.label('id'),
+            (func.count(Save.save_item_id) + func.count(reposts_count_subquery.c.repost_item_id))
+                .label('count')
+        )
+        .outerjoin(
+            reposts_count_subquery,
+            Save.save_item_id == reposts_count_subquery.c.repost_item_id
+        )
+        .filter(
+            Save.is_current == True,
+            Save.is_delete == False,
+            Save.save_type == type
+        )
+        .group_by(
+            Save.save_item_id
+        )
+        .subquery()
+    )
+    return subquery
+
+def seconds_ago(timestamp):
+    """Gets the number of seconds ago `timestamp` was from now as a SqlAlchemy expression."""
+    return func.extract('epoch', (func.now() - timestamp))
+
+def decayed_score(score, created_at, peak = 5, nominal_timestamp = 14 * 24 * 60 * 60):
+    """
+    Creates a decaying (over time) version of the provided `score`. The returned
+    value is score * a multiplier determined by `peak` and `nominal_timestamp`.
+
+    Args:
+        score: (number) The base score to modify
+        created_at: (timestamp) The timestamp the score is attributed to
+        peak?: (number) The peak multipler possible
+
+    Returns:
+        A SQLAlchemy expression representing decayed score (score * multipler)
+        where multipler is represented by:
+        max(0.2, 5 ^ 1 - min(time_ago / nominal_timestamp, 1))
+    """
+    return score * func.greatest(
+        func.pow(
+            5,
+            1 - func.least(seconds_ago(created_at) / nominal_timestamp, 1)
+        ),
+        0.2
+    )
+    
+
+def filter_to_playlist_mood(session, mood, query, correlation = Playlist):
+    """
+    Takes a session that is querying for playlists and filters the playlists
+    to only those with the dominant mood provided.
+    Dominant mood means that *most* of its tracks are of the specified mood.
+
+    Args:
+        session: SqlAlchemy session.
+        mood: (string) The mood to query against.
+        query: The base query to filter on
+        correlation: An optional correlation / subquery to correlate against.
+
+    Returns: A modified version of `query` with an extra filter clause.
+    """
+    top_mood_subquery = (
+        session.query(
+            Track.mood.label('mood'),
+            func.count(Track.mood).label('cnt')
+        )
+        .filter(
+            Track.is_current == True,
+            Track.is_delete == False,
+            Track.track_id.in_(
+                session.query(
+                    func.jsonb_array_elements(
+                        correlation.c.playlist_contents['track_ids']
+                    ).op('->')('track').cast(Integer)
+                ).correlate(correlation)
+            )
+        )
+        .group_by(Track.mood)
+        .order_by(desc('cnt'))
+        .limit(1)
+        .subquery()
+    )
+
+    mood_exists_query = (
+        session.query(
+            top_mood_subquery.c.mood
+        )
+        .select_from(
+            top_mood_subquery
+        )
+        .filter(
+            func.lower(top_mood_subquery.c.mood) == func.lower(mood)
+        )
+    )
+
+    return query.filter(
+        mood_exists_query.exists()
+    )
