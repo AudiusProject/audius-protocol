@@ -9,6 +9,8 @@ const Governance = artifacts.require('Governance')
 
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
 
+/** Helper functions */
+
 const fromBn = n => parseInt(n.valueOf(), 10)
 
 const audToWei = (aud) => {
@@ -29,6 +31,11 @@ contract('Governance test', async (accounts) => {
   const votingPeriod = 10
   const votingQuorum = 1
   const defaultStake = audToWei(1000)
+  const proposalDescription = "TestDescription"
+
+  const treasuryAddress = accounts[0]
+  const testStakingCallerAddress = accounts[9] // Dummy stand in for SP factory in actual deployment
+  const protocolOwnerAddress = treasuryAddress
 
   const Outcome = Object.freeze({
     InProgress: 0,
@@ -41,10 +48,6 @@ contract('Governance test', async (accounts) => {
     No: 1,
     Yes: 2
   })
-
-  const treasuryAddress = accounts[0]
-  const testStakingCallerAddress = accounts[9] // Dummy stand in for SP factory in actual deployment
-  const protocolOwnerAddress = treasuryAddress
 
   const approveAndStake = async (amount, staker) => {
     // Allow Staking app to move owner tokens
@@ -120,7 +123,7 @@ contract('Governance test', async (accounts) => {
     const lastBlock = (await _lib.getLatestBlock(web3)).number
 
     // Call submitSlashProposal
-    const txReceipt = await governanceC.submitSlashProposal(target, slashAmount, { from: proposer })
+    const txReceipt = await governanceC.submitSlashProposal(target, slashAmount, proposalDescription, { from: proposer })
 
     // Confirm event log
     const txParsed = _lib.parseTx(txReceipt)
@@ -130,6 +133,7 @@ contract('Governance test', async (accounts) => {
     assert.isTrue(parseInt(txParsed.event.args.startBlockNumber) > lastBlock, 'Expected event.args.startBlockNumber > lastBlock')
     assert.equal(txParsed.event.args.target, target, 'Expected same event.args.target')
     assert.equal(parseInt(txParsed.event.args.slashAmount), slashAmount, 'Expected same event.args.slashAmount')
+    assert.equal(txParsed.event.args.description, proposalDescription, "Expected same event.args.description")
 
     // Call getSlashProposalById() and confirm same values
     const proposal = await governanceC.getSlashProposalById.call(proposalId)
@@ -161,7 +165,7 @@ contract('Governance test', async (accounts) => {
 
     const lastBlock = (await _lib.getLatestBlock(web3)).number
     
-    await governanceC.submitSlashProposal(target, slashAmount, { from: proposer })
+    await governanceC.submitSlashProposal(target, slashAmount, proposalDescription, { from: proposer })
 
     // Call submitSlashProposalVote()
     const txReceipt = await governanceC.submitSlashProposalVote(proposalId, vote, { from: voter })
@@ -210,7 +214,7 @@ contract('Governance test', async (accounts) => {
 
     const lastBlock = (await _lib.getLatestBlock(web3)).number
     
-    const a = await governanceC.submitSlashProposal(target, slashAmount, { from: proposer })
+    const a = await governanceC.submitSlashProposal(target, slashAmount, proposalDescription, { from: proposer })
     await governanceC.submitSlashProposalVote(proposalId, vote, { from: voter })
 
     // Advance blocks to the next valid claim
