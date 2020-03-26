@@ -28,7 +28,7 @@ contract ServiceProviderFactory is RegistryContract {
     mapping(address => uint) spDeployerStake;
 
     // % Cut of delegator tokens assigned to sp deployer
-    mapping(address => uint) spDeployerCut; 
+    mapping(address => uint) spDeployerCut;
 
     bytes empty;
 
@@ -175,8 +175,8 @@ contract ServiceProviderFactory is RegistryContract {
                 empty
             );
 
-          // Update deployer total
-          spDeployerStake[owner] -= unstakeAmount;
+            // Update deployer total
+            spDeployerStake[owner] -= unstakeAmount;
         }
 
         (uint deregisteredID) = ServiceProviderStorageInterface(
@@ -311,30 +311,30 @@ contract ServiceProviderFactory is RegistryContract {
    * @notice Update service provider balance
    * TODO: Permission to only delegatemanager
    */
-   function updateServiceProviderStake(
-       address _serviceProvider,
-       uint _amount
-   ) external 
-   {
+    function updateServiceProviderStake(
+        address _serviceProvider,
+        uint _amount
+     ) external
+    {
         spDeployerStake[_serviceProvider] = _amount;
-   }
+    }
 
   /**
    * @notice Update service provider cut
-   * SPs will interact with this value as a percent, value translation done client side 
+   * SPs will interact with this value as a percent, value translation done client side
    */
-   function updateServiceProviderCut(
+    function updateServiceProviderCut(
         address _serviceProvider,
         uint _cut
     ) external
     {
-      require(
-        msg.sender == _serviceProvider,
-        'Service Provider cut update operation restricted to deployer');
+        require(
+            msg.sender == _serviceProvider,
+            "Service Provider cut update operation restricted to deployer");
 
-      require(
-        _cut <= DEPLOYER_CUT_BASE,
-        'Service Provider cut cannot exceed base value');
+        require(
+            _cut <= DEPLOYER_CUT_BASE,
+            "Service Provider cut cannot exceed base value");
         spDeployerCut[_serviceProvider] = _cut;
     }
 
@@ -350,10 +350,10 @@ contract ServiceProviderFactory is RegistryContract {
   /**
    * @notice Represents % taken by sp deployer of rewards
    */
-    function getServiceProviderDeployerCut(address _address) 
+    function getServiceProviderDeployerCut(address _address)
     external view returns (uint cut)
     {
-      return spDeployerCut[_address];
+        return spDeployerCut[_address];
     }
 
   /**
@@ -362,7 +362,7 @@ contract ServiceProviderFactory is RegistryContract {
     function getServiceProviderDeployerCutBase()
     external pure returns (uint base)
     {
-      return DEPLOYER_CUT_BASE;
+        return DEPLOYER_CUT_BASE;
     }
 
     function getTotalServiceTypeProviders(bytes32 _serviceType)

@@ -210,7 +210,8 @@ contract('Staking test', async (accounts) => {
     await approveAndStake(DEFAULT_AMOUNT, accounts[1])
     await approveAndStake(DEFAULT_AMOUNT, accounts[2])
 
-    let initialTotalStake = parseInt(await staking.totalStaked())
+    let initialStakeBN = await staking.totalStaked()
+    let initialTotalStake = parseInt(initialStakeBN)
     let initialStakeAmount = parseInt(await staking.totalStakedFor(accounts[1]))
     assert.equal(initialStakeAmount, DEFAULT_AMOUNT)
 
@@ -222,15 +223,15 @@ contract('Staking test', async (accounts) => {
       accounts[1],
       treasuryAddress)
 
-    // Confirm staked value
-    let finalStakeAmt = parseInt(await staking.totalStakedFor(accounts[1]))
-    assert.equal(finalStakeAmt, DEFAULT_AMOUNT / 2)
+    // Confirm staked value for account
+    let finalAccountStake = parseInt(await staking.totalStakedFor(accounts[1]))
+    assert.equal(finalAccountStake, DEFAULT_AMOUNT / 2)
 
-    // Confirm total stake is unchanged after slash
-    assert.equal(
-      initialTotalStake,
-      await staking.totalStaked(),
-      'Total amount unchanged')
+    // Confirm total stake is decreased after slash
+    let finalTotalStake = await staking.totalStaked()
+    assert.isTrue(
+      finalTotalStake.eq(initialStakeBN.sub(slashAmount)),
+      'Expect total amount decreased')
   })
 
   it('multiple claims, single fund cycle', async () => {
