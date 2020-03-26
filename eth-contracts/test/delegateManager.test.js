@@ -390,6 +390,8 @@ contract('DelegateManager', async (accounts) => {
 
       // Perform claim
       await delegateManager.makeClaim({ from: stakerAccount })
+      console.log('')
+      console.log('Claimed...')
 
       // let finalSpStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       // let finalDelegateStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
@@ -401,10 +403,11 @@ contract('DelegateManager', async (accounts) => {
       let slashAmount = toWei(100)
 
       let currentMultiplier = await staking.getCurrentStakeMultiplier()
-      console.log(`Slash amount: ${slashAmount}, stake multiplier: ${currentMultiplier}`)
       console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside stake: ${outsideStake},  Staking: ${totalInStakingContract}`)
 
+      console.log('')
       console.log('Slashing...')
+      console.log(`Slash amount: ${slashAmount}, stake multiplier: ${currentMultiplier}`)
       // Perform slash functions
       await delegateManager.slash(slashAmount, stakerAccount);
 
