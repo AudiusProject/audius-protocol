@@ -9,6 +9,8 @@ import requests
 from src import exceptions
 from . import multihash
 
+logger = logging.getLogger(__name__)
+
 @contextlib.contextmanager
 def cd(path):
     """Context manager that changes to directory `path` and return to CWD
@@ -58,6 +60,16 @@ def model_to_dictionary(db_model_obj, exclude_keys=None, relationships_to_includ
         model_dict[column_name] = getattr(db_model_obj, column_name)
 
     return model_dict
+
+
+# Convert a tuple of model format into the proper model itself.
+# The number of entries in the tuple, must map the modle
+def tuple_to_model_dictionary(tuple, model):
+    """Converts the given tuple into the proper SQLAlchemy model object."""
+    keys = model.__table__.columns.keys()
+    assert len(tuple) == len(keys)
+
+    return dict(zip(keys, tuple))
 
 
 # Configures root logger with custom format and loglevel
