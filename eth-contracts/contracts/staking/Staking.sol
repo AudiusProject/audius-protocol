@@ -67,6 +67,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         currentClaimBlock = 0;
         currentClaimableAmount = 0;
 
+        // TODO: Finalize multiplier value
         uint256 initialMultiplier = 10**uint256(DECIMALS);
         // Initialize multiplier history value
         stakeMultiplier.add64(getBlockNumber64(), initialMultiplier);
@@ -423,6 +424,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         _modifyStakeBalance(_from, _amount, false);
         _modifyStakeBalance(_to, _amount, true);
 
+        // TODO: Emit multiplier, OR adjust and emit correct amount
         emit StakeTransferred(_from,_amount, _to);
     }
 }

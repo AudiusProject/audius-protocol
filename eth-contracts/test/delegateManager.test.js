@@ -224,7 +224,6 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(initialBal.eq(finalBal.add(DEFAULT_AMOUNT)), 'Expect funds to be transferred')
     })
 
-    /*
     it('initial state + claim', async () => {
       // Validate basic claim w/SP path
       let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
@@ -352,7 +351,6 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
       assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
     })
-      */
 
     it('single delegator + claim + slash', async () => {
       // TODO: Validate all
@@ -415,7 +413,7 @@ contract('DelegateManager', async (accounts) => {
       delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
       outsideStake = spFactoryStake.add(delegatedStake)
       console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside stake: ${outsideStake},  Staking: ${totalInStakingContract}`)
-      let stakeDiscrepancy = totalInStakingContract.sub(spFactoryStake)
+      let stakeDiscrepancy = totalInStakingContract.sub(outsideStake)
       console.log(`Stake discrepancy: ${stakeDiscrepancy}`)
       // assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
       // assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
