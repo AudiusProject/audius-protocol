@@ -113,16 +113,17 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     function slash(uint256 _amount, address _slashAddress) external isInitialized {
         // TODO: restrict functionality to delegate manager
         // require(msg.sender == treasuryAddress, "Slashing functionality locked to treasury owner");
-
         // unstaking 0 tokens is not allowed
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
-        // Adjust amount by internal stake multiplier
-        uint internalSlashAmount = _amount.div(stakeMultiplier.getLatestValue());
-
-        // transfer slashed funds to treasury address
-        // reduce stake balance for address being slashed
-        _transfer(_slashAddress, treasuryAddress, internalSlashAmount);
+        // Transfer slashed tokens to treasury address
+        // Amount is adjusted in _unstakeFor
+        // TODO: Optionally burn
+        _unstakeFor(
+            _slashAddress,
+            treasuryAddress,
+            _amount,
+            bytes(''));
     }
 
     /**

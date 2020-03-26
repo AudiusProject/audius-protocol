@@ -415,8 +415,25 @@ contract('DelegateManager', async (accounts) => {
       console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside stake: ${outsideStake},  Staking: ${totalInStakingContract}`)
       let stakeDiscrepancy = totalInStakingContract.sub(outsideStake)
       console.log(`Stake discrepancy: ${stakeDiscrepancy}`)
+      let totalStaked = await staking.totalStaked()
+      console.log(`Total for all SP ${totalStaked}`)
       // assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
       // assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
+        //
+      // Fund second claim
+      await claimFactory.initiateClaim()
+      console.log('')
+      console.log(`Funding second claim...`)
+      // Perform claim
+      await delegateManager.makeClaim({ from: stakerAccount })
+
+      spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      totalInStakingContract = await staking.totalStakedFor(stakerAccount)
+      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      outsideStake = spFactoryStake.add(delegatedStake)
+      console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside stake: ${outsideStake},  Staking: ${totalInStakingContract}`)
+      currentMultiplier = await staking.getCurrentStakeMultiplier()
+      console.log(`New stake multiplier: ${currentMultiplier}`)
     })
 
     // 2 service providers, 1 claim, no delegation
