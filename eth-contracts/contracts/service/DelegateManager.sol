@@ -232,6 +232,27 @@ contract DelegateManager is RegistryContract {
         uint totalBalanceInSPFactory = spFactory.getServiceProviderStake(_slashAddress);
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
 
+        // 3/26 - Experimenting with some options to improve the 1:1
+
+        // Experiment 1:
+        // Below was an expiremnt to use total balance outside of staking instead of the value inside 
+        /*
+        uint totalBalanceOutsideStaking = 0;
+        // Calculate total balance outside staking
+        uint totalBalanceInDelegateManager = 0;
+        for (uint i = 0; i < spDelegates[_slashAddress].length; i++) {
+            address delegator = spDelegates[_slashAddress][i];
+            uint delegateStakeToSP = delegateInfo[delegator][_slashAddress];
+            totalBalanceInDelegateManager += delegateStakeToSP;
+        }
+        uint totalBalanceOutsideStaking = totalBalanceInSPFactory + totalBalanceInDelegateManager;
+        */
+
+        // Experiment 2: slash internally FIRST
+        // Decrease value in Staking contract
+        // stakingContract.slash(_amount, _slashAddress);
+        // uint totalBalanceInStakingAfterSlash = stakingContract.totalStakedFor(_slashAddress);
+
         // For each delegator and deployer
         // newStakeAmount = stakeAmount - (slashAmount * (stakeAmount / totalStakeAmount))
         for (uint i = 0; i < spDelegates[_slashAddress].length; i++) {

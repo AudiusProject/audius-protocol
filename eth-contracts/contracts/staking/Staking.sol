@@ -68,7 +68,8 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         currentClaimableAmount = 0;
 
         // TODO: Finalize multiplier value
-        uint256 initialMultiplier = 10**uint256(DECIMALS);
+        // uint256 initialMultiplier = 10**uint256(DECIMALS);
+        uint256 initialMultiplier = 10**uint256(9);
         // Initialize multiplier history value
         stakeMultiplier.add64(getBlockNumber64(), initialMultiplier);
     }
@@ -118,7 +119,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
 
         // Transfer slashed tokens to treasury address
         // Amount is adjusted in _unstakeFor
-        // TODO: Optionally burn
+        // TODO: Burn with actual ERC token call
         _unstakeFor(
             _slashAddress,
             treasuryAddress,
@@ -366,6 +367,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     {
         require(_amount > 0, ERROR_AMOUNT_ZERO);
         // Adjust amount by internal stake multiplier
+        //       Get ceiling div?
         uint internalStakeAmount = _amount.div(stakeMultiplier.getLatestValue());
 
         // checkpoint updated staking balance

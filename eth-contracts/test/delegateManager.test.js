@@ -146,6 +146,92 @@ contract('DelegateManager', async (accounts) => {
     return args
   }
 
+  const ensureValidClaimPeriod = async () => {
+    let currentBlock = await web3.eth.getBlock('latest')
+    let currentBlockNum = currentBlock.number
+    let lastClaimBlock = await claimFactory.getLastClaimedBlock()
+    let claimDiff = await claimFactory.getClaimBlockDifference()
+    let nextClaimBlock = lastClaimBlock.add(claimDiff)
+    while (currentBlockNum < nextClaimBlock) {
+      await _lib.advanceBlock(web3)
+      currentBlock = await web3.eth.getBlock('latest')
+      currentBlockNum = currentBlock.number
+    }
+  }
+
+  // Funds a claim, claims value for single SP address + delegators, slashes 
+  // Slashes claim amount
+  const fundClaimSlash = async () => {
+    console.log('----')
+    // Ensure block difference is met prior to any operations
+    await ensureValidClaimPeriod()
+
+    // Continue
+    let delegatedStake
+    let spFactoryStake
+    let totalInStakingContract
+
+    totalInStakingContract = await staking.totalStakedFor(stakerAccount)
+    totalInStakingContract = await staking.totalStakedFor(stakerAccount)
+    delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+
+    spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+    totalInStakingContract = await staking.totalStakedFor(stakerAccount)
+
+    let tokensInStaking = await token.balanceOf(stakingAddress)
+    console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Staking: ${totalInStakingContract}`)
+    console.log(`Tokens in staking ${tokensInStaking}`)
+
+    // Update SP Deployer Cut to 10%
+    await serviceProviderFactory.updateServiceProviderCut(stakerAccount, 10, { from: stakerAccount })
+    // Fund new claim
+    await claimFactory.initiateClaim()
+
+    // Perform claim
+    await delegateManager.makeClaim({ from: stakerAccount })
+    console.log('')
+    console.log('Claimed...')
+
+    // let finalSpStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+    // let finalDelegateStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+
+    spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+    totalInStakingContract = await staking.totalStakedFor(stakerAccount)
+    delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+    let outsideStake = spFactoryStake.add(delegatedStake)
+    // let slashAmount = toWei(100)
+    let slashAmount = await claimFactory.getFundsPerClaim() //  toWei(100)
+
+    let currentMultiplier = await staking.getCurrentStakeMultiplier()
+    console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside stake: ${outsideStake},  Staking: ${totalInStakingContract}`)
+    tokensInStaking = await token.balanceOf(stakingAddress)
+    console.log(`Tokens in staking ${tokensInStaking}`)
+
+    console.log(`Stake multiplier: ${currentMultiplier}`)
+    /*
+    console.log('')
+    console.log('Slashing...')
+    console.log(`Slash amount: ${slashAmount}, stake multiplier: ${currentMultiplier}`)
+    // Perform slash functions
+    await delegateManager.slash(slashAmount, stakerAccount);
+    */
+
+    spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+    totalInStakingContract = await staking.totalStakedFor(stakerAccount)
+    delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+    outsideStake = spFactoryStake.add(delegatedStake)
+    console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside stake: ${outsideStake},  Staking: ${totalInStakingContract}`)
+    let stakeDiscrepancy = totalInStakingContract.sub(outsideStake)
+    console.log(`Stake discrepancy: ${stakeDiscrepancy}`)
+
+    tokensInStaking = await token.balanceOf(stakingAddress)
+    console.log(`Tokens in staking ${tokensInStaking}`)
+
+    let totalStaked = await staking.totalStaked()
+    console.log(`Total for all SP ${totalStaked}`)
+    console.log('----')
+  }
+
   const increaseRegisteredProviderStake = async (type, endpoint, increase, account) => {
     // Approve token transfer
     await token.approve(
@@ -192,12 +278,6 @@ contract('DelegateManager', async (accounts) => {
       await serviceProviderFactory.getServiceProviderIdsFromAddress(account, type)
     ).map(x => fromBn(x))
     return ids
-  }
-
-  const serviceProviderIDRegisteredToAccount = async (account, type, id) => {
-    let ids = await getServiceProviderIdsFromAddress(account, type)
-    let newIdFound = ids.includes(id)
-    return newIdFound
   }
 
   describe('Delegation flow', () => {
@@ -352,16 +432,13 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
     })
 
-    it('single delegator + claim + slash', async () => {
+    it.only('single delegator + claim + slash', async () => {
+      // TODO: Run claim / clash pattern 10,000x and confirm discrepancy
+      // Validate discrepancy against some pre-known value, 1AUD or <1AUD
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
 
-      let delegatedStake
-      let spFactoryStake
-      let totalInStakingContract
-
-      totalInStakingContract = await staking.totalStakedFor(stakerAccount)
       let initialDelegateAmount = toWei(60)
 
       // Approve staking transfer
@@ -375,68 +452,26 @@ contract('DelegateManager', async (accounts) => {
         initialDelegateAmount,
         { from: delegatorAccount1 })
 
-      totalInStakingContract = await staking.totalStakedFor(stakerAccount)
-      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-
-      spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
-      totalInStakingContract = await staking.totalStakedFor(stakerAccount)
-      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-      console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Staking: ${totalInStakingContract}`)
-
-      // Update SP Deployer Cut to 10%
-      await serviceProviderFactory.updateServiceProviderCut(stakerAccount, 10, { from: stakerAccount })
-      // Fund new claim
-      await claimFactory.initiateClaim()
-
-      // Perform claim
-      await delegateManager.makeClaim({ from: stakerAccount })
-      console.log('')
-      console.log('Claimed...')
-
-      // let finalSpStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
-      // let finalDelegateStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-
-      spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
-      totalInStakingContract = await staking.totalStakedFor(stakerAccount)
-      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      let total = 100
+      let iterations = total
+      while(iterations > 0) {
+        console.log(`Round ${(total - iterations) + 1}`)
+        await fundClaimSlash()
+        iterations--
+      }
+      // Summarize after execution
+      let spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      let totalInStakingContract = await staking.totalStakedFor(stakerAccount)
+      let delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
       let outsideStake = spFactoryStake.add(delegatedStake)
-      let slashAmount = toWei(100)
-
-      let currentMultiplier = await staking.getCurrentStakeMultiplier()
-      console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside stake: ${outsideStake},  Staking: ${totalInStakingContract}`)
-
-      console.log('')
-      console.log('Slashing...')
-      console.log(`Slash amount: ${slashAmount}, stake multiplier: ${currentMultiplier}`)
-      // Perform slash functions
-      await delegateManager.slash(slashAmount, stakerAccount);
-
-      spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
-      totalInStakingContract = await staking.totalStakedFor(stakerAccount)
-      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-      outsideStake = spFactoryStake.add(delegatedStake)
       console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside stake: ${outsideStake},  Staking: ${totalInStakingContract}`)
       let stakeDiscrepancy = totalInStakingContract.sub(outsideStake)
       console.log(`Stake discrepancy: ${stakeDiscrepancy}`)
-      let totalStaked = await staking.totalStaked()
-      console.log(`Total for all SP ${totalStaked}`)
-      // assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
-      // assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
-        //
-      // Fund second claim
-      await claimFactory.initiateClaim()
-      console.log('')
-      console.log(`Funding second claim...`)
-      // Perform claim
-      await delegateManager.makeClaim({ from: stakerAccount })
+      let oneAud = toWei(1)
+      console.log(`1 AUD: ${oneAud}`)
 
-      spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
-      totalInStakingContract = await staking.totalStakedFor(stakerAccount)
-      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-      outsideStake = spFactoryStake.add(delegatedStake)
-      console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside stake: ${outsideStake},  Staking: ${totalInStakingContract}`)
-      currentMultiplier = await staking.getCurrentStakeMultiplier()
-      console.log(`New stake multiplier: ${currentMultiplier}`)
+      let tokensInStaking = await token.balanceOf(stakingAddress)
+      console.log(`Tokens in staking ${tokensInStaking}`)
     })
 
     // 2 service providers, 1 claim, no delegation
