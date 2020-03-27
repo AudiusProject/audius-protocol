@@ -98,7 +98,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         uint256 newMultiplier = currentMultiplier.add(multiplierDifference);
         stakeMultiplier.add64(getBlockNumber64(), newMultiplier);
 
-        // pull tokens into Staking contract from caller
+        // Pull tokens into Staking contract from caller
         stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
 
         // Increase total supply by input amount
@@ -343,18 +343,21 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // Adjust amount by internal stake multiplier
         uint internalStakeAmount = _amount.div(stakeMultiplier.getLatestValue());
 
+        // Readjust amount with multiplier
+        uint internalAmount = internalStakeAmount.mul(stakeMultiplier.getLatestValue());
+
         // Checkpoint updated staking balance
         _modifyStakeBalance(_stakeAccount, internalStakeAmount, true);
 
         // checkpoint total supply
-        _modifyTotalStaked(_amount, true);
+        _modifyTotalStaked(internalAmount, true);
 
         // pull tokens into Staking contract
-        stakingToken.safeTransferFrom(_transferAccount, address(this), _amount);
+        stakingToken.safeTransferFrom(_transferAccount, address(this), internalAmount);
 
         emit Staked(
             _stakeAccount,
-            _amount,
+            internalAmount,
             totalStakedFor(_stakeAccount),
             _data);
     }
@@ -367,21 +370,26 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     {
         require(_amount > 0, ERROR_AMOUNT_ZERO);
         // Adjust amount by internal stake multiplier
-        //       Get ceiling div?
         uint internalStakeAmount = _amount.div(stakeMultiplier.getLatestValue());
+
+        // Adjust internal stake amount to the ceiling of the division op
+        internalStakeAmount += 1;
+
+        // Readjust amount with multiplier
+        uint internalAmount = internalStakeAmount.mul(stakeMultiplier.getLatestValue());
 
         // checkpoint updated staking balance
         _modifyStakeBalance(_stakeAccount, internalStakeAmount, false);
 
         // checkpoint total supply
-        _modifyTotalStaked(_amount, false);
+        _modifyTotalStaked(internalAmount, false);
 
         // transfer tokens
-        stakingToken.safeTransfer(_transferAccount, _amount);
+        stakingToken.safeTransfer(_transferAccount, internalAmount);
 
         emit Unstaked(
             _stakeAccount,
-            _amount,
+            internalAmount,
             totalStakedFor(_stakeAccount),
             _data);
     }

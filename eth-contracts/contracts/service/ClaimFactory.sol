@@ -17,8 +17,9 @@ contract ClaimFactory {
     uint claimBlockDiff = 10;
     uint lastClaimBlock = 0;
 
-    // 100 AUD
-    uint fundingAmount = 100 * 10**uint256(DECIMALS);
+    // 20 AUD
+    // TODO: Make this modifiable based on total staking pool? 
+    uint fundingAmount = 20 * 10**uint256(DECIMALS); // 100 * 10**uint256(DECIMALS);
 
     // Staking contract ref
     ERC20Mintable internal audiusToken;

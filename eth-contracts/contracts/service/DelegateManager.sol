@@ -209,7 +209,7 @@ contract DelegateManager is RegistryContract {
         spFactory.updateServiceProviderStake(msg.sender, newSpBalance);
     }
 
-  // TODO: Permission to governance contract only
+    // TODO: Permission to governance contract only
     function slash(uint _amount, address _slashAddress)
     external
     {
@@ -222,58 +222,36 @@ contract DelegateManager is RegistryContract {
         );
 
         // Amount stored in staking contract for owner
-        // TODO: See whether totalBalanceOutsideOfStaking is better than val in staking
-        // Benefit of this value is no need to recompute total value outside of staking
-        uint totalBalanceInStaking = stakingContract.totalStakedFor(_slashAddress);
-        require(totalBalanceInStaking > 0, "Stake required prior to slash");
-        require(totalBalanceInStaking > _amount, "Cannot slash more than total currently staked");
+        uint totalBalanceInStakingPreSlash = stakingContract.totalStakedFor(_slashAddress);
+        require(totalBalanceInStakingPreSlash > 0, "Stake required prior to slash");
+        require(totalBalanceInStakingPreSlash > _amount, "Cannot slash more than total currently staked");
 
         // Amount in sp factory for slash target
         uint totalBalanceInSPFactory = spFactory.getServiceProviderStake(_slashAddress);
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
 
-        // 3/26 - Experimenting with some options to improve the 1:1
-
-        // Experiment 1:
-        // Below was an expiremnt to use total balance outside of staking instead of the value inside 
-        /*
-        uint totalBalanceOutsideStaking = 0;
-        // Calculate total balance outside staking
-        uint totalBalanceInDelegateManager = 0;
-        for (uint i = 0; i < spDelegates[_slashAddress].length; i++) {
-            address delegator = spDelegates[_slashAddress][i];
-            uint delegateStakeToSP = delegateInfo[delegator][_slashAddress];
-            totalBalanceInDelegateManager += delegateStakeToSP;
-        }
-        uint totalBalanceOutsideStaking = totalBalanceInSPFactory + totalBalanceInDelegateManager;
-        */
-
-        // Experiment 2: slash internally FIRST
         // Decrease value in Staking contract
-        // stakingContract.slash(_amount, _slashAddress);
-        // uint totalBalanceInStakingAfterSlash = stakingContract.totalStakedFor(_slashAddress);
+        stakingContract.slash(_amount, _slashAddress);
+        uint totalBalanceInStakingAfterSlash = stakingContract.totalStakedFor(_slashAddress);
 
-        // For each delegator and deployer
-        // newStakeAmount = stakeAmount - (slashAmount * (stakeAmount / totalStakeAmount))
+        // For each delegator and deployer, recalculate new value
+        // newStakeAmount = newStakeAmount * (oldStakeAmount / totalBalancePreSlash)
         for (uint i = 0; i < spDelegates[_slashAddress].length; i++) {
             address delegator = spDelegates[_slashAddress][i];
-            uint delegateStakeToSP = delegateInfo[delegator][_slashAddress];
-            uint slashAmountForDelegator = (
-              delegateStakeToSP.mul(_amount)
-            ).div(totalBalanceInStaking);
-
-            // Subtract slashed amount from delegator balances
+            uint preSlashDelegateStake = delegateInfo[delegator][_slashAddress];
+            uint newDelegateStake = (
+              totalBalanceInStakingAfterSlash.mul(preSlashDelegateStake)
+            ).div(totalBalanceInStakingPreSlash);
+            uint slashAmountForDelegator = preSlashDelegateStake.sub(newDelegateStake);
             delegateInfo[delegator][_slashAddress] -= (slashAmountForDelegator);
             delegatorStakeTotal[delegator] -= (slashAmountForDelegator);
         }
 
-        // Substract proportional amount from ServiceProviderFactory
-        uint spSlashAmount = (totalBalanceInSPFactory.mul(_amount)).div(totalBalanceInStaking);
-        uint newSpBalance = totalBalanceInSPFactory - spSlashAmount;
+        // Recalculate SP direct stake
+        uint newSpBalance = (
+          totalBalanceInStakingAfterSlash.mul(totalBalanceInSPFactory)
+        ).div(totalBalanceInStakingPreSlash);
         spFactory.updateServiceProviderStake(_slashAddress, newSpBalance);
-
-        // Decrease value in Staking contract
-        stakingContract.slash(_amount, _slashAddress);
     }
 
     /**
