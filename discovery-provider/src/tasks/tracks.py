@@ -124,8 +124,6 @@ def parse_track_event(
     # Just use block_timestamp as integer
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
 
-    ipfs = update_task.ipfs_client._api
-
     if event_type == track_event_types_lookup["new_track"]:
         track_record.created_at = block_datetime
 
