@@ -217,7 +217,7 @@ module.exports = function (app) {
     // Those listened should NOT be recorded in the userTrackListen table
     if (!isNaN(req.body.userId)) {
       // Find / Create the record of the user listening to the track
-      const [userTrackListenRecord, created] = await models.UserTrackListens
+      const [userTrackListenRecord, created] = await models.UserTrackListen
         .findOrCreate({ where: { userId: req.body.userId, trackId } })
 
       // If the record was not created, updated the timestamp
@@ -248,7 +248,7 @@ module.exports = function (app) {
       return errorResponseBadRequest('Must include user id')
     }
 
-    const trackListens = await models.UserTrackListens.findAll({
+    const trackListens = await models.UserTrackListen.findAll({
       where: { userId },
       order: [[ 'updatedAt', 'DESC' ]],
       attributes: ['trackId', 'updatedAt'],
