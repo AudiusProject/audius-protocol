@@ -3,6 +3,7 @@ const Sequelize = require('sequelize')
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const { logger } = require('../logging')
+const authMiddleware = require('../authMiddleware')
 
 async function getListenHour () {
   let listenDate = new Date()
@@ -216,13 +217,12 @@ module.exports = function (app) {
     // Those listened should NOT be recorded in the userTrackListen table
     if (!isNaN(req.body.userId)) {
       // Find / Create the record of the user listening to the track
-      const [userTrackListenRecord, created] = await models.UserTrackListens
+      const [userTrackListenRecord, created] = await models.UserTrackListen
         .findOrCreate({ where: { userId: req.body.userId, trackId } })
 
-      // If the recrod was not created, updated the timestamp
+      // If the record was not created, updated the timestamp
       if (!created) {
-        userTrackListenRecord.increment('count')
-        userTrackListenRecord.set('updatedAt', new Date())
+        await userTrackListenRecord.increment('count')
         await userTrackListenRecord.save()
       }
     }
@@ -248,7 +248,7 @@ module.exports = function (app) {
       return errorResponseBadRequest('Must include user id')
     }
 
-    const trackListens = await models.UserTrackListens.findAll({
+    const trackListens = await models.UserTrackListen.findAll({
       where: { userId },
       order: [[ 'updatedAt', 'DESC' ]],
       attributes: ['trackId', 'updatedAt'],
@@ -371,14 +371,13 @@ module.exports = function (app) {
    * require sorted lists of track listens for a given user.
    *
    * GET query parameters:
-   *  userId: The user id to query for
    *  limit: (optional) The number of tracks to fetch
    */
-  app.get('/users/listens/top', handleResponse(async (req, res) => {
-    const { userId, limit = 25 } = req.query
-    if (!userId) return errorResponseBadRequest('Please provide a userId')
+  app.get('/users/listens/top', authMiddleware, handleResponse(async (req, res) => {
+    const { blockchainUserId: userId } = req.user
+    const { limit = 25 } = req.query
 
-    const listens = await models.UserTrackListens.findAll({
+    const listens = await models.UserTrackListen.findAll({
       where: {
         userId: {
           [Sequelize.Op.eq]: userId
@@ -398,20 +397,20 @@ module.exports = function (app) {
   /*
    * Gets whether or not tracks have been listened to by a target user.
    * Useful in filtering out tracks that a user has already listened to.
+   * Requires auth.
    *
    * GET query parameters:
-   *  userId: The id of the user to query for
    *  trackIdList: The ids of tracks to check
    */
-  app.get('/users/listens', handleResponse(async (req, res) => {
-    const { userId, trackIdList } = req.query
+  app.get('/users/listens', authMiddleware, handleResponse(async (req, res) => {
+    const { blockchainUserId: userId } = req.user
+    const { trackIdList } = req.query
 
-    if (!userId) return errorResponseBadRequest('Please provide a userId')
     if (!trackIdList || !Array.isArray(trackIdList)) {
       return errorResponseBadRequest('Please provid an array of track ids')
     }
 
-    const listens = await models.UserTrackListens.findAll({
+    const listens = await models.UserTrackListen.findAll({
       where: {
         userId: {
           [Sequelize.Op.eq]: userId

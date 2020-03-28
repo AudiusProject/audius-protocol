@@ -1,6 +1,6 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
-  const UserTrackListens = sequelize.define('UserTrackListens', {
+  const UserTrackListen = sequelize.define('UserTrackListen', {
     id: {
       allowNull: false,
       autoIncrement: true,
@@ -29,5 +29,5 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE
     }
   }, {})
-  return UserTrackListens
+  return UserTrackListen
 }
