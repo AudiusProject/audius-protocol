@@ -7,6 +7,7 @@ import "./interface/registry/RegistryInterface.sol";
 
 import "../staking/Staking.sol";
 import "./ServiceProviderFactory.sol";
+import "./ClaimFactory.sol";
 
 
 // WORKING CONTRACT
@@ -20,6 +21,7 @@ contract DelegateManager is RegistryContract {
 
     bytes32 stakingProxyOwnerKey;
     bytes32 serviceProviderFactoryKey;
+    bytes32 claimFactoryKey;
 
     // Staking contract ref
     ERC20Mintable internal audiusToken;
@@ -39,20 +41,22 @@ contract DelegateManager is RegistryContract {
     bytes empty;
 
     event Test(
-    uint256 test,
-    string msg);
+        uint256 test,
+        string msg);
 
     constructor(
       address _tokenAddress,
       address _registryAddress,
       bytes32 _stakingProxyOwnerKey,
-      bytes32 _serviceProviderFactoryKey
+      bytes32 _serviceProviderFactoryKey,
+      bytes32 _claimFactoryKey
     ) public {
         tokenAddress = _tokenAddress;
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
+        claimFactoryKey = _claimFactoryKey;
     }
 
     function increaseDelegatedStake(
@@ -144,7 +148,20 @@ contract DelegateManager is RegistryContract {
         return delegateInfo[delegator][_target];
     }
 
-    function makeClaim() external {
+    // Distribute proceeds of reward
+    function claimRewards() external {
+        /*
+          TODO: See if its worth splitting processClaim into a separate tx? 
+          Primary concern is around gas consumption...
+          This tx ends up minting tokens, transferring to staking, and doing below updates
+          Can be stress tested and split out if needed
+        */
+
+        ClaimFactory claimFactory = ClaimFactory(
+          registry.getContract(claimFactoryKey)
+        );
+        claimFactory.processClaim(msg.sender);
+
         // address claimer = msg.sender;
         ServiceProviderFactory spFactory = ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)

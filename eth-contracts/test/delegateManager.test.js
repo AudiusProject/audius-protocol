@@ -36,6 +36,7 @@ const getTokenBalance2 = async (token, account) => fromWei(await token.balanceOf
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
+const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
 const testCreatorNodeType = web3.utils.utf8ToHex('creator-node')
@@ -72,6 +73,7 @@ contract('DelegateManager', async (accounts) => {
   let slasherAccount = stakerAccount
 
   beforeEach(async () => {
+    console.log('here')
     registry = await Registry.new()
 
     proxy = await OwnedUpgradeabilityProxy.new({ from: proxyOwner })
@@ -117,8 +119,11 @@ contract('DelegateManager', async (accounts) => {
     // Create new claim factory instance
     claimFactory = await ClaimFactory.new(
       token.address,
-      proxy.address,
+      registry.address,
+      ownedUpgradeabilityProxyKey,
       { from: accounts[0] })
+
+    await registry.addContract(claimFactoryKey, claimFactory.address)
 
     // Register new contract as a minter, from the same address that deployed the contract
     await token.addMinter(claimFactory.address, { from: accounts[0] })
@@ -127,7 +132,8 @@ contract('DelegateManager', async (accounts) => {
       token.address,
       registry.address,
       ownedUpgradeabilityProxyKey,
-      serviceProviderFactoryKey)
+      serviceProviderFactoryKey,
+      claimFactoryKey)
   })
 
   /* Helper functions */
@@ -200,7 +206,17 @@ contract('DelegateManager', async (accounts) => {
     // Update SP Deployer Cut to 10%
     await serviceProviderFactory.updateServiceProviderCut(stakerAccount, 10, { from: stakerAccount })
     // Fund new claim
-    await claimFactory.initiateClaim()
+    await claimFactory.initiateRound()
+
+    // Transfer tokens to Staking
+    // await claimFactory.processClaim(stakerAccount)
+    await delegateManager.claimRewards({ from: stakerAccount })
+    await delegateManager.claimRewards({ from: stakerAccount2 })
+
+    await printAccountStakeInfo(stakerAccount)
+    await printAccountStakeInfo(stakerAccount2)
+
+    return
 
     // Perform claim
     await delegateManager.makeClaim({ from: stakerAccount })
@@ -210,13 +226,10 @@ contract('DelegateManager', async (accounts) => {
     console.log('Claimed...')
     // let slashAmount = toWei(100)
 
-    let currentMultiplier = await staking.getCurrentStakeMultiplier()
-
     await printAccountStakeInfo(stakerAccount)
     await printAccountStakeInfo(stakerAccount2)
 
     console.log('')
-    console.log(`Stake multiplier: ${currentMultiplier}`)
     if (slash) {
       let slashNumerator = web3.utils.toBN(30)
       let slashDenominator = web3.utils.toBN(100)
@@ -462,9 +475,6 @@ contract('DelegateManager', async (accounts) => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
-      let currentMultiplier = await staking.getCurrentStakeMultiplier()
-      console.log(`currentMultiplier ${currentMultiplier}`)
-      return
 
       let initialDelegateAmount = toWei(60)
 
@@ -479,6 +489,8 @@ contract('DelegateManager', async (accounts) => {
         initialDelegateAmount,
         { from: delegatorAccount1 })
 
+      await fundClaimSlash(false)
+      /*
       let total = 1000
       let iterations = total
       while (iterations > 0) {
@@ -490,6 +502,7 @@ contract('DelegateManager', async (accounts) => {
         await fundClaimSlash(slash)
         iterations--
       }
+      */
 
       // Summarize after execution
       let spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
@@ -505,6 +518,9 @@ contract('DelegateManager', async (accounts) => {
       let tokensInStaking = await token.balanceOf(stakingAddress)
       console.log(`Tokens in staking ${tokensInStaking}`)
     })
+
+    // TODO: What happens when someone delegates after a funding round has started...?
+    // Do they still get rewards or not?
 
     // 2 service providers, 1 claim, no delegation
     // 2 service providers, 1 claim, delegation to first SP

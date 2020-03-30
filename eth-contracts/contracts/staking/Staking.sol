@@ -74,50 +74,22 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     /* External functions */
 
     /**
-     * @notice Funds `_amount` of tokens from msg.sender into treasury stake
+     * @notice Funds `_amount` of tokens from ClaimFactory to target account
      */
-    function fundNewClaim(uint256 _amount) external isInitialized {
+    function stakeRewards(uint256 _amount, address _stakerAccount) external isInitialized {
         // TODO: Add additional require statements here...
+        // TODO: Permission to claimFactory
+        // Stake for incoming account
+        // Transfer from msg.sender, in this case ClaimFactory 
+        // bytes memory empty;
+        _stakeFor(
+            _stakerAccount,
+            msg.sender,
+            _amount,
+            bytes('')); // TODO: RM bytes requirement if unused
 
-        // Update multiplier, total stake
-        /*
-        uint256 currentMultiplier = globalStakeMultiplier.getLatestValue();
-        uint256 totalStake = totalStakedHistory.getLatestValue();
-
-        uint internalClaimAmount = _amount.div(currentMultiplier);
-        uint internalClaimAdjusted = internalClaimAmount.mul(currentMultiplier);
-
-        // Pull tokens into Staking contract from caller
-        stakingToken.safeTransferFrom(msg.sender, address(this), internalClaimAdjusted);
-
-        // Increase total supply by input amount
-        _modifyTotalStaked(internalClaimAdjusted, true);
-
-        uint256 multiplierDifference = (currentMultiplier.mul(internalClaimAdjusted)).div(totalStake); 
-        uint256 newMultiplier = currentMultiplier.add(multiplierDifference);
-        globalStakeMultiplier.add64(getBlockNumber64(), newMultiplier);
-        */
-
-        /*
-        // Calculate and distribute funds by updating multiplier
-        // Proportionally increases multiplier equivalent to incoming token value
-        // newMultiplier = currentMultiplier + ((multiplier * _amount) / total) 
-        // Ex:
-        // multiplier = 1.0, total = 200,000, address1 = 200,000 * 1.0 (has all value)
-        // Incoming claim fund of 100,000
-        // newMultiplier = 1.0 + ((1.0 * 100,000) / 200,000) = 1.5
-        // address1 = 200,000 * 1.5 = 300,000 <-- Total value increased by fundAmount, with newMultiplier
-
-        uint256 multiplierDifference = (currentMultiplier.mul(_amount)).div(totalStake); 
-        uint256 newMultiplier = currentMultiplier.add(multiplierDifference);
-        globalStakeMultiplier.add64(getBlockNumber64(), newMultiplier);
-
-        // Pull tokens into Staking contract from caller
-        stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
-
-        // Increase total supply by input amount
-        _modifyTotalStaked(_amount, true);
-        */
+        // Update claim history even if no value claimed
+        accounts[_stakerAccount].claimHistory.add64(getBlockNumber64(), _amount);
     }
 
     /**
@@ -133,7 +105,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
         // Transfer slashed tokens to treasury address
-        // Amount is adjusted in _unstakeFor
         // TODO: Burn with actual ERC token call
         _unstakeFor(
             _slashAddress,
