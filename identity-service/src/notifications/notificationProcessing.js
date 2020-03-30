@@ -24,8 +24,8 @@ async function indexNotifications (notifications, tx, audiusLibs) {
     // Handle the 'follow' notification type
     if (notif.type === notificationTypes.Follow) {
       let notificationTarget = notif.metadata.followee_user_id
-      // Skip notification based on user settings
       const shouldNotify = await shouldNotifyUser(notificationTarget, 'followers', tx)
+      console.log(`Should notify: user ${notificationTarget} - notifyMobile: ${shouldNotify.notifyMobile}, notifyBrowserPush: ${shouldNotify.notifyMobile}`)
       await _processFollowNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
     }
 
@@ -33,16 +33,16 @@ async function indexNotifications (notifications, tx, audiusLibs) {
     // track/album/playlist
     if (notif.type === notificationTypes.Repost.base) {
       let notificationTarget = notif.metadata.entity_owner_id
-      // Skip notification based on user settings
       const shouldNotify = await shouldNotifyUser(notificationTarget, 'reposts', tx)
+      console.log(`Should notify: user ${notificationTarget} - notifyMobile: ${shouldNotify.notifyMobile}, notifyBrowserPush: ${shouldNotify.notifyMobile}`)
       await _processBaseRepostNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
     }
 
     // Handle the 'favorite' notification type, track/album/playlist
     if (notif.type === notificationTypes.Favorite.base) {
       let notificationTarget = notif.metadata.entity_owner_id
-      // Skip notification based on user settings
       const shouldNotify = await shouldNotifyUser(notificationTarget, 'favorites', tx)
+      console.log(`Should notify: user ${notificationTarget} - notifyMobile: ${shouldNotify.notifyMobile}, notifyBrowserPush: ${shouldNotify.notifyMobile}`)
       await _processFavoriteNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
     }
 
@@ -107,6 +107,7 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
     notificationId = unreadQuery[0].id
   }
 
+  console.log(`Target user ${notificationTarget} has notifID: ${notificationId}`)
   if (notificationId) {
     // Insertion into the NotificationActions table
     let notifActionCreateTx = await models.NotificationAction.findOrCreate({
@@ -149,6 +150,7 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
 
       // fetch metadata
       const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
+      console.log(`Follow notif mnetadat ${JSON.stringify(metadata, null, '')}`)
 
       // map properties necessary to render push notification message
       const mapNotification = notificationResponseMap[notificationTypes.Follow]
@@ -164,6 +166,7 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
       let types = []
       if (notifyMobile) types.push('mobile')
       if (notifyBrowserPush) types.push('browser')
+      console.log(`Follow for user: ${notificationTarget} notif publish ${JSON.stringify(msg, null, '')}`)
       await publish(msg, notificationTarget, tx, true, title, types)
     } catch (e) {
       logger.error('processFollowNotifications - Could not send push notification for _processFollowNotifications for target user', notificationTarget, e)
