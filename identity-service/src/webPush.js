@@ -33,11 +33,9 @@ if (vapidKeys.publicKey && vapidKeys.privateKey && browserPushGCMAPIKey) {
 */
 const sendBrowserNotification = async ({ userId, notificationParams }) => {
   try {
-    console.log(`Send browser notif called for userId: ${userId} and ${JSON.stringify(notificationParams, null, '')}`)
     if (!webPushIsConfigured) return
     const { message, title } = notificationParams
     const notificationBrowsers = await models.NotificationBrowserSubscription.findAll({ where: { userId, enabled: true } })
-    console.log(`Found ${notificationBrowsers.length} notif browsers`)
     await Promise.all(notificationBrowsers.map(async (notificationBrowser) => {
       const pushSubscription = {
         'endpoint': notificationBrowser.endpoint,
@@ -47,11 +45,8 @@ const sendBrowserNotification = async ({ userId, notificationParams }) => {
         }
       }
       try {
-        console.log(`Sending to ${JSON.stringify(pushSubscription, null, ' ')}, message: ${message}, title: ${title}`)
         await webpush.sendNotification(pushSubscription, JSON.stringify({ message, title }))
       } catch (err) {
-        console.log(`Sedning message did error, delteing browser`)
-        console.log(err.message)
         // If the send Notification response was not successful
         // delete the browser subscription as it is no longer valid
         await notificationBrowser.destroy()

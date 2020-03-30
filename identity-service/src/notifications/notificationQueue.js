@@ -31,20 +31,16 @@ async function addNotificationToBuffer (message, userId, tx, buffer, playSound, 
 }
 
 async function drainPublishedMessages () {
-  console.log(`\n\n DRAINING PUBLISHED MESSAGES \n\n`)
   for (let bufferObj of PUSH_NOTIFICATIONS_BUFFER) {
-    console.log(`buffObjType: ${JSON.stringify(bufferObj.types, null, '')}`)
     if (bufferObj.types.includes('mobile')) {
-      console.log(`Sending aws sns Notif ${JSON.stringify(bufferObj, null, '')}`)
       await sendAwsSns(bufferObj)
-    } else if (bufferObj.types.includes('browser')) {
-      console.log(`Sending Browser Notif ${JSON.stringify(bufferObj, null, '')}`)
+    }
+    if (bufferObj.types.includes('browser')) {
       await Promise.all([
         sendBrowserNotification(bufferObj),
         sendSafariNotification(bufferObj)
       ])
     }
-    console.log(`Sent Browser Notif w/out erroring`)
   }
 
   PUSH_NOTIFICATIONS_BUFFER = []
