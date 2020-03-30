@@ -41,8 +41,8 @@ contract DelegateManager is RegistryContract {
     bytes empty;
 
     event Test(
-        uint256 test,
-        string msg);
+    uint256 test,
+    string msg);
 
     constructor(
       address _tokenAddress,
@@ -160,6 +160,7 @@ contract DelegateManager is RegistryContract {
         ClaimFactory claimFactory = ClaimFactory(
           registry.getContract(claimFactoryKey)
         );
+        // Process claim for msg.sender
         claimFactory.processClaim(msg.sender);
 
         // address claimer = msg.sender;

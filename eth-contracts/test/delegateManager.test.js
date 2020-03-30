@@ -158,9 +158,9 @@ contract('DelegateManager', async (accounts) => {
   const ensureValidClaimPeriod = async () => {
     let currentBlock = await web3.eth.getBlock('latest')
     let currentBlockNum = currentBlock.number
-    let lastClaimBlock = await claimFactory.getLastClaimedBlock()
+    let lastFundBlock = await claimFactory.getLastFundBlock()
     let claimDiff = await claimFactory.getClaimBlockDifference()
-    let nextClaimBlock = lastClaimBlock.add(claimDiff)
+    let nextClaimBlock = lastFundBlock.add(claimDiff)
     while (currentBlockNum < nextClaimBlock) {
       await _lib.advanceBlock(web3)
       currentBlock = await web3.eth.getBlock('latest')
@@ -212,19 +212,6 @@ contract('DelegateManager', async (accounts) => {
     // await claimFactory.processClaim(stakerAccount)
     await delegateManager.claimRewards({ from: stakerAccount })
     await delegateManager.claimRewards({ from: stakerAccount2 })
-
-    await printAccountStakeInfo(stakerAccount)
-    await printAccountStakeInfo(stakerAccount2)
-
-    return
-
-    // Perform claim
-    await delegateManager.makeClaim({ from: stakerAccount })
-    // Perform claim
-    await delegateManager.makeClaim({ from: stakerAccount2 })
-    console.log('')
-    console.log('Claimed...')
-    // let slashAmount = toWei(100)
 
     await printAccountStakeInfo(stakerAccount)
     await printAccountStakeInfo(stakerAccount2)
@@ -346,12 +333,13 @@ contract('DelegateManager', async (accounts) => {
       let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       let totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
 
-      await claimFactory.initiateClaim()
+      await claimFactory.initiateRound()
 
       totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
       spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
 
       await delegateManager.makeClaim({ from: stakerAccount })
+
       totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
       spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       assert.isTrue(
