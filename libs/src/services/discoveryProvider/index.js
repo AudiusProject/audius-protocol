@@ -7,7 +7,7 @@ const {
   DISCOVERY_PROVIDER_TIMESTAMP,
   UNHEALTHY_BLOCK_DIFF,
   DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS
- } = require('./constants')
+} = require('./constants')
 
 // TODO - webpack workaround. find a way to do this without checkout for .default property
 let urlJoin = require('proper-url-join')
