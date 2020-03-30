@@ -1,3 +1,7 @@
+const ethers = require('ethers')
+const BigNum = require('bignumber.js')
+const util = require('util')
+
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('./encodeCall')
 
@@ -9,8 +13,6 @@ const Governance = artifacts.require('Governance')
 
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
 
-/** Helper functions */
-
 const fromBn = n => parseInt(n.valueOf(), 10)
 
 const audToWei = (aud) => {
@@ -21,242 +23,330 @@ const audToWei = (aud) => {
   )
 }
 
-contract('Governance test', async (accounts) => {
-  let proxyC
-  let tokenC
-  let stakingC
-  let registryC
-  let governanceC
+const  bigNumberify = (num) => {
+  return ethers.utils.bigNumberify(new BigNum(num).toFixed());
+}
+
+const abiEncode = (types, values) => {
+  const abi = new ethers.utils.AbiCoder()
+  return abi.encode(types, values)
+}
+
+const abiDecode = (types, data) => {
+  const abi = new ethers.utils.AbiCoder()
+  return abi.decode(types, data)
+}
+
+const keccak256 = (values) => {
+  return ethers.utils.keccak256(values);
+}
+
+const Outcome = Object.freeze({
+  InProgress: 0,
+  No: 1,
+  Yes: 2,
+  Invalid: 3
+})
+const Vote = Object.freeze({
+  None: 0,
+  No: 1,
+  Yes: 2
+})
+
+contract('Governance.sol', async (accounts) => {
+  let proxyContract
+  let tokenContract
+  let stakingContract
+  let registryContract
+  let governanceContract
 
   const votingPeriod = 10
   const votingQuorum = 1
-  const defaultStake = audToWei(1000)
+  const defaultStakeAmount = audToWei(1000)
   const proposalDescription = "TestDescription"
-
   const treasuryAddress = accounts[0]
-  const testStakingCallerAddress = accounts[9] // Dummy stand in for SP factory in actual deployment
+  // Dummy stand in for SP factory in actual deployment
+  const stakingContractCallerAddress = accounts[9]
   const protocolOwnerAddress = treasuryAddress
 
-  const Outcome = Object.freeze({
-    InProgress: 0,
-    No: 1,
-    Yes: 2,
-    Invalid: 3
-  })
-  const Vote = Object.freeze({
-    None: 0,
-    No: 1,
-    Yes: 2
-  })
-
-  const approveAndStake = async (amount, staker) => {
+  const approveAndStake = async (stakeAmount, stakerAddress) => {
     // Allow Staking app to move owner tokens
-    await tokenC.approve(stakingC.address, amount, { from: staker })
+    await tokenContract.approve(stakingContract.address, stakeAmount, { from: stakerAddress })
     // Stake tokens
-    await stakingC.stakeFor(
-      staker,
-      amount,
+    await stakingContract.stakeFor(
+      stakerAddress,
+      stakeAmount,
       web3.utils.utf8ToHex(''),
-      { from: testStakingCallerAddress })
+      { from: stakingContractCallerAddress })
   }
 
-  /**
-   * Deploy Registry, OwnedUpgradeabilityProxy, AudiusToken, Staking
-   * Deploy Governance
-   */
-  beforeEach(async () => {
-    registryC = await Registry.new()
-    proxyC = await OwnedUpgradeabilityProxy.new({ from: protocolOwnerAddress })
-    await registryC.addContract(ownedUpgradeabilityProxyKey, proxyC.address)
+  describe('Staking.slash proposal', async () => {
+    /**
+     * Deploy Registry, OwnedUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts.
+     */
+    beforeEach(async () => {
+      registryContract = await Registry.new()
+      proxyContract = await OwnedUpgradeabilityProxy.new({ from: protocolOwnerAddress })
+      await registryContract.addContract(ownedUpgradeabilityProxyKey, proxyContract.address)
 
-    tokenC = await AudiusToken.new({ from: treasuryAddress })
+      tokenContract = await AudiusToken.new({ from: treasuryAddress })
 
-    const impl0 = await Staking.new()
-    // Create initialization data
-    const initializeData = encodeCall(
-      'initialize',
-      ['address', 'address'],
-      [tokenC.address, treasuryAddress]
-    )
+      const stakingContract0 = await Staking.new()
+      // Create initialization data
+      const initializeData = encodeCall(
+        'initialize',
+        ['address', 'address'],
+        [tokenContract.address, treasuryAddress]
+      )
 
-    // Transfer 1000 tokens to accounts[1] and accounts[2]
-    await tokenC.transfer(accounts[1], defaultStake, { from: treasuryAddress })
-    await tokenC.transfer(accounts[2], defaultStake, { from: treasuryAddress })
+      // Transfer 1000 tokens to accounts[1] and accounts[2]
+      await tokenContract.transfer(accounts[1], defaultStakeAmount, { from: treasuryAddress })
+      await tokenContract.transfer(accounts[2], defaultStakeAmount, { from: treasuryAddress })
 
-    // Initialize staking contract
-    await proxyC.upgradeToAndCall(
-      impl0.address,
-      initializeData,
-      { from: protocolOwnerAddress }
-    )
+      // Initialize staking contract
+      await proxyContract.upgradeToAndCall(
+        stakingContract0.address,
+        initializeData,
+        { from: protocolOwnerAddress }
+      )
 
-    stakingC = await Staking.at(proxyC.address)
+      stakingContract = await Staking.at(proxyContract.address)
 
-    // Permission test address as caller
-    await stakingC.setStakingOwnerAddress(testStakingCallerAddress, { from: protocolOwnerAddress })
+      // Permission test address as caller
+      await stakingContract.setStakingOwnerAddress(stakingContractCallerAddress, { from: protocolOwnerAddress })
 
-    // Set up initial stakes
-    await approveAndStake(defaultStake, accounts[1])
-    await approveAndStake(defaultStake, accounts[2])
+      // Set up initial stakes
+      await approveAndStake(defaultStakeAmount, accounts[1])
+      await approveAndStake(defaultStakeAmount, accounts[2])
 
-    // Deploy Governance contract
-    governanceC = await Governance.new(
-      registryC.address,
-      ownedUpgradeabilityProxyKey,
-      votingPeriod,
-      votingQuorum,
-      { from: protocolOwnerAddress }
-    )
-  })
+      // Deploy Governance contract
+      governanceContract = await Governance.new(
+        registryContract.address,
+        ownedUpgradeabilityProxyKey,
+        votingPeriod,
+        votingQuorum,
+        { from: protocolOwnerAddress }
+      )
+    })
 
-  it('Initial state - Ensure no SlashProposals exist yet', async () => {
-    await _lib.assertRevert(governanceC.getSlashProposalById(0), 'Must provide valid non-zero _proposalId')
-    await _lib.assertRevert(governanceC.getSlashProposalById(1), 'Must provide valid non-zero _proposalId')
-  })
+    it('Initial state - Ensure no Proposals exist yet', async () => {
+      await _lib.assertRevert(governanceContract.getProposalById(0), 'Must provide valid non-zero _proposalId')
+      await _lib.assertRevert(governanceContract.getProposalById(1), 'Must provide valid non-zero _proposalId')
+    })
 
-  it('Submit slash proposal', async () => {
-    const proposalId = 1
-    const proposer = accounts[1]
-    const target = accounts[2]
-    const slashAmount = 1
+    it('Submit Proposal for Staking.slash()', async () => {
+      const proposalId = 1
+      const proposerAddress = accounts[1]
+      const slashAmount = 1
+      const targetAddress = accounts[2]
+      const lastBlock = (await _lib.getLatestBlock(web3)).number
+      const targetContract = stakingContract.address
+      const callValue = bigNumberify(0)
+      const signature = 'slash(uint256,address)'
+      const callData = abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
 
-    const lastBlock = (await _lib.getLatestBlock(web3)).number
+      // Call submitProposal
+      const txReceipt = await governanceContract.submitProposal(
+        targetContract,
+        callValue,
+        signature,
+        callData,
+        proposalDescription,
+        { from: proposerAddress }
+      )
 
-    // Call submitSlashProposal
-    const txReceipt = await governanceC.submitSlashProposal(target, slashAmount, proposalDescription, { from: proposer })
+      // Confirm event log
+      const txParsed = _lib.parseTx(txReceipt)
+      assert.equal(txParsed.event.name, 'ProposalSubmitted', 'Expected same event name')
+      assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
+      assert.equal(txParsed.event.args.proposer, proposerAddress, 'Expected same event.args.proposer')
+      assert.isTrue(parseInt(txParsed.event.args.startBlockNumber) > lastBlock, 'Expected event.args.startBlockNumber > lastBlock')
+      assert.equal(txParsed.event.args.targetContract, targetContract, 'Expected same event.args.targetContract')
+      assert.equal(fromBn(txParsed.event.args.callValue), callValue, 'Expected same event.args.callValue')
+      assert.equal(txParsed.event.args.signature, signature, 'Expected same event.args.signature')
+      assert.equal(txParsed.event.args.callData, callData, 'Expected same event.args.callData')
+      assert.equal(txParsed.event.args.description, proposalDescription, "Expected same event.args.description")
 
-    // Confirm event log
-    const txParsed = _lib.parseTx(txReceipt)
-    assert.equal(txParsed.event.name, 'SlashProposalSubmitted', 'Expected same event name')
-    assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-    assert.equal(txParsed.event.args.proposer, proposer, 'Expected same event.args.proposer')
-    assert.isTrue(parseInt(txParsed.event.args.startBlockNumber) > lastBlock, 'Expected event.args.startBlockNumber > lastBlock')
-    assert.equal(txParsed.event.args.target, target, 'Expected same event.args.target')
-    assert.equal(parseInt(txParsed.event.args.slashAmount), slashAmount, 'Expected same event.args.slashAmount')
-    assert.equal(txParsed.event.args.description, proposalDescription, "Expected same event.args.description")
+      // Call getProposalById() and confirm same values
+      const proposal = await governanceContract.getProposalById.call(proposalId)
+      assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
+      assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
+      assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
+      assert.equal(proposal.targetContract, targetContract, 'Expected same proposal.targetContract')
+      assert.equal(fromBn(proposal.callValue), callValue, 'Expected same proposal.callValue')
+      assert.equal(proposal.signature, signature, 'Expected same proposal.signature')
+      assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
+      assert.equal(proposal.outcome, Outcome.InProgress, 'Expected same outcome')
+      assert.equal(parseInt(proposal.voteMagnitudeYes), 0, 'Expected same voteMagnitudeYes')
+      assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
+      assert.equal(parseInt(proposal.numVotes), 0, 'Expected same numVotes')
 
-    // Call getSlashProposalById() and confirm same values
-    const proposal = await governanceC.getSlashProposalById.call(proposalId)
-    assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
-    assert.equal(proposal.proposer, proposer, 'Expected same proposer')
-    assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
-    assert.equal(proposal.target, target, 'Expected same target')
-    assert.equal(parseInt(proposal.slashAmount), slashAmount, 'Expected same slashAmount')
-    assert.equal(proposal.outcome, Outcome.InProgress, 'Expected same outcome')
-    assert.equal(parseInt(proposal.voteMagnitudeYes), 0, 'Expected same voteMagnitudeYes')
-    assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
-    assert.equal(parseInt(proposal.numVotes), 0, 'Expected same numVotes')
-
-    // Confirm all vote states - all Vote.None
-    for (const account of accounts) {
-      const vote = await governanceC.getVoteBySlashProposalAndVoter.call(proposalId, account)
-      assert.equal(vote, Vote.None)
-    }
-  })
-
-  it('Vote on slash proposal', async () => {
-    const proposalId = 1
-    const proposer = accounts[1]
-    const target = accounts[2]
-    const voter = accounts[1]
-    const vote = Vote.No
-    const defaultVote = Vote.None
-    const slashAmount = 1
-
-    const lastBlock = (await _lib.getLatestBlock(web3)).number
-    
-    await governanceC.submitSlashProposal(target, slashAmount, proposalDescription, { from: proposer })
-
-    // Call submitSlashProposalVote()
-    const txReceipt = await governanceC.submitSlashProposalVote(proposalId, vote, { from: voter })
-
-    // Confirm event log
-    const txParsed = _lib.parseTx(txReceipt)
-    assert.equal(txParsed.event.name, 'SlashProposalVoteSubmitted', 'Expected same event name')
-    assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-    assert.equal(txParsed.event.args.voter, voter, 'Expected same event.args.voter')
-    assert.equal(parseInt(txParsed.event.args.vote), vote, 'Expected same event.args.vote')
-    assert.equal((parseInt(txParsed.event.args.voterStake)), fromBn(defaultStake), 'Expected same event.args.voterStake')
-    assert.equal(parseInt(txParsed.event.args.previousVote), defaultVote, 'Expected same event.args.previousVote')
-
-    // Call getSlashProposalById() and confirm same values
-    const proposal = await governanceC.getSlashProposalById.call(proposalId)
-    assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
-    assert.equal(proposal.proposer, proposer, 'Expected same proposer')
-    assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
-    assert.equal(proposal.target, target, 'Expected same target')
-    assert.equal(parseInt(proposal.slashAmount), slashAmount, 'Expected same slashAmount')
-    assert.equal(proposal.outcome, Outcome.InProgress, 'Expected same outcome')
-    assert.equal(parseInt(proposal.voteMagnitudeYes), 0, 'Expected same voteMagnitudeYes')
-    assert.equal(parseInt(proposal.voteMagnitudeNo), defaultStake, 'Expected same voteMagnitudeNo')
-    assert.equal(parseInt(proposal.numVotes), 1, 'Expected same numVotes')
-
-    // Confirm all vote states - Vote.No for Voter, Vote.None for all others
-    for (const account of accounts) {
-      const vote = await governanceC.getVoteBySlashProposalAndVoter.call(proposalId, account)
-      if (account == voter) {
-        assert.equal(vote, vote)
-      } else {
-        assert.equal(vote, defaultVote)
+      // Confirm all vote states - all Vote.None
+      for (const account of accounts) {
+        const vote = await governanceContract.getVoteByProposalAndVoter.call(proposalId, account)
+        assert.equal(vote, Vote.None)
       }
-    }
-  })
+    })
 
-  it('Evaluate slash proposal', async () => {
-    const proposalId = 1
-    const proposer = accounts[1]
-    const target = accounts[2]
-    const voter = accounts[1]
-    const vote = Vote.No
-    const defaultVote = Vote.None
-    const outcome = Outcome.No
-    const slashAmount = 1
+    it('Vote on Proposal for Staking.slash()', async () => {
+      const proposalId = 1
+      const proposerAddress = accounts[1]
+      const slashAmount = 1
+      const targetAddress = accounts[2]
+      const voterAddress = accounts[1]
+      const vote = Vote.No
+      const defaultVote = Vote.None
+      const lastBlock = (await _lib.getLatestBlock(web3)).number
+      const targetContract = stakingContract.address
+      const callValue = bigNumberify(0)
+      const signature = 'slash(uint256,address)'
+      const callData = abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
 
-    const lastBlock = (await _lib.getLatestBlock(web3)).number
-    
-    const a = await governanceC.submitSlashProposal(target, slashAmount, proposalDescription, { from: proposer })
-    await governanceC.submitSlashProposalVote(proposalId, vote, { from: voter })
+      // Call submitProposal
+      await governanceContract.submitProposal(
+        targetContract,
+        callValue,
+        signature,
+        callData,
+        proposalDescription,
+        { from: proposerAddress }
+      )
 
-    // Advance blocks to the next valid claim
-    const proposalStartBlockNumber = parseInt(_lib.parseTx(a).event.args.startBlockNumber)
-    let currentBlockNumber = (await _lib.getLatestBlock(web3)).number
-    while (currentBlockNumber <= proposalStartBlockNumber + votingPeriod) {
-      await _lib.advanceBlock(web3)
-      currentBlockNumber = (await _lib.getLatestBlock(web3)).number
-    }
+      // Call submitProposalVote()
+      const txReceipt = await governanceContract.submitProposalVote(proposalId, vote, { from: voterAddress })
 
-    // Call evaluateSlashProposalOutcome()
-    const txReceipt = await governanceC.evaluateSlashProposalOutcome(proposalId, { from: proposer })
+      // Confirm event log
+      const txParsed = _lib.parseTx(txReceipt)
+      assert.equal(txParsed.event.name, 'ProposalVoteSubmitted', 'Expected same event name')
+      assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
+      assert.equal(txParsed.event.args.voter, voterAddress, 'Expected same event.args.voter')
+      assert.equal(parseInt(txParsed.event.args.vote), vote, 'Expected same event.args.vote')
+      assert.equal((parseInt(txParsed.event.args.voterStake)), fromBn(defaultStakeAmount), 'Expected same event.args.voterStake')
+      assert.equal(parseInt(txParsed.event.args.previousVote), defaultVote, 'Expected same event.args.previousVote')
 
-    // Confirm event log
-    const txParsed = _lib.parseTx(txReceipt)
-    assert.equal(txParsed.event.name, 'SlashProposalOutcomeEvaluated', 'Expected same event name')
-    assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-    assert.equal(parseInt(txParsed.event.args.outcome), outcome, 'Expected same event.args.outcome')
-    assert.equal(parseInt(txParsed.event.args.voteMagnitudeYes), 0, 'Expected same event.args.voteMagnitudeYes')
-    assert.equal(parseInt(txParsed.event.args.voteMagnitudeNo), fromBn(defaultStake), 'Expected same event.args.voteMagnitudeNo')
-    assert.equal(parseInt(txParsed.event.args.numVotes), 1, 'Expected same event.args.numVotes')
+      // Call getProposalById() and confirm same values
+      const proposal = await governanceContract.getProposalById.call(proposalId)
+      assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
+      assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
+      assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
+      assert.equal(proposal.targetContract, targetContract, 'Expected same proposal.targetContract')
+      assert.equal(fromBn(proposal.callValue), callValue, 'Expected same proposal.callValue')
+      assert.equal(proposal.signature, signature, 'Expected same proposal.signature')
+      assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
+      assert.equal(proposal.outcome, Outcome.InProgress, 'Expected same outcome')
+      assert.equal(parseInt(proposal.voteMagnitudeYes), 0, 'Expected same voteMagnitudeYes')
+      assert.equal(parseInt(proposal.voteMagnitudeNo), defaultStakeAmount, 'Expected same voteMagnitudeNo')
+      assert.equal(parseInt(proposal.numVotes), 1, 'Expected same numVotes')
 
-    // Call getSlashProposalById() and confirm same values
-    const proposal = await governanceC.getSlashProposalById.call(proposalId)
-    assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
-    assert.equal(proposal.proposer, proposer, 'Expected same proposer')
-    assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
-    assert.equal(proposal.target, target, 'Expected same target')
-    assert.equal(parseInt(proposal.slashAmount), slashAmount, 'Expected same slashAmount')
-    assert.equal(proposal.outcome, outcome, 'Expected same outcome')
-    assert.equal(parseInt(proposal.voteMagnitudeYes), 0, 'Expected same voteMagnitudeYes')
-    assert.equal(parseInt(proposal.voteMagnitudeNo), defaultStake, 'Expected same voteMagnitudeNo')
-    assert.equal(parseInt(proposal.numVotes), 1, 'Expected same numVotes')
-
-    // Confirm all vote states - Vote.No for Voter, Vote.None for all others
-    for (const account of accounts) {
-      const vote = await governanceC.getVoteBySlashProposalAndVoter.call(proposalId, account)
-      if (account == voter) {
-        assert.equal(vote, vote)
-      } else {
-        assert.equal(vote, defaultVote)
+      // Confirm all vote states - Vote.No for Voter, Vote.None for all others
+      for (const account of accounts) {
+        const voterVote = await governanceContract.getVoteByProposalAndVoter.call(proposalId, account)
+        if (account == voterAddress) {
+          assert.equal(voterVote, vote)
+        } else {
+          assert.equal(voterVote, defaultVote)
+        }
       }
-    }
+    })
+
+    it('Evaluate successful Proposal for Staking.slash()', async () => {
+      const proposalId = 1
+      const proposerAddress = accounts[1]
+      const slashAmount = 1
+      const targetAddress = accounts[2]
+      const voterAddress = accounts[1]
+      const vote = Vote.Yes
+      const defaultVote = Vote.None
+      const lastBlock = (await _lib.getLatestBlock(web3)).number
+      const targetContract = stakingContract.address
+      const callValue = bigNumberify(0)
+      const signature = 'slash(uint256,address)'
+      const callData = abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
+      const outcome = Outcome.Yes
+      const txHash = keccak256(
+        abiEncode(
+          ['address', 'uint256', 'string', 'bytes'],
+          [targetContract, callValue, signature, callData]
+        )
+      )
+      const returnData = null
+
+      // Confirm initial Stake state
+      const initialTotalStake = parseInt(await stakingContract.totalStaked())
+      assert.equal(initialTotalStake, defaultStakeAmount * 2)
+      const initialStakeAcct2 = parseInt(await stakingContract.totalStakedFor(targetAddress))
+      assert.equal(initialStakeAcct2, defaultStakeAmount)
+
+      // Call submitProposal + submitProposalVote
+      const submitProposalTxReceipt = await governanceContract.submitProposal(
+        targetContract,
+        callValue,
+        signature,
+        callData,
+        proposalDescription,
+        { from: proposerAddress }
+      )
+      await governanceContract.submitProposalVote(proposalId, vote, { from: voterAddress })
+
+      // Advance blocks to the next valid claim
+      const proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.startBlockNumber)
+      let currentBlockNumber = (await _lib.getLatestBlock(web3)).number
+      while (currentBlockNumber <= proposalStartBlockNumber + votingPeriod) {
+        await _lib.advanceBlock(web3)
+        currentBlockNumber = (await _lib.getLatestBlock(web3)).number
+      }
+
+      // Call evaluateProposalOutcome()
+      const txReceipt = await governanceContract.evaluateProposalOutcome(proposalId, { from: proposerAddress })
+
+      // Confirm event logs (2 events)
+      const [txParsedEvent0, txParsedEvent1] = _lib.parseTx(txReceipt, true)
+      assert.equal(txParsedEvent0.event.name, 'TransactionExecuted', 'Expected same event name')
+      assert.equal(txParsedEvent0.event.args.txHash, txHash, 'Expected same txParsedEvent0.event.args.txHash')
+      assert.equal(txParsedEvent0.event.args.targetContract, targetContract, 'Expected same txParsedEvent0.event.args.targetContract')
+      assert.equal(fromBn(txParsedEvent0.event.args.callValue), callValue, 'Expected same txParsedEvent0.event.args.callValue')
+      assert.equal(txParsedEvent0.event.args.signature, signature, 'Expected same txParsedEvent0.event.args.signature')
+      assert.equal(txParsedEvent0.event.args.callData, callData, 'Expected same txParsedEvent0.event.args.callData')
+      assert.equal(txParsedEvent0.event.args.returnData, returnData, 'Expected same txParsedEvent0.event.args.returnData')
+      assert.equal(txParsedEvent1.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
+      assert.equal(parseInt(txParsedEvent1.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
+      assert.equal(parseInt(txParsedEvent1.event.args.outcome), outcome, 'Expected same event.args.outcome')
+      assert.equal(parseInt(txParsedEvent1.event.args.voteMagnitudeYes), fromBn(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
+      assert.equal(parseInt(txParsedEvent1.event.args.voteMagnitudeNo), 0, 'Expected same event.args.voteMagnitudeNo')
+      assert.equal(parseInt(txParsedEvent1.event.args.numVotes), 1, 'Expected same event.args.numVotes')
+
+      // Call getProposalById() and confirm same values
+      const proposal = await governanceContract.getProposalById.call(proposalId)
+      assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
+      assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
+      assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
+      assert.equal(proposal.targetContract, targetContract, 'Expected same proposal.targetContract')
+      assert.equal(fromBn(proposal.callValue), callValue, 'Expected same proposal.callValue')
+      assert.equal(proposal.signature, signature, 'Expected same proposal.signature')
+      assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
+      assert.equal(proposal.outcome, outcome, 'Expected same outcome')
+      assert.equal(parseInt(proposal.voteMagnitudeYes), defaultStakeAmount, 'Expected same voteMagnitudeYes')
+      assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
+      assert.equal(parseInt(proposal.numVotes), 1, 'Expected same numVotes')
+
+      // Confirm all vote states - Vote.No for Voter, Vote.None for all others
+      for (const account of accounts) {
+        const voterVote = await governanceContract.getVoteByProposalAndVoter.call(proposalId, account)
+        if (account == voterAddress) {
+          assert.equal(voterVote, vote)
+        } else {
+          assert.equal(voterVote, defaultVote)
+        }
+      }
+
+      // Confirm new Stake values after Slash action
+      const finalStakeAcct2 = parseInt(await stakingContract.totalStakedFor(targetAddress))
+      assert.equal(finalStakeAcct2, defaultStakeAmount - slashAmount)
+      assert.equal(
+        initialTotalStake,
+        await stakingContract.totalStaked(),
+        'Expected same total stake amount'
+      )
+    })
   })
 })

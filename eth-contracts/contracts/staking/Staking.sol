@@ -122,8 +122,8 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @param _slashAddress address being slashed
      */
     function slash(uint256 _amount, address _slashAddress) external isInitialized {
-        // restrict functionality
-        require(msg.sender == treasuryAddress, "Slashing functionality locked to treasury owner");
+        // (disabled) only callable by treasuryAddress
+        // require(msg.sender == treasuryAddress, "Slashing functionality locked to treasury owner");
 
         // unstaking 0 tokens is not allowed
         require(_amount > 0, ERROR_AMOUNT_ZERO);
