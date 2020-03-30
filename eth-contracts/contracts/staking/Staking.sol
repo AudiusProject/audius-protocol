@@ -33,9 +33,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         Checkpointing.History claimHistory;
     }
 
-    // Multiplier used to increase funds
-    Checkpointing.History globalStakeMultiplier;
-
     ERC20 internal stakingToken;
     mapping (address => Account) internal accounts;
     Checkpointing.History internal totalStakedHistory;
@@ -69,9 +66,9 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
 
         // TODO: Finalize multiplier value
         // uint256 initialMultiplier = 10**uint256(DECIMALS);
-        uint256 initialMultiplier = 10**uint256(9);
+        // uint256 initialMultiplier = 10**uint256(9);
         // Initialize multiplier history value
-        globalStakeMultiplier.add64(getBlockNumber64(), initialMultiplier);
+        // globalStakeMultiplier.add64(getBlockNumber64(), initialMultiplier);
     }
 
     /* External functions */
@@ -83,6 +80,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // TODO: Add additional require statements here...
 
         // Update multiplier, total stake
+        /*
         uint256 currentMultiplier = globalStakeMultiplier.getLatestValue();
         uint256 totalStake = totalStakedHistory.getLatestValue();
 
@@ -98,6 +96,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         uint256 multiplierDifference = (currentMultiplier.mul(internalClaimAdjusted)).div(totalStake); 
         uint256 newMultiplier = currentMultiplier.add(multiplierDifference);
         globalStakeMultiplier.add64(getBlockNumber64(), newMultiplier);
+        */
 
         /*
         // Calculate and distribute funds by updating multiplier
@@ -274,13 +273,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     }
 
     /**
-     * @return Current stake multiplier
-     */
-    function getCurrentStakeMultiplier() public view isInitialized returns (uint256) {
-      return globalStakeMultiplier.getLatestValue();
-    }
-
-    /**
      * @notice Get last time `_accountAddress` modified its staked balance
      * @param _accountAddress Account requesting for
      * @return Last block number when account's balance was modified
@@ -312,7 +304,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @return The amount of tokens staked by the account at the given block number
      */
     function totalStakedForAt(address _accountAddress, uint256 _blockNumber) external view returns (uint256) {
-        return (accounts[_accountAddress].stakedHistory.get(_blockNumber)).mul(globalStakeMultiplier.get(_blockNumber));
+        return accounts[_accountAddress].stakedHistory.get(_blockNumber);
     }
 
     /**
@@ -333,7 +325,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      */
     function totalStakedFor(address _accountAddress) public view returns (uint256) {
         // we assume it's not possible to stake in the future
-        return (accounts[_accountAddress].stakedHistory.getLatestValue()).mul(globalStakeMultiplier.getLatestValue());
+        return accounts[_accountAddress].stakedHistory.getLatestValue();
     }
 
     /**
@@ -356,24 +348,18 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // staking 0 tokens is invalid
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
-        // Adjust amount by internal stake multiplier
-        uint internalStakeAmount = _amount.div(globalStakeMultiplier.getLatestValue());
-
-        // Readjust amount with multiplier
-        uint internalAmount = internalStakeAmount.mul(globalStakeMultiplier.getLatestValue());
-
         // Checkpoint updated staking balance
-        _modifyStakeBalance(_stakeAccount, internalStakeAmount, true);
+        _modifyStakeBalance(_stakeAccount, _amount, true);
 
         // checkpoint total supply
-        _modifyTotalStaked(internalAmount, true);
+        _modifyTotalStaked(_amount, true);
 
         // pull tokens into Staking contract
-        stakingToken.safeTransferFrom(_transferAccount, address(this), internalAmount);
+        stakingToken.safeTransferFrom(_transferAccount, address(this), _amount);
 
         emit Staked(
             _stakeAccount,
-            internalAmount,
+            _amount,
             totalStakedFor(_stakeAccount),
             _data);
     }
@@ -385,27 +371,19 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
       bytes memory _data) internal
     {
         require(_amount > 0, ERROR_AMOUNT_ZERO);
-        // Adjust amount by internal stake multiplier
-        uint internalStakeAmount = _amount.div(globalStakeMultiplier.getLatestValue());
-
-        // Adjust internal stake amount to the ceiling of the division op
-        internalStakeAmount += 1;
-
-        // Readjust amount with multiplier
-        uint internalAmount = internalStakeAmount.mul(globalStakeMultiplier.getLatestValue());
 
         // checkpoint updated staking balance
-        _modifyStakeBalance(_stakeAccount, internalStakeAmount, false);
+        _modifyStakeBalance(_stakeAccount, _amount, false);
 
         // checkpoint total supply
-        _modifyTotalStaked(internalAmount, false);
+        _modifyTotalStaked(_amount, false);
 
         // transfer tokens
-        stakingToken.safeTransfer(_transferAccount, internalAmount);
+        stakingToken.safeTransfer(_transferAccount, _amount);
 
         emit Unstaked(
             _stakeAccount,
-            internalAmount,
+            _amount,
             totalStakedFor(_stakeAccount),
             _data);
     }
