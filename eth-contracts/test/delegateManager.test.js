@@ -67,6 +67,9 @@ contract('DelegateManager', async (accounts) => {
 
   const stakerAccount = accounts[1]
   const delegatorAccount1 = accounts[2]
+  const stakerAccount2 = accounts[3]
+
+  let slasherAccount = stakerAccount
 
   beforeEach(async () => {
     registry = await Registry.new()
@@ -159,6 +162,28 @@ contract('DelegateManager', async (accounts) => {
     }
   }
 
+
+  const printAccountStakeInfo = async (account) => {
+    console.log('')
+    let spFactoryStake
+    let totalInStakingContract
+    spFactoryStake = await serviceProviderFactory.getServiceProviderStake(account)
+    totalInStakingContract = await staking.totalStakedFor(account)
+
+    let delegatedStake = web3.utils.toBN(0)
+    let delegators = await delegateManager.getDelegatorsList(account)
+    for (var i = 0; i < delegators.length; i++) {
+      let amountDelegated = await delegateManager.getTotalDelegatorStake(delegators[i])
+      delegatedStake = delegatedStake.add(amountDelegated)
+    }
+    let outsideStake = spFactoryStake.add(delegatedStake)
+    // let tokensInStaking = await token.balanceOf(account)
+    // console.log(`${account} Total balance in stakingContract ${tokensInStaking}`)
+    console.log(`${account} SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside Stake: ${outsideStake} Staking: ${totalInStakingContract}`)
+    let stakeDiscrepancy = totalInStakingContract.sub(outsideStake)
+    console.log(`Internal (Staking) vs External (DelegateManager + SPFactory) Stake discrepancy: ${stakeDiscrepancy}`)
+  }
+
   // Funds a claim, claims value for single SP address + delegators, slashes 
   // Slashes claim amount
   const fundClaimSlash = async (slash) => {
@@ -167,20 +192,10 @@ contract('DelegateManager', async (accounts) => {
     await ensureValidClaimPeriod()
 
     // Continue
-    let delegatedStake
-    let spFactoryStake
-    let totalInStakingContract
-
-    totalInStakingContract = await staking.totalStakedFor(stakerAccount)
-    totalInStakingContract = await staking.totalStakedFor(stakerAccount)
-    delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-
-    spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
-    totalInStakingContract = await staking.totalStakedFor(stakerAccount)
-
-    let tokensInStaking = await token.balanceOf(stakingAddress)
-    console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Staking: ${totalInStakingContract}`)
-    console.log(`Tokens in staking ${tokensInStaking}`)
+    await printAccountStakeInfo(stakerAccount)
+    await printAccountStakeInfo(stakerAccount2)
+    let totalStaked = await staking.totalStaked()
+    console.log(`Total tracked stake in Staking.sol: ${totalStaked}`)
 
     // Update SP Deployer Cut to 10%
     await serviceProviderFactory.updateServiceProviderCut(stakerAccount, 10, { from: stakerAccount })
@@ -189,53 +204,48 @@ contract('DelegateManager', async (accounts) => {
 
     // Perform claim
     await delegateManager.makeClaim({ from: stakerAccount })
+    // Perform claim
+    await delegateManager.makeClaim({ from: stakerAccount2 })
     console.log('')
     console.log('Claimed...')
-
-    // let finalSpStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
-    // let finalDelegateStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-
-    spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
-    totalInStakingContract = await staking.totalStakedFor(stakerAccount)
-    delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-    let outsideStake = spFactoryStake.add(delegatedStake)
     // let slashAmount = toWei(100)
 
     let currentMultiplier = await staking.getCurrentStakeMultiplier()
-    console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside stake: ${outsideStake},  Staking: ${totalInStakingContract}`)
-    tokensInStaking = await token.balanceOf(stakingAddress)
-    console.log(`Tokens in staking ${tokensInStaking}`)
 
+    await printAccountStakeInfo(stakerAccount)
+    await printAccountStakeInfo(stakerAccount2)
+
+    console.log('')
     console.log(`Stake multiplier: ${currentMultiplier}`)
     if (slash) {
       let slashNumerator = web3.utils.toBN(30)
       let slashDenominator = web3.utils.toBN(100)
-
+      let totalInStakingContract = await staking.totalStakedFor(slasherAccount)
       let slashAmount = (totalInStakingContract.mul(slashNumerator)).div(slashDenominator)
-      console.log('')
-      console.log('Slashing...')
-      console.log(`Slash amount: ${slashAmount}, stake multiplier: ${currentMultiplier}`)
+      console.log(`Slashing ${slasherAccount} amount: ${slashAmount}`)
       // Perform slash functions
-      await delegateManager.slash(slashAmount, stakerAccount);
+      await delegateManager.slash(slashAmount, slasherAccount)
+
+      // Switch slasher
+      if (slasherAccount === stakerAccount) {
+        slasherAccount = stakerAccount2
+      } else {
+        slasherAccount = stakerAccount
+      }
+      console.log(`Next slash to ${slasherAccount}`)
     }
-
-    spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
-    totalInStakingContract = await staking.totalStakedFor(stakerAccount)
-    delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-    outsideStake = spFactoryStake.add(delegatedStake)
     console.log('')
-    console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside stake: ${outsideStake},  Staking: ${totalInStakingContract}`)
-    let stakeDiscrepancy = totalInStakingContract.sub(outsideStake)
-    console.log(`Internal (Staking) vs External (DelegateManager + SPFactory) Stake discrepancy: ${stakeDiscrepancy}`)
 
-    tokensInStaking = await token.balanceOf(stakingAddress)
-    console.log(`Tokens in staking ${tokensInStaking}`)
+    await printAccountStakeInfo(stakerAccount)
+    await printAccountStakeInfo(stakerAccount2)
 
-    let tokensAvailableVsTotalStaked = tokensInStaking.sub(totalInStakingContract)
+    let tokensInStaking = await token.balanceOf(stakingAddress)
+    totalStaked = await staking.totalStaked()
+    console.log(`Total tracked stake in Staking.sol: ${totalStaked}`)
+    console.log(`Total tokens for stakingAddress ${tokensInStaking}`)
+
+    let tokensAvailableVsTotalStaked = tokensInStaking.sub(totalStaked)
     console.log(`Tokens available to staking address - total tracked in staking contract = ${tokensAvailableVsTotalStaked}`)
-
-    let totalStaked = await staking.totalStaked()
-    console.log(`Total for all SP ${totalStaked}`)
     console.log('----')
   }
 
@@ -292,6 +302,7 @@ contract('DelegateManager', async (accounts) => {
     beforeEach(async () => {
       // Transfer 1000 tokens to staker
       await token.transfer(stakerAccount, INITIAL_BAL, { from: treasuryAddress })
+      await token.transfer(stakerAccount2, INITIAL_BAL, { from: treasuryAddress })
 
       let initialBal = await token.balanceOf(stakerAccount)
 
@@ -302,6 +313,12 @@ contract('DelegateManager', async (accounts) => {
         testEndpoint,
         DEFAULT_AMOUNT,
         stakerAccount)
+
+      await registerServiceProvider(
+        testDiscProvType,
+        testEndpoint1,
+        DEFAULT_AMOUNT,
+        stakerAccount2)
 
       // Confirm event has correct amount
       assert.equal(regTx.stakedAmountInt, DEFAULT_AMOUNT)
@@ -445,6 +462,9 @@ contract('DelegateManager', async (accounts) => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
+      let currentMultiplier = await staking.getCurrentStakeMultiplier()
+      console.log(`currentMultiplier ${currentMultiplier}`)
+      return
 
       let initialDelegateAmount = toWei(60)
 
@@ -459,17 +479,18 @@ contract('DelegateManager', async (accounts) => {
         initialDelegateAmount,
         { from: delegatorAccount1 })
 
-      let total = 110
+      let total = 1000
       let iterations = total
       while (iterations > 0) {
         let slash = false
-        if (iterations % 10 === 0) {
+        if (((total - iterations) + 1) % 10 === 0) {
           slash = true
         }
         console.log(`Round ${(total - iterations) + 1}`)
         await fundClaimSlash(slash)
         iterations--
       }
+
       // Summarize after execution
       let spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       let totalInStakingContract = await staking.totalStakedFor(stakerAccount)
