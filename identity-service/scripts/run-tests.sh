@@ -23,10 +23,8 @@ export logLevel='debug' #should be error
 # fail, so we check if it is installed first.
 # In CircleCI, the docker environment variables set up audius_identity_service_test instead of
 # audius_identity_service.
-if [ -x "$(command -v psql)" ]; then
-  # taken from https://stackoverflow.com/a/36591842
-  psql -U postgres -h localhost -p $PG_PORT -tc "SELECT 1 FROM pg_database WHERE datname = 'audius_identity_service_test'" | grep -q 1 || psql -U postgres -h localhost -p $PG_PORT -c "CREATE DATABASE audius_identity_service_test"
-fi
+# taken from https://stackoverflow.com/a/36591842 
+docker exec -i audius-identity-service_db_1 /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_identity_service_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_identity_service_test\""
 
  # tests
 ./node_modules/mocha/bin/mocha test/index.js --timeout 10000 --exit
