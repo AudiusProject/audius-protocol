@@ -67,12 +67,12 @@ contract ClaimFactory is RegistryContract {
     }
 
     // Start a new funding round
+    // TODO: Permission caller to contract deployer or governance contract
     function initiateRound() external {
         require(
             block.number - fundBlock > fundRoundBlockDiff,
             "Required block difference not met");
 
-        // TODO: Permission caller to contract deployer or governance contract
         fundBlock = block.number;
 
         totalClaimedInRound = 0;
