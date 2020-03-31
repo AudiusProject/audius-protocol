@@ -48,8 +48,8 @@ contract ClaimFactory is RegistryContract {
         fundBlock = block.number - fundRoundBlockDiff;
     }
 
-    function getClaimBlockDifference()
-    external view returns (uint claimBlockDifference)
+    function getFundingRoundBlockDiff()
+    external view returns (uint blockDiff)
     {
         return (fundRoundBlockDiff);
     }

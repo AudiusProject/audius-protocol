@@ -77,7 +77,7 @@ contract('DelegateManager', async (accounts) => {
 
     proxy = await OwnedUpgradeabilityProxy.new({ from: proxyOwner })
 
-    // Deploy registry
+    // Add proxy to registry
     await registry.addContract(ownedUpgradeabilityProxyKey, proxy.address)
 
     token = await AudiusToken.new({ from: treasuryAddress })
@@ -158,7 +158,7 @@ contract('DelegateManager', async (accounts) => {
     let currentBlock = await web3.eth.getBlock('latest')
     let currentBlockNum = currentBlock.number
     let lastFundBlock = await claimFactory.getLastFundBlock()
-    let claimDiff = await claimFactory.getClaimBlockDifference()
+    let claimDiff = await claimFactory.getFundingRoundBlockDiff()
     let nextClaimBlock = lastFundBlock.add(claimDiff)
     while (currentBlockNum < nextClaimBlock) {
       await _lib.advanceBlock(web3)
@@ -246,54 +246,6 @@ contract('DelegateManager', async (accounts) => {
     let tokensAvailableVsTotalStaked = tokensInStaking.sub(totalStaked)
     console.log(`Tokens available to staking address - total tracked in staking contract = ${tokensAvailableVsTotalStaked}`)
     console.log('----')
-  }
-
-  const increaseRegisteredProviderStake = async (type, endpoint, increase, account) => {
-    // Approve token transfer
-    await token.approve(
-      stakingAddress,
-      increase,
-      { from: account })
-
-    let tx = await serviceProviderFactory.increaseStake(
-      increase,
-      { from: account })
-
-    let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
-    // console.dir(args, { depth: 5 })
-  }
-
-  const getStakeAmountForAccount = async (account) => {
-    return fromBn(await staking.totalStakedFor(account))
-  }
-
-  const decreaseRegisteredProviderStake = async (decrease, account) => {
-    // Approve token transfer from staking contract to account
-    let tx = await serviceProviderFactory.decreaseStake(
-      decrease,
-      { from: account })
-
-    let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
-    // console.dir(args, { depth: 5 })
-  }
-
-  const deregisterServiceProvider = async (type, endpoint, account) => {
-    let deregTx = await serviceProviderFactory.deregister(
-      type,
-      endpoint,
-      { from: account })
-    let args = deregTx.logs.find(log => log.event === 'DeregisteredServiceProvider').args
-    args.unstakedAmountInt = fromBn(args._unstakeAmount)
-    args.spID = fromBn(args._spID)
-    return args
-  }
-
-  const getServiceProviderIdsFromAddress = async (account, type) => {
-    // Query and convert returned IDs to bignumber
-    let ids = (
-      await serviceProviderFactory.getServiceProviderIdsFromAddress(account, type)
-    ).map(x => fromBn(x))
-    return ids
   }
 
   describe('Delegation flow', () => {
