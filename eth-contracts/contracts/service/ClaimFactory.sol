@@ -86,9 +86,9 @@ contract ClaimFactory is RegistryContract {
     // TODO: Name this function better
     // TODO: Permission caller
     function processClaim(address _claimer) external returns (uint newAccountTotal) {
-        // TODO: Check account last claim block and confirm is before round initiated
         address stakingAddress = registry.getContract(stakingProxyOwnerKey);
         Staking stakingContract = Staking(stakingAddress);
+        // Prevent duplicate claim
         uint lastUserClaimBlock = stakingContract.lastClaimedFor(_claimer);
         require(lastUserClaimBlock <= fundBlock, 'Claim already processed for user');
 
