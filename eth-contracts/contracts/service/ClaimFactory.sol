@@ -51,19 +51,25 @@ contract ClaimFactory is RegistryContract {
     function getFundingRoundBlockDiff()
     external view returns (uint blockDiff)
     {
-        return (fundRoundBlockDiff);
+        return fundRoundBlockDiff;
     }
 
     function getLastFundBlock()
     external view returns (uint lastFundBlock)
     {
-        return (fundBlock);
+        return fundBlock;
     }
 
     function getFundsPerRound()
     external view returns (uint amount)
     {
-        return (fundingAmount);
+        return fundingAmount;
+    }
+
+    function getTotalClaimedInRound()
+    external view retunrs (uint amount)
+    {
+      return totalClaimedInRound;
     }
 
     // Start a new funding round
@@ -72,10 +78,9 @@ contract ClaimFactory is RegistryContract {
         require(
             block.number - fundBlock > fundRoundBlockDiff,
             "Required block difference not met");
-
         fundBlock = block.number;
-
         totalClaimedInRound = 0;
+        roundNumber += 1;
     }
 
     // TODO: Name this function better
