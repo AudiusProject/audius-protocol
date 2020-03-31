@@ -325,6 +325,10 @@ contract('DelegateManager', async (accounts) => {
       // Confirm balance updated for tokens
       let finalBal = await token.balanceOf(stakerAccount)
       assert.isTrue(initialBal.eq(finalBal.add(DEFAULT_AMOUNT)), 'Expect funds to be transferred')
+
+      // Update SP Deployer Cut to 10%
+      await serviceProviderFactory.updateServiceProviderCut(stakerAccount, 10, { from: stakerAccount })
+      await serviceProviderFactory.updateServiceProviderCut(stakerAccount2, 10, { from: stakerAccount2 })
     })
 
     it('initial state + claim', async () => {
@@ -404,7 +408,7 @@ contract('DelegateManager', async (accounts) => {
         'Staking.sol back to initial value')
     })
 
-    it.only('single delegator + claim', async () => {
+    it('single delegator + claim', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
@@ -456,18 +460,12 @@ contract('DelegateManager', async (accounts) => {
 
       let finalSpStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       let finalDelegateStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-      console.log(fromBn(finalSpStake))
-      console.log(fromBn(expectedSpStake))
-      // console.log(fromBn(finalDelegateStake))
 
       assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
       assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
     })
 
-    /*
     it('single delegator + claim + slash', async () => {
-      // TODO: Run claim / clash pattern 10,000x and confirm discrepancy
-      // Validate discrepancy against some pre-known value, 1AUD or <1AUD
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
@@ -485,37 +483,41 @@ contract('DelegateManager', async (accounts) => {
         initialDelegateAmount,
         { from: delegatorAccount1 })
 
-      await fundClaimSlash(false)
-      let total = 1000
-      let iterations = total
-      while (iterations > 0) {
-        let slash = false
-        if (((total - iterations) + 1) % 10 === 0) {
-          slash = true
-        }
-        console.log(`Round ${(total - iterations) + 1}`)
-        await fundClaimSlash(slash)
-        iterations--
-      }
+      // Fund new claim
+      await claimFactory.initiateRound()
+
+      // Get rewards
+      await delegateManager.claimRewards({ from: stakerAccount })
+      await delegateManager.claimRewards({ from: stakerAccount2 })
+
+      // Slash 30% of total
+      let slashNumerator = web3.utils.toBN(30)
+      let slashDenominator = web3.utils.toBN(100)
+      let totalInStakingContract = await staking.totalStakedFor(slasherAccount)
+      let slashAmount = (totalInStakingContract.mul(slashNumerator)).div(slashDenominator)
+
+      // Perform slash functions
+      await delegateManager.slash(slashAmount, slasherAccount)
 
       // Summarize after execution
       let spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
-      let totalInStakingContract = await staking.totalStakedFor(stakerAccount)
+      let totalInStakingAfterSlash = await staking.totalStakedFor(stakerAccount)
       let delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
       let outsideStake = spFactoryStake.add(delegatedStake)
-      console.log(`SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside stake: ${outsideStake},  Staking: ${totalInStakingContract}`)
-      let stakeDiscrepancy = totalInStakingContract.sub(outsideStake)
-      console.log(`Stake discrepancy: ${stakeDiscrepancy}`)
-      let oneAud = toWei(1)
-      console.log(`1 AUD: ${oneAud}`)
+      let stakeDiscrepancy = totalInStakingAfterSlash.sub(outsideStake)
+      let totalStaked = await staking.totalStaked()
+      let tokensAtStakingAddress = await token.balanceOf(stakingAddress)
 
-      let tokensInStaking = await token.balanceOf(stakingAddress)
-      console.log(`Tokens in staking ${tokensInStaking}`)
+      assert.equal(totalStaked, tokensAtStakingAddress, 'Expect equivalency between Staking contract and ERC')
+      assert.equal(stakeDiscrepancy, 0, 'Equal tokens expected inside/outside Staking')
+      assert.isTrue(totalInStakingAfterSlash.eq(outsideStake), 'Expected SP/delegatemanager to equal staking')
+      assert.isTrue((totalInStakingContract.sub(slashAmount)).eq(totalInStakingAfterSlash), 'Expected slash value')
     })
-    */
 
+    // TODO: Run claim / clash pattern 10,000x and confirm discrepancy
     // TODO: What happens when someone delegates after a funding round has started...?
-    // Do they still get rewards or not?
+    //        Do they still get rewards or not?
+    //        Potential idea - just lockup delegation for some inteval
 
     // 2 service providers, 1 claim, no delegation
     // 2 service providers, 1 claim, delegation to first SP

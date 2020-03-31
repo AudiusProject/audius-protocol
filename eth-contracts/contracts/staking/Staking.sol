@@ -26,7 +26,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
 
     // Reward tracking info
     uint256 internal currentClaimBlock;
-    uint256 internal currentClaimableAmount;
 
     struct Account {
         Checkpointing.History stakedHistory;
@@ -59,16 +58,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         initialized();
         stakingToken = ERC20(_stakingToken);
         treasuryAddress = _treasuryAddress;
-
-        // Initialize claim values to zero, disabling claim prior to initial funding
-        currentClaimBlock = 0;
-        currentClaimableAmount = 0;
-
-        // TODO: Finalize multiplier value
-        // uint256 initialMultiplier = 10**uint256(DECIMALS);
-        // uint256 initialMultiplier = 10**uint256(9);
-        // Initialize multiplier history value
-        // globalStakeMultiplier.add64(getBlockNumber64(), initialMultiplier);
     }
 
     /* External functions */
@@ -262,13 +251,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     }
 
     /**
-     * @notice Get info relating to current claim status
-     */
-    function getClaimInfo() external view isInitialized returns (uint256, uint256) {
-        return (currentClaimableAmount, currentClaimBlock);
-    }
-
-    /**
      * @notice Get the total amount of tokens staked by `_accountAddress` at block number `_blockNumber`
      * @param _accountAddress Account requesting for
      * @param _blockNumber Block number at which we are requesting
@@ -359,9 +341,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
             _data);
     }
 
-    // Note that _by value has been adjusted for the stake multiplier prior to getting passed in 
     function _modifyStakeBalance(address _accountAddress, uint256 _by, bool _increase) internal {
-        // currentInternalStake represents the internal stake value, without multiplier adjustment
         uint256 currentInternalStake = accounts[_accountAddress].stakedHistory.getLatestValue();
 
         uint256 newStake;
@@ -400,7 +380,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         _modifyStakeBalance(_from, _amount, false);
         _modifyStakeBalance(_to, _amount, true);
 
-        // TODO: Emit multiplier, OR adjust and emit correct amount
         emit StakeTransferred(_from,_amount, _to);
     }
 }
