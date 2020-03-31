@@ -327,7 +327,7 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(initialBal.eq(finalBal.add(DEFAULT_AMOUNT)), 'Expect funds to be transferred')
     })
 
-    it.only('initial state + claim', async () => {
+    it('initial state + claim', async () => {
       // Validate basic claim w/SP path
       let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       let totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
@@ -404,8 +404,7 @@ contract('DelegateManager', async (accounts) => {
         'Staking.sol back to initial value')
     })
 
-    /*
-    it('single delegator + claim', async () => {
+    it.only('single delegator + claim', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
@@ -431,13 +430,18 @@ contract('DelegateManager', async (accounts) => {
       await serviceProviderFactory.updateServiceProviderCut(stakerAccount, 10, { from: stakerAccount })
       let deployerCut = await serviceProviderFactory.getServiceProviderDeployerCut(stakerAccount)
       let deployerCutBase = await serviceProviderFactory.getServiceProviderDeployerCutBase()
-      await claimFactory.initiateClaim()
+
+      // Initiate round
+      await claimFactory.initiateRound()
+
 
       let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      let totalStake = await staking.totalStaked()
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
       let totalValueOutsideStaking = spStake.add(delegatedStake)
-      let totalRewards = totalStakedForSP.sub(totalValueOutsideStaking)
+      let fundingAmount = await claimFactory.getFundsPerRound()
+      let totalRewards = (totalStakedForSP.mul(fundingAmount)).div(totalStake)
 
       // Manually calculate expected value prior to making claim
       // Identical math as contract
@@ -445,18 +449,22 @@ contract('DelegateManager', async (accounts) => {
       let spDeployerCut = (delegateRewardsPriorToSPCut.mul(deployerCut)).div(deployerCutBase)
       let delegateRewards = delegateRewardsPriorToSPCut.sub(spDeployerCut)
       let expectedDelegateStake = delegatedStake.add(delegateRewards)
-
       let spRewardShare = (spStake.mul(totalRewards)).div(totalValueOutsideStaking)
       let expectedSpStake = spStake.add(spRewardShare.add(spDeployerCut))
 
-      await delegateManager.makeClaim({ from: stakerAccount })
+      await delegateManager.claimRewards({ from: stakerAccount })
+
       let finalSpStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       let finalDelegateStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      console.log(fromBn(finalSpStake))
+      console.log(fromBn(expectedSpStake))
+      // console.log(fromBn(finalDelegateStake))
 
       assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
       assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
     })
 
+    /*
     it('single delegator + claim + slash', async () => {
       // TODO: Run claim / clash pattern 10,000x and confirm discrepancy
       // Validate discrepancy against some pre-known value, 1AUD or <1AUD
