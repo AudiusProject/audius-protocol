@@ -63,6 +63,10 @@ let apnAuthKeyPath = path.resolve(__dirname, './notifications/browserPush/audius
 if (apnAuthKey) {
   fs.writeFileSync(apnAuthKeyPath, apnAuthKey)
 }
+const apnTopic = config.get('environment') === 'staging'
+  ? 'web.co.audius.staging'
+  : 'web.co.audius'
+
 const apnConfig = {
   token: {
     key: apnAuthKeyPath,
@@ -91,7 +95,7 @@ const sendSafariNotification = async ({ userId, notificationParams }) => {
 
     const { message, title } = notificationParams
 
-    note.topic = 'web.co.audius' // Required: The destination topic for the notification.
+    note.topic = apnTopic // Required: The destination topic for the notification.
     note.pushType = 'alert' // Required: alert or background
     note.expiry = Math.floor(Date.now() / 1000) + 3600 // Expires 1 hour from now.
     note.alert = { title: `${title} - Audius`, body: message }
