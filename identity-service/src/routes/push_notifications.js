@@ -25,7 +25,16 @@ const SAFARI = 'safari'
 const DEVICE_TYPES = new Set([IOS, ANDROID, SAFARI])
 
 // A signed Push Pacakge zip is required for safari browser push notifications
-const pushPackagePath = path.join(__dirname, '../notifications/browserPush/pushPackage.zip')
+let pushPackageName = ''
+const environment = config.get('environment')
+if (environment === 'development') {
+  pushPackageName = 'devPushPackage.zip'
+} else if (environment === 'staging') {
+  pushPackageName = 'stagingPushPackage.zip'
+} else {
+  pushPackageName = 'productionPushPackage.zip'
+}
+const pushPackagePath = path.join(__dirname, `../notifications/browserPush/${pushPackageName}`)
 
 /**
  * Checks if a browser Push API subscription is valid for notifications

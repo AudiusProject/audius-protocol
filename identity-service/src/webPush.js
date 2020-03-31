@@ -58,9 +58,14 @@ const sendBrowserNotification = async ({ userId, notificationParams }) => {
 }
 
 // Configure APN for browser push notifs to safari
+const apnAuthKey = config.get('apnAuthKey').replace(/\\n/g, '\n')
+let apnAuthKeyPath = path.resolve(__dirname, './notifications/browserPush/audius.pushpackage/AuthKey_1.p8')
+if (apnAuthKey) {
+  fs.writeFileSync(apnAuthKeyPath, apnAuthKey)
+}
 const apnConfig = {
   token: {
-    key: path.resolve(__dirname, './notifications/browserPush/audius.pushpackage/AuthKey_JF59JDH2B2.p8'),
+    key: apnAuthKeyPath,
     keyId: config.get('apnKeyId'),
     teamId: config.get('apnTeamId')
   },

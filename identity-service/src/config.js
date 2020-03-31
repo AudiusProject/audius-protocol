@@ -308,6 +308,18 @@ const config = convict({
     format: String,
     default: '',
     env: 'apnTeamId'
+  },
+  apnAuthKey: {
+    doc: 'APN Auth Key, read from a string into a file',
+    format: String,
+    default: '',
+    env: 'apnAuthKey'
+  },
+  environment: {
+    doc: 'Determines running on development, staging, or production',
+    format: String,
+    default: 'development',
+    env: 'environment'
   }
 })
 
