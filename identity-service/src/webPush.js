@@ -59,7 +59,7 @@ const sendBrowserNotification = async ({ userId, notificationParams }) => {
 
 // Configure APN for browser push notifs to safari
 const apnAuthKey = config.get('apnAuthKey').replace(/\\n/g, '\n')
-let apnAuthKeyPath = path.resolve(__dirname, './notifications/browserPush/audius.pushpackage/AuthKey_1.p8')
+let apnAuthKeyPath = path.resolve(__dirname, './notifications/browserPush/audius.pushpackage/AuthKey.p8')
 if (apnAuthKey) {
   fs.writeFileSync(apnAuthKeyPath, apnAuthKey)
 }
@@ -105,10 +105,12 @@ const sendSafariNotification = async ({ userId, notificationParams }) => {
     const notifcationDevices = await models.NotificationDeviceToken.findAll({
       where: { userId, enabled: true, deviceType: 'safari' }
     })
-
     await Promise.all(notifcationDevices.map(async (notificationDevice) => {
       try {
+        console.log(`Sending notification to apn`)
+        console.log(JSON.stringify(note, null, ' '))
         const result = await apnProvider.send(note, notificationDevice.deviceToken)
+        console.log(JSON.stringify(result, null, ' '))
         if (result.failed && result.failed.length > 0) {
           for (let failed of result.failed) {
             if (failed.response && failed.response.reason === 'BadDeviceToken') {
