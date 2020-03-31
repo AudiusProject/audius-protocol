@@ -223,8 +223,7 @@ contract('Staking test', async (accounts) => {
     const spAccount3 = accounts[3]
     const funderAccount = accounts[4]
 
-    // TODO: Confirm that historic values for a single account can be recalculated by validating with blocknumber 
-    //
+    // TODO: Confirm that historic values for a single account can be recalculated by validating with blocknumber
     // Transfer DEFAULLT tokens to accts 1, 2, 3
     await token.transfer(spAccount1, DEFAULT_AMOUNT, { from: treasuryAddress })
     await token.transfer(spAccount2, DEFAULT_AMOUNT, { from: treasuryAddress })
