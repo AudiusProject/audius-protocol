@@ -67,7 +67,7 @@ contract ClaimFactory is RegistryContract {
     }
 
     function getTotalClaimedInRound()
-    external view retunrs (uint amount)
+    external view returns (uint claimedAmount)
     {
       return totalClaimedInRound;
     }
