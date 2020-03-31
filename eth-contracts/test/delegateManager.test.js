@@ -73,7 +73,6 @@ contract('DelegateManager', async (accounts) => {
   let slasherAccount = stakerAccount
 
   beforeEach(async () => {
-    console.log('here')
     registry = await Registry.new()
 
     proxy = await OwnedUpgradeabilityProxy.new({ from: proxyOwner })
@@ -328,7 +327,7 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(initialBal.eq(finalBal.add(DEFAULT_AMOUNT)), 'Expect funds to be transferred')
     })
 
-    it('initial state + claim', async () => {
+    it.only('initial state + claim', async () => {
       // Validate basic claim w/SP path
       let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       let totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
@@ -338,7 +337,7 @@ contract('DelegateManager', async (accounts) => {
       totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
       spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
 
-      await delegateManager.makeClaim({ from: stakerAccount })
+      await delegateManager.claimRewards({ from: stakerAccount })
 
       totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
       spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
@@ -405,6 +404,7 @@ contract('DelegateManager', async (accounts) => {
         'Staking.sol back to initial value')
     })
 
+    /*
     it('single delegator + claim', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
@@ -457,7 +457,7 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
     })
 
-    it.only('single delegator + claim + slash', async () => {
+    it('single delegator + claim + slash', async () => {
       // TODO: Run claim / clash pattern 10,000x and confirm discrepancy
       // Validate discrepancy against some pre-known value, 1AUD or <1AUD
       // TODO: Validate all
@@ -478,7 +478,6 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 })
 
       await fundClaimSlash(false)
-      /*
       let total = 1000
       let iterations = total
       while (iterations > 0) {
@@ -490,7 +489,6 @@ contract('DelegateManager', async (accounts) => {
         await fundClaimSlash(slash)
         iterations--
       }
-      */
 
       // Summarize after execution
       let spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
@@ -506,6 +504,7 @@ contract('DelegateManager', async (accounts) => {
       let tokensInStaking = await token.balanceOf(stakingAddress)
       console.log(`Tokens in staking ${tokensInStaking}`)
     })
+    */
 
     // TODO: What happens when someone delegates after a funding round has started...?
     // Do they still get rewards or not?
