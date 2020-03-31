@@ -508,8 +508,8 @@ contract('DelegateManager', async (accounts) => {
       let totalStaked = await staking.totalStaked()
       let tokensAtStakingAddress = await token.balanceOf(stakingAddress)
 
-      assert.equal(totalStaked, tokensAtStakingAddress, 'Expect equivalency between Staking contract and ERC')
       assert.equal(stakeDiscrepancy, 0, 'Equal tokens expected inside/outside Staking')
+      assert.isTrue(totalStaked.eq(tokensAtStakingAddress), 'Expect equivalency between Staking contract and ERC')
       assert.isTrue(totalInStakingAfterSlash.eq(outsideStake), 'Expected SP/delegatemanager to equal staking')
       assert.isTrue((totalInStakingContract.sub(slashAmount)).eq(totalInStakingAfterSlash), 'Expected slash value')
     })
