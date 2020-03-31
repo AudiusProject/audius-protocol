@@ -349,4 +349,8 @@ contract('Governance.sol', async (accounts) => {
       )
     })
   })
+
+  describe.skip('OTHER Proposal TODO', async () => {
+    
+  })
 })
