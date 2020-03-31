@@ -45,7 +45,7 @@ const sendBrowserNotification = async ({ userId, notificationParams }) => {
         }
       }
       try {
-        await webpush.sendNotification(pushSubscription, JSON.stringify({ message, title }))
+        await webpush.sendNotification(pushSubscription, JSON.stringify({ message, title: `${title} - Audius` }))
       } catch (err) {
         // If the send Notification response was not successful
         // delete the browser subscription as it is no longer valid
@@ -94,7 +94,7 @@ const sendSafariNotification = async ({ userId, notificationParams }) => {
     note.topic = 'web.co.audius' // Required: The destination topic for the notification.
     note.pushType = 'alert' // Required: alert or background
     note.expiry = Math.floor(Date.now() / 1000) + 3600 // Expires 1 hour from now.
-    note.alert = { title, body: message }
+    note.alert = { title: `${title} - Audius`, body: message }
     note.urlArgs = ['']
     note.payload = {}
 
