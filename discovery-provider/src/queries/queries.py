@@ -15,7 +15,7 @@ from src.queries import response_name_constants
 from src.queries.query_helpers import get_current_user_id, parse_sort_param, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_repost_counts, get_save_counts, \
     get_pagination_vars, paginate_query, get_users_by_id, get_users_ids, \
-    create_save_repost_count_subquery, decayed_score, filter_to_playlist_mood, get_followee_playlists_subquery
+    create_save_repost_count_subquery, decayed_score, filter_to_playlist_mood, create_followee_playlists_subquery
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("queries", __name__)
@@ -1605,7 +1605,7 @@ def get_top_playlists(type):
         # If filtering by followees, set the playlist view to be only playlists from
         # users that the current user follows.
         if query_filter == 'followees':
-            playlists_to_query = get_followee_playlists_subquery(session, current_user_id)
+            playlists_to_query = create_followee_playlists_subquery(session, current_user_id)
         # Otherwise, just query all playlists
         else:
             playlists_to_query = session.query(Playlist).subquery()
