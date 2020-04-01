@@ -99,7 +99,7 @@ const sendSafariNotification = async ({ userId, notificationParams }) => {
     note.pushType = 'alert' // Required: alert or background
     note.expiry = Math.floor(Date.now() / 1000) + 3600 // Expires 1 hour from now.
     note.alert = { title: `${title} - Audius`, body: message }
-    note.urlArgs = ['']
+    note.urlArgs = []
     note.payload = {}
 
     const notifcationDevices = await models.NotificationDeviceToken.findAll({
@@ -107,10 +107,7 @@ const sendSafariNotification = async ({ userId, notificationParams }) => {
     })
     await Promise.all(notifcationDevices.map(async (notificationDevice) => {
       try {
-        console.log(`Sending notification to apn`)
-        console.log(JSON.stringify(note, null, ' '))
         const result = await apnProvider.send(note, notificationDevice.deviceToken)
-        console.log(JSON.stringify(result, null, ' '))
         if (result.failed && result.failed.length > 0) {
           for (let failed of result.failed) {
             if (failed.response && failed.response.reason === 'BadDeviceToken') {
