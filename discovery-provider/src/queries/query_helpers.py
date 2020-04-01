@@ -825,6 +825,39 @@ def create_save_repost_count_subquery(session, type):
     )
     return subquery
 
+def create_followee_playlists_subquery(session, current_user_id):
+    """
+    Creates a subquery that returns playlists created by users that
+    `current_user_id` follows.
+
+    Args:
+        session: SQLAlchemy session.
+        current_user_id: The current user id to query against
+    """
+    # Get active followees
+    followee_user_ids_subquery = (
+        session.query(Follow.followee_user_id)
+        .filter(
+            Follow.follower_user_id == current_user_id,
+            Follow.is_current == True,
+            Follow.is_delete == False
+        )
+        .subquery()
+    )
+    followee_playlists_subquery = (
+        session.query(
+            Playlist
+        )
+        .select_from(Playlist)
+        .join(
+            followee_user_ids_subquery,
+            Playlist.playlist_owner_id == followee_user_ids_subquery.c.followee_user_id
+        )
+        .subquery()
+    )
+    return followee_playlists_subquery
+
+
 def seconds_ago(timestamp):
     """Gets the number of seconds ago `timestamp` was from now as a SqlAlchemy expression."""
     return func.extract('epoch', (func.now() - timestamp))
@@ -918,35 +951,3 @@ def filter_to_playlist_mood(session, mood, query, correlation = Playlist):
     return query.filter(
         mood_exists_query.exists()
     )
-
-def get_followee_playlists_subquery(session, current_user_id):
-    """
-    Creates a subquery that returns playlists created by users that
-    `current_user_id` follows.
-
-    Args:
-        session: SQLAlchemy session.
-        current_user_id: The current user id to query against
-    """
-    # Get active followees
-    followee_user_ids_subquery = (
-        session.query(Follow.followee_user_id)
-        .filter(
-            Follow.follower_user_id == current_user_id,
-            Follow.is_current == True,
-            Follow.is_delete == False
-        )
-        .subquery()
-    )
-    followee_playlists_subquery = (
-        session.query(
-            Playlist
-        )
-        .select_from(Playlist)
-        .join(
-            followee_user_ids_subquery,
-            Playlist.playlist_owner_id == followee_user_ids_subquery.c.followee_user_id
-        )
-        .subquery()
-    )
-    return followee_playlists_subquery
