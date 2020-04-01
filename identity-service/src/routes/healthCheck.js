@@ -89,7 +89,7 @@ module.exports = function (app) {
     }
 
     const serverResponse = {
-      numberOfTransactions: maxTransactions,
+      numberOfTransactions: txCounter,
       numberOfFailedTransactions: failureTxHashes.length,
       failedTransactionHashes: failureTxHashes,
       startBlock: startBlockNumber,
