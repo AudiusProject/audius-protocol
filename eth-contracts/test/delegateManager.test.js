@@ -405,12 +405,13 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue((totalInStakingContract.sub(slashAmount)).eq(totalInStakingAfterSlash), 'Expected slash value')
     })
 
-    it('single sp + 40 delegators + claim', async () => {
+    it('40 delegators to one SP + claim', async () => {
       // TODO: Validate all
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
 
       let numDelegators = 40
       if (accounts.length < numDelegators) {
+        // Disabled for CI, pending modification of total accounts
         console.log(`Insufficient accounts found - required ${numDelegators}, found ${accounts.length}`)
         return
       }

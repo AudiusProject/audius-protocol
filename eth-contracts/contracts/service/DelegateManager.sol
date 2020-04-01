@@ -44,6 +44,18 @@ contract DelegateManager is RegistryContract {
     uint256 test,
     string msg);
 
+    event IncreaseDelegatedStake(
+      address _delegator,
+      address _serviceProvider,
+      uint _increaseAmount
+    );
+
+    event DecreaseDelegatedStake(
+      address _delegator,
+      address _serviceProvider,
+      uint _decreaseAmount
+    );
+
     constructor(
       address _tokenAddress,
       address _registryAddress,
@@ -74,10 +86,16 @@ contract DelegateManager is RegistryContract {
 
         // Stake on behalf of target service provider
         stakingContract.delegateStakeFor(
-          _target,
-          delegator,
-          _amount,
-          empty
+            _target,
+            delegator,
+            _amount,
+            empty
+        );
+
+        emit IncreaseDelegatedStake(
+            delegator,
+            _target,
+            _amount
         );
 
         // Update list of delegators to SP if necessary
@@ -116,11 +134,16 @@ contract DelegateManager is RegistryContract {
 
         // Stake on behalf of target service provider
         stakingContract.undelegateStakeFor(
-          _target,
-          delegator,
-          _amount,
-          empty
+            _target,
+            delegator,
+            _amount,
+            empty
         );
+
+        emit DecreaseDelegatedStake(
+            delegator,
+            _target,
+            _amount);
 
         // Update amount staked from this delegator to targeted service provider
         delegateInfo[delegator][_target] -= _amount;
@@ -148,17 +171,16 @@ contract DelegateManager is RegistryContract {
         return delegateInfo[delegator][_target];
     }
 
+    /*
+      TODO: See if its worth splitting processClaim into a separate tx?
+      Primary concern is around gas consumption...
+      This tx ends up minting tokens, transferring to staking, and doing below updates
+      Can be stress tested and split out if needed
+    */
     // Distribute proceeds of reward
     function claimRewards() external {
-        /*
-          TODO: See if its worth splitting processClaim into a separate tx? 
-          Primary concern is around gas consumption...
-          This tx ends up minting tokens, transferring to staking, and doing below updates
-          Can be stress tested and split out if needed
-        */
-
         ClaimFactory claimFactory = ClaimFactory(
-          registry.getContract(claimFactoryKey)
+            registry.getContract(claimFactoryKey)
         );
         // Process claim for msg.sender
         claimFactory.processClaim(msg.sender);
@@ -242,7 +264,9 @@ contract DelegateManager is RegistryContract {
         // Amount stored in staking contract for owner
         uint totalBalanceInStakingPreSlash = stakingContract.totalStakedFor(_slashAddress);
         require(totalBalanceInStakingPreSlash > 0, "Stake required prior to slash");
-        require(totalBalanceInStakingPreSlash > _amount, "Cannot slash more than total currently staked");
+        require(
+            totalBalanceInStakingPreSlash > _amount,
+            "Cannot slash more than total currently staked");
 
         // Amount in sp factory for slash target
         uint totalBalanceInSPFactory = spFactory.getServiceProviderStake(_slashAddress);
