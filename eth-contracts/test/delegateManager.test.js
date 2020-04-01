@@ -410,6 +410,11 @@ contract('DelegateManager', async (accounts) => {
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
 
       let numDelegators = 40
+      if (accounts.length < numDelegators) {
+        console.log(`Insufficient accounts found - required ${numDelegators}, found ${accounts.length}`)
+        return
+      }
+
       let delegateAccountOffset = 4
       let delegatorAccounts = accounts.slice(delegateAccountOffset, delegateAccountOffset + numDelegators)
       let totalDelegationAmount = DEFAULT_AMOUNT
