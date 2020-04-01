@@ -16,8 +16,6 @@ let notifDiscProv = config.get('notificationDiscoveryProvider')
  * @param {*} endBlock endBlock value
  */
 const validateQueryParams = (startBlock, endBlock) => {
-  // TODO: ensure that if query params are used that error cases are handled
-
   let errorMessage = ''
 
   /* If startBlock and/or endBlock:
