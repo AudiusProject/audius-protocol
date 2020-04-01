@@ -17,8 +17,8 @@ const ACCOUNT = config.get('relayerPublicKey')
 
 module.exports = function (app) {
   /**
-   * Relay health check endpoint. Takes the query params startBlock, endBlock, and account. If those query params
-   * are not specified, default to config settings
+   * Relay health check endpoint. Takes the query params startBlock, endBlock, maxTransactions, and maxErrors.
+   * If those query params are not specified, use default values.
    */
   app.get('/health_check/relay', handleResponse(async (req, res) => {
     const start = Date.now()
@@ -26,7 +26,7 @@ module.exports = function (app) {
     const web3 = audiusLibsInstance.web3Manager.getWeb3()
 
     let endBlockNumber = req.query.endBlock || (await web3.eth.getBlockNumber())
-    // in the case that no query params are defined and the endBlockNumber is less than 720, default startBlockNumber to 0
+    // In the case that no query params are defined and the endBlockNumber is less than 720, default startBlockNumber to 0
     const defaultStartBlockNumber = endBlockNumber - ONE_HOUR_AGO_BLOCKS >= 0 ? endBlockNumber - ONE_HOUR_AGO_BLOCKS : 0
     let startBlockNumber = req.query.startBlock || defaultStartBlockNumber
     let maxTransactions = req.query.maxTransactions || MAX_TRANSACTIONS
@@ -48,7 +48,7 @@ module.exports = function (app) {
     }
 
     if (isNaN(maxTransactions) || isNaN(maxErrors) || maxTransactions < 0 || maxErrors < 0) {
-      return errorResponseServerError(`Invalid number of transactions and/or number of errors block. maxTransactions: ${maxTransactions}, maxErrors: ${maxErrors}`)
+      return errorResponseServerError(`Invalid number of transactions and/or number of errors. maxTransactions: ${maxTransactions}, maxErrors: ${maxErrors}`)
     }
 
     let failureTxHashes = []
