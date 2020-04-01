@@ -4,46 +4,16 @@ const { handleResponse, successResponse, errorResponseServerError } = require('.
 const { sequelize } = require('../models')
 const { getRelayerFunds } = require('../txRelay')
 const Web3 = require('web3')
-const web3 = new Web3(new Web3.providers.HttpProvider('https://poa-gateway.audius.co'))
 
 const axios = require('axios')
 
 let notifDiscProv = config.get('notificationDiscoveryProvider')
 
-/**
- * Helper method to sanitize query params
- * @param {} startBlock startBlock value
- * @param {*} endBlock endBlock value
- */
-const validateQueryParams = (startBlock, endBlock) => {
-  let errorMessage = ''
-
-  /* If startBlock and/or endBlock:
-      1. startBlock and/or endBlock are/is not whole number(s)
-      2. endBlock is less than startBlock
-      3. startBlock and/or endBlock are/is negative
-      4. the difference is over 1000
-    return a server error
-  */
-  if (isNaN(startBlock) || isNaN(endBlock) || parseFloat(startBlock) % 1 !== 0 || parseFloat(endBlock) % 1 !== 0) {
-    errorMessage = 'Please use positive, whole numbers for startBlock and endBlock'
-  }
-
-  endBlock = parseInt(endBlock)
-  startBlock = parseInt(startBlock)
-
-  if (endBlock < startBlock) {
-    errorMessage = 'endBlock value must be greater than startBlock value'
-  } else if (startBlock < 0 || endBlock < 0) {
-    errorMessage = 'startBlock and endBlock can not be negative'
-  } else if (endBlock - startBlock > 1000) {
-    errorMessage = 'Block difference is over the limit of 1000'
-  }
-
-  if (errorMessage) {
-    return errorResponseServerError(`${errorMessage}: startBlock=${startBlock}, endBlock=${endBlock}`)
-  }
-}
+// Defaults used in relay health check endpoint
+const ONE_HOUR_AGO_BLOCKS = 720 // 5 blocks/sec = 720 blocks/hr
+const MAX_TRANSACTIONS = 100 // max transactions to look into
+const MAX_ERRORS = 5 // max acceptable errors for a 200 response
+const ACCOUNT = config.get('relayerPublicKey')
 
 module.exports = function (app) {
   /**
@@ -52,21 +22,34 @@ module.exports = function (app) {
    */
   app.get('/health_check/relay', handleResponse(async (req, res) => {
     const start = Date.now()
-    const ONE_HOUR_AGO_BLOCKS = 720 // 5 blocks/sec = 720 blocks/hr
-    const MAX_TRANSACTIONS = 100 // max transactions look into
-    const MAX_ERRORS = 5 // max acceptable errors for a 200 response
-    const ACCOUNT = '0xdead88167Bd06Cbc251FB8336B44259c6407dd07' // eth wallet
+    const audiusLibsInstance = req.app.get('audiusLibs')
+    const web3 = audiusLibsInstance.web3Manager.getWeb3()
 
     let endBlockNumber = req.query.endBlock || (await web3.eth.getBlockNumber())
-    let startBlockNumber = req.query.startBlock || endBlockNumber - ONE_HOUR_AGO_BLOCKS
+    // in the case that no query params are defined and the endBlockNumber is less than 720, default startBlockNumber to 0
+    const defaultStartBlockNumber = endBlockNumber - ONE_HOUR_AGO_BLOCKS >= 0 ? endBlockNumber - ONE_HOUR_AGO_BLOCKS : 0
+    let startBlockNumber = req.query.startBlock || defaultStartBlockNumber
+    let maxTransactions = req.query.maxTransactions || MAX_TRANSACTIONS
+    let maxErrors = req.query.maxErrors || MAX_ERRORS
+
+    // Parse query strings into ints as all req.query values come in as strings
+    startBlockNumber = parseInt(startBlockNumber)
+    endBlockNumber = parseInt(endBlockNumber)
+    maxTransactions = parseInt(maxTransactions)
+    maxErrors = parseInt(maxErrors)
 
     // If query params are invalid, throw server error
-    const invalidQueryParamsError = validateQueryParams(startBlockNumber, endBlockNumber)
-    if (invalidQueryParamsError) return invalidQueryParamsError
+    if (isNaN(startBlockNumber) || isNaN(endBlockNumber) || startBlockNumber < 0 || endBlockNumber < 0 || endBlockNumber < startBlockNumber) {
+      return errorResponseServerError(`Invalid start and/or end block. startBlock: ${startBlockNumber}, endBlock: ${endBlockNumber}`)
+    }
 
-    // Parse startBlockNumber and endBlockNumber into integers as query params values are strings
-    endBlockNumber = parseInt(endBlockNumber)
-    startBlockNumber = parseInt(startBlockNumber)
+    if (endBlockNumber - startBlockNumber > 1000) {
+      return errorResponseServerError(`Block difference is over 1000. startBlock: ${startBlockNumber}, endBlock: ${endBlockNumber}`)
+    }
+
+    if (isNaN(maxTransactions) || isNaN(maxErrors) || maxTransactions < 0 || maxErrors < 0) {
+      return errorResponseServerError(`Invalid number of transactions and/or number of errors block. maxTransactions: ${maxTransactions}, maxErrors: ${maxErrors}`)
+    }
 
     let failureTxHashes = []
     let txCounter = 0
@@ -74,9 +57,11 @@ module.exports = function (app) {
     req.logger.info(
       `Searching for transactions to/from account ${ACCOUNT} within blocks ${startBlockNumber} and ${endBlockNumber}`
     )
-    // Search for the last 100 transactions
+
+    // Iterate through the range of blocks, looking into the max number of transactions that are from audius
     for (let i = endBlockNumber; i > startBlockNumber; i--) {
-      if (txCounter > MAX_TRANSACTIONS) break
+      // If the max number of transactions have been evaluated, break out
+      if (txCounter > maxTransactions) break
       let block = await web3.eth.getBlock(i, true)
       if (block && block.transactions.length) {
         for (const tx of block.transactions) {
@@ -85,7 +70,6 @@ module.exports = function (app) {
             const txHash = tx.hash
             const resp = await web3.eth.getTransactionReceipt(txHash)
             txCounter++
-            req.logger.info(`Found transaction: ${resp}`)
             if (!resp.status) failureTxHashes.push(txHash)
           }
         }
@@ -93,7 +77,7 @@ module.exports = function (app) {
     }
 
     const serverResponse = {
-      numberOfTransactions: MAX_TRANSACTIONS,
+      numberOfTransactions: maxTransactions,
       numberOfFailedTransactions: failureTxHashes.length,
       failedTransactionHashes: failureTxHashes,
       startBlock: startBlockNumber,
@@ -101,7 +85,7 @@ module.exports = function (app) {
       timeElapsed: Date.now() - start
     }
 
-    if (failureTxHashes > MAX_ERRORS) return errorResponseServerError(serverResponse)
+    if (failureTxHashes > maxErrors) return errorResponseServerError(serverResponse)
     else return successResponse(serverResponse)
   }))
 
