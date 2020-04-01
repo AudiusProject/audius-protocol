@@ -1574,7 +1574,7 @@ def get_top_playlists(type):
         )
 
     if 'limit' in request.args:
-        limit = min(request.args.get('limit'), 100)
+        limit = min(int(request.args.get('limit')), 100)
     else:
         limit = 16
 
@@ -1716,7 +1716,7 @@ def get_top_followee_windowed(type, window):
         )
 
     if 'limit' in request.args:
-        limit = min(request.args.get('limit'), 100)
+        limit = min(int(request.args.get('limit')), 100)
     else:
         limit = 25
 
@@ -1797,7 +1797,7 @@ def get_top_followee_saves(type):
         )
 
     if 'limit' in request.args:
-        limit = min(100, request.args.get('limit'))
+        limit = min(int(request.args.get('limit')), 100)
     else:
         limit = 25
 
