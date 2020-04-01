@@ -26,9 +26,15 @@ contract DelegateManager is RegistryContract {
     // Staking contract ref
     ERC20Mintable internal audiusToken;
 
-    // Service provider address -> list of delegators
-    // TODO: Bounded list
-    mapping (address => address[]) spDelegates;
+    // Struct representing total delegated to SP and list of delegators
+    // TODO: Bound list
+    struct ServiceProviderDelegateInfo {
+      uint totalDelegatedStake;
+      address[] delegators;
+    }
+
+    // Service provider address -> ServiceProviderDelegateInfo
+    mapping (address => ServiceProviderDelegateInfo) spDelegateInfo;
 
     // Total staked for a given delegator
     mapping (address => uint) delegatorStakeTotal;
@@ -114,6 +120,9 @@ contract DelegateManager is RegistryContract {
         // TODO: Any validation on returned value?
         updateServiceProviderDelegatorsIfNecessary(delegator, _target);
 
+        // Update total delegated for SP
+        spDelegateInfo[_target].totalDelegatedStake += _amount;
+
         // Update amount staked from this delegator to targeted service provider
         delegateInfo[delegator][_target] += _amount;
 
@@ -163,20 +172,24 @@ contract DelegateManager is RegistryContract {
         // Update total delegated stake
         delegatorStakeTotal[delegator] -= _amount;
 
+        // Update total delegated for SP
+        spDelegateInfo[_target].totalDelegatedStake -= _amount;
+
         // Remove from delegators list if no delegated stake remaining
         if (delegateInfo[delegator][_target] == 0) {
             bool foundDelegator;
             uint delegatorIndex;
-            for (uint i = 0; i < spDelegates[_target].length; i++) {
-                if (spDelegates[_target][i] == delegator) {
+            for (uint i = 0; i < spDelegateInfo[_target].delegators.length; i++) {
+                if (spDelegateInfo[_target].delegators[i] == delegator) {
                     foundDelegator = true;
                     delegatorIndex = i;
                 }
             }
 
             // Overwrite and shrink delegators list
-            spDelegates[_target][delegatorIndex] = spDelegates[_target][spDelegates[_target].length - 1];
-            spDelegates[_target].length--;
+            uint lastIndex = spDelegateInfo[_target].delegators.length - 1;
+            spDelegateInfo[_target].delegators[delegatorIndex] = spDelegateInfo[_target].delegators[lastIndex];
+            spDelegateInfo[_target].delegators.length--;
         }
 
         // Return new total
@@ -213,14 +226,7 @@ contract DelegateManager is RegistryContract {
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
 
         // Amount in delegate manager staked to service provider
-        // TODO: Consider caching this value
-        uint totalBalanceInDelegateManager = 0;
-        for (uint i = 0; i < spDelegates[msg.sender].length; i++) {
-            address delegator = spDelegates[msg.sender][i];
-            uint delegateStakeToSP = delegateInfo[delegator][msg.sender];
-            totalBalanceInDelegateManager += delegateStakeToSP;
-        }
-
+        uint totalBalanceInDelegateManager = spDelegateInfo[msg.sender].totalDelegatedStake;
         uint totalBalanceOutsideStaking = totalBalanceInSPFactory + totalBalanceInDelegateManager;
 
         // Require claim availability
@@ -236,11 +242,12 @@ contract DelegateManager is RegistryContract {
         uint deployerCut = spFactory.getServiceProviderDeployerCut(msg.sender);
         uint deployerCutBase = spFactory.getServiceProviderDeployerCutBase();
         uint spDeployerCutRewards = 0;
+        uint totalDelegatedStakeIncrease = 0;
 
         // Traverse all delegates and calculate their rewards
         // As each delegate reward is calculated, increment SP cut reward accordingly
-        for (uint i = 0; i < spDelegates[msg.sender].length; i++) {
-            address delegator = spDelegates[msg.sender][i];
+        for (uint i = 0; i < spDelegateInfo[msg.sender].delegators.length; i++) {
+            address delegator = spDelegateInfo[msg.sender].delegators[i];
             uint delegateStakeToSP = delegateInfo[delegator][msg.sender];
             // Calculate rewards by ((delegateStakeToSP / totalBalanceOutsideStaking) * totalRewards)
             uint rewardsPriorToSPCut = (
@@ -254,7 +261,11 @@ contract DelegateManager is RegistryContract {
             // delegateReward = rewardsPriorToSPCut - spDeployerCut;
             delegateInfo[delegator][msg.sender] += (rewardsPriorToSPCut - spDeployerCut);
             delegatorStakeTotal[delegator] += (rewardsPriorToSPCut - spDeployerCut);
+            totalDelegatedStakeIncrease += (rewardsPriorToSPCut - spDeployerCut);
         }
+
+        // Update total delegated to this SP
+        spDelegateInfo[msg.sender].totalDelegatedStake += totalDelegatedStakeIncrease;
 
         // TODO: Validate below with test cases
         uint spRewardShare = (
@@ -294,10 +305,12 @@ contract DelegateManager is RegistryContract {
         // Emit slash event
         emit Slash(_slashAddress, _amount, totalBalanceInStakingAfterSlash);
 
+        uint totalDelegatedStakeDecrease = 0;
+
         // For each delegator and deployer, recalculate new value
         // newStakeAmount = newStakeAmount * (oldStakeAmount / totalBalancePreSlash)
-        for (uint i = 0; i < spDelegates[_slashAddress].length; i++) {
-            address delegator = spDelegates[_slashAddress][i];
+        for (uint i = 0; i < spDelegateInfo[_slashAddress].delegators.length; i++) {
+            address delegator = spDelegateInfo[_slashAddress].delegators[i];
             uint preSlashDelegateStake = delegateInfo[delegator][_slashAddress];
             uint newDelegateStake = (
               totalBalanceInStakingAfterSlash.mul(preSlashDelegateStake)
@@ -305,7 +318,12 @@ contract DelegateManager is RegistryContract {
             uint slashAmountForDelegator = preSlashDelegateStake.sub(newDelegateStake);
             delegateInfo[delegator][_slashAddress] -= (slashAmountForDelegator);
             delegatorStakeTotal[delegator] -= (slashAmountForDelegator);
+            // Update total decrease amount
+            totalDelegatedStakeDecrease += slashAmountForDelegator;
         }
+
+        // Update total delegated to this SP
+        spDelegateInfo[msg.sender].totalDelegatedStake -= totalDelegatedStakeDecrease;
 
         // Recalculate SP direct stake
         uint newSpBalance = (
@@ -320,7 +338,16 @@ contract DelegateManager is RegistryContract {
     function getDelegatorsList(address _sp)
     external view returns (address[] memory dels)
     {
-        return spDelegates[_sp];
+        return spDelegateInfo[_sp].delegators;
+    }
+
+    /**
+     * @notice Total delegated to a service provider
+     */
+    function getTotalDelegatedToServiceProvider(address _sp)
+    external view returns (uint total)
+    {
+        return spDelegateInfo[_sp].totalDelegatedStake;
     }
 
     /**
@@ -346,13 +373,13 @@ contract DelegateManager is RegistryContract {
         address _serviceProvider
     ) internal returns (bool exists)
     {
-        for (uint i = 0; i < spDelegates[_serviceProvider].length; i++) {
-            if (spDelegates[_serviceProvider][i] == _delegator) {
+        for (uint i = 0; i < spDelegateInfo[_serviceProvider].delegators.length; i++) {
+            if (spDelegateInfo[_serviceProvider].delegators[i] == _delegator) {
                 return true;
             }
         }
         // If not found, update list of delegates
-        spDelegates[_serviceProvider].push(_delegator);
+        spDelegateInfo[_serviceProvider].delegators.push(_delegator);
         return false;
     }
 }
