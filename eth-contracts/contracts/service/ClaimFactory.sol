@@ -1,75 +1,145 @@
 pragma solidity ^0.5.0;
 import "../staking/Staking.sol";
+import "./registry/RegistryContract.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "./interface/registry/RegistryInterface.sol";
 
 
 // WORKING CONTRACT
 // Designed to automate claim funding, minting tokens as necessary
-contract ClaimFactory {
+contract ClaimFactory is RegistryContract {
+    using SafeMath for uint256;
+    RegistryInterface registry = RegistryInterface(0);
     // standard - imitates relationship between Ether and Wei
     uint8 private constant DECIMALS = 18;
 
     address tokenAddress;
-    address stakingAddress;
+    bytes32 stakingProxyOwnerKey;
 
     // Claim related configurations
-    uint claimBlockDiff = 10;
-    uint lastClaimBlock = 0;
+    uint fundRoundBlockDiff = 10;
+    uint fundBlock = 0;
 
     // 20 AUD
-    // TODO: Make this modifiable based on total staking pool? 
+    // TODO: Make this modifiable based on total staking pool?
     uint fundingAmount = 20 * 10**uint256(DECIMALS); // 100 * 10**uint256(DECIMALS);
+
+    // Denotes current round
+    uint roundNumber = 0;
+
+    // Total claimed so far in round
+    uint totalClaimedInRound = 0;
 
     // Staking contract ref
     ERC20Mintable internal audiusToken;
 
+    event RoundInitiated(
+      uint _blockNumber,
+      uint _roundNumber,
+      uint _fundAmount
+    );
+
+    event ClaimProcessed(
+      address _claimer,
+      uint _rewards,
+      uint _oldTotal,
+      uint _newTotal
+    );
+
     constructor(
       address _tokenAddress,
-      address _stakingAddress
+      address _registryAddress,
+      bytes32 _stakingProxyOwnerKey
     ) public {
         tokenAddress = _tokenAddress;
-        stakingAddress = _stakingAddress;
+        stakingProxyOwnerKey = _stakingProxyOwnerKey;
         audiusToken = ERC20Mintable(tokenAddress);
+        registry = RegistryInterface(_registryAddress);
         // Allow a claim to be funded initially by subtracting the configured difference
-        lastClaimBlock = block.number - claimBlockDiff;
+        fundBlock = block.number - fundRoundBlockDiff;
     }
 
-    function getClaimBlockDifference()
-    external view returns (uint claimBlockDifference)
+    function getFundingRoundBlockDiff()
+    external view returns (uint blockDiff)
     {
-        return (claimBlockDiff);
+        return fundRoundBlockDiff;
     }
 
-    function getLastClaimedBlock()
-    external view returns (uint lastClaimedBlock)
+    function getLastFundBlock()
+    external view returns (uint lastFundBlock)
     {
-        return (lastClaimBlock);
+        return fundBlock;
     }
 
-    function getFundsPerClaim()
+    function getFundsPerRound()
     external view returns (uint amount)
     {
-        return (fundingAmount);
+        return fundingAmount;
     }
 
-    function initiateClaim() external {
-        require(
-            block.number - lastClaimBlock > claimBlockDiff,
-            "Required block difference not met");
+    function getTotalClaimedInRound()
+    external view returns (uint claimedAmount)
+    {
+        return totalClaimedInRound;
+    }
 
-        bool minted = audiusToken.mint(address(this), fundingAmount);
+    // Start a new funding round
+    // TODO: Permission caller to contract deployer or governance contract
+    function initiateRound() external {
+        require(
+            block.number - fundBlock > fundRoundBlockDiff,
+            "Required block difference not met");
+        fundBlock = block.number;
+        totalClaimedInRound = 0;
+        roundNumber += 1;
+
+        emit RoundInitiated(
+            fundBlock,
+            roundNumber,
+            fundingAmount
+        );
+    }
+
+    // TODO: Name this function better
+    // TODO: Permission caller
+    function processClaim(address _claimer) external returns (uint newAccountTotal) {
+        address stakingAddress = registry.getContract(stakingProxyOwnerKey);
+        Staking stakingContract = Staking(stakingAddress);
+        // Prevent duplicate claim
+        uint lastUserClaimBlock = stakingContract.lastClaimedFor(_claimer);
+        require(lastUserClaimBlock <= fundBlock, "Claim already processed for user");
+
+        uint totalStakedAtFundBlockForClaimer = stakingContract.totalStakedForAt(
+            _claimer,
+            fundBlock);
+        uint totalStakedAtFundBlock = stakingContract.totalStakedAt(fundBlock);
+        uint rewardsForClaimer = (
+          totalStakedAtFundBlockForClaimer.mul(fundingAmount)
+        ).div(totalStakedAtFundBlock);
+
+        bool minted = audiusToken.mint(address(this), rewardsForClaimer);
         require(minted, "New tokens must be minted");
 
         // Approve token transfer to staking contract address
-        audiusToken.approve(stakingAddress, fundingAmount);
+        audiusToken.approve(stakingAddress, rewardsForClaimer);
 
-        // Fund staking contract with proceeds
-        Staking stakingContract = Staking(stakingAddress);
-        stakingContract.fundNewClaim(fundingAmount);
+        // Transfer rewards
+        stakingContract.stakeRewards(rewardsForClaimer, _claimer);
 
-        // Increment by claim difference
-        // Ensures funding of claims is repeatable given the right block difference
-        lastClaimBlock = lastClaimBlock + claimBlockDiff;
+        // Update round claim value
+        totalClaimedInRound += rewardsForClaimer;
+
+        // Update round claim value
+        uint newTotal = stakingContract.totalStakedFor(_claimer);
+
+        emit ClaimProcessed(
+            _claimer,
+            rewardsForClaimer,
+            totalStakedAtFundBlockForClaimer,
+            newTotal
+        );
+
+        return newTotal;
     }
 }

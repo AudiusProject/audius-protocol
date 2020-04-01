@@ -6,7 +6,6 @@ const Staking = artifacts.require('Staking')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
 const getTokenBalance = async (token, account) => fromBn(await token.balanceOf(account))
-const claimBlockDiff = 46000
 
 const toWei = (aud) => {
   let amountInAudWei = web3.utils.toWei(
@@ -45,27 +44,10 @@ contract('Staking test', async (accounts) => {
       { from: testStakingCallerAddress })
   }
 
-  const approveAndFundNewClaim = async (amount, from) => {
-    // allow Staking app to move owner tokens
-    await token.approve(stakingAddress, amount, { from })
-    let receipt = await staking.fundNewClaim(amount, { from })
-    return receipt
-  }
-
-  const getLatestBlock = async () => {
-    let block = await web3.eth.getBlock('latest')
-    // console.log(`Latest block: ${block.number}`)
-    return parseInt(block.number)
-  }
-
   const getStakedAmountForAcct = async (acct) => {
     let stakeValue = (await staking.totalStakedFor(acct)).valueOf()
     // console.log(`${acct} : ${stakeValue}`)
     return parseInt(stakeValue)
-  }
-
-  const getInstance = (receipt) => {
-    return receipt.logs.find(log => log.event === 'NewStaking').args.instance
   }
 
   const slashAccount = async (amount, slashAddr, slasherAddress) => {
@@ -241,8 +223,7 @@ contract('Staking test', async (accounts) => {
     const spAccount3 = accounts[3]
     const funderAccount = accounts[4]
 
-    // TODO: Confirm that historic values for a single account can be recalculated by validating with blocknumber 
-    //
+    // TODO: Confirm that historic values for a single account can be recalculated by validating with blocknumber
     // Transfer DEFAULLT tokens to accts 1, 2, 3
     await token.transfer(spAccount1, DEFAULT_AMOUNT, { from: treasuryAddress })
     await token.transfer(spAccount2, DEFAULT_AMOUNT, { from: treasuryAddress })
@@ -268,11 +249,17 @@ contract('Staking test', async (accounts) => {
     // Transfer 120AUD tokens to staking contract
     await token.transfer(funderAccount, FIRST_CLAIM_FUND, { from: treasuryAddress })
 
-    // Transfer funds for claiming to contract
-    await approveAndFundNewClaim(FIRST_CLAIM_FUND, funderAccount)
+    // allow Staking app to move owner tokens
+    let sp1Rewards = FIRST_CLAIM_FUND.div(web3.utils.toBN(2))
+    let sp2Rewards = sp1Rewards
+    await token.approve(stakingAddress, sp1Rewards, { from: funderAccount })
+    let receipt = await staking.stakeRewards(sp1Rewards, spAccount1, { from: funderAccount })
+
+    await token.approve(stakingAddress, sp2Rewards, { from: funderAccount })
+    receipt = await staking.stakeRewards(sp2Rewards, spAccount2, { from: funderAccount })
 
     // Initial val should be first claim fund / 2
-    let expectedValueAfterFirstFund = DEFAULT_AMOUNT.add(FIRST_CLAIM_FUND.div(web3.utils.toBN(2)))
+    let expectedValueAfterFirstFund = DEFAULT_AMOUNT.add(sp1Rewards)
 
     // Confirm value added to account 1
     let acct1StakeAfterFund = await getStakedAmountForAcct(spAccount1)
