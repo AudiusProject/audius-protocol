@@ -22,7 +22,7 @@ contract ClaimFactory is RegistryContract {
     uint fundBlock = 0;
 
     // 20 AUD
-    // TODO: Make this modifiable based on total staking pool? 
+    // TODO: Make this modifiable based on total staking pool?
     uint fundingAmount = 20 * 10**uint256(DECIMALS); // 100 * 10**uint256(DECIMALS);
 
     // Denotes current round
@@ -34,6 +34,18 @@ contract ClaimFactory is RegistryContract {
     // Staking contract ref
     ERC20Mintable internal audiusToken;
 
+    event RoundInitiated(
+      uint _blockNumber,
+      uint _roundNumber,
+      uint _fundAmount
+    );
+
+    event ClaimProcessed(
+      address _claimer,
+      uint _rewards,
+      uint _oldTotal,
+      uint _newTotal
+    );
 
     constructor(
       address _tokenAddress,
@@ -69,7 +81,7 @@ contract ClaimFactory is RegistryContract {
     function getTotalClaimedInRound()
     external view returns (uint claimedAmount)
     {
-      return totalClaimedInRound;
+        return totalClaimedInRound;
     }
 
     // Start a new funding round
@@ -81,6 +93,12 @@ contract ClaimFactory is RegistryContract {
         fundBlock = block.number;
         totalClaimedInRound = 0;
         roundNumber += 1;
+
+        emit RoundInitiated(
+            fundBlock,
+            roundNumber,
+            fundingAmount
+        );
     }
 
     // TODO: Name this function better
@@ -90,9 +108,11 @@ contract ClaimFactory is RegistryContract {
         Staking stakingContract = Staking(stakingAddress);
         // Prevent duplicate claim
         uint lastUserClaimBlock = stakingContract.lastClaimedFor(_claimer);
-        require(lastUserClaimBlock <= fundBlock, 'Claim already processed for user');
+        require(lastUserClaimBlock <= fundBlock, "Claim already processed for user");
 
-        uint totalStakedAtFundBlockForClaimer = stakingContract.totalStakedForAt(_claimer, fundBlock);
+        uint totalStakedAtFundBlockForClaimer = stakingContract.totalStakedForAt(
+            _claimer,
+            fundBlock);
         uint totalStakedAtFundBlock = stakingContract.totalStakedAt(fundBlock);
         uint rewardsForClaimer = (
           totalStakedAtFundBlockForClaimer.mul(fundingAmount)
@@ -111,6 +131,15 @@ contract ClaimFactory is RegistryContract {
         totalClaimedInRound += rewardsForClaimer;
 
         // Update round claim value
-        return stakingContract.totalStakedFor(_claimer);
+        uint newTotal = stakingContract.totalStakedFor(_claimer);
+
+        emit ClaimProcessed(
+            _claimer,
+            rewardsForClaimer,
+            totalStakedAtFundBlockForClaimer,
+            newTotal
+        );
+
+        return newTotal;
     }
 }
