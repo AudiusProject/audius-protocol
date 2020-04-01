@@ -6,4 +6,4 @@ module.exports.DISCOVERY_PROVIDER_RESELECT_TIMEOUT = 1 /* min */ * 60 /* seconds
 // How often to make sure the cached discovery provider is fresh
 module.exports.DISCOVERY_PROVIDER_TIMESTAMP_INTERVAL = 5000
 
-module.exports.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS = 10 /* seconds */ * 1000 /* millisec */
+module.exports.REQUEST_TIMEOUT_MS = 30 /* seconds */ * 1000 /* millisec */
