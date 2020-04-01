@@ -56,6 +56,18 @@ contract DelegateManager is RegistryContract {
       uint _decreaseAmount
     );
 
+    event Claim(
+      address _claimer,
+      uint _rewards,
+      uint newTotal
+    );
+
+    event Slash(
+      address _target,
+      uint _amount,
+      uint _newTotal
+    );
+
     constructor(
       address _tokenAddress,
       address _registryAddress,
@@ -218,6 +230,9 @@ contract DelegateManager is RegistryContract {
         // Equal to (balance in staking) - ((balance in sp factory) + (balance in delegate manager))
         uint totalRewards = totalBalanceInStaking - totalBalanceOutsideStaking;
 
+        // Emit claim event
+        emit Claim(msg.sender, totalRewards, totalBalanceInStaking);
+
         uint deployerCut = spFactory.getServiceProviderDeployerCut(msg.sender);
         uint deployerCutBase = spFactory.getServiceProviderDeployerCutBase();
         uint spDeployerCutRewards = 0;
@@ -275,6 +290,9 @@ contract DelegateManager is RegistryContract {
         // Decrease value in Staking contract
         stakingContract.slash(_amount, _slashAddress);
         uint totalBalanceInStakingAfterSlash = stakingContract.totalStakedFor(_slashAddress);
+
+        // Emit slash event
+        emit Slash(_slashAddress, _amount, totalBalanceInStakingAfterSlash);
 
         // For each delegator and deployer, recalculate new value
         // newStakeAmount = newStakeAmount * (oldStakeAmount / totalBalancePreSlash)
