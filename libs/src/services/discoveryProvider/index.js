@@ -6,7 +6,7 @@ const { serviceType } = require('../ethContracts/index')
 const {
   DISCOVERY_PROVIDER_TIMESTAMP,
   UNHEALTHY_BLOCK_DIFF,
-  DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS
+  REQUEST_TIMEOUT_MS
 } = require('./constants')
 
 // TODO - webpack workaround. find a way to do this without checkout for .default property
@@ -54,7 +54,7 @@ class DiscoveryProvider {
         try {
           let resp = await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
             pick = whitelistMap[url]
-          }, {}, DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS)
+          }, {}, REQUEST_TIMEOUT_MS)
 
           isValid = pick && resp.data.service && (resp.data.service === serviceType.DISCOVERY_PROVIDER)
           if (isValid) {
@@ -615,7 +615,7 @@ class DiscoveryProvider {
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
   // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, retries = 4, silent = false) {
+  async _makeRequest (requestObj, retries = 10, silent = false) {
     if (!this.discoveryProviderEndpoint) {
       await this.autoSelectEndpoint()
     }
@@ -636,7 +636,7 @@ class DiscoveryProvider {
       url: requestUrl,
       headers: headers,
       method: (requestObj.method || 'get'),
-      timeout: 10000
+      timeout: REQUEST_TIMEOUT_MS
     }
 
     if (requestObj.method === 'post' && requestObj.data) {
