@@ -773,12 +773,20 @@ def create_save_repost_count_subquery(session, type):
     """
     Creates a subquery for `type` that represents a combined save + repost count.
 
+    For example, to get the tracks with the largest combined save and repost count, use:
+        subquery = create_save_repost_count_subquery(session, 'track')
+        session
+            .query(tracks)
+            .join(subquery, tracks.track_id = subquery.c.id)
+            .order_by(desc(subquery.c.count))
+
     Args:
-        session: SqlALchemy session.
+        session: SQLAlchemy session.
         type: (string) The type of save/repost (album, playlist, track)
 
     Returns: A subquery with two fields `id` and `count`.
     """
+    # Get reposts by item id
     reposts_count_subquery = (
         session.query(
             Repost.repost_item_id,
@@ -790,13 +798,18 @@ def create_save_repost_count_subquery(session, type):
         )
         .subquery()
     )
+
+    # Query saves joined against reposts grouped by id and calculate
+    # a combined count for each
     subquery = (
         session.query(
             Save.save_item_id.label('id'),
             (func.count(Save.save_item_id) + func.count(reposts_count_subquery.c.repost_item_id))
                 .label('count')
         )
-        .outerjoin(
+        # Join against reposts filtering to matching ids.
+        # Inner-join drops no-match ids.
+        .join(
             reposts_count_subquery,
             Save.save_item_id == reposts_count_subquery.c.repost_item_id
         )
@@ -846,15 +859,23 @@ def filter_to_playlist_mood(session, mood, query, correlation = Playlist):
     to only those with the dominant mood provided.
     Dominant mood means that *most* of its tracks are of the specified mood.
 
+    This method takes a query inserts a filter clause on it and returns the same query.
+    We filter down those playlists to dominant mood by running an "exists" clause
+    on a dominant mood subquery.
+
     Args:
-        session: SqlAlchemy session.
+        session: SQLALchemy session.
         mood: (string) The mood to query against.
         query: The base query to filter on
         correlation: An optional correlation / subquery to correlate against.
 
     Returns: A modified version of `query` with an extra filter clause.
     """
-    top_mood_subquery = (
+    if not mood:
+        return query
+
+    # Query for the most common mood in a playlist
+    dominant_mood_subquery = (
         session.query(
             Track.mood.label('mood'),
             func.count(Track.mood).label('cnt')
@@ -867,6 +888,9 @@ def filter_to_playlist_mood(session, mood, query, correlation = Playlist):
                     func.jsonb_array_elements(
                         correlation.c.playlist_contents['track_ids']
                     ).op('->')('track').cast(Integer)
+                # If this query runs against a nested subquery, it might need to
+                # be manually correlated to that subquery so it doesn't pull in all
+                # playlists here.
                 ).correlate(correlation)
             )
         )
@@ -876,18 +900,53 @@ def filter_to_playlist_mood(session, mood, query, correlation = Playlist):
         .subquery()
     )
 
+    # Match the provided mood against the dominant mood for playlists
     mood_exists_query = (
         session.query(
-            top_mood_subquery.c.mood
+            dominant_mood_subquery.c.mood
         )
         .select_from(
-            top_mood_subquery
+            dominant_mood_subquery
         )
         .filter(
-            func.lower(top_mood_subquery.c.mood) == func.lower(mood)
+            func.lower(dominant_mood_subquery.c.mood) == func.lower(mood)
         )
     )
 
+    # Filter playlist query to those that have the most common mood checking that
+    # there `exists` such a playlist with the dominant mood
     return query.filter(
         mood_exists_query.exists()
     )
+
+def get_followee_playlists_subquery(session, current_user_id):
+    """
+    Creates a subquery that returns playlists created by users that
+    `current_user_id` follows.
+
+    Args:
+        session: SQLAlchemy session.
+        current_user_id: The current user id to query against
+    """
+    # Get active followees
+    followee_user_ids_subquery = (
+        session.query(Follow.followee_user_id)
+        .filter(
+            Follow.follower_user_id == current_user_id,
+            Follow.is_current == True,
+            Follow.is_delete == False
+        )
+        .subquery()
+    )
+    followee_playlists_subquery = (
+        session.query(
+            Playlist
+        )
+        .select_from(Playlist)
+        .join(
+            followee_user_ids_subquery,
+            Playlist.playlist_owner_id == followee_user_ids_subquery.c.followee_user_id
+        )
+        .subquery()
+    )
+    return followee_playlists_subquery

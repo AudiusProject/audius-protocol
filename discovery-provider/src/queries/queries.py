@@ -3,6 +3,7 @@ import datetime
 import sqlalchemy
 from sqlalchemy import func, asc, desc, text, or_, and_, Integer, Float, Date
 from sqlalchemy.orm import aliased
+from sqlalchemy.dialects import postgresql
 
 from flask import Blueprint, request
 
@@ -14,7 +15,7 @@ from src.queries import response_name_constants
 from src.queries.query_helpers import get_current_user_id, parse_sort_param, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_repost_counts, get_save_counts, \
     get_pagination_vars, paginate_query, get_users_by_id, get_users_ids, \
-    create_save_repost_count_subquery, decayed_score, filter_to_playlist_mood
+    create_save_repost_count_subquery, decayed_score, filter_to_playlist_mood, get_followee_playlists_subquery
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("queries", __name__)
@@ -1560,17 +1561,20 @@ def get_top_playlists(type):
 
     Args:
         type: (string) The `type` (same as repost/save type) to query from.
-        limit?: (number) default=16
+        limit?: (number) default=16, max=100
         mood?: (string) default=None
         filter?: (string) Optional filter to include (supports 'followees') default=None
     """
+    current_user_id = get_current_user_id(required=False)
+
+    # Argument parsing and checking
     if type != 'playlist' and type != 'album':
         return api_helpers.error_response(
             "Invalid type provided, must be one of 'playlist', 'album'", 400
         )
 
     if 'limit' in request.args:
-        limit = request.args.get('limit')
+        limit = min(request.args.get('limit'), 100)
     else:
         limit = 16
 
@@ -1585,42 +1589,26 @@ def get_top_playlists(type):
             return api_helpers.error_response(
                 "Invalid type provided, must be one of 'followees'", 400
             )
+        if query_filter == 'followees':
+            if not current_user_id:
+                return api_helpers.error_response(
+                    "User id required to query for followees", 400
+                )
     else:
         query_filter = None
 
-    current_user_id = get_current_user_id(required=False)
     db = get_db_read_replica()
     with db.scoped_session() as session:
+        # Construct a subquery to get the summed save + repost count for the `type`
         count_subquery = create_save_repost_count_subquery(session, type)
 
-        # If filtering by followers, set the playlist view to be only playlists from
+        # If filtering by followees, set the playlist view to be only playlists from
         # users that the current user follows.
-        if query_filter and query_filter == 'followees':
-            current_user_id = get_current_user_id()
-
-            followee_user_ids = (
-                session.query(Follow.followee_user_id)
-                .filter(
-                    Follow.follower_user_id == current_user_id,
-                    Follow.is_current == True,
-                    Follow.is_delete == False
-                )
-            )
-            followee_user_ids_subquery = followee_user_ids.subquery()
-            followee_playlists = (
-                session.query(
-                    Playlist
-                )
-                .select_from(Playlist)
-                .outerjoin(
-                    followee_user_ids_subquery,
-                    Playlist.playlist_owner_id == followee_user_ids_subquery.c.followee_user_id
-                )
-            )
-            playlists_to_query = followee_playlists.subquery().alias('pp')
+        if query_filter == 'followees':
+            playlists_to_query = get_followee_playlists_subquery(session, current_user_id)
         # Otherwise, just query all playlists
         else:
-            playlists_to_query = session.query(Playlist).subquery().alias('pp')
+            playlists_to_query = session.query(Playlist).subquery()
 
         # Create a decayed-score view of the playlists
         playlist_query = (
@@ -1630,28 +1618,26 @@ def get_top_playlists(type):
                 decayed_score(count_subquery.c['count'], playlists_to_query.c.created_at).label('score')
             )
             .select_from(playlists_to_query)
-            .outerjoin(
+            .join(
                 count_subquery,
                 count_subquery.c['id'] == playlists_to_query.c.playlist_id
             )
             .filter(
-                # Filter out things with no reposts
-                count_subquery.c['id'] != None,
                 playlists_to_query.c.is_current == True,
                 playlists_to_query.c.is_delete == False,
                 playlists_to_query.c.is_private == False,
             )
         )
 
-        # Add filtering if mood is provided
-        if (mood is not None):
-            playlist_query = filter_to_playlist_mood(
-                session,
-                mood,
-                playlist_query,
-                playlists_to_query
-            )
+        # Filter by mood (no-op if no mood is provided)
+        playlist_query = filter_to_playlist_mood(
+            session,
+            mood,
+            playlist_query,
+            playlists_to_query
+        )
 
+        # Order and limit the playlist query by score
         playlist_query = (
             playlist_query.order_by(
                 desc('score'),
@@ -1659,23 +1645,27 @@ def get_top_playlists(type):
             )
             .limit(limit)
         )
+
         playlist_results = playlist_query.all()
 
-        # Unzip playlists and populate respective metadata
-        score_map = {}
+        # Unzip query results into playlists and scores
+        score_map = {} # playlist_id : score
+        playlists = []
         if playlist_results:
-            playlists = []
             for result in playlist_results:
-                playlist = helpers.tuple_to_model_dictionary(result[:-2], Playlist)
+                # The playlist is the portion of the query result before repost_count and score
+                playlist = result[0:-2]
                 repost_count = result[-2]
                 score = result[-1]
+
+                # Convert the playlist row tuple into a dictionary keyed by column name
+                playlist = helpers.tuple_to_model_dictionary(playlist, Playlist)
                 score_map[playlist['playlist_id']] = score
                 playlists.append(playlist)
-        else:
-            playlists = []
+
         playlist_ids = list(map(lambda playlist: playlist["playlist_id"], playlists))
 
-        # bundle peripheral info into playlist results
+        # Bundle peripheral info into playlist results
         playlists = populate_playlist_metadata(
             session,
             playlist_ids,
@@ -1684,6 +1674,7 @@ def get_top_playlists(type):
             [SaveType.playlist, SaveType.album],
             current_user_id
         )
+        # Add scores into the response
         for playlist in playlists:
             playlist['score'] = score_map[playlist['playlist_id']]
 
@@ -1711,7 +1702,7 @@ def get_top_followee_windowed(type, window):
                 track is supported.
             window: (string) The window from now() to look back over. Supports all standard
                 SqlAlchemy interval notation (week, month, year, etc.).
-            limit?: (number) default=25
+            limit?: (number) default=25, max=100
     """
     if type != 'track':
         return api_helpers.error_response(
@@ -1725,13 +1716,14 @@ def get_top_followee_windowed(type, window):
         )
 
     if 'limit' in request.args:
-        limit = request.args.get('limit')
+        limit = min(request.args.get('limit'), 100)
     else:
         limit = 25
 
     current_user_id = get_current_user_id()
     db = get_db_read_replica()
     with db.scoped_session() as session:
+        # Construct a subquery to get the summed save + repost count for the `type`
         count_subquery = create_save_repost_count_subquery(session, type)
 
         followee_user_ids = (
@@ -1749,16 +1741,15 @@ def get_top_followee_windowed(type, window):
             session.query(
                 Track,
             )
-            .outerjoin(
+            .join(
                 followee_user_ids_subquery,
                 Track.owner_id == followee_user_ids_subquery.c.followee_user_id
             )
-            .outerjoin(
+            .join(
                 count_subquery,
                 Track.track_id == count_subquery.c['id']
             )
             .filter(
-                count_subquery.c['count'] != None,
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False,
@@ -1775,7 +1766,7 @@ def get_top_followee_windowed(type, window):
         tracks = helpers.query_result_to_list(tracks_query_results)
         track_ids = list(map(lambda track: track['track_id'], tracks))
 
-        # bundle peripheral info into track results
+        # Bundle peripheral info into track results
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
         if 'with_users' in request.args and request.args.get('with_users') != 'false':
@@ -1791,14 +1782,14 @@ def get_top_followee_windowed(type, window):
 @bp.route("/top_followee_saves/<type>")
 def get_top_followee_saves(type):
     """
-        Gets a global view into the most saved of `type` amongst followers. Requires an account.
+        Gets a global view into the most saved of `type` amongst followees. Requires an account.
         This endpoint is useful in generating views like:
             - Most favorited
 
         Args:
             type: (string) The `type` (same as repost/save type) to query from. Currently only
                 track is supported.
-            limit?: (number) default=25
+            limit?: (number) default=25, max=100
     """
     if type != 'track':
         return api_helpers.error_response(
@@ -1806,13 +1797,14 @@ def get_top_followee_saves(type):
         )
 
     if 'limit' in request.args:
-        limit = request.args.get('limit')
+        limit = min(100, request.args.get('limit'))
     else:
         limit = 25
 
     current_user_id = get_current_user_id()
     db = get_db_read_replica()
     with db.scoped_session() as session:
+        # Construct a subquery of all followees
         followee_user_ids = (
             session.query(Follow.followee_user_id)
             .filter(
@@ -1823,12 +1815,13 @@ def get_top_followee_saves(type):
         )
         followee_user_ids_subquery = followee_user_ids.subquery()
 
+        # Construct a subquery of all saves from followees aggregated by id
         save_count = (
             session.query(
                 Save.save_item_id,
                 func.count(Save.save_item_id).label(response_name_constants.save_count)
             )
-            .outerjoin(
+            .join(
                 followee_user_ids_subquery,
                 Save.user_id == followee_user_ids_subquery.c.followee_user_id
             )
@@ -1843,17 +1836,16 @@ def get_top_followee_saves(type):
         )
         save_count_subquery = save_count.subquery()
 
-        # Query for tracks joined against save counts
+        # Query for tracks joined against followee save counts
         tracks_query = (
             session.query(
                 Track,
             )
-            .outerjoin(
+            .join(
                 save_count_subquery,
                 Track.track_id == save_count_subquery.c.save_item_id
             )
             .filter(
-                save_count_subquery.c.save_count != None,
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False
