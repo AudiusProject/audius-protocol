@@ -47,7 +47,7 @@ set -e
 
 # run linter
 # node_modules/.bin/standard exit 1
-echo '0'
+cd /path/that/doesnt/exist
 
 # run tests
 printf '\nSTART tests:\n\n'
