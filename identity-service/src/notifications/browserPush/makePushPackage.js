@@ -1,6 +1,6 @@
 const fs = require('fs')
 const path = require('path')
-const pushLib = require('safari-push-notifications');
+const pushLib = require('safari-push-notifications')
 
 // Common between all env
 const intermediate = fs.readFileSync(path.join(__dirname, './audius.pushpackage/AppleWWDRCA.pem'))
@@ -12,14 +12,14 @@ const intermediate = fs.readFileSync(path.join(__dirname, './audius.pushpackage/
 const devConfig = {
   websiteName: 'Audius',
   websitePushID: 'web.co.audius.staging',
-  appUrl: 'http://localhost:3000', 
+  appUrl: 'http://localhost:3000',
   identityUrl: 'https://0ef6caf4.ngrok.io', // Replace with https ngrok link
   appUrls: [],
   cert: fs.readFileSync(path.join(__dirname, '/audius.pushpackage/stagingCert.pem')),
   key: fs.readFileSync(path.join(__dirname, '/audius.pushpackage/stagingKey.pem')),
   output: 'devPushPackage.zip'
 }
-
+/*
 // Staging
 const stagingConfig = {
   websiteName: 'Audius',
@@ -42,8 +42,8 @@ const prodConfig = {
   key: fs.readFileSync(path.join(__dirname, './audius.pushpackage/prodKey.pem')),
   output: 'productionPushPackage.zip'
 }
-
-// Change the config to be local / staging / prod 
+*/
+// Change the config to be local / staging / prod
 let config = devConfig
 
 const websiteJson = pushLib.websiteJSON(
@@ -53,7 +53,7 @@ const websiteJson = pushLib.websiteJSON(
   `${config.appUrl}/feed?openNotifications=true`, // urlFormatString
   1000000000000000, // authenticationToken (zeroFilled to fit 16 chars)
   `${config.identityUrl}/push_notifications/safari` // webServiceURL (Must be https!)
-);
+)
 
 pushLib.generatePackage(
   websiteJson, // The object from before / your own website.json object
@@ -64,5 +64,5 @@ pushLib.generatePackage(
 )
   .pipe(fs.createWriteStream(config.output))
   .on('finish', function () {
-      console.log('pushPackage.zip is ready.')
+    console.log('pushPackage.zip is ready.')
   })
