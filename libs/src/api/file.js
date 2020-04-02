@@ -11,7 +11,11 @@ const publicGateways = [
   'https://cloudflare-ipfs.com/ipfs/'
 ]
 
-// Download url if body document exists. Takes url and filename params
+/**
+ * Download url if body document exists.
+ * @param {*} url
+ * @param {*} filename
+ */
 const downloadURL = (url, filename) => {
   if (document) {
     const link = document.createElement('a')
