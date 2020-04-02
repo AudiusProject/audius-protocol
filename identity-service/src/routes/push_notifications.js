@@ -194,7 +194,6 @@ module.exports = function (app) {
   app.get('/push_notifications/device_token/enabled', authMiddleware, handleResponse(async (req, res, next) => {
     const userId = req.user.blockchainUserId
     const { deviceToken, deviceType } = req.query
-    console.log(JSON.stringify(req.query, null, ' '))
     if (!DEVICE_TYPES.has(deviceType)) {
       return errorResponseBadRequest('Attempting to check for an invalid deviceType')
     }
@@ -275,7 +274,6 @@ module.exports = function (app) {
       const enabled = (subscription && subscription.enabled) || false
       return successResponse({ enabled })
     } catch (e) {
-      console.log(e)
       return errorResponseServerError(`Unable to get browser push notificaiton enabled`, e.message)
     }
   }))
@@ -299,7 +297,6 @@ module.exports = function (app) {
       })
       return successResponse()
     } catch (e) {
-      console.log(e)
       return errorResponseServerError(`Unable to save browser push notificaiton subscription`, e.message)
     }
   }))

@@ -51,7 +51,7 @@ const websiteJson = pushLib.websiteJSON(
   config.websitePushID,
   [config.appUrl, config.identityUrl, ...config.appUrls], // allowedDomains
   `${config.appUrl}/feed?openNotifications=true`, // urlFormatString
-  0000000000000000, // authenticationToken (zeroFilled to fit 16 chars)
+  1000000000000000, // authenticationToken (zeroFilled to fit 16 chars)
   `${config.identityUrl}/push_notifications/safari` // webServiceURL (Must be https!)
 );
 
@@ -64,5 +64,5 @@ pushLib.generatePackage(
 )
   .pipe(fs.createWriteStream(config.output))
   .on('finish', function () {
-      console.log('pushPackage.zip is ready.');
-  });
+      console.log('pushPackage.zip is ready.')
+  })
