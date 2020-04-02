@@ -224,6 +224,7 @@ jobs:
         default: false
     steps:
       - checkout
+      - setup_remote_docker
       - unless:
           condition: << parameters.force >>
           steps:
