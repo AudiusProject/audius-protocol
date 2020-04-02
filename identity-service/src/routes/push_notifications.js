@@ -203,9 +203,11 @@ module.exports = function (app) {
 
     try {
       const notificationDeviceToken = await models.NotificationDeviceToken.findOne({
-        deviceToken,
-        deviceType,
-        userId
+        where: {
+          deviceToken,
+          deviceType,
+          userId
+        }
       })
       const enabled = (notificationDeviceToken && notificationDeviceToken.enabled) || false
       return successResponse({ enabled })
