@@ -318,10 +318,16 @@ class DiscoveryProvider {
    *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
-  async getSocialFeed (filter, limit = 100, offset = 0, withUsers = false) {
+  async getSocialFeed (filter, limit = 100, offset = 0, withUsers = false, tracksOnly = false) {
     let req = {
       endpoint: 'feed/',
-      queryParams: { filter: filter, limit: limit, offset: offset, with_users: withUsers }
+      queryParams: {
+        filter: filter,
+        limit: limit,
+        offset: offset,
+        with_users: withUsers,
+        tracks_only: tracksOnly
+      }
     }
 
     return this._makeRequest(req)
@@ -608,6 +614,48 @@ class DiscoveryProvider {
     return this._makeRequest(req, 0, true)
   }
 
+  async getTopPlaylists (type, limit, mood, filter, withUsers = false) {
+    const req = {
+      endpoint: `/top/${type}`,
+      queryParams: {
+        limit,
+        mood,
+        filter,
+        with_users: withUsers
+      }
+    }
+    return this._makeRequest(req)
+  }
+
+  async getTopFolloweeWindowed (type, window, limit, withUsers = false) {
+    const req = {
+      endpoint: `/top_followee_windowed/${type}/${window}`,
+      queryParams: {
+        limit,
+        with_users: withUsers
+      }
+    }
+    return this._makeRequest(req)
+  }
+
+  async getTopFolloweeSaves (type, limit, withUsers = false) {
+    const req = {
+      endpoint: `/top_followee_saves/${type}`,
+      queryParams: {
+        limit,
+        with_users: withUsers
+      }
+    }
+    return this._makeRequest(req)
+  }
+
+  async getLatest (type) {
+    const req = {
+      endpoint: `/latest/${type}`
+    }
+    return this._makeRequest(req)
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   // TODO(DM) - standardize this to axios like audius service and creator node
@@ -661,19 +709,19 @@ class DiscoveryProvider {
           latest_chain_block: chainBlock
         } = parsedResponse
 
-        if (
-          !chainBlock ||
-          !indexedBlock ||
-          (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
-        ) {
-          // Clear any cached discprov
-          localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
-          // Select a new one
-          console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
-          const endpoint = await this.autoSelectEndpoint()
-          this.setEndpoint(endpoint)
-          throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
-        }
+        // if (
+        //   !chainBlock ||
+        //   !indexedBlock ||
+        //   (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
+        // ) {
+        //   // Clear any cached discprov
+        //   localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
+        //   // Select a new one
+        //   console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
+        //   const endpoint = await this.autoSelectEndpoint()
+        //   this.setEndpoint(endpoint)
+        //   throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
+        // }
       }
 
       return parsedResponse.data
