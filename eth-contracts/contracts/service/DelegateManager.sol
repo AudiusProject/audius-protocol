@@ -8,6 +8,7 @@ import "./interface/registry/RegistryInterface.sol";
 import "../staking/Staking.sol";
 import "./ServiceProviderFactory.sol";
 import "./ClaimFactory.sol";
+// import "../staking/Checkpointing.sol";
 
 
 // WORKING CONTRACT
@@ -24,6 +25,8 @@ contract DelegateManager is RegistryContract {
     bytes32 claimFactoryKey;
 
     // Number of blocks an undelegate operation has to wait
+    // TODO: Expose CRUD
+    // TODO: Consider moving this value to Staking.sol as SPFactory may need as well 
     uint undelegateLockupDuration = 10;
 
     // Staking contract ref
@@ -33,7 +36,11 @@ contract DelegateManager is RegistryContract {
     // TODO: Bound list
     struct ServiceProviderDelegateInfo {
       uint totalDelegatedStake;
+      uint totalLockedUpStake;
       address[] delegators;
+      // TODO: Confirm if we need below to be checkpointed...?
+      // checkpointing history for locked up stake
+      // Checkpointing.History lockedUpStake;
     }
 
     // Data structures for lockup during withdrawal
@@ -102,7 +109,7 @@ contract DelegateManager is RegistryContract {
         claimFactoryKey = _claimFactoryKey;
     }
 
-    function increaseDelegatedStake(
+    function delegateStake(
         address _target,
         uint _amount
     ) external returns (uint delegeatedAmountForSP)
@@ -247,70 +254,6 @@ contract DelegateManager is RegistryContract {
 
         // Return new total
         return delegateInfo[delegator][serviceProvider];
-    }
-
-    function decreaseDelegatedStake(
-        address _target,
-        uint _amount
-    ) external returns (uint delegateAmount)
-    {
-        require(false, "Disabled");
-        address delegator = msg.sender;
-        Staking stakingContract = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        );
-        bool delegatorRecordExists = updateServiceProviderDelegatorsIfNecessary(
-            delegator,
-            _target
-        );
-        require(delegatorRecordExists, "Delegator must exist to decrease stake");
-
-        uint currentlyDelegatedToSP = delegateInfo[delegator][_target];
-        require(
-            _amount <= currentlyDelegatedToSP,
-            "Cannot decrease greater than currently staked for this ServiceProvider");
-
-        // Stake on behalf of target service provider
-        stakingContract.undelegateStakeFor(
-            _target,
-            delegator,
-            _amount,
-            empty
-        );
-
-        emit DecreaseDelegatedStake(
-            delegator,
-            _target,
-            _amount);
-
-        // Update amount staked from this delegator to targeted service provider
-        delegateInfo[delegator][_target] -= _amount;
-
-        // Update total delegated stake
-        delegatorStakeTotal[delegator] -= _amount;
-
-        // Update total delegated for SP
-        spDelegateInfo[_target].totalDelegatedStake -= _amount;
-
-        // Remove from delegators list if no delegated stake remaining
-        if (delegateInfo[delegator][_target] == 0) {
-            bool foundDelegator;
-            uint delegatorIndex;
-            for (uint i = 0; i < spDelegateInfo[_target].delegators.length; i++) {
-                if (spDelegateInfo[_target].delegators[i] == delegator) {
-                    foundDelegator = true;
-                    delegatorIndex = i;
-                }
-            }
-
-            // Overwrite and shrink delegators list
-            uint lastIndex = spDelegateInfo[_target].delegators.length - 1;
-            spDelegateInfo[_target].delegators[delegatorIndex] = spDelegateInfo[_target].delegators[lastIndex];
-            spDelegateInfo[_target].delegators.length--;
-        }
-
-        // Return new total
-        return delegateInfo[delegator][_target];
     }
 
     /*

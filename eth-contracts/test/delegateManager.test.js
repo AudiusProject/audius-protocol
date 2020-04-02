@@ -244,7 +244,7 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 })
 
       let delegators = await delegateManager.getDelegatorsList(stakerAccount)
-      await delegateManager.increaseDelegatedStake(
+      await delegateManager.delegateStake(
         stakerAccount,
         initialDelegateAmount,
         { from: delegatorAccount1 })
@@ -339,7 +339,7 @@ contract('DelegateManager', async (accounts) => {
         initialDelegateAmount,
         { from: delegatorAccount1 })
 
-      await delegateManager.increaseDelegatedStake(
+      await delegateManager.delegateStake(
         stakerAccount,
         initialDelegateAmount,
         { from: delegatorAccount1 })
@@ -394,7 +394,7 @@ contract('DelegateManager', async (accounts) => {
         initialDelegateAmount,
         { from: delegatorAccount1 })
 
-      await delegateManager.increaseDelegatedStake(
+      await delegateManager.delegateStake(
         stakerAccount,
         initialDelegateAmount,
         { from: delegatorAccount1 })
@@ -455,7 +455,7 @@ contract('DelegateManager', async (accounts) => {
           singleDelegateAmount,
           { from: delegator })
 
-        await delegateManager.increaseDelegatedStake(
+        await delegateManager.delegateStake(
           stakerAccount,
           singleDelegateAmount,
           { from: delegator })
