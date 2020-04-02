@@ -43,10 +43,9 @@ cd ../libs/
 # - Eth contracts config: AudiusToken contract address
 sh ./scripts/migrate_contracts.sh
 
-set -e
+# run linter
+node_modules/.bin/standard
+
 # run tests
 printf '\nSTART tests:\n\n'
 node_modules/.bin/mocha tests/index.js
-
-# run linter
-node_modules/.bin/standard
