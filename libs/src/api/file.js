@@ -11,6 +11,7 @@ const publicGateways = [
   'https://cloudflare-ipfs.com/ipfs/'
 ]
 
+// Download url
 const downloadURL = (url, filename) => {
   if (document) {
     const link = document.createElement('a')
