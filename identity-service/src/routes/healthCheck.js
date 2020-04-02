@@ -10,7 +10,7 @@ const axios = require('axios')
 let notifDiscProv = config.get('notificationDiscoveryProvider')
 
 // Defaults used in relay health check endpoint
-const RELAY_HEALTH_ONE_HOUR_AGO_BLOCKS = 720 // 5 blocks/sec = 720 blocks/hr
+const RELAY_HEALTH_ONE_HOUR_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/hr
 const RELAY_HEALTH_MAX_TRANSACTIONS = 100 // max transactions to look into
 const RELAY_HEALTH_MAX_ERRORS = 5 // max acceptable errors for a 200 response
 const RELAY_HEALTH_ACCOUNT = config.get('relayerPublicKey')
