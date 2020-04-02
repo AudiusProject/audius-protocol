@@ -85,6 +85,7 @@ jobs:
       - run:
           name: run tests
           command: |
+            set -e
             cd libs
             npm run test-circle-ci
 
