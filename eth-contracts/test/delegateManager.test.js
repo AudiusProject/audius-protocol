@@ -288,6 +288,15 @@ contract('DelegateManager', async (accounts) => {
         delegateManager.undelegateStake({ from: delegatorAccount1 }),
         'Lockup must be expired'
       )
+      // Try to submit another request, expect revert
+      await _lib.assertRevert(
+        delegateManager.requestUndelegateStake(
+          stakerAccount,
+          initialDelegateAmount,
+          { from: delegatorAccount1 }),
+          'No pending lockup expiry allowed'
+      )
+
       // Advance to valid block
       await _lib.advanceToTargetBlock(
         fromBn(undelegateRequestInfo.lockupExpiryBlock),
