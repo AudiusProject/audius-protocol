@@ -11,6 +11,7 @@ class Account extends Base {
   /**
    * Fetches the user metadata for the current account
    * @return {Object} user metadata
+   *
    */
   getCurrentUser () {
     return this.userStateManager.getCurrentUser()
