@@ -10,9 +10,10 @@ const axios = require('axios')
 let notifDiscProv = config.get('notificationDiscoveryProvider')
 
 // Defaults used in relay health check endpoint
-const RELAY_HEALTH_ONE_HOUR_AGO_BLOCKS = 720 // 5 blocks/sec = 720 blocks/hr
+const RELAY_HEALTH_ONE_HOUR_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/hr
 const RELAY_HEALTH_MAX_TRANSACTIONS = 100 // max transactions to look into
 const RELAY_HEALTH_MAX_ERRORS = 5 // max acceptable errors for a 200 response
+const RELAY_HEALTH_MAX_BLOCK_RANGE = 200 // max block range allowed from query params
 const RELAY_HEALTH_ACCOUNT = config.get('relayerPublicKey')
 
 module.exports = function (app) {
@@ -26,7 +27,7 @@ module.exports = function (app) {
     const web3 = audiusLibsInstance.web3Manager.getWeb3()
 
     let endBlockNumber = req.query.endBlock || (await web3.eth.getBlockNumber())
-    // In the case that no query params are defined and the endBlockNumber is less than 720, default startBlockNumber to 0
+    // In the case that no query params are defined and the endBlockNumber is less than the max block range, default startBlockNumber to 0
     const defaultStartBlockNumber = endBlockNumber - RELAY_HEALTH_ONE_HOUR_AGO_BLOCKS >= 0
       ? endBlockNumber - RELAY_HEALTH_ONE_HOUR_AGO_BLOCKS : 0
     let startBlockNumber = req.query.startBlock || defaultStartBlockNumber
@@ -50,8 +51,8 @@ module.exports = function (app) {
       return errorResponseServerError(`Invalid start and/or end block. startBlock: ${startBlockNumber}, endBlock: ${endBlockNumber}`)
     }
 
-    if (endBlockNumber - startBlockNumber > 1000) {
-      return errorResponseServerError(`Block difference is over 1000. startBlock: ${startBlockNumber}, endBlock: ${endBlockNumber}`)
+    if (endBlockNumber - startBlockNumber > RELAY_HEALTH_MAX_BLOCK_RANGE) {
+      return errorResponseServerError(`Block difference is over ${RELAY_HEALTH_MAX_BLOCK_RANGE}. startBlock: ${startBlockNumber}, endBlock: ${endBlockNumber}`)
     }
 
     if (
@@ -60,7 +61,7 @@ module.exports = function (app) {
       maxTransactions < 0 ||
       maxErrors < 0
     ) {
-      return errorResponseServerError(`Invalid number of transactions and/or number of errors. maxTransactions: ${maxTransactions}, maxErrors: ${maxErrors}`)
+      return errorResponseServerError(`Invalid number of transactions and/or errors. maxTransactions: ${maxTransactions}, maxErrors: ${maxErrors}`)
     }
 
     let failureTxHashes = []
