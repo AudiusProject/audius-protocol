@@ -14,7 +14,8 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM({
         values: [
           'ios',
-          'android'
+          'android',
+          'safari'
         ]
       }),
       allowNull: false,

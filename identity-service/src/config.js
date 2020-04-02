@@ -278,6 +278,48 @@ const config = convict({
     format: String,
     default: '0xf7100',
     env: 'defaultGasLimit'
+  },
+  browserPushGCMAPIKey: {
+    doc: 'Google Cloud Messaging Browser Push Key',
+    format: String,
+    default: '',
+    env: 'browserPushGCMAPIKey'
+  },
+  browserPushVapidPublicKey: {
+    doc: 'Vapid Public Key for browser push notification',
+    format: String,
+    default: '',
+    env: 'browserPushVapidPublicKey'
+  },
+  browserPushVapidPrivateKey: {
+    doc: 'Vapid Private Key for browser push notifications',
+    format: String,
+    default: '',
+    env: 'browserPushVapidPrivateKey'
+  },
+  apnKeyId: {
+    doc: 'APN Key ID for safari browser push notifications',
+    format: String,
+    default: '',
+    env: 'apnKeyId'
+  },
+  apnTeamId: {
+    doc: 'APN Team ID for safari browser push notifications',
+    format: String,
+    default: '',
+    env: 'apnTeamId'
+  },
+  apnAuthKey: {
+    doc: 'APN Auth Key, read from a string into a file',
+    format: String,
+    default: '',
+    env: 'apnAuthKey'
+  },
+  environment: {
+    doc: 'Determines running on development, staging, or production',
+    format: String,
+    default: 'development',
+    env: 'environment'
   }
 })
 

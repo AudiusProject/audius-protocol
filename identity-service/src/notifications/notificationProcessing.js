@@ -5,7 +5,7 @@ const {
   actionEntityTypes
 } = require('./constants')
 const { shouldNotifyUser } = require('./utils')
-const { publish } = require('../awsSNS')
+const { publish } = require('./notificationQueue')
 const { fetchNotificationMetadata } = require('./fetchNotificationMetadata')
 const {
   notificationResponseMap,
@@ -24,11 +24,7 @@ async function indexNotifications (notifications, tx, audiusLibs) {
     // Handle the 'follow' notification type
     if (notif.type === notificationTypes.Follow) {
       let notificationTarget = notif.metadata.followee_user_id
-      // Skip notification based on user settings
       const shouldNotify = await shouldNotifyUser(notificationTarget, 'followers', tx)
-      if (!shouldNotify.notifyWeb && !shouldNotify.notifyMobile) {
-        return
-      }
       await _processFollowNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
     }
 
@@ -36,22 +32,14 @@ async function indexNotifications (notifications, tx, audiusLibs) {
     // track/album/playlist
     if (notif.type === notificationTypes.Repost.base) {
       let notificationTarget = notif.metadata.entity_owner_id
-      // Skip notification based on user settings
       const shouldNotify = await shouldNotifyUser(notificationTarget, 'reposts', tx)
-      if (!shouldNotify.notifyWeb && !shouldNotify.notifyMobile) {
-        return
-      }
       await _processBaseRepostNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
     }
 
     // Handle the 'favorite' notification type, track/album/playlist
     if (notif.type === notificationTypes.Favorite.base) {
       let notificationTarget = notif.metadata.entity_owner_id
-      // Skip notification based on user settings
       const shouldNotify = await shouldNotifyUser(notificationTarget, 'favorites', tx)
-      if (!shouldNotify.notifyWeb && !shouldNotify.notifyMobile) {
-        return
-      }
       await _processFavoriteNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
     }
 
@@ -75,7 +63,8 @@ async function _processSubscriberPushNotifications (tx) {
         entry.notificationTarget,
         tx,
         true,
-        entry.title
+        entry.title,
+        ['mobile', 'browser']
       )
       subscriberPushNotifications[i] = false
     }
@@ -85,67 +74,65 @@ async function _processSubscriberPushNotifications (tx) {
 }
 
 async function _processFollowNotifications (audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify) {
-  const { notifyWeb, notifyMobile } = shouldNotify
+  const { notifyMobile, notifyBrowserPush } = shouldNotify
   let notificationInitiator = notif.metadata.follower_user_id
 
-  if (notifyWeb) {
-    let unreadQuery = await models.Notification.findAll({
+  let unreadQuery = await models.Notification.findAll({
+    where: {
+      isViewed: false,
+      userId: notificationTarget,
+      type: notificationTypes.Follow
+    },
+    transaction: tx
+  })
+
+  let notificationId = null
+  // Insertion into the Notification table
+  // Follow - userId = notif target, entityId=null, actionEntityId = user who followed target
+  if (unreadQuery.length === 0) {
+    let createNotifTx = await models.Notification.create({
+      type: notificationTypes.Follow,
+      isViewed: false,
+      isRead: false,
+      isHidden: false,
+      userId: notificationTarget,
+      blocknumber: blocknumber,
+      timestamp: timestamp
+    }, { transaction: tx })
+    notificationId = createNotifTx.id
+  } else {
+    notificationId = unreadQuery[0].id
+  }
+
+  if (notificationId) {
+    // Insertion into the NotificationActions table
+    let notifActionCreateTx = await models.NotificationAction.findOrCreate({
       where: {
-        isViewed: false,
-        userId: notificationTarget,
-        type: notificationTypes.Follow
+        notificationId: notificationId,
+        actionEntityType: actionEntityTypes.User,
+        actionEntityId: notificationInitiator,
+        blocknumber
       },
       transaction: tx
     })
-
-    let notificationId = null
-    // Insertion into the Notification table
-    // Follow - userId = notif target, entityId=null, actionEntityId = user who followed target
-    if (unreadQuery.length === 0) {
-      let createNotifTx = await models.Notification.create({
-        type: notificationTypes.Follow,
-        isViewed: false,
-        isRead: false,
-        isHidden: false,
-        userId: notificationTarget,
-        blocknumber: blocknumber,
-        timestamp: timestamp
-      }, { transaction: tx })
-      notificationId = createNotifTx.id
-    } else {
-      notificationId = unreadQuery[0].id
-    }
-
-    if (notificationId) {
-      // Insertion into the NotificationActions table
-      let notifActionCreateTx = await models.NotificationAction.findOrCreate({
-        where: {
-          notificationId: notificationId,
-          actionEntityType: actionEntityTypes.User,
-          actionEntityId: notificationInitiator,
-          blocknumber
-        },
+    // TODO: Handle log statements to indicate how many notifs have been processed
+    let updatePerformed = notifActionCreateTx[1]
+    if (updatePerformed) {
+      // Update Notification table timestamp
+      let newNotificationTimestamp = notifActionCreateTx[0].createdAt
+      await models.Notification.update({
+        timestamp: newNotificationTimestamp
+      }, {
+        where: { id: notificationId },
+        returning: true,
+        plain: true,
         transaction: tx
       })
-      // TODO: Handle log statements to indicate how many notifs have been processed
-      let updatePerformed = notifActionCreateTx[1]
-      if (updatePerformed) {
-        // Update Notification table timestamp
-        let newNotificationTimestamp = notifActionCreateTx[0].createdAt
-        await models.Notification.update({
-          timestamp: newNotificationTimestamp
-        }, {
-          where: { id: notificationId },
-          returning: true,
-          plain: true,
-          transaction: tx
-        })
-      }
     }
   }
 
   // send push notification
-  if (notifyMobile) {
+  if (notifyMobile || notifyBrowserPush) {
     try {
       logger.debug('processFollowNotifications - about to send a push notification for follower', notif)
       let notifWithAddProps = {
@@ -171,7 +158,10 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Follow](msgGenNotif)
       const title = notificationResponseTitleMap[notificationTypes.Follow]
-      await publish(msg, notificationTarget, tx, true, title)
+      let types = []
+      if (notifyMobile) types.push('mobile')
+      if (notifyBrowserPush) types.push('browser')
+      await publish(msg, notificationTarget, tx, true, title, types)
     } catch (e) {
       logger.error('processFollowNotifications - Could not send push notification for _processFollowNotifications for target user', notificationTarget, e)
     }
@@ -182,7 +172,7 @@ async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, 
   let repostType = null
   let notificationEntityId = notif.metadata.entity_id
   let notificationInitiator = notif.initiator
-  const { notifyWeb, notifyMobile } = shouldNotify
+  const { notifyMobile, notifyBrowserPush } = shouldNotify
 
   switch (notif.metadata.entity_type) {
     case 'track':
@@ -198,65 +188,63 @@ async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, 
       throw new Error('Invalid repost type')
   }
 
-  if (notifyWeb) {
-    let unreadQuery = await models.Notification.findAll({
+  let unreadQuery = await models.Notification.findAll({
+    where: {
+      isViewed: false,
+      userId: notificationTarget,
+      type: repostType,
+      entityId: notificationEntityId
+    },
+    transaction: tx
+  })
+
+  let notificationId = null
+  // Insert new notification
+  // Repost - userId=notif target, entityId=track/album/repost id, actionEntityType=User actionEntityId=user who reposted
+  // As multiple users repost an entity, NotificationActions are added matching the NotificationId
+  if (unreadQuery.length === 0) {
+    let repostNotifTx = await models.Notification.create({
+      type: repostType,
+      isRead: false,
+      isHidden: false,
+      isViewed: false,
+      userId: notificationTarget,
+      entityId: notificationEntityId,
+      blocknumber,
+      timestamp
+    }, { transaction: tx })
+    notificationId = repostNotifTx.id
+  } else {
+    notificationId = unreadQuery[0].id
+  }
+
+  if (notificationId) {
+    let notifActionCreateTx = await models.NotificationAction.findOrCreate({
       where: {
-        isViewed: false,
-        userId: notificationTarget,
-        type: repostType,
-        entityId: notificationEntityId
+        notificationId: notificationId,
+        actionEntityType: actionEntityTypes.User,
+        actionEntityId: notificationInitiator,
+        blocknumber
       },
       transaction: tx
     })
-
-    let notificationId = null
-    // Insert new notification
-    // Repost - userId=notif target, entityId=track/album/repost id, actionEntityType=User actionEntityId=user who reposted
-    // As multiple users repost an entity, NotificationActions are added matching the NotificationId
-    if (unreadQuery.length === 0) {
-      let repostNotifTx = await models.Notification.create({
-        type: repostType,
-        isRead: false,
-        isHidden: false,
-        isViewed: false,
-        userId: notificationTarget,
-        entityId: notificationEntityId,
-        blocknumber,
-        timestamp
-      }, { transaction: tx })
-      notificationId = repostNotifTx.id
-    } else {
-      notificationId = unreadQuery[0].id
-    }
-
-    if (notificationId) {
-      let notifActionCreateTx = await models.NotificationAction.findOrCreate({
-        where: {
-          notificationId: notificationId,
-          actionEntityType: actionEntityTypes.User,
-          actionEntityId: notificationInitiator,
-          blocknumber
-        },
+    // Update Notification table timestamp
+    let updatePerformed = notifActionCreateTx[1]
+    if (updatePerformed) {
+      let newNotificationTimestamp = notifActionCreateTx[0].createdAt
+      await models.Notification.update({
+        timestamp: newNotificationTimestamp
+      }, {
+        where: { id: notificationId },
+        returning: true,
+        plain: true,
         transaction: tx
       })
-      // Update Notification table timestamp
-      let updatePerformed = notifActionCreateTx[1]
-      if (updatePerformed) {
-        let newNotificationTimestamp = notifActionCreateTx[0].createdAt
-        await models.Notification.update({
-          timestamp: newNotificationTimestamp
-        }, {
-          where: { id: notificationId },
-          returning: true,
-          plain: true,
-          transaction: tx
-        })
-      }
     }
   }
 
   // send push notification
-  if (notifyMobile) {
+  if (notifyMobile || notifyBrowserPush) {
     try {
       logger.debug('processRepostNotification - about to send a push notification for repost', notif)
       let notifWithAddProps = {
@@ -285,7 +273,10 @@ async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Repost.base](msgGenNotif)
       const title = notificationResponseTitleMap[repostType]
-      await publish(msg, notificationTarget, tx, true, title)
+      let types = []
+      if (notifyMobile) types.push('mobile')
+      if (notifyBrowserPush) types.push('browser')
+      await publish(msg, notificationTarget, tx, true, title, types)
     } catch (e) {
       logger.error('processRepostNotification - Could not send push notification for _processBaseRepostNotifications for target user', notificationTarget, e)
     }
@@ -296,7 +287,7 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
   let favoriteType = null
   let notificationEntityId = notif.metadata.entity_id
   let notificationInitiator = notif.initiator
-  const { notifyWeb, notifyMobile } = shouldNotify
+  const { notifyMobile, notifyBrowserPush } = shouldNotify
 
   switch (notif.metadata.entity_type) {
     case 'track':
@@ -312,64 +303,62 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
       throw new Error('Invalid favorite type')
   }
 
-  if (notifyWeb) {
-    let unreadQuery = await models.Notification.findAll({
+  let unreadQuery = await models.Notification.findAll({
+    where: {
+      isViewed: false,
+      userId: notificationTarget,
+      type: favoriteType,
+      entityId: notificationEntityId
+    },
+    transaction: tx
+  })
+
+  let notificationId = null
+  if (unreadQuery.length === 0) {
+  // Favorite - userId=notif target, entityId=track/album/repost id, actionEntityType=User actionEntityId=user who favorited
+  // As multiple users favorite an entity, NotificationActions are added matching the NotificationId
+    let favoriteNotifTx = await models.Notification.create({
+      type: favoriteType,
+      isViewed: false,
+      isRead: false,
+      isHidden: false,
+      userId: notificationTarget,
+      entityId: notificationEntityId,
+      blocknumber,
+      timestamp
+    }, { transaction: tx })
+    notificationId = favoriteNotifTx.id
+  } else {
+    notificationId = unreadQuery[0].id
+  }
+
+  if (notificationId) {
+    let notifActionCreateTx = await models.NotificationAction.findOrCreate({
       where: {
-        isViewed: false,
-        userId: notificationTarget,
-        type: favoriteType,
-        entityId: notificationEntityId
+        notificationId: notificationId,
+        actionEntityType: actionEntityTypes.User,
+        actionEntityId: notificationInitiator,
+        blocknumber
       },
       transaction: tx
     })
-
-    let notificationId = null
-    if (unreadQuery.length === 0) {
-    // Favorite - userId=notif target, entityId=track/album/repost id, actionEntityType=User actionEntityId=user who favorited
-    // As multiple users favorite an entity, NotificationActions are added matching the NotificationId
-      let favoriteNotifTx = await models.Notification.create({
-        type: favoriteType,
-        isViewed: false,
-        isRead: false,
-        isHidden: false,
-        userId: notificationTarget,
-        entityId: notificationEntityId,
-        blocknumber,
-        timestamp
-      }, { transaction: tx })
-      notificationId = favoriteNotifTx.id
-    } else {
-      notificationId = unreadQuery[0].id
-    }
-
-    if (notificationId) {
-      let notifActionCreateTx = await models.NotificationAction.findOrCreate({
-        where: {
-          notificationId: notificationId,
-          actionEntityType: actionEntityTypes.User,
-          actionEntityId: notificationInitiator,
-          blocknumber
-        },
+    // Update Notification table timestamp
+    let updatePerformed = notifActionCreateTx[1]
+    if (updatePerformed) {
+      let newNotificationTimestamp = notifActionCreateTx[0].createdAt
+      await models.Notification.update({
+        timestamp: newNotificationTimestamp
+      }, {
+        where: { id: notificationId },
+        returning: true,
+        plain: true,
         transaction: tx
       })
-      // Update Notification table timestamp
-      let updatePerformed = notifActionCreateTx[1]
-      if (updatePerformed) {
-        let newNotificationTimestamp = notifActionCreateTx[0].createdAt
-        await models.Notification.update({
-          timestamp: newNotificationTimestamp
-        }, {
-          where: { id: notificationId },
-          returning: true,
-          plain: true,
-          transaction: tx
-        })
-      }
     }
   }
 
   // send push notification
-  if (notifyMobile) {
+  if (notifyMobile || notifyBrowserPush) {
     try {
       logger.debug('processFavoriteNotification - About to send a push notification for favorite', notif)
       let notifWithAddProps = {
@@ -398,7 +387,10 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Favorite.base](msgGenNotif)
       const title = notificationResponseTitleMap[favoriteType]
-      await publish(msg, notificationTarget, tx, true, title)
+      let types = []
+      if (notifyMobile) types.push('mobile')
+      if (notifyBrowserPush) types.push('browser')
+      await publish(msg, notificationTarget, tx, true, title, types)
     } catch (e) {
       logger.error('processFavoriteNotification - Could not send push notification for _processFavoriteNotifications for target user', notificationTarget, e)
     }

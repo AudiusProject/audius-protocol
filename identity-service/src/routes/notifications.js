@@ -456,7 +456,8 @@ module.exports = function (app) {
     }
   }))
 
-  /*
+  /**
+   * @deprecated
    * Updates fields for a user's settings (or creates the settings w/ db defaults if not created)
    * postBody: {object} settings      Identitifies if the notification is to be marked as read
    *
@@ -480,7 +481,8 @@ module.exports = function (app) {
     }
   }))
 
-  /*
+  /**
+   * @deprecated
    * Fetches the settings for a given userId
   */
   app.get('/notifications/settings', authMiddleware, handleResponse(async (req, res, next) => {
