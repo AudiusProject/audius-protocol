@@ -7,16 +7,10 @@ const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const Staking = artifacts.require('Staking')
-
 const DelegateManager = artifacts.require('DelegateManager')
-
 const ClaimFactory = artifacts.require('ClaimFactory')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
-
-const getTokenBalance = async (token, account) => fromBn(await token.balanceOf(account))
-const claimBlockDiff = 46000
-
 const toWei = (aud) => {
   let amountInAudWei = web3.utils.toWei(
     aud.toString(),
@@ -31,24 +25,18 @@ const fromWei = (wei) => {
   return web3.utils.fromWei(wei)
 }
 
-const getTokenBalance2 = async (token, account) => fromWei(await token.balanceOf(account))
-
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
-const testCreatorNodeType = web3.utils.utf8ToHex('creator-node')
 const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'
-
-const MIN_STAKE_AMOUNT = 10
 
 // 1000 AUD converted to AUDWei, multiplying by 10^18
 const INITIAL_BAL = toWei(1000)
 const DEFAULT_AMOUNT = toWei(120)
-const MAX_STAKE_AMOUNT = DEFAULT_AMOUNT * 100
 
 contract('DelegateManager', async (accounts) => {
   let treasuryAddress = accounts[0]
@@ -59,7 +47,6 @@ contract('DelegateManager', async (accounts) => {
   let token
   let registry
   let stakingAddress
-  let tokenAddress
   let serviceProviderStorage
   let serviceProviderFactory
 
@@ -81,7 +68,6 @@ contract('DelegateManager', async (accounts) => {
     await registry.addContract(ownedUpgradeabilityProxyKey, proxy.address)
 
     token = await AudiusToken.new({ from: treasuryAddress })
-    tokenAddress = token.address
     impl0 = await Staking.new()
 
     // Create initialization data
@@ -242,7 +228,7 @@ contract('DelegateManager', async (accounts) => {
         'Stake value in SPFactory and Staking.sol must be equal')
     })
 
-    it('single delegator basic operations', async () => {
+    it.only('single delegator basic operations', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
@@ -284,17 +270,47 @@ contract('DelegateManager', async (accounts) => {
         totalStakedForSP.eq(spStake.add(delegatedStake)),
         'Sum of Staking.sol equals SPFactory and DelegateManager'
       )
-      await delegateManager.decreaseDelegatedStake(
+
+      // Submit request to undelegate
+      await delegateManager.requestUndelegateStake(
         stakerAccount,
         initialDelegateAmount,
-        { from: delegatorAccount1 })
+        { from: delegatorAccount1 }
+      )
+      // Confirm lockup amount is registered
+      let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      assert.isTrue(
+        undelegateRequestInfo.amount.eq(initialDelegateAmount),
+        'Expected amount not found in lockup')
+
+      // Try to undelegate stake immediately, confirm failure
+      await _lib.assertRevert(
+        delegateManager.undelegateStake({ from: delegatorAccount1 }),
+        'Lockup must be expired'
+      )
+      // Advance to valid block
+      await _lib.advanceToTargetBlock(
+        fromBn(undelegateRequestInfo.lockupExpiryBlock),
+        web3
+      )
+
+      // Undelegate stake
+      delegateManager.undelegateStake({ from: delegatorAccount1 })
+
+      // Confirm all state change operations have occurred
+      undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
 
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       delegators = await delegateManager.getDelegatorsList(stakerAccount)
+      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
       assert.equal(
         delegators.length,
         0,
         'Expect no remaining delegators')
+      assert.equal(
+        delegatedStake,
+        0,
+        'Expect no remaining total delegate stake')
       assert.isTrue(
         initialSpStake.eq(totalStakedForSP),
         'Staking.sol back to initial value')

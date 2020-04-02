@@ -103,6 +103,7 @@ contract ClaimFactory is RegistryContract {
 
     // TODO: Name this function better
     // TODO: Permission caller
+    // TODO: Add parameter for locked funds, this will be subtracted in reards calculation
     function processClaim(address _claimer) external returns (uint newAccountTotal) {
         address stakingAddress = registry.getContract(stakingProxyOwnerKey);
         Staking stakingContract = Staking(stakingAddress);
