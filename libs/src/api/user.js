@@ -22,7 +22,7 @@ const USER_REQUIRED_PROPS = [
 ]
 
 class Users extends Base {
-  /* ---------- GETTERS ---------- */
+  /* ----------- GETTERS ---------- */
 
   /**
    * get users with all relevant user data

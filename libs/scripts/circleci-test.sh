@@ -45,11 +45,9 @@ sh ./scripts/migrate_contracts.sh
 
 set -e
 
-# run linter
-# node_modules/.bin/standard exit 1
-cd /path/that/doesnt/exist
-
 # run tests
 printf '\nSTART tests:\n\n'
-# node_modules/.bin/mocha tests/index.js
-cd /path/that/doesnt/exist
+node_modules/.bin/mocha tests/index.js
+
+# run linter
+node_modules/.bin/standard
