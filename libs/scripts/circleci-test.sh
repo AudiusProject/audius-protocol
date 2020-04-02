@@ -47,9 +47,9 @@ set -e
 
 # run linter
 # node_modules/.bin/standard exit 1
-cd /path/that/doesnt/exist
+echo '0'
 
 # run tests
 printf '\nSTART tests:\n\n'
 # node_modules/.bin/mocha tests/index.js
-echo '0'
+cd /path/that/doesnt/exist
