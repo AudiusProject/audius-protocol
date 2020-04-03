@@ -10,7 +10,7 @@ module.exports = function (app) {
     if (!favorites) return errorResponseBadRequest('Please provide a string array of favorites')
 
     try {
-      const a = await models.UserPlaylistFavorites.upsert({
+      await models.UserPlaylistFavorites.upsert({
         userId,
         favorites
       })
