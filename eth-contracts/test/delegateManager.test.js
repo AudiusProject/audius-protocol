@@ -645,7 +645,7 @@ contract('DelegateManager', async (accounts) => {
         'Expect no lockup funds to carry over')
     })
 
-    it.only('3 delegators + pending claim + undelegate restrictions', async () => {
+    it('3 delegators + pending claim + undelegate restrictions', async () => {
       const delegatorAccount2 = accounts[5]
       const delegatorAccount3 = accounts[6]
       // Transfer 1000 tokens to delegator2, delegator3
@@ -740,8 +740,5 @@ contract('DelegateManager', async (accounts) => {
 
       await delegateManager.claimRewards({ from: stakerAccount })
     })
-    // TODO: What happens when someone delegates after a funding round has started...?
-    //        Do they still get rewards or not?
-    //        Potential idea - just lockup delegation for some inteval
   })
 })
