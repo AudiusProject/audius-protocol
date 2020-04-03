@@ -250,6 +250,7 @@ jobs:
             cd creator-node
             export redisPort=6379
             export spOwnerWallet='yes'
+            export isCIBuild=true
             npm run test
 
   test-discovery-provider:
@@ -370,6 +371,7 @@ jobs:
             cd identity-service/
             export POSTGRES_TEST_PORT=5432
             export redisPort=6379
+            export isCIBuild=true
             npm run test
 
   docker-build-and-push:
