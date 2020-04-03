@@ -104,9 +104,10 @@ contract ClaimFactory is RegistryContract {
     // TODO: Name this function better
     // TODO: Permission caller
     function processClaim(
-      address _claimer,
-      uint _totalLockedForSP
-    ) external returns (uint newAccountTotal) {
+        address _claimer,
+        uint _totalLockedForSP
+    ) external returns (uint newAccountTotal)
+    {
         address stakingAddress = registry.getContract(stakingProxyOwnerKey);
         Staking stakingContract = Staking(stakingAddress);
         // Prevent duplicate claim
