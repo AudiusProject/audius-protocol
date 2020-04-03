@@ -108,7 +108,7 @@ contract('ClaimFactory', async (accounts) => {
     let fundsPerRound = await claimFactory.getFundsPerRound()
 
     await claimFactory.initiateRound()
-    await claimFactory.processClaim(staker)
+    await claimFactory.processClaim(staker, 0)
 
     totalStaked = await staking.totalStaked()
 
@@ -137,7 +137,7 @@ contract('ClaimFactory', async (accounts) => {
 
     // Initiate round
     await claimFactory.initiateRound()
-    await claimFactory.processClaim(staker)
+    await claimFactory.processClaim(staker, 0)
     totalStaked = await staking.totalStaked()
 
     assert.isTrue(
@@ -172,7 +172,7 @@ contract('ClaimFactory', async (accounts) => {
 
     // Initiate another round
     await claimFactory.initiateRound()
-    await claimFactory.processClaim(staker)
+    await claimFactory.processClaim(staker, 0)
     totalStaked = await staking.totalStaked()
     let finalAcctStake = await staking.totalStakedFor(staker)
     let expectedFinalValue = accountStakeBeforeSecondClaim.add(fundsPerClaim)
@@ -212,7 +212,7 @@ contract('ClaimFactory', async (accounts) => {
 
     // Initiate claim
     await claimFactory.initiateRound()
-    await claimFactory.processClaim(staker)
+    await claimFactory.processClaim(staker, 0)
     totalStaked = await staking.totalStaked()
 
     assert.isTrue(
