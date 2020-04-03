@@ -38,9 +38,6 @@ contract DelegateManager is RegistryContract {
       uint totalDelegatedStake;
       uint totalLockedUpStake;
       address[] delegators;
-      // TODO: Confirm if we need below to be checkpointed...?
-      // checkpointing history for locked up stake
-      // Checkpointing.History lockedUpStake;
     }
 
     // Data structures for lockup during withdrawal
@@ -109,14 +106,18 @@ contract DelegateManager is RegistryContract {
         claimFactoryKey = _claimFactoryKey;
     }
 
+    // TODO: Require _target is a valid SP
+    // TODO: Validate sp account total balance
+    // TODO: Enforce min _amount?
     function delegateStake(
         address _target,
         uint _amount
     ) external returns (uint delegeatedAmountForSP)
     {
-        // TODO: Require _target is a valid SP
-        // TODO: Validate sp account total balance
-        // TODO: Enforce min _amount?
+        require(
+          claimPending(_target) == false,
+          'Delegation not permitted for SP pending claim'
+        );
         address delegator = msg.sender;
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
@@ -159,6 +160,10 @@ contract DelegateManager is RegistryContract {
        uint _amount
     ) external returns (uint newDelegateAmount) 
     {
+        require(
+          claimPending(_target) == false,
+          'Undelegate not permitted for SP pending claim'
+        );
         address delegator = msg.sender;
         bool exists = delegatorExistsForSP(delegator, _target);
         require(exists, "Delegator must be staked for SP");
@@ -198,6 +203,11 @@ contract DelegateManager is RegistryContract {
         require(undelegateRequests[delegator].lockupExpiryBlock != 0, "Pending lockup expiry expected");
         require(undelegateRequests[delegator].amount != 0, "Pending lockup amount expected");
         require(undelegateRequests[delegator].serviceProvider != address(0), "Pending lockup SP expected");
+
+        require(
+          claimPending(undelegateRequests[delegator].serviceProvider) == false,
+          'Undelegate not permitted for SP pending claim'
+        );
 
         // Confirm lockup expiry has expired
         require(undelegateRequests[delegator].lockupExpiryBlock <= block.number, "Lockup must be expired");
@@ -355,7 +365,6 @@ contract DelegateManager is RegistryContract {
     }
 
     // TODO: Permission to governance contract only
-    // TODO: Handle slash amount...
     function slash(uint _amount, address _slashAddress)
     external
     {

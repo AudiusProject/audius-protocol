@@ -179,7 +179,7 @@ contract('DelegateManager', async (accounts) => {
     }
   }
 
-  describe('Delegation flow', () => {
+  describe('Delegation tests', () => {
     let regTx
     beforeEach(async () => {
       // Transfer 1000 tokens to stakers
@@ -602,7 +602,7 @@ contract('DelegateManager', async (accounts) => {
     })
 
     // Confirm a pending undelegate operation negates any claimed value
-    it.only('single delegator + undelegate + slash', async () => {
+    it('single delegator + undelegate + slash', async () => {
       let initialDelegateAmount = toWei(60)
       let slashAmount = toWei(100)
 
