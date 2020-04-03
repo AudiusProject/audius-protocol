@@ -8,7 +8,8 @@
     "coverage": "nyc npm run test",
     "report": "nyc report --reporter=html",
     "lint": "./node_modules/.bin/standard",
-    "lint-fix": "./node_modules/.bin/standard --fix"
+    "lint-fix": "./node_modules/.bin/standard --fix",
+    "psql": "psql -U postgres -h localhost -p 4432 -d audius_creator_node"
   },
   "keywords": [],
   "author": "",
