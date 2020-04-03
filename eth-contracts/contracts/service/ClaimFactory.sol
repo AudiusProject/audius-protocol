@@ -57,7 +57,7 @@ contract ClaimFactory is RegistryContract {
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
         // Allow a claim to be funded initially by subtracting the configured difference
-        fundBlock = block.number - fundRoundBlockDiff;
+        fundBlock = 0;
     }
 
     function getFundingRoundBlockDiff()
@@ -156,6 +156,6 @@ contract ClaimFactory is RegistryContract {
         address stakingAddress = registry.getContract(stakingProxyOwnerKey);
         Staking stakingContract = Staking(stakingAddress);
         uint lastClaimedForSP = stakingContract.lastClaimedFor(_sp);
-        return (lastClaimedForSP >= fundBlock);
+        return (lastClaimedForSP < fundBlock);
     }
 }

@@ -366,12 +366,15 @@ contract('DelegateManager', async (accounts) => {
 
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       let delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-
       let deployerCut = await serviceProviderFactory.getServiceProviderDeployerCut(stakerAccount)
       let deployerCutBase = await serviceProviderFactory.getServiceProviderDeployerCutBase()
 
       // Initiate round
       await claimFactory.initiateRound()
+
+      // Confirm claim is pending
+      let pendingClaim = await claimFactory.claimPending(stakerAccount)
+      assert.isTrue(pendingClaim, 'ClaimFactory expected to consider claim pending')
 
       let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       let totalStake = await staking.totalStaked()
