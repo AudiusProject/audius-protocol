@@ -224,7 +224,6 @@ jobs:
         default: false
     steps:
       - checkout
-      - setup_remote_docker
       - unless:
           condition: << parameters.force >>
           steps:
@@ -251,6 +250,7 @@ jobs:
             cd creator-node
             export redisPort=6379
             export spOwnerWallet='yes'
+            export isCI=true
             npm run test
 
   test-discovery-provider:
