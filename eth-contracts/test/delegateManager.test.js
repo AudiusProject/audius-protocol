@@ -169,7 +169,8 @@ contract('DelegateManager', async (accounts) => {
     let outsideStake = spFactoryStake.add(delegatedStake)
     // let tokensInStaking = await token.balanceOf(account)
     // console.log(`${account} Total balance in stakingContract ${tokensInStaking}`)
-    console.log(`${account} SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}, Outside Stake: ${outsideStake} Staking: ${totalInStakingContract}`)
+    console.log(`${account} SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}`)
+    console.log(`${account} Outside Stake: ${outsideStake} Staking: ${totalInStakingContract}`)
     let stakeDiscrepancy = totalInStakingContract.sub(outsideStake)
     console.log(`Internal (Staking) vs External (DelegateManager + SPFactory) Stake discrepancy: ${stakeDiscrepancy}`)
   }
@@ -277,11 +278,18 @@ contract('DelegateManager', async (accounts) => {
         initialDelegateAmount,
         { from: delegatorAccount1 }
       )
+
       // Confirm lockup amount is registered
       let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
       assert.isTrue(
         undelegateRequestInfo.amount.eq(initialDelegateAmount),
         'Expected amount not found in lockup')
+
+      let totalLockedDelegation =
+        await delegateManager.getTotalLockedDelegationForServiceProvider(stakerAccount)
+      assert.isTrue(
+        totalLockedDelegation.eq(initialDelegateAmount),
+        'Expected amount not found in total lockup for SP')
 
       // Try to undelegate stake immediately, confirm failure
       await _lib.assertRevert(
@@ -312,6 +320,8 @@ contract('DelegateManager', async (accounts) => {
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       delegators = await delegateManager.getDelegatorsList(stakerAccount)
       delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      totalLockedDelegation =
+        await delegateManager.getTotalLockedDelegationForServiceProvider(stakerAccount)
       assert.equal(
         delegators.length,
         0,
@@ -320,6 +330,10 @@ contract('DelegateManager', async (accounts) => {
         delegatedStake,
         0,
         'Expect no remaining total delegate stake')
+      assert.equal(
+        totalLockedDelegation,
+        0,
+        'Expect no remaining locked stake for SP')
       assert.isTrue(
         initialSpStake.eq(totalStakedForSP),
         'Staking.sol back to initial value')
@@ -347,8 +361,6 @@ contract('DelegateManager', async (accounts) => {
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       let delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
 
-      // Update SP Deployer Cut to 10%
-      await serviceProviderFactory.updateServiceProviderCut(stakerAccount, 10, { from: stakerAccount })
       let deployerCut = await serviceProviderFactory.getServiceProviderDeployerCut(stakerAccount)
       let deployerCutBase = await serviceProviderFactory.getServiceProviderDeployerCutBase()
 
@@ -379,6 +391,96 @@ contract('DelegateManager', async (accounts) => {
 
       assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
       assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
+    })
+
+    // Test to confirm a pending undelegate operation negates any claimed value
+    it('single delegator + undelegate + claim', async () => {
+      // TODO: Validate all
+      // Transfer 1000 tokens to delegator
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
+
+      let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
+      let initialDelegateAmount = toWei(60)
+
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      await delegateManager.delegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      totalStakedForSP = await staking.totalStakedFor(stakerAccount)
+      let totalStake = await staking.totalStaked()
+      let delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      let delegatedStakeToSP = await delegateManager.getDelegatorStakeForServiceProvider(
+        delegatorAccount1,
+        stakerAccount)
+
+      // let deployerCut = await serviceProviderFactory.getServiceProviderDeployerCut(stakerAccount)
+      // let deployerCutBase = await serviceProviderFactory.getServiceProviderDeployerCutBase()
+
+      // Submit request to undelegate
+      // TODO: Work through discrepancy
+      await delegateManager.requestUndelegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 }
+      )
+      await printAccountStakeInfo(stakerAccount)
+
+      // console.log(`Delegate info prior to round ${fromBn(delegatedStake)}, ${fromBn(delegatedStakeToSP)}`)
+      // console.log(`total for sp ${totalStakedForSP}`)
+      // console.log(`total stake ${totalStake}`)
+
+      // Initiate round
+      await claimFactory.initiateRound()
+
+      console.log('claiming...')
+
+      let tx = await delegateManager.claimRewards({ from: stakerAccount })
+      // console.dir(tx, { depth: 5 })
+
+      await printAccountStakeInfo(stakerAccount)
+
+      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      delegatedStakeToSP = await delegateManager.getDelegatorStakeForServiceProvider(
+        delegatorAccount1,
+        stakerAccount)
+      // console.log(`Delegate info after claim ${fromBn(delegatedStake)}, ${fromBn(delegatedStakeToSP)}`)
+
+      totalStakedForSP = await staking.totalStakedFor(stakerAccount)
+      // console.log(`total for sp ${totalStakedForSP}`)
+
+      /*
+      let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      let totalStake = await staking.totalStaked()
+      totalStakedForSP = await staking.totalStakedFor(stakerAccount)
+      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      let totalValueOutsideStaking = spStake.add(delegatedStake)
+      let fundingAmount = await claimFactory.getFundsPerRound()
+      let totalRewards = (totalStakedForSP.mul(fundingAmount)).div(totalStake)
+
+      // Manually calculate expected value prior to making claim
+      // Identical math as contract
+      let delegateRewardsPriorToSPCut = (delegatedStake.mul(totalRewards)).div(totalValueOutsideStaking)
+      let spDeployerCut = (delegateRewardsPriorToSPCut.mul(deployerCut)).div(deployerCutBase)
+      let delegateRewards = delegateRewardsPriorToSPCut.sub(spDeployerCut)
+      let expectedDelegateStake = delegatedStake.add(delegateRewards)
+      let spRewardShare = (spStake.mul(totalRewards)).div(totalValueOutsideStaking)
+      let expectedSpStake = spStake.add(spRewardShare.add(spDeployerCut))
+
+      await delegateManager.claimRewards({ from: stakerAccount })
+
+      let finalSpStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      let finalDelegateStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+
+      assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
+      assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
+      */
     })
 
     it('single delegator + claim + slash', async () => {

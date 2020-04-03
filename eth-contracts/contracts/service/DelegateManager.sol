@@ -182,6 +182,9 @@ contract DelegateManager is RegistryContract {
           serviceProvider: _target
         }); 
 
+        // Update total locked for this service provider
+        spDelegateInfo[_target].totalLockedUpStake += _amount;
+
         return delegatorStakeTotal[delegator] - _amount;
     }
 
@@ -226,6 +229,9 @@ contract DelegateManager is RegistryContract {
         // Update total delegated for SP
         spDelegateInfo[serviceProvider].totalDelegatedStake -= unstakeAmount;
 
+        // Update total locked for this service provider
+        spDelegateInfo[serviceProvider].totalLockedUpStake -= unstakeAmount;
+
         // Remove from delegators list if no delegated stake remaining
         if (delegateInfo[delegator][serviceProvider] == 0) {
             bool foundDelegator;
@@ -267,8 +273,10 @@ contract DelegateManager is RegistryContract {
         ClaimFactory claimFactory = ClaimFactory(
             registry.getContract(claimFactoryKey)
         );
+        // Pass in locked amount for claimer
+        uint totalLockedForClaimer = spDelegateInfo[msg.sender].totalLockedUpStake;
         // Process claim for msg.sender
-        claimFactory.processClaim(msg.sender);
+        claimFactory.processClaim(msg.sender, totalLockedForClaimer);
 
         // address claimer = msg.sender;
         ServiceProviderFactory spFactory = ServiceProviderFactory(
@@ -287,7 +295,8 @@ contract DelegateManager is RegistryContract {
 
         // Amount in delegate manager staked to service provider
         uint totalBalanceInDelegateManager = spDelegateInfo[msg.sender].totalDelegatedStake;
-        uint totalBalanceOutsideStaking = totalBalanceInSPFactory + totalBalanceInDelegateManager;
+        uint totalBalanceOutsideStaking = 
+          (totalBalanceInSPFactory + totalBalanceInDelegateManager);
 
         // Require claim availability
         require(totalBalanceInStaking > totalBalanceOutsideStaking, "No stake available to claim");
@@ -304,15 +313,25 @@ contract DelegateManager is RegistryContract {
         uint spDeployerCutRewards = 0;
         uint totalDelegatedStakeIncrease = 0;
 
+        // Total valid funds used to calculate rewards distribution
+        uint totalActiveFunds = totalBalanceOutsideStaking - totalLockedForClaimer;
+
         // Traverse all delegates and calculate their rewards
         // As each delegate reward is calculated, increment SP cut reward accordingly
         for (uint i = 0; i < spDelegateInfo[msg.sender].delegators.length; i++) {
             address delegator = spDelegateInfo[msg.sender].delegators[i];
             uint delegateStakeToSP = delegateInfo[delegator][msg.sender];
+
+            // Subtract any locked up stake
+            if (undelegateRequests[delegator].serviceProvider == msg.sender) {
+              delegateStakeToSP = delegateStakeToSP - undelegateRequests[delegator].amount;
+            }
+
             // Calculate rewards by ((delegateStakeToSP / totalBalanceOutsideStaking) * totalRewards)
             uint rewardsPriorToSPCut = (
               delegateStakeToSP.mul(totalRewards)
-            ).div(totalBalanceOutsideStaking);
+            ).div(totalActiveFunds);
+
             // Multiply by deployer cut fraction to calculate reward for SP
             uint spDeployerCut = (rewardsPriorToSPCut.mul(deployerCut)).div(deployerCutBase);
             spDeployerCutRewards += spDeployerCut;
@@ -330,12 +349,13 @@ contract DelegateManager is RegistryContract {
         // TODO: Validate below with test cases
         uint spRewardShare = (
           totalBalanceInSPFactory.mul(totalRewards)
-        ).div(totalBalanceOutsideStaking);
+        ).div(totalActiveFunds);
         uint newSpBalance = totalBalanceInSPFactory + spRewardShare + spDeployerCutRewards;
         spFactory.updateServiceProviderStake(msg.sender, newSpBalance);
     }
 
     // TODO: Permission to governance contract only
+    // TODO: Handle slash amount...
     function slash(uint _amount, address _slashAddress)
     external
     {
@@ -411,6 +431,15 @@ contract DelegateManager is RegistryContract {
     }
 
     /**
+     * @notice Total delegated stake locked up for a service provider
+     */
+    function getTotalLockedDelegationForServiceProvider(address _sp)
+    external view returns (uint total)
+    {
+        return spDelegateInfo[_sp].totalLockedUpStake;
+    }
+
+    /**
      * @notice Total currently staked for a delegator, across service providers
      */
     function getTotalDelegatorStake(address _delegator)
@@ -463,6 +492,14 @@ contract DelegateManager is RegistryContract {
           spDelegateInfo[_serviceProvider].delegators.push(_delegator);
         }
         return delegatorFound;
+    }
+
+    function claimPending(address _sp) internal view returns (bool pending) 
+    {
+        ClaimFactory claimFactory = ClaimFactory(
+            registry.getContract(claimFactoryKey)
+        );
+        return claimFactory.claimPending(_sp);
     }
 }
 
