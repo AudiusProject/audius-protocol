@@ -20,7 +20,10 @@ export logLevel='info'
 # audius_creator_node.
 # taken from https://stackoverflow.com/a/36591842
 
-# if not circleci build, run docker exec command. else, run psql command
+# CircleCI job and docker run in separate environments and cannot directly communicate with each other.
+# Therefore the 'docker exec' command will not work when running the CI build. 
+# https://circleci.com/docs/2.0/building-docker-images/#separation-of-environments
+# So, if tests are run locally, run docker exec command. Else, run the psql command in the job.
 if [ -z "${isCIBuild}" ]; then
   docker exec -i audius-creator-node_db_1 /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_creator_node_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_creator_node_test\""
 elif [ -x "$(command -v psql)" ]; then

@@ -24,7 +24,17 @@ export logLevel='debug' #should be error
 # In CircleCI, the docker environment variables set up audius_identity_service_test instead of
 # audius_identity_service.
 # taken from https://stackoverflow.com/a/36591842 
-docker exec -i audius-identity-service_db_1 /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_identity_service_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_identity_service_test\""
+
+# CircleCI job and docker run in separate environments and cannot directly communicate with each other.
+# Therefore the 'docker exec' command will not work when running the CI build. 
+# https://circleci.com/docs/2.0/building-docker-images/#separation-of-environments
+# So, if tests are run locally, run docker exec command. Else, run the psql command in the job.
+if [ -z "${isCIBuild}" ]; then
+  # taken from https://stackoverflow.com/a/36591842
+  docker exec -i audius-identity-service_db_1 /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_identity_service_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_identity_service_test\""
+elif [ -x "$(command -v psql)" ]; then
+  psql -U postgres -h localhost -p $PG_PORT -tc "SELECT 1 FROM pg_database WHERE datname = 'audius_identity_service_test'" | grep -q 1 || psql -U postgres -h localhost -p $PG_PORT -c "CREATE DATABASE audius_identity_service_test"
+fi
 
  # tests
 ./node_modules/mocha/bin/mocha test/index.js --timeout 10000 --exit
