@@ -162,7 +162,7 @@ contract DelegateManager is RegistryContract {
     {
         require(
           claimPending(_target) == false,
-          'Undelegate not permitted for SP pending claim'
+          'Undelegate request not permitted for SP pending claim'
         );
         address delegator = msg.sender;
         bool exists = delegatorExistsForSP(delegator, _target);
@@ -204,13 +204,14 @@ contract DelegateManager is RegistryContract {
         require(undelegateRequests[delegator].amount != 0, "Pending lockup amount expected");
         require(undelegateRequests[delegator].serviceProvider != address(0), "Pending lockup SP expected");
 
+        // Confirm lockup expiry has expired
+        require(undelegateRequests[delegator].lockupExpiryBlock <= block.number, "Lockup must be expired");
+
+        // Confirm no pending claim for this service provider
         require(
           claimPending(undelegateRequests[delegator].serviceProvider) == false,
           'Undelegate not permitted for SP pending claim'
         );
-
-        // Confirm lockup expiry has expired
-        require(undelegateRequests[delegator].lockupExpiryBlock <= block.number, "Lockup must be expired");
 
         address serviceProvider = undelegateRequests[delegator].serviceProvider;  
         uint unstakeAmount = undelegateRequests[delegator].amount; 

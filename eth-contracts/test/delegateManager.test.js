@@ -644,6 +644,102 @@ contract('DelegateManager', async (accounts) => {
         0,
         'Expect no lockup funds to carry over')
     })
+
+    it.only('3 delegators + pending claim + undelegate restrictions', async () => {
+      const delegatorAccount2 = accounts[5]
+      const delegatorAccount3 = accounts[6]
+      // Transfer 1000 tokens to delegator2, delegator3
+      await token.transfer(delegatorAccount2, INITIAL_BAL, { from: treasuryAddress })
+      await token.transfer(delegatorAccount3, INITIAL_BAL, { from: treasuryAddress })
+      let initialDelegateAmount = toWei(60)
+
+      // Approve staking transfer for delegator 1
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      // Stake initial value for delegator 1
+      await delegateManager.delegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      // Submit request to undelegate
+      await delegateManager.requestUndelegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 }
+      )
+
+      // Approve staking transfer for delegator 3
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount3 })
+
+      // Stake initial value for delegator 3
+      await delegateManager.delegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount3 })
+
+      // Confirm lockup amount is registered
+      let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      assert.isTrue(
+        undelegateRequestInfo.amount.eq(initialDelegateAmount),
+        'Expect request to match undelegate amount')
+
+      // Advance to valid block
+      await _lib.advanceToTargetBlock(
+        fromBn(undelegateRequestInfo.lockupExpiryBlock),
+        web3
+      )
+      let currentBlock = await web3.eth.getBlock('latest')
+      let currentBlockNum = currentBlock.number
+      assert.isTrue(
+        (web3.utils.toBN(currentBlockNum)).gte(undelegateRequestInfo.lockupExpiryBlock),
+        'Confirm expired lockup period')
+
+      // Initiate round
+      await claimFactory.initiateRound()
+
+      // Confirm claim is pending
+      let pendingClaim = await claimFactory.claimPending(stakerAccount)
+      assert.isTrue(pendingClaim, 'ClaimFactory expected to consider claim pending')
+
+      // Attempt to finalize undelegate stake request
+      await _lib.assertRevert(
+        delegateManager.undelegateStake({ from: delegatorAccount1 }),
+        'Undelegate not permitted for SP pending claim'
+      )
+
+      // Approve staking transfer for delegator 2
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount2 })
+
+      // Attempt to delegate
+      await _lib.assertRevert(
+        delegateManager.delegateStake(
+          stakerAccount,
+          initialDelegateAmount,
+          { from: delegatorAccount1 }),
+        'Delegation not permitted for SP pending claim'
+      )
+
+      // Submit request to undelegate for delegator 3
+      await _lib.assertRevert(
+        delegateManager.requestUndelegateStake(
+          stakerAccount,
+          initialDelegateAmount,
+          { from: delegatorAccount3 }),
+        'Undelegate request not permitted for SP'
+      )
+
+      await delegateManager.claimRewards({ from: stakerAccount })
+    })
     // TODO: What happens when someone delegates after a funding round has started...?
     //        Do they still get rewards or not?
     //        Potential idea - just lockup delegation for some inteval
