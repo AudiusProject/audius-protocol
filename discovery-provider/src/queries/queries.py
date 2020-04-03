@@ -1833,6 +1833,10 @@ def get_top_followee_saves(type):
             .group_by(
                 Save.save_item_id
             )
+            .order_by(
+                desc(response_name_constants.save_count)
+            )
+            .limit(limit)
         )
         save_count_subquery = save_count.subquery()
 
@@ -1850,10 +1854,6 @@ def get_top_followee_saves(type):
                 Track.is_delete == False,
                 Track.is_unlisted == False
             )
-            .order_by(
-                desc(response_name_constants.save_count)
-            )
-            .limit(limit)
         )
 
         tracks_query_results = tracks_query.all()
