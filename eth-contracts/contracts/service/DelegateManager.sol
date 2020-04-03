@@ -229,9 +229,6 @@ contract DelegateManager is RegistryContract {
         // Update total delegated for SP
         spDelegateInfo[serviceProvider].totalDelegatedStake -= unstakeAmount;
 
-        // Update total locked for this service provider
-        spDelegateInfo[serviceProvider].totalLockedUpStake -= unstakeAmount;
-
         // Remove from delegators list if no delegated stake remaining
         if (delegateInfo[delegator][serviceProvider] == 0) {
             bool foundDelegator;
@@ -250,6 +247,9 @@ contract DelegateManager is RegistryContract {
                 spDelegateInfo[serviceProvider].delegators.length--;
             }
         }
+
+        // Update total locked for this service provider
+        spDelegateInfo[serviceProvider].totalLockedUpStake -= unstakeAmount;
 
         // Reset lockup information
         undelegateRequests[delegator] = UndelegateStakeRequest({
@@ -386,20 +386,33 @@ contract DelegateManager is RegistryContract {
         emit Slash(_slashAddress, _amount, totalBalanceInStakingAfterSlash);
 
         uint totalDelegatedStakeDecrease = 0;
-
         // For each delegator and deployer, recalculate new value
         // newStakeAmount = newStakeAmount * (oldStakeAmount / totalBalancePreSlash)
         for (uint i = 0; i < spDelegateInfo[_slashAddress].delegators.length; i++) {
             address delegator = spDelegateInfo[_slashAddress].delegators[i];
             uint preSlashDelegateStake = delegateInfo[delegator][_slashAddress];
             uint newDelegateStake = (
-              totalBalanceInStakingAfterSlash.mul(preSlashDelegateStake)
+             totalBalanceInStakingAfterSlash.mul(preSlashDelegateStake)
             ).div(totalBalanceInStakingPreSlash);
             uint slashAmountForDelegator = preSlashDelegateStake.sub(newDelegateStake);
             delegateInfo[delegator][_slashAddress] -= (slashAmountForDelegator);
             delegatorStakeTotal[delegator] -= (slashAmountForDelegator);
             // Update total decrease amount
             totalDelegatedStakeDecrease += slashAmountForDelegator;
+            // Check for any locked up funds for this slashed delegator
+            // Slash overrides any pending withdrawal requests
+            if (undelegateRequests[delegator].amount != 0) {
+                address unstakeSP = undelegateRequests[delegator].serviceProvider;
+                uint unstakeAmount = undelegateRequests[delegator].amount;
+                // Reset total locked up stake
+                spDelegateInfo[unstakeSP].totalLockedUpStake -= unstakeAmount;
+                // Remove pending request
+                undelegateRequests[delegator] = UndelegateStakeRequest({
+                  lockupExpiryBlock: 0,
+                  amount: 0,
+                  serviceProvider: address(0)
+                });
+            }
         }
 
         // Update total delegated to this SP

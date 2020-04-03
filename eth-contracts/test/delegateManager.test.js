@@ -182,9 +182,11 @@ contract('DelegateManager', async (accounts) => {
   describe('Delegation flow', () => {
     let regTx
     beforeEach(async () => {
-      // Transfer 1000 tokens to staker
+      // Transfer 1000 tokens to stakers
       await token.transfer(stakerAccount, INITIAL_BAL, { from: treasuryAddress })
       await token.transfer(stakerAccount2, INITIAL_BAL, { from: treasuryAddress })
+      // Transfer 1000 tokens to delegator
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
 
       let initialBal = await token.balanceOf(stakerAccount)
 
@@ -554,13 +556,12 @@ contract('DelegateManager', async (accounts) => {
       }
     })
 
-    // Test to confirm a pending undelegate operation negates any claimed value
-    it.only('single delegator + undelegate + claim', async () => {
+    // Confirm a pending undelegate operation negates any claimed value
+    it('single delegator + undelegate + claim', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
 
-      let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       let initialDelegateAmount = toWei(60)
 
       // Approve staking transfer
@@ -575,7 +576,6 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 })
 
       // Submit request to undelegate
-      // TODO: Work through discrepancy
       await delegateManager.requestUndelegateStake(
         stakerAccount,
         initialDelegateAmount,
@@ -599,38 +599,50 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(
         postRewardStake.gt(preRewardStake),
         'Confirm reward issued to service provider')
-      /*
-      let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
-      let totalStake = await staking.totalStaked()
-      totalStakedForSP = await staking.totalStakedFor(stakerAccount)
-      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-      let totalValueOutsideStaking = spStake.add(delegatedStake)
-      let fundingAmount = await claimFactory.getFundsPerRound()
-      let totalRewards = (totalStakedForSP.mul(fundingAmount)).div(totalStake)
+    })
 
-      // Manually calculate expected value prior to making claim
-      // Identical math as contract
-      let delegateRewardsPriorToSPCut = (delegatedStake.mul(totalRewards)).div(totalValueOutsideStaking)
-      let spDeployerCut = (delegateRewardsPriorToSPCut.mul(deployerCut)).div(deployerCutBase)
-      let delegateRewards = delegateRewardsPriorToSPCut.sub(spDeployerCut)
-      let expectedDelegateStake = delegatedStake.add(delegateRewards)
-      let spRewardShare = (spStake.mul(totalRewards)).div(totalValueOutsideStaking)
-      let expectedSpStake = spStake.add(spRewardShare.add(spDeployerCut))
+    // Confirm a pending undelegate operation negates any claimed value
+    it.only('single delegator + undelegate + slash', async () => {
+      let initialDelegateAmount = toWei(60)
+      let slashAmount = toWei(100)
 
-      await delegateManager.claimRewards({ from: stakerAccount })
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
 
-      let finalSpStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
-      let finalDelegateStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      await delegateManager.delegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
 
-      assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
-      assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
-      */
+      // Submit request to undelegate
+      await delegateManager.requestUndelegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 }
+      )
+
+      let preSlashInfo = await getAccountStakeInfo(stakerAccount, false)
+      let preSlashLockupStake = preSlashInfo.lockedUpStake
+      assert.isTrue(
+        preSlashLockupStake.eq(initialDelegateAmount),
+        'Initial delegate amount not found')
+
+      // Perform slash functions
+      await delegateManager.slash(slashAmount, slasherAccount)
+
+      let postRewardInfo = await getAccountStakeInfo(stakerAccount, false)
+
+      let postSlashLockupStake = postRewardInfo.lockedUpStake
+      assert.equal(
+        postSlashLockupStake,
+        0,
+        'Expect no lockup funds to carry over')
     })
     // TODO: What happens when someone delegates after a funding round has started...?
     //        Do they still get rewards or not?
     //        Potential idea - just lockup delegation for some inteval
-
-    // 2 service providers, 1 claim, no delegation
-    // 2 service providers, 1 claim, delegation to first SP
   })
 })
