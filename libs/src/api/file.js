@@ -12,7 +12,7 @@ const publicGateways = [
 ]
 
 /**
- * Download url if body document exists.
+ * Downloads a file using an element in the DOM
  * @param {*} url
  * @param {*} filename
  */
