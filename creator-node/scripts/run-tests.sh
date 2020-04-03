@@ -21,10 +21,11 @@ export logLevel='info'
 # taken from https://stackoverflow.com/a/36591842
 
 # if not circleci build, run docker exec command. else, run psql command
-if [ -z "${isCIBuild}"]; then  
+if [ -z "${isCIBuild}"]; then
   docker exec -i audius-creator-node_db_1 /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_creator_node_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_creator_node_test\""
 else
   psql -U postgres -h localhost -p $PG_PORT -tc "SELECT 1 FROM pg_database WHERE datname = 'audius_creator_node_test'" | grep -q 1 || psql -U postgres -h localhost -p $PG_PORT -c "CREATE DATABASE audius_creator_node_test"
+fi
 
 mkdir -p $storagePath
 
