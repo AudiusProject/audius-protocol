@@ -23,7 +23,6 @@ export logLevel='debug' #should be error
 # fail, so we check if it is installed first.
 # In CircleCI, the docker environment variables set up audius_identity_service_test instead of
 # audius_identity_service.
-# taken from https://stackoverflow.com/a/36591842 
 
 # CircleCI job and docker run in separate environments and cannot directly communicate with each other.
 # Therefore the 'docker exec' command will not work when running the CI build. 
