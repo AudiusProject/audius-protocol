@@ -8,8 +8,6 @@ import "./interface/registry/RegistryInterface.sol";
 import "../staking/Staking.sol";
 import "./ServiceProviderFactory.sol";
 import "./ClaimFactory.sol";
-// import "../staking/Checkpointing.sol";
-
 
 // WORKING CONTRACT
 // Designed to manage delegation to staking contract
@@ -26,7 +24,7 @@ contract DelegateManager is RegistryContract {
 
     // Number of blocks an undelegate operation has to wait
     // TODO: Expose CRUD
-    // TODO: Consider moving this value to Staking.sol as SPFactory may need as well 
+    // TODO: Move this value to Staking.sol as SPFactory may need as well 
     uint undelegateLockupDuration = 10;
 
     // Staking contract ref

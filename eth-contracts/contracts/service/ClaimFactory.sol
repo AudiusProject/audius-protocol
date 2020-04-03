@@ -103,7 +103,6 @@ contract ClaimFactory is RegistryContract {
 
     // TODO: Name this function better
     // TODO: Permission caller
-    // TODO: Add parameter for locked funds, this will be subtracted in reards calculation
     function processClaim(
       address _claimer,
       uint _totalLockedForSP
@@ -122,7 +121,6 @@ contract ClaimFactory is RegistryContract {
         uint totalStakedAtFundBlock = stakingContract.totalStakedAt(fundBlock);
 
         // Calculate claimer rewards
-        // TODO: Determine whether claimerTotalStake has to be adjusted by locked amount
         uint rewardsForClaimer = (
           claimerTotalStake.mul(fundingAmount)
         ).div(totalStakedAtFundBlock);
