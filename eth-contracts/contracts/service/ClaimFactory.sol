@@ -56,7 +56,6 @@ contract ClaimFactory is RegistryContract {
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
-        // Allow a claim to be funded initially by subtracting the configured difference
         fundBlock = 0;
     }
 

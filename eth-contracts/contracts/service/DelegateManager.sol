@@ -194,9 +194,24 @@ contract DelegateManager is RegistryContract {
         return delegatorStakeTotal[delegator] - _amount;
     }
 
-    // TODO: Cancel undelegation request from delegator
+    // Cancel undelegation request
+    function cancelUndelegateStake() external {
+        address delegator = msg.sender;
+        // Confirm pending delegation request
+        require(
+            undelegateRequests[delegator].lockupExpiryBlock != 0, "Pending lockup expiry expected");
+        require(undelegateRequests[delegator].amount != 0, "Pending lockup amount expected");
+        require(
+            undelegateRequests[delegator].serviceProvider != address(0), "Pending lockup SP expected");
+        // Remove pending request
+        undelegateRequests[delegator] = UndelegateStakeRequest({
+            lockupExpiryBlock: 0,
+            amount: 0,
+            serviceProvider: address(0)
+        });
+    }
 
-    // Finalize undelegation request
+    // Finalize undelegation request and withdraw stake
     function undelegateStake() external returns (uint newTotal) {
         address delegator = msg.sender;
 
