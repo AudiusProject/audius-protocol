@@ -149,7 +149,7 @@ class Web3Manager {
     } else {
       const encodedABI = contractMethod.encodeABI()
 
-      const response = await retry(async (bail, num) => {
+      const response = await retry(async () => {
         return this.identityService.relay(
           contractRegistryKey,
           contractAddress,
@@ -167,7 +167,7 @@ class Web3Manager {
         onRetry: (err, i) => {
           if (err) {
             // eslint-disable-next-line no-console
-            console.log('Retry error : ', err)
+            console.log(`Retry error : ${err}`)
           }
         }
       })

@@ -2,6 +2,8 @@ let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
+const retry = require('async-retry')
+const FETCH_CID_TIMEOUT_MS = 20 /* sec */ * 1000 /* millis */
 
 // Public gateways to send requests to, ordered by precidence.
 const publicGateways = [
@@ -36,14 +38,25 @@ class File extends Base {
       .concat(creatorNodeGateways)
     const urls = gateways.map(gateway => urlJoin(gateway, cid))
 
-    try {
-      return Utils.raceRequests(urls, callback, {
-        method: 'get',
-        responseType: 'blob'
-      })
-    } catch (e) {
-      throw new Error(`Failed to retrieve ${cid}`)
-    }
+    return retry(async () => {
+      try {
+        return Utils.raceRequests(urls, callback, {
+          method: 'get',
+          responseType: 'blob'
+        }, FETCH_CID_TIMEOUT_MS)
+      } catch (e) {
+        throw new Error(`Failed to retrieve ${cid}`)
+      }
+    }, {
+      minTimeout: 500,
+      maxTimeout: 4000,
+      factor: 3,
+      retries: 5,
+      onRetry: (err, i) => {
+        // eslint-disable-next-line no-console
+        console.log(`FetchCID attempt ${i} error: ${err}`)
+      }
+    })
   }
 
   /**

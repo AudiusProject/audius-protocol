@@ -208,8 +208,13 @@ class Utils {
     sources.forEach(source => {
       source.cancel('Fetch already succeeded')
     })
-    callback(response.url)
-    return response.blob
+
+    if (response && response.url && response.blob) {
+      callback(response.url)
+      return response.blob
+    }
+
+    throw new Error(`All requests timed out for URLs ${urls}`)
   }
 }
 
