@@ -56,8 +56,7 @@ contract ClaimFactory is RegistryContract {
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
-        // Allow a claim to be funded initially by subtracting the configured difference
-        fundBlock = block.number - fundRoundBlockDiff;
+        fundBlock = 0;
     }
 
     function getFundingRoundBlockDiff()
@@ -103,19 +102,27 @@ contract ClaimFactory is RegistryContract {
 
     // TODO: Name this function better
     // TODO: Permission caller
-    function processClaim(address _claimer) external returns (uint newAccountTotal) {
+    function processClaim(
+        address _claimer,
+        uint _totalLockedForSP
+    ) external returns (uint newAccountTotal)
+    {
         address stakingAddress = registry.getContract(stakingProxyOwnerKey);
         Staking stakingContract = Staking(stakingAddress);
         // Prevent duplicate claim
         uint lastUserClaimBlock = stakingContract.lastClaimedFor(_claimer);
         require(lastUserClaimBlock <= fundBlock, "Claim already processed for user");
-
         uint totalStakedAtFundBlockForClaimer = stakingContract.totalStakedForAt(
             _claimer,
             fundBlock);
+
+        // Subtract total locked amount for SP from stake at fund block
+        uint claimerTotalStake = totalStakedAtFundBlockForClaimer - _totalLockedForSP;
         uint totalStakedAtFundBlock = stakingContract.totalStakedAt(fundBlock);
+
+        // Calculate claimer rewards
         uint rewardsForClaimer = (
-          totalStakedAtFundBlockForClaimer.mul(fundingAmount)
+          claimerTotalStake.mul(fundingAmount)
         ).div(totalStakedAtFundBlock);
 
         bool minted = audiusToken.mint(address(this), rewardsForClaimer);
@@ -141,5 +148,12 @@ contract ClaimFactory is RegistryContract {
         );
 
         return newTotal;
+    }
+
+    function claimPending(address _sp) external view returns (bool pending) {
+        address stakingAddress = registry.getContract(stakingProxyOwnerKey);
+        Staking stakingContract = Staking(stakingAddress);
+        uint lastClaimedForSP = stakingContract.lastClaimedFor(_sp);
+        return (lastClaimedForSP < fundBlock);
     }
 }

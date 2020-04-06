@@ -79,3 +79,13 @@ export const advanceBlock = (web3) => {
     })
   })
 }
+
+export const advanceToTargetBlock = async (targetBlockNumber, web3) => {
+  let currentBlock = await web3.eth.getBlock('latest')
+  let currentBlockNum = currentBlock.number
+  while (currentBlockNum < targetBlockNumber) {
+    await advanceBlock(web3)
+    currentBlock = await web3.eth.getBlock('latest')
+    currentBlockNum = currentBlock.number
+  }
+}
