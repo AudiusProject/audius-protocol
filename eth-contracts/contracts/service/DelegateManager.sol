@@ -305,6 +305,7 @@ contract DelegateManager is RegistryContract {
         );
         // Pass in locked amount for claimer
         uint totalLockedForClaimer = spDelegateInfo[msg.sender].totalLockedUpStake;
+
         // Process claim for msg.sender
         claimFactory.processClaim(msg.sender, totalLockedForClaimer);
 
@@ -322,6 +323,11 @@ contract DelegateManager is RegistryContract {
         // Amount in sp factory for claimer
         uint totalBalanceInSPFactory = spFactory.getServiceProviderStake(msg.sender);
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
+
+        // Confirm service provider is valid 
+        require(
+          spFactory.isServiceProviderWithinBounds(msg.sender),
+          'Service provider must be within bounds');
 
         // Amount in delegate manager staked to service provider
         uint totalBalanceInDelegateManager = spDelegateInfo[msg.sender].totalDelegatedStake;
