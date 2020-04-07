@@ -23,14 +23,17 @@ contract ServiceProviderFactory is RegistryContract {
 
     mapping(bytes32 => ServiceInstanceStakeRequirements) serviceTypeStakeRequirements;
 
-    // Maps directly staked amount by SP, not including delegators
-    mapping(address => uint) spDeployerStake;
+    // Stores following entities
+    // 1) Directly staked amount by SP, not including delegators
+    // 2) % Cut of delegator tokens taken during reward
+    // 3) Bool indicating whether this SP has met min/max requirements
+    struct ServiceProviderDetails {
+        uint deployerStake;
+        uint deployerCut;
+        bool validBounds;
+    }
 
-    // % Cut of delegator tokens assigned to sp deployer
-    mapping(address => uint) spDeployerCut;
-
-    // Bool indicating whether this SP has met the min/max stake requirements
-    mapping(address => bool) spValidBounds;
+    mapping(address => ServiceProviderDetails) spDetails;
     // END Temporary data structures
 
     bytes empty;
@@ -138,7 +141,8 @@ contract ServiceProviderFactory is RegistryContract {
         );
 
         // Update deployer total
-        spDeployerStake[owner] += _stakeAmount;
+        // spDeployerStake[owner] += _stakeAmount;
+        spDetails[owner].deployerStake += _stakeAmount;
 
         uint currentlyStakedForOwner = validateAccountStakeBalance(owner);
 
@@ -179,7 +183,8 @@ contract ServiceProviderFactory is RegistryContract {
             );
 
             // Update deployer total
-            spDeployerStake[owner] -= unstakeAmount;
+            // spDeployerStake[owner] -= unstakeAmount;
+            spDetails[owner].deployerStake -= unstakeAmount;
         }
 
         (uint deregisteredID) = ServiceProviderStorageInterface(
@@ -227,7 +232,7 @@ contract ServiceProviderFactory is RegistryContract {
         validateAccountStakeBalance(owner);
 
         // Update deployer total
-        spDeployerStake[owner] += _increaseStakeAmount;
+        spDetails[owner].deployerStake += _increaseStakeAmount;
 
         return newStakeAmount;
     }
@@ -268,7 +273,7 @@ contract ServiceProviderFactory is RegistryContract {
         validateAccountStakeBalance(owner);
 
         // Update deployer total
-        spDeployerStake[owner] -= _decreaseStakeAmount;
+        spDetails[owner].deployerStake -= _decreaseStakeAmount;
 
         return newStakeAmount;
     }
@@ -323,11 +328,11 @@ contract ServiceProviderFactory is RegistryContract {
         (uint minStake, uint maxStake) = this.getAccountStakeBounds(_serviceProvider);
         if (_amount < minStake || _amount > maxStake) {
           // Indicate this service provider is out of bounds
-          spValidBounds[_serviceProvider] = false;
+          spDetails[_serviceProvider].validBounds = false;
         }
 
         // Update SP tracked total
-        spDeployerStake[_serviceProvider] = _amount;
+        spDetails[_serviceProvider].deployerStake = _amount;
     }
 
   /**
@@ -346,7 +351,7 @@ contract ServiceProviderFactory is RegistryContract {
         require(
             _cut <= DEPLOYER_CUT_BASE,
             "Service Provider cut cannot exceed base value");
-        spDeployerCut[_serviceProvider] = _cut;
+        spDetails[_serviceProvider].deployerCut = _cut;
     }
 
   /**
@@ -355,7 +360,7 @@ contract ServiceProviderFactory is RegistryContract {
     function getServiceProviderStake(address _address)
     external view returns (uint stake)
     {
-        return spDeployerStake[_address];
+        return spDetails[_address].deployerStake;
     }
 
   /**
@@ -364,7 +369,7 @@ contract ServiceProviderFactory is RegistryContract {
     function getServiceProviderDeployerCut(address _address)
     external view returns (uint cut)
     {
-        return spDeployerCut[_address];
+        return spDetails[_address].deployerCut;
     }
 
   /**
@@ -479,7 +484,7 @@ contract ServiceProviderFactory is RegistryContract {
     function isServiceProviderWithinBounds(address sp) 
     external view returns (bool isValid)
     {
-        return spValidBounds[sp];
+        return spDetails[sp].validBounds;
     }
 
     /// @notice Validate that the service provider is between the min and max stakes for all their registered services
@@ -501,7 +506,7 @@ contract ServiceProviderFactory is RegistryContract {
             "Maximum stake amount exceeded");
 
         // Indicate this service provider is within bounds
-        spValidBounds[sp] = true;
+        spDetails[sp].validBounds = true;
 
         return currentlyStakedForOwner;
     }
