@@ -709,19 +709,19 @@ class DiscoveryProvider {
           latest_chain_block: chainBlock
         } = parsedResponse
 
-        // if (
-        //   !chainBlock ||
-        //   !indexedBlock ||
-        //   (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
-        // ) {
-        //   // Clear any cached discprov
-        //   localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
-        //   // Select a new one
-        //   console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
-        //   const endpoint = await this.autoSelectEndpoint()
-        //   this.setEndpoint(endpoint)
-        //   throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
-        // }
+        if (
+          !chainBlock ||
+          !indexedBlock ||
+          (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
+        ) {
+          // Clear any cached discprov
+          localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
+          // Select a new one
+          console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
+          const endpoint = await this.autoSelectEndpoint()
+          this.setEndpoint(endpoint)
+          throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
+        }
       }
 
       return parsedResponse.data
