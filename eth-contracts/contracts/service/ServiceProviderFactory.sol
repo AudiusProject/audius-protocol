@@ -22,7 +22,6 @@ contract ServiceProviderFactory is RegistryContract {
     }
 
     mapping(bytes32 => ServiceInstanceStakeRequirements) serviceTypeStakeRequirements;
-    // END Temporary data structures
 
     // Maps directly staked amount by SP, not including delegators
     mapping(address => uint) spDeployerStake;
@@ -32,6 +31,7 @@ contract ServiceProviderFactory is RegistryContract {
 
     // Bool indicating whether this SP has met the min/max stake requirements
     mapping(address => bool) spValidBounds;
+    // END Temporary data structures
 
     bytes empty;
 

@@ -705,6 +705,7 @@ contract('DelegateManager', async (accounts) => {
         increase,
         stakerAccount)
 
+      // Validate increase
       isWithinBounds = await serviceProviderFactory.isServiceProviderWithinBounds(slasherAccount)
       assert.isTrue(
         isWithinBounds,
