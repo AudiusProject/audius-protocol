@@ -886,7 +886,7 @@ def decayed_score(score, created_at, peak = 5, nominal_timestamp = 14 * 24 * 60 
     )
     
 
-def filter_to_playlist_mood(session, mood, query, correlation = Playlist):
+def filter_to_playlist_mood(session, mood, query, correlation):
     """
     Takes a session that is querying for playlists and filters the playlists
     to only those with the dominant mood provided.
@@ -907,6 +907,20 @@ def filter_to_playlist_mood(session, mood, query, correlation = Playlist):
     if not mood:
         return query
 
+    tracks_subquery = (
+        session.query(
+            func.jsonb_array_elements(
+                correlation.c.playlist_contents['track_ids']
+            ).op('->')('track').cast(Integer)
+        )
+    )
+
+    if correlation is not None:
+        # If this query runs against a nested subquery, it might need to
+        # be manually correlated to that subquery so it doesn't pull in all
+        # playlists here.
+        tracks_subquery = tracks_subquery.correlate(correlation)
+
     # Query for the most common mood in a playlist
     dominant_mood_subquery = (
         session.query(
@@ -916,16 +930,7 @@ def filter_to_playlist_mood(session, mood, query, correlation = Playlist):
         .filter(
             Track.is_current == True,
             Track.is_delete == False,
-            Track.track_id.in_(
-                session.query(
-                    func.jsonb_array_elements(
-                        correlation.c.playlist_contents['track_ids']
-                    ).op('->')('track').cast(Integer)
-                # If this query runs against a nested subquery, it might need to
-                # be manually correlated to that subquery so it doesn't pull in all
-                # playlists here.
-                ).correlate(correlation)
-            )
+            Track.track_id.in_(tracks_subquery)
         )
         .group_by(Track.mood)
         .order_by(desc('cnt'))
@@ -937,9 +942,6 @@ def filter_to_playlist_mood(session, mood, query, correlation = Playlist):
     mood_exists_query = (
         session.query(
             dominant_mood_subquery.c.mood
-        )
-        .select_from(
-            dominant_mood_subquery
         )
         .filter(
             func.lower(dominant_mood_subquery.c.mood) == func.lower(mood)

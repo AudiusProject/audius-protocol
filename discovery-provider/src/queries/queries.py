@@ -1686,14 +1686,13 @@ def get_top_playlists(type):
                 if user:
                     playlist['user'] = user
 
-        return api_helpers.success_response(playlists)
-    return api_helpers.error_response("Something went wrong", 400)
+    return api_helpers.success_response(playlists)
 
 @bp.route("/top_followee_windowed/<type>/<window>")
 def get_top_followee_windowed(type, window):
     """
         Gets a windowed (over a certain timerange) view into the "top" of a certain type
-        amongst followers. Requires an account.
+        amongst followees. Requires an account.
         This endpoint is useful in generating views like:
             - New releases
 
@@ -1712,7 +1711,7 @@ def get_top_followee_windowed(type, window):
     valid_windows =['week', 'month', 'year']
     if not window or window not in valid_windows:
         return api_helpers.error_response(
-            ("Invalid window provided, must be one of %s" % valid_windows)
+            "Invalid window provided, must be one of {}".format(valid_windows)
         )
 
     if 'limit' in request.args:
@@ -1753,6 +1752,7 @@ def get_top_followee_windowed(type, window):
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False,
+                # Query only tracks created `window` time ago (week, month, etc.)
                 Track.created_at >= text("NOW() - interval '1 {}'".format(window)),
             )
             .order_by(
