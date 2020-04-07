@@ -425,6 +425,7 @@ module.exports = function (app) {
       acc[listen.dataValues.trackId] = listen.dataValues.count
       return acc
     }, {})
+
     trackIdList.forEach(id => {
       if (!(id in listenMap)) {
         listenMap[id] = 0
