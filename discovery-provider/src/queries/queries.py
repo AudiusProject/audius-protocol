@@ -1872,3 +1872,146 @@ def get_top_followee_saves(type):
                     track['user'] = user
 
     return api_helpers.success_response(tracks)
+
+# Retrieves the top users for a requested genre under the follow parameters
+# - A given user can only be associated w/ one genre
+# - The user's associated genre is calculated by tallying the genre of the tracks and taking the max 
+#   - If there is a tie for # of tracks in a genre, then the first genre alphabetically is taken 
+# - The users associated w/ the requested genre are then sorted by follower count
+# Route Parameters
+#   urlParam: {Array<string>?}  genre       List of genres to query for the 'top' users
+#   urlParam: {boolean?}        with_user   Boolean if the response should be the user ID or user metadata defaults to false
+@bp.route("/top_genre_users", methods=("GET",))
+def get_top_genre_users():
+
+    genres = []
+    if "genre" in request.args:
+        genres = request.args.getlist("genre")
+
+    # If the with_users url arg is provided, then populate the user metadata else return user ids
+    with_users = "with_users" in request.args and request.args.get("with_users") != 'false'
+
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        if (len(genres) == 0):
+            # If no genres are provided, the user to genre association query does not need to happen
+            # Query for the users w/ a least one public track and sort by number of followers
+            user_query = session.query(
+                    User.user_id
+                ).join(
+                    Follow, Follow.followee_user_id == User.user_id
+                ).join(
+                    Track, Track.owner_id == User.user_id
+                ).filter(
+                    User.is_current == True,
+                    User.is_creator == True,
+                    Follow.is_current == True,
+                    Follow.is_delete == False,
+                    Track.is_unlisted == False,
+                    Track.is_current == True,
+                    Track.is_delete == False
+                ).group_by(
+                    User.user_id
+                ).order_by(
+                    desc(func.count(Follow.follower_user_id).label('follower_count')),
+                    User.user_id
+                )
+
+            # If the with_users flag is used, retrieve the user metadata
+            if with_users:
+                user_subquery = paginate_query(user_query).subquery('user_query')
+                user_query = session.query(User).filter(
+                    User.user_id.in_(user_subquery),
+                    User.is_current == True
+                )
+                users = user_query.all()
+                users = helpers.query_result_to_list(users)
+                user_ids = list(map(lambda user: user["user_id"], users))
+                users = populate_user_metadata(session, user_ids, users, None)
+                return api_helpers.success_response({ 'users': users })
+
+
+            # If the with_users flag is not set, respond with the user_ids
+            users = paginate_query(user_query).all()
+            user_ids = list(map(lambda user: user[0], users))
+
+            return api_helpers.success_response({ 'user_ids': user_ids })
+
+        # Associate the user w/ a genre by counting the total # of tracks per genre
+        # taking the genre w/ the most tracks (using genre name as secondary sort)  
+        user_genre_count_query = (
+            session.query(
+                User.user_id.label('user_id'),
+                Track.genre.label('genre'),
+                func.row_number().over(
+                        partition_by=User.user_id,
+                        order_by=(desc(func.count(Track.genre)), asc(Track.genre))
+                ).label("row_number")
+            ).join(
+                Track,
+                Track.owner_id == User.user_id
+            ).filter(
+                User.is_current == True,
+                User.is_creator == True,
+                Track.genre.isnot(None),
+                Track.is_unlisted == False,
+                Track.is_current == True,
+                Track.is_delete == False
+            ).group_by(
+                User.user_id,
+                Track.genre
+            ).order_by(
+                desc(func.count(Track.genre)), asc(Track.genre)
+            ).subquery('user_genre_count_query')
+        )
+
+        user_genre_query = (
+            session.query(
+                user_genre_count_query.c.user_id.label('user_id'),
+                user_genre_count_query.c.genre.label('genre'),
+            ).filter(
+                user_genre_count_query.c.row_number == 1
+            ).subquery('user_genre_query')
+        )
+
+        # Using the subquery of user to associated genre,
+        #   filter by the requested genres and 
+        #   sort by user follower count
+        user_genre_query = (
+            session.query(
+                user_genre_query.c.user_id.label('user_id')
+                # user_genre_query.c.genre.label('genre'),
+                # func.count(Follow.follower_user_id).label('follower_count')
+            ).join(
+                Follow, Follow.followee_user_id == user_genre_query.c.user_id
+            ).filter(
+                Follow.is_current == True,
+                Follow.is_delete == False,
+                user_genre_query.c.genre.in_(genres)
+            ).group_by(
+                user_genre_query.c.user_id, user_genre_query.c.genre
+            ).order_by(
+                # desc('follower_count')
+                desc(func.count(Follow.follower_user_id))
+            )
+        )
+
+        # If the with_users flag is used, retrieve the user metadata
+        if with_users:
+            user_genre_query = paginate_query(user_genre_query).subquery('user_genre_query')
+            user_query = session.query(User).filter(
+                User.user_id.in_(user_genre_query),
+                User.is_current == True
+            )
+            users = user_query.all()
+            users = helpers.query_result_to_list(users)
+            user_ids = list(map(lambda user: user["user_id"], users))
+            users = populate_user_metadata(session, user_ids, users, None)
+            return api_helpers.success_response({ 'users': users })
+
+
+        # If the with_users flag is not set, respond with the user_ids
+        users = paginate_query(user_genre_query).all()
+        user_ids = list(map(lambda user: user[0], users))
+
+        return api_helpers.success_response({ 'user_ids': user_ids })
