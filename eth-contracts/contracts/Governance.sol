@@ -4,284 +4,350 @@ import "./service/registry/RegistryContract.sol";
 import "./staking/Staking.sol";
 import "./service/interface/registry/RegistryInterface.sol";
 
+
 contract Governance {
-  RegistryInterface registry;
-  bytes32 stakingProxyOwnerKey;
+    RegistryInterface registry;
+    bytes32 stakingProxyOwnerKey;
 
-  uint256 votingPeriod;
-  uint256 votingQuorum;
+    uint256 votingPeriod;
+    uint256 votingQuorum;
 
-  /***** Enums *****/
-  enum Outcome {InProgress, No, Yes, Invalid}
-  // Enum values map to uints, so first value in Enum always is 0.
-  enum Vote {None, No, Yes}
+    /***** Enums *****/
+    enum Outcome {InProgress, No, Yes, Invalid}
+    // Enum values map to uints, so first value in Enum always is 0.
+    enum Vote {None, No, Yes}
 
-  struct SlashProposal {
-    uint256 proposalId;
-    address proposer;
-    uint256 startBlockNumber;
-    address target;
-    uint256 slashAmount;
-    Outcome outcome;
-    uint256 voteMagnitudeYes;
-    uint256 voteMagnitudeNo;
-    uint256 numVotes;
-    mapping(address => Vote) votes;
-  }
-
-  /***** SlashProposal storage *****/
-  uint256 lastProposalId = 0;
-  mapping(uint256 => SlashProposal) slashProposals;
-
-  /***** Events *****/
-  event SlashProposalSubmitted(
-    uint256 indexed proposalId,
-    address proposer,
-    uint256 startBlockNumber,
-    address indexed target,
-    uint256 indexed slashAmount
-  );
-  event SlashProposalVoteSubmitted(
-    uint256 indexed proposalId,
-    address indexed voter,
-    Vote indexed vote,
-    uint256 voterStake,
-    Vote previousVote
-  );
-  event SlashProposalOutcomeEvaluated(
-    uint256 indexed proposalId,
-    Outcome indexed outcome,
-    uint256 voteMagnitudeYes,
-    uint256 voteMagnitudeNo,
-    uint256 numVotes
-  );
-
-  constructor(
-    address _registryAddress,
-    bytes32 _stakingProxyOwnerKey,
-    uint256 _votingPeriod,
-    uint256 _votingQuorum
-  ) public {
-    require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
-    registry = RegistryInterface(_registryAddress);
-
-    stakingProxyOwnerKey = _stakingProxyOwnerKey;
-
-    require(_votingPeriod > 0, "Requires non-zero _votingPeriod");
-    votingPeriod = _votingPeriod;
-
-    require(_votingQuorum > 0, "Requires non-zero _votingQuorum");
-    votingQuorum = _votingQuorum;
-  }
-
-  // ========================================= Governance Actions =========================================
-
-  function submitSlashProposal(address _target, uint256 _amount)
-  external returns (uint256 proposalId)
-  {
-    address proposer = msg.sender;
-
-    // Require proposer is active Staker.
-    Staking stakingContract = Staking(registry.getContract(stakingProxyOwnerKey));
-    require(
-      stakingContract.totalStakedFor(proposer) > 0,
-      "Proposer must be active staker with non-zero stake."
-    );
-
-    // Require: _target is active Staker with stake >= slash amount.
-    require(
-      stakingContract.totalStakedFor(_target) >= _amount,
-      "Target must be active staker with stake >= proposed slash amount."
-    );
-
-    require (_amount > 0, "Slash amount must be greater than 0");
-
-    // set proposalId.
-    uint256 newProposalId = lastProposalId + 1;
-
-    // Create new Proposal obj and store in slashProposals mapping.
-    slashProposals[newProposalId] = SlashProposal({
-      proposalId: newProposalId,
-      proposer: proposer,
-      startBlockNumber: block.number,
-      target: _target,
-      slashAmount: _amount,
-      outcome: Outcome.InProgress,
-      voteMagnitudeYes: 0,
-      voteMagnitudeNo: 0,
-      numVotes: 0
-      /** votes: mappings are auto-initialized to default state. */
-    });
-
-    emit SlashProposalSubmitted(
-      newProposalId,
-      proposer,
-      block.number,
-      _target,
-      _amount
-    );
-
-    lastProposalId += 1;
-
-    return newProposalId;
-  }
-
-  function submitSlashProposalVote(uint256 _proposalId, Vote _vote) external
-  {
-    address voter = msg.sender;
-
-    require(_proposalId <= lastProposalId && _proposalId > 0, "Must provide valid non-zero _proposalId");
-
-    // Require voter is active Staker + get voterStake.
-    Staking stakingContract = Staking(registry.getContract(stakingProxyOwnerKey));
-    uint256 voterStake = stakingContract.totalStakedForAt(
-      voter,
-      slashProposals[_proposalId].startBlockNumber
-    );
-    require(voterStake > 0, "Voter must be active staker with non-zero stake.");
-
-    // Require proposal votingPeriod is still active.
-    uint256 startBlockNumber = slashProposals[_proposalId].startBlockNumber;
-    uint256 endBlockNumber = startBlockNumber + votingPeriod;
-    require(
-      block.number > startBlockNumber && block.number <= endBlockNumber,
-      "Proposal votingPeriod has ended"
-    );
-
-    // Require vote is not None.
-    require(_vote != Vote.None, "Cannot submit None vote");
-
-    // Record previous vote.
-    Vote previousVote = slashProposals[_proposalId].votes[voter];
-
-    // Will override staker's previous vote if present.
-    slashProposals[_proposalId].votes[voter] = _vote;
-
-    /** Update voteMagnitudes accordingly */
-
-    // New voter (Vote enum defaults to 0)
-    if (previousVote == Vote.None) {
-      if (_vote == Vote.Yes) {
-        slashProposals[_proposalId].voteMagnitudeYes += voterStake;
-      } else {
-        slashProposals[_proposalId].voteMagnitudeNo += voterStake;
-      }
-      slashProposals[_proposalId].numVotes += 1;
-    }
-    // Repeat voter
-    else {
-      if (previousVote == Vote.Yes && _vote == Vote.No) {
-        slashProposals[_proposalId].voteMagnitudeYes -= voterStake;
-        slashProposals[_proposalId].voteMagnitudeNo += voterStake;
-      }
-      else if (previousVote == Vote.No && _vote == Vote.Yes) {
-        slashProposals[_proposalId].voteMagnitudeYes += voterStake;
-        slashProposals[_proposalId].voteMagnitudeNo -= voterStake;
-      }
-      // If _vote == previousVote, no changes needed to vote magnitudes.
+    struct Proposal {
+        uint256 proposalId;
+        address proposer;
+        uint256 startBlockNumber;
+        address targetContract;
+        uint callValue;
+        string signature;
+        bytes callData;
+        Outcome outcome;
+        uint256 voteMagnitudeYes;
+        uint256 voteMagnitudeNo;
+        uint256 numVotes;
+        mapping(address => Vote) votes;
     }
 
-    emit SlashProposalVoteSubmitted(
-      _proposalId,
-      voter,
-      _vote,
-      voterStake,
-      previousVote
+    /***** Proposal storage *****/
+    uint256 lastProposalId = 0;
+    mapping(uint256 => Proposal) proposals;
+
+    /***** Events *****/
+    event ProposalSubmitted(
+        uint256 indexed proposalId,
+        address proposer,
+        uint256 startBlockNumber,
+        address targetContract,
+        uint callValue,
+        string signature,
+        bytes callData,
+        string description
     );
-  }
-
-  function evaluateSlashProposalOutcome(uint256 _proposalId)
-  external returns (Outcome proposalOutcome)
-  {
-    require(_proposalId <= lastProposalId && _proposalId > 0, "Must provide valid non-zero _proposalId");
-
-    // Require msg.sender is active Staker.
-    Staking stakingContract = Staking(registry.getContract(stakingProxyOwnerKey));
-    require(
-      stakingContract.totalStakedForAt(
-        msg.sender, slashProposals[_proposalId].startBlockNumber
-      ) > 0,
-      "Caller must be active staker with non-zero stake."
+    event ProposalVoteSubmitted(
+        uint256 indexed proposalId,
+        address indexed voter,
+        Vote indexed vote,
+        uint256 voterStake,
+        Vote previousVote
+    );
+    event ProposalOutcomeEvaluated(
+        uint256 indexed proposalId,
+        Outcome indexed outcome,
+        uint256 voteMagnitudeYes,
+        uint256 voteMagnitudeNo,
+        uint256 numVotes
+    );
+    event TransactionExecuted(
+        bytes32 indexed txHash,
+        address targetContract,
+        uint callValue,
+        string signature,
+        bytes callData,
+        bytes returnData
     );
 
-    // Require proposal votingPeriod has ended.
-    uint256 startBlockNumber = slashProposals[_proposalId].startBlockNumber;
-    uint256 endBlockNumber = startBlockNumber + votingPeriod;
-    require(
-      block.number > endBlockNumber,
-      "Proposal votingPeriod must end before evaluation."
-    );
+    constructor(
+        address _registryAddress,
+        bytes32 _stakingProxyOwnerKey,
+        uint256 _votingPeriod,
+        uint256 _votingQuorum
+    ) public {
+        require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
+        registry = RegistryInterface(_registryAddress);
 
-    // Calculate outcome
-    Outcome outcome;
-    if (slashProposals[_proposalId].numVotes < votingQuorum) {
-      outcome = Outcome.Invalid;
+        stakingProxyOwnerKey = _stakingProxyOwnerKey;
+
+        require(_votingPeriod > 0, "Requires non-zero _votingPeriod");
+        votingPeriod = _votingPeriod;
+
+        require(_votingQuorum > 0, "Requires non-zero _votingQuorum");
+        votingQuorum = _votingQuorum;
     }
-    else if (
-      slashProposals[_proposalId].voteMagnitudeYes >= slashProposals[_proposalId].voteMagnitudeNo
-    ) {
-      outcome = Outcome.Yes;
 
-      // Slash target's stake.
-      stakingContract.slash(
-        slashProposals[_proposalId].slashAmount,
-        slashProposals[_proposalId].target
-      );
-    } else {
-      outcome = Outcome.No;
+    // ========================================= Governance Actions =========================================
+
+    function submitProposal(
+        address _targetContract,
+        uint256 _callValue,
+        string calldata _signature,
+        bytes calldata _callData,
+        string calldata _description
+    ) external returns (uint256 proposalId)
+    {
+        address proposer = msg.sender;
+
+        // Require proposer is active Staker.
+        Staking stakingContract = Staking(registry.getContract(stakingProxyOwnerKey));
+        require(
+            stakingContract.totalStakedFor(proposer) > 0,
+            "Proposer must be active staker with non-zero stake."
+        );
+
+        // set proposalId.
+        uint256 newProposalId = lastProposalId + 1;
+
+        // Create new Proposal obj and store in slashProposals mapping.
+        proposals[newProposalId] = Proposal({
+            proposalId: newProposalId,
+            proposer: proposer,
+            startBlockNumber: block.number,
+            targetContract: _targetContract,
+            callValue: _callValue,
+            signature: _signature,
+            callData: _callData,
+            outcome: Outcome.InProgress,
+            voteMagnitudeYes: 0,
+            voteMagnitudeNo: 0,
+            numVotes: 0
+            /** votes: mappings are auto-initialized to default state. */
+        });
+
+        emit ProposalSubmitted(
+            newProposalId,
+            proposer,
+            block.number,
+            _targetContract,
+            _callValue,
+            _signature,
+            _callData,
+            _description
+        );
+
+        lastProposalId += 1;
+
+        return newProposalId;
     }
 
-    // Record outcome
-    slashProposals[_proposalId].outcome = outcome;
+    function submitProposalVote(uint256 _proposalId, Vote _vote) external {
+        address voter = msg.sender;
 
-    emit SlashProposalOutcomeEvaluated(
-      _proposalId,
-      outcome,
-      slashProposals[_proposalId].voteMagnitudeYes,
-      slashProposals[_proposalId].voteMagnitudeNo,
-      slashProposals[_proposalId].numVotes
-      /** @notice omitted: proposer, startBlockNumber, target, slashAmount, outcome */
-    );
+        require(
+            _proposalId <= lastProposalId && _proposalId > 0,
+            "Must provide valid non-zero _proposalId"
+        );
 
-    return outcome;
-  }
+        // Require voter is active Staker + get voterStake.
+        Staking stakingContract = Staking(registry.getContract(stakingProxyOwnerKey));
+        uint256 voterStake = stakingContract.totalStakedForAt(
+            voter,
+            proposals[_proposalId].startBlockNumber
+        );
+        require(voterStake > 0, "Voter must be active staker with non-zero stake.");
 
-  // ========================================= Getters =========================================
+        // Require proposal votingPeriod is still active.
+        uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;
+        uint256 endBlockNumber = startBlockNumber + votingPeriod;
+        require(
+            block.number > startBlockNumber && block.number <= endBlockNumber,
+            "Proposal votingPeriod has ended"
+        );
 
-  function getSlashProposalById(uint256 _proposalId)
-  external view returns (
-    uint256 proposalId,
-    address proposer,
-    uint256 startBlockNumber,
-    address target,
-    uint256 slashAmount,
-    Outcome outcome,
-    uint256 voteMagnitudeYes,
-    uint256 voteMagnitudeNo,
-    uint256 numVotes
-  ) {
-    require(_proposalId <= lastProposalId && _proposalId > 0, "Must provide valid non-zero _proposalId");
+        // Require vote is not None.
+        require(_vote != Vote.None, "Cannot submit None vote");
 
-    SlashProposal memory proposal = slashProposals[_proposalId];
-    return (
-      proposal.proposalId,
-      proposal.proposer,
-      proposal.startBlockNumber,
-      proposal.target,
-      proposal.slashAmount,
-      proposal.outcome,
-      proposal.voteMagnitudeYes,
-      proposal.voteMagnitudeNo,
-      proposal.numVotes
-      /** @notice - votes mapping cannot be returned by external function */
-    );
-  }
+        // Record previous vote.
+        Vote previousVote = proposals[_proposalId].votes[voter];
 
-  function getVoteBySlashProposalAndVoter(uint256 _proposalId, address _voter)
-  external view returns (Vote vote)
-  {
-    require(_proposalId <= lastProposalId && _proposalId > 0, "Must provide valid non-zero _proposalId");
-    return slashProposals[_proposalId].votes[_voter];
-  }
+        // Will override staker's previous vote if present.
+        proposals[_proposalId].votes[voter] = _vote;
 
+        /** Update voteMagnitudes accordingly */
+
+        // New voter (Vote enum defaults to 0)
+        if (previousVote == Vote.None) {
+            if (_vote == Vote.Yes) {
+                proposals[_proposalId].voteMagnitudeYes += voterStake;
+            } else {
+                proposals[_proposalId].voteMagnitudeNo += voterStake;
+            }
+            proposals[_proposalId].numVotes += 1;
+        } else { // Repeat voter
+            if (previousVote == Vote.Yes && _vote == Vote.No) {
+                proposals[_proposalId].voteMagnitudeYes -= voterStake;
+                proposals[_proposalId].voteMagnitudeNo += voterStake;
+            } else if (previousVote == Vote.No && _vote == Vote.Yes) {
+                proposals[_proposalId].voteMagnitudeYes += voterStake;
+                proposals[_proposalId].voteMagnitudeNo -= voterStake;
+            }
+            // If _vote == previousVote, no changes needed to vote magnitudes.
+        }
+
+        emit ProposalVoteSubmitted(
+            _proposalId,
+            voter,
+            _vote,
+            voterStake,
+            previousVote
+        );
+    }
+
+    function evaluateProposalOutcome(uint256 _proposalId)
+    external returns (Outcome proposalOutcome)
+        {
+        require(
+            _proposalId <= lastProposalId && _proposalId > 0,
+            "Must provide valid non-zero _proposalId"
+        );
+
+        // Require msg.sender is active Staker.
+        Staking stakingContract = Staking(registry.getContract(stakingProxyOwnerKey));
+        require(
+            stakingContract.totalStakedForAt(
+                msg.sender, proposals[_proposalId].startBlockNumber
+            ) > 0,
+            "Caller must be active staker with non-zero stake."
+        );
+
+        // Require proposal votingPeriod has ended.
+        uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;
+        uint256 endBlockNumber = startBlockNumber + votingPeriod;
+        require(
+            block.number > endBlockNumber,
+            "Proposal votingPeriod must end before evaluation."
+        );
+
+        // Calculate outcome
+        Outcome outcome;
+        if (proposals[_proposalId].numVotes < votingQuorum) {
+            outcome = Outcome.Invalid;
+        } else if (
+            proposals[_proposalId].voteMagnitudeYes >= proposals[_proposalId].voteMagnitudeNo
+        ) {
+            outcome = Outcome.Yes;
+
+            _executeTransaction(
+                proposals[_proposalId].targetContract,
+                proposals[_proposalId].callValue,
+                proposals[_proposalId].signature,
+                proposals[_proposalId].callData
+            );
+        } else {
+            outcome = Outcome.No;
+        }
+
+        // Record outcome
+        proposals[_proposalId].outcome = outcome;
+
+        emit ProposalOutcomeEvaluated(
+            _proposalId,
+            outcome,
+            proposals[_proposalId].voteMagnitudeYes,
+            proposals[_proposalId].voteMagnitudeNo,
+            proposals[_proposalId].numVotes
+        );
+
+        return outcome;
+    }
+
+    // ========================================= Getters =========================================
+
+    function getProposalById(uint256 _proposalId)
+    external view returns (
+        uint256 proposalId,
+        address proposer,
+        uint256 startBlockNumber,
+        address targetContract,
+        uint callValue,
+        string memory signature,
+        bytes memory callData,
+        Outcome outcome,
+        uint256 voteMagnitudeYes,
+        uint256 voteMagnitudeNo,
+        uint256 numVotes
+    )
+    {
+        require(
+            _proposalId <= lastProposalId && _proposalId > 0,
+            "Must provide valid non-zero _proposalId"
+        );
+
+        Proposal memory proposal = proposals[_proposalId];
+        return (
+            proposal.proposalId,
+            proposal.proposer,
+            proposal.startBlockNumber,
+            proposal.targetContract,
+            proposal.callValue,
+            proposal.signature,
+            proposal.callData,
+            proposal.outcome,
+            proposal.voteMagnitudeYes,
+            proposal.voteMagnitudeNo,
+            proposal.numVotes
+            /** @notice - votes mapping cannot be returned by external function */
+        );
+    }
+
+    function getVoteByProposalAndVoter(uint256 _proposalId, address _voter)
+    external view returns (Vote vote)
+    {
+        require(
+            _proposalId <= lastProposalId && _proposalId > 0,
+            "Must provide valid non-zero _proposalId"
+        );
+        return proposals[_proposalId].votes[_voter];
+    }
+
+    // ========================================= Private =========================================
+
+    function _executeTransaction(
+        address _targetContract,
+        uint256 _callValue,
+        string memory _signature,
+        bytes memory _callData
+    ) internal returns (bytes memory /** returnData */)
+    {
+        bytes32 txHash = keccak256(
+            abi.encode(
+                _targetContract, _callValue, _signature, _callData
+            )
+        );
+
+        bytes memory callData;
+
+        if (bytes(_signature).length == 0) {
+            callData = _callData;
+        } else {
+            callData = abi.encodePacked(bytes4(keccak256(bytes(_signature))), _callData);
+        }
+
+        // solium-disable-next-line security/no-call-value
+        (bool success, bytes memory returnData) = _targetContract.call.value(_callValue)(callData);
+        require(success, "Governance::executeTransaction:Transaction execution reverted.");
+
+        emit TransactionExecuted(
+            txHash,
+            _targetContract,
+            _callValue,
+            _signature,
+            _callData,
+            returnData
+        );
+
+        return returnData;
+    }
 }

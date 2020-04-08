@@ -33,19 +33,35 @@ export const getLatestBlock = async (web3) => {
  * @param {object} txReceipt - transaction receipt object
  * @returns {object} w/event + args array from txReceipt
  */
-export const parseTx = (txReceipt) => {
+export const parseTx = (txReceipt, multipleEvents = false) => {
   if (!txReceipt.logs.length >= 1) {
     throw new Error('Invalid txReceipt length')
   }
-
-  if (!(txReceipt.logs[0].hasOwnProperty('event'))) {
-    throw new Error('Missing event log in tx receipt')
-  }
-
-  return {
-    'event': {
-      'name': txReceipt.logs[0].event,
-      'args': txReceipt.logs[0].args
+  
+  if (multipleEvents) {
+    let resp = []
+    for (const log of txReceipt.logs) {
+      if (!log.hasOwnProperty('event')) {
+        throw new Error('Missing event log in tx receipt')
+      }
+      resp.push({
+        'event': {
+          'name': log.event,
+          'args': log.args
+        }
+      })
+    }
+    return resp
+  } else {
+    if (!(txReceipt.logs[0].hasOwnProperty('event'))) {
+      throw new Error('Missing event log in tx receipt')
+    }
+  
+    return {
+      'event': {
+        'name': txReceipt.logs[0].event,
+        'args': txReceipt.logs[0].args
+      }
     }
   }
 }
