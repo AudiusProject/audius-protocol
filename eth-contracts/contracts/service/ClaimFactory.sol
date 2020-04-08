@@ -4,6 +4,7 @@ import "./registry/RegistryContract.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "./interface/registry/RegistryInterface.sol";
+import "./ServiceProviderFactory.sol";
 
 
 // WORKING CONTRACT
@@ -16,6 +17,7 @@ contract ClaimFactory is RegistryContract {
 
     address tokenAddress;
     bytes32 stakingProxyOwnerKey;
+    bytes32 serviceProviderFactoryKey;
 
     // Claim related configurations
     uint fundRoundBlockDiff = 10;
@@ -50,10 +52,12 @@ contract ClaimFactory is RegistryContract {
     constructor(
       address _tokenAddress,
       address _registryAddress,
-      bytes32 _stakingProxyOwnerKey
+      bytes32 _stakingProxyOwnerKey,
+      bytes32 _serviceProviderFactoryKey
     ) public {
         tokenAddress = _tokenAddress;
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
+        serviceProviderFactoryKey = _serviceProviderFactoryKey;
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
         fundBlock = 0;
@@ -116,6 +120,16 @@ contract ClaimFactory is RegistryContract {
             _claimer,
             fundBlock);
 
+        (uint spMin, uint spMax) = ServiceProviderFactory(
+            registry.getContract(serviceProviderFactoryKey)
+        ).getAccountStakeBounds(_claimer);
+        require(
+          (totalStakedAtFundBlockForClaimer >= spMin),
+          'Minimum stake bounds violated at fund block'); 
+        require(
+          (totalStakedAtFundBlockForClaimer <= spMax),
+          'Maximum stake bounds violated at fund block'); 
+
         // Subtract total locked amount for SP from stake at fund block
         uint claimerTotalStake = totalStakedAtFundBlockForClaimer - _totalLockedForSP;
         uint totalStakedAtFundBlock = stakingContract.totalStakedAt(fundBlock);
@@ -125,8 +139,9 @@ contract ClaimFactory is RegistryContract {
           claimerTotalStake.mul(fundingAmount)
         ).div(totalStakedAtFundBlock);
 
-        bool minted = audiusToken.mint(address(this), rewardsForClaimer);
-        require(minted, "New tokens must be minted");
+        require(
+            audiusToken.mint(address(this), rewardsForClaimer),
+            "New tokens must be minted");
 
         // Approve token transfer to staking contract address
         audiusToken.approve(stakingAddress, rewardsForClaimer);

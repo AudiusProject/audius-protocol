@@ -144,7 +144,7 @@ contract ServiceProviderFactory is RegistryContract {
         // spDeployerStake[owner] += _stakeAmount;
         spDetails[owner].deployerStake += _stakeAmount;
 
-        uint currentlyStakedForOwner = validateAccountStakeBalance(owner);
+        uint currentlyStakedForOwner = this.validateAccountStakeBalance(owner);
 
         emit RegisteredServiceProvider(
             newServiceProviderID,
@@ -201,7 +201,7 @@ contract ServiceProviderFactory is RegistryContract {
             _endpoint,
             unstakeAmount);
 
-        validateAccountStakeBalance(owner);
+        this.validateAccountStakeBalance(owner);
 
         return deregisteredID;
     }
@@ -229,7 +229,7 @@ contract ServiceProviderFactory is RegistryContract {
             newStakeAmount
         );
 
-        validateAccountStakeBalance(owner);
+        this.validateAccountStakeBalance(owner);
 
         // Update deployer total
         spDetails[owner].deployerStake += _increaseStakeAmount;
@@ -270,7 +270,7 @@ contract ServiceProviderFactory is RegistryContract {
             newStakeAmount
         );
 
-        validateAccountStakeBalance(owner);
+        this.validateAccountStakeBalance(owner);
 
         // Update deployer total
         spDetails[owner].deployerStake -= _decreaseStakeAmount;
@@ -324,15 +324,20 @@ contract ServiceProviderFactory is RegistryContract {
         uint _amount
      ) external
     {
-        // Validate bounds
+        // Update SP tracked total
+        spDetails[_serviceProvider].deployerStake = _amount;
+
+        Staking stakingContract = Staking(
+            registry.getContract(stakingProxyOwnerKey)
+        );
+
+        // Validate bounds for total stake
+        uint totalSPStake = stakingContract.totalStakedFor(_serviceProvider);
         (uint minStake, uint maxStake) = this.getAccountStakeBounds(_serviceProvider);
-        if (_amount < minStake || _amount > maxStake) {
+        if (totalSPStake < minStake || totalSPStake > maxStake) {
           // Indicate this service provider is out of bounds
           spDetails[_serviceProvider].validBounds = false;
         }
-
-        // Update SP tracked total
-        spDetails[_serviceProvider].deployerStake = _amount;
     }
 
   /**
@@ -488,8 +493,9 @@ contract ServiceProviderFactory is RegistryContract {
     }
 
     /// @notice Validate that the service provider is between the min and max stakes for all their registered services
+    // Permission to 'this' contract or delegate manager
     function validateAccountStakeBalance(address sp)
-    internal returns (uint stakedForOwner)
+    external returns (uint stakedForOwner)
     {
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)

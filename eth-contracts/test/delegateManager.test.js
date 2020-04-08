@@ -106,6 +106,7 @@ contract('DelegateManager', async (accounts) => {
       token.address,
       registry.address,
       ownedUpgradeabilityProxyKey,
+      serviceProviderFactoryKey,
       { from: accounts[0] })
 
     await registry.addContract(claimFactoryKey, claimFactory.address)
@@ -660,58 +661,6 @@ contract('DelegateManager', async (accounts) => {
         'Expect no lockup funds to carry over')
     })
 
-    it('slash below sp bounds', async () => {
-      let preSlashInfo = await getAccountStakeInfo(stakerAccount, false)
-      // Set slash amount to all but 1 AUD for this SP
-      let diffAmount = toWei(1)
-      let slashAmount = (preSlashInfo.spFactoryStake).sub(diffAmount)
-
-      // Perform slash functions
-      await delegateManager.slash(slashAmount, slasherAccount)
-
-      let isWithinBounds = await serviceProviderFactory.isServiceProviderWithinBounds(slasherAccount)
-      assert.isFalse(
-        isWithinBounds,
-        'Bound violation expected')
-
-      // Initiate round
-      await claimFactory.initiateRound()
-
-      // Confirm claim is pending
-      let pendingClaim = await claimFactory.claimPending(stakerAccount)
-      assert.isTrue(pendingClaim, 'ClaimFactory expected to consider claim pending')
-
-      // Confirm claim fails due to bound violation
-      await _lib.assertRevert(
-        delegateManager.claimRewards({ from: stakerAccount }),
-        'Service provider must be within bounds'
-      )
-
-      // Try to increase by diffAmount, but expect rejection since lower bound is unmet
-      await _lib.assertRevert(
-        increaseRegisteredProviderStake(
-          testEndpoint,
-          diffAmount,
-          stakerAccount),
-        'Minimum stake threshold exceeded')
-
-      // Increase to minimum
-      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
-      let info = await getAccountStakeInfo(stakerAccount, false)
-      let increase = (bounds.min).sub(info.spFactoryStake)
-      // Increase to minimum bound
-      await increaseRegisteredProviderStake(
-        testEndpoint,
-        increase,
-        stakerAccount)
-
-      // Validate increase
-      isWithinBounds = await serviceProviderFactory.isServiceProviderWithinBounds(slasherAccount)
-      assert.isTrue(
-        isWithinBounds,
-        'Valid bound expected')
-    })
-
     it('3 delegators + pending claim + undelegate restrictions', async () => {
       const delegatorAccount2 = accounts[5]
       const delegatorAccount3 = accounts[6]
@@ -806,6 +755,64 @@ contract('DelegateManager', async (accounts) => {
       )
 
       await delegateManager.claimRewards({ from: stakerAccount })
+    })
+
+    it.only('slash below sp bounds', async () => {
+      let preSlashInfo = await getAccountStakeInfo(stakerAccount, false)
+      // Set slash amount to all but 1 AUD for this SP
+      let diffAmount = toWei(1)
+      let slashAmount = (preSlashInfo.spFactoryStake).sub(diffAmount)
+
+      // Perform slash functions
+      await delegateManager.slash(slashAmount, slasherAccount)
+
+      let isWithinBounds = await serviceProviderFactory.isServiceProviderWithinBounds(slasherAccount)
+      assert.isFalse(
+        isWithinBounds,
+        'Bound violation expected')
+
+      // Initiate round
+      await claimFactory.initiateRound()
+
+      // Confirm claim is pending
+      let pendingClaim = await claimFactory.claimPending(stakerAccount)
+      assert.isTrue(pendingClaim, 'ClaimFactory expected to consider claim pending')
+
+      // Confirm claim fails due to bound violation
+      await _lib.assertRevert(
+        delegateManager.claimRewards({ from: stakerAccount }),
+        'Service provider must be within bounds'
+      )
+
+      // Try to increase by diffAmount, but expect rejection since lower bound is unmet
+      await _lib.assertRevert(
+        increaseRegisteredProviderStake(
+          testEndpoint,
+          diffAmount,
+          stakerAccount),
+        'Minimum stake threshold exceeded')
+
+      // Increase to minimum
+      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
+      let info = await getAccountStakeInfo(stakerAccount, false)
+      let increase = (bounds.min).sub(info.spFactoryStake)
+      // Increase to minimum bound
+      await increaseRegisteredProviderStake(
+        testEndpoint,
+        increase,
+        stakerAccount)
+
+      // Validate increase
+      isWithinBounds = await serviceProviderFactory.isServiceProviderWithinBounds(slasherAccount)
+      assert.isTrue(
+        isWithinBounds,
+        'Valid bound expected')
+
+      // Confirm claim STILL fails due to bound violation at fundblock
+      await _lib.assertRevert(
+        delegateManager.claimRewards({ from: stakerAccount }),
+        'Minimum stake bounds violated at fund block'
+      )
     })
   })
 })
