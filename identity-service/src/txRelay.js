@@ -126,7 +126,7 @@ const sendTransactionInternal = async (req, web3, resetNonce = false, txProps, r
     // not get a tx hash back, the nonce is still available for use by others. For this
     // reason, we wait for this promise to resolve with a tx hash before incrementing
     // the current nonce)
-    req.logger.info(`txRelay - sending a transaction for wallet ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${gasLimit}`)
+    req.logger.info(`txRelay - sending a transaction for wallet ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${gasLimit}, nonce ${currentNonce}`)
     receiptPromise = web3.eth.sendSignedTransaction(signedTx)
     const prom = new Promise(function (resolve, reject) {
       let resolved = false
