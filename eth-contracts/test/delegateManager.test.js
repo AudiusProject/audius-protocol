@@ -33,6 +33,7 @@ const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
 const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'
+const testEndpoint3 = 'https://localhost:5002'
 
 // 1000 AUD converted to AUDWei, multiplying by 10^18
 const INITIAL_BAL = toWei(1000)
@@ -141,7 +142,7 @@ contract('DelegateManager', async (accounts) => {
     return args
   }
 
-  const increaseRegisteredProviderStake = async (endpoint, increase, account) => {
+  const increaseRegisteredProviderStake = async (increase, account) => {
     // Approve token transfer
     await token.approve(
       stakingAddress,
@@ -800,7 +801,6 @@ contract('DelegateManager', async (accounts) => {
       // Try to increase by diffAmount, but expect rejection since lower bound is unmet
       await _lib.assertRevert(
         increaseRegisteredProviderStake(
-          testEndpoint,
           diffAmount,
           stakerAccount),
         'Minimum stake threshold exceeded')
@@ -811,7 +811,6 @@ contract('DelegateManager', async (accounts) => {
       let increase = (bounds.min).sub(info.spFactoryStake)
       // Increase to minimum bound
       await increaseRegisteredProviderStake(
-        testEndpoint,
         increase,
         stakerAccount)
 
@@ -828,20 +827,15 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('delegator increase/decrease bounds validation', async () => {
-      // Increase to minimum
+    it.only('delegator increase/decrease + SP direct stake bound validation', async () => {
       let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
+      let delegateAmount = bounds.min
       let info = await getAccountStakeInfo(stakerAccount, false)
       let failedIncreaseAmount = bounds.max
       // Transfer sufficient funds
       await token.transfer(delegatorAccount1, failedIncreaseAmount, { from: treasuryAddress })
-
       // Approve staking transfer
-      await token.approve(
-        stakingAddress,
-        failedIncreaseAmount,
-        { from: delegatorAccount1 })
-
+      await token.approve(stakingAddress, failedIncreaseAmount, { from: delegatorAccount1 })
       await _lib.assertRevert(
         delegateManager.delegateStake(
           stakerAccount,
@@ -857,11 +851,11 @@ contract('DelegateManager', async (accounts) => {
       // Delegate min stake amount
       await token.approve(
         stakingAddress,
-        bounds.min,
+        delegateAmount,
         { from: delegatorAccount1 })
       delegateManager.delegateStake(
         stakerAccount,
-        bounds.min,
+        delegateAmount,
         { from: delegatorAccount1 })
 
       // Remove deployer direct stake
@@ -875,6 +869,7 @@ contract('DelegateManager', async (accounts) => {
         'Direct stake restriction violated for this service provider'
       )
 
+      // Decrease to min
       let spInfo = await getAccountStakeInfo(stakerAccount, false)
       let minDirectStake = await serviceProviderFactory.getMinDirectDeployerStake()
       let diffToMin = (spInfo.spFactoryStake).sub(minDirectStake)
@@ -883,6 +878,50 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(
         (infoAfterDecrease.spFactoryStake).eq(minDirectStake),
         'Expect min direct stake while within total account bounds')
+
+      // At this point we have a total stake of 2x the minimum for this SP
+      // 1x Min directly from SP
+      // 1x Min from our single delegator
+      // So - a service provider should be able to register with NO additional stake and still be within bounds
+      await registerServiceProvider(
+        testDiscProvType,
+        testEndpoint3,
+        toWei(0),
+        stakerAccount)
+
+      let infoAfterSecondEndpoint = await getAccountStakeInfo(stakerAccount, false)
+      assert.isTrue(
+        (infoAfterSecondEndpoint.totalInStakingContract).eq(infoAfterDecrease.totalInStakingContract),
+        'Expect static total stake after new SP endpoint'
+      )
+
+      // Now, initiate a request to undelegate for this SP
+      await delegateManager.requestUndelegateStake(
+        stakerAccount,
+        delegateAmount,
+        { from: delegatorAccount1 }
+      )
+      // Confirm lockup amount is registered
+      let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      assert.isTrue(
+        undelegateRequestInfo.amount.eq(delegateAmount),
+        'Expect request to match undelegate amount')
+
+      // Advance to valid block
+      await _lib.advanceToTargetBlock(
+        fromBn(undelegateRequestInfo.lockupExpiryBlock),
+        web3
+      )
+      let currentBlock = await web3.eth.getBlock('latest')
+      let currentBlockNum = currentBlock.number
+      assert.isTrue(
+        (web3.utils.toBN(currentBlockNum)).gte(undelegateRequestInfo.lockupExpiryBlock),
+        'Confirm expired lockup period')
+
+      // Try to execute undelegate stake, but fail due to min bound violation
+      await _lib.assertRevert(
+        delegateManager.undelegateStake({ from: delegatorAccount1 }),
+        'Minimum stake threshold exceeded')
     })
   })
 })

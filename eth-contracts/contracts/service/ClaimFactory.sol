@@ -96,7 +96,6 @@ contract ClaimFactory is RegistryContract {
         fundBlock = block.number;
         totalClaimedInRound = 0;
         roundNumber += 1;
-
         emit RoundInitiated(
             fundBlock,
             roundNumber,

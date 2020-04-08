@@ -181,6 +181,7 @@ contract ServiceProviderFactory is RegistryContract {
 
         // Unstake on deregistration if and only if this is the last service endpoint
         uint unstakeAmount = 0;
+        bool unstaked = false;
         // owned by the user
         if (numberOfEndpoints == 1) {
             unstakeAmount = Staking(
@@ -194,8 +195,8 @@ contract ServiceProviderFactory is RegistryContract {
             );
 
             // Update deployer total
-            // spDeployerStake[owner] -= unstakeAmount;
             spDetails[owner].deployerStake -= unstakeAmount;
+            unstaked = true;
         }
 
         (uint deregisteredID) = ServiceProviderStorageInterface(
@@ -213,8 +214,11 @@ contract ServiceProviderFactory is RegistryContract {
             unstakeAmount);
 
         // Confirm both aggregate account balance and directly staked amount are valid
-        this.validateAccountStakeBalance(owner);
-        validateServiceProviderDirectStake(owner);
+        // Only if unstake operation has not occurred
+        if (!unstaked) {
+            this.validateAccountStakeBalance(owner);
+            validateServiceProviderDirectStake(owner);
+        }
 
         return deregisteredID;
     }

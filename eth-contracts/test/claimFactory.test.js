@@ -4,10 +4,12 @@ const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
 const ClaimFactory = artifacts.require('ClaimFactory')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
+const MockServiceProviderFactory = artifacts.require('MockServiceProviderFactory')
 const Staking = artifacts.require('Staking')
 const encodeCall = require('./encodeCall')
 
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
+const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
 
@@ -80,11 +82,16 @@ contract('ClaimFactory', async (accounts) => {
     staking = await Staking.at(proxy.address)
     staker = accounts[2]
 
+    // Mock SP for test
+    let mockSPFactory = await MockServiceProviderFactory.new({ from: accounts[0] })
+    await registry.addContract(serviceProviderFactoryKey, mockSPFactory.address)
+
     // Create new claim factory instance
     claimFactory = await ClaimFactory.new(
       token.address,
       registry.address,
       ownedUpgradeabilityProxyKey,
+      serviceProviderFactoryKey,
       { from: accounts[0] })
 
     // Register new contract as a minter, from the same address that deployed the contract

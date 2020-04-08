@@ -293,6 +293,11 @@ contract DelegateManager is RegistryContract {
             serviceProvider: address(0)
         });
 
+        // Validate balance
+        ServiceProviderFactory(
+            registry.getContract(serviceProviderFactoryKey)
+        ).validateAccountStakeBalance(serviceProvider);
+
         // Return new total
         return delegateInfo[delegator][serviceProvider];
     }
