@@ -828,7 +828,7 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it.only('delegator increase/decrease bounds test', async () => {
+    it('delegator increase/decrease bounds validation', async () => {
       // Increase to minimum
       let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
       let info = await getAccountStakeInfo(stakerAccount, false)
@@ -864,11 +864,25 @@ contract('DelegateManager', async (accounts) => {
         bounds.min,
         { from: delegatorAccount1 })
 
-      // Remove all deployer direct stake
+      // Remove deployer direct stake
+      // Decrease by all but 1 AUD direct stake
       let spFactoryStake = infoAfterFailure.spFactoryStake
-      await decreaseRegisteredProviderStake(spFactoryStake, stakerAccount)
+      let diff = toWei(1)
+      // Confirm failure as direct stake threshold is violated
+      // Due to the total delegated stake equal to min bounds, total account stake balance will NOT violate bounds
+      await _lib.assertRevert(
+        decreaseRegisteredProviderStake(spFactoryStake.sub(diff), stakerAccount),
+        'Direct stake restriction violated for this service provider'
+      )
 
-      let infoAfterDecrease = await getAccountStakeInfo(stakerAccount, true)
+      let spInfo = await getAccountStakeInfo(stakerAccount, false)
+      let minDirectStake = await serviceProviderFactory.getMinDirectDeployerStake()
+      let diffToMin = (spInfo.spFactoryStake).sub(minDirectStake)
+      await decreaseRegisteredProviderStake(diffToMin, stakerAccount)
+      let infoAfterDecrease = await getAccountStakeInfo(stakerAccount, false)
+      assert.isTrue(
+        (infoAfterDecrease.spFactoryStake).eq(minDirectStake),
+        'Expect min direct stake while within total account bounds')
     })
   })
 })
