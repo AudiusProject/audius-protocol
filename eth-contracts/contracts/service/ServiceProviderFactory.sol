@@ -326,11 +326,18 @@ contract ServiceProviderFactory is RegistryContract {
     {
         // Update SP tracked total
         spDetails[_serviceProvider].deployerStake = _amount;
+        this.updateServiceProviderBoundStatus(_serviceProvider);
+    }
 
+  /**
+   * @notice Update service provider bound status
+   * TODO: Permission to only delegatemanager OR this
+   */
+    function updateServiceProviderBoundStatus(address _serviceProvider) external
+    {
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
-
         // Validate bounds for total stake
         uint totalSPStake = stakingContract.totalStakedFor(_serviceProvider);
         (uint minStake, uint maxStake) = this.getAccountStakeBounds(_serviceProvider);

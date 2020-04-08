@@ -156,6 +156,16 @@ contract('DelegateManager', async (accounts) => {
     // console.dir(args, { depth: 5 })
   }
 
+  const decreaseRegisteredProviderStake = async (decrease, account) => {
+    // Approve token transfer from staking contract to account
+    let tx = await serviceProviderFactory.decreaseStake(
+      decrease,
+      { from: account })
+
+    let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
+    // console.dir(args, { depth: 5 })
+  }
+
   const getAccountStakeInfo = async (account, print = false) => {
     let spFactoryStake
     let totalInStakingContract
@@ -179,12 +189,7 @@ contract('DelegateManager', async (accounts) => {
     let outsideStake = spFactoryStake.add(delegatedStake)
     let totalActiveStake = outsideStake.sub(lockedUpStake)
     let stakeDiscrepancy = totalInStakingContract.sub(outsideStake)
-    if (print) {
-      console.log(`${account} SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}`)
-      console.log(`${account} Outside Stake: ${outsideStake} Staking: ${totalInStakingContract}`)
-      console.log(`(Staking) vs (DelegateManager + SPFactory) Stake discrepancy: ${stakeDiscrepancy}`)
-    }
-    return {
+    let accountSummary = {
       totalInStakingContract,
       delegatedStake,
       spFactoryStake,
@@ -193,6 +198,14 @@ contract('DelegateManager', async (accounts) => {
       lockedUpStake,
       totalActiveStake
     }
+
+    if (print) {
+      console.log(`${account} SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}`)
+      console.log(`${account} Outside Stake: ${outsideStake} Staking: ${totalInStakingContract}`)
+      console.log(`(Staking) vs (DelegateManager + SPFactory) Stake discrepancy: ${stakeDiscrepancy}`)
+      console.dir(accountSummary, { depth: 5 })
+    }
+    return accountSummary
   }
 
   describe('Delegation tests', () => {
@@ -757,7 +770,7 @@ contract('DelegateManager', async (accounts) => {
       await delegateManager.claimRewards({ from: stakerAccount })
     })
 
-    it.only('slash below sp bounds', async () => {
+    it('slash below sp bounds', async () => {
       let preSlashInfo = await getAccountStakeInfo(stakerAccount, false)
       // Set slash amount to all but 1 AUD for this SP
       let diffAmount = toWei(1)
@@ -813,6 +826,49 @@ contract('DelegateManager', async (accounts) => {
         delegateManager.claimRewards({ from: stakerAccount }),
         'Minimum stake bounds violated at fund block'
       )
+    })
+
+    it.only('delegator increase/decrease bounds test', async () => {
+      // Increase to minimum
+      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
+      let info = await getAccountStakeInfo(stakerAccount, false)
+      let failedIncreaseAmount = bounds.max
+      // Transfer sufficient funds
+      await token.transfer(delegatorAccount1, failedIncreaseAmount, { from: treasuryAddress })
+
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        failedIncreaseAmount,
+        { from: delegatorAccount1 })
+
+      await _lib.assertRevert(
+        delegateManager.delegateStake(
+          stakerAccount,
+          failedIncreaseAmount,
+          { from: delegatorAccount1 }),
+        'Maximum stake amount exceeded'
+      )
+      let infoAfterFailure = await getAccountStakeInfo(stakerAccount, false)
+      assert.isTrue(
+        (info.delegatedStake).eq(infoAfterFailure.delegatedStake),
+        'No increase in delegated stake expected')
+
+      // Delegate min stake amount
+      await token.approve(
+        stakingAddress,
+        bounds.min,
+        { from: delegatorAccount1 })
+      delegateManager.delegateStake(
+        stakerAccount,
+        bounds.min,
+        { from: delegatorAccount1 })
+
+      // Remove all deployer direct stake
+      let spFactoryStake = infoAfterFailure.spFactoryStake
+      await decreaseRegisteredProviderStake(spFactoryStake, stakerAccount)
+
+      let infoAfterDecrease = await getAccountStakeInfo(stakerAccount, true)
     })
   })
 })

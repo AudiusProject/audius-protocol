@@ -389,7 +389,6 @@ contract DelegateManager is RegistryContract {
         // Update total delegated to this SP
         spDelegateInfo[msg.sender].totalDelegatedStake += totalDelegatedStakeIncrease;
 
-        // TODO: Validate below with test cases
         uint spRewardShare = (
           totalBalanceInSPFactory.mul(totalRewards)
         ).div(totalActiveFunds);
