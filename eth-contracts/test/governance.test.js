@@ -421,7 +421,7 @@ contract('Governance.sol', async (accounts) => {
         }
       }
 
-      // Confirm new Stake values after Slash action
+      // Confirm Slash action succeeded by checking new Stake values
       const finalStakeAcct2 = parseInt(await stakingContract.totalStakedFor(targetAddress))
       assert.equal(finalStakeAcct2, defaultStakeAmount - slashAmount)
       assert.equal(

@@ -9,6 +9,7 @@ import "./res/IsContract.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
 
 
 contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
@@ -49,9 +50,9 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
       uint256 amountClaimed
     );
 
-    event Test(
-      uint256 test,
-      string msg);
+    event Slashed(address indexed staker, uint256 slashAmount, uint256 total);
+
+    event Test(uint256 test, string msg);
 
     function initialize(address _stakingToken, address _treasuryAddress) external onlyInit {
         require(isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
@@ -87,19 +88,25 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @param _amount Number of tokens slashed
      * @param _slashAddress address being slashed
      */
-    function slash(uint256 _amount, address _slashAddress) external isInitialized {
+    function slash(
+        uint256 _amount,
+        address _slashAddress
+    ) external isInitialized
+    {
         // TODO: restrict functionality to delegate manager
         // require(msg.sender == treasuryAddress, "Slashing functionality locked to treasury owner");
+
         // unstaking 0 tokens is not allowed
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
-        // Transfer slashed tokens to treasury address
-        // TODO: Burn with actual ERC token call
-        _unstakeFor(
+        // Burn slashed tokens from account
+        _burnFor(_slashAddress, _amount);
+
+        emit Slashed(
             _slashAddress,
-            treasuryAddress,
             _amount,
-            bytes(''));
+            totalStakedFor(_slashAddress)
+        );
     }
 
     /**
@@ -318,10 +325,11 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     }
 
     function _unstakeFor(
-      address _stakeAccount,
-      address _transferAccount,
-      uint256 _amount,
-      bytes memory _data) internal
+        address _stakeAccount,
+        address _transferAccount,
+        uint256 _amount,
+        bytes memory _data
+    ) internal
     {
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
@@ -338,7 +346,23 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
             _stakeAccount,
             _amount,
             totalStakedFor(_stakeAccount),
-            _data);
+            _data
+        );
+    }
+
+    function _burnFor(address _stakeAccount, uint256 _amount) internal {
+        require(_amount > 0, ERROR_AMOUNT_ZERO);
+
+        // checkpoint updated staking balance
+        _modifyStakeBalance(_stakeAccount, _amount, false);
+
+        // checkpoint total supply
+        _modifyTotalStaked(_amount, false);
+
+        // burn
+        ERC20Burnable(address(stakingToken)).burn(_amount);
+
+        /** No event emitted since token.burn() call already emits a Transfer event */
     }
 
     function _modifyStakeBalance(address _accountAddress, uint256 _by, bool _increase) internal {
