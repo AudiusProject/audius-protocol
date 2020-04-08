@@ -550,9 +550,9 @@ contract ServiceProviderFactory is RegistryContract {
     function validateServiceProviderDirectStake(address sp)
     internal view returns (uint directStake)
     {
-      require(
-        spDetails[sp].deployerStake >= minDirectDeployerStake,
-        "Direct stake restriction violated for this service provider");
-      return spDetails[sp].deployerStake;
+        require(
+            spDetails[sp].deployerStake >= minDirectDeployerStake,
+            "Direct stake restriction violated for this service provider");
+        return spDetails[sp].deployerStake;
     }
 }
