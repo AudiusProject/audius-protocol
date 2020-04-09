@@ -33,6 +33,7 @@ const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
 const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'
+const testEndpoint3 = 'https://localhost:5002'
 
 // 1000 AUD converted to AUDWei, multiplying by 10^18
 const INITIAL_BAL = toWei(1000)
@@ -106,6 +107,7 @@ contract('DelegateManager', async (accounts) => {
       token.address,
       registry.address,
       ownedUpgradeabilityProxyKey,
+      serviceProviderFactoryKey,
       { from: accounts[0] })
 
     await registry.addContract(claimFactoryKey, claimFactory.address)
@@ -140,6 +142,31 @@ contract('DelegateManager', async (accounts) => {
     return args
   }
 
+  const increaseRegisteredProviderStake = async (increase, account) => {
+    // Approve token transfer
+    await token.approve(
+      stakingAddress,
+      increase,
+      { from: account })
+
+    let tx = await serviceProviderFactory.increaseStake(
+      increase,
+      { from: account })
+
+    let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
+    // console.dir(args, { depth: 5 })
+  }
+
+  const decreaseRegisteredProviderStake = async (decrease, account) => {
+    // Approve token transfer from staking contract to account
+    let tx = await serviceProviderFactory.decreaseStake(
+      decrease,
+      { from: account })
+
+    let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
+    // console.dir(args, { depth: 5 })
+  }
+
   const getAccountStakeInfo = async (account, print = false) => {
     let spFactoryStake
     let totalInStakingContract
@@ -163,12 +190,7 @@ contract('DelegateManager', async (accounts) => {
     let outsideStake = spFactoryStake.add(delegatedStake)
     let totalActiveStake = outsideStake.sub(lockedUpStake)
     let stakeDiscrepancy = totalInStakingContract.sub(outsideStake)
-    if (print) {
-      console.log(`${account} SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}`)
-      console.log(`${account} Outside Stake: ${outsideStake} Staking: ${totalInStakingContract}`)
-      console.log(`(Staking) vs (DelegateManager + SPFactory) Stake discrepancy: ${stakeDiscrepancy}`)
-    }
-    return {
+    let accountSummary = {
       totalInStakingContract,
       delegatedStake,
       spFactoryStake,
@@ -177,6 +199,14 @@ contract('DelegateManager', async (accounts) => {
       lockedUpStake,
       totalActiveStake
     }
+
+    if (print) {
+      console.log(`${account} SpFactory: ${spFactoryStake}, DelegateManager: ${delegatedStake}`)
+      console.log(`${account} Outside Stake: ${outsideStake} Staking: ${totalInStakingContract}`)
+      console.log(`(Staking) vs (DelegateManager + SPFactory) Stake discrepancy: ${stakeDiscrepancy}`)
+      console.dir(accountSummary, { depth: 5 })
+    }
+    return accountSummary
   }
 
   describe('Delegation tests', () => {
@@ -604,7 +634,7 @@ contract('DelegateManager', async (accounts) => {
         'Confirm reward issued to service provider')
     })
 
-    // Confirm a pending undelegate operation negates any claimed value
+    // Confirm a pending undelegate operation is negated by a slash to the account
     it('single delegator + undelegate + slash', async () => {
       let initialDelegateAmount = toWei(60)
       let slashAmount = toWei(100)
@@ -739,6 +769,158 @@ contract('DelegateManager', async (accounts) => {
       )
 
       await delegateManager.claimRewards({ from: stakerAccount })
+    })
+
+    it('slash below sp bounds', async () => {
+      let preSlashInfo = await getAccountStakeInfo(stakerAccount, false)
+      // Set slash amount to all but 1 AUD for this SP
+      let diffAmount = toWei(1)
+      let slashAmount = (preSlashInfo.spFactoryStake).sub(diffAmount)
+
+      // Perform slash functions
+      await delegateManager.slash(slashAmount, slasherAccount)
+
+      let isWithinBounds = await serviceProviderFactory.isServiceProviderWithinBounds(slasherAccount)
+      assert.isFalse(
+        isWithinBounds,
+        'Bound violation expected')
+
+      // Initiate round
+      await claimFactory.initiateRound()
+
+      // Confirm claim is pending
+      let pendingClaim = await claimFactory.claimPending(stakerAccount)
+      assert.isTrue(pendingClaim, 'ClaimFactory expected to consider claim pending')
+
+      // Confirm claim fails due to bound violation
+      await _lib.assertRevert(
+        delegateManager.claimRewards({ from: stakerAccount }),
+        'Service provider must be within bounds'
+      )
+
+      // Try to increase by diffAmount, but expect rejection since lower bound is unmet
+      await _lib.assertRevert(
+        increaseRegisteredProviderStake(
+          diffAmount,
+          stakerAccount),
+        'Minimum stake threshold exceeded')
+
+      // Increase to minimum
+      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
+      let info = await getAccountStakeInfo(stakerAccount, false)
+      let increase = (bounds.min).sub(info.spFactoryStake)
+      // Increase to minimum bound
+      await increaseRegisteredProviderStake(
+        increase,
+        stakerAccount)
+
+      // Validate increase
+      isWithinBounds = await serviceProviderFactory.isServiceProviderWithinBounds(slasherAccount)
+      assert.isTrue(
+        isWithinBounds,
+        'Valid bound expected')
+
+      // Confirm claim STILL fails due to bound violation at fundblock
+      await _lib.assertRevert(
+        delegateManager.claimRewards({ from: stakerAccount }),
+        'Minimum stake bounds violated at fund block'
+      )
+    })
+
+    it('delegator increase/decrease + SP direct stake bound validation', async () => {
+      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
+      let delegateAmount = bounds.min
+      let info = await getAccountStakeInfo(stakerAccount, false)
+      let failedIncreaseAmount = bounds.max
+      // Transfer sufficient funds
+      await token.transfer(delegatorAccount1, failedIncreaseAmount, { from: treasuryAddress })
+      // Approve staking transfer
+      await token.approve(stakingAddress, failedIncreaseAmount, { from: delegatorAccount1 })
+      await _lib.assertRevert(
+        delegateManager.delegateStake(
+          stakerAccount,
+          failedIncreaseAmount,
+          { from: delegatorAccount1 }),
+        'Maximum stake amount exceeded'
+      )
+      let infoAfterFailure = await getAccountStakeInfo(stakerAccount, false)
+      assert.isTrue(
+        (info.delegatedStake).eq(infoAfterFailure.delegatedStake),
+        'No increase in delegated stake expected')
+
+      // Delegate min stake amount
+      await token.approve(
+        stakingAddress,
+        delegateAmount,
+        { from: delegatorAccount1 })
+      delegateManager.delegateStake(
+        stakerAccount,
+        delegateAmount,
+        { from: delegatorAccount1 })
+
+      // Remove deployer direct stake
+      // Decrease by all but 1 AUD direct stake
+      let spFactoryStake = infoAfterFailure.spFactoryStake
+      let diff = toWei(1)
+      // Confirm failure as direct stake threshold is violated
+      // Due to the total delegated stake equal to min bounds, total account stake balance will NOT violate bounds
+      await _lib.assertRevert(
+        decreaseRegisteredProviderStake(spFactoryStake.sub(diff), stakerAccount),
+        'Direct stake restriction violated for this service provider'
+      )
+
+      // Decrease to min
+      let spInfo = await getAccountStakeInfo(stakerAccount, false)
+      let minDirectStake = await serviceProviderFactory.getMinDirectDeployerStake()
+      let diffToMin = (spInfo.spFactoryStake).sub(minDirectStake)
+      await decreaseRegisteredProviderStake(diffToMin, stakerAccount)
+      let infoAfterDecrease = await getAccountStakeInfo(stakerAccount, false)
+      assert.isTrue(
+        (infoAfterDecrease.spFactoryStake).eq(minDirectStake),
+        'Expect min direct stake while within total account bounds')
+
+      // At this point we have a total stake of 2x the minimum for this SP
+      // 1x Min directly from SP
+      // 1x Min from our single delegator
+      // So - a service provider should be able to register with NO additional stake and still be within bounds
+      await registerServiceProvider(
+        testDiscProvType,
+        testEndpoint3,
+        toWei(0),
+        stakerAccount)
+
+      let infoAfterSecondEndpoint = await getAccountStakeInfo(stakerAccount, false)
+      assert.isTrue(
+        (infoAfterSecondEndpoint.totalInStakingContract).eq(infoAfterDecrease.totalInStakingContract),
+        'Expect static total stake after new SP endpoint'
+      )
+
+      // Now, initiate a request to undelegate for this SP
+      await delegateManager.requestUndelegateStake(
+        stakerAccount,
+        delegateAmount,
+        { from: delegatorAccount1 }
+      )
+      // Confirm lockup amount is registered
+      let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      assert.isTrue(
+        undelegateRequestInfo.amount.eq(delegateAmount),
+        'Expect request to match undelegate amount')
+
+      // Advance to valid block
+      await _lib.advanceToTargetBlock(
+        fromBn(undelegateRequestInfo.lockupExpiryBlock),
+        web3
+      )
+      let currentBlock = await web3.eth.getBlock('latest')
+      let currentBlockNum = currentBlock.number
+      assert.isTrue(
+        (web3.utils.toBN(currentBlockNum)).gte(undelegateRequestInfo.lockupExpiryBlock),
+        'Confirm expired lockup period')
+      // Try to execute undelegate stake, but fail due to min bound violation
+      await _lib.assertRevert(
+        delegateManager.undelegateStake({ from: delegatorAccount1 }),
+        'Minimum stake threshold exceeded')
     })
   })
 })

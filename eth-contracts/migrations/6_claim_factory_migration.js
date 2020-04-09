@@ -4,6 +4,7 @@ const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
 const Registry = artifacts.require('Registry')
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
 const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
@@ -16,7 +17,8 @@ module.exports = (deployer, network, accounts) => {
       ClaimFactory,
       AudiusToken.address,
       registry.address,
-      ownedUpgradeabilityProxyKey)
+      ownedUpgradeabilityProxyKey,
+      serviceProviderFactoryKey)
 
     let claimFactory = await ClaimFactory.deployed()
 

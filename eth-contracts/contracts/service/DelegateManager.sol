@@ -149,6 +149,11 @@ contract DelegateManager is RegistryContract {
         // Update total delegated stake
         delegatorStakeTotal[delegator] += _amount;
 
+        // Validate balance
+        ServiceProviderFactory(
+            registry.getContract(serviceProviderFactoryKey)
+        ).validateAccountStakeBalance(_target);
+
         // Return new total
         return delegateInfo[delegator][_target];
     }
@@ -288,6 +293,11 @@ contract DelegateManager is RegistryContract {
             serviceProvider: address(0)
         });
 
+        // Validate balance
+        ServiceProviderFactory(
+            registry.getContract(serviceProviderFactoryKey)
+        ).validateAccountStakeBalance(serviceProvider);
+
         // Return new total
         return delegateInfo[delegator][serviceProvider];
     }
@@ -305,13 +315,19 @@ contract DelegateManager is RegistryContract {
         );
         // Pass in locked amount for claimer
         uint totalLockedForClaimer = spDelegateInfo[msg.sender].totalLockedUpStake;
-        // Process claim for msg.sender
-        claimFactory.processClaim(msg.sender, totalLockedForClaimer);
 
         // address claimer = msg.sender;
         ServiceProviderFactory spFactory = ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)
         );
+
+        // Confirm service provider is valid 
+        require(
+          spFactory.isServiceProviderWithinBounds(msg.sender),
+          'Service provider must be within bounds');
+
+        // Process claim for msg.sender
+        claimFactory.processClaim(msg.sender, totalLockedForClaimer);
 
         // Amount stored in staking contract for owner
         uint totalBalanceInStaking = Staking(
@@ -322,6 +338,7 @@ contract DelegateManager is RegistryContract {
         // Amount in sp factory for claimer
         uint totalBalanceInSPFactory = spFactory.getServiceProviderStake(msg.sender);
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
+
 
         // Amount in delegate manager staked to service provider
         uint totalBalanceInDelegateManager = spDelegateInfo[msg.sender].totalDelegatedStake;
@@ -377,7 +394,6 @@ contract DelegateManager is RegistryContract {
         // Update total delegated to this SP
         spDelegateInfo[msg.sender].totalDelegatedStake += totalDelegatedStakeIncrease;
 
-        // TODO: Validate below with test cases
         uint spRewardShare = (
           totalBalanceInSPFactory.mul(totalRewards)
         ).div(totalActiveFunds);
