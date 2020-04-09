@@ -10,8 +10,15 @@ const AudiusToken = artifacts.require('AudiusToken')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const Governance = artifacts.require('Governance')
+const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
+const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
+const DelegateManager = artifacts.require('DelegateManager')
+const ClaimFactory = artifacts.require('ClaimFactory')
 
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
+const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
+const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
+const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
 
@@ -58,74 +65,149 @@ contract('Governance.sol', async (accounts) => {
   let tokenContract
   let stakingContract
   let registryContract
+  let serviceProviderStorageContract
+  let serviceProviderFactoryContract
+  let claimFactoryContract
+  let delegateManagerContract
   let governanceContract
 
   const votingPeriod = 10
   const votingQuorum = 1
-  const defaultStakeAmount = audToWei(1000)
-  const proposalDescription = "TestDescription"
   const treasuryAddress = accounts[0]
-  // Dummy stand in for SP factory in actual deployment
-  const stakingContractCallerAddress = accounts[9]
   const protocolOwnerAddress = treasuryAddress
+  const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
+  const testEndpoint1 = 'https://localhost:5000'
+  const testEndpoint2 = 'https://localhost:5001'
 
-  const approveAndStake = async (stakeAmount, stakerAddress) => {
-    // Allow Staking app to move owner tokens
-    await tokenContract.approve(stakingContract.address, stakeAmount, { from: stakerAddress })
-    // Stake tokens
-    await stakingContract.stakeFor(
-      stakerAddress,
-      stakeAmount,
-      web3.utils.utf8ToHex(''),
-      { from: stakingContractCallerAddress })
+  const registerServiceProvider = async (type, endpoint, amount, account) => {
+    // Approve staking transfer
+    await tokenContract.approve(stakingContract.address, amount, { from: account })
+
+    const tx = await serviceProviderFactoryContract.register(
+      type,
+      endpoint,
+      amount,
+      account,
+      { from: account }
+    )
+
+    const args = tx.logs.find(log => log.event === 'RegisteredServiceProvider').args
+    args.stakedAmountInt = fromBn(args._stakeAmount)
+    args.spID = fromBn(args._spID)
+    return args
   }
 
-  describe('Staking.slash proposal', async () => {
-    /**
-     * Deploy Registry, OwnedUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts.
-     */
+  /**
+   * Deploy Registry, OwnedUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts.
+   */
+  beforeEach(async () => {
+    registryContract = await Registry.new()
+    proxyContract = await OwnedUpgradeabilityProxy.new({ from: protocolOwnerAddress })
+    await registryContract.addContract(ownedUpgradeabilityProxyKey, proxyContract.address)
+
+    tokenContract = await AudiusToken.new({ from: treasuryAddress })
+
+    const stakingContract0 = await Staking.new()
+    // Create initialization data
+    const initializeData = encodeCall(
+      'initialize',
+      ['address', 'address'],
+      [tokenContract.address, treasuryAddress]
+    )
+
+    // Initialize staking contract
+    await proxyContract.upgradeToAndCall(
+      stakingContract0.address,
+      initializeData,
+      { from: protocolOwnerAddress }
+    )
+
+    stakingContract = await Staking.at(proxyContract.address)
+
+    // Deploy + Registery ServiceProviderStorage contract
+    serviceProviderStorageContract = await ServiceProviderStorage.new(registryContract.address)
+    await registryContract.addContract(serviceProviderStorageKey, serviceProviderStorageContract.address)
+
+    // Deploy + Register ServiceProviderFactory contract
+    serviceProviderFactoryContract = await ServiceProviderFactory.new(
+      registryContract.address,
+      ownedUpgradeabilityProxyKey,
+      serviceProviderStorageKey
+    )
+    await registryContract.addContract(serviceProviderFactoryKey, serviceProviderFactoryContract.address)
+
+    // Permission sp factory as caller, from the treasuryAddress, which is proxy owner
+    await stakingContract.setStakingOwnerAddress(serviceProviderFactoryContract.address, { from: treasuryAddress })
+
+    // Deploy + Register ClaimFactory contract
+    claimFactoryContract = await ClaimFactory.new(
+      tokenContract.address,
+      registryContract.address,
+      ownedUpgradeabilityProxyKey,
+      { from: treasuryAddress }
+    )
+    await registryContract.addContract(claimFactoryKey, claimFactoryContract.address)
+
+    // Register new contract as a minter, from the same address that deployed the contract
+    await tokenContract.addMinter(claimFactoryContract.address, { from: treasuryAddress })
+
+    // Deploy DelegateManager contract
+    delegateManagerContract = await DelegateManager.new(
+      tokenContract.address,
+      registryContract.address,
+      ownedUpgradeabilityProxyKey,
+      serviceProviderFactoryKey,
+      claimFactoryKey
+    )
+
+    // Deploy Governance contract
+    governanceContract = await Governance.new(
+      registryContract.address,
+      ownedUpgradeabilityProxyKey,
+      votingPeriod,
+      votingQuorum,
+      { from: protocolOwnerAddress }
+    )
+  })
+
+  describe('Slash proposal', async () => {
+    const defaultStakeAmount = audToWei(1000)
+    const proposalDescription = "TestDescription"
+    const stakerAccount1 = accounts[1]
+    const stakerAccount2 = accounts[2]
+    const delegatorAccount1 = accounts[3]
+    
     beforeEach(async () => {
-      registryContract = await Registry.new()
-      proxyContract = await OwnedUpgradeabilityProxy.new({ from: protocolOwnerAddress })
-      await registryContract.addContract(ownedUpgradeabilityProxyKey, proxyContract.address)
+      // Transfer 1000 tokens to stakerAccount1, stakerAccount2, and delegatorAccount1
+      await tokenContract.transfer(stakerAccount1, defaultStakeAmount, { from: treasuryAddress })
+      await tokenContract.transfer(stakerAccount2, defaultStakeAmount, { from: treasuryAddress })
+      await tokenContract.transfer(delegatorAccount1, defaultStakeAmount, { from: treasuryAddress })
 
-      tokenContract = await AudiusToken.new({ from: treasuryAddress })
+      // Record initial staker account token balance
+      const initialBalance = await tokenContract.balanceOf(stakerAccount1)
 
-      const stakingContract0 = await Staking.new()
-      // Create initialization data
-      const initializeData = encodeCall(
-        'initialize',
-        ['address', 'address'],
-        [tokenContract.address, treasuryAddress]
+      // Register two SPs with stake
+      const tx1 = await registerServiceProvider(
+        testDiscProvType,
+        testEndpoint1,
+        defaultStakeAmount,
+        stakerAccount1
+      )
+      const tx2 = await registerServiceProvider(
+        testDiscProvType,
+        testEndpoint2,
+        defaultStakeAmount,
+        stakerAccount2
       )
 
-      // Transfer 1000 tokens to accounts[1] and accounts[2]
-      await tokenContract.transfer(accounts[1], defaultStakeAmount, { from: treasuryAddress })
-      await tokenContract.transfer(accounts[2], defaultStakeAmount, { from: treasuryAddress })
+      // Confirm event has correct amount
+      assert.equal(tx1.stakedAmountInt, defaultStakeAmount)
 
-      // Initialize staking contract
-      await proxyContract.upgradeToAndCall(
-        stakingContract0.address,
-        initializeData,
-        { from: protocolOwnerAddress }
-      )
-
-      stakingContract = await Staking.at(proxyContract.address)
-
-      // Permission test address as caller
-      await stakingContract.setStakingOwnerAddress(stakingContractCallerAddress, { from: protocolOwnerAddress })
-
-      // Set up initial stakes
-      await approveAndStake(defaultStakeAmount, accounts[1])
-      await approveAndStake(defaultStakeAmount, accounts[2])
-
-      // Deploy Governance contract
-      governanceContract = await Governance.new(
-        registryContract.address,
-        ownedUpgradeabilityProxyKey,
-        votingPeriod,
-        votingQuorum,
-        { from: protocolOwnerAddress }
+      // Confirm new token balances
+      const finalBalance = await tokenContract.balanceOf(stakerAccount1)
+      assert.isTrue(
+        initialBalance.eq(finalBalance.add(defaultStakeAmount)),
+        "Expected balances to be equal"
       )
     })
 
@@ -134,13 +216,13 @@ contract('Governance.sol', async (accounts) => {
       await _lib.assertRevert(governanceContract.getProposalById(1), 'Must provide valid non-zero _proposalId')
     })
 
-    it('Submit Proposal for Staking.slash()', async () => {
+    it('Submit Proposal for Slash', async () => {
       const proposalId = 1
       const proposerAddress = accounts[1]
       const slashAmount = 1
       const targetAddress = accounts[2]
       const lastBlock = (await _lib.getLatestBlock(web3)).number
-      const targetContract = stakingContract.address
+      const targetContract = delegateManagerContract.address
       const callValue = bigNumberify(0)
       const signature = 'slash(uint256,address)'
       const callData = abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
@@ -188,7 +270,7 @@ contract('Governance.sol', async (accounts) => {
       }
     })
 
-    it('Vote on Proposal for Staking.slash()', async () => {
+    it('Vote on Proposal for Slash', async () => {
       const proposalId = 1
       const proposerAddress = accounts[1]
       const slashAmount = 1
@@ -197,7 +279,7 @@ contract('Governance.sol', async (accounts) => {
       const vote = Vote.No
       const defaultVote = Vote.None
       const lastBlock = (await _lib.getLatestBlock(web3)).number
-      const targetContract = stakingContract.address
+      const targetContract = delegateManagerContract.address
       const callValue = bigNumberify(0)
       const signature = 'slash(uint256,address)'
       const callData = abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
@@ -249,20 +331,20 @@ contract('Governance.sol', async (accounts) => {
       }
     })
 
-    it('Evaluate successful Proposal for Staking.slash()', async () => {
+    it('Evaluate successful Proposal + execute Slash', async () => {
       const proposalId = 1
-      const proposerAddress = accounts[1]
+      const proposerAddress = stakerAccount1
       const slashAmount = 1
-      const targetAddress = accounts[2]
-      const voterAddress = accounts[1]
+      const targetAddress = stakerAccount2
+      const voterAddress = stakerAccount1
       const vote = Vote.Yes
       const defaultVote = Vote.None
       const lastBlock = (await _lib.getLatestBlock(web3)).number
-      const targetContract = stakingContract.address
+      const targetContract = delegateManagerContract.address
       const callValue = bigNumberify(0)
       const signature = 'slash(uint256,address)'
       const callData = abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
-      const outcome = Outcome.Yes
+      const outcome = Outcome.Yes 
       const txHash = keccak256(
         abiEncode(
           ['address', 'uint256', 'string', 'bytes'],
@@ -350,7 +432,7 @@ contract('Governance.sol', async (accounts) => {
     })
   })
 
-  describe.skip('OTHER Proposal TODO', async () => {
-    
+  describe.skip('Upgrade contract', async () => {
+    // example upgradeProxy.test.js:63
   })
 })

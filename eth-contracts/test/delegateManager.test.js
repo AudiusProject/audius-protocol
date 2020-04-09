@@ -181,6 +181,7 @@ contract('DelegateManager', async (accounts) => {
 
   describe('Delegation tests', () => {
     let regTx
+
     beforeEach(async () => {
       // Transfer 1000 tokens to stakers
       await token.transfer(stakerAccount, INITIAL_BAL, { from: treasuryAddress })
