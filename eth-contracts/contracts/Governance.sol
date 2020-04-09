@@ -21,7 +21,8 @@ contract Governance {
         uint256 proposalId;
         address proposer;
         uint256 startBlockNumber;
-        address targetContract;
+        bytes32 targetContractRegistryKey;
+        address targetContractAddress;
         uint callValue;
         string signature;
         bytes callData;
@@ -39,12 +40,8 @@ contract Governance {
     /***** Events *****/
     event ProposalSubmitted(
         uint256 indexed proposalId,
-        address proposer,
+        address indexed proposer,
         uint256 startBlockNumber,
-        address targetContract,
-        uint callValue,
-        string signature,
-        bytes callData,
         string description
     );
     event ProposalVoteSubmitted(
@@ -63,7 +60,7 @@ contract Governance {
     );
     event TransactionExecuted(
         bytes32 indexed txHash,
-        address targetContract,
+        address targetContractAddress,
         uint callValue,
         string signature,
         bytes callData,
@@ -91,7 +88,7 @@ contract Governance {
     // ========================================= Governance Actions =========================================
 
     function submitProposal(
-        address _targetContract,
+        bytes32 _targetContractRegistryKey,
         uint256 _callValue,
         string calldata _signature,
         bytes calldata _callData,
@@ -100,22 +97,30 @@ contract Governance {
     {
         address proposer = msg.sender;
 
-        // Require proposer is active Staker.
+        // Require proposer is active Staker
         Staking stakingContract = Staking(registry.getContract(stakingProxyOwnerKey));
         require(
             stakingContract.totalStakedFor(proposer) > 0,
             "Proposer must be active staker with non-zero stake."
         );
 
-        // set proposalId.
+        // Require _targetContractRegistryKey points to a valid registered contract
+        address targetContractAddress = registry.getContract(_targetContractRegistryKey);
+        require(
+            targetContractAddress != address(0x00),
+            "_targetContractRegistryKey must point to valid registered contract"
+        );
+
+        // set proposalId
         uint256 newProposalId = lastProposalId + 1;
 
-        // Create new Proposal obj and store in slashProposals mapping.
+        // Store new Proposal obj in proposals mapping
         proposals[newProposalId] = Proposal({
             proposalId: newProposalId,
             proposer: proposer,
             startBlockNumber: block.number,
-            targetContract: _targetContract,
+            targetContractRegistryKey: _targetContractRegistryKey,
+            targetContractAddress: targetContractAddress,
             callValue: _callValue,
             signature: _signature,
             callData: _callData,
@@ -123,17 +128,13 @@ contract Governance {
             voteMagnitudeYes: 0,
             voteMagnitudeNo: 0,
             numVotes: 0
-            /** votes: mappings are auto-initialized to default state. */
+            /** votes: mappings are auto-initialized to default state */
         });
 
         emit ProposalSubmitted(
             newProposalId,
             proposer,
             block.number,
-            _targetContract,
-            _callValue,
-            _signature,
-            _callData,
             _description
         );
 
@@ -230,6 +231,15 @@ contract Governance {
             "Proposal votingPeriod must end before evaluation."
         );
 
+        // Require registered contract address for provided registryKey has not changed.
+        address targetContractAddress = registry.getContract(
+            proposals[_proposalId].targetContractRegistryKey
+        );
+        require(
+            targetContractAddress == proposals[_proposalId].targetContractAddress,
+            "Registered contract address for targetContractRegistryKey has changed"
+        );
+
         // Calculate outcome
         Outcome outcome;
         if (proposals[_proposalId].numVotes < votingQuorum) {
@@ -240,7 +250,7 @@ contract Governance {
             outcome = Outcome.Yes;
 
             _executeTransaction(
-                proposals[_proposalId].targetContract,
+                proposals[_proposalId].targetContractAddress,
                 proposals[_proposalId].callValue,
                 proposals[_proposalId].signature,
                 proposals[_proposalId].callData
@@ -270,7 +280,8 @@ contract Governance {
         uint256 proposalId,
         address proposer,
         uint256 startBlockNumber,
-        address targetContract,
+        bytes32 targetContractRegistryKey,
+        address targetContractAddress,
         uint callValue,
         string memory signature,
         bytes memory callData,
@@ -290,7 +301,8 @@ contract Governance {
             proposal.proposalId,
             proposal.proposer,
             proposal.startBlockNumber,
-            proposal.targetContract,
+            proposal.targetContractRegistryKey,
+            proposal.targetContractAddress,
             proposal.callValue,
             proposal.signature,
             proposal.callData,
@@ -315,7 +327,7 @@ contract Governance {
     // ========================================= Private =========================================
 
     function _executeTransaction(
-        address _targetContract,
+        address _targetContractAddress,
         uint256 _callValue,
         string memory _signature,
         bytes memory _callData
@@ -323,7 +335,7 @@ contract Governance {
     {
         bytes32 txHash = keccak256(
             abi.encode(
-                _targetContract, _callValue, _signature, _callData
+                _targetContractAddress, _callValue, _signature, _callData
             )
         );
 
@@ -335,13 +347,15 @@ contract Governance {
             callData = abi.encodePacked(bytes4(keccak256(bytes(_signature))), _callData);
         }
 
-        // solium-disable-next-line security/no-call-value
-        (bool success, bytes memory returnData) = _targetContract.call.value(_callValue)(callData);
+        (bool success, bytes memory returnData) = (
+            // solium-disable-next-line security/no-call-value
+            _targetContractAddress.call.value(_callValue)(callData)
+        );
         require(success, "Governance::executeTransaction:Transaction execution reverted.");
 
         emit TransactionExecuted(
             txHash,
-            _targetContract,
+            _targetContractAddress,
             _callValue,
             _signature,
             _callData,

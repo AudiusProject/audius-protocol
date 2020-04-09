@@ -19,6 +19,7 @@ const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityPro
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManagerKey')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
 
@@ -73,8 +74,8 @@ contract('Governance.sol', async (accounts) => {
 
   const votingPeriod = 10
   const votingQuorum = 1
-  const treasuryAddress = accounts[0]
-  const protocolOwnerAddress = treasuryAddress
+  const protocolOwnerAddress = accounts[0]
+  const treasuryAddress = protocolOwnerAddress
   const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
   const testEndpoint1 = 'https://localhost:5000'
   const testEndpoint2 = 'https://localhost:5001'
@@ -101,18 +102,18 @@ contract('Governance.sol', async (accounts) => {
    * Deploy Registry, OwnedUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts.
    */
   beforeEach(async () => {
-    registryContract = await Registry.new()
+    registryContract = await Registry.new({ from: protocolOwnerAddress })
     proxyContract = await OwnedUpgradeabilityProxy.new({ from: protocolOwnerAddress })
-    await registryContract.addContract(ownedUpgradeabilityProxyKey, proxyContract.address)
+    await registryContract.addContract(ownedUpgradeabilityProxyKey, proxyContract.address, { from: protocolOwnerAddress })
 
-    tokenContract = await AudiusToken.new({ from: treasuryAddress })
+    tokenContract = await AudiusToken.new({ from: protocolOwnerAddress })
 
-    const stakingContract0 = await Staking.new()
+    const stakingContract0 = await Staking.new({ from: protocolOwnerAddress })
     // Create initialization data
     const initializeData = encodeCall(
       'initialize',
       ['address', 'address'],
-      [tokenContract.address, treasuryAddress]
+      [tokenContract.address, protocolOwnerAddress]
     )
 
     // Initialize staking contract
@@ -125,8 +126,8 @@ contract('Governance.sol', async (accounts) => {
     stakingContract = await Staking.at(proxyContract.address)
 
     // Deploy + Registery ServiceProviderStorage contract
-    serviceProviderStorageContract = await ServiceProviderStorage.new(registryContract.address)
-    await registryContract.addContract(serviceProviderStorageKey, serviceProviderStorageContract.address)
+    serviceProviderStorageContract = await ServiceProviderStorage.new(registryContract.address, { from: protocolOwnerAddress })
+    await registryContract.addContract(serviceProviderStorageKey, serviceProviderStorageContract.address, { from: protocolOwnerAddress })
 
     // Deploy + Register ServiceProviderFactory contract
     serviceProviderFactoryContract = await ServiceProviderFactory.new(
@@ -134,22 +135,22 @@ contract('Governance.sol', async (accounts) => {
       ownedUpgradeabilityProxyKey,
       serviceProviderStorageKey
     )
-    await registryContract.addContract(serviceProviderFactoryKey, serviceProviderFactoryContract.address)
+    await registryContract.addContract(serviceProviderFactoryKey, serviceProviderFactoryContract.address, { from: protocolOwnerAddress })
 
     // Permission sp factory as caller, from the treasuryAddress, which is proxy owner
-    await stakingContract.setStakingOwnerAddress(serviceProviderFactoryContract.address, { from: treasuryAddress })
+    await stakingContract.setStakingOwnerAddress(serviceProviderFactoryContract.address, { from: protocolOwnerAddress })
 
     // Deploy + Register ClaimFactory contract
     claimFactoryContract = await ClaimFactory.new(
       tokenContract.address,
       registryContract.address,
       ownedUpgradeabilityProxyKey,
-      { from: treasuryAddress }
+      { from: protocolOwnerAddress }
     )
-    await registryContract.addContract(claimFactoryKey, claimFactoryContract.address)
+    await registryContract.addContract(claimFactoryKey, claimFactoryContract.address, { from: protocolOwnerAddress })
 
     // Register new contract as a minter, from the same address that deployed the contract
-    await tokenContract.addMinter(claimFactoryContract.address, { from: treasuryAddress })
+    await tokenContract.addMinter(claimFactoryContract.address, { from: protocolOwnerAddress })
 
     // Deploy DelegateManager contract
     delegateManagerContract = await DelegateManager.new(
@@ -159,6 +160,7 @@ contract('Governance.sol', async (accounts) => {
       serviceProviderFactoryKey,
       claimFactoryKey
     )
+    await registryContract.addContract(delegateManagerKey, delegateManagerContract.address, { from: protocolOwnerAddress })
 
     // Deploy Governance contract
     governanceContract = await Governance.new(
@@ -216,20 +218,43 @@ contract('Governance.sol', async (accounts) => {
       await _lib.assertRevert(governanceContract.getProposalById(1), 'Must provide valid non-zero _proposalId')
     })
 
+    it('Should fail to Submit Proposal for unregistered target contract', async () => {
+      const proposerAddress = accounts[1]
+      const slashAmount = 1
+      const targetAddress = accounts[2]
+      const targetContractRegistryKey = web3.utils.utf8ToHex("blahblah")
+      const callValue = bigNumberify(0)
+      const signature = 'slash(uint256,address)'
+      const callData = abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
+
+      await _lib.assertRevert(
+        governanceContract.submitProposal(
+          targetContractRegistryKey,
+          callValue,
+          signature,
+          callData,
+          proposalDescription,
+          { from: proposerAddress }
+        ),
+        "_targetContractRegistryKey must point to valid registered contract"
+      )
+    })
+
     it('Submit Proposal for Slash', async () => {
       const proposalId = 1
       const proposerAddress = accounts[1]
       const slashAmount = 1
       const targetAddress = accounts[2]
       const lastBlock = (await _lib.getLatestBlock(web3)).number
-      const targetContract = delegateManagerContract.address
+      const targetContractRegistryKey = delegateManagerKey
+      const targetContractAddress = delegateManagerContract.address
       const callValue = bigNumberify(0)
       const signature = 'slash(uint256,address)'
       const callData = abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
 
       // Call submitProposal
       const txReceipt = await governanceContract.submitProposal(
-        targetContract,
+        targetContractRegistryKey,
         callValue,
         signature,
         callData,
@@ -243,10 +268,6 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
       assert.equal(txParsed.event.args.proposer, proposerAddress, 'Expected same event.args.proposer')
       assert.isTrue(parseInt(txParsed.event.args.startBlockNumber) > lastBlock, 'Expected event.args.startBlockNumber > lastBlock')
-      assert.equal(txParsed.event.args.targetContract, targetContract, 'Expected same event.args.targetContract')
-      assert.equal(fromBn(txParsed.event.args.callValue), callValue, 'Expected same event.args.callValue')
-      assert.equal(txParsed.event.args.signature, signature, 'Expected same event.args.signature')
-      assert.equal(txParsed.event.args.callData, callData, 'Expected same event.args.callData')
       assert.equal(txParsed.event.args.description, proposalDescription, "Expected same event.args.description")
 
       // Call getProposalById() and confirm same values
@@ -254,7 +275,8 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
       assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
       assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
-      assert.equal(proposal.targetContract, targetContract, 'Expected same proposal.targetContract')
+      assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
+      assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
       assert.equal(fromBn(proposal.callValue), callValue, 'Expected same proposal.callValue')
       assert.equal(proposal.signature, signature, 'Expected same proposal.signature')
       assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
@@ -272,21 +294,22 @@ contract('Governance.sol', async (accounts) => {
 
     it('Vote on Proposal for Slash', async () => {
       const proposalId = 1
-      const proposerAddress = accounts[1]
+      const proposerAddress = stakerAccount1
       const slashAmount = 1
-      const targetAddress = accounts[2]
-      const voterAddress = accounts[1]
+      const targetAddress = stakerAccount2
+      const voterAddress = stakerAccount1
       const vote = Vote.No
       const defaultVote = Vote.None
       const lastBlock = (await _lib.getLatestBlock(web3)).number
-      const targetContract = delegateManagerContract.address
+      const targetContractRegistryKey = delegateManagerKey
+      const targetContractAddress = delegateManagerContract.address
       const callValue = bigNumberify(0)
       const signature = 'slash(uint256,address)'
       const callData = abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
 
       // Call submitProposal
       await governanceContract.submitProposal(
-        targetContract,
+        targetContractRegistryKey,
         callValue,
         signature,
         callData,
@@ -311,7 +334,8 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
       assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
       assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
-      assert.equal(proposal.targetContract, targetContract, 'Expected same proposal.targetContract')
+      assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
+      assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
       assert.equal(fromBn(proposal.callValue), callValue, 'Expected same proposal.callValue')
       assert.equal(proposal.signature, signature, 'Expected same proposal.signature')
       assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
@@ -340,7 +364,8 @@ contract('Governance.sol', async (accounts) => {
       const vote = Vote.Yes
       const defaultVote = Vote.None
       const lastBlock = (await _lib.getLatestBlock(web3)).number
-      const targetContract = delegateManagerContract.address
+      const targetContractRegistryKey = delegateManagerKey
+      const targetContractAddress = delegateManagerContract.address
       const callValue = bigNumberify(0)
       const signature = 'slash(uint256,address)'
       const callData = abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
@@ -348,7 +373,7 @@ contract('Governance.sol', async (accounts) => {
       const txHash = keccak256(
         abiEncode(
           ['address', 'uint256', 'string', 'bytes'],
-          [targetContract, callValue, signature, callData]
+          [targetContractAddress, callValue, signature, callData]
         )
       )
       const returnData = null
@@ -361,7 +386,7 @@ contract('Governance.sol', async (accounts) => {
 
       // Call submitProposal + submitProposalVote
       const submitProposalTxReceipt = await governanceContract.submitProposal(
-        targetContract,
+        targetContractRegistryKey,
         callValue,
         signature,
         callData,
@@ -379,13 +404,13 @@ contract('Governance.sol', async (accounts) => {
       }
 
       // Call evaluateProposalOutcome()
-      const txReceipt = await governanceContract.evaluateProposalOutcome(proposalId, { from: proposerAddress })
+      const evaluateTxReceipt = await governanceContract.evaluateProposalOutcome(proposalId, { from: proposerAddress })
 
       // Confirm event logs (2 events)
-      const [txParsedEvent0, txParsedEvent1] = _lib.parseTx(txReceipt, true)
+      const [txParsedEvent0, txParsedEvent1] = _lib.parseTx(evaluateTxReceipt, true)
       assert.equal(txParsedEvent0.event.name, 'TransactionExecuted', 'Expected same event name')
       assert.equal(txParsedEvent0.event.args.txHash, txHash, 'Expected same txParsedEvent0.event.args.txHash')
-      assert.equal(txParsedEvent0.event.args.targetContract, targetContract, 'Expected same txParsedEvent0.event.args.targetContract')
+      assert.equal(txParsedEvent0.event.args.targetContractAddress, targetContractAddress, 'Expected same txParsedEvent0.event.args.targetContractAddress')
       assert.equal(fromBn(txParsedEvent0.event.args.callValue), callValue, 'Expected same txParsedEvent0.event.args.callValue')
       assert.equal(txParsedEvent0.event.args.signature, signature, 'Expected same txParsedEvent0.event.args.signature')
       assert.equal(txParsedEvent0.event.args.callData, callData, 'Expected same txParsedEvent0.event.args.callData')
@@ -402,7 +427,8 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
       assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
       assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
-      assert.equal(proposal.targetContract, targetContract, 'Expected same proposal.targetContract')
+      assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
+      assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
       assert.equal(fromBn(proposal.callValue), callValue, 'Expected same proposal.callValue')
       assert.equal(proposal.signature, signature, 'Expected same proposal.signature')
       assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
@@ -434,5 +460,9 @@ contract('Governance.sol', async (accounts) => {
 
   describe.skip('Upgrade contract', async () => {
     // example upgradeProxy.test.js:63
+  })
+
+  describe.skip('Fail to execute proposal after targetContract is upgraded', async () => {
+    /** TODO */
   })
 })
