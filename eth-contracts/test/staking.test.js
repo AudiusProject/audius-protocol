@@ -84,6 +84,7 @@ contract('Staking test', async (accounts) => {
     // Permission test address as caller
     await staking.setStakingOwnerAddress(testStakingCallerAddress, { from: treasuryAddress })
   })
+
   it('has correct initial state', async () => {
     assert.equal(await staking.token(), tokenAddress, 'Token is wrong')
     assert.equal((await staking.totalStaked()).valueOf(), 0, 'Initial total staked amount should be zero')
@@ -185,37 +186,40 @@ contract('Staking test', async (accounts) => {
       'Final stake amount must be 2x default stake')
   })
 
-  it('slash functioning as expected', async () => {
-    // Transfer 1000 tokens to accounts[1], accounts[2]
-    await token.transfer(accounts[1], DEFAULT_AMOUNT, { from: treasuryAddress })
-    await token.transfer(accounts[2], DEFAULT_AMOUNT, { from: treasuryAddress })
+  it('slash account', async () => {
+    const account = accounts[1]
+    const slashAmount = web3.utils.toBN(DEFAULT_AMOUNT / 2)
 
-    // Stake w/both accounts
-    await approveAndStake(DEFAULT_AMOUNT, accounts[1])
-    await approveAndStake(DEFAULT_AMOUNT, accounts[2])
+    // Transfer & stake
+    await token.transfer(account, DEFAULT_AMOUNT, { from: treasuryAddress })
+    await approveAndStake(DEFAULT_AMOUNT, account)
 
-    let initialStakeBN = await staking.totalStaked()
-    let initialTotalStake = parseInt(initialStakeBN)
-    let initialStakeAmount = parseInt(await staking.totalStakedFor(accounts[1]))
+    // Confirm initial Staking state
+    const initialStakeBN = await staking.totalStaked()
+    const tokenInitialSupply = await token.totalSupply()
+    const initialStakeAmount = parseInt(await staking.totalStakedFor(account))
     assert.equal(initialStakeAmount, DEFAULT_AMOUNT)
 
-    let slashAmount = web3.utils.toBN(DEFAULT_AMOUNT / 2)
-
-    // Slash 1/2 value from treasury
-    await slashAccount(
-      slashAmount,
-      accounts[1],
-      treasuryAddress)
+    // Slash account's stake
+    await slashAccount(slashAmount, account, treasuryAddress)
 
     // Confirm staked value for account
-    let finalAccountStake = parseInt(await staking.totalStakedFor(accounts[1]))
+    const finalAccountStake = parseInt(await staking.totalStakedFor(account))
     assert.equal(finalAccountStake, DEFAULT_AMOUNT / 2)
 
     // Confirm total stake is decreased after slash
-    let finalTotalStake = await staking.totalStaked()
+    const finalTotalStake = await staking.totalStaked()
     assert.isTrue(
       finalTotalStake.eq(initialStakeBN.sub(slashAmount)),
-      'Expect total amount decreased')
+      'Expect total amount decreased'
+    )
+
+    // Confirm token total supply decreased after burn
+    assert.equal(
+      await token.totalSupply(),
+      tokenInitialSupply - slashAmount,
+      "ruh roh"
+    )
   })
 
   it('multiple claims, single fund cycle', async () => {
