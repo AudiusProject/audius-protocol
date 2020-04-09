@@ -917,7 +917,6 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(
         (web3.utils.toBN(currentBlockNum)).gte(undelegateRequestInfo.lockupExpiryBlock),
         'Confirm expired lockup period')
-
       // Try to execute undelegate stake, but fail due to min bound violation
       await _lib.assertRevert(
         delegateManager.undelegateStake({ from: delegatorAccount1 }),
