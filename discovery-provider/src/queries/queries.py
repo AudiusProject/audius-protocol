@@ -1922,9 +1922,6 @@ def get_top_genre_users():
             )
         )
 
-        if not with_genres: 
-            user_genre_count_query = user_genre_count_query.filter(Track.genre.isnot(None))
-
         user_genre_count_query = user_genre_count_query.subquery('user_genre_count_query')
 
         user_genre_query = (
@@ -1955,7 +1952,7 @@ def get_top_genre_users():
             )
         )
 
-        if with_genres: 
+        if with_genres:
             user_genre_followers_query = user_genre_followers_query.filter(user_genre_query.c.genre.in_(genres))
 
         # If the with_users flag is used, retrieve the user metadata
