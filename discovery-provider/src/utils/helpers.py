@@ -59,24 +59,6 @@ def model_to_dictionary(db_model_obj, exclude_keys=None, relationships_to_includ
 
     return model_dict
 
-# The logging module has a method called basicConfig() that sets up the basic config for the logging
-# system. It creates a StreamHandler with a default Formatter and adds it to the root logger.
-# You can customize it, like in this example method
-# https://docs.python.org/3/library/logging.html#logging.basicConfig
-def configure_logging_works(loglevel_str):
-    formatter = '[%(asctime)s] {%(name)s:%(lineno)d} (%(levelname)s) - %(message)s'
-    
-    logger = logging.getLogger("")  # retrieve root logger
-    try:
-        loglevel = getattr(logging, loglevel_str)
-    except AttributeError:
-        logger.warning(
-            f"{loglevel_str} is not a valid loglevel. Defaulting to logging.WARN"
-        )
-        loglevel = logging.WARN
-
-    logging.basicConfig(level=loglevel, format=formatter)
-
 # Configures root logger with custom format and loglevel
 # All child loggers will inherit settings from root logger as configured in this function
 def configure_logging(loglevel_str):
