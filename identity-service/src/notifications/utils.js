@@ -131,19 +131,19 @@ async function getHighestBlockNumber () {
  * @returns Object { notifyWeb: Boolean, notifyMobile: Boolean}
  */
 async function shouldNotifyUser (notificationTarget, prop, tx = null) {
-  // web
-  let webQuery = { where: { userId: notificationTarget } }
-  if (tx) webQuery.transaction = tx
-  let userNotifSettings = await models.UserNotificationSettings.findOne(webQuery)
-  const notifyWeb = userNotifSettings === null || (userNotifSettings && userNotifSettings[prop]) || false
-
   // mobile
   let mobileQuery = { where: { userId: notificationTarget } }
   if (tx) mobileQuery.transaction = tx
   let userNotifSettingsMobile = await models.UserNotificationMobileSettings.findOne(mobileQuery)
   const notifyMobile = (userNotifSettingsMobile && userNotifSettingsMobile[prop]) || false
 
-  return { notifyWeb, notifyMobile }
+  // browser push notifications
+  let browserPushQuery = { where: { userId: notificationTarget } }
+  if (tx) browserPushQuery.transaction = tx
+  let userNotifBrowserPushSettings = await models.UserNotificationBrowserSettings.findOne(browserPushQuery)
+  const notifyBrowserPush = (userNotifBrowserPushSettings && userNotifBrowserPushSettings[prop]) || false
+
+  return { notifyMobile, notifyBrowserPush }
 }
 
 module.exports = {

@@ -35,7 +35,7 @@ before(async function () {
   )).trackId)
 })
 
-// TODO: Add validation to the below test cases, currently they just perform chain operations
+// TODO: Add validation to the below test cases, currently they just perform chain operations.
 
 it('should create playlist', async function () {
   const playlistId = await audiusInstance.contracts.PlaylistFactoryClient.createPlaylist(

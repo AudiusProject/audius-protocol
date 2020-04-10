@@ -4,11 +4,104 @@ const { handleResponse, successResponse, errorResponseServerError } = require('.
 const { sequelize } = require('../models')
 const { getRelayerFunds } = require('../txRelay')
 const Web3 = require('web3')
+
 const axios = require('axios')
 
 let notifDiscProv = config.get('notificationDiscoveryProvider')
 
+// Defaults used in relay health check endpoint
+const RELAY_HEALTH_ONE_HOUR_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/hr
+const RELAY_HEALTH_MAX_TRANSACTIONS = 100 // max transactions to look into
+const RELAY_HEALTH_MAX_ERRORS = 5 // max acceptable errors for a 200 response
+const RELAY_HEALTH_MAX_BLOCK_RANGE = 200 // max block range allowed from query params
+const RELAY_HEALTH_ACCOUNT = config.get('relayerPublicKey')
+
 module.exports = function (app) {
+  /**
+   * Relay health check endpoint. Takes the query params startBlock, endBlock, maxTransactions, and maxErrors.
+   * If those query params are not specified, use default values.
+   */
+  app.get('/health_check/relay', handleResponse(async (req, res) => {
+    const start = Date.now()
+    const audiusLibsInstance = req.app.get('audiusLibs')
+    const web3 = audiusLibsInstance.web3Manager.getWeb3()
+
+    let endBlockNumber = req.query.endBlock || (await web3.eth.getBlockNumber())
+    // In the case that no query params are defined and the endBlockNumber is less than the max block range, default startBlockNumber to 0
+    const defaultStartBlockNumber = endBlockNumber - RELAY_HEALTH_ONE_HOUR_AGO_BLOCKS >= 0
+      ? endBlockNumber - RELAY_HEALTH_ONE_HOUR_AGO_BLOCKS : 0
+    let startBlockNumber = req.query.startBlock || defaultStartBlockNumber
+    let maxTransactions = req.query.maxTransactions || RELAY_HEALTH_MAX_TRANSACTIONS
+    let maxErrors = req.query.maxErrors || RELAY_HEALTH_MAX_ERRORS
+
+    // Parse query strings into ints as all req.query values come in as strings
+    startBlockNumber = parseInt(startBlockNumber)
+    endBlockNumber = parseInt(endBlockNumber)
+    maxTransactions = parseInt(maxTransactions)
+    maxErrors = parseInt(maxErrors)
+
+    // If query params are invalid, throw server error
+    if (
+      isNaN(startBlockNumber) ||
+      isNaN(endBlockNumber) ||
+      startBlockNumber < 0 ||
+      endBlockNumber < 0 ||
+      endBlockNumber < startBlockNumber
+    ) {
+      return errorResponseServerError(`Invalid start and/or end block. startBlock: ${startBlockNumber}, endBlock: ${endBlockNumber}`)
+    }
+
+    if (endBlockNumber - startBlockNumber > RELAY_HEALTH_MAX_BLOCK_RANGE) {
+      return errorResponseServerError(`Block difference is over ${RELAY_HEALTH_MAX_BLOCK_RANGE}. startBlock: ${startBlockNumber}, endBlock: ${endBlockNumber}`)
+    }
+
+    if (
+      isNaN(maxTransactions) ||
+      isNaN(maxErrors) ||
+      maxTransactions < 0 ||
+      maxErrors < 0
+    ) {
+      return errorResponseServerError(`Invalid number of transactions and/or errors. maxTransactions: ${maxTransactions}, maxErrors: ${maxErrors}`)
+    }
+
+    let failureTxHashes = []
+    let txCounter = 0
+
+    req.logger.info(
+      `Searching for transactions to/from account ${RELAY_HEALTH_ACCOUNT} within blocks ${startBlockNumber} and ${endBlockNumber}`
+    )
+
+    // Iterate through the range of blocks, looking into the max number of transactions that are from audius
+    for (let i = endBlockNumber; i > startBlockNumber; i--) {
+      // If the max number of transactions have been evaluated, break out
+      if (txCounter > maxTransactions) break
+      let block = await web3.eth.getBlock(i, true)
+      if (block && block.transactions.length) {
+        for (const tx of block.transactions) {
+          // If transaction is from audius account, determine success or fail status
+          if (RELAY_HEALTH_ACCOUNT === tx.from) {
+            const txHash = tx.hash
+            const resp = await web3.eth.getTransactionReceipt(txHash)
+            txCounter++
+            if (!resp.status) failureTxHashes.push(txHash)
+          }
+        }
+      }
+    }
+
+    const serverResponse = {
+      numberOfTransactions: txCounter,
+      numberOfFailedTransactions: failureTxHashes.length,
+      failedTransactionHashes: failureTxHashes,
+      startBlock: startBlockNumber,
+      endBlock: endBlockNumber,
+      timeElapsed: Date.now() - start
+    }
+
+    if (failureTxHashes.length > maxErrors) return errorResponseServerError(serverResponse)
+    else return successResponse(serverResponse)
+  }))
+
   app.get('/health_check', handleResponse(async (req, res) => {
     // for now we just check db connectivity
     await sequelize.query('SELECT 1', { type: sequelize.QueryTypes.SELECT })

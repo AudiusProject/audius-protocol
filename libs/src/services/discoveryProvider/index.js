@@ -318,10 +318,16 @@ class DiscoveryProvider {
    *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
-  async getSocialFeed (filter, limit = 100, offset = 0, withUsers = false) {
+  async getSocialFeed (filter, limit = 100, offset = 0, withUsers = false, tracksOnly = false) {
     let req = {
       endpoint: 'feed/',
-      queryParams: { filter: filter, limit: limit, offset: offset, with_users: withUsers }
+      queryParams: {
+        filter: filter,
+        limit: limit,
+        offset: offset,
+        with_users: withUsers,
+        tracks_only: tracksOnly
+      }
     }
 
     return this._makeRequest(req)
@@ -606,6 +612,48 @@ class DiscoveryProvider {
       queryParams: { wallet }
     }
     return this._makeRequest(req, 0, true)
+  }
+
+  async getTopPlaylists (type, limit, mood, filter, withUsers = false) {
+    const req = {
+      endpoint: `/top/${type}`,
+      queryParams: {
+        limit,
+        mood,
+        filter,
+        with_users: withUsers
+      }
+    }
+    return this._makeRequest(req)
+  }
+
+  async getTopFolloweeWindowed (type, window, limit, withUsers = false) {
+    const req = {
+      endpoint: `/top_followee_windowed/${type}/${window}`,
+      queryParams: {
+        limit,
+        with_users: withUsers
+      }
+    }
+    return this._makeRequest(req)
+  }
+
+  async getTopFolloweeSaves (type, limit, withUsers = false) {
+    const req = {
+      endpoint: `/top_followee_saves/${type}`,
+      queryParams: {
+        limit,
+        with_users: withUsers
+      }
+    }
+    return this._makeRequest(req)
+  }
+
+  async getLatest (type) {
+    const req = {
+      endpoint: `/latest/${type}`
+    }
+    return this._makeRequest(req)
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */

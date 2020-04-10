@@ -38,5 +38,10 @@
   "awsAccessKeyId": "",
   "awsSecretAccessKey": "",
   "awsSNSiOSARN": "",
-  "awsSNSAndroidARN": ""
+  "awsSNSAndroidARN": "",
+  "browserPushGCMAPIKey": "",
+  "browserPushVapidPublicKey": "",
+  "browserPushVapidPrivateKey": "",
+  "apnKeyId": "",
+  "apnTeamId": ""
 }
