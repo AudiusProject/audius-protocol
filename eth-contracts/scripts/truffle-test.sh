@@ -34,7 +34,7 @@ docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 truffles
 
 # compile and lint
 ./node_modules/.bin/truffle compile
-# ./scripts/lint.sh
+./scripts/lint.sh
 
 # run truffle tests
 if [ $# -eq 0 ]

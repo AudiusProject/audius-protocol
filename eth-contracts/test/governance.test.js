@@ -145,6 +145,7 @@ contract('Governance.sol', async (accounts) => {
       tokenContract.address,
       registryContract.address,
       ownedUpgradeabilityProxyKey,
+      serviceProviderFactoryKey,
       { from: protocolOwnerAddress }
     )
     await registryContract.addContract(claimFactoryKey, claimFactoryContract.address, { from: protocolOwnerAddress })
@@ -158,7 +159,8 @@ contract('Governance.sol', async (accounts) => {
       registryContract.address,
       ownedUpgradeabilityProxyKey,
       serviceProviderFactoryKey,
-      claimFactoryKey
+      claimFactoryKey,
+      { from: protocolOwnerAddress }
     )
     await registryContract.addContract(delegateManagerKey, delegateManagerContract.address, { from: protocolOwnerAddress })
 
@@ -383,6 +385,7 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(initialTotalStake, defaultStakeAmount * 2)
       const initialStakeAcct2 = parseInt(await stakingContract.totalStakedFor(targetAddress))
       assert.equal(initialStakeAcct2, defaultStakeAmount)
+      const initialTokenSupply = await tokenContract.totalSupply()
 
       // Call submitProposal + submitProposalVote
       const submitProposalTxReceipt = await governanceContract.submitProposal(
@@ -397,11 +400,7 @@ contract('Governance.sol', async (accounts) => {
 
       // Advance blocks to the next valid claim
       const proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.startBlockNumber)
-      let currentBlockNumber = (await _lib.getLatestBlock(web3)).number
-      while (currentBlockNumber <= proposalStartBlockNumber + votingPeriod) {
-        await _lib.advanceBlock(web3)
-        currentBlockNumber = (await _lib.getLatestBlock(web3)).number
-      }
+      await _lib.advanceToTargetBlock(proposalStartBlockNumber + votingPeriod, web3)
 
       // Call evaluateProposalOutcome()
       const evaluateTxReceipt = await governanceContract.evaluateProposalOutcome(proposalId, { from: proposerAddress })
@@ -447,13 +446,18 @@ contract('Governance.sol', async (accounts) => {
         }
       }
 
-      // Confirm Slash action succeeded by checking new Stake values
+      // Confirm Slash action succeeded by checking new Stake + Token values
       const finalStakeAcct2 = parseInt(await stakingContract.totalStakedFor(targetAddress))
       assert.equal(finalStakeAcct2, defaultStakeAmount - slashAmount)
       assert.equal(
         initialTotalStake,
         await stakingContract.totalStaked(),
         'Expected same total stake amount'
+      )
+      assert.equal(
+        await tokenContract.totalSupply(),
+        initialTokenSupply - slashAmount,
+        "Expected same token total supply"
       )
     })
   })
