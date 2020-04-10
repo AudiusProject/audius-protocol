@@ -1,8 +1,9 @@
 import logging # pylint: disable=C0302
 import datetime
 import sqlalchemy
-from sqlalchemy import func, asc, desc, or_, and_
+from sqlalchemy import func, asc, desc, text, or_, and_, Integer, Float, Date
 from sqlalchemy.orm import aliased
+from sqlalchemy.dialects import postgresql
 
 from flask import Blueprint, request
 
@@ -13,7 +14,8 @@ from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 from src.queries.query_helpers import get_current_user_id, parse_sort_param, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_repost_counts, get_save_counts, \
-    get_pagination_vars, paginate_query, get_users_by_id, get_users_ids
+    get_pagination_vars, paginate_query, get_users_by_id, get_users_ids, \
+    create_save_repost_count_subquery, decayed_score, filter_to_playlist_mood, create_followee_playlists_subquery
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("queries", __name__)
@@ -328,6 +330,12 @@ def get_feed():
     else:
         feed_filter = "all"
 
+    # Allow for fetching only tracks
+    if ('tracks_only' in request.args and request.args.get('tracks_only') != 'false'):
+        tracks_only = True
+    else:
+        tracks_only = False
+
     # Current user - user for whom feed is being generated
     current_user_id = get_current_user_id()
     with db.scoped_session() as session:
@@ -345,50 +353,56 @@ def get_feed():
 
         # Fetch followee creations if requested
         if feed_filter in ["original", "all"]:
-            # Query playlists posted by followees, sorted and paginated by created_at desc
-            created_playlists_query = (
-                session.query(Playlist)
-                .filter(
-                    Playlist.is_current == True,
-                    Playlist.is_delete == False,
-                    Playlist.is_private == False,
-                    Playlist.playlist_owner_id.in_(followee_user_ids)
+            if not tracks_only:
+                # Query playlists posted by followees, sorted and paginated by created_at desc
+                created_playlists_query = (
+                    session.query(Playlist)
+                    .filter(
+                        Playlist.is_current == True,
+                        Playlist.is_delete == False,
+                        Playlist.is_private == False,
+                        Playlist.playlist_owner_id.in_(followee_user_ids)
+                    )
+                    .order_by(desc(Playlist.created_at))
                 )
-                .order_by(desc(Playlist.created_at))
-            )
-            created_playlists = paginate_query(created_playlists_query, False).all()
+                created_playlists = paginate_query(created_playlists_query, False).all()
 
-            # get track ids for all tracks in playlists
-            playlist_track_ids = set()
-            for playlist in created_playlists:
-                for track in playlist.playlist_contents["track_ids"]:
-                    playlist_track_ids.add(track["track"])
+                # get track ids for all tracks in playlists
+                playlist_track_ids = set()
+                for playlist in created_playlists:
+                    for track in playlist.playlist_contents["track_ids"]:
+                        playlist_track_ids.add(track["track"])
 
-            # get all track objects for track ids
-            playlist_tracks = (
-                session.query(Track)
-                .filter(
-                    Track.is_current == True,
-                    Track.track_id.in_(playlist_track_ids)
+                # get all track objects for track ids
+                playlist_tracks = (
+                    session.query(Track)
+                    .filter(
+                        Track.is_current == True,
+                        Track.track_id.in_(playlist_track_ids)
+                    )
+                    .all()
                 )
-                .all()
-            )
-            playlist_tracks_dict = {track.track_id: track for track in playlist_tracks}
+                playlist_tracks_dict = {track.track_id: track for track in playlist_tracks}
 
-            # get all track ids that have same owner as playlist and created in "same action"
-            # "same action": track created within [x time] before playlist creation
-            tracks_to_dedupe = set()
-            for playlist in created_playlists:
-                for track_entry in playlist.playlist_contents["track_ids"]:
-                    track = playlist_tracks_dict.get(track_entry["track"])
-                    if not track:
-                        return api_helpers.error_response("Something caused the server to crash.")
-                    max_timedelta = datetime.timedelta(minutes=trackDedupeMaxMinutes)
-                    if (track.owner_id == playlist.playlist_owner_id) and \
-                        (track.created_at <= playlist.created_at) and \
-                        (playlist.created_at - track.created_at <= max_timedelta):
-                        tracks_to_dedupe.add(track.track_id)
-            tracks_to_dedupe = list(tracks_to_dedupe)
+                # get all track ids that have same owner as playlist and created in "same action"
+                # "same action": track created within [x time] before playlist creation
+                tracks_to_dedupe = set()
+                for playlist in created_playlists:
+                    for track_entry in playlist.playlist_contents["track_ids"]:
+                        track = playlist_tracks_dict.get(track_entry["track"])
+                        if not track:
+                            return api_helpers.error_response("Something caused the server to crash.")
+                        max_timedelta = datetime.timedelta(minutes=trackDedupeMaxMinutes)
+                        if (track.owner_id == playlist.playlist_owner_id) and \
+                            (track.created_at <= playlist.created_at) and \
+                            (playlist.created_at - track.created_at <= max_timedelta):
+                            tracks_to_dedupe.add(track.track_id)
+                tracks_to_dedupe = list(tracks_to_dedupe)
+            else:
+                # No playlists to consider
+                tracks_to_dedupe = []
+                created_playlists = []
+
 
             # Query tracks posted by followees, sorted & paginated by created_at desc
             # exclude tracks that were posted in "same action" as playlist
@@ -480,21 +494,24 @@ def get_feed():
                 desc(Track.created_at)
             ).all()
 
-            # Query playlists reposted by followees, excluding playlists already fetched from above
-            reposted_playlists = session.query(Playlist).filter(
-                Playlist.is_current == True,
-                Playlist.is_delete == False,
-                Playlist.is_private == False,
-                Playlist.playlist_id.in_(reposted_playlist_ids)
-            )
-            # exclude playlists already fetched from above, in case of "all" filter
-            if feed_filter == "all":
-                reposted_playlists = reposted_playlists.filter(
-                    Playlist.playlist_id.notin_(created_playlist_ids)
+            if not tracks_only:
+                # Query playlists reposted by followees, excluding playlists already fetched from above
+                reposted_playlists = session.query(Playlist).filter(
+                    Playlist.is_current == True,
+                    Playlist.is_delete == False,
+                    Playlist.is_private == False,
+                    Playlist.playlist_id.in_(reposted_playlist_ids)
                 )
-            reposted_playlists = reposted_playlists.order_by(
-                desc(Playlist.created_at)
-            ).all()
+                # exclude playlists already fetched from above, in case of "all" filter
+                if feed_filter == "all":
+                    reposted_playlists = reposted_playlists.filter(
+                        Playlist.playlist_id.notin_(created_playlist_ids)
+                    )
+                reposted_playlists = reposted_playlists.order_by(
+                    desc(Playlist.created_at)
+                ).all()
+            else:
+                reposted_playlists = []
 
         if feed_filter == "original":
             tracks_to_process = created_tracks
@@ -1531,3 +1548,429 @@ def get_max_id(type):
             )
             return api_helpers.success_response(latest)
     return api_helpers.error_response("Unable to compute latest", 400)
+
+@bp.route("/top/<type>", methods=("GET",))
+def get_top_playlists(type):
+    """
+    An endpoint to retrieve the "top" of a certain demographic of playlists or albums.
+    This endpoint is useful in generating views like:
+        - Top playlists
+        - Top Albums
+        - Top playlists of a certain mood
+        - Top playlists of a certain mood from people you follow
+
+    Args:
+        type: (string) The `type` (same as repost/save type) to query from.
+        limit?: (number) default=16, max=100
+        mood?: (string) default=None
+        filter?: (string) Optional filter to include (supports 'followees') default=None
+    """
+    current_user_id = get_current_user_id(required=False)
+
+    # Argument parsing and checking
+    if type != 'playlist' and type != 'album':
+        return api_helpers.error_response(
+            "Invalid type provided, must be one of 'playlist', 'album'", 400
+        )
+
+    if 'limit' in request.args:
+        limit = min(int(request.args.get('limit')), 100)
+    else:
+        limit = 16
+
+    if 'mood' in request.args:
+        mood = request.args.get('mood')
+    else:
+        mood = None
+
+    if 'filter' in request.args:
+        query_filter = request.args.get('filter')
+        if query_filter != 'followees':
+            return api_helpers.error_response(
+                "Invalid type provided, must be one of 'followees'", 400
+            )
+        if query_filter == 'followees':
+            if not current_user_id:
+                return api_helpers.error_response(
+                    "User id required to query for followees", 400
+                )
+    else:
+        query_filter = None
+
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        # Construct a subquery to get the summed save + repost count for the `type`
+        count_subquery = create_save_repost_count_subquery(session, type)
+
+        # If filtering by followees, set the playlist view to be only playlists from
+        # users that the current user follows.
+        if query_filter == 'followees':
+            playlists_to_query = create_followee_playlists_subquery(session, current_user_id)
+        # Otherwise, just query all playlists
+        else:
+            playlists_to_query = session.query(Playlist).subquery()
+
+        # Create a decayed-score view of the playlists
+        playlist_query = (
+            session.query(
+                playlists_to_query,
+                count_subquery.c['count'],
+                decayed_score(count_subquery.c['count'], playlists_to_query.c.created_at).label('score')
+            )
+            .select_from(playlists_to_query)
+            .join(
+                count_subquery,
+                count_subquery.c['id'] == playlists_to_query.c.playlist_id
+            )
+            .filter(
+                playlists_to_query.c.is_current == True,
+                playlists_to_query.c.is_delete == False,
+                playlists_to_query.c.is_private == False,
+            )
+        )
+
+        # Filter by mood (no-op if no mood is provided)
+        playlist_query = filter_to_playlist_mood(
+            session,
+            mood,
+            playlist_query,
+            playlists_to_query
+        )
+
+        # Order and limit the playlist query by score
+        playlist_query = (
+            playlist_query.order_by(
+                desc('score'),
+                desc(playlists_to_query.c.playlist_id)
+            )
+            .limit(limit)
+        )
+
+        playlist_results = playlist_query.all()
+
+        # Unzip query results into playlists and scores
+        score_map = {} # playlist_id : score
+        playlists = []
+        if playlist_results:
+            for result in playlist_results:
+                # The playlist is the portion of the query result before repost_count and score
+                playlist = result[0:-2]
+                repost_count = result[-2]
+                score = result[-1]
+
+                # Convert the playlist row tuple into a dictionary keyed by column name
+                playlist = helpers.tuple_to_model_dictionary(playlist, Playlist)
+                score_map[playlist['playlist_id']] = score
+                playlists.append(playlist)
+
+        playlist_ids = list(map(lambda playlist: playlist["playlist_id"], playlists))
+
+        # Bundle peripheral info into playlist results
+        playlists = populate_playlist_metadata(
+            session,
+            playlist_ids,
+            playlists,
+            [RepostType.playlist, RepostType.album],
+            [SaveType.playlist, SaveType.album],
+            current_user_id
+        )
+        # Add scores into the response
+        for playlist in playlists:
+            playlist['score'] = score_map[playlist['playlist_id']]
+
+        if "with_users" in request.args and request.args.get("with_users") != 'false':
+            user_id_list = get_users_ids(playlists)
+            users = get_users_by_id(session, user_id_list)
+            for playlist in playlists:
+                user = users[playlist['playlist_owner_id']]
+                if user:
+                    playlist['user'] = user
+
+    return api_helpers.success_response(playlists)
+
+@bp.route("/top_followee_windowed/<type>/<window>")
+def get_top_followee_windowed(type, window):
+    """
+        Gets a windowed (over a certain timerange) view into the "top" of a certain type
+        amongst followees. Requires an account.
+        This endpoint is useful in generating views like:
+            - New releases
+
+        Args:
+            type: (string) The `type` (same as repost/save type) to query from. Currently only
+                track is supported.
+            window: (string) The window from now() to look back over. Supports all standard
+                SqlAlchemy interval notation (week, month, year, etc.).
+            limit?: (number) default=25, max=100
+    """
+    if type != 'track':
+        return api_helpers.error_response(
+            "Invalid type provided, must be one of 'track'", 400
+        )
+
+    valid_windows =['week', 'month', 'year']
+    if not window or window not in valid_windows:
+        return api_helpers.error_response(
+            "Invalid window provided, must be one of {}".format(valid_windows)
+        )
+
+    if 'limit' in request.args:
+        limit = min(int(request.args.get('limit')), 100)
+    else:
+        limit = 25
+
+    current_user_id = get_current_user_id()
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        # Construct a subquery to get the summed save + repost count for the `type`
+        count_subquery = create_save_repost_count_subquery(session, type)
+
+        followee_user_ids = (
+            session.query(Follow.followee_user_id)
+            .filter(
+                Follow.follower_user_id == current_user_id,
+                Follow.is_current == True,
+                Follow.is_delete == False
+            )
+        )
+        followee_user_ids_subquery = followee_user_ids.subquery()
+
+        # Queries for tracks joined against followed users and counts
+        tracks_query = (
+            session.query(
+                Track,
+            )
+            .join(
+                followee_user_ids_subquery,
+                Track.owner_id == followee_user_ids_subquery.c.followee_user_id
+            )
+            .join(
+                count_subquery,
+                Track.track_id == count_subquery.c['id']
+            )
+            .filter(
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.is_unlisted == False,
+                # Query only tracks created `window` time ago (week, month, etc.)
+                Track.created_at >= text("NOW() - interval '1 {}'".format(window)),
+            )
+            .order_by(
+                desc(count_subquery.c['count']),
+                desc(Track.track_id)
+            )
+            .limit(limit)
+        )
+
+        tracks_query_results = tracks_query.all()
+        tracks = helpers.query_result_to_list(tracks_query_results)
+        track_ids = list(map(lambda track: track['track_id'], tracks))
+
+        # Bundle peripheral info into track results
+        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+
+        if 'with_users' in request.args and request.args.get('with_users') != 'false':
+            user_id_list = get_users_ids(tracks)
+            users = get_users_by_id(session, user_id_list)
+            for track in tracks:
+                user = users[track['owner_id']]
+                if user:
+                    track['user'] = user
+
+    return api_helpers.success_response(tracks)
+
+@bp.route("/top_followee_saves/<type>")
+def get_top_followee_saves(type):
+    """
+        Gets a global view into the most saved of `type` amongst followees. Requires an account.
+        This endpoint is useful in generating views like:
+            - Most favorited
+
+        Args:
+            type: (string) The `type` (same as repost/save type) to query from. Currently only
+                track is supported.
+            limit?: (number) default=25, max=100
+    """
+    if type != 'track':
+        return api_helpers.error_response(
+            "Invalid type provided, must be one of 'track'", 400
+        )
+
+    if 'limit' in request.args:
+        limit = min(int(request.args.get('limit')), 100)
+    else:
+        limit = 25
+
+    current_user_id = get_current_user_id()
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        # Construct a subquery of all followees
+        followee_user_ids = (
+            session.query(Follow.followee_user_id)
+            .filter(
+                Follow.follower_user_id == current_user_id,
+                Follow.is_current == True,
+                Follow.is_delete == False
+            )
+        )
+        followee_user_ids_subquery = followee_user_ids.subquery()
+
+        # Construct a subquery of all saves from followees aggregated by id
+        save_count = (
+            session.query(
+                Save.save_item_id,
+                func.count(Save.save_item_id).label(response_name_constants.save_count)
+            )
+            .join(
+                followee_user_ids_subquery,
+                Save.user_id == followee_user_ids_subquery.c.followee_user_id
+            )
+            .filter(
+                Save.is_current == True,
+                Save.is_delete == False,
+                Save.save_type == type,
+            )
+            .group_by(
+                Save.save_item_id
+            )
+            .order_by(
+                desc(response_name_constants.save_count)
+            )
+            .limit(limit)
+        )
+        save_count_subquery = save_count.subquery()
+
+        # Query for tracks joined against followee save counts
+        tracks_query = (
+            session.query(
+                Track,
+            )
+            .join(
+                save_count_subquery,
+                Track.track_id == save_count_subquery.c.save_item_id
+            )
+            .filter(
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.is_unlisted == False
+            )
+        )
+
+        tracks_query_results = tracks_query.all()
+        tracks = helpers.query_result_to_list(tracks_query_results)
+        track_ids = list(map(lambda track: track['track_id'], tracks))
+
+        # bundle peripheral info into track results
+        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+
+        if 'with_users' in request.args and request.args.get('with_users') != 'false':
+            user_id_list = get_users_ids(tracks)
+            users = get_users_by_id(session, user_id_list)
+            for track in tracks:
+                user = users[track['owner_id']]
+                if user:
+                    track['user'] = user
+
+    return api_helpers.success_response(tracks)
+
+# Retrieves the top users for a requested genre under the follow parameters
+# - A given user can only be associated w/ one genre
+# - The user's associated genre is calculated by tallying the genre of the tracks and taking the max 
+#   - If there is a tie for # of tracks in a genre, then the first genre alphabetically is taken 
+# - The users associated w/ the requested genre are then sorted by follower count
+# Route Parameters
+#   urlParam: {Array<string>?}  genre       List of genres to query for the 'top' users
+#   urlParam: {boolean?}        with_user   Boolean if the response should be the user ID or user metadata defaults to false
+@bp.route("/users/genre/top", methods=("GET",))
+def get_top_genre_users():
+
+    genres = []
+    if "genre" in request.args:
+        genres = request.args.getlist("genre")
+
+    # If the with_users url arg is provided, then populate the user metadata else return user ids
+    with_users = "with_users" in request.args and request.args.get("with_users") != 'false'
+
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        with_genres = len(genres) != 0
+
+        # Associate the user w/ a genre by counting the total # of tracks per genre
+        # taking the genre w/ the most tracks (using genre name as secondary sort)  
+        user_genre_count_query = (
+            session.query(
+                User.user_id.label('user_id'),
+                Track.genre.label('genre'),
+                func.row_number().over(
+                        partition_by=User.user_id,
+                        order_by=(desc(func.count(Track.genre)), asc(Track.genre))
+                ).label("row_number")
+            ).join(
+                Track,
+                Track.owner_id == User.user_id
+            ).filter(
+                User.is_current == True,
+                User.is_creator == True,
+                Track.is_unlisted == False,
+                Track.is_current == True,
+                Track.is_delete == False
+            ).group_by(
+                User.user_id,
+                Track.genre
+            ).order_by(
+                desc(func.count(Track.genre)), asc(Track.genre)
+            )
+        )
+
+        user_genre_count_query = user_genre_count_query.subquery('user_genre_count_query')
+
+        user_genre_query = (
+            session.query(
+                user_genre_count_query.c.user_id.label('user_id'),
+                user_genre_count_query.c.genre.label('genre'),
+            ).filter(
+                user_genre_count_query.c.row_number == 1
+            ).subquery('user_genre_query')
+        )
+
+        # Using the subquery of user to associated genre,
+        #   filter by the requested genres and 
+        #   sort by user follower count
+        user_genre_followers_query = (
+            session.query(
+                user_genre_query.c.user_id.label('user_id')
+            ).join(
+                Follow, Follow.followee_user_id == user_genre_query.c.user_id
+            ).filter(
+                Follow.is_current == True,
+                Follow.is_delete == False
+            ).group_by(
+                user_genre_query.c.user_id, user_genre_query.c.genre
+            ).order_by(
+                # desc('follower_count')
+                desc(func.count(Follow.follower_user_id))
+            )
+        )
+
+        if with_genres:
+            user_genre_followers_query = user_genre_followers_query.filter(user_genre_query.c.genre.in_(genres))
+
+        # If the with_users flag is used, retrieve the user metadata
+        if with_users:
+            user_genre_followers_query = paginate_query(user_genre_followers_query).subquery('user_genre_followers_query')
+            user_query = session.query(User).filter(
+                User.user_id.in_(user_genre_followers_query),
+                User.is_current == True
+            )
+            users = user_query.all()
+            users = helpers.query_result_to_list(users)
+            user_ids = list(map(lambda user: user["user_id"], users))
+            users = populate_user_metadata(session, user_ids, users, None)
+            return api_helpers.success_response({ 'users': users })
+
+
+        # If the with_users flag is not set, respond with the user_ids
+        users = paginate_query(user_genre_followers_query).all()
+        user_ids = list(map(lambda user: user[0], users))
+
+        return api_helpers.success_response({ 'user_ids': user_ids })
