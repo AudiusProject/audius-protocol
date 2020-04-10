@@ -314,10 +314,10 @@ contract DelegateManager is RegistryContract {
             registry.getContract(serviceProviderFactoryKey)
         );
 
-        // Confirm service provider is valid 
+        // Confirm service provider is valid
         require(
-          spFactory.isServiceProviderWithinBounds(msg.sender),
-          'Service provider must be within bounds');
+            spFactory.isServiceProviderWithinBounds(msg.sender),
+            "Service provider must be within bounds");
 
         // Process claim for msg.sender
         claimFactory.processClaim(msg.sender, totalLockedForClaimer);

@@ -35,9 +35,9 @@ contract ServiceProviderFactory is RegistryContract {
 
     mapping(address => ServiceProviderDetails) spDetails;
 
-    // Minimum direct staked by service provider
+    // Minimum staked by service provider account deployer
     // Static regardless of total number of endpoints for a given account
-    uint minDirectDeployerStake;
+    uint minDeployerStake;
 
     // END Temporary data structures
 
@@ -115,7 +115,7 @@ contract ServiceProviderFactory is RegistryContract {
         });
 
         // Configure direct minimum stake for deployer
-        minDirectDeployerStake = 5 * 10**uint256(DECIMALS);
+        minDeployerStake = 5 * 10**uint256(DECIMALS);
     }
 
     function register(
@@ -151,7 +151,12 @@ contract ServiceProviderFactory is RegistryContract {
         // Update deployer total
         spDetails[owner].deployerStake += _stakeAmount;
 
+        // Confirm both aggregate account balance and directly staked amount are valid
         uint currentlyStakedForOwner = this.validateAccountStakeBalance(owner);
+        validateAccountDeployerStake(owner);
+
+        // Indicate this service provider is within bounds
+        spDetails[owner].validBounds = true;
 
         emit RegisteredServiceProvider(
             newServiceProviderID,
@@ -160,10 +165,6 @@ contract ServiceProviderFactory is RegistryContract {
             _endpoint,
             currentlyStakedForOwner
         );
-
-        // Confirm both aggregate account balance and directly staked amount are valid
-        this.validateAccountStakeBalance(owner);
-        validateServiceProviderDirectStake(owner);
 
         return newServiceProviderID;
     }
@@ -217,7 +218,9 @@ contract ServiceProviderFactory is RegistryContract {
         // Only if unstake operation has not occurred
         if (!unstaked) {
             this.validateAccountStakeBalance(owner);
-            validateServiceProviderDirectStake(owner);
+            validateAccountDeployerStake(owner);
+            // Indicate this service provider is within bounds
+            spDetails[owner].validBounds = true;
         }
 
         return deregisteredID;
@@ -241,17 +244,20 @@ contract ServiceProviderFactory is RegistryContract {
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(owner);
 
-        emit UpdatedStakeAmount(
-            owner,
-            newStakeAmount
-        );
-
         // Update deployer total
         spDetails[owner].deployerStake += _increaseStakeAmount;
 
         // Confirm both aggregate account balance and directly staked amount are valid
         this.validateAccountStakeBalance(owner);
-        validateServiceProviderDirectStake(owner);
+        validateAccountDeployerStake(owner);
+
+        // Indicate this service provider is within bounds
+        spDetails[owner].validBounds = true;
+
+        emit UpdatedStakeAmount(
+            owner,
+            newStakeAmount
+        );
 
         return newStakeAmount;
     }
@@ -284,17 +290,20 @@ contract ServiceProviderFactory is RegistryContract {
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(owner);
 
-        emit UpdatedStakeAmount(
-            owner,
-            newStakeAmount
-        );
-
         // Update deployer total
         spDetails[owner].deployerStake -= _decreaseStakeAmount;
 
         // Confirm both aggregate account balance and directly staked amount are valid
         this.validateAccountStakeBalance(owner);
-        validateServiceProviderDirectStake(owner);
+        validateAccountDeployerStake(owner);
+
+        // Indicate this service provider is within bounds
+        spDetails[owner].validBounds = true;
+
+        emit UpdatedStakeAmount(
+            owner,
+            newStakeAmount
+        );
 
         return newStakeAmount;
     }
@@ -364,6 +373,9 @@ contract ServiceProviderFactory is RegistryContract {
         if (totalSPStake < minStake || totalSPStake > maxStake) {
             // Indicate this service provider is out of bounds
             spDetails[_serviceProvider].validBounds = false;
+        } else {
+            // Indicate this service provider is within bounds
+            spDetails[_serviceProvider].validBounds = true;
         }
     }
 
@@ -442,10 +454,10 @@ contract ServiceProviderFactory is RegistryContract {
         ).getServiceProviderIdFromEndpoint(_endpoint);
     }
 
-    function getMinDirectDeployerStake()
+    function getMinDeployerStake()
     external view returns (uint min)
     {
-        return minDirectDeployerStake;
+        return minDeployerStake;
     }
 
     function getServiceProviderIdsFromAddress(address _ownerAddress, bytes32 _serviceType)
@@ -529,7 +541,7 @@ contract ServiceProviderFactory is RegistryContract {
     /// @notice Validate that the service provider is between the min and max stakes for all their registered services
     // Permission to 'this' contract or delegate manager
     function validateAccountStakeBalance(address sp)
-    external returns (uint stakedForOwner)
+    external view returns (uint stakedForOwner)
     {
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
@@ -545,17 +557,15 @@ contract ServiceProviderFactory is RegistryContract {
             currentlyStakedForOwner <= maxStakeAmount,
             "Maximum stake amount exceeded");
 
-        // Indicate this service provider is within bounds
-        spDetails[sp].validBounds = true;
-
         return currentlyStakedForOwner;
     }
 
-    function validateServiceProviderDirectStake(address sp)
-    internal view returns (uint directStake)
+    /// @notice Validate that the service provider deployer stake satisfies protocol minimum
+    function validateAccountDeployerStake(address sp)
+    internal view returns (uint deployerStake)
     {
         require(
-            spDetails[sp].deployerStake >= minDirectDeployerStake,
+            spDetails[sp].deployerStake >= minDeployerStake,
             "Direct stake restriction violated for this service provider");
         return spDetails[sp].deployerStake;
     }

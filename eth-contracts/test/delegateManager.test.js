@@ -892,7 +892,7 @@ contract('DelegateManager', async (accounts) => {
 
       // Decrease to min
       let spInfo = await getAccountStakeInfo(stakerAccount, false)
-      let minDirectStake = await serviceProviderFactory.getMinDirectDeployerStake()
+      let minDirectStake = await serviceProviderFactory.getMinDeployerStake()
       let diffToMin = (spInfo.spFactoryStake).sub(minDirectStake)
       await decreaseRegisteredProviderStake(diffToMin, stakerAccount)
       let infoAfterDecrease = await getAccountStakeInfo(stakerAccount, false)
