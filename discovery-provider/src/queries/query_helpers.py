@@ -911,7 +911,7 @@ def filter_to_playlist_mood(session, mood, query, correlation):
         session.query(
             func.jsonb_array_elements(
                 correlation.c.playlist_contents['track_ids']
-            ).op('->')('track').cast(Integer)
+            ).op('->>')('track').cast(Integer)
         )
     )
 
