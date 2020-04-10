@@ -13,6 +13,15 @@ contract('Registry', async (accounts) => {
     registry = await Registry.new()
   })
 
+  it('Confirm unregistered contract request returns 0 address', async () => {
+    const contractAddress = await registry.getContract.call(contractName)
+    assert.equal(parseInt(contractAddress), 0x0, "Expected same contract address")
+  })
+
+  it('Should fail to register a non-contract address', async () => {
+    /** TODO */
+  })
+
   it('Should add newly deployed contract to Registry', async () => {
     let testContract = await TestContract.new(registry.address)
     let testContractAddress = testContract.address

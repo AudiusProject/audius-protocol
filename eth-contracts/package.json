@@ -33,7 +33,8 @@
   "devDependencies": {
     "standard": "^12.0.1",
     "async": "^2.6.1",
-    "babel-register": "^6.26.0"
+    "babel-register": "^6.26.0",
+    "bignumber.js": "8.0.1"
   },
   "//": {
     "dependenciesComments": {

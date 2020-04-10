@@ -4,9 +4,10 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Pausable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
 
 
-contract AudiusToken is ERC20, ERC20Detailed, ERC20Mintable, ERC20Pausable {
+contract AudiusToken is ERC20, ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable {
     string constant NAME = "TestAudius";
     string constant SYMBOL = "TAUDS";
     // standard - imitates relationship between Ether and Wei
@@ -22,6 +23,7 @@ contract AudiusToken is ERC20, ERC20Detailed, ERC20Mintable, ERC20Pausable {
         ERC20Mintable()
         // ERC20Detailed provides setters/getters for name, symbol, decimals properties
         ERC20Detailed(NAME, SYMBOL, DECIMALS)
+        // ERC20Burnable has no constructor
         ERC20()
         public
     {
