@@ -49,10 +49,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
       uint256 amountClaimed
     );
 
-    event Test(
-      uint256 test,
-      string msg);
-
     function initialize(address _stakingToken, address _treasuryAddress) external onlyInit {
         require(isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         initialized();
