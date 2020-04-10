@@ -179,6 +179,38 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_oldEndpoint",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "_newEndpoint",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "spId",
+          "type": "uint256"
+        }
+      ],
+      "name": "UpdateEndpoint",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": true,
           "name": "previousOwner",
           "type": "address"
@@ -312,6 +344,33 @@
       "type": "function"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "name": "_oldEndpoint",
+          "type": "string"
+        },
+        {
+          "name": "_newEndpoint",
+          "type": "string"
+        }
+      ],
+      "name": "updateEndpoint",
+      "outputs": [
+        {
+          "name": "spID",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [
         {
@@ -424,6 +483,85 @@
         {
           "name": "",
           "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        }
+      ],
+      "name": "isValidServiceType",
+      "outputs": [
+        {
+          "name": "isValid",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getValidServiceTypes",
+      "outputs": [
+        {
+          "name": "types",
+          "type": "bytes32[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getServiceStakeInfo",
+      "outputs": [
+        {
+          "name": "min",
+          "type": "uint256"
+        },
+        {
+          "name": "max",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "sp",
+          "type": "address"
+        }
+      ],
+      "name": "getAccountStakeBounds",
+      "outputs": [
+        {
+          "name": "min",
+          "type": "uint256"
+        },
+        {
+          "name": "max",
+          "type": "uint256"
         }
       ],
       "payable": false,

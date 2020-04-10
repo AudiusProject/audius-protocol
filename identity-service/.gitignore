@@ -14,3 +14,8 @@ eth-contract-config.json
 docker-compose/.development.env
 .nyc_output/
 coverage/
+
+src/notifications/browserPush/audius.pushPackage/*.pem
+src/notifications/browserPush/audius.pushPackage/*.p8
+src/notifications/browserPush/audius.pushPackage/*.p12
+src/notifications/browserPush/devPushPackage.zip

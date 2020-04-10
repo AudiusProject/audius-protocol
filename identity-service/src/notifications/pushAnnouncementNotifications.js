@@ -1,6 +1,6 @@
 const models = require('../models')
 const { logger } = require('../logging')
-const { publishAnnouncement, drainPublishedAnnouncements } = require('../awsSNS')
+const { publishAnnouncement, drainPublishedAnnouncements } = require('./notificationQueue')
 const axios = require('axios')
 const config = require('../config.js')
 const audiusNotificationUrl = config.get('audiusNotificationUrl')

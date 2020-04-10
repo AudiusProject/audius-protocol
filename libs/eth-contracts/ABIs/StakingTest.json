@@ -130,20 +130,6 @@
     },
     {
       "constant": true,
-      "inputs": [],
-      "name": "getMaxStakeAmount",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
       "inputs": [
         {
           "name": "_accountAddress",
@@ -188,20 +174,6 @@
         }
       ],
       "name": "totalStakedFor",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getMinStakeAmount",
       "outputs": [
         {
           "name": "",
@@ -324,20 +296,6 @@
       "type": "function"
     },
     {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "setMaxStakeAmount",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
       "constant": true,
       "inputs": [],
       "name": "isPetrified",
@@ -352,17 +310,17 @@
       "type": "function"
     },
     {
-      "constant": false,
-      "inputs": [
+      "constant": true,
+      "inputs": [],
+      "name": "getCurrentStakeMultiplier",
+      "outputs": [
         {
-          "name": "_amount",
+          "name": "",
           "type": "uint256"
         }
       ],
-      "name": "setMinStakeAmount",
-      "outputs": [],
       "payable": false,
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -386,15 +344,6 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [],
-      "name": "makeClaim",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -443,23 +392,6 @@
         }
       ],
       "name": "StakeTransferred",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "test",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "msg",
-          "type": "string"
-        }
-      ],
-      "name": "Test",
       "type": "event"
     },
     {

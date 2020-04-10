@@ -14,7 +14,7 @@ const {
 const { processEmailNotifications } = require('./sendNotificationEmails')
 const { pushAnnouncementNotifications } = require('./pushAnnouncementNotifications')
 const { notificationJobType, announcementJobType } = require('./constants')
-const { drainPublishedMessages } = require('../awsSNS')
+const { drainPublishedMessages } = require('./notificationQueue')
 const notifDiscProv = config.get('notificationDiscoveryProvider')
 const emailCachePath = './emailCache'
 
@@ -165,7 +165,7 @@ class NotificationProcessor {
     let reqObj = {
       method: 'get',
       url: `${notifDiscProv}/notifications`,
-      params: params,
+      params,
       timeout: 10000
     }
     // Use a single transaction

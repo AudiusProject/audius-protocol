@@ -70,23 +70,6 @@
       "inputs": [
         {
           "indexed": false,
-          "name": "test",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "msg",
-          "type": "string"
-        }
-      ],
-      "name": "Test",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
           "name": "claimaint",
           "type": "address"
         },
@@ -187,15 +170,6 @@
     },
     {
       "constant": false,
-      "inputs": [],
-      "name": "makeClaim",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
       "inputs": [
         {
           "name": "_amount",
@@ -221,34 +195,6 @@
         }
       ],
       "name": "setStakingOwnerAddress",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "setMinStakeAmount",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "setMaxStakeAmount",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -364,6 +310,20 @@
     },
     {
       "constant": true,
+      "inputs": [],
+      "name": "getCurrentStakeMultiplier",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
       "inputs": [
         {
           "name": "_accountAddress",
@@ -450,34 +410,6 @@
         }
       ],
       "name": "totalStakedAt",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getMinStakeAmount",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getMaxStakeAmount",
       "outputs": [
         {
           "name": "",
