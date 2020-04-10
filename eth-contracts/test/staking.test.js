@@ -6,7 +6,6 @@ const Staking = artifacts.require('Staking')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
 const getTokenBalance = async (token, account) => fromBn(await token.balanceOf(account))
-const claimBlockDiff = 46000
 
 const toWei = (aud) => {
   let amountInAudWei = web3.utils.toWei(
@@ -45,27 +44,10 @@ contract('Staking test', async (accounts) => {
       { from: testStakingCallerAddress })
   }
 
-  const approveAndFundNewClaim = async (amount, from) => {
-    // allow Staking app to move owner tokens
-    await token.approve(stakingAddress, amount, { from })
-    let receipt = await staking.fundNewClaim(amount, { from })
-    return receipt
-  }
-
-  const getLatestBlock = async () => {
-    let block = await web3.eth.getBlock('latest')
-    // console.log(`Latest block: ${block.number}`)
-    return parseInt(block.number)
-  }
-
   const getStakedAmountForAcct = async (acct) => {
     let stakeValue = (await staking.totalStakedFor(acct)).valueOf()
     // console.log(`${acct} : ${stakeValue}`)
     return parseInt(stakeValue)
-  }
-
-  const getInstance = (receipt) => {
-    return receipt.logs.find(log => log.event === 'NewStaking').args.instance
   }
 
   const slashAccount = async (amount, slashAddr, slasherAddress) => {
@@ -85,12 +67,14 @@ contract('Staking test', async (accounts) => {
     let initializeData = encodeCall(
       'initialize',
       ['address', 'address'],
-      [token.address, treasuryAddress])
+      [token.address, treasuryAddress]
+    )
 
     await proxy.upgradeToAndCall(
       impl0.address,
       initializeData,
-      { from: proxyOwner })
+      { from: proxyOwner }
+    )
 
     staking = await Staking.at(proxy.address)
     // Reset min for test purposes
@@ -100,6 +84,7 @@ contract('Staking test', async (accounts) => {
     // Permission test address as caller
     await staking.setStakingOwnerAddress(testStakingCallerAddress, { from: treasuryAddress })
   })
+
   it('has correct initial state', async () => {
     assert.equal(await staking.token(), tokenAddress, 'Token is wrong')
     assert.equal((await staking.totalStaked()).valueOf(), 0, 'Initial total staked amount should be zero')
@@ -201,36 +186,40 @@ contract('Staking test', async (accounts) => {
       'Final stake amount must be 2x default stake')
   })
 
-  it('slash functioning as expected', async () => {
-    // Transfer 1000 tokens to accounts[1], accounts[2]
-    await token.transfer(accounts[1], DEFAULT_AMOUNT, { from: treasuryAddress })
-    await token.transfer(accounts[2], DEFAULT_AMOUNT, { from: treasuryAddress })
+  it('slash account', async () => {
+    const account = accounts[1]
+    const slashAmount = web3.utils.toBN(DEFAULT_AMOUNT / 2)
 
-    // Stake w/both accounts
-    await approveAndStake(DEFAULT_AMOUNT, accounts[1])
-    await approveAndStake(DEFAULT_AMOUNT, accounts[2])
+    // Transfer & stake
+    await token.transfer(account, DEFAULT_AMOUNT, { from: treasuryAddress })
+    await approveAndStake(DEFAULT_AMOUNT, account)
 
-    let initialTotalStake = parseInt(await staking.totalStaked())
-    let initialStakeAmount = parseInt(await staking.totalStakedFor(accounts[1]))
+    // Confirm initial Staking state
+    const initialStakeBN = await staking.totalStaked()
+    const tokenInitialSupply = await token.totalSupply()
+    const initialStakeAmount = parseInt(await staking.totalStakedFor(account))
     assert.equal(initialStakeAmount, DEFAULT_AMOUNT)
 
-    let slashAmount = web3.utils.toBN(DEFAULT_AMOUNT / 2)
+    // Slash account's stake
+    await slashAccount(slashAmount, account, treasuryAddress)
 
-    // Slash 1/2 value from treasury
-    await slashAccount(
-      slashAmount,
-      accounts[1],
-      treasuryAddress)
+    // Confirm staked value for account
+    const finalAccountStake = parseInt(await staking.totalStakedFor(account))
+    assert.equal(finalAccountStake, DEFAULT_AMOUNT / 2)
 
-    // Confirm staked value
-    let finalStakeAmt = parseInt(await staking.totalStakedFor(accounts[1]))
-    assert.equal(finalStakeAmt, DEFAULT_AMOUNT / 2)
+    // Confirm total stake is decreased after slash
+    const finalTotalStake = await staking.totalStaked()
+    assert.isTrue(
+      finalTotalStake.eq(initialStakeBN.sub(slashAmount)),
+      'Expect total amount decreased'
+    )
 
-    // Confirm total stake is unchanged after slash
+    // Confirm token total supply decreased after burn
     assert.equal(
-      initialTotalStake,
-      await staking.totalStaked(),
-      'Total amount unchanged')
+      await token.totalSupply(),
+      tokenInitialSupply - slashAmount,
+      "ruh roh"
+    )
   })
 
   it('multiple claims, single fund cycle', async () => {
@@ -240,8 +229,7 @@ contract('Staking test', async (accounts) => {
     const spAccount3 = accounts[3]
     const funderAccount = accounts[4]
 
-    // TODO: Confirm that historic values for a single account can be recalculated by validating with blocknumber 
-    //
+    // TODO: Confirm that historic values for a single account can be recalculated by validating with blocknumber
     // Transfer DEFAULLT tokens to accts 1, 2, 3
     await token.transfer(spAccount1, DEFAULT_AMOUNT, { from: treasuryAddress })
     await token.transfer(spAccount2, DEFAULT_AMOUNT, { from: treasuryAddress })
@@ -267,11 +255,17 @@ contract('Staking test', async (accounts) => {
     // Transfer 120AUD tokens to staking contract
     await token.transfer(funderAccount, FIRST_CLAIM_FUND, { from: treasuryAddress })
 
-    // Transfer funds for claiming to contract
-    await approveAndFundNewClaim(FIRST_CLAIM_FUND, funderAccount)
+    // allow Staking app to move owner tokens
+    let sp1Rewards = FIRST_CLAIM_FUND.div(web3.utils.toBN(2))
+    let sp2Rewards = sp1Rewards
+    await token.approve(stakingAddress, sp1Rewards, { from: funderAccount })
+    let receipt = await staking.stakeRewards(sp1Rewards, spAccount1, { from: funderAccount })
+
+    await token.approve(stakingAddress, sp2Rewards, { from: funderAccount })
+    receipt = await staking.stakeRewards(sp2Rewards, spAccount2, { from: funderAccount })
 
     // Initial val should be first claim fund / 2
-    let expectedValueAfterFirstFund = DEFAULT_AMOUNT.add(FIRST_CLAIM_FUND.div(web3.utils.toBN(2)))
+    let expectedValueAfterFirstFund = DEFAULT_AMOUNT.add(sp1Rewards)
 
     // Confirm value added to account 1
     let acct1StakeAfterFund = await getStakedAmountForAcct(spAccount1)
