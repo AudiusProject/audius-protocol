@@ -123,11 +123,11 @@ contract ClaimFactory is RegistryContract {
             registry.getContract(serviceProviderFactoryKey)
         ).getAccountStakeBounds(_claimer);
         require(
-          (totalStakedAtFundBlockForClaimer >= spMin),
-          'Minimum stake bounds violated at fund block'); 
+            (totalStakedAtFundBlockForClaimer >= spMin),
+            "Minimum stake bounds violated at fund block");
         require(
-          (totalStakedAtFundBlockForClaimer <= spMax),
-          'Maximum stake bounds violated at fund block'); 
+            (totalStakedAtFundBlockForClaimer <= spMax),
+            "Maximum stake bounds violated at fund block");
 
         // Subtract total locked amount for SP from stake at fund block
         uint claimerTotalStake = totalStakedAtFundBlockForClaimer - _totalLockedForSP;
