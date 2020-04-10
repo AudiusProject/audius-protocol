@@ -135,6 +135,19 @@ class Users extends Base {
     return []
   }
 
+  /**
+   * Returns the top users for the specified genres
+   * @param {number} limit - max # of items to return
+   * @param {number} offset - offset into list to return from (for pagination)
+   * @param {Object} {Array of genres} - filter by genres ie. "Rock", "Alternative"
+   * @param {Boolean} with_users - If the userIds should be returned or the full user metadata
+   * @returns {Object} {Array of user objects if with_users set, else array of userIds}
+   */
+  async getTopAristByGenres (genres, limit = 30, offset = 0, withUsers = false) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getTopAristByGenres(genres, limit, offset, withUsers)
+  }
+
   /* ------- SETTERS ------- */
 
   /**
