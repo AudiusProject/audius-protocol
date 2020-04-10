@@ -15,7 +15,7 @@ contract MockServiceProviderFactory is RegistryContract {
     }
 
     /// @notice Calculate the stake for an account based on total number of registered services
-    function getAccountStakeBounds(address sp)
+    function getAccountStakeBounds(address)
     external view returns (uint minStake, uint maxStake)
     {
         return (0, max);

@@ -146,7 +146,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @param _amount Number of tokens staked
      * @param _data Used in Unstaked event, to add signalling information in more complex staking applications
      */
-     // TODO: Convert to internal model w/transfer address and account address
     function unstake(uint256 _amount, bytes calldata _data) external isInitialized {
         _unstakeFor(
           msg.sender,

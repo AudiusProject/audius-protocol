@@ -62,10 +62,6 @@ contract DelegateManager is RegistryContract {
     // TODO: Evaluate whether this is necessary
     bytes empty;
 
-    event Test(
-    uint256 test,
-    string msg);
-
     event IncreaseDelegatedStake(
       address _delegator,
       address _serviceProvider,
@@ -105,9 +101,6 @@ contract DelegateManager is RegistryContract {
         claimFactoryKey = _claimFactoryKey;
     }
 
-    // TODO: Require _target is a valid SP
-    // TODO: Validate sp account total balance
-    // TODO: Enforce min _amount?
     function delegateStake(
         address _target,
         uint _amount

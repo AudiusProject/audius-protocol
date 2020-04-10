@@ -675,6 +675,26 @@ contract('DelegateManager', async (accounts) => {
         'Expect no lockup funds to carry over')
     })
 
+    it('single delegator to invalid SP', async () => {
+      let initialDelegateAmount = toWei(60)
+
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      // Confirm maximum bounds exceeded for SP w/zero endpoints
+      await _lib.assertRevert(
+        delegateManager.delegateStake(
+          accounts[8],
+          initialDelegateAmount,
+          { from: delegatorAccount1 }),
+        'Maximum stake amount exceeded'
+      )
+    })
+
+
     it('3 delegators + pending claim + undelegate restrictions', async () => {
       const delegatorAccount2 = accounts[5]
       const delegatorAccount3 = accounts[6]
