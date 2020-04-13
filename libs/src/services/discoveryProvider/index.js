@@ -656,7 +656,7 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
-  async getTopAristByGenres (genres, limit = 30, offset = 0, withUsers = false) {
+  async getTopUsersByGenres (genres, limit = 30, offset = 0, withUsers = false) {
     let req = {
       endpoint: 'users/genre/top',
       queryParams: { genre: genres, limit, offset, with_users: withUsers }

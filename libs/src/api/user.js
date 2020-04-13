@@ -143,9 +143,9 @@ class Users extends Base {
    * @param {Boolean} with_users - If the userIds should be returned or the full user metadata
    * @returns {Object} {Array of user objects if with_users set, else array of userIds}
    */
-  async getTopAristByGenres (genres, limit = 30, offset = 0, withUsers = false) {
+  async getTopUsersByGenres (genres, limit = 30, offset = 0, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getTopAristByGenres(genres, limit, offset, withUsers)
+    return this.discoveryProvider.getTopUsersByGenres(genres, limit, offset, withUsers)
   }
 
   /* ------- SETTERS ------- */
