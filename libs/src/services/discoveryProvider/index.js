@@ -656,6 +656,14 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
+  async getTopCreatorsByGenres (genres, limit = 30, offset = 0, withUsers = false) {
+    let req = {
+      endpoint: 'users/genre/top',
+      queryParams: { genre: genres, limit, offset, with_users: withUsers }
+    }
+    return this._makeRequest(req)
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   // TODO(DM) - standardize this to axios like audius service and creator node
