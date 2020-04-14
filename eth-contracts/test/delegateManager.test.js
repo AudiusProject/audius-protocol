@@ -29,6 +29,7 @@ const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityPro
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
 const testEndpoint = 'https://localhost:5000'
@@ -108,6 +109,7 @@ contract('DelegateManager', async (accounts) => {
       registry.address,
       ownedUpgradeabilityProxyKey,
       serviceProviderFactoryKey,
+      delegateManagerKey,
       { from: accounts[0] })
 
     await registry.addContract(claimFactoryKey, claimFactory.address)
@@ -121,6 +123,8 @@ contract('DelegateManager', async (accounts) => {
       ownedUpgradeabilityProxyKey,
       serviceProviderFactoryKey,
       claimFactoryKey)
+
+    await registry.addContract(delegateManagerKey, delegateManager.address)
   })
 
   /* Helper functions */

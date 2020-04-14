@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-import "./registry/RegistryContract.sol";
+import "../service/registry/RegistryContract.sol";
 
 
 // Test contract used in claim factory scenarios

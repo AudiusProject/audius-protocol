@@ -2,14 +2,18 @@ import * as _lib from './_lib/lib.js'
 
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
+const RegistryContract = artifacts.require('RegistryContract')
 const ClaimFactory = artifacts.require('ClaimFactory')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
 const MockServiceProviderFactory = artifacts.require('MockServiceProviderFactory')
+const MockDelegateManager = artifacts.require('MockDelegateManager')
 const Staking = artifacts.require('Staking')
 const encodeCall = require('./encodeCall')
 
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
+const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
 
@@ -39,7 +43,8 @@ contract('ClaimFactory', async (accounts) => {
   let impl0
   let BN = web3.utils.BN
   let testStakingCallerAddress = accounts[6] // Dummy stand in for sp factory in actual deployment
-
+  let mockSPFactory
+  let mockDelegateManager
 
   const getLatestBlock = async () => {
     return web3.eth.getBlock('latest')
@@ -83,8 +88,12 @@ contract('ClaimFactory', async (accounts) => {
     staker = accounts[2]
 
     // Mock SP for test
-    let mockSPFactory = await MockServiceProviderFactory.new({ from: accounts[0] })
+    mockSPFactory = await MockServiceProviderFactory.new({ from: accounts[0] })
     await registry.addContract(serviceProviderFactoryKey, mockSPFactory.address)
+
+    // Deploy mock delegate manager with only function to forward processClaim call
+    mockDelegateManager = await MockDelegateManager.new(registry.address, claimFactoryKey, { from: accounts[0]})
+    await registry.addContract(delegateManagerKey, mockDelegateManager.address)
 
     // Create new claim factory instance
     claimFactory = await ClaimFactory.new(
@@ -92,7 +101,13 @@ contract('ClaimFactory', async (accounts) => {
       registry.address,
       ownedUpgradeabilityProxyKey,
       serviceProviderFactoryKey,
+      delegateManagerKey,
       { from: accounts[0] })
+
+    // Register claim factory instance
+    await registry.addContract(
+      claimFactoryKey,
+      claimFactory.address)
 
     // Register new contract as a minter, from the same address that deployed the contract
     await token.addMinter(claimFactory.address, { from: accounts[0] })
@@ -115,7 +130,7 @@ contract('ClaimFactory', async (accounts) => {
     let fundsPerRound = await claimFactory.getFundsPerRound()
 
     await claimFactory.initiateRound()
-    await claimFactory.processClaim(staker, 0)
+    await mockDelegateManager.testProcessClaim(staker, 0)
 
     totalStaked = await staking.totalStaked()
 
@@ -144,7 +159,7 @@ contract('ClaimFactory', async (accounts) => {
 
     // Initiate round
     await claimFactory.initiateRound()
-    await claimFactory.processClaim(staker, 0)
+    await mockDelegateManager.testProcessClaim(staker, 0)
     totalStaked = await staking.totalStaked()
 
     assert.isTrue(
@@ -179,7 +194,7 @@ contract('ClaimFactory', async (accounts) => {
 
     // Initiate another round
     await claimFactory.initiateRound()
-    await claimFactory.processClaim(staker, 0)
+    await mockDelegateManager.testProcessClaim(staker, 0)
     totalStaked = await staking.totalStaked()
     let finalAcctStake = await staking.totalStakedFor(staker)
     let expectedFinalValue = accountStakeBeforeSecondClaim.add(fundsPerClaim)
@@ -219,7 +234,7 @@ contract('ClaimFactory', async (accounts) => {
 
     // Initiate claim
     await claimFactory.initiateRound()
-    await claimFactory.processClaim(staker, 0)
+    await mockDelegateManager.testProcessClaim(staker, 0)
     totalStaked = await staking.totalStaked()
 
     assert.isTrue(

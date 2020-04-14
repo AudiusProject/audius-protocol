@@ -16,8 +16,10 @@ contract ClaimFactory is RegistryContract {
     uint8 private constant DECIMALS = 18;
 
     address tokenAddress;
+    address deployerAddress;
     bytes32 stakingProxyOwnerKey;
     bytes32 serviceProviderFactoryKey;
+    bytes32 delegateManagerKey;
 
     // Claim related configurations
     uint fundRoundBlockDiff = 10;
@@ -53,11 +55,14 @@ contract ClaimFactory is RegistryContract {
       address _tokenAddress,
       address _registryAddress,
       bytes32 _stakingProxyOwnerKey,
-      bytes32 _serviceProviderFactoryKey
+      bytes32 _serviceProviderFactoryKey,
+      bytes32 _delegateManagerKey
     ) public {
         tokenAddress = _tokenAddress;
+        deployerAddress = msg.sender;
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
+        delegateManagerKey = _delegateManagerKey;
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
         fundBlock = 0;
@@ -90,6 +95,12 @@ contract ClaimFactory is RegistryContract {
     // Start a new funding round
     // TODO: Permission caller to contract deployer or governance contract
     function initiateRound() external {
+        bool senderStaked = Staking(
+            registry.getContract(stakingProxyOwnerKey)
+        ).totalStakedFor(msg.sender) > 0;
+        require(
+            senderStaked || (msg.sender == deployerAddress),
+            "Round must be initiated from account with staked value or contract deployer");
         require(
             block.number - fundBlock > fundRoundBlockDiff,
             "Required block difference not met");
@@ -104,12 +115,16 @@ contract ClaimFactory is RegistryContract {
     }
 
     // TODO: Name this function better
-    // TODO: Permission caller
     function processClaim(
         address _claimer,
         uint _totalLockedForSP
     ) external returns (uint newAccountTotal)
     {
+        require(
+            msg.sender == registry.getContract(delegateManagerKey),
+            "ProcessClaim only accessible to DelegateManager"
+        );
+
         address stakingAddress = registry.getContract(stakingProxyOwnerKey);
         Staking stakingContract = Staking(stakingAddress);
         // Prevent duplicate claim
