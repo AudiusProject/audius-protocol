@@ -80,5 +80,10 @@ http {
         proxy_pass ${APP_URL};
       }
     }
+
+    # Connectivity check
+    location /204 {
+      return 204;
+    }
   }
 }
