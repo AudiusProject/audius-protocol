@@ -75,7 +75,7 @@ def tuple_to_model_dictionary(t, model):
 
 # Configures root logger with custom format and loglevel
 # All child loggers will inherit settings from root logger as configured in this function
-def configure_logging(loglevel_str):
+def configure_logging(loglevel_str='WARN'):
     logger = logging.getLogger()  # retrieve root logger
 
     handler = logging.StreamHandler()

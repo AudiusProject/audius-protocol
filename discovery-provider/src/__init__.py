@@ -171,7 +171,8 @@ def create(test_config=None, mode="app"):
         return app
 
     if mode == "celery":
-        helpers.configure_logging(shared_config["discprov"]["loglevel_celery"])
+        # log level is defined via command line in docker yml files
+        helpers.configure_logging()
         configure_celery(app, celery_app.celery, test_config)
         return celery_app
 
