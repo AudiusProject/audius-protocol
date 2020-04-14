@@ -83,6 +83,11 @@ http {
 
     # Connectivity check
     location /204 {
+      add_header 'Access-Control-Allow-Origin' '*' always;
+      add_header 'Access-Control-Allow-Methods' 'GET';
+      add_header 'Access-Control-Max-Age' 0;
+      add_header 'Content-Type' 'text/plain; charset=utf-8';
+      add_header 'Content-Length' 0;
       return 204;
     }
   }
