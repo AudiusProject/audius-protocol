@@ -1,6 +1,7 @@
 const DelegateManager = artifacts.require('DelegateManager')
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
+const Governance = artifacts.require('Governance')
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
 const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -16,6 +17,7 @@ module.exports = (deployer, network, accounts) => {
       DelegateManager,
       audiusToken.address,
       registry.address,
+      Governance.address,
       ownedUpgradeabilityProxyKey,
       serviceProviderFactoryKey,
       claimFactoryKey)

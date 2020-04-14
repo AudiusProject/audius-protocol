@@ -154,17 +154,6 @@ contract('Governance.sol', async (accounts) => {
     // Register new contract as a minter, from the same address that deployed the contract
     await tokenContract.addMinter(claimFactoryContract.address, { from: protocolOwnerAddress })
 
-    // Deploy DelegateManager contract
-    delegateManagerContract = await DelegateManager.new(
-      tokenContract.address,
-      registryContract.address,
-      ownedUpgradeabilityProxyKey,
-      serviceProviderFactoryKey,
-      claimFactoryKey,
-      { from: protocolOwnerAddress }
-    )
-    await registryContract.addContract(delegateManagerKey, delegateManagerContract.address, { from: protocolOwnerAddress })
-
     // Deploy Governance contract
     governanceContract = await Governance.new(
       registryContract.address,
@@ -173,6 +162,18 @@ contract('Governance.sol', async (accounts) => {
       votingQuorum,
       { from: protocolOwnerAddress }
     )
+
+    // Deploy DelegateManager contract
+    delegateManagerContract = await DelegateManager.new(
+      tokenContract.address,
+      registryContract.address,
+      governanceContract.address,
+      ownedUpgradeabilityProxyKey,
+      serviceProviderFactoryKey,
+      claimFactoryKey,
+      { from: protocolOwnerAddress }
+    )
+    await registryContract.addContract(delegateManagerKey, delegateManagerContract.address, { from: protocolOwnerAddress })
   })
 
   describe('Slash proposal', async () => {
@@ -181,7 +182,7 @@ contract('Governance.sol', async (accounts) => {
     const stakerAccount1 = accounts[1]
     const stakerAccount2 = accounts[2]
     const delegatorAccount1 = accounts[3]
-    
+
     beforeEach(async () => {
       // Transfer 1000 tokens to stakerAccount1, stakerAccount2, and delegatorAccount1
       await tokenContract.transfer(stakerAccount1, defaultStakeAmount, { from: treasuryAddress })

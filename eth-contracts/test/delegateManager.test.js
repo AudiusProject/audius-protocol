@@ -9,6 +9,7 @@ const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const Staking = artifacts.require('Staking')
 const DelegateManager = artifacts.require('DelegateManager')
 const ClaimFactory = artifacts.require('ClaimFactory')
+const MockGovernance = artifacts.require('MockGovernance')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
 const toWei = (aud) => {
@@ -54,6 +55,7 @@ contract('DelegateManager', async (accounts) => {
 
   let claimFactory
   let delegateManager
+  let mockGovernance
 
   const stakerAccount = accounts[1]
   const delegatorAccount1 = accounts[2]
@@ -117,9 +119,15 @@ contract('DelegateManager', async (accounts) => {
     // Register new contract as a minter, from the same address that deployed the contract
     await token.addMinter(claimFactory.address, { from: accounts[0] })
 
+    mockGovernance = await MockGovernance.new(
+      registry.address,
+      delegateManagerKey,
+      { from: accounts[0] })
+
     delegateManager = await DelegateManager.new(
       token.address,
       registry.address,
+      mockGovernance.address,
       ownedUpgradeabilityProxyKey,
       serviceProviderFactoryKey,
       claimFactoryKey)
@@ -469,7 +477,8 @@ contract('DelegateManager', async (accounts) => {
       let slashAmount = (totalInStakingContract.mul(slashNumerator)).div(slashDenominator)
 
       // Perform slash functions
-      await delegateManager.slash(slashAmount, slasherAccount)
+      // Called from mockGovernance
+      await mockGovernance.testSlash(slashAmount, slasherAccount)
 
       // Summarize after execution
       let spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
@@ -669,7 +678,8 @@ contract('DelegateManager', async (accounts) => {
         'Initial delegate amount not found')
 
       // Perform slash functions
-      await delegateManager.slash(slashAmount, slasherAccount)
+      // Called from mockGovernance
+      await mockGovernance.testSlash(slashAmount, slasherAccount)
 
       let postRewardInfo = await getAccountStakeInfo(stakerAccount, false)
 
@@ -803,7 +813,8 @@ contract('DelegateManager', async (accounts) => {
       let slashAmount = (preSlashInfo.spFactoryStake).sub(diffAmount)
 
       // Perform slash functions
-      await delegateManager.slash(slashAmount, slasherAccount)
+      // Called from mockGovernance
+      await mockGovernance.testSlash(slashAmount, slasherAccount)
 
       let isWithinBounds = await serviceProviderFactory.isServiceProviderWithinBounds(slasherAccount)
       assert.isFalse(

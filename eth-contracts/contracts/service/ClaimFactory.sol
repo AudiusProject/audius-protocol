@@ -93,7 +93,7 @@ contract ClaimFactory is RegistryContract {
     }
 
     // Start a new funding round
-    // TODO: Permission caller to contract deployer or governance contract
+    // Permissioned to stakers or contract deployer
     function initiateRound() external {
         bool senderStaked = Staking(
             registry.getContract(stakingProxyOwnerKey)
@@ -114,7 +114,8 @@ contract ClaimFactory is RegistryContract {
         );
     }
 
-    // TODO: Name this function better
+    // Callable by DelegateManager only
+    // Mints new tokens and stakes on behalf of claimer
     function processClaim(
         address _claimer,
         uint _totalLockedForSP
