@@ -6,6 +6,8 @@ import "./Checkpointing.sol";
 import "./res/Autopetrified.sol";
 import "./res/IsContract.sol";
 
+import "../service/interface/registry/RegistryInterface.sol";
+
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
@@ -34,10 +36,18 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     }
 
     ERC20 internal stakingToken;
+    RegistryInterface registry = RegistryInterface(0);
+
     mapping (address => Account) internal accounts;
     Checkpointing.History internal totalStakedHistory;
+
     address treasuryAddress;
     address stakingOwnerAddress;
+
+    address registryAddress;
+    bytes32 claimFactoryKey;
+    bytes32 delegateManagerKey;
+    bytes32 serviceProviderFactoryKey;
 
     event StakeTransferred(
       address indexed from,
@@ -52,11 +62,23 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
 
     event Slashed(address indexed user, uint256 amount, uint256 total);
 
-    function initialize(address _stakingToken, address _treasuryAddress) external onlyInit {
+    function initialize(
+      address _stakingToken,
+      address _treasuryAddress,
+      address _registryAddress,
+      bytes32 _claimFactoryKey,
+      bytes32 _delegateManagerkey,
+      bytes32 _serviceProviderFactoryKey
+    ) external onlyInit {
         require(isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
-        initialized();
         stakingToken = ERC20(_stakingToken);
+        registry = RegistryInterface(_registryAddress);
         treasuryAddress = _treasuryAddress;
+        registryAddress = _registryAddress;
+        claimFactoryKey = _claimFactoryKey;
+        delegateManagerKey = _delegateManagerkey;
+        serviceProviderFactoryKey = _serviceProviderFactoryKey;
+        initialized();
     }
 
     /* External functions */
@@ -70,6 +92,8 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         // Stake for incoming account
         // Transfer from msg.sender, in this case ClaimFactory 
         // bytes memory empty;
+        require(msg.sender == registry.getContract(claimFactoryKey), "Only callable from ClaimFactory");
+
         _stakeFor(
             _stakerAccount,
             msg.sender,

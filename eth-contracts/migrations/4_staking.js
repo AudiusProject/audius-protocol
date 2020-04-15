@@ -7,6 +7,9 @@ const AudiusToken = artifacts.require('AudiusToken')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
 
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
+const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 
 function encodeCall (name, args, values) {
   const methodId = abi.methodID(name, args).toString('hex')
@@ -33,8 +36,22 @@ module.exports = (deployer, network, accounts) => {
     // Encode data for the call to initialize
     let initializeData = encodeCall(
       'initialize',
-      ['address', 'address'],
-      [token.address, treasuryAddress])
+      [
+        'address',
+        'address',
+        'address',
+        'bytes32',
+        'bytes32',
+        'bytes32'
+      ],
+      [
+        token.address,
+        treasuryAddress,
+        registry.address,
+        claimFactoryKey,
+        delegateManagerKey,
+        serviceProviderFactoryKey
+      ])
 
     let contractDeployer = accounts[0]
 

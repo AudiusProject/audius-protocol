@@ -1,11 +1,16 @@
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('./encodeCall')
+const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
+const MockStakingCaller = artifacts.require('MockStakingCaller')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
 const getTokenBalance = async (token, account) => fromBn(await token.balanceOf(account))
+
+const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 
 const toWei = (aud) => {
   let amountInAudWei = web3.utils.toWei(
@@ -29,6 +34,8 @@ contract('Staking test', async (accounts) => {
   let token
   let stakingAddress
   let tokenAddress
+  let registry
+  let testStakingCaller
 
   const DEFAULT_TREASURY_AMOUNT = DEFAULT_AMOUNT * 10
   const EMPTY_STRING = ''
@@ -61,13 +68,18 @@ contract('Staking test', async (accounts) => {
     proxy = await OwnedUpgradeabilityProxy.new({ from: proxyOwner })
     token = await AudiusToken.new({ from: treasuryAddress })
     tokenAddress = token.address
+    registry = await Registry.new()
+
+    testStakingCaller = await MockStakingCaller.new(proxy.address, tokenAddress)
+    await registry.addContract(claimFactoryKey, testStakingCaller.address)
+    await registry.addContract(serviceProviderFactoryKey, testStakingCaller.address)
 
     impl0 = await Staking.new()
     // Create initialization data
     let initializeData = encodeCall(
       'initialize',
-      ['address', 'address'],
-      [token.address, treasuryAddress]
+      ['address', 'address', 'address', 'bytes32'],
+      [token.address, treasuryAddress, registry.address, claimFactoryKey]
     )
 
     await proxy.upgradeToAndCall(
@@ -258,11 +270,11 @@ contract('Staking test', async (accounts) => {
     // allow Staking app to move owner tokens
     let sp1Rewards = FIRST_CLAIM_FUND.div(web3.utils.toBN(2))
     let sp2Rewards = sp1Rewards
-    await token.approve(stakingAddress, sp1Rewards, { from: funderAccount })
-    let receipt = await staking.stakeRewards(sp1Rewards, spAccount1, { from: funderAccount })
+    await token.approve(testStakingCaller.address, sp1Rewards, { from: funderAccount })
+    let receipt = await testStakingCaller.testStakeRewards(sp1Rewards, spAccount1, { from: funderAccount })
 
-    await token.approve(stakingAddress, sp2Rewards, { from: funderAccount })
-    receipt = await staking.stakeRewards(sp2Rewards, spAccount2, { from: funderAccount })
+    await token.approve(testStakingCaller.address, sp2Rewards, { from: funderAccount })
+    receipt = await testStakingCaller.testStakeRewards(sp2Rewards, spAccount2, { from: funderAccount })
 
     // Initial val should be first claim fund / 2
     let expectedValueAfterFirstFund = DEFAULT_AMOUNT.add(sp1Rewards)

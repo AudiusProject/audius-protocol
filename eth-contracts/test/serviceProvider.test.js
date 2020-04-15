@@ -27,8 +27,6 @@ const fromWei = (wei) => {
   return web3.utils.fromWei(wei)
 }
 
-const getTokenBalance2 = async (token, account) => fromWei(await token.balanceOf(account))
-
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -43,7 +41,6 @@ const MIN_STAKE_AMOUNT = 10
 // 1000 AUD converted to AUDWei, multiplying by 10^18
 const INITIAL_BAL = toWei(1000)
 const DEFAULT_AMOUNT = toWei(120)
-const MAX_STAKE_AMOUNT = DEFAULT_AMOUNT * 100
 
 contract('ServiceProvider test', async (accounts) => {
   let treasuryAddress = accounts[0]
@@ -54,7 +51,6 @@ contract('ServiceProvider test', async (accounts) => {
   let token
   let registry
   let stakingAddress
-  let tokenAddress
   let serviceProviderStorage
   let serviceProviderFactory
 
@@ -67,9 +63,6 @@ contract('ServiceProvider test', async (accounts) => {
     await registry.addContract(ownedUpgradeabilityProxyKey, proxy.address)
 
     token = await AudiusToken.new({ from: treasuryAddress })
-    tokenAddress = token.address
-
-    let initialTokenBal = fromBn(await token.balanceOf(accounts[0]))
 
     impl0 = await Staking.new()
 
