@@ -197,7 +197,7 @@ class EthContracts {
       this.expectedServiceVersions = await this.getExpectedServiceVersions()
     }
 
-    console.info(`Looking latest for service provider in ${serviceProviders} with version ${this.expectedServiceVersions}`)
+    console.info(`Looking latest for service provider in ${JSON.stringify(serviceProviders)} with version ${JSON.stringify(this.expectedServiceVersions)}`)
 
     if (!this.expectedServiceVersions.hasOwnProperty(spType)) {
       throw new Error(`Invalid service name: ${spType}`)
@@ -259,7 +259,7 @@ class EthContracts {
           }
         } catch (e) {
           // Swallow errors for a single sp endpoint to ensure others can proceed
-          console.error(`Failed to retrieve information for ${sp}`)
+          console.error(`Failed to retrieve information for ${JSON.stringify(sp)}:\n\t${e}`)
         }
       }))
 
