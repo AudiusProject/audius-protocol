@@ -1,9 +1,9 @@
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('./encodeCall')
 
-const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
+const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
-const StakingTest = artifacts.require('StakingTest')
+const StakingUpgraded = artifacts.require('StakingUpgraded')
 const AudiusToken = artifacts.require('AudiusToken')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
@@ -17,19 +17,15 @@ const toWei = (aud) => {
   let amountInAudWeiBN = web3.utils.toBN(amountInAudWei)
   return amountInAudWeiBN
 }
+
 const DEFAULT_AMOUNT = toWei(120)
 
 contract('Upgrade proxy test', async (accounts) => {
-  let treasuryAddress = accounts[0]
-  let testStakingCallerAddress = accounts[6] // Dummy stand in for sp factory in actual deployment
-  let proxyOwner = treasuryAddress
-  let proxy
-  let impl0
-  let impl1
-  let token
-  let initializeData
-  let staking0
-  let staking1
+  // let staking, stakingUpgraded, stakingInitializeData, token, proxy, stakingInstance
+  let token, staking0, stakingInitializeData, proxy, stakingUpgraded, staking
+
+  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const stakingOwnerAddress = accounts[9] // Dummy stand in for sp factory in actual deployment
 
   const approveAndStake = async (amount, staker, staking) => {
     // Transfer default tokens to
@@ -41,90 +37,117 @@ contract('Upgrade proxy test', async (accounts) => {
       staker,
       amount,
       web3.utils.utf8ToHex(''),
-      { from: testStakingCallerAddress })
+      { from: stakingOwnerAddress }
+    )
   }
 
   beforeEach(async function () {
-    proxy = await OwnedUpgradeabilityProxy.new({ from: proxyOwner })
-    token = await AudiusToken.new({ from: accounts[0] })
-    impl0 = await Staking.new()
-    impl1 = await StakingTest.new()
-    // Create initialization data
-    initializeData = encodeCall(
+    token = await AudiusToken.new({ from: treasuryAddress })
+    staking0 = await Staking.new({ from: proxyAdminAddress })
+    stakingUpgraded = await StakingUpgraded.new({ from: proxyAdminAddress })
+    assert.notEqual(staking0.address, stakingUpgraded.address)
+    stakingInitializeData = encodeCall(
       'initialize',
       ['address', 'address'],
-      [token.address, treasuryAddress])
-
-    staking0 = await Staking.at(proxy.address)
-    staking1 = await StakingTest.at(proxy.address)
+      [token.address, treasuryAddress]
+    )
   })
 
-  it('upgradeTo', async () => {
-    await proxy.upgradeTo(impl0.address)
-    const implementation = await proxy.implementation()
-    assert.equal(implementation, impl0.address)
+  it('deploy proxy', async () => {
+    proxy = await AdminUpgradeabilityProxy.new(
+      staking0.address,
+      proxyAdminAddress,
+      stakingInitializeData,
+      { from: proxyDeployerAddress }
+    )
+
+    staking = await Staking.at(proxy.address)
+    const totalStaked = await staking.totalStaked.call({ from: proxyDeployerAddress })
+    assert.equal(fromBn(totalStaked), 0)
+
+    assert.equal(await proxy.implementation.call({ from: proxyAdminAddress }), staking0.address)
   })
 
-  it('upgradeToAndCall', async () => {
-    await proxy.upgradeToAndCall(impl0.address, initializeData, { from: proxyOwner })
-    const implementation = await proxy.implementation()
-    assert.equal(implementation, impl0.address)
+  it('fail to call newFunction before upgrade', async () => {
+    proxy = await AdminUpgradeabilityProxy.new(
+      staking0.address,
+      proxyAdminAddress,
+      stakingInitializeData,
+      { from: proxyDeployerAddress }
+    )
+
+    staking = await StakingUpgraded.at(proxy.address)
+    await _lib.assertRevert(staking.newFunction.call({ from: proxyDeployerAddress }))
   })
 
-  describe('initial staking function provided', function () {
+  it('upgrade proxy to StakingUpgraded + call newFunction()', async () => {
+    proxy = await AdminUpgradeabilityProxy.new(
+      staking0.address,
+      proxyAdminAddress,
+      stakingInitializeData,
+      { from: proxyDeployerAddress }
+    )
+
+    // assert proxy.newFunction() not callable before upgrade
+    staking = await StakingUpgraded.at(proxy.address)
+    await _lib.assertRevert(staking.newFunction.call({ from: proxyDeployerAddress }))
+
+    await proxy.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
+    assert.equal(await proxy.implementation.call({ from: proxyAdminAddress }), stakingUpgraded.address)
+
+    // assert proxy.newFunction() call succeeds after upgrade
+    staking = await StakingUpgraded.at(proxy.address)
+    const newFunctionResp = await staking.newFunction.call({ from: proxyDeployerAddress })
+    assert.equal(newFunctionResp, 5)
+  })
+
+  describe('Confirm staking logic', function () {
     beforeEach(async function () {
-      const spAccount1 = accounts[1]
-      const spAccount2 = accounts[2]
+      const spAccount1 = accounts[3]
+      const spAccount2 = accounts[4]
 
       // Transfer 1000 tokens to accounts[1] and accounts[2]
       await token.transfer(spAccount1, 1000, { from: treasuryAddress })
       await token.transfer(spAccount2, 1000, { from: treasuryAddress })
 
-      await proxy.upgradeToAndCall(impl0.address, initializeData, { from: proxyOwner })
+      proxy = await AdminUpgradeabilityProxy.new(
+        staking0.address,
+        proxyAdminAddress,
+        stakingInitializeData,
+        { from: proxyDeployerAddress }
+      )
 
       // Permission test address as caller
-      await staking0.setStakingOwnerAddress(testStakingCallerAddress, { from: treasuryAddress })
+      staking = await Staking.at(proxy.address)
+      await staking.setStakingOwnerAddress(stakingOwnerAddress, { from: treasuryAddress })
     })
 
     it('upgrade and confirm initial staking state at proxy', async () => {
-      const implementation = await proxy.implementation()
-      assert.equal(implementation, impl0.address)
-      assert.equal(await staking0.hasInitialized(), true, 'contract has not been initialized')
-      assert.equal(await staking0.token(), token.address, 'Token is wrong')
-      assert.equal((await staking0.totalStaked()).valueOf(), 0, 'Initial total staked amount should be zero')
-      assert.equal(await staking0.supportsHistory(), true, 'history support should match')
+      assert.equal(await proxy.implementation.call({ from: proxyAdminAddress }), staking0.address)
+      assert.equal(await staking.initializerRan.call({ from: accounts[3]}), true, 'contract has not been initialized')
+      assert.equal(await staking.token.call({ from: accounts[3] }), token.address, 'Token is wrong')
+      assert.equal((await staking.totalStaked.call({ from: accounts[3] })).valueOf(), 0, 'Initial total staked amount should be zero')
+      assert.equal(await staking.supportsHistory({ from: accounts[3] }), true, 'history support should match')
     })
 
-    it('fails to invoke unknown function', async () => {
-      const implementation = await proxy.implementation()
-      assert.equal(implementation, impl0.address)
-      _lib.assertRevert(staking1.testFunction())
-    })
+    it('Confirm that contract state changes persist after proxy upgrade', async () => {
+      const staker = accounts[3]
+      const otherAccount = accounts[4]
 
-    it('successfully upgrades contract', async () => {
-      await proxy.upgradeTo(impl1.address, { from: proxyOwner })
-      let tx = await staking1.testFunction()
-      let testEventCheck = tx.logs.find(log => log.event === 'TestEvent').args
-      assert.isTrue(testEventCheck.msg.length > 0, 'Expect TestEvent to be fired')
-    })
+      await approveAndStake(DEFAULT_AMOUNT, staker, staking)
+      await proxy.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
 
-    it('successfully upgrades contract and transfers state', async () => {
-      await approveAndStake(DEFAULT_AMOUNT, accounts[1], staking0)
-      await proxy.upgradeTo(impl1.address, { from: proxyOwner })
+      staking = await StakingUpgraded.at(proxy.address)
 
-      let tx = await staking1.testFunction()
-      let testEventCheck = tx.logs.find(log => log.event === 'TestEvent').args
-      assert.isTrue(testEventCheck.msg.length > 0, 'Expect TestEvent to be fired')
-
-      let totalStakedAfterUpgrade = await staking1.totalStaked()
       assert.isTrue(
-        DEFAULT_AMOUNT.eq(totalStakedAfterUpgrade),
-        'total staked amount should transfer after upgrade')
+        DEFAULT_AMOUNT.eq(await staking.totalStaked.call({ from: otherAccount })),
+        'total staked amount should transfer after upgrade'
+      )
 
-      let accountStakeAfterUpgrade = await staking1.totalStakedFor(accounts[1])
       assert.isTrue(
-        DEFAULT_AMOUNT.eq(accountStakeAfterUpgrade),
-        'total staked for accounts[1] should match after upgrade')
+        DEFAULT_AMOUNT.eq(await staking.totalStakedFor.call(staker, { from: otherAccount })),
+        'total staked for staker should match after upgrade'
+      )
     })
   })
 })

@@ -6,45 +6,44 @@ const VersioningFactory = artifacts.require('VersioningFactory')
 const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const Staking = artifacts.require('Staking')
-const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
 
 const versioningStorageKey = web3.utils.utf8ToHex('VersioningStorage')
 const versioningFactoryKey = web3.utils.utf8ToHex('VersioningFactory')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
-const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
+const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 
-const AudiusToken = artifacts.require('AudiusToken')
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
-    let registry = await Registry.deployed()
-    const networkId = Registry.network_id
     const config = contractConfig[network]
+    const registry = await Registry.deployed()
 
     const versionerAddress = config.versionerAddress || accounts[0]
     const treasuryAddress = config.treasuryAddress || accounts[0]
-    const tokenAddress = AudiusToken.address
 
-    await deployer.deploy(VersioningStorage, Registry.address)
-    await registry.addContract(versioningStorageKey, VersioningStorage.address)
-    await deployer.deploy(VersioningFactory, Registry.address, versioningStorageKey, versionerAddress)
-    await registry.addContract(versioningFactoryKey, VersioningFactory.address)
+    await deployer.deploy(VersioningStorage, Registry.address, { from: treasuryAddress })
+    await registry.addContract(versioningStorageKey, VersioningStorage.address, { from: treasuryAddress })
+    await deployer.deploy(VersioningFactory, Registry.address, versioningStorageKey, versionerAddress, { from: treasuryAddress })
+    await registry.addContract(versioningFactoryKey, VersioningFactory.address, { from: treasuryAddress })
 
-    await deployer.deploy(ServiceProviderStorage, Registry.address)
-    await registry.addContract(serviceProviderStorageKey, ServiceProviderStorage.address)
+    await deployer.deploy(ServiceProviderStorage, Registry.address, { from: treasuryAddress })
+    await registry.addContract(serviceProviderStorageKey, ServiceProviderStorage.address, { from: treasuryAddress })
 
-    let serviceProviderFactory = await deployer.deploy(
+    const serviceProviderFactory = await deployer.deploy(
       ServiceProviderFactory,
       Registry.address,
-      ownedUpgradeabilityProxyKey,
-      serviceProviderStorageKey)
+      stakingProxyKey,
+      serviceProviderStorageKey,
+      { from: treasuryAddress }
+    )
 
-    await registry.addContract(serviceProviderFactoryKey, ServiceProviderFactory.address)
+    await registry.addContract(serviceProviderFactoryKey, ServiceProviderFactory.address, { from: treasuryAddress })
 
-    // Configure owner of staking contract to be service provider factory
-    let proxy = await OwnedUpgradeabilityProxy.deployed()
-    let staking = await Staking.at(proxy.address)
-    await staking.setStakingOwnerAddress(serviceProviderFactory.address)
+    const stakingProxyAddress = await registry.getContract.call(stakingProxyKey)
+
+    // Set owner of staking contract to ServiceProviderFactory
+    const staking = await Staking.at(stakingProxyAddress)
+    await staking.setStakingOwnerAddress(serviceProviderFactory.address, { from: treasuryAddress })
   })
 }

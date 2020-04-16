@@ -1,7 +1,8 @@
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('./encodeCall')
+
 const AudiusToken = artifacts.require('AudiusToken')
-const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
+const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
@@ -20,17 +21,11 @@ const toWei = (aud) => {
 const DEFAULT_AMOUNT = toWei(120)
 
 contract('Staking test', async (accounts) => {
-  let treasuryAddress = accounts[0]
-  let testStakingCallerAddress = accounts[6] // Dummy stand in for sp factory in actual deployment
-  let proxyOwner = treasuryAddress
-  let proxy
-  let impl0
-  let staking
-  let token
-  let stakingAddress
-  let tokenAddress
+  let token, staking0, stakingInitializeData, proxy, staking, stakingAddress
+  
+  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const stakingOwnerAddress = accounts[9] // Dummy stand in for sp factory in actual deployment
 
-  const DEFAULT_TREASURY_AMOUNT = DEFAULT_AMOUNT * 10
   const EMPTY_STRING = ''
 
   const approveAndStake = async (amount, staker) => {
@@ -41,7 +36,7 @@ contract('Staking test', async (accounts) => {
       staker,
       amount,
       web3.utils.utf8ToHex(EMPTY_STRING),
-      { from: testStakingCallerAddress })
+      { from: stakingOwnerAddress })
   }
 
   const getStakedAmountForAcct = async (acct) => {
@@ -58,35 +53,30 @@ contract('Staking test', async (accounts) => {
   }
 
   beforeEach(async () => {
-    proxy = await OwnedUpgradeabilityProxy.new({ from: proxyOwner })
     token = await AudiusToken.new({ from: treasuryAddress })
-    tokenAddress = token.address
-
-    impl0 = await Staking.new()
-    // Create initialization data
-    let initializeData = encodeCall(
+    staking0 = await Staking.new({ from: proxyAdminAddress })
+    stakingInitializeData = encodeCall(
       'initialize',
       ['address', 'address'],
       [token.address, treasuryAddress]
     )
 
-    await proxy.upgradeToAndCall(
-      impl0.address,
-      initializeData,
-      { from: proxyOwner }
+    proxy = await AdminUpgradeabilityProxy.new(
+      staking0.address,
+      proxyAdminAddress,
+      stakingInitializeData,
+      { from: proxyDeployerAddress }
     )
 
+    // Permission test address as caller
     staking = await Staking.at(proxy.address)
-    // Reset min for test purposes
+    await staking.setStakingOwnerAddress(stakingOwnerAddress, { from: treasuryAddress })
 
     stakingAddress = staking.address
-
-    // Permission test address as caller
-    await staking.setStakingOwnerAddress(testStakingCallerAddress, { from: treasuryAddress })
   })
 
   it('has correct initial state', async () => {
-    assert.equal(await staking.token(), tokenAddress, 'Token is wrong')
+    assert.equal(await staking.token({ from: accounts[3]}), token.address, 'Token is wrong')
     assert.equal((await staking.totalStaked()).valueOf(), 0, 'Initial total staked amount should be zero')
     assert.equal(await staking.supportsHistory(), true, 'history support should match')
   })
@@ -121,7 +111,7 @@ contract('Staking test', async (accounts) => {
       staker,
       DEFAULT_AMOUNT,
       web3.utils.utf8ToHex(EMPTY_STRING),
-      { from: testStakingCallerAddress })
+      { from: stakingOwnerAddress })
 
     let finalTotalStaked = parseInt(await staking.totalStaked())
     assert.equal(

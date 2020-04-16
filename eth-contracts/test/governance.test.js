@@ -1,13 +1,12 @@
 const ethers = require('ethers')
 const BigNum = require('bignumber.js')
-const util = require('util')
 
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('./encodeCall')
 
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
-const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
+const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const Governance = artifacts.require('Governance')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
@@ -15,7 +14,7 @@ const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const DelegateManager = artifacts.require('DelegateManager')
 const ClaimFactory = artifacts.require('ClaimFactory')
 
-const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
+const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
@@ -62,29 +61,21 @@ const Vote = Object.freeze({
 })
 
 contract('Governance.sol', async (accounts) => {
-  let proxyContract
-  let tokenContract
-  let stakingContract
-  let registryContract
-  let serviceProviderStorageContract
-  let serviceProviderFactoryContract
-  let claimFactoryContract
-  let delegateManagerContract
-  let governanceContract
+  let token, registry, staking0, staking, proxy, serviceProviderStorage, serviceProviderFactory, claimFactory, delegateManager, governance
 
   const votingPeriod = 10
   const votingQuorum = 1
-  const protocolOwnerAddress = accounts[0]
-  const treasuryAddress = protocolOwnerAddress
+  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const protocolOwnerAddress = treasuryAddress
   const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
   const testEndpoint1 = 'https://localhost:5000'
   const testEndpoint2 = 'https://localhost:5001'
 
   const registerServiceProvider = async (type, endpoint, amount, account) => {
     // Approve staking transfer
-    await tokenContract.approve(stakingContract.address, amount, { from: account })
+    await token.approve(staking.address, amount, { from: account })
 
-    const tx = await serviceProviderFactoryContract.register(
+    const tx = await serviceProviderFactory.register(
       type,
       endpoint,
       amount,
@@ -99,75 +90,71 @@ contract('Governance.sol', async (accounts) => {
   }
 
   /**
-   * Deploy Registry, OwnedUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts.
+   * Deploy Registry, AdminUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts.
    */
   beforeEach(async () => {
-    registryContract = await Registry.new({ from: protocolOwnerAddress })
-    proxyContract = await OwnedUpgradeabilityProxy.new({ from: protocolOwnerAddress })
-    await registryContract.addContract(ownedUpgradeabilityProxyKey, proxyContract.address, { from: protocolOwnerAddress })
+    token = await AudiusToken.new({ from: treasuryAddress })
+    registry = await Registry.new({ from: treasuryAddress })
 
-    tokenContract = await AudiusToken.new({ from: protocolOwnerAddress })
-
-    const stakingContract0 = await Staking.new({ from: protocolOwnerAddress })
-    // Create initialization data
-    const initializeData = encodeCall(
+    // Set up staking
+    staking0 = await Staking.new({ from: proxyAdminAddress })
+    const stakingInitializeData = encodeCall(
       'initialize',
       ['address', 'address'],
-      [tokenContract.address, protocolOwnerAddress]
+      [token.address, treasuryAddress]
     )
-
-    // Initialize staking contract
-    await proxyContract.upgradeToAndCall(
-      stakingContract0.address,
-      initializeData,
-      { from: protocolOwnerAddress }
+    proxy = await AdminUpgradeabilityProxy.new(
+      staking0.address,
+      proxyAdminAddress,
+      stakingInitializeData,
+      { from: proxyDeployerAddress }
     )
-
-    stakingContract = await Staking.at(proxyContract.address)
-
+    staking = await Staking.at(proxy.address)
+    await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
+    
     // Deploy + Registery ServiceProviderStorage contract
-    serviceProviderStorageContract = await ServiceProviderStorage.new(registryContract.address, { from: protocolOwnerAddress })
-    await registryContract.addContract(serviceProviderStorageKey, serviceProviderStorageContract.address, { from: protocolOwnerAddress })
+    serviceProviderStorage = await ServiceProviderStorage.new(registry.address, { from: protocolOwnerAddress })
+    await registry.addContract(serviceProviderStorageKey, serviceProviderStorage.address, { from: protocolOwnerAddress })
 
     // Deploy + Register ServiceProviderFactory contract
-    serviceProviderFactoryContract = await ServiceProviderFactory.new(
-      registryContract.address,
-      ownedUpgradeabilityProxyKey,
+    serviceProviderFactory = await ServiceProviderFactory.new(
+      registry.address,
+      stakingProxyKey,
       serviceProviderStorageKey
     )
-    await registryContract.addContract(serviceProviderFactoryKey, serviceProviderFactoryContract.address, { from: protocolOwnerAddress })
+    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address, { from: protocolOwnerAddress })
 
     // Permission sp factory as caller, from the treasuryAddress, which is proxy owner
-    await stakingContract.setStakingOwnerAddress(serviceProviderFactoryContract.address, { from: protocolOwnerAddress })
+    await staking.setStakingOwnerAddress(serviceProviderFactory.address, { from: protocolOwnerAddress })
 
     // Deploy + Register ClaimFactory contract
-    claimFactoryContract = await ClaimFactory.new(
-      tokenContract.address,
-      registryContract.address,
-      ownedUpgradeabilityProxyKey,
+    claimFactory = await ClaimFactory.new(
+      token.address,
+      registry.address,
+      stakingProxyKey,
       serviceProviderFactoryKey,
       { from: protocolOwnerAddress }
     )
-    await registryContract.addContract(claimFactoryKey, claimFactoryContract.address, { from: protocolOwnerAddress })
+    await registry.addContract(claimFactoryKey, claimFactory.address, { from: protocolOwnerAddress })
 
     // Register new contract as a minter, from the same address that deployed the contract
-    await tokenContract.addMinter(claimFactoryContract.address, { from: protocolOwnerAddress })
+    await token.addMinter(claimFactory.address, { from: protocolOwnerAddress })
 
     // Deploy DelegateManager contract
-    delegateManagerContract = await DelegateManager.new(
-      tokenContract.address,
-      registryContract.address,
-      ownedUpgradeabilityProxyKey,
+    delegateManager = await DelegateManager.new(
+      token.address,
+      registry.address,
+      stakingProxyKey,
       serviceProviderFactoryKey,
       claimFactoryKey,
       { from: protocolOwnerAddress }
     )
-    await registryContract.addContract(delegateManagerKey, delegateManagerContract.address, { from: protocolOwnerAddress })
+    await registry.addContract(delegateManagerKey, delegateManager.address, { from: protocolOwnerAddress })
 
     // Deploy Governance contract
-    governanceContract = await Governance.new(
-      registryContract.address,
-      ownedUpgradeabilityProxyKey,
+    governance = await Governance.new(
+      registry.address,
+      stakingProxyKey,
       votingPeriod,
       votingQuorum,
       { from: protocolOwnerAddress }
@@ -177,18 +164,18 @@ contract('Governance.sol', async (accounts) => {
   describe('Slash proposal', async () => {
     const defaultStakeAmount = audToWei(1000)
     const proposalDescription = "TestDescription"
-    const stakerAccount1 = accounts[1]
-    const stakerAccount2 = accounts[2]
-    const delegatorAccount1 = accounts[3]
+    const stakerAccount1 = accounts[10]
+    const stakerAccount2 = accounts[11]
+    const delegatorAccount1 = accounts[12]
     
     beforeEach(async () => {
       // Transfer 1000 tokens to stakerAccount1, stakerAccount2, and delegatorAccount1
-      await tokenContract.transfer(stakerAccount1, defaultStakeAmount, { from: treasuryAddress })
-      await tokenContract.transfer(stakerAccount2, defaultStakeAmount, { from: treasuryAddress })
-      await tokenContract.transfer(delegatorAccount1, defaultStakeAmount, { from: treasuryAddress })
+      await token.transfer(stakerAccount1, defaultStakeAmount, { from: treasuryAddress })
+      await token.transfer(stakerAccount2, defaultStakeAmount, { from: treasuryAddress })
+      await token.transfer(delegatorAccount1, defaultStakeAmount, { from: treasuryAddress })
 
       // Record initial staker account token balance
-      const initialBalance = await tokenContract.balanceOf(stakerAccount1)
+      const initialBalance = await token.balanceOf(stakerAccount1)
 
       // Register two SPs with stake
       const tx1 = await registerServiceProvider(
@@ -208,7 +195,7 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(tx1.stakedAmountInt, defaultStakeAmount)
 
       // Confirm new token balances
-      const finalBalance = await tokenContract.balanceOf(stakerAccount1)
+      const finalBalance = await token.balanceOf(stakerAccount1)
       assert.isTrue(
         initialBalance.eq(finalBalance.add(defaultStakeAmount)),
         "Expected balances to be equal"
@@ -216,21 +203,21 @@ contract('Governance.sol', async (accounts) => {
     })
 
     it('Initial state - Ensure no Proposals exist yet', async () => {
-      await _lib.assertRevert(governanceContract.getProposalById(0), 'Must provide valid non-zero _proposalId')
-      await _lib.assertRevert(governanceContract.getProposalById(1), 'Must provide valid non-zero _proposalId')
+      await _lib.assertRevert(governance.getProposalById(0), 'Must provide valid non-zero _proposalId')
+      await _lib.assertRevert(governance.getProposalById(1), 'Must provide valid non-zero _proposalId')
     })
 
     it('Should fail to Submit Proposal for unregistered target contract', async () => {
-      const proposerAddress = accounts[1]
+      const proposerAddress = accounts[10]
       const slashAmount = 1
-      const targetAddress = accounts[2]
+      const targetAddress = accounts[11]
       const targetContractRegistryKey = web3.utils.utf8ToHex("blahblah")
       const callValue = bigNumberify(0)
       const signature = 'slash(uint256,address)'
       const callData = abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
 
       await _lib.assertRevert(
-        governanceContract.submitProposal(
+        governance.submitProposal(
           targetContractRegistryKey,
           callValue,
           signature,
@@ -244,18 +231,18 @@ contract('Governance.sol', async (accounts) => {
 
     it('Submit Proposal for Slash', async () => {
       const proposalId = 1
-      const proposerAddress = accounts[1]
+      const proposerAddress = accounts[10]
       const slashAmount = 1
-      const targetAddress = accounts[2]
+      const targetAddress = accounts[11]
       const lastBlock = (await _lib.getLatestBlock(web3)).number
       const targetContractRegistryKey = delegateManagerKey
-      const targetContractAddress = delegateManagerContract.address
+      const targetContractAddress = delegateManager.address
       const callValue = bigNumberify(0)
       const signature = 'slash(uint256,address)'
       const callData = abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
 
       // Call submitProposal
-      const txReceipt = await governanceContract.submitProposal(
+      const txReceipt = await governance.submitProposal(
         targetContractRegistryKey,
         callValue,
         signature,
@@ -273,7 +260,7 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(txParsed.event.args.description, proposalDescription, "Expected same event.args.description")
 
       // Call getProposalById() and confirm same values
-      const proposal = await governanceContract.getProposalById.call(proposalId)
+      const proposal = await governance.getProposalById.call(proposalId)
       assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
       assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
       assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
@@ -289,7 +276,7 @@ contract('Governance.sol', async (accounts) => {
 
       // Confirm all vote states - all Vote.None
       for (const account of accounts) {
-        const vote = await governanceContract.getVoteByProposalAndVoter.call(proposalId, account)
+        const vote = await governance.getVoteByProposalAndVoter.call(proposalId, account)
         assert.equal(vote, Vote.None)
       }
     })
@@ -304,13 +291,13 @@ contract('Governance.sol', async (accounts) => {
       const defaultVote = Vote.None
       const lastBlock = (await _lib.getLatestBlock(web3)).number
       const targetContractRegistryKey = delegateManagerKey
-      const targetContractAddress = delegateManagerContract.address
+      const targetContractAddress = delegateManager.address
       const callValue = bigNumberify(0)
       const signature = 'slash(uint256,address)'
       const callData = abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
 
       // Call submitProposal
-      await governanceContract.submitProposal(
+      await governance.submitProposal(
         targetContractRegistryKey,
         callValue,
         signature,
@@ -320,7 +307,7 @@ contract('Governance.sol', async (accounts) => {
       )
 
       // Call submitProposalVote()
-      const txReceipt = await governanceContract.submitProposalVote(proposalId, vote, { from: voterAddress })
+      const txReceipt = await governance.submitProposalVote(proposalId, vote, { from: voterAddress })
 
       // Confirm event log
       const txParsed = _lib.parseTx(txReceipt)
@@ -332,7 +319,7 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(parseInt(txParsed.event.args.previousVote), defaultVote, 'Expected same event.args.previousVote')
 
       // Call getProposalById() and confirm same values
-      const proposal = await governanceContract.getProposalById.call(proposalId)
+      const proposal = await governance.getProposalById.call(proposalId)
       assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
       assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
       assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
@@ -348,7 +335,7 @@ contract('Governance.sol', async (accounts) => {
 
       // Confirm all vote states - Vote.No for Voter, Vote.None for all others
       for (const account of accounts) {
-        const voterVote = await governanceContract.getVoteByProposalAndVoter.call(proposalId, account)
+        const voterVote = await governance.getVoteByProposalAndVoter.call(proposalId, account)
         if (account == voterAddress) {
           assert.equal(voterVote, vote)
         } else {
@@ -367,7 +354,7 @@ contract('Governance.sol', async (accounts) => {
       const defaultVote = Vote.None
       const lastBlock = (await _lib.getLatestBlock(web3)).number
       const targetContractRegistryKey = delegateManagerKey
-      const targetContractAddress = delegateManagerContract.address
+      const targetContractAddress = delegateManager.address
       const callValue = bigNumberify(0)
       const signature = 'slash(uint256,address)'
       const callData = abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
@@ -381,14 +368,14 @@ contract('Governance.sol', async (accounts) => {
       const returnData = null
 
       // Confirm initial Stake state
-      const initialTotalStake = parseInt(await stakingContract.totalStaked())
+      const initialTotalStake = parseInt(await staking.totalStaked())
       assert.equal(initialTotalStake, defaultStakeAmount * 2)
-      const initialStakeAcct2 = parseInt(await stakingContract.totalStakedFor(targetAddress))
+      const initialStakeAcct2 = parseInt(await staking.totalStakedFor(targetAddress))
       assert.equal(initialStakeAcct2, defaultStakeAmount)
-      const initialTokenSupply = await tokenContract.totalSupply()
+      const initialTokenSupply = await token.totalSupply()
 
       // Call submitProposal + submitProposalVote
-      const submitProposalTxReceipt = await governanceContract.submitProposal(
+      const submitProposalTxReceipt = await governance.submitProposal(
         targetContractRegistryKey,
         callValue,
         signature,
@@ -396,14 +383,14 @@ contract('Governance.sol', async (accounts) => {
         proposalDescription,
         { from: proposerAddress }
       )
-      await governanceContract.submitProposalVote(proposalId, vote, { from: voterAddress })
+      await governance.submitProposalVote(proposalId, vote, { from: voterAddress })
 
       // Advance blocks to the next valid claim
       const proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.startBlockNumber)
       await _lib.advanceToTargetBlock(proposalStartBlockNumber + votingPeriod, web3)
 
       // Call evaluateProposalOutcome()
-      const evaluateTxReceipt = await governanceContract.evaluateProposalOutcome(proposalId, { from: proposerAddress })
+      const evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
 
       // Confirm event logs (2 events)
       const [txParsedEvent0, txParsedEvent1] = _lib.parseTx(evaluateTxReceipt, true)
@@ -422,7 +409,7 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(parseInt(txParsedEvent1.event.args.numVotes), 1, 'Expected same event.args.numVotes')
 
       // Call getProposalById() and confirm same values
-      const proposal = await governanceContract.getProposalById.call(proposalId)
+      const proposal = await governance.getProposalById.call(proposalId)
       assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
       assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
       assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
@@ -438,7 +425,7 @@ contract('Governance.sol', async (accounts) => {
 
       // Confirm all vote states - Vote.No for Voter, Vote.None for all others
       for (const account of accounts) {
-        const voterVote = await governanceContract.getVoteByProposalAndVoter.call(proposalId, account)
+        const voterVote = await governance.getVoteByProposalAndVoter.call(proposalId, account)
         if (account == voterAddress) {
           assert.equal(voterVote, vote)
         } else {
@@ -447,15 +434,15 @@ contract('Governance.sol', async (accounts) => {
       }
 
       // Confirm Slash action succeeded by checking new Stake + Token values
-      const finalStakeAcct2 = parseInt(await stakingContract.totalStakedFor(targetAddress))
+      const finalStakeAcct2 = parseInt(await staking.totalStakedFor(targetAddress))
       assert.equal(finalStakeAcct2, defaultStakeAmount - slashAmount)
       assert.equal(
         initialTotalStake,
-        await stakingContract.totalStaked(),
+        await staking.totalStaked(),
         'Expected same total stake amount'
       )
       assert.equal(
-        await tokenContract.totalSupply(),
+        await token.totalSupply(),
         initialTokenSupply - slashAmount,
         "Expected same token total supply"
       )

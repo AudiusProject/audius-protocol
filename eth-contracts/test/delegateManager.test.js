@@ -1,9 +1,9 @@
 import * as _lib from './_lib/lib.js'
-
 const encodeCall = require('./encodeCall')
+
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
-const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
+const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const Staking = artifacts.require('Staking')
@@ -25,7 +25,7 @@ const fromWei = (wei) => {
   return web3.utils.fromWei(wei)
 }
 
-const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
+const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
@@ -40,52 +40,35 @@ const INITIAL_BAL = toWei(1000)
 const DEFAULT_AMOUNT = toWei(120)
 
 contract('DelegateManager', async (accounts) => {
-  let treasuryAddress = accounts[0]
-  let proxyOwner = treasuryAddress
-  let proxy
-  let impl0
-  let staking
-  let token
-  let registry
-  let stakingAddress
-  let serviceProviderStorage
-  let serviceProviderFactory
-
-  let claimFactory
-  let delegateManager
-
-  const stakerAccount = accounts[1]
-  const delegatorAccount1 = accounts[2]
-  const stakerAccount2 = accounts[3]
-
-  let slasherAccount = stakerAccount
+  let proxy, staking0, staking, stakingAddress, token, registry, serviceProviderStorage, serviceProviderFactory, claimFactory, delegateManager
+  
+  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const stakerAccount = accounts[10]
+  const delegatorAccount1 = accounts[11]
+  const stakerAccount2 = accounts[12]
+  const slasherAccount = stakerAccount
 
   beforeEach(async () => {
-    registry = await Registry.new()
-
-    proxy = await OwnedUpgradeabilityProxy.new({ from: proxyOwner })
-
-    // Add proxy to registry
-    await registry.addContract(ownedUpgradeabilityProxyKey, proxy.address)
-
     token = await AudiusToken.new({ from: treasuryAddress })
-    impl0 = await Staking.new()
+    registry = await Registry.new({ from: treasuryAddress })
 
-    // Create initialization data
-    let initializeData = encodeCall(
+    // Set up staking
+    staking0 = await Staking.new({ from: proxyAdminAddress })
+    const stakingInitializeData = encodeCall(
       'initialize',
       ['address', 'address'],
-      [token.address, treasuryAddress])
-
-    // Initialize staking contract
-    await proxy.upgradeToAndCall(
-      impl0.address,
-      initializeData,
-      { from: proxyOwner })
-
+      [token.address, treasuryAddress]
+    )
+    proxy = await AdminUpgradeabilityProxy.new(
+      staking0.address,
+      proxyAdminAddress,
+      stakingInitializeData,
+      { from: proxyDeployerAddress }
+    )
     staking = await Staking.at(proxy.address)
+    await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
     stakingAddress = staking.address
-
+    
     // Deploy sp storage
     serviceProviderStorage = await ServiceProviderStorage.new(registry.address)
     await registry.addContract(serviceProviderStorageKey, serviceProviderStorage.address)
@@ -93,32 +76,32 @@ contract('DelegateManager', async (accounts) => {
     // Deploy sp factory
     serviceProviderFactory = await ServiceProviderFactory.new(
       registry.address,
-      ownedUpgradeabilityProxyKey,
+      stakingProxyKey,
       serviceProviderStorageKey)
 
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)
 
     // Permission sp factory as caller, from the proxy owner address
     // (which happens to equal treasury in this test case)
-    await staking.setStakingOwnerAddress(serviceProviderFactory.address, { from: proxyOwner })
+    await staking.setStakingOwnerAddress(serviceProviderFactory.address, { from: treasuryAddress })
 
     // Create new claim factory instance
     claimFactory = await ClaimFactory.new(
       token.address,
       registry.address,
-      ownedUpgradeabilityProxyKey,
+      stakingProxyKey,
       serviceProviderFactoryKey,
-      { from: accounts[0] })
+      { from: treasuryAddress })
 
     await registry.addContract(claimFactoryKey, claimFactory.address)
 
     // Register new contract as a minter, from the same address that deployed the contract
-    await token.addMinter(claimFactory.address, { from: accounts[0] })
+    await token.addMinter(claimFactory.address, { from: treasuryAddress })
 
     delegateManager = await DelegateManager.new(
       token.address,
       registry.address,
-      ownedUpgradeabilityProxyKey,
+      stakingProxyKey,
       serviceProviderFactoryKey,
       claimFactoryKey)
   })
