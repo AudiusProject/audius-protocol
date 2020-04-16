@@ -7,6 +7,7 @@ const ClaimFactory = artifacts.require('ClaimFactory')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
 const MockServiceProviderFactory = artifacts.require('MockServiceProviderFactory')
 const MockDelegateManager = artifacts.require('MockDelegateManager')
+const MockStakingCaller = artifacts.require('MockStakingCaller')
 const Staking = artifacts.require('Staking')
 const encodeCall = require('./encodeCall')
 
@@ -45,6 +46,7 @@ contract('ClaimFactory', async (accounts) => {
   let testStakingCallerAddress = accounts[6] // Dummy stand in for sp factory in actual deployment
   let mockSPFactory
   let mockDelegateManager
+  let mockStakingCaller
 
   const getLatestBlock = async () => {
     return web3.eth.getBlock('latest')
@@ -56,11 +58,10 @@ contract('ClaimFactory', async (accounts) => {
     // Allow Staking app to move owner tokens
     await token.approve(staking.address, amount, { from: staker })
     // Stake tokens
-    await staking.stakeFor(
+    await mockStakingCaller.stakeFor(
       staker,
       amount,
-      web3.utils.utf8ToHex(''),
-      { from: testStakingCallerAddress })
+      web3.utils.utf8ToHex(''))
   }
 
   beforeEach(async () => {
@@ -75,8 +76,16 @@ contract('ClaimFactory', async (accounts) => {
     // Create initialization data
     let initializeData = encodeCall(
       'initialize',
-      ['address', 'address'],
-      [token.address, treasuryAddress])
+      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [
+        token.address,
+        treasuryAddress,
+        registry.address,
+        claimFactoryKey,
+        delegateManagerKey,
+        serviceProviderFactoryKey
+      ]
+    )
 
     // Initialize staking contract
     await proxy.upgradeToAndCall(
@@ -87,9 +96,12 @@ contract('ClaimFactory', async (accounts) => {
     staking = await Staking.at(proxy.address)
     staker = accounts[2]
 
+    // mockSPFactory = await MockServiceProviderFactory.new({ from: accounts[0] })
+    // await registry.addContract(serviceProviderFactoryKey, mockSPFactory.address)
+
     // Mock SP for test
-    mockSPFactory = await MockServiceProviderFactory.new({ from: accounts[0] })
-    await registry.addContract(serviceProviderFactoryKey, mockSPFactory.address)
+    mockStakingCaller = await MockStakingCaller.new(proxy.address, token.address)
+    await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
 
     // Deploy mock delegate manager with only function to forward processClaim call
     mockDelegateManager = await MockDelegateManager.new(registry.address, claimFactoryKey, { from: accounts[0]})

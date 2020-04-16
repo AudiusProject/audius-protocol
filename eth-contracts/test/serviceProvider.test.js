@@ -29,6 +29,8 @@ const fromWei = (wei) => {
 
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
+const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
@@ -63,14 +65,21 @@ contract('ServiceProvider test', async (accounts) => {
     await registry.addContract(ownedUpgradeabilityProxyKey, proxy.address)
 
     token = await AudiusToken.new({ from: treasuryAddress })
-
     impl0 = await Staking.new()
 
     // Create initialization data
     let initializeData = encodeCall(
       'initialize',
-      ['address', 'address'],
-      [token.address, treasuryAddress])
+      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [
+        token.address,
+        treasuryAddress,
+        registry.address,
+        claimFactoryKey,
+        delegateManagerKey,
+        serviceProviderFactoryKey
+      ]
+    )
 
     // Initialize staking contract
     await proxy.upgradeToAndCall(

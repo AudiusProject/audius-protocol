@@ -77,8 +77,16 @@ contract('DelegateManager', async (accounts) => {
     // Create initialization data
     let initializeData = encodeCall(
       'initialize',
-      ['address', 'address'],
-      [token.address, treasuryAddress])
+      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [
+        token.address,
+        treasuryAddress,
+        registry.address,
+        claimFactoryKey,
+        delegateManagerKey,
+        serviceProviderFactoryKey
+      ]
+    )
 
     // Initialize staking contract
     await proxy.upgradeToAndCall(

@@ -10,6 +10,7 @@ const fromBn = n => parseInt(n.valueOf(), 10)
 const getTokenBalance = async (token, account) => fromBn(await token.balanceOf(account))
 
 const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 
 const toWei = (aud) => {
@@ -44,11 +45,10 @@ contract('Staking test', async (accounts) => {
     // allow Staking app to move owner tokens
     await token.approve(stakingAddress, amount, { from: staker })
     // stake tokens
-    await staking.stakeFor(
+    await testStakingCaller.stakeFor(
       staker,
       amount,
-      web3.utils.utf8ToHex(EMPTY_STRING),
-      { from: testStakingCallerAddress })
+      web3.utils.utf8ToHex(EMPTY_STRING))
   }
 
   const getStakedAmountForAcct = async (acct) => {
@@ -78,8 +78,15 @@ contract('Staking test', async (accounts) => {
     // Create initialization data
     let initializeData = encodeCall(
       'initialize',
-      ['address', 'address', 'address', 'bytes32'],
-      [token.address, treasuryAddress, registry.address, claimFactoryKey]
+      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [
+        token.address,
+        treasuryAddress,
+        registry.address,
+        claimFactoryKey,
+        delegateManagerKey,
+        serviceProviderFactoryKey
+      ]
     )
 
     await proxy.upgradeToAndCall(
@@ -129,11 +136,10 @@ contract('Staking test', async (accounts) => {
     await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: staker })
 
     // stake tokens
-    let tx = await staking.stakeFor(
+    await testStakingCaller.stakeFor(
       staker,
       DEFAULT_AMOUNT,
-      web3.utils.utf8ToHex(EMPTY_STRING),
-      { from: testStakingCallerAddress })
+      web3.utils.utf8ToHex(EMPTY_STRING))
 
     let finalTotalStaked = parseInt(await staking.totalStaked())
     assert.equal(
@@ -166,10 +172,10 @@ contract('Staking test', async (accounts) => {
     assert.equal((await staking.totalStaked()).toString(), DEFAULT_AMOUNT, 'Total stake should match')
 
     // Unstake default amount
-    await staking.unstake(
+    await testStakingCaller.unstakeFor(
+      staker,
       DEFAULT_AMOUNT,
-      web3.utils.utf8ToHex(EMPTY_STRING),
-      { from: staker }
+      web3.utils.utf8ToHex(EMPTY_STRING)
     )
 
     const finalOwnerBalance = await getTokenBalance(token, staker)
@@ -271,10 +277,10 @@ contract('Staking test', async (accounts) => {
     let sp1Rewards = FIRST_CLAIM_FUND.div(web3.utils.toBN(2))
     let sp2Rewards = sp1Rewards
     await token.approve(testStakingCaller.address, sp1Rewards, { from: funderAccount })
-    let receipt = await testStakingCaller.testStakeRewards(sp1Rewards, spAccount1, { from: funderAccount })
+    let receipt = await testStakingCaller.stakeRewards(sp1Rewards, spAccount1, { from: funderAccount })
 
     await token.approve(testStakingCaller.address, sp2Rewards, { from: funderAccount })
-    receipt = await testStakingCaller.testStakeRewards(sp2Rewards, spAccount2, { from: funderAccount })
+    receipt = await testStakingCaller.stakeRewards(sp2Rewards, spAccount2, { from: funderAccount })
 
     // Initial val should be first claim fund / 2
     let expectedValueAfterFirstFund = DEFAULT_AMOUNT.add(sp1Rewards)
