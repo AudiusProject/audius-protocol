@@ -107,8 +107,9 @@ class Playlists extends Base {
    * Reorders the tracks in a playlist
    * @param {number} playlistId
    * @param {Array<number>} trackIds
+   * @param {number?} retries [Optional, defaults to web3Manager.sendTransaction retries default]
    */
-  async orderPlaylistTracks (playlistId, trackIds) {
+  async orderPlaylistTracks (playlistId, trackIds, retries) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     if (!Array.isArray(trackIds)) {
       throw new Error('Cannot order playlist - trackIds must be array')
@@ -137,7 +138,38 @@ class Playlists extends Base {
       }
     }
 
-    return this.contracts.PlaylistFactoryClient.orderPlaylistTracks(playlistId, trackIds)
+    return this.contracts.PlaylistFactoryClient.orderPlaylistTracks(playlistId, trackIds, retries)
+  }
+
+  /**
+   * Checks if a playlist has entered a corrupt state
+   * @param {number} playlistId
+   */
+  async validateTracksInPlaylist (playlistId) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER, Services.CREATOR_NODE)
+
+    const userId = this.userStateManager.getCurrentUserId()
+    const playlistsReponse = await this.discoveryProvider.getPlaylists(1, 0, [playlistId], userId)
+
+    // error if playlist does not exist or hasn't been indexed by discovery provider
+    if (!Array.isArray(playlistsReponse) || !playlistsReponse.length) {
+      throw new Error('Cannot validate playlist - Playlist does not exist, is private and not owned by current user or has not yet been indexed by discovery provider')
+    }
+
+    const playlist = playlistsReponse[0]
+    const playlistTrackIds = playlist.playlist_contents.track_ids.map(a => a.track)
+
+    // Check if each track is in the playlist
+    const invalidTrackIds = []
+    for (let trackId of playlistTrackIds) {
+      const trackInPlaylist = await this.contracts.PlaylistFactoryClient.isTrackInPlaylist(playlistId, trackId)
+      if (!trackInPlaylist) invalidTrackIds.push(trackId)
+    }
+
+    return {
+      isValid: invalidTrackIds.length === 0,
+      invalidTrackIds
+    }
   }
 
   /**
@@ -207,9 +239,10 @@ class Playlists extends Base {
    * @param {number} playlistId
    * @param {number} deletedTrackId
    * @param {string} deletedPlaylistTimestamp parseable timestamp (to be copied from playlist metadata)
+   * @param {number?} retries [Optional, defaults to web3Manager.sendTransaction retries default]
    */
-  async deletePlaylistTrack (playlistId, deletedTrackId, deletedPlaylistTimestamp) {
-    return this.contracts.PlaylistFactoryClient.deletePlaylistTrack(playlistId, deletedTrackId, deletedPlaylistTimestamp)
+  async deletePlaylistTrack (playlistId, deletedTrackId, deletedPlaylistTimestamp, retries) {
+    return this.contracts.PlaylistFactoryClient.deletePlaylistTrack(playlistId, deletedTrackId, deletedPlaylistTimestamp, retries)
   }
 
   /**
