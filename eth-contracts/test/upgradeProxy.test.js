@@ -1,12 +1,17 @@
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('./encodeCall')
 
+const Registry = artifacts.require('Registry')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const StakingTest = artifacts.require('StakingTest')
 const AudiusToken = artifacts.require('AudiusToken')
+const MockStakingCaller = artifacts.require('MockStakingCaller')
 
-const fromBn = n => parseInt(n.valueOf(), 10)
+// Registry keys
+const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
+const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 
 const toWei = (aud) => {
   let amountInAudWei = web3.utils.toWei(
@@ -24,12 +29,14 @@ contract('Upgrade proxy test', async (accounts) => {
   let testStakingCallerAddress = accounts[6] // Dummy stand in for sp factory in actual deployment
   let proxyOwner = treasuryAddress
   let proxy
+  let registry
   let impl0
   let impl1
   let token
   let initializeData
   let staking0
   let staking1
+  let mockStakingCaller
 
   const approveAndStake = async (amount, staker, staking) => {
     // Transfer default tokens to
@@ -37,11 +44,10 @@ contract('Upgrade proxy test', async (accounts) => {
     // allow Staking app to move owner tokens
     await token.approve(staking.address, amount, { from: staker })
     // stake tokens
-    await staking.stakeFor(
+    await mockStakingCaller.stakeFor(
       staker,
       amount,
-      web3.utils.utf8ToHex(''),
-      { from: testStakingCallerAddress })
+      web3.utils.utf8ToHex(''))
   }
 
   beforeEach(async function () {
@@ -49,11 +55,27 @@ contract('Upgrade proxy test', async (accounts) => {
     token = await AudiusToken.new({ from: accounts[0] })
     impl0 = await Staking.new()
     impl1 = await StakingTest.new()
+    registry = await Registry.new()
+
+    // Register mock contract as claimFactory, spFactory, delegateManager
+    mockStakingCaller = await MockStakingCaller.new(proxy.address, token.address)
+    await registry.addContract(claimFactoryKey, mockStakingCaller.address)
+    await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
+    await registry.addContract(delegateManagerKey, mockStakingCaller.address)
+
     // Create initialization data
     initializeData = encodeCall(
       'initialize',
-      ['address', 'address'],
-      [token.address, treasuryAddress])
+      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [
+        token.address,
+        treasuryAddress,
+        registry.address,
+        claimFactoryKey,
+        delegateManagerKey,
+        serviceProviderFactoryKey
+      ]
+    )
 
     staking0 = await Staking.at(proxy.address)
     staking1 = await StakingTest.at(proxy.address)
