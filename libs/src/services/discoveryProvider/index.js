@@ -4,7 +4,6 @@ const Utils = require('../../utils')
 const { serviceType } = require('../ethContracts/index')
 
 const {
-  DISCOVERY_PROVIDER_TIMESTAMP,
   UNHEALTHY_BLOCK_DIFF,
   REQUEST_TIMEOUT_MS
 } = require('./constants')
@@ -13,13 +12,8 @@ const {
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
-let localStorage
-if (typeof window === 'undefined' || window === null) {
-  const LocalStorage = require('node-localstorage').LocalStorage
-  localStorage = new LocalStorage('./local-storage')
-} else {
-  localStorage = window.localStorage
-}
+const MAKE_REQUEST_RETRY_COUNT = 3
+const AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT = 3
 
 class DiscoveryProvider {
   constructor (autoselect, whitelist, userStateManager, ethContracts, web3Manager) {
@@ -85,13 +79,13 @@ class DiscoveryProvider {
   /**
    * Wrapper method to auto select a valid discovery provider.
    * @param {*} retries max retries before throwing an error
-   * @param {*} clearDPLocalStorageEntryAndClearInterval if set to true, implies that the previously
+   * @param {*} clearCachedDiscoveryProvider if set to true, implies that the previously
    * selected discovery provider has been failing to serve requests. The prior recurring interval of
    * checking local storage for DP and old DP local storage entry need to be cleared.
    */
-  async autoSelectEndpoint (retries = 3, clearDPLocalStorageEntryAndClearInterval = false) {
+  async autoSelectEndpoint (retries = 3, clearCachedDiscoveryProvider = false) {
     if (retries > 0) {
-      const endpoint = await this.ethContracts.autoselectDiscoveryProvider(this.whitelist, clearDPLocalStorageEntryAndClearInterval)
+      const endpoint = await this.ethContracts.autoselectDiscoveryProvider(this.whitelist, clearCachedDiscoveryProvider)
       if (endpoint) {
         this.setEndpoint(endpoint)
         return endpoint
@@ -618,8 +612,7 @@ class DiscoveryProvider {
       endpoint: 'users/account',
       queryParams: { wallet }
     }
-    // TEMP: Forcing 1 retry to see recursion logic
-    return this._makeRequest(req, 1, true)
+    return this._makeRequest(req, 0, true)
   }
 
   async getTopPlaylists (type, limit, mood, filter, withUsers = false) {
@@ -679,25 +672,23 @@ class DiscoveryProvider {
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
   // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, retries = 10, silent = false) {
+  async _makeRequest (requestObj, retries = MAKE_REQUEST_RETRY_COUNT, silent = false) {
     if (!this.discoveryProviderEndpoint) {
       await this.autoSelectEndpoint()
     }
 
     if (retries === 0) {
-      await this.autoSelectEndpoint(3, true)
+      // Reset the retries count in the case that the newly selected disc prov fails, we can
+      // allow it to try MAKE_REQUEST_RETRIES_COUNT number of times before trying another
+      retries = MAKE_REQUEST_RETRY_COUNT
+      await this.autoSelectEndpoint(AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT, true)
     }
 
-    // TEMP: forcing all dp1 request to fail and hit 404 not found
-    let endpointPath = requestObj.endpoint
-    if (this.discoveryProviderEndpoint === 'https://discoveryprovider.staging.audius.co') {
-      endpointPath = '/fail'
-    }
     let requestUrl
 
     if (urlJoin && urlJoin.default) {
-      requestUrl = urlJoin.default(this.discoveryProviderEndpoint, endpointPath, requestObj.urlParams, { query: requestObj.queryParams })
-    } else requestUrl = urlJoin(this.discoveryProviderEndpoint, endpointPath, requestObj.urlParams, { query: requestObj.queryParams })
+      requestUrl = urlJoin.default(this.discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
+    } else requestUrl = urlJoin(this.discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
 
     const headers = {}
     const currentUserId = this.userStateManager.getCurrentUserId()
@@ -739,11 +730,9 @@ class DiscoveryProvider {
           !indexedBlock ||
           (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
         ) {
-          // // Clear any cached discprov
-          // localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
           // Select a new one
           console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
-          const endpoint = await this.autoSelectEndpoint(3, true)
+          const endpoint = await this.autoSelectEndpoint(AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT, true)
           this.setEndpoint(endpoint)
           throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
         }

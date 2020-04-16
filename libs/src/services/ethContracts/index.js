@@ -321,16 +321,10 @@ class EthContracts {
    * @return {Promise<{healthy: boolean, blockDiff: number}>} If the discovery provider is valid
    */
   async validateDiscoveryProviderHealth (endpoint) {
-    // TEMP: forcing dp1 healthcheck to fail
-    let path = 'health_check'
-    if (endpoint === 'https://discoveryprovider.staging.audius.co') {
-      path = 'fail'
-    }
-
     try {
       const healthResp = await axios(
         {
-          url: urlJoin(endpoint, path),
+          url: urlJoin(endpoint, 'health_check'),
           method: 'get',
           timeout: 5000
         }
@@ -351,10 +345,10 @@ class EthContracts {
    * @param {Set<string>?} whitelist optional whitelist to autoselect from
    * @return {Promise<string>} The selected discovery provider url
    */
-  async autoselectDiscoveryProvider (whitelist = null, clearDPLocalStorageEntryAndClearInterval = false) {
+  async autoselectDiscoveryProvider (whitelist = null, clearCachedDiscoveryProvider = false) {
     // If under the context of selecting a new DP because of prior failure, do not use the old DP endpoint
     // in local storage by clearing the entry and clearing the interval
-    if (clearDPLocalStorageEntryAndClearInterval) {
+    if (clearCachedDiscoveryProvider) {
       localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
       clearInterval(this.discProvInterval)
     }
