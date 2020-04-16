@@ -110,10 +110,18 @@ contract('Governance.sol', async (accounts) => {
 
     const stakingContract0 = await Staking.new({ from: protocolOwnerAddress })
     // Create initialization data
-    const initializeData = encodeCall(
+    // Create initialization data
+    let initializeData = encodeCall(
       'initialize',
-      ['address', 'address'],
-      [tokenContract.address, protocolOwnerAddress]
+      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [
+        tokenContract.address,
+        treasuryAddress,
+        registryContract.address,
+        claimFactoryKey,
+        delegateManagerKey,
+        serviceProviderFactoryKey
+      ]
     )
 
     // Initialize staking contract
