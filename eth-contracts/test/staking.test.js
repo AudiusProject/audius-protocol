@@ -58,7 +58,7 @@ contract('Staking test', async (accounts) => {
   }
 
   const slashAccount = async (amount, slashAddr, slasherAddress) => {
-    return await staking.slash(
+    return testStakingCaller.slash(
       amount,
       slashAddr,
       { from: slasherAddress })
@@ -70,9 +70,11 @@ contract('Staking test', async (accounts) => {
     tokenAddress = token.address
     registry = await Registry.new()
 
+    // Register mock contract as claimFactory, spFactory, delegateManager
     testStakingCaller = await MockStakingCaller.new(proxy.address, tokenAddress)
     await registry.addContract(claimFactoryKey, testStakingCaller.address)
     await registry.addContract(serviceProviderFactoryKey, testStakingCaller.address)
+    await registry.addContract(delegateManagerKey, testStakingCaller.address)
 
     impl0 = await Staking.new()
     // Create initialization data

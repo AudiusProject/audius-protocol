@@ -57,6 +57,13 @@ contract MockStakingCaller is RegistryContract {
       staking.unstakeFor(_accountAddress, _amount, _data);
     }
 
+    function slash(
+        uint256 _amount,
+        address _slashAddress
+    ) external {
+      staking.slash(_amount, _slashAddress);
+    }
+
     /// @notice Calculate the stake for an account based on total number of registered services
     function getAccountStakeBounds(address)
     external view returns (uint minStake, uint maxStake)
