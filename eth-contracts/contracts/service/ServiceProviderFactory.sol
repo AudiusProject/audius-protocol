@@ -12,6 +12,7 @@ contract ServiceProviderFactory is RegistryContract {
     RegistryInterface registry = RegistryInterface(0);
     bytes32 serviceProviderStorageRegistryKey;
     bytes32 stakingProxyOwnerKey;
+    bytes32 delegateManagerKey;
 
     // START Temporary data structures
     bytes32[] validServiceTypes;
@@ -82,6 +83,7 @@ contract ServiceProviderFactory is RegistryContract {
     constructor(
       address _registryAddress,
       bytes32 _stakingProxyOwnerKey,
+      bytes32 _delegateManagerKey,
       bytes32 _serviceProviderStorageRegistryKey
     ) public
     {
@@ -91,6 +93,7 @@ contract ServiceProviderFactory is RegistryContract {
         );
         registry = RegistryInterface(_registryAddress);
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
+        delegateManagerKey = _delegateManagerKey;
         serviceProviderStorageRegistryKey = _serviceProviderStorageRegistryKey;
 
         // Hardcoded values for development.
@@ -347,36 +350,19 @@ contract ServiceProviderFactory is RegistryContract {
 
   /**
    * @notice Update service provider balance
-   * TODO: Permission to only delegatemanager
    */
     function updateServiceProviderStake(
         address _serviceProvider,
         uint _amount
      ) external
     {
+        require(
+            msg.sender == registry.getContract(delegateManagerKey),
+            "updateServiceProviderStake - only callable by DelegateManager"
+        );
         // Update SP tracked total
         spDetails[_serviceProvider].deployerStake = _amount;
-        this.updateServiceProviderBoundStatus(_serviceProvider);
-    }
-
-  /**
-   * @notice Update service provider bound status
-   * TODO: Permission to only delegatemanager OR this
-   */
-    function updateServiceProviderBoundStatus(address _serviceProvider) external {
-        Staking stakingContract = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        );
-        // Validate bounds for total stake
-        uint totalSPStake = stakingContract.totalStakedFor(_serviceProvider);
-        (uint minStake, uint maxStake) = this.getAccountStakeBounds(_serviceProvider);
-        if (totalSPStake < minStake || totalSPStake > maxStake) {
-            // Indicate this service provider is out of bounds
-            spDetails[_serviceProvider].validBounds = false;
-        } else {
-            // Indicate this service provider is within bounds
-            spDetails[_serviceProvider].validBounds = true;
-        }
+        updateServiceProviderBoundStatus(_serviceProvider);
     }
 
   /**
@@ -558,6 +544,25 @@ contract ServiceProviderFactory is RegistryContract {
             "Maximum stake amount exceeded");
 
         return currentlyStakedForOwner;
+    }
+
+    /**
+     * @notice Update service provider bound status
+     */
+    function updateServiceProviderBoundStatus(address _serviceProvider) internal {
+        Staking stakingContract = Staking(
+            registry.getContract(stakingProxyOwnerKey)
+        );
+        // Validate bounds for total stake
+        uint totalSPStake = stakingContract.totalStakedFor(_serviceProvider);
+        (uint minStake, uint maxStake) = this.getAccountStakeBounds(_serviceProvider);
+        if (totalSPStake < minStake || totalSPStake > maxStake) {
+            // Indicate this service provider is out of bounds
+            spDetails[_serviceProvider].validBounds = false;
+        } else {
+            // Indicate this service provider is within bounds
+            spDetails[_serviceProvider].validBounds = true;
+        }
     }
 
     /// @notice Validate that the service provider deployer stake satisfies protocol minimum

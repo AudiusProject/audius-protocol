@@ -13,6 +13,7 @@ const versioningFactoryKey = web3.utils.utf8ToHex('VersioningFactory')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 
 const AudiusToken = artifacts.require('AudiusToken')
 
@@ -38,6 +39,7 @@ module.exports = (deployer, network, accounts) => {
       ServiceProviderFactory,
       Registry.address,
       ownedUpgradeabilityProxyKey,
+      delegateManagerKey,
       serviceProviderStorageKey)
 
     await registry.addContract(serviceProviderFactoryKey, ServiceProviderFactory.address)

@@ -98,6 +98,7 @@ contract('ServiceProvider test', async (accounts) => {
     serviceProviderFactory = await ServiceProviderFactory.new(
       registry.address,
       ownedUpgradeabilityProxyKey,
+      delegateManagerKey,
       serviceProviderStorageKey)
 
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)

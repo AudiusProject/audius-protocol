@@ -141,6 +141,7 @@ contract('Governance.sol', async (accounts) => {
     serviceProviderFactoryContract = await ServiceProviderFactory.new(
       registryContract.address,
       ownedUpgradeabilityProxyKey,
+      delegateManagerKey,
       serviceProviderStorageKey
     )
     await registryContract.addContract(serviceProviderFactoryKey, serviceProviderFactoryContract.address, { from: protocolOwnerAddress })
