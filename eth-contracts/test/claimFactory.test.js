@@ -2,10 +2,8 @@ import * as _lib from './_lib/lib.js'
 
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
-const RegistryContract = artifacts.require('RegistryContract')
 const ClaimFactory = artifacts.require('ClaimFactory')
 const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
-const MockServiceProviderFactory = artifacts.require('MockServiceProviderFactory')
 const MockDelegateManager = artifacts.require('MockDelegateManager')
 const MockStakingCaller = artifacts.require('MockStakingCaller')
 const Staking = artifacts.require('Staking')
@@ -95,9 +93,6 @@ contract('ClaimFactory', async (accounts) => {
 
     staking = await Staking.at(proxy.address)
     staker = accounts[2]
-
-    // mockSPFactory = await MockServiceProviderFactory.new({ from: accounts[0] })
-    // await registry.addContract(serviceProviderFactoryKey, mockSPFactory.address)
 
     // Mock SP for test
     mockStakingCaller = await MockStakingCaller.new(proxy.address, token.address)
