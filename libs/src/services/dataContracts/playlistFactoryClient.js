@@ -290,10 +290,11 @@ class PlaylistFactoryClient extends ContractClient {
   }
 
   async isTrackInPlaylist (playlistId, trackId) {
-    const result = await this.getMethod('isTrackInPlaylist',
+    const method = await this.getMethod('isTrackInPlaylist',
       playlistId,
       trackId
-    ).then(method => method.call())
+    )
+    const result = await method.call()
     return result
   }
 }

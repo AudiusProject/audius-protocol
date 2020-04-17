@@ -107,9 +107,9 @@ class Playlists extends Base {
    * Reorders the tracks in a playlist
    * @param {number} playlistId
    * @param {Array<number>} trackIds
-   * @param {number?} retries [Optional, defaults to web3Manager.sendTransaction retries default]
+   * @param {number?} retriesOverride [Optional, defaults to web3Manager.sendTransaction retries default]
    */
-  async orderPlaylistTracks (playlistId, trackIds, retries) {
+  async orderPlaylistTracks (playlistId, trackIds, retriesOverride) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     if (!Array.isArray(trackIds)) {
       throw new Error('Cannot order playlist - trackIds must be array')
@@ -138,11 +138,16 @@ class Playlists extends Base {
       }
     }
 
-    return this.contracts.PlaylistFactoryClient.orderPlaylistTracks(playlistId, trackIds, retries)
+    return this.contracts.PlaylistFactoryClient.orderPlaylistTracks(playlistId, trackIds, retriesOverride)
   }
 
   /**
-   * Checks if a playlist has entered a corrupt state
+   * Checks if a playlist has entered a corrupted state
+   * Check that each of the tracks within a playlist retrieved from discprov are in the onchain playlist
+   * Note: the onchain playlists stores the tracks as a mapping of track ID to track count and the
+   * track order is an event that is indexed by discprov. The track order event does not validate that the
+   * updated order of tracks has the correct track count, so a track order event w/ duplicate tracks can
+   * lead the playlist entering a corrupted state.
    * @param {number} playlistId
    */
   async validateTracksInPlaylist (playlistId) {
@@ -239,10 +244,10 @@ class Playlists extends Base {
    * @param {number} playlistId
    * @param {number} deletedTrackId
    * @param {string} deletedPlaylistTimestamp parseable timestamp (to be copied from playlist metadata)
-   * @param {number?} retries [Optional, defaults to web3Manager.sendTransaction retries default]
+   * @param {number?} retriesOverride [Optional, defaults to web3Manager.sendTransaction retries default]
    */
-  async deletePlaylistTrack (playlistId, deletedTrackId, deletedPlaylistTimestamp, retries) {
-    return this.contracts.PlaylistFactoryClient.deletePlaylistTrack(playlistId, deletedTrackId, deletedPlaylistTimestamp, retries)
+  async deletePlaylistTrack (playlistId, deletedTrackId, deletedPlaylistTimestamp, retriesOverride) {
+    return this.contracts.PlaylistFactoryClient.deletePlaylistTrack(playlistId, deletedTrackId, deletedPlaylistTimestamp, retriesOverride)
   }
 
   /**
