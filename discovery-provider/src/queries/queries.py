@@ -3,6 +3,7 @@ import datetime
 import sqlalchemy
 from sqlalchemy import func, asc, desc, text, or_, and_, Integer, Float, Date
 from sqlalchemy.orm import aliased
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.dialects import postgresql
 
 from flask import Blueprint, request
@@ -1461,7 +1462,12 @@ def get_users_account():
         else:
             return api_helpers.error_response('Invalid wallet length', 400)
 
-        user = base_query.one()
+        # If user cannot be found, exit early and return empty response
+        try:
+            user = base_query.one()
+        except NoResultFound:
+            return api_helpers.success_response(None)
+
         user = helpers.model_to_dictionary(user)
         user_id = user['user_id']
 
