@@ -118,9 +118,6 @@ contract('ClaimFactory', async (accounts) => {
 
     // Register new contract as a minter, from the same address that deployed the contract
     await token.addMinter(claimFactory.address, { from: accounts[0] })
-
-    // Permission test address as caller
-    await staking.setStakingOwnerAddress(testStakingCallerAddress, { from: treasuryAddress })
   })
 
   it('Initiate a claim', async () => {

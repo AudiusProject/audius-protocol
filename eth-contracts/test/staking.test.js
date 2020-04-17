@@ -101,9 +101,6 @@ contract('Staking test', async (accounts) => {
     // Reset min for test purposes
 
     stakingAddress = staking.address
-
-    // Permission test address as caller
-    await staking.setStakingOwnerAddress(testStakingCallerAddress, { from: treasuryAddress })
   })
 
   it('has correct initial state', async () => {
@@ -113,13 +110,24 @@ contract('Staking test', async (accounts) => {
   })
 
   it('fails staking 0 amount', async () => {
+    let staker = accounts[1]
     await token.approve(stakingAddress, 1)
-    await _lib.assertRevert(staking.stake(0, web3.utils.utf8ToHex(EMPTY_STRING)))
+    await _lib.assertRevert(
+      mockStakingCaller.stakeFor(
+        staker,
+        0,
+        web3.utils.utf8ToHex(EMPTY_STRING)
+      ))
   })
 
   it('fails unstaking more than staked', async () => {
     await approveAndStake(DEFAULT_AMOUNT, treasuryAddress)
-    await _lib.assertRevert(staking.unstake(DEFAULT_AMOUNT + 1, web3.utils.utf8ToHex(EMPTY_STRING)))
+    await _lib.assertRevert(
+      mockStakingCaller.unstakeFor(
+        treasuryAddress,
+        DEFAULT_AMOUNT + 1,
+        web3.utils.utf8ToHex(EMPTY_STRING)
+      ))
   })
 
   it('fails staking with insufficient balance', async () => {

@@ -42,7 +42,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     Checkpointing.History internal totalStakedHistory;
 
     address treasuryAddress;
-    address stakingOwnerAddress;
 
     address registryAddress;
     bytes32 claimFactoryKey;
@@ -67,7 +66,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
       address _treasuryAddress,
       address _registryAddress,
       bytes32 _claimFactoryKey,
-      bytes32 _delegateManagerkey,
+      bytes32 _delegateManagerKey,
       bytes32 _serviceProviderFactoryKey
     ) external onlyInit {
         require(isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
@@ -76,7 +75,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         treasuryAddress = _treasuryAddress;
         registryAddress = _registryAddress;
         claimFactoryKey = _claimFactoryKey;
-        delegateManagerKey = _delegateManagerkey;
+        delegateManagerKey = _delegateManagerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
         initialized();
     }
@@ -129,30 +128,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
     }
 
     /**
-      * @notice Sets caller for stake and unstake functions
-      * Controlled by treasury address
-      */
-    function setStakingOwnerAddress(address _stakeCaller) external isInitialized {
-        require(msg.sender == treasuryAddress, "Slashing functionality locked to treasury owner");
-        stakingOwnerAddress = _stakeCaller;
-    }
-
-    /**
-     * @notice Stakes `_amount` tokens, transferring them from `msg.sender`
-     * @param _amount Number of tokens staked
-     * @param _data Used in Staked event, to add signalling information in more complex staking applications
-     */
-    function stake(uint256 _amount, bytes calldata _data) external isInitialized {
-        require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
-        _stakeFor(
-            msg.sender,
-            msg.sender,
-            _amount,
-            _data);
-    }
-
-    /**
-     * @notice Stakes `_amount` tokens, transferring them from caller, and assigns them to `_accountAddress`
+     * @notice Stakes `_amount` tokens, transferring them from _accountAddress, and assigns them to `_accountAddress`
      * @param _accountAddress The final staker of the tokens
      * @param _amount Number of tokens staked
      * @param _data Used in Staked event, to add signalling information in more complex staking applications
@@ -167,20 +143,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
             _accountAddress,
             _amount,
             _data);
-    }
-
-    /**
-     * @notice Unstakes `_amount` tokens, returning them to the user
-     * @param _amount Number of tokens staked
-     * @param _data Used in Unstaked event, to add signalling information in more complex staking applications
-     */
-    function unstake(uint256 _amount, bytes calldata _data) external isInitialized {
-        require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
-        _unstakeFor(
-          msg.sender,
-          msg.sender,
-          _amount,
-          _data);
     }
 
     /**

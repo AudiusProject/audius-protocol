@@ -103,9 +103,6 @@ contract('Upgrade proxy test', async (accounts) => {
       await token.transfer(spAccount2, 1000, { from: treasuryAddress })
 
       await proxy.upgradeToAndCall(impl0.address, initializeData, { from: proxyOwner })
-
-      // Permission test address as caller
-      await staking0.setStakingOwnerAddress(testStakingCallerAddress, { from: treasuryAddress })
     })
 
     it('upgrade and confirm initial staking state at proxy', async () => {

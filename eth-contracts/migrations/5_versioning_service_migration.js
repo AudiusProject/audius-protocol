@@ -43,10 +43,5 @@ module.exports = (deployer, network, accounts) => {
       serviceProviderStorageKey)
 
     await registry.addContract(serviceProviderFactoryKey, ServiceProviderFactory.address)
-
-    // Configure owner of staking contract to be service provider factory
-    let proxy = await OwnedUpgradeabilityProxy.deployed()
-    let staking = await Staking.at(proxy.address)
-    await staking.setStakingOwnerAddress(serviceProviderFactory.address)
   })
 }

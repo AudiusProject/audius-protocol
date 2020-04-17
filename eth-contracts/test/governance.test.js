@@ -146,9 +146,6 @@ contract('Governance.sol', async (accounts) => {
     )
     await registryContract.addContract(serviceProviderFactoryKey, serviceProviderFactoryContract.address, { from: protocolOwnerAddress })
 
-    // Permission sp factory as caller, from the treasuryAddress, which is proxy owner
-    await stakingContract.setStakingOwnerAddress(serviceProviderFactoryContract.address, { from: protocolOwnerAddress })
-
     // Deploy + Register ClaimFactory contract
     claimFactoryContract = await ClaimFactory.new(
       tokenContract.address,
