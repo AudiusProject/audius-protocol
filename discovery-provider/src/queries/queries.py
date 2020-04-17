@@ -1461,7 +1461,12 @@ def get_users_account():
         else:
             return api_helpers.error_response('Invalid wallet length', 400)
 
-        user = base_query.one()
+        # If user cannot be found, exit early and return empty response
+        try:
+            user = base_query.one()
+        except:
+            return api_helpers.success_response([])
+
         user = helpers.model_to_dictionary(user)
         user_id = user['user_id']
 
