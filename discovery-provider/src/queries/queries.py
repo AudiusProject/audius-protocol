@@ -3,6 +3,7 @@ import datetime
 import sqlalchemy
 from sqlalchemy import func, asc, desc, text, or_, and_, Integer, Float, Date
 from sqlalchemy.orm import aliased
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.dialects import postgresql
 
 from flask import Blueprint, request
@@ -1464,7 +1465,7 @@ def get_users_account():
         # If user cannot be found, exit early and return empty response
         try:
             user = base_query.one()
-        except:
+        except NoResultFound:
             return api_helpers.success_response([])
 
         user = helpers.model_to_dictionary(user)
