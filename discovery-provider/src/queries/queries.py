@@ -1466,7 +1466,7 @@ def get_users_account():
         try:
             user = base_query.one()
         except NoResultFound:
-            return api_helpers.success_response([])
+            return api_helpers.success_response(None)
 
         user = helpers.model_to_dictionary(user)
         user_id = user['user_id']
