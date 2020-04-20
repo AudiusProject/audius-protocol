@@ -13,6 +13,7 @@ let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 const MAKE_REQUEST_RETRY_COUNT = 3
+const MAX_MAKE_REQUEST_RETRY_COUNT = 50
 const AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT = 3
 
 class DiscoveryProvider {
@@ -672,7 +673,12 @@ class DiscoveryProvider {
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
   // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, retries = MAKE_REQUEST_RETRY_COUNT) {
+  async _makeRequest (requestObj, retries = MAKE_REQUEST_RETRY_COUNT, attempedRetries = 0) {
+    if (attempedRetries > MAX_MAKE_REQUEST_RETRY_COUNT) {
+      console.error('Attempted max request retries.')
+      return
+    }
+
     if (!this.discoveryProviderEndpoint) {
       await this.autoSelectEndpoint()
     }
@@ -743,7 +749,7 @@ class DiscoveryProvider {
       console.error(e)
 
       if (retries > 0) {
-        return this._makeRequest(requestObj, retries - 1)
+        return this._makeRequest(requestObj, retries - 1, attempedRetries + 1)
       }
     }
   }
