@@ -95,13 +95,6 @@ const ipfsSingleByteCat = (path, req, timeout = 1000) => new Promise(async (reso
   }
 })
 
-const parseSourcePath = (sourcePath) => {
-  if (sourcePath.includes('blob') || sourcePath.includes('Artwork')) {
-    sourcePath = sourcePath.split('/')[1]
-  }
-  return sourcePath
-}
-
 async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, filename = null) {
   let ipfs = req.app.get('ipfsAPI')
   let ipfsPath = multihash
@@ -150,7 +143,7 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
       let sourceFilePath = entry.storagePath
       try {
         let bufferedFile = fs.readFileSync(sourceFilePath)
-        let originalSource = parseSourcePath(entry.sourceFile)
+        let originalSource = entry.sourceFile
         ipfsAddArray.push({
           path: originalSource,
           content: bufferedFile
@@ -180,7 +173,7 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
 
   let rehydrateNecessary = false
   for (let entry of findOriginalFileQuery) {
-    let sourcePath = parseSourcePath(entry.sourceFile)
+    let sourcePath = entry.sourceFile
     let ipfsPath = `${dirHash}/${sourcePath}`
     req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, ipfsPath: ${ipfsPath}`)
     try {
