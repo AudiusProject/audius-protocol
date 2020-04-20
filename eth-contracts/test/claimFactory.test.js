@@ -1,14 +1,14 @@
 import * as _lib from './_lib/lib.js'
+const encodeCall = require('./encodeCall')
 
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
-const ClaimFactory = artifacts.require('ClaimFactory')
-const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
-const MockServiceProviderFactory = artifacts.require('MockServiceProviderFactory')
 const Staking = artifacts.require('Staking')
-const encodeCall = require('./encodeCall')
+const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+const MockServiceProviderFactory = artifacts.require('MockServiceProviderFactory')
+const ClaimFactory = artifacts.require('ClaimFactory')
 
-const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
+const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
@@ -26,19 +26,12 @@ const toWei = (aud) => {
 const DEFAULT_AMOUNT = toWei(120)
 
 contract('ClaimFactory', async (accounts) => {
-  // Local web3, injected by truffle
-  let treasuryAddress = accounts[0]
-  let proxyOwner = treasuryAddress
-  let claimFactory
-  let token
-  let registry
+  let token, registry, staking0, proxy, staking, claimFactory
 
-  let staking
-  let staker
-  let proxy
-  let impl0
-  let BN = web3.utils.BN
-  let testStakingCallerAddress = accounts[6] // Dummy stand in for sp factory in actual deployment
+  const BN = web3.utils.BN
+  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const staker = accounts[3]
+  const stakingOwnerAddress = accounts[6] // Dummy stand in for sp factory in actual deployment
 
 
   const getLatestBlock = async () => {
@@ -55,50 +48,47 @@ contract('ClaimFactory', async (accounts) => {
       staker,
       amount,
       web3.utils.utf8ToHex(''),
-      { from: testStakingCallerAddress })
+      { from: stakingOwnerAddress })
   }
 
   beforeEach(async () => {
-    registry = await Registry.new()
-    proxy = await OwnedUpgradeabilityProxy.new({ from: proxyOwner })
-    // Add proxy to registry
-    await registry.addContract(ownedUpgradeabilityProxyKey, proxy.address)
+    token = await AudiusToken.new({ from: treasuryAddress })
+    registry = await Registry.new({ from: treasuryAddress })
 
-    token = await AudiusToken.new({ from: accounts[0] })
-    impl0 = await Staking.new()
-
-    // Create initialization data
-    let initializeData = encodeCall(
+    // Set up staking
+    staking0 = await Staking.new({ from: proxyAdminAddress })
+    const stakingInitializeData = encodeCall(
       'initialize',
       ['address', 'address'],
-      [token.address, treasuryAddress])
-
-    // Initialize staking contract
-    await proxy.upgradeToAndCall(
-      impl0.address,
-      initializeData,
-      { from: proxyOwner })
-
+      [token.address, treasuryAddress]
+    )
+    proxy = await AdminUpgradeabilityProxy.new(
+      staking0.address,
+      proxyAdminAddress,
+      stakingInitializeData,
+      { from: proxyDeployerAddress }
+    )
     staking = await Staking.at(proxy.address)
-    staker = accounts[2]
+    await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
 
     // Mock SP for test
-    let mockSPFactory = await MockServiceProviderFactory.new({ from: accounts[0] })
+    let mockSPFactory = await MockServiceProviderFactory.new({ from: treasuryAddress })
     await registry.addContract(serviceProviderFactoryKey, mockSPFactory.address)
 
     // Create new claim factory instance
     claimFactory = await ClaimFactory.new(
       token.address,
       registry.address,
-      ownedUpgradeabilityProxyKey,
+      stakingProxyKey,
       serviceProviderFactoryKey,
-      { from: accounts[0] })
+      { from: treasuryAddress }
+    )
 
     // Register new contract as a minter, from the same address that deployed the contract
-    await token.addMinter(claimFactory.address, { from: accounts[0] })
+    await token.addMinter(claimFactory.address, { from: treasuryAddress })
 
     // Permission test address as caller
-    await staking.setStakingOwnerAddress(testStakingCallerAddress, { from: treasuryAddress })
+    await staking.setStakingOwnerAddress(stakingOwnerAddress, { from: treasuryAddress })
   })
 
   it('Initiate a claim', async () => {

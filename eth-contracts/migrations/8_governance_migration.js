@@ -1,7 +1,7 @@
 const Registry = artifacts.require('Registry')
 const Governance = artifacts.require('Governance')
 
-const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
+const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 
 // 48hr * 60 min/hr * 60 sec/min / ~15 sec/block = 11520 blocks
 const VotingPeriod = 11520
@@ -15,9 +15,10 @@ module.exports = (deployer, network, accounts) => {
     await deployer.deploy(
       Governance,
       registry.address,
-      ownedUpgradeabilityProxyKey,
+      stakingProxyKey,
       VotingPeriod,
-      VotingQuorum
+      VotingQuorum,
+      { from: accounts[0] }
     )
   })
 }
