@@ -740,6 +740,7 @@ class DiscoveryProvider {
           console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
           const endpoint = await this.autoSelectEndpoint(AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT, true)
           this.setEndpoint(endpoint)
+          retries = MAKE_REQUEST_RETRY_COUNT // reset retry count when setting a new endpoint
           throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
         }
       }
