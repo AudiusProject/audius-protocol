@@ -671,7 +671,7 @@ class DiscoveryProvider {
   // requestObj consists of multiple properties
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
-  // queryParams - object of query params to be appended to ur
+  // queryParams - object of query params to be appended to url
   async _makeRequest (requestObj, retries = MAKE_REQUEST_RETRY_COUNT) {
     if (!this.discoveryProviderEndpoint) {
       await this.autoSelectEndpoint()
