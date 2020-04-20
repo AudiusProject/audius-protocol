@@ -3,6 +3,7 @@ import datetime
 import sqlalchemy
 from sqlalchemy import func, asc, desc, text, or_, and_, Integer, Float, Date
 from sqlalchemy.orm import aliased
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.dialects import postgresql
 
 from flask import Blueprint, request
@@ -1461,7 +1462,12 @@ def get_users_account():
         else:
             return api_helpers.error_response('Invalid wallet length', 400)
 
-        user = base_query.one()
+        # If user cannot be found, exit early and return empty response
+        try:
+            user = base_query.one()
+        except NoResultFound:
+            return api_helpers.success_response(None)
+
         user = helpers.model_to_dictionary(user)
         user_id = user['user_id']
 
@@ -1955,22 +1961,25 @@ def get_top_genre_users():
         if with_genres:
             user_genre_followers_query = user_genre_followers_query.filter(user_genre_query.c.genre.in_(genres))
 
+        # If the with_users flag is not set, respond with the user_ids
+        users = paginate_query(user_genre_followers_query).all()
+        user_ids = list(map(lambda user: user[0], users))
+
         # If the with_users flag is used, retrieve the user metadata
         if with_users:
-            user_genre_followers_query = paginate_query(user_genre_followers_query).subquery('user_genre_followers_query')
             user_query = session.query(User).filter(
-                User.user_id.in_(user_genre_followers_query),
+                User.user_id.in_(user_ids),
                 User.is_current == True
             )
             users = user_query.all()
             users = helpers.query_result_to_list(users)
-            user_ids = list(map(lambda user: user["user_id"], users))
-            users = populate_user_metadata(session, user_ids, users, None)
+            queried_user_ids = list(map(lambda user: user["user_id"], users))
+            users = populate_user_metadata(session, queried_user_ids, users, None)
+
+            # Sort the users so that it's in the same order as the previous query
+            user_map = {user['user_id']:user for user in users}
+            users = [user_map[user_id] for user_id in user_ids]
             return api_helpers.success_response({ 'users': users })
 
-
-        # If the with_users flag is not set, respond with the user_ids
-        users = paginate_query(user_genre_followers_query).all()
-        user_ids = list(map(lambda user: user[0], users))
 
         return api_helpers.success_response({ 'user_ids': user_ids })

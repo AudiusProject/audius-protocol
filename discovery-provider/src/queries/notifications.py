@@ -360,6 +360,41 @@ def notifications():
             }
             created_notifications.append(track_notif)
 
+        # Tracks that were unlisted and turned to public
+        # TODO: Consider switching blocknumber for updated at?
+        publish_tracks_query = session.query(Track)
+        publish_tracks_query = publish_tracks_query.filter(
+            Track.is_unlisted == False,
+            Track.created_at != Track.updated_at,
+            Track.blocknumber > min_block_number,
+            Track.blocknumber <= max_block_number)
+        publish_track_results = publish_tracks_query.all()
+        for entry in publish_track_results:
+            prev_entry_query = (
+                session.query(Track)
+                .filter(
+                    Track.track_id == entry.track_id,
+                    Track.blocknumber < entry.blocknumber)
+                .order_by(desc(Track.blocknumber))
+            )
+            # Previous unlisted entry indicates transition to public, triggering a notification
+            prev_entry = prev_entry_query.first()
+            if prev_entry.is_unlisted == True:
+                track_notif = {
+                    const.notification_type: \
+                            const.notification_type_create,
+                    const.notification_blocknumber: entry.blocknumber,
+                    const.notification_timestamp: entry.created_at,
+                    const.notification_initiator: entry.owner_id,
+                    # TODO: is entity owner id necessary for tracks?
+                    const.notification_metadata: {
+                        const.notification_entity_type: 'track',
+                        const.notification_entity_id: entry.track_id,
+                        const.notification_entity_owner_id: entry.owner_id
+                    }
+                }
+                created_notifications.append(track_notif)
+
         # Aggregate playlist/album notifs
         collection_query = session.query(Playlist)
         # TODO: Is it valid to use is_current here? Might not be the right info...

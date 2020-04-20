@@ -97,7 +97,7 @@ class PlaylistFactoryClient extends ContractClient {
     )
   }
 
-  async deletePlaylistTrack (playlistId, deletedTrackId, deletedPlaylistTimestamp) {
+  async deletePlaylistTrack (playlistId, deletedTrackId, deletedPlaylistTimestamp, retries) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
     const contractAddress = await this.getAddress()
@@ -121,11 +121,13 @@ class PlaylistFactoryClient extends ContractClient {
     return this.web3Manager.sendTransaction(
       method,
       this.contractRegistryKey,
-      contractAddress
+      contractAddress,
+      undefined, // txGasLimit
+      retries
     )
   }
 
-  async orderPlaylistTracks (playlistId, trackIds) {
+  async orderPlaylistTracks (playlistId, trackIds, retries) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
     const contractAddress = await this.getAddress()
@@ -146,10 +148,11 @@ class PlaylistFactoryClient extends ContractClient {
       sig)
 
     return this.web3Manager.sendTransaction(
-      method,
+      method, // contractMethod
       this.contractRegistryKey,
       contractAddress,
-      8000000
+      8000000, // txGasLimit
+      retries
     )
   }
 
@@ -284,6 +287,15 @@ class PlaylistFactoryClient extends ContractClient {
       this.contractRegistryKey,
       contractAddress
     )
+  }
+
+  async isTrackInPlaylist (playlistId, trackId) {
+    const method = await this.getMethod('isTrackInPlaylist',
+      playlistId,
+      trackId
+    )
+    const result = await method.call()
+    return result
   }
 }
 
