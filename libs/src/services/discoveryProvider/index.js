@@ -612,7 +612,7 @@ class DiscoveryProvider {
       endpoint: 'users/account',
       queryParams: { wallet }
     }
-    return this._makeRequest(req, 0, true)
+    return this._makeRequest(req)
   }
 
   async getTopPlaylists (type, limit, mood, filter, withUsers = false) {
@@ -671,8 +671,8 @@ class DiscoveryProvider {
   // requestObj consists of multiple properties
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
-  // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, retries = MAKE_REQUEST_RETRY_COUNT, silent = false) {
+  // queryParams - object of query params to be appended to ur
+  async _makeRequest (requestObj, retries = MAKE_REQUEST_RETRY_COUNT) {
     if (!this.discoveryProviderEndpoint) {
       await this.autoSelectEndpoint()
     }
@@ -740,9 +740,7 @@ class DiscoveryProvider {
 
       return parsedResponse.data
     } catch (e) {
-      if (!silent) {
-        console.error(e)
-      }
+      console.error(e)
 
       if (retries > 0) {
         return this._makeRequest(requestObj, retries - 1)
