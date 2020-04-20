@@ -25,6 +25,8 @@ contract Initializable {
    */
   bool private initializing;
 
+  string private constant ERROR_NOT_INITIALIZED = "INIT_NOT_INITIALIZED";	
+
   /**
    * @dev Modifier to use in the initializer function of a contract.
    */
@@ -42,6 +44,11 @@ contract Initializable {
     if (isTopLevelCall) {
       initializing = false;
     }
+  }
+
+  modifier isInitialized() {
+    require(initialized == true, ERROR_NOT_INITIALIZED);
+    _;
   }
 
   /// @dev Returns true if and only if the function is running in the constructor

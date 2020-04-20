@@ -40,8 +40,6 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
     address treasuryAddress;
     address stakingOwnerAddress;
 
-    bool public initializerRan;
-
     event StakeTransferred(
       address indexed from,
       uint256 amount,
@@ -59,7 +57,6 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
         require(isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         stakingToken = ERC20(_stakingToken);
         treasuryAddress = _treasuryAddress;
-        initializerRan = true;
     }
 
     /* External functions */
@@ -67,7 +64,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
     /**
      * @notice Funds `_amount` of tokens from ClaimFactory to target account
      */
-    function stakeRewards(uint256 _amount, address _stakerAccount) external {
+    function stakeRewards(uint256 _amount, address _stakerAccount) external isInitialized() {
         // TODO: Add additional require statements here...
         // TODO: Permission to claimFactory
         // Stake for incoming account
@@ -92,7 +89,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
     function slash(
         uint256 _amount,
         address _slashAddress
-    ) external
+    ) external isInitialized()
     {
         // TODO: restrict functionality to delegate manager
         // require(msg.sender == treasuryAddress, "Slashing functionality locked to treasury owner");
@@ -114,7 +111,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
       * @notice Sets caller for stake and unstake functions
       * Controlled by treasury address
       */
-    function setStakingOwnerAddress(address _stakeCaller) external {
+    function setStakingOwnerAddress(address _stakeCaller) external isInitialized() {
         require(msg.sender == treasuryAddress, "Slashing functionality locked to treasury owner");
         stakingOwnerAddress = _stakeCaller;
     }
@@ -124,7 +121,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @param _amount Number of tokens staked
      * @param _data Used in Staked event, to add signalling information in more complex staking applications
      */
-    function stake(uint256 _amount, bytes calldata _data) external {
+    function stake(uint256 _amount, bytes calldata _data) external isInitialized() {
         require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
         _stakeFor(
             msg.sender,
@@ -139,7 +136,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @param _amount Number of tokens staked
      * @param _data Used in Staked event, to add signalling information in more complex staking applications
      */
-    function stakeFor(address _accountAddress, uint256 _amount, bytes calldata _data) external {
+    function stakeFor(address _accountAddress, uint256 _amount, bytes calldata _data) external isInitialized() {
         // TODO: permission to contract addresses via registry contract instead of 'stakingOwnerAddress'  
         // require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
         _stakeFor(
@@ -154,7 +151,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @param _amount Number of tokens staked
      * @param _data Used in Unstaked event, to add signalling information in more complex staking applications
      */
-    function unstake(uint256 _amount, bytes calldata _data) external {
+    function unstake(uint256 _amount, bytes calldata _data) external isInitialized() {
         _unstakeFor(
           msg.sender,
           msg.sender,
@@ -168,7 +165,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @param _amount Number of tokens staked
      * @param _data Used in Unstaked event, to add signalling information in more complex staking applications
      */
-    function unstakeFor(address _accountAddress, uint256 _amount, bytes calldata _data) external {
+    function unstakeFor(address _accountAddress, uint256 _amount, bytes calldata _data) external isInitialized() {
         // TODO: permission to contract addresses via registry contract instead of 'stakingOwnerAddress'  
         // require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
         // unstaking 0 tokens is not allowed
@@ -191,7 +188,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
       address _delegatorAddress,
       uint256 _amount,
       bytes calldata _data
-    ) external {
+    ) external isInitialized() {
         // TODO: permission to contract addresses via registry contract instead of 'stakingOwnerAddress'  
         // require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
         _stakeFor(
@@ -213,7 +210,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
       address _delegatorAddress,
       uint256 _amount,
       bytes calldata _data
-    ) external {
+    ) external isInitialized() {
         // TODO: permission to contract addresses via registry contract instead of 'stakingOwnerAddress'  
         // require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
         _unstakeFor(
@@ -227,7 +224,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @notice Get the token used by the contract for staking and locking
      * @return The token used by the contract for staking and locking
      */
-    function token() external view returns (address) {
+    function token() external view isInitialized() returns (address) {
         return address(stakingToken);
     }
 
@@ -244,7 +241,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @param _accountAddress Account requesting for
      * @return Last block number when account's balance was modified
      */
-    function lastStakedFor(address _accountAddress) external view returns (uint256) {
+    function lastStakedFor(address _accountAddress) external view isInitialized() returns (uint256) {
         return accounts[_accountAddress].stakedHistory.lastUpdated();
     }
 
@@ -253,7 +250,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @param _accountAddress Account requesting for
      * @return Last block number when claim requested
      */
-    function lastClaimedFor(address _accountAddress) external view returns (uint256) {
+    function lastClaimedFor(address _accountAddress) external view isInitialized() returns (uint256) {
         return accounts[_accountAddress].claimHistory.lastUpdated();
     }
 
@@ -263,7 +260,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @param _blockNumber Block number at which we are requesting
      * @return The amount of tokens staked by the account at the given block number
      */
-    function totalStakedForAt(address _accountAddress, uint256 _blockNumber) external view returns (uint256) {
+    function totalStakedForAt(address _accountAddress, uint256 _blockNumber) external view isInitialized() returns (uint256) {
         return accounts[_accountAddress].stakedHistory.get(_blockNumber);
     }
 
@@ -272,7 +269,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @param _blockNumber Block number at which we are requesting
      * @return The amount of tokens staked at the given block number
      */
-    function totalStakedAt(uint256 _blockNumber) external view returns (uint256) {
+    function totalStakedAt(uint256 _blockNumber) external view isInitialized() returns (uint256) {
         return totalStakedHistory.get(_blockNumber);
     }
 
@@ -283,7 +280,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @param _accountAddress The owner of the tokens
      * @return The amount of tokens staked by the given account
      */
-    function totalStakedFor(address _accountAddress) public view returns (uint256) {
+    function totalStakedFor(address _accountAddress) public view isInitialized() returns (uint256) {
         // we assume it's not possible to stake in the future
         return accounts[_accountAddress].stakedHistory.getLatestValue();
     }
@@ -292,7 +289,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @notice Get the total amount of tokens staked by all users
      * @return The total amount of tokens staked by all users
      */
-    function totalStaked() public view returns (uint256) {
+    function totalStaked() public view isInitialized() returns (uint256) {
         // we assume it's not possible to stake in the future
         return totalStakedHistory.getLatestValue();
     }
@@ -303,7 +300,8 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
         address _stakeAccount,
         address _transferAccount,
         uint256 _amount,
-        bytes memory _data) internal
+        bytes memory _data
+    ) internal isInitialized()
     {
         // staking 0 tokens is invalid
         require(_amount > 0, ERROR_AMOUNT_ZERO);
@@ -329,7 +327,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
         address _transferAccount,
         uint256 _amount,
         bytes memory _data
-    ) internal
+    ) internal isInitialized()
     {
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
@@ -350,7 +348,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
         );
     }
 
-    function _burnFor(address _stakeAccount, uint256 _amount) internal {
+    function _burnFor(address _stakeAccount, uint256 _amount) internal isInitialized() {
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
         // checkpoint updated staking balance
@@ -365,7 +363,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
         /** No event emitted since token.burn() call already emits a Transfer event */
     }
 
-    function _modifyStakeBalance(address _accountAddress, uint256 _by, bool _increase) internal {
+    function _modifyStakeBalance(address _accountAddress, uint256 _by, bool _increase) internal isInitialized() {
         uint256 currentInternalStake = accounts[_accountAddress].stakedHistory.getLatestValue();
 
         uint256 newStake;
@@ -382,7 +380,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
         accounts[_accountAddress].stakedHistory.add64(getBlockNumber64(), newStake);
     }
 
-    function _modifyTotalStaked(uint256 _by, bool _increase) internal {
+    function _modifyTotalStaked(uint256 _by, bool _increase) internal isInitialized() {
         uint256 currentStake = totalStaked();
 
         uint256 newStake;
@@ -396,7 +394,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
         totalStakedHistory.add64(getBlockNumber64(), newStake);
     }
 
-    function _transfer(address _from, address _to, uint256 _amount) internal {
+    function _transfer(address _from, address _to, uint256 _amount) internal isInitialized() {
         // transferring 0 staked tokens is invalid
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 

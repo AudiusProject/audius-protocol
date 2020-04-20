@@ -15,11 +15,11 @@ jobs:
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
-        command: ["-l", "8000000"]
+        command: ["-l", "8000000", "-a", "50"]
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
-        command: ["-l", "8000000", "-p", "8546"]
+        command: ["-l", "8000000", "-p", "8546", "-a", "50"]
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -132,7 +132,7 @@ jobs:
     docker:
       - image: circleci/node:10.16.3
       - image: trufflesuite/ganache-cli:latest
-        command: ["--port=8546"]
+        command: ["--port=8546", "-a", "50", "-l", "8000000"]
     parameters:
       force:
         type: boolean

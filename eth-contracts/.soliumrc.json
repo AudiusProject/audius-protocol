@@ -10,7 +10,7 @@
     "max-len":          ["error", 99],
     "no-unused-vars":   ["error"],
     "pragma-on-top":    ["error"],
-    "function-order":   ["ignore"],
+    "function-order":   ["error"],
     "visibility-first": ["error"],
     "security/no-inline-assembly": ["warning"]
   }

@@ -124,7 +124,6 @@ contract('Upgrade proxy test', async (accounts) => {
 
     it('upgrade and confirm initial staking state at proxy', async () => {
       assert.equal(await proxy.implementation.call({ from: proxyAdminAddress }), staking0.address)
-      assert.equal(await staking.initializerRan.call({ from: accounts[3]}), true, 'contract has not been initialized')
       assert.equal(await staking.token.call({ from: accounts[3] }), token.address, 'Token is wrong')
       assert.equal((await staking.totalStaked.call({ from: accounts[3] })).valueOf(), 0, 'Initial total staked amount should be zero')
       assert.equal(await staking.supportsHistory({ from: accounts[3] }), true, 'history support should match')
