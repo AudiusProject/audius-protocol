@@ -11,6 +11,17 @@ const DelegateManager = artifacts.require('DelegateManager')
 const ClaimFactory = artifacts.require('ClaimFactory')
 const MockGovernance = artifacts.require('MockGovernance')
 
+const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
+const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
+const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
+const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
+
+const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
+const testEndpoint = 'https://localhost:5000'
+const testEndpoint1 = 'https://localhost:5001'
+const testEndpoint3 = 'https://localhost:5002'
+
 const fromBn = n => parseInt(n.valueOf(), 10)
 const toWei = (aud) => {
   let amountInAudWei = web3.utils.toWei(
@@ -26,52 +37,18 @@ const fromWei = (wei) => {
   return web3.utils.fromWei(wei)
 }
 
-const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
-const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
-const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
-const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
-const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
-
-const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
-const testEndpoint = 'https://localhost:5000'
-const testEndpoint1 = 'https://localhost:5001'
-const testEndpoint3 = 'https://localhost:5002'
-
 // 1000 AUD converted to AUDWei, multiplying by 10^18
 const INITIAL_BAL = toWei(1000)
 const DEFAULT_AMOUNT = toWei(120)
 
 contract('DelegateManager', async (accounts) => {
-<<<<<<< HEAD
-  let treasuryAddress = accounts[0]
-  let proxyOwner = treasuryAddress
-  let proxy
-  let impl0
-  let staking
-  let token
-  let registry
-  let stakingAddress
-  let serviceProviderStorage
-  let serviceProviderFactory
-
-  let claimFactory
-  let delegateManager
-  let mockGovernance
-
-  const stakerAccount = accounts[1]
-  const delegatorAccount1 = accounts[2]
-  const stakerAccount2 = accounts[3]
-
-  let slasherAccount = stakerAccount
-=======
-  let proxy, staking0, staking, stakingAddress, token, registry, serviceProviderStorage, serviceProviderFactory, claimFactory, delegateManager
-  
+  let proxy, staking0, staking, stakingAddress, token, registry
+  let serviceProviderStorage, serviceProviderFactory, claimFactory, delegateManager, mockGovernance
   const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
   const stakerAccount = accounts[10]
-  const delegatorAccount1 = accounts[11]
   const stakerAccount2 = accounts[12]
+  const delegatorAccount1 = accounts[11]
   const slasherAccount = stakerAccount
->>>>>>> mainnet
 
   beforeEach(async () => {
     token = await AudiusToken.new({ from: treasuryAddress })
@@ -81,7 +58,6 @@ contract('DelegateManager', async (accounts) => {
     staking0 = await Staking.new({ from: proxyAdminAddress })
     const stakingInitializeData = encodeCall(
       'initialize',
-<<<<<<< HEAD
       ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [
         token.address,
@@ -93,27 +69,17 @@ contract('DelegateManager', async (accounts) => {
       ]
     )
 
-    // Initialize staking contract
-    await proxy.upgradeToAndCall(
-      impl0.address,
-      initializeData,
-      { from: proxyOwner })
-
-=======
-      ['address', 'address'],
-      [token.address, treasuryAddress]
-    )
     proxy = await AdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
       { from: proxyDeployerAddress }
     )
->>>>>>> mainnet
+
     staking = await Staking.at(proxy.address)
     await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
     stakingAddress = staking.address
-    
+
     // Deploy sp storage
     serviceProviderStorage = await ServiceProviderStorage.new(registry.address)
     await registry.addContract(serviceProviderStorageKey, serviceProviderStorage.address)
@@ -121,35 +87,20 @@ contract('DelegateManager', async (accounts) => {
     // Deploy sp factory
     serviceProviderFactory = await ServiceProviderFactory.new(
       registry.address,
-<<<<<<< HEAD
-      ownedUpgradeabilityProxyKey,
-      delegateManagerKey,
-=======
       stakingProxyKey,
->>>>>>> mainnet
+      delegateManagerKey,
       serviceProviderStorageKey)
 
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)
 
-<<<<<<< HEAD
-=======
-    // Permission sp factory as caller, from the proxy owner address
-    // (which happens to equal treasury in this test case)
-    await staking.setStakingOwnerAddress(serviceProviderFactory.address, { from: treasuryAddress })
-
->>>>>>> mainnet
     // Create new claim factory instance
     claimFactory = await ClaimFactory.new(
       token.address,
       registry.address,
       stakingProxyKey,
       serviceProviderFactoryKey,
-<<<<<<< HEAD
       delegateManagerKey,
       { from: accounts[0] })
-=======
-      { from: treasuryAddress })
->>>>>>> mainnet
 
     await registry.addContract(claimFactoryKey, claimFactory.address)
 
@@ -164,12 +115,8 @@ contract('DelegateManager', async (accounts) => {
     delegateManager = await DelegateManager.new(
       token.address,
       registry.address,
-<<<<<<< HEAD
       mockGovernance.address,
-      ownedUpgradeabilityProxyKey,
-=======
       stakingProxyKey,
->>>>>>> mainnet
       serviceProviderFactoryKey,
       claimFactoryKey)
 
