@@ -25,7 +25,7 @@ const StakingABI = Utils.importEthContractABI('Staking.json').abi
 
 const VersioningFactoryRegistryKey = 'VersioningFactory'
 const ServiceProviderFactoryRegistryKey = 'ServiceProviderFactory'
-const OwnedUpgradeabilityProxyKey = 'OwnedUpgradeabilityProxy'
+const StakingProxyKey = 'StakingProxy'
 
 const TWO_MINUTES = 2 * 60 * 1000
 
@@ -74,7 +74,7 @@ class EthContracts {
     this.StakingProxyClient = new StakingProxyClient(
       this.ethWeb3Manager,
       StakingABI,
-      OwnedUpgradeabilityProxyKey,
+      StakingProxyKey,
       this.getRegistryAddressForContract,
       this.AudiusTokenClient
     )
