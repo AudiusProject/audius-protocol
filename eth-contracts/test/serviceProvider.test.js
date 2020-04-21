@@ -11,6 +11,8 @@ const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
+const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
 const testCreatorNodeType = web3.utils.utf8ToHex('creator-node')
@@ -33,55 +35,21 @@ const fromWei = (wei) => {
   return web3.utils.fromWei(wei)
 }
 
-<<<<<<< HEAD
-const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
-const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
-const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
-const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
-const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
-
-const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
-const testCreatorNodeType = web3.utils.utf8ToHex('creator-node')
-const testEndpoint = 'https://localhost:5000'
-const testEndpoint1 = 'https://localhost:5001'
-
-const MIN_STAKE_AMOUNT = 10
-
-=======
->>>>>>> mainnet
 // 1000 AUD converted to AUDWei, multiplying by 10^18
 const INITIAL_BAL = toWei(1000)
 const DEFAULT_AMOUNT = toWei(120)
 
 contract('ServiceProvider test', async (accounts) => {
-<<<<<<< HEAD
-  let treasuryAddress = accounts[0]
-  let proxyOwner = treasuryAddress
-  let proxy
-  let impl0
-  let staking
-  let token
-  let registry
-  let stakingAddress
-  let serviceProviderStorage
-  let serviceProviderFactory
+  let token, registry, staking0, stakingInitializeData, proxy, staking, serviceProviderStorage, serviceProviderFactory
+
+  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
 
   beforeEach(async () => {
     registry = await Registry.new()
-=======
-  let token, registry, staking0, stakingInitializeData, proxy, staking, serviceProviderStorage, serviceProviderFactory
->>>>>>> mainnet
-
-  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
-  const proxyOwner = treasuryAddress
-
-  beforeEach(async () => {
     token = await AudiusToken.new({ from: treasuryAddress })
-<<<<<<< HEAD
-    impl0 = await Staking.new()
-
-    // Create initialization data
-    let initializeData = encodeCall(
+    // Set up staking
+    staking0 = await Staking.new({ from: proxyAdminAddress })
+    stakingInitializeData = encodeCall(
       'initialize',
       ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [
@@ -94,29 +62,13 @@ contract('ServiceProvider test', async (accounts) => {
       ]
     )
 
-    // Initialize staking contract
-    await proxy.upgradeToAndCall(
-      impl0.address,
-      initializeData,
-      { from: proxyOwner })
-
-=======
-    registry = await Registry.new({ from: treasuryAddress })
-
-    // Set up staking
-    staking0 = await Staking.new({ from: proxyAdminAddress })
-    stakingInitializeData = encodeCall(
-      'initialize',
-      ['address', 'address'],
-      [token.address, treasuryAddress]
-    )
     proxy = await AdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
       { from: proxyDeployerAddress }
     )
->>>>>>> mainnet
+
     staking = await Staking.at(proxy.address)
     await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
 
@@ -127,30 +79,13 @@ contract('ServiceProvider test', async (accounts) => {
     // Deploy ServiceProviderFactory
     serviceProviderFactory = await ServiceProviderFactory.new(
       registry.address,
-<<<<<<< HEAD
-      ownedUpgradeabilityProxyKey,
+      stakingProxyKey,
       delegateManagerKey,
       serviceProviderStorageKey)
-=======
-      stakingProxyKey,
-      serviceProviderStorageKey,
-      { from: treasuryAddress }
-    )
->>>>>>> mainnet
 
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address, { from: treasuryAddress })
-
-<<<<<<< HEAD
-    // Transfer 1000 tokens to accounts[1]
-    await token.transfer(accounts[1], INITIAL_BAL, { from: treasuryAddress })
-=======
-    // Permission sp factory as caller, from the proxy owner address
-    // (which happens to equal treasury in this test case)
-    await staking.setStakingOwnerAddress(serviceProviderFactory.address, { from: proxyOwner })
-
     // Transfer 1000 tokens to accounts[11]
     await token.transfer(accounts[11], INITIAL_BAL, { from: treasuryAddress })
->>>>>>> mainnet
   })
 
   /* Helper functions */
@@ -185,13 +120,6 @@ contract('ServiceProvider test', async (accounts) => {
 
     let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
     // console.dir(args, { depth: 5 })
-  }
-
-  const getStakeAmountFromEndpoint = async (endpoint, type) => {
-    let stakeAmount = await serviceProviderFactory.getStakeAmountFromEndpoint(
-      endpoint,
-      type)
-    return fromBn(stakeAmount)
   }
 
   const getStakeAmountForAccount = async (account) => {
@@ -346,7 +274,6 @@ contract('ServiceProvider test', async (accounts) => {
       let cnTypeMax = cnTypeInfo[1]
       let dpTypeInfo = await serviceProviderFactory.getServiceStakeInfo(testDiscProvType)
       let dpTypeMin = dpTypeInfo[0]
-      let dpTypeMax = dpTypeInfo[1]
 
       // 3rd endpoint for stakerAccount = https://localhost:4001
       // Total Stake = 240 AUD <-- Expect failure
@@ -383,9 +310,9 @@ contract('ServiceProvider test', async (accounts) => {
       let transferAmount = web3.utils.toBN(
         accountDiff
       ).add(
-          web3.utils.toBN(fromWei(cnTypeMax))
+        web3.utils.toBN(fromWei(cnTypeMax))
       ).add(
-          web3.utils.toBN(200)
+        web3.utils.toBN(200)
       )
 
       // Transfer greater than max tokens
