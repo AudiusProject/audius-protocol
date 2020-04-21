@@ -15,6 +15,7 @@ const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const governanceKey = web3.utils.utf8ToHex('Governance')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
@@ -110,12 +111,14 @@ contract('DelegateManager', async (accounts) => {
     mockGovernance = await MockGovernance.new(
       registry.address,
       delegateManagerKey,
-      { from: accounts[0] })
+      { from: accounts[0] }
+    )
+    await registry.addContract(governanceKey, mockGovernance.address)
 
     delegateManager = await DelegateManager.new(
       token.address,
       registry.address,
-      mockGovernance.address,
+      governanceKey,
       stakingProxyKey,
       serviceProviderFactoryKey,
       claimFactoryKey)
