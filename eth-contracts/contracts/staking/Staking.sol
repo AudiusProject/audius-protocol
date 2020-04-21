@@ -2,6 +2,7 @@ pragma solidity ^0.5.0;
 
 import "./ERCStaking.sol";
 import "./Checkpointing.sol";
+import "../service/interface/registry/RegistryInterface.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
@@ -35,10 +36,17 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
     }
 
     ERC20 internal stakingToken;
+    RegistryInterface registry = RegistryInterface(0);
+
     mapping (address => Account) internal accounts;
     Checkpointing.History internal totalStakedHistory;
+
     address treasuryAddress;
-    address stakingOwnerAddress;
+
+    address registryAddress;
+    bytes32 claimFactoryKey;
+    bytes32 delegateManagerKey;
+    bytes32 serviceProviderFactoryKey;
 
     event StakeTransferred(
       address indexed from,
@@ -53,10 +61,22 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
 
     event Slashed(address indexed user, uint256 amount, uint256 total);
 
-    function initialize(address _stakingToken, address _treasuryAddress) public initializer {
+    function initialize(
+      address _stakingToken,
+      address _treasuryAddress,
+      address _registryAddress,
+      bytes32 _claimFactoryKey,
+      bytes32 _delegateManagerKey,
+      bytes32 _serviceProviderFactoryKey
+    ) public initializer {
         require(isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         stakingToken = ERC20(_stakingToken);
+        registry = RegistryInterface(_registryAddress);
         treasuryAddress = _treasuryAddress;
+        registryAddress = _registryAddress;
+        claimFactoryKey = _claimFactoryKey;
+        delegateManagerKey = _delegateManagerKey;
+        serviceProviderFactoryKey = _serviceProviderFactoryKey;
     }
 
     /* External functions */
@@ -65,11 +85,7 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @notice Funds `_amount` of tokens from ClaimFactory to target account
      */
     function stakeRewards(uint256 _amount, address _stakerAccount) external isInitialized {
-        // TODO: Add additional require statements here...
-        // TODO: Permission to claimFactory
-        // Stake for incoming account
-        // Transfer from msg.sender, in this case ClaimFactory
-        // bytes memory empty;
+        require(msg.sender == registry.getContract(claimFactoryKey), "Only callable from ClaimFactory");
         _stakeFor(
             _stakerAccount,
             msg.sender,
@@ -91,8 +107,10 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
         address _slashAddress
     ) external isInitialized
     {
-        // TODO: restrict functionality to delegate manager
-        // require(msg.sender == treasuryAddress, "Slashing functionality locked to treasury owner");
+        require(
+            msg.sender == registry.getContract(delegateManagerKey),
+            "slash only callable from DelegateManager"
+        );
 
         // unstaking 0 tokens is not allowed
         require(_amount > 0, ERROR_AMOUNT_ZERO);
@@ -108,55 +126,21 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
     }
 
     /**
-      * @notice Sets caller for stake and unstake functions
-      * Controlled by treasury address
-      */
-    function setStakingOwnerAddress(address _stakeCaller) external isInitialized {
-        require(msg.sender == treasuryAddress, "Slashing functionality locked to treasury owner");
-        stakingOwnerAddress = _stakeCaller;
-    }
-
-    /**
-     * @notice Stakes `_amount` tokens, transferring them from `msg.sender`
-     * @param _amount Number of tokens staked
-     * @param _data Used in Staked event, to add signalling information in more complex staking applications
-     */
-    function stake(uint256 _amount, bytes calldata _data) external isInitialized {
-        require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
-        _stakeFor(
-            msg.sender,
-            msg.sender,
-            _amount,
-            _data);
-    }
-
-    /**
-     * @notice Stakes `_amount` tokens, transferring them from caller, and assigns them to `_accountAddress`
+     * @notice Stakes `_amount` tokens, transferring them from _accountAddress, and assigns them to `_accountAddress`
      * @param _accountAddress The final staker of the tokens
      * @param _amount Number of tokens staked
      * @param _data Used in Staked event, to add signalling information in more complex staking applications
      */
     function stakeFor(address _accountAddress, uint256 _amount, bytes calldata _data) external isInitialized {
-        // TODO: permission to contract addresses via registry contract instead of 'stakingOwnerAddress'  
-        // require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
+        require(
+            msg.sender == registry.getContract(serviceProviderFactoryKey),
+            "Only callable from ServiceProviderFactory"
+        );
         _stakeFor(
             _accountAddress,
             _accountAddress,
             _amount,
             _data);
-    }
-
-    /**
-     * @notice Unstakes `_amount` tokens, returning them to the user
-     * @param _amount Number of tokens staked
-     * @param _data Used in Unstaked event, to add signalling information in more complex staking applications
-     */
-    function unstake(uint256 _amount, bytes calldata _data) external isInitialized {
-        _unstakeFor(
-          msg.sender,
-          msg.sender,
-          _amount,
-          _data);
     }
 
     /**
@@ -166,9 +150,10 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @param _data Used in Unstaked event, to add signalling information in more complex staking applications
      */
     function unstakeFor(address _accountAddress, uint256 _amount, bytes calldata _data) external isInitialized {
-        // TODO: permission to contract addresses via registry contract instead of 'stakingOwnerAddress'  
-        // require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
-        // unstaking 0 tokens is not allowed
+        require(
+            msg.sender == registry.getContract(serviceProviderFactoryKey),
+            "Only callable from ServiceProviderFactory"
+        );
         _unstakeFor(
           _accountAddress,
           _accountAddress,
@@ -189,8 +174,10 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
       uint256 _amount,
       bytes calldata _data
     ) external isInitialized {
-        // TODO: permission to contract addresses via registry contract instead of 'stakingOwnerAddress'  
-        // require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
+        require(
+            msg.sender == registry.getContract(delegateManagerKey),
+            "delegateStakeFor - Only callable from DelegateManager"
+        );
         _stakeFor(
             _accountAddress,
             _delegatorAddress,
@@ -211,8 +198,10 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
       uint256 _amount,
       bytes calldata _data
     ) external isInitialized {
-        // TODO: permission to contract addresses via registry contract instead of 'stakingOwnerAddress'  
-        // require(msg.sender == stakingOwnerAddress, "Unauthorized staking operation");
+        require(
+            msg.sender == registry.getContract(delegateManagerKey),
+            "undelegateStakeFor - Only callable from DelegateManager"
+        );
         _unstakeFor(
             _accountAddress,
             _delegatorAddress,

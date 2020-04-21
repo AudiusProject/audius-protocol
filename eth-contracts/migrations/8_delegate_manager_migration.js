@@ -1,10 +1,11 @@
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
+const Governance = artifacts.require('Governance')
+const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
 const DelegateManager = artifacts.require('DelegateManager')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
-const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 
 module.exports = (deployer, network, accounts) => {
@@ -17,6 +18,7 @@ module.exports = (deployer, network, accounts) => {
       DelegateManager,
       token.address,
       registry.address,
+      Governance.address,
       stakingProxyKey,
       serviceProviderFactoryKey,
       claimFactoryKey,

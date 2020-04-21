@@ -30,7 +30,7 @@ const audToWei = (aud) => {
   )
 }
 
-const  bigNumberify = (num) => {
+const bigNumberify = (num) => {
   return ethers.utils.bigNumberify(new BigNum(num).toFixed());
 }
 
@@ -61,7 +61,8 @@ const Vote = Object.freeze({
 })
 
 contract('Governance.sol', async (accounts) => {
-  let token, registry, staking0, staking, proxy, serviceProviderStorage, serviceProviderFactory, claimFactory, delegateManager, governance
+  let token, registry, staking0, staking, proxy
+  let serviceProviderStorage, serviceProviderFactory, claimFactory, delegateManager, governance
 
   const votingPeriod = 10
   const votingQuorum = 1
@@ -96,13 +97,21 @@ contract('Governance.sol', async (accounts) => {
     token = await AudiusToken.new({ from: treasuryAddress })
     registry = await Registry.new({ from: treasuryAddress })
 
+    // Create initialization data
+    let stakingInitializeData = encodeCall(
+      'initialize',
+      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [
+        token.address,
+        treasuryAddress,
+        registry.address,
+        claimFactoryKey,
+        delegateManagerKey,
+        serviceProviderFactoryKey
+      ]
+    )
     // Set up staking
     staking0 = await Staking.new({ from: proxyAdminAddress })
-    const stakingInitializeData = encodeCall(
-      'initialize',
-      ['address', 'address'],
-      [token.address, treasuryAddress]
-    )
     proxy = await AdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
@@ -111,7 +120,7 @@ contract('Governance.sol', async (accounts) => {
     )
     staking = await Staking.at(proxy.address)
     await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
-    
+
     // Deploy + Registery ServiceProviderStorage contract
     serviceProviderStorage = await ServiceProviderStorage.new(registry.address, { from: protocolOwnerAddress })
     await registry.addContract(serviceProviderStorageKey, serviceProviderStorage.address, { from: protocolOwnerAddress })
@@ -120,12 +129,10 @@ contract('Governance.sol', async (accounts) => {
     serviceProviderFactory = await ServiceProviderFactory.new(
       registry.address,
       stakingProxyKey,
+      delegateManagerKey,
       serviceProviderStorageKey
     )
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address, { from: protocolOwnerAddress })
-
-    // Permission sp factory as caller, from the treasuryAddress, which is proxy owner
-    await staking.setStakingOwnerAddress(serviceProviderFactory.address, { from: protocolOwnerAddress })
 
     // Deploy + Register ClaimFactory contract
     claimFactory = await ClaimFactory.new(
@@ -133,23 +140,13 @@ contract('Governance.sol', async (accounts) => {
       registry.address,
       stakingProxyKey,
       serviceProviderFactoryKey,
+      delegateManagerKey,
       { from: protocolOwnerAddress }
     )
     await registry.addContract(claimFactoryKey, claimFactory.address, { from: protocolOwnerAddress })
 
     // Register new contract as a minter, from the same address that deployed the contract
     await token.addMinter(claimFactory.address, { from: protocolOwnerAddress })
-
-    // Deploy DelegateManager contract
-    delegateManager = await DelegateManager.new(
-      token.address,
-      registry.address,
-      stakingProxyKey,
-      serviceProviderFactoryKey,
-      claimFactoryKey,
-      { from: protocolOwnerAddress }
-    )
-    await registry.addContract(delegateManagerKey, delegateManager.address, { from: protocolOwnerAddress })
 
     // Deploy Governance contract
     governance = await Governance.new(
@@ -159,6 +156,18 @@ contract('Governance.sol', async (accounts) => {
       votingQuorum,
       { from: protocolOwnerAddress }
     )
+
+    // Deploy DelegateManager contract
+    delegateManager = await DelegateManager.new(
+      token.address,
+      registry.address,
+      governance.address,
+      stakingProxyKey,
+      serviceProviderFactoryKey,
+      claimFactoryKey,
+      { from: protocolOwnerAddress }
+    )
+    await registry.addContract(delegateManagerKey, delegateManager.address, { from: protocolOwnerAddress })
   })
 
   describe('Slash proposal', async () => {

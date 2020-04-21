@@ -11,6 +11,8 @@ const versioningStorageKey = web3.utils.utf8ToHex('VersioningStorage')
 const versioningFactoryKey = web3.utils.utf8ToHex('VersioningFactory')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
+const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 
 
@@ -22,28 +24,21 @@ module.exports = (deployer, network, accounts) => {
     const versionerAddress = config.versionerAddress || accounts[0]
     const treasuryAddress = config.treasuryAddress || accounts[0]
 
-    await deployer.deploy(VersioningStorage, Registry.address, { from: treasuryAddress })
-    await registry.addContract(versioningStorageKey, VersioningStorage.address, { from: treasuryAddress })
-    await deployer.deploy(VersioningFactory, Registry.address, versioningStorageKey, versionerAddress, { from: treasuryAddress })
-    await registry.addContract(versioningFactoryKey, VersioningFactory.address, { from: treasuryAddress })
+    await deployer.deploy(VersioningStorage, Registry.address)
+    await registry.addContract(versioningStorageKey, VersioningStorage.address)
+    await deployer.deploy(VersioningFactory, Registry.address, versioningStorageKey, versionerAddress)
+    await registry.addContract(versioningFactoryKey, VersioningFactory.address)
 
-    await deployer.deploy(ServiceProviderStorage, Registry.address, { from: treasuryAddress })
-    await registry.addContract(serviceProviderStorageKey, ServiceProviderStorage.address, { from: treasuryAddress })
+    await deployer.deploy(ServiceProviderStorage, Registry.address)
+    await registry.addContract(serviceProviderStorageKey, ServiceProviderStorage.address)
 
     const serviceProviderFactory = await deployer.deploy(
       ServiceProviderFactory,
       Registry.address,
       stakingProxyKey,
-      serviceProviderStorageKey,
-      { from: treasuryAddress }
-    )
+      delegateManagerKey,
+      serviceProviderStorageKey)
 
-    await registry.addContract(serviceProviderFactoryKey, ServiceProviderFactory.address, { from: treasuryAddress })
-
-    const stakingProxyAddress = await registry.getContract.call(stakingProxyKey)
-
-    // Set owner of staking contract to ServiceProviderFactory
-    const staking = await Staking.at(stakingProxyAddress)
-    await staking.setStakingOwnerAddress(serviceProviderFactory.address, { from: treasuryAddress })
+    await registry.addContract(serviceProviderFactoryKey, ServiceProviderFactory.address)
   })
 }

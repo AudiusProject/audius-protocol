@@ -9,6 +9,18 @@ const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const Staking = artifacts.require('Staking')
 const DelegateManager = artifacts.require('DelegateManager')
 const ClaimFactory = artifacts.require('ClaimFactory')
+const MockGovernance = artifacts.require('MockGovernance')
+
+const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
+const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
+const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
+const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
+
+const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
+const testEndpoint = 'https://localhost:5000'
+const testEndpoint1 = 'https://localhost:5001'
+const testEndpoint3 = 'https://localhost:5002'
 
 const fromBn = n => parseInt(n.valueOf(), 10)
 const toWei = (aud) => {
@@ -25,27 +37,17 @@ const fromWei = (wei) => {
   return web3.utils.fromWei(wei)
 }
 
-const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
-const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
-const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
-const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
-
-const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
-const testEndpoint = 'https://localhost:5000'
-const testEndpoint1 = 'https://localhost:5001'
-const testEndpoint3 = 'https://localhost:5002'
-
 // 1000 AUD converted to AUDWei, multiplying by 10^18
 const INITIAL_BAL = toWei(1000)
 const DEFAULT_AMOUNT = toWei(120)
 
 contract('DelegateManager', async (accounts) => {
-  let proxy, staking0, staking, stakingAddress, token, registry, serviceProviderStorage, serviceProviderFactory, claimFactory, delegateManager
-  
+  let proxy, staking0, staking, stakingAddress, token, registry
+  let serviceProviderStorage, serviceProviderFactory, claimFactory, delegateManager, mockGovernance
   const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
   const stakerAccount = accounts[10]
-  const delegatorAccount1 = accounts[11]
   const stakerAccount2 = accounts[12]
+  const delegatorAccount1 = accounts[11]
   const slasherAccount = stakerAccount
 
   beforeEach(async () => {
@@ -56,19 +58,28 @@ contract('DelegateManager', async (accounts) => {
     staking0 = await Staking.new({ from: proxyAdminAddress })
     const stakingInitializeData = encodeCall(
       'initialize',
-      ['address', 'address'],
-      [token.address, treasuryAddress]
+      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [
+        token.address,
+        treasuryAddress,
+        registry.address,
+        claimFactoryKey,
+        delegateManagerKey,
+        serviceProviderFactoryKey
+      ]
     )
+
     proxy = await AdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
       { from: proxyDeployerAddress }
     )
+
     staking = await Staking.at(proxy.address)
     await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
     stakingAddress = staking.address
-    
+
     // Deploy sp storage
     serviceProviderStorage = await ServiceProviderStorage.new(registry.address)
     await registry.addContract(serviceProviderStorageKey, serviceProviderStorage.address)
@@ -77,13 +88,10 @@ contract('DelegateManager', async (accounts) => {
     serviceProviderFactory = await ServiceProviderFactory.new(
       registry.address,
       stakingProxyKey,
+      delegateManagerKey,
       serviceProviderStorageKey)
 
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)
-
-    // Permission sp factory as caller, from the proxy owner address
-    // (which happens to equal treasury in this test case)
-    await staking.setStakingOwnerAddress(serviceProviderFactory.address, { from: treasuryAddress })
 
     // Create new claim factory instance
     claimFactory = await ClaimFactory.new(
@@ -91,19 +99,28 @@ contract('DelegateManager', async (accounts) => {
       registry.address,
       stakingProxyKey,
       serviceProviderFactoryKey,
-      { from: treasuryAddress })
+      delegateManagerKey,
+      { from: accounts[0] })
 
     await registry.addContract(claimFactoryKey, claimFactory.address)
 
     // Register new contract as a minter, from the same address that deployed the contract
     await token.addMinter(claimFactory.address, { from: treasuryAddress })
 
+    mockGovernance = await MockGovernance.new(
+      registry.address,
+      delegateManagerKey,
+      { from: accounts[0] })
+
     delegateManager = await DelegateManager.new(
       token.address,
       registry.address,
+      mockGovernance.address,
       stakingProxyKey,
       serviceProviderFactoryKey,
       claimFactoryKey)
+
+    await registry.addContract(delegateManagerKey, delegateManager.address)
   })
 
   /* Helper functions */
@@ -448,7 +465,8 @@ contract('DelegateManager', async (accounts) => {
       let slashAmount = (totalInStakingContract.mul(slashNumerator)).div(slashDenominator)
 
       // Perform slash functions
-      await delegateManager.slash(slashAmount, slasherAccount)
+      // Called from mockGovernance
+      await mockGovernance.testSlash(slashAmount, slasherAccount)
 
       // Summarize after execution
       let spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
@@ -648,7 +666,8 @@ contract('DelegateManager', async (accounts) => {
         'Initial delegate amount not found')
 
       // Perform slash functions
-      await delegateManager.slash(slashAmount, slasherAccount)
+      // Called from mockGovernance
+      await mockGovernance.testSlash(slashAmount, slasherAccount)
 
       let postRewardInfo = await getAccountStakeInfo(stakerAccount, false)
 
@@ -782,7 +801,8 @@ contract('DelegateManager', async (accounts) => {
       let slashAmount = (preSlashInfo.spFactoryStake).sub(diffAmount)
 
       // Perform slash functions
-      await delegateManager.slash(slashAmount, slasherAccount)
+      // Called from mockGovernance
+      await mockGovernance.testSlash(slashAmount, slasherAccount)
 
       let isWithinBounds = await serviceProviderFactory.isServiceProviderWithinBounds(slasherAccount)
       assert.isFalse(

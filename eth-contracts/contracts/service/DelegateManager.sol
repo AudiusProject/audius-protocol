@@ -18,6 +18,7 @@ contract DelegateManager is RegistryContract {
 
     address tokenAddress;
     address stakingAddress;
+    address governanceAddress;
 
     bytes32 stakingProxyOwnerKey;
     bytes32 serviceProviderFactoryKey;
@@ -89,6 +90,7 @@ contract DelegateManager is RegistryContract {
     constructor(
       address _tokenAddress,
       address _registryAddress,
+      address _governanceAddress,
       bytes32 _stakingProxyOwnerKey,
       bytes32 _serviceProviderFactoryKey,
       bytes32 _claimFactoryKey
@@ -96,6 +98,7 @@ contract DelegateManager is RegistryContract {
         tokenAddress = _tokenAddress;
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
+        governanceAddress = _governanceAddress;
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
         claimFactoryKey = _claimFactoryKey;
@@ -394,10 +397,10 @@ contract DelegateManager is RegistryContract {
         spFactory.updateServiceProviderStake(msg.sender, newSpBalance);
     }
 
-    // TODO: Permission to governance contract only
     function slash(uint _amount, address _slashAddress)
     external
     {
+        require(msg.sender == governanceAddress, "Slash only callable from governance contract");
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );

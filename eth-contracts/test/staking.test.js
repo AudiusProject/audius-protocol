@@ -1,12 +1,17 @@
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('./encodeCall')
-
+const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
+const MockStakingCaller = artifacts.require('MockStakingCaller')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
 const getTokenBalance = async (token, account) => fromBn(await token.balanceOf(account))
+
+const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
+const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 
 const toWei = (aud) => {
   let amountInAudWei = web3.utils.toWei(
@@ -21,10 +26,11 @@ const toWei = (aud) => {
 const DEFAULT_AMOUNT = toWei(120)
 
 contract('Staking test', async (accounts) => {
+  let registry
+  let mockStakingCaller
   let token, staking0, stakingInitializeData, proxy, staking, stakingAddress
-  
+
   const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
-  const stakingOwnerAddress = accounts[9] // Dummy stand in for sp factory in actual deployment
 
   const EMPTY_STRING = ''
 
@@ -32,11 +38,10 @@ contract('Staking test', async (accounts) => {
     // allow Staking app to move owner tokens
     await token.approve(stakingAddress, amount, { from: staker })
     // stake tokens
-    await staking.stakeFor(
+    await mockStakingCaller.stakeFor(
       staker,
       amount,
-      web3.utils.utf8ToHex(EMPTY_STRING),
-      { from: stakingOwnerAddress })
+      web3.utils.utf8ToHex(EMPTY_STRING))
   }
 
   const getStakedAmountForAcct = async (acct) => {
@@ -46,7 +51,7 @@ contract('Staking test', async (accounts) => {
   }
 
   const slashAccount = async (amount, slashAddr, slasherAddress) => {
-    return await staking.slash(
+    return mockStakingCaller.slash(
       amount,
       slashAddr,
       { from: slasherAddress })
@@ -54,11 +59,21 @@ contract('Staking test', async (accounts) => {
 
   beforeEach(async () => {
     token = await AudiusToken.new({ from: treasuryAddress })
+    registry = await Registry.new()
+
+    // Create initialization data
     staking0 = await Staking.new({ from: proxyAdminAddress })
     stakingInitializeData = encodeCall(
       'initialize',
-      ['address', 'address'],
-      [token.address, treasuryAddress]
+      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [
+        token.address,
+        treasuryAddress,
+        registry.address,
+        claimFactoryKey,
+        delegateManagerKey,
+        serviceProviderFactoryKey
+      ]
     )
 
     proxy = await AdminUpgradeabilityProxy.new(
@@ -68,10 +83,14 @@ contract('Staking test', async (accounts) => {
       { from: proxyDeployerAddress }
     )
 
+    // Register mock contract as claimFactory, spFactory, delegateManager
+    mockStakingCaller = await MockStakingCaller.new(proxy.address, token.address)
+    await registry.addContract(claimFactoryKey, mockStakingCaller.address)
+    await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
+    await registry.addContract(delegateManagerKey, mockStakingCaller.address)
+
     // Permission test address as caller
     staking = await Staking.at(proxy.address)
-    await staking.setStakingOwnerAddress(stakingOwnerAddress, { from: treasuryAddress })
-
     stakingAddress = staking.address
   })
 
@@ -82,13 +101,24 @@ contract('Staking test', async (accounts) => {
   })
 
   it('fails staking 0 amount', async () => {
+    let staker = accounts[1]
     await token.approve(stakingAddress, 1)
-    await _lib.assertRevert(staking.stake(0, web3.utils.utf8ToHex(EMPTY_STRING)))
+    await _lib.assertRevert(
+      mockStakingCaller.stakeFor(
+        staker,
+        0,
+        web3.utils.utf8ToHex(EMPTY_STRING)
+      ))
   })
 
   it('fails unstaking more than staked', async () => {
     await approveAndStake(DEFAULT_AMOUNT, treasuryAddress)
-    await _lib.assertRevert(staking.unstake(DEFAULT_AMOUNT + 1, web3.utils.utf8ToHex(EMPTY_STRING)))
+    await _lib.assertRevert(
+      mockStakingCaller.unstakeFor(
+        treasuryAddress,
+        DEFAULT_AMOUNT + 1,
+        web3.utils.utf8ToHex(EMPTY_STRING)
+      ))
   })
 
   it('fails staking with insufficient balance', async () => {
@@ -107,11 +137,10 @@ contract('Staking test', async (accounts) => {
     await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: staker })
 
     // stake tokens
-    let tx = await staking.stakeFor(
+    await mockStakingCaller.stakeFor(
       staker,
       DEFAULT_AMOUNT,
-      web3.utils.utf8ToHex(EMPTY_STRING),
-      { from: stakingOwnerAddress })
+      web3.utils.utf8ToHex(EMPTY_STRING))
 
     let finalTotalStaked = parseInt(await staking.totalStaked())
     assert.equal(
@@ -144,10 +173,10 @@ contract('Staking test', async (accounts) => {
     assert.equal((await staking.totalStaked()).toString(), DEFAULT_AMOUNT, 'Total stake should match')
 
     // Unstake default amount
-    await staking.unstake(
+    await mockStakingCaller.unstakeFor(
+      staker,
       DEFAULT_AMOUNT,
-      web3.utils.utf8ToHex(EMPTY_STRING),
-      { from: staker }
+      web3.utils.utf8ToHex(EMPTY_STRING)
     )
 
     const finalOwnerBalance = await getTokenBalance(token, staker)
@@ -248,11 +277,11 @@ contract('Staking test', async (accounts) => {
     // allow Staking app to move owner tokens
     let sp1Rewards = FIRST_CLAIM_FUND.div(web3.utils.toBN(2))
     let sp2Rewards = sp1Rewards
-    await token.approve(stakingAddress, sp1Rewards, { from: funderAccount })
-    let receipt = await staking.stakeRewards(sp1Rewards, spAccount1, { from: funderAccount })
+    await token.approve(mockStakingCaller.address, sp1Rewards, { from: funderAccount })
+    let receipt = await mockStakingCaller.stakeRewards(sp1Rewards, spAccount1, { from: funderAccount })
 
-    await token.approve(stakingAddress, sp2Rewards, { from: funderAccount })
-    receipt = await staking.stakeRewards(sp2Rewards, spAccount2, { from: funderAccount })
+    await token.approve(mockStakingCaller.address, sp2Rewards, { from: funderAccount })
+    receipt = await mockStakingCaller.stakeRewards(sp2Rewards, spAccount2, { from: funderAccount })
 
     // Initial val should be first claim fund / 2
     let expectedValueAfterFirstFund = DEFAULT_AMOUNT.add(sp1Rewards)

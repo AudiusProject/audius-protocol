@@ -1,12 +1,18 @@
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('./encodeCall')
 
+const Registry = artifacts.require('Registry')
+const TestContract = artifacts.require('TestContract')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const StakingUpgraded = artifacts.require('StakingUpgraded')
 const AudiusToken = artifacts.require('AudiusToken')
+const MockStakingCaller = artifacts.require('MockStakingCaller')
 
-const fromBn = n => parseInt(n.valueOf(), 10)
+// Registry keys
+const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
+const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 
 const toWei = (aud) => {
   let amountInAudWei = web3.utils.toWei(
@@ -19,13 +25,18 @@ const toWei = (aud) => {
 }
 
 const DEFAULT_AMOUNT = toWei(120)
-
 contract('Upgrade proxy test', async (accounts) => {
-  // let staking, stakingUpgraded, stakingInitializeData, token, proxy, stakingInstance
-  let token, staking0, stakingInitializeData, proxy, stakingUpgraded, staking
+  let testStakingCallerAddress = accounts[6] // Dummy stand in for sp factory in actual deployment
+  let proxy
+  let token
+  let staking0
+  let staking
+  let stakingUpgraded
+  let stakingInitializeData
+  let mockStakingCaller
+  let registry
 
   const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
-  const stakingOwnerAddress = accounts[9] // Dummy stand in for sp factory in actual deployment
 
   const approveAndStake = async (amount, staker, staking) => {
     // Transfer default tokens to
@@ -33,27 +44,34 @@ contract('Upgrade proxy test', async (accounts) => {
     // allow Staking app to move owner tokens
     await token.approve(staking.address, amount, { from: staker })
     // stake tokens
-    await staking.stakeFor(
+    await mockStakingCaller.stakeFor(
       staker,
       amount,
-      web3.utils.utf8ToHex(''),
-      { from: stakingOwnerAddress }
-    )
+      web3.utils.utf8ToHex(''))
   }
 
-  beforeEach(async function () {
-    token = await AudiusToken.new({ from: treasuryAddress })
+  beforeEach(async () => {
+    token = await AudiusToken.new({ from: accounts[0] })
+    registry = await Registry.new()
+
     staking0 = await Staking.new({ from: proxyAdminAddress })
     stakingUpgraded = await StakingUpgraded.new({ from: proxyAdminAddress })
     assert.notEqual(staking0.address, stakingUpgraded.address)
+
+    // Create initialization data
     stakingInitializeData = encodeCall(
       'initialize',
-      ['address', 'address'],
-      [token.address, treasuryAddress]
+      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [
+        token.address,
+        treasuryAddress,
+        registry.address,
+        claimFactoryKey,
+        delegateManagerKey,
+        serviceProviderFactoryKey
+      ]
     )
-  })
 
-  it('deploy proxy', async () => {
     proxy = await AdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
@@ -61,33 +79,26 @@ contract('Upgrade proxy test', async (accounts) => {
       { from: proxyDeployerAddress }
     )
 
+    // Register mock contract as claimFactory, spFactory, delegateManager
+    mockStakingCaller = await MockStakingCaller.new(proxy.address, token.address)
+    await registry.addContract(claimFactoryKey, mockStakingCaller.address)
+    await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
+    await registry.addContract(delegateManagerKey, mockStakingCaller.address)
+  })
+
+  it('Deployed proxy state', async () => {
     staking = await Staking.at(proxy.address)
     const totalStaked = await staking.totalStaked.call({ from: proxyDeployerAddress })
-    assert.equal(fromBn(totalStaked), 0)
-
+    assert.equal(totalStaked, 0)
     assert.equal(await proxy.implementation.call({ from: proxyAdminAddress }), staking0.address)
   })
 
   it('fail to call newFunction before upgrade', async () => {
-    proxy = await AdminUpgradeabilityProxy.new(
-      staking0.address,
-      proxyAdminAddress,
-      stakingInitializeData,
-      { from: proxyDeployerAddress }
-    )
-
     staking = await StakingUpgraded.at(proxy.address)
     await _lib.assertRevert(staking.newFunction.call({ from: proxyDeployerAddress }))
   })
 
   it('upgrade proxy to StakingUpgraded + call newFunction()', async () => {
-    proxy = await AdminUpgradeabilityProxy.new(
-      staking0.address,
-      proxyAdminAddress,
-      stakingInitializeData,
-      { from: proxyDeployerAddress }
-    )
-
     // assert proxy.newFunction() not callable before upgrade
     staking = await StakingUpgraded.at(proxy.address)
     await _lib.assertRevert(staking.newFunction.call({ from: proxyDeployerAddress }))
@@ -110,16 +121,8 @@ contract('Upgrade proxy test', async (accounts) => {
       await token.transfer(spAccount1, 1000, { from: treasuryAddress })
       await token.transfer(spAccount2, 1000, { from: treasuryAddress })
 
-      proxy = await AdminUpgradeabilityProxy.new(
-        staking0.address,
-        proxyAdminAddress,
-        stakingInitializeData,
-        { from: proxyDeployerAddress }
-      )
-
       // Permission test address as caller
       staking = await Staking.at(proxy.address)
-      await staking.setStakingOwnerAddress(stakingOwnerAddress, { from: treasuryAddress })
     })
 
     it('upgrade and confirm initial staking state at proxy', async () => {
