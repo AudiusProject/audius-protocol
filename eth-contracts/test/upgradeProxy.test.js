@@ -26,6 +26,7 @@ const toWei = (aud) => {
 const DEFAULT_AMOUNT = toWei(120)
 
 contract('Upgrade proxy test', async (accounts) => {
+  console.log('inn contract')
   let testStakingCallerAddress = accounts[6] // Dummy stand in for sp factory in actual deployment
   let proxyOwner = treasuryAddress
   let proxy
