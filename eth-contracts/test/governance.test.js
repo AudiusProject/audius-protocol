@@ -30,7 +30,7 @@ const audToWei = (aud) => {
   )
 }
 
-const  bigNumberify = (num) => {
+const bigNumberify = (num) => {
   return ethers.utils.bigNumberify(new BigNum(num).toFixed());
 }
 
@@ -61,7 +61,8 @@ const Vote = Object.freeze({
 })
 
 contract('Governance.sol', async (accounts) => {
-  let token, registry, staking0, staking, proxy, serviceProviderStorage, serviceProviderFactory, claimFactory, delegateManager, governance
+  let token, registry, staking0, staking, proxy
+  let serviceProviderStorage, serviceProviderFactory, claimFactory, delegateManager, governance
 
   const votingPeriod = 10
   const votingQuorum = 1
@@ -96,32 +97,21 @@ contract('Governance.sol', async (accounts) => {
     token = await AudiusToken.new({ from: treasuryAddress })
     registry = await Registry.new({ from: treasuryAddress })
 
-<<<<<<< HEAD
-    tokenContract = await AudiusToken.new({ from: protocolOwnerAddress })
-
-    const stakingContract0 = await Staking.new({ from: protocolOwnerAddress })
     // Create initialization data
-    // Create initialization data
-    let initializeData = encodeCall(
+    let stakingInitializeData = encodeCall(
       'initialize',
       ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [
-        tokenContract.address,
+        token.address,
         treasuryAddress,
-        registryContract.address,
+        registry.address,
         claimFactoryKey,
         delegateManagerKey,
         serviceProviderFactoryKey
       ]
-=======
+    )
     // Set up staking
     staking0 = await Staking.new({ from: proxyAdminAddress })
-    const stakingInitializeData = encodeCall(
-      'initialize',
-      ['address', 'address'],
-      [token.address, treasuryAddress]
->>>>>>> mainnet
-    )
     proxy = await AdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
@@ -130,32 +120,20 @@ contract('Governance.sol', async (accounts) => {
     )
     staking = await Staking.at(proxy.address)
     await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
-    
+
     // Deploy + Registery ServiceProviderStorage contract
     serviceProviderStorage = await ServiceProviderStorage.new(registry.address, { from: protocolOwnerAddress })
     await registry.addContract(serviceProviderStorageKey, serviceProviderStorage.address, { from: protocolOwnerAddress })
 
     // Deploy + Register ServiceProviderFactory contract
-<<<<<<< HEAD
-    serviceProviderFactoryContract = await ServiceProviderFactory.new(
-      registryContract.address,
-      ownedUpgradeabilityProxyKey,
-      delegateManagerKey,
-=======
     serviceProviderFactory = await ServiceProviderFactory.new(
       registry.address,
       stakingProxyKey,
->>>>>>> mainnet
+      delegateManagerKey,
       serviceProviderStorageKey
     )
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address, { from: protocolOwnerAddress })
 
-<<<<<<< HEAD
-=======
-    // Permission sp factory as caller, from the treasuryAddress, which is proxy owner
-    await staking.setStakingOwnerAddress(serviceProviderFactory.address, { from: protocolOwnerAddress })
-
->>>>>>> mainnet
     // Deploy + Register ClaimFactory contract
     claimFactory = await ClaimFactory.new(
       token.address,
@@ -171,37 +149,6 @@ contract('Governance.sol', async (accounts) => {
     await token.addMinter(claimFactory.address, { from: protocolOwnerAddress })
 
     // Deploy Governance contract
-    governanceContract = await Governance.new(
-      registryContract.address,
-      ownedUpgradeabilityProxyKey,
-      votingPeriod,
-      votingQuorum,
-      { from: protocolOwnerAddress }
-    )
-
-    // Deploy DelegateManager contract
-<<<<<<< HEAD
-    delegateManagerContract = await DelegateManager.new(
-      tokenContract.address,
-      registryContract.address,
-      governanceContract.address,
-      ownedUpgradeabilityProxyKey,
-=======
-    delegateManager = await DelegateManager.new(
-      token.address,
-      registry.address,
-      stakingProxyKey,
->>>>>>> mainnet
-      serviceProviderFactoryKey,
-      claimFactoryKey,
-      { from: protocolOwnerAddress }
-    )
-<<<<<<< HEAD
-    await registryContract.addContract(delegateManagerKey, delegateManagerContract.address, { from: protocolOwnerAddress })
-=======
-    await registry.addContract(delegateManagerKey, delegateManager.address, { from: protocolOwnerAddress })
-
-    // Deploy Governance contract
     governance = await Governance.new(
       registry.address,
       stakingProxyKey,
@@ -209,23 +156,27 @@ contract('Governance.sol', async (accounts) => {
       votingQuorum,
       { from: protocolOwnerAddress }
     )
->>>>>>> mainnet
+
+    // Deploy DelegateManager contract
+    delegateManager = await DelegateManager.new(
+      token.address,
+      registry.address,
+      governance.address,
+      stakingProxyKey,
+      serviceProviderFactoryKey,
+      claimFactoryKey,
+      { from: protocolOwnerAddress }
+    )
+    await registry.addContract(delegateManagerKey, delegateManager.address, { from: protocolOwnerAddress })
   })
 
   describe('Slash proposal', async () => {
     const defaultStakeAmount = audToWei(1000)
     const proposalDescription = "TestDescription"
-<<<<<<< HEAD
-    const stakerAccount1 = accounts[1]
-    const stakerAccount2 = accounts[2]
-    const delegatorAccount1 = accounts[3]
-
-=======
     const stakerAccount1 = accounts[10]
     const stakerAccount2 = accounts[11]
     const delegatorAccount1 = accounts[12]
     
->>>>>>> mainnet
     beforeEach(async () => {
       // Transfer 1000 tokens to stakerAccount1, stakerAccount2, and delegatorAccount1
       await token.transfer(stakerAccount1, defaultStakeAmount, { from: treasuryAddress })
