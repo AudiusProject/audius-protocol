@@ -1,15 +1,15 @@
 const abi = require('ethereumjs-abi')
 const contractConfig = require('../contract-config.js')
 
-const Staking = artifacts.require('Staking')
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
-const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
+const Staking = artifacts.require('Staking')
+const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 
-const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
 const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
+const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 
 function encodeCall (name, args, values) {
   const methodId = abi.methodID(name, args).toString('hex')
@@ -19,22 +19,18 @@ function encodeCall (name, args, values) {
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
-    let registry = await Registry.deployed()
-    // const networkId = Registry.network_id
     const config = contractConfig[network]
-    const treasuryAddress = config.treasuryAddress || accounts[0]
-
+    const registry = await Registry.deployed()
     const token = await AudiusToken.deployed()
-    let staking = await deployer.deploy(Staking)
-    let ownedUpgradeabilityProxy = await deployer.deploy(OwnedUpgradeabilityProxy)
 
-    // Register proxy for access by service provider factory
-    await registry.addContract(
-      ownedUpgradeabilityProxyKey,
-      ownedUpgradeabilityProxy.address)
+    const treasuryAddress = config.treasuryAddress || accounts[0]
+    // TODO move to contractConfig
+    const [proxyAdminAddress, proxyDeployerAddress] = [accounts[10], accounts[11]]
+
+    const staking0 = await deployer.deploy(Staking, { from: proxyAdminAddress })
 
     // Encode data for the call to initialize
-    let initializeData = encodeCall(
+    const initializeCallData = encodeCall(
       'initialize',
       [
         'address',
@@ -53,12 +49,17 @@ module.exports = (deployer, network, accounts) => {
         serviceProviderFactoryKey
       ])
 
-    let contractDeployer = accounts[0]
+    const stakingProxy = await deployer.deploy(AdminUpgradeabilityProxy,
+      staking0.address,
+      proxyAdminAddress,
+      initializeCallData,
+      { from: proxyDeployerAddress }
+    )
 
-    // Initialize staking proxy
-    await ownedUpgradeabilityProxy.upgradeToAndCall(
-      staking.address,
-      initializeData,
-      { from: contractDeployer })
+    await registry.addContract(
+      stakingProxyKey,
+      stakingProxy.address,
+      { from: treasuryAddress }
+    )
   })
 }

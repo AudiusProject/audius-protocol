@@ -6,7 +6,6 @@ const VersioningFactory = artifacts.require('VersioningFactory')
 const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const Staking = artifacts.require('Staking')
-const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
 
 const versioningStorageKey = web3.utils.utf8ToHex('VersioningStorage')
 const versioningFactoryKey = web3.utils.utf8ToHex('VersioningFactory')
@@ -14,18 +13,16 @@ const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
+const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 
-const AudiusToken = artifacts.require('AudiusToken')
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
-    let registry = await Registry.deployed()
-    const networkId = Registry.network_id
     const config = contractConfig[network]
+    const registry = await Registry.deployed()
 
     const versionerAddress = config.versionerAddress || accounts[0]
     const treasuryAddress = config.treasuryAddress || accounts[0]
-    const tokenAddress = AudiusToken.address
 
     await deployer.deploy(VersioningStorage, Registry.address)
     await registry.addContract(versioningStorageKey, VersioningStorage.address)
@@ -35,10 +32,10 @@ module.exports = (deployer, network, accounts) => {
     await deployer.deploy(ServiceProviderStorage, Registry.address)
     await registry.addContract(serviceProviderStorageKey, ServiceProviderStorage.address)
 
-    let serviceProviderFactory = await deployer.deploy(
+    const serviceProviderFactory = await deployer.deploy(
       ServiceProviderFactory,
       Registry.address,
-      ownedUpgradeabilityProxyKey,
+      stakingProxyKey,
       delegateManagerKey,
       serviceProviderStorageKey)
 

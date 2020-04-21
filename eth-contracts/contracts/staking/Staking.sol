@@ -2,19 +2,19 @@ pragma solidity ^0.5.0;
 
 import "./ERCStaking.sol";
 import "./Checkpointing.sol";
-
-import "./res/Autopetrified.sol";
-import "./res/IsContract.sol";
-
 import "../service/interface/registry/RegistryInterface.sol";
-
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
+import "../res/IsContract.sol";
+import "../res/openzeppelin/Initializable.sol";
+import "../res/TimeHelpers.sol";
+import "../service/registry/RegistryContract.sol";
 
 
-contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
+/** NOTE - will call RegistryContract.constructor */
+contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHistory, IsContract, TimeHelpers {
     using SafeMath for uint256;
     using Checkpointing for Checkpointing.History;
     using SafeERC20 for ERC20;
@@ -68,7 +68,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
       bytes32 _claimFactoryKey,
       bytes32 _delegateManagerKey,
       bytes32 _serviceProviderFactoryKey
-    ) external onlyInit {
+    ) public initializer {
         require(isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         stakingToken = ERC20(_stakingToken);
         registry = RegistryInterface(_registryAddress);
@@ -77,7 +77,6 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         claimFactoryKey = _claimFactoryKey;
         delegateManagerKey = _delegateManagerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
-        initialized();
     }
 
     /* External functions */
@@ -87,12 +86,11 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      */
     function stakeRewards(uint256 _amount, address _stakerAccount) external isInitialized {
         require(msg.sender == registry.getContract(claimFactoryKey), "Only callable from ClaimFactory");
-
         _stakeFor(
             _stakerAccount,
             msg.sender,
             _amount,
-            bytes('')); // TODO: RM bytes requirement if unused
+            bytes("")); // TODO: RM bytes requirement if unused
 
         // Update claim history even if no value claimed
         accounts[_stakerAccount].claimHistory.add64(getBlockNumber64(), _amount);
@@ -251,7 +249,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @param _blockNumber Block number at which we are requesting
      * @return The amount of tokens staked by the account at the given block number
      */
-    function totalStakedForAt(address _accountAddress, uint256 _blockNumber) external view returns (uint256) {
+    function totalStakedForAt(address _accountAddress, uint256 _blockNumber) external view isInitialized returns (uint256) {
         return accounts[_accountAddress].stakedHistory.get(_blockNumber);
     }
 
@@ -260,7 +258,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @param _blockNumber Block number at which we are requesting
      * @return The amount of tokens staked at the given block number
      */
-    function totalStakedAt(uint256 _blockNumber) external view returns (uint256) {
+    function totalStakedAt(uint256 _blockNumber) external view isInitialized returns (uint256) {
         return totalStakedHistory.get(_blockNumber);
     }
 
@@ -271,7 +269,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @param _accountAddress The owner of the tokens
      * @return The amount of tokens staked by the given account
      */
-    function totalStakedFor(address _accountAddress) public view returns (uint256) {
+    function totalStakedFor(address _accountAddress) public view isInitialized returns (uint256) {
         // we assume it's not possible to stake in the future
         return accounts[_accountAddress].stakedHistory.getLatestValue();
     }
@@ -280,7 +278,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
      * @notice Get the total amount of tokens staked by all users
      * @return The total amount of tokens staked by all users
      */
-    function totalStaked() public view returns (uint256) {
+    function totalStaked() public view isInitialized returns (uint256) {
         // we assume it's not possible to stake in the future
         return totalStakedHistory.getLatestValue();
     }
@@ -291,7 +289,8 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         address _stakeAccount,
         address _transferAccount,
         uint256 _amount,
-        bytes memory _data) internal
+        bytes memory _data
+    ) internal isInitialized
     {
         // staking 0 tokens is invalid
         require(_amount > 0, ERROR_AMOUNT_ZERO);
@@ -317,7 +316,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         address _transferAccount,
         uint256 _amount,
         bytes memory _data
-    ) internal
+    ) internal isInitialized
     {
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
@@ -338,7 +337,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         );
     }
 
-    function _burnFor(address _stakeAccount, uint256 _amount) internal {
+    function _burnFor(address _stakeAccount, uint256 _amount) internal isInitialized {
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
         // checkpoint updated staking balance
@@ -353,7 +352,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         /** No event emitted since token.burn() call already emits a Transfer event */
     }
 
-    function _modifyStakeBalance(address _accountAddress, uint256 _by, bool _increase) internal {
+    function _modifyStakeBalance(address _accountAddress, uint256 _by, bool _increase) internal isInitialized {
         uint256 currentInternalStake = accounts[_accountAddress].stakedHistory.getLatestValue();
 
         uint256 newStake;
@@ -370,7 +369,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         accounts[_accountAddress].stakedHistory.add64(getBlockNumber64(), newStake);
     }
 
-    function _modifyTotalStaked(uint256 _by, bool _increase) internal {
+    function _modifyTotalStaked(uint256 _by, bool _increase) internal isInitialized {
         uint256 currentStake = totalStaked();
 
         uint256 newStake;
@@ -384,7 +383,7 @@ contract Staking is Autopetrified, ERCStaking, ERCStakingHistory, IsContract {
         totalStakedHistory.add64(getBlockNumber64(), newStake);
     }
 
-    function _transfer(address _from, address _to, uint256 _amount) internal {
+    function _transfer(address _from, address _to, uint256 _amount) internal isInitialized {
         // transferring 0 staked tokens is invalid
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 

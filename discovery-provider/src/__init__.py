@@ -171,7 +171,8 @@ def create(test_config=None, mode="app"):
         return app
 
     if mode == "celery":
-        helpers.configure_logging(shared_config["discprov"]["loglevel_celery"])
+        # log level is defined via command line in docker yml files
+        helpers.configure_logging()
         configure_celery(app, celery_app.celery, test_config)
         return celery_app
 
@@ -275,6 +276,7 @@ def configure_celery(flask_app, celery, test_config=None):
 
     # Initialize DB object for celery task context
     db = SessionManager(database_url, engine_args_literal)
+    logger.info('Database instance initialized!')
 
     # Initialize IPFS client for celery task context
     gateway_addrs = shared_config["ipfs"]["gateway_hosts"].split(',')
@@ -289,6 +291,7 @@ def configure_celery(flask_app, celery, test_config=None):
 
     # Clear existing lock if present
     redis_inst.delete("disc_prov_lock")
+    logger.info('Redis instance initialized!')
 
     # Initialize custom task context with database object
     class DatabaseTask(Task):

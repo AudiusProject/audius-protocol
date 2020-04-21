@@ -1,38 +1,35 @@
 const AudiusToken = artifacts.require('AudiusToken')
-const ClaimFactory = artifacts.require('ClaimFactory')
-const OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy')
 const Registry = artifacts.require('Registry')
-const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
-const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const ClaimFactory = artifacts.require('ClaimFactory')
+
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
+const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
+const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
-    let proxy = await OwnedUpgradeabilityProxy.deployed()
-    let registry = await Registry.deployed()
+    const token = await AudiusToken.deployed()
+    const registry = await Registry.deployed()
+    const tokenDeployerAcct = accounts[0]
 
     // Deploy new ClaimFactory
-    await deployer.deploy(
+    let claimFactory = await deployer.deploy(
       ClaimFactory,
-      AudiusToken.address,
+      token.address,
       registry.address,
-      ownedUpgradeabilityProxyKey,
+      stakingProxyKey,
       serviceProviderFactoryKey,
       delegateManagerKey)
 
-    let claimFactory = await ClaimFactory.deployed()
+    claimFactory = await ClaimFactory.deployed()
 
-    // Register claimFactory
-    await registry.addContract(claimFactoryKey, claimFactory.address)
-
-    // Replace AudiusToken artifact with AudiusToken.at('0x...') if needed
-    let audiusToken = await AudiusToken.at(AudiusToken.address)
+    // Register ClaimFactory
+    await registry.addContract(claimFactoryKey, claimFactory.address, { from: accounts[0] })
 
     // Register ClaimFactory as minter
     // Note that by default this is called from accounts[0] in ganache
     // During an actual migration, this step should be run independently
-    let tokenDeployerAcct = accounts[0]
-    await audiusToken.addMinter(claimFactory.address, { from: tokenDeployerAcct })
+    await token.addMinter(claimFactory.address, { from: tokenDeployerAcct })
   })
 }
