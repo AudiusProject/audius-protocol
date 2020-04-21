@@ -1,10 +1,6 @@
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('./encodeCall')
-<<<<<<< HEAD
 const Registry = artifacts.require('Registry')
-=======
-
->>>>>>> mainnet
 const AudiusToken = artifacts.require('AudiusToken')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
@@ -30,27 +26,12 @@ const toWei = (aud) => {
 const DEFAULT_AMOUNT = toWei(120)
 
 contract('Staking test', async (accounts) => {
-<<<<<<< HEAD
-  let treasuryAddress = accounts[0]
-  let testStakingCallerAddress = accounts[6] // Dummy stand in for sp factory in actual deployment
-  let proxyOwner = treasuryAddress
-  let proxy
-  let impl0
-  let staking
-  let token
-  let stakingAddress
-  let tokenAddress
   let registry
   let mockStakingCaller
-
-  const DEFAULT_TREASURY_AMOUNT = DEFAULT_AMOUNT * 10
-=======
   let token, staking0, stakingInitializeData, proxy, staking, stakingAddress
-  
-  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
-  const stakingOwnerAddress = accounts[9] // Dummy stand in for sp factory in actual deployment
 
->>>>>>> mainnet
+  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+
   const EMPTY_STRING = ''
 
   const approveAndStake = async (amount, staker) => {
@@ -60,12 +41,7 @@ contract('Staking test', async (accounts) => {
     await mockStakingCaller.stakeFor(
       staker,
       amount,
-<<<<<<< HEAD
       web3.utils.utf8ToHex(EMPTY_STRING))
-=======
-      web3.utils.utf8ToHex(EMPTY_STRING),
-      { from: stakingOwnerAddress })
->>>>>>> mainnet
   }
 
   const getStakedAmountForAcct = async (acct) => {
@@ -83,23 +59,11 @@ contract('Staking test', async (accounts) => {
 
   beforeEach(async () => {
     token = await AudiusToken.new({ from: treasuryAddress })
-<<<<<<< HEAD
-    tokenAddress = token.address
     registry = await Registry.new()
 
-    // Register mock contract as claimFactory, spFactory, delegateManager
-    mockStakingCaller = await MockStakingCaller.new(proxy.address, tokenAddress)
-    await registry.addContract(claimFactoryKey, mockStakingCaller.address)
-    await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
-    await registry.addContract(delegateManagerKey, mockStakingCaller.address)
-
-    impl0 = await Staking.new()
     // Create initialization data
-    let initializeData = encodeCall(
-=======
     staking0 = await Staking.new({ from: proxyAdminAddress })
     stakingInitializeData = encodeCall(
->>>>>>> mainnet
       'initialize',
       ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [
@@ -119,10 +83,14 @@ contract('Staking test', async (accounts) => {
       { from: proxyDeployerAddress }
     )
 
+    // Register mock contract as claimFactory, spFactory, delegateManager
+    mockStakingCaller = await MockStakingCaller.new(proxy.address, token.address)
+    await registry.addContract(claimFactoryKey, mockStakingCaller.address)
+    await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
+    await registry.addContract(delegateManagerKey, mockStakingCaller.address)
+
     // Permission test address as caller
     staking = await Staking.at(proxy.address)
-    await staking.setStakingOwnerAddress(stakingOwnerAddress, { from: treasuryAddress })
-
     stakingAddress = staking.address
   })
 
@@ -172,12 +140,7 @@ contract('Staking test', async (accounts) => {
     await mockStakingCaller.stakeFor(
       staker,
       DEFAULT_AMOUNT,
-<<<<<<< HEAD
       web3.utils.utf8ToHex(EMPTY_STRING))
-=======
-      web3.utils.utf8ToHex(EMPTY_STRING),
-      { from: stakingOwnerAddress })
->>>>>>> mainnet
 
     let finalTotalStaked = parseInt(await staking.totalStaked())
     assert.equal(
