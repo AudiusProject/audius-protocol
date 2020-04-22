@@ -402,9 +402,9 @@ contract ServiceProviderFactory is RegistryContract {
       serviceTypeStakeRequirements[_serviceType].maxStake = _serviceTypeMax;
     }
 
-  /**
-   * @notice Update service provider balance
-   */
+    /**
+     * @notice Update service provider balance
+     */
     function updateServiceProviderStake(
         address _serviceProvider,
         uint _amount
@@ -419,10 +419,10 @@ contract ServiceProviderFactory is RegistryContract {
         updateServiceProviderBoundStatus(_serviceProvider);
     }
 
-  /**
-   * @notice Update service provider cut
-   * SPs will interact with this value as a percent, value translation done client side
-   */
+    /**
+     * @notice Update service provider cut
+     * SPs will interact with this value as a percent, value translation done client side
+     */
     function updateServiceProviderCut(
         address _serviceProvider,
         uint _cut
@@ -438,27 +438,27 @@ contract ServiceProviderFactory is RegistryContract {
         spDetails[_serviceProvider].deployerCut = _cut;
     }
 
-  /**
-   * @notice Represents amount directly staked by service provider
-   */
+    /**
+     * @notice Represents amount directly staked by service provider
+     */
     function getServiceProviderStake(address _address)
     external view returns (uint stake)
     {
         return spDetails[_address].deployerStake;
     }
 
-  /**
-   * @notice Represents % taken by sp deployer of rewards
-   */
+    /**
+     * @notice Represents % taken by sp deployer of rewards
+     */
     function getServiceProviderDeployerCut(address _address)
     external view returns (uint cut)
     {
         return spDetails[_address].deployerCut;
     }
 
-  /**
-   * @notice Denominator for deployer cut calculations
-   */
+    /**
+     * @notice Denominator for deployer cut calculations
+     */
     function getServiceProviderDeployerCutBase()
     external pure returns (uint base)
     {
