@@ -13,6 +13,7 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32 serviceProviderStorageRegistryKey;
     bytes32 stakingProxyOwnerKey;
     bytes32 delegateManagerKey;
+    bytes32 governanceKey;
     address deployerAddress;
 
     // START Temporary data structures
@@ -85,6 +86,7 @@ contract ServiceProviderFactory is RegistryContract {
       address _registryAddress,
       bytes32 _stakingProxyOwnerKey,
       bytes32 _delegateManagerKey,
+      bytes32 _governanceKey,
       bytes32 _serviceProviderStorageRegistryKey
     ) public
     {
@@ -96,6 +98,7 @@ contract ServiceProviderFactory is RegistryContract {
         registry = RegistryInterface(_registryAddress);
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         delegateManagerKey = _delegateManagerKey;
+        governanceKey = _governanceKey;
         serviceProviderStorageRegistryKey = _serviceProviderStorageRegistryKey;
 
         // Hardcoded values for development.
@@ -357,7 +360,9 @@ contract ServiceProviderFactory is RegistryContract {
         uint _serviceTypeMax
     ) external
     {
-      require(msg.sender == deployerAddress, "Only deployer or governance");
+      require(
+          msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
+          "Only deployer or governance");
       require(!this.isValidServiceType(_serviceType), "Already known service type");
       validServiceTypes.push(_serviceType);
       serviceTypeStakeRequirements[_serviceType] = ServiceInstanceStakeRequirements({
@@ -368,7 +373,9 @@ contract ServiceProviderFactory is RegistryContract {
 
     // TODO: Restrict to governance
     function removeServiceType(bytes32 _serviceType) external {
-      require(msg.sender == deployerAddress, "Only deployer or governance");
+      require(
+          msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
+          "Only deployer or governance");
       uint serviceIndex = 0;
       bool foundService = false;
       for (uint i = 0; i < validServiceTypes.length; i ++) {
@@ -391,7 +398,9 @@ contract ServiceProviderFactory is RegistryContract {
         uint _serviceTypeMin,
         uint _serviceTypeMax
     ) external {
-      require(msg.sender == deployerAddress, "Only deployer or governance");
+      require(
+          msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
+          "Only deployer or governance");
       require(this.isValidServiceType(_serviceType), "Invalid service type");
       serviceTypeStakeRequirements[_serviceType].minStake = _serviceTypeMin;
       serviceTypeStakeRequirements[_serviceType].maxStake = _serviceTypeMax;
