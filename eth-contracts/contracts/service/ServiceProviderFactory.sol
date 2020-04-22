@@ -1,11 +1,9 @@
 pragma solidity ^0.5.0;
 
 import "./registry/RegistryContract.sol";
-import "../staking/Staking.sol";
+import "../staking/ERCStaking.sol";
 import "./interface/registry/RegistryInterface.sol";
 import "./interface/ServiceProviderStorageInterface.sol";
-
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 
 contract ServiceProviderFactory is RegistryContract {
@@ -138,7 +136,7 @@ contract ServiceProviderFactory is RegistryContract {
             "Valid service type required");
 
         address owner = msg.sender;
-        Staking stakingContract = Staking(
+        ERCStaking stakingContract = ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
         );
 
@@ -193,11 +191,11 @@ contract ServiceProviderFactory is RegistryContract {
         bool unstaked = false;
         // owned by the user
         if (numberOfEndpoints == 1) {
-            unstakeAmount = Staking(
+            unstakeAmount = ERCStaking(
                 registry.getContract(stakingProxyOwnerKey)
             ).totalStakedFor(owner);
 
-            Staking(registry.getContract(stakingProxyOwnerKey)).unstakeFor(
+            ERCStaking(registry.getContract(stakingProxyOwnerKey)).unstakeFor(
                 owner,
                 unstakeAmount,
                 empty
@@ -244,11 +242,11 @@ contract ServiceProviderFactory is RegistryContract {
         require(numberOfEndpoints > 0, "Registered endpoint required to increase stake");
 
         // Stake increased token amount for msg.sender
-        Staking(
+        ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
         ).stakeFor(owner, _increaseStakeAmount, empty);
 
-        uint newStakeAmount = Staking(
+        uint newStakeAmount = ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(owner);
 
@@ -279,7 +277,7 @@ contract ServiceProviderFactory is RegistryContract {
         ).getNumberOfEndpointsFromAddress(owner);
         require(numberOfEndpoints > 0, "Registered endpoint required to decrease stake");
 
-        uint currentStakeAmount = Staking(
+        uint currentStakeAmount = ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(owner);
 
@@ -289,12 +287,12 @@ contract ServiceProviderFactory is RegistryContract {
             "Please deregister endpoints to remove all stake");
 
         // Decrease staked token amount for msg.sender
-        Staking(
+        ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
         ).unstakeFor(owner, _decreaseStakeAmount, empty);
 
         // Query current stake
-        uint newStakeAmount = Staking(
+        uint newStakeAmount = ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(owner);
 
@@ -398,8 +396,12 @@ contract ServiceProviderFactory is RegistryContract {
         uint _serviceTypeMin,
         uint _serviceTypeMax
     ) external {
+      address governance = registry.getContract(governanceKey);
       require(
-          msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
+          msg.sender == deployerAddress,
+          "Only deployer or governance");
+      require(
+          msg.sender == governance,
           "Only deployer or governance");
       require(this.isValidServiceType(_serviceType), "Invalid service type");
       serviceTypeStakeRequirements[_serviceType].minStake = _serviceTypeMin;
@@ -588,7 +590,7 @@ contract ServiceProviderFactory is RegistryContract {
     function validateAccountStakeBalance(address sp)
     external view returns (uint stakedForOwner)
     {
-        Staking stakingContract = Staking(
+        ERCStaking stakingContract = ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
         );
         uint currentlyStakedForOwner = stakingContract.totalStakedFor(sp);
@@ -609,7 +611,7 @@ contract ServiceProviderFactory is RegistryContract {
      * @notice Update service provider bound status
      */
     function updateServiceProviderBoundStatus(address _serviceProvider) internal {
-        Staking stakingContract = Staking(
+        ERCStaking stakingContract = ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
         );
         // Validate bounds for total stake
