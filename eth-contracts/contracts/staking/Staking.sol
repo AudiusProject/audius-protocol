@@ -1,5 +1,7 @@
 pragma solidity ^0.5.0;
 
+import "@openzeppelin/upgrades/contracts/Initializable.sol";
+
 import "./ERCStaking.sol";
 import "./Checkpointing.sol";
 import "../service/interface/registry/RegistryInterface.sol";
@@ -8,13 +10,13 @@ import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
 import "../res/IsContract.sol";
-import "../res/openzeppelin/Initializable.sol";
+import "../InitializableHelpers.sol";
 import "../res/TimeHelpers.sol";
 import "../service/registry/RegistryContract.sol";
 
 
-/** NOTE - will call RegistryContract.constructor */
-contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHistory, IsContract, TimeHelpers {
+/** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
+contract Staking is Initializable, InitializableHelpers, RegistryContract, ERCStaking, ERCStakingHistory, IsContract, TimeHelpers {
     using SafeMath for uint256;
     using Checkpointing for Checkpointing.History;
     using SafeERC20 for ERC20;
@@ -60,25 +62,6 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
     );
 
     event Slashed(address indexed user, uint256 amount, uint256 total);
-
-    function initialize(
-      address _stakingToken,
-      address _treasuryAddress,
-      address _registryAddress,
-      bytes32 _claimFactoryKey,
-      bytes32 _delegateManagerKey,
-      bytes32 _serviceProviderFactoryKey
-    ) public initializer
-    {
-        require(isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
-        stakingToken = ERC20(_stakingToken);
-        registry = RegistryInterface(_registryAddress);
-        treasuryAddress = _treasuryAddress;
-        registryAddress = _registryAddress;
-        claimFactoryKey = _claimFactoryKey;
-        delegateManagerKey = _delegateManagerKey;
-        serviceProviderFactoryKey = _serviceProviderFactoryKey;
-    }
 
     /* External functions */
 
@@ -132,7 +115,12 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @param _amount Number of tokens staked
      * @param _data Used in Staked event, to add signalling information in more complex staking applications
      */
-    function stakeFor(address _accountAddress, uint256 _amount, bytes calldata _data) external isInitialized {
+    function stakeFor(
+        address _accountAddress,
+        uint256 _amount,
+        bytes calldata _data
+    ) external isInitialized
+    {
         require(
             msg.sender == registry.getContract(serviceProviderFactoryKey),
             "Only callable from ServiceProviderFactory"
@@ -150,16 +138,22 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
      * @param _amount Number of tokens staked
      * @param _data Used in Unstaked event, to add signalling information in more complex staking applications
      */
-    function unstakeFor(address _accountAddress, uint256 _amount, bytes calldata _data) external isInitialized {
+    function unstakeFor(
+        address _accountAddress,
+        uint256 _amount,
+        bytes calldata _data
+    ) external isInitialized
+    {
         require(
             msg.sender == registry.getContract(serviceProviderFactoryKey),
             "Only callable from ServiceProviderFactory"
         );
         _unstakeFor(
-          _accountAddress,
-          _accountAddress,
-          _amount,
-          _data);
+            _accountAddress,
+            _accountAddress,
+            _amount,
+            _data
+        );
     }
 
     /**
@@ -264,6 +258,26 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
     }
 
     /* Public functions */
+
+    function initialize(
+      address _stakingToken,
+      address _treasuryAddress,
+      address _registryAddress,
+      bytes32 _claimFactoryKey,
+      bytes32 _delegateManagerKey,
+      bytes32 _serviceProviderFactoryKey
+    ) public initializer
+    {
+        require(isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
+        stakingToken = ERC20(_stakingToken);
+        registry = RegistryInterface(_registryAddress);
+        treasuryAddress = _treasuryAddress;
+        registryAddress = _registryAddress;
+        claimFactoryKey = _claimFactoryKey;
+        delegateManagerKey = _delegateManagerKey;
+        serviceProviderFactoryKey = _serviceProviderFactoryKey;
+        initialized = true;
+    }
 
     /**
      * @notice Get the amount of tokens staked by `_accountAddress`

@@ -2,12 +2,11 @@ import * as _lib from './_lib/lib.js'
 const encodeCall = require('./encodeCall')
 
 const Registry = artifacts.require('Registry')
-const TestContract = artifacts.require('TestContract')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const StakingUpgraded = artifacts.require('StakingUpgraded')
 const AudiusToken = artifacts.require('AudiusToken')
 const MockStakingCaller = artifacts.require('MockStakingCaller')
+const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 
 // Registry keys
 const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
@@ -84,6 +83,14 @@ contract('Upgrade proxy test', async (accounts) => {
     await registry.addContract(claimFactoryKey, mockStakingCaller.address)
     await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
     await registry.addContract(delegateManagerKey, mockStakingCaller.address)
+  })
+
+  it('Fails to call Staking contract function before proxy initialization', async () => {
+    const stakingLogic = await Staking.new({ from: proxyAdminAddress })
+    _lib.assertRevert(
+      stakingLogic.totalStaked.call({ from: proxyDeployerAddress }),
+      "revert INIT_NOT_INITIALIZED"
+    )
   })
 
   it('Deployed proxy state', async () => {
