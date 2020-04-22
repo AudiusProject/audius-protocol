@@ -191,11 +191,11 @@ contract ServiceProviderFactory is RegistryContract {
         bool unstaked = false;
         // owned by the user
         if (numberOfEndpoints == 1) {
-            unstakeAmount = ERCStaking(
+            ERCStaking stakingContract = ERCStaking(
                 registry.getContract(stakingProxyOwnerKey)
-            ).totalStakedFor(owner);
-
-            ERCStaking(registry.getContract(stakingProxyOwnerKey)).unstakeFor(
+            );
+            unstakeAmount = stakingContract.totalStakedFor(owner);
+            stakingContract.unstakeFor(
                 owner,
                 unstakeAmount,
                 empty
@@ -241,14 +241,14 @@ contract ServiceProviderFactory is RegistryContract {
         ).getNumberOfEndpointsFromAddress(owner);
         require(numberOfEndpoints > 0, "Registered endpoint required to increase stake");
 
-        // Stake increased token amount for msg.sender
-        ERCStaking(
+        ERCStaking stakingContract = ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
-        ).stakeFor(owner, _increaseStakeAmount, empty);
+        );
 
-        uint newStakeAmount = ERCStaking(
-            registry.getContract(stakingProxyOwnerKey)
-        ).totalStakedFor(owner);
+        // Stake increased token amount for msg.sender
+        stakingContract.stakeFor(owner, _increaseStakeAmount, empty);
+
+        uint newStakeAmount = stakingContract.totalStakedFor(owner);
 
         // Update deployer total
         spDetails[owner].deployerStake += _increaseStakeAmount;
@@ -277,9 +277,11 @@ contract ServiceProviderFactory is RegistryContract {
         ).getNumberOfEndpointsFromAddress(owner);
         require(numberOfEndpoints > 0, "Registered endpoint required to decrease stake");
 
-        uint currentStakeAmount = ERCStaking(
+        ERCStaking stakingContract = ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
-        ).totalStakedFor(owner);
+        );
+
+        uint currentStakeAmount = stakingContract.totalStakedFor(owner);
 
         // Prohibit decreasing stake to zero without deregistering all endpoints
         require(
@@ -287,14 +289,10 @@ contract ServiceProviderFactory is RegistryContract {
             "Please deregister endpoints to remove all stake");
 
         // Decrease staked token amount for msg.sender
-        ERCStaking(
-            registry.getContract(stakingProxyOwnerKey)
-        ).unstakeFor(owner, _decreaseStakeAmount, empty);
+        stakingContract.unstakeFor(owner, _decreaseStakeAmount, empty);
 
         // Query current stake
-        uint newStakeAmount = ERCStaking(
-            registry.getContract(stakingProxyOwnerKey)
-        ).totalStakedFor(owner);
+        uint newStakeAmount = stakingContract.totalStakedFor(owner);
 
         // Update deployer total
         spDetails[owner].deployerStake -= _decreaseStakeAmount;
@@ -390,18 +388,16 @@ contract ServiceProviderFactory is RegistryContract {
       validServiceTypes.length--;
     }
 
-    // TODO: Restrict to governance
     function updateServiceType(
         bytes32 _serviceType,
         uint _serviceTypeMin,
         uint _serviceTypeMax
     ) external {
-      address governance = registry.getContract(governanceKey);
       require(
           msg.sender == deployerAddress,
           "Only deployer or governance");
       require(
-          msg.sender == governance,
+          msg.sender == registry.getContract(governanceKey),
           "Only deployer or governance");
       require(this.isValidServiceType(_serviceType), "Invalid service type");
       serviceTypeStakeRequirements[_serviceType].minStake = _serviceTypeMin;

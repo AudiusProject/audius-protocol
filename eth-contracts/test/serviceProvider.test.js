@@ -13,6 +13,7 @@ const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
+const governanceKey = web3.utils.utf8ToHex('Governance')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
 const testCreatorNodeType = web3.utils.utf8ToHex('creator-node')
@@ -81,6 +82,7 @@ contract('ServiceProvider test', async (accounts) => {
       registry.address,
       stakingProxyKey,
       delegateManagerKey,
+      governanceKey,
       serviceProviderStorageKey)
 
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address, { from: treasuryAddress })

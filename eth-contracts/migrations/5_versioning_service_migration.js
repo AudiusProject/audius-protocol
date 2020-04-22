@@ -39,7 +39,7 @@ module.exports = (deployer, network, accounts) => {
       delegateManagerKey,
       governanceKey,
       serviceProviderStorageKey, {
-        gas: 20000000
+        gas: 8000000
       })
 
     await registry.addContract(serviceProviderFactoryKey, ServiceProviderFactory.address)
