@@ -10,6 +10,7 @@ contract InitializableHelpers {
     bool private initialized;
 
     string private constant ERROR_NOT_INITIALIZED = "INIT_NOT_INITIALIZED";
+    string private constant ERROR_ALREADY_INITIALIZED = "ERROR_ALREADY_INITIALIZED";
 
     modifier isInitialized() {
         require(initialized == true, ERROR_NOT_INITIALIZED);
@@ -17,6 +18,7 @@ contract InitializableHelpers {
     }
 
     function setInitialized(bool isInitializedVal) internal {
+        require(!initialized, ERROR_ALREADY_INITIALIZED);
         initialized = isInitializedVal;
     }
 

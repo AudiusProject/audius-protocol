@@ -119,7 +119,7 @@ contract('Upgrade proxy test', async (accounts) => {
     assert.equal(newFunctionResp, 5)
   })
 
-  describe('Confirm staking logic', function () {
+  describe('Test with Staking contract', function () {
     beforeEach(async function () {
       const spAccount1 = accounts[3]
       const spAccount2 = accounts[4]
