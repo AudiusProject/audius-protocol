@@ -7,12 +7,20 @@ pragma solidity >=0.4.24 <0.7.0;
  * https://github.com/OpenZeppelin/openzeppelin-sdk/blob/v2.8.0/packages/lib/contracts/Initializable.sol
  */
 contract InitializableHelpers {
-    bool internal initialized;
+    bool private initialized;
 
     string private constant ERROR_NOT_INITIALIZED = "INIT_NOT_INITIALIZED";
 
     modifier isInitialized() {
         require(initialized == true, ERROR_NOT_INITIALIZED);
         _;
+    }
+
+    function setInitialized(bool isInitializedVal) internal {
+        initialized = isInitializedVal;
+    }
+
+    function getInitialized() internal view returns (bool) {
+        return initialized;
     }
 }

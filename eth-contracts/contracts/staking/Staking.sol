@@ -276,7 +276,7 @@ contract Staking is Initializable, InitializableHelpers, RegistryContract, ERCSt
         claimFactoryKey = _claimFactoryKey;
         delegateManagerKey = _delegateManagerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
-        initialized = true;
+        setInitialized(true);
     }
 
     /**
