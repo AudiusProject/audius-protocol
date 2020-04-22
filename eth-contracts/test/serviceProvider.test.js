@@ -630,5 +630,67 @@ contract('ServiceProvider test', async (accounts) => {
         'Could not find service provider with that endpoint'
       )
     })
+
+    it('service type operations test', async () => {
+      let deployer = accounts[0]
+      let typeMin = toWei(200)
+      let typeMax = toWei(20000)
+      let testType = web3.utils.utf8ToHex('test-service')
+      let isValid = await serviceProviderFactory.isValidServiceType(testType)
+      assert.isTrue(!isValid, 'Invalid type expected')
+
+      // Expect failure as type is already present
+      await _lib.assertRevert(
+        serviceProviderFactory.addServiceType(testDiscProvType, typeMin, typeMax, { from: deployer }),
+        'Already known service type'
+      )
+      // Expect failure from invalid account
+      await _lib.assertRevert(
+        serviceProviderFactory.addServiceType(testDiscProvType, typeMin, typeMax, { from: accounts[12] }),
+        'Only deployer or governance'
+      )
+
+      await serviceProviderFactory.addServiceType(testType, typeMin, typeMax, { from: deployer })
+
+      isValid = await serviceProviderFactory.isValidServiceType(testType)
+      assert.isTrue(isValid, 'Expect valid type after registration')
+
+      let info = await serviceProviderFactory.getServiceTypeStakeInfo(testType)
+      assert.isTrue(typeMin.eq(info.min), 'Min values not equal')
+      assert.isTrue(typeMax.eq(info.max), 'Max values not equal')
+
+      let newMin = toWei(300)
+      let newMax = toWei(40000)
+
+      let unregisteredType = web3.utils.utf8ToHex('invalid-service')
+      // Expect failure with unknown type
+      await _lib.assertRevert(
+        serviceProviderFactory.updateServiceType(unregisteredType, newMin, newMax, { from: deployer }),
+        'Invalid service type'
+      )
+      // Expect failure from invalid account
+      await _lib.assertRevert(
+        serviceProviderFactory.updateServiceType(testType, newMin, newMax, { from: accounts[12] }),
+        'Only deployer or governance'
+      )
+      await serviceProviderFactory.updateServiceType(testType, newMin, newMax, { from: deployer })
+
+      // Confirm update
+      info = await serviceProviderFactory.getServiceTypeStakeInfo(testType)
+      assert.isTrue(newMin.eq(info.min), 'Min values not equal')
+      assert.isTrue(newMax.eq(info.max), 'Max values not equal')
+
+      await _lib.assertRevert(
+        serviceProviderFactory.removeServiceType(unregisteredType), 'Invalid service type, not found'
+      )
+      await _lib.assertRevert(
+        serviceProviderFactory.removeServiceType(testType, { from: accounts[12] }), 'Only deployer or governance'
+      )
+
+      await serviceProviderFactory.removeServiceType(testType)
+
+      isValid = await serviceProviderFactory.isValidServiceType(testType)
+      assert.isTrue(!isValid, 'Expect invalid type after deregistration')
+    })
   })
 })

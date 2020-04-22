@@ -349,7 +349,6 @@ contract ServiceProviderFactory is RegistryContract {
         return spId;
     }
 
-    // TODO: Restrict to governance
     function addServiceType(
         bytes32 _serviceType,
         uint _serviceTypeMin,
@@ -367,7 +366,6 @@ contract ServiceProviderFactory is RegistryContract {
       });
     }
 
-    // TODO: Restrict to governance
     function removeServiceType(bytes32 _serviceType) external {
       require(
           msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
@@ -386,6 +384,9 @@ contract ServiceProviderFactory is RegistryContract {
       uint lastIndex = validServiceTypes.length - 1;
       validServiceTypes[serviceIndex] = validServiceTypes[lastIndex];
       validServiceTypes.length--;
+      // Overwrite values
+      serviceTypeStakeRequirements[_serviceType].minStake = 0;
+      serviceTypeStakeRequirements[_serviceType].maxStake = 0;
     }
 
     function updateServiceType(
@@ -394,10 +395,7 @@ contract ServiceProviderFactory is RegistryContract {
         uint _serviceTypeMax
     ) external {
       require(
-          msg.sender == deployerAddress,
-          "Only deployer or governance");
-      require(
-          msg.sender == registry.getContract(governanceKey),
+          msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
           "Only deployer or governance");
       require(this.isValidServiceType(_serviceType), "Invalid service type");
       serviceTypeStakeRequirements[_serviceType].minStake = _serviceTypeMin;
@@ -531,12 +529,15 @@ contract ServiceProviderFactory is RegistryContract {
     function isValidServiceType(bytes32 _serviceType)
     external view returns (bool isValid)
     {
+        return serviceTypeStakeRequirements[_serviceType].maxStake > 0;
+        /*
         for (uint i = 0; i < validServiceTypes.length; i ++) {
             if (validServiceTypes[i] == _serviceType) {
                 return true;
             }
         }
         return false;
+        */
     }
 
     function getValidServiceTypes()
