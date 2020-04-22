@@ -199,7 +199,7 @@ contract('ServiceProvider test', async (accounts) => {
         DEFAULT_AMOUNT,
         'Expect default stake amount')
 
-      let spTypeInfo = await serviceProviderFactory.getServiceStakeInfo(testDiscProvType)
+      let spTypeInfo = await serviceProviderFactory.getServiceTypeStakeInfo(testDiscProvType)
       let typeMin = fromWei(spTypeInfo[0])
       let typeMax = fromWei(spTypeInfo[1])
 
@@ -269,10 +269,10 @@ contract('ServiceProvider test', async (accounts) => {
       let testEndpoint = 'https://localhost:4000'
       let testEndpoint2 = 'https://localhost:4001'
 
-      let cnTypeInfo = await serviceProviderFactory.getServiceStakeInfo(testCreatorNodeType)
+      let cnTypeInfo = await serviceProviderFactory.getServiceTypeStakeInfo(testCreatorNodeType)
       let cnTypeMin = cnTypeInfo[0]
       let cnTypeMax = cnTypeInfo[1]
-      let dpTypeInfo = await serviceProviderFactory.getServiceStakeInfo(testDiscProvType)
+      let dpTypeInfo = await serviceProviderFactory.getServiceTypeStakeInfo(testDiscProvType)
       let dpTypeMin = dpTypeInfo[0]
 
       // 3rd endpoint for stakerAccount = https://localhost:4001

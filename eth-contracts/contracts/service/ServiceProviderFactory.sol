@@ -13,6 +13,7 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32 serviceProviderStorageRegistryKey;
     bytes32 stakingProxyOwnerKey;
     bytes32 delegateManagerKey;
+    address deployerAddress;
 
     // START Temporary data structures
     bytes32[] validServiceTypes;
@@ -91,6 +92,7 @@ contract ServiceProviderFactory is RegistryContract {
             _registryAddress != address(0x00),
             "Requires non-zero _registryAddress"
         );
+        deployerAddress = msg.sender;
         registry = RegistryInterface(_registryAddress);
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         delegateManagerKey = _delegateManagerKey;
@@ -348,6 +350,53 @@ contract ServiceProviderFactory is RegistryContract {
         return spId;
     }
 
+    // TODO: Restrict to governance
+    function addServiceType(
+        bytes32 _serviceType,
+        uint _serviceTypeMin,
+        uint _serviceTypeMax
+    ) external
+    {
+      require(msg.sender == deployerAddress, "Only deployer or governance");
+      require(!this.isValidServiceType(_serviceType), "Already known service type");
+      validServiceTypes.push(_serviceType);
+      serviceTypeStakeRequirements[_serviceType] = ServiceInstanceStakeRequirements({
+          minStake: _serviceTypeMin,
+          maxStake: _serviceTypeMax
+      });
+    }
+
+    // TODO: Restrict to governance
+    function removeServiceType(bytes32 _serviceType) external {
+      require(msg.sender == deployerAddress, "Only deployer or governance");
+      uint serviceIndex = 0;
+      bool foundService = false;
+      for (uint i = 0; i < validServiceTypes.length; i ++) {
+          if (validServiceTypes[i] == _serviceType) {
+              serviceIndex = i;
+              foundService = true;
+              break;
+          }
+      }
+      require(foundService == true, "Invalid service type, not found");
+      // Overwrite service index
+      uint lastIndex = validServiceTypes.length - 1;
+      validServiceTypes[serviceIndex] = validServiceTypes[lastIndex];
+      validServiceTypes.length--;
+    }
+
+    // TODO: Restrict to governance
+    function updateServiceType(
+        bytes32 _serviceType,
+        uint _serviceTypeMin,
+        uint _serviceTypeMax
+    ) external {
+      require(msg.sender == deployerAddress, "Only deployer or governance");
+      require(this.isValidServiceType(_serviceType), "Invalid service type");
+      serviceTypeStakeRequirements[_serviceType].minStake = _serviceTypeMin;
+      serviceTypeStakeRequirements[_serviceType].maxStake = _serviceTypeMax;
+    }
+
   /**
    * @notice Update service provider balance
    */
@@ -491,11 +540,12 @@ contract ServiceProviderFactory is RegistryContract {
 
     /// @notice Get min and max stake for a given service type
     /// @return min/max stake for type
-    function getServiceStakeInfo(bytes32 _serviceType)
+    function getServiceTypeStakeInfo(bytes32 _serviceType)
     external view returns (uint min, uint max)
     {
         return (
-            serviceTypeStakeRequirements[_serviceType].minStake, serviceTypeStakeRequirements[_serviceType].maxStake
+            serviceTypeStakeRequirements[_serviceType].minStake,
+            serviceTypeStakeRequirements[_serviceType].maxStake
         );
     }
 
@@ -509,7 +559,7 @@ contract ServiceProviderFactory is RegistryContract {
         uint validTypesLength = validServiceTypes.length;
         for (uint i = 0; i < validTypesLength; i++) {
             bytes32 serviceType = validServiceTypes[i];
-            (uint typeMin, uint typeMax) = this.getServiceStakeInfo(serviceType);
+            (uint typeMin, uint typeMax) = this.getServiceTypeStakeInfo(serviceType);
             uint numberOfEndpoints = this.getServiceProviderIdsFromAddress(sp, serviceType).length;
             minStake += (typeMin * numberOfEndpoints);
             maxStake += (typeMax * numberOfEndpoints);
