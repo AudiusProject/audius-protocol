@@ -8,6 +8,7 @@ import "./interface/registry/RegistryInterface.sol";
 import "../staking/Staking.sol";
 import "./ServiceProviderFactory.sol";
 import "./ClaimFactory.sol";
+import "../Governance.sol";
 
 
 // WORKING CONTRACT
@@ -18,11 +19,11 @@ contract DelegateManager is RegistryContract {
 
     address tokenAddress;
     address stakingAddress;
-    address governanceAddress;
 
     bytes32 stakingProxyOwnerKey;
     bytes32 serviceProviderFactoryKey;
     bytes32 claimFactoryKey;
+    bytes32 governanceKey;
 
     // Number of blocks an undelegate operation has to wait
     // TODO: Expose CRUD
@@ -90,7 +91,7 @@ contract DelegateManager is RegistryContract {
     constructor(
       address _tokenAddress,
       address _registryAddress,
-      address _governanceAddress,
+      bytes32 _governanceKey,
       bytes32 _stakingProxyOwnerKey,
       bytes32 _serviceProviderFactoryKey,
       bytes32 _claimFactoryKey
@@ -98,7 +99,7 @@ contract DelegateManager is RegistryContract {
         tokenAddress = _tokenAddress;
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
-        governanceAddress = _governanceAddress;
+        governanceKey = _governanceKey;
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
         claimFactoryKey = _claimFactoryKey;
@@ -400,7 +401,10 @@ contract DelegateManager is RegistryContract {
     function slash(uint _amount, address _slashAddress)
     external
     {
-        require(msg.sender == governanceAddress, "Slash only callable from governance contract");
+        require(
+            msg.sender == registry.getContract(governanceKey),
+            "Slash only callable from governance contract"
+        );
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );

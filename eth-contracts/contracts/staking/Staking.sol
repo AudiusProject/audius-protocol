@@ -68,7 +68,8 @@ contract Staking is Initializable, RegistryContract, ERCStaking, ERCStakingHisto
       bytes32 _claimFactoryKey,
       bytes32 _delegateManagerKey,
       bytes32 _serviceProviderFactoryKey
-    ) public initializer {
+    ) public initializer
+    {
         require(isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         stakingToken = ERC20(_stakingToken);
         registry = RegistryInterface(_registryAddress);

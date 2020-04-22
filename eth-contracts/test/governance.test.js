@@ -18,6 +18,7 @@ const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const governanceKey = web3.utils.utf8ToHex('Governance')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManagerKey')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
@@ -156,12 +157,13 @@ contract('Governance.sol', async (accounts) => {
       votingQuorum,
       { from: protocolOwnerAddress }
     )
+    await registry.addContract(governanceKey, governance.address, { from: protocolOwnerAddress })
 
     // Deploy DelegateManager contract
     delegateManager = await DelegateManager.new(
       token.address,
       registry.address,
-      governance.address,
+      governanceKey,
       stakingProxyKey,
       serviceProviderFactoryKey,
       claimFactoryKey,

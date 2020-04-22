@@ -3,9 +3,10 @@ pragma solidity ^0.5.0;
 import "./service/registry/RegistryContract.sol";
 import "./staking/Staking.sol";
 import "./service/interface/registry/RegistryInterface.sol";
+import "./service/registry/RegistryContract.sol";
 
 
-contract Governance {
+contract Governance is RegistryContract {
     RegistryInterface registry;
     bytes32 stakingProxyOwnerKey;
 
