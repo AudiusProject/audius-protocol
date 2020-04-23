@@ -114,7 +114,7 @@ module.exports = function (app) {
       req.logger.info(`Found equal signatures: User Challenge Value ${theirChallengeBytes}, Server Challenge Value ${ourChallengeBytes}`)
     }
 
-    redisClient.del(userLoginChallengeKey)
+    await redisClient.del(userLoginChallengeKey)
 
     // All checks have passed! generate a new session token for the user
     const sessionToken = await sessionManager.createSession(user.cnodeUserUUID)
