@@ -2,9 +2,41 @@
   "contractName": "Staking",
   "abi": [
     {
+      "constant": false,
+      "inputs": [],
+      "name": "kill",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [],
-      "name": "hasInitialized",
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
       "outputs": [
         {
           "name": "",
@@ -16,31 +48,31 @@
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "getInitializationBlock",
-      "outputs": [
+      "constant": false,
+      "inputs": [
         {
-          "name": "",
-          "type": "uint256"
+          "name": "_registryAddress",
+          "type": "address"
         }
       ],
+      "name": "setRegistry",
+      "outputs": [],
       "payable": false,
-      "stateMutability": "view",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "isPetrified",
-      "outputs": [
+      "constant": false,
+      "inputs": [
         {
-          "name": "",
-          "type": "bool"
+          "name": "newOwner",
+          "type": "address"
         }
       ],
+      "name": "transferOwnership",
+      "outputs": [],
       "payable": false,
-      "stateMutability": "view",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -99,6 +131,28 @@
           "indexed": false,
           "name": "total",
           "type": "uint256"
+        }
+      ],
+      "name": "Slashed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "total",
+          "type": "uint256"
         },
         {
           "indexed": false,
@@ -137,6 +191,23 @@
       "type": "event"
     },
     {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
       "constant": false,
       "inputs": [
         {
@@ -146,8 +217,33 @@
         {
           "name": "_treasuryAddress",
           "type": "address"
+        },
+        {
+          "name": "_registryAddress",
+          "type": "address"
+        },
+        {
+          "name": "_claimFactoryKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_delegateManagerKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_serviceProviderFactoryKey",
+          "type": "bytes32"
         }
       ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
       "name": "initialize",
       "outputs": [],
       "payable": false,
@@ -160,9 +256,13 @@
         {
           "name": "_amount",
           "type": "uint256"
+        },
+        {
+          "name": "_stakerAccount",
+          "type": "address"
         }
       ],
-      "name": "fundNewClaim",
+      "name": "stakeRewards",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -181,38 +281,6 @@
         }
       ],
       "name": "slash",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_stakeCaller",
-          "type": "address"
-        }
-      ],
-      "name": "setStakingOwnerAddress",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_amount",
-          "type": "uint256"
-        },
-        {
-          "name": "_data",
-          "type": "bytes"
-        }
-      ],
-      "name": "stake",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -244,24 +312,6 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_amount",
-          "type": "uint256"
-        },
-        {
-          "name": "_data",
-          "type": "bytes"
-        }
-      ],
-      "name": "unstake",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
           "name": "_accountAddress",
           "type": "address"
         },
@@ -275,6 +325,58 @@
         }
       ],
       "name": "unstakeFor",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_accountAddress",
+          "type": "address"
+        },
+        {
+          "name": "_delegatorAddress",
+          "type": "address"
+        },
+        {
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "name": "_data",
+          "type": "bytes"
+        }
+      ],
+      "name": "delegateStakeFor",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_accountAddress",
+          "type": "address"
+        },
+        {
+          "name": "_delegatorAddress",
+          "type": "address"
+        },
+        {
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "name": "_data",
+          "type": "bytes"
+        }
+      ],
+      "name": "undelegateStakeFor",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -310,20 +412,6 @@
     },
     {
       "constant": true,
-      "inputs": [],
-      "name": "getCurrentStakeMultiplier",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
       "inputs": [
         {
           "name": "_accountAddress",
@@ -351,24 +439,6 @@
       ],
       "name": "lastClaimedFor",
       "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getClaimInfo",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        },
         {
           "name": "",
           "type": "uint256"

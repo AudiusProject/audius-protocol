@@ -1,5 +1,5 @@
 {
-  "contractName": "VersioningFactory",
+  "contractName": "MockDelegateManager",
   "abi": [
     {
       "constant": false,
@@ -82,34 +82,13 @@
           "type": "address"
         },
         {
-          "name": "_versionStorageRegistryKey",
+          "name": "_claimFactoryKey",
           "type": "bytes32"
-        },
-        {
-          "name": "_versionerAddress",
-          "type": "address"
         }
       ],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "constructor"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "name": "_serviceVersion",
-          "type": "bytes32"
-        }
-      ],
-      "name": "SetServiceVersion",
-      "type": "event"
     },
     {
       "anonymous": false,
@@ -132,79 +111,23 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_serviceType",
-          "type": "bytes32"
+          "name": "_claimer",
+          "type": "address"
         },
         {
-          "name": "_serviceVersion",
-          "type": "bytes32"
+          "name": "_totalLockedForSP",
+          "type": "uint256"
         }
       ],
-      "name": "setServiceVersion",
-      "outputs": [],
+      "name": "testProcessClaim",
+      "outputs": [
+        {
+          "name": "newAccountTotal",
+          "type": "uint256"
+        }
+      ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
-          "name": "_versionIndex",
-          "type": "uint256"
-        }
-      ],
-      "name": "getVersion",
-      "outputs": [
-        {
-          "name": "version",
-          "type": "bytes32"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "_serviceType",
-          "type": "bytes32"
-        }
-      ],
-      "name": "getCurrentVersion",
-      "outputs": [
-        {
-          "name": "currentVersion",
-          "type": "bytes32"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "_serviceType",
-          "type": "bytes32"
-        }
-      ],
-      "name": "getNumberOfVersions",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
       "type": "function"
     }
   ]

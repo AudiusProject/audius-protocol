@@ -2,7 +2,7 @@ const Utils = require('../../utils')
 const ContractClient = require('../contracts/ContractClient')
 const DEFAULT_GAS_AMOUNT = 200000
 
-class VersioningFactoryClient extends ContractClient {
+class ServiceTypeManagerClient extends ContractClient {
   async setServiceVersion (serviceType, serviceVersion, privateKey = null) {
     const method = await this.getMethod('setServiceVersion',
       Utils.utf8ToHex(serviceType),
@@ -35,4 +35,4 @@ class VersioningFactoryClient extends ContractClient {
   }
 }
 
-module.exports = VersioningFactoryClient
+module.exports = ServiceTypeManagerClient

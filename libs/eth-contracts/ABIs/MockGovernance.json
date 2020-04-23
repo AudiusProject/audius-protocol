@@ -1,5 +1,5 @@
 {
-  "contractName": "SocialFeatureStorage",
+  "contractName": "MockGovernance",
   "abi": [
     {
       "constant": false,
@@ -80,6 +80,10 @@
         {
           "name": "_registryAddress",
           "type": "address"
+        },
+        {
+          "name": "_delegateManagerKey",
+          "type": "bytes32"
         }
       ],
       "payable": false,
@@ -107,118 +111,18 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_userId",
+          "name": "_amount",
           "type": "uint256"
         },
         {
-          "name": "_trackId",
-          "type": "uint256"
+          "name": "_slashAddress",
+          "type": "address"
         }
       ],
-      "name": "addTrackRepost",
+      "name": "testSlash",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_trackId",
-          "type": "uint256"
-        }
-      ],
-      "name": "deleteTrackRepost",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_trackId",
-          "type": "uint256"
-        }
-      ],
-      "name": "userRepostedTrack",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_playlistId",
-          "type": "uint256"
-        }
-      ],
-      "name": "addPlaylistRepost",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_playlistId",
-          "type": "uint256"
-        }
-      ],
-      "name": "deletePlaylistRepost",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_playlistId",
-          "type": "uint256"
-        }
-      ],
-      "name": "userRepostedPlaylist",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
       "type": "function"
     }
   ]

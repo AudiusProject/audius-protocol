@@ -1,5 +1,5 @@
 {
-  "contractName": "SocialFeatureFactory",
+  "contractName": "Governance",
   "abi": [
     {
       "constant": false,
@@ -76,48 +76,21 @@
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "name": "usedSignatures",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "name": "_registryAddress",
           "type": "address"
         },
         {
-          "name": "_socialFeatureStorageRegistryKey",
+          "name": "_stakingProxyOwnerKey",
           "type": "bytes32"
         },
         {
-          "name": "_userFactoryRegistryKey",
-          "type": "bytes32"
+          "name": "_votingPeriod",
+          "type": "uint256"
         },
         {
-          "name": "_trackFactoryRegistryKey",
-          "type": "bytes32"
-        },
-        {
-          "name": "_playlistFactoryRegistryKey",
-          "type": "bytes32"
-        },
-        {
-          "name": "_networkId",
+          "name": "_votingQuorum",
           "type": "uint256"
         }
       ],
@@ -129,102 +102,128 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
+          "name": "proposalId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "name": "proposer",
+          "type": "address"
+        },
+        {
           "indexed": false,
-          "name": "_userId",
+          "name": "startBlockNumber",
           "type": "uint256"
         },
         {
           "indexed": false,
-          "name": "_trackId",
-          "type": "uint256"
+          "name": "description",
+          "type": "string"
         }
       ],
-      "name": "TrackRepostAdded",
+      "name": "ProposalSubmitted",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
+          "name": "proposalId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "name": "voter",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "vote",
+          "type": "uint8"
+        },
+        {
           "indexed": false,
-          "name": "_userId",
+          "name": "voterStake",
           "type": "uint256"
         },
         {
           "indexed": false,
-          "name": "_trackId",
-          "type": "uint256"
+          "name": "previousVote",
+          "type": "uint8"
         }
       ],
-      "name": "TrackRepostDeleted",
+      "name": "ProposalVoteSubmitted",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
+          "name": "proposalId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "name": "outcome",
+          "type": "uint8"
+        },
+        {
           "indexed": false,
-          "name": "_userId",
+          "name": "voteMagnitudeYes",
           "type": "uint256"
         },
         {
           "indexed": false,
-          "name": "_playlistId",
+          "name": "voteMagnitudeNo",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "numVotes",
           "type": "uint256"
         }
       ],
-      "name": "PlaylistRepostAdded",
+      "name": "ProposalOutcomeEvaluated",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
+          "name": "txHash",
+          "type": "bytes32"
+        },
+        {
           "indexed": false,
-          "name": "_userId",
+          "name": "targetContractAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "callValue",
           "type": "uint256"
         },
         {
           "indexed": false,
-          "name": "_playlistId",
-          "type": "uint256"
-        }
-      ],
-      "name": "PlaylistRepostDeleted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "_followerUserId",
-          "type": "uint256"
+          "name": "signature",
+          "type": "string"
         },
         {
           "indexed": false,
-          "name": "_followeeUserId",
-          "type": "uint256"
-        }
-      ],
-      "name": "UserFollowAdded",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "_followerUserId",
-          "type": "uint256"
+          "name": "callData",
+          "type": "bytes"
         },
         {
           "indexed": false,
-          "name": "_followeeUserId",
-          "type": "uint256"
+          "name": "returnData",
+          "type": "bytes"
         }
       ],
-      "name": "UserFollowDeleted",
+      "name": "TransactionExecuted",
       "type": "event"
     },
     {
@@ -248,131 +247,31 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_trackId",
-          "type": "uint256"
-        },
-        {
-          "name": "_requestNonce",
+          "name": "_targetContractRegistryKey",
           "type": "bytes32"
         },
         {
-          "name": "_subjectSig",
+          "name": "_callValue",
+          "type": "uint256"
+        },
+        {
+          "name": "_signature",
+          "type": "string"
+        },
+        {
+          "name": "_callData",
           "type": "bytes"
+        },
+        {
+          "name": "_description",
+          "type": "string"
         }
       ],
-      "name": "addTrackRepost",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_playlistId",
-          "type": "uint256"
-        },
-        {
-          "name": "_requestNonce",
-          "type": "bytes32"
-        },
-        {
-          "name": "_subjectSig",
-          "type": "bytes"
-        }
-      ],
-      "name": "addPlaylistRepost",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_trackId",
-          "type": "uint256"
-        },
-        {
-          "name": "_requestNonce",
-          "type": "bytes32"
-        },
-        {
-          "name": "_subjectSig",
-          "type": "bytes"
-        }
-      ],
-      "name": "deleteTrackRepost",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_playlistId",
-          "type": "uint256"
-        },
-        {
-          "name": "_requestNonce",
-          "type": "bytes32"
-        },
-        {
-          "name": "_subjectSig",
-          "type": "bytes"
-        }
-      ],
-      "name": "deletePlaylistRepost",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_followerUserId",
-          "type": "uint256"
-        },
-        {
-          "name": "_followeeUserId",
-          "type": "uint256"
-        },
-        {
-          "name": "_requestNonce",
-          "type": "bytes32"
-        },
-        {
-          "name": "_subjectSig",
-          "type": "bytes"
-        }
-      ],
-      "name": "addUserFollow",
+      "name": "submitProposal",
       "outputs": [
         {
-          "name": "status",
-          "type": "bool"
+          "name": "proposalId",
+          "type": "uint256"
         }
       ],
       "payable": false,
@@ -383,27 +282,33 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_followerUserId",
+          "name": "_proposalId",
           "type": "uint256"
         },
         {
-          "name": "_followeeUserId",
-          "type": "uint256"
-        },
-        {
-          "name": "_requestNonce",
-          "type": "bytes32"
-        },
-        {
-          "name": "_subjectSig",
-          "type": "bytes"
+          "name": "_vote",
+          "type": "uint8"
         }
       ],
-      "name": "deleteUserFollow",
+      "name": "submitProposalVote",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_proposalId",
+          "type": "uint256"
+        }
+      ],
+      "name": "evaluateProposalOutcome",
       "outputs": [
         {
-          "name": "status",
-          "type": "bool"
+          "name": "proposalOutcome",
+          "type": "uint8"
         }
       ],
       "payable": false,
@@ -414,19 +319,59 @@
       "constant": true,
       "inputs": [
         {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_trackId",
+          "name": "_proposalId",
           "type": "uint256"
         }
       ],
-      "name": "userRepostedTrack",
+      "name": "getProposalById",
       "outputs": [
         {
-          "name": "",
-          "type": "bool"
+          "name": "proposalId",
+          "type": "uint256"
+        },
+        {
+          "name": "proposer",
+          "type": "address"
+        },
+        {
+          "name": "startBlockNumber",
+          "type": "uint256"
+        },
+        {
+          "name": "targetContractRegistryKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "targetContractAddress",
+          "type": "address"
+        },
+        {
+          "name": "callValue",
+          "type": "uint256"
+        },
+        {
+          "name": "signature",
+          "type": "string"
+        },
+        {
+          "name": "callData",
+          "type": "bytes"
+        },
+        {
+          "name": "outcome",
+          "type": "uint8"
+        },
+        {
+          "name": "voteMagnitudeYes",
+          "type": "uint256"
+        },
+        {
+          "name": "voteMagnitudeNo",
+          "type": "uint256"
+        },
+        {
+          "name": "numVotes",
+          "type": "uint256"
         }
       ],
       "payable": false,
@@ -437,19 +382,19 @@
       "constant": true,
       "inputs": [
         {
-          "name": "_userId",
+          "name": "_proposalId",
           "type": "uint256"
         },
         {
-          "name": "_playlistId",
-          "type": "uint256"
+          "name": "_voter",
+          "type": "address"
         }
       ],
-      "name": "userRepostedPlaylist",
+      "name": "getVoteByProposalAndVoter",
       "outputs": [
         {
-          "name": "",
-          "type": "bool"
+          "name": "vote",
+          "type": "uint8"
         }
       ],
       "payable": false,

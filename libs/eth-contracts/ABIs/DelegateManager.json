@@ -1,5 +1,5 @@
 {
-  "contractName": "SocialFeatureFactory",
+  "contractName": "DelegateManager",
   "abi": [
     {
       "constant": false,
@@ -76,49 +76,30 @@
       "type": "function"
     },
     {
-      "constant": true,
       "inputs": [
         {
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "name": "usedSignatures",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
+          "name": "_tokenAddress",
+          "type": "address"
+        },
         {
           "name": "_registryAddress",
           "type": "address"
         },
         {
-          "name": "_socialFeatureStorageRegistryKey",
+          "name": "_governanceKey",
           "type": "bytes32"
         },
         {
-          "name": "_userFactoryRegistryKey",
+          "name": "_stakingProxyOwnerKey",
           "type": "bytes32"
         },
         {
-          "name": "_trackFactoryRegistryKey",
+          "name": "_serviceProviderFactoryKey",
           "type": "bytes32"
         },
         {
-          "name": "_playlistFactoryRegistryKey",
+          "name": "_claimFactoryKey",
           "type": "bytes32"
-        },
-        {
-          "name": "_networkId",
-          "type": "uint256"
         }
       ],
       "payable": false,
@@ -130,16 +111,21 @@
       "inputs": [
         {
           "indexed": false,
-          "name": "_userId",
-          "type": "uint256"
+          "name": "_delegator",
+          "type": "address"
         },
         {
           "indexed": false,
-          "name": "_trackId",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_increaseAmount",
           "type": "uint256"
         }
       ],
-      "name": "TrackRepostAdded",
+      "name": "IncreaseDelegatedStake",
       "type": "event"
     },
     {
@@ -147,16 +133,21 @@
       "inputs": [
         {
           "indexed": false,
-          "name": "_userId",
-          "type": "uint256"
+          "name": "_delegator",
+          "type": "address"
         },
         {
           "indexed": false,
-          "name": "_trackId",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_decreaseAmount",
           "type": "uint256"
         }
       ],
-      "name": "TrackRepostDeleted",
+      "name": "DecreaseDelegatedStake",
       "type": "event"
     },
     {
@@ -164,16 +155,21 @@
       "inputs": [
         {
           "indexed": false,
-          "name": "_userId",
+          "name": "_claimer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_rewards",
           "type": "uint256"
         },
         {
           "indexed": false,
-          "name": "_playlistId",
+          "name": "newTotal",
           "type": "uint256"
         }
       ],
-      "name": "PlaylistRepostAdded",
+      "name": "Claim",
       "type": "event"
     },
     {
@@ -181,50 +177,21 @@
       "inputs": [
         {
           "indexed": false,
-          "name": "_userId",
+          "name": "_target",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_amount",
           "type": "uint256"
         },
         {
           "indexed": false,
-          "name": "_playlistId",
+          "name": "_newTotal",
           "type": "uint256"
         }
       ],
-      "name": "PlaylistRepostDeleted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "_followerUserId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "_followeeUserId",
-          "type": "uint256"
-        }
-      ],
-      "name": "UserFollowAdded",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "_followerUserId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "_followeeUserId",
-          "type": "uint256"
-        }
-      ],
-      "name": "UserFollowDeleted",
+      "name": "Slash",
       "type": "event"
     },
     {
@@ -248,131 +215,19 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_userId",
+          "name": "_target",
+          "type": "address"
+        },
+        {
+          "name": "_amount",
           "type": "uint256"
-        },
-        {
-          "name": "_trackId",
-          "type": "uint256"
-        },
-        {
-          "name": "_requestNonce",
-          "type": "bytes32"
-        },
-        {
-          "name": "_subjectSig",
-          "type": "bytes"
         }
       ],
-      "name": "addTrackRepost",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_playlistId",
-          "type": "uint256"
-        },
-        {
-          "name": "_requestNonce",
-          "type": "bytes32"
-        },
-        {
-          "name": "_subjectSig",
-          "type": "bytes"
-        }
-      ],
-      "name": "addPlaylistRepost",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_trackId",
-          "type": "uint256"
-        },
-        {
-          "name": "_requestNonce",
-          "type": "bytes32"
-        },
-        {
-          "name": "_subjectSig",
-          "type": "bytes"
-        }
-      ],
-      "name": "deleteTrackRepost",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_playlistId",
-          "type": "uint256"
-        },
-        {
-          "name": "_requestNonce",
-          "type": "bytes32"
-        },
-        {
-          "name": "_subjectSig",
-          "type": "bytes"
-        }
-      ],
-      "name": "deletePlaylistRepost",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_followerUserId",
-          "type": "uint256"
-        },
-        {
-          "name": "_followeeUserId",
-          "type": "uint256"
-        },
-        {
-          "name": "_requestNonce",
-          "type": "bytes32"
-        },
-        {
-          "name": "_subjectSig",
-          "type": "bytes"
-        }
-      ],
-      "name": "addUserFollow",
+      "name": "delegateStake",
       "outputs": [
         {
-          "name": "status",
-          "type": "bool"
+          "name": "delegeatedAmountForSP",
+          "type": "uint256"
         }
       ],
       "payable": false,
@@ -383,29 +238,71 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_followerUserId",
+          "name": "_target",
+          "type": "address"
+        },
+        {
+          "name": "_amount",
           "type": "uint256"
-        },
-        {
-          "name": "_followeeUserId",
-          "type": "uint256"
-        },
-        {
-          "name": "_requestNonce",
-          "type": "bytes32"
-        },
-        {
-          "name": "_subjectSig",
-          "type": "bytes"
         }
       ],
-      "name": "deleteUserFollow",
+      "name": "requestUndelegateStake",
       "outputs": [
         {
-          "name": "status",
-          "type": "bool"
+          "name": "newDelegateAmount",
+          "type": "uint256"
         }
       ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "cancelUndelegateStake",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "undelegateStake",
+      "outputs": [
+        {
+          "name": "newTotal",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "claimRewards",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "name": "_slashAddress",
+          "type": "address"
+        }
+      ],
+      "name": "slash",
+      "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
@@ -414,19 +311,15 @@
       "constant": true,
       "inputs": [
         {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_trackId",
-          "type": "uint256"
+          "name": "_sp",
+          "type": "address"
         }
       ],
-      "name": "userRepostedTrack",
+      "name": "getDelegatorsList",
       "outputs": [
         {
-          "name": "",
-          "type": "bool"
+          "name": "dels",
+          "type": "address[]"
         }
       ],
       "payable": false,
@@ -437,19 +330,103 @@
       "constant": true,
       "inputs": [
         {
-          "name": "_userId",
-          "type": "uint256"
-        },
+          "name": "_sp",
+          "type": "address"
+        }
+      ],
+      "name": "getTotalDelegatedToServiceProvider",
+      "outputs": [
         {
-          "name": "_playlistId",
+          "name": "total",
           "type": "uint256"
         }
       ],
-      "name": "userRepostedPlaylist",
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_sp",
+          "type": "address"
+        }
+      ],
+      "name": "getTotalLockedDelegationForServiceProvider",
       "outputs": [
         {
-          "name": "",
-          "type": "bool"
+          "name": "total",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_delegator",
+          "type": "address"
+        }
+      ],
+      "name": "getTotalDelegatorStake",
+      "outputs": [
+        {
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_delegator",
+          "type": "address"
+        },
+        {
+          "name": "_serviceProvider",
+          "type": "address"
+        }
+      ],
+      "name": "getDelegatorStakeForServiceProvider",
+      "outputs": [
+        {
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_delegator",
+          "type": "address"
+        }
+      ],
+      "name": "getPendingUndelegateRequest",
+      "outputs": [
+        {
+          "name": "target",
+          "type": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "name": "lockupExpiryBlock",
+          "type": "uint256"
         }
       ],
       "payable": false,

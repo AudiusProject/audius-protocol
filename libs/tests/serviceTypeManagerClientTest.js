@@ -19,7 +19,7 @@ it('register service versions', async function () {
   for (const serviceType of serviceTypeList) {
     let testTx
     try {
-      testTx = await audius0.ethContracts.VersioningFactoryClient.setServiceVersion(
+      testTx = await audius0.ethContracts.ServiceTypeManagerClient.setServiceVersion(
         serviceType,
         latestVersionStr)
     } catch (e) {
@@ -35,7 +35,7 @@ it('register service versions', async function () {
 it('query service versions', async function () {
   for (const serviceType of serviceTypeList) {
     try {
-      let currentVersion = await audius0.ethContracts.VersioningFactoryClient.getCurrentVersion(serviceType)
+      let currentVersion = await audius0.ethContracts.ServiceTypeManagerClient.getCurrentVersion(serviceType)
       assert(currentVersion === latestVersionStr, 'Expect latest version')
     } catch (e) {
       if (!e.toString().includes('Already registered')) {

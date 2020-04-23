@@ -1,5 +1,5 @@
 {
-  "contractName": "VersioningStorage",
+  "contractName": "ServiceTypeManager",
   "abi": [
     {
       "constant": false,
@@ -99,15 +99,21 @@
       "type": "function"
     },
     {
+      "anonymous": false,
       "inputs": [
         {
-          "name": "_registryAddress",
-          "type": "address"
+          "indexed": false,
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "_serviceVersion",
+          "type": "bytes32"
         }
       ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "constructor"
+      "name": "SetServiceVersion",
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -125,6 +131,33 @@
       ],
       "name": "OwnershipTransferred",
       "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_registryAddress",
+          "type": "address"
+        },
+        {
+          "name": "_versionerAddress",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
       "constant": false,
