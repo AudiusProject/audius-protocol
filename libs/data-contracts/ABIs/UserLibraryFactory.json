@@ -8,7 +8,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x41c0e1b5"
     },
     {
       "constant": false,
@@ -17,7 +18,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x715018a6"
     },
     {
       "constant": true,
@@ -31,7 +33,8 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0x8da5cb5b"
     },
     {
       "constant": true,
@@ -45,7 +48,8 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0x8f32d59b"
     },
     {
       "constant": false,
@@ -59,7 +63,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xa91ee0dc"
     },
     {
       "constant": false,
@@ -73,7 +78,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xf2fde38b"
     },
     {
       "constant": true,
@@ -92,7 +98,8 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0xf978fd61"
     },
     {
       "inputs": [
@@ -119,7 +126,8 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "constructor"
+      "type": "constructor",
+      "signature": "constructor"
     },
     {
       "anonymous": false,
@@ -136,7 +144,8 @@
         }
       ],
       "name": "TrackSaveAdded",
-      "type": "event"
+      "type": "event",
+      "signature": "0x964f89908ea114d77c6e09be374b51fadefa021ce9a46a749393b52a22a7a1bd"
     },
     {
       "anonymous": false,
@@ -153,7 +162,8 @@
         }
       ],
       "name": "TrackSaveDeleted",
-      "type": "event"
+      "type": "event",
+      "signature": "0xb8ad8491e80121978fe4b82c8c0406ccb3e83b06652aa1e0da0f04f5c86116cf"
     },
     {
       "anonymous": false,
@@ -170,7 +180,8 @@
         }
       ],
       "name": "PlaylistSaveAdded",
-      "type": "event"
+      "type": "event",
+      "signature": "0x129919c436dc5f2253c806ca6040aa79d483e0c68621d9b277876f1bb30a2920"
     },
     {
       "anonymous": false,
@@ -187,7 +198,8 @@
         }
       ],
       "name": "PlaylistSaveDeleted",
-      "type": "event"
+      "type": "event",
+      "signature": "0xc6cb7d10cac0da02dfee3103ad4fde63a875f686e4010772f8ea787f9d9ac3c4"
     },
     {
       "anonymous": false,
@@ -204,7 +216,8 @@
         }
       ],
       "name": "OwnershipTransferred",
-      "type": "event"
+      "type": "event",
+      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
     },
     {
       "constant": false,
@@ -235,7 +248,8 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x6dea362a"
     },
     {
       "constant": false,
@@ -266,7 +280,8 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x1ca56b48"
     },
     {
       "constant": false,
@@ -297,7 +312,8 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x746579ca"
     },
     {
       "constant": false,
@@ -328,7 +344,8 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x0a0fcfe4"
     }
   ]
 }

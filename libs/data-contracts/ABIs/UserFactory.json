@@ -8,7 +8,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x41c0e1b5"
     },
     {
       "constant": false,
@@ -17,7 +18,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x715018a6"
     },
     {
       "constant": true,
@@ -31,7 +33,8 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0x8da5cb5b"
     },
     {
       "constant": true,
@@ -45,7 +48,8 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0x8f32d59b"
     },
     {
       "constant": false,
@@ -59,7 +63,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xa91ee0dc"
     },
     {
       "constant": false,
@@ -73,7 +78,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xf2fde38b"
     },
     {
       "constant": true,
@@ -92,7 +98,8 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0xf978fd61"
     },
     {
       "inputs": [
@@ -115,7 +122,8 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "constructor"
+      "type": "constructor",
+      "signature": "constructor"
     },
     {
       "anonymous": false,
@@ -137,7 +145,8 @@
         }
       ],
       "name": "AddUser",
-      "type": "event"
+      "type": "event",
+      "signature": "0xd1d6ad95bbecda8e24685116c6fcbf8bbbd6a03c07fea60fad548103fceffe5f"
     },
     {
       "anonymous": false,
@@ -154,7 +163,8 @@
         }
       ],
       "name": "UpdateMultihash",
-      "type": "event"
+      "type": "event",
+      "signature": "0x0b3c47cf5987756c09345045f9d607c7df6565537126fe0e728c84ccae3f493e"
     },
     {
       "anonymous": false,
@@ -171,7 +181,8 @@
         }
       ],
       "name": "UpdateName",
-      "type": "event"
+      "type": "event",
+      "signature": "0x9b6107f4b7ebf09cb539dd0ee11828c588cb696924082fbfb6730ca103f64680"
     },
     {
       "anonymous": false,
@@ -188,7 +199,8 @@
         }
       ],
       "name": "UpdateLocation",
-      "type": "event"
+      "type": "event",
+      "signature": "0x218e0779ad52ae82f133a3258c0122bfb578807cf2cc9910f410b1ef620ac08a"
     },
     {
       "anonymous": false,
@@ -205,7 +217,8 @@
         }
       ],
       "name": "UpdateBio",
-      "type": "event"
+      "type": "event",
+      "signature": "0xc29a654846b675986efd662b2b8ae8a5fef979d24cd054630c3540552f1539eb"
     },
     {
       "anonymous": false,
@@ -222,7 +235,8 @@
         }
       ],
       "name": "UpdateProfilePhoto",
-      "type": "event"
+      "type": "event",
+      "signature": "0xa404544365c5470e1016fb75ec96d1c96a6205ed11ff90a5db99bdd1c4151404"
     },
     {
       "anonymous": false,
@@ -239,7 +253,8 @@
         }
       ],
       "name": "UpdateCoverPhoto",
-      "type": "event"
+      "type": "event",
+      "signature": "0x57150fecd31580d01998659881486f4cd3a0cbf51061c5156dc37af78fbd4d2f"
     },
     {
       "anonymous": false,
@@ -256,7 +271,8 @@
         }
       ],
       "name": "UpdateIsCreator",
-      "type": "event"
+      "type": "event",
+      "signature": "0x914531849c1b0d5ead57b0db0e64a6321c8065c5bfbef4a49e384be6c5a1346d"
     },
     {
       "anonymous": false,
@@ -273,7 +289,8 @@
         }
       ],
       "name": "UpdateIsVerified",
-      "type": "event"
+      "type": "event",
+      "signature": "0x49bc85f8dda63ee321b3397be6085137abeef4f08ca07aa23fc4ecd4590b4736"
     },
     {
       "anonymous": false,
@@ -290,7 +307,8 @@
         }
       ],
       "name": "UpdateCreatorNodeEndpoint",
-      "type": "event"
+      "type": "event",
+      "signature": "0x1de68860660449be41a0be3b2c20925b05e4d5b2b4fd6a35a9d41f936f55a65e"
     },
     {
       "anonymous": false,
@@ -307,7 +325,8 @@
         }
       ],
       "name": "OwnershipTransferred",
-      "type": "event"
+      "type": "event",
+      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
     },
     {
       "constant": true,
@@ -325,7 +344,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0x865cc490"
     },
     {
       "constant": true,
@@ -348,7 +368,8 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0xb0467deb"
     },
     {
       "constant": false,
@@ -379,7 +400,8 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x5f18ce6c"
     },
     {
       "constant": false,
@@ -405,7 +427,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x344639b4"
     },
     {
       "constant": false,
@@ -431,7 +454,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xc3c742c0"
     },
     {
       "constant": false,
@@ -457,7 +481,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xe1fef537"
     },
     {
       "constant": false,
@@ -483,7 +508,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x8f47b2a0"
     },
     {
       "constant": false,
@@ -509,7 +535,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xf712849f"
     },
     {
       "constant": false,
@@ -535,7 +562,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x7865fc60"
     },
     {
       "constant": false,
@@ -561,7 +589,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0xf80fc430"
     },
     {
       "constant": false,
@@ -587,7 +616,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x6ddaf8ea"
     },
     {
       "constant": false,
@@ -613,7 +643,8 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "function",
+      "signature": "0x3d4314dd"
     },
     {
       "constant": true,
@@ -632,7 +663,8 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0x69eea1d6"
     },
     {
       "constant": true,
@@ -651,7 +683,8 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "signature": "0x6f93dd91"
     }
   ]
 }
