@@ -125,14 +125,27 @@ class Users extends Base {
    *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
-  async getSocialFeed (filter, limit = 100, offset = 0, withUsers = false) {
+  async getSocialFeed (filter, limit = 100, offset = 0, withUsers = false, tracksOnly = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     const owner = this.userStateManager.getCurrentUser()
     if (owner) {
-      return this.discoveryProvider.getSocialFeed(filter, limit, offset, withUsers)
+      return this.discoveryProvider.getSocialFeed(filter, limit, offset, withUsers, tracksOnly)
     }
 
     return []
+  }
+
+  /**
+   * Returns the top users for the specified genres
+   * @param {number} limit - max # of items to return
+   * @param {number} offset - offset into list to return from (for pagination)
+   * @param {Object} {Array of genres} - filter by genres ie. "Rock", "Alternative"
+   * @param {Boolean} with_users - If the userIds should be returned or the full user metadata
+   * @returns {Object} {Array of user objects if with_users set, else array of userIds}
+   */
+  async getTopCreatorsByGenres (genres, limit = 30, offset = 0, withUsers = false) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getTopCreatorsByGenres(genres, limit, offset, withUsers)
   }
 
   /* ------- SETTERS ------- */

@@ -3,6 +3,7 @@ import datetime
 import sqlalchemy
 from sqlalchemy import func, asc, desc, text, or_, and_, Integer, Float, Date
 from sqlalchemy.orm import aliased
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.dialects import postgresql
 
 from flask import Blueprint, request
@@ -1461,7 +1462,11 @@ def get_users_account():
         else:
             return api_helpers.error_response('Invalid wallet length', 400)
 
-        user = base_query.one()
+        # If user cannot be found, exit early and return empty response
+        user = base_query.first()
+        if not user:
+            return api_helpers.success_response(None)
+
         user = helpers.model_to_dictionary(user)
         user_id = user['user_id']
 
@@ -1872,3 +1877,108 @@ def get_top_followee_saves(type):
                     track['user'] = user
 
     return api_helpers.success_response(tracks)
+
+# Retrieves the top users for a requested genre under the follow parameters
+# - A given user can only be associated w/ one genre
+# - The user's associated genre is calculated by tallying the genre of the tracks and taking the max 
+#   - If there is a tie for # of tracks in a genre, then the first genre alphabetically is taken 
+# - The users associated w/ the requested genre are then sorted by follower count
+# Route Parameters
+#   urlParam: {Array<string>?}  genre       List of genres to query for the 'top' users
+#   urlParam: {boolean?}        with_user   Boolean if the response should be the user ID or user metadata defaults to false
+@bp.route("/users/genre/top", methods=("GET",))
+def get_top_genre_users():
+
+    genres = []
+    if "genre" in request.args:
+        genres = request.args.getlist("genre")
+
+    # If the with_users url arg is provided, then populate the user metadata else return user ids
+    with_users = "with_users" in request.args and request.args.get("with_users") != 'false'
+
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        with_genres = len(genres) != 0
+
+        # Associate the user w/ a genre by counting the total # of tracks per genre
+        # taking the genre w/ the most tracks (using genre name as secondary sort)  
+        user_genre_count_query = (
+            session.query(
+                User.user_id.label('user_id'),
+                Track.genre.label('genre'),
+                func.row_number().over(
+                        partition_by=User.user_id,
+                        order_by=(desc(func.count(Track.genre)), asc(Track.genre))
+                ).label("row_number")
+            ).join(
+                Track,
+                Track.owner_id == User.user_id
+            ).filter(
+                User.is_current == True,
+                User.is_creator == True,
+                Track.is_unlisted == False,
+                Track.is_current == True,
+                Track.is_delete == False
+            ).group_by(
+                User.user_id,
+                Track.genre
+            ).order_by(
+                desc(func.count(Track.genre)), asc(Track.genre)
+            )
+        )
+
+        user_genre_count_query = user_genre_count_query.subquery('user_genre_count_query')
+
+        user_genre_query = (
+            session.query(
+                user_genre_count_query.c.user_id.label('user_id'),
+                user_genre_count_query.c.genre.label('genre'),
+            ).filter(
+                user_genre_count_query.c.row_number == 1
+            ).subquery('user_genre_query')
+        )
+
+        # Using the subquery of user to associated genre,
+        #   filter by the requested genres and 
+        #   sort by user follower count
+        user_genre_followers_query = (
+            session.query(
+                user_genre_query.c.user_id.label('user_id')
+            ).join(
+                Follow, Follow.followee_user_id == user_genre_query.c.user_id
+            ).filter(
+                Follow.is_current == True,
+                Follow.is_delete == False
+            ).group_by(
+                user_genre_query.c.user_id, user_genre_query.c.genre
+            ).order_by(
+                # desc('follower_count')
+                desc(func.count(Follow.follower_user_id))
+            )
+        )
+
+        if with_genres:
+            user_genre_followers_query = user_genre_followers_query.filter(user_genre_query.c.genre.in_(genres))
+
+        # If the with_users flag is not set, respond with the user_ids
+        users = paginate_query(user_genre_followers_query).all()
+        user_ids = list(map(lambda user: user[0], users))
+
+        # If the with_users flag is used, retrieve the user metadata
+        if with_users:
+            user_query = session.query(User).filter(
+                User.user_id.in_(user_ids),
+                User.is_current == True
+            )
+            users = user_query.all()
+            users = helpers.query_result_to_list(users)
+            queried_user_ids = list(map(lambda user: user["user_id"], users))
+            users = populate_user_metadata(session, queried_user_ids, users, None)
+
+            # Sort the users so that it's in the same order as the previous query
+            user_map = {user['user_id']:user for user in users}
+            users = [user_map[user_id] for user_id in user_ids]
+            return api_helpers.success_response({ 'users': users })
+
+
+        return api_helpers.success_response({ 'user_ids': user_ids })

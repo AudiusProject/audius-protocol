@@ -911,7 +911,7 @@ def filter_to_playlist_mood(session, mood, query, correlation):
         session.query(
             func.jsonb_array_elements(
                 correlation.c.playlist_contents['track_ids']
-            ).op('->')('track').cast(Integer)
+            ).op('->>')('track').cast(Integer)
         )
     )
 
@@ -925,6 +925,7 @@ def filter_to_playlist_mood(session, mood, query, correlation):
     dominant_mood_subquery = (
         session.query(
             Track.mood.label('mood'),
+            func.max(Track.track_id).label('latest'),
             func.count(Track.mood).label('cnt')
         )
         .filter(
@@ -933,7 +934,7 @@ def filter_to_playlist_mood(session, mood, query, correlation):
             Track.track_id.in_(tracks_subquery)
         )
         .group_by(Track.mood)
-        .order_by(desc('cnt'))
+        .order_by(desc('cnt'), desc('latest'))
         .limit(1)
         .subquery()
     )

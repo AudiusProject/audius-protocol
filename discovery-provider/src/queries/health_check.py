@@ -50,6 +50,7 @@ def _get_db_block_state(latest_blocknum, latest_blockhash):
         )
         health_results["block_difference"] = block_difference
         health_results["maximum_healthy_block_difference"] = default_healthy_block_diff
+        health_results.update(disc_prov_version)
 
         return health_results
 

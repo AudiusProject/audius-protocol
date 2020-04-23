@@ -10,7 +10,7 @@ requirements = [str(ir.req) for ir in install_reqs]
 
 config = {
     "description": "Audius Discovery Provider",
-    "author": "Hareesh Nagara",
+    "author": "Hareesh Nagaraj",
     "url": "",
     "download_url": "",
     "author_email": "",
