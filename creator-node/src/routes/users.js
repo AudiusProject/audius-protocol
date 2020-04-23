@@ -106,8 +106,6 @@ module.exports = function (app) {
     }
 
     const theirChallengeBytes = data.split(': ')[1]
-
-    req.logger.info(`Detected challenge ${challenge}`)
     const redisClient = req.app.get('redisClient')
     const userLoginChallengeKey = `userLoginChallenge:${address}`
     const ourChallengeBytes = await redisClient.get(userLoginChallengeKey)
