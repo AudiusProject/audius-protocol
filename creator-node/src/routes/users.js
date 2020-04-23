@@ -118,8 +118,6 @@ module.exports = function (app) {
 
     if (theirChallengeBytes !== ourChallengeBytes) {
       return errorResponseBadRequest(`Invalid response.`)
-    } else {
-      req.logger.info(`Found equal signatures!`)
     }
 
     await redisClient.del(userLoginChallengeKey)
