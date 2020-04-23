@@ -39,6 +39,10 @@ module.exports = function (app) {
   app.post('/users/login', handleResponse(async (req, res, next) => {
     const { signature, data } = req.body
 
+    if (!signature || !data) {
+      return errorResponseBadRequest('Missing request body values.')
+    }
+
     const address = utils.verifySignature(data, signature)
     const user = await models.CNodeUser.findOne({
       where: {
@@ -71,7 +75,7 @@ module.exports = function (app) {
     const challengeBuffer = await randomBytes(CHALLENGE_VALUE_LENGTH)
     const challenge = base64url.encode(challengeBuffer)
 
-    // Set challenge ttl to 10 minutes ('EX' option = sets expire time in seconds)
+    // Set challenge ttl to 2 minutes ('EX' option = sets expire time in seconds)
     // https://redis.io/commands/set
     // https://github.com/luin/ioredis/blob/master/examples/basic_operations.js#L44
     await redisClient.set(userLoginChallengeKey, challenge, 'EX', CHALLENGE_TTL_SECONDS)
@@ -86,6 +90,10 @@ module.exports = function (app) {
    */
   app.post('/users/login/challenge', handleResponse(async (req, res, next) => {
     const { signature, data, challenge } = req.body
+
+    if (!signature || !data || !challenge) {
+      return errorResponseBadRequest('Missing request body values.')
+    }
 
     const address = utils.verifySignature(data, signature)
     const user = await models.CNodeUser.findOne({
