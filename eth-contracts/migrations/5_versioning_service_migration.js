@@ -1,11 +1,13 @@
 const contractConfig = require('../contract-config.js')
+const encodeCall = require('../utils/encodeCall')
 
 const Registry = artifacts.require('Registry')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
+const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 
-const ServiceTypeManagerKey = web3.utils.utf8ToHex('ServiceTypeManager')
+const ServiceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
@@ -19,10 +21,26 @@ module.exports = (deployer, network, accounts) => {
     const registry = await Registry.deployed()
 
     const versionerAddress = config.versionerAddress || accounts[0]
+    // TODO move to contractConfig
+    const [proxyAdminAddress, proxyDeployerAddress] = [accounts[10], accounts[11]]
 
-    // Deploy + Register ServiceTypeManager contract
-    await deployer.deploy(ServiceTypeManager, Registry.address, versionerAddress)
-    await registry.addContract(ServiceTypeManagerKey, ServiceTypeManager.address)
+    const serviceTypeManager0 = await deployer.deploy(ServiceTypeManager, { from: proxyDeployerAddress })
+
+    const initializeCallData = encodeCall(
+      'initialize',
+      ['address', 'address'],
+      [registry.address, versionerAddress]
+    )
+
+    const serviceTypeManagerProxy = await deployer.deploy(
+      AdminUpgradeabilityProxy,
+      serviceTypeManager0.address,
+      proxyAdminAddress,
+      initializeCallData,
+      { from: proxyDeployerAddress }
+    )
+
+    await registry.addContract(ServiceTypeManagerProxyKey, serviceTypeManagerProxy.address)
 
     // Deploy + Register ServiceProviderStorage contract
     await deployer.deploy(ServiceProviderStorage, Registry.address)

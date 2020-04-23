@@ -1,13 +1,12 @@
 pragma solidity ^0.5.0;
 
-import "@openzeppelin/upgrades/contracts/Initializable.sol";
-
 import "./registry/RegistryContract.sol";
 import "./interface/registry/RegistryInterface.sol";
-import "../InitializableHelpers.sol";
+import "../InitializableV2.sol";
 
 
-contract ServiceTypeManager is Initializable, RegistryContract {
+/** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
+contract ServiceTypeManager is InitializableV2, RegistryContract {
     RegistryInterface registry;
     address versionerAddress;
 
@@ -19,14 +18,16 @@ contract ServiceTypeManager is Initializable, RegistryContract {
 
     event SetServiceVersion(bytes32 _serviceType, bytes32 _serviceVersion);
 
-    constructor(address _registryAddress, address _versionerAddress) public {
+    function initialize(address _registryAddress, address _versionerAddress) public initializer {
         // TODO move to RegistryContract as modifier
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
         registry = RegistryInterface(_registryAddress);
         versionerAddress = _versionerAddress;
+        
+        InitializableV2.initialize();
     }
 
-    function setServiceVersion(bytes32 _serviceType, bytes32 _serviceVersion) external {
+    function setServiceVersion(bytes32 _serviceType, bytes32 _serviceVersion) external isInitialized {
         require(versionerAddress == msg.sender, "Invalid signature for versioner");
 
         uint numExistingVersions = this.getNumberOfVersions(_serviceType);
@@ -42,7 +43,7 @@ contract ServiceTypeManager is Initializable, RegistryContract {
     }
 
     function getVersion(bytes32 _serviceType, uint _versionIndex)
-    external view returns (bytes32 version)
+    external view isInitialized returns (bytes32 version)
     {
         require(
             serviceTypeVersions[_serviceType].length > _versionIndex,
@@ -52,7 +53,7 @@ contract ServiceTypeManager is Initializable, RegistryContract {
     }
 
     function getCurrentVersion(bytes32 _serviceType)
-    external view returns (bytes32 currentVersion)
+    external view isInitialized returns (bytes32 currentVersion)
     {
         require(
             serviceTypeVersions[_serviceType].length >= 1,
@@ -63,7 +64,7 @@ contract ServiceTypeManager is Initializable, RegistryContract {
     }
 
     function getNumberOfVersions(bytes32 _serviceType)
-    external view returns (uint)
+    external view isInitialized returns (uint)
     {
         return serviceTypeVersions[_serviceType].length;
     }

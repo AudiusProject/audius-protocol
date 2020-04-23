@@ -1,5 +1,6 @@
 import * as _lib from './_lib/lib.js'
-const encodeCall = require('./encodeCall')
+const encodeCall = require('../utils/encodeCall')
+
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
