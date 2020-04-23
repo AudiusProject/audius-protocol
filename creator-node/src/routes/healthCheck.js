@@ -13,6 +13,7 @@ module.exports = function (app) {
     const libs = req.app.get('audiusLibs')
 
     let response = {
+      ...versionInfo,
       'healthy': true,
       'git': process.env.GIT_SHA,
       'selectedDiscoveryProvider': 'none'
