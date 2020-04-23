@@ -59,24 +59,6 @@
       "constant": false,
       "inputs": [
         {
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "name": "data",
-          "type": "bytes"
-        }
-      ],
-      "name": "stake",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
           "name": "user",
           "type": "address"
         },
@@ -99,6 +81,10 @@
       "constant": false,
       "inputs": [
         {
+          "name": "user",
+          "type": "address"
+        },
+        {
           "name": "amount",
           "type": "uint256"
         },
@@ -107,7 +93,7 @@
           "type": "bytes"
         }
       ],
-      "name": "unstake",
+      "name": "unstakeFor",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",

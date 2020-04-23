@@ -1,5 +1,5 @@
 import * as _lib from './_lib/lib.js'
-const encodeCall = require('./encodeCall')
+const encodeCall = require('../utils/encodeCall')
 
 const Registry = artifacts.require('Registry')
 const Staking = artifacts.require('Staking')

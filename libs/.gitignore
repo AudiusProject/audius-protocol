@@ -10,3 +10,4 @@ test.js
 local-storage/
 initScripts/*-config.json
 .npmrc
+.nyc_output/*

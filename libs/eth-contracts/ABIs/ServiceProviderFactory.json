@@ -86,6 +86,14 @@
           "type": "bytes32"
         },
         {
+          "name": "_delegateManagerKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_governanceKey",
+          "type": "bytes32"
+        },
+        {
           "name": "_serviceProviderStorageRegistryKey",
           "type": "bytes32"
         }
@@ -371,6 +379,152 @@
       "type": "function"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "name": "_serviceTypeMin",
+          "type": "uint256"
+        },
+        {
+          "name": "_serviceTypeMax",
+          "type": "uint256"
+        }
+      ],
+      "name": "addServiceType",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        }
+      ],
+      "name": "removeServiceType",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "name": "_serviceTypeMin",
+          "type": "uint256"
+        },
+        {
+          "name": "_serviceTypeMax",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateServiceType",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateServiceProviderStake",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "name": "_cut",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateServiceProviderCut",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "name": "getServiceProviderStake",
+      "outputs": [
+        {
+          "name": "stake",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "name": "getServiceProviderDeployerCut",
+      "outputs": [
+        {
+          "name": "cut",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getServiceProviderDeployerCutBase",
+      "outputs": [
+        {
+          "name": "base",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [
         {
@@ -436,6 +590,20 @@
       "outputs": [
         {
           "name": "spID",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getMinDeployerStake",
+      "outputs": [
+        {
+          "name": "min",
           "type": "uint256"
         }
       ],
@@ -530,7 +698,7 @@
           "type": "bytes32"
         }
       ],
-      "name": "getServiceStakeInfo",
+      "name": "getServiceTypeStakeInfo",
       "outputs": [
         {
           "name": "min",
@@ -561,6 +729,44 @@
         },
         {
           "name": "max",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "sp",
+          "type": "address"
+        }
+      ],
+      "name": "isServiceProviderWithinBounds",
+      "outputs": [
+        {
+          "name": "isValid",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "sp",
+          "type": "address"
+        }
+      ],
+      "name": "validateAccountStakeBalance",
+      "outputs": [
+        {
+          "name": "stakedForOwner",
           "type": "uint256"
         }
       ],

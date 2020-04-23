@@ -1,6 +1,8 @@
 const abi = require('ethereumjs-abi')
 const contractConfig = require('../contract-config.js')
 
+const encodeCall = require('../utils/encodeCall')
+
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
 const Staking = artifacts.require('Staking')
@@ -10,12 +12,6 @@ const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
-
-function encodeCall (name, args, values) {
-  const methodId = abi.methodID(name, args).toString('hex')
-  const params = abi.rawEncode(args, values).toString('hex')
-  return '0x' + methodId + params
-}
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
@@ -27,7 +23,7 @@ module.exports = (deployer, network, accounts) => {
     // TODO move to contractConfig
     const [proxyAdminAddress, proxyDeployerAddress] = [accounts[10], accounts[11]]
 
-    const staking0 = await deployer.deploy(Staking, { from: proxyAdminAddress })
+    const staking0 = await deployer.deploy(Staking, { from: proxyDeployerAddress })
 
     // Encode data for the call to initialize
     const initializeCallData = encodeCall(

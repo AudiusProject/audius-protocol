@@ -2,7 +2,7 @@ const ethers = require('ethers')
 const BigNum = require('bignumber.js')
 
 import * as _lib from './_lib/lib.js'
-const encodeCall = require('./encodeCall')
+const encodeCall = require('../utils/encodeCall')
 
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')

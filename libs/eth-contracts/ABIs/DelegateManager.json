@@ -1,5 +1,5 @@
 {
-  "contractName": "ClaimFactory",
+  "contractName": "DelegateManager",
   "abi": [
     {
       "constant": false,
@@ -86,6 +86,10 @@
           "type": "address"
         },
         {
+          "name": "_governanceKey",
+          "type": "bytes32"
+        },
+        {
           "name": "_stakingProxyOwnerKey",
           "type": "bytes32"
         },
@@ -94,7 +98,7 @@
           "type": "bytes32"
         },
         {
-          "name": "_delegateManagerKey",
+          "name": "_claimFactoryKey",
           "type": "bytes32"
         }
       ],
@@ -107,21 +111,43 @@
       "inputs": [
         {
           "indexed": false,
-          "name": "_blockNumber",
-          "type": "uint256"
+          "name": "_delegator",
+          "type": "address"
         },
         {
           "indexed": false,
-          "name": "_roundNumber",
-          "type": "uint256"
+          "name": "_serviceProvider",
+          "type": "address"
         },
         {
           "indexed": false,
-          "name": "_fundAmount",
+          "name": "_increaseAmount",
           "type": "uint256"
         }
       ],
-      "name": "RoundInitiated",
+      "name": "IncreaseDelegatedStake",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_delegator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_decreaseAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "DecreaseDelegatedStake",
       "type": "event"
     },
     {
@@ -139,7 +165,24 @@
         },
         {
           "indexed": false,
-          "name": "_oldTotal",
+          "name": "newTotal",
+          "type": "uint256"
+        }
+      ],
+      "name": "Claim",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_target",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_amount",
           "type": "uint256"
         },
         {
@@ -148,7 +191,7 @@
           "type": "uint256"
         }
       ],
-      "name": "ClaimProcessed",
+      "name": "Slash",
       "type": "event"
     },
     {
@@ -169,65 +212,78 @@
       "type": "event"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "getFundingRoundBlockDiff",
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_target",
+          "type": "address"
+        },
+        {
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "delegateStake",
       "outputs": [
         {
-          "name": "blockDiff",
+          "name": "delegeatedAmountForSP",
           "type": "uint256"
         }
       ],
       "payable": false,
-      "stateMutability": "view",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "getLastFundBlock",
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_target",
+          "type": "address"
+        },
+        {
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "requestUndelegateStake",
       "outputs": [
         {
-          "name": "lastFundBlock",
+          "name": "newDelegateAmount",
           "type": "uint256"
         }
       ],
       "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getFundsPerRound",
-      "outputs": [
-        {
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getTotalClaimedInRound",
-      "outputs": [
-        {
-          "name": "claimedAmount",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "constant": false,
       "inputs": [],
-      "name": "initiateRound",
+      "name": "cancelUndelegateStake",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "undelegateStake",
+      "outputs": [
+        {
+          "name": "newTotal",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "claimRewards",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -237,21 +293,16 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_claimer",
-          "type": "address"
+          "name": "_amount",
+          "type": "uint256"
         },
         {
-          "name": "_totalLockedForSP",
-          "type": "uint256"
+          "name": "_slashAddress",
+          "type": "address"
         }
       ],
-      "name": "processClaim",
-      "outputs": [
-        {
-          "name": "newAccountTotal",
-          "type": "uint256"
-        }
-      ],
+      "name": "slash",
+      "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
@@ -264,11 +315,118 @@
           "type": "address"
         }
       ],
-      "name": "claimPending",
+      "name": "getDelegatorsList",
       "outputs": [
         {
-          "name": "pending",
-          "type": "bool"
+          "name": "dels",
+          "type": "address[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_sp",
+          "type": "address"
+        }
+      ],
+      "name": "getTotalDelegatedToServiceProvider",
+      "outputs": [
+        {
+          "name": "total",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_sp",
+          "type": "address"
+        }
+      ],
+      "name": "getTotalLockedDelegationForServiceProvider",
+      "outputs": [
+        {
+          "name": "total",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_delegator",
+          "type": "address"
+        }
+      ],
+      "name": "getTotalDelegatorStake",
+      "outputs": [
+        {
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_delegator",
+          "type": "address"
+        },
+        {
+          "name": "_serviceProvider",
+          "type": "address"
+        }
+      ],
+      "name": "getDelegatorStakeForServiceProvider",
+      "outputs": [
+        {
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_delegator",
+          "type": "address"
+        }
+      ],
+      "name": "getPendingUndelegateRequest",
+      "outputs": [
+        {
+          "name": "target",
+          "type": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "name": "lockupExpiryBlock",
+          "type": "uint256"
         }
       ],
       "payable": false,
