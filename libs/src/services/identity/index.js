@@ -254,17 +254,6 @@ class IdentityService {
     })
   }
 
-  /** Check if beta access password is valid */
-  async requestBetaAccess (password) {
-    if (password) {
-      return this._makeRequest({
-        url: `/betapassword/${password}`,
-        method: 'post',
-        data: {}
-      })
-    } else throw new Error('Missing a field: password')
-  }
-
   async relay (contractRegistryKey, contractAddress, senderAddress, encodedABI, gasLimit) {
     return this._makeRequest({
       url: '/relay',
@@ -278,15 +267,6 @@ class IdentityService {
       }
     })
   }
-
-  async submitWaitlistEmail (email) {
-    return this._makeRequest({
-      url: '/waitlist',
-      method: 'post',
-      data: { email }
-    })
-  }
-
   /* ------- INTERNAL FUNCTIONS ------- */
 
   async _makeRequest (axiosRequestObj) {
