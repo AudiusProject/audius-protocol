@@ -13,6 +13,7 @@ const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
+const governanceKey = web3.utils.utf8ToHex('Governance')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
 const testCreatorNodeType = web3.utils.utf8ToHex('creator-node')
@@ -81,6 +82,7 @@ contract('ServiceProvider test', async (accounts) => {
       registry.address,
       stakingProxyKey,
       delegateManagerKey,
+      governanceKey,
       serviceProviderStorageKey)
 
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address, { from: treasuryAddress })
@@ -199,7 +201,7 @@ contract('ServiceProvider test', async (accounts) => {
         DEFAULT_AMOUNT,
         'Expect default stake amount')
 
-      let spTypeInfo = await serviceProviderFactory.getServiceStakeInfo(testDiscProvType)
+      let spTypeInfo = await serviceProviderFactory.getServiceTypeStakeInfo(testDiscProvType)
       let typeMin = fromWei(spTypeInfo[0])
       let typeMax = fromWei(spTypeInfo[1])
 
@@ -269,10 +271,10 @@ contract('ServiceProvider test', async (accounts) => {
       let testEndpoint = 'https://localhost:4000'
       let testEndpoint2 = 'https://localhost:4001'
 
-      let cnTypeInfo = await serviceProviderFactory.getServiceStakeInfo(testCreatorNodeType)
+      let cnTypeInfo = await serviceProviderFactory.getServiceTypeStakeInfo(testCreatorNodeType)
       let cnTypeMin = cnTypeInfo[0]
       let cnTypeMax = cnTypeInfo[1]
-      let dpTypeInfo = await serviceProviderFactory.getServiceStakeInfo(testDiscProvType)
+      let dpTypeInfo = await serviceProviderFactory.getServiceTypeStakeInfo(testDiscProvType)
       let dpTypeMin = dpTypeInfo[0]
 
       // 3rd endpoint for stakerAccount = https://localhost:4001
@@ -627,6 +629,68 @@ contract('ServiceProvider test', async (accounts) => {
         serviceProviderFactory.updateEndpoint(testDiscProvType, fakeEndpoint, testEndpoint1),
         'Could not find service provider with that endpoint'
       )
+    })
+
+    it('service type operations test', async () => {
+      let deployer = accounts[0]
+      let typeMin = toWei(200)
+      let typeMax = toWei(20000)
+      let testType = web3.utils.utf8ToHex('test-service')
+      let isValid = await serviceProviderFactory.isValidServiceType(testType)
+      assert.isTrue(!isValid, 'Invalid type expected')
+
+      // Expect failure as type is already present
+      await _lib.assertRevert(
+        serviceProviderFactory.addServiceType(testDiscProvType, typeMin, typeMax, { from: deployer }),
+        'Already known service type'
+      )
+      // Expect failure from invalid account
+      await _lib.assertRevert(
+        serviceProviderFactory.addServiceType(testDiscProvType, typeMin, typeMax, { from: accounts[12] }),
+        'Only deployer or governance'
+      )
+
+      await serviceProviderFactory.addServiceType(testType, typeMin, typeMax, { from: deployer })
+
+      isValid = await serviceProviderFactory.isValidServiceType(testType)
+      assert.isTrue(isValid, 'Expect valid type after registration')
+
+      let info = await serviceProviderFactory.getServiceTypeStakeInfo(testType)
+      assert.isTrue(typeMin.eq(info.min), 'Min values not equal')
+      assert.isTrue(typeMax.eq(info.max), 'Max values not equal')
+
+      let newMin = toWei(300)
+      let newMax = toWei(40000)
+
+      let unregisteredType = web3.utils.utf8ToHex('invalid-service')
+      // Expect failure with unknown type
+      await _lib.assertRevert(
+        serviceProviderFactory.updateServiceType(unregisteredType, newMin, newMax, { from: deployer }),
+        'Invalid service type'
+      )
+      // Expect failure from invalid account
+      await _lib.assertRevert(
+        serviceProviderFactory.updateServiceType(testType, newMin, newMax, { from: accounts[12] }),
+        'Only deployer or governance'
+      )
+      await serviceProviderFactory.updateServiceType(testType, newMin, newMax, { from: deployer })
+
+      // Confirm update
+      info = await serviceProviderFactory.getServiceTypeStakeInfo(testType)
+      assert.isTrue(newMin.eq(info.min), 'Min values not equal')
+      assert.isTrue(newMax.eq(info.max), 'Max values not equal')
+
+      await _lib.assertRevert(
+        serviceProviderFactory.removeServiceType(unregisteredType), 'Invalid service type, not found'
+      )
+      await _lib.assertRevert(
+        serviceProviderFactory.removeServiceType(testType, { from: accounts[12] }), 'Only deployer or governance'
+      )
+
+      await serviceProviderFactory.removeServiceType(testType)
+
+      isValid = await serviceProviderFactory.isValidServiceType(testType)
+      assert.isTrue(!isValid, 'Expect invalid type after deregistration')
     })
   })
 })

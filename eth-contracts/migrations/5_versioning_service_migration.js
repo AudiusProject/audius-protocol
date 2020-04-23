@@ -14,6 +14,7 @@ const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const ownedUpgradeabilityProxyKey = web3.utils.utf8ToHex('OwnedUpgradeabilityProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
+const governanceKey = web3.utils.utf8ToHex('Governance')
 
 
 module.exports = (deployer, network, accounts) => {
@@ -22,7 +23,6 @@ module.exports = (deployer, network, accounts) => {
     const registry = await Registry.deployed()
 
     const versionerAddress = config.versionerAddress || accounts[0]
-    const treasuryAddress = config.treasuryAddress || accounts[0]
 
     await deployer.deploy(VersioningStorage, Registry.address)
     await registry.addContract(versioningStorageKey, VersioningStorage.address)
@@ -37,6 +37,7 @@ module.exports = (deployer, network, accounts) => {
       Registry.address,
       stakingProxyKey,
       delegateManagerKey,
+      governanceKey,
       serviceProviderStorageKey)
 
     await registry.addContract(serviceProviderFactoryKey, ServiceProviderFactory.address)
