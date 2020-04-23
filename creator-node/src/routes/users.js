@@ -1,10 +1,17 @@
 const ethereumUtils = require('ethereumjs-util')
+const crypto = require('crypto')
+const base64url = require('base64-url')
+const { promisify } = require('util')
+const randomBytes = promisify(crypto.randomBytes)
 
 const models = require('../models')
 const { authMiddleware, syncLockMiddleware } = require('../middlewares')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const sessionManager = require('../sessionManager')
 const utils = require('../utils')
+
+const CHALLENGE_VALUE_LENGTH = 20
+const CHALLENGE_TTL_SECONDS = 600
 
 module.exports = function (app) {
   app.post('/users', handleResponse(async (req, res, next) => {
@@ -28,16 +35,9 @@ module.exports = function (app) {
     return successResponse()
   }))
 
-  app.get('/users/login/challenge', handleResponse(async (req, res, next) => {
-    const walletPublicKey = req.query.walletPublicKey
-    const redisClient = req.app.get('redisClient')
-    const challenge = (new Date()).getTime()
-    redisClient.set(walletPublicKey, challenge)
-    return successResponse({ walletPublicKey, challenge })
-  }))
-
+  // TODO: to deprecate; leaving here for backwards compatibility
   app.post('/users/login', handleResponse(async (req, res, next) => {
-    const { signature, data, challenge } = req.body
+    const { signature, data } = req.body
 
     const address = utils.verifySignature(data, signature)
     const user = await models.CNodeUser.findOne({
@@ -50,26 +50,71 @@ module.exports = function (app) {
     }
 
     const theirTimestamp = parseInt(data.split(':')[1])
-    // Conditionally verify challenge based on request parameters
-    if (challenge) {
-      req.logger.info(`Detected challenge ${challenge}`)
-      const redisClient = req.app.get('redisClient')
-      const redisValue = await redisClient.get(address)
-      if (!redisValue) {
-        return errorResponseBadRequest('Missing challenge key')
-      }
-      const ourTimestamp = parseInt(redisValue)
-      if (theirTimestamp !== ourTimestamp) {
-        return errorResponseBadRequest(`Found invalid response: User timestamp ${theirTimestamp}, Server timestamp ${ourTimestamp}`)
-      } else {
-        req.logger.info(`Found equal signatures: User timestamp ${theirTimestamp}, Server timestamp ${ourTimestamp}`)
-      }
-    } else {
-      const ourTimestamp = Math.round((new Date()).getTime() / 1000)
-      if (Math.abs(theirTimestamp - ourTimestamp) > 3600) {
-        console.error(`Timestamp too old. User timestamp ${theirTimestamp}, Server timestamp ${ourTimestamp}`)
-      }
+    const ourTimestamp = Math.round((new Date()).getTime() / 1000)
+
+    if (Math.abs(theirTimestamp - ourTimestamp) > 3600) {
+      console.error(`Timestamp too old. User timestamp ${theirTimestamp}, Server timestamp ${ourTimestamp}`)
     }
+
+    const sessionToken = await sessionManager.createSession(user.cnodeUserUUID)
+    return successResponse({ sessionToken })
+  }))
+
+  /**
+   * Return a challeng used for validating user login. Challenge value
+   * is also set in redis cache with the key 'userLoginChallenge:<wallet>'.
+   */
+  app.get('/users/login/challenge', handleResponse(async (req, res, next) => {
+    const walletPublicKey = req.query.walletPublicKey
+    const userLoginChallengeKey = `userLoginChallenge:${walletPublicKey}`
+    const redisClient = req.app.get('redisClient')
+    const challengeBuffer = await randomBytes(CHALLENGE_VALUE_LENGTH)
+    const challenge = base64url.encode(challengeBuffer)
+
+    // Set challenge ttl to 10 minutes ('EX' option = sets expire time in seconds)
+    // https://redis.io/commands/set
+    // https://github.com/luin/ioredis/blob/master/examples/basic_operations.js#L44
+    await redisClient.set(userLoginChallengeKey, challenge, 'EX', CHALLENGE_TTL_SECONDS)
+
+    return successResponse({ walletPublicKey, challenge })
+  }))
+
+  /**
+   * Checks if challenge in request body matches up with what we have stored.
+   * If request challenge matches what we have, remove instance from redis to
+   * prevent replay attacks. Return sessionToken upon success.
+   */
+  app.post('/users/login/challenge', handleResponse(async (req, res, next) => {
+    const { signature, data, challenge } = req.body
+
+    const address = utils.verifySignature(data, signature)
+    const user = await models.CNodeUser.findOne({
+      where: {
+        walletPublicKey: address
+      }
+    })
+    if (!user) {
+      return errorResponseBadRequest('Invalid data or signature')
+    }
+
+    const theirChallengeBytes = data.split(': ')[1]
+
+    req.logger.info(`Detected challenge ${challenge}`)
+    const redisClient = req.app.get('redisClient')
+    const userLoginChallengeKey = `userLoginChallenge:${address}`
+    const ourChallengeBytes = await redisClient.get(userLoginChallengeKey)
+
+    if (!ourChallengeBytes) {
+      return errorResponseBadRequest('Missing challenge key')
+    }
+
+    if (theirChallengeBytes !== ourChallengeBytes) {
+      return errorResponseBadRequest(`Found invalid response: User Challenge Value ${theirChallengeBytes}, Server Challenge Value ${ourChallengeBytes}`)
+    } else {
+      req.logger.info(`Found equal signatures: User Challenge Value ${theirChallengeBytes}, Server Challenge Value ${ourChallengeBytes}`)
+    }
+
+    redisClient.del(userLoginChallengeKey)
 
     // All checks have passed! generate a new session token for the user
     const sessionToken = await sessionManager.createSession(user.cnodeUserUUID)
