@@ -11,7 +11,7 @@ const sessionManager = require('../sessionManager')
 const utils = require('../utils')
 
 const CHALLENGE_VALUE_LENGTH = 20
-const CHALLENGE_TTL_SECONDS = 600
+const CHALLENGE_TTL_SECONDS = 120
 
 module.exports = function (app) {
   app.post('/users', handleResponse(async (req, res, next) => {
@@ -109,9 +109,9 @@ module.exports = function (app) {
     }
 
     if (theirChallengeBytes !== ourChallengeBytes) {
-      return errorResponseBadRequest(`Found invalid response: User Challenge Value ${theirChallengeBytes}, Server Challenge Value ${ourChallengeBytes}`)
+      return errorResponseBadRequest(`Invalid response.`)
     } else {
-      req.logger.info(`Found equal signatures: User Challenge Value ${theirChallengeBytes}, Server Challenge Value ${ourChallengeBytes}`)
+      req.logger.info(`Found equal signatures!`)
     }
 
     await redisClient.del(userLoginChallengeKey)
