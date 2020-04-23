@@ -476,7 +476,7 @@ contract DelegateManager is RegistryContract {
     function updateUndelegateLockupDuration(uint _duration) external {
         require(
             msg.sender == registry.getContract(governanceKey),
-            "Slash only callable from governance contract"
+            "Only callable from governance"
         );
         undelegateLockupDuration = _duration;
     }

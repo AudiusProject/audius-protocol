@@ -32,7 +32,7 @@ contract MockGovernance is RegistryContract {
     }
 
     // Test only function
-    function testUndelegateLockupDuration(uint _duration) external
+    function testUpdateUndelegateLockupDuration(uint _duration) external
     {
         DelegateManager delegateManager = DelegateManager(
             registry.getContract(delegateManagerKey)

@@ -950,5 +950,19 @@ contract('DelegateManager', async (accounts) => {
         delegateManager.undelegateStake({ from: delegatorAccount1 }),
         'Minimum stake threshold exceeded')
     })
+
+    it('undelegate lockup duration changes', async () => {
+      let currentDuration = await delegateManager.getUndelegateLockupDuration()
+      let newDuration = currentDuration.mul(web3.utils.toBN(2))
+
+      await _lib.assertRevert(
+        delegateManager.updateUndelegateLockupDuration(newDuration),
+        'Only callable from governance'
+      )
+
+      await mockGovernance.testUpdateUndelegateLockupDuration(newDuration)
+      currentDuration = await delegateManager.getUndelegateLockupDuration()
+      assert.isTrue(currentDuration.eq(newDuration))
+    })
   })
 })
