@@ -49,7 +49,8 @@ module.exports = (deployer, network, accounts) => {
         serviceProviderFactoryKey
       ])
 
-    const stakingProxy = await deployer.deploy(AdminUpgradeabilityProxy,
+    const stakingProxy = await deployer.deploy(
+      AdminUpgradeabilityProxy,
       staking0.address,
       proxyAdminAddress,
       initializeCallData,

@@ -23,6 +23,8 @@
     "lint-fix": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
+    "@openzeppelin/upgrades": "2.8.0",
+    "@truffle/contract": "^4.2.1",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "ethereumjs-abi": "^0.6.7",
