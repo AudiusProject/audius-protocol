@@ -11,15 +11,19 @@ contract TestContract is RegistryContract {
 
     uint public x = 1;
 
-    constructor(address _registryAddress) public {
+    function initialize(address _registryAddress) public initializer {
         require(
             _registryAddress != address(0x00),
             "Requires non-zero _registryAddress"
         );
         registry = RegistryInterface(_registryAddress);
+
+        RegistryContract.initialize();
     }
 
     function setX(uint _x) external {
+        requireIsInitialized();
+
         x = _x;
     }
 }

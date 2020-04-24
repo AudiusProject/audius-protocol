@@ -34,10 +34,6 @@ const toWei = (aud) => {
   return amountInAudWeiBN
 }
 
-const fromWei = (wei) => {
-  return web3.utils.fromWei(wei)
-}
-
 // 1000 AUD converted to AUDWei, multiplying by 10^18
 const INITIAL_BAL = toWei(1000)
 const DEFAULT_AMOUNT = toWei(120)
@@ -53,7 +49,9 @@ contract('DelegateManager', async (accounts) => {
 
   beforeEach(async () => {
     token = await AudiusToken.new({ from: treasuryAddress })
+    await token.initialize()
     registry = await Registry.new({ from: treasuryAddress })
+    await registry.initialize()
 
     // Set up staking
     staking0 = await Staking.new({ from: proxyAdminAddress })
@@ -144,11 +142,8 @@ contract('DelegateManager', async (accounts) => {
     // Register new contract as a minter, from the same address that deployed the contract
     await token.addMinter(claimsManager.address, { from: treasuryAddress })
 
-    mockGovernance = await MockGovernance.new(
-      registry.address,
-      delegateManagerKey,
-      { from: accounts[0] }
-    )
+    mockGovernance = await MockGovernance.new()
+    await mockGovernance.initialize(registry.address, delegateManagerKey)
     await registry.addContract(governanceKey, mockGovernance.address)
 
     const delegateManagerInitializeData = encodeCall(

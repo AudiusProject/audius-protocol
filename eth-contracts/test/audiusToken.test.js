@@ -1,3 +1,4 @@
+import * as _lib from './_lib/lib.js'
 const AudiusToken = artifacts.require('AudiusToken')
 
 contract('AudiusToken', async (accounts) => {
@@ -12,6 +13,7 @@ contract('AudiusToken', async (accounts) => {
 
   beforeEach(async () => {
     token = await AudiusToken.new({ from: treasuryAddress })
+    await token.initialize()
   })
 
   it('Initial token properties', async () => {
@@ -27,25 +29,17 @@ contract('AudiusToken', async (accounts) => {
   })
 
   it('Transfers', async () => {
+    const amount = 1000
     // transfer
-    await token.transfer(accounts[1], 1000, {from: treasuryAddress})
-    assert.equal(await token.balanceOf(treasuryAddress), INITIAL_SUPPLY - 1000)
-    assert.equal(await token.balanceOf(accounts[1]), 1000)
+    await token.transfer(accounts[1], amount, {from: treasuryAddress})
+    assert.equal(await token.balanceOf(treasuryAddress), INITIAL_SUPPLY - amount)
+    assert.equal(await token.balanceOf(accounts[1]), amount)
 
     // fail to transfer above balance
-    let caughtError = false
-    try {
-      await token.transfer(accounts[2], 10000, {from: accounts[1]})
-    } catch (e) {
-      // catch expected error
-      if (e.message.indexOf('subtraction overflow') >= 0) {
-        caughtError = true
-      } else {
-        // throw on unexpected error
-        throw e
-      }
-    }
-    assert.isTrue(caughtError)
+    await _lib.assertRevert(
+      token.transfer(accounts[2], 2*amount, {from: accounts[1]}),
+      'transfer amount exceeds balance' 
+    )
   })
 
   it('Burn from treasury', async () => {

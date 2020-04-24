@@ -30,8 +30,7 @@ const DEFAULT_AMOUNT = toWei(120)
 
 contract('ClaimsManager', async (accounts) => {
   let token, registry, staking0, stakingProxy, staking, claimsManager0, claimsManagerProxy, claimsManager
-  let mockDelegateManager
-  let mockStakingCaller
+  let mockDelegateManager, mockStakingCaller
 
   const BN = web3.utils.BN
   const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress, staker] = accounts
@@ -54,7 +53,9 @@ contract('ClaimsManager', async (accounts) => {
 
   beforeEach(async () => {
     token = await AudiusToken.new({ from: treasuryAddress })
+    await token.initialize()
     registry = await Registry.new({ from: treasuryAddress })
+    await registry.initialize()
 
     // Deploy and register stakingProxy
     staking0 = await Staking.new({ from: proxyDeployerAddress })
@@ -80,11 +81,13 @@ contract('ClaimsManager', async (accounts) => {
     staking = await Staking.at(stakingProxy.address)
 
     // Mock SP for test
-    mockStakingCaller = await MockStakingCaller.new(stakingProxy.address, token.address)
+    mockStakingCaller = await MockStakingCaller.new()
+    await mockStakingCaller.initialize(stakingProxy.address, token.address)
     await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
 
     // Deploy mock delegate manager with only function to forward processClaim call
-    mockDelegateManager = await MockDelegateManager.new(registry.address, claimsManagerProxyKey, { from: accounts[0] })
+    mockDelegateManager = await MockDelegateManager.new()
+    await mockDelegateManager.initialize(registry.address, claimsManagerProxyKey)
     await registry.addContract(delegateManagerKey, mockDelegateManager.address)
 
     // Deploy claimsManagerProxy

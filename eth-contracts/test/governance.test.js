@@ -96,7 +96,9 @@ contract('Governance.sol', async (accounts) => {
    */
   beforeEach(async () => {
     token = await AudiusToken.new({ from: treasuryAddress })
+    await token.initialize()
     registry = await Registry.new({ from: treasuryAddress })
+    await registry.initialize()
 
     // Create initialization data
     let stakingInitializeData = encodeCall(
@@ -185,12 +187,12 @@ contract('Governance.sol', async (accounts) => {
     await token.addMinter(claimsManager.address, { from: protocolOwnerAddress })
 
     // Deploy Governance contract
-    governance = await Governance.new(
+    governance = await Governance.new()
+    await governance.initialize(
       registry.address,
       stakingProxyKey,
       votingPeriod,
-      votingQuorum,
-      { from: protocolOwnerAddress }
+      votingQuorum
     )
     await registry.addContract(governanceKey, governance.address, { from: protocolOwnerAddress })
 

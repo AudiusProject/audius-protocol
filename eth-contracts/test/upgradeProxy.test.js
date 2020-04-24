@@ -51,7 +51,9 @@ contract('Upgrade proxy test', async (accounts) => {
 
   beforeEach(async () => {
     token = await AudiusToken.new({ from: accounts[0] })
+    await token.initialize()
     registry = await Registry.new()
+    await registry.initialize()
 
     staking0 = await Staking.new({ from: proxyAdminAddress })
     stakingUpgraded = await StakingUpgraded.new({ from: proxyAdminAddress })
@@ -79,17 +81,18 @@ contract('Upgrade proxy test', async (accounts) => {
     )
 
     // Register mock contract as claimsManager, spFactory, delegateManager
-    mockStakingCaller = await MockStakingCaller.new(proxy.address, token.address)
+    mockStakingCaller = await MockStakingCaller.new()
+    await mockStakingCaller.initialize(proxy.address, token.address)
     await registry.addContract(claimsManagerProxyKey, mockStakingCaller.address)
     await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
     await registry.addContract(delegateManagerKey, mockStakingCaller.address)
   })
 
   it('Fails to call Staking contract function before proxy initialization', async () => {
-    const stakingLogic = await Staking.new({ from: proxyAdminAddress })
-    _lib.assertRevert(
-      stakingLogic.totalStaked.call({ from: proxyDeployerAddress }),
-      "revert INIT_NOT_INITIALIZED"
+    const mock = await MockStakingCaller.new({ from: proxyAdminAddress })
+    await _lib.assertRevert(
+      mock.stakeRewards(10, accounts[5], { from: proxyDeployerAddress }),
+      "INIT_NOT_INITIALIZED"
     )
   })
 
@@ -102,13 +105,13 @@ contract('Upgrade proxy test', async (accounts) => {
 
   it('fail to call newFunction before upgrade', async () => {
     staking = await StakingUpgraded.at(proxy.address)
-    await _lib.assertRevert(staking.newFunction.call({ from: proxyDeployerAddress }))
+    await _lib.assertRevert(staking.newFunction.call({ from: proxyDeployerAddress }), 'revert')
   })
 
   it('upgrade proxy to StakingUpgraded + call newFunction()', async () => {
     // assert proxy.newFunction() not callable before upgrade
     staking = await StakingUpgraded.at(proxy.address)
-    await _lib.assertRevert(staking.newFunction.call({ from: proxyDeployerAddress }))
+    await _lib.assertRevert(staking.newFunction.call({ from: proxyDeployerAddress }), 'revert')
 
     await proxy.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
     assert.equal(await proxy.implementation.call({ from: proxyAdminAddress }), stakingUpgraded.address)

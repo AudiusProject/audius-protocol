@@ -1,4 +1,3 @@
-const abi = require('ethereumjs-abi')
 const contractConfig = require('../contract-config.js')
 
 const encodeCall = require('../utils/encodeCall')

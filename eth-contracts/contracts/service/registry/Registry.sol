@@ -1,6 +1,8 @@
 pragma solidity ^0.5.0;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
+
+import "../../InitializableV2.sol";
 import "../interface/registry/RegistryContractInterface.sol";
 
 
@@ -13,9 +15,8 @@ import "../interface/registry/RegistryContractInterface.sol";
 *      Calling Contract -> Registry -> Destination Contract
 *    It also serves as a communication hub and a version manager that can
 *    upgrade existing contracts and remove contracts
-* @dev for simplicity, this is the only contract that does not have de-coupled storage
 */
-contract Registry is Ownable {
+contract Registry is InitializableV2, Ownable {
 
     /**
      * @dev addressStorage mapping allows efficient lookup of current contract version
@@ -28,6 +29,11 @@ contract Registry is Ownable {
     event ContractRemoved(bytes32 _name, address _address);
     event ContractUpgraded(bytes32 _name, address _oldAddress, address _newAddress);
 
+    function initialize() public initializer {
+        Ownable.initialize(msg.sender);
+        InitializableV2.initialize();
+    }
+
     /**
      * @dev addContract does two things:
      *      1.) registers the address of given RegistryContract in the registry
@@ -35,6 +41,7 @@ contract Registry is Ownable {
      *          the registry can call functions on given contract
      */
     function addContract(bytes32 _name, address _address) external onlyOwner {
+        requireIsInitialized();
         require(
             addressStorage[_name] == address(0x00),
             "Requires that given _name does not already have non-zero registered contract address"
@@ -78,6 +85,7 @@ contract Registry is Ownable {
      * @param _name - registry key for lookup
      */
     function removeContract(bytes32 _name) external onlyOwner {
+        requireIsInitialized();
         address contractAddress = addressStorage[_name];
         require(
             contractAddress != address(0x00),
@@ -94,6 +102,7 @@ contract Registry is Ownable {
      * @param _newAddress - new contract address to register under given key
      */
     function upgradeContract(bytes32 _name, address _newAddress) external onlyOwner {
+        requireIsInitialized();
         address oldAddress = addressStorage[_name];
         require(
             oldAddress != address(0x00),

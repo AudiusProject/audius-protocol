@@ -1,5 +1,10 @@
+
+const contractConfig = require('../contract-config.js')
+const encodeCall = require('../utils/encodeCall')
+
 const Registry = artifacts.require('Registry')
 const Governance = artifacts.require('Governance')
+const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const governanceKey = web3.utils.utf8ToHex('Governance')
@@ -12,18 +17,26 @@ const VotingQuorum = 1
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
     const protocolOwner = accounts[0]
+    // TODO move to contractConfig
+    const [proxyAdminAddress, proxyDeployerAddress] = [accounts[10], accounts[11]]
     
     const registry = await Registry.deployed()
 
-    const governance = await deployer.deploy(
-      Governance,
-      registry.address,
-      stakingProxyKey,
-      VotingPeriod,
-      VotingQuorum,
-      { from: protocolOwner }
+    const initializeCallData = encodeCall(
+      'initialize',
+      ['address', 'bytes32', 'uint256', 'uint256'],
+      [registry.address, stakingProxyKey, VotingPeriod, VotingQuorum]
+    )
+    
+    const governance0 = await deployer.deploy(Governance, { from: protocolOwner })
+    const governanceProxy = await deployer.deploy(
+      AdminUpgradeabilityProxy,
+      governance0.address,
+      proxyAdminAddress,
+      initializeCallData,
+      { from: proxyDeployerAddress }
     )
 
-    await registry.addContract(governanceKey, governance.address, { from: protocolOwner })
+    await registry.addContract(governanceKey, governanceProxy.address, { from: protocolOwner })
   })
 }

@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 import "../service/registry/RegistryContract.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "../staking/Staking.sol";
 
 
@@ -14,16 +14,18 @@ contract MockStakingCaller is RegistryContract {
     ERC20 internal stakingToken;
     address stakingAddress;
 
-    constructor(
+    function initialize(
       address _stakingAddress,
       address _tokenAddress
-    ) public {
+    ) public initializer {
         stakingAddress = _stakingAddress;
         staking = Staking(_stakingAddress);
         stakingToken = ERC20(_tokenAddress);
 
         // Configure test max
         max = 100000000 * 10**uint256(18);
+
+        RegistryContract.initialize();
     }
 
     // Test only function
@@ -31,6 +33,8 @@ contract MockStakingCaller is RegistryContract {
         uint _amount,
         address _staker
     ) external {
+      requireIsInitialized();
+
       // pull tokens into contract
       stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
       // Approve transfer
@@ -45,6 +49,8 @@ contract MockStakingCaller is RegistryContract {
       uint256 _amount,
       bytes calldata _data
     ) external {
+      requireIsInitialized();
+
       staking.stakeFor(_accountAddress, _amount, _data);
     }
 
@@ -54,6 +60,8 @@ contract MockStakingCaller is RegistryContract {
       uint256 _amount,
       bytes calldata _data
     ) external {
+      requireIsInitialized();
+
       staking.unstakeFor(_accountAddress, _amount, _data);
     }
 
@@ -61,6 +69,8 @@ contract MockStakingCaller is RegistryContract {
         uint256 _amount,
         address _slashAddress
     ) external {
+      requireIsInitialized();
+
       staking.slash(_amount, _slashAddress);
     }
 

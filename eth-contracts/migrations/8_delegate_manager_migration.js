@@ -1,4 +1,5 @@
 const encodeCall = require('../utils/encodeCall')
+
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
 const DelegateManager = artifacts.require('DelegateManager')

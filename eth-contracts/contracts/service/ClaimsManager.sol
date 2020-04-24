@@ -1,18 +1,17 @@
 pragma solidity ^0.5.0;
 import "../staking/Staking.sol";
 import "./registry/RegistryContract.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "./interface/registry/RegistryInterface.sol";
 import "./ServiceProviderFactory.sol";
-import "../InitializableV2.sol";
 
 
 /**
  * Designed to automate claim funding, minting tokens as necessary
  * @notice - will call RegistryContract.constructor, which calls Ownable constructor
  */
-contract ClaimsManager is InitializableV2, RegistryContract {
+contract ClaimsManager is RegistryContract {
     using SafeMath for uint256;
 
     // standard - imitates relationship between Ether and Wei
@@ -77,36 +76,37 @@ contract ClaimsManager is InitializableV2, RegistryContract {
         roundNumber = 0;
         totalClaimedInRound = 0;
 
-        InitializableV2.initialize();
+        RegistryContract.initialize();
     }
 
     function getFundingRoundBlockDiff()
-    external view isInitialized returns (uint blockDiff)
+    external view returns (uint blockDiff)
     {
         return fundRoundBlockDiff;
     }
 
     function getLastFundBlock()
-    external view isInitialized returns (uint lastFundBlock)
+    external view returns (uint lastFundBlock)
     {
         return fundBlock;
     }
 
     function getFundsPerRound()
-    external view isInitialized returns (uint amount)
+    external view returns (uint amount)
     {
         return fundingAmount;
     }
 
     function getTotalClaimedInRound()
-    external view isInitialized returns (uint claimedAmount)
+    external view returns (uint claimedAmount)
     {
         return totalClaimedInRound;
     }
 
     // Start a new funding round
     // Permissioned to stakers or contract deployer
-    function initiateRound() external isInitialized {
+    function initiateRound() external {
+        requireIsInitialized();
         bool senderStaked = Staking(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(msg.sender) > 0;
@@ -136,8 +136,9 @@ contract ClaimsManager is InitializableV2, RegistryContract {
     function processClaim(
         address _claimer,
         uint _totalLockedForSP
-    ) external isInitialized returns (uint newAccountTotal)
+    ) external returns (uint newAccountTotal)
     {
+        requireIsInitialized();
         require(
             msg.sender == registry.getContract(delegateManagerKey),
             "ProcessClaim only accessible to DelegateManager"
@@ -197,7 +198,7 @@ contract ClaimsManager is InitializableV2, RegistryContract {
         return newTotal;
     }
 
-    function claimPending(address _sp) external view isInitialized returns (bool pending) {
+    function claimPending(address _sp) external view returns (bool pending) {
         uint lastClaimedForSP = Staking(
             registry.getContract(stakingProxyOwnerKey)
         ).lastClaimedFor(_sp);

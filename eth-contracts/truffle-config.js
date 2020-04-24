@@ -55,7 +55,18 @@ module.exports = {
     solc: {
       parser: 'solcjs', // Leverages solc-js purely for speedy parsing
       settings: {
-        evmVersion: 'byzantium'
+        evmVersion: 'constantinople',
+        optimizer: {
+          enabled: true,
+          // runs: 10 // defaults to 200 --> ideally we should increase as much as possible until we ,
+          details: {
+            orderLiterals: true,
+            deduplicate: true,
+            cse: true,
+            constantOptimizer: true,
+            yul: false // TODO try after solc upgrade
+          }
+        }
       }
     }
   },

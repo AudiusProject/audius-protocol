@@ -4,10 +4,9 @@ import "./registry/RegistryContract.sol";
 import "./ServiceTypeManager.sol";
 import "../staking/ERCStaking.sol";
 import "./interface/registry/RegistryInterface.sol";
-import "../InitializableV2.sol";
 
 
-contract ServiceProviderFactory is RegistryContract, InitializableV2 {
+contract ServiceProviderFactory is RegistryContract {
     RegistryInterface private registry = RegistryInterface(0);
     bytes32 private stakingProxyOwnerKey;
     bytes32 private delegateManagerKey;
@@ -124,7 +123,8 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
 
         // Configure direct minimum stake for deployer
         minDeployerStake = 5 * 10**uint256(DECIMALS);
-        InitializableV2.initialize();
+
+        RegistryContract.initialize();
     }
 
     /// @dev - Register a new endpoint to the account of msg.sender
@@ -134,8 +134,10 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         string calldata _endpoint,
         uint256 _stakeAmount,
         address _delegateOwnerWallet
-    ) external isInitialized returns (uint spID)
+    ) external returns (uint spID)
     {
+        requireIsInitialized();
+
         require(
             ServiceTypeManager(
                 registry.getContract(serviceTypeManagerKey)
@@ -214,8 +216,10 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
     function deregister(
         bytes32 _serviceType,
         string calldata _endpoint
-    ) external isInitialized returns (uint deregisteredSpID)
+    ) external returns (uint deregisteredSpID)
     {
+        requireIsInitialized();
+
         // Unstake on deregistration if and only if this is the last service endpoint
         uint unstakeAmount = 0;
         bool unstaked = false;
@@ -292,7 +296,9 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         return deregisteredID;
     }
 
-    function increaseStake(uint256 _increaseStakeAmount) external isInitialized returns (uint newTotalStake) {
+    function increaseStake(uint256 _increaseStakeAmount) external returns (uint newTotalStake) {
+        requireIsInitialized();
+
         address owner = msg.sender;
 
         // Confirm owner has an endpoint
@@ -324,7 +330,9 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         return newStakeAmount;
     }
 
-    function decreaseStake(uint256 _decreaseStakeAmount) external isInitialized returns (uint newTotalStake) {
+    function decreaseStake(uint256 _decreaseStakeAmount) external returns (uint newTotalStake) {
+        requireIsInitialized();
+
         address owner = msg.sender;
 
         // Confirm owner has an endpoint
