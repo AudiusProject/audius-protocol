@@ -9,25 +9,26 @@ import "../staking/Staking.sol";
 import "./ServiceProviderFactory.sol";
 import "./ClaimsManager.sol";
 import "../Governance.sol";
+import "../InitializableV2.sol";
 
 
 // WORKING CONTRACT
 // Designed to manage delegation to staking contract
-contract DelegateManager is RegistryContract {
+contract DelegateManager is InitializableV2, RegistryContract {
     using SafeMath for uint256;
     RegistryInterface registry = RegistryInterface(0);
 
-    address tokenAddress;
-    address stakingAddress;
+    address private tokenAddress;
+    address private stakingAddress;
 
-    bytes32 stakingProxyOwnerKey;
-    bytes32 serviceProviderFactoryKey;
-    bytes32 claimsManagerKey;
-    bytes32 governanceKey;
+    bytes32 private stakingProxyOwnerKey;
+    bytes32 private serviceProviderFactoryKey;
+    bytes32 private claimsManagerKey;
+    bytes32 private governanceKey;
 
     // Number of blocks an undelegate operation has to wait
     // TODO: Move this value to Staking.sol as SPFactory may need as well
-    uint undelegateLockupDuration = 10;
+    uint undelegateLockupDuration;
 
     // Staking contract ref
     ERC20Mintable internal audiusToken;
@@ -87,14 +88,14 @@ contract DelegateManager is RegistryContract {
       uint _newTotal
     );
 
-    constructor(
+    function initialize (
       address _tokenAddress,
       address _registryAddress,
       bytes32 _governanceKey,
       bytes32 _stakingProxyOwnerKey,
       bytes32 _serviceProviderFactoryKey,
       bytes32 _claimsManagerKey
-    ) public {
+    ) public initializer {
         tokenAddress = _tokenAddress;
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
@@ -102,6 +103,8 @@ contract DelegateManager is RegistryContract {
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
         claimsManagerKey = _claimsManagerKey;
+        undelegateLockupDuration = 10;
+        InitializableV2.initialize();
     }
 
     function delegateStake(

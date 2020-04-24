@@ -161,16 +161,20 @@ contract('Governance.sol', async (accounts) => {
     await registry.addContract(governanceKey, governance.address, { from: protocolOwnerAddress })
 
     // Deploy DelegateManager contract
-    delegateManager = await DelegateManager.new(
-      token.address,
-      registry.address,
-      governanceKey,
-      stakingProxyKey,
-      serviceProviderFactoryKey,
-      claimsManagerProxyKey,
-      { from: protocolOwnerAddress }
+    const delegateManagerInitializeData = encodeCall(
+      'initialize',
+      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [token.address, registry.address, governanceKey, stakingProxyKey, serviceProviderFactoryKey, claimsManagerProxyKey]
     )
-    await registry.addContract(delegateManagerKey, delegateManager.address, { from: protocolOwnerAddress })
+    let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
+    let delegateManagerProxy = await AdminUpgradeabilityProxy.new(
+      delegateManager0.address,
+      proxyAdminAddress,
+      delegateManagerInitializeData,
+      { from: proxyDeployerAddress }
+    )
+    delegateManager = await DelegateManager.at(delegateManagerProxy.address)
+    await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: protocolOwnerAddress })
   })
 
   describe('Slash proposal', async () => {
