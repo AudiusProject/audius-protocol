@@ -102,7 +102,7 @@ contract('ClaimsManager', async (accounts) => {
     )
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
 
-    // Register claim factory instance
+    // Register claimsManagerProxy
     await registry.addContract(
       claimsManagerProxyKey,
       claimsManagerProxy.address
