@@ -1,5 +1,4 @@
 pragma solidity ^0.5.0;
-import "../staking/Staking.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "./registry/RegistryContract.sol";
@@ -8,12 +7,12 @@ import "./interface/registry/RegistryInterface.sol";
 import "../staking/Staking.sol";
 import "./ServiceProviderFactory.sol";
 import "./ClaimsManager.sol";
-import "../Governance.sol";
 import "../InitializableV2.sol";
 
-
-// WORKING CONTRACT
-// Designed to manage delegation to staking contract
+/**
+ * Designed to manage delegation to staking contract
+ * @notice - will call RegistryContract.constructor, which calls Ownable constructor
+ */
 contract DelegateManager is InitializableV2, RegistryContract {
     using SafeMath for uint256;
     RegistryInterface registry = RegistryInterface(0);
@@ -108,12 +107,12 @@ contract DelegateManager is InitializableV2, RegistryContract {
     }
 
     function delegateStake(
-        address _target,
+        address _targetSP,
         uint _amount
-    ) external returns (uint delegeatedAmountForSP)
+    ) external isInitialized returns (uint delegatedAmount)
     {
         require(
-            claimPending(_target) == false,
+            claimPending(_targetSP) == false,
             "Delegation not permitted for SP pending claim"
         );
         address delegator = msg.sender;
@@ -123,7 +122,7 @@ contract DelegateManager is InitializableV2, RegistryContract {
 
         // Stake on behalf of target service provider
         stakingContract.delegateStakeFor(
-            _target,
+            _targetSP,
             delegator,
             _amount,
             empty
@@ -131,19 +130,21 @@ contract DelegateManager is InitializableV2, RegistryContract {
 
         emit IncreaseDelegatedStake(
             delegator,
-            _target,
+            _targetSP,
             _amount
         );
 
         // Update list of delegators to SP if necessary
-        // TODO: Any validation on returned value?
-        updateServiceProviderDelegatorsIfNecessary(delegator, _target);
+        if (!delegatorExistsForSP(delegator, _targetSP)) {
+            // If not found, update list of delegates
+            spDelegateInfo[_targetSP].delegators.push(delegator);
+        }
 
         // Update total delegated for SP
-        spDelegateInfo[_target].totalDelegatedStake += _amount;
+        spDelegateInfo[_targetSP].totalDelegatedStake += _amount;
 
         // Update amount staked from this delegator to targeted service provider
-        delegateInfo[delegator][_target] += _amount;
+        delegateInfo[delegator][_targetSP] += _amount;
 
         // Update total delegated stake
         delegatorStakeTotal[delegator] += _amount;
@@ -151,32 +152,32 @@ contract DelegateManager is InitializableV2, RegistryContract {
         // Validate balance
         ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)
-        ).validateAccountStakeBalance(_target);
+        ).validateAccountStakeBalance(_targetSP);
 
         // Return new total
-        return delegateInfo[delegator][_target];
+        return delegateInfo[delegator][_targetSP];
     }
 
     // Submit request for undelegation
     function requestUndelegateStake(
         address _target,
         uint _amount
-    ) external returns (uint newDelegateAmount)
+    ) external isInitialized returns (uint newDelegateAmount)
     {
         require(
             claimPending(_target) == false,
             "Undelegate request not permitted for SP pending claim"
         );
         address delegator = msg.sender;
-        bool exists = delegatorExistsForSP(delegator, _target);
-        require(exists, "Delegator must be staked for SP");
+        require(delegatorExistsForSP(delegator, _target), "Delegator must be staked for SP");
 
         // Confirm no pending delegation request
         require(
-            undelegateRequests[delegator].lockupExpiryBlock == 0, "No pending lockup expiry allowed");
-        require(undelegateRequests[delegator].amount == 0, "No pending lockup amount allowed");
-        require(
-            undelegateRequests[delegator].serviceProvider == address(0), "No pending lockup SP allowed");
+            (undelegateRequests[delegator].lockupExpiryBlock == 0) &&
+            (undelegateRequests[delegator].amount == 0) && 
+            (undelegateRequests[delegator].serviceProvider == address(0)),
+            "No pending lockup expected"
+        );
 
         // Ensure valid bounds
         uint currentlyDelegatedToSP = delegateInfo[delegator][_target];
@@ -184,10 +185,8 @@ contract DelegateManager is InitializableV2, RegistryContract {
             _amount <= currentlyDelegatedToSP,
             "Cannot decrease greater than currently staked for this ServiceProvider");
 
-        uint expiryBlock = block.number + undelegateLockupDuration;
-
         undelegateRequests[delegator] = UndelegateStakeRequest({
-            lockupExpiryBlock: expiryBlock,
+            lockupExpiryBlock: block.number + undelegateLockupDuration,
             amount: _amount,
             serviceProvider: _target
         });
@@ -199,14 +198,15 @@ contract DelegateManager is InitializableV2, RegistryContract {
     }
 
     // Cancel undelegation request
-    function cancelUndelegateStake() external {
+    function cancelUndelegateStake() external isInitialized {
         address delegator = msg.sender;
         // Confirm pending delegation request
         require(
-            undelegateRequests[delegator].lockupExpiryBlock != 0, "Pending lockup expiry expected");
-        require(undelegateRequests[delegator].amount != 0, "Pending lockup amount expected");
-        require(
-            undelegateRequests[delegator].serviceProvider != address(0), "Pending lockup SP expected");
+            (undelegateRequests[delegator].lockupExpiryBlock != 0) &&
+            (undelegateRequests[delegator].amount != 0) && 
+            (undelegateRequests[delegator].serviceProvider != address(0)),
+            "Pending lockup expected"
+        );
         // Remove pending request
         undelegateRequests[delegator] = UndelegateStakeRequest({
             lockupExpiryBlock: 0,
@@ -216,15 +216,16 @@ contract DelegateManager is InitializableV2, RegistryContract {
     }
 
     // Finalize undelegation request and withdraw stake
-    function undelegateStake() external returns (uint newTotal) {
+    function undelegateStake() external isInitialized returns (uint newTotal) {
         address delegator = msg.sender;
 
         // Confirm pending delegation request
         require(
-            undelegateRequests[delegator].lockupExpiryBlock != 0, "Pending lockup expiry expected");
-        require(undelegateRequests[delegator].amount != 0, "Pending lockup amount expected");
-        require(
-            undelegateRequests[delegator].serviceProvider != address(0), "Pending lockup SP expected");
+            (undelegateRequests[delegator].lockupExpiryBlock != 0) &&
+            (undelegateRequests[delegator].amount != 0) && 
+            (undelegateRequests[delegator].serviceProvider != address(0)),
+            "Pending lockup expected"
+        );
 
         // Confirm lockup expiry has expired
         require(
@@ -239,8 +240,7 @@ contract DelegateManager is InitializableV2, RegistryContract {
         address serviceProvider = undelegateRequests[delegator].serviceProvider;
         uint unstakeAmount = undelegateRequests[delegator].amount;
 
-        bool exists = delegatorExistsForSP(delegator, serviceProvider);
-        require(exists, "Delegator must be staked for SP");
+        require(delegatorExistsForSP(delegator, serviceProvider), "Delegator must be staked for SP");
 
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
@@ -265,20 +265,13 @@ contract DelegateManager is InitializableV2, RegistryContract {
 
         // Remove from delegators list if no delegated stake remaining
         if (delegateInfo[delegator][serviceProvider] == 0) {
-            bool foundDelegator;
-            uint delegatorIndex;
             for (uint i = 0; i < spDelegateInfo[serviceProvider].delegators.length; i++) {
                 if (spDelegateInfo[serviceProvider].delegators[i] == delegator) {
-                    foundDelegator = true;
-                    delegatorIndex = i;
+                    // Overwrite and shrink delegators list
+                    spDelegateInfo[serviceProvider].delegators[i] = spDelegateInfo[serviceProvider].delegators[spDelegateInfo[serviceProvider].delegators.length - 1];
+                    spDelegateInfo[serviceProvider].delegators.length--;
+                    break;
                 }
-            }
-
-            if (foundDelegator) {
-                // Overwrite and shrink delegators list
-                uint lastIndex = spDelegateInfo[serviceProvider].delegators.length - 1;
-                spDelegateInfo[serviceProvider].delegators[delegatorIndex] = spDelegateInfo[serviceProvider].delegators[lastIndex];
-                spDelegateInfo[serviceProvider].delegators.length--;
             }
         }
 
@@ -308,7 +301,7 @@ contract DelegateManager is InitializableV2, RegistryContract {
       Can be stress tested and split out if needed
     */
     // Distribute proceeds of reward
-    function claimRewards() external {
+    function claimRewards() external isInitialized {
         ClaimsManager claimsManager = ClaimsManager(
             registry.getContract(claimsManagerKey)
         );
@@ -401,7 +394,7 @@ contract DelegateManager is InitializableV2, RegistryContract {
     }
 
     function slash(uint _amount, address _slashAddress)
-    external
+    external isInitialized
     {
         require(
             msg.sender == registry.getContract(governanceKey),
@@ -560,19 +553,6 @@ contract DelegateManager is InitializableV2, RegistryContract {
         }
         // Not found
         return false;
-    }
-
-    function updateServiceProviderDelegatorsIfNecessary (
-        address _delegator,
-        address _serviceProvider
-    ) internal returns (bool exists)
-    {
-        bool delegatorFound = delegatorExistsForSP(_delegator, _serviceProvider);
-        if (!delegatorFound) {
-            // If not found, update list of delegates
-            spDelegateInfo[_serviceProvider].delegators.push(_delegator);
-        }
-        return delegatorFound;
     }
 
     function claimPending(address _sp) internal view returns (bool pending) {
