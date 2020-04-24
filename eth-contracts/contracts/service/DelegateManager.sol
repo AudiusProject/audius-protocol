@@ -26,7 +26,6 @@ contract DelegateManager is RegistryContract {
     bytes32 governanceKey;
 
     // Number of blocks an undelegate operation has to wait
-    // TODO: Expose CRUD
     // TODO: Move this value to Staking.sol as SPFactory may need as well
     uint undelegateLockupDuration = 10;
 
@@ -472,6 +471,17 @@ contract DelegateManager is RegistryContract {
     }
 
     /**
+     * @notice Update duration for undelegate request lockup
+     */
+    function updateUndelegateLockupDuration(uint _duration) external {
+        require(
+            msg.sender == registry.getContract(governanceKey),
+            "Only callable from governance"
+        );
+        undelegateLockupDuration = _duration;
+    }
+
+    /**
      * @notice List of delegators for a given service provider
      */
     function getDelegatorsList(address _sp)
@@ -524,6 +534,15 @@ contract DelegateManager is RegistryContract {
     {
         UndelegateStakeRequest memory req = undelegateRequests[_delegator];
         return (req.serviceProvider, req.amount, req.lockupExpiryBlock);
+    }
+
+    /**
+     * @notice Current undelegate lockup duration
+     */
+    function getUndelegateLockupDuration()
+    external view returns (uint duration)
+    {
+        return undelegateLockupDuration;
     }
 
     function delegatorExistsForSP(

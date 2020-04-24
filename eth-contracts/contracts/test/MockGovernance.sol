@@ -30,5 +30,14 @@ contract MockGovernance is RegistryContract {
         );
         delegateManager.slash(_amount, _slashAddress);
     }
+
+    // Test only function
+    function testUpdateUndelegateLockupDuration(uint _duration) external
+    {
+        DelegateManager delegateManager = DelegateManager(
+            registry.getContract(delegateManagerKey)
+        );
+        delegateManager.updateUndelegateLockupDuration(_duration);
+    }
 }
 

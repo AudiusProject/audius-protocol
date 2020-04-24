@@ -355,51 +355,52 @@ contract ServiceProviderFactory is RegistryContract {
         uint _serviceTypeMax
     ) external
     {
-      require(
-          msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
-          "Only deployer or governance");
-      require(!this.isValidServiceType(_serviceType), "Already known service type");
-      validServiceTypes.push(_serviceType);
-      serviceTypeStakeRequirements[_serviceType] = ServiceInstanceStakeRequirements({
-          minStake: _serviceTypeMin,
-          maxStake: _serviceTypeMax
-      });
+        require(
+            msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
+            "Only deployer or governance");
+        require(!this.isValidServiceType(_serviceType), "Already known service type");
+        validServiceTypes.push(_serviceType);
+        serviceTypeStakeRequirements[_serviceType] = ServiceInstanceStakeRequirements({
+            minStake: _serviceTypeMin,
+            maxStake: _serviceTypeMax
+        });
     }
 
     function removeServiceType(bytes32 _serviceType) external {
-      require(
-          msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
-          "Only deployer or governance");
-      uint serviceIndex = 0;
-      bool foundService = false;
-      for (uint i = 0; i < validServiceTypes.length; i ++) {
-          if (validServiceTypes[i] == _serviceType) {
-              serviceIndex = i;
-              foundService = true;
-              break;
-          }
-      }
-      require(foundService == true, "Invalid service type, not found");
-      // Overwrite service index
-      uint lastIndex = validServiceTypes.length - 1;
-      validServiceTypes[serviceIndex] = validServiceTypes[lastIndex];
-      validServiceTypes.length--;
-      // Overwrite values
-      serviceTypeStakeRequirements[_serviceType].minStake = 0;
-      serviceTypeStakeRequirements[_serviceType].maxStake = 0;
+        require(
+            msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
+            "Only deployer or governance");
+        uint serviceIndex = 0;
+        bool foundService = false;
+        for (uint i = 0; i < validServiceTypes.length; i ++) {
+            if (validServiceTypes[i] == _serviceType) {
+                serviceIndex = i;
+                foundService = true;
+                break;
+            }
+        }
+        require(foundService == true, "Invalid service type, not found");
+        // Overwrite service index
+        uint lastIndex = validServiceTypes.length - 1;
+        validServiceTypes[serviceIndex] = validServiceTypes[lastIndex];
+        validServiceTypes.length--;
+        // Overwrite values
+        serviceTypeStakeRequirements[_serviceType].minStake = 0;
+        serviceTypeStakeRequirements[_serviceType].maxStake = 0;
     }
 
     function updateServiceType(
         bytes32 _serviceType,
         uint _serviceTypeMin,
         uint _serviceTypeMax
-    ) external {
-      require(
-          msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
-          "Only deployer or governance");
-      require(this.isValidServiceType(_serviceType), "Invalid service type");
-      serviceTypeStakeRequirements[_serviceType].minStake = _serviceTypeMin;
-      serviceTypeStakeRequirements[_serviceType].maxStake = _serviceTypeMax;
+    ) external
+    {
+        require(
+            msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
+            "Only deployer or governance");
+        require(this.isValidServiceType(_serviceType), "Invalid service type");
+        serviceTypeStakeRequirements[_serviceType].minStake = _serviceTypeMin;
+        serviceTypeStakeRequirements[_serviceType].maxStake = _serviceTypeMax;
     }
 
     /**
