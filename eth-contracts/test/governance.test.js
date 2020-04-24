@@ -62,7 +62,7 @@ const Vote = Object.freeze({
 })
 
 contract('Governance.sol', async (accounts) => {
-  let token, registry, staking0, staking, proxy
+  let token, registry, staking0, staking, proxy, claimsManager0, claimsManagerProxy
   let serviceProviderStorage, serviceProviderFactory, claimsManager, delegateManager, governance
 
   const votingPeriod = 10
@@ -136,16 +136,25 @@ contract('Governance.sol', async (accounts) => {
     )
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address, { from: protocolOwnerAddress })
 
-    // Deploy + Register ClaimsManager contract
-    claimsManager = await ClaimsManager.new(
-      token.address,
-      registry.address,
-      stakingProxyKey,
-      serviceProviderFactoryKey,
-      delegateManagerKey,
+    // Deploy + register claimsManagerProxy
+    claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
+    const claimsInitializeCallData = encodeCall(
+      'initialize',
+      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey]
+    )
+    claimsManagerProxy = await AdminUpgradeabilityProxy.new(
+      claimsManager0.address,
+      proxyAdminAddress,
+      claimsInitializeCallData,
+      { from: proxyDeployerAddress }
+    )
+    claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
+    await registry.addContract(
+      claimsManagerProxyKey,
+      claimsManagerProxy.address,
       { from: protocolOwnerAddress }
     )
-    await registry.addContract(claimsManagerProxyKey, claimsManager.address, { from: protocolOwnerAddress })
 
     // Register new contract as a minter, from the same address that deployed the contract
     await token.addMinter(claimsManager.address, { from: protocolOwnerAddress })
