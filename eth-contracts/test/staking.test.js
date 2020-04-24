@@ -10,7 +10,7 @@ const MockStakingCaller = artifacts.require('MockStakingCaller')
 const fromBn = n => parseInt(n.valueOf(), 10)
 const getTokenBalance = async (token, account) => fromBn(await token.balanceOf(account))
 
-const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 
@@ -71,7 +71,7 @@ contract('Staking test', async (accounts) => {
         token.address,
         treasuryAddress,
         registry.address,
-        claimFactoryKey,
+        claimsManagerProxyKey,
         delegateManagerKey,
         serviceProviderFactoryKey
       ]
@@ -84,9 +84,9 @@ contract('Staking test', async (accounts) => {
       { from: proxyDeployerAddress }
     )
 
-    // Register mock contract as claimFactory, spFactory, delegateManager
+    // Register mock contract as claimsManager, spFactory, delegateManager
     mockStakingCaller = await MockStakingCaller.new(proxy.address, token.address)
-    await registry.addContract(claimFactoryKey, mockStakingCaller.address)
+    await registry.addContract(claimsManagerProxyKey, mockStakingCaller.address)
     await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
     await registry.addContract(delegateManagerKey, mockStakingCaller.address)
 

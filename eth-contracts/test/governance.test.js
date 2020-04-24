@@ -12,12 +12,12 @@ const Governance = artifacts.require('Governance')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const DelegateManager = artifacts.require('DelegateManager')
-const ClaimFactory = artifacts.require('ClaimFactory')
+const ClaimsManager = artifacts.require('ClaimsManager')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
-const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManagerKey')
 
@@ -63,7 +63,7 @@ const Vote = Object.freeze({
 
 contract('Governance.sol', async (accounts) => {
   let token, registry, staking0, staking, proxy
-  let serviceProviderStorage, serviceProviderFactory, claimFactory, delegateManager, governance
+  let serviceProviderStorage, serviceProviderFactory, claimsManager, delegateManager, governance
 
   const votingPeriod = 10
   const votingQuorum = 1
@@ -106,7 +106,7 @@ contract('Governance.sol', async (accounts) => {
         token.address,
         treasuryAddress,
         registry.address,
-        claimFactoryKey,
+        claimsManagerProxyKey,
         delegateManagerKey,
         serviceProviderFactoryKey
       ]
@@ -136,8 +136,8 @@ contract('Governance.sol', async (accounts) => {
     )
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address, { from: protocolOwnerAddress })
 
-    // Deploy + Register ClaimFactory contract
-    claimFactory = await ClaimFactory.new(
+    // Deploy + Register ClaimsManager contract
+    claimsManager = await ClaimsManager.new(
       token.address,
       registry.address,
       stakingProxyKey,
@@ -145,10 +145,10 @@ contract('Governance.sol', async (accounts) => {
       delegateManagerKey,
       { from: protocolOwnerAddress }
     )
-    await registry.addContract(claimFactoryKey, claimFactory.address, { from: protocolOwnerAddress })
+    await registry.addContract(claimsManagerProxyKey, claimsManager.address, { from: protocolOwnerAddress })
 
     // Register new contract as a minter, from the same address that deployed the contract
-    await token.addMinter(claimFactory.address, { from: protocolOwnerAddress })
+    await token.addMinter(claimsManager.address, { from: protocolOwnerAddress })
 
     // Deploy Governance contract
     governance = await Governance.new(
@@ -167,7 +167,7 @@ contract('Governance.sol', async (accounts) => {
       governanceKey,
       stakingProxyKey,
       serviceProviderFactoryKey,
-      claimFactoryKey,
+      claimsManagerProxyKey,
       { from: protocolOwnerAddress }
     )
     await registry.addContract(delegateManagerKey, delegateManager.address, { from: protocolOwnerAddress })

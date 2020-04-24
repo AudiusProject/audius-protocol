@@ -44,7 +44,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
     address treasuryAddress;
 
     address registryAddress;
-    bytes32 claimFactoryKey;
+    bytes32 claimsManagerProxyKey;
     bytes32 delegateManagerKey;
     bytes32 serviceProviderFactoryKey;
 
@@ -65,7 +65,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
       address _stakingToken,
       address _treasuryAddress,
       address _registryAddress,
-      bytes32 _claimFactoryKey,
+      bytes32 _claimsManagerProxyKey,
       bytes32 _delegateManagerKey,
       bytes32 _serviceProviderFactoryKey
     ) public initializer
@@ -75,7 +75,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
         registry = RegistryInterface(_registryAddress);
         treasuryAddress = _treasuryAddress;
         registryAddress = _registryAddress;
-        claimFactoryKey = _claimFactoryKey;
+        claimsManagerProxyKey = _claimsManagerProxyKey;
         delegateManagerKey = _delegateManagerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
 
@@ -85,10 +85,10 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
     /* External functions */
 
     /**
-     * @notice Funds `_amount` of tokens from ClaimFactory to target account
+     * @notice Funds `_amount` of tokens from ClaimsManager to target account
      */
     function stakeRewards(uint256 _amount, address _stakerAccount) external isInitialized {
-        require(msg.sender == registry.getContract(claimFactoryKey), "Only callable from ClaimFactory");
+        require(msg.sender == registry.getContract(claimsManagerProxyKey), "Only callable from ClaimsManager");
         _stakeFor(
             _stakerAccount,
             msg.sender,
