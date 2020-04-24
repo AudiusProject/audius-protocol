@@ -469,7 +469,7 @@ contract DelegateManager is InitializableV2, RegistryContract {
     /**
      * @notice Update duration for undelegate request lockup
      */
-    function updateUndelegateLockupDuration(uint _duration) external {
+    function updateUndelegateLockupDuration(uint _duration) external isInitialized {
         require(
             msg.sender == registry.getContract(governanceKey),
             "Only callable from governance"

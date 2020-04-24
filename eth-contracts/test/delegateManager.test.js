@@ -360,7 +360,7 @@ contract('DelegateManager', async (accounts) => {
           stakerAccount,
           initialDelegateAmount,
           { from: delegatorAccount1 }),
-          'No pending lockup expiry allowed'
+          'No pending lockup expected'
       )
 
       // Advance to valid block
