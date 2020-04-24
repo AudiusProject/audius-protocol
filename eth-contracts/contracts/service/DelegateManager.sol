@@ -7,7 +7,7 @@ import "./interface/registry/RegistryInterface.sol";
 
 import "../staking/Staking.sol";
 import "./ServiceProviderFactory.sol";
-import "./ClaimFactory.sol";
+import "./ClaimsManager.sol";
 import "../Governance.sol";
 
 
@@ -22,7 +22,7 @@ contract DelegateManager is RegistryContract {
 
     bytes32 stakingProxyOwnerKey;
     bytes32 serviceProviderFactoryKey;
-    bytes32 claimFactoryKey;
+    bytes32 claimsManagerKey;
     bytes32 governanceKey;
 
     // Number of blocks an undelegate operation has to wait
@@ -94,7 +94,7 @@ contract DelegateManager is RegistryContract {
       bytes32 _governanceKey,
       bytes32 _stakingProxyOwnerKey,
       bytes32 _serviceProviderFactoryKey,
-      bytes32 _claimFactoryKey
+      bytes32 _claimsManagerKey
     ) public {
         tokenAddress = _tokenAddress;
         audiusToken = ERC20Mintable(tokenAddress);
@@ -102,7 +102,7 @@ contract DelegateManager is RegistryContract {
         governanceKey = _governanceKey;
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
-        claimFactoryKey = _claimFactoryKey;
+        claimsManagerKey = _claimsManagerKey;
     }
 
     function delegateStake(
@@ -307,8 +307,8 @@ contract DelegateManager is RegistryContract {
     */
     // Distribute proceeds of reward
     function claimRewards() external {
-        ClaimFactory claimFactory = ClaimFactory(
-            registry.getContract(claimFactoryKey)
+        ClaimsManager claimsManager = ClaimsManager(
+            registry.getContract(claimsManagerKey)
         );
         // Pass in locked amount for claimer
         uint totalLockedForClaimer = spDelegateInfo[msg.sender].totalLockedUpStake;
@@ -324,7 +324,7 @@ contract DelegateManager is RegistryContract {
             "Service provider must be within bounds");
 
         // Process claim for msg.sender
-        claimFactory.processClaim(msg.sender, totalLockedForClaimer);
+        claimsManager.processClaim(msg.sender, totalLockedForClaimer);
 
         // Amount stored in staking contract for owner
         uint totalBalanceInStaking = Staking(
@@ -554,10 +554,10 @@ contract DelegateManager is RegistryContract {
     }
 
     function claimPending(address _sp) internal view returns (bool pending) {
-        ClaimFactory claimFactory = ClaimFactory(
-            registry.getContract(claimFactoryKey)
+        ClaimsManager claimsManager = ClaimsManager(
+            registry.getContract(claimsManagerKey)
         );
-        return claimFactory.claimPending(_sp);
+        return claimsManager.claimPending(_sp);
     }
 }
 

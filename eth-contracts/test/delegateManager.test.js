@@ -8,13 +8,13 @@ const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const Staking = artifacts.require('Staking')
 const DelegateManager = artifacts.require('DelegateManager')
-const ClaimFactory = artifacts.require('ClaimFactory')
+const ClaimsManager = artifacts.require('ClaimsManager')
 const MockGovernance = artifacts.require('MockGovernance')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
-const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 
@@ -43,8 +43,8 @@ const INITIAL_BAL = toWei(1000)
 const DEFAULT_AMOUNT = toWei(120)
 
 contract('DelegateManager', async (accounts) => {
-  let proxy, staking0, staking, stakingAddress, token, registry
-  let serviceProviderStorage, serviceProviderFactory, claimFactory, delegateManager, mockGovernance
+  let proxy, staking0, staking, stakingAddress, token, registry, claimsManager0, claimsManagerProxy
+  let serviceProviderStorage, serviceProviderFactory, claimsManager, delegateManager, mockGovernance
   const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
   const stakerAccount = accounts[10]
   const stakerAccount2 = accounts[12]
@@ -64,7 +64,7 @@ contract('DelegateManager', async (accounts) => {
         token.address,
         treasuryAddress,
         registry.address,
-        claimFactoryKey,
+        claimsManagerProxyKey,
         delegateManagerKey,
         serviceProviderFactoryKey
       ]
@@ -95,19 +95,29 @@ contract('DelegateManager', async (accounts) => {
 
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)
 
-    // Create new claim factory instance
-    claimFactory = await ClaimFactory.new(
-      token.address,
-      registry.address,
-      stakingProxyKey,
-      serviceProviderFactoryKey,
-      delegateManagerKey,
-      { from: accounts[0] })
+    // Deploy new claimsManager proxy
+    claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
+    const claimsInitializeCallData = encodeCall(
+      'initialize',
+      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey]
+    )
+    claimsManagerProxy = await AdminUpgradeabilityProxy.new(
+      claimsManager0.address,
+      proxyAdminAddress,
+      claimsInitializeCallData,
+      { from: proxyDeployerAddress }
+    )
+    claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
 
-    await registry.addContract(claimFactoryKey, claimFactory.address)
+    // Register claimsManagerProxy
+    await registry.addContract(
+      claimsManagerProxyKey,
+      claimsManagerProxy.address
+    )
 
     // Register new contract as a minter, from the same address that deployed the contract
-    await token.addMinter(claimFactory.address, { from: treasuryAddress })
+    await token.addMinter(claimsManager.address, { from: treasuryAddress })
 
     mockGovernance = await MockGovernance.new(
       registry.address,
@@ -122,7 +132,7 @@ contract('DelegateManager', async (accounts) => {
       governanceKey,
       stakingProxyKey,
       serviceProviderFactoryKey,
-      claimFactoryKey)
+      claimsManagerProxyKey)
 
     await registry.addContract(delegateManagerKey, delegateManager.address)
   })
@@ -256,7 +266,7 @@ contract('DelegateManager', async (accounts) => {
       let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       let totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
 
-      await claimFactory.initiateRound()
+      await claimsManager.initiateRound({ from: proxyDeployerAddress })
 
       totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
       spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
@@ -405,18 +415,18 @@ contract('DelegateManager', async (accounts) => {
       let deployerCutBase = await serviceProviderFactory.getServiceProviderDeployerCutBase()
 
       // Initiate round
-      await claimFactory.initiateRound()
+      await claimsManager.initiateRound({ from: proxyDeployerAddress })
 
       // Confirm claim is pending
-      let pendingClaim = await claimFactory.claimPending(stakerAccount)
-      assert.isTrue(pendingClaim, 'ClaimFactory expected to consider claim pending')
+      let pendingClaim = await claimsManager.claimPending(stakerAccount)
+      assert.isTrue(pendingClaim, 'ClaimsManager expected to consider claim pending')
 
       let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
       let totalStake = await staking.totalStaked()
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
       let totalValueOutsideStaking = spStake.add(delegatedStake)
-      let fundingAmount = await claimFactory.getFundsPerRound()
+      let fundingAmount = await claimsManager.getFundsPerRound()
       let totalRewards = (totalStakedForSP.mul(fundingAmount)).div(totalStake)
 
       // Manually calculate expected value prior to making claim
@@ -456,7 +466,7 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 })
 
       // Fund new claim
-      await claimFactory.initiateRound()
+      await claimsManager.initiateRound({ from: proxyDeployerAddress })
 
       // Get rewards
       await delegateManager.claimRewards({ from: stakerAccount })
@@ -536,7 +546,7 @@ contract('DelegateManager', async (accounts) => {
         `Total value inconsistent after all delegation. Expected ${fromBn(expectedTotalStakeAfterDelegation)}, found ${fromBn(totalSPStakeAfterDelegation)}`)
 
       // Initiate round
-      await claimFactory.initiateRound()
+      await claimsManager.initiateRound({ from: proxyDeployerAddress })
 
       let deployerCut = await serviceProviderFactory.getServiceProviderDeployerCut(stakerAccount)
       let deployerCutBase = await serviceProviderFactory.getServiceProviderDeployerCutBase()
@@ -556,7 +566,7 @@ contract('DelegateManager', async (accounts) => {
         totalStakedForSP.eq(totalValueOutsideStaking),
         'Expect equivalent value between staking contract and protocol contracts')
 
-      let fundingAmount = await claimFactory.getFundsPerRound()
+      let fundingAmount = await claimsManager.getFundsPerRound()
       let totalRewards = (totalStakedForSP.mul(fundingAmount)).div(totalStake)
 
       let spDelegationRewards = web3.utils.toBN(0)
@@ -624,7 +634,7 @@ contract('DelegateManager', async (accounts) => {
       let preRewardInfo = await getAccountStakeInfo(stakerAccount, false)
 
       // Initiate round
-      await claimFactory.initiateRound()
+      await claimsManager.initiateRound({ from: proxyDeployerAddress })
       await delegateManager.claimRewards({ from: stakerAccount })
       let postRewardInfo = await getAccountStakeInfo(stakerAccount, false)
 
@@ -759,11 +769,11 @@ contract('DelegateManager', async (accounts) => {
         'Confirm expired lockup period')
 
       // Initiate round
-      await claimFactory.initiateRound()
+      await claimsManager.initiateRound({ from: proxyDeployerAddress })
 
       // Confirm claim is pending
-      let pendingClaim = await claimFactory.claimPending(stakerAccount)
-      assert.isTrue(pendingClaim, 'ClaimFactory expected to consider claim pending')
+      let pendingClaim = await claimsManager.claimPending(stakerAccount)
+      assert.isTrue(pendingClaim, 'ClaimsManager expected to consider claim pending')
 
       // Attempt to finalize undelegate stake request
       await _lib.assertRevert(
@@ -814,11 +824,11 @@ contract('DelegateManager', async (accounts) => {
         'Bound violation expected')
 
       // Initiate round
-      await claimFactory.initiateRound()
+      await claimsManager.initiateRound({ from: proxyDeployerAddress })
 
       // Confirm claim is pending
-      let pendingClaim = await claimFactory.claimPending(stakerAccount)
-      assert.isTrue(pendingClaim, 'ClaimFactory expected to consider claim pending')
+      let pendingClaim = await claimsManager.claimPending(stakerAccount)
+      assert.isTrue(pendingClaim, 'ClaimsManager expected to consider claim pending')
 
       // Confirm claim fails due to bound violation
       await _lib.assertRevert(

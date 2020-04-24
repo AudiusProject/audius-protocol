@@ -5,10 +5,6 @@
   "author": "AudiusProject",
   "license": "Apache-2.0",
   "scripts": {
-    "test": "npm run truffle-test",
-    "test-circle-ci": "./scripts/circleci-test.sh",
-    "truffle-test": "./scripts/truffle-test.sh",
-    "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
     "ganache": "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 -a 50",
     "ganache-test": "docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 -a 50",
     "ganache-i": "docker ps",
@@ -18,6 +14,11 @@
     "truffle-migrate": "npm run truffle-compile && ./node_modules/.bin/truffle migrate --reset --network development",
     "truffle-migrate-test": "npm run truffle-compile && ./node_modules/.bin/truffle migrate --reset --network test_local",
     "truffle-console": "./node_modules/.bin/truffle console --network development",
+    "test": "npm run truffle-test",
+    "test-only": "./node_modules/.bin/truffle test --network=test_local",
+    "truffle-test": "./scripts/truffle-test.sh",
+    "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
+    "test-circle-ci": "./scripts/circleci-test.sh",
     "solidity-lint": "./node_modules/.bin/solium -d contracts",
     "lint": "./node_modules/.bin/standard",
     "lint-fix": "./node_modules/.bin/standard --fix"

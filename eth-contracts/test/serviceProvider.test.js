@@ -11,7 +11,7 @@ const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
-const claimFactoryKey = web3.utils.utf8ToHex('ClaimFactory')
+const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 
@@ -57,7 +57,7 @@ contract('ServiceProvider test', async (accounts) => {
         token.address,
         treasuryAddress,
         registry.address,
-        claimFactoryKey,
+        claimsManagerProxyKey,
         delegateManagerKey,
         serviceProviderFactoryKey
       ]

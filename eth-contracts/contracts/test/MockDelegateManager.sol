@@ -3,20 +3,20 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "../service/registry/RegistryContract.sol";
 import "../service/interface/registry/RegistryInterface.sol";
-import "../service/ClaimFactory.sol";
+import "../service/ClaimsManager.sol";
 
 
 // TEST ONLY MOCK CONTRACT
 contract MockDelegateManager is RegistryContract {
     RegistryInterface registry = RegistryInterface(0);
-    bytes32 claimFactoryKey;
+    bytes32 claimsManagerProxyKey;
 
     constructor(
       address _registryAddress,
-      bytes32 _claimFactoryKey
+      bytes32 _claimsManagerProxyKey
     ) public {
         registry = RegistryInterface(_registryAddress);
-        claimFactoryKey = _claimFactoryKey;
+        claimsManagerProxyKey = _claimsManagerProxyKey;
     }
 
     // Test only function
@@ -24,10 +24,10 @@ contract MockDelegateManager is RegistryContract {
         address _claimer,
         uint _totalLockedForSP
     ) external returns (uint newAccountTotal) {
-        ClaimFactory claimFactory = ClaimFactory(
-            registry.getContract(claimFactoryKey)
+        ClaimsManager claimsManager = ClaimsManager(
+            registry.getContract(claimsManagerProxyKey)
         );
-        return claimFactory.processClaim(_claimer, _totalLockedForSP);
+        return claimsManager.processClaim(_claimer, _totalLockedForSP);
     }
 }
 

@@ -5,38 +5,42 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "./interface/registry/RegistryInterface.sol";
 import "./ServiceProviderFactory.sol";
+import "../InitializableV2.sol";
 
 
-// WORKING CONTRACT
-// Designed to automate claim funding, minting tokens as necessary
-contract ClaimFactory is RegistryContract {
+/**
+ * Designed to automate claim funding, minting tokens as necessary
+ * @notice - will call RegistryContract.constructor, which calls Ownable constructor
+ */
+contract ClaimsManager is InitializableV2, RegistryContract {
     using SafeMath for uint256;
-    RegistryInterface registry = RegistryInterface(0);
+
     // standard - imitates relationship between Ether and Wei
     uint8 private constant DECIMALS = 18;
 
-    address tokenAddress;
-    address deployerAddress;
-    bytes32 stakingProxyOwnerKey;
-    bytes32 serviceProviderFactoryKey;
-    bytes32 delegateManagerKey;
+    RegistryInterface private registry;
+
+    address private tokenAddress;
+    address private deployerAddress;
+    bytes32 private stakingProxyOwnerKey;
+    bytes32 private serviceProviderFactoryKey;
+    bytes32 private delegateManagerKey;
 
     // Claim related configurations
-    uint fundRoundBlockDiff = 10;
-    uint fundBlock = 0;
+    uint private fundRoundBlockDiff;
+    uint private fundBlock;
 
-    // 20 AUD
     // TODO: Make this modifiable based on total staking pool?
-    uint fundingAmount = 20 * 10**uint256(DECIMALS); // 100 * 10**uint256(DECIMALS);
+    uint private fundingAmount;
 
     // Denotes current round
-    uint roundNumber = 0;
+    uint private roundNumber;
 
     // Total claimed so far in round
-    uint totalClaimedInRound = 0;
+    uint private totalClaimedInRound;
 
     // Staking contract ref
-    ERC20Mintable internal audiusToken;
+    ERC20Mintable private audiusToken;
 
     event RoundInitiated(
       uint _blockNumber,
@@ -51,13 +55,13 @@ contract ClaimFactory is RegistryContract {
       uint _newTotal
     );
 
-    constructor(
+    function initialize(
       address _tokenAddress,
       address _registryAddress,
       bytes32 _stakingProxyOwnerKey,
       bytes32 _serviceProviderFactoryKey,
       bytes32 _delegateManagerKey
-    ) public {
+    ) public initializer {
         tokenAddress = _tokenAddress;
         deployerAddress = msg.sender;
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
@@ -65,48 +69,61 @@ contract ClaimFactory is RegistryContract {
         delegateManagerKey = _delegateManagerKey;
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
+        
         fundBlock = 0;
+        fundRoundBlockDiff = 10;
+        fundBlock = 0;
+        fundingAmount = 20 * 10**uint256(DECIMALS); // 20 AUDS = 20 * 10**uint256(DECIMALS)
+        roundNumber = 0;
+        totalClaimedInRound = 0;
+
+        InitializableV2.initialize();
     }
 
     function getFundingRoundBlockDiff()
-    external view returns (uint blockDiff)
+    external view isInitialized returns (uint blockDiff)
     {
         return fundRoundBlockDiff;
     }
 
     function getLastFundBlock()
-    external view returns (uint lastFundBlock)
+    external view isInitialized returns (uint lastFundBlock)
     {
         return fundBlock;
     }
 
     function getFundsPerRound()
-    external view returns (uint amount)
+    external view isInitialized returns (uint amount)
     {
         return fundingAmount;
     }
 
     function getTotalClaimedInRound()
-    external view returns (uint claimedAmount)
+    external view isInitialized returns (uint claimedAmount)
     {
         return totalClaimedInRound;
     }
 
     // Start a new funding round
     // Permissioned to stakers or contract deployer
-    function initiateRound() external {
+    function initiateRound() external isInitialized {
         bool senderStaked = Staking(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(msg.sender) > 0;
+
         require(
             senderStaked || (msg.sender == deployerAddress),
-            "Round must be initiated from account with staked value or contract deployer");
+            "Round must be initiated from account with staked value or contract deployer"
+        );
         require(
             block.number - fundBlock > fundRoundBlockDiff,
-            "Required block difference not met");
+            "Required block difference not met"
+        );
+
         fundBlock = block.number;
         totalClaimedInRound = 0;
         roundNumber += 1;
+
         emit RoundInitiated(
             fundBlock,
             roundNumber,
@@ -119,7 +136,7 @@ contract ClaimFactory is RegistryContract {
     function processClaim(
         address _claimer,
         uint _totalLockedForSP
-    ) external returns (uint newAccountTotal)
+    ) external isInitialized returns (uint newAccountTotal)
     {
         require(
             msg.sender == registry.getContract(delegateManagerKey),
@@ -180,10 +197,10 @@ contract ClaimFactory is RegistryContract {
         return newTotal;
     }
 
-    function claimPending(address _sp) external view returns (bool pending) {
-        address stakingAddress = registry.getContract(stakingProxyOwnerKey);
-        Staking stakingContract = Staking(stakingAddress);
-        uint lastClaimedForSP = stakingContract.lastClaimedFor(_sp);
+    function claimPending(address _sp) external view isInitialized returns (bool pending) {
+        uint lastClaimedForSP = Staking(
+            registry.getContract(stakingProxyOwnerKey)
+        ).lastClaimedFor(_sp);
         return (lastClaimedForSP < fundBlock);
     }
 }
