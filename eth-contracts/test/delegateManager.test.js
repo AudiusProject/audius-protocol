@@ -126,15 +126,22 @@ contract('DelegateManager', async (accounts) => {
     )
     await registry.addContract(governanceKey, mockGovernance.address)
 
-    delegateManager = await DelegateManager.new(
-      token.address,
-      registry.address,
-      governanceKey,
-      stakingProxyKey,
-      serviceProviderFactoryKey,
-      claimsManagerProxyKey)
+    const delegateManagerInitializeData = encodeCall(
+      'initialize',
+      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [token.address, registry.address, governanceKey, stakingProxyKey, serviceProviderFactoryKey, claimsManagerProxyKey]
+    )
 
-    await registry.addContract(delegateManagerKey, delegateManager.address)
+    let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
+    let delegateManagerProxy = await AdminUpgradeabilityProxy.new(
+      delegateManager0.address,
+      proxyAdminAddress,
+      delegateManagerInitializeData,
+      { from: proxyDeployerAddress }
+    )
+
+    delegateManager = await DelegateManager.at(delegateManagerProxy.address)
+    await registry.addContract(delegateManagerKey, delegateManagerProxy.address)
   })
 
   /* Helper functions */
@@ -353,7 +360,7 @@ contract('DelegateManager', async (accounts) => {
           stakerAccount,
           initialDelegateAmount,
           { from: delegatorAccount1 }),
-          'No pending lockup expiry allowed'
+          'No pending lockup expected'
       )
 
       // Advance to valid block
