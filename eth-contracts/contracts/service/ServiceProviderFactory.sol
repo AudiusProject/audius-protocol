@@ -33,6 +33,7 @@ contract ServiceProviderFactory is RegistryContract {
         bool validBounds;
     }
 
+    // Mapping of service provider address to details
     mapping(address => ServiceProviderDetails) spDetails;
 
     // Minimum staked by service provider account deployer
@@ -110,7 +111,9 @@ contract ServiceProviderFactory is RegistryContract {
     ) external returns (uint spID)
     {
         require(
-            isValidServiceType(_serviceType),
+            ServiceTypeManager(
+                registry.getContract(serviceTypeManagerKey)
+            ).isValidServiceType(_serviceType),
             "Valid service type required");
 
         address owner = msg.sender;
@@ -458,11 +461,15 @@ contract ServiceProviderFactory is RegistryContract {
     {
         uint minStake = 0;
         uint maxStake = 0;
-        bytes32[] memory validServiceTypes = getValidServiceTypes();
+        bytes32[] memory validServiceTypes = ServiceTypeManager(
+            registry.getContract(serviceTypeManagerKey)
+        ).getValidServiceTypes();
         uint validTypesLength = validServiceTypes.length;
         for (uint i = 0; i < validTypesLength; i++) {
             bytes32 serviceType = validServiceTypes[i];
-            (uint typeMin, uint typeMax) = getServiceTypeStakeInfo(serviceType);
+            (uint typeMin, uint typeMax) = ServiceTypeManager(
+                registry.getContract(serviceTypeManagerKey)
+            ).getServiceTypeStakeInfo(serviceType);
             uint numberOfEndpoints = this.getServiceProviderIdsFromAddress(sp, serviceType).length;
             minStake += (typeMin * numberOfEndpoints);
             maxStake += (typeMax * numberOfEndpoints);
@@ -526,31 +533,5 @@ contract ServiceProviderFactory is RegistryContract {
             spDetails[sp].deployerStake >= minDeployerStake,
             "Direct stake restriction violated for this service provider");
         return spDetails[sp].deployerStake;
-    }
-
-    function isValidServiceType(bytes32 _serviceType)
-    internal view returns (bool isValid)
-    {
-        return ServiceTypeManager(
-            registry.getContract(serviceTypeManagerKey)
-        ).isValidServiceType(_serviceType);
-    }
-
-    function getValidServiceTypes()
-    internal view returns (bytes32[] memory types)
-    {
-        return ServiceTypeManager(
-            registry.getContract(serviceTypeManagerKey)
-        ).getValidServiceTypes();
-    }
-
-    /// @notice Get min and max stake for a given service type
-    /// @return min/max stake for type
-    function getServiceTypeStakeInfo(bytes32 _serviceType)
-    internal view returns (uint min, uint max)
-    {
-        return ServiceTypeManager(
-            registry.getContract(serviceTypeManagerKey)
-        ).getServiceTypeStakeInfo(_serviceType);
     }
 }
