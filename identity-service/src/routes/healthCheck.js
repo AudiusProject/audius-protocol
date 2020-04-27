@@ -10,35 +10,50 @@ const axios = require('axios')
 let notifDiscProv = config.get('notificationDiscoveryProvider')
 
 // Defaults used in relay health check endpoint
-const RELAY_HEALTH_ONE_HOUR_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/hr
+const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
 const RELAY_HEALTH_MAX_TRANSACTIONS = 100 // max transactions to look into
 const RELAY_HEALTH_MAX_ERRORS = 5 // max acceptable errors for a 200 response
+const RELAY_HEALTH_MIN_NUM_USERS = 3 //min number of users affected to qualify for error
 const RELAY_HEALTH_MAX_BLOCK_RANGE = 200 // max block range allowed from query params
+const RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD = 0.2
 const RELAY_HEALTH_ACCOUNT = config.get('relayerPublicKey')
+
+// flatten one level of nexted arrays
+const flatten = (arr) => arr.reduce((acc, val) => acc.concat(val), []);
 
 module.exports = function (app) {
   /**
    * Relay health check endpoint. Takes the query params startBlock, endBlock, maxTransactions, and maxErrors.
    * If those query params are not specified, use default values.
    */
+  /*
+  There are a few scenarios where a health check should return unhealthy
+  1. Some number of relays are failing for some number of users
+     To solve this, have an object in redis which 
+  2. Relays are not being sent / acknowledged by blockchain, but there were relays we 
+     wanted to send anyway
+  */ 
   app.get('/health_check/relay', handleResponse(async (req, res) => {
     const start = Date.now()
     const audiusLibsInstance = req.app.get('audiusLibs')
+    const redis = req.app.get('redis')
     const web3 = audiusLibsInstance.web3Manager.getWeb3()
 
     let endBlockNumber = req.query.endBlock || (await web3.eth.getBlockNumber())
     // In the case that no query params are defined and the endBlockNumber is less than the max block range, default startBlockNumber to 0
-    const defaultStartBlockNumber = endBlockNumber - RELAY_HEALTH_ONE_HOUR_AGO_BLOCKS >= 0
-      ? endBlockNumber - RELAY_HEALTH_ONE_HOUR_AGO_BLOCKS : 0
+    const defaultStartBlockNumber = endBlockNumber - RELAY_HEALTH_TEN_MINS_AGO_BLOCKS >= 0
+      ? endBlockNumber - RELAY_HEALTH_TEN_MINS_AGO_BLOCKS : 0
     let startBlockNumber = req.query.startBlock || defaultStartBlockNumber
     let maxTransactions = req.query.maxTransactions || RELAY_HEALTH_MAX_TRANSACTIONS
     let maxErrors = req.query.maxErrors || RELAY_HEALTH_MAX_ERRORS
+    let sentVsAttemptThreshold = req.query.sentVsAttemptThreshold || RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD
 
     // Parse query strings into ints as all req.query values come in as strings
     startBlockNumber = parseInt(startBlockNumber)
     endBlockNumber = parseInt(endBlockNumber)
     maxTransactions = parseInt(maxTransactions)
     maxErrors = parseInt(maxErrors)
+    sentVsAttemptThreshold = parseFloat(sentVsAttemptThreshold)
 
     // If query params are invalid, throw server error
     if (
@@ -64,8 +79,9 @@ module.exports = function (app) {
       return errorResponseServerError(`Invalid number of transactions and/or errors. maxTransactions: ${maxTransactions}, maxErrors: ${maxErrors}`)
     }
 
-    let failureTxHashes = []
+    let failureTxs = {} // senderAddress: [<txHash>]
     let txCounter = 0
+    let minBlockTime = null
 
     req.logger.info(
       `Searching for transactions to/from account ${RELAY_HEALTH_ACCOUNT} within blocks ${startBlockNumber} and ${endBlockNumber}`
@@ -76,6 +92,7 @@ module.exports = function (app) {
       // If the max number of transactions have been evaluated, break out
       if (txCounter > maxTransactions) break
       let block = await web3.eth.getBlock(i, true)
+      if (!minBlockTime || block.timestamp < minBlockTime) minBlockTime = block.timestamp
       if (block && block.transactions.length) {
         for (const tx of block.transactions) {
           // If transaction is from audius account, determine success or fail status
@@ -83,22 +100,54 @@ module.exports = function (app) {
             const txHash = tx.hash
             const resp = await web3.eth.getTransactionReceipt(txHash)
             txCounter++
-            if (!resp.status) failureTxHashes.push(txHash)
+            
+            // tx failed
+            if (!resp.status){
+              const senderAddress = await redis.hget('txHasToSenderAddress', txHash)
+              if (senderAddress){
+                if (!failureTxs[senderAddress]) failureTxs[senderAddress] = [txHash]
+                else failureTxs[senderAddress].push(txHash)
+              }
+              else failureTxs['unknown'].push(txHash)
+            }
           }
         }
       }
     }
 
+    let isError = false
+    if (Object.keys(failureTxs).length >= RELAY_HEALTH_MIN_NUM_USERS &&
+      flatten(Object.values(failureTxs)).length > maxErrors) isError = true
+    
+    // delete old entries from set in redis
+    const epochOneHourAgo = Math.floor(Date.now() / 1000) - 3600
+    await redis.zremrangebyscore('relayTxAttempts', '-inf', epochOneHourAgo)
+    await redis.zremrangebyscore('relayTxFailures', '-inf', epochOneHourAgo)
+    await redis.zremrangebyscore('relayTxSuccesses', '-inf', epochOneHourAgo)
+    
+    // check if there have been any attempts in the time window that we processed the block health check
+    const attemptedTxsInRedis = await redis.zrangebyscore('relayTxAttempts', minBlockTime, '+inf')
+    const successfulTxsInRedis = await redis.zrangebyscore('relayTxSuccesses', minBlockTime, '+inf')
+    const failureTxsInRedis = await redis.zrangebyscore('relayTxFailures', minBlockTime, '+inf')
+    if ((txCounter / attemptedTxsInRedis.length) < sentVsAttemptThreshold) isError = true
+
     const serverResponse = {
-      numberOfTransactions: txCounter,
-      numberOfFailedTransactions: failureTxHashes.length,
-      failedTransactionHashes: failureTxHashes,
-      startBlock: startBlockNumber,
-      endBlock: endBlockNumber,
+      blockchain: {
+        numberOfTransactions: txCounter,
+        numberOfFailedTransactions: flatten(Object.values(failureTxs)).length,
+        failedTransactionHashes: failureTxs,
+        startBlock: startBlockNumber,
+        endBlock: endBlockNumber
+      },
+      redis: {
+        attemptedTxsInRedis: attemptedTxsInRedis.length,
+        successfulTxsInRedis: successfulTxsInRedis.length,
+        failureTxsInRedis: failureTxsInRedis.length
+      },
       timeElapsed: Date.now() - start
     }
 
-    if (failureTxHashes.length > maxErrors) return errorResponseServerError(serverResponse)
+    if (isError) return errorResponseServerError(serverResponse)
     else return successResponse(serverResponse)
   }))
 

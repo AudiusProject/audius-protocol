@@ -68,6 +68,7 @@ const sendTransactionInternal = async (req, web3, resetNonce = false, txProps, r
     senderAddress,
     gasLimit
   } = txProps
+  const redis = req.app.get('redis')
 
   const existingTx = await models.Transaction.findOne({
     where: {
@@ -126,20 +127,33 @@ const sendTransactionInternal = async (req, web3, resetNonce = false, txProps, r
     // not get a tx hash back, the nonce is still available for use by others. For this
     // reason, we wait for this promise to resolve with a tx hash before incrementing
     // the current nonce)
+    const redisLogParams = {
+      date: Math.floor(Date.now() / 1000),
+      reqBodySHA,
+      txParams,
+      senderAddress,
+      currentNonce
+    }
+    await redis.zadd('relayTxAttempts', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
     req.logger.info(`txRelay - sending a transaction for wallet ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${gasLimit}, nonce ${currentNonce}`)
+    
     receiptPromise = web3.eth.sendSignedTransaction(signedTx)
     const prom = new Promise(function (resolve, reject) {
       let resolved = false
       receiptPromise.once('transactionHash', function (hash) {
+        redis.hset('txHasToSenderAddress', hash, senderAddress)
         resolved = true
         resolve(hash)
-      }).on('error', function (error) {
+      }).on('error', async function (error) {
         if (!resolved) {
+          await redis.zadd('relayTxFailures', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
           reject(error)
         }
       })
     })
+    
     await prom // resolves when a hash exists for a transaction, proving that it has not errored
+    await redis.zadd('relayTxSuccesses', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
     currentRelayerAccountNonce++
   } finally {
     nonceLocked = false
