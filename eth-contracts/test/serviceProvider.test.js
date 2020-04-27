@@ -47,7 +47,7 @@ contract('ServiceProvider test', async (accounts) => {
   let staking, serviceProviderStorage, serviceProviderFactory, serviceTypeManager
 
   const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
-  let versionerAddress
+  let controllerAddress
 
   beforeEach(async () => {
     registry = await Registry.new()
@@ -78,13 +78,13 @@ contract('ServiceProvider test', async (accounts) => {
     await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
 
     // Deploy service type manager
-    versionerAddress = accounts[9]
+    controllerAddress = accounts[9]
     let serviceTypeInitializeData = encodeCall(
       'initialize',
       ['address', 'address', 'bytes32'],
       [
         registry.address,
-        versionerAddress,
+        controllerAddress,
         governanceKey
       ]
     )
@@ -668,16 +668,16 @@ contract('ServiceProvider test', async (accounts) => {
 
       // Expect failure as type is already present
       await _lib.assertRevert(
-        serviceTypeManager.addServiceType(testDiscProvType, typeMin, typeMax, { from: versionerAddress }),
+        serviceTypeManager.addServiceType(testDiscProvType, typeMin, typeMax, { from: controllerAddress }),
         'Already known service type'
       )
       // Expect failure from invalid account
       await _lib.assertRevert(
         serviceTypeManager.addServiceType(testDiscProvType, typeMin, typeMax, { from: accounts[12] }),
-        'Only deployer or governance'
+        'Only controller or governance'
       )
 
-      await serviceTypeManager.addServiceType(testType, typeMin, typeMax, { from: versionerAddress })
+      await serviceTypeManager.addServiceType(testType, typeMin, typeMax, { from: controllerAddress })
 
       isValid = await serviceTypeManager.isValidServiceType(testType)
       assert.isTrue(isValid, 'Expect valid type after registration')
@@ -692,15 +692,15 @@ contract('ServiceProvider test', async (accounts) => {
       let unregisteredType = web3.utils.utf8ToHex('invalid-service')
       // Expect failure with unknown type
       await _lib.assertRevert(
-        serviceTypeManager.updateServiceType(unregisteredType, newMin, newMax, { from: versionerAddress }),
+        serviceTypeManager.updateServiceType(unregisteredType, newMin, newMax, { from: controllerAddress }),
         'Invalid service type'
       )
       // Expect failure from invalid account
       await _lib.assertRevert(
         serviceTypeManager.updateServiceType(testType, newMin, newMax, { from: accounts[12] }),
-        'Only deployer or governance'
+        'Only controller or governance'
       )
-      await serviceTypeManager.updateServiceType(testType, newMin, newMax, { from: versionerAddress })
+      await serviceTypeManager.updateServiceType(testType, newMin, newMax, { from: controllerAddress })
 
       // Confirm update
       info = await serviceTypeManager.getServiceTypeStakeInfo(testType)
@@ -708,13 +708,13 @@ contract('ServiceProvider test', async (accounts) => {
       assert.isTrue(newMax.eq(info.max), 'Max values not equal')
 
       await _lib.assertRevert(
-        serviceTypeManager.removeServiceType(unregisteredType, { from: versionerAddress }), 'Invalid service type, not found'
+        serviceTypeManager.removeServiceType(unregisteredType, { from: controllerAddress }), 'Invalid service type, not found'
       )
       await _lib.assertRevert(
-        serviceTypeManager.removeServiceType(testType, { from: accounts[12] }), 'Only deployer or governance'
+        serviceTypeManager.removeServiceType(testType, { from: accounts[12] }), 'Only controller or governance'
       )
 
-      await serviceTypeManager.removeServiceType(testType, { from: versionerAddress })
+      await serviceTypeManager.removeServiceType(testType, { from: controllerAddress })
 
       isValid = await serviceTypeManager.isValidServiceType(testType)
       assert.isTrue(!isValid, 'Expect invalid type after deregistration')

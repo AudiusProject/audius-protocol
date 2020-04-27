@@ -84,11 +84,11 @@ contract('DelegateManager', async (accounts) => {
     stakingAddress = staking.address
 
     // Deploy service type manager
-    let versionerAddress = accounts[9]
+    let controllerAddress = accounts[9]
     let serviceTypeInitializeData = encodeCall(
       'initialize',
       ['address', 'address', 'bytes32'],
-      [registry.address, versionerAddress, governanceKey]
+      [registry.address, controllerAddress, governanceKey]
     )
     let serviceTypeManager0 = await ServiceTypeManager.new({ from: treasuryAddress })
     let serviceTypeManagerProxy = await AdminUpgradeabilityProxy.new(

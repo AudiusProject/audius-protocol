@@ -8,7 +8,7 @@ import "../InitializableV2.sol";
 /** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
 contract ServiceTypeManager is InitializableV2, RegistryContract {
     RegistryInterface registry;
-    address private versionerAddress;
+    address private controllerAddress;
     bytes32 private governanceKey;
 
     /**
@@ -38,14 +38,14 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
 
     function initialize(
         address _registryAddress,
-        address _versionerAddress,
+        address _controllerAddress,
         bytes32 _governanceKey
     ) public initializer
     {
         // TODO move to RegistryContract as modifier
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
         registry = RegistryInterface(_registryAddress);
-        versionerAddress = _versionerAddress;
+        controllerAddress = _controllerAddress;
         governanceKey = _governanceKey;
 
         // Hardcoded values for development.
@@ -77,7 +77,7 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
         bytes32 _serviceVersion
     ) external isInitialized
     {
-        require(versionerAddress == msg.sender, "Invalid signature for versioner");
+        require(controllerAddress == msg.sender, "Invalid signature for versioner");
 
         uint numExistingVersions = this.getNumberOfVersions(_serviceType);
 
@@ -99,8 +99,8 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
     ) external isInitialized
     {
         require(
-            (msg.sender == versionerAddress || msg.sender == registry.getContract(governanceKey)),
-            "Only deployer or governance");
+            (msg.sender == controllerAddress || msg.sender == registry.getContract(governanceKey)),
+            "Only controller or governance");
         require(!this.isValidServiceType(_serviceType), "Already known service type");
         validServiceTypes.push(_serviceType);
         serviceTypeStakeRequirements[_serviceType] = ServiceInstanceStakeRequirements({
@@ -112,8 +112,8 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
     /// @notice Remove an existing service type
     function removeServiceType(bytes32 _serviceType) external {
         require(
-            msg.sender == versionerAddress || msg.sender == registry.getContract(governanceKey),
-            "Only deployer or governance");
+            msg.sender == controllerAddress || msg.sender == registry.getContract(governanceKey),
+            "Only controller or governance");
         uint serviceIndex = 0;
         bool foundService = false;
         for (uint i = 0; i < validServiceTypes.length; i ++) {
@@ -141,8 +141,8 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
     ) external
     {
         require(
-            msg.sender == versionerAddress || msg.sender == registry.getContract(governanceKey),
-            "Only deployer or governance");
+            msg.sender == controllerAddress || msg.sender == registry.getContract(governanceKey),
+            "Only controller or governance");
         require(this.isValidServiceType(_serviceType), "Invalid service type");
         serviceTypeStakeRequirements[_serviceType].minStake = _serviceTypeMin;
         serviceTypeStakeRequirements[_serviceType].maxStake = _serviceTypeMax;
