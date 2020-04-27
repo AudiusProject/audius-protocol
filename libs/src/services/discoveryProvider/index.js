@@ -4,7 +4,6 @@ const Utils = require('../../utils')
 const { serviceType } = require('../ethContracts/index')
 
 const {
-  DISCOVERY_PROVIDER_TIMESTAMP,
   UNHEALTHY_BLOCK_DIFF,
   REQUEST_TIMEOUT_MS
 } = require('./constants')
@@ -13,13 +12,9 @@ const {
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
-let localStorage
-if (typeof window === 'undefined' || window === null) {
-  const LocalStorage = require('node-localstorage').LocalStorage
-  localStorage = new LocalStorage('./local-storage')
-} else {
-  localStorage = window.localStorage
-}
+const MAKE_REQUEST_RETRY_COUNT = 3
+const MAX_MAKE_REQUEST_RETRY_COUNT = 50
+const AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT = 3
 
 class DiscoveryProvider {
   constructor (autoselect, whitelist, userStateManager, ethContracts, web3Manager) {
@@ -82,9 +77,16 @@ class DiscoveryProvider {
     this.discoveryProviderEndpoint = endpoint
   }
 
-  async autoSelectEndpoint (retries = 3) {
+  /**
+   * Wrapper method to auto select a valid discovery provider.
+   * @param {*} retries max retries before throwing an error
+   * @param {*} clearCachedDiscoveryProvider if set to true, implies that the previously
+   * selected discovery provider has been failing to serve requests. The prior recurring interval of
+   * checking local storage for DP and old DP local storage entry need to be cleared.
+   */
+  async autoSelectEndpoint (retries = 3, clearCachedDiscoveryProvider = false) {
     if (retries > 0) {
-      const endpoint = await this.ethContracts.autoselectDiscoveryProvider(this.whitelist)
+      const endpoint = await this.ethContracts.autoselectDiscoveryProvider(this.whitelist, clearCachedDiscoveryProvider)
       if (endpoint) {
         this.setEndpoint(endpoint)
         return endpoint
@@ -611,7 +613,7 @@ class DiscoveryProvider {
       endpoint: 'users/account',
       queryParams: { wallet }
     }
-    return this._makeRequest(req, 0, true)
+    return this._makeRequest(req)
   }
 
   async getTopPlaylists (type, limit, mood, filter, withUsers = false) {
@@ -671,9 +673,21 @@ class DiscoveryProvider {
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
   // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, retries = 10, silent = false) {
+  async _makeRequest (requestObj, retries = MAKE_REQUEST_RETRY_COUNT, attempedRetries = 0) {
+    if (attempedRetries > MAX_MAKE_REQUEST_RETRY_COUNT) {
+      console.error('Attempted max request retries.')
+      return
+    }
+
     if (!this.discoveryProviderEndpoint) {
       await this.autoSelectEndpoint()
+    }
+
+    if (retries === 0) {
+      // Reset the retries count in the case that the newly selected disc prov fails, we can
+      // allow it to try MAKE_REQUEST_RETRIES_COUNT number of times before trying another
+      retries = MAKE_REQUEST_RETRY_COUNT
+      await this.autoSelectEndpoint(AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT, true)
     }
 
     let requestUrl
@@ -722,24 +736,21 @@ class DiscoveryProvider {
           !indexedBlock ||
           (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
         ) {
-          // Clear any cached discprov
-          localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
           // Select a new one
           console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
-          const endpoint = await this.autoSelectEndpoint()
+          const endpoint = await this.autoSelectEndpoint(AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT, true)
           this.setEndpoint(endpoint)
+          retries = MAKE_REQUEST_RETRY_COUNT // reset retry count when setting a new endpoint
           throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
         }
       }
 
       return parsedResponse.data
     } catch (e) {
-      if (!silent) {
-        console.error(e)
-      }
+      console.error(e)
 
       if (retries > 0) {
-        return this._makeRequest(requestObj, retries - 1)
+        return this._makeRequest(requestObj, retries - 1, attempedRetries + 1)
       }
     }
   }
