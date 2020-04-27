@@ -16,13 +16,6 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32 serviceTypeManagerKey;
     address deployerAddress;
 
-    struct ServiceInstanceStakeRequirements {
-        uint minStake;
-        uint maxStake;
-    }
-
-    mapping(bytes32 => ServiceInstanceStakeRequirements) serviceTypeStakeRequirements;
-
     // Stores following entities
     // 1) Directly staked amount by SP, not including delegators
     // 2) % Cut of delegator tokens taken during reward
