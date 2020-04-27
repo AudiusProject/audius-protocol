@@ -47,6 +47,7 @@ module.exports = function (app) {
     let maxTransactions = req.query.maxTransactions || RELAY_HEALTH_MAX_TRANSACTIONS
     let maxErrors = req.query.maxErrors || RELAY_HEALTH_MAX_ERRORS
     let sentVsAttemptThreshold = req.query.sentVsAttemptThreshold || RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD
+    let isVerbose = req.query.verbose || false
 
     // Parse query strings into ints as all req.query values come in as strings
     startBlockNumber = parseInt(startBlockNumber)
@@ -140,11 +141,20 @@ module.exports = function (app) {
         endBlock: endBlockNumber
       },
       redis: {
-        attemptedTxsInRedis: attemptedTxsInRedis.length,
-        successfulTxsInRedis: successfulTxsInRedis.length,
-        failureTxsInRedis: failureTxsInRedis.length
+        attemptedTxsCount: attemptedTxsInRedis.length,
+        successfulTxsCount: successfulTxsInRedis.length,
+        failureTxsCount: failureTxsInRedis.length
       },
       timeElapsed: Date.now() - start
+    }
+
+    if (isVerbose) {
+      serverResponse.redis = {
+        ...serverResponse.redis,
+        attemptedTxsInRedis,
+        successfulTxsInRedis,
+        failureTxsInRedis
+      }
     }
 
     if (isError) return errorResponseServerError(serverResponse)
