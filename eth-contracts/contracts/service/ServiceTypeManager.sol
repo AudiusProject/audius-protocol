@@ -9,7 +9,6 @@ import "../InitializableV2.sol";
 contract ServiceTypeManager is InitializableV2, RegistryContract {
     RegistryInterface registry;
     address private versionerAddress;
-    address private deployerAddress;
     bytes32 private governanceKey;
 
     /**
@@ -18,19 +17,24 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
      */
     mapping(bytes32 => bytes32[]) public serviceTypeVersions;
 
+    // @dev List of valid service types
     bytes32[] private validServiceTypes;
 
+    // @dev Struct representing service type stake requirements
     struct ServiceInstanceStakeRequirements {
         uint minStake;
         uint maxStake;
     }
 
+    // @dev mapping of service type to registered requirements
     mapping(bytes32 => ServiceInstanceStakeRequirements) serviceTypeStakeRequirements;
 
     // standard - imitates relationship between Ether and Wei
     uint8 private constant DECIMALS = 18;
 
     event SetServiceVersion(bytes32 _serviceType, bytes32 _serviceVersion);
+    event Test(string msg, bool value);
+    event TestAddr(string msg, address addr);
 
     function initialize(
         address _registryAddress,
@@ -42,7 +46,6 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
         registry = RegistryInterface(_registryAddress);
         versionerAddress = _versionerAddress;
-        deployerAddress = msg.sender;
         governanceKey = _governanceKey;
 
         // Hardcoded values for development.
@@ -96,7 +99,7 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
     ) external isInitialized
     {
         require(
-            msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
+            (msg.sender == versionerAddress || msg.sender == registry.getContract(governanceKey)),
             "Only deployer or governance");
         require(!this.isValidServiceType(_serviceType), "Already known service type");
         validServiceTypes.push(_serviceType);
@@ -109,7 +112,7 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
     /// @notice Remove an existing service type
     function removeServiceType(bytes32 _serviceType) external {
         require(
-            msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
+            msg.sender == versionerAddress || msg.sender == registry.getContract(governanceKey),
             "Only deployer or governance");
         uint serviceIndex = 0;
         bool foundService = false;
@@ -138,7 +141,7 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
     ) external
     {
         require(
-            msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
+            msg.sender == versionerAddress || msg.sender == registry.getContract(governanceKey),
             "Only deployer or governance");
         require(this.isValidServiceType(_serviceType), "Invalid service type");
         serviceTypeStakeRequirements[_serviceType].minStake = _serviceTypeMin;
