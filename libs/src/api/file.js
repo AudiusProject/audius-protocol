@@ -1,7 +1,6 @@
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 const { Base, Services } = require('./base')
-const Utils = require('../utils')
 const { raceRequests } = require('../utils/network')
 const retry = require('async-retry')
 const FETCH_CID_TIMEOUT_MS = 20 /* sec */ * 1000 /* millis */

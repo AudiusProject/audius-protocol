@@ -18,7 +18,7 @@ const { raceRequests } = require('../utils/network')
  *
  * ```
  *
- * In essence this class operates by taking a list of services,
+ * This class operates by taking a list of services and
  * round-robin makes requests at them until a suitable one is found.
  *
  * Two types of "bad" services are defined below:
@@ -26,7 +26,7 @@ const { raceRequests } = require('../utils/network')
  *  - Backup: this service is bad, but if we can't find anything better, maybe use it
  *
  * Classes that extend `ServiceSelection` can choose to implement custom logic on top
- * of them.
+ * of them and is generally how this class is intended to be used.
  */
 class ServiceSelection {
   /**
@@ -60,7 +60,7 @@ class ServiceSelection {
     // Truly "unhealthy" services. Should not ever be picked.
     this.unhealthy = new Set([])
 
-    // Selectable services but not optimal. Will be picked a last resort.
+    // Selectable services but not optimal. Will be picked as a last resort.
     this.backups = {}
 
     // Total number of services attempted
@@ -114,7 +114,7 @@ class ServiceSelection {
     // so they can get retried in the future
     this.triggerCleanup()
 
-    // Recursively try this selection if we didn't find something
+    // Recursively try this selection function if we didn't find something
     if (!best) {
       return this.select()
     }
