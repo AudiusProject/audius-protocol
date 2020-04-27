@@ -9,6 +9,7 @@ const AudiusToken = artifacts.require('AudiusToken')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const Governance = artifacts.require('Governance')
+const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const DelegateManager = artifacts.require('DelegateManager')
@@ -17,6 +18,7 @@ const ClaimsManager = artifacts.require('ClaimsManager')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
+const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManagerKey')
@@ -122,6 +124,22 @@ contract('Governance.sol', async (accounts) => {
     staking = await Staking.at(proxy.address)
     await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
 
+    // Deploy service type manager
+    let versionerAddress = accounts[9]
+    let serviceTypeInitializeData = encodeCall(
+      'initialize',
+      ['address', 'address', 'bytes32'],
+      [registry.address, versionerAddress, governanceKey]
+    )
+    let serviceTypeManager0 = await ServiceTypeManager.new({ from: treasuryAddress })
+    let serviceTypeManagerProxy = await AdminUpgradeabilityProxy.new(
+      serviceTypeManager0.address,
+      proxyAdminAddress,
+      serviceTypeInitializeData,
+      { from: proxyAdminAddress }
+    )
+    await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: treasuryAddress })
+
     // Deploy + Registery ServiceProviderStorage contract
     serviceProviderStorage = await ServiceProviderStorage.new(registry.address, { from: protocolOwnerAddress })
     await registry.addContract(serviceProviderStorageKey, serviceProviderStorage.address, { from: protocolOwnerAddress })
@@ -132,6 +150,7 @@ contract('Governance.sol', async (accounts) => {
       stakingProxyKey,
       delegateManagerKey,
       governanceKey,
+      serviceTypeManagerProxyKey,
       serviceProviderStorageKey
     )
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address, { from: protocolOwnerAddress })
