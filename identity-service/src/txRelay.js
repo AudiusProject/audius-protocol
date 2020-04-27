@@ -136,7 +136,7 @@ const sendTransactionInternal = async (req, web3, resetNonce = false, txProps, r
     }
     await redis.zadd('relayTxAttempts', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
     req.logger.info(`txRelay - sending a transaction for wallet ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${gasLimit}, nonce ${currentNonce}`)
-    
+
     receiptPromise = web3.eth.sendSignedTransaction(signedTx)
     const prom = new Promise(function (resolve, reject) {
       let resolved = false
@@ -151,7 +151,7 @@ const sendTransactionInternal = async (req, web3, resetNonce = false, txProps, r
         }
       })
     })
-    
+
     await prom // resolves when a hash exists for a transaction, proving that it has not errored
     await redis.zadd('relayTxSuccesses', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
     currentRelayerAccountNonce++

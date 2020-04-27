@@ -13,13 +13,15 @@ let notifDiscProv = config.get('notificationDiscoveryProvider')
 const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
 const RELAY_HEALTH_MAX_TRANSACTIONS = 100 // max transactions to look into
 const RELAY_HEALTH_MAX_ERRORS = 5 // max acceptable errors for a 200 response
-const RELAY_HEALTH_MIN_NUM_USERS = 3 //min number of users affected to qualify for error
+const RELAY_HEALTH_MIN_NUM_USERS = 3 // min number of users affected to qualify for error
 const RELAY_HEALTH_MAX_BLOCK_RANGE = 200 // max block range allowed from query params
+// if (txs on blockchain / attempted) is less than this percent, health check will error
+// eg. 10 transactions on chain but 120 attempts should error
 const RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD = 0.2
 const RELAY_HEALTH_ACCOUNT = config.get('relayerPublicKey')
 
 // flatten one level of nexted arrays
-const flatten = (arr) => arr.reduce((acc, val) => acc.concat(val), []);
+const flatten = (arr) => arr.reduce((acc, val) => acc.concat(val), [])
 
 module.exports = function (app) {
   /**
@@ -29,10 +31,10 @@ module.exports = function (app) {
   /*
   There are a few scenarios where a health check should return unhealthy
   1. Some number of relays are failing for some number of users
-     To solve this, have an object in redis which 
-  2. Relays are not being sent / acknowledged by blockchain, but there were relays we 
-     wanted to send anyway
-  */ 
+     To solve this, traverse the blocks for Audius transactions and count failures
+     for users. If it's greater than some threshold, return error
+  2. Relays are not being sent / sent but not acknowledged by blockchain
+  */
   app.get('/health_check/relay', handleResponse(async (req, res) => {
     const start = Date.now()
     const audiusLibsInstance = req.app.get('audiusLibs')
@@ -101,15 +103,14 @@ module.exports = function (app) {
             const txHash = tx.hash
             const resp = await web3.eth.getTransactionReceipt(txHash)
             txCounter++
-            
+
             // tx failed
-            if (!resp.status){
+            if (!resp.status) {
               const senderAddress = await redis.hget('txHasToSenderAddress', txHash)
-              if (senderAddress){
+              if (senderAddress) {
                 if (!failureTxs[senderAddress]) failureTxs[senderAddress] = [txHash]
                 else failureTxs[senderAddress].push(txHash)
-              }
-              else failureTxs['unknown'].push(txHash)
+              } else failureTxs['unknown'].push(txHash)
             }
           }
         }
@@ -119,13 +120,13 @@ module.exports = function (app) {
     let isError = false
     if (Object.keys(failureTxs).length >= RELAY_HEALTH_MIN_NUM_USERS &&
       flatten(Object.values(failureTxs)).length > maxErrors) isError = true
-    
+
     // delete old entries from set in redis
     const epochOneHourAgo = Math.floor(Date.now() / 1000) - 3600
     await redis.zremrangebyscore('relayTxAttempts', '-inf', epochOneHourAgo)
     await redis.zremrangebyscore('relayTxFailures', '-inf', epochOneHourAgo)
     await redis.zremrangebyscore('relayTxSuccesses', '-inf', epochOneHourAgo)
-    
+
     // check if there have been any attempts in the time window that we processed the block health check
     const attemptedTxsInRedis = await redis.zrangebyscore('relayTxAttempts', minBlockTime, '+inf')
     const successfulTxsInRedis = await redis.zrangebyscore('relayTxSuccesses', minBlockTime, '+inf')
