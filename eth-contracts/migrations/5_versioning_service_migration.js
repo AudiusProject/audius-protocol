@@ -7,7 +7,7 @@ const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 
-const ServiceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
+const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
@@ -28,8 +28,8 @@ module.exports = (deployer, network, accounts) => {
 
     const initializeCallData = encodeCall(
       'initialize',
-      ['address', 'address'],
-      [registry.address, versionerAddress]
+      ['address', 'address', 'bytes32'],
+      [registry.address, versionerAddress, governanceKey]
     )
 
     const serviceTypeManagerProxy = await deployer.deploy(
@@ -40,7 +40,7 @@ module.exports = (deployer, network, accounts) => {
       { from: proxyDeployerAddress }
     )
 
-    await registry.addContract(ServiceTypeManagerProxyKey, serviceTypeManagerProxy.address)
+    await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address)
 
     // Deploy + Register ServiceProviderStorage contract
     await deployer.deploy(ServiceProviderStorage, Registry.address)
@@ -53,6 +53,7 @@ module.exports = (deployer, network, accounts) => {
       stakingProxyKey,
       delegateManagerKey,
       governanceKey,
+      serviceTypeManagerProxyKey,
       serviceProviderStorageKey
     )
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)
