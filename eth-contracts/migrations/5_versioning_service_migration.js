@@ -20,7 +20,7 @@ module.exports = (deployer, network, accounts) => {
     const config = contractConfig[network]
     const registry = await Registry.deployed()
 
-    const versionerAddress = config.versionerAddress || accounts[0]
+    const controllerAddress = config.controllerAddress || accounts[0]
     // TODO move to contractConfig
     const [proxyAdminAddress, proxyDeployerAddress] = [accounts[10], accounts[11]]
 
@@ -29,7 +29,7 @@ module.exports = (deployer, network, accounts) => {
     const initializeCallData = encodeCall(
       'initialize',
       ['address', 'address', 'bytes32'],
-      [registry.address, versionerAddress, governanceKey]
+      [registry.address, controllerAddress, governanceKey]
     )
 
     const serviceTypeManagerProxy = await deployer.deploy(
