@@ -87,7 +87,16 @@ async function raceRequests (
     })
   })
   requests.push(Utils.wait(timeout))
-  const { val: response, errored } = await promiseFight(requests, /* captureErrorred */ true)
+  let response
+  let errored
+  try {
+    const { val, errored: e } = await promiseFight(requests, /* captureErrorred */ true)
+    response = val
+    errored = e
+  } catch (e) {
+    response = null
+    errored = e
+  }
   sources.forEach(source => {
     source.cancel('Fetch already succeeded')
   })

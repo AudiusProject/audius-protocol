@@ -176,6 +176,10 @@ class EthContracts {
     )
   }
 
+  async getServiceProviderList (spType) {
+    return this.ServiceProviderFactoryClient.getServiceProviderList(spType)
+  }
+
   /**
    * Returns a valid service provider url with the fastest response
    * @param {string} spType service provider type: 'discovery-provider' | 'content-service' | 'creator-node'
@@ -389,15 +393,12 @@ class EthContracts {
     return endpoint
   }
 
-  async selectPriorVersionServiceProvider (spType, whitelist = null) {
+  async selectPriorVersionServiceProvider (spType) {
     if (!this.expectedServiceVersions) {
       this.expectedServiceVersions = await this.getExpectedServiceVersions()
     }
     let serviceProviders =
       await this.ServiceProviderFactoryClient.getServiceProviderList(spType)
-    if (whitelist) {
-      serviceProviders = serviceProviders.filter(d => whitelist.has(d.endpoint))
-    }
 
     let numberOfServiceVersions =
       await this.VersioningFactoryClient.getNumberOfVersions(spType)
@@ -435,9 +436,9 @@ class EthContracts {
             continue
           }
 
-          if (!semver.valid(serviceVersion)) {
-            throw new Error(`Invalid semver version found - ${serviceVersion}`)
-          }
+          // if (!semver.valid(serviceVersion)) {
+          //   throw new Error(`Invalid semver version found - ${serviceVersion}`)
+          // }
 
           // Discovery provider specific validation
           if (spType === 'discovery-provider') {

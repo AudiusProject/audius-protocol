@@ -3,6 +3,7 @@ const axios = require('axios')
 const Utils = require('../../utils')
 const { raceRequests } = require('../../utils/network')
 const { serviceType } = require('../ethContracts/index')
+const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 
 const {
   UNHEALTHY_BLOCK_DIFF,
@@ -24,47 +25,15 @@ class DiscoveryProvider {
     this.userStateManager = userStateManager
     this.ethContracts = ethContracts
     this.web3Manager = web3Manager
+
+    this.serviceSelector = new DiscoveryProviderSelection(
+      { whitelist },
+      ethContracts
+    )
   }
 
   async init () {
-    let endpoint
-    let pick
-    let isValid = null
-
-    if (this.autoselect) {
-      endpoint = await this.autoSelectEndpoint()
-    } else {
-      if (typeof this.whitelist === 'string') {
-        endpoint = this.whitelist
-      } else {
-        if (!this.whitelist || this.whitelist.size === 0) {
-          throw new Error('Must pass autoselect true or provide whitelist.')
-        }
-
-        // use this as a lookup between version endpoint and base url
-        const whitelistMap = {}
-        this.whitelist.forEach((url) => {
-          whitelistMap[urlJoin(url, '/version')] = url
-        })
-
-        try {
-          const { response } = await raceRequests(Object.keys(whitelistMap), (url) => {
-            pick = whitelistMap[url]
-          }, {}, REQUEST_TIMEOUT_MS)
-
-          isValid = pick && response.data.service && (response.data.service === serviceType.DISCOVERY_PROVIDER)
-          if (isValid) {
-            console.info('Initial discovery provider was valid')
-            endpoint = pick
-          } else {
-            console.info('Initial discovery provider was invalid, searching for a new one')
-            endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
-          }
-        } catch (e) {
-          throw new Error('Could not select a discprov from the whitelist', e)
-        }
-      }
-    }
+    const endpoint = await this.serviceSelector.select()
     this.setEndpoint(endpoint)
 
     if (endpoint && this.web3Manager && this.web3Manager.web3) {
@@ -681,7 +650,8 @@ class DiscoveryProvider {
     }
 
     if (!this.discoveryProviderEndpoint) {
-      await this.autoSelectEndpoint()
+      const endpoint = await this.serviceSelector.select()
+      this.setEndpoint(endpoint)
     }
 
     if (retries === 0) {
@@ -722,8 +692,8 @@ class DiscoveryProvider {
       const parsedResponse = Utils.parseDataFromResponse(response)
 
       if (
-        this.ethContracts &&
-        !this.ethContracts.isInRegressedMode() &&
+        this.serviceSelector &&
+        !this.serviceSelector.isInRegressedMode() &&
         'latest_indexed_block' in parsedResponse &&
         'latest_chain_block' in parsedResponse
       ) {
