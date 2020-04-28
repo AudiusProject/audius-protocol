@@ -21,13 +21,13 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
     bytes32[] private validServiceTypes;
 
     // @dev Struct representing service type stake requirements
-    struct ServiceInstanceStakeRequirements {
+    struct ServiceTypeStakeRequirements {
         uint minStake;
         uint maxStake;
     }
 
     // @dev mapping of service type to registered requirements
-    mapping(bytes32 => ServiceInstanceStakeRequirements) serviceTypeStakeRequirements;
+    mapping(bytes32 => ServiceTypeStakeRequirements) serviceTypeStakeRequirements;
 
     // standard - imitates relationship between Ether and Wei
     uint8 private constant DECIMALS = 18;
@@ -55,7 +55,7 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
         bytes32 _serviceVersion
     ) external isInitialized
     {
-        require(controllerAddress == msg.sender, "Invalid signature for versioner");
+        require(controllerAddress == msg.sender, "Invalid signature for controller");
 
         uint numExistingVersions = this.getNumberOfVersions(_serviceType);
 
@@ -81,7 +81,7 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
             "Only controller or governance");
         require(!this.isValidServiceType(_serviceType), "Already known service type");
         validServiceTypes.push(_serviceType);
-        serviceTypeStakeRequirements[_serviceType] = ServiceInstanceStakeRequirements({
+        serviceTypeStakeRequirements[_serviceType] = ServiceTypeStakeRequirements({
             minStake: _serviceTypeMin,
             maxStake: _serviceTypeMax
         });
