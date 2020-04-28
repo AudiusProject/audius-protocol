@@ -8,10 +8,6 @@ const { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConst
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 
-// async function wait (milliseconds) {
-//   return new Promise(resolve => setTimeout(resolve, milliseconds))
-// }
-
 describe('test Users', function () {
   let app, server, ipfsMock, libsMock
 
