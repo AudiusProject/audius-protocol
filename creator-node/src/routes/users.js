@@ -44,7 +44,9 @@ module.exports = function (app) {
       return errorResponseBadRequest('Missing request body values.')
     }
 
-    const address = utils.verifySignature(data, signature)
+    let address = utils.verifySignature(data, signature)
+    address = address.toLowerCase()
+
     const user = await models.CNodeUser.findOne({
       where: {
         walletPublicKey: address
@@ -70,12 +72,13 @@ module.exports = function (app) {
    * is also set in redis cache with the key 'userLoginChallenge:<wallet>'.
    */
   app.get('/users/login/challenge', handleResponse(async (req, res, next) => {
-    const walletPublicKey = req.query.walletPublicKey
+    let walletPublicKey = req.query.walletPublicKey
 
     if (!walletPublicKey) {
       return errorResponseBadRequest('Missing wallet address.')
     }
 
+    walletPublicKey = walletPublicKey.toLowerCase()
     const userLoginChallengeKey = `${CHALLENGE_PREFIX}${walletPublicKey}`
     const redisClient = req.app.get('redisClient')
     const challengeBuffer = await randomBytes(CHALLENGE_VALUE_LENGTH)
@@ -102,7 +105,14 @@ module.exports = function (app) {
       return errorResponseBadRequest('Missing request body values.')
     }
 
-    const address = utils.verifySignature(theirChallenge, signature)
+    let address
+    try {
+      address = utils.verifySignature(theirChallenge, signature)
+      address = address.toLowerCase()
+    } catch (e) {
+      return errorResponseBadRequest(`Unable to verify signature: ${e}`)
+    }
+
     const user = await models.CNodeUser.findOne({
       where: {
         walletPublicKey: address
