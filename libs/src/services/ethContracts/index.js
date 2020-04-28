@@ -436,9 +436,9 @@ class EthContracts {
             continue
           }
 
-          // if (!semver.valid(serviceVersion)) {
-          //   throw new Error(`Invalid semver version found - ${serviceVersion}`)
-          // }
+          if (!semver.valid(serviceVersion)) {
+            throw new Error(`Invalid semver version found - ${serviceVersion}`)
+          }
 
           // Discovery provider specific validation
           if (spType === 'discovery-provider') {
