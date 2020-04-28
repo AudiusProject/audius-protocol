@@ -109,14 +109,23 @@ contract('ServiceProvider test', async (accounts) => {
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: treasuryAddress })
 
     // Deploy ServiceProviderFactory
-    serviceProviderFactory = await ServiceProviderFactory.new(
-      registry.address,
-      stakingProxyKey,
-      delegateManagerKey,
-      governanceKey,
-      serviceTypeManagerProxyKey)
+    let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: treasuryAddress })
 
-    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address, { from: treasuryAddress })
+    const serviceProviderFactoryCalldata = encodeCall(
+      'initialize',
+      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
+    )
+    let serviceProviderFactoryProxy = await AdminUpgradeabilityProxy.new(
+      serviceProviderFactory0.address,
+      proxyAdminAddress,
+      serviceProviderFactoryCalldata,
+      { from: proxyAdminAddress }
+    )
+
+    serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
+    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: treasuryAddress })
+
     // Transfer 1000 tokens to accounts[11]
     await token.transfer(accounts[11], INITIAL_BAL, { from: treasuryAddress })
   })
@@ -534,13 +543,13 @@ contract('ServiceProvider test', async (accounts) => {
      * Mutate owner wallet and validate function restrictions
      */
     it('updates delegateOwnerWallet', async () => {
-      let currentDelegateOwner = await serviceProviderFactory.getDelegateOwnerWallet(
-        testDiscProvType,
-        testEndpoint,
-        { from: stakerAccount })
+      let spID = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint)
+      let info = await serviceProviderFactory.getServiceProviderInfo(testDiscProvType, spID)
+      let currentDelegateOwnerWallet = info.delegateOwnerWallet
+
       assert.equal(
         stakerAccount,
-        currentDelegateOwner,
+        currentDelegateOwnerWallet,
         'Expect initial delegateOwnerWallet equal to registrant')
       // Confirm wrong owner update is rejected
       await _lib.assertRevert(
@@ -559,10 +568,10 @@ contract('ServiceProvider test', async (accounts) => {
         testEndpoint,
         newDelegateOwnerWallet,
         { from: stakerAccount })
-      let newDelegateFromChain = await serviceProviderFactory.getDelegateOwnerWallet(
-        testDiscProvType,
-        testEndpoint,
-        { from: stakerAccount })
+
+      info = await serviceProviderFactory.getServiceProviderInfo(testDiscProvType, spID)
+      let newDelegateFromChain = info.delegateOwnerWallet
+
       assert.equal(
         newDelegateOwnerWallet,
         newDelegateFromChain,
