@@ -14,10 +14,10 @@ const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 min
 const RELAY_HEALTH_MAX_TRANSACTIONS = 100 // max transactions to look into
 const RELAY_HEALTH_MAX_ERRORS = 5 // max acceptable errors for a 200 response
 const RELAY_HEALTH_MIN_NUM_USERS = 3 // min number of users affected to qualify for error
-const RELAY_HEALTH_MAX_BLOCK_RANGE = 200 // max block range allowed from query params
+const RELAY_HEALTH_MAX_BLOCK_RANGE = 360 // max block range allowed from query params
 // if (txs on blockchain / attempted) is less than this percent, health check will error
 // eg. 10 transactions on chain but 120 attempts should error
-const RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD = 0.2
+const RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD = 0.75
 const RELAY_HEALTH_ACCOUNT = config.get('relayerPublicKey')
 
 // flatten one level of nexted arrays
