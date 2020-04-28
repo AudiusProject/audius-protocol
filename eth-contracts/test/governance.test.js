@@ -139,6 +139,13 @@ contract('Governance.sol', async (accounts) => {
       { from: proxyAdminAddress }
     )
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: treasuryAddress })
+    let serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
+    // Register discovery provider
+    await serviceTypeManager.addServiceType(
+      testDiscProvType,
+      audToWei(5),
+      audToWei(10000000),
+      { from: controllerAddress })
 
     // Deploy + Registery ServiceProviderStorage contract
     serviceProviderStorage = await ServiceProviderStorage.new(registry.address, { from: protocolOwnerAddress })

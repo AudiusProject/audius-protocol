@@ -47,28 +47,6 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
         registry = RegistryInterface(_registryAddress);
         controllerAddress = _controllerAddress;
         governanceKey = _governanceKey;
-
-        // Hardcoded values for development.
-        // Note that all token mins/maxes are in AudWEI not actual AUD
-        // discovery-provider, 0x646973636f766572792d70726f7669646572
-        // creator-node 0x63726561746f722d6e6f6465
-        bytes32 discoveryProvider = hex"646973636f766572792d70726f7669646572";
-        bytes32 creatorNode = hex"63726561746f722d6e6f6465";
-        validServiceTypes.push(discoveryProvider);
-        validServiceTypes.push(creatorNode);
-
-        // All min/max values are in AUD and require conversion
-        // discovery-provider, MIN=5 AUD   MAX=10,000,000 AUD
-        // creator-node,       MIN=10 AUD  MAX=10,000,000 AUD
-        serviceTypeStakeRequirements[discoveryProvider] = ServiceInstanceStakeRequirements({
-            minStake: 5 * 10**uint256(DECIMALS),
-            maxStake: 10000000 * 10**uint256(DECIMALS)
-        });
-        serviceTypeStakeRequirements[creatorNode] = ServiceInstanceStakeRequirements({
-            minStake: 10 * 10**uint256(DECIMALS),
-            maxStake: 10000000 * 10**uint256(DECIMALS)
-        });
-
         InitializableV2.initialize();
     }
 

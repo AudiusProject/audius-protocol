@@ -30,8 +30,7 @@ const getTokenBalance = async (token, account) => fromBn(await token.balanceOf(a
 
 const toWei = (aud) => {
   const amountInAudWei = web3.utils.toWei(aud.toString(), 'ether')
-  const amountInAudWeiBN = web3.utils.toBN(amountInAudWei)
-  return amountInAudWeiBN
+  return web3.utils.toBN(amountInAudWei)
 }
 
 const fromWei = (wei) => {
@@ -95,8 +94,20 @@ contract('ServiceProvider test', async (accounts) => {
       serviceTypeInitializeData,
       { from: proxyAdminAddress }
     )
-
     serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
+    // Register creator node
+    await serviceTypeManager.addServiceType(
+      testCreatorNodeType,
+      toWei(10),
+      toWei(10000000),
+      { from: controllerAddress })
+    // Register discovery provider
+    await serviceTypeManager.addServiceType(
+      testDiscProvType,
+      toWei(5),
+      toWei(10000000),
+      { from: controllerAddress })
+
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: treasuryAddress })
 
     // Deploy ServiceProviderStorage
