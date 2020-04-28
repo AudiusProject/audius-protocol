@@ -211,6 +211,9 @@ contract('ServiceProvider test', async (accounts) => {
         stakerAccount
       )
 
+      let numberOfEndpoints = await serviceProviderFactory.getNumberOfEndpointsFromAddress(stakerAccount)
+      assert.isTrue(numberOfEndpoints.eq(web3.utils.toBN(1)), 'Expect 1 endpoint registered')
+
       // Confirm event has correct amount
       assert.equal(regTx.stakedAmountInt, DEFAULT_AMOUNT)
 

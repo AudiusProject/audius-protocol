@@ -14,6 +14,7 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32 governanceKey;
     bytes32 serviceTypeManagerKey;
     address deployerAddress;
+    bytes empty;
 
     /// @dev - Stores following entities
     ///        1) Directly staked amount by SP, not including delegators
@@ -24,6 +25,7 @@ contract ServiceProviderFactory is RegistryContract {
         uint deployerStake;
         uint deployerCut;
         bool validBounds;
+        uint numberOfEndpoints;
     }
 
     // Mapping of service provider address to details
@@ -33,8 +35,6 @@ contract ServiceProviderFactory is RegistryContract {
     /// @dev - Static regardless of total number of endpoints for a given account
     uint minDeployerStake;
 
-    bytes empty;
-
     /// @dev - standard - imitates relationship between Ether and Wei
     uint8 private constant DECIMALS = 18;
 
@@ -43,7 +43,7 @@ contract ServiceProviderFactory is RegistryContract {
     uint private constant DEPLOYER_CUT_BASE = 100;
 
     /// @dev - Struct maintaining information about sp
-    struct ServiceProvider {
+    struct ServiceEndpoint {
         address owner;
         string endpoint;
         uint blocknumber;
@@ -58,7 +58,7 @@ contract ServiceProviderFactory is RegistryContract {
     /// @dev - mapping of (serviceType -> (serviceInstanceId <-> serviceProviderInfo))
     /// @notice - stores the actual service provider data like endpoint and owner wallet
     ///           with the ability lookup by service type and service id */
-    mapping(bytes32 => mapping(uint => ServiceProvider)) serviceProviderInfo;
+    mapping(bytes32 => mapping(uint => ServiceEndpoint)) serviceProviderInfo;
 
     /// @dev - mapping of keccak256(endpoint) to uint ID
     /// @notice - used to check if a endpoint has already been registered and also lookup
@@ -69,10 +69,6 @@ contract ServiceProviderFactory is RegistryContract {
     /// @notice - stores all the services registered by a provider. for each address,
     /// provides the ability to lookup by service type and see all registered services
     mapping(address => mapping(bytes32 => uint[])) serviceProviderAddressToId;
-
-    /// @dev - mapping of address -> number of service providers registered
-    /// @notice - stores the number of services registered by a provider
-    mapping(address => uint) serviceProviderAddressNumberOfEndpoints;
 
     event RegisteredServiceProvider(
       uint _spID,
@@ -158,7 +154,7 @@ contract ServiceProviderFactory is RegistryContract {
         serviceProviderTypeIDs[_serviceType] = newServiceProviderID;
 
         // Index spInfo
-        serviceProviderInfo[_serviceType][newServiceProviderID] = ServiceProvider({
+        serviceProviderInfo[_serviceType][newServiceProviderID] = ServiceEndpoint({
             owner: owner,
             endpoint: _endpoint,
             blocknumber: block.number,
@@ -181,7 +177,7 @@ contract ServiceProviderFactory is RegistryContract {
         }
 
         // Increment number of endpoints for this address
-        serviceProviderAddressNumberOfEndpoints[owner] += 1;
+        spDetails[owner].numberOfEndpoints += 1;
         // End code moved from storage
 
         // Update deployer total
@@ -234,7 +230,6 @@ contract ServiceProviderFactory is RegistryContract {
             unstaked = true;
         }
 
-        // Start code moved from storage
         require (
             serviceProviderEndpointToId[keccak256(bytes(_endpoint))] != 0,
             "Endpoint not registered");
@@ -264,8 +259,7 @@ contract ServiceProviderFactory is RegistryContract {
         }
 
         // Decrement number of endpoints for this address
-        serviceProviderAddressNumberOfEndpoints[owner] -= 1;
-        // End code moved from stg 
+        spDetails[owner].numberOfEndpoints -= 1;
 
         emit DeregisteredServiceProvider(
             deregisteredID,
@@ -392,7 +386,7 @@ contract ServiceProviderFactory is RegistryContract {
             "Could not find service provider with that endpoint"
         );
 
-        ServiceProvider memory sp = serviceProviderInfo[_serviceType][spId];
+        ServiceEndpoint memory sp = serviceProviderInfo[_serviceType][spId];
 
         require(
             sp.owner == owner,
@@ -486,7 +480,7 @@ contract ServiceProviderFactory is RegistryContract {
     function getServiceProviderInfo(bytes32 _serviceType, uint _serviceId)
     external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet)
     {
-        ServiceProvider memory sp = serviceProviderInfo[_serviceType][_serviceId];
+        ServiceEndpoint memory sp = serviceProviderInfo[_serviceType][_serviceId];
         return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet);
     }
 
@@ -527,7 +521,7 @@ contract ServiceProviderFactory is RegistryContract {
     function getNumberOfEndpointsFromAddress(address _ownerAddress)
     external view returns (uint numberOfEndpoints)
     {
-        return serviceProviderAddressNumberOfEndpoints[_ownerAddress];
+        return spDetails[_ownerAddress].numberOfEndpoints;
     }
 
     /// @notice Calculate the stake for an account based on total number of registered services
