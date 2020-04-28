@@ -4,6 +4,7 @@ const encodeCall = require('../utils/encodeCall')
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const Staking = artifacts.require('Staking')
@@ -14,6 +15,7 @@ const MockGovernance = artifacts.require('MockGovernance')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
+const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
@@ -81,6 +83,29 @@ contract('DelegateManager', async (accounts) => {
     await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
     stakingAddress = staking.address
 
+    // Deploy service type manager
+    let controllerAddress = accounts[9]
+    let serviceTypeInitializeData = encodeCall(
+      'initialize',
+      ['address', 'address', 'bytes32'],
+      [registry.address, controllerAddress, governanceKey]
+    )
+    let serviceTypeManager0 = await ServiceTypeManager.new({ from: treasuryAddress })
+    let serviceTypeManagerProxy = await AdminUpgradeabilityProxy.new(
+      serviceTypeManager0.address,
+      proxyAdminAddress,
+      serviceTypeInitializeData,
+      { from: proxyAdminAddress }
+    )
+    await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: treasuryAddress })
+    let serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
+    // Register discovery provider
+    await serviceTypeManager.addServiceType(
+      testDiscProvType,
+      toWei(5),
+      toWei(10000000),
+      { from: controllerAddress })
+
     // Deploy sp storage
     serviceProviderStorage = await ServiceProviderStorage.new(registry.address)
     await registry.addContract(serviceProviderStorageKey, serviceProviderStorage.address)
@@ -91,6 +116,7 @@ contract('DelegateManager', async (accounts) => {
       stakingProxyKey,
       delegateManagerKey,
       governanceKey,
+      serviceTypeManagerProxyKey,
       serviceProviderStorageKey)
 
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)

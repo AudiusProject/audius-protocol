@@ -5,12 +5,14 @@ const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
 const Staking = artifacts.require('Staking')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
+const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const governanceKey = web3.utils.utf8ToHex('Governance')
@@ -28,8 +30,7 @@ const getTokenBalance = async (token, account) => fromBn(await token.balanceOf(a
 
 const toWei = (aud) => {
   const amountInAudWei = web3.utils.toWei(aud.toString(), 'ether')
-  const amountInAudWeiBN = web3.utils.toBN(amountInAudWei)
-  return amountInAudWeiBN
+  return web3.utils.toBN(amountInAudWei)
 }
 
 const fromWei = (wei) => {
@@ -41,9 +42,11 @@ const INITIAL_BAL = toWei(1000)
 const DEFAULT_AMOUNT = toWei(120)
 
 contract('ServiceProvider test', async (accounts) => {
-  let token, registry, staking0, stakingInitializeData, proxy, staking, serviceProviderStorage, serviceProviderFactory
+  let token, registry, staking0, stakingInitializeData, proxy
+  let staking, serviceProviderStorage, serviceProviderFactory, serviceTypeManager
 
   const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  let controllerAddress
 
   beforeEach(async () => {
     registry = await Registry.new()
@@ -73,6 +76,40 @@ contract('ServiceProvider test', async (accounts) => {
     staking = await Staking.at(proxy.address)
     await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
 
+    // Deploy service type manager
+    controllerAddress = accounts[9]
+    let serviceTypeInitializeData = encodeCall(
+      'initialize',
+      ['address', 'address', 'bytes32'],
+      [
+        registry.address,
+        controllerAddress,
+        governanceKey
+      ]
+    )
+    let serviceTypeManager0 = await ServiceTypeManager.new({ from: treasuryAddress })
+    let serviceTypeManagerProxy = await AdminUpgradeabilityProxy.new(
+      serviceTypeManager0.address,
+      proxyAdminAddress,
+      serviceTypeInitializeData,
+      { from: proxyAdminAddress }
+    )
+    serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
+    // Register creator node
+    await serviceTypeManager.addServiceType(
+      testCreatorNodeType,
+      toWei(10),
+      toWei(10000000),
+      { from: controllerAddress })
+    // Register discovery provider
+    await serviceTypeManager.addServiceType(
+      testDiscProvType,
+      toWei(5),
+      toWei(10000000),
+      { from: controllerAddress })
+
+    await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: treasuryAddress })
+
     // Deploy ServiceProviderStorage
     serviceProviderStorage = await ServiceProviderStorage.new(registry.address, { from: treasuryAddress })
     await registry.addContract(serviceProviderStorageKey, serviceProviderStorage.address, { from: treasuryAddress })
@@ -83,6 +120,7 @@ contract('ServiceProvider test', async (accounts) => {
       stakingProxyKey,
       delegateManagerKey,
       governanceKey,
+      serviceTypeManagerProxyKey,
       serviceProviderStorageKey)
 
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address, { from: treasuryAddress })
@@ -201,7 +239,7 @@ contract('ServiceProvider test', async (accounts) => {
         DEFAULT_AMOUNT,
         'Expect default stake amount')
 
-      let spTypeInfo = await serviceProviderFactory.getServiceTypeStakeInfo(testDiscProvType)
+      let spTypeInfo = await serviceTypeManager.getServiceTypeStakeInfo(testDiscProvType)
       let typeMin = fromWei(spTypeInfo[0])
       let typeMax = fromWei(spTypeInfo[1])
 
@@ -271,10 +309,10 @@ contract('ServiceProvider test', async (accounts) => {
       let testEndpoint = 'https://localhost:4000'
       let testEndpoint2 = 'https://localhost:4001'
 
-      let cnTypeInfo = await serviceProviderFactory.getServiceTypeStakeInfo(testCreatorNodeType)
+      let cnTypeInfo = await serviceTypeManager.getServiceTypeStakeInfo(testCreatorNodeType)
       let cnTypeMin = cnTypeInfo[0]
       let cnTypeMax = cnTypeInfo[1]
-      let dpTypeInfo = await serviceProviderFactory.getServiceTypeStakeInfo(testDiscProvType)
+      let dpTypeInfo = await serviceTypeManager.getServiceTypeStakeInfo(testDiscProvType)
       let dpTypeMin = dpTypeInfo[0]
 
       // 3rd endpoint for stakerAccount = https://localhost:4001
@@ -636,26 +674,26 @@ contract('ServiceProvider test', async (accounts) => {
       let typeMin = toWei(200)
       let typeMax = toWei(20000)
       let testType = web3.utils.utf8ToHex('test-service')
-      let isValid = await serviceProviderFactory.isValidServiceType(testType)
+      let isValid = await serviceTypeManager.isValidServiceType(testType)
       assert.isTrue(!isValid, 'Invalid type expected')
 
       // Expect failure as type is already present
       await _lib.assertRevert(
-        serviceProviderFactory.addServiceType(testDiscProvType, typeMin, typeMax, { from: deployer }),
+        serviceTypeManager.addServiceType(testDiscProvType, typeMin, typeMax, { from: controllerAddress }),
         'Already known service type'
       )
       // Expect failure from invalid account
       await _lib.assertRevert(
-        serviceProviderFactory.addServiceType(testDiscProvType, typeMin, typeMax, { from: accounts[12] }),
-        'Only deployer or governance'
+        serviceTypeManager.addServiceType(testDiscProvType, typeMin, typeMax, { from: accounts[12] }),
+        'Only controller or governance'
       )
 
-      await serviceProviderFactory.addServiceType(testType, typeMin, typeMax, { from: deployer })
+      await serviceTypeManager.addServiceType(testType, typeMin, typeMax, { from: controllerAddress })
 
-      isValid = await serviceProviderFactory.isValidServiceType(testType)
+      isValid = await serviceTypeManager.isValidServiceType(testType)
       assert.isTrue(isValid, 'Expect valid type after registration')
 
-      let info = await serviceProviderFactory.getServiceTypeStakeInfo(testType)
+      let info = await serviceTypeManager.getServiceTypeStakeInfo(testType)
       assert.isTrue(typeMin.eq(info.min), 'Min values not equal')
       assert.isTrue(typeMax.eq(info.max), 'Max values not equal')
 
@@ -665,31 +703,31 @@ contract('ServiceProvider test', async (accounts) => {
       let unregisteredType = web3.utils.utf8ToHex('invalid-service')
       // Expect failure with unknown type
       await _lib.assertRevert(
-        serviceProviderFactory.updateServiceType(unregisteredType, newMin, newMax, { from: deployer }),
+        serviceTypeManager.updateServiceType(unregisteredType, newMin, newMax, { from: controllerAddress }),
         'Invalid service type'
       )
       // Expect failure from invalid account
       await _lib.assertRevert(
-        serviceProviderFactory.updateServiceType(testType, newMin, newMax, { from: accounts[12] }),
-        'Only deployer or governance'
+        serviceTypeManager.updateServiceType(testType, newMin, newMax, { from: accounts[12] }),
+        'Only controller or governance'
       )
-      await serviceProviderFactory.updateServiceType(testType, newMin, newMax, { from: deployer })
+      await serviceTypeManager.updateServiceType(testType, newMin, newMax, { from: controllerAddress })
 
       // Confirm update
-      info = await serviceProviderFactory.getServiceTypeStakeInfo(testType)
+      info = await serviceTypeManager.getServiceTypeStakeInfo(testType)
       assert.isTrue(newMin.eq(info.min), 'Min values not equal')
       assert.isTrue(newMax.eq(info.max), 'Max values not equal')
 
       await _lib.assertRevert(
-        serviceProviderFactory.removeServiceType(unregisteredType), 'Invalid service type, not found'
+        serviceTypeManager.removeServiceType(unregisteredType, { from: controllerAddress }), 'Invalid service type, not found'
       )
       await _lib.assertRevert(
-        serviceProviderFactory.removeServiceType(testType, { from: accounts[12] }), 'Only deployer or governance'
+        serviceTypeManager.removeServiceType(testType, { from: accounts[12] }), 'Only controller or governance'
       )
 
-      await serviceProviderFactory.removeServiceType(testType)
+      await serviceTypeManager.removeServiceType(testType, { from: controllerAddress })
 
-      isValid = await serviceProviderFactory.isValidServiceType(testType)
+      isValid = await serviceTypeManager.isValidServiceType(testType)
       assert.isTrue(!isValid, 'Expect invalid type after deregistration')
     })
   })

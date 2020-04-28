@@ -1,6 +1,7 @@
 pragma solidity ^0.5.0;
 
 import "./registry/RegistryContract.sol";
+import "./ServiceTypeManager.sol";
 import "../staking/ERCStaking.sol";
 import "./interface/registry/RegistryInterface.sol";
 import "./interface/ServiceProviderStorageInterface.sol";
@@ -12,17 +13,8 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32 stakingProxyOwnerKey;
     bytes32 delegateManagerKey;
     bytes32 governanceKey;
+    bytes32 serviceTypeManagerKey;
     address deployerAddress;
-
-    // START Temporary data structures
-    bytes32[] validServiceTypes;
-
-    struct ServiceInstanceStakeRequirements {
-        uint minStake;
-        uint maxStake;
-    }
-
-    mapping(bytes32 => ServiceInstanceStakeRequirements) serviceTypeStakeRequirements;
 
     // Stores following entities
     // 1) Directly staked amount by SP, not including delegators
@@ -34,13 +26,12 @@ contract ServiceProviderFactory is RegistryContract {
         bool validBounds;
     }
 
+    // Mapping of service provider address to details
     mapping(address => ServiceProviderDetails) spDetails;
 
     // Minimum staked by service provider account deployer
     // Static regardless of total number of endpoints for a given account
     uint minDeployerStake;
-
-    // END Temporary data structures
 
     bytes empty;
 
@@ -85,6 +76,7 @@ contract ServiceProviderFactory is RegistryContract {
       bytes32 _stakingProxyOwnerKey,
       bytes32 _delegateManagerKey,
       bytes32 _governanceKey,
+      bytes32 _serviceTypeManagerKey,
       bytes32 _serviceProviderStorageRegistryKey
     ) public
     {
@@ -97,28 +89,8 @@ contract ServiceProviderFactory is RegistryContract {
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         delegateManagerKey = _delegateManagerKey;
         governanceKey = _governanceKey;
+        serviceTypeManagerKey = _serviceTypeManagerKey;
         serviceProviderStorageRegistryKey = _serviceProviderStorageRegistryKey;
-
-        // Hardcoded values for development.
-        // Note that all token mins/maxes are in AudWEI not actual AUD
-        // discovery-provider, 0x646973636f766572792d70726f7669646572
-        // creator-node 0x63726561746f722d6e6f6465
-        bytes32 discoveryProvider = hex"646973636f766572792d70726f7669646572";
-        bytes32 creatorNode = hex"63726561746f722d6e6f6465";
-        validServiceTypes.push(discoveryProvider);
-        validServiceTypes.push(creatorNode);
-
-        // All min/max values are in AUD and require conversion
-        // discovery-provider, MIN=5 AUD   MAX=10,000,000 AUD
-        // creator-node,       MIN=10 AUD  MAX=10,000,000 AUD
-        serviceTypeStakeRequirements[discoveryProvider] = ServiceInstanceStakeRequirements({
-            minStake: 5 * 10**uint256(DECIMALS),
-            maxStake: 10000000 * 10**uint256(DECIMALS)
-        });
-        serviceTypeStakeRequirements[creatorNode] = ServiceInstanceStakeRequirements({
-            minStake: 10 * 10**uint256(DECIMALS),
-            maxStake: 10000000 * 10**uint256(DECIMALS)
-        });
 
         // Configure direct minimum stake for deployer
         minDeployerStake = 5 * 10**uint256(DECIMALS);
@@ -132,7 +104,9 @@ contract ServiceProviderFactory is RegistryContract {
     ) external returns (uint spID)
     {
         require(
-            this.isValidServiceType(_serviceType),
+            ServiceTypeManager(
+                registry.getContract(serviceTypeManagerKey)
+            ).isValidServiceType(_serviceType),
             "Valid service type required");
 
         address owner = msg.sender;
@@ -349,60 +323,6 @@ contract ServiceProviderFactory is RegistryContract {
         return spId;
     }
 
-    function addServiceType(
-        bytes32 _serviceType,
-        uint _serviceTypeMin,
-        uint _serviceTypeMax
-    ) external
-    {
-        require(
-            msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
-            "Only deployer or governance");
-        require(!this.isValidServiceType(_serviceType), "Already known service type");
-        validServiceTypes.push(_serviceType);
-        serviceTypeStakeRequirements[_serviceType] = ServiceInstanceStakeRequirements({
-            minStake: _serviceTypeMin,
-            maxStake: _serviceTypeMax
-        });
-    }
-
-    function removeServiceType(bytes32 _serviceType) external {
-        require(
-            msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
-            "Only deployer or governance");
-        uint serviceIndex = 0;
-        bool foundService = false;
-        for (uint i = 0; i < validServiceTypes.length; i ++) {
-            if (validServiceTypes[i] == _serviceType) {
-                serviceIndex = i;
-                foundService = true;
-                break;
-            }
-        }
-        require(foundService == true, "Invalid service type, not found");
-        // Overwrite service index
-        uint lastIndex = validServiceTypes.length - 1;
-        validServiceTypes[serviceIndex] = validServiceTypes[lastIndex];
-        validServiceTypes.length--;
-        // Overwrite values
-        serviceTypeStakeRequirements[_serviceType].minStake = 0;
-        serviceTypeStakeRequirements[_serviceType].maxStake = 0;
-    }
-
-    function updateServiceType(
-        bytes32 _serviceType,
-        uint _serviceTypeMin,
-        uint _serviceTypeMax
-    ) external
-    {
-        require(
-            msg.sender == deployerAddress || msg.sender == registry.getContract(governanceKey),
-            "Only deployer or governance");
-        require(this.isValidServiceType(_serviceType), "Invalid service type");
-        serviceTypeStakeRequirements[_serviceType].minStake = _serviceTypeMin;
-        serviceTypeStakeRequirements[_serviceType].maxStake = _serviceTypeMax;
-    }
-
     /**
      * @notice Update service provider balance
      */
@@ -527,37 +447,6 @@ contract ServiceProviderFactory is RegistryContract {
         );
     }
 
-    function isValidServiceType(bytes32 _serviceType)
-    external view returns (bool isValid)
-    {
-        return serviceTypeStakeRequirements[_serviceType].maxStake > 0;
-        /*
-        for (uint i = 0; i < validServiceTypes.length; i ++) {
-            if (validServiceTypes[i] == _serviceType) {
-                return true;
-            }
-        }
-        return false;
-        */
-    }
-
-    function getValidServiceTypes()
-    external view returns (bytes32[] memory types)
-    {
-        return validServiceTypes;
-    }
-
-    /// @notice Get min and max stake for a given service type
-    /// @return min/max stake for type
-    function getServiceTypeStakeInfo(bytes32 _serviceType)
-    external view returns (uint min, uint max)
-    {
-        return (
-            serviceTypeStakeRequirements[_serviceType].minStake,
-            serviceTypeStakeRequirements[_serviceType].maxStake
-        );
-    }
-
     /// @notice Calculate the stake for an account based on total number of registered services
     // TODO: Cache value
     function getAccountStakeBounds(address sp)
@@ -565,10 +454,15 @@ contract ServiceProviderFactory is RegistryContract {
     {
         uint minStake = 0;
         uint maxStake = 0;
+        bytes32[] memory validServiceTypes = ServiceTypeManager(
+            registry.getContract(serviceTypeManagerKey)
+        ).getValidServiceTypes();
         uint validTypesLength = validServiceTypes.length;
         for (uint i = 0; i < validTypesLength; i++) {
             bytes32 serviceType = validServiceTypes[i];
-            (uint typeMin, uint typeMax) = this.getServiceTypeStakeInfo(serviceType);
+            (uint typeMin, uint typeMax) = ServiceTypeManager(
+                registry.getContract(serviceTypeManagerKey)
+            ).getServiceTypeStakeInfo(serviceType);
             uint numberOfEndpoints = this.getServiceProviderIdsFromAddress(sp, serviceType).length;
             minStake += (typeMin * numberOfEndpoints);
             maxStake += (typeMax * numberOfEndpoints);

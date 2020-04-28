@@ -7,40 +7,60 @@ const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 
-const ServiceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
+const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 
+// Known service types
+const discoveryProvider = web3.utils.utf8ToHex('discovery-provider')
+const creatorNode = web3.utils.utf8ToHex('creator-node')
+
+const toWei = (aud) => {
+  const amountInAudWei = web3.utils.toWei(aud.toString(), 'ether')
+  return web3.utils.toBN(amountInAudWei)
+}
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
     const config = contractConfig[network]
     const registry = await Registry.deployed()
 
-    const versionerAddress = config.versionerAddress || accounts[0]
+    const controllerAddress = config.controllerAddress || accounts[0]
     // TODO move to contractConfig
     const [proxyAdminAddress, proxyDeployerAddress] = [accounts[10], accounts[11]]
 
     const serviceTypeManager0 = await deployer.deploy(ServiceTypeManager, { from: proxyDeployerAddress })
-
-    const initializeCallData = encodeCall(
+    const serviceTypeCalldata = encodeCall(
       'initialize',
-      ['address', 'address'],
-      [registry.address, versionerAddress]
+      ['address', 'address', 'bytes32'],
+      [registry.address, controllerAddress, governanceKey]
     )
 
     const serviceTypeManagerProxy = await deployer.deploy(
       AdminUpgradeabilityProxy,
       serviceTypeManager0.address,
       proxyAdminAddress,
-      initializeCallData,
+      serviceTypeCalldata,
       { from: proxyDeployerAddress }
     )
 
-    await registry.addContract(ServiceTypeManagerProxyKey, serviceTypeManagerProxy.address)
+    await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address)
+    let serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
+    // Register creator node
+    await serviceTypeManager.addServiceType(
+      creatorNode,
+      toWei(10),
+      toWei(10000000),
+      { from: controllerAddress })
+    // Register discovery provider
+    await serviceTypeManager.addServiceType(
+      discoveryProvider,
+      toWei(5),
+      toWei(10000000),
+      { from: controllerAddress })
 
     // Deploy + Register ServiceProviderStorage contract
     await deployer.deploy(ServiceProviderStorage, Registry.address)
@@ -53,6 +73,7 @@ module.exports = (deployer, network, accounts) => {
       stakingProxyKey,
       delegateManagerKey,
       governanceKey,
+      serviceTypeManagerProxyKey,
       serviceProviderStorageKey
     )
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)
