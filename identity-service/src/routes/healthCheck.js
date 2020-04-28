@@ -41,22 +41,15 @@ module.exports = function (app) {
     const redis = req.app.get('redis')
     const web3 = audiusLibsInstance.web3Manager.getWeb3()
 
-    let endBlockNumber = (await web3.eth.getBlockNumber())
-    // In the case that no query params are defined and the endBlockNumber is less than the max block range, default startBlockNumber to 0
-    const defaultStartBlockNumber = endBlockNumber - RELAY_HEALTH_TEN_MINS_AGO_BLOCKS >= 0
-      ? endBlockNumber - RELAY_HEALTH_TEN_MINS_AGO_BLOCKS : 0
-    let startBlockNumber = req.query.startBlock || defaultStartBlockNumber
-    let maxTransactions = req.query.maxTransactions || RELAY_HEALTH_MAX_TRANSACTIONS
-    let maxErrors = req.query.maxErrors || RELAY_HEALTH_MAX_ERRORS
-    let sentVsAttemptThreshold = req.query.sentVsAttemptThreshold || RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD
+    let endBlockNumber = parseInt((await web3.eth.getBlockNumber()), 10)
+    let blockDiff = parseInt(req.query.blockDiff, 10) || RELAY_HEALTH_TEN_MINS_AGO_BLOCKS
+    let maxTransactions = parseInt(req.query.maxTransactions, 10) || RELAY_HEALTH_MAX_TRANSACTIONS
+    let maxErrors = parseInt(req.query.maxErrors, 10) || RELAY_HEALTH_MAX_ERRORS
+    let sentVsAttemptThreshold = parseFloat(req.query.sentVsAttemptThreshold) || RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD
     let isVerbose = req.query.verbose || false
 
-    // Parse query strings into ints as all req.query values come in as strings
-    startBlockNumber = parseInt(startBlockNumber)
-    endBlockNumber = parseInt(endBlockNumber)
-    maxTransactions = parseInt(maxTransactions)
-    maxErrors = parseInt(maxErrors)
-    sentVsAttemptThreshold = parseFloat(sentVsAttemptThreshold)
+    // In the case that endBlockNumber - blockDiff goes negative, default startBlockNumber to 0
+    let startBlockNumber = Math.max(endBlockNumber-blockDiff, 0)
 
     // If query params are invalid, throw server error
     if (
