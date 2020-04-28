@@ -1,8 +1,6 @@
 const axios = require('axios')
 
 const Utils = require('../../utils')
-const { raceRequests } = require('../../utils/network')
-const { serviceType } = require('../ethContracts/index')
 const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 
 const {
@@ -16,7 +14,6 @@ if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 const MAKE_REQUEST_RETRY_COUNT = 3
 const MAX_MAKE_REQUEST_RETRY_COUNT = 50
-const AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT = 3
 
 class DiscoveryProvider {
   constructor (autoselect, whitelist, userStateManager, ethContracts, web3Manager) {
@@ -45,25 +42,6 @@ class DiscoveryProvider {
 
   setEndpoint (endpoint) {
     this.discoveryProviderEndpoint = endpoint
-  }
-
-  /**
-   * Wrapper method to auto select a valid discovery provider.
-   * @param {*} retries max retries before throwing an error
-   * @param {*} clearCachedDiscoveryProvider if set to true, implies that the previously
-   * selected discovery provider has been failing to serve requests. The prior recurring interval of
-   * checking local storage for DP and old DP local storage entry need to be cleared.
-   */
-  async autoSelectEndpoint (retries = 3, clearCachedDiscoveryProvider = false) {
-    if (retries > 0) {
-      const endpoint = await this.ethContracts.autoselectDiscoveryProvider(this.whitelist, clearCachedDiscoveryProvider)
-      if (endpoint) {
-        this.setEndpoint(endpoint)
-        return endpoint
-      }
-      return this.autoSelectEndpoint(retries - 1)
-    }
-    throw new Error('Failed to autoselect discovery provider')
   }
 
   /**
@@ -658,7 +636,8 @@ class DiscoveryProvider {
       // Reset the retries count in the case that the newly selected disc prov fails, we can
       // allow it to try MAKE_REQUEST_RETRIES_COUNT number of times before trying another
       retries = MAKE_REQUEST_RETRY_COUNT
-      await this.autoSelectEndpoint(AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT, true)
+      const endpoint = await this.serviceSelector.select()
+      this.setEndpoint(endpoint)
     }
 
     let requestUrl
@@ -707,10 +686,13 @@ class DiscoveryProvider {
           !indexedBlock ||
           (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
         ) {
-          // Select a new one
           console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
-          const endpoint = await this.autoSelectEndpoint(AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT, true)
+          // Mark the current selection as a backup
+          this.serviceSelector.addBackup(this.discoveryProviderEndpoint, response)
+          // Select a new one
+          const endpoint = await this.serviceSelector.select()
           this.setEndpoint(endpoint)
+
           retries = MAKE_REQUEST_RETRY_COUNT // reset retry count when setting a new endpoint
           throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
         }
