@@ -15,10 +15,11 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32 serviceTypeManagerKey;
     address deployerAddress;
 
-    // Stores following entities
-    // 1) Directly staked amount by SP, not including delegators
-    // 2) % Cut of delegator tokens taken during reward
-    // 3) Bool indicating whether this SP has met min/max requirements
+    /// @dev - Stores following entities
+    ///        1) Directly staked amount by SP, not including delegators
+    ///        2) % Cut of delegator tokens taken during reward
+    ///        3) Bool indicating whether this SP has met min/max requirements
+    ///        4) Number of endpoints registered by SP
     struct ServiceProviderDetails {
         uint deployerStake;
         uint deployerCut;
@@ -28,20 +29,20 @@ contract ServiceProviderFactory is RegistryContract {
     // Mapping of service provider address to details
     mapping(address => ServiceProviderDetails) spDetails;
 
-    // Minimum staked by service provider account deployer
-    // Static regardless of total number of endpoints for a given account
+    /// @dev - Minimum staked by service provider account deployer
+    /// @dev - Static regardless of total number of endpoints for a given account
     uint minDeployerStake;
 
     bytes empty;
 
-    // standard - imitates relationship between Ether and Wei
+    /// @dev - standard - imitates relationship between Ether and Wei
     uint8 private constant DECIMALS = 18;
 
-    // denominator for deployer cut calculations
-    // user values are intended to be x/DEPLOYER_CUT_BASE
+    /// @dev - denominator for deployer cut calculations
+    /// @dev - user values are intended to be x/DEPLOYER_CUT_BASE
     uint private constant DEPLOYER_CUT_BASE = 100;
 
-    /** Struct maintaining information about sp */
+    /// @dev - Struct maintaining information about sp
     struct ServiceProvider {
         address owner;
         string endpoint;
@@ -49,28 +50,28 @@ contract ServiceProviderFactory is RegistryContract {
         address delegateOwnerWallet;
     }
 
-    /** @dev - Uniquely assigned serviceProvider ID, incremented for each service type */
-    /** @notice - Keeps track of the total number of services registered regardless of
-    whether some have been deregistered since */
+    /// @dev - Uniquely assigned serviceProvider ID, incremented for each service type
+    /// @notice - Keeps track of the total number of services registered regardless of
+    ///           whether some have been deregistered since
     mapping(bytes32 => uint) serviceProviderTypeIDs;
 
-    /** @dev - mapping of (serviceType -> (serviceInstanceId <-> serviceProviderInfo)) */
-    /** @notice - stores the actual service provider data like endpoint and owner wallet
-    with the ability lookup by service type and service id */
+    /// @dev - mapping of (serviceType -> (serviceInstanceId <-> serviceProviderInfo))
+    /// @notice - stores the actual service provider data like endpoint and owner wallet
+    ///           with the ability lookup by service type and service id */
     mapping(bytes32 => mapping(uint => ServiceProvider)) serviceProviderInfo;
 
-    /** @dev - mapping of keccak256(endpoint) to uint ID */
-    /** @notice - used to check if a endpoint has already been registered and also lookup
-    the id of an endpoint */
+    /// @dev - mapping of keccak256(endpoint) to uint ID
+    /// @notice - used to check if a endpoint has already been registered and also lookup
+    /// the id of an endpoint
     mapping(bytes32 => uint) serviceProviderEndpointToId;
 
-    /** @dev - mapping of address -> sp id array */
-    /** @notice - stores all the services registered by a provider. for each address,
-    provides the ability to lookup by service type and see all registered services */
+    /// @dev - mapping of address -> sp id array */
+    /// @notice - stores all the services registered by a provider. for each address,
+    /// provides the ability to lookup by service type and see all registered services
     mapping(address => mapping(bytes32 => uint[])) serviceProviderAddressToId;
 
-    /** @dev - mapping of address -> number of service providers registered */
-    /** @notice - stores the number of services registered by a provider */
+    /// @dev - mapping of address -> number of service providers registered
+    /// @notice - stores the number of services registered by a provider
     mapping(address => uint) serviceProviderAddressNumberOfEndpoints;
 
     event RegisteredServiceProvider(

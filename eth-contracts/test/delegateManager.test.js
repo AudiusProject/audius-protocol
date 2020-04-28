@@ -6,14 +6,12 @@ const AudiusToken = artifacts.require('AudiusToken')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
-const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const Staking = artifacts.require('Staking')
 const DelegateManager = artifacts.require('DelegateManager')
 const ClaimsManager = artifacts.require('ClaimsManager')
 const MockGovernance = artifacts.require('MockGovernance')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
-const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
@@ -46,7 +44,7 @@ const DEFAULT_AMOUNT = toWei(120)
 
 contract('DelegateManager', async (accounts) => {
   let proxy, staking0, staking, stakingAddress, token, registry, claimsManager0, claimsManagerProxy
-  let serviceProviderStorage, serviceProviderFactory, claimsManager, delegateManager, mockGovernance
+  let serviceProviderFactory, claimsManager, delegateManager, mockGovernance
   const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
   const stakerAccount = accounts[10]
   const stakerAccount2 = accounts[12]
@@ -106,18 +104,13 @@ contract('DelegateManager', async (accounts) => {
       toWei(10000000),
       { from: controllerAddress })
 
-    // Deploy sp storage
-    serviceProviderStorage = await ServiceProviderStorage.new(registry.address)
-    await registry.addContract(serviceProviderStorageKey, serviceProviderStorage.address)
-
     // Deploy sp factory
     serviceProviderFactory = await ServiceProviderFactory.new(
       registry.address,
       stakingProxyKey,
       delegateManagerKey,
       governanceKey,
-      serviceTypeManagerProxyKey,
-      serviceProviderStorageKey)
+      serviceTypeManagerProxyKey)
 
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)
 

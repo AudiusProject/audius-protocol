@@ -3,13 +3,11 @@ const encodeCall = require('../utils/encodeCall')
 
 const Registry = artifacts.require('Registry')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
-const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 
 const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
-const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const governanceKey = web3.utils.utf8ToHex('Governance')

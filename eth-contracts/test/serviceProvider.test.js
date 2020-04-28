@@ -7,10 +7,8 @@ const Staking = artifacts.require('Staking')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
-const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
-const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
@@ -43,7 +41,7 @@ const DEFAULT_AMOUNT = toWei(120)
 
 contract('ServiceProvider test', async (accounts) => {
   let token, registry, staking0, stakingInitializeData, proxy
-  let staking, serviceProviderStorage, serviceProviderFactory, serviceTypeManager
+  let staking, serviceProviderFactory, serviceTypeManager
 
   const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
   let controllerAddress
@@ -110,18 +108,13 @@ contract('ServiceProvider test', async (accounts) => {
 
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: treasuryAddress })
 
-    // Deploy ServiceProviderStorage
-    serviceProviderStorage = await ServiceProviderStorage.new(registry.address, { from: treasuryAddress })
-    await registry.addContract(serviceProviderStorageKey, serviceProviderStorage.address, { from: treasuryAddress })
-
     // Deploy ServiceProviderFactory
     serviceProviderFactory = await ServiceProviderFactory.new(
       registry.address,
       stakingProxyKey,
       delegateManagerKey,
       governanceKey,
-      serviceTypeManagerProxyKey,
-      serviceProviderStorageKey)
+      serviceTypeManagerProxyKey)
 
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address, { from: treasuryAddress })
     // Transfer 1000 tokens to accounts[11]
