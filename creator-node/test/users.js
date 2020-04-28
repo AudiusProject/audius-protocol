@@ -4,13 +4,13 @@ const sigUtil = require('eth-sig-util')
 const BlacklistManager = require('../src/blacklistManager')
 
 const { getApp } = require('./lib/app')
-const { createStarterCNodeUser, testEthereumConstants } = require('./lib/dataSeeds')
+const { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConstants } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 
-async function wait (milliseconds) {
-  return new Promise(resolve => setTimeout(resolve, milliseconds))
-}
+// async function wait (milliseconds) {
+//   return new Promise(resolve => setTimeout(resolve, milliseconds))
+// }
 
 describe('test Users', function () {
   let app, server, ipfsMock, libsMock
@@ -99,18 +99,17 @@ describe('test Users', function () {
   })
 
   it('fail using POST challenge route with challenge key not present in redis', async function () {
-    this.timeout(200000) // set timeout for mocha test to accomodate for setTimeout call
     let challengeResp
+    const randomPubKey = '0xadD36bad12002f1097Cdb7eE24085C28e9random'
     await createStarterCNodeUser()
+    await createStarterCNodeUserWithKey(randomPubKey)
     await request(app)
       .get('/users/login/challenge')
-      .query({ walletPublicKey: testEthereumConstants.pubKey.toUpperCase() })
+      .query({ walletPublicKey: randomPubKey })
       .expect(200)
       .then(response => {
         challengeResp = response.body
       })
-
-    await wait(130000)// wait for redis cache to expire; current ttl is 120s
 
     const signature = sigUtil.personalSign(Buffer.from(testEthereumConstants.privKeyHex, 'hex'), { data: challengeResp.challenge })
 
