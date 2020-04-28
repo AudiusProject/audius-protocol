@@ -49,7 +49,7 @@ module.exports = function (app) {
     let isVerbose = req.query.verbose || false
 
     // In the case that endBlockNumber - blockDiff goes negative, default startBlockNumber to 0
-    let startBlockNumber = Math.max(endBlockNumber-blockDiff, 0)
+    let startBlockNumber = Math.max(endBlockNumber - blockDiff, 0)
 
     // If query params are invalid, throw server error
     if (
