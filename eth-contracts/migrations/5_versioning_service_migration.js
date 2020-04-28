@@ -61,14 +61,21 @@ module.exports = (deployer, network, accounts) => {
       { from: controllerAddress })
 
     // Deploy + Register ServiceProviderFactory contract
-    const serviceProviderFactory = await deployer.deploy(
-      ServiceProviderFactory,
-      Registry.address,
-      stakingProxyKey,
-      delegateManagerKey,
-      governanceKey,
-      serviceTypeManagerProxyKey
+    const serviceProviderFactory0 = await deployer.deploy(ServiceProviderFactory, { from: proxyDeployerAddress })
+    const serviceProviderFactoryCalldata = encodeCall(
+      'initialize',
+      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
     )
-    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)
+
+    const serviceProviderFactoryProxy = await deployer.deploy(
+      AdminUpgradeabilityProxy,
+      serviceProviderFactory0.address,
+      proxyAdminAddress,
+      serviceProviderFactoryCalldata,
+      { from: proxyDeployerAddress }
+    )
+
+    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address)
   })
 }

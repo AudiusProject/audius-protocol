@@ -4,9 +4,10 @@ import "./registry/RegistryContract.sol";
 import "./ServiceTypeManager.sol";
 import "../staking/ERCStaking.sol";
 import "./interface/registry/RegistryInterface.sol";
+import "../InitializableV2.sol";
 
 
-contract ServiceProviderFactory is RegistryContract {
+contract ServiceProviderFactory is RegistryContract, InitializableV2 {
     RegistryInterface registry = RegistryInterface(0);
     bytes32 serviceProviderStorageRegistryKey;
     bytes32 stakingProxyOwnerKey;
@@ -99,13 +100,13 @@ contract ServiceProviderFactory is RegistryContract {
       uint spId
     );
 
-    constructor(
+    function initialize (
       address _registryAddress,
       bytes32 _stakingProxyOwnerKey,
       bytes32 _delegateManagerKey,
       bytes32 _governanceKey,
       bytes32 _serviceTypeManagerKey
-    ) public
+    ) public initializer
     {
         require(
             _registryAddress != address(0x00),
@@ -120,6 +121,7 @@ contract ServiceProviderFactory is RegistryContract {
 
         // Configure direct minimum stake for deployer
         minDeployerStake = 5 * 10**uint256(DECIMALS);
+        InitializableV2.initialize();
     }
 
     function register(
@@ -127,7 +129,7 @@ contract ServiceProviderFactory is RegistryContract {
         string calldata _endpoint,
         uint256 _stakeAmount,
         address _delegateOwnerWallet
-    ) external returns (uint spID)
+    ) external isInitialized returns (uint spID)
     {
         require(
             ServiceTypeManager(
@@ -185,7 +187,6 @@ contract ServiceProviderFactory is RegistryContract {
 
         // Confirm both aggregate account balance and directly staked amount are valid
         uint currentlyStakedForOwner = this.validateAccountStakeBalance(owner);
-        validateAccountDeployerStake(owner);
 
         // Indicate this service provider is within bounds
         spDetails[owner].validBounds = true;
@@ -204,7 +205,7 @@ contract ServiceProviderFactory is RegistryContract {
     function deregister(
         bytes32 _serviceType,
         string calldata _endpoint
-    ) external returns (uint deregisteredSpID)
+    ) external isInitialized returns (uint deregisteredSpID)
     {
         address owner = msg.sender;
 
@@ -272,7 +273,6 @@ contract ServiceProviderFactory is RegistryContract {
         // Only if unstake operation has not occurred
         if (!unstaked) {
             this.validateAccountStakeBalance(owner);
-            validateAccountDeployerStake(owner);
             // Indicate this service provider is within bounds
             spDetails[owner].validBounds = true;
         }
@@ -280,7 +280,7 @@ contract ServiceProviderFactory is RegistryContract {
         return deregisteredID;
     }
 
-    function increaseStake(uint256 _increaseStakeAmount) external returns (uint newTotalStake) {
+    function increaseStake(uint256 _increaseStakeAmount) external isInitialized returns (uint newTotalStake) {
         address owner = msg.sender;
 
         // Confirm owner has an endpoint
@@ -301,7 +301,6 @@ contract ServiceProviderFactory is RegistryContract {
 
         // Confirm both aggregate account balance and directly staked amount are valid
         this.validateAccountStakeBalance(owner);
-        validateAccountDeployerStake(owner);
 
         // Indicate this service provider is within bounds
         spDetails[owner].validBounds = true;
@@ -314,7 +313,7 @@ contract ServiceProviderFactory is RegistryContract {
         return newStakeAmount;
     }
 
-    function decreaseStake(uint256 _decreaseStakeAmount) external returns (uint newTotalStake) {
+    function decreaseStake(uint256 _decreaseStakeAmount) external isInitialized returns (uint newTotalStake) {
         address owner = msg.sender;
 
         // Confirm owner has an endpoint
@@ -343,7 +342,6 @@ contract ServiceProviderFactory is RegistryContract {
 
         // Confirm both aggregate account balance and directly staked amount are valid
         this.validateAccountStakeBalance(owner);
-        validateAccountDeployerStake(owner);
 
         // Indicate this service provider is within bounds
         spDetails[owner].validBounds = true;
@@ -502,6 +500,8 @@ contract ServiceProviderFactory is RegistryContract {
         return serviceProviderAddressToId[_ownerAddress][_serviceType];
     }
 
+    // TODO: Use other functions to do this
+    /*
     function getDelegateOwnerWallet(
         bytes32 _serviceType,
         string calldata _endpoint
@@ -517,6 +517,7 @@ contract ServiceProviderFactory is RegistryContract {
             "Mismatched delegate owner wallet");
         return delegateOwnerWallet;
     }
+    */
 
     function getNumberOfEndpointsFromAddress(address _ownerAddress)
     external view returns (uint numberOfEndpoints)
@@ -554,8 +555,8 @@ contract ServiceProviderFactory is RegistryContract {
         return spDetails[sp].validBounds;
     }
 
-    /// @notice Validate that the service provider is between the min and max stakes for all their registered services
-    // Permission to 'this' contract or delegate manager
+    /// @notice Validate that the total service provider balance is between the min and max stakes for all their registered services
+    //          Validates that direct stake for sp is also above minimum
     function validateAccountStakeBalance(address sp)
     external view returns (uint stakedForOwner)
     {
@@ -572,6 +573,10 @@ contract ServiceProviderFactory is RegistryContract {
         require(
             currentlyStakedForOwner <= maxStakeAmount,
             "Maximum stake amount exceeded");
+
+        require(
+            spDetails[sp].deployerStake >= minDeployerStake,
+            "Direct stake restriction violated for this service provider");
 
         return currentlyStakedForOwner;
     }
@@ -593,15 +598,5 @@ contract ServiceProviderFactory is RegistryContract {
             // Indicate this service provider is within bounds
             spDetails[_serviceProvider].validBounds = true;
         }
-    }
-
-    /// @notice Validate that the service provider deployer stake satisfies protocol minimum
-    function validateAccountDeployerStake(address sp)
-    internal view returns (uint deployerStake)
-    {
-        require(
-            spDetails[sp].deployerStake >= minDeployerStake,
-            "Direct stake restriction violated for this service provider");
-        return spDetails[sp].deployerStake;
     }
 }
