@@ -138,10 +138,12 @@ const sendTransactionInternal = async (req, web3, resetNonce = false, txProps, r
     req.logger.info(`txRelay - sending a transaction for wallet ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${gasLimit}, nonce ${currentNonce}`)
 
     receiptPromise = web3.eth.sendSignedTransaction(signedTx)
+    // use a promi-event for this web3 call
+    // https://web3js.readthedocs.io/en/v1.2.0/callbacks-promises-events.html#promievent
     const prom = new Promise(function (resolve, reject) {
       let resolved = false
-      receiptPromise.once('transactionHash', function (hash) {
-        redis.hset('txHasToSenderAddress', hash, senderAddress)
+      receiptPromise.once('transactionHash', async function (hash) {
+        await redis.hset('txHashToSenderAddress', hash, senderAddress)
         resolved = true
         resolve(hash)
       }).on('error', async function (error) {
@@ -159,6 +161,8 @@ const sendTransactionInternal = async (req, web3, resetNonce = false, txProps, r
     nonceLocked = false
   }
 
+  // if this promise resolves, it continues to the next step
+  // if it errors, the reject is caught by the calling function in the try/catch and handled
   const receipt = await receiptPromise
 
   await models.Transaction.create({

@@ -41,7 +41,7 @@ module.exports = function (app) {
     const redis = req.app.get('redis')
     const web3 = audiusLibsInstance.web3Manager.getWeb3()
 
-    let endBlockNumber = req.query.endBlock || (await web3.eth.getBlockNumber())
+    let endBlockNumber = (await web3.eth.getBlockNumber())
     // In the case that no query params are defined and the endBlockNumber is less than the max block range, default startBlockNumber to 0
     const defaultStartBlockNumber = endBlockNumber - RELAY_HEALTH_TEN_MINS_AGO_BLOCKS >= 0
       ? endBlockNumber - RELAY_HEALTH_TEN_MINS_AGO_BLOCKS : 0
@@ -106,7 +106,7 @@ module.exports = function (app) {
 
             // tx failed
             if (!resp.status) {
-              const senderAddress = await redis.hget('txHasToSenderAddress', txHash)
+              const senderAddress = await redis.hget('txHashToSenderAddress', txHash)
               if (senderAddress) {
                 if (!failureTxs[senderAddress]) failureTxs[senderAddress] = [txHash]
                 else failureTxs[senderAddress].push(txHash)
@@ -146,7 +146,7 @@ module.exports = function (app) {
         successfulTxsCount: successfulTxsInRedis.length,
         failureTxsCount: failureTxsInRedis.length
       },
-      timeElapsed: Date.now() - start
+      healthCheckComputeTime: Date.now() - start
     }
 
     if (isVerbose) {
