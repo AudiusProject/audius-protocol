@@ -110,7 +110,6 @@ contract('ServiceProvider test', async (accounts) => {
 
     // Deploy ServiceProviderFactory
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: treasuryAddress })
-
     const serviceProviderFactoryCalldata = encodeCall(
       'initialize',
       ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
@@ -122,7 +121,6 @@ contract('ServiceProvider test', async (accounts) => {
       serviceProviderFactoryCalldata,
       { from: proxyAdminAddress }
     )
-
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: treasuryAddress })
 

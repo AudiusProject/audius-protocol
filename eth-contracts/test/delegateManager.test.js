@@ -104,15 +104,21 @@ contract('DelegateManager', async (accounts) => {
       toWei(10000000),
       { from: controllerAddress })
 
-    // Deploy sp factory
-    serviceProviderFactory = await ServiceProviderFactory.new(
-      registry.address,
-      stakingProxyKey,
-      delegateManagerKey,
-      governanceKey,
-      serviceTypeManagerProxyKey)
-
-    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)
+    // Deploy ServiceProviderFactory
+    let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: treasuryAddress })
+    const serviceProviderFactoryCalldata = encodeCall(
+      'initialize',
+      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
+    )
+    let serviceProviderFactoryProxy = await AdminUpgradeabilityProxy.new(
+      serviceProviderFactory0.address,
+      proxyAdminAddress,
+      serviceProviderFactoryCalldata,
+      { from: proxyAdminAddress }
+    )
+    serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
+    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: treasuryAddress })
 
     // Deploy new claimsManager proxy
     claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })

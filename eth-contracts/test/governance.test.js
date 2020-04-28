@@ -146,13 +146,20 @@ contract('Governance.sol', async (accounts) => {
       { from: controllerAddress })
 
     // Deploy + Register ServiceProviderFactory contract
-    serviceProviderFactory = await ServiceProviderFactory.new(
-      registry.address,
-      stakingProxyKey,
-      delegateManagerKey,
-      governanceKey,
-      serviceTypeManagerProxyKey)
-    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address, { from: protocolOwnerAddress })
+    let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: treasuryAddress })
+    const serviceProviderFactoryCalldata = encodeCall(
+      'initialize',
+      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
+    )
+    let serviceProviderFactoryProxy = await AdminUpgradeabilityProxy.new(
+      serviceProviderFactory0.address,
+      proxyAdminAddress,
+      serviceProviderFactoryCalldata,
+      { from: proxyAdminAddress }
+    )
+    serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
+    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: treasuryAddress })
 
     // Deploy + register claimsManagerProxy
     claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
