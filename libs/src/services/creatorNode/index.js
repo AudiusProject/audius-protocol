@@ -335,7 +335,7 @@ class CreatorNode {
     }
 
     let walletPublicKey = this.web3Manager.getWalletAddress()
-    let newChallengeKey
+    let clientChallengeKey
     let url
 
     try {
@@ -347,12 +347,12 @@ class CreatorNode {
         }
       }, false)
 
-      newChallengeKey = challengeResp.challenge
+      clientChallengeKey = challengeResp.challenge
       url = '/users/login/challenge'
     } catch (e) {
       // If '/users/login/get_challenge' returns 404, login using non-challenge route
       if (e.response && e.response.status === 404) {
-        newChallengeKey = Math.round((new Date()).getTime() / 1000)
+        clientChallengeKey = Math.round((new Date()).getTime() / 1000)
         url = '/users/login'
       } else {
         const requestUrl = this.creatorNodeEndpoint + '/users/login/challenge'
@@ -360,14 +360,13 @@ class CreatorNode {
       }
     }
 
-    const data = `Click sign to authenticate with creator node: ${newChallengeKey}`
-    const signature = await this.web3Manager.sign(data)
+    const signature = await this.web3Manager.sign(clientChallengeKey)
 
     const resp = await this._makeRequest({
       url,
       method: 'post',
       data: {
-        data,
+        data: clientChallengeKey,
         signature
       }
     }, false)

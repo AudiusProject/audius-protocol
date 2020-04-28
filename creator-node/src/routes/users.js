@@ -12,6 +12,7 @@ const utils = require('../utils')
 
 const CHALLENGE_VALUE_LENGTH = 20
 const CHALLENGE_TTL_SECONDS = 120
+const CHALLENGE_PREFIX = 'userLoginChallenge:'
 
 module.exports = function (app) {
   app.post('/users', handleResponse(async (req, res, next) => {
@@ -65,15 +66,21 @@ module.exports = function (app) {
   }))
 
   /**
-   * Return a challeng used for validating user login. Challenge value
+   * Return a challenge used for validating user login. Challenge value
    * is also set in redis cache with the key 'userLoginChallenge:<wallet>'.
    */
   app.get('/users/login/challenge', handleResponse(async (req, res, next) => {
     const walletPublicKey = req.query.walletPublicKey
-    const userLoginChallengeKey = `userLoginChallenge:${walletPublicKey}`
+
+    if (!walletPublicKey) {
+      return errorResponseBadRequest('Missing wallet address.')
+    }
+
+    const userLoginChallengeKey = `${CHALLENGE_PREFIX}${walletPublicKey}`
     const redisClient = req.app.get('redisClient')
     const challengeBuffer = await randomBytes(CHALLENGE_VALUE_LENGTH)
-    const challenge = base64url.encode(challengeBuffer)
+    const challengeBytes = base64url.encode(challengeBuffer)
+    const challenge = `Click sign to authenticate with creator node: ${challengeBytes}`
 
     // Set challenge ttl to 2 minutes ('EX' option = sets expire time in seconds)
     // https://redis.io/commands/set
@@ -89,13 +96,13 @@ module.exports = function (app) {
    * prevent replay attacks. Return sessionToken upon success.
    */
   app.post('/users/login/challenge', handleResponse(async (req, res, next) => {
-    const { signature, data, challenge } = req.body
+    const { signature, data: theirChallenge } = req.body
 
-    if (!signature || !data || !challenge) {
+    if (!signature || !theirChallenge) {
       return errorResponseBadRequest('Missing request body values.')
     }
 
-    const address = utils.verifySignature(data, signature)
+    const address = utils.verifySignature(theirChallenge, signature)
     const user = await models.CNodeUser.findOne({
       where: {
         walletPublicKey: address
@@ -105,16 +112,15 @@ module.exports = function (app) {
       return errorResponseBadRequest('Invalid data or signature')
     }
 
-    const theirChallengeBytes = data.split(': ')[1]
     const redisClient = req.app.get('redisClient')
-    const userLoginChallengeKey = `userLoginChallenge:${address}`
-    const ourChallengeBytes = await redisClient.get(userLoginChallengeKey)
+    const userLoginChallengeKey = `${CHALLENGE_PREFIX}${address}`
+    const ourChallenge = await redisClient.get(userLoginChallengeKey)
 
-    if (!ourChallengeBytes) {
+    if (!ourChallenge) {
       return errorResponseBadRequest('Missing challenge key')
     }
 
-    if (theirChallengeBytes !== ourChallengeBytes) {
+    if (theirChallenge !== ourChallenge) {
       return errorResponseBadRequest(`Invalid response.`)
     }
 
