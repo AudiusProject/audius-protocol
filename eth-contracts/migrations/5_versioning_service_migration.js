@@ -62,10 +62,6 @@ module.exports = (deployer, network, accounts) => {
       toWei(10000000),
       { from: controllerAddress })
 
-    // Deploy + Register ServiceProviderStorage contract
-    await deployer.deploy(ServiceProviderStorage, Registry.address)
-    await registry.addContract(serviceProviderStorageKey, ServiceProviderStorage.address)
-
     // Deploy + Register ServiceProviderFactory contract
     const serviceProviderFactory = await deployer.deploy(
       ServiceProviderFactory,
@@ -73,8 +69,7 @@ module.exports = (deployer, network, accounts) => {
       stakingProxyKey,
       delegateManagerKey,
       governanceKey,
-      serviceTypeManagerProxyKey,
-      serviceProviderStorageKey
+      serviceTypeManagerProxyKey
     )
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)
   })
