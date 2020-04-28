@@ -4,43 +4,75 @@ import "./registry/RegistryContract.sol";
 import "./ServiceTypeManager.sol";
 import "../staking/ERCStaking.sol";
 import "./interface/registry/RegistryInterface.sol";
-import "./interface/ServiceProviderStorageInterface.sol";
+import "../InitializableV2.sol";
 
 
-contract ServiceProviderFactory is RegistryContract {
-    RegistryInterface registry = RegistryInterface(0);
-    bytes32 serviceProviderStorageRegistryKey;
-    bytes32 stakingProxyOwnerKey;
-    bytes32 delegateManagerKey;
-    bytes32 governanceKey;
-    bytes32 serviceTypeManagerKey;
-    address deployerAddress;
+contract ServiceProviderFactory is RegistryContract, InitializableV2 {
+    RegistryInterface private registry = RegistryInterface(0);
+    bytes32 private stakingProxyOwnerKey;
+    bytes32 private delegateManagerKey;
+    bytes32 private governanceKey;
+    bytes32 private serviceTypeManagerKey;
+    address private deployerAddress;
+    bytes empty;
 
-    // Stores following entities
-    // 1) Directly staked amount by SP, not including delegators
-    // 2) % Cut of delegator tokens taken during reward
-    // 3) Bool indicating whether this SP has met min/max requirements
+    /// @dev - Stores following entities
+    ///        1) Directly staked amount by SP, not including delegators
+    ///        2) % Cut of delegator tokens taken during reward
+    ///        3) Bool indicating whether this SP has met min/max requirements
+    ///        4) Number of endpoints registered by SP
+    ///        5) Minimum total stake for this account
+    ///        6) Maximum total stake for this account
     struct ServiceProviderDetails {
         uint deployerStake;
         uint deployerCut;
         bool validBounds;
+        uint numberOfEndpoints;
+        uint minAccountStake;
+        uint maxAccountStake;
     }
 
     // Mapping of service provider address to details
     mapping(address => ServiceProviderDetails) spDetails;
 
-    // Minimum staked by service provider account deployer
-    // Static regardless of total number of endpoints for a given account
+    /// @dev - Minimum staked by service provider account deployer
+    /// @dev - Static regardless of total number of endpoints for a given account
     uint minDeployerStake;
 
-    bytes empty;
-
-    // standard - imitates relationship between Ether and Wei
+    /// @dev - standard - imitates relationship between Ether and Wei
     uint8 private constant DECIMALS = 18;
 
-    // denominator for deployer cut calculations
-    // user values are intended to be x/DEPLOYER_CUT_BASE
+    /// @dev - denominator for deployer cut calculations
+    /// @dev - user values are intended to be x/DEPLOYER_CUT_BASE
     uint private constant DEPLOYER_CUT_BASE = 100;
+
+    /// @dev - Struct maintaining information about sp
+    struct ServiceEndpoint {
+        address owner;
+        string endpoint;
+        uint blocknumber;
+        address delegateOwnerWallet;
+    }
+
+    /// @dev - Uniquely assigned serviceProvider ID, incremented for each service type
+    /// @notice - Keeps track of the total number of services registered regardless of
+    ///           whether some have been deregistered since
+    mapping(bytes32 => uint) serviceProviderTypeIDs;
+
+    /// @dev - mapping of (serviceType -> (serviceInstanceId <-> serviceProviderInfo))
+    /// @notice - stores the actual service provider data like endpoint and owner wallet
+    ///           with the ability lookup by service type and service id */
+    mapping(bytes32 => mapping(uint => ServiceEndpoint)) serviceProviderInfo;
+
+    /// @dev - mapping of keccak256(endpoint) to uint ID
+    /// @notice - used to check if a endpoint has already been registered and also lookup
+    /// the id of an endpoint
+    mapping(bytes32 => uint) serviceProviderEndpointToId;
+
+    /// @dev - mapping of address -> sp id array */
+    /// @notice - stores all the services registered by a provider. for each address,
+    /// provides the ability to lookup by service type and see all registered services
+    mapping(address => mapping(bytes32 => uint[])) serviceProviderAddressToId;
 
     event RegisteredServiceProvider(
       uint _spID,
@@ -71,14 +103,13 @@ contract ServiceProviderFactory is RegistryContract {
       uint spId
     );
 
-    constructor(
+    function initialize (
       address _registryAddress,
       bytes32 _stakingProxyOwnerKey,
       bytes32 _delegateManagerKey,
       bytes32 _governanceKey,
-      bytes32 _serviceTypeManagerKey,
-      bytes32 _serviceProviderStorageRegistryKey
-    ) public
+      bytes32 _serviceTypeManagerKey
+    ) public initializer
     {
         require(
             _registryAddress != address(0x00),
@@ -90,18 +121,20 @@ contract ServiceProviderFactory is RegistryContract {
         delegateManagerKey = _delegateManagerKey;
         governanceKey = _governanceKey;
         serviceTypeManagerKey = _serviceTypeManagerKey;
-        serviceProviderStorageRegistryKey = _serviceProviderStorageRegistryKey;
 
         // Configure direct minimum stake for deployer
         minDeployerStake = 5 * 10**uint256(DECIMALS);
+        InitializableV2.initialize();
     }
 
+    /// @dev - Register a new endpoint to the account of msg.sender
+    ///        Transfers stake into staking pool
     function register(
         bytes32 _serviceType,
         string calldata _endpoint,
         uint256 _stakeAmount,
         address _delegateOwnerWallet
-    ) external returns (uint spID)
+    ) external isInitialized returns (uint spID)
     {
         require(
             ServiceTypeManager(
@@ -109,39 +142,66 @@ contract ServiceProviderFactory is RegistryContract {
             ).isValidServiceType(_serviceType),
             "Valid service type required");
 
-        address owner = msg.sender;
-        ERCStaking stakingContract = ERCStaking(
-            registry.getContract(stakingProxyOwnerKey)
-        );
-
         // Stake token amount from msg.sender
         if (_stakeAmount > 0) {
-            stakingContract.stakeFor(owner, _stakeAmount, empty);
+            ERCStaking(
+                registry.getContract(stakingProxyOwnerKey)
+            ).stakeFor(msg.sender, _stakeAmount, empty);
         }
 
-        uint newServiceProviderID = ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).register(
-            _serviceType,
-            owner,
-            _endpoint,
-            _delegateOwnerWallet
-        );
+        require (
+            serviceProviderEndpointToId[keccak256(bytes(_endpoint))] == 0,
+            "Endpoint already registered");
+
+        uint newServiceProviderID = serviceProviderTypeIDs[_serviceType] + 1;
+        serviceProviderTypeIDs[_serviceType] = newServiceProviderID;
+
+        // Index spInfo
+        serviceProviderInfo[_serviceType][newServiceProviderID] = ServiceEndpoint({
+            owner: msg.sender,
+            endpoint: _endpoint,
+            blocknumber: block.number,
+            delegateOwnerWallet: _delegateOwnerWallet
+        });
+
+        // Update endpoint mapping
+        serviceProviderEndpointToId[keccak256(bytes(_endpoint))] = newServiceProviderID;
+
+        // Update address mapping
+        uint spTypeLength = serviceProviderAddressToId[msg.sender][_serviceType].length;
+        bool idFound = false;
+        for (uint i = 0; i < spTypeLength; i++) {
+            if (serviceProviderAddressToId[msg.sender][_serviceType][i] == newServiceProviderID) {
+                idFound = true;
+            }
+        }
+        if (!idFound) {
+            serviceProviderAddressToId[msg.sender][_serviceType].push(newServiceProviderID);
+        }
+
+        // Increment number of endpoints for this address
+        spDetails[msg.sender].numberOfEndpoints += 1;
 
         // Update deployer total
-        spDetails[owner].deployerStake += _stakeAmount;
+        spDetails[msg.sender].deployerStake += _stakeAmount;
+
+        // Update min and max totals for this service provider
+        (uint typeMin, uint typeMax) = ServiceTypeManager(
+            registry.getContract(serviceTypeManagerKey)
+        ).getServiceTypeStakeInfo(_serviceType);
+        spDetails[msg.sender].minAccountStake += typeMin;
+        spDetails[msg.sender].maxAccountStake += typeMax;
 
         // Confirm both aggregate account balance and directly staked amount are valid
-        uint currentlyStakedForOwner = this.validateAccountStakeBalance(owner);
-        validateAccountDeployerStake(owner);
+        uint currentlyStakedForOwner = this.validateAccountStakeBalance(msg.sender);
 
         // Indicate this service provider is within bounds
-        spDetails[owner].validBounds = true;
+        spDetails[msg.sender].validBounds = true;
 
         emit RegisteredServiceProvider(
             newServiceProviderID,
             _serviceType,
-            owner,
+            msg.sender,
             _endpoint,
             currentlyStakedForOwner
         );
@@ -149,71 +209,94 @@ contract ServiceProviderFactory is RegistryContract {
         return newServiceProviderID;
     }
 
+    /// @dev - Deregister an endpoint from the account of msg.sender
+    ///        Removes stake if this is the final endpoint remaining for account
     function deregister(
         bytes32 _serviceType,
         string calldata _endpoint
-    ) external returns (uint deregisteredSpID)
+    ) external isInitialized returns (uint deregisteredSpID)
     {
-        address owner = msg.sender;
-
-        uint numberOfEndpoints = ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).getNumberOfEndpointsFromAddress(owner);
-
         // Unstake on deregistration if and only if this is the last service endpoint
         uint unstakeAmount = 0;
         bool unstaked = false;
         // owned by the user
-        if (numberOfEndpoints == 1) {
+        if (this.getNumberOfEndpointsFromAddress(msg.sender) == 1) {
             ERCStaking stakingContract = ERCStaking(
                 registry.getContract(stakingProxyOwnerKey)
             );
-            unstakeAmount = stakingContract.totalStakedFor(owner);
+            unstakeAmount = stakingContract.totalStakedFor(msg.sender);
             stakingContract.unstakeFor(
-                owner,
+                msg.sender,
                 unstakeAmount,
                 empty
             );
 
             // Update deployer total
-            spDetails[owner].deployerStake -= unstakeAmount;
+            spDetails[msg.sender].deployerStake -= unstakeAmount;
             unstaked = true;
         }
 
-        (uint deregisteredID) = ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).deregister(
-            _serviceType,
-            owner,
-            _endpoint);
+        require (
+            serviceProviderEndpointToId[keccak256(bytes(_endpoint))] != 0,
+            "Endpoint not registered");
+
+        // Cache invalided service provider ID
+        uint deregisteredID = serviceProviderEndpointToId[keccak256(bytes(_endpoint))];
+
+        // Update endpoint mapping
+        serviceProviderEndpointToId[keccak256(bytes(_endpoint))] = 0;
+
+        require (
+            serviceProviderInfo[_serviceType][deregisteredID].owner == msg.sender,
+            "Invalid deregister operation");
+
+        // Update info mapping
+        delete serviceProviderInfo[_serviceType][deregisteredID];
+        // Reset id, update array
+        uint spTypeLength = serviceProviderAddressToId[msg.sender][_serviceType].length;
+        for (uint i = 0; i < spTypeLength; i ++) {
+            if (serviceProviderAddressToId[msg.sender][_serviceType][i] == deregisteredID) {
+                // Overwrite element to be deleted with last element in array
+                serviceProviderAddressToId[msg.sender][_serviceType][i] = serviceProviderAddressToId[msg.sender][_serviceType][spTypeLength - 1];
+                // Reduce array size, exit loop
+                serviceProviderAddressToId[msg.sender][_serviceType].length--;
+                break;
+            }
+        }
+
+        // Decrement number of endpoints for this address
+        spDetails[msg.sender].numberOfEndpoints -= 1;
+
+        // Update min and max totals for this service provider
+        (uint typeMin, uint typeMax) = ServiceTypeManager(
+            registry.getContract(serviceTypeManagerKey)
+        ).getServiceTypeStakeInfo(_serviceType);
+        spDetails[msg.sender].minAccountStake -= typeMin;
+        spDetails[msg.sender].maxAccountStake -= typeMax;
 
         emit DeregisteredServiceProvider(
             deregisteredID,
             _serviceType,
-            owner,
+            msg.sender,
             _endpoint,
             unstakeAmount);
 
         // Confirm both aggregate account balance and directly staked amount are valid
         // Only if unstake operation has not occurred
         if (!unstaked) {
-            this.validateAccountStakeBalance(owner);
-            validateAccountDeployerStake(owner);
+            this.validateAccountStakeBalance(msg.sender);
             // Indicate this service provider is within bounds
-            spDetails[owner].validBounds = true;
+            spDetails[msg.sender].validBounds = true;
         }
 
         return deregisteredID;
     }
 
-    function increaseStake(uint256 _increaseStakeAmount) external returns (uint newTotalStake) {
+    function increaseStake(uint256 _increaseStakeAmount) external isInitialized returns (uint newTotalStake) {
         address owner = msg.sender;
 
         // Confirm owner has an endpoint
-        uint numberOfEndpoints = ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).getNumberOfEndpointsFromAddress(owner);
-        require(numberOfEndpoints > 0, "Registered endpoint required to increase stake");
+        require(this.getNumberOfEndpointsFromAddress(owner) > 0, "Registered endpoint required to decrease stake");
 
         ERCStaking stakingContract = ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
@@ -229,7 +312,6 @@ contract ServiceProviderFactory is RegistryContract {
 
         // Confirm both aggregate account balance and directly staked amount are valid
         this.validateAccountStakeBalance(owner);
-        validateAccountDeployerStake(owner);
 
         // Indicate this service provider is within bounds
         spDetails[owner].validBounds = true;
@@ -242,14 +324,11 @@ contract ServiceProviderFactory is RegistryContract {
         return newStakeAmount;
     }
 
-    function decreaseStake(uint256 _decreaseStakeAmount) external returns (uint newTotalStake) {
+    function decreaseStake(uint256 _decreaseStakeAmount) external isInitialized returns (uint newTotalStake) {
         address owner = msg.sender;
 
         // Confirm owner has an endpoint
-        uint numberOfEndpoints = ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).getNumberOfEndpointsFromAddress(owner);
-        require(numberOfEndpoints > 0, "Registered endpoint required to decrease stake");
+        require(this.getNumberOfEndpointsFromAddress(owner) > 0, "Registered endpoint required to decrease stake");
 
         ERCStaking stakingContract = ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
@@ -273,7 +352,6 @@ contract ServiceProviderFactory is RegistryContract {
 
         // Confirm both aggregate account balance and directly staked amount are valid
         this.validateAccountStakeBalance(owner);
-        validateAccountDeployerStake(owner);
 
         // Indicate this service provider is within bounds
         spDetails[owner].validBounds = true;
@@ -292,15 +370,13 @@ contract ServiceProviderFactory is RegistryContract {
         address _updatedDelegateOwnerWallet
     ) external returns (address)
     {
-        address owner = msg.sender;
-        return ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).updateDelegateOwnerWallet(
-            owner,
-            _serviceType,
-            _endpoint,
-            _updatedDelegateOwnerWallet
-        );
+        uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
+
+        require(
+            serviceProviderInfo[_serviceType][spID].owner == msg.sender,
+            "Invalid update operation, wrong owner");
+
+        serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
     }
 
     function updateEndpoint(
@@ -309,17 +385,32 @@ contract ServiceProviderFactory is RegistryContract {
         string calldata _newEndpoint
     ) external returns (uint spID)
     {
-        address owner = msg.sender;
-        uint spId = ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).updateEndpoint(owner, _serviceType, _oldEndpoint, _newEndpoint);
-        emit UpdateEndpoint(
-            _serviceType,
-            owner,
-            _oldEndpoint,
-            _newEndpoint,
-            spId
+        uint spId = this.getServiceProviderIdFromEndpoint(_oldEndpoint);
+
+        require (
+            spId != 0,
+            "Could not find service provider with that endpoint"
         );
+
+        ServiceEndpoint memory sp = serviceProviderInfo[_serviceType][spId];
+
+        require(
+            sp.owner == msg.sender,
+            "Invalid update endpoint operation, wrong owner"
+        );
+
+        require(
+            keccak256(bytes(sp.endpoint)) == keccak256(bytes(_oldEndpoint)),
+            "Old endpoint doesn't match what's registered for the service provider"
+        );
+
+        // invalidate old endpoint
+        serviceProviderEndpointToId[keccak256(bytes(sp.endpoint))] = 0;
+
+        // update to new endpoint
+        sp.endpoint = _newEndpoint;
+        serviceProviderInfo[_serviceType][spId] = sp;
+        serviceProviderEndpointToId[keccak256(bytes(_newEndpoint))] = spId;
         return spId;
     }
 
@@ -389,30 +480,20 @@ contract ServiceProviderFactory is RegistryContract {
     function getTotalServiceTypeProviders(bytes32 _serviceType)
     external view returns (uint numberOfProviders)
     {
-        return ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).getTotalServiceTypeProviders(
-            _serviceType
-        );
+        return serviceProviderTypeIDs[_serviceType];
     }
 
     function getServiceProviderInfo(bytes32 _serviceType, uint _serviceId)
     external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet)
     {
-        return ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).getServiceProviderInfo(
-            _serviceType,
-            _serviceId
-        );
+        ServiceEndpoint memory sp = serviceProviderInfo[_serviceType][_serviceId];
+        return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet);
     }
 
     function getServiceProviderIdFromEndpoint(string calldata _endpoint)
     external view returns (uint spID)
     {
-        return ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).getServiceProviderIdFromEndpoint(_endpoint);
+        return serviceProviderEndpointToId[keccak256(bytes(_endpoint))];
     }
 
     function getMinDeployerStake()
@@ -424,50 +505,20 @@ contract ServiceProviderFactory is RegistryContract {
     function getServiceProviderIdsFromAddress(address _ownerAddress, bytes32 _serviceType)
     external view returns (uint[] memory spIds)
     {
-        return ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).getServiceProviderIdsFromAddress(
-            _ownerAddress,
-            _serviceType
-        );
+        return serviceProviderAddressToId[_ownerAddress][_serviceType];
     }
 
-    function getDelegateOwnerWallet(
-        bytes32 _serviceType,
-        string calldata _endpoint
-    ) external view returns (address)
+    function getNumberOfEndpointsFromAddress(address _ownerAddress)
+    external view returns (uint numberOfEndpoints)
     {
-        address owner = msg.sender;
-        return ServiceProviderStorageInterface(
-            registry.getContract(serviceProviderStorageRegistryKey)
-        ).getDelegateOwnerWallet(
-            owner,
-            _serviceType,
-            _endpoint
-        );
+        return spDetails[_ownerAddress].numberOfEndpoints;
     }
 
-    /// @notice Calculate the stake for an account based on total number of registered services
-    // TODO: Cache value
+    /// @notice Return the stake for an account based on total number of registered services
     function getAccountStakeBounds(address sp)
     external view returns (uint min, uint max)
     {
-        uint minStake = 0;
-        uint maxStake = 0;
-        bytes32[] memory validServiceTypes = ServiceTypeManager(
-            registry.getContract(serviceTypeManagerKey)
-        ).getValidServiceTypes();
-        uint validTypesLength = validServiceTypes.length;
-        for (uint i = 0; i < validTypesLength; i++) {
-            bytes32 serviceType = validServiceTypes[i];
-            (uint typeMin, uint typeMax) = ServiceTypeManager(
-                registry.getContract(serviceTypeManagerKey)
-            ).getServiceTypeStakeInfo(serviceType);
-            uint numberOfEndpoints = this.getServiceProviderIdsFromAddress(sp, serviceType).length;
-            minStake += (typeMin * numberOfEndpoints);
-            maxStake += (typeMax * numberOfEndpoints);
-        }
-        return (minStake, maxStake);
+        return (spDetails[sp].minAccountStake, spDetails[sp].maxAccountStake);
     }
 
     // @notice Returns status of service provider total stake and relation to bounds
@@ -477,8 +528,8 @@ contract ServiceProviderFactory is RegistryContract {
         return spDetails[sp].validBounds;
     }
 
-    /// @notice Validate that the service provider is between the min and max stakes for all their registered services
-    // Permission to 'this' contract or delegate manager
+    /// @notice Validate that the total service provider balance is between the min and max stakes for all their registered services
+    //          Validates that direct stake for sp is also above minimum
     function validateAccountStakeBalance(address sp)
     external view returns (uint stakedForOwner)
     {
@@ -486,15 +537,18 @@ contract ServiceProviderFactory is RegistryContract {
             registry.getContract(stakingProxyOwnerKey)
         );
         uint currentlyStakedForOwner = stakingContract.totalStakedFor(sp);
-        (uint minStakeAmount, uint maxStakeAmount) = this.getAccountStakeBounds(sp);
 
         require(
-            currentlyStakedForOwner >= minStakeAmount,
+            currentlyStakedForOwner >= spDetails[sp].minAccountStake,
             "Minimum stake threshold exceeded");
 
         require(
-            currentlyStakedForOwner <= maxStakeAmount,
+            currentlyStakedForOwner <= spDetails[sp].maxAccountStake,
             "Maximum stake amount exceeded");
+
+        require(
+            spDetails[sp].deployerStake >= minDeployerStake,
+            "Direct stake restriction violated for this service provider");
 
         return currentlyStakedForOwner;
     }
@@ -508,23 +562,12 @@ contract ServiceProviderFactory is RegistryContract {
         );
         // Validate bounds for total stake
         uint totalSPStake = stakingContract.totalStakedFor(_serviceProvider);
-        (uint minStake, uint maxStake) = this.getAccountStakeBounds(_serviceProvider);
-        if (totalSPStake < minStake || totalSPStake > maxStake) {
+        if (totalSPStake < spDetails[_serviceProvider].minAccountStake || totalSPStake > spDetails[_serviceProvider].maxAccountStake) {
             // Indicate this service provider is out of bounds
             spDetails[_serviceProvider].validBounds = false;
         } else {
             // Indicate this service provider is within bounds
             spDetails[_serviceProvider].validBounds = true;
         }
-    }
-
-    /// @notice Validate that the service provider deployer stake satisfies protocol minimum
-    function validateAccountDeployerStake(address sp)
-    internal view returns (uint deployerStake)
-    {
-        require(
-            spDetails[sp].deployerStake >= minDeployerStake,
-            "Direct stake restriction violated for this service provider");
-        return spDetails[sp].deployerStake;
     }
 }

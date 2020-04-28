@@ -7,10 +7,8 @@ const Staking = artifacts.require('Staking')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
-const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
-const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
@@ -43,7 +41,7 @@ const DEFAULT_AMOUNT = toWei(120)
 
 contract('ServiceProvider test', async (accounts) => {
   let token, registry, staking0, stakingInitializeData, proxy
-  let staking, serviceProviderStorage, serviceProviderFactory, serviceTypeManager
+  let staking, serviceProviderFactory, serviceTypeManager
 
   const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
   let controllerAddress
@@ -110,20 +108,22 @@ contract('ServiceProvider test', async (accounts) => {
 
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: treasuryAddress })
 
-    // Deploy ServiceProviderStorage
-    serviceProviderStorage = await ServiceProviderStorage.new(registry.address, { from: treasuryAddress })
-    await registry.addContract(serviceProviderStorageKey, serviceProviderStorage.address, { from: treasuryAddress })
-
     // Deploy ServiceProviderFactory
-    serviceProviderFactory = await ServiceProviderFactory.new(
-      registry.address,
-      stakingProxyKey,
-      delegateManagerKey,
-      governanceKey,
-      serviceTypeManagerProxyKey,
-      serviceProviderStorageKey)
+    let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: treasuryAddress })
+    const serviceProviderFactoryCalldata = encodeCall(
+      'initialize',
+      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
+    )
+    let serviceProviderFactoryProxy = await AdminUpgradeabilityProxy.new(
+      serviceProviderFactory0.address,
+      proxyAdminAddress,
+      serviceProviderFactoryCalldata,
+      { from: proxyAdminAddress }
+    )
+    serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
+    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: treasuryAddress })
 
-    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address, { from: treasuryAddress })
     // Transfer 1000 tokens to accounts[11]
     await token.transfer(accounts[11], INITIAL_BAL, { from: treasuryAddress })
   })
@@ -217,6 +217,9 @@ contract('ServiceProvider test', async (accounts) => {
         DEFAULT_AMOUNT,
         stakerAccount
       )
+
+      let numberOfEndpoints = await serviceProviderFactory.getNumberOfEndpointsFromAddress(stakerAccount)
+      assert.isTrue(numberOfEndpoints.eq(web3.utils.toBN(1)), 'Expect 1 endpoint registered')
 
       // Confirm event has correct amount
       assert.equal(regTx.stakedAmountInt, DEFAULT_AMOUNT)
@@ -538,13 +541,13 @@ contract('ServiceProvider test', async (accounts) => {
      * Mutate owner wallet and validate function restrictions
      */
     it('updates delegateOwnerWallet', async () => {
-      let currentDelegateOwner = await serviceProviderFactory.getDelegateOwnerWallet(
-        testDiscProvType,
-        testEndpoint,
-        { from: stakerAccount })
+      let spID = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint)
+      let info = await serviceProviderFactory.getServiceProviderInfo(testDiscProvType, spID)
+      let currentDelegateOwnerWallet = info.delegateOwnerWallet
+
       assert.equal(
         stakerAccount,
-        currentDelegateOwner,
+        currentDelegateOwnerWallet,
         'Expect initial delegateOwnerWallet equal to registrant')
       // Confirm wrong owner update is rejected
       await _lib.assertRevert(
@@ -563,10 +566,10 @@ contract('ServiceProvider test', async (accounts) => {
         testEndpoint,
         newDelegateOwnerWallet,
         { from: stakerAccount })
-      let newDelegateFromChain = await serviceProviderFactory.getDelegateOwnerWallet(
-        testDiscProvType,
-        testEndpoint,
-        { from: stakerAccount })
+
+      info = await serviceProviderFactory.getServiceProviderInfo(testDiscProvType, spID)
+      let newDelegateFromChain = info.delegateOwnerWallet
+
       assert.equal(
         newDelegateOwnerWallet,
         newDelegateFromChain,

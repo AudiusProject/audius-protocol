@@ -3,13 +3,11 @@ const encodeCall = require('../utils/encodeCall')
 
 const Registry = artifacts.require('Registry')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
-const ServiceProviderStorage = artifacts.require('ServiceProviderStorage')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 
 const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
-const serviceProviderStorageKey = web3.utils.utf8ToHex('ServiceProviderStorage')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const governanceKey = web3.utils.utf8ToHex('Governance')
@@ -62,20 +60,22 @@ module.exports = (deployer, network, accounts) => {
       toWei(10000000),
       { from: controllerAddress })
 
-    // Deploy + Register ServiceProviderStorage contract
-    await deployer.deploy(ServiceProviderStorage, Registry.address)
-    await registry.addContract(serviceProviderStorageKey, ServiceProviderStorage.address)
-
     // Deploy + Register ServiceProviderFactory contract
-    const serviceProviderFactory = await deployer.deploy(
-      ServiceProviderFactory,
-      Registry.address,
-      stakingProxyKey,
-      delegateManagerKey,
-      governanceKey,
-      serviceTypeManagerProxyKey,
-      serviceProviderStorageKey
+    const serviceProviderFactory0 = await deployer.deploy(ServiceProviderFactory, { from: proxyDeployerAddress })
+    const serviceProviderFactoryCalldata = encodeCall(
+      'initialize',
+      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
     )
-    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactory.address)
+
+    const serviceProviderFactoryProxy = await deployer.deploy(
+      AdminUpgradeabilityProxy,
+      serviceProviderFactory0.address,
+      proxyAdminAddress,
+      serviceProviderFactoryCalldata,
+      { from: proxyDeployerAddress }
+    )
+
+    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address)
   })
 }
