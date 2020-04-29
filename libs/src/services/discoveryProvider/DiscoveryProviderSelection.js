@@ -8,6 +8,8 @@ const {
 } = require('./constants')
 const semver = require('semver')
 
+const PREVIOUS_VERSIONS_TO_CHECK = 5
+
 let localStorage
 if (typeof window === 'undefined' || window === null) {
   const LocalStorage = require('node-localstorage').LocalStorage
@@ -36,6 +38,9 @@ class DiscoveryProviderSelection extends ServiceSelection {
     // unable to select a discovery provider that was up-to-date. Clients may
     // want to consider blocking writes.
     this._regressedMode = false
+  
+    // Set of valid past discovery provider versions registered on chain
+    this.validVersions = null
   }
 
   /** Retrieves a cached discovery provider from localstorage */
@@ -132,16 +137,37 @@ class DiscoveryProviderSelection extends ServiceSelection {
    * 1. Pick the most recent version that's not behind
    * 2. Pick the least behind provider and enter "regressed mode"
    */
-  selectFromBackups () {
+  async selectFromBackups () {
     const versions = []
     const blockDiffs = []
 
     const versionMap = {}
     const blockDiffMap = {}
 
+    // Go backwards in time on chain and get the registered versions up to PREVIOUS_VERSIONS_TO_CHECK.
+    // Record those versions in a set and validate any backups against that set.
+    // TODO: Clean up this logic when we can validate a specific version rather
+    // than traversing backwards through all the versions
+    if (!this.validVersions) {
+      this.validVersions = new Set([this.currentVersion])
+      const numberOfVersions = await this.ethContracts.getNumberOfVersions(DISCOVERY_SERVICE_NAME)
+      for (let i = 0; i < Math.min(PREVIOUS_VERSIONS_TO_CHECK, numberOfVersions - 1); ++i) {
+        const pastServiceVersion = await this.ethContracts.getVersion(
+          DISCOVERY_SERVICE_NAME,
+          // Exclude the latest version when querying older versions
+          // Latest index is numberOfVersions - 1, so 2nd oldest version starts at numberOfVersions - 2
+          numberOfVersions - 2 - i
+        )
+        this.validVersions.add(pastServiceVersion)
+      }
+    }
+
     // Go through each backup and record version and block diff maps
     Object.keys(this.backups).forEach(backup => {
       const { block_difference: blockDiff, version } = this.backups[backup]
+      // Filter out any version that wasn't registered on chain
+      if (!this.validVersions.has(version)) return
+
       versions.push(version)
       blockDiffs.push(blockDiff)
 

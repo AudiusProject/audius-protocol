@@ -6,6 +6,10 @@ const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 
 const mockEthContracts = (urls, currrentVersion) => ({
   getCurrentVersion: async () => currrentVersion,
+  getNumberOfVersions: async (spType) => 2,
+  getVersion: async (spType, queryIndex) => {
+    return ['1.2.2', '1.2.3'][queryIndex]
+  },
   getServiceProviderList: async () => urls,
   isValidSPVersion: (version1, version2) => {
     return (

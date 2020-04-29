@@ -180,6 +180,14 @@ class EthContracts {
     return this.ServiceProviderFactoryClient.getServiceProviderList(spType)
   }
 
+  async getNumberOfVersions (spType) {
+    return this.VersioningFactoryClient.getNumberOfVersions(spType)
+  }
+
+  async getVersion (spType, queryIndex) {
+    return this.VersioningFactoryClient.getVersion(spType, queryIndex)
+  }
+
   /**
    * Returns a valid service provider url with the fastest response
    * @param {string} spType service provider type: 'discovery-provider' | 'content-service' | 'creator-node'
