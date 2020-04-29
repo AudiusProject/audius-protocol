@@ -15,6 +15,7 @@
     "truffle-migrate-test": "npm run truffle-compile && ./node_modules/.bin/truffle migrate --reset --network test_local",
     "truffle-console": "./node_modules/.bin/truffle console --network development",
     "test": "npm run truffle-test",
+    "test-coverage": "./node_modules/.bin/truffle run coverage",
     "test-only": "./node_modules/.bin/truffle test --network=test_local",
     "truffle-test": "./scripts/truffle-test.sh",
     "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
