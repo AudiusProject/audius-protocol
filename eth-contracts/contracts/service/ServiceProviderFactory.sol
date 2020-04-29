@@ -508,17 +508,29 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         return serviceProviderAddressToId[_ownerAddress][_serviceType];
     }
 
+    function getServiceProviderDetails(address _sp)
+    external view returns (
+        uint deployerStake,
+        uint deployerCut,
+        bool validBounds,
+        uint numberOfEndpoints,
+        uint minAccountStake,
+        uint maxAccountStake)
+    {
+        return (
+            spDetails[_sp].deployerStake,
+            spDetails[_sp].deployerCut,
+            spDetails[_sp].validBounds,
+            spDetails[_sp].numberOfEndpoints,
+            spDetails[_sp].minAccountStake,
+            spDetails[_sp].maxAccountStake
+        );
+    }
+
     function getNumberOfEndpointsFromAddress(address _ownerAddress)
     external view returns (uint numberOfEndpoints)
     {
         return spDetails[_ownerAddress].numberOfEndpoints;
-    }
-
-    /// @notice Return the stake for an account based on total number of registered services
-    function getAccountStakeBounds(address sp)
-    external view returns (uint min, uint max)
-    {
-        return (spDetails[sp].minAccountStake, spDetails[sp].maxAccountStake);
     }
 
     // @notice Returns status of service provider total stake and relation to bounds

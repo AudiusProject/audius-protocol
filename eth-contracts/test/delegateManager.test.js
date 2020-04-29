@@ -876,9 +876,9 @@ contract('DelegateManager', async (accounts) => {
         'Minimum stake threshold exceeded')
 
       // Increase to minimum
-      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
+      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       let info = await getAccountStakeInfo(stakerAccount, false)
-      let increase = (bounds.min).sub(info.spFactoryStake)
+      let increase = (spDetails.minAccountStake).sub(info.spFactoryStake)
       // Increase to minimum bound
       await increaseRegisteredProviderStake(
         increase,
@@ -898,10 +898,10 @@ contract('DelegateManager', async (accounts) => {
     })
 
     it('delegator increase/decrease + SP direct stake bound validation', async () => {
-      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
-      let delegateAmount = bounds.min
+      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      let delegateAmount = spDetails.minAccountStake
       let info = await getAccountStakeInfo(stakerAccount, false)
-      let failedIncreaseAmount = bounds.max
+      let failedIncreaseAmount = spDetails.maxAccountStake
       // Transfer sufficient funds
       await token.transfer(delegatorAccount1, failedIncreaseAmount, { from: treasuryAddress })
       // Approve staking transfer

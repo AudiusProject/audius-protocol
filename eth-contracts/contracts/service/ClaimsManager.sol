@@ -152,9 +152,9 @@ contract ClaimsManager is InitializableV2, RegistryContract {
             _claimer,
             fundBlock);
 
-        (uint spMin, uint spMax) = ServiceProviderFactory(
+        ( , , , ,uint spMin, uint spMax) = ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)
-        ).getAccountStakeBounds(_claimer);
+        ).getServiceProviderDetails(_claimer);
         require(
             (totalStakedAtFundBlockForClaimer >= spMin),
             "Minimum stake bounds violated at fund block");

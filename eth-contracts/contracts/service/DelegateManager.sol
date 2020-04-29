@@ -314,9 +314,8 @@ contract DelegateManager is InitializableV2, RegistryContract {
         );
 
         // Confirm service provider is valid
-        require(
-            spFactory.isServiceProviderWithinBounds(msg.sender),
-            "Service provider must be within bounds");
+        ( , ,bool withinBounds, , , ) = spFactory.getServiceProviderDetails(msg.sender);
+        require(withinBounds, "Service provider must be within bounds");
 
         // Process claim for msg.sender
         claimsManager.processClaim(msg.sender, totalLockedForClaimer);

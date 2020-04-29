@@ -248,9 +248,9 @@ contract('ServiceProvider test', async (accounts) => {
 
       // Validate min stake requirements
       // Both current account bounds and single testDiscProvType bounds expected to be equal 
-      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
-      let accountMin = fromWei(bounds[0])
-      let accountMax = fromWei(bounds[1])
+      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      let accountMin = fromWei(spDetails.minAccountStake)
+      let accountMax = fromWei(spDetails.maxAccountStake)
       assert.equal(
         typeMin,
         accountMin,
@@ -300,9 +300,9 @@ contract('ServiceProvider test', async (accounts) => {
       await token.transfer(stakerAccount, INITIAL_BAL, { from: treasuryAddress })
 
       let stakedAmount = await staking.totalStakedFor(stakerAccount)
-      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
-      let accountMin = fromWei(bounds[0])
-      let accountMax = fromWei(bounds[1])
+      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      let accountMin = fromWei(spDetails.minAccountStake)
+      let accountMax = fromWei(spDetails.maxAccountStake)
 
       let accountDiff = fromWei(stakedAmount) - accountMin
 
@@ -342,10 +342,10 @@ contract('ServiceProvider test', async (accounts) => {
       stakedAmount = await staking.totalStakedFor(stakerAccount)
       assert.equal(stakedAmount, dpMinStake + cnodeMinStake, 'Expect min staked with total endpoints')
 
-      bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
+      spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       let stakedAmountWei = fromWei(stakedAmount)
-      accountMin = fromWei(bounds[0])
-      accountMax = fromWei(bounds[1])
+      accountMin = fromWei(spDetails.minAccountStake)
+      accountMax = fromWei(spDetails.maxAccountStake)
       assert.equal(stakedAmountWei, accountMin, 'Expect min staked with total endpoints')
 
       accountDiff = accountMax - stakedAmountWei
