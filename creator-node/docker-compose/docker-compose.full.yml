@@ -9,6 +9,13 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     ports:
       - '4432:5432'
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "4080:80"
+    volumes:
+      - ../nginx:/home/nginx
+    command: sh -c /home/nginx/nginx.sh
   creator-node:
     build: ../.
     command: sh -c '/usr/bin/wait && exec ./node_modules/.bin/nodemon src/index.js | ./node_modules/.bin/bunyan'
