@@ -480,7 +480,7 @@ contract('ServiceProvider test', async (accounts) => {
         DEFAULT_AMOUNT,
         stakerAccount)
 
-      let readStorageValues = await serviceProviderFactory.getServiceProviderInfo(
+      let readStorageValues = await serviceProviderFactory.getServiceEndpointInfo(
         testDiscProvType,
         regTx.spID)
 
@@ -499,7 +499,7 @@ contract('ServiceProvider test', async (accounts) => {
         web3.utils.toBN(decreaseStakeAmount),
         stakerAccount)
 
-      let readStorageValues = await serviceProviderFactory.getServiceProviderInfo(
+      let readStorageValues = await serviceProviderFactory.getServiceEndpointInfo(
         testDiscProvType,
         regTx.spID)
 
@@ -542,7 +542,7 @@ contract('ServiceProvider test', async (accounts) => {
      */
     it('updates delegateOwnerWallet', async () => {
       let spID = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint)
-      let info = await serviceProviderFactory.getServiceProviderInfo(testDiscProvType, spID)
+      let info = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spID)
       let currentDelegateOwnerWallet = info.delegateOwnerWallet
 
       assert.equal(
@@ -567,7 +567,7 @@ contract('ServiceProvider test', async (accounts) => {
         newDelegateOwnerWallet,
         { from: stakerAccount })
 
-      info = await serviceProviderFactory.getServiceProviderInfo(testDiscProvType, spID)
+      info = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spID)
       let newDelegateFromChain = info.delegateOwnerWallet
 
       assert.equal(
@@ -642,12 +642,12 @@ contract('ServiceProvider test', async (accounts) => {
 
     it('will modify the dns endpoint for an existing service', async () => {
       const spId = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint)
-      const { endpoint } = await serviceProviderFactory.getServiceProviderInfo(testDiscProvType, spId)
+      const { endpoint } = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spId)
       assert.equal(testEndpoint, endpoint)
       
       // update the endpoint from testEndpoint to testEndpoint1
       await serviceProviderFactory.updateEndpoint(testDiscProvType, testEndpoint, testEndpoint1, { from: stakerAccount })
-      const { endpoint: endpointAfter } = await serviceProviderFactory.getServiceProviderInfo(testDiscProvType, spId)
+      const { endpoint: endpointAfter } = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spId)
       assert.equal(testEndpoint1, endpointAfter)
 
       // it should replace the service provider in place so spId should be consistent

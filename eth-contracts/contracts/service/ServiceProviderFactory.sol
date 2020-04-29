@@ -483,7 +483,7 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         return serviceProviderTypeIDs[_serviceType];
     }
 
-    function getServiceProviderInfo(bytes32 _serviceType, uint _serviceId)
+    function getServiceEndpointInfo(bytes32 _serviceType, uint _serviceId)
     external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet)
     {
         ServiceEndpoint memory sp = serviceProviderInfo[_serviceType][_serviceId];
