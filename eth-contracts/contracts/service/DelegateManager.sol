@@ -302,23 +302,22 @@ contract DelegateManager is InitializableV2, RegistryContract {
     */
     // Distribute proceeds of reward
     function claimRewards() external isInitialized {
-        ClaimsManager claimsManager = ClaimsManager(
-            registry.getContract(claimsManagerKey)
-        );
-        // Pass in locked amount for claimer
-        uint totalLockedForClaimer = spDelegateInfo[msg.sender].totalLockedUpStake;
-
         // address claimer = msg.sender;
         ServiceProviderFactory spFactory = ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)
         );
 
         // Confirm service provider is valid
-        ( , ,bool withinBounds, , , ) = spFactory.getServiceProviderDetails(msg.sender);
+        ( ,uint deployerCut, bool withinBounds, , , ) = spFactory.getServiceProviderDetails(msg.sender);
         require(withinBounds, "Service provider must be within bounds");
 
         // Process claim for msg.sender
-        claimsManager.processClaim(msg.sender, totalLockedForClaimer);
+        ClaimsManager(
+            registry.getContract(claimsManagerKey)
+        ).processClaim(
+            msg.sender,
+            spDelegateInfo[msg.sender].totalLockedUpStake
+        );
 
         // Amount stored in staking contract for owner
         uint totalBalanceInStaking = Staking(
@@ -330,11 +329,9 @@ contract DelegateManager is InitializableV2, RegistryContract {
         uint totalBalanceInSPFactory = spFactory.getServiceProviderStake(msg.sender);
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
 
-
         // Amount in delegate manager staked to service provider
-        uint totalBalanceInDelegateManager = spDelegateInfo[msg.sender].totalDelegatedStake;
         uint totalBalanceOutsideStaking = (
-            totalBalanceInSPFactory + totalBalanceInDelegateManager
+            totalBalanceInSPFactory + spDelegateInfo[msg.sender].totalDelegatedStake
         );
 
         // Require claim availability
@@ -347,13 +344,12 @@ contract DelegateManager is InitializableV2, RegistryContract {
         // Emit claim event
         emit Claim(msg.sender, totalRewards, totalBalanceInStaking);
 
-        uint deployerCut = spFactory.getServiceProviderDeployerCut(msg.sender);
         uint deployerCutBase = spFactory.getServiceProviderDeployerCutBase();
         uint spDeployerCutRewards = 0;
         uint totalDelegatedStakeIncrease = 0;
 
         // Total valid funds used to calculate rewards distribution
-        uint totalActiveFunds = totalBalanceOutsideStaking - totalLockedForClaimer;
+        uint totalActiveFunds = totalBalanceOutsideStaking - spDelegateInfo[msg.sender].totalLockedUpStake;
 
         // Traverse all delegates and calculate their rewards
         // As each delegate reward is calculated, increment SP cut reward accordingly
@@ -388,8 +384,8 @@ contract DelegateManager is InitializableV2, RegistryContract {
         uint spRewardShare = (
           totalBalanceInSPFactory.mul(totalRewards)
         ).div(totalActiveFunds);
-        uint newSpBalance = totalBalanceInSPFactory + spRewardShare + spDeployerCutRewards;
-        spFactory.updateServiceProviderStake(msg.sender, newSpBalance);
+        /// newSpBalance = totalBalanceInSPFactory + spRewardShare + spDeployerCutRewards;
+        spFactory.updateServiceProviderStake(msg.sender, totalBalanceInSPFactory + spRewardShare + spDeployerCutRewards);
     }
 
     function slash(uint _amount, address _slashAddress)

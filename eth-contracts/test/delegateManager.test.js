@@ -443,7 +443,7 @@ contract('DelegateManager', async (accounts) => {
 
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       let delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-      let deployerCut = await serviceProviderFactory.getServiceProviderDeployerCut(stakerAccount)
+      let deployerCut = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerCut
       let deployerCutBase = await serviceProviderFactory.getServiceProviderDeployerCutBase()
 
       // Initiate round
@@ -580,7 +580,7 @@ contract('DelegateManager', async (accounts) => {
       // Initiate round
       await claimsManager.initiateRound({ from: proxyDeployerAddress })
 
-      let deployerCut = await serviceProviderFactory.getServiceProviderDeployerCut(stakerAccount)
+      let deployerCut = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerCut
       let deployerCutBase = await serviceProviderFactory.getServiceProviderDeployerCutBase()
 
       // Calculating expected values
