@@ -7,8 +7,12 @@ const testEthereumConstants = {
 }
 
 async function createStarterCNodeUser () {
-  const cnodeUser = await CNodeUser.create({ walletPublicKey: testEthereumConstants.pubKey.toLowerCase() })
+  return createStarterCNodeUserWithKey(testEthereumConstants.pubKey.toLowerCase())
+}
+
+async function createStarterCNodeUserWithKey (walletPublicKey) {
+  const cnodeUser = await CNodeUser.create({ walletPublicKey })
   return sessionManager.createSession(cnodeUser.cnodeUserUUID)
 }
 
-module.exports = { createStarterCNodeUser, testEthereumConstants }
+module.exports = { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConstants }

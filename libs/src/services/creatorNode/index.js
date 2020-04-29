@@ -334,17 +334,40 @@ class CreatorNode {
       return
     }
 
-    const unixTs = Math.round((new Date()).getTime() / 1000) // current unix timestamp (sec)
-    const data = `Click sign to authenticate with creator node: ${unixTs}`
-    const signature = await this.web3Manager.sign(data)
+    let walletPublicKey = this.web3Manager.getWalletAddress()
+    let clientChallengeKey
+    let url
 
-    // submit signed timestamp to server, receive permanent auth token in return
+    try {
+      let challengeResp = await this._makeRequest({
+        url: '/users/login/challenge',
+        method: 'get',
+        params: {
+          walletPublicKey
+        }
+      }, false)
+
+      clientChallengeKey = challengeResp.challenge
+      url = '/users/login/challenge'
+    } catch (e) {
+      // If '/users/login/get_challenge' returns 404, login using non-challenge route
+      if (e.response && e.response.status === 404) {
+        clientChallengeKey = Math.round((new Date()).getTime() / 1000)
+        url = '/users/login'
+      } else {
+        const requestUrl = this.creatorNodeEndpoint + '/users/login/challenge'
+        _handleErrorHelper(e, requestUrl)
+      }
+    }
+
+    const signature = await this.web3Manager.sign(clientChallengeKey)
+
     const resp = await this._makeRequest({
-      url: '/users/login',
+      url,
       method: 'post',
       data: {
-        data: data,
-        signature: signature
+        data: clientChallengeKey,
+        signature
       }
     }, false)
     this.authToken = resp.sessionToken

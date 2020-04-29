@@ -4,7 +4,7 @@ const sigUtil = require('eth-sig-util')
 const BlacklistManager = require('../src/blacklistManager')
 
 const { getApp } = require('./lib/app')
-const { createStarterCNodeUser, testEthereumConstants } = require('./lib/dataSeeds')
+const { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConstants } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 
@@ -45,6 +45,116 @@ describe('test Users', function () {
     await request(app)
       .post('/users')
       .send({ walletAddress: testEthereumConstants.pubKey })
+      .expect(200)
+  })
+
+  it('fail to get challenge without wallet address', function (done) {
+    request(app)
+      .get('/users/login/challenge')
+      .expect(400, done)
+  })
+
+  it('get challenge with wallet address', async function () {
+    await createStarterCNodeUser()
+    await request(app)
+      .get('/users/login/challenge')
+      .query({ walletPublicKey: testEthereumConstants.pubKey })
+      .expect(200)
+  })
+
+  it('fail using POST challenge route with missing body keys', async function () {
+    await request(app)
+      .post('/users/login/challenge')
+      .send({ })
+      .expect(400)
+  })
+
+  it('fail using POST challenge route with invalid data and signature', async function () {
+    await request(app)
+      .post('/users/login/challenge')
+      .send({ data: 'data', signature: 'signature' })
+      .expect(400)
+  })
+
+  it('fail using POST challenge route with no cnode user', async function () {
+    let challengeResp
+    await request(app)
+      .get('/users/login/challenge')
+      .query({ walletPublicKey: testEthereumConstants.pubKey })
+      .expect(200)
+      .then(response => {
+        challengeResp = response.body
+      })
+
+    const signature = sigUtil.personalSign(Buffer.from(testEthereumConstants.privKeyHex, 'hex'), { data: challengeResp.challenge })
+
+    await request(app)
+      .post('/users/login/challenge')
+      .send({ data: challengeResp.challenge, signature })
+      .expect(400)
+  })
+
+  it('fail using POST challenge route with challenge key not present in redis', async function () {
+    let challengeResp
+    const randomPubKey = '0xadD36bad12002f1097Cdb7eE24085C28e9random'
+    await createStarterCNodeUser()
+    await createStarterCNodeUserWithKey(randomPubKey)
+    await request(app)
+      .get('/users/login/challenge')
+      .query({ walletPublicKey: randomPubKey })
+      .expect(200)
+      .then(response => {
+        challengeResp = response.body
+      })
+
+    const signature = sigUtil.personalSign(Buffer.from(testEthereumConstants.privKeyHex, 'hex'), { data: challengeResp.challenge })
+
+    await request(app)
+      .post('/users/login/challenge')
+      .send({ data: challengeResp.challenge, signature })
+      .expect(400)
+  })
+
+  it('fail to log user in with challenge key if used twice', async function () {
+    let challengeResp
+    await createStarterCNodeUser()
+    await request(app)
+      .get('/users/login/challenge')
+      .query({ walletPublicKey: testEthereumConstants.pubKey })
+      .expect(200)
+      .then(response => {
+        challengeResp = response.body
+      })
+
+    const signature = sigUtil.personalSign(Buffer.from(testEthereumConstants.privKeyHex, 'hex'), { data: challengeResp.challenge })
+
+    await request(app)
+      .post('/users/login/challenge')
+      .send({ data: challengeResp.challenge, signature })
+      .expect(200)
+
+    await request(app)
+      .post('/users/login/challenge')
+      .send({ data: challengeResp.challenge, signature })
+      .expect(400)
+  })
+
+  it('successfully log user in with challenge key using challenge routes', async function () {
+    let challengeResp
+    await createStarterCNodeUser()
+    await request(app)
+      .get('/users/login/challenge')
+      .query({ walletPublicKey: testEthereumConstants.pubKey })
+      .expect(200)
+      .then(response => {
+        challengeResp = response.body
+      })
+
+    const signature = sigUtil.personalSign(Buffer.from(testEthereumConstants.privKeyHex, 'hex'), { data: challengeResp.challenge })
+
+    await request(app)
+      .post('/users/login/challenge')
+      .send({ data: challengeResp.challenge, signature })
       .expect(200)
   })
 
@@ -89,7 +199,7 @@ describe('test Users', function () {
       .expect(400)
   })
 
-  /*
+  /* // will only log error
   it('login fails on old timestamp', async function () {
     await createStarterCNodeUser()
     const ts = Math.round((new Date()).getTime() / 1000) - 305

@@ -1,4 +1,4 @@
 {
-    "version": "0.3.6",
-    "service": "discovery-provider"
+  "version": "0.3.7",
+  "service": "discovery-provider"
 }
