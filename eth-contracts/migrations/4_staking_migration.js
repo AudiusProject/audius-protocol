@@ -20,6 +20,7 @@ module.exports = (deployer, network, accounts) => {
     const token = await AudiusToken.deployed()
 
     const treasuryAddress = config.treasuryAddress || accounts[0]
+
     // TODO move to contractConfig
     const [proxyAdminAddress, proxyDeployerAddress] = [accounts[10], accounts[11]]
 

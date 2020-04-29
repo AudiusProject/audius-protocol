@@ -9,6 +9,10 @@ module.exports = {
     controllerAddress: null,
     treasuryAddress: null
   },
+  'soliditycoverage': {
+    controllerAddress: null,
+    treasuryAddress: null
+  },
   'audius_private': {
     controllerAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
     treasuryAddress: null
