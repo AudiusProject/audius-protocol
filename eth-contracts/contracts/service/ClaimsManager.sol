@@ -56,12 +56,13 @@ contract ClaimsManager is InitializableV2, RegistryContract {
     );
 
     function initialize(
-      address _tokenAddress,
-      address _registryAddress,
-      bytes32 _stakingProxyOwnerKey,
-      bytes32 _serviceProviderFactoryKey,
-      bytes32 _delegateManagerKey
-    ) public initializer {
+        address _tokenAddress,
+        address _registryAddress,
+        bytes32 _stakingProxyOwnerKey,
+        bytes32 _serviceProviderFactoryKey,
+        bytes32 _delegateManagerKey
+    ) public initializer
+    {
         tokenAddress = _tokenAddress;
         deployerAddress = msg.sender;
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
@@ -69,7 +70,7 @@ contract ClaimsManager is InitializableV2, RegistryContract {
         delegateManagerKey = _delegateManagerKey;
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
-        
+
         fundBlock = 0;
         fundRoundBlockDiff = 10;
         fundBlock = 0;

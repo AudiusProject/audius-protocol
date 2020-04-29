@@ -104,11 +104,11 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
     );
 
     function initialize (
-      address _registryAddress,
-      bytes32 _stakingProxyOwnerKey,
-      bytes32 _delegateManagerKey,
-      bytes32 _governanceKey,
-      bytes32 _serviceTypeManagerKey
+        address _registryAddress,
+        bytes32 _stakingProxyOwnerKey,
+        bytes32 _delegateManagerKey,
+        bytes32 _governanceKey,
+        bytes32 _serviceTypeManagerKey
     ) public initializer
     {
         require(
@@ -292,11 +292,17 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         return deregisteredID;
     }
 
-    function increaseStake(uint256 _increaseStakeAmount) external isInitialized returns (uint newTotalStake) {
+    function increaseStake(
+        uint256 _increaseStakeAmount
+    ) external isInitialized returns (uint newTotalStake)
+    {
         address owner = msg.sender;
 
         // Confirm owner has an endpoint
-        require(spDetails[owner].numberOfEndpoints > 0, "Registered endpoint required to decrease stake");
+        require(
+            spDetails[owner].numberOfEndpoints > 0,
+            "Registered endpoint required to decrease stake"
+        );
 
         ERCStaking stakingContract = ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
@@ -324,11 +330,17 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         return newStakeAmount;
     }
 
-    function decreaseStake(uint256 _decreaseStakeAmount) external isInitialized returns (uint newTotalStake) {
+    function decreaseStake(
+        uint256 _decreaseStakeAmount
+    ) external isInitialized returns (uint newTotalStake)
+    {
         address owner = msg.sender;
 
         // Confirm owner has an endpoint
-        require(spDetails[owner].numberOfEndpoints > 0, "Registered endpoint required to decrease stake");
+        require(
+            spDetails[owner].numberOfEndpoints > 0,
+            "Registered endpoint required to decrease stake"
+        );
 
         ERCStaking stakingContract = ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
@@ -537,7 +549,8 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         );
         // Validate bounds for total stake
         uint totalSPStake = stakingContract.totalStakedFor(_serviceProvider);
-        if (totalSPStake < spDetails[_serviceProvider].minAccountStake || totalSPStake > spDetails[_serviceProvider].maxAccountStake) {
+        if (totalSPStake < spDetails[_serviceProvider].minAccountStake ||
+            totalSPStake > spDetails[_serviceProvider].maxAccountStake) {
             // Indicate this service provider is out of bounds
             spDetails[_serviceProvider].validBounds = false;
         } else {
