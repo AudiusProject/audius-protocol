@@ -216,7 +216,7 @@ contract('DelegateManager', async (accounts) => {
   const getAccountStakeInfo = async (account, print = false) => {
     let spFactoryStake
     let totalInStakingContract
-    spFactoryStake = await serviceProviderFactory.getServiceProviderStake(account)
+    spFactoryStake = (await serviceProviderFactory.getServiceProviderDetails(account)).deployerStake
     totalInStakingContract = await staking.totalStakedFor(account)
 
     let delegatedStake = await delegateManager.getTotalDelegatedToServiceProvider(account)
@@ -295,18 +295,19 @@ contract('DelegateManager', async (accounts) => {
 
     it('initial state + claim', async () => {
       // Validate basic claim w/SP path
-      let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
+
       let totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
 
       await claimsManager.initiateRound({ from: proxyDeployerAddress })
 
       totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
-      spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
 
       await delegateManager.claimRewards({ from: stakerAccount })
 
       totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
-      spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
       assert.isTrue(
         spStake.eq(totalStakedForAccount),
         'Stake value in SPFactory and Staking.sol must be equal')
@@ -335,7 +336,7 @@ contract('DelegateManager', async (accounts) => {
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       delegators = await delegateManager.getDelegatorsList(stakerAccount)
 
-      let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
       let delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
       let delegatedStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(
         delegatorAccount1,
@@ -453,7 +454,7 @@ contract('DelegateManager', async (accounts) => {
       let pendingClaim = await claimsManager.claimPending(stakerAccount)
       assert.isTrue(pendingClaim, 'ClaimsManager expected to consider claim pending')
 
-      let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
       let totalStake = await staking.totalStaked()
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
@@ -472,7 +473,7 @@ contract('DelegateManager', async (accounts) => {
 
       await delegateManager.claimRewards({ from: stakerAccount })
 
-      let finalSpStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      let finalSpStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
       let finalDelegateStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
 
       assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
@@ -515,7 +516,7 @@ contract('DelegateManager', async (accounts) => {
       await mockGovernance.testSlash(slashAmount, slasherAccount)
 
       // Summarize after execution
-      let spFactoryStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      let spFactoryStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
       let totalInStakingAfterSlash = await staking.totalStakedFor(stakerAccount)
       let delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
       let outsideStake = spFactoryStake.add(delegatedStake)
@@ -584,7 +585,7 @@ contract('DelegateManager', async (accounts) => {
       let deployerCutBase = await serviceProviderFactory.getServiceProviderDeployerCutBase()
 
       // Calculating expected values
-      let spStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
       let totalStake = await staking.totalStaked()
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       let totalDelegatedStake = web3.utils.toBN(0)
@@ -625,7 +626,7 @@ contract('DelegateManager', async (accounts) => {
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
 
       // Validate final SP value vs expected
-      let finalSpStake = await serviceProviderFactory.getServiceProviderStake(stakerAccount)
+      let finalSpStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
       assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
       // Validate each delegate value against expected
       for (let delegator of delegatorAccounts) {

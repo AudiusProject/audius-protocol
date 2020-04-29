@@ -446,13 +446,6 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         spDetails[_serviceProvider].deployerCut = _cut;
     }
 
-    /// @notice Represents amount directly staked by service provider
-    function getServiceProviderStake(address _address)
-    external view returns (uint stake)
-    {
-        return spDetails[_address].deployerStake;
-    }
-
     /// @notice Denominator for deployer cut calculations
     function getServiceProviderDeployerCutBase()
     external pure returns (uint base)

@@ -308,7 +308,7 @@ contract DelegateManager is InitializableV2, RegistryContract {
         );
 
         // Confirm service provider is valid
-        ( ,uint deployerCut, bool withinBounds, , , ) = spFactory.getServiceProviderDetails(msg.sender);
+        ( , , bool withinBounds, , , ) = spFactory.getServiceProviderDetails(msg.sender);
         require(withinBounds, "Service provider must be within bounds");
 
         // Process claim for msg.sender
@@ -326,7 +326,7 @@ contract DelegateManager is InitializableV2, RegistryContract {
         require(totalBalanceInStaking > 0, "Stake required for claim");
 
         // Amount in sp factory for claimer
-        uint totalBalanceInSPFactory = spFactory.getServiceProviderStake(msg.sender);
+        (uint totalBalanceInSPFactory, , , , , ) = spFactory.getServiceProviderDetails(msg.sender);
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
 
         // Amount in delegate manager staked to service provider
@@ -344,6 +344,7 @@ contract DelegateManager is InitializableV2, RegistryContract {
         // Emit claim event
         emit Claim(msg.sender, totalRewards, totalBalanceInStaking);
 
+        ( ,uint deployerCut, , , , ) = spFactory.getServiceProviderDetails(msg.sender);
         uint deployerCutBase = spFactory.getServiceProviderDeployerCutBase();
         uint spDeployerCutRewards = 0;
         uint totalDelegatedStakeIncrease = 0;
@@ -411,7 +412,7 @@ contract DelegateManager is InitializableV2, RegistryContract {
             "Cannot slash more than total currently staked");
 
         // Amount in sp factory for slash target
-        uint totalBalanceInSPFactory = spFactory.getServiceProviderStake(_slashAddress);
+        (uint totalBalanceInSPFactory, , , , , ) = spFactory.getServiceProviderDetails(_slashAddress);
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
 
         // Decrease value in Staking contract
