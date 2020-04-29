@@ -322,3 +322,13 @@ class Stem(Base):
     def __repr__(self):
         return f"<Remix(parent_track_id={self.parent_track_id},\
             child_track_id={self.child_track_id})"
+
+class Credit(Base):
+    __tablename__ = "credits"
+
+    parent_track_id = Column(Integer, nullable=False, primary_key=True)
+    child_track_id = Column(Integer, nullable=False, index=True)
+
+    def __repr__(self):
+        return f"<Credit(parent_track_id={self.parent_track_id},\
+child_track_id={self.child_track_id}>"
