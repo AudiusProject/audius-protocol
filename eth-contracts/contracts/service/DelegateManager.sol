@@ -305,7 +305,6 @@ contract DelegateManager is InitializableV2, RegistryContract {
     */
     // Distribute proceeds of reward
     function claimRewards() external isInitialized {
-        // address claimer = msg.sender;
         ServiceProviderFactory spFactory = ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)
         );
