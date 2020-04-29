@@ -218,8 +218,8 @@ contract('ServiceProvider test', async (accounts) => {
         stakerAccount
       )
 
-      let numberOfEndpoints = await serviceProviderFactory.getNumberOfEndpointsFromAddress(stakerAccount)
-      assert.isTrue(numberOfEndpoints.eq(web3.utils.toBN(1)), 'Expect 1 endpoint registered')
+      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      assert.isTrue(spDetails.numberOfEndpoints.eq(web3.utils.toBN(1)), 'Expect 1 endpoint registered')
 
       // Confirm event has correct amount
       assert.equal(regTx.stakedAmountInt, DEFAULT_AMOUNT)
@@ -248,7 +248,6 @@ contract('ServiceProvider test', async (accounts) => {
 
       // Validate min stake requirements
       // Both current account bounds and single testDiscProvType bounds expected to be equal 
-      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       let accountMin = fromWei(spDetails.minAccountStake)
       let accountMax = fromWei(spDetails.maxAccountStake)
       assert.equal(

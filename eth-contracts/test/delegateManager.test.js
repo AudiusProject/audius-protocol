@@ -850,9 +850,9 @@ contract('DelegateManager', async (accounts) => {
       // Called from mockGovernance
       await mockGovernance.testSlash(slashAmount, slasherAccount)
 
-      let isWithinBounds = await serviceProviderFactory.isServiceProviderWithinBounds(slasherAccount)
+      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       assert.isFalse(
-        isWithinBounds,
+        spDetails.validBounds,
         'Bound violation expected')
 
       // Initiate round
@@ -876,7 +876,7 @@ contract('DelegateManager', async (accounts) => {
         'Minimum stake threshold exceeded')
 
       // Increase to minimum
-      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       let info = await getAccountStakeInfo(stakerAccount, false)
       let increase = (spDetails.minAccountStake).sub(info.spFactoryStake)
       // Increase to minimum bound
@@ -885,9 +885,9 @@ contract('DelegateManager', async (accounts) => {
         stakerAccount)
 
       // Validate increase
-      isWithinBounds = await serviceProviderFactory.isServiceProviderWithinBounds(slasherAccount)
+      spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       assert.isTrue(
-        isWithinBounds,
+        spDetails.validBounds,
         'Valid bound expected')
 
       // Confirm claim STILL fails due to bound violation at fundblock
