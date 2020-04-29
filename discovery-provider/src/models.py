@@ -309,3 +309,13 @@ created_at={self.created_at},\
 save_type={self.save_type},\
 is_current={self.is_current},\
 is_delete={self.is_delete}>"
+
+class Credit(Base):
+    __tablename__ = "credits"
+
+    parent_track_id = Column(Integer, nullable=False, primary_key=True)
+    child_track_id = Column(Integer, nullable=False, index=True)
+
+    def __repr__(self):
+        return f"<Credit(parent_track_id={self.parent_track_id},\
+child_track_id={self.child_track_id}>"
