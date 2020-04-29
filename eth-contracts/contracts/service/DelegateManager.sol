@@ -9,10 +9,9 @@ import "./ServiceProviderFactory.sol";
 import "./ClaimsManager.sol";
 import "../InitializableV2.sol";
 
-/**
- * Designed to manage delegation to staking contract
- * @notice - will call RegistryContract.constructor, which calls Ownable constructor
- */
+
+ /// Designed to manage delegation to staking contract
+ /// @notice - will call RegistryContract.constructor, which calls Ownable constructor
 contract DelegateManager is InitializableV2, RegistryContract {
     using SafeMath for uint256;
     RegistryInterface registry = RegistryInterface(0);
@@ -88,13 +87,14 @@ contract DelegateManager is InitializableV2, RegistryContract {
     );
 
     function initialize (
-      address _tokenAddress,
-      address _registryAddress,
-      bytes32 _governanceKey,
-      bytes32 _stakingProxyOwnerKey,
-      bytes32 _serviceProviderFactoryKey,
-      bytes32 _claimsManagerKey
-    ) public initializer {
+        address _tokenAddress,
+        address _registryAddress,
+        bytes32 _governanceKey,
+        bytes32 _stakingProxyOwnerKey,
+        bytes32 _serviceProviderFactoryKey,
+        bytes32 _claimsManagerKey
+    ) public initializer
+    {
         tokenAddress = _tokenAddress;
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
@@ -174,7 +174,7 @@ contract DelegateManager is InitializableV2, RegistryContract {
         // Confirm no pending delegation request
         require(
             (undelegateRequests[delegator].lockupExpiryBlock == 0) &&
-            (undelegateRequests[delegator].amount == 0) && 
+            (undelegateRequests[delegator].amount == 0) &&
             (undelegateRequests[delegator].serviceProvider == address(0)),
             "No pending lockup expected"
         );
@@ -203,7 +203,7 @@ contract DelegateManager is InitializableV2, RegistryContract {
         // Confirm pending delegation request
         require(
             (undelegateRequests[delegator].lockupExpiryBlock != 0) &&
-            (undelegateRequests[delegator].amount != 0) && 
+            (undelegateRequests[delegator].amount != 0) &&
             (undelegateRequests[delegator].serviceProvider != address(0)),
             "Pending lockup expected"
         );
@@ -222,7 +222,7 @@ contract DelegateManager is InitializableV2, RegistryContract {
         // Confirm pending delegation request
         require(
             (undelegateRequests[delegator].lockupExpiryBlock != 0) &&
-            (undelegateRequests[delegator].amount != 0) && 
+            (undelegateRequests[delegator].amount != 0) &&
             (undelegateRequests[delegator].serviceProvider != address(0)),
             "Pending lockup expected"
         );
@@ -240,7 +240,10 @@ contract DelegateManager is InitializableV2, RegistryContract {
         address serviceProvider = undelegateRequests[delegator].serviceProvider;
         uint unstakeAmount = undelegateRequests[delegator].amount;
 
-        require(delegatorExistsForSP(delegator, serviceProvider), "Delegator must be staked for SP");
+        require(
+            delegatorExistsForSP(delegator, serviceProvider),
+            "Delegator must be staked for SP"
+        );
 
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
@@ -302,24 +305,21 @@ contract DelegateManager is InitializableV2, RegistryContract {
     */
     // Distribute proceeds of reward
     function claimRewards() external isInitialized {
-        ClaimsManager claimsManager = ClaimsManager(
-            registry.getContract(claimsManagerKey)
-        );
-        // Pass in locked amount for claimer
-        uint totalLockedForClaimer = spDelegateInfo[msg.sender].totalLockedUpStake;
-
-        // address claimer = msg.sender;
         ServiceProviderFactory spFactory = ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)
         );
 
         // Confirm service provider is valid
-        require(
-            spFactory.isServiceProviderWithinBounds(msg.sender),
-            "Service provider must be within bounds");
+        (,,bool withinBounds,,,) = spFactory.getServiceProviderDetails(msg.sender);
+        require(withinBounds, "Service provider must be within bounds");
 
         // Process claim for msg.sender
-        claimsManager.processClaim(msg.sender, totalLockedForClaimer);
+        ClaimsManager(
+            registry.getContract(claimsManagerKey)
+        ).processClaim(
+            msg.sender,
+            spDelegateInfo[msg.sender].totalLockedUpStake
+        );
 
         // Amount stored in staking contract for owner
         uint totalBalanceInStaking = Staking(
@@ -328,14 +328,12 @@ contract DelegateManager is InitializableV2, RegistryContract {
         require(totalBalanceInStaking > 0, "Stake required for claim");
 
         // Amount in sp factory for claimer
-        uint totalBalanceInSPFactory = spFactory.getServiceProviderStake(msg.sender);
+        (uint totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(msg.sender);
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
 
-
         // Amount in delegate manager staked to service provider
-        uint totalBalanceInDelegateManager = spDelegateInfo[msg.sender].totalDelegatedStake;
         uint totalBalanceOutsideStaking = (
-            totalBalanceInSPFactory + totalBalanceInDelegateManager
+            totalBalanceInSPFactory + spDelegateInfo[msg.sender].totalDelegatedStake
         );
 
         // Require claim availability
@@ -348,13 +346,15 @@ contract DelegateManager is InitializableV2, RegistryContract {
         // Emit claim event
         emit Claim(msg.sender, totalRewards, totalBalanceInStaking);
 
-        uint deployerCut = spFactory.getServiceProviderDeployerCut(msg.sender);
+        ( ,uint deployerCut, , , , ) = spFactory.getServiceProviderDetails(msg.sender);
         uint deployerCutBase = spFactory.getServiceProviderDeployerCutBase();
         uint spDeployerCutRewards = 0;
         uint totalDelegatedStakeIncrease = 0;
 
         // Total valid funds used to calculate rewards distribution
-        uint totalActiveFunds = totalBalanceOutsideStaking - totalLockedForClaimer;
+        uint totalActiveFunds = (
+            totalBalanceOutsideStaking - spDelegateInfo[msg.sender].totalLockedUpStake
+        );
 
         // Traverse all delegates and calculate their rewards
         // As each delegate reward is calculated, increment SP cut reward accordingly
@@ -389,8 +389,11 @@ contract DelegateManager is InitializableV2, RegistryContract {
         uint spRewardShare = (
           totalBalanceInSPFactory.mul(totalRewards)
         ).div(totalActiveFunds);
-        uint newSpBalance = totalBalanceInSPFactory + spRewardShare + spDeployerCutRewards;
-        spFactory.updateServiceProviderStake(msg.sender, newSpBalance);
+        /// newSpBalance = totalBalanceInSPFactory + spRewardShare + spDeployerCutRewards;
+        spFactory.updateServiceProviderStake(
+            msg.sender,
+            totalBalanceInSPFactory + spRewardShare + spDeployerCutRewards
+        );
     }
 
     function slash(uint _amount, address _slashAddress)
@@ -416,7 +419,7 @@ contract DelegateManager is InitializableV2, RegistryContract {
             "Cannot slash more than total currently staked");
 
         // Amount in sp factory for slash target
-        uint totalBalanceInSPFactory = spFactory.getServiceProviderStake(_slashAddress);
+        (uint totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(_slashAddress);
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
 
         // Decrease value in Staking contract

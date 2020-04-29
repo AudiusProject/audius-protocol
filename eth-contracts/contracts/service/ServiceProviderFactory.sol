@@ -104,11 +104,11 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
     );
 
     function initialize (
-      address _registryAddress,
-      bytes32 _stakingProxyOwnerKey,
-      bytes32 _delegateManagerKey,
-      bytes32 _governanceKey,
-      bytes32 _serviceTypeManagerKey
+        address _registryAddress,
+        bytes32 _stakingProxyOwnerKey,
+        bytes32 _delegateManagerKey,
+        bytes32 _governanceKey,
+        bytes32 _serviceTypeManagerKey
     ) public initializer
     {
         require(
@@ -220,7 +220,7 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         uint unstakeAmount = 0;
         bool unstaked = false;
         // owned by the user
-        if (this.getNumberOfEndpointsFromAddress(msg.sender) == 1) {
+        if (spDetails[msg.sender].numberOfEndpoints == 1) {
             ERCStaking stakingContract = ERCStaking(
                 registry.getContract(stakingProxyOwnerKey)
             );
@@ -292,11 +292,17 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         return deregisteredID;
     }
 
-    function increaseStake(uint256 _increaseStakeAmount) external isInitialized returns (uint newTotalStake) {
+    function increaseStake(
+        uint256 _increaseStakeAmount
+    ) external isInitialized returns (uint newTotalStake)
+    {
         address owner = msg.sender;
 
         // Confirm owner has an endpoint
-        require(this.getNumberOfEndpointsFromAddress(owner) > 0, "Registered endpoint required to decrease stake");
+        require(
+            spDetails[owner].numberOfEndpoints > 0,
+            "Registered endpoint required to decrease stake"
+        );
 
         ERCStaking stakingContract = ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
@@ -324,11 +330,17 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         return newStakeAmount;
     }
 
-    function decreaseStake(uint256 _decreaseStakeAmount) external isInitialized returns (uint newTotalStake) {
+    function decreaseStake(
+        uint256 _decreaseStakeAmount
+    ) external isInitialized returns (uint newTotalStake)
+    {
         address owner = msg.sender;
 
         // Confirm owner has an endpoint
-        require(this.getNumberOfEndpointsFromAddress(owner) > 0, "Registered endpoint required to decrease stake");
+        require(
+            spDetails[owner].numberOfEndpoints > 0,
+            "Registered endpoint required to decrease stake"
+        );
 
         ERCStaking stakingContract = ERCStaking(
             registry.getContract(stakingProxyOwnerKey)
@@ -414,9 +426,7 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         return spId;
     }
 
-    /**
-     * @notice Update service provider balance
-     */
+    /// @notice Update service provider balance
     function updateServiceProviderStake(
         address _serviceProvider,
         uint _amount
@@ -431,10 +441,8 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         updateServiceProviderBoundStatus(_serviceProvider);
     }
 
-    /**
-     * @notice Update service provider cut
-     * SPs will interact with this value as a percent, value translation done client side
-     */
+    /// @notice Update service provider cut
+    /// SPs will interact with this value as a percent, value translation done client side
     function updateServiceProviderCut(
         address _serviceProvider,
         uint _cut
@@ -450,27 +458,7 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         spDetails[_serviceProvider].deployerCut = _cut;
     }
 
-    /**
-     * @notice Represents amount directly staked by service provider
-     */
-    function getServiceProviderStake(address _address)
-    external view returns (uint stake)
-    {
-        return spDetails[_address].deployerStake;
-    }
-
-    /**
-     * @notice Represents % taken by sp deployer of rewards
-     */
-    function getServiceProviderDeployerCut(address _address)
-    external view returns (uint cut)
-    {
-        return spDetails[_address].deployerCut;
-    }
-
-    /**
-     * @notice Denominator for deployer cut calculations
-     */
+    /// @notice Denominator for deployer cut calculations
     function getServiceProviderDeployerCutBase()
     external pure returns (uint base)
     {
@@ -481,13 +469,6 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
     external view returns (uint numberOfProviders)
     {
         return serviceProviderTypeIDs[_serviceType];
-    }
-
-    function getServiceProviderInfo(bytes32 _serviceType, uint _serviceId)
-    external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet)
-    {
-        ServiceEndpoint memory sp = serviceProviderInfo[_serviceType][_serviceId];
-        return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet);
     }
 
     function getServiceProviderIdFromEndpoint(string calldata _endpoint)
@@ -508,24 +489,30 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         return serviceProviderAddressToId[_ownerAddress][_serviceType];
     }
 
-    function getNumberOfEndpointsFromAddress(address _ownerAddress)
-    external view returns (uint numberOfEndpoints)
+    function getServiceEndpointInfo(bytes32 _serviceType, uint _serviceId)
+    external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet)
     {
-        return spDetails[_ownerAddress].numberOfEndpoints;
+        ServiceEndpoint memory sp = serviceProviderInfo[_serviceType][_serviceId];
+        return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet);
     }
 
-    /// @notice Return the stake for an account based on total number of registered services
-    function getAccountStakeBounds(address sp)
-    external view returns (uint min, uint max)
+    function getServiceProviderDetails(address _sp)
+    external view returns (
+        uint deployerStake,
+        uint deployerCut,
+        bool validBounds,
+        uint numberOfEndpoints,
+        uint minAccountStake,
+        uint maxAccountStake)
     {
-        return (spDetails[sp].minAccountStake, spDetails[sp].maxAccountStake);
-    }
-
-    // @notice Returns status of service provider total stake and relation to bounds
-    function isServiceProviderWithinBounds(address sp)
-    external view returns (bool isValid)
-    {
-        return spDetails[sp].validBounds;
+        return (
+            spDetails[_sp].deployerStake,
+            spDetails[_sp].deployerCut,
+            spDetails[_sp].validBounds,
+            spDetails[_sp].numberOfEndpoints,
+            spDetails[_sp].minAccountStake,
+            spDetails[_sp].maxAccountStake
+        );
     }
 
     /// @notice Validate that the total service provider balance is between the min and max stakes for all their registered services
@@ -562,7 +549,8 @@ contract ServiceProviderFactory is RegistryContract, InitializableV2 {
         );
         // Validate bounds for total stake
         uint totalSPStake = stakingContract.totalStakedFor(_serviceProvider);
-        if (totalSPStake < spDetails[_serviceProvider].minAccountStake || totalSPStake > spDetails[_serviceProvider].maxAccountStake) {
+        if (totalSPStake < spDetails[_serviceProvider].minAccountStake ||
+            totalSPStake > spDetails[_serviceProvider].maxAccountStake) {
             // Indicate this service provider is out of bounds
             spDetails[_serviceProvider].validBounds = false;
         } else {
