@@ -61,5 +61,6 @@ module.exports = {
   },
   mocha: {
     enableTimeouts: false
-  }
+  },
+  plugins: ['solidity-coverage']
 }

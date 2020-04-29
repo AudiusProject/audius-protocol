@@ -15,6 +15,7 @@
     "truffle-migrate-test": "npm run truffle-compile && ./node_modules/.bin/truffle migrate --reset --network test_local",
     "truffle-console": "./node_modules/.bin/truffle console --network development",
     "test": "npm run truffle-test",
+    "test-coverage": "./node_modules/.bin/truffle run coverage",
     "test-only": "./node_modules/.bin/truffle test --network=test_local",
     "truffle-test": "./scripts/truffle-test.sh",
     "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
@@ -37,10 +38,11 @@
     "truffle-hdwallet-provider": "^1.0.13"
   },
   "devDependencies": {
-    "standard": "^12.0.1",
     "async": "^2.6.1",
     "babel-register": "^6.26.0",
-    "bignumber.js": "8.0.1"
+    "bignumber.js": "8.0.1",
+    "solidity-coverage": "^0.7.4",
+    "standard": "^12.0.1"
   },
   "//": {
     "dependenciesComments": {
