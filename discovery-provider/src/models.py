@@ -132,7 +132,7 @@ class Track(Base):
     tags = Column(String)
     genre = Column(String)
     mood = Column(String)
-    credits_splits = Column(String)
+    credits_splits = Column(postgresql.JSONB, nullable=True)
     create_date = Column(String)
     release_date = Column(String)
     file_type = Column(String)
