@@ -112,12 +112,18 @@ contract('Staking test', async (accounts) => {
       ))
   })
 
-  it('fails unstaking more than staked', async () => {
+  it('fails unstaking more than staked, fails 0', async () => {
     await approveAndStake(DEFAULT_AMOUNT, treasuryAddress)
     await _lib.assertRevert(
       mockStakingCaller.unstakeFor(
         treasuryAddress,
         DEFAULT_AMOUNT + 1,
+        web3.utils.utf8ToHex(EMPTY_STRING)
+      ))
+    await _lib.assertRevert(
+      mockStakingCaller.unstakeFor(
+        treasuryAddress,
+        0,
         web3.utils.utf8ToHex(EMPTY_STRING)
       ))
   })
