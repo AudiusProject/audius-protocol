@@ -338,7 +338,7 @@ contract ServiceProviderFactory is RegistryContract {
 
     function decreaseStake(
         uint256 _decreaseStakeAmount
-    ) external isInitialized returns (uint newTotalStake)
+    ) external returns (uint newTotalStake)
     {
         requireIsInitialized();
         

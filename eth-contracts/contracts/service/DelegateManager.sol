@@ -310,7 +310,7 @@ contract DelegateManager is RegistryContract {
       Can be stress tested and split out if needed
     */
     // Distribute proceeds of reward
-    function claimRewards() external isInitialized {
+    function claimRewards() external {
         requireIsInitialized();
 
         ServiceProviderFactory spFactory = ServiceProviderFactory(
