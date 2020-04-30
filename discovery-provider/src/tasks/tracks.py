@@ -121,7 +121,7 @@ def update_credit_splits(session, track_record, track_metadata):
     child_track_id = track_record.track_id
 
     # Delete existing credits
-    session.query(Credit).filter_by(child_track_id = child_track_id).delete()
+    session.query(Credit).filter_by(child_track_id=child_track_id).delete()
     logger.info(track_metadata["credits_splits"])
 
     # Add all credits
