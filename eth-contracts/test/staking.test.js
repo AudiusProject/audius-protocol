@@ -60,7 +60,9 @@ contract('Staking test', async (accounts) => {
 
   beforeEach(async () => {
     token = await AudiusToken.new({ from: treasuryAddress })
+    await token.initialize()
     registry = await Registry.new()
+    await registry.initialize()
 
     // Create initialization data
     staking0 = await Staking.new({ from: proxyAdminAddress })
@@ -85,7 +87,8 @@ contract('Staking test', async (accounts) => {
     )
 
     // Register mock contract as claimsManager, spFactory, delegateManager
-    mockStakingCaller = await MockStakingCaller.new(proxy.address, token.address)
+    mockStakingCaller = await MockStakingCaller.new()
+    await mockStakingCaller.initialize(proxy.address, token.address)
     await registry.addContract(claimsManagerProxyKey, mockStakingCaller.address)
     await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
     await registry.addContract(delegateManagerKey, mockStakingCaller.address)
@@ -109,7 +112,9 @@ contract('Staking test', async (accounts) => {
         staker,
         0,
         web3.utils.utf8ToHex(EMPTY_STRING)
-      ))
+      ),
+      "STAKING_AMOUNT_ZERO"
+    )
   })
 
   it('fails unstaking more than staked', async () => {
@@ -119,7 +124,9 @@ contract('Staking test', async (accounts) => {
         treasuryAddress,
         DEFAULT_AMOUNT + 1,
         web3.utils.utf8ToHex(EMPTY_STRING)
-      ))
+      ),
+      "Cannot decrease greater than current balance"
+    )
   })
 
   it('fails staking with insufficient balance', async () => {

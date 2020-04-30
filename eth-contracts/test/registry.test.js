@@ -10,7 +10,8 @@ contract('Registry', async (accounts) => {
   let registry
 
   beforeEach(async () => {
-    registry = await Registry.new()
+    registry = await Registry.new({ from: accounts[0] })
+    await registry.initialize({ from: accounts[0] })
   })
 
   it('Confirm unregistered contract request returns 0 address', async () => {
@@ -18,12 +19,13 @@ contract('Registry', async (accounts) => {
     assert.equal(parseInt(contractAddress), 0x0, "Expected same contract address")
   })
 
-  it('Should fail to register a non-contract address', async () => {
+  it.skip('Should fail to register a non-contract address', async () => {
     /** TODO */
   })
 
   it('Should add newly deployed contract to Registry', async () => {
-    let testContract = await TestContract.new(registry.address)
+    let testContract = await TestContract.new()
+    await testContract.initialize(registry.address)
     let testContractAddress = testContract.address
 
     let tx = await registry.addContract(contractName, testContractAddress)
@@ -59,7 +61,8 @@ contract('Registry', async (accounts) => {
   })
 
   it('Should remove registered contract', async () => {
-    let testContract = await TestContract.new(registry.address)
+    let testContract = await TestContract.new()
+    await testContract.initialize(registry.address)
     let testContractAddress = testContract.address
 
     // register contract and confirm successful registration
@@ -91,9 +94,12 @@ contract('Registry', async (accounts) => {
 
   it('Should upgrade registered contract', async () => {
     // declare three contracts. These are not added to the registry yet
-    let testContract1 = await TestContract.new(registry.address)
-    let testContract2 = await TestContract.new(registry.address)
-    let testContract3 = await TestContract.new(registry.address)
+    let testContract1 = await TestContract.new()
+    await testContract1.initialize(registry.address)
+    let testContract2 = await TestContract.new()
+    await testContract2.initialize(registry.address)
+    let testContract3 = await TestContract.new()
+    await testContract3.initialize(registry.address)
 
     let upgradeTx, upgradeTxInfo
     let regContractAddress
@@ -145,11 +151,13 @@ contract('Registry', async (accounts) => {
 
   it('Should upgrade registry and re-point all registry contracts', async () => {
     // register contract
-    let testContract = await TestContract.new(registry.address)
+    let testContract = await TestContract.new()
+    await testContract.initialize(registry.address)
     let tx = await registry.addContract(contractName, testContract.address)
 
     // deploy new registry
     let registry2 = await Registry.new()
+    await registry2.initialize()
 
     // re-point testContract to new Registry
     await testContract.setRegistry(registry2.address)
@@ -158,29 +166,18 @@ contract('Registry', async (accounts) => {
 
   it('Should fail when a foreign account tries to re-point registry contracts to new registry', async () => {
     // register contract
-    let testContract = await TestContract.new(registry.address)
+    let testContract = await TestContract.new()
+    await testContract.initialize(registry.address)
     let tx = await registry.addContract(contractName, testContract.address)
 
     // deploy new registry
     let registry2 = await Registry.new()
+    await registry2.initialize()
 
     // attempt to re-point testContract to new registry from different account
-    let caughtError = false
-    try {
-      await testContract.setRegistry(registry2.address, {from: accounts[5]})
-      await registry2.addContract(contractName, testContract.address)
-    } catch (e) {
-      // handle expected error
-      if (e.message.indexOf('Can only be called if registryAddress is empty, msg.sender or owner') >= 0) {
-        caughtError = true
-      } else {
-        // other unexpected error - throw it normally
-        throw e
-      }
-    }
-    assert.isTrue(
-      caughtError,
-      "Failed to handle case where foreign account tries to re-point registry contracts to new registry"
-    )
+    await _lib.assertRevert(
+      testContract.setRegistry(registry2.address, {from: accounts[5]}),
+      'Can only be called if registryAddress is empty, msg.sender or owner'
+    ) 
   })
 })

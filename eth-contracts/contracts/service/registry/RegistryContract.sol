@@ -1,6 +1,8 @@
 pragma solidity ^0.5.0;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
+
+import "../../InitializableV2.sol";
 import "../interface/registry/RegistryInterface.sol";
 
 
@@ -9,7 +11,7 @@ import "../interface/registry/RegistryInterface.sol";
  * @notice RegistryContract is Ownable so the deployer can re-register it against new registries
  * @dev The Registry uses this to talk to all contracts that inherit from this contract.
  */
-contract RegistryContract is Ownable {
+contract RegistryContract is InitializableV2, Ownable {
 
     struct Multihash {
         bytes32 digest;
@@ -19,21 +21,13 @@ contract RegistryContract is Ownable {
 
     address payable internal registryAddress;
 
-    /// @notice all contracts that inherit from RegistryContract are automatically Ownable()
-    /// @dev internal constructor makes RegistryContract abstract
-    constructor() Ownable() internal { }
-
-    /// @notice only allow storage contracts to be called by the respective factory.
-    ///     i.e. TrackStorage methods can only be invoked by TrackFactory.
-    modifier onlyRegistrant(bytes32 _name) {
-        require(
-            msg.sender == RegistryInterface(registryAddress).getContract(_name),
-            "Requires msg.sender is from contract address registered to _name"
-        );
-        _;
+    function initialize() public initializer {
+        InitializableV2.initialize();
+        Ownable.initialize(msg.sender);
     }
 
     function setRegistry(address payable _registryAddress) external {
+        requireIsInitialized();
         require(
             registryAddress == address(0x00) ||
             registryAddress == msg.sender ||
@@ -44,7 +38,19 @@ contract RegistryContract is Ownable {
     }
 
     function kill() external {
+        requireIsInitialized();
         assert (msg.sender == registryAddress);
         selfdestruct(registryAddress);
+    }
+
+    /**
+     * @notice only allow storage contracts to be called by the respective factory.
+     *      i.e. TrackStorage methods can only be invoked by TrackFactory.
+     */
+    function onlyRegistrant(bytes32 _name) internal view {
+        require(
+            msg.sender == RegistryInterface(registryAddress).getContract(_name),
+            "Requires msg.sender is from contract address registered to _name"
+        );
     }
 }

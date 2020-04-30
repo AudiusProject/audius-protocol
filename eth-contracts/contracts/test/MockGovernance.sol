@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "../service/registry/RegistryContract.sol";
 import "../service/interface/registry/RegistryInterface.sol";
 import "../service/DelegateManager.sol";
@@ -11,12 +11,14 @@ contract MockGovernance is RegistryContract {
     RegistryInterface registry = RegistryInterface(0);
     bytes32 delegateManagerKey;
 
-    constructor(
+    function initialize(
       address _registryAddress,
       bytes32 _delegateManagerKey
-    ) public {
+    ) public initializer {
         registry = RegistryInterface(_registryAddress);
         delegateManagerKey = _delegateManagerKey;
+
+        RegistryContract.initialize();
     }
 
     // Test only function
@@ -25,6 +27,8 @@ contract MockGovernance is RegistryContract {
         address _slashAddress
     ) external
     {
+        requireIsInitialized();
+
         DelegateManager delegateManager = DelegateManager(
             registry.getContract(delegateManagerKey)
         );
@@ -34,6 +38,8 @@ contract MockGovernance is RegistryContract {
     // Test only function
     function testUpdateUndelegateLockupDuration(uint _duration) external
     {
+        requireIsInitialized();
+
         DelegateManager delegateManager = DelegateManager(
             registry.getContract(delegateManagerKey)
         );

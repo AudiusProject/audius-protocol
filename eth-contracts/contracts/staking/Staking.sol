@@ -3,18 +3,17 @@ pragma solidity ^0.5.0;
 import "./ERCStaking.sol";
 import "./Checkpointing.sol";
 import "../service/interface/registry/RegistryInterface.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol";
 import "../res/IsContract.sol";
-import "../InitializableV2.sol";
 import "../res/TimeHelpers.sol";
 import "../service/registry/RegistryContract.sol";
 
 
 /** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
-contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHistory, IsContract, TimeHelpers {
+contract Staking is RegistryContract, ERCStaking, ERCStakingHistory, IsContract, TimeHelpers {
     using SafeMath for uint256;
     using Checkpointing for Checkpointing.History;
     using SafeERC20 for ERC20;
@@ -79,7 +78,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
         delegateManagerKey = _delegateManagerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
 
-        InitializableV2.initialize();
+        RegistryContract.initialize();
     }
 
     /* External functions */
@@ -87,7 +86,8 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
     /**
      * @notice Funds `_amount` of tokens from ClaimsManager to target account
      */
-    function stakeRewards(uint256 _amount, address _stakerAccount) external isInitialized {
+    function stakeRewards(uint256 _amount, address _stakerAccount) external {
+        requireIsInitialized();
         require(msg.sender == registry.getContract(claimsManagerProxyKey), "Only callable from ClaimsManager");
         _stakeFor(
             _stakerAccount,
@@ -108,8 +108,9 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
     function slash(
         uint256 _amount,
         address _slashAddress
-    ) external isInitialized
+    ) external
     {
+        requireIsInitialized();
         require(
             msg.sender == registry.getContract(delegateManagerKey),
             "slash only callable from DelegateManager"
@@ -138,8 +139,9 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
         address _accountAddress,
         uint256 _amount,
         bytes calldata _data
-    ) external isInitialized
+    ) external
     {
+        requireIsInitialized();
         require(
             msg.sender == registry.getContract(serviceProviderFactoryKey),
             "Only callable from ServiceProviderFactory"
@@ -161,8 +163,9 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
         address _accountAddress,
         uint256 _amount,
         bytes calldata _data
-    ) external isInitialized
+    ) external
     {
+        requireIsInitialized();
         require(
             msg.sender == registry.getContract(serviceProviderFactoryKey),
             "Only callable from ServiceProviderFactory"
@@ -187,7 +190,8 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
       address _delegatorAddress,
       uint256 _amount,
       bytes calldata _data
-    ) external isInitialized {
+    ) external {
+        requireIsInitialized();
         require(
             msg.sender == registry.getContract(delegateManagerKey),
             "delegateStakeFor - Only callable from DelegateManager"
@@ -211,7 +215,8 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
       address _delegatorAddress,
       uint256 _amount,
       bytes calldata _data
-    ) external isInitialized {
+    ) external {
+        requireIsInitialized();
         require(
             msg.sender == registry.getContract(delegateManagerKey),
             "undelegateStakeFor - Only callable from DelegateManager"
@@ -227,7 +232,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
      * @notice Get the token used by the contract for staking and locking
      * @return The token used by the contract for staking and locking
      */
-    function token() external view isInitialized returns (address) {
+    function token() external view returns (address) {
         return address(stakingToken);
     }
 
@@ -244,7 +249,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
      * @param _accountAddress Account requesting for
      * @return Last block number when account's balance was modified
      */
-    function lastStakedFor(address _accountAddress) external view isInitialized returns (uint256) {
+    function lastStakedFor(address _accountAddress) external view returns (uint256) {
         return accounts[_accountAddress].stakedHistory.lastUpdated();
     }
 
@@ -253,7 +258,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
      * @param _accountAddress Account requesting for
      * @return Last block number when claim requested
      */
-    function lastClaimedFor(address _accountAddress) external view isInitialized returns (uint256) {
+    function lastClaimedFor(address _accountAddress) external view returns (uint256) {
         return accounts[_accountAddress].claimHistory.lastUpdated();
     }
 
@@ -263,7 +268,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
      * @param _blockNumber Block number at which we are requesting
      * @return The amount of tokens staked by the account at the given block number
      */
-    function totalStakedForAt(address _accountAddress, uint256 _blockNumber) external view isInitialized returns (uint256) {
+    function totalStakedForAt(address _accountAddress, uint256 _blockNumber) external view returns (uint256) {
         return accounts[_accountAddress].stakedHistory.get(_blockNumber);
     }
 
@@ -272,7 +277,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
      * @param _blockNumber Block number at which we are requesting
      * @return The amount of tokens staked at the given block number
      */
-    function totalStakedAt(uint256 _blockNumber) external view isInitialized returns (uint256) {
+    function totalStakedAt(uint256 _blockNumber) external view returns (uint256) {
         return totalStakedHistory.get(_blockNumber);
     }
 
@@ -283,7 +288,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
      * @param _accountAddress The owner of the tokens
      * @return The amount of tokens staked by the given account
      */
-    function totalStakedFor(address _accountAddress) public view isInitialized returns (uint256) {
+    function totalStakedFor(address _accountAddress) public view returns (uint256) {
         // we assume it's not possible to stake in the future
         return accounts[_accountAddress].stakedHistory.getLatestValue();
     }
@@ -292,7 +297,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
      * @notice Get the total amount of tokens staked by all users
      * @return The total amount of tokens staked by all users
      */
-    function totalStaked() public view isInitialized returns (uint256) {
+    function totalStaked() public view returns (uint256) {
         // we assume it's not possible to stake in the future
         return totalStakedHistory.getLatestValue();
     }
@@ -304,7 +309,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
         address _transferAccount,
         uint256 _amount,
         bytes memory _data
-    ) internal isInitialized
+    ) internal
     {
         // staking 0 tokens is invalid
         require(_amount > 0, ERROR_AMOUNT_ZERO);
@@ -330,7 +335,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
         address _transferAccount,
         uint256 _amount,
         bytes memory _data
-    ) internal isInitialized
+    ) internal
     {
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
@@ -351,7 +356,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
         );
     }
 
-    function _burnFor(address _stakeAccount, uint256 _amount) internal isInitialized {
+    function _burnFor(address _stakeAccount, uint256 _amount) internal {
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
         // checkpoint updated staking balance
@@ -366,7 +371,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
         /** No event emitted since token.burn() call already emits a Transfer event */
     }
 
-    function _modifyStakeBalance(address _accountAddress, uint256 _by, bool _increase) internal isInitialized {
+    function _modifyStakeBalance(address _accountAddress, uint256 _by, bool _increase) internal {
         uint256 currentInternalStake = accounts[_accountAddress].stakedHistory.getLatestValue();
 
         uint256 newStake;
@@ -383,7 +388,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
         accounts[_accountAddress].stakedHistory.add64(getBlockNumber64(), newStake);
     }
 
-    function _modifyTotalStaked(uint256 _by, bool _increase) internal isInitialized {
+    function _modifyTotalStaked(uint256 _by, bool _increase) internal {
         uint256 currentStake = totalStaked();
 
         uint256 newStake;
@@ -397,7 +402,7 @@ contract Staking is InitializableV2, RegistryContract, ERCStaking, ERCStakingHis
         totalStakedHistory.add64(getBlockNumber64(), newStake);
     }
 
-    function _transfer(address _from, address _to, uint256 _amount) internal isInitialized {
+    function _transfer(address _from, address _to, uint256 _amount) internal {
         // transferring 0 staked tokens is invalid
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 

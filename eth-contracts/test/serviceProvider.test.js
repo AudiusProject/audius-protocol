@@ -47,8 +47,11 @@ contract('ServiceProvider test', async (accounts) => {
   let controllerAddress
 
   beforeEach(async () => {
-    registry = await Registry.new()
     token = await AudiusToken.new({ from: treasuryAddress })
+    await token.initialize()
+    registry = await Registry.new()
+    await registry.initialize()
+
     // Set up staking
     staking0 = await Staking.new({ from: proxyAdminAddress })
     stakingInitializeData = encodeCall(

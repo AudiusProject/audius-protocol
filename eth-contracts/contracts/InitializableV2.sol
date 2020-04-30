@@ -20,9 +20,8 @@ contract InitializableV2 is Initializable {
         initialized = true;
     }
 
-    modifier isInitialized() {
-        require(initialized == true, ERROR_NOT_INITIALIZED);
-        _;
+    function requireIsInitialized() internal view {
+      require(initialized == true, ERROR_NOT_INITIALIZED);
     }
 
     function getInitialized() internal view returns (bool) {
