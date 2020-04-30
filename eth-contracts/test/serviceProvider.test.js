@@ -217,6 +217,8 @@ contract('ServiceProvider test', async (accounts) => {
         DEFAULT_AMOUNT,
         stakerAccount
       )
+      let numProviders = await serviceProviderFactory.getTotalServiceTypeProviders(testDiscProvType)
+      assert.isTrue(numProviders.eq(web3.utils.toBN(1)), 'Expect 1 for test disc prov type')
 
       let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       assert.isTrue(spDetails.numberOfEndpoints.eq(web3.utils.toBN(1)), 'Expect 1 endpoint registered')
