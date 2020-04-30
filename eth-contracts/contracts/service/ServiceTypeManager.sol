@@ -2,11 +2,10 @@ pragma solidity ^0.5.0;
 
 import "./registry/RegistryContract.sol";
 import "./interface/registry/RegistryInterface.sol";
-import "../InitializableV2.sol";
 
 
 /** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
-contract ServiceTypeManager is InitializableV2, RegistryContract {
+contract ServiceTypeManager is RegistryContract {
     RegistryInterface registry;
     address private controllerAddress;
     bytes32 private governanceKey;
@@ -47,14 +46,16 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
         registry = RegistryInterface(_registryAddress);
         controllerAddress = _controllerAddress;
         governanceKey = _governanceKey;
-        InitializableV2.initialize();
+
+        RegistryContract.initialize();
     }
 
     function setServiceVersion(
         bytes32 _serviceType,
         bytes32 _serviceVersion
-    ) external isInitialized
+    ) external
     {
+        requireIsInitialized();
         require(controllerAddress == msg.sender, "Invalid signature for controller");
 
         uint numExistingVersions = this.getNumberOfVersions(_serviceType);
@@ -74,8 +75,9 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
         bytes32 _serviceType,
         uint _serviceTypeMin,
         uint _serviceTypeMax
-    ) external isInitialized
+    ) external
     {
+        requireIsInitialized();
         require(
             (msg.sender == controllerAddress || msg.sender == registry.getContract(governanceKey)),
             "Only controller or governance");
@@ -89,6 +91,7 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
 
     /// @notice Remove an existing service type
     function removeServiceType(bytes32 _serviceType) external {
+        requireIsInitialized();
         require(
             msg.sender == controllerAddress || msg.sender == registry.getContract(governanceKey),
             "Only controller or governance");
@@ -118,6 +121,7 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
         uint _serviceTypeMax
     ) external
     {
+        requireIsInitialized();
         require(
             msg.sender == controllerAddress || msg.sender == registry.getContract(governanceKey),
             "Only controller or governance");
@@ -127,7 +131,7 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
     }
 
     function getVersion(bytes32 _serviceType, uint _versionIndex)
-    external view isInitialized returns (bytes32 version)
+    external view returns (bytes32 version)
     {
         require(
             serviceTypeVersions[_serviceType].length > _versionIndex,
@@ -137,7 +141,7 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
     }
 
     function getCurrentVersion(bytes32 _serviceType)
-    external view isInitialized returns (bytes32 currentVersion)
+    external view returns (bytes32 currentVersion)
     {
         require(
             serviceTypeVersions[_serviceType].length >= 1,
@@ -148,7 +152,7 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
     }
 
     function getNumberOfVersions(bytes32 _serviceType)
-    external view isInitialized returns (uint)
+    external view returns (uint)
     {
         return serviceTypeVersions[_serviceType].length;
     }
@@ -156,7 +160,7 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
     /// @notice Get min and max stake for a given service type
     /// @return min/max stake for type
     function getServiceTypeStakeInfo(bytes32 _serviceType)
-    external view isInitialized returns (uint min, uint max)
+    external view returns (uint min, uint max)
     {
         return (
             serviceTypeStakeRequirements[_serviceType].minStake,
@@ -166,7 +170,7 @@ contract ServiceTypeManager is InitializableV2, RegistryContract {
 
     /// @notice Get list of valid service types
     function getValidServiceTypes()
-    external view isInitialized returns (bytes32[] memory types)
+    external view returns (bytes32[] memory types)
     {
         return validServiceTypes;
     }

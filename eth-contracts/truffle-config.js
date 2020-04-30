@@ -51,11 +51,23 @@ module.exports = {
       network_id: '*'
     }
   },
+  // https://solidity.readthedocs.io/en/develop/using-the-compiler.html#input-description
   compilers: {
     solc: {
       parser: 'solcjs', // Leverages solc-js purely for speedy parsing
       settings: {
-        evmVersion: 'byzantium'
+        evmVersion: 'constantinople',
+        optimizer: {
+          enabled: true,
+          runs: 200, // 200 is default value
+          details: {
+            orderLiterals: true,
+            deduplicate: true,
+            cse: true,
+            constantOptimizer: true,
+            yul: false // TODO try after solc upgrade
+          }
+        }
       }
     }
   },

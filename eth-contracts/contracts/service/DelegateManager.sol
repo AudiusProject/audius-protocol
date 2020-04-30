@@ -1,18 +1,19 @@
 pragma solidity ^0.5.0;
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
+
 import "./registry/RegistryContract.sol";
 import "./interface/registry/RegistryInterface.sol";
-
 import "../staking/Staking.sol";
 import "./ServiceProviderFactory.sol";
 import "./ClaimsManager.sol";
-import "../InitializableV2.sol";
 
-
- /// Designed to manage delegation to staking contract
- /// @notice - will call RegistryContract.constructor, which calls Ownable constructor
-contract DelegateManager is InitializableV2, RegistryContract {
+/**
+ * Designed to manage delegation to staking contract
+ * @notice - will call RegistryContract.initialize(), which calls Ownable.initialize()
+ */
+contract DelegateManager is RegistryContract {
     using SafeMath for uint256;
     RegistryInterface registry = RegistryInterface(0);
 
@@ -103,14 +104,16 @@ contract DelegateManager is InitializableV2, RegistryContract {
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
         claimsManagerKey = _claimsManagerKey;
         undelegateLockupDuration = 10;
-        InitializableV2.initialize();
+
+        RegistryContract.initialize();
     }
 
     function delegateStake(
         address _targetSP,
         uint _amount
-    ) external isInitialized returns (uint delegatedAmount)
+    ) external returns (uint delegatedAmount)
     {
+        requireIsInitialized();
         require(
             claimPending(_targetSP) == false,
             "Delegation not permitted for SP pending claim"
@@ -162,8 +165,9 @@ contract DelegateManager is InitializableV2, RegistryContract {
     function requestUndelegateStake(
         address _target,
         uint _amount
-    ) external isInitialized returns (uint newDelegateAmount)
+    ) external returns (uint newDelegateAmount)
     {
+        requireIsInitialized();
         require(
             claimPending(_target) == false,
             "Undelegate request not permitted for SP pending claim"
@@ -198,7 +202,8 @@ contract DelegateManager is InitializableV2, RegistryContract {
     }
 
     // Cancel undelegation request
-    function cancelUndelegateStake() external isInitialized {
+    function cancelUndelegateStake() external {
+        requireIsInitialized();
         address delegator = msg.sender;
         // Confirm pending delegation request
         require(
@@ -216,7 +221,8 @@ contract DelegateManager is InitializableV2, RegistryContract {
     }
 
     // Finalize undelegation request and withdraw stake
-    function undelegateStake() external isInitialized returns (uint newTotal) {
+    function undelegateStake() external returns (uint newTotal) {
+        requireIsInitialized();
         address delegator = msg.sender;
 
         // Confirm pending delegation request
@@ -304,7 +310,9 @@ contract DelegateManager is InitializableV2, RegistryContract {
       Can be stress tested and split out if needed
     */
     // Distribute proceeds of reward
-    function claimRewards() external isInitialized {
+    function claimRewards() external {
+        requireIsInitialized();
+
         ServiceProviderFactory spFactory = ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)
         );
@@ -397,8 +405,9 @@ contract DelegateManager is InitializableV2, RegistryContract {
     }
 
     function slash(uint _amount, address _slashAddress)
-    external isInitialized
+    external
     {
+        requireIsInitialized();
         require(
             msg.sender == registry.getContract(governanceKey),
             "Slash only callable from governance contract"
@@ -472,7 +481,8 @@ contract DelegateManager is InitializableV2, RegistryContract {
     /**
      * @notice Update duration for undelegate request lockup
      */
-    function updateUndelegateLockupDuration(uint _duration) external isInitialized {
+    function updateUndelegateLockupDuration(uint _duration) external {
+        requireIsInitialized();
         require(
             msg.sender == registry.getContract(governanceKey),
             "Only callable from governance"

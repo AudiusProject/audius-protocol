@@ -2,6 +2,7 @@ const Registry = artifacts.require('Registry')
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
-    await deployer.deploy(Registry, { from: accounts[0] })
+    const registry = await deployer.deploy(Registry)
+    await registry.initialize()
   })
 }

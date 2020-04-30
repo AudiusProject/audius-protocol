@@ -3,7 +3,6 @@ pragma solidity ^0.5.0;
 import "./service/registry/RegistryContract.sol";
 import "./staking/Staking.sol";
 import "./service/interface/registry/RegistryInterface.sol";
-import "./service/registry/RegistryContract.sol";
 
 
 contract Governance is RegistryContract {
@@ -68,12 +67,12 @@ contract Governance is RegistryContract {
         bytes returnData
     );
 
-    constructor(
+    function initialize(
         address _registryAddress,
         bytes32 _stakingProxyOwnerKey,
         uint256 _votingPeriod,
         uint256 _votingQuorum
-    ) public {
+    ) public initializer {
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
         registry = RegistryInterface(_registryAddress);
 
@@ -84,6 +83,8 @@ contract Governance is RegistryContract {
 
         require(_votingQuorum > 0, "Requires non-zero _votingQuorum");
         votingQuorum = _votingQuorum;
+
+        RegistryContract.initialize();
     }
 
     // ========================================= Governance Actions =========================================
@@ -96,6 +97,8 @@ contract Governance is RegistryContract {
         string calldata _description
     ) external returns (uint256 proposalId)
     {
+        requireIsInitialized();
+        
         address proposer = msg.sender;
 
         // Require proposer is active Staker
@@ -145,6 +148,8 @@ contract Governance is RegistryContract {
     }
 
     function submitProposalVote(uint256 _proposalId, Vote _vote) external {
+        requireIsInitialized();
+        
         address voter = msg.sender;
 
         require(
@@ -209,7 +214,9 @@ contract Governance is RegistryContract {
 
     function evaluateProposalOutcome(uint256 _proposalId)
     external returns (Outcome proposalOutcome)
-        {
+    {
+        requireIsInitialized();
+
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
             "Must provide valid non-zero _proposalId"
