@@ -19,8 +19,12 @@ contract('Registry', async (accounts) => {
     assert.equal(parseInt(contractAddress), 0x0, "Expected same contract address")
   })
 
-  it.skip('Should fail to register a non-contract address', async () => {
-    /** TODO */
+  it('Should fail to register a non-contract address', async () => {
+    let nonContractAddress = accounts[8]
+    assert.isTrue(web3.utils.isAddress(accounts[8]), 'Expect address')
+    // Add non contract address
+    // Confirm failure
+    await _lib.assertRevert(registry.addContract(contractName, nonContractAddress))
   })
 
   it('Should add newly deployed contract to Registry', async () => {

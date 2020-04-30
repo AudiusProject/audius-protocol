@@ -220,6 +220,8 @@ contract('ServiceProvider test', async (accounts) => {
         DEFAULT_AMOUNT,
         stakerAccount
       )
+      let numProviders = await serviceProviderFactory.getTotalServiceTypeProviders(testDiscProvType)
+      assert.isTrue(numProviders.eq(web3.utils.toBN(1)), 'Expect 1 for test disc prov type')
 
       let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       assert.isTrue(spDetails.numberOfEndpoints.eq(web3.utils.toBN(1)), 'Expect 1 endpoint registered')
@@ -675,7 +677,6 @@ contract('ServiceProvider test', async (accounts) => {
     })
 
     it('service type operations test', async () => {
-      let deployer = accounts[0]
       let typeMin = toWei(200)
       let typeMax = toWei(20000)
       let testType = web3.utils.utf8ToHex('test-service')
@@ -693,7 +694,47 @@ contract('ServiceProvider test', async (accounts) => {
         'Only controller or governance'
       )
 
+      // Add new type
       await serviceTypeManager.addServiceType(testType, typeMin, typeMax, { from: controllerAddress })
+
+      // Confirm presence of test type in list
+      let validTypes = (await serviceTypeManager.getValidServiceTypes()).map(x => web3.utils.hexToUtf8(x))
+      let typeFound = false
+      for (let type of validTypes) {
+        if (type === web3.utils.hexToUtf8(testType)) typeFound = true
+      }
+      assert.isTrue(typeFound, 'Expect type to be found in valid list')
+
+      // Set service version
+      let testVersion = web3.utils.utf8ToHex('0.0.1')
+      await serviceTypeManager.setServiceVersion(testType, testVersion, { from: controllerAddress })
+      await _lib.assertRevert(
+        serviceTypeManager.setServiceVersion(testType, testVersion, { from: controllerAddress }),
+        'Already registered')
+      let chainVersion = await serviceTypeManager.getCurrentVersion(testType)
+      assert.equal(
+        web3.utils.hexToUtf8(testVersion),
+        web3.utils.hexToUtf8(chainVersion),
+        'Expect test version to be set')
+
+      let testVersion2 = web3.utils.utf8ToHex('0.0.2')
+
+      // Update version again
+      await serviceTypeManager.setServiceVersion(testType, testVersion2, { from: controllerAddress })
+      // Validate number of versions
+      let numVersions = await serviceTypeManager.getNumberOfVersions(testType)
+      assert.isTrue(numVersions.eq(web3.utils.toBN(2)), 'Expect 2 versions')
+      let lastIndex = numVersions.sub(web3.utils.toBN(1))
+      let lastIndexVersionFromChain = await serviceTypeManager.getVersion(testType, lastIndex)
+      // Additional validation
+      assert.equal(
+        web3.utils.hexToUtf8(lastIndexVersionFromChain),
+        web3.utils.hexToUtf8(testVersion2),
+        'Latest version equals expected')
+      assert.equal(
+        lastIndexVersionFromChain,
+        await serviceTypeManager.getCurrentVersion(testType),
+        'Expect equal current and last index')
 
       isValid = await serviceTypeManager.isValidServiceType(testType)
       assert.isTrue(isValid, 'Expect valid type after registration')
