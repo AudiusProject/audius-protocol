@@ -313,8 +313,9 @@ is_delete={self.is_delete}>"
 class Credit(Base):
     __tablename__ = "credits"
 
-    parent_track_id = Column(Integer, nullable=False, primary_key=True)
+    parent_track_id = Column(Integer, nullable=Falsem, index=True)
     child_track_id = Column(Integer, nullable=False, index=True)
+    PrimaryKeyConstraint(parent_track_id, child_track_id)
 
     def __repr__(self):
         return f"<Credit(parent_track_id={self.parent_track_id},\
