@@ -36,14 +36,25 @@ contract MockGovernance is RegistryContract {
     }
 
     // Test only function
-    function testUpdateUndelegateLockupDuration(uint _duration) external
+    function updateUndelegateLockupDuration(uint _duration) external
     {
         requireIsInitialized();
-
-        DelegateManager delegateManager = DelegateManager(
+        DelegateManager(
             registry.getContract(delegateManagerKey)
-        );
-        delegateManager.updateUndelegateLockupDuration(_duration);
+        ).updateUndelegateLockupDuration(_duration);
+    }
+
+    function updateMinDelegationAmount(uint _minDelegationAmount) external {
+        requireIsInitialized();
+        DelegateManager(
+            registry.getContract(delegateManagerKey)
+        ).updateMinDelegationAmount(_minDelegationAmount);
+    }
+    function updateMaxDelegators(uint _maxDelegators) external {
+        requireIsInitialized();
+        DelegateManager(
+            registry.getContract(delegateManagerKey)
+        ).updateMaxDelegators(_maxDelegators);
     }
 }
 

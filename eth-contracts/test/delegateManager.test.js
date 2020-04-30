@@ -162,6 +162,9 @@ contract('DelegateManager', async (accounts) => {
 
     delegateManager = await DelegateManager.at(delegateManagerProxy.address)
     await registry.addContract(delegateManagerKey, delegateManagerProxy.address)
+
+    // Clear min delegation amount for testing
+    await mockGovernance.updateMinDelegationAmount(0)
   })
 
   /* Helper functions */
@@ -523,6 +526,36 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(totalStaked.eq(tokensAtStakingAddress), 'Expect equivalency between Staking contract and ERC')
       assert.isTrue(totalInStakingAfterSlash.eq(outsideStake), 'Expected SP/delegatemanager to equal staking')
       assert.isTrue((totalInStakingContract.sub(slashAmount)).eq(totalInStakingAfterSlash), 'Expected slash value')
+    })
+
+    it('maximum delegators test', async () => {
+      // Update max delegators to 5
+      let maxDelegators = 4
+      await mockGovernance.updateMaxDelegators(maxDelegators)
+      let delegateAccountOffset = 4
+      let delegatorAccounts = accounts.slice(delegateAccountOffset, delegateAccountOffset + (maxDelegators + 1))
+      let singleDelegateAmount = toWei(10)
+      for (var i = 0; i < delegatorAccounts.length; i++) {
+        let delegator = delegatorAccounts[i]
+        // Transfer 1000 tokens to each delegator
+        await token.transfer(delegator, singleDelegateAmount, { from: treasuryAddress })
+        // Approve staking transfer
+        await token.approve(stakingAddress, singleDelegateAmount, { from: delegator })
+        if (i === (delegatorAccounts.length - 1)) {
+          await _lib.assertRevert(
+            delegateManager.delegateStake(
+              stakerAccount,
+              singleDelegateAmount,
+              { from: delegator }),
+            'Maximum delegators exceeded'
+          )
+        } else {
+          await delegateManager.delegateStake(
+            stakerAccount,
+            singleDelegateAmount,
+            { from: delegator })
+        }
+      }
     })
 
     it('40 delegators to one SP + claim', async () => {
@@ -998,7 +1031,7 @@ contract('DelegateManager', async (accounts) => {
         'Only callable from governance'
       )
 
-      await mockGovernance.testUpdateUndelegateLockupDuration(newDuration)
+      await mockGovernance.updateUndelegateLockupDuration(newDuration)
       currentDuration = await delegateManager.getUndelegateLockupDuration()
       assert.isTrue(currentDuration.eq(newDuration))
     })
