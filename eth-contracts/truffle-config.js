@@ -51,6 +51,7 @@ module.exports = {
       network_id: '*'
     }
   },
+  // https://solidity.readthedocs.io/en/develop/using-the-compiler.html#input-description
   compilers: {
     solc: {
       parser: 'solcjs', // Leverages solc-js purely for speedy parsing
@@ -58,7 +59,7 @@ module.exports = {
         evmVersion: 'constantinople',
         optimizer: {
           enabled: true,
-          // runs: 10 // defaults to 200 --> ideally we should increase as much as possible until we ,
+          runs: 200, // 200 is default value
           details: {
             orderLiterals: true,
             deduplicate: true,

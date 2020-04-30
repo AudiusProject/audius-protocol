@@ -30,6 +30,7 @@ contract Registry is InitializableV2, Ownable {
     event ContractUpgraded(bytes32 _name, address _oldAddress, address _newAddress);
 
     function initialize() public initializer {
+        // Ownable.initialize(address _sender) sets contract owner to address passed as argument.
         Ownable.initialize(msg.sender);
         InitializableV2.initialize();
     }
