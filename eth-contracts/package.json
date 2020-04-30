@@ -13,7 +13,6 @@
     "truffle-compile": "./node_modules/.bin/truffle compile",
     "truffle-migrate": "npm run truffle-compile && ./node_modules/.bin/truffle migrate --reset --network development",
     "truffle-migrate-test": "npm run truffle-compile && ./node_modules/.bin/truffle migrate --reset --network test_local",
-    "truffle-migrate-test-test": "npm run truffle-compile && ./node_modules/.bin/truffle migrate --reset --network test_local --f 1 --to 2",
     "truffle-console": "./node_modules/.bin/truffle console --network development",
     "truffle-console-test": "./node_modules/.bin/truffle console --network test_local",
     "test": "npm run truffle-test",
@@ -35,7 +34,7 @@
     "ethlint": "^1.2.3",
     "fs-extra": "^7.0.0",
     "lodash": "^4.17.15",
-    "truffle": "5.0.42",
+    "truffle": "5.1.23",
     "truffle-hdwallet-provider": "^1.0.13"
   },
   "devDependencies": {
