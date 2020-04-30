@@ -9,6 +9,7 @@ import "../staking/Staking.sol";
 import "./ServiceProviderFactory.sol";
 import "./ClaimsManager.sol";
 
+
 /**
  * Designed to manage delegation to staking contract
  * @notice - will call RegistryContract.initialize(), which calls Ownable.initialize()
