@@ -7,6 +7,7 @@ import "../staking/Staking.sol";
 
 // TEST ONLY MOCK CONTRACT
 // Forwards basic staking functions
+// Forwards ServiceProviderFactory functions as well
 contract MockStakingCaller is RegistryContract {
     uint max;
     using SafeERC20 for ERC20;
@@ -75,10 +76,16 @@ contract MockStakingCaller is RegistryContract {
     }
 
     /// @notice Calculate the stake for an account based on total number of registered services
-    function getAccountStakeBounds(address)
-    external view returns (uint minStake, uint maxStake)
+    function getServiceProviderDetails(address)
+    external view returns (
+        uint deployerStake,
+        uint deployerCut,
+        bool validBounds,
+        uint numberOfEndpoints,
+        uint minAccountStake,
+        uint maxAccountStake)
     {
-        return (0, max);
+        return (0, 0, true, 0, 0, max);
     }
 }
 

@@ -2,6 +2,7 @@ pragma solidity >=0.4.24 <0.7.0;
 
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
+
 /**
  * Wrapper around OpenZeppelin's Initializable contract.
  * Exposes initialized state management to ensure logic contract functions cannot be called before initialization.

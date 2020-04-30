@@ -221,8 +221,8 @@ contract('ServiceProvider test', async (accounts) => {
         stakerAccount
       )
 
-      let numberOfEndpoints = await serviceProviderFactory.getNumberOfEndpointsFromAddress(stakerAccount)
-      assert.isTrue(numberOfEndpoints.eq(web3.utils.toBN(1)), 'Expect 1 endpoint registered')
+      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      assert.isTrue(spDetails.numberOfEndpoints.eq(web3.utils.toBN(1)), 'Expect 1 endpoint registered')
 
       // Confirm event has correct amount
       assert.equal(regTx.stakedAmountInt, DEFAULT_AMOUNT)
@@ -251,9 +251,8 @@ contract('ServiceProvider test', async (accounts) => {
 
       // Validate min stake requirements
       // Both current account bounds and single testDiscProvType bounds expected to be equal 
-      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
-      let accountMin = fromWei(bounds[0])
-      let accountMax = fromWei(bounds[1])
+      let accountMin = fromWei(spDetails.minAccountStake)
+      let accountMax = fromWei(spDetails.maxAccountStake)
       assert.equal(
         typeMin,
         accountMin,
@@ -303,9 +302,9 @@ contract('ServiceProvider test', async (accounts) => {
       await token.transfer(stakerAccount, INITIAL_BAL, { from: treasuryAddress })
 
       let stakedAmount = await staking.totalStakedFor(stakerAccount)
-      let bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
-      let accountMin = fromWei(bounds[0])
-      let accountMax = fromWei(bounds[1])
+      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      let accountMin = fromWei(spDetails.minAccountStake)
+      let accountMax = fromWei(spDetails.maxAccountStake)
 
       let accountDiff = fromWei(stakedAmount) - accountMin
 
@@ -345,10 +344,10 @@ contract('ServiceProvider test', async (accounts) => {
       stakedAmount = await staking.totalStakedFor(stakerAccount)
       assert.equal(stakedAmount, dpMinStake + cnodeMinStake, 'Expect min staked with total endpoints')
 
-      bounds = await serviceProviderFactory.getAccountStakeBounds(stakerAccount)
+      spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       let stakedAmountWei = fromWei(stakedAmount)
-      accountMin = fromWei(bounds[0])
-      accountMax = fromWei(bounds[1])
+      accountMin = fromWei(spDetails.minAccountStake)
+      accountMax = fromWei(spDetails.maxAccountStake)
       assert.equal(stakedAmountWei, accountMin, 'Expect min staked with total endpoints')
 
       accountDiff = accountMax - stakedAmountWei
@@ -483,7 +482,7 @@ contract('ServiceProvider test', async (accounts) => {
         DEFAULT_AMOUNT,
         stakerAccount)
 
-      let readStorageValues = await serviceProviderFactory.getServiceProviderInfo(
+      let readStorageValues = await serviceProviderFactory.getServiceEndpointInfo(
         testDiscProvType,
         regTx.spID)
 
@@ -502,7 +501,7 @@ contract('ServiceProvider test', async (accounts) => {
         web3.utils.toBN(decreaseStakeAmount),
         stakerAccount)
 
-      let readStorageValues = await serviceProviderFactory.getServiceProviderInfo(
+      let readStorageValues = await serviceProviderFactory.getServiceEndpointInfo(
         testDiscProvType,
         regTx.spID)
 
@@ -545,7 +544,7 @@ contract('ServiceProvider test', async (accounts) => {
      */
     it('updates delegateOwnerWallet', async () => {
       let spID = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint)
-      let info = await serviceProviderFactory.getServiceProviderInfo(testDiscProvType, spID)
+      let info = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spID)
       let currentDelegateOwnerWallet = info.delegateOwnerWallet
 
       assert.equal(
@@ -570,7 +569,7 @@ contract('ServiceProvider test', async (accounts) => {
         newDelegateOwnerWallet,
         { from: stakerAccount })
 
-      info = await serviceProviderFactory.getServiceProviderInfo(testDiscProvType, spID)
+      info = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spID)
       let newDelegateFromChain = info.delegateOwnerWallet
 
       assert.equal(
@@ -645,12 +644,12 @@ contract('ServiceProvider test', async (accounts) => {
 
     it('will modify the dns endpoint for an existing service', async () => {
       const spId = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint)
-      const { endpoint } = await serviceProviderFactory.getServiceProviderInfo(testDiscProvType, spId)
+      const { endpoint } = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spId)
       assert.equal(testEndpoint, endpoint)
       
       // update the endpoint from testEndpoint to testEndpoint1
       await serviceProviderFactory.updateEndpoint(testDiscProvType, testEndpoint, testEndpoint1, { from: stakerAccount })
-      const { endpoint: endpointAfter } = await serviceProviderFactory.getServiceProviderInfo(testDiscProvType, spId)
+      const { endpoint: endpointAfter } = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spId)
       assert.equal(testEndpoint1, endpointAfter)
 
       // it should replace the service provider in place so spId should be consistent
