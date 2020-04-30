@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from src import contract_addresses
 from src.utils import multihash, helpers
-from src.models import Track, User, BlacklistedIPLD
+from src.models import Track, User, BlacklistedIPLD, Credit
 from src.tasks.metadata import track_metadata_format
 
 logger = logging.getLogger(__name__)
@@ -117,6 +117,28 @@ def invalidate_old_track(session, track_id):
     ), "Update operation requires a current track to be invalidated"
 
 
+def update_credit_splits(session, track_record, track_metadata):
+    child_track_id = track_record.track_id
+
+    # Delete existing credits
+    session.query(Credit).filter_by(child_track_id = child_track_id).delete()
+    logger.info(track_metadata["credits_splits"])
+
+    # Add all credits
+    if "credits_splits" in track_metadata:
+        logger.info("here ins")
+        splits = track_metadata["credits_splits"].get("splits")
+        if splits:
+            for split in splits:
+                parent_track_id = split.get("track_id")
+                if parent_track_id:
+                    credit = Credit(
+                        parent_track_id=parent_track_id,
+                        child_track_id=child_track_id
+                    )
+                    session.add(credit)
+
+
 def parse_track_event(
         self, session, update_task, entry, event_type, track_record, block_timestamp
     ):
@@ -173,6 +195,8 @@ def parse_track_event(
                 track_record.cover_art_sizes = track_record.cover_art
                 track_record.cover_art = None
 
+        update_credit_splits(session, track_record, track_metadata)
+
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
         upd_track_metadata_hash_fn = event_args._multihashHashFn
@@ -218,6 +242,8 @@ def parse_track_event(
             if is_directory:
                 track_record.cover_art_sizes = track_record.cover_art
                 track_record.cover_art = None
+
+        update_credit_splits(session, track_record, track_metadata)
 
     if event_type == track_event_types_lookup["delete_track"]:
         track_record.is_delete = True
