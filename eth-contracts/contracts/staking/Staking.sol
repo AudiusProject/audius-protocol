@@ -400,15 +400,4 @@ contract Staking is RegistryContract, ERCStaking, ERCStakingHistory, IsContract 
         // add new value to total history
         totalStakedHistory.add(block.number, newStake);
     }
-
-    function _transfer(address _from, address _to, uint256 _amount) internal {
-        // transferring 0 staked tokens is invalid
-        require(_amount > 0, ERROR_AMOUNT_ZERO);
-
-        // update stakes
-        _modifyStakeBalance(_from, _amount, false);
-        _modifyStakeBalance(_to, _amount, true);
-
-        emit StakeTransferred(_from,_amount, _to);
-    }
 }
