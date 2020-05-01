@@ -222,6 +222,12 @@ contract Governance is RegistryContract {
             "Must provide valid non-zero _proposalId"
         );
 
+        // Require proposal has not already been evaluated.
+        require(
+            proposals[_proposalId].outcome == Outcome.InProgress,
+            "Governance::evaluateProposalOutcome:Proposal has already been evaluated."
+        );
+
         // Require msg.sender is active Staker.
         StakingInterface stakingContract = StakingInterface(registry.getContract(stakingProxyOwnerKey));
         require(
