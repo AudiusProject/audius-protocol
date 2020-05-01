@@ -33,9 +33,6 @@ contract DelegateManager is RegistryContract {
     // Maximum number of delegators a single account can handle
     uint private maxDelegators;
 
-    // standard - imitates relationship between Ether and Wei
-    uint8 private constant DECIMALS = 18;
-
     // Minimum amount of delegation allowed
     uint minDelegationAmount;
 
