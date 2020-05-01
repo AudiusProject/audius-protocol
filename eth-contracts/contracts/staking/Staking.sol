@@ -7,12 +7,12 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol";
-import "../res/IsContract.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/utils/Address.sol";
 import "../service/registry/RegistryContract.sol";
 
 
 /** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
-contract Staking is RegistryContract, StakingInterface, IsContract {
+contract Staking is RegistryContract, StakingInterface {
     using SafeMath for uint256;
     using Checkpointing for Checkpointing.History;
     using SafeERC20 for ERC20;
@@ -68,7 +68,7 @@ contract Staking is RegistryContract, StakingInterface, IsContract {
       bytes32 _serviceProviderFactoryKey
     ) public initializer
     {
-        require(isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
+        require(Address.isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         stakingToken = ERC20(_stakingToken);
         registry = RegistryInterface(_registryAddress);
         treasuryAddress = _treasuryAddress;
