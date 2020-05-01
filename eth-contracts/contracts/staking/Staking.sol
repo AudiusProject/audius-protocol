@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-import "./ERCStakingInterface.sol";
+import "./StakingInterface.sol";
 import "./Checkpointing.sol";
 import "../service/interface/registry/RegistryInterface.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
@@ -12,7 +12,7 @@ import "../service/registry/RegistryContract.sol";
 
 
 /** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
-contract Staking is RegistryContract, ERCStakingInterface, IsContract {
+contract Staking is RegistryContract, StakingInterface, IsContract {
     using SafeMath for uint256;
     using Checkpointing for Checkpointing.History;
     using SafeERC20 for ERC20;

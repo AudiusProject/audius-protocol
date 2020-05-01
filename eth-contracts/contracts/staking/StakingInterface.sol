@@ -4,7 +4,7 @@ pragma solidity ^0.5.0;
 
 // Modified interface for ERC900: https://eips.ethereum.org/EIPS/eip-900
 // Eliminates direct stake operations
-interface ERCStakingInterface {
+interface StakingInterface {
     event Staked(address indexed user, uint256 amount, uint256 total, bytes data);
     event Unstaked(address indexed user, uint256 amount, uint256 total, bytes data);
 

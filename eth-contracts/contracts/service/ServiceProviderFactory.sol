@@ -2,7 +2,7 @@ pragma solidity ^0.5.0;
 
 import "./registry/RegistryContract.sol";
 import "./ServiceTypeManager.sol";
-import "../staking/ERCStakingInterface.sol";
+import "../staking/StakingInterface.sol";
 import "./interface/registry/RegistryInterface.sol";
 
 
@@ -146,7 +146,7 @@ contract ServiceProviderFactory is RegistryContract {
 
         // Stake token amount from msg.sender
         if (_stakeAmount > 0) {
-            ERCStakingInterface(
+            StakingInterface(
                 registry.getContract(stakingProxyOwnerKey)
             ).stakeFor(msg.sender, _stakeAmount, empty);
         }
@@ -225,7 +225,7 @@ contract ServiceProviderFactory is RegistryContract {
         bool unstaked = false;
         // owned by the user
         if (spDetails[msg.sender].numberOfEndpoints == 1) {
-            ERCStakingInterface stakingContract = ERCStakingInterface(
+            StakingInterface stakingContract = StakingInterface(
                 registry.getContract(stakingProxyOwnerKey)
             );
             unstakeAmount = stakingContract.totalStakedFor(msg.sender);
@@ -310,7 +310,7 @@ contract ServiceProviderFactory is RegistryContract {
             "Registered endpoint required to decrease stake"
         );
 
-        ERCStakingInterface stakingContract = ERCStakingInterface(
+        StakingInterface stakingContract = StakingInterface(
             registry.getContract(stakingProxyOwnerKey)
         );
 
@@ -350,7 +350,7 @@ contract ServiceProviderFactory is RegistryContract {
             "Registered endpoint required to decrease stake"
         );
 
-        ERCStakingInterface stakingContract = ERCStakingInterface(
+        StakingInterface stakingContract = StakingInterface(
             registry.getContract(stakingProxyOwnerKey)
         );
 
@@ -528,7 +528,7 @@ contract ServiceProviderFactory is RegistryContract {
     function validateAccountStakeBalance(address sp)
     external view returns (uint stakedForOwner)
     {
-        uint currentlyStakedForOwner = ERCStakingInterface(
+        uint currentlyStakedForOwner = StakingInterface(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(sp);
 
@@ -552,7 +552,7 @@ contract ServiceProviderFactory is RegistryContract {
      */
     function updateServiceProviderBoundStatus(address _serviceProvider) internal {
         // Validate bounds for total stake
-        uint totalSPStake = ERCStakingInterface(
+        uint totalSPStake = StakingInterface(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(_serviceProvider);
         if (totalSPStake < spDetails[_serviceProvider].minAccountStake ||

@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 
 import "./service/registry/RegistryContract.sol";
-import "./staking/Staking.sol";
+import "./staking/StakingInterface.sol";
 import "./service/interface/registry/RegistryInterface.sol";
 
 
@@ -102,7 +102,7 @@ contract Governance is RegistryContract {
         address proposer = msg.sender;
 
         // Require proposer is active Staker
-        Staking stakingContract = Staking(registry.getContract(stakingProxyOwnerKey));
+        StakingInterface stakingContract = StakingInterface(registry.getContract(stakingProxyOwnerKey));
         require(
             stakingContract.totalStakedFor(proposer) > 0,
             "Proposer must be active staker with non-zero stake."
@@ -158,7 +158,7 @@ contract Governance is RegistryContract {
         );
 
         // Require voter is active Staker + get voterStake.
-        Staking stakingContract = Staking(registry.getContract(stakingProxyOwnerKey));
+        StakingInterface stakingContract = StakingInterface(registry.getContract(stakingProxyOwnerKey));
         uint256 voterStake = stakingContract.totalStakedForAt(
             voter,
             proposals[_proposalId].startBlockNumber
@@ -223,7 +223,7 @@ contract Governance is RegistryContract {
         );
 
         // Require msg.sender is active Staker.
-        Staking stakingContract = Staking(registry.getContract(stakingProxyOwnerKey));
+        StakingInterface stakingContract = StakingInterface(registry.getContract(stakingProxyOwnerKey));
         require(
             stakingContract.totalStakedForAt(
                 msg.sender, proposals[_proposalId].startBlockNumber
