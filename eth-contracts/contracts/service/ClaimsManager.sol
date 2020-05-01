@@ -1,5 +1,5 @@
 pragma solidity ^0.5.0;
-import "../staking/Staking.sol";
+import "../staking/ERCStakingInterface.sol";
 import "./registry/RegistryContract.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
@@ -70,7 +70,6 @@ contract ClaimsManager is RegistryContract {
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
 
-        fundBlock = 0;
         fundRoundBlockDiff = 10;
         fundBlock = 0;
         fundingAmount = 20 * 10**uint256(DECIMALS); // 20 AUDS = 20 * 10**uint256(DECIMALS)
@@ -108,7 +107,7 @@ contract ClaimsManager is RegistryContract {
     // Permissioned to stakers or contract deployer
     function initiateRound() external {
         requireIsInitialized();
-        bool senderStaked = Staking(
+        bool senderStaked = ERCStakingInterface(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(msg.sender) > 0;
 
@@ -146,7 +145,7 @@ contract ClaimsManager is RegistryContract {
         );
 
         address stakingAddress = registry.getContract(stakingProxyOwnerKey);
-        Staking stakingContract = Staking(stakingAddress);
+        ERCStakingInterface stakingContract = ERCStakingInterface(stakingAddress);
         // Prevent duplicate claim
         uint lastUserClaimBlock = stakingContract.lastClaimedFor(_claimer);
         require(lastUserClaimBlock <= fundBlock, "Claim already processed for user");
@@ -200,7 +199,7 @@ contract ClaimsManager is RegistryContract {
     }
 
     function claimPending(address _sp) external view returns (bool pending) {
-        uint lastClaimedForSP = Staking(
+        uint lastClaimedForSP = ERCStakingInterface(
             registry.getContract(stakingProxyOwnerKey)
         ).lastClaimedFor(_sp);
         return (lastClaimedForSP < fundBlock);
