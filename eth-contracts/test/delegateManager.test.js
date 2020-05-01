@@ -404,21 +404,10 @@ contract('DelegateManager', async (accounts) => {
       delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
       totalLockedDelegation =
         await delegateManager.getTotalLockedDelegationForServiceProvider(stakerAccount)
-      assert.equal(
-        delegators.length,
-        0,
-        'Expect no remaining delegators')
-      assert.equal(
-        delegatedStake,
-        0,
-        'Expect no remaining total delegate stake')
-      assert.equal(
-        totalLockedDelegation,
-        0,
-        'Expect no remaining locked stake for SP')
-      assert.isTrue(
-        initialSpStake.eq(totalStakedForSP),
-        'Staking.sol back to initial value')
+      assert.equal(delegators.length, 0, 'Expect no remaining delegators')
+      assert.equal(delegatedStake, 0, 'Expect no remaining total delegate stake')
+      assert.equal(totalLockedDelegation, 0, 'Expect no remaining locked stake for SP')
+      assert.isTrue(initialSpStake.eq(totalStakedForSP),'Staking.sol back to initial value')
     })
 
     it('single delegator + claim', async () => {
@@ -526,36 +515,6 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(totalStaked.eq(tokensAtStakingAddress), 'Expect equivalency between Staking contract and ERC')
       assert.isTrue(totalInStakingAfterSlash.eq(outsideStake), 'Expected SP/delegatemanager to equal staking')
       assert.isTrue((totalInStakingContract.sub(slashAmount)).eq(totalInStakingAfterSlash), 'Expected slash value')
-    })
-
-    it('maximum delegators test', async () => {
-      // Update max delegators to 5
-      let maxDelegators = 4
-      await mockGovernance.updateMaxDelegators(maxDelegators)
-      let delegateAccountOffset = 4
-      let delegatorAccounts = accounts.slice(delegateAccountOffset, delegateAccountOffset + (maxDelegators + 1))
-      let singleDelegateAmount = toWei(10)
-      for (var i = 0; i < delegatorAccounts.length; i++) {
-        let delegator = delegatorAccounts[i]
-        // Transfer 1000 tokens to each delegator
-        await token.transfer(delegator, singleDelegateAmount, { from: treasuryAddress })
-        // Approve staking transfer
-        await token.approve(stakingAddress, singleDelegateAmount, { from: delegator })
-        if (i === (delegatorAccounts.length - 1)) {
-          await _lib.assertRevert(
-            delegateManager.delegateStake(
-              stakerAccount,
-              singleDelegateAmount,
-              { from: delegator }),
-            'Maximum delegators exceeded'
-          )
-        } else {
-          await delegateManager.delegateStake(
-            stakerAccount,
-            singleDelegateAmount,
-            { from: delegator })
-        }
-      }
     })
 
     it('40 delegators to one SP + claim', async () => {
@@ -1034,6 +993,92 @@ contract('DelegateManager', async (accounts) => {
       await mockGovernance.updateUndelegateLockupDuration(newDuration)
       currentDuration = await delegateManager.getUndelegateLockupDuration()
       assert.isTrue(currentDuration.eq(newDuration))
+    })
+
+    it('maximum delegators', async () => {
+      // Update max delegators to 5
+      let maxDelegators = 4
+      await mockGovernance.updateMaxDelegators(maxDelegators)
+      assert.equal(
+        fromBn(await delegateManager.getMaxDelegators()),
+        maxDelegators,
+        'Max delegators not updated'
+      )
+      let delegateAccountOffset = 4
+      let delegatorAccounts = accounts.slice(delegateAccountOffset, delegateAccountOffset + (maxDelegators + 1))
+      let singleDelegateAmount = toWei(10)
+      for (var i = 0; i < delegatorAccounts.length; i++) {
+        let delegator = delegatorAccounts[i]
+        // Transfer 1000 tokens to each delegator
+        await token.transfer(delegator, singleDelegateAmount, { from: treasuryAddress })
+        // Approve staking transfer
+        await token.approve(stakingAddress, singleDelegateAmount, { from: delegator })
+        if (i === (delegatorAccounts.length - 1)) {
+          await _lib.assertRevert(
+            delegateManager.delegateStake(
+              stakerAccount,
+              singleDelegateAmount,
+              { from: delegator }),
+            'Maximum delegators exceeded'
+          )
+        } else {
+          await delegateManager.delegateStake(
+            stakerAccount,
+            singleDelegateAmount,
+            { from: delegator })
+        }
+      }
+    })
+
+    it('min delegate stake', async () => {
+      // Update min delegation level configuration
+      let minDelegateStake = toWei(100)
+      await mockGovernance.updateMinDelegationAmount(minDelegateStake)
+      assert.isTrue(
+        minDelegateStake.eq(await delegateManager.getMinDelegationAmount()),
+        'Min delegation not updated')
+
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        minDelegateStake,
+        { from: delegatorAccount1 })
+
+      // Confirm failure below minimum
+      await _lib.assertRevert(
+        delegateManager.delegateStake(
+          stakerAccount,
+          minDelegateStake.sub(toWei(10)),
+          { from: delegatorAccount1 }),
+        'Minimum delegation amount')
+
+      // Delegate min
+      await delegateManager.delegateStake(
+        stakerAccount,
+        minDelegateStake,
+        { from: delegatorAccount1 })
+
+      // Submit request to undelegate stake that will fail as total amount results in < min amount
+      let failUndelegateAmount = minDelegateStake.sub(toWei(30))
+      await delegateManager.requestUndelegateStake(stakerAccount, failUndelegateAmount, { from: delegatorAccount1 })
+      let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      await _lib.advanceToTargetBlock(fromBn(undelegateRequestInfo.lockupExpiryBlock), web3)
+      await _lib.assertRevert(
+        delegateManager.undelegateStake({ from: delegatorAccount1 }),
+        'Minimum delegation amount'
+      )
+      // Cancel request
+      await delegateManager.cancelUndelegateStake({ from: delegatorAccount1 })
+
+      // Undelegate all stake and confirm min delegation amount does not prevent withdrawal
+      await delegateManager.requestUndelegateStake(stakerAccount, minDelegateStake, { from: delegatorAccount1 })
+      undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      await _lib.advanceToTargetBlock(fromBn(undelegateRequestInfo.lockupExpiryBlock), web3)
+
+      // Finalize undelegation, confirm operation is allowed
+      await delegateManager.undelegateStake({ from: delegatorAccount1 })
+      assert.equal(fromBn(await delegateManager.getTotalDelegatorStake(delegatorAccount1)), 0, 'No stake expected')
+      assert.equal((await delegateManager.getDelegatorsList(stakerAccount)).length, 0, 'No delegators expected')
     })
   })
 })

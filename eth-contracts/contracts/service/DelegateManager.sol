@@ -604,6 +604,24 @@ contract DelegateManager is RegistryContract {
         return undelegateLockupDuration;
     }
 
+    /**
+     * @notice Current maximum delegators
+     */
+    function getMaxDelegators()
+    external view returns (uint numDelegators)
+    {
+        return maxDelegators;
+    }
+
+    /**
+     * @notice Get minimum delegation amount
+     */
+    function getMinDelegationAmount()
+    external view returns (uint minDelegation)
+    {
+        return minDelegationAmount;
+    }
+
     function delegatorExistsForSP(
         address _delegator,
         address _serviceProvider
