@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-import "./ERCStaking.sol";
+import "./StakingInterface.sol";
 import "./Checkpointing.sol";
 import "../service/interface/registry/RegistryInterface.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
@@ -8,12 +8,11 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol";
 import "../res/IsContract.sol";
-import "../res/TimeHelpers.sol";
 import "../service/registry/RegistryContract.sol";
 
 
 /** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
-contract Staking is RegistryContract, ERCStaking, ERCStakingHistory, IsContract, TimeHelpers {
+contract Staking is RegistryContract, StakingInterface, IsContract {
     using SafeMath for uint256;
     using Checkpointing for Checkpointing.History;
     using SafeERC20 for ERC20;
@@ -96,7 +95,7 @@ contract Staking is RegistryContract, ERCStaking, ERCStakingHistory, IsContract,
             bytes("")); // TODO: RM bytes requirement if unused
 
         // Update claim history even if no value claimed
-        accounts[_stakerAccount].claimHistory.add64(getBlockNumber64(), _amount);
+        accounts[_stakerAccount].claimHistory.add(block.number, _amount);
     }
 
     /**
@@ -385,7 +384,7 @@ contract Staking is RegistryContract, ERCStaking, ERCStakingHistory, IsContract,
         }
 
         // add new value to account history
-        accounts[_accountAddress].stakedHistory.add64(getBlockNumber64(), newStake);
+        accounts[_accountAddress].stakedHistory.add(block.number, newStake);
     }
 
     function _modifyTotalStaked(uint256 _by, bool _increase) internal {
@@ -399,17 +398,6 @@ contract Staking is RegistryContract, ERCStaking, ERCStakingHistory, IsContract,
         }
 
         // add new value to total history
-        totalStakedHistory.add64(getBlockNumber64(), newStake);
-    }
-
-    function _transfer(address _from, address _to, uint256 _amount) internal {
-        // transferring 0 staked tokens is invalid
-        require(_amount > 0, ERROR_AMOUNT_ZERO);
-
-        // update stakes
-        _modifyStakeBalance(_from, _amount, false);
-        _modifyStakeBalance(_to, _amount, true);
-
-        emit StakeTransferred(_from,_amount, _to);
+        totalStakedHistory.add(block.number, newStake);
     }
 }

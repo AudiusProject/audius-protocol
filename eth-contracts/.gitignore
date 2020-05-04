@@ -6,3 +6,6 @@
 ganache_log.txt
 node_modules/
 build/
+coverage/
+coverage.json
+coverage.zip
