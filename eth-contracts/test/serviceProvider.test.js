@@ -43,11 +43,11 @@ contract('ServiceProvider test', async (accounts) => {
   let token, registry, staking0, stakingInitializeData, proxy
   let staking, serviceProviderFactory, serviceTypeManager
 
-  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const [deployerAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
   let controllerAddress
 
   beforeEach(async () => {
-    token = await AudiusToken.new({ from: treasuryAddress })
+    token = await AudiusToken.new({ from: deployerAddress })
     await token.initialize()
     registry = await Registry.new()
     await registry.initialize()
@@ -56,10 +56,9 @@ contract('ServiceProvider test', async (accounts) => {
     staking0 = await Staking.new({ from: proxyAdminAddress })
     stakingInitializeData = encodeCall(
       'initialize',
-      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [
         token.address,
-        treasuryAddress,
         registry.address,
         claimsManagerProxyKey,
         delegateManagerKey,
@@ -75,7 +74,7 @@ contract('ServiceProvider test', async (accounts) => {
     )
 
     staking = await Staking.at(proxy.address)
-    await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
+    await registry.addContract(stakingProxyKey, proxy.address, { from: deployerAddress })
 
     // Deploy service type manager
     controllerAddress = accounts[9]
@@ -88,7 +87,7 @@ contract('ServiceProvider test', async (accounts) => {
         governanceKey
       ]
     )
-    let serviceTypeManager0 = await ServiceTypeManager.new({ from: treasuryAddress })
+    let serviceTypeManager0 = await ServiceTypeManager.new({ from: deployerAddress })
     let serviceTypeManagerProxy = await AdminUpgradeabilityProxy.new(
       serviceTypeManager0.address,
       proxyAdminAddress,
@@ -109,10 +108,10 @@ contract('ServiceProvider test', async (accounts) => {
       toWei(10000000),
       { from: controllerAddress })
 
-    await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: treasuryAddress })
+    await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: deployerAddress })
 
     // Deploy ServiceProviderFactory
-    let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: treasuryAddress })
+    let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: deployerAddress })
     const serviceProviderFactoryCalldata = encodeCall(
       'initialize',
       ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
@@ -125,10 +124,10 @@ contract('ServiceProvider test', async (accounts) => {
       { from: proxyAdminAddress }
     )
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
-    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: treasuryAddress })
+    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: deployerAddress })
 
     // Transfer 1000 tokens to accounts[11]
-    await token.transfer(accounts[11], INITIAL_BAL, { from: treasuryAddress })
+    await token.transfer(accounts[11], INITIAL_BAL, { from: deployerAddress })
   })
 
   /* Helper functions */
@@ -301,7 +300,7 @@ contract('ServiceProvider test', async (accounts) => {
 
       // 3rd endpoint for stakerAccount
       // Transfer 1000 tokens to staker for test
-      await token.transfer(stakerAccount, INITIAL_BAL, { from: treasuryAddress })
+      await token.transfer(stakerAccount, INITIAL_BAL, { from: deployerAddress })
 
       let stakedAmount = await staking.totalStakedFor(stakerAccount)
       let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
@@ -363,7 +362,7 @@ contract('ServiceProvider test', async (accounts) => {
       )
 
       // Transfer greater than max tokens
-      await token.transfer(stakerAccount, toWei(transferAmount), { from: treasuryAddress })
+      await token.transfer(stakerAccount, toWei(transferAmount), { from: deployerAddress })
 
       // Attempt to register, expect max stake bounds to be exceeded
       await _lib.assertRevert(
@@ -447,7 +446,7 @@ contract('ServiceProvider test', async (accounts) => {
       await token.transfer(
         stakerAccount2,
         MIN_STAKE_AMOUNT - 1,
-        { from: treasuryAddress })
+        { from: deployerAddress })
 
       // Attempt to register first endpoint with zero stake
       await _lib.assertRevert(

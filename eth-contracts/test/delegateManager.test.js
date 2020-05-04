@@ -41,26 +41,26 @@ const DEFAULT_AMOUNT = toWei(120)
 contract('DelegateManager', async (accounts) => {
   let proxy, staking0, staking, stakingAddress, token, registry, claimsManager0, claimsManagerProxy
   let serviceProviderFactory, claimsManager, delegateManager, mockGovernance
-  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const [deployerAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  let controllerAddress = accounts[9]
   const stakerAccount = accounts[10]
   const stakerAccount2 = accounts[12]
   const delegatorAccount1 = accounts[11]
   const slasherAccount = stakerAccount
 
   beforeEach(async () => {
-    token = await AudiusToken.new({ from: treasuryAddress })
+    token = await AudiusToken.new({ from: deployerAddress })
     await token.initialize()
-    registry = await Registry.new({ from: treasuryAddress })
+    registry = await Registry.new({ from: deployerAddress })
     await registry.initialize()
 
     // Set up staking
     staking0 = await Staking.new({ from: proxyAdminAddress })
     const stakingInitializeData = encodeCall(
       'initialize',
-      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [
         token.address,
-        treasuryAddress,
         registry.address,
         claimsManagerProxyKey,
         delegateManagerKey,
@@ -76,24 +76,23 @@ contract('DelegateManager', async (accounts) => {
     )
 
     staking = await Staking.at(proxy.address)
-    await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
+    await registry.addContract(stakingProxyKey, proxy.address, { from: deployerAddress })
     stakingAddress = staking.address
 
     // Deploy service type manager
-    let controllerAddress = accounts[9]
     let serviceTypeInitializeData = encodeCall(
       'initialize',
       ['address', 'address', 'bytes32'],
       [registry.address, controllerAddress, governanceKey]
     )
-    let serviceTypeManager0 = await ServiceTypeManager.new({ from: treasuryAddress })
+    let serviceTypeManager0 = await ServiceTypeManager.new({ from: deployerAddress })
     let serviceTypeManagerProxy = await AdminUpgradeabilityProxy.new(
       serviceTypeManager0.address,
       proxyAdminAddress,
       serviceTypeInitializeData,
       { from: proxyAdminAddress }
     )
-    await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: treasuryAddress })
+    await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: deployerAddress })
     let serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
     // Register discovery provider
     await serviceTypeManager.addServiceType(
@@ -103,7 +102,7 @@ contract('DelegateManager', async (accounts) => {
       { from: controllerAddress })
 
     // Deploy ServiceProviderFactory
-    let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: treasuryAddress })
+    let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: deployerAddress })
     const serviceProviderFactoryCalldata = encodeCall(
       'initialize',
       ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
@@ -116,14 +115,14 @@ contract('DelegateManager', async (accounts) => {
       { from: proxyAdminAddress }
     )
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
-    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: treasuryAddress })
+    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: deployerAddress })
 
     // Deploy new claimsManager proxy
     claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
     const claimsInitializeCallData = encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey]
+      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [token.address, registry.address, controllerAddress, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey]
     )
     claimsManagerProxy = await AdminUpgradeabilityProxy.new(
       claimsManager0.address,
@@ -140,7 +139,7 @@ contract('DelegateManager', async (accounts) => {
     )
 
     // Register new contract as a minter, from the same address that deployed the contract
-    await token.addMinter(claimsManager.address, { from: treasuryAddress })
+    await token.addMinter(claimsManager.address, { from: deployerAddress })
 
     mockGovernance = await MockGovernance.new()
     await mockGovernance.initialize(registry.address, delegateManagerKey)
@@ -255,10 +254,10 @@ contract('DelegateManager', async (accounts) => {
 
     beforeEach(async () => {
       // Transfer 1000 tokens to stakers
-      await token.transfer(stakerAccount, INITIAL_BAL, { from: treasuryAddress })
-      await token.transfer(stakerAccount2, INITIAL_BAL, { from: treasuryAddress })
+      await token.transfer(stakerAccount, INITIAL_BAL, { from: deployerAddress })
+      await token.transfer(stakerAccount2, INITIAL_BAL, { from: deployerAddress })
       // Transfer 1000 tokens to delegator
-      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
 
       let initialBal = await token.balanceOf(stakerAccount)
 
@@ -294,7 +293,7 @@ contract('DelegateManager', async (accounts) => {
 
       let totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
 
-      await claimsManager.initiateRound({ from: proxyDeployerAddress })
+      await claimsManager.initiateRound({ from: controllerAddress })
 
       totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
       spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
@@ -311,7 +310,7 @@ contract('DelegateManager', async (accounts) => {
     it('single delegator basic operations', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
-      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
 
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       let initialSpStake = totalStakedForSP
@@ -421,7 +420,7 @@ contract('DelegateManager', async (accounts) => {
     it('single delegator + claim', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
-      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
 
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       let initialDelegateAmount = toWei(60)
@@ -443,7 +442,7 @@ contract('DelegateManager', async (accounts) => {
       let deployerCutBase = await serviceProviderFactory.getServiceProviderDeployerCutBase()
 
       // Initiate round
-      await claimsManager.initiateRound({ from: proxyDeployerAddress })
+      await claimsManager.initiateRound({ from: controllerAddress })
 
       // Confirm claim is pending
       let pendingClaim = await claimsManager.claimPending(stakerAccount)
@@ -478,7 +477,7 @@ contract('DelegateManager', async (accounts) => {
     it('single delegator + claim + slash', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
-      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
 
       let initialDelegateAmount = toWei(60)
 
@@ -494,7 +493,7 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 })
 
       // Fund new claim
-      await claimsManager.initiateRound({ from: proxyDeployerAddress })
+      await claimsManager.initiateRound({ from: controllerAddress })
 
       // Get rewards
       await delegateManager.claimRewards({ from: stakerAccount })
@@ -543,7 +542,7 @@ contract('DelegateManager', async (accounts) => {
 
       for (var delegator of delegatorAccounts) {
         // Transfer 1000 tokens to each delegator
-        await token.transfer(delegator, INITIAL_BAL, { from: treasuryAddress })
+        await token.transfer(delegator, INITIAL_BAL, { from: deployerAddress })
         // Approve staking transfer
         await token.approve(
           stakingAddress,
@@ -574,7 +573,7 @@ contract('DelegateManager', async (accounts) => {
         `Total value inconsistent after all delegation. Expected ${fromBn(expectedTotalStakeAfterDelegation)}, found ${fromBn(totalSPStakeAfterDelegation)}`)
 
       // Initiate round
-      await claimsManager.initiateRound({ from: proxyDeployerAddress })
+      await claimsManager.initiateRound({ from: controllerAddress })
 
       let deployerCut = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerCut
       let deployerCutBase = await serviceProviderFactory.getServiceProviderDeployerCutBase()
@@ -637,7 +636,7 @@ contract('DelegateManager', async (accounts) => {
     it('single delegator + undelegate + claim', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
-      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: treasuryAddress })
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
 
       let initialDelegateAmount = toWei(60)
 
@@ -662,7 +661,7 @@ contract('DelegateManager', async (accounts) => {
       let preRewardInfo = await getAccountStakeInfo(stakerAccount, false)
 
       // Initiate round
-      await claimsManager.initiateRound({ from: proxyDeployerAddress })
+      await claimsManager.initiateRound({ from: controllerAddress })
       await delegateManager.claimRewards({ from: stakerAccount })
       let postRewardInfo = await getAccountStakeInfo(stakerAccount, false)
 
@@ -744,8 +743,8 @@ contract('DelegateManager', async (accounts) => {
       const delegatorAccount2 = accounts[5]
       const delegatorAccount3 = accounts[6]
       // Transfer 1000 tokens to delegator2, delegator3
-      await token.transfer(delegatorAccount2, INITIAL_BAL, { from: treasuryAddress })
-      await token.transfer(delegatorAccount3, INITIAL_BAL, { from: treasuryAddress })
+      await token.transfer(delegatorAccount2, INITIAL_BAL, { from: deployerAddress })
+      await token.transfer(delegatorAccount3, INITIAL_BAL, { from: deployerAddress })
       let initialDelegateAmount = toWei(60)
 
       // Approve staking transfer for delegator 1
@@ -797,7 +796,7 @@ contract('DelegateManager', async (accounts) => {
         'Confirm expired lockup period')
 
       // Initiate round
-      await claimsManager.initiateRound({ from: proxyDeployerAddress })
+      await claimsManager.initiateRound({ from: controllerAddress })
 
       // Confirm claim is pending
       let pendingClaim = await claimsManager.claimPending(stakerAccount)
@@ -852,7 +851,7 @@ contract('DelegateManager', async (accounts) => {
         'Bound violation expected')
 
       // Initiate round
-      await claimsManager.initiateRound({ from: proxyDeployerAddress })
+      await claimsManager.initiateRound({ from: controllerAddress })
 
       // Confirm claim is pending
       let pendingClaim = await claimsManager.claimPending(stakerAccount)
@@ -899,7 +898,7 @@ contract('DelegateManager', async (accounts) => {
       let info = await getAccountStakeInfo(stakerAccount, false)
       let failedIncreaseAmount = spDetails.maxAccountStake
       // Transfer sufficient funds
-      await token.transfer(delegatorAccount1, failedIncreaseAmount, { from: treasuryAddress })
+      await token.transfer(delegatorAccount1, failedIncreaseAmount, { from: deployerAddress })
       // Approve staking transfer
       await token.approve(stakingAddress, failedIncreaseAmount, { from: delegatorAccount1 })
       await _lib.assertRevert(

@@ -31,7 +31,7 @@ contract('Staking test', async (accounts) => {
   let mockStakingCaller
   let token, staking0, stakingInitializeData, proxy, staking, stakingAddress
 
-  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const [deployerAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
 
   const EMPTY_STRING = ''
 
@@ -59,7 +59,7 @@ contract('Staking test', async (accounts) => {
   }
 
   beforeEach(async () => {
-    token = await AudiusToken.new({ from: treasuryAddress })
+    token = await AudiusToken.new({ from: deployerAddress })
     await token.initialize()
     registry = await Registry.new()
     await registry.initialize()
@@ -68,10 +68,9 @@ contract('Staking test', async (accounts) => {
     staking0 = await Staking.new({ from: proxyAdminAddress })
     stakingInitializeData = encodeCall(
       'initialize',
-      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [
         token.address,
-        treasuryAddress,
         registry.address,
         claimsManagerProxyKey,
         delegateManagerKey,
@@ -118,10 +117,10 @@ contract('Staking test', async (accounts) => {
   })
 
   it('fails unstaking more than staked, fails 0', async () => {
-    await approveAndStake(DEFAULT_AMOUNT, treasuryAddress)
+    await approveAndStake(DEFAULT_AMOUNT, deployerAddress)
     await _lib.assertRevert(
       mockStakingCaller.unstakeFor(
-        treasuryAddress,
+        deployerAddress,
         DEFAULT_AMOUNT + 1,
         web3.utils.utf8ToHex(EMPTY_STRING)
       ),
@@ -129,7 +128,7 @@ contract('Staking test', async (accounts) => {
     )
     await _lib.assertRevert(
       mockStakingCaller.unstakeFor(
-        treasuryAddress,
+        deployerAddress,
         0,
         web3.utils.utf8ToHex(EMPTY_STRING)
       ))
@@ -147,7 +146,7 @@ contract('Staking test', async (accounts) => {
   it('stake with single account', async () => {
     let staker = accounts[1]
     // Transfer 1000 tokens to accounts[1]
-    await token.transfer(staker, DEFAULT_AMOUNT, { from: treasuryAddress })
+    await token.transfer(staker, DEFAULT_AMOUNT, { from: deployerAddress })
     await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: staker })
 
     // stake tokens
@@ -170,7 +169,7 @@ contract('Staking test', async (accounts) => {
   it('unstakes', async () => {
     const staker = accounts[2]
     // Transfer default tokens to account[2]
-    await token.transfer(staker, DEFAULT_AMOUNT, { from: treasuryAddress })
+    await token.transfer(staker, DEFAULT_AMOUNT, { from: deployerAddress })
 
     const initialOwnerBalance = await getTokenBalance(token, staker)
     const initialStakingBalance = await getTokenBalance(token, stakingAddress)
@@ -202,8 +201,8 @@ contract('Staking test', async (accounts) => {
 
   it('stake with multiple accounts', async () => {
     // Transfer 1000 tokens to accounts[1], accounts[2]
-    await token.transfer(accounts[1], DEFAULT_AMOUNT, { from: treasuryAddress })
-    await token.transfer(accounts[2], DEFAULT_AMOUNT, { from: treasuryAddress })
+    await token.transfer(accounts[1], DEFAULT_AMOUNT, { from: deployerAddress })
+    await token.transfer(accounts[2], DEFAULT_AMOUNT, { from: deployerAddress })
 
     let initialTotalStaked = await staking.totalStaked()
 
@@ -224,7 +223,7 @@ contract('Staking test', async (accounts) => {
     const slashAmount = web3.utils.toBN(DEFAULT_AMOUNT / 2)
 
     // Transfer & stake
-    await token.transfer(account, DEFAULT_AMOUNT, { from: treasuryAddress })
+    await token.transfer(account, DEFAULT_AMOUNT, { from: deployerAddress })
     await approveAndStake(DEFAULT_AMOUNT, account)
 
     // Confirm initial Staking state
@@ -234,7 +233,7 @@ contract('Staking test', async (accounts) => {
     assert.equal(initialStakeAmount, DEFAULT_AMOUNT)
 
     // Slash account's stake
-    await slashAccount(slashAmount, account, treasuryAddress)
+    await slashAccount(slashAmount, account, deployerAddress)
 
     // Confirm staked value for account
     const finalAccountStake = parseInt(await staking.totalStakedFor(account))
@@ -264,9 +263,9 @@ contract('Staking test', async (accounts) => {
 
     // TODO: Confirm that historic values for a single account can be recalculated by validating with blocknumber
     // Transfer DEFAULLT tokens to accts 1, 2, 3
-    await token.transfer(spAccount1, DEFAULT_AMOUNT, { from: treasuryAddress })
-    await token.transfer(spAccount2, DEFAULT_AMOUNT, { from: treasuryAddress })
-    await token.transfer(spAccount3, DEFAULT_AMOUNT, { from: treasuryAddress })
+    await token.transfer(spAccount1, DEFAULT_AMOUNT, { from: deployerAddress })
+    await token.transfer(spAccount2, DEFAULT_AMOUNT, { from: deployerAddress })
+    await token.transfer(spAccount3, DEFAULT_AMOUNT, { from: deployerAddress })
 
     // Stake with account 1
     // Treasury - 120
@@ -286,7 +285,7 @@ contract('Staking test', async (accounts) => {
     let FIRST_CLAIM_FUND = toWei(120)
 
     // Transfer 120AUD tokens to staking contract
-    await token.transfer(funderAccount, FIRST_CLAIM_FUND, { from: treasuryAddress })
+    await token.transfer(funderAccount, FIRST_CLAIM_FUND, { from: deployerAddress })
 
     // allow Staking app to move owner tokens
     let sp1Rewards = FIRST_CLAIM_FUND.div(web3.utils.toBN(2))
