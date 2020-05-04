@@ -9,6 +9,7 @@ import "../staking/StakingInterface.sol";
 import "./ServiceProviderFactory.sol";
 import "./ClaimsManager.sol";
 
+
 /**
  * Designed to manage delegation to staking contract
  * @notice - will call RegistryContract.initialize(), which calls Ownable.initialize()
@@ -27,7 +28,13 @@ contract DelegateManager is RegistryContract {
 
     // Number of blocks an undelegate operation has to wait
     // TODO: Move this value to Staking.sol as SPFactory may need as well
-    uint undelegateLockupDuration;
+    uint private undelegateLockupDuration;
+
+    // Maximum number of delegators a single account can handle
+    uint private maxDelegators;
+
+    // Minimum amount of delegation allowed
+    uint minDelegationAmount;
 
     // Staking contract ref
     ERC20Mintable internal audiusToken;
@@ -104,7 +111,9 @@ contract DelegateManager is RegistryContract {
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
         claimsManagerKey = _claimsManagerKey;
         undelegateLockupDuration = 10;
-
+        maxDelegators = 175;
+        // Default minimum delegation amount set to 100AUD
+        minDelegationAmount = 100 * 10**uint256(18);
         RegistryContract.initialize();
     }
 
@@ -131,16 +140,14 @@ contract DelegateManager is RegistryContract {
             empty
         );
 
-        emit IncreaseDelegatedStake(
-            delegator,
-            _targetSP,
-            _amount
-        );
-
         // Update list of delegators to SP if necessary
         if (!delegatorExistsForSP(delegator, _targetSP)) {
             // If not found, update list of delegates
             spDelegateInfo[_targetSP].delegators.push(delegator);
+            require(
+                spDelegateInfo[_targetSP].delegators.length <= maxDelegators,
+                "Maximum delegators exceeded"
+            );
         }
 
         // Update total delegated for SP
@@ -152,10 +159,21 @@ contract DelegateManager is RegistryContract {
         // Update total delegated stake
         delegatorStakeTotal[delegator] += _amount;
 
+        require(
+            delegatorStakeTotal[delegator] >= minDelegationAmount,
+            "Minimum delegation amount"
+        );
+
         // Validate balance
         ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)
         ).validateAccountStakeBalance(_targetSP);
+
+        emit IncreaseDelegatedStake(
+            delegator,
+            _targetSP,
+            _amount
+        );
 
         // Return new total
         return delegateInfo[delegator][_targetSP];
@@ -266,6 +284,11 @@ contract DelegateManager is RegistryContract {
 
         // Update total delegated stake
         delegatorStakeTotal[delegator] -= unstakeAmount;
+        require(
+            (delegatorStakeTotal[delegator] >= minDelegationAmount ||
+             delegatorStakeTotal[delegator] == 0),
+            "Minimum delegation amount"
+        );
 
         // Update total delegated for SP
         spDelegateInfo[serviceProvider].totalDelegatedStake -= unstakeAmount;
@@ -296,6 +319,11 @@ contract DelegateManager is RegistryContract {
         ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)
         ).validateAccountStakeBalance(serviceProvider);
+
+        emit DecreaseDelegatedStake(
+            delegator,
+            serviceProvider,
+            unstakeAmount);
 
         // Return new total
         return delegateInfo[delegator][serviceProvider];
@@ -489,6 +517,30 @@ contract DelegateManager is RegistryContract {
     }
 
     /**
+     * @notice Update maximum delegators allowed
+     */
+    function updateMaxDelegators(uint _maxDelegators) external {
+        requireIsInitialized();
+        require(
+            msg.sender == registry.getContract(governanceKey),
+            "Only callable from governance"
+        );
+        maxDelegators = _maxDelegators;
+    }
+
+    /**
+     * @notice Update minimum delegation amount
+     */
+    function updateMinDelegationAmount(uint _minDelegationAmount) external {
+        requireIsInitialized();
+        require(
+            msg.sender == registry.getContract(governanceKey),
+            "Only callable from governance"
+        );
+        minDelegationAmount = _minDelegationAmount;
+    }
+
+    /**
      * @notice List of delegators for a given service provider
      */
     function getDelegatorsList(address _sp)
@@ -550,6 +602,24 @@ contract DelegateManager is RegistryContract {
     external view returns (uint duration)
     {
         return undelegateLockupDuration;
+    }
+
+    /**
+     * @notice Current maximum delegators
+     */
+    function getMaxDelegators()
+    external view returns (uint numDelegators)
+    {
+        return maxDelegators;
+    }
+
+    /**
+     * @notice Get minimum delegation amount
+     */
+    function getMinDelegationAmount()
+    external view returns (uint minDelegation)
+    {
+        return minDelegationAmount;
     }
 
     function delegatorExistsForSP(

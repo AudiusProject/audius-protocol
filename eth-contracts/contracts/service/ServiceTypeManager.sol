@@ -28,9 +28,6 @@ contract ServiceTypeManager is RegistryContract {
     // @dev mapping of service type to registered requirements
     mapping(bytes32 => ServiceTypeStakeRequirements) serviceTypeStakeRequirements;
 
-    // standard - imitates relationship between Ether and Wei
-    uint8 private constant DECIMALS = 18;
-
     event SetServiceVersion(bytes32 _serviceType, bytes32 _serviceVersion);
     event Test(string msg, bool value);
     event TestAddr(string msg, address addr);

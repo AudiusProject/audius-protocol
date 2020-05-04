@@ -301,12 +301,10 @@ contract ServiceProviderFactory is RegistryContract {
     ) external returns (uint newTotalStake)
     {
         requireIsInitialized();
-        
-        address owner = msg.sender;
 
         // Confirm owner has an endpoint
         require(
-            spDetails[owner].numberOfEndpoints > 0,
+            spDetails[msg.sender].numberOfEndpoints > 0,
             "Registered endpoint required to decrease stake"
         );
 
@@ -315,21 +313,21 @@ contract ServiceProviderFactory is RegistryContract {
         );
 
         // Stake increased token amount for msg.sender
-        stakingContract.stakeFor(owner, _increaseStakeAmount, empty);
+        stakingContract.stakeFor(msg.sender, _increaseStakeAmount, empty);
 
-        uint newStakeAmount = stakingContract.totalStakedFor(owner);
+        uint newStakeAmount = stakingContract.totalStakedFor(msg.sender);
 
         // Update deployer total
-        spDetails[owner].deployerStake += _increaseStakeAmount;
+        spDetails[msg.sender].deployerStake += _increaseStakeAmount;
 
         // Confirm both aggregate account balance and directly staked amount are valid
-        this.validateAccountStakeBalance(owner);
+        this.validateAccountStakeBalance(msg.sender);
 
         // Indicate this service provider is within bounds
-        spDetails[owner].validBounds = true;
+        spDetails[msg.sender].validBounds = true;
 
         emit UpdatedStakeAmount(
-            owner,
+            msg.sender,
             newStakeAmount
         );
 
@@ -341,12 +339,10 @@ contract ServiceProviderFactory is RegistryContract {
     ) external returns (uint newTotalStake)
     {
         requireIsInitialized();
-        
-        address owner = msg.sender;
 
         // Confirm owner has an endpoint
         require(
-            spDetails[owner].numberOfEndpoints > 0,
+            spDetails[msg.sender].numberOfEndpoints > 0,
             "Registered endpoint required to decrease stake"
         );
 
@@ -354,7 +350,7 @@ contract ServiceProviderFactory is RegistryContract {
             registry.getContract(stakingProxyOwnerKey)
         );
 
-        uint currentStakeAmount = stakingContract.totalStakedFor(owner);
+        uint currentStakeAmount = stakingContract.totalStakedFor(msg.sender);
 
         // Prohibit decreasing stake to zero without deregistering all endpoints
         require(
@@ -362,22 +358,22 @@ contract ServiceProviderFactory is RegistryContract {
             "Please deregister endpoints to remove all stake");
 
         // Decrease staked token amount for msg.sender
-        stakingContract.unstakeFor(owner, _decreaseStakeAmount, empty);
+        stakingContract.unstakeFor(msg.sender, _decreaseStakeAmount, empty);
 
         // Query current stake
-        uint newStakeAmount = stakingContract.totalStakedFor(owner);
+        uint newStakeAmount = stakingContract.totalStakedFor(msg.sender);
 
         // Update deployer total
-        spDetails[owner].deployerStake -= _decreaseStakeAmount;
+        spDetails[msg.sender].deployerStake -= _decreaseStakeAmount;
 
         // Confirm both aggregate account balance and directly staked amount are valid
-        this.validateAccountStakeBalance(owner);
+        this.validateAccountStakeBalance(msg.sender);
 
         // Indicate this service provider is within bounds
-        spDetails[owner].validBounds = true;
+        spDetails[msg.sender].validBounds = true;
 
         emit UpdatedStakeAmount(
-            owner,
+            msg.sender,
             newStakeAmount
         );
 
