@@ -996,7 +996,7 @@ contract('DelegateManager', async (accounts) => {
     })
 
     it('maximum delegators', async () => {
-      // Update max delegators to 5
+      // Update max delegators to 4
       let maxDelegators = 4
       await mockGovernance.updateMaxDelegators(maxDelegators)
       assert.equal(

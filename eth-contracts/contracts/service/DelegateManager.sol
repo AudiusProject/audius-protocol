@@ -140,12 +140,6 @@ contract DelegateManager is RegistryContract {
             empty
         );
 
-        emit IncreaseDelegatedStake(
-            delegator,
-            _targetSP,
-            _amount
-        );
-
         // Update list of delegators to SP if necessary
         if (!delegatorExistsForSP(delegator, _targetSP)) {
             // If not found, update list of delegates
@@ -174,6 +168,12 @@ contract DelegateManager is RegistryContract {
         ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)
         ).validateAccountStakeBalance(_targetSP);
+
+        emit IncreaseDelegatedStake(
+            delegator,
+            _targetSP,
+            _amount
+        );
 
         // Return new total
         return delegateInfo[delegator][_targetSP];
@@ -287,7 +287,7 @@ contract DelegateManager is RegistryContract {
         // Update total delegated stake
         delegatorStakeTotal[delegator] -= unstakeAmount;
         require(
-            (delegatorStakeTotal[delegator] >= minDelegationAmount || 
+            (delegatorStakeTotal[delegator] >= minDelegationAmount ||
              delegatorStakeTotal[delegator] == 0),
             "Minimum delegation amount"
         );
@@ -321,6 +321,11 @@ contract DelegateManager is RegistryContract {
         ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)
         ).validateAccountStakeBalance(serviceProvider);
+
+        emit DecreaseDelegatedStake(
+            delegator,
+            serviceProvider,
+            unstakeAmount);
 
         // Return new total
         return delegateInfo[delegator][serviceProvider];
