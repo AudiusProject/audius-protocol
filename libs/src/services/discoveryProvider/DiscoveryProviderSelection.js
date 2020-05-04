@@ -38,7 +38,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     // unable to select a discovery provider that was up-to-date. Clients may
     // want to consider blocking writes.
     this._regressedMode = false
-  
+
     // Set of valid past discovery provider versions registered on chain
     this.validVersions = null
   }

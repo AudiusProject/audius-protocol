@@ -45,7 +45,7 @@ class File extends Base {
 
     return retry(async () => {
       try {
-        const { response } = raceRequests(urls, callback, {
+        const { response } = await raceRequests(urls, callback, {
           method: 'get',
           responseType: 'blob'
         }, FETCH_CID_TIMEOUT_MS)
@@ -81,7 +81,7 @@ class File extends Base {
     try {
       // Races requests and fires the download callback for the first endpoint to
       // respond with a valid response to a `head` request.
-      const { response } = raceRequests(urls, (url) => downloadURL(url, filename), {
+      const { response } = await raceRequests(urls, (url) => downloadURL(url, filename), {
         method: 'head'
       }, /* timeout */ 10000)
       return response
