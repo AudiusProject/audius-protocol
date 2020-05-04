@@ -20,7 +20,7 @@ contract ClaimsManager is RegistryContract {
     RegistryInterface private registry;
 
     address private tokenAddress;
-    address private deployerAddress;
+    address private controllerAddress;
     bytes32 private stakingProxyOwnerKey;
     bytes32 private serviceProviderFactoryKey;
     bytes32 private delegateManagerKey;
@@ -57,13 +57,14 @@ contract ClaimsManager is RegistryContract {
     function initialize(
         address _tokenAddress,
         address _registryAddress,
+        address _controllerAddress,
         bytes32 _stakingProxyOwnerKey,
         bytes32 _serviceProviderFactoryKey,
         bytes32 _delegateManagerKey
     ) public initializer
     {
         tokenAddress = _tokenAddress;
-        deployerAddress = msg.sender;
+        controllerAddress = _controllerAddress;
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
         delegateManagerKey = _delegateManagerKey;
@@ -112,7 +113,7 @@ contract ClaimsManager is RegistryContract {
         ).totalStakedFor(msg.sender) > 0;
 
         require(
-            senderStaked || (msg.sender == deployerAddress),
+            senderStaked || (msg.sender == controllerAddress),
             "Round must be initiated from account with staked value or contract deployer"
         );
         require(
