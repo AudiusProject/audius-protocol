@@ -1,7 +1,7 @@
 import logging # pylint: disable=C0302
 import datetime
 import sqlalchemy
-from sqlalchemy import func, asc, desc, text, or_, and_, Integer, Float, Date
+from sqlalchemy import func, asc, desc, text, case, or_, and_, Integer, Float, Date
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.dialects import postgresql
@@ -9,7 +9,7 @@ from sqlalchemy.dialects import postgresql
 from flask import Blueprint, request
 
 from src import api_helpers, exceptions
-from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType
+from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType, Remix
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
@@ -73,6 +73,7 @@ def get_users():
         users = helpers.query_result_to_list(users)
 
         user_ids = list(map(lambda user: user["user_id"], users))
+
 
         current_user_id = get_current_user_id(required=False)
 
@@ -1982,3 +1983,130 @@ def get_top_genre_users():
 
 
         return api_helpers.success_response({ 'user_ids': user_ids })
+
+
+
+# Get the tracks that are 'children' remixes of the requested track
+# The results are sorted by if the original artist has reposted or saved the track
+@bp.route("/remixes/<int:track_id>/children", methods=("GET",))
+def get_remix_tracks(track_id):
+
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        parent_track = session.query(Track).filter(
+            Track.is_current == True,
+            Track.track_id == track_id
+        ).first()
+        
+        if (parent_track == None):
+            return api_helpers.error_response("Invalid track_id provided", 400)
+
+        track_owner_id = parent_track.owner_id
+        base_query = session.query(Track).join(
+            Remix,
+            and_(
+                Remix.child_track_id == Track.track_id,
+                Remix.parent_track_id == track_id
+            )
+        ).outerjoin(
+            Save,
+            and_(
+                Save.save_item_id == Track.track_id,
+                Save.save_type == SaveType.track,
+                Save.is_current == True,
+                Save.is_delete == False,
+                Save.user_id == track_owner_id
+            )
+        ).outerjoin(
+            Repost,
+            and_(
+                Repost.repost_item_id == Track.track_id,
+                Repost.user_id == track_owner_id,
+                Repost.repost_type == RepostType.track,
+                Repost.is_current == True,
+                Repost.is_delete == False
+            )
+        ).filter(
+            Track.is_current == True,
+            Track.is_delete == False
+        ).order_by(
+            desc(
+                case([
+                    (and_(Repost.created_at == None, Save.created_at == None), 0),
+                ],
+                else_ = 1)
+            ),
+            desc(
+                case([
+                    (or_(Repost.created_at == None, Repost.created_at <= Save.created_at), Save.created_at),
+                    (or_(Save.created_at == None, Repost.created_at >= Save.created_at), Repost.created_at)
+                ],
+                else_ = None)
+            ),
+            desc(Track.track_id)
+        )
+
+        tracks = base_query.all()
+        tracks = helpers.query_result_to_list(tracks)
+        track_ids = list(map(lambda track: track["track_id"], tracks))
+        current_user_id = get_current_user_id(required=False)
+        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+
+
+        if "with_users" in request.args and request.args.get("with_users") != 'false':
+            user_id_list = get_users_ids(tracks)
+            users = get_users_by_id(session, user_id_list)
+            for track in tracks:
+                user = users[track['owner_id']]
+                if user:
+                    track['user'] = user
+
+    return api_helpers.success_response(tracks)
+
+# Get the tracks that are 'parent' remixes of the requested track
+@bp.route("/remixes/<int:track_id>/parents", methods=("GET",))
+def get_remix_track_parents(track_id):
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        parent_track = session.query(Track).filter(
+            Track.is_current == True,
+            Track.track_id == track_id
+        ).first()
+        
+        if (parent_track == None):
+            return api_helpers.error_response("Invalid track_id provided", 400)
+
+        track_owner_id = parent_track.owner_id
+
+        base_query = session.query(
+            Track
+        ).join(
+            Remix,
+            and_(
+                Remix.parent_track_id == Track.track_id,
+                Remix.child_track_id == track_id
+            )
+        ).filter(
+            Track.is_current == True
+        ).order_by(
+            desc(Track.created_at),
+            desc(Track.track_id)
+        )
+
+        tracks = base_query.all()
+
+        tracks = helpers.query_result_to_list(tracks)
+        track_ids = list(map(lambda track: track["track_id"], tracks))
+        current_user_id = get_current_user_id(required=False)
+        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+
+
+        if "with_users" in request.args and request.args.get("with_users") != 'false':
+            user_id_list = get_users_ids(tracks)
+            users = get_users_by_id(session, user_id_list)
+            for track in tracks:
+                user = users[track['owner_id']]
+                if user:
+                    track['user'] = user
+
+    return api_helpers.success_response(tracks)

@@ -1,14 +1,14 @@
 import logging # pylint: disable=C0302
 import json
 import requests
-from sqlalchemy import func, desc, text, Integer
+from sqlalchemy import func, desc, text, Integer, and_
 from urllib.parse import urljoin
 
 from flask import request
 
 from src import exceptions
 from src.queries import response_name_constants
-from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType
+from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType, Remix
 from src.utils import helpers
 from src.utils.config import shared_config
 
@@ -292,6 +292,7 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
 
 # given list of track ids and corresponding tracks, populates each track object with:
 #   repost_count, save_count
+#   if remix: remix users, has_remix_author_reposted, has_remix_author_favorited
 #   if current_user_id available, populates followee_reposts, has_current_user_reposted, has_current_user_saved
 def populate_track_metadata(session, track_ids, tracks, current_user_id):
     # build dict of track id --> repost count
@@ -327,6 +328,81 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
         .all()
     )
     save_count_dict = {track_id: save_count for (track_id, save_count) in save_counts}
+
+
+    remix_query = session.query(
+        Track.owner_id.label('track_owner_id'),
+        Remix.parent_track_id.label('parent_track_id'),
+        Remix.child_track_id.label('child_track_id'),
+        Save.is_current.label('has_remix_author_favorited'),
+        Repost.is_current.label('has_remix_author_reposted'),
+        User
+    ).join(
+        Remix,
+        and_(
+            Remix.parent_track_id == Track.track_id,
+            Remix.child_track_id.in_(track_ids)
+        )
+    ).join(
+        User,
+        and_(
+            User.user_id == Track.owner_id,
+            User.is_current == True
+        )
+    ).outerjoin(
+        Save,
+        and_(
+            Save.save_item_id == Remix.child_track_id,
+            Save.save_type == SaveType.track,
+            Save.is_current == True,
+            Save.is_delete == False,
+            Save.user_id == Track.owner_id
+        )
+    ).outerjoin(
+        Repost,
+        and_(
+            Repost.repost_item_id == Remix.child_track_id,
+            Repost.user_id == Track.owner_id,
+            Repost.repost_type == RepostType.track,
+            Repost.is_current == True,
+            Repost.is_delete == False
+        )
+    ).filter(
+        Track.is_current == True
+    )
+
+    remixes = {}
+    remix_parent_owners = {}
+    populated_users = {}
+
+    for remix_relationship in remix_query:
+        [track_owner_id, _, _, _, _, user] = remix_relationship
+        if not track_owner_id in remix_parent_owners:
+            remix_parent_owners[track_owner_id] = user
+
+    if len(remix_parent_owners) > 0:
+        [remix_parent_owner_ids, remix_parent_owners] = list(zip(*[[k, remix_parent_owners[k]] for k in remix_parent_owners]))
+        remix_parent_owners = helpers.query_result_to_list(list(remix_parent_owners))
+        populated_remix_parent_users = populate_user_metadata(session, list(remix_parent_owner_ids), remix_parent_owners, current_user_id)
+        for user in populated_remix_parent_users:
+            populated_users[user['user_id']] = user
+
+    for remix_relationship in remix_query:
+        [track_owner_id, parent_track_id, child_track_id, has_remix_author_favorited, has_remix_author_reposted, _] = remix_relationship
+        if not child_track_id in remixes:
+            remixes[child_track_id] = {
+                parent_track_id: {
+                    'has_remix_author_favorited': bool(has_remix_author_favorited),
+                    'has_remix_author_reposted': bool(has_remix_author_reposted),
+                    'user': populated_users[track_owner_id]
+                } 
+            }
+        else: 
+            remixes[child_track_id][parent_track_id] = {
+                'has_remix_author_favorited': bool(has_remix_author_favorited),
+                'has_remix_author_reposted': bool(has_remix_author_reposted),
+                'user': populated_users[track_owner_id]
+            }
 
     user_reposted_track_dict = {}
     user_saved_track_dict = {}
@@ -416,6 +492,15 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
         track[response_name_constants.followee_saves] = followee_track_save_dict.get(track_id, [])
         track[response_name_constants.has_current_user_reposted] = user_reposted_track_dict.get(track_id, False)
         track[response_name_constants.has_current_user_saved] = user_saved_track_dict.get(track['track_id'], False)
+        if "remix_of" in track and type(track["remix_of"]) is dict and track["track_id"] in remixes:
+            remix_tracks = track["remix_of"].get("tracks")
+            if remix_tracks and type(remix_tracks) is list:
+                for remix_track in remix_tracks:
+                    parent_track_id = remix_track.get("parent_track_id")
+                    if (parent_track_id in remixes[track["track_id"]]):
+                        remix_track.update(remixes[track["track_id"]][parent_track_id])
+        else:
+            track[response_name_constants.remix_of] = None
 
     return tracks
 

@@ -315,7 +315,7 @@ is_delete={self.is_delete}>"
 class Remix(Base):
     __tablename__ = "remixes"
 
-    parent_track_id = Column(Integer, nullable=Falsem, index=True)
+    parent_track_id = Column(Integer, nullable=False, index=True)
     child_track_id = Column(Integer, nullable=False, index=True)
     PrimaryKeyConstraint(parent_track_id, child_track_id)
 
