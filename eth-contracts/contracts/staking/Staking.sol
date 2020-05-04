@@ -39,8 +39,6 @@ contract Staking is RegistryContract, StakingInterface, IsContract {
     mapping (address => Account) internal accounts;
     Checkpointing.History internal totalStakedHistory;
 
-    address treasuryAddress;
-
     address registryAddress;
     bytes32 claimsManagerProxyKey;
     bytes32 delegateManagerKey;
@@ -61,7 +59,6 @@ contract Staking is RegistryContract, StakingInterface, IsContract {
 
     function initialize(
       address _stakingToken,
-      address _treasuryAddress,
       address _registryAddress,
       bytes32 _claimsManagerProxyKey,
       bytes32 _delegateManagerKey,
@@ -71,7 +68,6 @@ contract Staking is RegistryContract, StakingInterface, IsContract {
         require(isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         stakingToken = ERC20(_stakingToken);
         registry = RegistryInterface(_registryAddress);
-        treasuryAddress = _treasuryAddress;
         registryAddress = _registryAddress;
         claimsManagerProxyKey = _claimsManagerProxyKey;
         delegateManagerKey = _delegateManagerKey;

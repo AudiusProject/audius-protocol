@@ -18,8 +18,6 @@ module.exports = (deployer, network, accounts) => {
     const registry = await Registry.deployed()
     const token = await AudiusToken.deployed()
 
-    const treasuryAddress = config.treasuryAddress || accounts[0]
-
     // TODO move to contractConfig
     const [proxyAdminAddress, proxyDeployerAddress] = [accounts[10], accounts[11]]
 
@@ -31,14 +29,12 @@ module.exports = (deployer, network, accounts) => {
       [
         'address',
         'address',
-        'address',
         'bytes32',
         'bytes32',
         'bytes32'
       ],
       [
         token.address,
-        treasuryAddress,
         registry.address,
         claimsManagerProxyKey,
         delegateManagerKey,
@@ -56,7 +52,7 @@ module.exports = (deployer, network, accounts) => {
     await registry.addContract(
       stakingProxyKey,
       stakingProxy.address,
-      { from: treasuryAddress }
+      { from: accounts[0] }
     )
   })
 }
