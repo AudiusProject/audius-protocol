@@ -420,6 +420,15 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
         track[response_name_constants.followee_saves] = followee_track_save_dict.get(track_id, [])
         track[response_name_constants.has_current_user_reposted] = user_reposted_track_dict.get(track_id, False)
         track[response_name_constants.has_current_user_saved] = user_saved_track_dict.get(track['track_id'], False)
+        if "remix_of" in track and type(track["remix_of"]) is dict and track["track_id"] in remixes:
+            remix_tracks = track["remix_of"].get("tracks")
+            if remix_tracks and type(remix_tracks) is list:
+                for remix_track in remix_tracks:
+                    parent_track_id = remix_track.get("parent_track_id")
+                    if (parent_track_id in remixes[track["track_id"]]):
+                        remix_track.update(remixes[track["track_id"]][parent_track_id])
+        else:
+            track[response_name_constants.remix_of] = None
 
         # Populate the remix_of tracks w/ the parent track's user and if that user saved/reposted the child
         if response_name_constants.remix_of in track and type(track[response_name_constants.remix_of]) is dict and track["track_id"] in remixes:
