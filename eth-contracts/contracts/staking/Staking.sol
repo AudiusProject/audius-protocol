@@ -96,7 +96,7 @@ contract Staking is RegistryContract, StakingInterface, IsContract {
 
     /**
      * @notice Slashes `_amount` tokens from _slashAddress
-     * Controlled by treasury address
+     * Callable from DelegateManager
      * @param _amount Number of tokens slashed
      * @param _slashAddress address being slashed
      */
