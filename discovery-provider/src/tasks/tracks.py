@@ -124,13 +124,13 @@ def update_rexmixes_table(session, track_record, track_metadata):
     session.query(Remix).filter_by(child_track_id=child_track_id).delete()
 
     # Add all remixes
-    if "remix_of" in track_metadata and type(track_metadata["remix_of"]) is dict:
+    if "remix_of" in track_metadata and isinstance(track_metadata["remix_of"], dict):
         logger.info("here ins")
         tracks = track_metadata["remix_of"].get("tracks")
-        if tracks and type(tracks) is list:
+        if tracks and isinstance(tracks, list):
             for track in tracks:
                 parent_track_id = track.get("parent_track_id")
-                if parent_track_id and type(parent_track_id) is int:
+                if parent_track_id and isinstance(parent_track_id, int):
                     remix = Remix(
                         parent_track_id=parent_track_id,
                         child_track_id=child_track_id
