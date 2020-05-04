@@ -1,7 +1,7 @@
 const axios = require('axios')
 
 const Utils = require('../../utils')
-const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
+const { serviceType } = require('../ethContracts/index')
 
 const {
   UNHEALTHY_BLOCK_DIFF,
@@ -14,6 +14,7 @@ if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 const MAKE_REQUEST_RETRY_COUNT = 3
 const MAX_MAKE_REQUEST_RETRY_COUNT = 50
+const AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT = 3
 
 class DiscoveryProvider {
   constructor (autoselect, whitelist, userStateManager, ethContracts, web3Manager) {
@@ -22,15 +23,47 @@ class DiscoveryProvider {
     this.userStateManager = userStateManager
     this.ethContracts = ethContracts
     this.web3Manager = web3Manager
-
-    this.serviceSelector = new DiscoveryProviderSelection(
-      { whitelist },
-      ethContracts
-    )
   }
 
   async init () {
-    const endpoint = await this.serviceSelector.select()
+    let endpoint
+    let pick
+    let isValid = null
+
+    if (this.autoselect) {
+      endpoint = await this.autoSelectEndpoint()
+    } else {
+      if (typeof this.whitelist === 'string') {
+        endpoint = this.whitelist
+      } else {
+        if (!this.whitelist || this.whitelist.size === 0) {
+          throw new Error('Must pass autoselect true or provide whitelist.')
+        }
+
+        // use this as a lookup between version endpoint and base url
+        const whitelistMap = {}
+        this.whitelist.forEach((url) => {
+          whitelistMap[urlJoin(url, '/version')] = url
+        })
+
+        try {
+          let resp = await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
+            pick = whitelistMap[url]
+          }, {}, REQUEST_TIMEOUT_MS)
+
+          isValid = pick && resp.data.service && (resp.data.service === serviceType.DISCOVERY_PROVIDER)
+          if (isValid) {
+            console.info('Initial discovery provider was valid')
+            endpoint = pick
+          } else {
+            console.info('Initial discovery provider was invalid, searching for a new one')
+            endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
+          }
+        } catch (e) {
+          throw new Error('Could not select a discprov from the whitelist', e)
+        }
+      }
+    }
     this.setEndpoint(endpoint)
 
     if (endpoint && this.web3Manager && this.web3Manager.web3) {
@@ -42,6 +75,25 @@ class DiscoveryProvider {
 
   setEndpoint (endpoint) {
     this.discoveryProviderEndpoint = endpoint
+  }
+
+  /**
+   * Wrapper method to auto select a valid discovery provider.
+   * @param {*} retries max retries before throwing an error
+   * @param {*} clearCachedDiscoveryProvider if set to true, implies that the previously
+   * selected discovery provider has been failing to serve requests. The prior recurring interval of
+   * checking local storage for DP and old DP local storage entry need to be cleared.
+   */
+  async autoSelectEndpoint (retries = 3, clearCachedDiscoveryProvider = false) {
+    if (retries > 0) {
+      const endpoint = await this.ethContracts.autoselectDiscoveryProvider(this.whitelist, clearCachedDiscoveryProvider)
+      if (endpoint) {
+        this.setEndpoint(endpoint)
+        return endpoint
+      }
+      return this.autoSelectEndpoint(retries - 1)
+    }
+    throw new Error('Failed to autoselect discovery provider')
   }
 
   /**
@@ -628,16 +680,14 @@ class DiscoveryProvider {
     }
 
     if (!this.discoveryProviderEndpoint) {
-      const endpoint = await this.serviceSelector.select()
-      this.setEndpoint(endpoint)
+      await this.autoSelectEndpoint()
     }
 
     if (retries === 0) {
       // Reset the retries count in the case that the newly selected disc prov fails, we can
       // allow it to try MAKE_REQUEST_RETRIES_COUNT number of times before trying another
       retries = MAKE_REQUEST_RETRY_COUNT
-      const endpoint = await this.serviceSelector.select()
-      this.setEndpoint(endpoint)
+      await this.autoSelectEndpoint(AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT, true)
     }
 
     let requestUrl
@@ -671,8 +721,8 @@ class DiscoveryProvider {
       const parsedResponse = Utils.parseDataFromResponse(response)
 
       if (
-        this.serviceSelector &&
-        !this.serviceSelector.isInRegressedMode() &&
+        this.ethContracts &&
+        !this.ethContracts.isInRegressedMode() &&
         'latest_indexed_block' in parsedResponse &&
         'latest_chain_block' in parsedResponse
       ) {
@@ -686,13 +736,10 @@ class DiscoveryProvider {
           !indexedBlock ||
           (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
         ) {
-          console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
-          // Mark the current selection as a backup
-          this.serviceSelector.addBackup(this.discoveryProviderEndpoint, response)
           // Select a new one
-          const endpoint = await this.serviceSelector.select()
+          console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
+          const endpoint = await this.autoSelectEndpoint(AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT, true)
           this.setEndpoint(endpoint)
-
           retries = MAKE_REQUEST_RETRY_COUNT // reset retry count when setting a new endpoint
           throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
         }
