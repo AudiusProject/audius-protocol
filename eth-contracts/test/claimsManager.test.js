@@ -247,4 +247,17 @@ contract('ClaimsManager', async (accounts) => {
       claimsManager.initiateRound({ from: controllerAddress }),
       'Required block difference not met')
   })
+
+  it('updates funding amount', async () => {
+    let currentFunding = await claimsManager.getFundsPerRound()
+    let newAmount = toWei(1000)
+    assert.isTrue(!newAmount.eq(currentFunding), 'Expect change in funding value')
+    await _lib.assertRevert(
+      claimsManager.updateFundingAmount(newAmount, { from: accounts[7] }),
+      'UpdateFundingAmount only accessible from controllerAddress.'
+    )
+    await claimsManager.updateFundingAmount(newAmount, { from: controllerAddress })
+    let updatedFundingAmount = await claimsManager.getFundsPerRound()
+    assert.isTrue(newAmount.eq(updatedFundingAmount), 'Expect updated funding amount')
+  })
 })
