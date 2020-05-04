@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from src import contract_addresses
 from src.utils import multihash, helpers
-from src.models import Track, User, BlacklistedIPLD, Credit
+from src.models import Track, User, BlacklistedIPLD, Remix
 from src.tasks.metadata import track_metadata_format
 
 logger = logging.getLogger(__name__)
@@ -117,24 +117,25 @@ def invalidate_old_track(session, track_id):
     ), "Update operation requires a current track to be invalidated"
 
 
-def update_credit_splits(session, track_record, track_metadata):
+def update_rexmixes_table(session, track_record, track_metadata):
     child_track_id = track_record.track_id
 
-    # Delete existing credits
-    session.query(Credit).filter_by(child_track_id=child_track_id).delete()
+    # Delete existing remix parents
+    session.query(Remix).filter_by(child_track_id=child_track_id).delete()
 
-    # Add all credits
-    if "credits_splits" in track_metadata:
-        splits = track_metadata["credits_splits"].get("splits")
-        if splits:
-            for split in splits:
-                parent_track_id = split.get("track_id")
-                if parent_track_id:
-                    credit = Credit(
+    # Add all remixes
+    if "remix_of" in track_metadata and type(track_metadata["remix_of"]) is dict:
+        logger.info("here ins")
+        tracks = track_metadata["remix_of"].get("tracks")
+        if tracks and type(tracks) is list:
+            for track in tracks:
+                parent_track_id = track.get("parent_track_id")
+                if parent_track_id and type(parent_track_id) is int:
+                    remix = Remix(
                         parent_track_id=parent_track_id,
                         child_track_id=child_track_id
                     )
-                    session.add(credit)
+                    session.add(remix)
 
 
 def parse_track_event(
@@ -193,7 +194,7 @@ def parse_track_event(
                 track_record.cover_art_sizes = track_record.cover_art
                 track_record.cover_art = None
 
-        update_credit_splits(session, track_record, track_metadata)
+        update_rexmixes_table(session, track_record, track_metadata)
 
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
@@ -241,7 +242,7 @@ def parse_track_event(
                 track_record.cover_art_sizes = track_record.cover_art
                 track_record.cover_art = None
 
-        update_credit_splits(session, track_record, track_metadata)
+        update_rexmixes_table(session, track_record, track_metadata)
 
     if event_type == track_event_types_lookup["delete_track"]:
         track_record.is_delete = True
@@ -277,6 +278,7 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_segments = track_metadata["track_segments"]
     track_record.is_unlisted = track_metadata["is_unlisted"]
     track_record.field_visibility = track_metadata["field_visibility"]
+    track_record.remix_of = track_metadata["remix_of"]
 
     if "download" in track_metadata:
         track_record.download = {
