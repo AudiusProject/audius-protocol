@@ -132,7 +132,8 @@ class Track(Base):
     tags = Column(String)
     genre = Column(String)
     mood = Column(String)
-    credits_splits = Column(postgresql.JSONB, nullable=True)
+    credits_splits = Column(String)
+    remix_of = Column(postgresql.JSONB, nullable=True)
     create_date = Column(String)
     release_date = Column(String)
     file_type = Column(String)
@@ -169,6 +170,7 @@ class Track(Base):
             f"genre={self.genre},"
             f"mood={self.mood},"
             f"credits_splits={self.credits_splits},"
+            f"remix_of={self.remix_of},"
             f"create_date={self.create_date},"
             f"release_date={self.release_date},"
             f"file_type={self.file_type},"
@@ -310,13 +312,13 @@ save_type={self.save_type},\
 is_current={self.is_current},\
 is_delete={self.is_delete}>"
 
-class Credit(Base):
-    __tablename__ = "credits"
+class Remix(Base):
+    __tablename__ = "remixes"
 
     parent_track_id = Column(Integer, nullable=Falsem, index=True)
     child_track_id = Column(Integer, nullable=False, index=True)
     PrimaryKeyConstraint(parent_track_id, child_track_id)
 
     def __repr__(self):
-        return f"<Credit(parent_track_id={self.parent_track_id},\
+        return f"<Remix(parent_track_id={self.parent_track_id},\
 child_track_id={self.child_track_id}>"

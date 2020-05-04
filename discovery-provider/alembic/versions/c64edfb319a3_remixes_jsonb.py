@@ -1,4 +1,4 @@
-"""credits-splits-jsonb
+"""remixes-jsonb
 
 Revision ID: c64edfb319a3
 Revises: b3084b7bc025
@@ -17,10 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    op.drop_column('tracks', 'credits_splits')
-    op.add_column('tracks', sa.Column('credits_splits', postgresql.JSONB(astext_type=sa.Text()), nullable=True))
+    op.add_column('tracks', sa.Column('remix_of', postgresql.JSONB(astext_type=sa.Text()), nullable=True))
 
 
 def downgrade():
-    op.drop_column('tracks', 'credits_splits')
-    op.add_column('tracks', sa.Column('credits_splits', postgresql.VARCHAR(), nullable=True))
+    op.drop_column('tracks', 'remix_of')

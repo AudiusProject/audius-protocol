@@ -19,6 +19,7 @@ track_metadata_format = {
     "iswc": None,
     "track_segments": [],
     "download": {},
+    "remix_of": None,
     "is_unlisted": False,
     "field_visibility": None
 }
