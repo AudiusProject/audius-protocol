@@ -104,8 +104,8 @@ contract ClaimsManager is RegistryContract {
         return totalClaimedInRound;
     }
 
-    // Start a new funding round
-    // Permissioned to stakers or contract deployer
+    /// @dev - Start a new funding round
+    //         Permissioned to stakers or contract deployer
     function initiateRound() external {
         requireIsInitialized();
         bool senderStaked = StakingInterface(
@@ -132,8 +132,8 @@ contract ClaimsManager is RegistryContract {
         );
     }
 
-    // Callable by DelegateManager only
-    // Mints new tokens and stakes on behalf of claimer
+    /// @dev - Callable by DelegateManager only
+    ///        Mints new tokens and stakes on behalf of claimer
     function processClaim(
         address _claimer,
         uint _totalLockedForSP
@@ -197,6 +197,14 @@ contract ClaimsManager is RegistryContract {
         );
 
         return newTotal;
+    }
+
+    function updateFundingAmount(uint _newAmount)
+    external returns (uint newAmount) 
+    {
+        require(msg.sender == controllerAddress, "UpdateFundingAmount only accessible from controllerAddress");
+        fundingAmount = _newAmount;
+        return _newAmount;
     }
 
     function claimPending(address _sp) external view returns (bool pending) {
