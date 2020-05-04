@@ -133,9 +133,10 @@ class DiscoveryProviderSelection extends ServiceSelection {
   }
 
   /**
-   * In the case of no "healthy" services, we resort to backups.
-   * 1. Pick the most recent version that's not behind
-   * 2. Pick the least behind provider and enter "regressed mode"
+   * In the case of no "healthy" services, we resort to backups in the following order:
+   * 1. Pick the most recent (patch) version that's not behind
+   * 2. Pick the least behind provider that is a valid patch version and enter "regressed mode"
+   * 3. Pick `null`
    */
   async selectFromBackups () {
     const versions = []
@@ -162,7 +163,9 @@ class DiscoveryProviderSelection extends ServiceSelection {
       }
     }
 
-    // Go through each backup and record version and block diff maps
+    // Go through each backup and create two keyed maps:
+    // { semver => [provider] }
+    // { blockdiff => [provider] }
     Object.keys(this.backups).forEach(backup => {
       const { block_difference: blockDiff, version } = this.backups[backup]
       // Filter out any version that wasn't registered on chain

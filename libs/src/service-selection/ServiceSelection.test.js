@@ -147,7 +147,8 @@ describe('ServiceSelection', () => {
     const firstService = await s.select()
     assert.strictEqual(firstService, atFirstHealthy)
 
-    await Utils.wait(200)
+    // Push the event loop just to let the unhealthy list get cleared
+    await Utils.wait(0)
     const secondService = await s.select()
     assert.strictEqual(secondService, atFirstUnhealthy)
   })

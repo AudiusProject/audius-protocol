@@ -162,7 +162,7 @@ describe('DiscoveryProviderSelection', () => {
     assert.strictEqual(s.getTotalAttempts(), 2)
   })
 
-  it('can select the discprov that is the least number of blocks behind', async () => {
+  it('can select the discprov that is the least number of blocks behind for the current version', async () => {
     const behind20 = 'https://behind20.audius.co'
     nock(behind20)
       .get('/health_check')
