@@ -1993,6 +1993,7 @@ def get_remix_tracks(track_id):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
+        # Fetch the parent track to get the track's owner id
         parent_track = session.query(Track).filter(
             Track.is_current == True,
             Track.track_id == track_id
@@ -2002,6 +2003,8 @@ def get_remix_tracks(track_id):
             return api_helpers.error_response("Invalid track_id provided", 400)
 
         track_owner_id = parent_track.owner_id
+        # Get the 'children' remix tracks
+        # Use the track owner id to fetch reposted/saved tracks returned first 
         base_query = session.query(Track).join(
             Remix,
             and_(
@@ -2046,7 +2049,7 @@ def get_remix_tracks(track_id):
             desc(Track.track_id)
         )
 
-        tracks = base_query.all()
+        tracks = paginate_query(base_query).all()
         tracks = helpers.query_result_to_list(tracks)
         track_ids = list(map(lambda track: track["track_id"], tracks))
         current_user_id = get_current_user_id(required=False)
@@ -2068,16 +2071,6 @@ def get_remix_tracks(track_id):
 def get_remix_track_parents(track_id):
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        parent_track = session.query(Track).filter(
-            Track.is_current == True,
-            Track.track_id == track_id
-        ).first()
-        
-        if (parent_track == None):
-            return api_helpers.error_response("Invalid track_id provided", 400)
-
-        track_owner_id = parent_track.owner_id
-
         base_query = session.query(
             Track
         ).join(
@@ -2093,13 +2086,11 @@ def get_remix_track_parents(track_id):
             desc(Track.track_id)
         )
 
-        tracks = base_query.all()
-
+        tracks = paginate_query(base_query).all()
         tracks = helpers.query_result_to_list(tracks)
         track_ids = list(map(lambda track: track["track_id"], tracks))
         current_user_id = get_current_user_id(required=False)
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
-
 
         if "with_users" in request.args and request.args.get("with_users") != 'false':
             user_id_list = get_users_ids(tracks)
