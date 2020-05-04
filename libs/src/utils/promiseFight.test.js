@@ -68,4 +68,20 @@ describe('promiseFight', () => {
     ], true)
     assert.deepStrictEqual(res, { val: 'first', errored: ['second', 'third'] })
   })
+
+  it('should fail if all of the promises fail', async () => {
+    try {
+      await promiseFight([
+        p('first', null, 100),
+        p('second', null, 10),
+        p('third', null, 20),
+        p('fourth', null, 200)
+      ], true)
+    } catch (e) {
+      assert.deepStrictEqual(
+        e,
+        ['first', 'second', 'third', 'fourth']
+      )
+    }
+  })
 })

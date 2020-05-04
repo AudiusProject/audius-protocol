@@ -1,6 +1,7 @@
 const ServiceSelection = require('./ServiceSelection')
 const nock = require('nock')
 const assert = require('assert')
+const Utils = require('../utils')
 
 describe('ServiceSelection', () => {
   it('prefers a healthy service', async () => {
@@ -120,6 +121,36 @@ describe('ServiceSelection', () => {
     })
     const service = await s.select()
     assert.strictEqual(service, slow)
+  })
+
+  it('will recheck unhealthy ones', async () => {
+    const atFirstHealthy = 'https://atFirstHealthy.audius.co'
+    nock(atFirstHealthy)
+      .get('/health_check')
+      .reply(200)
+    nock(atFirstHealthy)
+      .get('/health_check')
+      .reply(400)
+
+    const atFirstUnhealthy = 'https://atFirstUnhealthy.audius.co'
+    nock(atFirstUnhealthy)
+      .get('/health_check')
+      .reply(400)
+    nock(atFirstUnhealthy)
+      .get('/health_check')
+      .reply(200)
+
+    const s = new ServiceSelection({
+      getServices: () => [atFirstHealthy, atFirstUnhealthy],
+      unhealthyTTL: 0
+    })
+    const firstService = await s.select()
+    assert.strictEqual(firstService, atFirstHealthy)
+
+    // Push the event loop just to let the unhealthy list get cleared
+    await Utils.wait(0)
+    const secondService = await s.select()
+    assert.strictEqual(secondService, atFirstUnhealthy)
   })
 })
 

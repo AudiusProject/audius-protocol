@@ -128,8 +128,16 @@ class ServiceSelection {
     clearTimeout(this.unhealthyCleanupTimeout)
     clearTimeout(this.backupCleanupTimeout)
 
-    this.unhealthyCleanupTimeout = setTimeout(() => { this.unhealthy = [] }, this.unhealthyTTL)
-    this.backupCleanupTimeout = setTimeout(() => { this.backups = {} }, this.backupsTTL)
+    this.unhealthyCleanupTimeout = setTimeout(() => { this.clearUnhealthy() }, this.unhealthyTTL)
+    this.backupCleanupTimeout = setTimeout(() => { this.clearBackups() }, this.backupsTTL)
+  }
+
+  clearUnhealthy () {
+    this.unhealthy = new Set([])
+  }
+
+  clearBackups () {
+    this.backups = {}
   }
 
   /** A short-circuit. If overriden, can be used to skip selection (which could be slow) */
@@ -215,7 +223,7 @@ class ServiceSelection {
    * Controls how a backup is picked. Overriding methods may choose to use the backup's response.
    * e.g. pick a backup that's the fewest versions behind
    */
-  selectFromBackups () {
+  async selectFromBackups () {
     return Object.keys(this.backups)[0]
   }
 }
