@@ -13,6 +13,7 @@ const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 
+// TODO - consolidate all helper logic in _lib
 const toWei = (aud) => {
   let amountInAudWei = web3.utils.toWei(
     aud.toString(),
@@ -24,8 +25,8 @@ const toWei = (aud) => {
 }
 
 const DEFAULT_AMOUNT = toWei(120)
+
 contract('Upgrade proxy test', async (accounts) => {
-  let testStakingCallerAddress = accounts[6] // Dummy stand in for sp factory in actual deployment
   let proxy
   let token
   let staking0
@@ -119,10 +120,12 @@ contract('Upgrade proxy test', async (accounts) => {
     staking = await StakingUpgraded.at(proxy.address)
     const newFunctionResp = await staking.newFunction.call({ from: proxyDeployerAddress })
     assert.equal(newFunctionResp, 5)
+
+    // TODO - confirm Upgraded event emission / data
   })
 
-  describe('Test with Staking contract', function () {
-    beforeEach(async function () {
+  describe('Test with Staking contract', async () => {
+    beforeEach(async () => {
       const spAccount1 = accounts[3]
       const spAccount2 = accounts[4]
 
@@ -161,4 +164,6 @@ contract('Upgrade proxy test', async (accounts) => {
       )
     })
   })
+
+  describe.skip('Test AudiusAdminUpgradeabilityProxy or convert above tests to new contract', async () => { })
 })

@@ -5,12 +5,13 @@ const encodeCall = require('../utils/encodeCall')
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
 const Staking = artifacts.require('Staking')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
+const governanceKey = web3.utils.utf8ToHex('Governance')
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
@@ -42,10 +43,12 @@ module.exports = (deployer, network, accounts) => {
       ])
 
     const stakingProxy = await deployer.deploy(
-      AdminUpgradeabilityProxy,
+      AudiusAdminUpgradeabilityProxy,
       staking0.address,
       proxyAdminAddress,
       initializeCallData,
+      registry.address,
+      governanceKey,
       { from: proxyDeployerAddress }
     )
 
