@@ -4,7 +4,7 @@ const encodeCall = require('../utils/encodeCall')
 const Registry = artifacts.require('Registry')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 
 const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -25,6 +25,7 @@ module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
     const config = contractConfig[network]
     const registry = await Registry.deployed()
+    const registryAddress = registry.address
 
     const controllerAddress = config.controllerAddress || accounts[0]
     // TODO move to contractConfig
@@ -34,14 +35,16 @@ module.exports = (deployer, network, accounts) => {
     const serviceTypeCalldata = encodeCall(
       'initialize',
       ['address', 'address', 'bytes32'],
-      [registry.address, controllerAddress, governanceKey]
+      [registryAddress, controllerAddress, governanceKey]
     )
 
     const serviceTypeManagerProxy = await deployer.deploy(
-      AdminUpgradeabilityProxy,
+      AudiusAdminUpgradeabilityProxy,
       serviceTypeManager0.address,
       proxyAdminAddress,
       serviceTypeCalldata,
+      registryAddress,
+      governanceKey,
       { from: proxyDeployerAddress }
     )
 
@@ -65,14 +68,16 @@ module.exports = (deployer, network, accounts) => {
     const serviceProviderFactoryCalldata = encodeCall(
       'initialize',
       ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
+      [registryAddress, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
     )
 
     const serviceProviderFactoryProxy = await deployer.deploy(
-      AdminUpgradeabilityProxy,
+      AudiusAdminUpgradeabilityProxy,
       serviceProviderFactory0.address,
       proxyAdminAddress,
       serviceProviderFactoryCalldata,
+      registryAddress,
+      governanceKey,
       { from: proxyDeployerAddress }
     )
 
