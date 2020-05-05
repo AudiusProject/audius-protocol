@@ -1,19 +1,21 @@
 pragma solidity ^0.5.0;
 
 import "./StakingInterface.sol";
-import "./Checkpointing.sol";
 import "../service/interface/registry/RegistryInterface.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/utils/Address.sol";
+import "@aragon/court/contracts/lib/Checkpointing.sol";
+import "@aragon/court/contracts/lib/os/Uint256Helpers.sol";
 import "../service/registry/RegistryContract.sol";
 
 
 /** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
 contract Staking is RegistryContract, StakingInterface {
     using SafeMath for uint256;
+    using Uint256Helpers for uint256;
     using Checkpointing for Checkpointing.History;
     using SafeERC20 for ERC20;
 
@@ -88,7 +90,7 @@ contract Staking is RegistryContract, StakingInterface {
             bytes("")); // TODO: RM bytes requirement if unused
 
         // Update claim history even if no value claimed
-        accounts[_stakerAccount].claimHistory.add(block.number, _amount);
+        accounts[_stakerAccount].claimHistory.add(block.number.toUint64(), _amount);
     }
 
     /**
@@ -242,7 +244,11 @@ contract Staking is RegistryContract, StakingInterface {
      * @return Last block number when account's balance was modified
      */
     function lastStakedFor(address _accountAddress) external view returns (uint256) {
-        return accounts[_accountAddress].stakedHistory.lastUpdated();
+        uint256 length = accounts[_accountAddress].stakedHistory.history.length;
+        if (length > 0) {
+            return uint256(accounts[_accountAddress].stakedHistory.history[length - 1].time);
+        }
+        return 0;
     }
 
     /**
@@ -251,7 +257,11 @@ contract Staking is RegistryContract, StakingInterface {
      * @return Last block number when claim requested
      */
     function lastClaimedFor(address _accountAddress) external view returns (uint256) {
-        return accounts[_accountAddress].claimHistory.lastUpdated();
+        uint256 length = accounts[_accountAddress].claimHistory.history.length;
+        if (length > 0) {
+            return uint256(accounts[_accountAddress].claimHistory.history[length - 1].time);
+        }
+        return 0;
     }
 
     /**
@@ -261,7 +271,7 @@ contract Staking is RegistryContract, StakingInterface {
      * @return The amount of tokens staked by the account at the given block number
      */
     function totalStakedForAt(address _accountAddress, uint256 _blockNumber) external view returns (uint256) {
-        return accounts[_accountAddress].stakedHistory.get(_blockNumber);
+        return accounts[_accountAddress].stakedHistory.get(_blockNumber.toUint64());
     }
 
     /**
@@ -270,7 +280,7 @@ contract Staking is RegistryContract, StakingInterface {
      * @return The amount of tokens staked at the given block number
      */
     function totalStakedAt(uint256 _blockNumber) external view returns (uint256) {
-        return totalStakedHistory.get(_blockNumber);
+        return totalStakedHistory.get(_blockNumber.toUint64());
     }
 
     /* Public functions */
@@ -282,7 +292,7 @@ contract Staking is RegistryContract, StakingInterface {
      */
     function totalStakedFor(address _accountAddress) public view returns (uint256) {
         // we assume it's not possible to stake in the future
-        return accounts[_accountAddress].stakedHistory.getLatestValue();
+        return accounts[_accountAddress].stakedHistory.getLast();
     }
 
     /**
@@ -291,7 +301,7 @@ contract Staking is RegistryContract, StakingInterface {
      */
     function totalStaked() public view returns (uint256) {
         // we assume it's not possible to stake in the future
-        return totalStakedHistory.getLatestValue();
+        return totalStakedHistory.getLast();
     }
 
     /* Internal functions */
@@ -364,7 +374,7 @@ contract Staking is RegistryContract, StakingInterface {
     }
 
     function _modifyStakeBalance(address _accountAddress, uint256 _by, bool _increase) internal {
-        uint256 currentInternalStake = accounts[_accountAddress].stakedHistory.getLatestValue();
+        uint256 currentInternalStake = accounts[_accountAddress].stakedHistory.getLast();
 
         uint256 newStake;
         if (_increase) {
@@ -377,7 +387,7 @@ contract Staking is RegistryContract, StakingInterface {
         }
 
         // add new value to account history
-        accounts[_accountAddress].stakedHistory.add(block.number, newStake);
+        accounts[_accountAddress].stakedHistory.add(block.number.toUint64(), newStake);
     }
 
     function _modifyTotalStaked(uint256 _by, bool _increase) internal {
@@ -391,6 +401,6 @@ contract Staking is RegistryContract, StakingInterface {
         }
 
         // add new value to total history
-        totalStakedHistory.add(block.number, newStake);
+        totalStakedHistory.add(block.number.toUint64(), newStake);
     }
 }
