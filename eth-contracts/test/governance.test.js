@@ -688,6 +688,13 @@ contract('Governance.sol', async (accounts) => {
       const stakingCopy2 = await StakingUpgraded.at(staking.address)
       const newFnResp = await stakingCopy2.newFunction.call({ from: proxyDeployerAddress })
       assert.equal(newFnResp, 5)
+
+      // Confirm that proxy contract's implementation address has upgraded
+      assert.equal(
+        await stakingProxy.implementation.call({ from: proxyAdminAddress }),
+        stakingUpgraded0.address,
+        'Expected updated proxy implementation address'
+      )
     })
   })
 
