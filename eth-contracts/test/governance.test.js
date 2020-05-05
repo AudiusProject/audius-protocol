@@ -7,7 +7,9 @@ const encodeCall = require('../utils/encodeCall')
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
+const StakingUpgraded = artifacts.require('StakingUpgraded')
 const Governance = artifacts.require('Governance')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
@@ -21,8 +23,6 @@ const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManagerKey')
-
-const EMPTY_STRING = ''
 
 const toBN = val => web3.utils.toBN(val)
 
@@ -61,7 +61,7 @@ const Vote = Object.freeze({
 })
 
 contract('Governance.sol', async (accounts) => {
-  let token, registry, staking0, staking, proxy, claimsManager0, claimsManagerProxy
+  let token, registry, staking0, staking, stakingProxy, claimsManager0, claimsManagerProxy
   let serviceProviderFactory, claimsManager, delegateManager, governance
 
   const votingPeriod = 10
@@ -71,6 +71,12 @@ contract('Governance.sol', async (accounts) => {
   const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
   const testEndpoint1 = 'https://localhost:5000'
   const testEndpoint2 = 'https://localhost:5001'
+
+  const defaultStakeAmount = audToWeiBN(1000)
+  const proposalDescription = "TestDescription"
+  const stakerAccount1 = accounts[10]
+  const stakerAccount2 = accounts[11]
+  const delegatorAccount1 = accounts[12]
 
   const registerServiceProvider = async (type, endpoint, amount, account) => {
     // Approve staking transfer
@@ -90,9 +96,7 @@ contract('Governance.sol', async (accounts) => {
     return args
   }
 
-  /**
-   * Deploy Registry, AdminUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts.
-   */
+  /** Deploy Registry, AdminUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts. */
   beforeEach(async () => {
     token = await AudiusToken.new({ from: treasuryAddress })
     await token.initialize()
@@ -113,14 +117,16 @@ contract('Governance.sol', async (accounts) => {
     )
     // Set up staking
     staking0 = await Staking.new({ from: proxyAdminAddress })
-    proxy = await AdminUpgradeabilityProxy.new(
+    stakingProxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
+      registry.address,
+      governanceKey,
       { from: proxyDeployerAddress }
     )
-    staking = await Staking.at(proxy.address)
-    await registry.addContract(stakingProxyKey, proxy.address, { from: treasuryAddress })
+    staking = await Staking.at(stakingProxy.address)
+    await registry.addContract(stakingProxyKey, stakingProxy.address, { from: treasuryAddress })
 
     // Deploy service type manager
     let controllerAddress = accounts[9]
@@ -211,49 +217,45 @@ contract('Governance.sol', async (accounts) => {
     await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: protocolOwnerAddress })
   })
 
+  /** Transfer tokens & register 2 SPs */
+  beforeEach(async () => {
+    // Transfer 1000 tokens to stakerAccount1, stakerAccount2, and delegatorAccount1
+    await token.transfer(stakerAccount1, defaultStakeAmount, { from: treasuryAddress })
+    await token.transfer(stakerAccount2, defaultStakeAmount, { from: treasuryAddress })
+    await token.transfer(delegatorAccount1, defaultStakeAmount, { from: treasuryAddress })
+
+    // Record initial staker account token balance
+    const initialBalance = await token.balanceOf(stakerAccount1)
+
+    // Register two SPs with stake
+    const tx1 = await registerServiceProvider(
+      testDiscProvType,
+      testEndpoint1,
+      defaultStakeAmount,
+      stakerAccount1
+    )
+    await registerServiceProvider(
+      testDiscProvType,
+      testEndpoint2,
+      defaultStakeAmount,
+      stakerAccount2
+    )
+
+    // Confirm event has correct amount
+    assert.isTrue(tx1.stakeAmount.eq(defaultStakeAmount))
+
+    // Confirm new token balances
+    const finalBalance = await token.balanceOf(stakerAccount1)
+    assert.isTrue(
+      initialBalance.eq(
+        finalBalance.add(defaultStakeAmount)
+      ),
+      "Expected initialBalance == finalBalance + defaultStakeAmount"
+    )
+  })
+
   describe('Slash proposal', async () => {
-    const defaultStakeAmount = audToWeiBN(1000)
-    const proposalDescription = "TestDescription"
-    const stakerAccount1 = accounts[10]
-    const stakerAccount2 = accounts[11]
-    const delegatorAccount1 = accounts[12]
     
-    beforeEach(async () => {
-      // Transfer 1000 tokens to stakerAccount1, stakerAccount2, and delegatorAccount1
-      await token.transfer(stakerAccount1, defaultStakeAmount, { from: treasuryAddress })
-      await token.transfer(stakerAccount2, defaultStakeAmount, { from: treasuryAddress })
-      await token.transfer(delegatorAccount1, defaultStakeAmount, { from: treasuryAddress })
-
-      // Record initial staker account token balance
-      const initialBalance = await token.balanceOf(stakerAccount1)
-
-      // Register two SPs with stake
-      const tx1 = await registerServiceProvider(
-        testDiscProvType,
-        testEndpoint1,
-        defaultStakeAmount,
-        stakerAccount1
-      )
-      await registerServiceProvider(
-        testDiscProvType,
-        testEndpoint2,
-        defaultStakeAmount,
-        stakerAccount2
-      )
-
-      // Confirm event has correct amount
-      assert.isTrue(tx1.stakeAmount.eq(defaultStakeAmount))
-
-      // Confirm new token balances
-      const finalBalance = await token.balanceOf(stakerAccount1)
-      assert.isTrue(
-        initialBalance.eq(
-          finalBalance.add(defaultStakeAmount)
-        ),
-        "Expected initialBalance == finalBalance + defaultStakeAmount"
-      )
-    })
-
     it('Initial state - Ensure no Proposals exist yet', async () => {
       await _lib.assertRevert(governance.getProposalById(0), 'Must provide valid non-zero _proposalId')
       await _lib.assertRevert(governance.getProposalById(1), 'Must provide valid non-zero _proposalId')
@@ -458,7 +460,7 @@ contract('Governance.sol', async (accounts) => {
         // Confirm event logs (2 events)
         const [txParsedEvent0, txParsedEvent1] = _lib.parseTx(evaluateTxReceipt, true)
         assert.equal(txParsedEvent0.event.name, 'TransactionExecuted', 'Expected same event name')
-        assert.equal(txParsedEvent0.event.args.proposalId, proposalId, 'Expected same txParsedEvent0.event.args.txHash')
+        assert.equal(parseInt(txParsedEvent0.event.args.proposalId), proposalId, 'Expected same txParsedEvent0.event.args.proposalId')
         assert.equal(txParsedEvent0.event.args.txHash, txHash, 'Expected same txParsedEvent0.event.args.txHash')
         assert.equal(txParsedEvent0.event.args.success, true, 'Expected same txParsedEvent0.event.args.returnData')
         assert.equal(txParsedEvent0.event.args.returnData, returnData, 'Expected same txParsedEvent0.event.args.returnData')
@@ -604,8 +606,89 @@ contract('Governance.sol', async (accounts) => {
     })
   })
 
-  describe.skip('Submit proposal to upgrade contract', async () => {
-    // example upgradeProxy.test.js:63
+  describe('Upgrade Contract Proposal', async () => {
+    it('Upgrade Contract Proposal', async () => {
+      // Confirm staking.newFunction() not callable before upgrade
+      const stakingCopy = await StakingUpgraded.at(staking.address)
+      await _lib.assertRevert(stakingCopy.newFunction.call({ from: proxyDeployerAddress }), 'revert')
+
+      // Deploy new logic contract to later upgrade to
+      const stakingUpgraded0 = await StakingUpgraded.new({ from: proxyAdminAddress })
+      
+      // Define vars
+      const targetContractRegistryKey = stakingProxyKey
+      const targetContractAddress = stakingProxy.address
+      const callValue = audToWei(0)
+      const signature = 'upgradeTo(address)'
+      const callData = abiEncode(['address'], [stakingUpgraded0.address])
+      const txHash = keccak256(
+        abiEncode(
+          ['address', 'uint256', 'string', 'bytes'],
+          [targetContractAddress, callValue, signature, callData]
+        )
+      )
+      const returnData = null
+
+      const proposerAddress = stakerAccount1
+      const voterAddress = stakerAccount1
+      const outcome = Outcome.Yes
+      const lastBlock = (await _lib.getLatestBlock(web3)).number
+      
+      // Submit proposal
+      const submitTxReceipt = await governance.submitProposal(
+        targetContractRegistryKey,
+        callValue,
+        signature,
+        callData,
+        proposalDescription,
+        { from: proposerAddress }
+      )
+      const proposalId = _lib.parseTx(submitTxReceipt).event.args.proposalId
+
+      // Submit proposal vote for Yes
+      await governance.submitProposalVote(proposalId, Vote.Yes, { from: voterAddress })
+
+      // Advance blocks to after proposal evaluation period
+      const proposalStartBlock = parseInt(_lib.parseTx(submitTxReceipt).event.args.startBlockNumber)
+      await _lib.advanceToTargetBlock(proposalStartBlock + votingPeriod, web3)
+
+      // Call evaluateProposalOutcome()
+      const evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
+
+      // Confirm event log states - TransactionExecuted, ProposalOutcomeEvaluated
+      const [txParsedEvent0, txParsedEvent1] = _lib.parseTx(evaluateTxReceipt, true)
+      assert.equal(txParsedEvent0.event.name, 'TransactionExecuted', 'Expected event.name')
+      assert.equal(parseInt(txParsedEvent0.event.args.proposalId), proposalId, 'Expected event.args.proposalId')
+      assert.equal(txParsedEvent0.event.args.txHash, txHash, 'Expected event.args.txHash')
+      assert.equal(txParsedEvent0.event.args.success, true, 'Expected event.args.returnData')
+      assert.equal(txParsedEvent0.event.args.returnData, returnData, 'Expected event.args.returnData')
+      assert.equal(txParsedEvent1.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
+      assert.equal(parseInt(txParsedEvent1.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
+      assert.equal(txParsedEvent1.event.args.outcome, outcome, 'Expected same event.args.outcome')
+      assert.isTrue(txParsedEvent1.event.args.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
+      assert.isTrue(txParsedEvent1.event.args.voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
+      assert.equal(parseInt(txParsedEvent1.event.args.numVotes), 1, 'Expected same event.args.numVotes')
+
+      // Call getProposalById() and confirm same values
+      const proposal = await governance.getProposalById.call(proposalId)
+      assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
+      assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
+      assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
+      assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
+      assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
+      assert.equal(fromBN(proposal.callValue), callValue, 'Expected same proposal.callValue')
+      assert.equal(proposal.signature, signature, 'Expected same proposal.signature')
+      assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
+      assert.equal(proposal.outcome, outcome, 'Expected same outcome')
+      assert.equal(parseInt(proposal.voteMagnitudeYes), defaultStakeAmount, 'Expected same voteMagnitudeYes')
+      assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
+      assert.equal(parseInt(proposal.numVotes), 1, 'Expected same numVotes')
+
+      // Confirm that contract was upgraded by ensuring staking.newFunction() call succeeds
+      const stakingCopy2 = await StakingUpgraded.at(staking.address)
+      const newFnResp = await stakingCopy2.newFunction.call({ from: proxyDeployerAddress })
+      assert.equal(newFnResp, 5)
+    })
   })
 
   describe.skip('Submit proposal to upgrade governance contract', async () => {
