@@ -13,7 +13,7 @@ contract Governance is RegistryContract {
     uint256 votingQuorum;
 
     /***** Enums *****/
-    enum Outcome {InProgress, No, Yes, Invalid}
+    enum Outcome {InProgress, No, Yes, Invalid, TxFailed}
     // Enum values map to uints, so first value in Enum always is 0.
     enum Vote {None, No, Yes}
 
@@ -59,11 +59,9 @@ contract Governance is RegistryContract {
         uint256 numVotes
     );
     event TransactionExecuted(
+        uint256 indexed proposalId,
         bytes32 indexed txHash,
-        address targetContractAddress,
-        uint callValue,
-        string signature,
-        bytes callData,
+        bool indexed success,
         bytes returnData
     );
 
@@ -222,6 +220,12 @@ contract Governance is RegistryContract {
             "Must provide valid non-zero _proposalId"
         );
 
+        // Require proposal has not already been evaluated.
+        require(
+            proposals[_proposalId].outcome == Outcome.InProgress,
+            "Governance::evaluateProposalOutcome:Proposal has already been evaluated."
+        );
+
         // Require msg.sender is active Staker.
         StakingInterface stakingContract = StakingInterface(registry.getContract(stakingProxyOwnerKey));
         require(
@@ -250,20 +254,25 @@ contract Governance is RegistryContract {
 
         // Calculate outcome
         Outcome outcome;
+        // votingQuorum not met -> proposal is invalid.
         if (proposals[_proposalId].numVotes < votingQuorum) {
             outcome = Outcome.Invalid;
-        } else if (
+        }
+        // votingQuorum met & vote is Yes -> execute proposed transaction & close proposal.
+        else if (
             proposals[_proposalId].voteMagnitudeYes >= proposals[_proposalId].voteMagnitudeNo
         ) {
-            outcome = Outcome.Yes;
+            bool success = _executeTransaction(_proposalId);
 
-            _executeTransaction(
-                proposals[_proposalId].targetContractAddress,
-                proposals[_proposalId].callValue,
-                proposals[_proposalId].signature,
-                proposals[_proposalId].callData
-            );
-        } else {
+            // Proposal outcome depends on success of transaction execution.
+            if (success == true) {
+                outcome = Outcome.Yes;
+            } else {
+                outcome = Outcome.TxFailed;
+            }
+        }
+        // votingQuorum met & vote is No -> close proposal without transaction execution.
+        else {
             outcome = Outcome.No;
         }
 
@@ -332,44 +341,41 @@ contract Governance is RegistryContract {
         return proposals[_proposalId].votes[_voter];
     }
 
-    // ========================================= Private =========================================
+    // ========================================= Internal =========================================
 
-    function _executeTransaction(
-        address _targetContractAddress,
-        uint256 _callValue,
-        string memory _signature,
-        bytes memory _callData
-    ) internal returns (bytes memory /** returnData */)
+    function _executeTransaction(uint256 _proposalId) internal
+    returns (bool /** success */)
     {
+        address targetContractAddress = proposals[_proposalId].targetContractAddress;
+        uint256 callValue = proposals[_proposalId].callValue;
+        string memory signature = proposals[_proposalId].signature;
+        bytes memory callData = proposals[_proposalId].callData;
+
         bytes32 txHash = keccak256(
             abi.encode(
-                _targetContractAddress, _callValue, _signature, _callData
+                targetContractAddress, callValue, signature, callData
             )
         );
 
-        bytes memory callData;
-
-        if (bytes(_signature).length == 0) {
-            callData = _callData;
+        bytes memory encodedCallData;
+        if (bytes(signature).length == 0) {
+            encodedCallData = callData;
         } else {
-            callData = abi.encodePacked(bytes4(keccak256(bytes(_signature))), _callData);
+            encodedCallData = abi.encodePacked(bytes4(keccak256(bytes(signature))), callData);
         }
 
         (bool success, bytes memory returnData) = (
             // solium-disable-next-line security/no-call-value
-            _targetContractAddress.call.value(_callValue)(callData)
+            targetContractAddress.call.value(callValue)(encodedCallData)
         );
-        require(success, "Governance::executeTransaction:Transaction execution reverted.");
 
         emit TransactionExecuted(
+            _proposalId,
             txHash,
-            _targetContractAddress,
-            _callValue,
-            _signature,
-            _callData,
+            success,
             returnData
         );
 
-        return returnData;
+        return success;
     }
 }

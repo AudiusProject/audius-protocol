@@ -54,9 +54,12 @@ module.exports = {
   // https://solidity.readthedocs.io/en/develop/using-the-compiler.html#input-description
   compilers: {
     solc: {
+      // 0.5.16 is latest 0.5.x version
+      // cannot use 0.6.x due to openzeppelin dependency, which are only 0.5.x compatible
+      version: '0.5.16',
       parser: 'solcjs', // Leverages solc-js purely for speedy parsing
       settings: {
-        evmVersion: 'constantinople',
+        evmVersion: 'istanbul', // istanbul is latest stable, and default setting
         optimizer: {
           enabled: true,
           runs: 200, // 200 is default value
@@ -65,7 +68,7 @@ module.exports = {
             deduplicate: true,
             cse: true,
             constantOptimizer: true,
-            yul: false // TODO try after solc upgrade
+            yul: false // disabled as Yul optimizer is still experimental in 0.5.x
           }
         }
       }
