@@ -117,7 +117,7 @@ def invalidate_old_track(session, track_id):
     ), "Update operation requires a current track to be invalidated"
 
 
-def update_rexmixes_table(session, track_record, track_metadata):
+def update_remixes_table(session, track_record, track_metadata):
     child_track_id = track_record.track_id
 
     # Delete existing remix parents
@@ -125,7 +125,6 @@ def update_rexmixes_table(session, track_record, track_metadata):
 
     # Add all remixes
     if "remix_of" in track_metadata and isinstance(track_metadata["remix_of"], dict):
-        logger.info("here ins")
         tracks = track_metadata["remix_of"].get("tracks")
         if tracks and isinstance(tracks, list):
             for track in tracks:
@@ -194,7 +193,7 @@ def parse_track_event(
                 track_record.cover_art_sizes = track_record.cover_art
                 track_record.cover_art = None
 
-        update_rexmixes_table(session, track_record, track_metadata)
+        update_remixes_table(session, track_record, track_metadata)
 
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
@@ -242,7 +241,7 @@ def parse_track_event(
                 track_record.cover_art_sizes = track_record.cover_art
                 track_record.cover_art = None
 
-        update_rexmixes_table(session, track_record, track_metadata)
+        update_remixes_table(session, track_record, track_metadata)
 
     if event_type == track_event_types_lookup["delete_track"]:
         track_record.is_delete = True

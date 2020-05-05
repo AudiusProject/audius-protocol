@@ -16,7 +16,8 @@ from src.queries import response_name_constants
 from src.queries.query_helpers import get_current_user_id, parse_sort_param, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_repost_counts, get_save_counts, \
     get_pagination_vars, paginate_query, get_users_by_id, get_users_ids, \
-    create_save_repost_count_subquery, decayed_score, filter_to_playlist_mood, create_followee_playlists_subquery
+    create_save_repost_count_subquery, decayed_score, filter_to_playlist_mood, \
+    create_followee_playlists_subquery, add_users_to_tracks
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("queries", __name__)
@@ -1989,7 +1990,7 @@ def get_top_genre_users():
 # Get the tracks that are 'children' remixes of the requested track
 # The results are sorted by if the original artist has reposted or saved the track
 @bp.route("/remixes/<int:track_id>/children", methods=("GET",))
-def get_remix_tracks(track_id):
+def get_remixes_of(track_id):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
@@ -2005,48 +2006,53 @@ def get_remix_tracks(track_id):
         track_owner_id = parent_track.owner_id
         # Get the 'children' remix tracks
         # Use the track owner id to fetch reposted/saved tracks returned first 
-        base_query = session.query(Track).join(
-            Remix,
-            and_(
-                Remix.child_track_id == Track.track_id,
-                Remix.parent_track_id == track_id
+        base_query = (
+            session.query(Track)
+            .join(
+                Remix,
+                and_(
+                    Remix.child_track_id == Track.track_id,
+                    Remix.parent_track_id == track_id
+                )
+            ).outerjoin(
+                Save,
+                and_(
+                    Save.save_item_id == Track.track_id,
+                    Save.save_type == SaveType.track,
+                    Save.is_current == True,
+                    Save.is_delete == False,
+                    Save.user_id == track_owner_id
+                )
+            ).outerjoin(
+                Repost,
+                and_(
+                    Repost.repost_item_id == Track.track_id,
+                    Repost.user_id == track_owner_id,
+                    Repost.repost_type == RepostType.track,
+                    Repost.is_current == True,
+                    Repost.is_delete == False
+                )
+            ).filter(
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.is_unlisted == False
             )
-        ).outerjoin(
-            Save,
-            and_(
-                Save.save_item_id == Track.track_id,
-                Save.save_type == SaveType.track,
-                Save.is_current == True,
-                Save.is_delete == False,
-                Save.user_id == track_owner_id
+            .order_by(
+                desc(
+                    case([
+                        (and_(Repost.created_at == None, Save.created_at == None), 0),
+                    ],
+                    else_ = 1)
+                ),
+                desc(
+                    case([
+                        (or_(Repost.created_at == None, Repost.created_at <= Save.created_at), Save.created_at),
+                        (or_(Save.created_at == None, Repost.created_at >= Save.created_at), Repost.created_at)
+                    ],
+                    else_ = None)
+                ),
+                desc(Track.track_id)
             )
-        ).outerjoin(
-            Repost,
-            and_(
-                Repost.repost_item_id == Track.track_id,
-                Repost.user_id == track_owner_id,
-                Repost.repost_type == RepostType.track,
-                Repost.is_current == True,
-                Repost.is_delete == False
-            )
-        ).filter(
-            Track.is_current == True,
-            Track.is_delete == False
-        ).order_by(
-            desc(
-                case([
-                    (and_(Repost.created_at == None, Save.created_at == None), 0),
-                ],
-                else_ = 1)
-            ),
-            desc(
-                case([
-                    (or_(Repost.created_at == None, Repost.created_at <= Save.created_at), Save.created_at),
-                    (or_(Save.created_at == None, Repost.created_at >= Save.created_at), Repost.created_at)
-                ],
-                else_ = None)
-            ),
-            desc(Track.track_id)
         )
 
         tracks = paginate_query(base_query).all()
@@ -2055,14 +2061,8 @@ def get_remix_tracks(track_id):
         current_user_id = get_current_user_id(required=False)
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
-
         if "with_users" in request.args and request.args.get("with_users") != 'false':
-            user_id_list = get_users_ids(tracks)
-            users = get_users_by_id(session, user_id_list)
-            for track in tracks:
-                user = users[track['owner_id']]
-                if user:
-                    track['user'] = user
+            add_users_to_tracks(session, tracks)
 
     return api_helpers.success_response(tracks)
 
@@ -2071,19 +2071,23 @@ def get_remix_tracks(track_id):
 def get_remix_track_parents(track_id):
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        base_query = session.query(
-            Track
-        ).join(
-            Remix,
-            and_(
-                Remix.parent_track_id == Track.track_id,
-                Remix.child_track_id == track_id
+        base_query = (
+            session.query(Track)
+            .join(
+                Remix,
+                and_(
+                    Remix.parent_track_id == Track.track_id,
+                    Remix.child_track_id == track_id
+                )
             )
-        ).filter(
-            Track.is_current == True
-        ).order_by(
-            desc(Track.created_at),
-            desc(Track.track_id)
+            .filter(
+                Track.is_current == True,
+                Track.is_unlisted == False
+            )
+            .order_by(
+                desc(Track.created_at),
+                desc(Track.track_id)
+            )
         )
 
         tracks = paginate_query(base_query).all()
@@ -2093,11 +2097,6 @@ def get_remix_track_parents(track_id):
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
         if "with_users" in request.args and request.args.get("with_users") != 'false':
-            user_id_list = get_users_ids(tracks)
-            users = get_users_by_id(session, user_id_list)
-            for track in tracks:
-                user = users[track['owner_id']]
-                if user:
-                    track['user'] = user
+            add_users_to_tracks(session, tracks)
 
     return api_helpers.success_response(tracks)
