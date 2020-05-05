@@ -26,8 +26,9 @@
     "lint-fix": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
-    "@openzeppelin/upgrades": "2.8.0",
+    "@aragon/court": "^1.1.2",
     "@openzeppelin/contracts-ethereum-package": "2.5.0",
+    "@openzeppelin/upgrades": "2.8.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "ethereumjs-abi": "^0.6.7",
