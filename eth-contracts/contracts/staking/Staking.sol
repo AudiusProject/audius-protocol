@@ -57,11 +57,11 @@ contract Staking is RegistryContract, StakingInterface {
     event Slashed(address indexed user, uint256 amount, uint256 total);
 
     function initialize(
-      address _stakingToken,
-      address _registryAddress,
-      bytes32 _claimsManagerProxyKey,
-      bytes32 _delegateManagerKey,
-      bytes32 _serviceProviderFactoryKey
+        address _stakingToken,
+        address _registryAddress,
+        bytes32 _claimsManagerProxyKey,
+        bytes32 _delegateManagerKey,
+        bytes32 _serviceProviderFactoryKey
     ) public initializer
     {
         require(Address.isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
@@ -82,7 +82,10 @@ contract Staking is RegistryContract, StakingInterface {
      */
     function stakeRewards(uint256 _amount, address _stakerAccount) external {
         requireIsInitialized();
-        require(msg.sender == registry.getContract(claimsManagerProxyKey), "Only callable from ClaimsManager");
+        require(
+            msg.sender == registry.getContract(claimsManagerProxyKey),
+            "Only callable from ClaimsManager"
+        );
         _stakeFor(
             _stakerAccount,
             msg.sender,
@@ -149,7 +152,7 @@ contract Staking is RegistryContract, StakingInterface {
 
     /**
      * @notice Unstakes `_amount` tokens, returning them to the desired account.
-     * @param _accountAddress Account unstaked for, and token recipient 
+     * @param _accountAddress Account unstaked for, and token recipient
      * @param _amount Number of tokens staked
      * @param _data Used in Unstaked event, to add signalling information in more complex staking applications
      */
@@ -180,10 +183,10 @@ contract Staking is RegistryContract, StakingInterface {
      * @param _data Used in Staked event, to add signalling information in more complex staking applications
      */
     function delegateStakeFor(
-      address _accountAddress,
-      address _delegatorAddress,
-      uint256 _amount,
-      bytes calldata _data
+        address _accountAddress,
+        address _delegatorAddress,
+        uint256 _amount,
+        bytes calldata _data
     ) external {
         requireIsInitialized();
         require(
@@ -205,10 +208,10 @@ contract Staking is RegistryContract, StakingInterface {
      * @param _data Used in Staked event, to add signalling information in more complex staking applications
      */
     function undelegateStakeFor(
-      address _accountAddress,
-      address _delegatorAddress,
-      uint256 _amount,
-      bytes calldata _data
+        address _accountAddress,
+        address _delegatorAddress,
+        uint256 _amount,
+        bytes calldata _data
     ) external {
         requireIsInitialized();
         require(
@@ -270,7 +273,10 @@ contract Staking is RegistryContract, StakingInterface {
      * @param _blockNumber Block number at which we are requesting
      * @return The amount of tokens staked by the account at the given block number
      */
-    function totalStakedForAt(address _accountAddress, uint256 _blockNumber) external view returns (uint256) {
+    function totalStakedForAt(
+        address _accountAddress,
+        uint256 _blockNumber
+    ) external view returns (uint256) {
         return accounts[_accountAddress].stakedHistory.get(_blockNumber.toUint64());
     }
 
@@ -381,8 +387,8 @@ contract Staking is RegistryContract, StakingInterface {
             newStake = currentInternalStake.add(_by);
         } else {
             require(
-              currentInternalStake >= _by,
-              'Cannot decrease greater than current balance');
+                currentInternalStake >= _by,
+                "Cannot decrease greater than current balance");
             newStake = currentInternalStake.sub(_by);
         }
 

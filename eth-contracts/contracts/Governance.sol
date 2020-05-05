@@ -96,11 +96,13 @@ contract Governance is RegistryContract {
     ) external returns (uint256 proposalId)
     {
         requireIsInitialized();
-        
+
         address proposer = msg.sender;
 
         // Require proposer is active Staker
-        StakingInterface stakingContract = StakingInterface(registry.getContract(stakingProxyOwnerKey));
+        StakingInterface stakingContract = StakingInterface(
+            registry.getContract(stakingProxyOwnerKey)
+        );
         require(
             stakingContract.totalStakedFor(proposer) > 0,
             "Proposer must be active staker with non-zero stake."
@@ -147,7 +149,7 @@ contract Governance is RegistryContract {
 
     function submitProposalVote(uint256 _proposalId, Vote _vote) external {
         requireIsInitialized();
-        
+
         address voter = msg.sender;
 
         require(
@@ -156,7 +158,9 @@ contract Governance is RegistryContract {
         );
 
         // Require voter is active Staker + get voterStake.
-        StakingInterface stakingContract = StakingInterface(registry.getContract(stakingProxyOwnerKey));
+        StakingInterface stakingContract = StakingInterface(
+            registry.getContract(stakingProxyOwnerKey)
+        );
         uint256 voterStake = stakingContract.totalStakedForAt(
             voter,
             proposals[_proposalId].startBlockNumber
@@ -227,7 +231,9 @@ contract Governance is RegistryContract {
         );
 
         // Require msg.sender is active Staker.
-        StakingInterface stakingContract = StakingInterface(registry.getContract(stakingProxyOwnerKey));
+        StakingInterface stakingContract = StakingInterface(
+            registry.getContract(stakingProxyOwnerKey)
+        );
         require(
             stakingContract.totalStakedForAt(
                 msg.sender, proposals[_proposalId].startBlockNumber
