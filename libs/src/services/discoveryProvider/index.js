@@ -1,6 +1,7 @@
 const axios = require('axios')
 
 const Utils = require('../../utils')
+const { raceRequests } = require('../../utils/network')
 const { serviceType } = require('../ethContracts/index')
 
 const {
@@ -47,11 +48,11 @@ class DiscoveryProvider {
         })
 
         try {
-          let resp = await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
+          const { response } = await raceRequests(Object.keys(whitelistMap), (url) => {
             pick = whitelistMap[url]
           }, {}, REQUEST_TIMEOUT_MS)
 
-          isValid = pick && resp.data.service && (resp.data.service === serviceType.DISCOVERY_PROVIDER)
+          isValid = pick && response.data.service && (response.data.service === serviceType.DISCOVERY_PROVIDER)
           if (isValid) {
             console.info('Initial discovery provider was valid')
             endpoint = pick
