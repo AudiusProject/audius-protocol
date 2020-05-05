@@ -130,7 +130,14 @@ module.exports = function (app) {
           const senderAddress = config.get('userVerifierPublicKey')
 
           try {
-            await txRelay.sendTransaction(contractRegKey, contractAddress, encodedABI, senderAddress)
+            var txProps = {
+              contractRegistryKey: contractRegKey,
+              contractAddress: contractAddress,
+              encodedABI: encodedABI,
+              senderAddress: senderAddress,
+              gasLimit: null
+            }
+            await txRelay.sendTransaction(req, false, txProps, 'twitterVerified')
           } catch (e) {
             return errorResponseBadRequest(e)
           }

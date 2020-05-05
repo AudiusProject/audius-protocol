@@ -1009,7 +1009,7 @@ contract('DelegateManager', async (accounts) => {
       for (var i = 0; i < delegatorAccounts.length; i++) {
         let delegator = delegatorAccounts[i]
         // Transfer 1000 tokens to each delegator
-        await token.transfer(delegator, singleDelegateAmount, { from: treasuryAddress })
+        await token.transfer(delegator, singleDelegateAmount, { from: deployerAddress })
         // Approve staking transfer
         await token.approve(stakingAddress, singleDelegateAmount, { from: delegator })
         if (i === (delegatorAccounts.length - 1)) {

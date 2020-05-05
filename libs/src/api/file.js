@@ -1,7 +1,7 @@
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 const { Base, Services } = require('./base')
-const Utils = require('../utils')
+const { raceRequests } = require('../utils/network')
 const retry = require('async-retry')
 const FETCH_CID_TIMEOUT_MS = 20 /* sec */ * 1000 /* millis */
 
@@ -45,10 +45,11 @@ class File extends Base {
 
     return retry(async () => {
       try {
-        return Utils.raceRequests(urls, callback, {
+        const { response } = await raceRequests(urls, callback, {
           method: 'get',
           responseType: 'blob'
         }, FETCH_CID_TIMEOUT_MS)
+        return response
       } catch (e) {
         throw new Error(`Failed to retrieve ${cid}`)
       }
@@ -80,9 +81,10 @@ class File extends Base {
     try {
       // Races requests and fires the download callback for the first endpoint to
       // respond with a valid response to a `head` request.
-      return Utils.raceRequests(urls, (url) => downloadURL(url, filename), {
+      const { response } = await raceRequests(urls, (url) => downloadURL(url, filename), {
         method: 'head'
       }, /* timeout */ 10000)
+      return response
     } catch (e) {
       throw new Error(`Failed to retrieve ${cid}`)
     }
