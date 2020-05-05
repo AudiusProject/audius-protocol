@@ -22,9 +22,6 @@ contract Staking is RegistryContract, StakingInterface {
     string private constant ERROR_TOKEN_TRANSFER = "STAKING_TOKEN_TRANSFER";
     string private constant ERROR_NOT_ENOUGH_BALANCE = "STAKING_NOT_ENOUGH_BALANCE";
 
-    // standard - imitates relationship between Ether and Wei
-    uint8 private constant DECIMALS = 18;
-
     // Reward tracking info
     uint256 internal currentClaimBlock;
 
@@ -38,8 +35,6 @@ contract Staking is RegistryContract, StakingInterface {
 
     mapping (address => Account) internal accounts;
     Checkpointing.History internal totalStakedHistory;
-
-    address treasuryAddress;
 
     address registryAddress;
     bytes32 claimsManagerProxyKey;
@@ -61,7 +56,6 @@ contract Staking is RegistryContract, StakingInterface {
 
     function initialize(
       address _stakingToken,
-      address _treasuryAddress,
       address _registryAddress,
       bytes32 _claimsManagerProxyKey,
       bytes32 _delegateManagerKey,
@@ -71,7 +65,6 @@ contract Staking is RegistryContract, StakingInterface {
         require(Address.isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         stakingToken = ERC20(_stakingToken);
         registry = RegistryInterface(_registryAddress);
-        treasuryAddress = _treasuryAddress;
         registryAddress = _registryAddress;
         claimsManagerProxyKey = _claimsManagerProxyKey;
         delegateManagerKey = _delegateManagerKey;
@@ -100,7 +93,7 @@ contract Staking is RegistryContract, StakingInterface {
 
     /**
      * @notice Slashes `_amount` tokens from _slashAddress
-     * Controlled by treasury address
+     * Callable from DelegateManager
      * @param _amount Number of tokens slashed
      * @param _slashAddress address being slashed
      */

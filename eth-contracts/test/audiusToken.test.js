@@ -9,10 +9,10 @@ contract('AudiusToken', async (accounts) => {
   const INITIAL_SUPPLY = Math.pow(10,27) // 10^27 = 1 billion tokens, 18 decimal places
 
   let token
-  const treasuryAddress = accounts[0]
+  const deployerAddress = accounts[0]
 
   beforeEach(async () => {
-    token = await AudiusToken.new({ from: treasuryAddress })
+    token = await AudiusToken.new({ from: deployerAddress })
     await token.initialize()
   })
 
@@ -24,15 +24,15 @@ contract('AudiusToken', async (accounts) => {
   })
 
   it('initial account balances', async () => {
-    assert.equal(await token.balanceOf(treasuryAddress), INITIAL_SUPPLY)
+    assert.equal(await token.balanceOf(deployerAddress), INITIAL_SUPPLY)
     assert.equal(await token.balanceOf(accounts[1]), 0)
   })
 
   it('Transfers', async () => {
     const amount = 1000
     // transfer
-    await token.transfer(accounts[1], amount, {from: treasuryAddress})
-    assert.equal(await token.balanceOf(treasuryAddress), INITIAL_SUPPLY - amount)
+    await token.transfer(accounts[1], amount, {from: deployerAddress})
+    assert.equal(await token.balanceOf(deployerAddress), INITIAL_SUPPLY - amount)
     assert.equal(await token.balanceOf(accounts[1]), amount)
 
     // fail to transfer above balance
@@ -46,14 +46,14 @@ contract('AudiusToken', async (accounts) => {
     const burnAmount = Math.pow(10,3)
 
     // Confirm token state before burn
-    assert.equal(await token.balanceOf(treasuryAddress), INITIAL_SUPPLY)
+    assert.equal(await token.balanceOf(deployerAddress), INITIAL_SUPPLY)
     assert.equal(await token.totalSupply(), INITIAL_SUPPLY)
 
     // Decrease total supply by burning from treasury
-    await token.burn(burnAmount, { from: treasuryAddress })
+    await token.burn(burnAmount, { from: deployerAddress })
 
     // Confirm token state after burn
-    assert.equal(await token.balanceOf(treasuryAddress), INITIAL_SUPPLY - burnAmount)
+    assert.equal(await token.balanceOf(deployerAddress), INITIAL_SUPPLY - burnAmount)
     assert.equal(await token.totalSupply(), INITIAL_SUPPLY - burnAmount)
   })
 
@@ -62,25 +62,25 @@ contract('AudiusToken', async (accounts) => {
     const account = accounts[1]
 
     // Confirm token state before burn
-    await token.transfer(account, amount, {from: treasuryAddress})
-    assert.equal(await token.balanceOf(treasuryAddress), INITIAL_SUPPLY - amount)
+    await token.transfer(account, amount, {from: deployerAddress})
+    assert.equal(await token.balanceOf(deployerAddress), INITIAL_SUPPLY - amount)
     assert.equal(await token.balanceOf(account), amount)
     assert.equal(await token.totalSupply(), INITIAL_SUPPLY)
     
     // Decrease total supply by burning from account
-    await token.approve(treasuryAddress, amount, { from: account })
-    await token.burnFrom(account, amount, { from: treasuryAddress })
+    await token.approve(deployerAddress, amount, { from: account })
+    await token.burnFrom(account, amount, { from: deployerAddress })
 
     // Confirm token state after burn
-    assert.equal(await token.balanceOf(treasuryAddress), INITIAL_SUPPLY - amount)
+    assert.equal(await token.balanceOf(deployerAddress), INITIAL_SUPPLY - amount)
     assert.equal(await token.balanceOf(account), 0)
     assert.equal(await token.totalSupply(), INITIAL_SUPPLY - amount)
   })
 
   it('Mint', async () => {
     // mint tokens
-    await token.mint(accounts[1], 1000, {from: treasuryAddress})
-    assert.equal(await token.balanceOf(treasuryAddress), INITIAL_SUPPLY)
+    await token.mint(accounts[1], 1000, {from: deployerAddress})
+    assert.equal(await token.balanceOf(deployerAddress), INITIAL_SUPPLY)
     assert.equal(await token.balanceOf(accounts[1]), 1000)
     assert.equal(await token.totalSupply(), INITIAL_SUPPLY + 1000)
 
@@ -100,18 +100,18 @@ contract('AudiusToken', async (accounts) => {
     assert.isTrue(caughtError)
 
     // add new minter
-    await token.addMinter(accounts[2], {from: treasuryAddress})
+    await token.addMinter(accounts[2], {from: deployerAddress})
     assert.isTrue(await token.isMinter(accounts[2]))
     assert.isFalse(await token.isMinter(accounts[3]))
     await token.mint(accounts[2], 1000, {from: accounts[2]})
 
     // renounce minter
-    await token.renounceMinter({from: treasuryAddress})
+    await token.renounceMinter({from: deployerAddress})
 
     // fail to mint from renounced minter
     caughtError = false
     try {
-      await token.mint(accounts[4], 1000, {from: treasuryAddress})
+      await token.mint(accounts[4], 1000, {from: deployerAddress})
     } catch (e) {
       // catch expected error
       if (e.message.indexOf('MinterRole: caller does not have the Minter role') >= 0) {
@@ -126,13 +126,13 @@ contract('AudiusToken', async (accounts) => {
 
   it('Pause', async () => {
     // pause contract
-    await token.pause({from: treasuryAddress})
+    await token.pause({from: deployerAddress})
     assert.isTrue(await token.paused())
 
     // fail to transfer while contract paused
     let caughtError = false
     try {
-      await token.transfer(accounts[1], 1000, {from: treasuryAddress})
+      await token.transfer(accounts[1], 1000, {from: deployerAddress})
     } catch (e) {
       // catch expected error
       if (e.message.indexOf('Pausable: paused') >= 0) {
@@ -146,7 +146,7 @@ contract('AudiusToken', async (accounts) => {
 
     // add new pauser
     await token.addPauser(accounts[5])
-    assert.isTrue(await token.isPauser(treasuryAddress))
+    assert.isTrue(await token.isPauser(deployerAddress))
     assert.isTrue(await token.isPauser(accounts[5]))
 
     // unpause contract
@@ -169,14 +169,14 @@ contract('AudiusToken', async (accounts) => {
     assert.isTrue(caughtError)
 
     // renounce pauser
-    await token.renouncePauser({from: treasuryAddress})
-    assert.isFalse(await token.isPauser(treasuryAddress))
+    await token.renouncePauser({from: deployerAddress})
+    assert.isFalse(await token.isPauser(deployerAddress))
     assert.isTrue(await token.isPauser(accounts[5]))
 
     // fail to pause contract from renounced pauser
     caughtError = false
     try {
-      await token.pause({from: treasuryAddress})
+      await token.pause({from: deployerAddress})
     } catch (e) {
       // catch expected error
       if (e.message.indexOf('PauserRole: caller does not have the Pauser role') >= 0) {

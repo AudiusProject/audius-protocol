@@ -1,3 +1,4 @@
+const contractConfig = require('../contract-config.js')
 const encodeCall = require('../utils/encodeCall')
 
 const AudiusToken = artifacts.require('AudiusToken')
@@ -12,9 +13,11 @@ const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
+    const config = contractConfig[network]
     const token = await AudiusToken.deployed()
     const registry = await Registry.deployed()
     const tokenDeployerAcct = accounts[0]
+    const controllerAddress = config.controllerAddress || accounts[0]
 
     // TODO move to contractConfig
     const [proxyAdminAddress, proxyDeployerAddress] = [accounts[10], accounts[11]]
@@ -23,8 +26,8 @@ module.exports = (deployer, network, accounts) => {
 
     const initializeCallData = encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey]
+      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [token.address, registry.address, controllerAddress, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey]
     )
 
     // Deploy new ClaimsManager

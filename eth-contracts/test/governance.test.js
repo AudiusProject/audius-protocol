@@ -102,10 +102,9 @@ contract('Governance.sol', async (accounts) => {
     // Create initialization data
     let stakingInitializeData = encodeCall(
       'initialize',
-      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [
         token.address,
-        treasuryAddress,
         registry.address,
         claimsManagerProxyKey,
         delegateManagerKey,
@@ -166,8 +165,8 @@ contract('Governance.sol', async (accounts) => {
     claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
     const claimsInitializeCallData = encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey]
+      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      [token.address, registry.address, controllerAddress, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey]
     )
     claimsManagerProxy = await AdminUpgradeabilityProxy.new(
       claimsManager0.address,

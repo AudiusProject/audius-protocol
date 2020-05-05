@@ -35,11 +35,11 @@ contract('Upgrade proxy test', async (accounts) => {
   let mockStakingCaller
   let registry
 
-  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const [deployerAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
 
   const approveAndStake = async (amount, staker, staking) => {
     // Transfer default tokens to
-    await token.transfer(staker, amount, { from: treasuryAddress })
+    await token.transfer(staker, amount, { from: deployerAddress })
     // allow Staking app to move owner tokens
     await token.approve(staking.address, amount, { from: staker })
     // stake tokens
@@ -62,10 +62,9 @@ contract('Upgrade proxy test', async (accounts) => {
     // Create initialization data
     stakingInitializeData = encodeCall(
       'initialize',
-      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [
         token.address,
-        treasuryAddress,
         registry.address,
         claimsManagerProxyKey,
         delegateManagerKey,
@@ -128,8 +127,8 @@ contract('Upgrade proxy test', async (accounts) => {
       const spAccount2 = accounts[4]
 
       // Transfer 1000 tokens to accounts[1] and accounts[2]
-      await token.transfer(spAccount1, 1000, { from: treasuryAddress })
-      await token.transfer(spAccount2, 1000, { from: treasuryAddress })
+      await token.transfer(spAccount1, 1000, { from: deployerAddress })
+      await token.transfer(spAccount2, 1000, { from: deployerAddress })
 
       // Permission test address as caller
       staking = await Staking.at(proxy.address)
