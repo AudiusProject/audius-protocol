@@ -9,7 +9,7 @@ from sqlalchemy.dialects import postgresql
 from flask import Blueprint, request
 
 from src import api_helpers, exceptions
-from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType
+from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType, Stem
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
@@ -224,6 +224,29 @@ def get_tracks_including_unlisted():
 
     return api_helpers.success_response(extended_tracks)
 
+
+@bp.route("/stems/<int:track_id>", methods=("GET",))
+def get_stems_of(track_id):
+    logger.info("IN IT")
+    db = get_db_read_replica()
+    stems = []
+    with db.scoped_session() as session:
+        stem_results = (
+            session.query(Track)
+            .join(
+                Stem,
+                and_(
+                    Stem.child_track_id == Track.track_id,
+                    Stem.parent_track_id == track_id
+                ))
+            .filter(Track.is_current == True, Track.is_delete == False)
+            .all())
+        logger.info(stem_results)
+        stems = helpers.query_result_to_list(stem_results)
+        logger.info(stems)
+
+
+    return api_helpers.success_response(stems)
 
 # Return playlist content in json form
 # optional parameters playlist owner's user_id, playlist_id = []
