@@ -13,7 +13,6 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32 private governanceKey;
     bytes32 private serviceTypeManagerKey;
     address private deployerAddress;
-    bytes empty;
 
     /// @dev - Stores following entities
     ///        1) Directly staked amount by SP, not including delegators
@@ -148,7 +147,7 @@ contract ServiceProviderFactory is RegistryContract {
         if (_stakeAmount > 0) {
             StakingInterface(
                 registry.getContract(stakingProxyOwnerKey)
-            ).stakeFor(msg.sender, _stakeAmount, empty);
+            ).stakeFor(msg.sender, _stakeAmount);
         }
 
         require (
@@ -231,8 +230,7 @@ contract ServiceProviderFactory is RegistryContract {
             unstakeAmount = stakingContract.totalStakedFor(msg.sender);
             stakingContract.unstakeFor(
                 msg.sender,
-                unstakeAmount,
-                empty
+                unstakeAmount
             );
 
             // Update deployer total
@@ -313,7 +311,7 @@ contract ServiceProviderFactory is RegistryContract {
         );
 
         // Stake increased token amount for msg.sender
-        stakingContract.stakeFor(msg.sender, _increaseStakeAmount, empty);
+        stakingContract.stakeFor(msg.sender, _increaseStakeAmount);
 
         uint newStakeAmount = stakingContract.totalStakedFor(msg.sender);
 
@@ -358,7 +356,7 @@ contract ServiceProviderFactory is RegistryContract {
             "Please deregister endpoints to remove all stake");
 
         // Decrease staked token amount for msg.sender
-        stakingContract.unstakeFor(msg.sender, _decreaseStakeAmount, empty);
+        stakingContract.unstakeFor(msg.sender, _decreaseStakeAmount);
 
         // Query current stake
         uint newStakeAmount = stakingContract.totalStakedFor(msg.sender);

@@ -5,23 +5,21 @@ pragma solidity ^0.5.0;
 // Modified interface for ERC900: https://eips.ethereum.org/EIPS/eip-900
 // Eliminates direct stake operations
 interface StakingInterface {
-    event Staked(address indexed user, uint256 amount, uint256 total, bytes data);
-    event Unstaked(address indexed user, uint256 amount, uint256 total, bytes data);
+    event Staked(address indexed user, uint256 amount, uint256 total);
+    event Unstaked(address indexed user, uint256 amount, uint256 total);
 
-    function stakeFor(address user, uint256 amount, bytes calldata data) external;
-    function unstakeFor(address user, uint256 amount, bytes calldata data) external;
+    function stakeFor(address user, uint256 amount) external;
+    function unstakeFor(address user, uint256 amount) external;
 
     function stakeRewards(uint256 amount, address stakerAccount) external;
     function delegateStakeFor(
         address accountAddress,
         address delegatorAddress,
-        uint256 amount,
-        bytes calldata data) external;
+        uint256 amount) external;
     function undelegateStakeFor(
         address accountAddress,
         address delegatorAddress,
-        uint256 amount,
-        bytes calldata data) external;
+        uint256 amount) external;
     function slash(uint256 amount, address slashAddress) external;
 
 

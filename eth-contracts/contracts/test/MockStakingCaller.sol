@@ -44,21 +44,19 @@ contract MockStakingCaller is RegistryContract {
     // Test only function
     function stakeFor(
         address _accountAddress,
-        uint256 _amount,
-        bytes calldata _data
+        uint256 _amount
     ) external {
         requireIsInitialized();
-        staking.stakeFor(_accountAddress, _amount, _data);
+        staking.stakeFor(_accountAddress, _amount);
     }
 
     // Test only function
     function unstakeFor(
         address _accountAddress,
-        uint256 _amount,
-        bytes calldata _data
+        uint256 _amount
     ) external {
         requireIsInitialized();
-        staking.unstakeFor(_accountAddress, _amount, _data);
+        staking.unstakeFor(_accountAddress, _amount);
     }
 
     function slash(
