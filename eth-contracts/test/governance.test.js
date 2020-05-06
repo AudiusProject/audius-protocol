@@ -95,7 +95,7 @@ contract('Governance.sol', async (accounts) => {
     return args
   }
 
-  /** Deploy Registry, AdminUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts. */
+  /** Deploy Registry, AudiusAdminUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts. */
   beforeEach(async () => {
     token = await AudiusToken.new({ from: treasuryAddress })
     await token.initialize()

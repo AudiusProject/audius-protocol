@@ -3,7 +3,7 @@ const encodeCall = require('../utils/encodeCall')
 
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const MockStakingCaller = artifacts.require('MockStakingCaller')
 
@@ -13,6 +13,7 @@ const getTokenBalance = async (token, account) => fromBn(await token.balanceOf(a
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
+const governanceKey = web3.utils.utf8ToHex('Governance')
 
 const toWei = (aud) => {
   let amountInAudWei = web3.utils.toWei(
@@ -78,10 +79,12 @@ contract('Staking test', async (accounts) => {
       ]
     )
 
-    proxy = await AdminUpgradeabilityProxy.new(
+    proxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
+      registry.address,
+      governanceKey,
       { from: proxyDeployerAddress }
     )
 
