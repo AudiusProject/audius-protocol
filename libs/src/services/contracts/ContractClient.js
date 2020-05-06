@@ -1,3 +1,5 @@
+const ProviderSelection = require('./ProviderSelection')
+
 const CONTRACT_INITIALIZING_INTERVAL = 100
 const CONTRACT_INITIALIZING_TIMEOUT = 10000
 
@@ -43,19 +45,49 @@ class ContractClient {
       return
     }
 
+    // Perform init by selecting healthy provider
+    const providerSelector = new ProviderSelection()
+    providerSelector.setContractClientProvider(this)
+
     // Perform init
-    this._isInitializing = true
-    try {
-      this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
-      this._contract = new this.web3.eth.Contract(
-        this.contractABI,
-        this._contractAddress
-      )
-      this._isInitialized = true
-    } catch (e) {
-      console.error(`Failed to initialize contract ${JSON.stringify(this.contractABI)}`, e)
-    }
-    this._isInitializing = false
+    // TODO: update init logic
+    // this._isInitializing = true
+
+    // try {
+    //   this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
+    //   this._contract = new this.web3.eth.Contract(
+    //     this.contractABI,
+    //     this._contractAddress
+    //   )
+    //   this._isInitialized = true
+    // } catch (e) {
+    //   console.error(`Failed to initialize contract ${JSON.stringify(this.contractABI)}`, e)
+    // }
+    // this._isInitializing = false
+  }
+
+  setContractAddress (contractAddress) {
+    this._contractAddress = contractAddress
+  }
+
+  setContract (contract) {
+    this._contract = contract
+  }
+
+  setIsInitializing (isInitializing) {
+    this._isInitializing = isInitializing
+  }
+
+  getWeb3Instance () {
+    return this.web3
+  }
+
+  getWeb3EthContractInstance () {
+    return this.web3.eth.Contract(this.contractABI, this._contractAddress)
+  }
+
+  getContractABI () {
+    return this.contractABI
   }
 
   /** Gets the contract address and ensures that the contract has initted. */
