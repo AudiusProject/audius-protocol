@@ -4,7 +4,7 @@ const encodeCall = require('../utils/encodeCall')
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
 const Staking = artifacts.require('Staking')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 
@@ -66,10 +66,12 @@ contract('ServiceProvider test', async (accounts) => {
       ]
     )
 
-    proxy = await AdminUpgradeabilityProxy.new(
+    proxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
+      registry.address,
+      governanceKey,
       { from: proxyDeployerAddress }
     )
 
@@ -88,10 +90,12 @@ contract('ServiceProvider test', async (accounts) => {
       ]
     )
     let serviceTypeManager0 = await ServiceTypeManager.new({ from: deployerAddress })
-    let serviceTypeManagerProxy = await AdminUpgradeabilityProxy.new(
+    let serviceTypeManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceTypeManager0.address,
       proxyAdminAddress,
       serviceTypeInitializeData,
+      registry.address,
+      governanceKey,
       { from: proxyAdminAddress }
     )
     serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
@@ -117,10 +121,12 @@ contract('ServiceProvider test', async (accounts) => {
       ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
       [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
     )
-    let serviceProviderFactoryProxy = await AdminUpgradeabilityProxy.new(
+    let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
       proxyAdminAddress,
       serviceProviderFactoryCalldata,
+      registry.address,
+      governanceKey,
       { from: proxyAdminAddress }
     )
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)

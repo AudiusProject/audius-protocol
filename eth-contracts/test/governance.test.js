@@ -6,7 +6,6 @@ const encodeCall = require('../utils/encodeCall')
 
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const StakingUpgraded = artifacts.require('StakingUpgraded')
@@ -96,7 +95,7 @@ contract('Governance.sol', async (accounts) => {
     return args
   }
 
-  /** Deploy Registry, AdminUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts. */
+  /** Deploy Registry, AudiusAdminUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts. */
   beforeEach(async () => {
     token = await AudiusToken.new({ from: treasuryAddress })
     await token.initialize()
@@ -136,10 +135,12 @@ contract('Governance.sol', async (accounts) => {
       [registry.address, controllerAddress, governanceKey]
     )
     let serviceTypeManager0 = await ServiceTypeManager.new({ from: treasuryAddress })
-    let serviceTypeManagerProxy = await AdminUpgradeabilityProxy.new(
+    let serviceTypeManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceTypeManager0.address,
       proxyAdminAddress,
       serviceTypeInitializeData,
+      registry.address,
+      governanceKey,
       { from: proxyAdminAddress }
     )
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: treasuryAddress })
@@ -158,10 +159,12 @@ contract('Governance.sol', async (accounts) => {
       ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
       [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
     )
-    let serviceProviderFactoryProxy = await AdminUpgradeabilityProxy.new(
+    let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
       proxyAdminAddress,
       serviceProviderFactoryCalldata,
+      registry.address,
+      governanceKey,
       { from: proxyAdminAddress }
     )
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
@@ -174,10 +177,12 @@ contract('Governance.sol', async (accounts) => {
       ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [token.address, registry.address, controllerAddress, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey]
     )
-    claimsManagerProxy = await AdminUpgradeabilityProxy.new(
+    claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       claimsManager0.address,
       proxyAdminAddress,
       claimsInitializeCallData,
+      registry.address,
+      governanceKey,
       { from: proxyDeployerAddress }
     )
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
@@ -207,10 +212,12 @@ contract('Governance.sol', async (accounts) => {
       [token.address, registry.address, governanceKey, stakingProxyKey, serviceProviderFactoryKey, claimsManagerProxyKey]
     )
     let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
-    let delegateManagerProxy = await AdminUpgradeabilityProxy.new(
+    let delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       delegateManager0.address,
       proxyAdminAddress,
       delegateManagerInitializeData,
+      registry.address,
+      governanceKey,
       { from: proxyDeployerAddress }
     )
     delegateManager = await DelegateManager.at(delegateManagerProxy.address)
