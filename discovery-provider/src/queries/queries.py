@@ -91,7 +91,7 @@ def get_tracks():
     with db.scoped_session() as session:
         # Create initial query
         base_query = session.query(Track)
-        base_query = base_query.filter(Track.is_current == True, Track.is_unlisted == False)
+        base_query = base_query.filter(Track.is_current == True, Track.is_unlisted == False, Track.stem_of == None)
 
         # Conditionally process an array of tracks
         if "id" in request.args:
@@ -133,6 +133,7 @@ def get_tracks():
         whitelist_params = ['created_at', 'create_date', 'release_date', 'blocknumber', 'track_id']
         base_query = parse_sort_param(base_query, Track, whitelist_params)
         query_results = paginate_query(base_query).all()
+        logger.error(f' tracks: {query_results}')
         tracks = helpers.query_result_to_list(query_results)
 
         track_ids = list(map(lambda track: track["track_id"], tracks))
@@ -165,7 +166,8 @@ def get_tracks_including_unlisted():
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        base_query = session.query(Track)
+        # Create base query, filtering out stems
+        base_query = session.query(Track).filter(Track.stem_of == None)
         filter_cond = []
 
         # Create filter conditions as a list of `and` clauses
@@ -438,6 +440,7 @@ def get_feed():
                     Track.is_current == True,
                     Track.is_delete == False,
                     Track.is_unlisted == False,
+                    Track.stem_of == None,
                     Track.owner_id.in_(followee_user_ids),
                     Track.track_id.notin_(tracks_to_dedupe)
                 )
@@ -509,6 +512,7 @@ def get_feed():
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False,
+                Track.stem_of == None,
                 Track.track_id.in_(reposted_track_ids)
             )
             # exclude tracks already fetched from above, in case of "all" filter
@@ -663,6 +667,7 @@ def get_repost_feed_for_user(user_id):
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False,
+                Track.stem_of == None,
                 Track.track_id.in_(repost_track_ids)
             )
             .order_by(desc(Track.created_at))
@@ -1782,6 +1787,7 @@ def get_top_followee_windowed(type, window):
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False,
+                Track.stem_of == None,
                 # Query only tracks created `window` time ago (week, month, etc.)
                 Track.created_at >= text("NOW() - interval '1 {}'".format(window)),
             )
@@ -1882,7 +1888,8 @@ def get_top_followee_saves(type):
             .filter(
                 Track.is_current == True,
                 Track.is_delete == False,
-                Track.is_unlisted == False
+                Track.is_unlisted == False,
+                Track.stem_of == None,
             )
         )
 
@@ -1942,6 +1949,7 @@ def get_top_genre_users():
                 User.is_current == True,
                 User.is_creator == True,
                 Track.is_unlisted == False,
+                Track.stem_of == None,
                 Track.is_current == True,
                 Track.is_delete == False
             ).group_by(
