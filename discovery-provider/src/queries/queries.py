@@ -227,24 +227,26 @@ def get_tracks_including_unlisted():
 
 @bp.route("/stems/<int:track_id>", methods=("GET",))
 def get_stems_of(track_id):
-    logger.info("IN IT")
     db = get_db_read_replica()
     stems = []
     with db.scoped_session() as session:
+        parent_not_deleted_subquery = (
+            session.query(Track.is_delete)
+                .filter(Track.track_id == track_id)
+                .subquery()
+            )
+
         stem_results = (
             session.query(Track)
             .join(
                 Stem,
-                and_(
-                    Stem.child_track_id == Track.track_id,
-                    Stem.parent_track_id == track_id
-                ))
+                Stem.child_track_id == Track.track_id,
+            )
             .filter(Track.is_current == True, Track.is_delete == False)
+            .filter(Stem.parent_track_id == track_id)
+            .filter(parent_not_deleted_subquery.c.is_delete == False)
             .all())
-        logger.info(stem_results)
         stems = helpers.query_result_to_list(stem_results)
-        logger.info(stems)
-
 
     return api_helpers.success_response(stems)
 
@@ -1504,7 +1506,7 @@ def get_users_account():
             Save.is_delete == False,
             or_(Save.save_type == SaveType.playlist, Save.save_type == SaveType.album)
         )
- 
+
         saved_query_results = saved_query.all()
         save_collection_ids = [item[0] for item in saved_query_results]
 
@@ -1903,8 +1905,8 @@ def get_top_followee_saves(type):
 
 # Retrieves the top users for a requested genre under the follow parameters
 # - A given user can only be associated w/ one genre
-# - The user's associated genre is calculated by tallying the genre of the tracks and taking the max 
-#   - If there is a tie for # of tracks in a genre, then the first genre alphabetically is taken 
+# - The user's associated genre is calculated by tallying the genre of the tracks and taking the max
+#   - If there is a tie for # of tracks in a genre, then the first genre alphabetically is taken
 # - The users associated w/ the requested genre are then sorted by follower count
 # Route Parameters
 #   urlParam: {Array<string>?}  genre       List of genres to query for the 'top' users
@@ -1924,7 +1926,7 @@ def get_top_genre_users():
         with_genres = len(genres) != 0
 
         # Associate the user w/ a genre by counting the total # of tracks per genre
-        # taking the genre w/ the most tracks (using genre name as secondary sort)  
+        # taking the genre w/ the most tracks (using genre name as secondary sort)
         user_genre_count_query = (
             session.query(
                 User.user_id.label('user_id'),
@@ -1962,7 +1964,7 @@ def get_top_genre_users():
         )
 
         # Using the subquery of user to associated genre,
-        #   filter by the requested genres and 
+        #   filter by the requested genres and
         #   sort by user follower count
         user_genre_followers_query = (
             session.query(
