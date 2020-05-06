@@ -167,7 +167,7 @@ def get_tracks_including_unlisted():
     db = get_db_read_replica()
     with db.scoped_session() as session:
         # Create base query, filtering out stems
-        base_query = session.query(Track).filter(Track.stem_of == None)
+        base_query = session.query(Track)
         filter_cond = []
 
         # Create filter conditions as a list of `and` clauses
