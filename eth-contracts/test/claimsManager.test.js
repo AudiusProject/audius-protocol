@@ -48,8 +48,7 @@ contract('ClaimsManager', async (accounts) => {
     // Stake tokens
     await mockStakingCaller.stakeFor(
       staker,
-      amount,
-      web3.utils.utf8ToHex(''))
+      amount)
   }
 
   beforeEach(async () => {
