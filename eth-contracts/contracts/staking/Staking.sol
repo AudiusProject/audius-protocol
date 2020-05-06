@@ -43,17 +43,6 @@ contract Staking is RegistryContract, StakingInterface {
     bytes32 delegateManagerKey;
     bytes32 serviceProviderFactoryKey;
 
-    event StakeTransferred(
-      address indexed from,
-      uint256 amount,
-      address to
-    );
-
-    event Claimed(
-      address claimaint,
-      uint256 amountClaimed
-    );
-
     event Slashed(address indexed user, uint256 amount, uint256 total);
 
     function initialize(
