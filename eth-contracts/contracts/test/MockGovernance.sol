@@ -12,8 +12,8 @@ contract MockGovernance is RegistryContract {
     bytes32 delegateManagerKey;
 
     function initialize(
-      address _registryAddress,
-      bytes32 _delegateManagerKey
+        address _registryAddress,
+        bytes32 _delegateManagerKey
     ) public initializer {
         registry = RegistryInterface(_registryAddress);
         delegateManagerKey = _delegateManagerKey;
@@ -50,6 +50,7 @@ contract MockGovernance is RegistryContract {
             registry.getContract(delegateManagerKey)
         ).updateMinDelegationAmount(_minDelegationAmount);
     }
+
     function updateMaxDelegators(uint _maxDelegators) external {
         requireIsInitialized();
         DelegateManager(

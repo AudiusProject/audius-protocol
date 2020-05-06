@@ -16,16 +16,14 @@ contract MockStakingCaller is RegistryContract {
     address stakingAddress;
 
     function initialize(
-      address _stakingAddress,
-      address _tokenAddress
+        address _stakingAddress,
+        address _tokenAddress
     ) public initializer {
         stakingAddress = _stakingAddress;
         staking = Staking(_stakingAddress);
         stakingToken = ERC20(_tokenAddress);
-
         // Configure test max
         max = 100000000 * 10**uint256(18);
-
         RegistryContract.initialize();
     }
 
@@ -34,45 +32,41 @@ contract MockStakingCaller is RegistryContract {
         uint _amount,
         address _staker
     ) external {
-      requireIsInitialized();
-
-      // pull tokens into contract
-      stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
-      // Approve transfer
-      stakingToken.approve(stakingAddress, _amount);
-      // Stake rewards
-      staking.stakeRewards(_amount, _staker);
+        requireIsInitialized();
+        // pull tokens into contract
+        stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
+        // Approve transfer
+        stakingToken.approve(stakingAddress, _amount);
+        // Stake rewards
+        staking.stakeRewards(_amount, _staker);
     }
 
     // Test only function
     function stakeFor(
-      address _accountAddress,
-      uint256 _amount,
-      bytes calldata _data
+        address _accountAddress,
+        uint256 _amount,
+        bytes calldata _data
     ) external {
-      requireIsInitialized();
-
-      staking.stakeFor(_accountAddress, _amount, _data);
+        requireIsInitialized();
+        staking.stakeFor(_accountAddress, _amount, _data);
     }
 
     // Test only function
     function unstakeFor(
-      address _accountAddress,
-      uint256 _amount,
-      bytes calldata _data
+        address _accountAddress,
+        uint256 _amount,
+        bytes calldata _data
     ) external {
-      requireIsInitialized();
-
-      staking.unstakeFor(_accountAddress, _amount, _data);
+        requireIsInitialized();
+        staking.unstakeFor(_accountAddress, _amount, _data);
     }
 
     function slash(
         uint256 _amount,
         address _slashAddress
     ) external {
-      requireIsInitialized();
-
-      staking.slash(_amount, _slashAddress);
+        requireIsInitialized();
+        staking.slash(_amount, _slashAddress);
     }
 
     /// @notice Calculate the stake for an account based on total number of registered services

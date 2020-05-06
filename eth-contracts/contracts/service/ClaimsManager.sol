@@ -200,9 +200,12 @@ contract ClaimsManager is RegistryContract {
     }
 
     function updateFundingAmount(uint _newAmount)
-    external returns (uint newAmount) 
+    external returns (uint newAmount)
     {
-        require(msg.sender == controllerAddress, "UpdateFundingAmount only accessible from controllerAddress");
+        require(
+            msg.sender == controllerAddress,
+            "UpdateFundingAmount only accessible from controllerAddress"
+        );
         fundingAmount = _newAmount;
         return _newAmount;
     }

@@ -4,7 +4,7 @@ const encodeCall = require('../utils/encodeCall')
 
 const Registry = artifacts.require('Registry')
 const Governance = artifacts.require('Governance')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const governanceKey = web3.utils.utf8ToHex('Governance')
@@ -30,10 +30,12 @@ module.exports = (deployer, network, accounts) => {
     
     const governance0 = await deployer.deploy(Governance, { from: protocolOwner })
     const governanceProxy = await deployer.deploy(
-      AdminUpgradeabilityProxy,
+      AudiusAdminUpgradeabilityProxy,
       governance0.address,
       proxyAdminAddress,
       initializeCallData,
+      registry.address,
+      governanceKey,
       { from: proxyDeployerAddress }
     )
 

@@ -12,8 +12,8 @@ contract MockDelegateManager is RegistryContract {
     bytes32 claimsManagerProxyKey;
 
     function initialize(
-      address _registryAddress,
-      bytes32 _claimsManagerProxyKey
+        address _registryAddress,
+        bytes32 _claimsManagerProxyKey
     ) public initializer {
         registry = RegistryInterface(_registryAddress);
         claimsManagerProxyKey = _claimsManagerProxyKey;

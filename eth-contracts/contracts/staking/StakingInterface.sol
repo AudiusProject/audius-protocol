@@ -12,8 +12,16 @@ interface StakingInterface {
     function unstakeFor(address user, uint256 amount, bytes calldata data) external;
 
     function stakeRewards(uint256 amount, address stakerAccount) external;
-    function delegateStakeFor(address accountAddress, address delegatorAddress, uint256 amount, bytes calldata data) external;
-    function undelegateStakeFor(address accountAddress, address delegatorAddress, uint256 amount, bytes calldata data) external;
+    function delegateStakeFor(
+        address accountAddress,
+        address delegatorAddress,
+        uint256 amount,
+        bytes calldata data) external;
+    function undelegateStakeFor(
+        address accountAddress,
+        address delegatorAddress,
+        uint256 amount,
+        bytes calldata data) external;
     function slash(uint256 amount, address slashAddress) external;
 
 

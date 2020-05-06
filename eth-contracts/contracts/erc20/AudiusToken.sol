@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Paus
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol";
 import "../InitializableV2.sol";
 
+
 /** Upgradeable ERC20 token that is Detailed, Mintable, Pausable, Burnable. */
 contract AudiusToken is InitializableV2, ERC20, ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable {
     string constant NAME = "TestAudius";
