@@ -6,12 +6,13 @@ const Registry = artifacts.require('Registry')
 const MockDelegateManager = artifacts.require('MockDelegateManager')
 const MockStakingCaller = artifacts.require('MockStakingCaller')
 const Staking = artifacts.require('Staking')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const ClaimsManager = artifacts.require('ClaimsManager')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
+const governanceKey = web3.utils.utf8ToHex('Governance')
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 
 const fromBn = n => parseInt(n.valueOf(), 10)
@@ -70,10 +71,12 @@ contract('ClaimsManager', async (accounts) => {
         serviceProviderFactoryKey
       ]
     )
-    stakingProxy = await AdminUpgradeabilityProxy.new(
+    stakingProxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
+      registry.address,
+      governanceKey,
       { from: proxyDeployerAddress }
     )
     await registry.addContract(stakingProxyKey, stakingProxy.address, { from: controllerAddress })
@@ -96,10 +99,12 @@ contract('ClaimsManager', async (accounts) => {
       ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [token.address, registry.address, controllerAddress, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey]
     )
-    claimsManagerProxy = await AdminUpgradeabilityProxy.new(
+    claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       claimsManager0.address,
       proxyAdminAddress,
       claimsInitializeCallData,
+      registry.address,
+      governanceKey,
       { from: proxyDeployerAddress }
     )
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)

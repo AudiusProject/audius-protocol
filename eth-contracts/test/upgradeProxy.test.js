@@ -6,12 +6,13 @@ const Staking = artifacts.require('Staking')
 const StakingUpgraded = artifacts.require('StakingUpgraded')
 const AudiusToken = artifacts.require('AudiusToken')
 const MockStakingCaller = artifacts.require('MockStakingCaller')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 
 // Registry keys
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
+const governanceKey = web3.utils.utf8ToHex('Governance')
 
 // TODO - consolidate all helper logic in _lib
 const toWei = (aud) => {
@@ -73,10 +74,12 @@ contract('Upgrade proxy test', async (accounts) => {
       ]
     )
 
-    proxy = await AdminUpgradeabilityProxy.new(
+    proxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
+      registry.address,
+      governanceKey,
       { from: proxyDeployerAddress }
     )
 
@@ -86,6 +89,7 @@ contract('Upgrade proxy test', async (accounts) => {
     await registry.addContract(claimsManagerProxyKey, mockStakingCaller.address)
     await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
     await registry.addContract(delegateManagerKey, mockStakingCaller.address)
+    await registry.addContract(governanceKey, mockStakingCaller.address)
   })
 
   it('Fails to call Staking contract function before proxy initialization', async () => {
