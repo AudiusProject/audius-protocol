@@ -6,7 +6,8 @@
   "browser": {
     "fs": false,
     "node-localstorage": false,
-    "crypto": false
+    "crypto": false,
+    "web3": false
   },
   "scripts": {
     "test": "./scripts/test.sh",

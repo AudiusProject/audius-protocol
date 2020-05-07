@@ -1,4 +1,4 @@
-const Web3 = require('web3')
+const Web3 = require('../../web3')
 const sigUtil = require('eth-sig-util')
 const retry = require('async-retry')
 const AudiusABIDecoder = require('../ABIDecoder/index')
