@@ -23,5 +23,6 @@ module.exports = (deployer, network, accounts) => {
 
     // Export to env for reference in future migrations
     process.env.tokenAddress = tokenProxy.address
+    console.log(`tokenAddress: ${process.env.tokenAddress}`)
   })
 }

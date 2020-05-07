@@ -23,5 +23,6 @@ module.exports = (deployer, network, accounts) => {
 
     // Export to env for reference in future migrations
     process.env.registryAddress = registryProxy.address
+    console.log(`registryAddress: ${process.env.registryAddress}`)
   })
 }
