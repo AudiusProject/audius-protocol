@@ -26,8 +26,8 @@ module.exports = (deployer, network, accounts) => {
     const governance0 = await deployer.deploy(Governance, { from: proxyDeployerAddress })
     const initializeCallData = encodeCall(
       'initialize',
-      ['address', 'bytes32', 'uint256', 'uint256'],
-      [registry.address, stakingProxyKey, VotingPeriod, VotingQuorum]
+      ['address', 'bytes32', 'uint256', 'uint256', 'address'],
+      [registry.address, stakingProxyKey, VotingPeriod, VotingQuorum, proxyDeployerAddress]
     )
     const governanceProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,

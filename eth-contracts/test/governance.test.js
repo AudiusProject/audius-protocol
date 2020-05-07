@@ -61,11 +61,12 @@ const Vote = Object.freeze({
 
 contract('Governance.sol', async (accounts) => {
   let token, registry, staking0, staking, stakingProxy, claimsManager0, claimsManagerProxy
-  let serviceProviderFactory, claimsManager, delegateManager, governance
+  let serviceProviderFactory, claimsManager, delegateManager, governance0, governanceProxy, governance
 
   const votingPeriod = 10
   const votingQuorum = 1
   const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const guardianAddress = proxyDeployerAddress
   const protocolOwnerAddress = treasuryAddress
   const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
   const testEndpoint1 = 'https://localhost:5000'
@@ -101,6 +102,24 @@ contract('Governance.sol', async (accounts) => {
     await token.initialize()
     registry = await Registry.new({ from: treasuryAddress })
     await registry.initialize()
+
+    // Deploy Governance contract
+    governance0 = await Governance.new({ from: proxyDeployerAddress })
+    const governanceCallData = encodeCall(
+      'initialize',
+      ['address', 'bytes32', 'uint256', 'uint256', 'address'],
+      [registry.address, stakingProxyKey, votingPeriod, votingQuorum, proxyDeployerAddress]
+    )
+    governanceProxy = await AudiusAdminUpgradeabilityProxy.new(
+      governance0.address,
+      proxyAdminAddress,
+      governanceCallData,
+      registry.address,
+      governanceKey,
+      { from: proxyDeployerAddress }
+    )
+    governance = await Governance.at(governanceProxy.address)
+    await registry.addContract(governanceKey, governance.address, { from: protocolOwnerAddress })
 
     // Create initialization data
     let stakingInitializeData = encodeCall(
@@ -194,16 +213,6 @@ contract('Governance.sol', async (accounts) => {
 
     // Register new contract as a minter, from the same address that deployed the contract
     await token.addMinter(claimsManager.address, { from: protocolOwnerAddress })
-
-    // Deploy Governance contract
-    governance = await Governance.new()
-    await governance.initialize(
-      registry.address,
-      stakingProxyKey,
-      votingPeriod,
-      votingQuorum
-    )
-    await registry.addContract(governanceKey, governance.address, { from: protocolOwnerAddress })
 
     // Deploy DelegateManager contract
     const delegateManagerInitializeData = encodeCall(
@@ -525,7 +534,7 @@ contract('Governance.sol', async (accounts) => {
         
         await _lib.assertRevert(
           governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
-          "Governance::evaluateProposalOutcome:Proposal has already been evaluated."
+          "Governance::evaluateProposalOutcome:Cannot evaluate inactive proposal."
         )
       })
 
@@ -609,6 +618,55 @@ contract('Governance.sol', async (accounts) => {
           'Expected total stake amount to be unchanged'
         )
         assert.isTrue((await token.totalSupply()).eq(initialTokenSupply), "Expected total token supply to be unchanged")
+      })
+
+      describe.only('Veto logic', async () => {
+        it('Ensure only guardian can veto', async () => {
+          // Fail to veto from non-guardian address
+          await _lib.assertRevert(
+            governance.vetoProposal(proposalId, { from: stakerAccount1 }),
+            'Governance::vetoProposal:Only guardian can veto proposals'
+          )
+        })
+
+        it('Ensure on active proposal can be vetoed', async () => {
+          await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
+
+          // Ensure proposal.outcome != InProgress
+          assert.notEqual(
+            (await governance.getProposalById.call(proposalId)).outcome,
+            Outcome.InProgress,
+            'Expected outcome != InProgress'
+          )
+          
+          // Fail to veto due to inactive proposal
+          await _lib.assertRevert(
+            governance.vetoProposal(proposalId, { from: guardianAddress }),
+            'Governance::vetoProposal:Cannot veto inactive proposal.'
+          )
+        })
+
+        it('Successfully veto proposal + ensure further actions are blocked', async () => {
+          const vetoTxReceipt = await governance.vetoProposal(proposalId, { from: guardianAddress })
+
+          // Confirm event log
+          const vetoTx = _lib.parseTx(vetoTxReceipt)
+          assert.equal(vetoTx.event.name, 'ProposalVetoed', 'event.name')
+          assert.equal(parseInt(vetoTx.event.args.proposalId), proposalId, 'event.args.proposalId')
+
+          // Call getProposalById() and confirm expected outcome
+          const proposal = await governance.getProposalById.call(proposalId)
+          assert.equal(proposal.outcome, Outcome.No, 'outcome')
+          assert.equal(parseInt(proposal.voteMagnitudeYes), defaultStakeAmount, 'voteMagnitudeYes')
+          assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'voteMagnitudeNo')
+          assert.equal(parseInt(proposal.numVotes), 1, 'numVotes')
+
+          // Confirm that further actions are blocked
+          await _lib.assertRevert(
+            governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
+            "Governance::evaluateProposalOutcome:Cannot evaluate inactive proposal."
+          )
+        })
       })
     })
   })

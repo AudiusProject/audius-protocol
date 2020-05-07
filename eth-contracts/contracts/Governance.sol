@@ -12,6 +12,8 @@ contract Governance is RegistryContract {
     uint256 votingPeriod;
     uint256 votingQuorum;
 
+    address guardianAddress;
+
     /***** Enums *****/
     enum Outcome {InProgress, No, Yes, Invalid, TxFailed}
     // Enum values map to uints, so first value in Enum always is 0.
@@ -64,12 +66,14 @@ contract Governance is RegistryContract {
         bool indexed success,
         bytes returnData
     );
+    event ProposalVetoed(uint256 indexed proposalId);
 
     function initialize(
         address _registryAddress,
         bytes32 _stakingProxyOwnerKey,
         uint256 _votingPeriod,
-        uint256 _votingQuorum
+        uint256 _votingQuorum,
+        address _guardianAddress
     ) public initializer {
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
         registry = RegistryInterface(_registryAddress);
@@ -81,6 +85,8 @@ contract Governance is RegistryContract {
 
         require(_votingQuorum > 0, "Requires non-zero _votingQuorum");
         votingQuorum = _votingQuorum;
+
+        guardianAddress = _guardianAddress;
 
         RegistryContract.initialize();
     }
@@ -167,6 +173,12 @@ contract Governance is RegistryContract {
         );
         require(voterStake > 0, "Voter must be active staker with non-zero stake.");
 
+        // Require proposal is still active
+        require(
+            proposals[_proposalId].outcome == Outcome.InProgress,
+            "Governance::submitProposalVote:Cannot vote on inactive proposal."
+        );
+
         // Require proposal votingPeriod is still active.
         uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;
         uint256 endBlockNumber = startBlockNumber + votingPeriod;
@@ -227,7 +239,7 @@ contract Governance is RegistryContract {
         // Require proposal has not already been evaluated.
         require(
             proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance::evaluateProposalOutcome:Proposal has already been evaluated."
+            "Governance::evaluateProposalOutcome:Cannot evaluate inactive proposal."
         );
 
         // Require msg.sender is active Staker.
@@ -294,6 +306,26 @@ contract Governance is RegistryContract {
         );
 
         return outcome;
+    }
+
+    function vetoProposal(uint256 _proposalId) external {
+        requireIsInitialized();
+
+        require(msg.sender == guardianAddress, "Governance::vetoProposal:Only guardian can veto proposals.");
+
+        require(
+            _proposalId <= lastProposalId && _proposalId > 0,
+            "Governance::vetoProposal:Must provide valid non-zero _proposalId."
+        );
+
+        require(
+            proposals[_proposalId].outcome == Outcome.InProgress,
+            "Governance::vetoProposal:Cannot veto inactive proposal."
+        );
+
+        proposals[_proposalId].outcome = Outcome.No;
+
+        emit ProposalVetoed(_proposalId);
     }
 
     // ========================================= Getters =========================================
