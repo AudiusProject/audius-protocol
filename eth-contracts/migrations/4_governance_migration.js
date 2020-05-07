@@ -1,4 +1,3 @@
-
 const contractConfig = require('../contract-config.js')
 const encodeCall = require('../utils/encodeCall')
 
@@ -16,19 +15,20 @@ const VotingQuorum = 1
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
-    const protocolOwner = accounts[0]
-    // TODO move to contractConfig
-    const [proxyAdminAddress, proxyDeployerAddress] = [accounts[10], accounts[11]]
+    const config = contractConfig[network]
+    const proxyAdminAddress = config.proxyAdminAddress || accounts[10]
+    const proxyDeployerAddress = config.proxyDeployerAddress || accounts[11]
     
-    const registry = await Registry.deployed()
-
+    const registryAddress = process.env.registryAddress
+    const registry = await Registry.at(registryAddress)
+    
+    // Deploy Governance logic and proxy contracts + register proxy
+    const governance0 = await deployer.deploy(Governance, { from: proxyDeployerAddress })
     const initializeCallData = encodeCall(
       'initialize',
-      ['address', 'bytes32', 'uint256', 'uint256'],
-      [registry.address, stakingProxyKey, VotingPeriod, VotingQuorum]
+      ['address', 'bytes32', 'uint256', 'uint256', 'address'],
+      [registry.address, stakingProxyKey, VotingPeriod, VotingQuorum, proxyDeployerAddress]
     )
-    
-    const governance0 = await deployer.deploy(Governance, { from: protocolOwner })
     const governanceProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
       governance0.address,
@@ -38,7 +38,6 @@ module.exports = (deployer, network, accounts) => {
       governanceKey,
       { from: proxyDeployerAddress }
     )
-
-    await registry.addContract(governanceKey, governanceProxy.address, { from: protocolOwner })
+    await registry.addContract(governanceKey, governanceProxy.address, { from: proxyDeployerAddress })
   })
 }

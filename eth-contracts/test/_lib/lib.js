@@ -1,3 +1,5 @@
+const ethers = require('ethers')
+
 /** ensures use of pre-configured web3 if provided */
 let web3New
 if (typeof web3 === 'undefined') {
@@ -66,7 +68,7 @@ export const parseTx = (txReceipt, multipleEvents = false) => {
   }
 }
 
-/**  */
+/** TODO */
 export const assertThrows = async (blockOrPromise, expectedErrorCode, expectedReason) => {
   try {
     (typeof blockOrPromise === 'function') ? await blockOrPromise() : await blockOrPromise
@@ -78,7 +80,7 @@ export const assertThrows = async (blockOrPromise, expectedErrorCode, expectedRe
   assert(false, `Expected "${expectedErrorCode}"${expectedReason ? ` (with reason: "${expectedReason}")` : ''} but it did not fail`)
 }
 
-/**  */
+/** TODO */
 export const assertRevert = async (blockOrPromise, expectedReason) => {
   const error = await assertThrows(blockOrPromise, 'revert', expectedReason)
   if (!expectedReason) {
@@ -88,7 +90,7 @@ export const assertRevert = async (blockOrPromise, expectedReason) => {
   assert.isTrue(expectedMsgFound, `Expected revert reason not found. Expected '${expectedReason}'. Found '${error.message}'`)
 }
 
-/**  */
+/** TODO */
 export const advanceBlock = (web3) => {
   return new Promise((resolve, reject) => {
     web3.currentProvider.send({
@@ -112,4 +114,62 @@ export const advanceToTargetBlock = async (targetBlockNumber, web3) => {
     currentBlock = await web3.eth.getBlock('latest')
     currentBlockNum = currentBlock.number
   }
+}
+
+export const toBN = (val) => web3.utils.toBN(val)
+
+export const fromBN = (val) => val.toNumber()
+
+export const audToWei = (val) => web3.utils.toWei(val.toString(), 'ether')
+
+export const audToWeiBN = (aud) => toBN(audToWei(aud))
+
+export const fromWei = (wei) => web3.utils.fromWei(wei)
+
+export const abiEncode = (types, values) => {
+  const abi = new ethers.utils.AbiCoder()
+  return abi.encode(types, values)
+}
+
+export const abiDecode = (types, data) => {
+  const abi = new ethers.utils.AbiCoder()
+  return abi.decode(types, data)
+}
+
+export const keccak256 = (values) => {
+  return ethers.utils.keccak256(values);
+}
+
+export const registerServiceProvider = async (token, staking, serviceProviderFactory, type, endpoint, amount, account) => {
+  // Approve staking transfer
+  await token.approve(staking.address, amount, { from: account })
+
+  // register service provider
+  const tx = await serviceProviderFactory.register(
+    type,
+    endpoint,
+    amount,
+    account,
+    { from: account }
+  )
+
+  // parse and return args
+  const args = tx.logs.find(log => log.event === 'RegisteredServiceProvider').args
+  args.stakeAmount = args._stakeAmount
+  args.spID = args._spID
+  return args
+}
+
+export const deregisterServiceProvider = async (serviceProviderFactory, type, endpoint, account) => {
+  const deregTx = await serviceProviderFactory.deregister(
+    type,
+    endpoint,
+    { from: account }
+  )
+
+  // parse and return args
+  const args = deregTx.logs.find(log => log.event === 'DeregisteredServiceProvider').args
+  args.unstakeAmount = args._unstakeAmount
+  args.spID = args._spID
+  return args
 }
