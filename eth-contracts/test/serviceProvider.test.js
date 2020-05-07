@@ -143,6 +143,7 @@ contract('ServiceProvider test', async (accounts) => {
     // Approve staking transfer
     await token.approve(staking.address, amount, { from: account })
 
+    let expectedNewStake = (await staking.totalStakedFor(account)).add(amount)
     let tx = await serviceProviderFactory.register(
       type,
       endpoint,
@@ -150,7 +151,7 @@ contract('ServiceProvider test', async (accounts) => {
       account,
       { from: account })
 
-    await expectEvent.inTransaction(tx.tx, ServiceProviderFactory, 'RegisteredServiceProvider', { _owner: account })
+    await expectEvent.inTransaction(tx.tx, ServiceProviderFactory, 'RegisteredServiceProvider', { _owner: account, _stakeAmount: expectedNewStake })
     await expectEvent.inTransaction(tx.tx, Staking, 'Staked', { user: account, amount: amount })
 
     let args = tx.logs.find(log => log.event === 'RegisteredServiceProvider').args
