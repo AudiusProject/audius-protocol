@@ -1,5 +1,6 @@
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('../utils/encodeCall')
+const { expectEvent } = require('@openzeppelin/test-helpers')
 
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
@@ -149,6 +150,9 @@ contract('ServiceProvider test', async (accounts) => {
       account,
       { from: account })
 
+    await expectEvent.inTransaction(tx.tx, ServiceProviderFactory, 'RegisteredServiceProvider', { _owner: account })
+    await expectEvent.inTransaction(tx.tx, Staking, 'Staked', { user: account, amount: amount })
+
     let args = tx.logs.find(log => log.event === 'RegisteredServiceProvider').args
     args.stakedAmountInt = fromBn(args._stakeAmount)
     args.spID = fromBn(args._spID)
@@ -162,12 +166,12 @@ contract('ServiceProvider test', async (accounts) => {
       increase,
       { from: account })
 
+    let expectedNewStake = (await staking.totalStakedFor(account)).add(increase)
     let tx = await serviceProviderFactory.increaseStake(
       increase,
       { from: account })
 
-    let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
-    // console.dir(args, { depth: 5 })
+    await expectEvent.inTransaction(tx.tx, ServiceProviderFactory, 'UpdatedStakeAmount', { _owner: account, _stakeAmount: expectedNewStake })
   }
 
   const getStakeAmountForAccount = async (account) => {
@@ -479,7 +483,7 @@ contract('ServiceProvider test', async (accounts) => {
         'Minimum stake threshold exceeded')
     })
 
-    it('increases stake value', async () => {
+    it.only('increases stake value', async () => {
       // Confirm initial amount in staking contract
       assert.equal(await getStakeAmountForAccount(stakerAccount), DEFAULT_AMOUNT)
 
