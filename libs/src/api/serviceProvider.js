@@ -1,4 +1,4 @@
-const _ = require('lodash')
+const { sampleSize } = require('lodash')
 const { Base } = require('./base')
 const { timeRequests } = require('../utils/network')
 
@@ -112,7 +112,7 @@ class ServiceProvider extends Base {
 
     // Secondaries: select randomly
     // TODO: Implement geolocation-based selection
-    const secondaries = _.sampleSize(timings.slice(1), numberOfNodes - 1)
+    const secondaries = sampleSize(timings.slice(1), numberOfNodes - 1)
       .map(timing => timing.request.id)
 
     return { primary, secondaries, services }
