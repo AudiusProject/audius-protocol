@@ -9,7 +9,7 @@ from sqlalchemy.dialects import postgresql
 from flask import Blueprint, request
 
 from src import api_helpers, exceptions
-from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType
+from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType, Stem
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
@@ -91,7 +91,7 @@ def get_tracks():
     with db.scoped_session() as session:
         # Create initial query
         base_query = session.query(Track)
-        base_query = base_query.filter(Track.is_current == True, Track.is_unlisted == False)
+        base_query = base_query.filter(Track.is_current == True, Track.is_unlisted == False, Track.stem_of == None)
 
         # Conditionally process an array of tracks
         if "id" in request.args:
@@ -224,6 +224,31 @@ def get_tracks_including_unlisted():
 
     return api_helpers.success_response(extended_tracks)
 
+
+@bp.route("/stems/<int:track_id>", methods=("GET",))
+def get_stems_of(track_id):
+    db = get_db_read_replica()
+    stems = []
+    with db.scoped_session() as session:
+        parent_not_deleted_subquery = (
+            session.query(Track.is_delete)
+                .filter(Track.track_id == track_id)
+                .subquery()
+            )
+
+        stem_results = (
+            session.query(Track)
+            .join(
+                Stem,
+                Stem.child_track_id == Track.track_id,
+            )
+            .filter(Track.is_current == True, Track.is_delete == False)
+            .filter(Stem.parent_track_id == track_id)
+            .filter(parent_not_deleted_subquery.c.is_delete == False)
+            .all())
+        stems = helpers.query_result_to_list(stem_results)
+
+    return api_helpers.success_response(stems)
 
 # Return playlist content in json form
 # optional parameters playlist owner's user_id, playlist_id = []
@@ -413,6 +438,7 @@ def get_feed():
                     Track.is_current == True,
                     Track.is_delete == False,
                     Track.is_unlisted == False,
+                    Track.stem_of == None,
                     Track.owner_id.in_(followee_user_ids),
                     Track.track_id.notin_(tracks_to_dedupe)
                 )
@@ -484,6 +510,7 @@ def get_feed():
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False,
+                Track.stem_of == None,
                 Track.track_id.in_(reposted_track_ids)
             )
             # exclude tracks already fetched from above, in case of "all" filter
@@ -638,6 +665,7 @@ def get_repost_feed_for_user(user_id):
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False,
+                Track.stem_of == None,
                 Track.track_id.in_(repost_track_ids)
             )
             .order_by(desc(Track.created_at))
@@ -1481,7 +1509,7 @@ def get_users_account():
             Save.is_delete == False,
             or_(Save.save_type == SaveType.playlist, Save.save_type == SaveType.album)
         )
- 
+
         saved_query_results = saved_query.all()
         save_collection_ids = [item[0] for item in saved_query_results]
 
@@ -1757,6 +1785,7 @@ def get_top_followee_windowed(type, window):
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False,
+                Track.stem_of == None,
                 # Query only tracks created `window` time ago (week, month, etc.)
                 Track.created_at >= text("NOW() - interval '1 {}'".format(window)),
             )
@@ -1857,7 +1886,8 @@ def get_top_followee_saves(type):
             .filter(
                 Track.is_current == True,
                 Track.is_delete == False,
-                Track.is_unlisted == False
+                Track.is_unlisted == False,
+                Track.stem_of == None,
             )
         )
 
@@ -1880,8 +1910,8 @@ def get_top_followee_saves(type):
 
 # Retrieves the top users for a requested genre under the follow parameters
 # - A given user can only be associated w/ one genre
-# - The user's associated genre is calculated by tallying the genre of the tracks and taking the max 
-#   - If there is a tie for # of tracks in a genre, then the first genre alphabetically is taken 
+# - The user's associated genre is calculated by tallying the genre of the tracks and taking the max
+#   - If there is a tie for # of tracks in a genre, then the first genre alphabetically is taken
 # - The users associated w/ the requested genre are then sorted by follower count
 # Route Parameters
 #   urlParam: {Array<string>?}  genre       List of genres to query for the 'top' users
@@ -1901,7 +1931,7 @@ def get_top_genre_users():
         with_genres = len(genres) != 0
 
         # Associate the user w/ a genre by counting the total # of tracks per genre
-        # taking the genre w/ the most tracks (using genre name as secondary sort)  
+        # taking the genre w/ the most tracks (using genre name as secondary sort)
         user_genre_count_query = (
             session.query(
                 User.user_id.label('user_id'),
@@ -1917,6 +1947,7 @@ def get_top_genre_users():
                 User.is_current == True,
                 User.is_creator == True,
                 Track.is_unlisted == False,
+                Track.stem_of == None,
                 Track.is_current == True,
                 Track.is_delete == False
             ).group_by(
@@ -1939,7 +1970,7 @@ def get_top_genre_users():
         )
 
         # Using the subquery of user to associated genre,
-        #   filter by the requested genres and 
+        #   filter by the requested genres and
         #   sort by user follower count
         user_genre_followers_query = (
             session.query(

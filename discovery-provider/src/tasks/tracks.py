@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from src import contract_addresses
 from src.utils import multihash, helpers
-from src.models import Track, User, BlacklistedIPLD
+from src.models import Track, User, BlacklistedIPLD, Stem
 from src.tasks.metadata import track_metadata_format
 
 logger = logging.getLogger(__name__)
@@ -116,6 +116,14 @@ def invalidate_old_track(session, track_id):
         num_invalidated_tracks > 0
     ), "Update operation requires a current track to be invalidated"
 
+def update_stems_table(session, track_record, track_metadata):
+    if (not "stem_of" in track_metadata) or (not isinstance(track_metadata["stem_of"], dict)):
+        return
+    parent_track_id = track_metadata["stem_of"].get("parent_track_id")
+    if not isinstance(parent_track_id, int): return
+    stem = Stem(parent_track_id=parent_track_id, child_track_id=track_record.track_id)
+    session.add(stem)
+
 
 def parse_track_event(
         self, session, update_task, entry, event_type, track_record, block_timestamp
@@ -172,6 +180,8 @@ def parse_track_event(
             if is_directory:
                 track_record.cover_art_sizes = track_record.cover_art
                 track_record.cover_art = None
+
+        update_stems_table(session, track_record, track_metadata)
 
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
@@ -253,6 +263,7 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_segments = track_metadata["track_segments"]
     track_record.is_unlisted = track_metadata["is_unlisted"]
     track_record.field_visibility = track_metadata["field_visibility"]
+    track_record.stem_of = track_metadata["stem_of"]
 
     if "download" in track_metadata:
         track_record.download = {
