@@ -120,7 +120,8 @@ def update_stems_table(session, track_record, track_metadata):
     if (not "stem_of" in track_metadata) or (not isinstance(track_metadata["stem_of"], dict)):
         return
     parent_track_id = track_metadata["stem_of"].get("parent_track_id")
-    if not isinstance(parent_track_id, int): return
+    if not isinstance(parent_track_id, int):
+        return
     stem = Stem(parent_track_id=parent_track_id, child_track_id=track_record.track_id)
     session.add(stem)
 
