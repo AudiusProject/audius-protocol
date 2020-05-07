@@ -36,7 +36,7 @@ class Utils {
   }
 
   static isBN (number) {
-    return Web3.utils.isBn(number)
+    return Web3.utils.isBN(number)
   }
 
   static checkStrLen (str, maxLen, minLen = 1) {
