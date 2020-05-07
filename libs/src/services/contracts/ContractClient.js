@@ -45,9 +45,13 @@ class ContractClient {
       return
     }
 
-    // Perform init by selecting healthy provider
-    const providerSelector = new ProviderSelection()
-    providerSelector.setContractClientProvider(this)
+    try {
+      // Perform init by selecting healthy provider
+      const providerSelector = new ProviderSelection()
+      providerSelector.setContractClientProvider(this)
+    } catch (e) {
+      console.log(`Error in doing provider selection logic: ${e}`)
+    }
 
     // Perform init
     // TODO: update init logic
@@ -70,7 +74,7 @@ class ContractClient {
     this._contractAddress = contractAddress
   }
 
-  setContract (contract) {
+  setWeb3EthContractInstance (contract) {
     this._contract = contract
   }
 
@@ -78,12 +82,16 @@ class ContractClient {
     this._isInitializing = isInitializing
   }
 
+  setIsInitialzed (isInitialized) {
+    this._isInitialized = isInitialized
+  }
+
   getWeb3Instance () {
     return this.web3
   }
 
-  getWeb3EthContractInstance () {
-    return this.web3.eth.Contract(this.contractABI, this._contractAddress)
+  createWeb3EthContractInstance () {
+    return new this.web3.eth.Contract(this.contractABI, this._contractAddress)
   }
 
   getContractABI () {

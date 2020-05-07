@@ -1,10 +1,13 @@
-const ServiceSelection = require('../../service-selection/ServiceSelection')
+
 const Web3 = require('web3')
+
+const ServiceSelection = require('../../service-selection/ServiceSelection')
+const EthWeb3Manager = require('../../../src/services/ethWeb3Manager/index')
 
 /**
  * This class provides the logic in selecting the proper gateway
  */
-// TODO: use env vars
+// TODO: use env vars idk how to use env vars lol
 const gatewayProvidersList = ['https://poa-gateway.audius.co', 'https://core.poa.network']
 
 class ProviderSelection extends ServiceSelection {
@@ -16,11 +19,10 @@ class ProviderSelection extends ServiceSelection {
     })
   }
 
-  // TODO: add logic for backups? and stuff
   /**
    * Initializes the ContractClient with a healthy POA provider.
    *
-   * First, try to contract logic with currently set provider when web3Manager
+   * First, try the contract logic with currently set provider when web3Manager
    * was initialized. If contract logic fails, add current provider to unhealthy
    * list and retry with the other provided gateways.
    *
@@ -35,22 +37,24 @@ class ProviderSelection extends ServiceSelection {
       const contractAddress = await contractClient.getRegistryAddress(contractClient.contractRegistryKey)
       contractClient.setContractAddress(contractAddress)
 
-      const contract = contractClient.getWeb3EthContractInstance()
-      contractClient.setContract(contract)
+      const contract = contractClient.createWeb3EthContractInstance()
+      contractClient.setWeb3EthContractInstance(contract)
+      contractClient.setIsInitialzed(true)
     } catch (e) {
       // If error, current provider is unhealthy; add to unhealthy
-      this.addUnhealthy(contractClient.web3Manager.getWeb3().currentProvider)
-
+      this.addUnhealthy(contractClient.web3Manager.getWeb3().currentProvider.host)
       const servicesSize = await this.getServicesSize()
 
+      // If web3Manager is instance of EthWeb3Manager, do not do retry logic
       // If all providers have been tested and are unhealthy, log the error
-      if (this.getUnhealthySize() === servicesSize) {
+      if (contractClient.web3Manager instanceof EthWeb3Manager || this.getUnhealthySize() === servicesSize) {
         console.error(`Failed to initialize contract ${JSON.stringify(contractClient.getContractABI())}`, e)
-      } else {
-        // Try again with other unused gateways
-        await this.select(contractClient)
-        this.setContractClientProvider(contractClient)
+        return
       }
+
+      // Try again with other unused gateways
+      await this.select(contractClient)
+      await this.setContractClientProvider(contractClient)
     }
 
     contractClient.setIsInitializing(false)
@@ -58,7 +62,6 @@ class ProviderSelection extends ServiceSelection {
 
   async select (contractClient) {
     const web3Manager = contractClient.web3Manager
-    console.log('selcting')
     let services = await this.getServices()
 
     const filteredServices = this.filterOutKnownUnhealthy(services)
@@ -67,7 +70,6 @@ class ProviderSelection extends ServiceSelection {
     try {
       const web3 = new Web3(web3Manager.provider(filteredServices[0], 10000))
       web3Manager.setWeb3(web3)
-      console.log(web3Manager.getWeb3())
     } catch (e) {
       console.log(e)
     }
