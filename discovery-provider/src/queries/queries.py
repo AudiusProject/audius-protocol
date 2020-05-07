@@ -133,7 +133,6 @@ def get_tracks():
         whitelist_params = ['created_at', 'create_date', 'release_date', 'blocknumber', 'track_id']
         base_query = parse_sort_param(base_query, Track, whitelist_params)
         query_results = paginate_query(base_query).all()
-        logger.error(f' tracks: {query_results}')
         tracks = helpers.query_result_to_list(query_results)
 
         track_ids = list(map(lambda track: track["track_id"], tracks))

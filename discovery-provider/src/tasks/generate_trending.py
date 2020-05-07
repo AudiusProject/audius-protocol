@@ -79,7 +79,6 @@ def generate_trending(db, time, genre, limit, offset):
             )
             .all()
         )
-        logger.error(f'not_deleted: ${not_deleted_track_ids}')
 
         # Generate track -> created_at date
         track_created_at_dict = {
