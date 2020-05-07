@@ -180,13 +180,15 @@ contract('ServiceProvider test', async (accounts) => {
   }
 
   const decreaseRegisteredProviderStake = async (decrease, account) => {
+    let expectedNewStake = (await staking.totalStakedFor(account)).sub(decrease)
     // Approve token transfer from staking contract to account
     let tx = await serviceProviderFactory.decreaseStake(
       decrease,
       { from: account })
 
     let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
-    // console.dir(args, { depth: 5 })
+    await expectEvent.inTransaction(tx.tx, ServiceProviderFactory, 'UpdatedStakeAmount', { _owner: account, _stakeAmount: expectedNewStake })
+    await expectEvent.inTransaction(tx.tx, Staking, 'Unstaked', { user: account, amount: decrease })
   }
 
   const deregisterServiceProvider = async (type, endpoint, account) => {
@@ -484,7 +486,7 @@ contract('ServiceProvider test', async (accounts) => {
         'Minimum stake threshold exceeded')
     })
 
-    it.only('increases stake value', async () => {
+    it('increases stake value', async () => {
       // Confirm initial amount in staking contract
       assert.equal(await getStakeAmountForAccount(stakerAccount), DEFAULT_AMOUNT)
 
