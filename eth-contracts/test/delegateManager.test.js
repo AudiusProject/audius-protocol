@@ -1,5 +1,6 @@
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('../utils/encodeCall')
+const { time } = require('@openzeppelin/test-helpers')
 
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
@@ -397,10 +398,7 @@ contract('DelegateManager', async (accounts) => {
       )
 
       // Advance to valid block
-      await _lib.advanceToTargetBlock(
-        fromBn(undelegateRequestInfo.lockupExpiryBlock),
-        web3
-      )
+      await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
 
       // Undelegate stake
       delegateManager.undelegateStake({ from: delegatorAccount1 })
@@ -787,10 +785,7 @@ contract('DelegateManager', async (accounts) => {
         'Expect request to match undelegate amount')
 
       // Advance to valid block
-      await _lib.advanceToTargetBlock(
-        fromBn(undelegateRequestInfo.lockupExpiryBlock),
-        web3
-      )
+      await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
       let currentBlock = await web3.eth.getBlock('latest')
       let currentBlockNum = currentBlock.number
       assert.isTrue(
@@ -975,10 +970,7 @@ contract('DelegateManager', async (accounts) => {
         'Expect request to match undelegate amount')
 
       // Advance to valid block
-      await _lib.advanceToTargetBlock(
-        fromBn(undelegateRequestInfo.lockupExpiryBlock),
-        web3
-      )
+      await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
       let currentBlock = await web3.eth.getBlock('latest')
       let currentBlockNum = currentBlock.number
       assert.isTrue(
@@ -1071,7 +1063,7 @@ contract('DelegateManager', async (accounts) => {
       let failUndelegateAmount = minDelegateStake.sub(toWei(30))
       await delegateManager.requestUndelegateStake(stakerAccount, failUndelegateAmount, { from: delegatorAccount1 })
       let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
-      await _lib.advanceToTargetBlock(fromBn(undelegateRequestInfo.lockupExpiryBlock), web3)
+      await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
       await _lib.assertRevert(
         delegateManager.undelegateStake({ from: delegatorAccount1 }),
         'Minimum delegation amount'
@@ -1082,7 +1074,7 @@ contract('DelegateManager', async (accounts) => {
       // Undelegate all stake and confirm min delegation amount does not prevent withdrawal
       await delegateManager.requestUndelegateStake(stakerAccount, minDelegateStake, { from: delegatorAccount1 })
       undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
-      await _lib.advanceToTargetBlock(fromBn(undelegateRequestInfo.lockupExpiryBlock), web3)
+      await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
 
       // Finalize undelegation, confirm operation is allowed
       await delegateManager.undelegateStake({ from: delegatorAccount1 })

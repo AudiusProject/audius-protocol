@@ -3,6 +3,7 @@ const BigNum = require('bignumber.js')
 
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('../utils/encodeCall')
+const { time } = require('@openzeppelin/test-helpers')
 
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
@@ -457,7 +458,7 @@ contract('Governance.sol', async (accounts) => {
   
         // Advance blocks to the next valid claim
         proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.startBlockNumber)
-        await _lib.advanceToTargetBlock(proposalStartBlockNumber + votingPeriod, web3)
+        await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
       })
 
       it('Confirm proposal evaluated correctly + transaction executed', async () => {
@@ -657,7 +658,7 @@ contract('Governance.sol', async (accounts) => {
 
       // Advance blocks to after proposal evaluation period
       const proposalStartBlock = parseInt(_lib.parseTx(submitTxReceipt).event.args.startBlockNumber)
-      await _lib.advanceToTargetBlock(proposalStartBlock + votingPeriod, web3)
+      await time.advanceBlockTo(proposalStartBlock + votingPeriod)
 
       // Call evaluateProposalOutcome()
       const evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
