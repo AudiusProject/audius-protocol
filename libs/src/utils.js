@@ -35,6 +35,10 @@ class Utils {
     return Web3.utils.keccak256(utf8Str)
   }
 
+  static isBN (number) {
+    return Web3.utils.isBn(number)
+  }
+
   static checkStrLen (str, maxLen, minLen = 1) {
     if (str === undefined || str === null || str.length > maxLen || str.length < minLen) {
       throw new Error(`String must be between ${minLen}-${maxLen} characters`)
