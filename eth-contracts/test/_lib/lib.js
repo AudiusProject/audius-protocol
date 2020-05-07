@@ -111,7 +111,7 @@ export const abiDecode = (types, data) => {
 }
 
 export const keccak256 = (values) => {
-  return ethers.utils.keccak256(values);
+  return ethers.utils.keccak256(values)
 }
 
 export const registerServiceProvider = async (token, staking, serviceProviderFactory, type, endpoint, amount, account) => {
