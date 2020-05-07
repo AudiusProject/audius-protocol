@@ -12,11 +12,6 @@ const AudiusEthContracts = 'eth-contracts'
 
 const Libs = 'libs'
 
-const getDefaultAccount = async () => {
-  let accounts = await web3.eth.getAccounts()
-  return accounts[0]
-}
-
 /**  dirName is directory name of the audius repo that you're trying to get the path to */
 const getDirectoryRoot = (dirName) => {
   const dir = path.join(__dirname, '../../')
@@ -76,7 +71,7 @@ const outputJsonConfigFile = async (outputFilePath) => {
     let outputDictionary = {}
     outputDictionary['audiusTokenAddress'] = addressInfo.tokenAddress
     outputDictionary['registryAddress'] = addressInfo.registryAddress
-    outputDictionary['ownerWallet'] = await getDefaultAccount()
+    outputDictionary['ownerWallet'] = addressInfo.proxyDeployerAddress
     outputDictionary['allWallets'] = await web3.eth.getAccounts()
     fs.writeFile(outputFilePath, JSON.stringify(outputDictionary), (err) => {
       if (err != null) {
