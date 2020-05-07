@@ -78,7 +78,6 @@ const outputJsonConfigFile = async (outputFilePath) => {
         console.log(err)
       }
     })
-    console.log(outputDictionary)
   } catch (e) {
     console.log(e)
   }
