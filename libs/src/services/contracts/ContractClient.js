@@ -50,24 +50,8 @@ class ContractClient {
       const providerSelector = new ProviderSelection()
       providerSelector.setContractClientProvider(this)
     } catch (e) {
-      console.log(`Error in doing provider selection logic: ${e}`)
+      console.log(`Error in selecting new provider: ${e}`)
     }
-
-    // Perform init
-    // TODO: update init logic
-    // this._isInitializing = true
-
-    // try {
-    //   this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
-    //   this._contract = new this.web3.eth.Contract(
-    //     this.contractABI,
-    //     this._contractAddress
-    //   )
-    //   this._isInitialized = true
-    // } catch (e) {
-    //   console.error(`Failed to initialize contract ${JSON.stringify(this.contractABI)}`, e)
-    // }
-    // this._isInitializing = false
   }
 
   setContractAddress (contractAddress) {
