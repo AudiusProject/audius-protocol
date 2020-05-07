@@ -66,6 +66,14 @@ contract Governance is RegistryContract {
         bool indexed success,
         bytes returnData
     );
+    event GuardianTransactionExecuted(
+        address indexed targetContractAddress,
+        uint256 callValue,
+        string indexed signature,
+        bytes indexed callData,
+        bool success,
+        bytes returnData
+    );
     event ProposalVetoed(uint256 indexed proposalId);
 
     function initialize(
@@ -326,6 +334,50 @@ contract Governance is RegistryContract {
         proposals[_proposalId].outcome = Outcome.No;
 
         emit ProposalVetoed(_proposalId);
+    }
+
+    // ========================================= Guardian Actions =========================================
+
+    /**
+    TODO
+    - take contractKey instead and validate that key points to valid registered contract
+    - figure out function + event naming
+    - do we need txHash in internal _execTx?
+    */
+    function guardianExecuteTransaction(
+        address _targetContractAddress,
+        uint256 _callValue,
+        string calldata _signature,
+        bytes calldata _callData
+    ) external
+    {
+        requireIsInitialized();
+
+        require(
+            msg.sender == guardianAddress,
+            "Governance::guardianExecuteTransaction:Only guardian."
+        );
+        
+        bytes memory encodedCallData;
+        if (bytes(_signature).length == 0) {
+            encodedCallData = _callData;
+        } else {
+            encodedCallData = abi.encodePacked(bytes4(keccak256(bytes(_signature))), _callData);
+        }
+
+        (bool success, bytes memory returnData) = (
+            // solium-disable-next-line security/no-call-value
+            _targetContractAddress.call.value(_callValue)(encodedCallData)
+        );
+
+        emit GuardianTransactionExecuted(
+            _targetContractAddress,
+            _callValue,
+            _signature,
+            _callData,
+            success,
+            returnData
+        );
     }
 
     // ========================================= Getters =========================================
