@@ -54,7 +54,10 @@ contract('Governance.sol', async (accounts) => {
   const stakerAccount2 = accounts[11]
   const delegatorAccount1 = accounts[12]
 
-  /** Deploy Registry, AudiusAdminUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts. */
+  /**
+   * Deploy Registry, AudiusAdminUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts
+   * Transfer tokens & register 2 SPs
+   */
   beforeEach(async () => {
     token = await AudiusToken.new({ from: treasuryAddress })
     await token.initialize()
@@ -189,10 +192,7 @@ contract('Governance.sol', async (accounts) => {
     )
     delegateManager = await DelegateManager.at(delegateManagerProxy.address)
     await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: protocolOwnerAddress })
-  })
 
-  /** Transfer tokens & register 2 SPs */
-  beforeEach(async () => {
     // Transfer 1000 tokens to stakerAccount1, stakerAccount2, and delegatorAccount1
     await token.transfer(stakerAccount1, defaultStakeAmount, { from: treasuryAddress })
     await token.transfer(stakerAccount2, defaultStakeAmount, { from: treasuryAddress })
@@ -235,7 +235,6 @@ contract('Governance.sol', async (accounts) => {
   })
 
   describe('Slash proposal', async () => {
-    
     it('Initial state - Ensure no Proposals exist yet', async () => {
       await _lib.assertRevert(governance.getProposalById(0), 'Must provide valid non-zero _proposalId')
       await _lib.assertRevert(governance.getProposalById(1), 'Must provide valid non-zero _proposalId')
@@ -245,7 +244,7 @@ contract('Governance.sol', async (accounts) => {
       const proposerAddress = accounts[10]
       const slashAmount = _lib.toBN(1)
       const targetAddress = accounts[11]
-      const targetContractRegistryKey = web3.utils.utf8ToHex("blahblah")
+      const targetContractRegistryKey = web3.utils.utf8ToHex("invalidKey")
       const callValue = _lib.toBN(0)
       const signature = 'slash(uint256,address)'
       const callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
@@ -381,7 +380,7 @@ contract('Governance.sol', async (accounts) => {
     describe('Proposal evaluation', async () => {
       let proposalId, proposerAddress, slashAmountNum, slashAmount, targetAddress, voterAddress, vote, defaultVote
       let lastBlock, targetContractRegistryKey, targetContractAddress, callValue, signature, callData
-      let outcome, txHash, returnData, initialTotalStake, initialStakeAcct2, initialTokenSupply
+      let outcome, returnData, initialTotalStake, initialStakeAcct2, initialTokenSupply
       let submitProposalTxReceipt, proposalStartBlockNumber, evaluateTxReceipt
 
       /** Define vars, submit proposal, submit votes, advance blocks */
@@ -402,12 +401,6 @@ contract('Governance.sol', async (accounts) => {
         signature = 'slash(uint256,address)'
         callData = _lib.abiEncode(['uint256', 'address'], [slashAmountNum, targetAddress])
         outcome = Outcome.Yes 
-        txHash = _lib.keccak256(
-          _lib.abiEncode(
-            ['address', 'uint256', 'string', 'bytes'],
-            [targetContractAddress, callValue, signature, callData]
-          )
-        )
         returnData = null
   
         // Confirm initial Stake state
@@ -439,9 +432,8 @@ contract('Governance.sol', async (accounts) => {
         
         // Confirm event logs (2 events)
         const [txParsedEvent0, txParsedEvent1] = _lib.parseTx(evaluateTxReceipt, true)
-        assert.equal(txParsedEvent0.event.name, 'TransactionExecuted', 'Expected same event name')
+        assert.equal(txParsedEvent0.event.name, 'ProposalTransactionExecuted', 'Expected same event name')
         assert.equal(parseInt(txParsedEvent0.event.args.proposalId), proposalId, 'Expected same txParsedEvent0.event.args.proposalId')
-        assert.equal(txParsedEvent0.event.args.txHash, txHash, 'Expected same txParsedEvent0.event.args.txHash')
         assert.equal(txParsedEvent0.event.args.success, true, 'Expected same txParsedEvent0.event.args.returnData')
         assert.equal(txParsedEvent0.event.args.returnData, returnData, 'Expected same txParsedEvent0.event.args.returnData')
         assert.equal(txParsedEvent1.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
@@ -534,10 +526,9 @@ contract('Governance.sol', async (accounts) => {
         
         // Confirm event logs (2 events)
         const [txParsedEvent0, txParsedEvent1] = _lib.parseTx(evaluateTxReceipt, true)
-        assert.equal(txParsedEvent0.event.name, 'TransactionExecuted', 'Expected same event name')
-        assert.equal(txParsedEvent0.event.args.proposalId, proposalId, 'Expected same txParsedEvent0.event.args.txHash')
-        assert.equal(txParsedEvent0.event.args.txHash, txHash, 'Expected same txParsedEvent0.event.args.txHash')
-        assert.equal(txParsedEvent0.event.args.success, false, 'Expected same txParsedEvent0.event.args.returnData')
+        assert.equal(txParsedEvent0.event.name, 'ProposalTransactionExecuted', 'Expected same event name')
+        assert.equal(txParsedEvent0.event.args.proposalId, proposalId, 'Expected same txParsedEvent0.event.args.proposalId')
+        assert.equal(txParsedEvent0.event.args.success, false, 'Expected same txParsedEvent0.event.args.success')
 
         // TODO - confirm that returnData = "Cannot slash more than total currently staked"
         // assert.equal(txParsedEvent0.event.args.returnData, returnData, 'Expected same txParsedEvent0.event.args.returnData')
@@ -635,108 +626,110 @@ contract('Governance.sol', async (accounts) => {
     })
   })
 
-  it('Upgrade Contract Proposal', async () => {
-    // Confirm staking.newFunction() not callable before upgrade
-    const stakingCopy = await StakingUpgraded.at(staking.address)
-    await _lib.assertRevert(stakingCopy.newFunction.call({ from: proxyDeployerAddress }), 'revert')
-
-    // Deploy new logic contract to later upgrade to
-    const stakingUpgraded0 = await StakingUpgraded.new({ from: proxyAdminAddress })
-    
-    // Define vars
-    const targetContractRegistryKey = stakingProxyKey
-    const targetContractAddress = stakingProxy.address
-    const callValue = _lib.audToWei(0)
-    const signature = 'upgradeTo(address)'
-    const callData = _lib.abiEncode(['address'], [stakingUpgraded0.address])
-    const txHash = _lib.keccak256(
-      _lib.abiEncode(
-        ['address', 'uint256', 'string', 'bytes'],
-        [targetContractAddress, callValue, signature, callData]
+  describe('Upgrade Contract Proposal', async () => {
+    it('Upgrade Contract Proposal', async () => {
+      // Confirm staking.newFunction() not callable before upgrade
+      const stakingCopy = await StakingUpgraded.at(staking.address)
+      await _lib.assertRevert(stakingCopy.newFunction.call({ from: proxyDeployerAddress }), 'revert')
+  
+      // Deploy new logic contract to later upgrade to
+      const stakingUpgraded0 = await StakingUpgraded.new({ from: proxyAdminAddress })
+      
+      // Define vars
+      const targetContractRegistryKey = stakingProxyKey
+      const targetContractAddress = stakingProxy.address
+      const callValue = _lib.audToWei(0)
+      const signature = 'upgradeTo(address)'
+      const callData = _lib.abiEncode(['address'], [stakingUpgraded0.address])
+      const returnData = null
+  
+      const proposerAddress = stakerAccount1
+      const voterAddress = stakerAccount1
+      const outcome = Outcome.Yes
+      const lastBlock = (await _lib.getLatestBlock(web3)).number
+      
+      // Submit proposal
+      const submitTxReceipt = await governance.submitProposal(
+        targetContractRegistryKey,
+        callValue,
+        signature,
+        callData,
+        proposalDescription,
+        { from: proposerAddress }
       )
-    )
-    const returnData = null
-
-    const proposerAddress = stakerAccount1
-    const voterAddress = stakerAccount1
-    const outcome = Outcome.Yes
-    const lastBlock = (await _lib.getLatestBlock(web3)).number
-    
-    // Submit proposal
-    const submitTxReceipt = await governance.submitProposal(
-      targetContractRegistryKey,
-      callValue,
-      signature,
-      callData,
-      proposalDescription,
-      { from: proposerAddress }
-    )
-    const proposalId = _lib.parseTx(submitTxReceipt).event.args.proposalId
-
-    // Submit proposal vote for Yes
-    await governance.submitProposalVote(proposalId, Vote.Yes, { from: voterAddress })
-
-    // Advance blocks to after proposal evaluation period
-    const proposalStartBlock = parseInt(_lib.parseTx(submitTxReceipt).event.args.startBlockNumber)
-    await _lib.advanceToTargetBlock(proposalStartBlock + votingPeriod, web3)
-
-    // Call evaluateProposalOutcome()
-    const evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
-
-    // Confirm event log states - TransactionExecuted, ProposalOutcomeEvaluated
-    const [txParsedEvent0, txParsedEvent1] = _lib.parseTx(evaluateTxReceipt, true)
-    assert.equal(txParsedEvent0.event.name, 'TransactionExecuted', 'Expected event.name')
-    assert.equal(parseInt(txParsedEvent0.event.args.proposalId), proposalId, 'Expected event.args.proposalId')
-    assert.equal(txParsedEvent0.event.args.txHash, txHash, 'Expected event.args.txHash')
-    assert.equal(txParsedEvent0.event.args.success, true, 'Expected event.args.returnData')
-    assert.equal(txParsedEvent0.event.args.returnData, returnData, 'Expected event.args.returnData')
-    assert.equal(txParsedEvent1.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
-    assert.equal(parseInt(txParsedEvent1.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-    assert.equal(txParsedEvent1.event.args.outcome, outcome, 'Expected same event.args.outcome')
-    assert.isTrue(txParsedEvent1.event.args.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
-    assert.isTrue(txParsedEvent1.event.args.voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
-    assert.equal(parseInt(txParsedEvent1.event.args.numVotes), 1, 'Expected same event.args.numVotes')
-
-    // Call getProposalById() and confirm same values
-    const proposal = await governance.getProposalById.call(proposalId)
-    assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
-    assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
-    assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
-    assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
-    assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
-    assert.equal(_lib.fromBN(proposal.callValue), callValue, 'Expected same proposal.callValue')
-    assert.equal(proposal.signature, signature, 'Expected same proposal.signature')
-    assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
-    assert.equal(proposal.outcome, outcome, 'Expected same outcome')
-    assert.equal(parseInt(proposal.voteMagnitudeYes), defaultStakeAmount, 'Expected same voteMagnitudeYes')
-    assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
-    assert.equal(parseInt(proposal.numVotes), 1, 'Expected same numVotes')
-
-    // Confirm that contract was upgraded by ensuring staking.newFunction() call succeeds
-    const stakingCopy2 = await StakingUpgraded.at(staking.address)
-    const newFnResp = await stakingCopy2.newFunction.call({ from: proxyDeployerAddress })
-    assert.equal(newFnResp, 5)
-
-    // Confirm that proxy contract's implementation address has upgraded
-    assert.equal(
-      await stakingProxy.implementation.call({ from: proxyAdminAddress }),
-      stakingUpgraded0.address,
-      'Expected updated proxy implementation address'
-    )
+      const proposalId = _lib.parseTx(submitTxReceipt).event.args.proposalId
+  
+      // Submit proposal vote for Yes
+      await governance.submitProposalVote(proposalId, Vote.Yes, { from: voterAddress })
+  
+      // Advance blocks to after proposal evaluation period
+      const proposalStartBlock = parseInt(_lib.parseTx(submitTxReceipt).event.args.startBlockNumber)
+      await _lib.advanceToTargetBlock(proposalStartBlock + votingPeriod, web3)
+  
+      // Call evaluateProposalOutcome()
+      const evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
+  
+      // Confirm event log states - ProposalTransactionExecuted, ProposalOutcomeEvaluated
+      const [txParsedEvent0, txParsedEvent1] = _lib.parseTx(evaluateTxReceipt, true)
+      assert.equal(txParsedEvent0.event.name, 'ProposalTransactionExecuted', 'Expected event.name')
+      assert.equal(parseInt(txParsedEvent0.event.args.proposalId), proposalId, 'Expected event.args.proposalId')
+      assert.equal(txParsedEvent0.event.args.success, true, 'Expected event.args.returnData')
+      assert.equal(txParsedEvent0.event.args.returnData, returnData, 'Expected event.args.returnData')
+      assert.equal(txParsedEvent1.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
+      assert.equal(parseInt(txParsedEvent1.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
+      assert.equal(txParsedEvent1.event.args.outcome, outcome, 'Expected same event.args.outcome')
+      assert.isTrue(txParsedEvent1.event.args.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
+      assert.isTrue(txParsedEvent1.event.args.voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
+      assert.equal(parseInt(txParsedEvent1.event.args.numVotes), 1, 'Expected same event.args.numVotes')
+  
+      // Call getProposalById() and confirm same values
+      const proposal = await governance.getProposalById.call(proposalId)
+      assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
+      assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
+      assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
+      assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
+      assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
+      assert.equal(_lib.fromBN(proposal.callValue), callValue, 'Expected same proposal.callValue')
+      assert.equal(proposal.signature, signature, 'Expected same proposal.signature')
+      assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
+      assert.equal(proposal.outcome, outcome, 'Expected same outcome')
+      assert.equal(parseInt(proposal.voteMagnitudeYes), defaultStakeAmount, 'Expected same voteMagnitudeYes')
+      assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
+      assert.equal(parseInt(proposal.numVotes), 1, 'Expected same numVotes')
+  
+      // Confirm that contract was upgraded by ensuring staking.newFunction() call succeeds
+      const stakingCopy2 = await StakingUpgraded.at(staking.address)
+      const newFnResp = await stakingCopy2.newFunction.call({ from: proxyDeployerAddress })
+      assert.equal(newFnResp, 5)
+  
+      // Confirm that proxy contract's implementation address has upgraded
+      assert.equal(
+        await stakingProxy.implementation.call({ from: proxyAdminAddress }),
+        stakingUpgraded0.address,
+        'Expected updated proxy implementation address'
+      )
+    })
   })
 
-  describe('Guardian execute transactions', async () => {
-    it('Fail to call from non-guardian address', async () => {
-      const slashAmount = _lib.toBN(1)
-      const targetAddress = stakerAccount2
-      const targetContractAddress = delegateManager.address
-      const callValue = _lib.toBN(0)
-      const signature = 'slash(uint256,address)'
-      const callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
+  describe('Guardian execute transactions', async () => {    
+    let slashAmount, targetAddress, targetContractRegistryKey, targetContractAddress
+    let callValue, signature, callData, returnData
 
+    beforeEach(async () => {
+      slashAmount = _lib.toBN(1)
+      targetAddress = stakerAccount2
+      targetContractRegistryKey = delegateManagerKey
+      targetContractAddress = delegateManager.address
+      callValue = _lib.toBN(0)
+      signature = 'slash(uint256,address)'
+      callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
+      returnData = null
+    })
+
+    it('Fail to call from non-guardian address', async () => {
       await _lib.assertRevert(
         governance.guardianExecuteTransaction(
-          targetContractAddress,
+          targetContractRegistryKey,
           callValue,
           signature,
           callData,
@@ -745,16 +738,8 @@ contract('Governance.sol', async (accounts) => {
         "Governance::guardianExecuteTransaction:Only guardian."
       )
     })
-    
-    it('Slash staker', async () => {
-      const slashAmount = _lib.toBN(1)
-      const targetAddress = stakerAccount2
-      const targetContractAddress = delegateManager.address
-      const callValue = _lib.toBN(0)
-      const signature = 'slash(uint256,address)'
-      const callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
-      const returnData = null
 
+    it('Slash staker', async () => {
       // Confirm initial Stake state
       const initialTotalStake = await staking.totalStaked()
       assert.isTrue(initialTotalStake.eq(defaultStakeAmount.mul(_lib.toBN(2))))
@@ -764,7 +749,7 @@ contract('Governance.sol', async (accounts) => {
 
       // Execute transaction
       const guardianExecTxReceipt = await governance.guardianExecuteTransaction(
-        targetContractAddress,
+        targetContractRegistryKey,
         callValue,
         signature,
         callData,
@@ -783,29 +768,22 @@ contract('Governance.sol', async (accounts) => {
       // Confirm Slash action succeeded by checking new Stake + Token values
       const finalStakeAcct2 = await staking.totalStakedFor(targetAddress)
       assert.isTrue(
-        finalStakeAcct2.eq(defaultStakeAmount.sub(_lib.toBN(slashAmount)))
+        finalStakeAcct2.eq(defaultStakeAmount.sub(slashAmount))
       )
       assert.isTrue(
         (initialTotalStake.sub(slashAmount)).eq(await staking.totalStaked()),
         'Expected same total stake amount'
       )
-      assert.equal(
-        await token.totalSupply(),
-        initialTokenSupply - slashAmount,
+      assert.isTrue(
+        (await token.totalSupply()).eq(initialTokenSupply.sub(slashAmount)),
         "Expected same token total supply"
       )
     })
 
-    it.skip('Fail to slash too large amount', async () => {
+    it.skip('Fail to slash too large amount', async () => { })
 
-    })
-
-    it.skip('Upgrade contract', async () => {
-
-    })
+    it.skip('Upgrade contract', async () => { })
   })
 
-  describe.skip('Submit proposal to upgrade governance contract', async () => {
-
-  })
+  describe.skip('Proposal to upgrade governance contract', async () => { })
 })

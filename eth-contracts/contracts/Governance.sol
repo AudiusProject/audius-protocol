@@ -60,9 +60,8 @@ contract Governance is RegistryContract {
         uint256 voteMagnitudeNo,
         uint256 numVotes
     );
-    event TransactionExecuted(
+    event ProposalTransactionExecuted(
         uint256 indexed proposalId,
-        bytes32 indexed txHash,
         bool indexed success,
         bytes returnData
     );
@@ -288,7 +287,18 @@ contract Governance is RegistryContract {
         else if (
             proposals[_proposalId].voteMagnitudeYes >= proposals[_proposalId].voteMagnitudeNo
         ) {
-            bool success = _executeTransaction(_proposalId);
+            (bool success, bytes memory returnData) = _executeTransaction(
+                targetContractAddress,
+                proposals[_proposalId].callValue,
+                proposals[_proposalId].signature,
+                proposals[_proposalId].callData
+            );
+
+            emit ProposalTransactionExecuted(
+                _proposalId,
+                success,
+                returnData
+            );
 
             // Proposal outcome depends on success of transaction execution.
             if (success == true) {
@@ -338,14 +348,8 @@ contract Governance is RegistryContract {
 
     // ========================================= Guardian Actions =========================================
 
-    /**
-    TODO
-    - take contractKey instead and validate that key points to valid registered contract
-    - figure out function + event naming
-    - do we need txHash in internal _execTx?
-    */
     function guardianExecuteTransaction(
-        address _targetContractAddress,
+        bytes32 _targetContractRegistryKey,
         uint256 _callValue,
         string calldata _signature,
         bytes calldata _callData
@@ -357,21 +361,23 @@ contract Governance is RegistryContract {
             msg.sender == guardianAddress,
             "Governance::guardianExecuteTransaction:Only guardian."
         );
-        
-        bytes memory encodedCallData;
-        if (bytes(_signature).length == 0) {
-            encodedCallData = _callData;
-        } else {
-            encodedCallData = abi.encodePacked(bytes4(keccak256(bytes(_signature))), _callData);
-        }
 
-        (bool success, bytes memory returnData) = (
-            // solium-disable-next-line security/no-call-value
-            _targetContractAddress.call.value(_callValue)(encodedCallData)
+        // Require _targetContractRegistryKey points to a valid registered contract
+        address targetContractAddress = registry.getContract(_targetContractRegistryKey);
+        require(
+            targetContractAddress != address(0x00),
+            "_targetContractRegistryKey must point to valid registered contract"
+        );
+
+        (bool success, bytes memory returnData) = _executeTransaction(
+            targetContractAddress,
+            _callValue,
+            _signature,
+            _callData
         );
 
         emit GuardianTransactionExecuted(
-            _targetContractAddress,
+            targetContractAddress,
             _callValue,
             _signature,
             _callData,
@@ -433,39 +439,25 @@ contract Governance is RegistryContract {
 
     // ========================================= Internal =========================================
 
-    function _executeTransaction(uint256 _proposalId) internal
-    returns (bool /** success */)
+    function _executeTransaction(
+        address _targetContractAddress,
+        uint256 _callValue,
+        string memory _signature,
+        bytes memory _callData
+    ) internal returns (bool /** success */, bytes memory /** returnData */)
     {
-        address targetContractAddress = proposals[_proposalId].targetContractAddress;
-        uint256 callValue = proposals[_proposalId].callValue;
-        string memory signature = proposals[_proposalId].signature;
-        bytes memory callData = proposals[_proposalId].callData;
-
-        bytes32 txHash = keccak256(
-            abi.encode(
-                targetContractAddress, callValue, signature, callData
-            )
-        );
-
         bytes memory encodedCallData;
-        if (bytes(signature).length == 0) {
-            encodedCallData = callData;
+        if (bytes(_signature).length == 0) {
+            encodedCallData = _callData;
         } else {
-            encodedCallData = abi.encodePacked(bytes4(keccak256(bytes(signature))), callData);
+            encodedCallData = abi.encodePacked(bytes4(keccak256(bytes(_signature))), _callData);
         }
 
         (bool success, bytes memory returnData) = (
             // solium-disable-next-line security/no-call-value
-            targetContractAddress.call.value(callValue)(encodedCallData)
+            _targetContractAddress.call.value(_callValue)(encodedCallData)
         );
 
-        emit TransactionExecuted(
-            _proposalId,
-            txHash,
-            success,
-            returnData
-        );
-
-        return success;
+        return (success, returnData);
     }
 }
