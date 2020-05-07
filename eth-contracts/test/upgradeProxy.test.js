@@ -8,24 +8,13 @@ const AudiusToken = artifacts.require('AudiusToken')
 const MockStakingCaller = artifacts.require('MockStakingCaller')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 
-// Registry keys
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 
-// TODO - consolidate all helper logic in _lib
-const toWei = (aud) => {
-  let amountInAudWei = web3.utils.toWei(
-    aud.toString(),
-    'ether'
-  )
+const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
-  let amountInAudWeiBN = web3.utils.toBN(amountInAudWei)
-  return amountInAudWeiBN
-}
-
-const DEFAULT_AMOUNT = toWei(120)
 
 contract('Upgrade proxy test', async (accounts) => {
   let proxy
@@ -117,15 +106,20 @@ contract('Upgrade proxy test', async (accounts) => {
     staking = await StakingUpgraded.at(proxy.address)
     await _lib.assertRevert(staking.newFunction.call({ from: proxyDeployerAddress }), 'revert')
 
-    await proxy.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
+    const upgradeTxReceipt = await proxy.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
+
+    // Confirm event log
+    const txParsed = _lib.parseTx(upgradeTxReceipt)
+    assert.equal(txParsed.event.name, 'Upgraded', 'event.name')
+    assert.equal(txParsed.event.args.implementation, stakingUpgraded.address, 'event.args.implementation')
+
+    // Confirm proxy implementation's address has updated to new logic contract
     assert.equal(await proxy.implementation.call({ from: proxyAdminAddress }), stakingUpgraded.address)
 
     // assert proxy.newFunction() call succeeds after upgrade
     staking = await StakingUpgraded.at(proxy.address)
     const newFunctionResp = await staking.newFunction.call({ from: proxyDeployerAddress })
     assert.equal(newFunctionResp, 5)
-
-    // TODO - confirm Upgraded event emission / data
   })
 
   describe('Test with Staking contract', async () => {

@@ -1,6 +1,3 @@
-const ethers = require('ethers')
-const BigNum = require('bignumber.js')
-
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('../utils/encodeCall')
 
@@ -23,28 +20,6 @@ const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManagerKey')
 
-const toBN = val => web3.utils.toBN(val)
-
-const fromBN = val => val.toNumber()
-
-const audToWei = val => web3.utils.toWei(val.toString(), 'ether')
-
-const audToWeiBN = aud => toBN(audToWei(aud))
-
-const abiEncode = (types, values) => {
-  const abi = new ethers.utils.AbiCoder()
-  return abi.encode(types, values)
-}
-
-const abiDecode = (types, data) => {
-  const abi = new ethers.utils.AbiCoder()
-  return abi.decode(types, data)
-}
-
-const keccak256 = (values) => {
-  return ethers.utils.keccak256(values);
-}
-
 const Outcome = Object.freeze({
   InProgress: 0,
   No: 1,
@@ -59,6 +34,7 @@ const Vote = Object.freeze({
   Yes: 2
 })
 
+
 contract('Governance.sol', async (accounts) => {
   let token, registry, staking0, staking, stakingProxy, claimsManager0, claimsManagerProxy
   let serviceProviderFactory, claimsManager, delegateManager, governance0, governanceProxy, governance
@@ -72,29 +48,11 @@ contract('Governance.sol', async (accounts) => {
   const testEndpoint1 = 'https://localhost:5000'
   const testEndpoint2 = 'https://localhost:5001'
 
-  const defaultStakeAmount = audToWeiBN(1000)
+  const defaultStakeAmount = _lib.audToWeiBN(1000)
   const proposalDescription = "TestDescription"
   const stakerAccount1 = accounts[10]
   const stakerAccount2 = accounts[11]
   const delegatorAccount1 = accounts[12]
-
-  const registerServiceProvider = async (type, endpoint, amount, account) => {
-    // Approve staking transfer
-    await token.approve(staking.address, amount, { from: account })
-
-    const tx = await serviceProviderFactory.register(
-      type,
-      endpoint,
-      amount,
-      account,
-      { from: account }
-    )
-
-    const args = tx.logs.find(log => log.event === 'RegisteredServiceProvider').args
-    args.stakeAmount = args._stakeAmount
-    args.spID = args._spID
-    return args
-  }
 
   /** Deploy Registry, AudiusAdminUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts. */
   beforeEach(async () => {
@@ -167,8 +125,8 @@ contract('Governance.sol', async (accounts) => {
     // Register discovery provider
     await serviceTypeManager.addServiceType(
       testDiscProvType,
-      audToWeiBN(5),
-      audToWeiBN(10000000),
+      _lib.audToWeiBN(5),
+      _lib.audToWeiBN(10000000),
       { from: controllerAddress })
 
     // Deploy + Register ServiceProviderFactory contract
@@ -244,13 +202,19 @@ contract('Governance.sol', async (accounts) => {
     const initialBalance = await token.balanceOf(stakerAccount1)
 
     // Register two SPs with stake
-    const tx1 = await registerServiceProvider(
+    const tx1 = await _lib.registerServiceProvider(
+      token,
+      staking,
+      serviceProviderFactory,
       testDiscProvType,
       testEndpoint1,
       defaultStakeAmount,
       stakerAccount1
     )
-    await registerServiceProvider(
+    await _lib.registerServiceProvider(
+      token,
+      staking,
+      serviceProviderFactory,
       testDiscProvType,
       testEndpoint2,
       defaultStakeAmount,
@@ -279,12 +243,12 @@ contract('Governance.sol', async (accounts) => {
 
     it('Should fail to Submit Proposal for unregistered target contract', async () => {
       const proposerAddress = accounts[10]
-      const slashAmount = toBN(1)
+      const slashAmount = _lib.toBN(1)
       const targetAddress = accounts[11]
       const targetContractRegistryKey = web3.utils.utf8ToHex("blahblah")
-      const callValue = toBN(0)
+      const callValue = _lib.toBN(0)
       const signature = 'slash(uint256,address)'
-      const callData = abiEncode(['uint256', 'address'], [fromBN(slashAmount), targetAddress])
+      const callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
 
       await _lib.assertRevert(
         governance.submitProposal(
@@ -302,14 +266,14 @@ contract('Governance.sol', async (accounts) => {
     it('Submit Proposal for Slash', async () => {
       const proposalId = 1
       const proposerAddress = accounts[10]
-      const slashAmount = toBN(1)
+      const slashAmount = _lib.toBN(1)
       const targetAddress = accounts[11]
       const lastBlock = (await _lib.getLatestBlock(web3)).number
       const targetContractRegistryKey = delegateManagerKey
       const targetContractAddress = delegateManager.address
-      const callValue = toBN(0)
+      const callValue = _lib.toBN(0)
       const signature = 'slash(uint256,address)'
-      const callData = abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
+      const callData = _lib.abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
 
       // Call submitProposal
       const txReceipt = await governance.submitProposal(
@@ -354,7 +318,7 @@ contract('Governance.sol', async (accounts) => {
     it('Vote on Proposal for Slash', async () => {
       const proposalId = 1
       const proposerAddress = stakerAccount1
-      const slashAmount = toBN(1)
+      const slashAmount = _lib.toBN(1)
       const targetAddress = stakerAccount2
       const voterAddress = stakerAccount1
       const vote = Vote.No
@@ -362,9 +326,9 @@ contract('Governance.sol', async (accounts) => {
       const lastBlock = (await _lib.getLatestBlock(web3)).number
       const targetContractRegistryKey = delegateManagerKey
       const targetContractAddress = delegateManager.address
-      const callValue = toBN(0)
+      const callValue = _lib.toBN(0)
       const signature = 'slash(uint256,address)'
-      const callData = abiEncode(['uint256', 'address'], [fromBN(slashAmount), targetAddress])
+      const callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
 
       // Call submitProposal
       await governance.submitProposal(
@@ -425,8 +389,8 @@ contract('Governance.sol', async (accounts) => {
         // Define vars
         proposalId = 1
         proposerAddress = stakerAccount1
-        slashAmountNum = audToWei(500)
-        slashAmount = toBN(slashAmountNum)
+        slashAmountNum = _lib.audToWei(500)
+        slashAmount = _lib.toBN(slashAmountNum)
         targetAddress = stakerAccount2
         voterAddress = stakerAccount1
         vote = Vote.Yes
@@ -434,12 +398,12 @@ contract('Governance.sol', async (accounts) => {
         lastBlock = (await _lib.getLatestBlock(web3)).number
         targetContractRegistryKey = delegateManagerKey
         targetContractAddress = delegateManager.address
-        callValue = audToWei(0)
+        callValue = _lib.audToWei(0)
         signature = 'slash(uint256,address)'
-        callData = abiEncode(['uint256', 'address'], [slashAmountNum, targetAddress])
+        callData = _lib.abiEncode(['uint256', 'address'], [slashAmountNum, targetAddress])
         outcome = Outcome.Yes 
-        txHash = keccak256(
-          abiEncode(
+        txHash = _lib.keccak256(
+          _lib.abiEncode(
             ['address', 'uint256', 'string', 'bytes'],
             [targetContractAddress, callValue, signature, callData]
           )
@@ -448,7 +412,7 @@ contract('Governance.sol', async (accounts) => {
   
         // Confirm initial Stake state
         initialTotalStake = await staking.totalStaked()
-        assert.isTrue(initialTotalStake.eq(defaultStakeAmount.mul(toBN(2))))
+        assert.isTrue(initialTotalStake.eq(defaultStakeAmount.mul(_lib.toBN(2))))
         initialStakeAcct2 = await staking.totalStakedFor(targetAddress)
         assert.isTrue(initialStakeAcct2.eq(defaultStakeAmount))
         initialTokenSupply = await token.totalSupply()
@@ -494,7 +458,7 @@ contract('Governance.sol', async (accounts) => {
         assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
         assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
         assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
-        assert.equal(fromBN(proposal.callValue), callValue, 'Expected same proposal.callValue')
+        assert.equal(_lib.fromBN(proposal.callValue), callValue, 'Expected same proposal.callValue')
         assert.equal(proposal.signature, signature, 'Expected same proposal.signature')
         assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
         assert.equal(proposal.outcome, outcome, 'Expected same outcome')
@@ -515,10 +479,10 @@ contract('Governance.sol', async (accounts) => {
         // Confirm Slash action succeeded by checking new Stake + Token values
         const finalStakeAcct2 = await staking.totalStakedFor(targetAddress)
         assert.isTrue(
-          finalStakeAcct2.eq(defaultStakeAmount.sub(web3.utils.toBN(slashAmount)))
+          finalStakeAcct2.eq(defaultStakeAmount.sub(_lib.toBN(slashAmount)))
         )
         assert.isTrue(
-          (web3.utils.toBN(initialTotalStake)).sub(web3.utils.toBN(slashAmount)).eq(await staking.totalStaked()),
+          (_lib.toBN(initialTotalStake)).sub(_lib.toBN(slashAmount)).eq(await staking.totalStaked()),
           'Expected same total stake amount'
         )
         assert.equal(
@@ -557,7 +521,7 @@ contract('Governance.sol', async (accounts) => {
         assert.isTrue(initialStakeAcct2.eq(defaultStakeAmount))
 
         // Reduce stake amount below proposed slash amount
-        const decreaseStakeAmount = audToWeiBN(700)
+        const decreaseStakeAmount = _lib.audToWeiBN(700)
         await serviceProviderFactory.decreaseStake(
           decreaseStakeAmount,
           { from: stakerAccount2 }
@@ -592,7 +556,7 @@ contract('Governance.sol', async (accounts) => {
         assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
         assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
         assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
-        assert.equal(fromBN(proposal.callValue), callValue, 'Expected same proposal.callValue')
+        assert.equal(_lib.fromBN(proposal.callValue), callValue, 'Expected same proposal.callValue')
         assert.equal(proposal.signature, signature, 'Expected same proposal.signature')
         assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
         assert.equal(proposal.outcome, Outcome.TxFailed, 'Expected same outcome')
@@ -682,11 +646,11 @@ contract('Governance.sol', async (accounts) => {
     // Define vars
     const targetContractRegistryKey = stakingProxyKey
     const targetContractAddress = stakingProxy.address
-    const callValue = audToWei(0)
+    const callValue = _lib.audToWei(0)
     const signature = 'upgradeTo(address)'
-    const callData = abiEncode(['address'], [stakingUpgraded0.address])
-    const txHash = keccak256(
-      abiEncode(
+    const callData = _lib.abiEncode(['address'], [stakingUpgraded0.address])
+    const txHash = _lib.keccak256(
+      _lib.abiEncode(
         ['address', 'uint256', 'string', 'bytes'],
         [targetContractAddress, callValue, signature, callData]
       )
@@ -740,7 +704,7 @@ contract('Governance.sol', async (accounts) => {
     assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
     assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
     assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
-    assert.equal(fromBN(proposal.callValue), callValue, 'Expected same proposal.callValue')
+    assert.equal(_lib.fromBN(proposal.callValue), callValue, 'Expected same proposal.callValue')
     assert.equal(proposal.signature, signature, 'Expected same proposal.signature')
     assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
     assert.equal(proposal.outcome, outcome, 'Expected same outcome')
@@ -761,14 +725,14 @@ contract('Governance.sol', async (accounts) => {
     )
   })
 
-  describe.only('Guardian execute transactions', async () => {
+  describe('Guardian execute transactions', async () => {
     it('Fail to call from non-guardian address', async () => {
-      const slashAmount = toBN(1)
+      const slashAmount = _lib.toBN(1)
       const targetAddress = stakerAccount2
       const targetContractAddress = delegateManager.address
-      const callValue = toBN(0)
+      const callValue = _lib.toBN(0)
       const signature = 'slash(uint256,address)'
-      const callData = abiEncode(['uint256', 'address'], [fromBN(slashAmount), targetAddress])
+      const callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
 
       await _lib.assertRevert(
         governance.guardianExecuteTransaction(
@@ -782,18 +746,18 @@ contract('Governance.sol', async (accounts) => {
       )
     })
     
-    it.only('Slash staker', async () => {
-      const slashAmount = toBN(1)
+    it('Slash staker', async () => {
+      const slashAmount = _lib.toBN(1)
       const targetAddress = stakerAccount2
       const targetContractAddress = delegateManager.address
-      const callValue = toBN(0)
+      const callValue = _lib.toBN(0)
       const signature = 'slash(uint256,address)'
-      const callData = abiEncode(['uint256', 'address'], [fromBN(slashAmount), targetAddress])
+      const callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
       const returnData = null
 
       // Confirm initial Stake state
       const initialTotalStake = await staking.totalStaked()
-      assert.isTrue(initialTotalStake.eq(defaultStakeAmount.mul(toBN(2))))
+      assert.isTrue(initialTotalStake.eq(defaultStakeAmount.mul(_lib.toBN(2))))
       const initialStakeAcct2 = await staking.totalStakedFor(targetAddress)
       assert.isTrue(initialStakeAcct2.eq(defaultStakeAmount))
       const initialTokenSupply = await token.totalSupply()
@@ -819,7 +783,7 @@ contract('Governance.sol', async (accounts) => {
       // Confirm Slash action succeeded by checking new Stake + Token values
       const finalStakeAcct2 = await staking.totalStakedFor(targetAddress)
       assert.isTrue(
-        finalStakeAcct2.eq(defaultStakeAmount.sub(web3.utils.toBN(slashAmount)))
+        finalStakeAcct2.eq(defaultStakeAmount.sub(_lib.toBN(slashAmount)))
       )
       assert.isTrue(
         (initialTotalStake.sub(slashAmount)).eq(await staking.totalStaked()),

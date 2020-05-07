@@ -23,20 +23,9 @@ const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'
 const testEndpoint3 = 'https://localhost:5002'
 
-const fromBn = n => parseInt(n.valueOf(), 10)
-const toWei = (aud) => {
-  let amountInAudWei = web3.utils.toWei(
-    aud.toString(),
-    'ether'
-  )
+const INITIAL_BAL = _lib.audToWeiBN(1000)
+const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
-  let amountInAudWeiBN = web3.utils.toBN(amountInAudWei)
-  return amountInAudWeiBN
-}
-
-// 1000 AUD converted to AUDWei, multiplying by 10^18
-const INITIAL_BAL = toWei(1000)
-const DEFAULT_AMOUNT = toWei(120)
 
 contract('DelegateManager', async (accounts) => {
   let proxy, staking0, staking, stakingAddress, token, registry, claimsManager0, claimsManagerProxy
@@ -101,8 +90,8 @@ contract('DelegateManager', async (accounts) => {
     // Register discovery provider
     await serviceTypeManager.addServiceType(
       testDiscProvType,
-      toWei(5),
-      toWei(10000000),
+      _lib.audToWeiBN(5),
+      _lib.audToWeiBN(10000000),
       { from: controllerAddress })
 
     // Deploy ServiceProviderFactory
@@ -177,23 +166,6 @@ contract('DelegateManager', async (accounts) => {
   })
 
   /* Helper functions */
-
-  const registerServiceProvider = async (type, endpoint, amount, account) => {
-    // Approve staking transfer
-    await token.approve(stakingAddress, amount, { from: account })
-
-    let tx = await serviceProviderFactory.register(
-      type,
-      endpoint,
-      amount,
-      account,
-      { from: account })
-
-    let args = tx.logs.find(log => log.event === 'RegisteredServiceProvider').args
-    args.stakedAmountInt = fromBn(args._stakeAmount)
-    args.spID = fromBn(args._spID)
-    return args
-  }
 
   const increaseRegisteredProviderStake = async (increase, account) => {
     // Approve token transfer
@@ -274,22 +246,27 @@ contract('DelegateManager', async (accounts) => {
 
       let initialBal = await token.balanceOf(stakerAccount)
 
-      // 1st endpoint for stakerAccount = https://localhost:5000
-      // Total Stake = 120 AUD
-      regTx = await registerServiceProvider(
+      regTx = await _lib.registerServiceProvider(
+        token,
+        staking,
+        serviceProviderFactory,
         testDiscProvType,
         testEndpoint,
         DEFAULT_AMOUNT,
-        stakerAccount)
-
-      await registerServiceProvider(
+        stakerAccount
+      )
+      await _lib.registerServiceProvider(
+        token,
+        staking,
+        serviceProviderFactory,
         testDiscProvType,
         testEndpoint1,
         DEFAULT_AMOUNT,
-        stakerAccount2)
+        stakerAccount2
+      )
 
       // Confirm event has correct amount
-      assert.equal(regTx.stakedAmountInt, DEFAULT_AMOUNT)
+      assert.isTrue(regTx.stakeAmount.eq(DEFAULT_AMOUNT))
 
       // Confirm balance updated for tokens
       let finalBal = await token.balanceOf(stakerAccount)
@@ -327,7 +304,7 @@ contract('DelegateManager', async (accounts) => {
 
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       let initialSpStake = totalStakedForSP
-      let initialDelegateAmount = toWei(60)
+      let initialDelegateAmount = _lib.audToWeiBN(60)
 
       // Approve staking transfer
       await token.approve(
@@ -398,7 +375,7 @@ contract('DelegateManager', async (accounts) => {
 
       // Advance to valid block
       await _lib.advanceToTargetBlock(
-        fromBn(undelegateRequestInfo.lockupExpiryBlock),
+        _lib.fromBN(undelegateRequestInfo.lockupExpiryBlock),
         web3
       )
 
@@ -425,7 +402,7 @@ contract('DelegateManager', async (accounts) => {
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
 
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
-      let initialDelegateAmount = toWei(60)
+      let initialDelegateAmount = _lib.audToWeiBN(60)
 
       // Approve staking transfer
       await token.approve(
@@ -481,7 +458,7 @@ contract('DelegateManager', async (accounts) => {
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
 
-      let initialDelegateAmount = toWei(60)
+      let initialDelegateAmount = _lib.audToWeiBN(60)
 
       // Approve staking transfer
       await token.approve(
@@ -572,7 +549,7 @@ contract('DelegateManager', async (accounts) => {
       let expectedTotalStakeAfterDelegation = totalStakedForSP.add(totalDelegationAmount)
       assert.isTrue(
         totalSPStakeAfterDelegation.eq(expectedTotalStakeAfterDelegation),
-        `Total value inconsistent after all delegation. Expected ${fromBn(expectedTotalStakeAfterDelegation)}, found ${fromBn(totalSPStakeAfterDelegation)}`)
+        `Total value inconsistent after all delegation. Expected ${expectedTotalStakeAfterDelegation}, found ${totalSPStakeAfterDelegation}`)
 
       // Initiate round
       await claimsManager.initiateRound({ from: controllerAddress })
@@ -640,7 +617,7 @@ contract('DelegateManager', async (accounts) => {
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
 
-      let initialDelegateAmount = toWei(60)
+      let initialDelegateAmount = _lib.audToWeiBN(60)
 
       // Approve staking transfer
       await token.approve(
@@ -681,8 +658,8 @@ contract('DelegateManager', async (accounts) => {
 
     // Confirm a pending undelegate operation is negated by a slash to the account
     it('single delegator + undelegate + slash', async () => {
-      let initialDelegateAmount = toWei(60)
-      let slashAmount = toWei(100)
+      let initialDelegateAmount = _lib.audToWeiBN(60)
+      let slashAmount = _lib.audToWeiBN(100)
 
       // Approve staking transfer
       await token.approve(
@@ -722,7 +699,7 @@ contract('DelegateManager', async (accounts) => {
     })
 
     it('single delegator to invalid SP', async () => {
-      let initialDelegateAmount = toWei(60)
+      let initialDelegateAmount = _lib.audToWeiBN(60)
 
       // Approve staking transfer
       await token.approve(
@@ -740,14 +717,13 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-
     it('3 delegators + pending claim + undelegate restrictions', async () => {
       const delegatorAccount2 = accounts[5]
       const delegatorAccount3 = accounts[6]
       // Transfer 1000 tokens to delegator2, delegator3
       await token.transfer(delegatorAccount2, INITIAL_BAL, { from: deployerAddress })
       await token.transfer(delegatorAccount3, INITIAL_BAL, { from: deployerAddress })
-      let initialDelegateAmount = toWei(60)
+      let initialDelegateAmount = _lib.audToWeiBN(60)
 
       // Approve staking transfer for delegator 1
       await token.approve(
@@ -788,7 +764,7 @@ contract('DelegateManager', async (accounts) => {
 
       // Advance to valid block
       await _lib.advanceToTargetBlock(
-        fromBn(undelegateRequestInfo.lockupExpiryBlock),
+        _lib.fromBN(undelegateRequestInfo.lockupExpiryBlock),
         web3
       )
       let currentBlock = await web3.eth.getBlock('latest')
@@ -840,7 +816,7 @@ contract('DelegateManager', async (accounts) => {
     it('slash below sp bounds', async () => {
       let preSlashInfo = await getAccountStakeInfo(stakerAccount, false)
       // Set slash amount to all but 1 AUD for this SP
-      let diffAmount = toWei(1)
+      let diffAmount = _lib.audToWeiBN(1)
       let slashAmount = (preSlashInfo.spFactoryStake).sub(diffAmount)
 
       // Perform slash functions
@@ -928,7 +904,7 @@ contract('DelegateManager', async (accounts) => {
       // Remove deployer direct stake
       // Decrease by all but 1 AUD direct stake
       let spFactoryStake = infoAfterFailure.spFactoryStake
-      let diff = toWei(1)
+      let diff = _lib.audToWeiBN(1)
       // Confirm failure as direct stake threshold is violated
       // Due to the total delegated stake equal to min bounds, total account stake balance will NOT violate bounds
       await _lib.assertRevert(
@@ -950,10 +926,13 @@ contract('DelegateManager', async (accounts) => {
       // 1x Min directly from SP
       // 1x Min from our single delegator
       // So - a service provider should be able to register with NO additional stake and still be within bounds
-      await registerServiceProvider(
+      await _lib.registerServiceProvider(
+        token,
+        staking,
+        serviceProviderFactory,
         testDiscProvType,
         testEndpoint3,
-        toWei(0),
+        _lib.audToWeiBN(0),
         stakerAccount)
 
       let infoAfterSecondEndpoint = await getAccountStakeInfo(stakerAccount, false)
@@ -976,7 +955,7 @@ contract('DelegateManager', async (accounts) => {
 
       // Advance to valid block
       await _lib.advanceToTargetBlock(
-        fromBn(undelegateRequestInfo.lockupExpiryBlock),
+        _lib.fromBN(undelegateRequestInfo.lockupExpiryBlock),
         web3
       )
       let currentBlock = await web3.eth.getBlock('latest')
@@ -1009,13 +988,13 @@ contract('DelegateManager', async (accounts) => {
       let maxDelegators = 4
       await mockGovernance.updateMaxDelegators(maxDelegators)
       assert.equal(
-        fromBn(await delegateManager.getMaxDelegators()),
+        _lib.fromBN(await delegateManager.getMaxDelegators()),
         maxDelegators,
         'Max delegators not updated'
       )
       let delegateAccountOffset = 4
       let delegatorAccounts = accounts.slice(delegateAccountOffset, delegateAccountOffset + (maxDelegators + 1))
-      let singleDelegateAmount = toWei(10)
+      let singleDelegateAmount = _lib.audToWeiBN(10)
       for (var i = 0; i < delegatorAccounts.length; i++) {
         let delegator = delegatorAccounts[i]
         // Transfer 1000 tokens to each delegator
@@ -1041,7 +1020,7 @@ contract('DelegateManager', async (accounts) => {
 
     it('min delegate stake', async () => {
       // Update min delegation level configuration
-      let minDelegateStake = toWei(100)
+      let minDelegateStake = _lib.audToWeiBN(100)
       await mockGovernance.updateMinDelegationAmount(minDelegateStake)
       assert.isTrue(
         minDelegateStake.eq(await delegateManager.getMinDelegationAmount()),
@@ -1057,7 +1036,7 @@ contract('DelegateManager', async (accounts) => {
       await _lib.assertRevert(
         delegateManager.delegateStake(
           stakerAccount,
-          minDelegateStake.sub(toWei(10)),
+          minDelegateStake.sub(_lib.audToWeiBN(10)),
           { from: delegatorAccount1 }),
         'Minimum delegation amount')
 
@@ -1068,10 +1047,10 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 })
 
       // Submit request to undelegate stake that will fail as total amount results in < min amount
-      let failUndelegateAmount = minDelegateStake.sub(toWei(30))
+      let failUndelegateAmount = minDelegateStake.sub(_lib.audToWeiBN(30))
       await delegateManager.requestUndelegateStake(stakerAccount, failUndelegateAmount, { from: delegatorAccount1 })
       let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
-      await _lib.advanceToTargetBlock(fromBn(undelegateRequestInfo.lockupExpiryBlock), web3)
+      await _lib.advanceToTargetBlock(_lib.fromBN(undelegateRequestInfo.lockupExpiryBlock), web3)
       await _lib.assertRevert(
         delegateManager.undelegateStake({ from: delegatorAccount1 }),
         'Minimum delegation amount'
@@ -1082,11 +1061,11 @@ contract('DelegateManager', async (accounts) => {
       // Undelegate all stake and confirm min delegation amount does not prevent withdrawal
       await delegateManager.requestUndelegateStake(stakerAccount, minDelegateStake, { from: delegatorAccount1 })
       undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
-      await _lib.advanceToTargetBlock(fromBn(undelegateRequestInfo.lockupExpiryBlock), web3)
+      await _lib.advanceToTargetBlock(_lib.fromBN(undelegateRequestInfo.lockupExpiryBlock), web3)
 
       // Finalize undelegation, confirm operation is allowed
       await delegateManager.undelegateStake({ from: delegatorAccount1 })
-      assert.equal(fromBn(await delegateManager.getTotalDelegatorStake(delegatorAccount1)), 0, 'No stake expected')
+      assert.equal(_lib.fromBN(await delegateManager.getTotalDelegatorStake(delegatorAccount1)), 0, 'No stake expected')
       assert.equal((await delegateManager.getDelegatorsList(stakerAccount)).length, 0, 'No delegators expected')
     })
   })

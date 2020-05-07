@@ -15,19 +15,8 @@ const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 
-const fromBn = n => parseInt(n.valueOf(), 10)
+const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
-const toWei = (aud) => {
-  let amountInAudWei = web3.utils.toWei(
-    aud.toString(),
-    'ether'
-  )
-
-  let amountInAudWeiBN = web3.utils.toBN(amountInAudWei)
-  return amountInAudWeiBN
-}
-
-const DEFAULT_AMOUNT = toWei(120)
 
 contract('ClaimsManager', async (accounts) => {
   let token, registry, staking0, stakingProxy, staking, claimsManager0, claimsManagerProxy, claimsManager
@@ -49,7 +38,8 @@ contract('ClaimsManager', async (accounts) => {
     await mockStakingCaller.stakeFor(
       staker,
       amount,
-      web3.utils.utf8ToHex(''))
+      web3.utils.utf8ToHex('')
+    )
   }
 
   beforeEach(async () => {
@@ -155,7 +145,8 @@ contract('ClaimsManager', async (accounts) => {
     let totalStaked = await staking.totalStaked()
     assert.isTrue(
       totalStaked.isZero(),
-      'Expect zero stake prior to claim funding')
+      'Expect zero stake prior to claim funding'
+    )
 
     // Stake default amount
     await approveTransferAndStake(DEFAULT_AMOUNT, staker)
@@ -205,11 +196,7 @@ contract('ClaimsManager', async (accounts) => {
     let finalAcctStake = await staking.totalStakedFor(staker)
     let expectedFinalValue = accountStakeBeforeSecondClaim.add(fundsPerClaim)
 
-    // Note - we convert ouf of BN format here to handle infinitesimal precision loss
-    assert.equal(
-      fromBn(finalAcctStake),
-      fromBn(expectedFinalValue),
-      'Expect additional increase in stake after 2nd claim')
+    assert.isTrue(finalAcctStake.eq(expectedFinalValue), 'Expect additional increase in stake after 2nd claim')
   })
 
   it('Initiate single claim after 2x claim block diff', async () => {
@@ -255,7 +242,7 @@ contract('ClaimsManager', async (accounts) => {
 
   it('updates funding amount', async () => {
     let currentFunding = await claimsManager.getFundsPerRound()
-    let newAmount = toWei(1000)
+    let newAmount = _lib.audToWeiBN(1000)
     assert.isTrue(!newAmount.eq(currentFunding), 'Expect change in funding value')
     await _lib.assertRevert(
       claimsManager.updateFundingAmount(newAmount, { from: accounts[7] }),
