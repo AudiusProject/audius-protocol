@@ -7,25 +7,13 @@ const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabil
 const Staking = artifacts.require('Staking')
 const MockStakingCaller = artifacts.require('MockStakingCaller')
 
-const fromBn = n => parseInt(n.valueOf(), 10)
-const getTokenBalance = async (token, account) => fromBn(await token.balanceOf(account))
-
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 
-const toWei = (aud) => {
-  let amountInAudWei = web3.utils.toWei(
-    aud.toString(),
-    'ether'
-  )
+const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
-  let amountInAudWeiBN = web3.utils.toBN(amountInAudWei)
-  return amountInAudWeiBN
-}
-
-const DEFAULT_AMOUNT = toWei(120)
 
 contract('Staking test', async (accounts) => {
   let registry
@@ -152,15 +140,14 @@ contract('Staking test', async (accounts) => {
       staker,
       DEFAULT_AMOUNT)
 
-    let finalTotalStaked = parseInt(await staking.totalStaked())
-    assert.equal(
-      finalTotalStaked,
-      DEFAULT_AMOUNT,
-      'Final total stake amount must be default stake')
-    assert.equal(
-      fromBn(await staking.totalStakedFor(staker)),
-      DEFAULT_AMOUNT,
-      'Account stake value should match default stake')
+    assert.isTrue(
+      (await staking.totalStaked()).eq(DEFAULT_AMOUNT),
+      'Final total stake amount must be default stake'
+    )
+    assert.isTrue(
+      (await staking.totalStakedFor(staker)).eq(DEFAULT_AMOUNT),
+      'Account stake value should match default stake'
+    )
   })
 
   it('unstakes', async () => {
@@ -168,16 +155,14 @@ contract('Staking test', async (accounts) => {
     // Transfer default tokens to account[2]
     await token.transfer(staker, DEFAULT_AMOUNT, { from: deployerAddress })
 
-    const initialOwnerBalance = await getTokenBalance(token, staker)
-    const initialStakingBalance = await getTokenBalance(token, stakingAddress)
+    const initialOwnerBalance = await token.balanceOf(staker)
+    const initialStakingBalance = await token.balanceOf(stakingAddress)
 
     await approveAndStake(DEFAULT_AMOUNT, staker)
 
-    const tmpOwnerBalance = await getTokenBalance(token, staker)
-    const tmpStakingBalance = await getTokenBalance(token, stakingAddress)
-    assert.equal(tmpOwnerBalance, initialOwnerBalance - DEFAULT_AMOUNT, 'staker balance should match')
-    assert.equal(tmpStakingBalance, initialStakingBalance + DEFAULT_AMOUNT, 'Staking app balance should match')
-    assert.equal(fromBn(await staking.totalStakedFor(staker)), DEFAULT_AMOUNT, 'staked value should match')
+    assert.isTrue((await token.balanceOf(staker)).eq(initialOwnerBalance.sub(DEFAULT_AMOUNT)), 'staker balance should match')
+    assert.isTrue((await token.balanceOf(stakingAddress)).eq(initialStakingBalance.add(DEFAULT_AMOUNT)), 'Staking app balance should match')
+    assert.isTrue((await staking.totalStakedFor(staker)).eq(DEFAULT_AMOUNT), 'staked value should match')
 
     // total stake
     assert.equal((await staking.totalStaked()).toString(), DEFAULT_AMOUNT, 'Total stake should match')
@@ -188,11 +173,11 @@ contract('Staking test', async (accounts) => {
       DEFAULT_AMOUNT
     )
 
-    const finalOwnerBalance = await getTokenBalance(token, staker)
-    const finalStakingBalance = await getTokenBalance(token, stakingAddress)
+    const finalOwnerBalance = await token.balanceOf(staker)
+    const finalStakingBalance = await token.balanceOf(stakingAddress)
 
-    assert.equal(finalOwnerBalance, initialOwnerBalance, 'initial and final staker balance should match')
-    assert.equal(finalStakingBalance, initialStakingBalance, 'initial and final staking balance should match')
+    assert.isTrue(finalOwnerBalance.eq(initialOwnerBalance), 'initial and final owner balance should match')
+    assert.isTrue(finalStakingBalance.eq(initialStakingBalance), 'initial and final staking balance should match')
   })
 
   it('stake with multiple accounts', async () => {
@@ -278,7 +263,7 @@ contract('Staking test', async (accounts) => {
       expectedTotalStake,
       'Final stake amount must be 2x default stake')
 
-    let FIRST_CLAIM_FUND = toWei(120)
+    let FIRST_CLAIM_FUND = _lib.audToWeiBN(120)
 
     // Transfer 120AUD tokens to staking contract
     await token.transfer(funderAccount, FIRST_CLAIM_FUND, { from: deployerAddress })

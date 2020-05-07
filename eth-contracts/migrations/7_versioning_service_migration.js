@@ -16,7 +16,7 @@ const governanceKey = web3.utils.utf8ToHex('Governance')
 const discoveryProvider = web3.utils.utf8ToHex('discovery-provider')
 const creatorNode = web3.utils.utf8ToHex('creator-node')
 
-const toWei = (aud) => {
+const audToWeiBN = (aud) => {
   const amountInAudWei = web3.utils.toWei(aud.toString(), 'ether')
   return web3.utils.toBN(amountInAudWei)
 }
@@ -24,20 +24,20 @@ const toWei = (aud) => {
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
     const config = contractConfig[network]
-    const registry = await Registry.deployed()
-    const registryAddress = registry.address
-
     const controllerAddress = config.controllerAddress || accounts[0]
-    // TODO move to contractConfig
-    const [proxyAdminAddress, proxyDeployerAddress] = [accounts[10], accounts[11]]
+    const proxyAdminAddress = config.proxyAdminAddress || accounts[10]
+    const proxyDeployerAddress = config.proxyDeployerAddress || accounts[11]
 
+    const registryAddress = process.env.registryAddress
+    const registry = await Registry.at(registryAddress)
+
+    // Deploy ServiceTypeManager logic and proxy contracts + register proxy
     const serviceTypeManager0 = await deployer.deploy(ServiceTypeManager, { from: proxyDeployerAddress })
     const serviceTypeCalldata = encodeCall(
       'initialize',
       ['address', 'address', 'bytes32'],
       [registryAddress, controllerAddress, governanceKey]
     )
-
     const serviceTypeManagerProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
       serviceTypeManager0.address,
@@ -47,30 +47,32 @@ module.exports = (deployer, network, accounts) => {
       governanceKey,
       { from: proxyDeployerAddress }
     )
+    await registry.addContract(
+      serviceTypeManagerProxyKey,
+      serviceTypeManagerProxy.address,
+      { from: proxyDeployerAddress }
+    )
 
-    await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address)
-    let serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
-    // Register creator node
+    // Register creatorNode and discoveryProvider service types
+    const serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
     await serviceTypeManager.addServiceType(
       creatorNode,
-      toWei(10),
-      toWei(10000000),
+      audToWeiBN(10),
+      audToWeiBN(10000000),
       { from: controllerAddress })
-    // Register discovery provider
     await serviceTypeManager.addServiceType(
       discoveryProvider,
-      toWei(5),
-      toWei(10000000),
+      audToWeiBN(5),
+      audToWeiBN(10000000),
       { from: controllerAddress })
 
-    // Deploy + Register ServiceProviderFactory contract
+    // Deploy ServiceProviderFactory logic and proxy contracts + register proxy
     const serviceProviderFactory0 = await deployer.deploy(ServiceProviderFactory, { from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = encodeCall(
       'initialize',
       ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
       [registryAddress, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
     )
-
     const serviceProviderFactoryProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
       serviceProviderFactory0.address,
@@ -80,7 +82,10 @@ module.exports = (deployer, network, accounts) => {
       governanceKey,
       { from: proxyDeployerAddress }
     )
-
-    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address)
+    await registry.addContract(
+      serviceProviderFactoryKey,
+      serviceProviderFactoryProxy.address,
+      { from: proxyDeployerAddress }
+    )
   })
 }
