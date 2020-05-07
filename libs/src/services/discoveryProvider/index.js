@@ -223,6 +223,18 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
+/**
+ * Gets all stems for a given trackId as an array of tracks.
+ * @param {number} trackId
+ * @returns {(Array)} track
+ */
+  async getStemsForTrack (trackId) {
+    const req = {
+      endpoint: `stems/${trackId}`
+    }
+    return this._makeRequest(req)
+  }
+
   /**
    * Gets tracks trending on Audius.
    * @param {string} genre

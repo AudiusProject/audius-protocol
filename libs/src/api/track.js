@@ -79,6 +79,16 @@ class Tracks extends Base {
   }
 
   /**
+   * Gets all stems for a given trackId as an array of tracks.
+   * @param {number} trackId
+   * @returns {(Array)} track
+   */
+  async getStemsForTrack (trackId) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getStemsForTrack(trackId)
+  }
+
+  /**
    * Return saved tracks for current user
    * NOTE in returned JSON, SaveType string one of track, playlist, album
    * @param {number} limit - max # of items to return
