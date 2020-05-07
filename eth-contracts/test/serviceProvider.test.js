@@ -143,6 +143,10 @@ contract('ServiceProvider test', async (accounts) => {
     // Approve staking transfer
     await token.approve(staking.address, amount, { from: account })
 
+    // Convert to BN if necessary
+    if(!web3.utils.isBN(amount)) {
+      amount = web3.utils.toBN(amount)
+    }
     let expectedNewStake = (await staking.totalStakedFor(account)).add(amount)
     let tx = await serviceProviderFactory.register(
       type,
@@ -152,7 +156,9 @@ contract('ServiceProvider test', async (accounts) => {
       { from: account })
 
     await expectEvent.inTransaction(tx.tx, ServiceProviderFactory, 'RegisteredServiceProvider', { _owner: account, _stakeAmount: expectedNewStake })
-    await expectEvent.inTransaction(tx.tx, Staking, 'Staked', { user: account, amount: amount })
+    if (amount > 0) {
+      await expectEvent.inTransaction(tx.tx, Staking, 'Staked', { user: account, amount: amount })
+    }
 
     let args = tx.logs.find(log => log.event === 'RegisteredServiceProvider').args
     args.stakedAmountInt = fromBn(args._stakeAmount)
@@ -180,6 +186,9 @@ contract('ServiceProvider test', async (accounts) => {
   }
 
   const decreaseRegisteredProviderStake = async (decrease, account) => {
+    if(!web3.utils.isBN(decrease)) {
+      decrease = web3.utils.toBN(decrease)
+    }
     let expectedNewStake = (await staking.totalStakedFor(account)).sub(decrease)
     // Approve token transfer from staking contract to account
     let tx = await serviceProviderFactory.decreaseStake(
