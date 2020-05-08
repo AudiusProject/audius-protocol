@@ -1,4 +1,5 @@
 const ProviderSelection = require('./ProviderSelection')
+const EthWeb3Manager = require('../ethWeb3Manager/index')
 
 const CONTRACT_INITIALIZING_INTERVAL = 100
 const CONTRACT_INITIALIZING_TIMEOUT = 10000
@@ -27,6 +28,16 @@ class ContractClient {
 
   /** Inits the contract if necessary */
   async init () {
+    let providerSelector
+    if (!(this.web3Manager instanceof EthWeb3Manager)) {
+      providerSelector = new ProviderSelection(this.web3Manager.getWeb3Providers())
+    }
+
+    // Perform init
+    await this.initializeContracts(providerSelector)
+  }
+
+  async initializeContracts (providerSelector) {
     // No-op if we are already initted
     if (this._isInitialized) return
 
@@ -45,41 +56,34 @@ class ContractClient {
       return
     }
 
+    this._isInitializing = true
     try {
-      // Perform init by selecting healthy provider
-      const providerSelector = new ProviderSelection()
-      providerSelector.setContractClientProvider(this)
+      this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
+      this._contract = new this.web3.eth.Contract(
+        this.contractABI,
+        this._contractAddress
+      )
+      this._isInitializing = false
+      this._isInitialized = true
     } catch (e) {
-      console.log(`Error in selecting new provider: ${e}`)
+      if (this.web3Manager instanceof EthWeb3Manager) {
+        console.error(`Failed to initialize contract ${JSON.stringify(this.contractABI)}`, e)
+        return
+      }
+
+      // If error, current provider is unhealthy; add to unhealthy
+      providerSelector.addUnhealthy(this.web3Manager.getWeb3().currentProvider.host)
+
+      if (providerSelector.getUnhealthySize() === providerSelector.getServicesSize()) {
+        console.error(`No available, healthy providers to init contract ${JSON.stringify(this.contractABI)}`, e)
+        return
+      }
+
+      // Reset _isInitializing to false to retry init logic and avoid the _isInitialzing check
+      this._isInitializing = false
+      await providerSelector.select(this)
+      await this.initializeContracts(providerSelector)
     }
-  }
-
-  setContractAddress (contractAddress) {
-    this._contractAddress = contractAddress
-  }
-
-  setWeb3EthContractInstance (contract) {
-    this._contract = contract
-  }
-
-  setIsInitializing (isInitializing) {
-    this._isInitializing = isInitializing
-  }
-
-  setIsInitialzed (isInitialized) {
-    this._isInitialized = isInitialized
-  }
-
-  getWeb3Instance () {
-    return this.web3
-  }
-
-  createWeb3EthContractInstance () {
-    return new this.web3.eth.Contract(this.contractABI, this._contractAddress)
-  }
-
-  getContractABI () {
-    return this.contractABI
   }
 
   /** Gets the contract address and ensures that the contract has initted. */

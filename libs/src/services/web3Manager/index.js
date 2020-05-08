@@ -62,6 +62,15 @@ class Web3Manager {
     }
   }
 
+  getWeb3Providers () {
+    let web3ProviderEndpoints = []
+    if (this.web3Config &&
+      this.web3Config.internalWeb3Config &&
+      this.web3Config.internalWeb3Config.web3ProviderEndpoints) {
+      web3ProviderEndpoints = this.web3Config.internalWeb3Config.web3ProviderEndpoints
+    }
+    return web3ProviderEndpoints
+  }
   getWeb3 () {
     return this.web3
   }

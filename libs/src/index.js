@@ -77,12 +77,13 @@ class AudiusLibs {
    * @param {string} registryAddress
    * @param {string} url web3 provider endpoint
    */
-  static configInternalWeb3 (registryAddress, url) {
+  static configInternalWeb3 (registryAddress, chosenProviderUrl, allProviderUrls) {
     return {
       registryAddress,
       useExternalWeb3: false,
       internalWeb3Config: {
-        web3ProviderEndpoint: url
+        web3ProviderEndpoint: chosenProviderUrl,
+        web3ProviderEndpoints: allProviderUrls
       }
     }
   }
