@@ -16,7 +16,7 @@
     "truffle-console": "./node_modules/.bin/truffle console --network development",
     "truffle-console-test": "./node_modules/.bin/truffle console --network test_local",
     "test": "npm run truffle-test",
-    "test-coverage": "./node_modules/.bin/truffle run coverage",
+    "test-coverage": "ENABLE_OPTIMIZER=false ./node_modules/.bin/truffle run coverage",
     "test-only": "./node_modules/.bin/truffle test --network=test_local",
     "truffle-test": "./scripts/truffle-test.sh",
     "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
