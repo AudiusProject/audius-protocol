@@ -19,6 +19,8 @@ const getEnv = env => {
   }
   return value
 }
+let ENABLE_OPTIMIZER = true
+if (getEnv('ENABLE_OPTIMIZER') === 'false') ENABLE_OPTIMIZER = false
 
 // Values must be set in calling environment
 // Consult @hareeshnagaraj for details
@@ -61,7 +63,7 @@ module.exports = {
       settings: {
         evmVersion: 'istanbul', // istanbul is latest stable, and default setting
         optimizer: {
-          enabled: true,
+          enabled: ENABLE_OPTIMIZER,
           runs: 200, // 200 is default value
           details: {
             orderLiterals: true,
