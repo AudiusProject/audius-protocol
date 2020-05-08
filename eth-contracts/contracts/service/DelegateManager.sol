@@ -67,9 +67,6 @@ contract DelegateManager is RegistryContract {
     // Requester to pending undelegate request
     mapping (address => UndelegateStakeRequest) undelegateRequests;
 
-    // TODO: Evaluate whether this is necessary
-    bytes empty;
-
     event IncreaseDelegatedStake(
       address _delegator,
       address _serviceProvider,
@@ -136,8 +133,7 @@ contract DelegateManager is RegistryContract {
         stakingContract.delegateStakeFor(
             _targetSP,
             delegator,
-            _amount,
-            empty
+            _amount
         );
 
         // Update list of delegators to SP if necessary
@@ -275,8 +271,7 @@ contract DelegateManager is RegistryContract {
         ).undelegateStakeFor(
             serviceProvider,
             delegator,
-            unstakeAmount,
-            empty
+            unstakeAmount
         );
 
         // Update amount staked from this delegator to targeted service provider

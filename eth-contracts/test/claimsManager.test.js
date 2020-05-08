@@ -1,5 +1,6 @@
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('../utils/encodeCall')
+const { time } = require('@openzeppelin/test-helpers')
 
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
@@ -37,9 +38,7 @@ contract('ClaimsManager', async (accounts) => {
     // Stake tokens
     await mockStakingCaller.stakeFor(
       staker,
-      amount,
-      web3.utils.utf8ToHex('')
-    )
+      amount)
   }
 
   beforeEach(async () => {
@@ -168,18 +167,12 @@ contract('ClaimsManager', async (accounts) => {
       claimsManager.initiateRound({ from: controllerAddress }),
       'Required block difference not met')
 
-    let currentBlock = await getLatestBlock()
-    let currentBlockNum = currentBlock.number
     let lastClaimBlock = await claimsManager.getLastFundBlock()
     let claimDiff = await claimsManager.getFundingRoundBlockDiff()
     let nextClaimBlock = lastClaimBlock.add(claimDiff)
 
     // Advance blocks to the next valid claim
-    while (currentBlockNum < nextClaimBlock) {
-      await _lib.advanceBlock(web3)
-      currentBlock = await getLatestBlock()
-      currentBlockNum = currentBlock.number
-    }
+    await time.advanceBlockTo(nextClaimBlock)
 
     // No change expected after block diff
     totalStaked = await staking.totalStaked()
@@ -211,19 +204,16 @@ contract('ClaimsManager', async (accounts) => {
     // Stake default amount
     await approveTransferAndStake(DEFAULT_AMOUNT, staker)
 
-    let currentBlock = await getLatestBlock()
-    let currentBlockNum = currentBlock.number
+    // Initiate 1st claim
+    await claimsManager.initiateRound({ from: controllerAddress })
+
     let lastClaimBlock = await claimsManager.getLastFundBlock()
     let claimDiff = await claimsManager.getFundingRoundBlockDiff()
     let twiceClaimDiff = claimDiff.mul(new BN('2'))
-    let nextClaimBlock = lastClaimBlock.add(twiceClaimDiff)
+    let nextClaimBlockTwiceDiff = lastClaimBlock.add(twiceClaimDiff)
 
-    // Advance blocks to the next valid claim
-    while (currentBlockNum < nextClaimBlock) {
-      await _lib.advanceBlock(web3)
-      currentBlock = await getLatestBlock()
-      currentBlockNum = currentBlock.number
-    }
+    // Advance blocks to the target
+    await time.advanceBlockTo(nextClaimBlockTwiceDiff)
 
     // Initiate claim
     await claimsManager.initiateRound({ from: controllerAddress })

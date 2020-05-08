@@ -22,16 +22,14 @@ contract('Staking test', async (accounts) => {
 
   const [deployerAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
 
-  const EMPTY_STRING = ''
-
   const approveAndStake = async (amount, staker) => {
     // allow Staking app to move owner tokens
     await token.approve(stakingAddress, amount, { from: staker })
     // stake tokens
     await mockStakingCaller.stakeFor(
       staker,
-      amount,
-      web3.utils.utf8ToHex(EMPTY_STRING))
+      amount
+    )
   }
 
   const getStakedAmountForAcct = async (acct) => {
@@ -100,8 +98,7 @@ contract('Staking test', async (accounts) => {
     await _lib.assertRevert(
       mockStakingCaller.stakeFor(
         staker,
-        0,
-        web3.utils.utf8ToHex(EMPTY_STRING)
+        0
       ),
       "STAKING_AMOUNT_ZERO"
     )
@@ -112,16 +109,14 @@ contract('Staking test', async (accounts) => {
     await _lib.assertRevert(
       mockStakingCaller.unstakeFor(
         deployerAddress,
-        DEFAULT_AMOUNT + 1,
-        web3.utils.utf8ToHex(EMPTY_STRING)
+        DEFAULT_AMOUNT + 1
       ),
       "Cannot decrease greater than current balance"
     )
     await _lib.assertRevert(
       mockStakingCaller.unstakeFor(
         deployerAddress,
-        0,
-        web3.utils.utf8ToHex(EMPTY_STRING)
+        0
       ))
   })
 
@@ -143,9 +138,7 @@ contract('Staking test', async (accounts) => {
     // stake tokens
     await mockStakingCaller.stakeFor(
       staker,
-      DEFAULT_AMOUNT,
-      web3.utils.utf8ToHex(EMPTY_STRING)
-    )
+      DEFAULT_AMOUNT)
 
     assert.isTrue(
       (await staking.totalStaked()).eq(DEFAULT_AMOUNT),
@@ -177,8 +170,7 @@ contract('Staking test', async (accounts) => {
     // Unstake default amount
     await mockStakingCaller.unstakeFor(
       staker,
-      DEFAULT_AMOUNT,
-      web3.utils.utf8ToHex(EMPTY_STRING)
+      DEFAULT_AMOUNT
     )
 
     const finalOwnerBalance = await token.balanceOf(staker)

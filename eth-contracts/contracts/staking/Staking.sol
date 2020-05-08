@@ -43,17 +43,6 @@ contract Staking is RegistryContract, StakingInterface {
     bytes32 delegateManagerKey;
     bytes32 serviceProviderFactoryKey;
 
-    event StakeTransferred(
-      address indexed from,
-      uint256 amount,
-      address to
-    );
-
-    event Claimed(
-      address claimaint,
-      uint256 amountClaimed
-    );
-
     event Slashed(address indexed user, uint256 amount, uint256 total);
 
     function initialize(
@@ -86,11 +75,7 @@ contract Staking is RegistryContract, StakingInterface {
             msg.sender == registry.getContract(claimsManagerProxyKey),
             "Only callable from ClaimsManager"
         );
-        _stakeFor(
-            _stakerAccount,
-            msg.sender,
-            _amount,
-            bytes("")); // TODO: RM bytes requirement if unused
+        _stakeFor(_stakerAccount, msg.sender, _amount);
 
         // Update claim history even if no value claimed
         accounts[_stakerAccount].claimHistory.add(block.number.toUint64(), _amount);
@@ -130,12 +115,10 @@ contract Staking is RegistryContract, StakingInterface {
      * @notice Stakes `_amount` tokens, transferring them from _accountAddress, and assigns them to `_accountAddress`
      * @param _accountAddress The final staker of the tokens
      * @param _amount Number of tokens staked
-     * @param _data Used in Staked event, to add signalling information in more complex staking applications
      */
     function stakeFor(
         address _accountAddress,
-        uint256 _amount,
-        bytes calldata _data
+        uint256 _amount
     ) external
     {
         requireIsInitialized();
@@ -146,20 +129,17 @@ contract Staking is RegistryContract, StakingInterface {
         _stakeFor(
             _accountAddress,
             _accountAddress,
-            _amount,
-            _data);
+            _amount);
     }
 
     /**
      * @notice Unstakes `_amount` tokens, returning them to the desired account.
      * @param _accountAddress Account unstaked for, and token recipient
      * @param _amount Number of tokens staked
-     * @param _data Used in Unstaked event, to add signalling information in more complex staking applications
      */
     function unstakeFor(
         address _accountAddress,
-        uint256 _amount,
-        bytes calldata _data
+        uint256 _amount
     ) external
     {
         requireIsInitialized();
@@ -170,8 +150,7 @@ contract Staking is RegistryContract, StakingInterface {
         _unstakeFor(
             _accountAddress,
             _accountAddress,
-            _amount,
-            _data
+            _amount
         );
     }
 
@@ -180,13 +159,11 @@ contract Staking is RegistryContract, StakingInterface {
      * @param _accountAddress The final staker of the tokens
      * @param _delegatorAddress Address from which to transfer tokens
      * @param _amount Number of tokens staked
-     * @param _data Used in Staked event, to add signalling information in more complex staking applications
      */
     function delegateStakeFor(
         address _accountAddress,
         address _delegatorAddress,
-        uint256 _amount,
-        bytes calldata _data
+        uint256 _amount
     ) external {
         requireIsInitialized();
         require(
@@ -196,8 +173,7 @@ contract Staking is RegistryContract, StakingInterface {
         _stakeFor(
             _accountAddress,
             _delegatorAddress,
-            _amount,
-            _data);
+            _amount);
     }
 
     /**
@@ -205,13 +181,11 @@ contract Staking is RegistryContract, StakingInterface {
      * @param _accountAddress The staker of the tokens
      * @param _delegatorAddress Address from which to transfer tokens
      * @param _amount Number of tokens unstaked
-     * @param _data Used in Staked event, to add signalling information in more complex staking applications
      */
     function undelegateStakeFor(
         address _accountAddress,
         address _delegatorAddress,
-        uint256 _amount,
-        bytes calldata _data
+        uint256 _amount
     ) external {
         requireIsInitialized();
         require(
@@ -221,8 +195,7 @@ contract Staking is RegistryContract, StakingInterface {
         _unstakeFor(
             _accountAddress,
             _delegatorAddress,
-            _amount,
-            _data);
+            _amount);
     }
 
     /**
@@ -315,8 +288,7 @@ contract Staking is RegistryContract, StakingInterface {
     function _stakeFor(
         address _stakeAccount,
         address _transferAccount,
-        uint256 _amount,
-        bytes memory _data
+        uint256 _amount
     ) internal
     {
         // staking 0 tokens is invalid
@@ -334,15 +306,13 @@ contract Staking is RegistryContract, StakingInterface {
         emit Staked(
             _stakeAccount,
             _amount,
-            totalStakedFor(_stakeAccount),
-            _data);
+            totalStakedFor(_stakeAccount));
     }
 
     function _unstakeFor(
         address _stakeAccount,
         address _transferAccount,
-        uint256 _amount,
-        bytes memory _data
+        uint256 _amount
     ) internal
     {
         require(_amount > 0, ERROR_AMOUNT_ZERO);
@@ -359,8 +329,7 @@ contract Staking is RegistryContract, StakingInterface {
         emit Unstaked(
             _stakeAccount,
             _amount,
-            totalStakedFor(_stakeAccount),
-            _data
+            totalStakedFor(_stakeAccount)
         );
     }
 

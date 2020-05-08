@@ -1,5 +1,6 @@
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('../utils/encodeCall')
+const { expectEvent } = require('@openzeppelin/test-helpers')
 
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
@@ -145,12 +146,15 @@ contract('ServiceProvider test', async (accounts) => {
   const getStakeAmountForAccount = async (account) => staking.totalStakedFor(account)
 
   const decreaseRegisteredProviderStake = async (decrease, account) => {
+    if(!web3.utils.isBN(decrease)) {
+      decrease = web3.utils.toBN(decrease)
+    }
+    let expectedNewStake = (await staking.totalStakedFor(account)).sub(decrease)
     // Approve token transfer from staking contract to account
     const tx = await serviceProviderFactory.decreaseStake(
       decrease,
       { from: account }
     )
-
     const args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
     return args
   }

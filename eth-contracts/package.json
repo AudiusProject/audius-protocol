@@ -39,6 +39,7 @@
     "truffle-hdwallet-provider": "^1.0.13"
   },
   "devDependencies": {
+    "@openzeppelin/test-helpers": "^0.5.5",
     "async": "^2.6.1",
     "babel-register": "^6.26.0",
     "bignumber.js": "8.0.1",

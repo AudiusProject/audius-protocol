@@ -36,8 +36,7 @@ contract('Upgrade proxy test', async (accounts) => {
     // stake tokens
     await mockStakingCaller.stakeFor(
       staker,
-      amount,
-      web3.utils.utf8ToHex(''))
+      amount)
   }
 
   beforeEach(async () => {

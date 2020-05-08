@@ -9,3 +9,4 @@ build/
 coverage/
 coverage.json
 coverage.zip
+migrations/migration-output.json

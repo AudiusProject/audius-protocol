@@ -90,32 +90,6 @@ export const assertRevert = async (blockOrPromise, expectedReason) => {
   assert.isTrue(expectedMsgFound, `Expected revert reason not found. Expected '${expectedReason}'. Found '${error.message}'`)
 }
 
-/** TODO */
-export const advanceBlock = (web3) => {
-  return new Promise((resolve, reject) => {
-    web3.currentProvider.send({
-      jsonrpc: '2.0',
-      method: 'evm_mine',
-      id: new Date().getTime()
-    }, (err, result) => {
-      if (err) { return reject(err) }
-      const newBlockHash = web3.eth.getBlock('latest').hash
-
-      return resolve(newBlockHash)
-    })
-  })
-}
-
-export const advanceToTargetBlock = async (targetBlockNumber, web3) => {
-  let currentBlock = await web3.eth.getBlock('latest')
-  let currentBlockNum = currentBlock.number
-  while (currentBlockNum < targetBlockNumber) {
-    await advanceBlock(web3)
-    currentBlock = await web3.eth.getBlock('latest')
-    currentBlockNum = currentBlock.number
-  }
-}
-
 export const toBN = (val) => web3.utils.toBN(val)
 
 export const fromBN = (val) => val.toNumber()
@@ -137,7 +111,7 @@ export const abiDecode = (types, data) => {
 }
 
 export const keccak256 = (values) => {
-  return ethers.utils.keccak256(values);
+  return ethers.utils.keccak256(values)
 }
 
 export const registerServiceProvider = async (token, staking, serviceProviderFactory, type, endpoint, amount, account) => {

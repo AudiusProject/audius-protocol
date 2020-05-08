@@ -1,5 +1,6 @@
 import * as _lib from './_lib/lib.js'
 const encodeCall = require('../utils/encodeCall')
+const { time } = require('@openzeppelin/test-helpers')
 
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
@@ -423,7 +424,7 @@ contract('Governance.sol', async (accounts) => {
   
         // Advance blocks to the next valid claim
         proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.startBlockNumber)
-        await _lib.advanceToTargetBlock(proposalStartBlockNumber + votingPeriod, web3)
+        await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
       })
 
       it('Confirm proposal evaluated correctly + transaction executed', async () => {
@@ -664,8 +665,8 @@ contract('Governance.sol', async (accounts) => {
   
       // Advance blocks to after proposal evaluation period
       const proposalStartBlock = parseInt(_lib.parseTx(submitTxReceipt).event.args.startBlockNumber)
-      await _lib.advanceToTargetBlock(proposalStartBlock + votingPeriod, web3)
-  
+      await time.advanceBlockTo(proposalStartBlock + votingPeriod)
+
       // Call evaluateProposalOutcome()
       const evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
   
@@ -681,7 +682,7 @@ contract('Governance.sol', async (accounts) => {
       assert.isTrue(txParsedEvent1.event.args.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
       assert.isTrue(txParsedEvent1.event.args.voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
       assert.equal(parseInt(txParsedEvent1.event.args.numVotes), 1, 'Expected same event.args.numVotes')
-  
+
       // Call getProposalById() and confirm same values
       const proposal = await governance.getProposalById.call(proposalId)
       assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
@@ -696,12 +697,12 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(parseInt(proposal.voteMagnitudeYes), defaultStakeAmount, 'Expected same voteMagnitudeYes')
       assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
       assert.equal(parseInt(proposal.numVotes), 1, 'Expected same numVotes')
-  
+
       // Confirm that contract was upgraded by ensuring staking.newFunction() call succeeds
       const stakingCopy2 = await StakingUpgraded.at(staking.address)
       const newFnResp = await stakingCopy2.newFunction.call({ from: proxyDeployerAddress })
       assert.equal(newFnResp, 5)
-  
+
       // Confirm that proxy contract's implementation address has upgraded
       assert.equal(
         await stakingProxy.implementation.call({ from: proxyAdminAddress }),
