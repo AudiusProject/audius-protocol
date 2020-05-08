@@ -43,6 +43,19 @@ async function indexNotifications (notifications, tx, audiusLibs) {
       await _processFavoriteNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
     }
 
+    // Handle the 'remix create' notification type
+    if (notif.type === notificationTypes.RemixCreate) {
+      let notificationTarget = notif.metadata.remix_original_track_id
+      const shouldNotify = await shouldNotifyUser(notificationTarget, 'remixes', tx)
+      await _processRemixCreateNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
+    }
+
+    // Handle the 'favorite' notification type, track/album/playlist
+    if (notif.type === notificationTypes.RemixCosign) {
+      let notificationTarget = notif.metadata.remix_original_track_id
+      await _processCosignNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget)
+    }
+
     // Handle the 'create' notification type, track/album/playlist
     if (notif.type === notificationTypes.Create.base) {
       await _processCreateNotifications(audiusLibs, notif, blocknumber, timestamp, tx)
@@ -583,6 +596,171 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
         subscriberPushNotifications = subscriberPushNotifications.filter(x => x.pending)
       }
     }
+  }
+}
+
+async function _processRemixCreateNotifications (audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify) {
+  const {
+    entity_id: rexmixedTrackId,
+    entity_owner_id: rexmixerUserId,
+    remix_author_user_id: originalAuthorId,
+    remix_original_track_id: orignialTrackId
+  } = notif.metadata
+
+  // Action entity id can be one of album/playlist/track
+  const [notification, created] = await models.Notification.findOrCreate({
+    where: {
+      type: notificationTypes.RemixCreate,
+      userId: originalAuthorId,
+      entityId: rexmixedTrackId,
+      blocknumber,
+      timestamp
+    },
+    transaction: tx
+  })
+
+  let notificationAction = await models.NotificationAction.findOrCreate({
+    where: {
+      notificationId: notification.id,
+      actionEntityType: actionEntityTypes.Track,
+      actionEntityId: orignialTrackId,
+      blocknumber
+    },
+    transaction: tx
+  })
+  const notifcationActionCreated = notificationAction[1]
+
+  // If the notification and the notifcation action were already created, then this is a repeat - do not continue
+  if (!created && !notifcationActionCreated) return
+
+  try {
+    logger.debug('processRemixCreateNotification - About to send a push notification for remix creation', notif)
+    let notifWithAddProps = {
+      ...notif,
+      actions: [{
+        actionEntityType: actionEntityTypes.User,
+        actionEntityId: originalAuthorId,
+        blocknumber
+      }, {
+        actionEntityType: actionEntityTypes.Track,
+        actionEntityId: rexmixedTrackId,
+        blocknumber
+      }, {
+        actionEntityType: actionEntityTypes.Track,
+        actionEntityId: orignialTrackId,
+        blocknumber
+      }],
+      entityId: rexmixedTrackId,
+      type: notificationTypes.RemixCreate
+    }
+
+    // fetch metadata
+    const metadata = await fetchNotificationMetadata(audiusLibs, rexmixerUserId, [notifWithAddProps])
+
+    // map properties necessary to render push notification message
+    const mapNotification = notificationResponseMap[notificationTypes.RemixCreate]
+    let msgGenNotif = {
+      ...notifWithAddProps,
+      ...(mapNotification(notifWithAddProps, metadata))
+    }
+    logger.debug('processRemixCreateNotification - About to generate message for favorite push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
+
+    const { notifyMobile, notifyBrowserPush } = shouldNotify
+    // send push notification
+    if (notifyMobile || notifyBrowserPush) {
+      try {
+        // snippets
+        const msg = pushNotificationMessagesMap[notificationTypes.RemixCreate](msgGenNotif)
+        const title = notificationResponseTitleMap[notificationTypes.RemixCreate]
+        let types = []
+        if (notifyMobile) types.push('mobile')
+        if (notifyBrowserPush) types.push('browser')
+        await publish(msg, originalAuthorId, tx, true, title, types)
+      } catch (e) {
+        logger.error('processRemixCreateNotification - Could not send push notification for _processRemixCreateNotifications for target user', notificationTarget, e)
+      }
+    }
+  } catch (e) {
+    logger.error('processRemixCreateNotification - Could not send push notification for _processRemixCreateNotifications for target user', notificationTarget, e)
+  }
+}
+
+async function _processCosignNotifications (audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget) {
+  const {
+    entity_id: rexmixedTrackId,
+    entity_owner_id: rexmixerUserId
+  } = notif.metadata
+  const parentTrackUserId = notif.initiator
+
+  let cosignNotifications = await models.Notification.findAll({
+    where: {
+      userId: rexmixerUserId,
+      type: notificationTypes.RemixCosign,
+      entityId: rexmixedTrackId
+    },
+    include: [{
+      model: models.NotificationAction,
+      as: 'actions',
+      where: {
+        actionEntityType: actionEntityTypes.User,
+        actionEntityId: parentTrackUserId
+      }
+    }],
+    transaction: tx
+  })
+
+  // If this track is already cosigned, ignore
+  if (cosignNotifications.length > 0) return
+
+  let cosignNotification = await models.Notification.create({
+    type: notificationTypes.RemixCosign,
+    userId: rexmixerUserId,
+    entityId: rexmixedTrackId,
+    blocknumber,
+    timestamp
+  }, { transaction: tx })
+
+  await models.NotificationAction.create({
+    notificationId: cosignNotification.id,
+    actionEntityType: actionEntityTypes.User,
+    actionEntityId: parentTrackUserId,
+    blocknumber
+  }, { transaction: tx })
+
+  try {
+    logger.debug('processCosignNotification - About to send a push notification for cosign', notif)
+    let notifWithAddProps = {
+      ...notif,
+      actions: [{
+        actionEntityType: actionEntityTypes.User,
+        actionEntityId: rexmixerUserId,
+        blocknumber
+      }, {
+        actionEntityType: actionEntityTypes.Track,
+        actionEntityId: rexmixedTrackId,
+        blocknumber
+      }],
+      type: notificationTypes.RemixCosign
+    }
+
+    // fetch metadata
+    const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
+
+    // map properties necessary to render push notification message
+    const mapNotification = notificationResponseMap[notificationTypes.RemixCosign]
+    let msgGenNotif = {
+      ...notifWithAddProps,
+      ...(mapNotification(notifWithAddProps, metadata))
+    }
+    logger.debug('processCosignNotification - About to generate message for cosign push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
+
+    // snippets
+    const msg = pushNotificationMessagesMap[notificationTypes.RemixCosign](msgGenNotif)
+    const title = notificationResponseTitleMap[notificationTypes.RemixCosign]
+    let types = ['mobile', 'browser']
+    await publish(msg, rexmixerUserId, tx, true, title, types)
+  } catch (e) {
+    logger.error('processCosignNotification - Could not send push notification for _processCosignNotifications for target user', notificationTarget, e)
   }
 }
 

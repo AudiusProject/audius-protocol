@@ -148,6 +148,17 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
         trackIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId))
         break
       }
+      case NotificationType.RemixCreate:
+      case NotificationType.RemixCosign: {
+        for (const action of notification.actions) {
+          if (action.actionEntityType === Entity.Track) {
+            trackIdsToFetch.push(action.actionEntityId)
+          } else if (action.actionEntityType === Entity.User) {
+            userIdsToFetch.push(action.actionEntityId)
+          }
+        }
+        break
+      }
     }
   }
 

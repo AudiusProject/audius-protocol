@@ -27,7 +27,9 @@ const NotificationType = Object.freeze({
   MilestoneRepost: 'MilestoneRepost',
   MilestoneFavorite: 'MilestoneFavorite',
   MilestoneListen: 'MilestoneListen',
-  MilestoneFollow: 'MilestoneFollow'
+  MilestoneFollow: 'MilestoneFollow',
+  RemixCreate: 'RemixCreate',
+  RemixCosign: 'RemixCosign'
 })
 
 const ClientNotificationTypes = new Set([
@@ -155,6 +157,24 @@ const formatMilestone = (notification) => {
   }
 }
 
+const formatRemixCreate = (notification) => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    type: NotificationType.RemixCreate,
+    parentTrack: notification.entityId,
+    childTrack: notification.actions[0].actionEntityId
+  }
+}
+
+const formatRemixCosign = (notification) => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    type: NotificationType.RemixCosign,
+    parentTrackUserId: notification.actions[0].actionEntityId,
+    childTrackId: notification.entityId
+  }
+}
+
 const getCommonNotificationsFields = (notification) => ({
   id: notification.id,
   isHidden: notification.isHidden,
@@ -177,7 +197,9 @@ const notificationResponseMap = {
   [NotificationType.MilestoneRepost]: formatMilestone,
   [NotificationType.MilestoneFavorite]: formatMilestone,
   [NotificationType.MilestoneListen]: formatMilestone,
-  [NotificationType.MilestoneFollow]: formatMilestone
+  [NotificationType.MilestoneFollow]: formatMilestone,
+  [NotificationType.RemixCreate]: formatRemixCreate,
+  [NotificationType.RemixCosign]: formatRemixCosign
 }
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).
@@ -260,7 +282,10 @@ module.exports = function (app) {
   app.get('/notifications', authMiddleware, handleResponse(async (req) => {
     const limit = parseInt(req.query.limit)
     const timeOffset = req.query.timeOffset ? moment(req.query.timeOffset) : moment()
-    const { blockchainUserId: userId, createdAt } = req.user
+    // const { blockchainUserId: userId, createdAt } = req.user
+    // const { blockchainUserId: userId, createdAt } = req.user
+    const userId = req.query.userId
+    const createdAt = '2020-05-05T19:29:37.765Z'
     const createdDate = moment(createdAt)
     if (!timeOffset.isValid()) {
       return errorResponseBadRequest(`Invalid Date params`)

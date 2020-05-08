@@ -18,6 +18,8 @@ const notificationTypes = Object.freeze({
     album: 'CreateAlbum',
     playlist: 'CreatePlaylist'
   },
+  RemixCreate: 'RemixCreate',
+  RemixCosign: 'RemixCosign',
   Milestone: 'Milestone',
   MilestoneFollow: 'MilestoneFollow',
   MilestoneRepost: 'MilestoneRepost',
