@@ -1,4 +1,4 @@
-"""add-credits-table
+"""add-remixes-table
 
 Revision ID: 7b3f27e78b84
 Revises: c64edfb319a3
@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    op.create_table('credits',
-        # A child track "credits" parent track (and can credit many)
+    op.create_table('remixes',
+        # A child track "remixes" parent track (and can remixes many)
         sa.Column('parent_track_id', sa.Integer(), nullable=False, index=True),
         sa.Column('child_track_id', sa.Integer(), nullable=False, index=True),
         # TODO: Consider a way to make this possible. It's not right now because
@@ -30,4 +30,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table('credits')
+    op.drop_table('remixes')
