@@ -340,6 +340,7 @@ def notifications():
         tracks_query = tracks_query.filter(
                 Track.is_unlisted == False,
                 Track.is_delete == False,
+                Track.stem_of == None,
                 Track.blocknumber > min_block_number,
                 Track.blocknumber <= max_block_number)
         tracks_query = tracks_query.filter(Track.created_at == Track.updated_at)
@@ -365,6 +366,7 @@ def notifications():
         publish_tracks_query = session.query(Track)
         publish_tracks_query = publish_tracks_query.filter(
             Track.is_unlisted == False,
+            Track.stem_of == None,
             Track.created_at != Track.updated_at,
             Track.blocknumber > min_block_number,
             Track.blocknumber <= max_block_number)
