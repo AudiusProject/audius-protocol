@@ -94,6 +94,7 @@ def search_tags():
                         and (is_current is true)
                         and (is_delete is false)
                         and (is_unlisted is false)
+                        and (stem_of is NULL)
                     order by
                         updated_at desc
                 ) as t
@@ -118,6 +119,7 @@ def search_tags():
                     Track.is_current == True,
                     Track.is_delete == False,
                     Track.is_unlisted == False,
+                    Track.stem_of == None,
                     Track.track_id.in_(track_ids),
                 )
                 .all()
@@ -162,6 +164,7 @@ def search_tags():
                             (tags like :like_tags_query)
                             and (is_current is true)
                             and (is_unlisted is false)
+                            and (stem_of is NULL)
                         order by
                             updated_at desc
                     ) as t
@@ -231,6 +234,7 @@ def search_tags():
                     Track.is_current == True,
                     Track.is_delete == False,
                     Track.is_unlisted == False,
+                    Track.stem_of == None,
                     Track.track_id.in_(saved_track_ids),
                 )
                 .all()
@@ -429,6 +433,7 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
             Track.is_delete == False,
             Track.is_current == True,
             Track.is_unlisted == False,
+            Track.stem_of == None,
             Track.track_id.in_(track_ids),
         )
         .all()

@@ -1,4 +1,4 @@
-const _ = require('lodash')
+const { pick } = require('lodash')
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
 const CreatorNode = require('../services/creatorNode')
@@ -475,7 +475,7 @@ class Users extends Base {
   }
 
   _cleanUserMetadata (metadata) {
-    return _.pick(metadata, USER_PROPS.concat('user_id'))
+    return pick(metadata, USER_PROPS.concat('user_id'))
   }
 }
 

@@ -1,4 +1,4 @@
-const _ = require('lodash')
+const { sampleSize } = require('lodash')
 const { raceRequests } = require('../utils/network')
 
 /**
@@ -157,7 +157,7 @@ class ServiceSelection {
 
   /** Given a list of services, samples maxConcurrentRequests from them */
   getSelectionRound (services) {
-    return _.sampleSize(services, this.maxConcurrentRequests)
+    return sampleSize(services, this.maxConcurrentRequests)
   }
 
   /** Gets the total number of attempts we've made this instantiation */

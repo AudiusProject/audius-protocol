@@ -104,6 +104,7 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
             Track.is_current == True,
             Track.is_delete == False,
             Track.is_unlisted == False,
+            Track.stem_of == None,
             Track.owner_id.in_(user_ids)
         )
         .group_by(Track.owner_id)
@@ -195,7 +196,7 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
     )
     repost_count_dict = {user_id: repost_count for (user_id, repost_count) in repost_counts}
     track_save_count_dict = {}
-    if with_track_save_count : 
+    if with_track_save_count :
         # build dict of user id --> track save count
         track_save_counts = (
             session.query(
@@ -389,7 +390,7 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
             if track_repost["repost_item_id"] not in followee_track_repost_dict:
                 followee_track_repost_dict[track_repost["repost_item_id"]] = []
             followee_track_repost_dict[track_repost["repost_item_id"]].append(track_repost)
-        
+
         # Build dict of track id --> followee saves.
         followee_track_saves = (
             session.query(Save)
@@ -473,7 +474,7 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
             )
             .all()
         )
-        
+
         # Build dict of playlist id --> followee reposts.
         followee_playlist_reposts = (
             session.query(Repost)
@@ -491,7 +492,7 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
             if playlist_repost["repost_item_id"] not in followee_playlist_repost_dict:
                 followee_playlist_repost_dict[playlist_repost["repost_item_id"]] = []
             followee_playlist_repost_dict[playlist_repost["repost_item_id"]].append(playlist_repost)
-        
+
         # Build dict of playlist id --> followee saves.
         followee_playlist_saves = (
             session.query(Save)
@@ -570,7 +571,7 @@ def get_repost_counts_query(session, query_by_user_flag, query_repost_type_flag,
 
     return repost_counts_query
 
-# Gets the repost count for users or tracks with the filters specified in the params. 
+# Gets the repost count for users or tracks with the filters specified in the params.
 # The time param {day, week, month, year} is used in generate_trending to create a windowed time frame for repost counts
 def get_repost_counts(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, max_block_number=None, time=None):
     repost_counts_query = get_repost_counts_query(session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, max_block_number)
@@ -629,11 +630,11 @@ def get_save_counts_query(session, query_by_user_flag, query_save_type_flag, fil
 
     return save_counts_query
 
-# Gets the save count for users or tracks with the filters specified in the params. 
+# Gets the save count for users or tracks with the filters specified in the params.
 # The time param {day, week, month, year} is used in generate_trending to create a windowed time frame for save counts
 def get_save_counts(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number=None, time=None):
     save_counts_query = get_save_counts_query(session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number)
-    
+
     if time is not None:
         interval = "NOW() - interval '1 {}'".format(time)
         save_counts_query = save_counts_query.filter(
@@ -884,7 +885,7 @@ def decayed_score(score, created_at, peak = 5, nominal_timestamp = 14 * 24 * 60 
         ),
         0.2
     )
-    
+
 
 def filter_to_playlist_mood(session, mood, query, correlation):
     """
