@@ -815,15 +815,17 @@ contract('ServiceProvider test', async (accounts) => {
 
       // bytes32 version string
       let testVersion = web3.utils.utf8ToHex('0.0.1')
-
-      // Confirm invalid address fails set operation
-      await _lib.assertRevert(
-        serviceTypeManager.setServiceVersion(testType, testVersion, { from: accounts[3] }),
-        'Invalid signature'
+      assert.isFalse(
+        await serviceTypeManager.isValidVersion(testType, testVersion),
+        'Expect invalid version prior to registration'
       )
 
-      // Set service version
       await serviceTypeManager.setServiceVersion(testType, testVersion, { from: controllerAddress })
+
+      assert.isTrue(
+        await serviceTypeManager.isValidVersion(testType, testVersion),
+        'Expect version after registration'
+      )
       await _lib.assertRevert(
         serviceTypeManager.setServiceVersion(testType, testVersion, { from: controllerAddress }),
         'Already registered')

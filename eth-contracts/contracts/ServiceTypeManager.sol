@@ -16,6 +16,12 @@ contract ServiceTypeManager is RegistryContract {
      */
     mapping(bytes32 => bytes32[]) public serviceTypeVersions;
 
+    /**
+     * @dev - mapping of serviceType - < serviceTypeVersion, isValid >
+     * Example - "discovery-provider" - <"0.0.1", true>
+     */
+    mapping(bytes32 => mapping(bytes32 => bool)) public serviceTypeVersionInfo;
+
     // @dev List of valid service types
     bytes32[] private validServiceTypes;
 
@@ -55,14 +61,15 @@ contract ServiceTypeManager is RegistryContract {
         _requireIsInitialized();
         require(controllerAddress == msg.sender, "Invalid signature for controller");
 
-        uint numExistingVersions = this.getNumberOfVersions(_serviceType);
+        require(
+            serviceTypeVersionInfo[_serviceType][_serviceVersion] == false,
+            "Already registered");
 
-        for (uint i = 0; i < numExistingVersions; i++) {
-            bytes32 existingVersion = this.getVersion(_serviceType, i);
-            require(existingVersion != _serviceVersion, "Already registered");
-        }
-
+         // Update array of known types
         serviceTypeVersions[_serviceType].push(_serviceVersion);
+
+        // Update status for this specific service version 
+        serviceTypeVersionInfo[_serviceType][_serviceVersion] = true;
 
         emit SetServiceVersion(_serviceType, _serviceVersion);
     }
@@ -177,5 +184,12 @@ contract ServiceTypeManager is RegistryContract {
     external view returns (bool isValid)
     {
         return serviceTypeStakeRequirements[_serviceType].maxStake > 0;
+    }
+
+    /// @notice Return boolean indicating whether this is a valid service version
+    function isValidVersion(bytes32 _serviceType, bytes32 _serviceVersion)
+    external view returns (bool isValidServiceVersion)
+    {
+        return serviceTypeVersionInfo[_serviceType][_serviceVersion];
     }
 }
