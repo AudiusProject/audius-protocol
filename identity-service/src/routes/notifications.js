@@ -282,10 +282,7 @@ module.exports = function (app) {
   app.get('/notifications', authMiddleware, handleResponse(async (req) => {
     const limit = parseInt(req.query.limit)
     const timeOffset = req.query.timeOffset ? moment(req.query.timeOffset) : moment()
-    // const { blockchainUserId: userId, createdAt } = req.user
-    // const { blockchainUserId: userId, createdAt } = req.user
-    const userId = req.query.userId
-    const createdAt = '2020-05-05T19:29:37.765Z'
+    const { blockchainUserId: userId, createdAt } = req.user
     const createdDate = moment(createdAt)
     if (!timeOffset.isValid()) {
       return errorResponseBadRequest(`Invalid Date params`)

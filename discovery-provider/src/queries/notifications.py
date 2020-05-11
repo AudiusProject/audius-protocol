@@ -59,7 +59,7 @@ def get_owner_id(session, entity_type, entity_id):
 
 def get_cosign_remix_notifications(session, max_block_number, remix_tracks):
     """
-    Get the notifications for remix tracks that are favorited by the original remix author
+    Get the notifications for remix tracks that are reposted/favorited by the parent remix author
 
     Args:
         session: (DB)
@@ -80,9 +80,8 @@ def get_cosign_remix_notifications(session, max_block_number, remix_tracks):
 
     remix_notifications = []
     remix_track_ids = [r['item_id'] for r in remix_tracks]
-    # # Check if reposted tracks are reposts of remix by original artist
-    #     # Want compare list of original track owner id to reposter user id to see if match 
 
+    # Query for all the parent tracks of the remix tracks 
     tracks_subquery = (
         session.query(Track)
             .filter(
@@ -144,18 +143,18 @@ def get_cosign_remix_notifications(session, max_block_number, remix_tracks):
 @bp.route("/notifications", methods=("GET",))
 def notifications():
     """
-    Fetches the notifications events that occured between the given block numbers
+    Fetches the notifications events that occurred between the given block numbers
 
     URL Params:
         min_block_number: (int) The start block number for querying for notifications
-        max_block_number?: (int) The end block number for querying for notificaions
+        max_block_number?: (int) The end block number for querying for notifications
         track_id?: (Array<int>) Array of track id for fetching the track's owner id 
             and adding the track id to owner user id mapping to the `owners` response field
             NOTE: this is added for notification for listen counts 
     
     Response - Json object w/ the following fields
         notifications: Array of notifications of shape:
-            type: 'Follow' | 'Favorite' | 'Repost' | 'Create'
+            type: 'Follow' | 'Favorite' | 'Repost' | 'Create' | 'RemixCreate' | 'RemixCosign'
             blocknumber: (int) blocknumber of notification
             timestamp: (string) timestamp of notification
             initiator: (int) the user id that caused this notification
@@ -164,7 +163,7 @@ def notifications():
                 entity_type?: (string) the type of the target entity
                 entity_owner_id?: (int) the id of the target entity's owner (if applicable)
 
-        info: Dictionary of metadata w/ min_block_number & max_block_number
+        info: Dictionary of metadata w/ min_block_number & max_block_number fields
 
         milestones: Dictionary mapping of follows/reposts/favorites (processed within the blocks params)
             Root fields:
@@ -173,7 +172,7 @@ def notifications():
                 favorite_counts: Contains a dictionary tracks/albums/playlists of id to favorite count
 
         owners: Dictionary containing the mapping for track id / playlist id / album -> owner user id
-            The root keys are 'tracks', 'playlists', 'albums' and each conains the id to owner id mapping
+            The root keys are 'tracks', 'playlists', 'albums' and each contains the id to owner id mapping
     """
 
     db = get_db_read_replica()
