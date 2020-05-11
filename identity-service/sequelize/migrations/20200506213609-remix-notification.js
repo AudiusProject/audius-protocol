@@ -1,6 +1,13 @@
 'use strict'
 const models = require('../../src/models')
 
+/**
+ * Update the `UserNotificationBrowserSettings` table to add column `remixes`
+ * Update the `UserNotificationMobileSettings` table to add column `remixes`
+ * Update the enum `enum_Notifications_type` used in table `Notifications` column `type`
+ *   Add the values `RemixCreate` and `RemixCosign`
+ */
+
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(async (transaction) => {
