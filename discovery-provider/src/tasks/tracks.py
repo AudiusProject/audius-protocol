@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from src import contract_addresses
 from src.utils import multihash, helpers
-from src.models import Track, User, BlacklistedIPLD, Stem
+from src.models import Track, User, BlacklistedIPLD, Stem, Remix
 from src.tasks.metadata import track_metadata_format
 
 logger = logging.getLogger(__name__)
@@ -126,6 +126,26 @@ def update_stems_table(session, track_record, track_metadata):
     session.add(stem)
 
 
+def update_remixes_table(session, track_record, track_metadata):
+    child_track_id = track_record.track_id
+
+    # Delete existing remix parents
+    session.query(Remix).filter_by(child_track_id=child_track_id).delete()
+
+    # Add all remixes
+    if "remix_of" in track_metadata and isinstance(track_metadata["remix_of"], dict):
+        tracks = track_metadata["remix_of"].get("tracks")
+        if tracks and isinstance(tracks, list):
+            for track in tracks:
+                parent_track_id = track.get("parent_track_id")
+                if parent_track_id and isinstance(parent_track_id, int):
+                    remix = Remix(
+                        parent_track_id=parent_track_id,
+                        child_track_id=child_track_id
+                    )
+                    session.add(remix)
+
+
 def parse_track_event(
         self, session, update_task, entry, event_type, track_record, block_timestamp
     ):
@@ -183,6 +203,7 @@ def parse_track_event(
                 track_record.cover_art = None
 
         update_stems_table(session, track_record, track_metadata)
+        update_remixes_table(session, track_record, track_metadata)
 
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
@@ -230,6 +251,8 @@ def parse_track_event(
                 track_record.cover_art_sizes = track_record.cover_art
                 track_record.cover_art = None
 
+        update_remixes_table(session, track_record, track_metadata)
+
     if event_type == track_event_types_lookup["delete_track"]:
         track_record.is_delete = True
         logger.info(f"Removing track : {track_record.track_id}")
@@ -243,6 +266,11 @@ def is_blacklisted_ipld(session, ipld_blacklist_multihash):
         session.query(BlacklistedIPLD).filter(BlacklistedIPLD.ipld == ipld_blacklist_multihash)
     )
     return ipld_blacklist_entry.count() > 0
+
+def is_valid_json_field(metadata, field):
+    if field in metadata and isinstance(metadata[field], dict) and len(metadata[field]) > 0:
+        return True
+    return False
 
 def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.title = track_metadata["title"]
@@ -264,7 +292,10 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_segments = track_metadata["track_segments"]
     track_record.is_unlisted = track_metadata["is_unlisted"]
     track_record.field_visibility = track_metadata["field_visibility"]
-    track_record.stem_of = track_metadata["stem_of"]
+    if is_valid_json_field(track_metadata, "stem_of"):
+        track_record.stem_of = track_metadata["stem_of"]
+    if is_valid_json_field(track_metadata, "remix_of"):
+        track_record.remix_of = track_metadata["remix_of"]
 
     if "download" in track_metadata:
         track_record.download = {
