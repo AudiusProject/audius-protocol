@@ -302,4 +302,55 @@ contract('Staking test', async (accounts) => {
         web3.utils.toBN(acct3Stake)),
       'Expected stake increase for acct 2')
   })
+
+  describe('caller restriction verification', async () => {
+    it('stakeFor, unstakeFor called from invalid address, ServiceProviderFactory restrictions', async () => {
+      let staker = accounts[1]
+      // Transfer 1000 tokens to accounts[1]
+      await token.transfer(staker, DEFAULT_AMOUNT, { from: deployerAddress })
+      await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: staker })
+
+      // stake tokens
+      await _lib.assertRevert(
+        staking.stakeFor(
+          staker,
+          DEFAULT_AMOUNT
+        ),
+        'Only callable from ServiceProviderFactory'
+      )
+      // unstake tokens
+      await _lib.assertRevert(
+        staking.unstakeFor(
+          staker,
+          DEFAULT_AMOUNT
+        ),
+        'Only callable from ServiceProviderFactory'
+      )
+    })
+
+    it('invalid token address', async () => {
+      let testStaking = await Staking.new({ from: proxyAdminAddress })
+      let invalidStakingInitializeData = encodeCall(
+        'initialize',
+        ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+        [
+          accounts[4],
+          registry.address,
+          claimsManagerProxyKey,
+          delegateManagerKey,
+          serviceProviderFactoryKey
+        ]
+      )
+      await _lib.assertRevert(
+        AudiusAdminUpgradeabilityProxy.new(
+          testStaking.address,
+          proxyAdminAddress,
+          invalidStakingInitializeData,
+          registry.address,
+          governanceKey,
+          { from: proxyDeployerAddress }
+        )
+      )
+    })
+  })
 })
