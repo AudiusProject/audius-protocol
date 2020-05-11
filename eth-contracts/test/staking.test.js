@@ -282,6 +282,9 @@ contract('Staking test', async (accounts) => {
       expectedTotalStake,
       'Final stake amount must be 2x default stake')
 
+    assert.equal(await staking.lastClaimedFor(spAccount1), 0, 'No claim history expected')
+    assert.equal(await staking.lastClaimedFor(spAccount2), 0, 'No claim history expected')
+
     let FIRST_CLAIM_FUND = _lib.audToWeiBN(120)
 
     // Transfer 120AUD tokens to staking contract
@@ -291,10 +294,16 @@ contract('Staking test', async (accounts) => {
     let sp1Rewards = FIRST_CLAIM_FUND.div(web3.utils.toBN(2))
     let sp2Rewards = sp1Rewards
     await token.approve(mockStakingCaller.address, sp1Rewards, { from: funderAccount })
-    let receipt = await mockStakingCaller.stakeRewards(sp1Rewards, spAccount1, { from: funderAccount })
+    let tx = await mockStakingCaller.stakeRewards(sp1Rewards, spAccount1, { from: funderAccount })
+    assert.isTrue(
+      (await staking.lastClaimedFor(spAccount1)).eq(_lib.toBN(tx.receipt.blockNumber)),
+      'Updated claim history expected')
 
     await token.approve(mockStakingCaller.address, sp2Rewards, { from: funderAccount })
-    receipt = await mockStakingCaller.stakeRewards(sp2Rewards, spAccount2, { from: funderAccount })
+    tx = await mockStakingCaller.stakeRewards(sp2Rewards, spAccount2, { from: funderAccount })
+    assert.isTrue(
+      (await staking.lastClaimedFor(spAccount2)).eq(_lib.toBN(tx.receipt.blockNumber)),
+      'Updated claim history expected')
 
     // Initial val should be first claim fund / 2
     let expectedValueAfterFirstFund = DEFAULT_AMOUNT.add(sp1Rewards)
