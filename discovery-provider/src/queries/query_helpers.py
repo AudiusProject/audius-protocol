@@ -11,7 +11,6 @@ from src.queries import response_name_constants
 from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType
 from src.utils import helpers
 from src.utils.config import shared_config
-from sqlalchemy.dialects.postgresql import JSON
 
 from datetime import datetime, timedelta
 
@@ -105,7 +104,7 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
             Track.is_current == True,
             Track.is_delete == False,
             Track.is_unlisted == False,
-            Track.stem_of == JSON.NULL,
+            Track.stem_of == None,
             Track.owner_id.in_(user_ids)
         )
         .group_by(Track.owner_id)

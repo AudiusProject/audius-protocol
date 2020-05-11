@@ -2,7 +2,6 @@ import logging # pylint: disable=C0302
 from urllib.parse import urljoin, unquote
 import requests
 from sqlalchemy import func
-from sqlalchemy.dialects.postgresql import JSON
 
 from src import api_helpers
 from src.models import Track, RepostType, Follow, SaveType
@@ -38,7 +37,7 @@ def generate_trending(db, time, genre, limit, offset):
                     Track.is_current == True,
                     Track.is_delete == False,
                     Track.is_unlisted == False,
-                    Track.stem_of == JSON.NULL
+                    Track.stem_of == None
                 )
                 .all()
             )
@@ -76,7 +75,7 @@ def generate_trending(db, time, genre, limit, offset):
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False,
-                Track.stem_of == JSON.NULL
+                Track.stem_of == None
             )
             .all()
         )
@@ -114,7 +113,7 @@ def generate_trending(db, time, genre, limit, offset):
             (
                 Track.is_current == True,
                 Track.is_unlisted == False,
-                Track.stem_of == JSON.NULL,
+                Track.stem_of == None,
                 Track.track_id.in_(not_deleted_track_ids)
             )
             .all()
