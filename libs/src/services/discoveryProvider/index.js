@@ -223,11 +223,11 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
-/**
- * Gets all stems for a given trackId as an array of tracks.
- * @param {number} trackId
- * @returns {(Array)} track
- */
+  /**
+   * Gets all stems for a given trackId as an array of tracks.
+   * @param {number} trackId
+   * @returns {(Array)} track
+   */
   async getStemsForTrack (trackId) {
     const req = {
       endpoint: `stems/${trackId}`
