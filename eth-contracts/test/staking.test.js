@@ -135,6 +135,8 @@ contract('Staking test', async (accounts) => {
     await token.transfer(staker, DEFAULT_AMOUNT, { from: deployerAddress })
     await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: staker })
 
+    assert.equal(0, await staking.lastStakedFor(staker), 'No stake history expected')
+
     // stake tokens
     await mockStakingCaller.stakeFor(
       staker,
@@ -345,6 +347,22 @@ contract('Staking test', async (accounts) => {
     it('slash called from invalid address, DelegateManager restrictions', async () => {
       await _lib.assertRevert(
         staking.slash(DEFAULT_AMOUNT, accounts[3], { from: accounts[7] }),
+        'Only callable from DelegateManager'
+      )
+    })
+
+    it('delegate/undelegate called from invalid address, DelegateManager restrictions', async () => {
+      let staker = accounts[1]
+      let delegator = accounts[2]
+      // Transfer 1000 tokens to accounts[1]
+      await token.transfer(delegator, DEFAULT_AMOUNT, { from: deployerAddress })
+      await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: delegator })
+      await _lib.assertRevert(
+        staking.delegateStakeFor(staker, delegator, DEFAULT_AMOUNT),
+        'Only callable from DelegateManager'
+      )
+      await _lib.assertRevert(
+        staking.undelegateStakeFor(staker, delegator, DEFAULT_AMOUNT),
         'Only callable from DelegateManager'
       )
     })
