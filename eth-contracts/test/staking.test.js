@@ -138,9 +138,20 @@ contract('Staking test', async (accounts) => {
     assert.equal(0, await staking.lastStakedFor(staker), 'No stake history expected')
 
     // stake tokens
-    await mockStakingCaller.stakeFor(
+    let tx = await mockStakingCaller.stakeFor(
       staker,
       DEFAULT_AMOUNT)
+    assert.equal(
+      _lib.fromBN(await staking.lastStakedFor(staker)),
+      tx.receipt.blockNumber,
+      'Expect history update in Staking')
+
+    assert.isTrue(
+      (await staking.totalStakedAt(tx.receipt.blockNumber)).eq(DEFAULT_AMOUNT),
+      'Default amount expected')
+    assert.isTrue(
+      (await staking.totalStakedForAt(staker, tx.receipt.blockNumber)).eq(DEFAULT_AMOUNT),
+      'Default amount expected')
 
     assert.isTrue(
       (await staking.totalStaked()).eq(DEFAULT_AMOUNT),
