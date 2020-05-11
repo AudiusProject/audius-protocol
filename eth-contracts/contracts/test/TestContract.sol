@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 
-import "../RegistryContract.sol";
-import "../../interface/registry/RegistryInterface.sol";
+import "../service/registry/RegistryContract.sol";
+import "../service/interface/registry/RegistryInterface.sol";
 
 
 /** Simple test RegistryContract w/o storage */
