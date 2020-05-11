@@ -95,11 +95,8 @@ contract Staking is RegistryContract, StakingInterface {
         requireIsInitialized();
         require(
             msg.sender == registry.getContract(delegateManagerKey),
-            "slash only callable from DelegateManager"
+            "Only callable from DelegateManager"
         );
-
-        // unstaking 0 tokens is not allowed
-        require(_amount > 0, ERROR_AMOUNT_ZERO);
 
         // Burn slashed tokens from account
         _burnFor(_slashAddress, _amount);
@@ -334,6 +331,7 @@ contract Staking is RegistryContract, StakingInterface {
     }
 
     function _burnFor(address _stakeAccount, uint256 _amount) internal {
+        // burning zero tokens is not allowed
         require(_amount > 0, ERROR_AMOUNT_ZERO);
 
         // checkpoint updated staking balance

@@ -6,6 +6,7 @@ module.exports = {
     'test/TestContract.sol',
     'test/MockDelegateManager.sol',
     'test/MockGovernance.sol',
-    'test/MockStakingCaller.sol'
+    'test/MockStakingCaller.sol',
+    'test/StakingUpgraded.sol'
   ]
 }

@@ -100,7 +100,7 @@ contract('Staking test', async (accounts) => {
         staker,
         0
       ),
-      "STAKING_AMOUNT_ZERO"
+      'STAKING_AMOUNT_ZERO'
     )
   })
 
@@ -212,6 +212,12 @@ contract('Staking test', async (accounts) => {
     const tokenInitialSupply = await token.totalSupply()
     const initialStakeAmount = parseInt(await staking.totalStakedFor(account))
     assert.equal(initialStakeAmount, DEFAULT_AMOUNT)
+
+    // Fail to slash zero
+    await _lib.assertRevert(
+      slashAccount(0, account, deployerAddress),
+      'STAKING_AMOUNT_ZERO'
+    )
 
     // Slash account's stake
     await slashAccount(slashAmount, account, deployerAddress)
@@ -325,6 +331,21 @@ contract('Staking test', async (accounts) => {
           DEFAULT_AMOUNT
         ),
         'Only callable from ServiceProviderFactory'
+      )
+    })
+
+    it('stakeRewards called from invalid address, ClaimsManager restriction', async () => {
+      let staker = accounts[1]
+      // Transfer 1000 tokens to accounts[1]
+      await token.transfer(staker, DEFAULT_AMOUNT, { from: deployerAddress })
+      await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: staker })
+      await _lib.assertRevert(staking.stakeRewards(DEFAULT_AMOUNT, staker), 'Only callable from ClaimsManager')
+    })
+
+    it('slash called from invalid address, DelegateManager restrictions', async () => {
+      await _lib.assertRevert(
+        staking.slash(DEFAULT_AMOUNT, accounts[3], { from: accounts[7] }),
+        'Only callable from DelegateManager'
       )
     })
 
