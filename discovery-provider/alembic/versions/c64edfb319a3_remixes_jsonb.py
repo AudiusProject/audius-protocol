@@ -1,7 +1,7 @@
 """remixes-jsonb
 
 Revision ID: c64edfb319a3
-Revises: b3084b7bc025
+Revises: e7bf0280310b
 Create Date: 2020-04-29 11:41:50.041780
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = 'c64edfb319a3'
-down_revision = 'b3084b7bc025'
+down_revision = 'e7bf0280310b'
 branch_labels = None
 depends_on = None
 

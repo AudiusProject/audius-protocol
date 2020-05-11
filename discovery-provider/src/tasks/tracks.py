@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from src import contract_addresses
 from src.utils import multihash, helpers
-from src.models import Track, User, BlacklistedIPLD, Stem Remix
+from src.models import Track, User, BlacklistedIPLD, Stem, Remix
 from src.tasks.metadata import track_metadata_format
 
 logger = logging.getLogger(__name__)
@@ -267,6 +267,11 @@ def is_blacklisted_ipld(session, ipld_blacklist_multihash):
     )
     return ipld_blacklist_entry.count() > 0
 
+def is_valid_json_field(metadata, field):
+    if field in metadata and isinstance(metadata[field], dict) and len(metadata[field]) > 0:
+        return True
+    return False
+
 def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.title = track_metadata["title"]
     track_record.length = track_metadata["length"]
@@ -287,8 +292,10 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_segments = track_metadata["track_segments"]
     track_record.is_unlisted = track_metadata["is_unlisted"]
     track_record.field_visibility = track_metadata["field_visibility"]
-    track_record.stem_of = track_metadata["stem_of"]
-    track_record.remix_of = track_metadata["remix_of"]
+    if is_valid_json_field(track_metadata, "stem_of"):
+        track_record.stem_of = track_metadata["stem_of"]
+    if is_valid_json_field(track_metadata, "remix_of"):
+        track_record.remix_of = track_metadata["remix_of"]
 
     if "download" in track_metadata:
         track_record.download = {

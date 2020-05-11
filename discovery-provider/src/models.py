@@ -317,8 +317,8 @@ is_delete={self.is_delete}>"
 class Stem(Base):
     __tablename__ = "stems"
 
-    parent_track_id = Column(Integer, nullable=False, index=True)
-    child_track_id = Column(Integer, nullable=False, index=True)
+    parent_track_id = Column(Integer, nullable=False, index=False)
+    child_track_id = Column(Integer, nullable=False, index=False)
     PrimaryKeyConstraint(parent_track_id, child_track_id)
 
     def __repr__(self):
@@ -328,8 +328,8 @@ class Stem(Base):
 class Remix(Base):
     __tablename__ = "remixes"
 
-    parent_track_id = Column(Integer, nullable=False, index=True)
-    child_track_id = Column(Integer, nullable=False, index=True)
+    parent_track_id = Column(Integer, nullable=False, index=False)
+    child_track_id = Column(Integer, nullable=False, index=False)
     PrimaryKeyConstraint(parent_track_id, child_track_id)
 
     def __repr__(self):
