@@ -18,6 +18,7 @@ const governanceKey = web3.utils.utf8ToHex('Governance')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
 const testCreatorNodeType = web3.utils.utf8ToHex('creator-node')
+const testInvalidType = web3.utils.utf8ToHex('invalid-type')
 const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'
 
@@ -71,11 +72,7 @@ contract('ServiceProvider test', async (accounts) => {
     let serviceTypeInitializeData = encodeCall(
       'initialize',
       ['address', 'address', 'bytes32'],
-      [
-        registry.address,
-        controllerAddress,
-        governanceKey
-      ]
+      [registry.address, controllerAddress, governanceKey]
     )
     let serviceTypeManager0 = await ServiceTypeManager.new({ from: deployerAddress })
     let serviceTypeManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
@@ -93,10 +90,12 @@ contract('ServiceProvider test', async (accounts) => {
       _lib.audToWeiBN(10),
       _lib.audToWeiBN(10000000),
       { from: controllerAddress })
+
     // Register discovery provider
+    // Minimum stake set to 1 AUD below minDeployerStake
     await serviceTypeManager.addServiceType(
       testDiscProvType,
-      _lib.audToWeiBN(5),
+      _lib.audToWeiBN(4),
       _lib.audToWeiBN(10000000),
       { from: controllerAddress })
 
@@ -172,9 +171,9 @@ contract('ServiceProvider test', async (accounts) => {
   }
 
   describe('Registration flow', () => {
-    let regTx
     const stakerAccount = accounts[11]
     const stakerAccount2 = accounts[12]
+    let regTx
 
     beforeEach(async () => {
       const initialBal = await token.balanceOf(stakerAccount)
@@ -235,12 +234,13 @@ contract('ServiceProvider test', async (accounts) => {
       )
     })
 
-    const multipleEndpointScenario = async (increaseStake = true) => {
+    const multipleEndpointScenario = async () => {
       let increaseAmt = DEFAULT_AMOUNT
       let initialBal = await token.balanceOf(stakerAccount)
       let initialStake = await getStakeAmountForAccount(stakerAccount)
 
       // 2nd endpoint for stakerAccount = https://localhost:5001
+      // discovery-provider
       // Total Stake = 240 AUD
       let registerInfo = await _lib.registerServiceProvider(
         token,
@@ -286,8 +286,8 @@ contract('ServiceProvider test', async (accounts) => {
       await decreaseRegisteredProviderStake(_lib.audToWeiBN(accountDiff), stakerAccount)
       stakedAmount = await staking.totalStakedFor(stakerAccount)
 
-      let testEndpoint = 'https://localhost:4000'
-      let testEndpoint2 = 'https://localhost:4001'
+      let testCnodeEndpoint1 = 'https://localhost:4000'
+      let testCnodeEndpoint2 = 'https://localhost:4001'
 
       let cnTypeInfo = await serviceTypeManager.getServiceTypeStakeInfo(testCreatorNodeType)
       let cnTypeMin = cnTypeInfo[0]
@@ -295,7 +295,6 @@ contract('ServiceProvider test', async (accounts) => {
       let dpTypeInfo = await serviceTypeManager.getServiceTypeStakeInfo(testDiscProvType)
       let dpTypeMin = dpTypeInfo[0]
 
-      // 3rd endpoint for stakerAccount = https://localhost:4001
       // Total Stake = 240 AUD <-- Expect failure
       await _lib.assertRevert(
         _lib.registerServiceProvider(
@@ -303,17 +302,19 @@ contract('ServiceProvider test', async (accounts) => {
           staking,
           serviceProviderFactory,
           testCreatorNodeType,
-          testEndpoint,
+          testCnodeEndpoint1,
           0,
           stakerAccount),
         'Minimum stake threshold')
 
-      let registerInfo2 = await _lib.registerServiceProvider(
+      // 3rd endpoint for stakerAccount = https://localhost:4001
+      // creator-node
+      await _lib.registerServiceProvider(
         token,
         staking,
         serviceProviderFactory,
         testCreatorNodeType,
-        testEndpoint,
+        testCnodeEndpoint1,
         cnTypeMin,
         stakerAccount)
 
@@ -333,13 +334,9 @@ contract('ServiceProvider test', async (accounts) => {
 
       accountDiff = accountMax - stakedAmountWei
       // Generate BNjs value
-      let transferAmount = web3.utils.toBN(
-        accountDiff
-      ).add(
-        web3.utils.toBN(_lib.fromWei(cnTypeMax))
-      ).add(
-        web3.utils.toBN(200)
-      )
+      let transferAmount = web3.utils.toBN(accountDiff)
+        .add(web3.utils.toBN(_lib.fromWei(cnTypeMax)))
+        .add(web3.utils.toBN(200))
 
       // Transfer greater than max tokens
       await token.transfer(stakerAccount, _lib.audToWeiBN(transferAmount), { from: deployerAddress })
@@ -351,38 +348,98 @@ contract('ServiceProvider test', async (accounts) => {
           staking,
           serviceProviderFactory,
           testCreatorNodeType,
-          testEndpoint2,
+          testCnodeEndpoint2,
           _lib.audToWeiBN(transferAmount),
           stakerAccount),
         'Maximum stake'
       )
 
-      let numCnodes = await getServiceProviderIdsFromAddress(stakerAccount, testCreatorNodeType)
+      let numCnodeEndpoints = await getServiceProviderIdsFromAddress(stakerAccount, testCreatorNodeType)
 
-      registerInfo2 = await _lib.registerServiceProvider(
+      // 4th endpoint for service provider
+      // creator-node
+      await _lib.registerServiceProvider(
         token,
         staking,
         serviceProviderFactory,
         testCreatorNodeType,
-        testEndpoint2,
+        testCnodeEndpoint2,
         cnTypeMin,
         stakerAccount)
 
       assert.equal(
-        numCnodes.length + 1,
+        numCnodeEndpoints.length + 1,
         (await getServiceProviderIdsFromAddress(stakerAccount, testCreatorNodeType)).length,
         'Expect increase in number of endpoints')
+
+      stakedAmount = await staking.totalStakedFor(stakerAccount)
+      numCnodeEndpoints = await getServiceProviderIdsFromAddress(stakerAccount, testCreatorNodeType)
+
+      // Confirm failure to deregister invalid endpoint and service type combination
+      await _lib.assertRevert(
+        _lib.deregisterServiceProvider(
+          serviceProviderFactory,
+          testCreatorNodeType,
+          testEndpoint,
+          stakerAccount
+        ),
+        'Invalid endpoint for service type'
+      )
+
+      // Successfully deregister
+      await _lib.deregisterServiceProvider(
+        serviceProviderFactory,
+        testCreatorNodeType,
+        testCnodeEndpoint2,
+        stakerAccount)
+      assert.isTrue(stakedAmount.eq(await staking.totalStakedFor(stakerAccount)), 'Expect no stake change')
     }
+
+    it('Fail to register invalid type', async () => {
+      // Confirm invalid type cannot be registered
+      await _lib.assertRevert(
+        _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testInvalidType,
+          testEndpoint,
+          DEFAULT_AMOUNT,
+          stakerAccount
+        ),
+        'Valid service type required'
+      )
+    })
 
     it('Confirm correct stake for account', async () => {
       assert.isTrue((await getStakeAmountForAccount(stakerAccount)).eq(DEFAULT_AMOUNT))
     })
 
-    it('Remove endpoint and confirm transfer of staking balance to owner', async () => {
+    it('deregister endpoint and confirm transfer of staking balance to owner', async () => {
       // Confirm staking contract has correct amt
       assert.isTrue((await getStakeAmountForAccount(stakerAccount)).eq(DEFAULT_AMOUNT))
 
-      // deregister service provider
+      // Confirm unregistered endpoint cannot be deregistered
+      await _lib.assertRevert(
+        _lib.deregisterServiceProvider(
+          serviceProviderFactory,
+          testDiscProvType,
+          'http://localhost:1000',
+          stakerAccount),
+        'Endpoint not registered'
+      )
+
+      await _lib.assertRevert(
+        _lib.deregisterServiceProvider(
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint,
+          accounts[5]
+        ),
+        'Only callable by endpoint owner'
+      )
+
+      // Deregister 4th service provider
       let deregTx = await _lib.deregisterServiceProvider(
         serviceProviderFactory,
         testDiscProvType,
@@ -391,7 +448,6 @@ contract('ServiceProvider test', async (accounts) => {
       )
 
       assert.isTrue(deregTx.spID.eq(regTx.spID))
-
       assert.isTrue(deregTx.unstakeAmount.eq(DEFAULT_AMOUNT))
 
       // Confirm no stake is remaining in staking contract
@@ -402,6 +458,49 @@ contract('ServiceProvider test', async (accounts) => {
         (await token.balanceOf(stakerAccount)).eq(INITIAL_BAL),
         'Expect full amount returned to staker after deregistering'
       )
+    })
+
+    it('min direct deployer stake violation', async () => {
+      let minDirectStake = await serviceProviderFactory.getMinDeployerStake()
+      // Calculate an invalid direct stake amount
+      let invalidDirectStake = minDirectStake.sub(_lib.toBN(1))
+      await token.transfer(stakerAccount2, invalidDirectStake, { from: deployerAddress })
+      let dpTypeInfo = await serviceTypeManager.getServiceTypeStakeInfo(testDiscProvType)
+      let dpTypeMin = dpTypeInfo[0]
+      // Validate that this value won't violate service type minimum
+      assert.isTrue(invalidDirectStake.gt(dpTypeMin), 'Invalid direct stake above dp type min')
+      await _lib.assertRevert(
+        _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint1,
+          invalidDirectStake,
+          stakerAccount2),
+        'Direct stake restriction violated')
+    })
+
+    it('update service provider cut', async () => {
+      let updatedCutValue = 10
+      await _lib.assertRevert(
+        serviceProviderFactory.updateServiceProviderCut(
+          stakerAccount,
+          updatedCutValue,
+          { from: accounts[4] }),
+        'Service Provider cut update operation restricted to deployer')
+      await serviceProviderFactory.updateServiceProviderCut(
+        stakerAccount,
+        updatedCutValue,
+        { from: stakerAccount })
+      let info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCutValue)), 'Expect updated cut')
+      let newCut = 110
+      let base = await serviceProviderFactory.getServiceProviderDeployerCutBase()
+      assert.isTrue(_lib.toBN(newCut).gt(base), 'Expect invalid newCut')
+      await _lib.assertRevert(
+        serviceProviderFactory.updateServiceProviderCut(stakerAccount, newCut, { from: stakerAccount }),
+        'Service Provider cut cannot exceed base value')
     })
 
     it('fails to register duplicate endpoint w/same account', async () => {
@@ -461,6 +560,11 @@ contract('ServiceProvider test', async (accounts) => {
       // Confirm initial amount in staking contract
       assert.isTrue((await getStakeAmountForAccount(stakerAccount)).eq(DEFAULT_AMOUNT))
 
+      await _lib.assertRevert(
+        increaseRegisteredProviderStake(_lib.audToWeiBN(10), accounts[4]),
+        'Registered endpoint required to increase stake'
+      )
+
       await increaseRegisteredProviderStake(
         DEFAULT_AMOUNT,
         stakerAccount
@@ -477,6 +581,11 @@ contract('ServiceProvider test', async (accounts) => {
       const initialBal = await token.balanceOf(stakerAccount)
       const decreaseStakeAmount = DEFAULT_AMOUNT.div(_lib.toBN(2))
 
+      await _lib.assertRevert(
+        decreaseRegisteredProviderStake(_lib.audToWeiBN(10), accounts[4]),
+        'Registered endpoint required to decrease stake'
+      )
+
       await decreaseRegisteredProviderStake(decreaseStakeAmount, stakerAccount)
 
       // Confirm decreased amount in staking contract
@@ -492,7 +601,7 @@ contract('ServiceProvider test', async (accounts) => {
     it('fails to decrease more than staked', async () => {
       // Confirm initial amount in staking contract
       assert.isTrue((await getStakeAmountForAccount(stakerAccount)).eq(DEFAULT_AMOUNT))
-      
+
       let decreaseStakeAmount = DEFAULT_AMOUNT + 2
       await _lib.assertRevert(
         decreaseRegisteredProviderStake(decreaseStakeAmount, stakerAccount)
@@ -591,7 +700,7 @@ contract('ServiceProvider test', async (accounts) => {
     })
 
     it('multiple endpoints w/multiple accounts varying stake', async () => {
-      await multipleEndpointScenario(true)
+      await multipleEndpointScenario()
     })
 
     /*
@@ -624,11 +733,17 @@ contract('ServiceProvider test', async (accounts) => {
       assert.isTrue(newIdFound, 'Expected valid new ID')
     })
 
-    it('will modify the dns endpoint for an existing service', async () => {
+    it('fail to update service provider stake', async () => {
+      await _lib.assertRevert(
+        serviceProviderFactory.updateServiceProviderStake(stakerAccount, _lib.audToWeiBN(10)),
+        'only callable by DelegateManager')
+    })
+
+    it('modify the dns endpoint for an existing service', async () => {
       const spId = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint)
       const { endpoint } = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spId)
       assert.equal(testEndpoint, endpoint)
-      
+
       // update the endpoint from testEndpoint to testEndpoint1
       await serviceProviderFactory.updateEndpoint(testDiscProvType, testEndpoint, testEndpoint1, { from: stakerAccount })
       const { endpoint: endpointAfter } = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spId)
@@ -639,15 +754,15 @@ contract('ServiceProvider test', async (accounts) => {
       assert.isTrue(spId.eq(spIdNew))
     })
 
-    it('will fail to modify the dns endpoint for the wrong owner', async () => {
+    it('fail to modify the dns endpoint for the wrong owner', async () => {
       // will try to update the endpoint from the incorrect account
       await _lib.assertRevert(
         serviceProviderFactory.updateEndpoint(testDiscProvType, testEndpoint, testEndpoint1),
         'Invalid update endpoint operation, wrong owner'
       )
     })
-    
-    it('will fail to modify the dns endpoint if the dns endpoint doesnt exist', async () => {
+
+    it('fail to modify the dns endpoint if the dns endpoint doesnt exist', async () => {
       // will try to update the endpoint from the incorrect account
       const fakeEndpoint = 'https://does.not.exist.com'
       await _lib.assertRevert(
@@ -662,6 +777,11 @@ contract('ServiceProvider test', async (accounts) => {
       let testType = web3.utils.utf8ToHex('test-service')
       let isValid = await serviceTypeManager.isValidServiceType(testType)
       assert.isTrue(!isValid, 'Invalid type expected')
+
+      // Expect failure as service type has not been registered
+      await _lib.assertRevert(
+        serviceTypeManager.getCurrentVersion(testType),
+        'No registered version of serviceType')
 
       // Expect failure as type is already present
       await _lib.assertRevert(
@@ -685,8 +805,16 @@ contract('ServiceProvider test', async (accounts) => {
       }
       assert.isTrue(typeFound, 'Expect type to be found in valid list')
 
-      // Set service version
+      // bytes32 version string
       let testVersion = web3.utils.utf8ToHex('0.0.1')
+
+      // Confirm invalid address fails set operation
+      await _lib.assertRevert(
+        serviceTypeManager.setServiceVersion(testType, testVersion, { from: accounts[3] }),
+        'Invalid signature'
+      )
+
+      // Set service version
       await serviceTypeManager.setServiceVersion(testType, testVersion, { from: controllerAddress })
       await _lib.assertRevert(
         serviceTypeManager.setServiceVersion(testType, testVersion, { from: controllerAddress }),
@@ -696,6 +824,18 @@ contract('ServiceProvider test', async (accounts) => {
         web3.utils.hexToUtf8(testVersion),
         web3.utils.hexToUtf8(chainVersion),
         'Expect test version to be set')
+
+      let numberOfVersions = await serviceTypeManager.getNumberOfVersions(testType)
+      // Expect failure to retrieve version without decrementing numberOfVersions to index 0
+      await _lib.assertRevert(
+        serviceTypeManager.getVersion(testType, numberOfVersions),
+        'No registered version of serviceType')
+
+      // Confirm valid version at 0 index when queried
+      assert.equal(
+        web3.utils.hexToUtf8(await serviceTypeManager.getVersion(testType, numberOfVersions.sub(_lib.toBN(1)))),
+        web3.utils.hexToUtf8(testVersion),
+        'Expect initial test type version at 0 index')
 
       let testVersion2 = web3.utils.utf8ToHex('0.0.2')
 

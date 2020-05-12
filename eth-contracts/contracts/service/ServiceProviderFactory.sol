@@ -168,17 +168,8 @@ contract ServiceProviderFactory is RegistryContract {
         // Update endpoint mapping
         serviceProviderEndpointToId[keccak256(bytes(_endpoint))] = newServiceProviderID;
 
-        // Update address mapping
-        uint spTypeLength = serviceProviderAddressToId[msg.sender][_serviceType].length;
-        bool idFound = false;
-        for (uint i = 0; i < spTypeLength; i++) {
-            if (serviceProviderAddressToId[msg.sender][_serviceType][i] == newServiceProviderID) {
-                idFound = true;
-            }
-        }
-        if (!idFound) {
-            serviceProviderAddressToId[msg.sender][_serviceType].push(newServiceProviderID);
-        }
+        // Update (address -> type -> ids[])
+        serviceProviderAddressToId[msg.sender][_serviceType].push(newServiceProviderID);
 
         // Increment number of endpoints for this address
         spDetails[msg.sender].numberOfEndpoints += 1;
@@ -222,7 +213,7 @@ contract ServiceProviderFactory is RegistryContract {
         // Unstake on deregistration if and only if this is the last service endpoint
         uint unstakeAmount = 0;
         bool unstaked = false;
-        // owned by the user
+        // owned by the service provider
         if (spDetails[msg.sender].numberOfEndpoints == 1) {
             StakingInterface stakingContract = StakingInterface(
                 registry.getContract(stakingProxyOwnerKey)
@@ -248,23 +239,31 @@ contract ServiceProviderFactory is RegistryContract {
         // Update endpoint mapping
         serviceProviderEndpointToId[keccak256(bytes(_endpoint))] = 0;
 
+        require(
+          keccak256(bytes(serviceProviderInfo[_serviceType][deregisteredID].endpoint)) == keccak256(bytes(_endpoint)),
+          "Invalid endpoint for service type");
+
         require (
             serviceProviderInfo[_serviceType][deregisteredID].owner == msg.sender,
-            "Invalid deregister operation");
+            "Only callable by endpoint owner");
 
         // Update info mapping
         delete serviceProviderInfo[_serviceType][deregisteredID];
         // Reset id, update array
         uint spTypeLength = serviceProviderAddressToId[msg.sender][_serviceType].length;
+        bool idFound = false;
         for (uint i = 0; i < spTypeLength; i ++) {
             if (serviceProviderAddressToId[msg.sender][_serviceType][i] == deregisteredID) {
                 // Overwrite element to be deleted with last element in array
                 serviceProviderAddressToId[msg.sender][_serviceType][i] = serviceProviderAddressToId[msg.sender][_serviceType][spTypeLength - 1];
                 // Reduce array size, exit loop
                 serviceProviderAddressToId[msg.sender][_serviceType].length--;
+                // Confirm this ID has been found for the service provider
+                idFound = true;
                 break;
             }
         }
+        require(idFound == true, "Failed to find service type and ID for owner");
 
         // Decrement number of endpoints for this address
         spDetails[msg.sender].numberOfEndpoints -= 1;
@@ -303,7 +302,7 @@ contract ServiceProviderFactory is RegistryContract {
         // Confirm owner has an endpoint
         require(
             spDetails[msg.sender].numberOfEndpoints > 0,
-            "Registered endpoint required to decrease stake"
+            "Registered endpoint required to increase stake"
         );
 
         StakingInterface stakingContract = StakingInterface(
@@ -401,17 +400,11 @@ contract ServiceProviderFactory is RegistryContract {
     {
         uint spId = this.getServiceProviderIdFromEndpoint(_oldEndpoint);
 
-        require (
-            spId != 0,
-            "Could not find service provider with that endpoint"
-        );
+        require (spId != 0, "Could not find service provider with that endpoint");
 
         ServiceEndpoint memory sp = serviceProviderInfo[_serviceType][spId];
 
-        require(
-            sp.owner == msg.sender,
-            "Invalid update endpoint operation, wrong owner"
-        );
+        require(sp.owner == msg.sender,"Invalid update endpoint operation, wrong owner");
 
         require(
             keccak256(bytes(sp.endpoint)) == keccak256(bytes(_oldEndpoint)),
