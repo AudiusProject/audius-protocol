@@ -379,6 +379,12 @@ contract Governance is RegistryContract {
 
     // ========================================= Guardian Actions =========================================
 
+    /**
+     * @notice Allows the guardian to execute actions
+     * @param _callValue - amount of wei if a token transfer is involved
+     * @param _signature - function signature of the function to be executed if proposal is successful
+     * @param _callData - encoded call with value to be executed in proposal is successful
+     */
     function guardianExecuteTransaction(
         bytes32 _targetContractRegistryKey,
         uint256 _callValue,
@@ -419,6 +425,10 @@ contract Governance is RegistryContract {
 
     // ========================================= Getters =========================================
 
+    /**
+     * @notice Get proposal information by proposal Id
+     * @param _proposalId - id of proposal
+     */
     function getProposalById(uint256 _proposalId)
     external view returns (
         uint256 proposalId,
@@ -458,6 +468,12 @@ contract Governance is RegistryContract {
         );
     }
 
+    /**
+     * @notice Get how a voter voted for a given proposal
+     * @param _proposalId - id of the proposal
+     * @param _voter - address of the voter we want to check
+     * @return returns a value from the Vote enum if a valid vote, otherwise returns no value
+     */
     function getVoteByProposalAndVoter(uint256 _proposalId, address _voter)
     external view returns (Vote vote)
     {
@@ -470,6 +486,13 @@ contract Governance is RegistryContract {
 
     // ========================================= Internal =========================================
 
+    /**
+     * @notice Function to execute transaction
+     * @param _targetContractAddress - address of registry proxy contract to execute transaction on
+     * @param _callValue - amount of wei if a token transfer is involved
+     * @param _signature - function signature of the function to be executed if proposal is successful
+     * @param _callData - encoded call with value to be executed in proposal is successful
+     */
     function _executeTransaction(
         address _targetContractAddress,
         uint256 _callValue,

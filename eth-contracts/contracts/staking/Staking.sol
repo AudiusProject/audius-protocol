@@ -27,15 +27,20 @@ contract Staking is RegistryContract, StakingInterface {
     // Reward tracking info
     uint256 internal currentClaimBlock;
 
+    // stores the history of staking and claim for a given address
     struct Account {
         Checkpointing.History stakedHistory;
         Checkpointing.History claimHistory;
     }
 
+    // ERC-20 token that will be used to stake with
     ERC20 internal stakingToken;
     RegistryInterface registry = RegistryInterface(0);
 
+    // maps addresses to staking and claims history
     mapping (address => Account) internal accounts;
+    
+    // total staked tokens at a given block
     Checkpointing.History internal totalStakedHistory;
 
     address registryAddress;
