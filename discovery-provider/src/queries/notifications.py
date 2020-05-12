@@ -6,7 +6,6 @@ from src.queries.query_helpers import get_repost_counts, get_save_counts, get_fo
 from src.models import Block, Follow, Save, SaveType, Playlist, Track, Repost, RepostType
 from src.utils.db_session import get_db_read_replica
 from sqlalchemy import desc, func
-from sqlalchemy.dialects.postgresql import JSON
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
@@ -341,7 +340,7 @@ def notifications():
         tracks_query = tracks_query.filter(
                 Track.is_unlisted == False,
                 Track.is_delete == False,
-                Track.stem_of == JSON.NULL,
+                Track.stem_of == None,
                 Track.blocknumber > min_block_number,
                 Track.blocknumber <= max_block_number)
         tracks_query = tracks_query.filter(Track.created_at == Track.updated_at)
@@ -367,7 +366,7 @@ def notifications():
         publish_tracks_query = session.query(Track)
         publish_tracks_query = publish_tracks_query.filter(
             Track.is_unlisted == False,
-            Track.stem_of == JSON.NULL,
+            Track.stem_of == None,
             Track.created_at != Track.updated_at,
             Track.blocknumber > min_block_number,
             Track.blocknumber <= max_block_number)

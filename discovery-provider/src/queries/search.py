@@ -10,7 +10,6 @@ from src.utils import helpers
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
-from sqlalchemy.dialects.postgresql import JSON
 
 from src.queries.query_helpers import get_current_user_id, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_pagination_vars, \
@@ -120,7 +119,7 @@ def search_tags():
                     Track.is_current == True,
                     Track.is_delete == False,
                     Track.is_unlisted == False,
-                    Track.stem_of == JSON.NULL,
+                    Track.stem_of == None,
                     Track.track_id.in_(track_ids),
                 )
                 .all()
@@ -235,7 +234,7 @@ def search_tags():
                     Track.is_current == True,
                     Track.is_delete == False,
                     Track.is_unlisted == False,
-                    Track.stem_of == JSON.NULL,
+                    Track.stem_of == None,
                     Track.track_id.in_(saved_track_ids),
                 )
                 .all()
@@ -434,7 +433,7 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
             Track.is_delete == False,
             Track.is_current == True,
             Track.is_unlisted == False,
-            Track.stem_of == JSON.NULL,
+            Track.stem_of == None,
             Track.track_id.in_(track_ids),
         )
         .all()
