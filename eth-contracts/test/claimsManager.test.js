@@ -108,7 +108,7 @@ contract('ClaimsManager', async (accounts) => {
     await token.addMinter(claimsManagerProxy.address, { from: accounts[0] })
   })
 
-  it.only('Initiate a claim', async () => {
+  it('Initiate a claim', async () => {
     // Get amount staked
     let totalStaked = await staking.totalStaked()
     assert.isTrue(
@@ -266,5 +266,26 @@ contract('ClaimsManager', async (accounts) => {
     await claimsManager.updateFundingAmount(newAmount, { from: controllerAddress })
     let updatedFundingAmount = await claimsManager.getFundsPerRound()
     assert.isTrue(newAmount.eq(updatedFundingAmount), 'Expect updated funding amount')
+  })
+
+  it('minimum bound violation during claim processing,', async () => {
+    let invalidAmount = _lib.audToWeiBN(5)
+    // Stake default amount
+    await approveTransferAndStake(invalidAmount, staker)
+    await claimsManager.initiateRound({ from: controllerAddress })
+    await _lib.assertRevert(
+      mockDelegateManager.testProcessClaim(staker, 0),
+      'Minimum stake bounds violated at fund block')
+  })
+
+  it('maximum bound violation during claim processing,', async () => {
+    // Exactly 1 AUD over max bound
+    let invalidAmount = _lib.audToWeiBN(1000001)
+    // Stake default amount
+    await approveTransferAndStake(invalidAmount, staker)
+    await claimsManager.initiateRound({ from: controllerAddress })
+    await _lib.assertRevert(
+      mockDelegateManager.testProcessClaim(staker, 0),
+      'Maximum stake bounds violated at fund block')
   })
 })
