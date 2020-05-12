@@ -108,7 +108,7 @@ contract('ClaimsManager', async (accounts) => {
     await token.addMinter(claimsManagerProxy.address, { from: accounts[0] })
   })
 
-  it('Initiate a claim', async () => {
+  it.only('Initiate a claim', async () => {
     // Get amount staked
     let totalStaked = await staking.totalStaked()
     assert.isTrue(
@@ -122,7 +122,23 @@ contract('ClaimsManager', async (accounts) => {
     // Get funds per claim
     let fundsPerRound = await claimsManager.getFundsPerRound()
 
+    // Try and initiate from invalid address
+    await _lib.assertRevert(
+      claimsManager.initiateRound({ from: accounts[8] }),
+      'Round must be initiated from account with staked value or contract deployer')
+
+    assert.isFalse((await claimsManager.claimPending(staker)), 'Expect no pending claim')
+
     await claimsManager.initiateRound({ from: controllerAddress })
+
+    // Confirm a claim is pending
+    assert.isTrue((await claimsManager.claimPending(staker)), 'Expect pending claim')
+
+    // Try and directly initiate claim
+    await _lib.assertRevert(
+      claimsManager.processClaim(staker, 0),
+      'ProcessClaim only accessible to DelegateManager')
+
     await mockDelegateManager.testProcessClaim(staker, 0)
 
     totalStaked = await staking.totalStaked()
@@ -132,10 +148,19 @@ contract('ClaimsManager', async (accounts) => {
       'Expect single round of funding + initial stake at this time'
     )
 
+    assert.isTrue(
+      (await claimsManager.getTotalClaimedInRound()).eq(fundsPerRound),
+      'All funds expected to be claimed')
+
     // Confirm another claim cannot be immediately funded
     await _lib.assertRevert(
       claimsManager.initiateRound({ from: controllerAddress }),
       'Required block difference not met'
+    )
+
+    await _lib.assertRevert(
+      mockDelegateManager.testProcessClaim(staker, 0),
+      'Claim already processed for user'
     )
   })
 
