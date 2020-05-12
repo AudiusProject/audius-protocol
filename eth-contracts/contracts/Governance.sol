@@ -75,6 +75,14 @@ contract Governance is RegistryContract {
     );
     event ProposalVetoed(uint256 indexed proposalId);
 
+    /**
+     * @notice Initialize the Governance contract as well as all calling initialize on all parent contracts
+     * @param _registryAddress - address of the registry proxy contract
+     * @param _stakingProxyOwnerKey - key in Registry that points to Staking proxy
+     * @param _votingPeriod - how long each voting period should last in terms of blocks
+     * @param _votingQuorum - required minimum number of votes to consider judge a proposal
+     * @param _guardianAddress - address for an account that can override certain governance actions
+     */
     function initialize(
         address _registryAddress,
         bytes32 _stakingProxyOwnerKey,
@@ -100,6 +108,14 @@ contract Governance is RegistryContract {
 
     // ========================================= Governance Actions =========================================
 
+    /**
+     * @notice Submit a proposal for vote
+     * @param _targetContractRegistryKey - Registry key for the contract concerning this proposal
+     * @param _callValue - amount of wei if a token transfer is involved
+     * @param _signature - function signature of the function to be executed if proposal is successful
+     * @param _callData - encoded call with value to be executed in proposal is successful
+     * @param _description - key in Registry that points to Staking proxy
+     */
     function submitProposal(
         bytes32 _targetContractRegistryKey,
         uint256 _callValue,
@@ -160,6 +176,11 @@ contract Governance is RegistryContract {
         return newProposalId;
     }
 
+    /**
+     * @notice Vote on a proposal if you are an active staker when the proposal is submitted
+     * @param _proposalId - id of the proposal this vote is for
+     * @param _vote - can be any of the values of the Vote enum
+     */
     function submitProposalVote(uint256 _proposalId, Vote _vote) external {
         requireIsInitialized();
 
@@ -233,6 +254,12 @@ contract Governance is RegistryContract {
         );
     }
 
+    /**
+     * @notice Once the voting period for a proposal has ended, evaluate the outcome and
+     *      execute the proposal if paassed and meets quorum
+     * @dev Requires that caller is an active staker at the time the proposal is created
+     * @param _proposalId - id of the proposal
+     */
     function evaluateProposalOutcome(uint256 _proposalId)
     external returns (Outcome proposalOutcome)
     {
@@ -326,6 +353,10 @@ contract Governance is RegistryContract {
         return outcome;
     }
 
+    /**
+     * @notice Action limited to the guardian address that can veto a proposal
+     * @param _proposalId - id of the proposal
+     */
     function vetoProposal(uint256 _proposalId) external {
         requireIsInitialized();
 

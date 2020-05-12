@@ -21,11 +21,19 @@ contract RegistryContract is InitializableV2, Ownable {
 
     address payable internal registryAddress;
 
+    /**
+     * @notice initializes contracts that are added to the Registry since this acts
+     *      as the parent class for all Registry contracts
+     */
     function initialize() public initializer {
         InitializableV2.initialize();
         Ownable.initialize(msg.sender);
     }
 
+    /**
+     * @notice sets the registry address in the event of a first time deploy or registry upgrade
+     * @param _registryAddress - new registry address to store
+     */
     function setRegistry(address payable _registryAddress) external {
         requireIsInitialized();
         require(
@@ -37,6 +45,9 @@ contract RegistryContract is InitializableV2, Ownable {
         registryAddress = _registryAddress;
     }
 
+    /**
+     * @notice calls 'selfdestruct' and sends any contract balances to the registryAddress
+     */
     function kill() external {
         requireIsInitialized();
         assert (msg.sender == registryAddress);
