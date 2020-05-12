@@ -47,9 +47,11 @@
     "standard": "^12.0.1"
   },
   "//": {
+    "scriptsComments": {
+      "solidty-coverage": "Expanded heap size fix link here - https://github.com/sc-forks/solidity-coverage/blob/master/docs/faq.md#running-out-of-memory"
+    },
     "dependenciesComments": {
-      "lodash": "Vuln in < 4.17.13, fixed by https://github.com/lodash/lodash/pull/4336",
-      "solidty-coverage": "Expanded heap size per link here - https://github.com/sc-forks/solidity-coverage/blob/master/docs/faq.md#running-out-of-memory "
+      "lodash": "Vuln in < 4.17.13, fixed by https://github.com/lodash/lodash/pull/4336"
     }
   },
   "engines": {

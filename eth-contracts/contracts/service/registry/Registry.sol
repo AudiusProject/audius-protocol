@@ -42,14 +42,14 @@ contract Registry is InitializableV2, Ownable {
      *          the registry can call functions on given contract
      */
     function addContract(bytes32 _name, address _address) external onlyOwner {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             addressStorage[_name] == address(0x00),
-            "Requires that given _name does not already have non-zero registered contract address"
+            "Registry::addContract:Contract already registered with given name."
         );
         require(
             _address != address(0x00),
-            "Requires non-zero _address"
+            "Registry::addContract:Cannot register zero address."
         );
         RegistryContractInterface(_address).setRegistry(address(this));
         setAddress(_name, _address);
@@ -72,7 +72,7 @@ contract Registry is InitializableV2, Ownable {
         // array length for key implies version number
         require(
             _version <= addressStorageHistory[_name].length,
-            "Index out of range `_version`"
+            "Registry::getContract:Index out of range _version."
         );
         return addressStorageHistory[_name][_version - 1];
     }
@@ -86,11 +86,11 @@ contract Registry is InitializableV2, Ownable {
      * @param _name - registry key for lookup
      */
     function removeContract(bytes32 _name) external onlyOwner {
-        requireIsInitialized();
+        _requireIsInitialized();
         address contractAddress = addressStorage[_name];
         require(
             contractAddress != address(0x00),
-            "Requires that given _name already has non-zero registered contract address"
+            "Registry::removeContract:Cannot remove - no contract registered with given _name."
         );
         RegistryContractInterface(contractAddress).kill();
         setAddress(_name, address(0x00));
@@ -103,11 +103,11 @@ contract Registry is InitializableV2, Ownable {
      * @param _newAddress - new contract address to register under given key
      */
     function upgradeContract(bytes32 _name, address _newAddress) external onlyOwner {
-        requireIsInitialized();
+        _requireIsInitialized();
         address oldAddress = addressStorage[_name];
         require(
             oldAddress != address(0x00),
-            "Requires given _name already has non-zero registered contract address"
+            "Registry::upgradeContract:Cannot upgrade - no contract registered with given _name."
         );
         RegistryContractInterface(oldAddress).kill();
         RegistryContractInterface(_newAddress).setRegistry(address(this));

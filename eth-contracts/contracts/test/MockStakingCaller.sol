@@ -32,7 +32,7 @@ contract MockStakingCaller is RegistryContract {
         uint _amount,
         address _staker
     ) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         // pull tokens into contract
         stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
         // Approve transfer
@@ -46,7 +46,7 @@ contract MockStakingCaller is RegistryContract {
         address _accountAddress,
         uint256 _amount
     ) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         staking.stakeFor(_accountAddress, _amount);
     }
 
@@ -55,7 +55,7 @@ contract MockStakingCaller is RegistryContract {
         address _accountAddress,
         uint256 _amount
     ) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         staking.unstakeFor(_accountAddress, _amount);
     }
 
@@ -63,7 +63,7 @@ contract MockStakingCaller is RegistryContract {
         uint256 _amount,
         address _slashAddress
     ) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         staking.slash(_amount, _slashAddress);
     }
 
@@ -78,6 +78,10 @@ contract MockStakingCaller is RegistryContract {
         uint maxAccountStake)
     {
         return (0, 0, true, 0, 0, max);
+    }
+
+    function isInitialized() external view returns (bool) {
+        return _isInitialized();
     }
 }
 

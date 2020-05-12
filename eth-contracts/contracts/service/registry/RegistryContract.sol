@@ -27,7 +27,7 @@ contract RegistryContract is InitializableV2, Ownable {
     }
 
     function setRegistry(address payable _registryAddress) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             registryAddress == address(0x00) ||
             registryAddress == msg.sender ||
@@ -38,19 +38,15 @@ contract RegistryContract is InitializableV2, Ownable {
     }
 
     function kill() external {
-        requireIsInitialized();
-        assert (msg.sender == registryAddress);
-        selfdestruct(registryAddress);
-    }
-
-    /**
-     * @notice only allow storage contracts to be called by the respective factory.
-     *      i.e. TrackStorage methods can only be invoked by TrackFactory.
-     */
-    function onlyRegistrant(bytes32 _name) internal view {
+        _requireIsInitialized();
         require(
-            msg.sender == RegistryInterface(registryAddress).getContract(_name),
-            "Requires msg.sender is from contract address registered to _name"
+            registryAddress != address(0x00),
+            "RegistryContract::kill:Registry address has not yet been set."
         );
+        require(
+            msg.sender == registryAddress,
+            "RegistryContract::kill:Only registry can kill."
+        );
+        selfdestruct(registryAddress);
     }
 }

@@ -135,7 +135,7 @@ contract ServiceProviderFactory is RegistryContract {
         address _delegateOwnerWallet
     ) external returns (uint spID)
     {
-        requireIsInitialized();
+        _requireIsInitialized();
 
         require(
             ServiceTypeManager(
@@ -217,7 +217,7 @@ contract ServiceProviderFactory is RegistryContract {
         string calldata _endpoint
     ) external returns (uint deregisteredSpID)
     {
-        requireIsInitialized();
+        _requireIsInitialized();
 
         // Unstake on deregistration if and only if this is the last service endpoint
         uint unstakeAmount = 0;
@@ -298,7 +298,7 @@ contract ServiceProviderFactory is RegistryContract {
         uint256 _increaseStakeAmount
     ) external returns (uint newTotalStake)
     {
-        requireIsInitialized();
+        _requireIsInitialized();
 
         // Confirm owner has an endpoint
         require(
@@ -336,7 +336,7 @@ contract ServiceProviderFactory is RegistryContract {
         uint256 _decreaseStakeAmount
     ) external returns (uint newTotalStake)
     {
-        requireIsInitialized();
+        _requireIsInitialized();
 
         // Confirm owner has an endpoint
         require(

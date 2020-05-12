@@ -16,15 +16,14 @@ contract InitializableV2 is Initializable {
     string private constant ERROR_ALREADY_INITIALIZED = "ERROR_ALREADY_INITIALIZED";
 
     function initialize() public initializer {
-        require(!initialized, ERROR_ALREADY_INITIALIZED);
         initialized = true;
     }
 
-    function requireIsInitialized() internal view {
+    function _requireIsInitialized() internal view {
         require(initialized == true, ERROR_NOT_INITIALIZED);
     }
 
-    function getInitialized() internal view returns (bool) {
+    function _isInitialized() internal view returns (bool) {
         return initialized;
     }
 }
