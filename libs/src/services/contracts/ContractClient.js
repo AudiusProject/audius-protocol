@@ -1,5 +1,5 @@
 const ProviderSelection = require('./ProviderSelection')
-const EthWeb3Manager = require('../ethWeb3Manager/index')
+const Web3Manager = require('../web3Manager/index')
 
 const CONTRACT_INITIALIZING_INTERVAL = 100
 const CONTRACT_INITIALIZING_TIMEOUT = 10000
@@ -29,15 +29,17 @@ class ContractClient {
   /** Inits the contract if necessary */
   async init () {
     let providerSelector
-    if (!(this.web3Manager instanceof EthWeb3Manager)) {
-      providerSelector = new ProviderSelection(this.web3Manager.getWeb3Providers())
+
+    if (this.web3Manager instanceof Web3Manager && this.web3Manager.web3Config.useExternalWeb3) {
+      const providerEndpoints = this.web3Manager.web3Config.internalWeb3Config.web3ProviderEndpoints
+      providerSelector = new ProviderSelection(providerEndpoints)
     }
 
     // Perform init
-    await this.initializeContracts(providerSelector)
+    await this.initWithProviderSelection(providerSelector)
   }
 
-  async initializeContracts (providerSelector) {
+  async initWithProviderSelection (providerSelector) {
     // No-op if we are already initted
     if (this._isInitialized) return
 
@@ -66,7 +68,7 @@ class ContractClient {
       this._isInitializing = false
       this._isInitialized = true
     } catch (e) {
-      if (this.web3Manager instanceof EthWeb3Manager) {
+      if (!(this.web3Manager instanceof Web3Manager) || this.web3Manager.web3Config.useExternalWeb3) {
         console.error(`Failed to initialize contract ${JSON.stringify(this.contractABI)}`, e)
         return
       }
@@ -82,7 +84,7 @@ class ContractClient {
       // Reset _isInitializing to false to retry init logic and avoid the _isInitialzing check
       this._isInitializing = false
       await providerSelector.select(this)
-      await this.initializeContracts(providerSelector)
+      await this.initWithProviderSelection(providerSelector)
     }
   }
 
@@ -104,6 +106,19 @@ class ContractClient {
     }
     return this._contract.methods[methodName](...args)
   }
+
+  // async getChainId () {
+  //   await this.init()
+  //   return this.web3.eth.net.getId()
+  // }
+
+  // add init check
+  // async getContract (registryKey) {
+  //   await this.init()
+  //   return this.Registry.methods.getContract(
+  //     Utils.utf8ToHex(contractRegistryKey)
+  //   ).call()
+  // }
 }
 
 module.exports = ContractClient

@@ -43,10 +43,10 @@ class Web3Manager {
       web3Config &&
       !web3Config.useExternalWeb3 &&
       web3Config.internalWeb3Config &&
-      web3Config.internalWeb3Config.web3ProviderEndpoint
+      web3Config.internalWeb3Config.web3ProviderEndpoints
     ) {
       // either user has external web3 but it's not configured, or doesn't have web3
-      this.web3 = new Web3(this.provider(web3Config.internalWeb3Config.web3ProviderEndpoint, 10000))
+      this.web3 = new Web3(this.provider(web3Config.internalWeb3Config.web3ProviderEndpoints[0], 10000))
       this.useExternalWeb3 = false
 
       // create private key pair here if it doesn't already exist
@@ -62,15 +62,6 @@ class Web3Manager {
     }
   }
 
-  getWeb3Providers () {
-    let web3ProviderEndpoints = []
-    if (this.web3Config &&
-      this.web3Config.internalWeb3Config &&
-      this.web3Config.internalWeb3Config.web3ProviderEndpoints) {
-      web3ProviderEndpoints = this.web3Config.internalWeb3Config.web3ProviderEndpoints
-    }
-    return web3ProviderEndpoints
-  }
   getWeb3 () {
     return this.web3
   }

@@ -26,14 +26,16 @@ class ProviderSelection extends ServiceSelection {
    * log an error.
    * @param {ContractClient} contractClient object used for making transaction calls
    */
-
   async select (contractClient) {
     const web3Manager = contractClient.web3Manager
     const filteredServices = this.filterOutKnownUnhealthy(this.getServices())
-
-    // Set new web3 with another provider URL
+    // Create another web3 instance with another provider
     const web3 = new Web3(web3Manager.provider(filteredServices[0], 10000))
+
     web3Manager.setWeb3(web3)
+    contractClient.web3 = web3
+
+    return web3
   }
 
   getServicesSize () {
