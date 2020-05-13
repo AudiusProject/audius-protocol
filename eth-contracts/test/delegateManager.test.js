@@ -299,28 +299,28 @@ contract('DelegateManager', async (accounts) => {
     })
 
     it('single delegator basic operations', async () => {
-      // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
 
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       let initialSpStake = totalStakedForSP
-      let initialDelegateAmount = _lib.audToWeiBN(60)
+      let delegateAmount = _lib.audToWeiBN(60)
+
+      let minDel = await delegateManager.getMinDelegationAmount()
+      assert.isTrue(minDel.lte(delegateAmount), 'Must be above min delegation')
 
       // Approve staking transfer
       await token.approve(
         stakingAddress,
-        initialDelegateAmount,
+        delegateAmount,
         { from: delegatorAccount1 })
 
-      let delegators = await delegateManager.getDelegatorsList(stakerAccount)
       await delegateManager.delegateStake(
         stakerAccount,
-        initialDelegateAmount,
+        delegateAmount,
         { from: delegatorAccount1 })
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
-      delegators = await delegateManager.getDelegatorsList(stakerAccount)
-
+      let delegators = await delegateManager.getDelegatorsList(stakerAccount)
       let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
       let delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
       let delegatedStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(
@@ -341,23 +341,39 @@ contract('DelegateManager', async (accounts) => {
         'Sum of Staking.sol equals SPFactory and DelegateManager'
       )
 
-      // Submit request to undelegate
+      // Increase delegated stake
+      let increaseAmount = _lib.audToWeiBN(5)
+      await token.approve(
+        stakingAddress,
+        increaseAmount,
+        { from: delegatorAccount1 })
+      await delegateManager.delegateStake(
+        stakerAccount,
+        increaseAmount,
+        { from: delegatorAccount1 })
+      assert.isTrue(
+        (await delegateManager.getTotalDelegatorStake(delegatorAccount1)).eq(delegatedStake.add(increaseAmount)),
+        'Confirm increase')
+
+      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+
+      // Submit request to undelegate all stake
       await delegateManager.requestUndelegateStake(
         stakerAccount,
-        initialDelegateAmount,
+        delegatedStake,
         { from: delegatorAccount1 }
       )
 
       // Confirm lockup amount is registered
       let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
       assert.isTrue(
-        undelegateRequestInfo.amount.eq(initialDelegateAmount),
+        undelegateRequestInfo.amount.eq(delegatedStake),
         'Expected amount not found in lockup')
 
       let totalLockedDelegation =
         await delegateManager.getTotalLockedDelegationForServiceProvider(stakerAccount)
       assert.isTrue(
-        totalLockedDelegation.eq(initialDelegateAmount),
+        totalLockedDelegation.eq(delegatedStake),
         'Expected amount not found in total lockup for SP')
 
       // Try to undelegate stake immediately, confirm failure
@@ -369,9 +385,9 @@ contract('DelegateManager', async (accounts) => {
       await _lib.assertRevert(
         delegateManager.requestUndelegateStake(
           stakerAccount,
-          initialDelegateAmount,
+          delegatedStake,
           { from: delegatorAccount1 }),
-          'No pending lockup expected'
+        'No pending lockup expected'
       )
 
       // Advance to valid block
@@ -391,7 +407,7 @@ contract('DelegateManager', async (accounts) => {
       assert.equal(delegators.length, 0, 'Expect no remaining delegators')
       assert.equal(delegatedStake, 0, 'Expect no remaining total delegate stake')
       assert.equal(totalLockedDelegation, 0, 'Expect no remaining locked stake for SP')
-      assert.isTrue(initialSpStake.eq(totalStakedForSP),'Staking.sol back to initial value')
+      assert.isTrue(initialSpStake.eq(totalStakedForSP), 'Staking.sol back to initial value')
     })
 
     it('single delegator + claim', async () => {
@@ -408,7 +424,7 @@ contract('DelegateManager', async (accounts) => {
         initialDelegateAmount,
         { from: delegatorAccount1 })
 
-      await delegateManager.delegateStake(
+      let tx = await delegateManager.delegateStake(
         stakerAccount,
         initialDelegateAmount,
         { from: delegatorAccount1 })
