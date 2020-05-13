@@ -426,7 +426,7 @@ contract DelegateManager is RegistryContract {
         requireIsInitialized();
         require(
             msg.sender == registry.getContract(governanceKey),
-            "Slash only callable from governance contract"
+            "Only callable from governance contract"
         );
         StakingInterface stakingContract = StakingInterface(
             registry.getContract(stakingProxyOwnerKey)

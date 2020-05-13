@@ -1110,4 +1110,19 @@ contract('DelegateManager', async (accounts) => {
       assert.equal((await delegateManager.getDelegatorsList(stakerAccount)).length, 0, 'No delegators expected')
     })
   })
+
+  it('caller restriction verification', async () => {
+    await _lib.assertRevert(
+      delegateManager.updateMaxDelegators(10, { from: accounts[3] }),
+      'Only callable from governance'
+    )
+    await _lib.assertRevert(
+      delegateManager.updateMinDelegationAmount(10, { from: accounts[3] }),
+      'Only callable from governance'
+    )
+    await _lib.assertRevert(
+      delegateManager.slash(10, slasherAccount),
+      'Only callable from governance'
+    )
+  })
 })
