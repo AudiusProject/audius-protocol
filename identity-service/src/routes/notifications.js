@@ -161,8 +161,8 @@ const formatRemixCreate = (notification) => {
   return {
     ...getCommonNotificationsFields(notification),
     type: NotificationType.RemixCreate,
-    parentTrack: notification.entityId,
-    childTrack: notification.actions[0].actionEntityId
+    parentTrackId: notification.entityId,
+    childTrackId: notification.actions[0].actionEntityId
   }
 }
 

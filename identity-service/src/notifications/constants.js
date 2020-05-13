@@ -40,11 +40,17 @@ const weekInHours = 168
 const notificationJobType = 'notificationProcessJob'
 const announcementJobType = 'pushAnnouncementsJob'
 
+const deviceType = Object.freeze({
+  Mobile: 'mobile',
+  Browser: 'browser'
+})
+
 module.exports = {
   notificationTypes,
   actionEntityTypes,
   dayInHours,
   weekInHours,
   notificationJobType,
-  announcementJobType
+  announcementJobType,
+  deviceType
 }

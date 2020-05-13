@@ -87,20 +87,18 @@ def get_cosign_remix_notifications(session, max_block_number, remix_tracks):
             .filter(
                 Track.is_unlisted == False,
                 Track.is_delete == False,
-                Track.blocknumber <= max_block_number
+                Track.is_current == True
             )
-            .distinct(Track.track_id)
-            .order_by(desc(Track.track_id),desc(Track.blocknumber))
             .subquery()
     )
 
-    remix_track = (
+    parent_tracks = (
         session.query(
             Remix.child_track_id,
             Remix.parent_track_id,
             tracks_subquery.c.owner_id
         )
-        .outerjoin(
+        .join(
             tracks_subquery,
             Remix.parent_track_id == tracks_subquery.c.track_id
         )
@@ -110,21 +108,21 @@ def get_cosign_remix_notifications(session, max_block_number, remix_tracks):
         .all()
     )
     # Mapping of parent track users to child track to parent track
-    track_parents = {}
-    for track_parent in remix_track:
+    parent_track_users_to_remixes = {}
+    for track_parent in parent_tracks:
         [remix_track_id, remix_parent_id, remix_parent_user_id] = track_parent 
-        if not remix_parent_user_id in track_parents:
-            track_parents[remix_parent_user_id] = {
+        if not remix_parent_user_id in parent_track_users_to_remixes:
+            parent_track_users_to_remixes[remix_parent_user_id] = {
                 remix_track_id: remix_parent_id
             }
         else: 
-            track_parents[remix_parent_user_id][remix_track_id] = remix_parent_id
+            parent_track_users_to_remixes[remix_parent_user_id][remix_track_id] = remix_parent_id
 
     for remix_track in remix_tracks:
         user_id = remix_track['user_id']
         track_id = remix_track['item_id']
 
-        if (user_id in track_parents and track_id in track_parents[user_id]):
+        if (user_id in parent_track_users_to_remixes and track_id in parent_track_users_to_remixes[user_id]):
             remix_notifications.append({
                 const.notification_type: const.notification_type_remix_cosign,
                 const.notification_blocknumber: remix_track[const.notification_blocknumber],
@@ -532,10 +530,8 @@ def notifications():
                             Track.track_id.in_(parent_remix_tracks),
                             Track.is_unlisted == False,
                             Track.is_delete == False,
-                            Track.blocknumber <= max_block_number
+                            Track.is_current == True
                         )
-                        .distinct(Track.track_id)
-                        .order_by(desc(Track.track_id),desc(Track.blocknumber))
                         .all()
                 )
                 for remix_track_parent in remix_track_parents:

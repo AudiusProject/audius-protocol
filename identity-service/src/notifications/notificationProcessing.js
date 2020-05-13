@@ -1,6 +1,8 @@
 const models = require('../models')
 const { logger } = require('../logging')
+const moment = require('moment')
 const {
+  deviceType,
   notificationTypes,
   actionEntityTypes
 } = require('./constants')
@@ -77,7 +79,7 @@ async function _processSubscriberPushNotifications (tx) {
         tx,
         true,
         entry.title,
-        ['mobile', 'browser']
+        [deviceType.Mobile, deviceType.Browser]
       )
       subscriberPushNotifications[i] = false
     }
@@ -109,8 +111,8 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
       isRead: false,
       isHidden: false,
       userId: notificationTarget,
-      blocknumber: blocknumber,
-      timestamp: timestamp
+      blocknumber,
+      timestamp
     }, { transaction: tx })
     notificationId = createNotifTx.id
   } else {
@@ -132,9 +134,8 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
     let updatePerformed = notifActionCreateTx[1]
     if (updatePerformed) {
       // Update Notification table timestamp
-      let newNotificationTimestamp = notifActionCreateTx[0].createdAt
       await models.Notification.update({
-        timestamp: newNotificationTimestamp
+        timestamp
       }, {
         where: { id: notificationId },
         returning: true,
@@ -172,8 +173,8 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
       const msg = pushNotificationMessagesMap[notificationTypes.Follow](msgGenNotif)
       const title = notificationResponseTitleMap[notificationTypes.Follow]
       let types = []
-      if (notifyMobile) types.push('mobile')
-      if (notifyBrowserPush) types.push('browser')
+      if (notifyMobile) types.push(deviceType.Mobile)
+      if (notifyBrowserPush) types.push(deviceType.Browser)
       await publish(msg, notificationTarget, tx, true, title, types)
     } catch (e) {
       logger.error('processFollowNotifications - Could not send push notification for _processFollowNotifications for target user', notificationTarget, e)
@@ -244,9 +245,8 @@ async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, 
     // Update Notification table timestamp
     let updatePerformed = notifActionCreateTx[1]
     if (updatePerformed) {
-      let newNotificationTimestamp = notifActionCreateTx[0].createdAt
       await models.Notification.update({
-        timestamp: newNotificationTimestamp
+        timestamp
       }, {
         where: { id: notificationId },
         returning: true,
@@ -287,8 +287,8 @@ async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, 
       const msg = pushNotificationMessagesMap[notificationTypes.Repost.base](msgGenNotif)
       const title = notificationResponseTitleMap[repostType]
       let types = []
-      if (notifyMobile) types.push('mobile')
-      if (notifyBrowserPush) types.push('browser')
+      if (notifyMobile) types.push(deviceType.Mobile)
+      if (notifyBrowserPush) types.push(deviceType.Browser)
       await publish(msg, notificationTarget, tx, true, title, types)
     } catch (e) {
       logger.error('processRepostNotification - Could not send push notification for _processBaseRepostNotifications for target user', notificationTarget, e)
@@ -358,9 +358,8 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
     // Update Notification table timestamp
     let updatePerformed = notifActionCreateTx[1]
     if (updatePerformed) {
-      let newNotificationTimestamp = notifActionCreateTx[0].createdAt
       await models.Notification.update({
-        timestamp: newNotificationTimestamp
+        timestamp
       }, {
         where: { id: notificationId },
         returning: true,
@@ -401,8 +400,8 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
       const msg = pushNotificationMessagesMap[notificationTypes.Favorite.base](msgGenNotif)
       const title = notificationResponseTitleMap[favoriteType]
       let types = []
-      if (notifyMobile) types.push('mobile')
-      if (notifyBrowserPush) types.push('browser')
+      if (notifyMobile) types.push(deviceType.Mobile)
+      if (notifyBrowserPush) types.push(deviceType.Browser)
       await publish(msg, notificationTarget, tx, true, title, types)
     } catch (e) {
       logger.error('processFavoriteNotification - Could not send push notification for _processFavoriteNotifications for target user', notificationTarget, e)
@@ -505,9 +504,8 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
       // Update Notification table timestamp
       let updatePerformed = notifActionCreateTx[1]
       if (updatePerformed) {
-        let newNotificationTimestamp = notifActionCreateTx[0].createdAt
         await models.Notification.update({
-          timestamp: newNotificationTimestamp
+          timestamp
         }, {
           where: { id: notificationId },
           returning: true,
@@ -665,7 +663,7 @@ async function _processRemixCreateNotifications (audiusLibs, notif, blocknumber,
       ...notifWithAddProps,
       ...(mapNotification(notifWithAddProps, metadata))
     }
-    logger.debug('processRemixCreateNotification - About to generate message for favorite push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
+    logger.debug('processRemixCreateNotification - About to generate message for create remix push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
 
     const { notifyMobile, notifyBrowserPush } = shouldNotify
     // send push notification
@@ -675,8 +673,8 @@ async function _processRemixCreateNotifications (audiusLibs, notif, blocknumber,
         const msg = pushNotificationMessagesMap[notificationTypes.RemixCreate](msgGenNotif)
         const title = notificationResponseTitleMap[notificationTypes.RemixCreate]
         let types = []
-        if (notifyMobile) types.push('mobile')
-        if (notifyBrowserPush) types.push('browser')
+        if (notifyMobile) types.push(deviceType.Mobile)
+        if (notifyBrowserPush) types.push(deviceType.Browser)
         await publish(msg, parentTrackUserId, tx, true, title, types)
       } catch (e) {
         logger.error('processRemixCreateNotification - Could not send push notification for _processRemixCreateNotifications for target user', notificationTarget, e)
@@ -714,7 +712,10 @@ async function _processCosignNotifications (audiusLibs, notif, blocknumber, time
 
   // If this track is already cosigned, ignore
   if (cosignNotifications.length > 0) return
+  const momentTimestamp = moment(timestamp)
 
+  // Add 1 s to the timestamp so that it appears after the favorite/repost
+  const updatedTimestamp = momentTimestamp.add(1, 's').format("YYYY-MM-DD HH:mm:ss")
   // Create a new Notification and NotificationAction
   // NOTE: Cosign Notifications do NOT stack. A new notification is created every time
   let cosignNotification = await models.Notification.create({
@@ -722,7 +723,7 @@ async function _processCosignNotifications (audiusLibs, notif, blocknumber, time
     userId: childTrackUserId,
     entityId: childTrackId,
     blocknumber,
-    timestamp
+    timestamp: updatedTimestamp
   }, { transaction: tx })
 
   await models.NotificationAction.create({
@@ -762,7 +763,7 @@ async function _processCosignNotifications (audiusLibs, notif, blocknumber, time
     // snippets
     const msg = pushNotificationMessagesMap[notificationTypes.RemixCosign](msgGenNotif)
     const title = notificationResponseTitleMap[notificationTypes.RemixCosign]
-    let types = ['mobile', 'browser']
+    let types = [deviceType.Mobile, deviceType.Browser]
     await publish(msg, childTrackUserId, tx, true, title, types)
   } catch (e) {
     logger.error('processCosignNotification - Could not send push notification for _processCosignNotifications for target user', notificationTarget, e)

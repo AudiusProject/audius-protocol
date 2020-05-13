@@ -162,7 +162,6 @@ const notificationResponseMap = {
     return formatRemixCreate(notification, metadata)
   },
   [NotificationType.RemixCosign]: (notification, metadata) => {
-    console.log(metadata)
     return formatRemixCosign(notification, metadata)
   },
   [NotificationType.Announcement]: formatAnnouncement,
