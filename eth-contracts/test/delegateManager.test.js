@@ -731,6 +731,39 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
+    it('undelegate request restrictions', async () => {
+      await _lib.assertRevert(
+        delegateManager.cancelUndelegateStake({ from: delegatorAccount1 }),
+        'Pending lockup expected')
+      await _lib.assertRevert(
+        delegateManager.undelegateStake({ from: delegatorAccount1 }),
+        'Pending lockup expected')
+      await _lib.assertRevert(
+        delegateManager.requestUndelegateStake(stakerAccount, 10, { from: delegatorAccount1 }),
+        'Delegator must be staked for SP')
+
+      let initialDelegateAmount = _lib.audToWeiBN(60)
+      // Approve staking transfer for delegator 1
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      // Stake initial value for delegator 1
+      await delegateManager.delegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      // Try and undelegate more than available
+      await _lib.assertRevert(
+        delegateManager.requestUndelegateStake(
+          stakerAccount,
+          initialDelegateAmount.add(_lib.toBN(10)), { from: delegatorAccount1 }),
+        'Cannot decrease greater than currently staked for this ServiceProvider'
+      )
+    })
+
     it('3 delegators + pending claim + undelegate restrictions', async () => {
       const delegatorAccount2 = accounts[5]
       const delegatorAccount3 = accounts[6]
@@ -808,7 +841,7 @@ contract('DelegateManager', async (accounts) => {
         delegateManager.delegateStake(
           stakerAccount,
           initialDelegateAmount,
-          { from: delegatorAccount1 }),
+          { from: delegatorAccount2 }),
         'Delegation not permitted for SP pending claim'
       )
 
