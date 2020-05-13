@@ -260,11 +260,6 @@ contract DelegateManager is RegistryContract {
         address serviceProvider = undelegateRequests[delegator].serviceProvider;
         uint unstakeAmount = undelegateRequests[delegator].amount;
 
-        require(
-            delegatorExistsForSP(delegator, serviceProvider),
-            "Delegator must be staked for SP"
-        );
-
         // Stake on behalf of target service provider
         StakingInterface(
             registry.getContract(stakingProxyOwnerKey)

@@ -731,7 +731,7 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('undelegate request restrictions', async () => {
+    it('validate undelegate request restrictions', async () => {
       await _lib.assertRevert(
         delegateManager.cancelUndelegateStake({ from: delegatorAccount1 }),
         'Pending lockup expected')
