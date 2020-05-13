@@ -715,7 +715,7 @@ async function _processCosignNotifications (audiusLibs, notif, blocknumber, time
   const momentTimestamp = moment(timestamp)
 
   // Add 1 s to the timestamp so that it appears after the favorite/repost
-  const updatedTimestamp = momentTimestamp.add(1, 's').format("YYYY-MM-DD HH:mm:ss")
+  const updatedTimestamp = momentTimestamp.add(1, 's').format('YYYY-MM-DD HH:mm:ss')
   // Create a new Notification and NotificationAction
   // NOTE: Cosign Notifications do NOT stack. A new notification is created every time
   let cosignNotification = await models.Notification.create({
