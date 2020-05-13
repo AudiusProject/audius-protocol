@@ -70,7 +70,7 @@ contract Staking is RegistryContract, StakingInterface {
      * @notice Funds `_amount` of tokens from ClaimsManager to target account
      */
     function stakeRewards(uint256 _amount, address _stakerAccount) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             msg.sender == registry.getContract(claimsManagerProxyKey),
             "Only callable from ClaimsManager"
@@ -92,7 +92,7 @@ contract Staking is RegistryContract, StakingInterface {
         address _slashAddress
     ) external
     {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             msg.sender == registry.getContract(delegateManagerKey),
             "Only callable from DelegateManager"
@@ -118,7 +118,7 @@ contract Staking is RegistryContract, StakingInterface {
         uint256 _amount
     ) external
     {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             msg.sender == registry.getContract(serviceProviderFactoryKey),
             "Only callable from ServiceProviderFactory"
@@ -139,7 +139,7 @@ contract Staking is RegistryContract, StakingInterface {
         uint256 _amount
     ) external
     {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             msg.sender == registry.getContract(serviceProviderFactoryKey),
             "Only callable from ServiceProviderFactory"
@@ -162,7 +162,7 @@ contract Staking is RegistryContract, StakingInterface {
         address _delegatorAddress,
         uint256 _amount
     ) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             msg.sender == registry.getContract(delegateManagerKey),
             "delegateStakeFor - Only callable from DelegateManager"
@@ -184,7 +184,7 @@ contract Staking is RegistryContract, StakingInterface {
         address _delegatorAddress,
         uint256 _amount
     ) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             msg.sender == registry.getContract(delegateManagerKey),
             "undelegateStakeFor - Only callable from DelegateManager"

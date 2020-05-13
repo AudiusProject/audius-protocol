@@ -17,6 +17,7 @@ export const strings = {
   third: web3New.utils.utf8ToHex('third'),
   test: web3New.utils.utf8ToHex('test')
 }
+export const addressZero = '0x0000000000000000000000000000000000000000'
 
 /** hex to utf8
  * @param {string} arg - Raw hex-encoded string returned from contract code
