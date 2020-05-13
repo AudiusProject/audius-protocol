@@ -293,7 +293,7 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
 
 # given list of track ids and corresponding tracks, populates each track object with:
 #   repost_count, save_count
-#   if remix: remix users, has_remix_author_reposted, has_remix_author_favorited
+#   if remix: remix users, has_remix_author_reposted, has_remix_author_saved
 #   if current_user_id available, populates followee_reposts, has_current_user_reposted, has_current_user_saved
 def populate_track_metadata(session, track_ids, tracks, current_user_id):
     # build dict of track id --> repost count
@@ -449,7 +449,7 @@ def get_track_remix_metadata(session, tracks, current_user_id):
         {
             [childTrackId] : {
                 [parentTrackId]: {
-                    has_remix_author_favorited: boolean,
+                    has_remix_author_saved: boolean,
                     has_remix_author_reposted: boolean,
                     user: populated user metadata
                 }
@@ -469,7 +469,7 @@ def get_track_remix_metadata(session, tracks, current_user_id):
                 Track.owner_id.label('track_owner_id'),
                 Remix.parent_track_id.label('parent_track_id'),
                 Remix.child_track_id.label('child_track_id'),
-                Save.is_current.label('has_remix_author_favorited'),
+                Save.is_current.label('has_remix_author_saved'),
                 Repost.is_current.label('has_remix_author_reposted'),
                 User
             )
@@ -533,20 +533,20 @@ def get_track_remix_metadata(session, tracks, current_user_id):
         for user in populated_remix_parent_users:
             populated_users[user['user_id']] = user
 
-    # Build a dict of child track id => parent track id => { user, has_remix_author_favorited, has_remix_author_reposted }
+    # Build a dict of child track id => parent track id => { user, has_remix_author_saved, has_remix_author_reposted }
     for remix_relationship in remix_query:
-        [track_owner_id, parent_track_id, child_track_id, has_remix_author_favorited, has_remix_author_reposted, _] = remix_relationship
+        [track_owner_id, parent_track_id, child_track_id, has_remix_author_saved, has_remix_author_reposted, _] = remix_relationship
         if not child_track_id in remixes:
             remixes[child_track_id] = {
                 parent_track_id: {
-                    response_name_constants.has_remix_author_favorited: bool(has_remix_author_favorited),
+                    response_name_constants.has_remix_author_saved: bool(has_remix_author_saved),
                     response_name_constants.has_remix_author_reposted : bool(has_remix_author_reposted),
                     'user': populated_users[track_owner_id]
                 } 
             }
         else: 
             remixes[child_track_id][parent_track_id] = {
-                response_name_constants.has_remix_author_favorited: bool(has_remix_author_favorited),
+                response_name_constants.has_remix_author_saved: bool(has_remix_author_saved),
                 response_name_constants.has_remix_author_reposted: bool(has_remix_author_reposted),
                 'user': populated_users[track_owner_id]
             }
