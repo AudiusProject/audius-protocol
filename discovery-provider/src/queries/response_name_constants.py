@@ -10,7 +10,7 @@ play_count = 'play_count' # integer - total number of plays for a given track/pl
 # remix track specific
 remix_of = 'remix_of' # dictionary - contains an array of parent track ids
 has_remix_author_reposted = 'has_remix_author_reposted' # boolean - does the remix track author repost the track
-has_remix_author_favorited = 'has_remix_author_favorited' # boolean - does the remix track author favorite the track
+has_remix_author_saved = 'has_remix_author_saved' # boolean - does the remix track author favorite the track
 
 does_current_user_follow = 'does_current_user_follow' # boolean - does current user follow given user
 current_user_followee_follow_count = 'current_user_followee_follow_count' # integer - number of followees of current user that also follow given user
