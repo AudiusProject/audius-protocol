@@ -218,11 +218,8 @@ contract ServiceProviderFactory is RegistryContract {
             StakingInterface stakingContract = StakingInterface(
                 registry.getContract(stakingProxyOwnerKey)
             );
-            unstakeAmount = stakingContract.totalStakedFor(msg.sender);
-            stakingContract.unstakeFor(
-                msg.sender,
-                unstakeAmount
-            );
+            unstakeAmount = spDetails[msg.sender].deployerStake;
+            stakingContract.unstakeFor(msg.sender, unstakeAmount);
 
             // Update deployer total
             spDetails[msg.sender].deployerStake -= unstakeAmount;

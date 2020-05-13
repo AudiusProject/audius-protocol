@@ -468,7 +468,6 @@ contract('DelegateManager', async (accounts) => {
     })
 
     it('single delegator + claim + slash', async () => {
-      // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
 
@@ -517,8 +516,82 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue((totalInStakingContract.sub(slashAmount)).eq(totalInStakingAfterSlash), 'Expected slash value')
     })
 
+    it('slash restrictions', async () => {
+      // Deregister endpoint, removing all stake
+      await _lib.deregisterServiceProvider(
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint,
+        stakerAccount)
+
+      // Perform slash functions
+      // Called from mockGovernance
+      await _lib.assertRevert(
+        mockGovernance.testSlash(DEFAULT_AMOUNT, slasherAccount),
+        'Stake required prior to slash')
+
+      await _lib.assertRevert(
+        mockGovernance.testSlash(DEFAULT_AMOUNT.add(_lib.toBN(4)), stakerAccount2),
+        'Cannot slash more than total currently staked')
+
+      // Transfer 1000 tokens to delegator
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
+
+      // Delegate equal stake to stakerAccount2
+      // Approve staking transfer
+      await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: delegatorAccount1 })
+
+      await delegateManager.delegateStake(
+        stakerAccount2,
+        DEFAULT_AMOUNT,
+        { from: delegatorAccount1 })
+
+      // Deregister endpoint, removing all direct stake
+      await _lib.deregisterServiceProvider(
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint1,
+        stakerAccount2)
+
+      await _lib.assertRevert(
+        mockGovernance.testSlash(DEFAULT_AMOUNT, stakerAccount2),
+        'Service Provider stake required')
+    })
+
+    // TODO: Revisit below test case and remove unneeded validation if necessary
+    // Test case still in progress
+    it.skip('WIP - claim restriction on staking balance', async () => {
+      // Transfer 1000 tokens to delegator
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
+
+      let initialDelegateAmount = _lib.audToWeiBN(60)
+
+      // Fund new claim
+      await claimsManager.initiateRound({ from: controllerAddress })
+      let fundBlock = await claimsManager.getLastFundBlock()
+      let stakedAtFundBlock = await staking.totalStakedForAt(stakerAccount, fundBlock)
+      console.log(stakedAtFundBlock)
+      console.log('deregstering')
+
+      // Deregister endpoint, removing all stake
+      await _lib.deregisterServiceProvider(
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint,
+        stakerAccount,
+        { from: stakerAccount })
+
+      console.log('deregistered')
+      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      console.log(spDetails)
+      assert.isTrue(
+        stakedAtFundBlock.lte(spDetails.maxAccountStake),
+        'Must be less than account max')
+      // This calls fails maximum bounds check since the max is now zero with no registered endpoint
+      await delegateManager.claimRewards({ from: stakerAccount })
+    })
+
     it('40 delegators to one SP + claim', async () => {
-      // TODO: Validate all
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
 
       let numDelegators = 40
@@ -1109,20 +1182,20 @@ contract('DelegateManager', async (accounts) => {
       assert.equal(_lib.fromBN(await delegateManager.getTotalDelegatorStake(delegatorAccount1)), 0, 'No stake expected')
       assert.equal((await delegateManager.getDelegatorsList(stakerAccount)).length, 0, 'No delegators expected')
     })
-  })
 
-  it('caller restriction verification', async () => {
-    await _lib.assertRevert(
-      delegateManager.updateMaxDelegators(10, { from: accounts[3] }),
-      'Only callable from governance'
-    )
-    await _lib.assertRevert(
-      delegateManager.updateMinDelegationAmount(10, { from: accounts[3] }),
-      'Only callable from governance'
-    )
-    await _lib.assertRevert(
-      delegateManager.slash(10, slasherAccount),
-      'Only callable from governance'
-    )
+    it('caller restriction verification', async () => {
+      await _lib.assertRevert(
+        delegateManager.updateMaxDelegators(10, { from: accounts[3] }),
+        'Only callable from governance'
+      )
+      await _lib.assertRevert(
+        delegateManager.updateMinDelegationAmount(10, { from: accounts[3] }),
+        'Only callable from governance'
+      )
+      await _lib.assertRevert(
+        delegateManager.slash(10, slasherAccount),
+        'Only callable from governance'
+      )
+    })
   })
 })

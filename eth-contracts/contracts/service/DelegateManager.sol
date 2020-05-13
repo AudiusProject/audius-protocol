@@ -440,7 +440,7 @@ contract DelegateManager is RegistryContract {
         uint totalBalanceInStakingPreSlash = stakingContract.totalStakedFor(_slashAddress);
         require(totalBalanceInStakingPreSlash > 0, "Stake required prior to slash");
         require(
-            totalBalanceInStakingPreSlash > _amount,
+            totalBalanceInStakingPreSlash >= _amount,
             "Cannot slash more than total currently staked");
 
         // Amount in sp factory for slash target
