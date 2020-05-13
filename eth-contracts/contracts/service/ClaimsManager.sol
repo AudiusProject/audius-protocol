@@ -54,6 +54,15 @@ contract ClaimsManager is RegistryContract {
       uint _newTotal
     );
 
+    /**
+     * @notice Function to initialize the contract
+     * @param _tokenAddress - address of ERC20 token that will be claimed
+     * @param _registryAddress - address for registry proxy contract
+     * @param _controllerAddress - address that can initiate rounds in addition to any staker
+     * @param _stakingProxyOwnerKey - registry key for Staking proxy
+     * @param _serviceProviderFactoryKey - registry key for ServiceProvider proxy
+     * @param _delegateManagerKey - registry key for DelegateManager proxy
+     */
     function initialize(
         address _tokenAddress,
         address _registryAddress,
@@ -80,24 +89,36 @@ contract ClaimsManager is RegistryContract {
         RegistryContract.initialize();
     }
 
+    /**
+     * @notice Get the duration of a funding round in blocks
+     */
     function getFundingRoundBlockDiff()
     external view returns (uint blockDiff)
     {
         return fundRoundBlockDiff;
     }
 
+    /**
+     * @notice Get the last block where a funding round was initiated
+     */
     function getLastFundBlock()
     external view returns (uint lastFundBlock)
     {
         return fundBlock;
     }
 
+    /**
+     * @notice Get the amount funded per round in wei
+     */
     function getFundsPerRound()
     external view returns (uint amount)
     {
         return fundingAmount;
     }
 
+    /**
+     * @notice Get the total amount claimed in the current round
+     */
     function getTotalClaimedInRound()
     external view returns (uint claimedAmount)
     {
