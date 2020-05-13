@@ -30,7 +30,7 @@ class ContractClient {
   async init () {
     let providerSelector
 
-    if (this.web3Manager instanceof Web3Manager && this.web3Manager.web3Config.useExternalWeb3) {
+    if (this.web3Manager instanceof Web3Manager && !this.web3Manager.web3Config.useExternalWeb3) {
       const providerEndpoints = this.web3Manager.web3Config.internalWeb3Config.web3ProviderEndpoints
       providerSelector = new ProviderSelection(providerEndpoints)
     }

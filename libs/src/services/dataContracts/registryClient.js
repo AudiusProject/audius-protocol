@@ -43,8 +43,8 @@ class RegistryClient {
 
       await providerSelector.select(this)
       this.Registry = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
-      console.log(this.Registry)
-      await this.getContractWithProviderSelection(providerSelector, contractRegistryKey)
+      const contract = await this.getContractWithProviderSelection(providerSelector, contractRegistryKey)
+      return contract
     }
   }
 }

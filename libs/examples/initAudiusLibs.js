@@ -6,8 +6,8 @@ const ethContractsConfig = require('../eth-contracts/config.json')
 
 const creatorNodeEndpoint = 'http://localhost:4000'
 const identityServiceEndpoint = 'http://localhost:7000'
-const dataWeb3ProviderEndpoints = ['http://localhost:8545', 'http://localhost:8545']
-const dataWeb3ProviderEndpoint = 'http://localhost:8545'
+const dataWeb3ProviderEndpoints = ['http://localhost:8547', 'http://localhost:8545']
+// const dataWeb3ProviderEndpoint = 'http://localhost:8545'
 const ethWeb3ProviderEndpoint = 'http://localhost:8546'
 const isServer = true
 
@@ -15,7 +15,7 @@ async function initAudiusLibs (useExternalWeb3, ownerWalletOverride = null, ethO
   let audiusLibsConfig
   let ethWallet = ethOwnerWalletOverride === null ? ethContractsConfig.ownerWallet : ethOwnerWalletOverride
   if (useExternalWeb3) {
-    const dataWeb3 = new Web3(new Web3.providers.HttpProvider(dataWeb3ProviderEndpoint))
+    const dataWeb3 = new Web3(new Web3.providers.HttpProvider(dataWeb3ProviderEndpoints[0]))
     audiusLibsConfig = {
       // Network id does not need to be checked in the test environment.
       web3Config: AudiusLibs.configExternalWeb3(
