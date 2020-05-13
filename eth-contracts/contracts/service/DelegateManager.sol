@@ -119,7 +119,7 @@ contract DelegateManager is RegistryContract {
         uint _amount
     ) external returns (uint delegatedAmount)
     {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             claimPending(_targetSP) == false,
             "Delegation not permitted for SP pending claim"
@@ -181,7 +181,7 @@ contract DelegateManager is RegistryContract {
         uint _amount
     ) external returns (uint newDelegateAmount)
     {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             claimPending(_target) == false,
             "Undelegate request not permitted for SP pending claim"
@@ -217,7 +217,7 @@ contract DelegateManager is RegistryContract {
 
     // Cancel undelegation request
     function cancelUndelegateStake() external {
-        requireIsInitialized();
+        _requireIsInitialized();
         address delegator = msg.sender;
         // Confirm pending delegation request
         require(
@@ -236,7 +236,7 @@ contract DelegateManager is RegistryContract {
 
     // Finalize undelegation request and withdraw stake
     function undelegateStake() external returns (uint newTotal) {
-        requireIsInitialized();
+        _requireIsInitialized();
         address delegator = msg.sender;
 
         // Confirm pending delegation request
@@ -332,7 +332,7 @@ contract DelegateManager is RegistryContract {
     */
     // Distribute proceeds of reward
     function claimRewards() external {
-        requireIsInitialized();
+        _requireIsInitialized();
 
         ServiceProviderFactory spFactory = ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)
@@ -428,7 +428,7 @@ contract DelegateManager is RegistryContract {
     function slash(uint _amount, address _slashAddress)
     external
     {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             msg.sender == registry.getContract(governanceKey),
             "Slash only callable from governance contract"
@@ -503,7 +503,7 @@ contract DelegateManager is RegistryContract {
      * @notice Update duration for undelegate request lockup
      */
     function updateUndelegateLockupDuration(uint _duration) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             msg.sender == registry.getContract(governanceKey),
             "Only callable from governance"
@@ -515,7 +515,7 @@ contract DelegateManager is RegistryContract {
      * @notice Update maximum delegators allowed
      */
     function updateMaxDelegators(uint _maxDelegators) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             msg.sender == registry.getContract(governanceKey),
             "Only callable from governance"
@@ -527,7 +527,7 @@ contract DelegateManager is RegistryContract {
      * @notice Update minimum delegation amount
      */
     function updateMinDelegationAmount(uint _minDelegationAmount) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             msg.sender == registry.getContract(governanceKey),
             "Only callable from governance"

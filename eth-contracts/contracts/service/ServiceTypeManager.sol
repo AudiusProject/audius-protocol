@@ -52,7 +52,7 @@ contract ServiceTypeManager is RegistryContract {
         bytes32 _serviceVersion
     ) external
     {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(controllerAddress == msg.sender, "Invalid signature for controller");
 
         uint numExistingVersions = this.getNumberOfVersions(_serviceType);
@@ -74,7 +74,7 @@ contract ServiceTypeManager is RegistryContract {
         uint _serviceTypeMax
     ) external
     {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             (msg.sender == controllerAddress || msg.sender == registry.getContract(governanceKey)),
             "Only controller or governance");
@@ -88,7 +88,7 @@ contract ServiceTypeManager is RegistryContract {
 
     /// @notice Remove an existing service type
     function removeServiceType(bytes32 _serviceType) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             msg.sender == controllerAddress || msg.sender == registry.getContract(governanceKey),
             "Only controller or governance");
@@ -118,7 +118,7 @@ contract ServiceTypeManager is RegistryContract {
         uint _serviceTypeMax
     ) external
     {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             msg.sender == controllerAddress || msg.sender == registry.getContract(governanceKey),
             "Only controller or governance");
