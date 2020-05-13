@@ -23,7 +23,7 @@ function _promisifySNS (functionName) {
       }
       sns[functionName](...args, function (err, data) {
         if (err) {
-          logger.debug(`${err}`)
+          logger.debug(`Error sending to SNS: ${err}`)
           reject(err)
         } else resolve(data)
       })
@@ -161,6 +161,7 @@ async function drainMessageObject (bufferObj) {
       }
 
       if (formattedMessage) {
+        logger.debug(`Publishing SNS message: ${JSON.stringify(formattedMessage)}`)
         await publishPromisified(formattedMessage)
       }
     } catch (e) {

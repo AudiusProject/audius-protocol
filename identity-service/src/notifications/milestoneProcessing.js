@@ -390,7 +390,7 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
       await publish(msg, userId, tx, true, title, types)
     } catch (e) {
       // Log on error instead of failing
-      logger.info(`Error adding push notification to buffer: ${e}. notifStub ${notifStub}`)
+      logger.info(`Error adding push notification to buffer: ${e}. notifStub ${JSON.stringify(notifStub)}`)
     }
   }
 }
