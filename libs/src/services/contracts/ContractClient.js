@@ -25,6 +25,14 @@ class ContractClient {
     this._isInitializing = false
   }
 
+  async getEthNetId () {
+    console.log(`ContractClient [getEthNetId] calling init`)
+    await this.init()
+    console.log(`ContractClient [getEthNetId] done callinig init`)
+    const netId = await this.web3Manager.getWeb3().eth.net.getId()
+
+    return netId
+  }
   /** Inits the contract if necessary */
   async init () {
     let providerSelector
@@ -106,19 +114,6 @@ class ContractClient {
     }
     return this._contract.methods[methodName](...args)
   }
-
-  // async getChainId () {
-  //   await this.init()
-  //   return this.web3.eth.net.getId()
-  // }
-
-  // add init check
-  // async getContract (registryKey) {
-  //   await this.init()
-  //   return this.Registry.methods.getContract(
-  //     Utils.utf8ToHex(contractRegistryKey)
-  //   ).call()
-  // }
 }
 
 module.exports = ContractClient

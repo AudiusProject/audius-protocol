@@ -12,7 +12,7 @@ class PlaylistFactoryClient extends ContractClient {
     }
 
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3Manager.getWeb3().eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const trackIdsHash = this.web3Manager.getWeb3().utils.soliditySha3(
       this.web3Manager.getWeb3().eth.abi.encodeParameter('uint[]', trackIds)
@@ -50,7 +50,7 @@ class PlaylistFactoryClient extends ContractClient {
 
   async deletePlaylist (playlistId) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3Manager.getWeb3().eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getDeletePlaylistRequestData(
       chainId,
@@ -72,7 +72,7 @@ class PlaylistFactoryClient extends ContractClient {
 
   async addPlaylistTrack (playlistId, addedTrackId) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3Manager.getWeb3().eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getAddPlaylistTrackRequestData(
       chainId,
@@ -99,7 +99,7 @@ class PlaylistFactoryClient extends ContractClient {
 
   async deletePlaylistTrack (playlistId, deletedTrackId, deletedPlaylistTimestamp, retries) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3Manager.getWeb3().eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getDeletePlaylistTrackRequestData(
       chainId,
@@ -129,7 +129,7 @@ class PlaylistFactoryClient extends ContractClient {
 
   async orderPlaylistTracks (playlistId, trackIds, retries) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3Manager.getWeb3().eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const trackIdsHash = this.web3Manager.getWeb3().utils.soliditySha3(this.web3Manager.getWeb3().eth.abi.encodeParameter('uint[]', trackIds))
     const signatureData = signatureSchemas.generators.getOrderPlaylistTracksRequestData(
@@ -158,7 +158,7 @@ class PlaylistFactoryClient extends ContractClient {
 
   async updatePlaylistPrivacy (playlistId, updatedPlaylistPrivacy) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3Manager.getWeb3().eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getUpdatePlaylistPrivacyRequestData(
       chainId,
@@ -185,7 +185,7 @@ class PlaylistFactoryClient extends ContractClient {
 
   async updatePlaylistName (playlistId, updatedPlaylistName) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3Manager.getWeb3().eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getUpdatePlaylistNameRequestData(
       chainId,
@@ -212,7 +212,7 @@ class PlaylistFactoryClient extends ContractClient {
 
   async updatePlaylistCoverPhoto (playlistId, updatedPlaylistImageMultihashDigest) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3Manager.getWeb3().eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getUpdatePlaylistCoverPhotoRequestData(
       chainId,
@@ -239,7 +239,7 @@ class PlaylistFactoryClient extends ContractClient {
 
   async updatePlaylistDescription (playlistId, updatedPlaylistDescription) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3Manager.getWeb3().eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getUpdatePlaylistDescriptionRequestData(
       chainId,
@@ -265,7 +265,7 @@ class PlaylistFactoryClient extends ContractClient {
 
   async updatePlaylistUPC (playlistId, updatedPlaylistUPC) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3Manager.getWeb3().eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getUpdatePlaylistUPCRequestData(
       chainId,
