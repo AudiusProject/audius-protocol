@@ -167,6 +167,8 @@ jobs:
             npm run test-circle-ci
             cd ../
 
+  # Disabled - not included in any workflows below
+  # Not removing code in case of potential re-enabling
   test-content-service:
     docker:
       # specify the version you desire here
@@ -447,8 +449,6 @@ workflows:
           force: true
       - test-eth-contracts:
           force: true
-      - test-content-service:
-          force: true
       - test-creator-node:
           force: true
       - test-discovery-provider:
@@ -474,10 +474,6 @@ workflows:
             branches:
               ignore: master
       - test-eth-contracts:
-          filters:
-            branches:
-              ignore: master
-      - test-content-service:
           filters:
             branches:
               ignore: master
@@ -553,24 +549,6 @@ workflows:
               only: /^@audius/eth-contracts@\d+\.\d+\.\d+/
             branches:
               only: master
-      # content service: test, build and push
-      - test-content-service:
-          force: true
-          filters:
-            tags:
-              only: /^@audius/content-service@\d+\.\d+\.\d+/
-            branches:
-              only: master
-      - docker-build-and-push:
-          name: build-content-service
-          repo: content-service
-          requires:
-            - test-content-service
-          filters:
-            tags:
-              only: /^@audius/content-service@\d+\.\d+\.\d+/
-            branches:
-              only: master
       # creator node: test, build and push
       - test-creator-node:
           force: true
@@ -630,12 +608,11 @@ workflows:
           name: deploy-ci
           cluster-name: audius-ci
           aws-region: us-west-2
-          deploy-args: ci contracts-1 eth-contracts-1 discovery-1 content-1 creator-1 identity-1 --force-tag $CIRCLE_SHA1 --first-time
+          deploy-args: ci contracts-1 eth-contracts-1 discovery-1 creator-1 identity-1 --force-tag $CIRCLE_SHA1 --first-time
           requires:
             - build-libs
             - build-contracts
             - build-eth-contracts
-            - build-content-service
             - build-creator-node
             - build-discovery-provider
             - build-identity-service
