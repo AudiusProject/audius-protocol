@@ -12,7 +12,6 @@ const CONTRACT_INITIALIZING_TIMEOUT = 10000
 class ContractClient {
   constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress) {
     this.web3Manager = web3Manager
-    this.web3 = web3Manager.getWeb3()
     this.contractABI = contractABI
     this.contractRegistryKey = contractRegistryKey
     this.getRegistryAddress = getRegistryAddress
@@ -61,7 +60,8 @@ class ContractClient {
     this._isInitializing = true
     try {
       this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
-      this._contract = new this.web3.eth.Contract(
+      const web3 = this.web3Manager.getWeb3()
+      this._contract = new web3.eth.Contract(
         this.contractABI,
         this._contractAddress
       )

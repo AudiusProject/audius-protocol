@@ -8,8 +8,8 @@ class RegistryClient {
     this.contractABI = contractABI
     this.contractAddress = contractAddress
 
-    this.web3 = this.web3Manager.getWeb3()
-    this.Registry = new this.web3.eth.Contract(contractABI, contractAddress)
+    const web3 = this.web3Manager.getWeb3()
+    this.Registry = new web3.eth.Contract(contractABI, contractAddress)
   }
 
   async getContract (contractRegistryKey) {
@@ -42,7 +42,8 @@ class RegistryClient {
       }
 
       await providerSelector.select(this)
-      this.Registry = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
+      const web3 = this.web3Manager.getWeb3()
+      this.Registry = new web3.eth.Contract(this.contractABI, this.contractAddress)
       const contract = await this.getContractWithProviderSelection(providerSelector, contractRegistryKey)
       return contract
     }

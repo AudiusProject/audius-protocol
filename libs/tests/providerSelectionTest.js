@@ -46,7 +46,7 @@ describe('Testing ContractClient class with ProviderSelection', () => {
      * Should: do not use provider selection logic and use initially set audius gateway
      */
   it('should use initial audius gateway if healthy', async () => {
-    sinon.stub(contractClient.web3.eth, 'Contract').callsFake((arg1, arg2) => { return arg1 })
+    sinon.stub(contractClient.web3Manager.web3.eth, 'Contract').callsFake((arg1, arg2) => { return arg1 })
     const initWithProviderSelectionSpy = sinon.spy(contractClient, 'initWithProviderSelection')
     const consoleSpy = sinon.spy(console, 'error')
 
@@ -62,8 +62,10 @@ describe('Testing ContractClient class with ProviderSelection', () => {
      * When: we do contract logic
      * Should: try both gateways and then log error
      */
+  // note: when web3 is set to a new object, the second call will throw a different error. that is acceptable
+  // as we don't care about what the error is
   it('should log error if both audius gateway and public gateway are unhealthy', async () => {
-    sinon.stub(contractClient.web3.eth, 'Contract').callsFake((arg1, arg2) => { throw new Error('Bad provider') })
+    sinon.stub(contractClient.web3Manager.web3.eth, 'Contract').callsFake((arg1, arg2) => { throw new Error('Bad provider') })
     const initWithProviderSelectionSpy = sinon.spy(contractClient, 'initWithProviderSelection')
     const consoleSpy = sinon.spy(console, 'error')
 
@@ -73,7 +75,7 @@ describe('Testing ContractClient class with ProviderSelection', () => {
     assert(consoleSpy.calledOnce)
   })
 
-  // TODO: can't mock new Web3() call and will err unless stub is injected into cod
+  // TODO: can't mock new Web3() call and will err unless stub is injected into tested module
   /**
      * Given: audius gateway is not healthy but the public gateway is
      * When: we do contract logic
@@ -87,7 +89,7 @@ describe('Testing ContractClient class with ProviderSelection', () => {
 
   //   // web3Mock.what()
 
-  //   sinon.stub(contractClient.web3.eth, 'Contract')
+  //   sinon.stub(contractClient.web3Manager.web3.eth, 'Contract')
   //     .onFirstCall()
   //     .throws(new Error('Bad provider'))
   //     .onSecondCall()
@@ -111,10 +113,11 @@ describe('Testing ContractClient class with ProviderSelection', () => {
     // Initializing ethWeb3Manager with dummy data
     const web3Config = { url: 'https://audius.eth.network', ownerWallet: '0xvicky' }
     const ethWeb3Manager = new EthWeb3Manager(web3Config)
-    ethWeb3Manager.web3 = { currentProvider: { host: 'https://eth.network' } }
+    // ethWeb3Manager.web3 = { currentProvider: { host: 'https://eth.network' } }
+    ethWeb3Manager.web3 = createWeb3Obj('https://eth.network')
     contractClient.web3Manager = ethWeb3Manager
 
-    sinon.stub(contractClient.web3.eth, 'Contract').callsFake((arg1, arg2) => { return arg1 })
+    sinon.stub(contractClient.web3Manager.web3.eth, 'Contract').callsFake((arg1, arg2) => { return arg1 })
 
     const initWithProviderSelectionSpy = sinon.spy(contractClient, 'initWithProviderSelection')
     const consoleSpy = sinon.spy(console, 'error')
@@ -135,10 +138,10 @@ describe('Testing ContractClient class with ProviderSelection', () => {
     // Initializing ethWeb3Manager with dummy data
     const web3Config = { url: 'https://audius.eth.network', ownerWallet: '0xvicky' }
     const ethWeb3Manager = new EthWeb3Manager(web3Config)
-    ethWeb3Manager.web3 = { currentProvider: { host: 'https://eth.network' } }
+    ethWeb3Manager.web3 = createWeb3Obj('https://eth.network')
     contractClient.web3Manager = ethWeb3Manager
 
-    sinon.stub(contractClient.web3.eth, 'Contract').callsFake((arg1, arg2) => { throw new Error('Bad provider') })
+    sinon.stub(contractClient.web3Manager.web3.eth, 'Contract').callsFake((arg1, arg2) => { throw new Error('Bad provider') })
 
     const initWithProviderSelectionSpy = sinon.spy(contractClient, 'initWithProviderSelection')
     const consoleSpy = sinon.spy(console, 'error')
@@ -158,7 +161,7 @@ describe('Testing ContractClient class with ProviderSelection', () => {
   it('should use initial gateway url if useExternalWeb3 is true and contract logic passes', async () => {
     contractClient.web3Manager.web3Config.useExternalWeb3 = true
 
-    sinon.stub(contractClient.web3.eth, 'Contract').callsFake((arg1, arg2) => { return arg1 })
+    sinon.stub(contractClient.web3Manager.web3.eth, 'Contract').callsFake((arg1, arg2) => { return arg1 })
 
     const initWithProviderSelectionSpy = sinon.spy(contractClient, 'initWithProviderSelection')
     const consoleSpy = sinon.spy(console, 'error')
@@ -178,7 +181,7 @@ describe('Testing ContractClient class with ProviderSelection', () => {
   it('should log error if useExternalWeb3 is true and contract logic fails', async () => {
     contractClient.web3Manager.web3Config.useExternalWeb3 = true
 
-    sinon.stub(contractClient.web3.eth, 'Contract').callsFake((arg1, arg2) => { throw new Error('Bad provider') })
+    sinon.stub(contractClient.web3Manager.web3.eth, 'Contract').callsFake((arg1, arg2) => { throw new Error('Bad provider') })
 
     const initWithProviderSelectionSpy = sinon.spy(contractClient, 'initWithProviderSelection')
     const consoleSpy = sinon.spy(console, 'error')

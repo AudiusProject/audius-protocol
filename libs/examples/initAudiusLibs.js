@@ -6,7 +6,7 @@ const ethContractsConfig = require('../eth-contracts/config.json')
 
 const creatorNodeEndpoint = 'http://localhost:4000'
 const identityServiceEndpoint = 'http://localhost:7000'
-const dataWeb3ProviderEndpoints = ['http://localhost:8547', 'http://localhost:8545']
+const dataWeb3ProviderEndpoints = ['http://localhost:8545', 'http://localhost:8545']
 // const dataWeb3ProviderEndpoint = 'http://localhost:8545'
 const ethWeb3ProviderEndpoint = 'http://localhost:8546'
 const isServer = true

@@ -27,8 +27,6 @@ class ProviderSelection extends ServiceSelection {
     const web3 = new Web3(web3Manager.provider(filteredServices[0], 10000))
     web3Manager.setWeb3(web3)
 
-    // TODO: remove this. instead use web3Manager.getWeb3()
-    client.web3 = web3
   }
 
   getServicesSize () {

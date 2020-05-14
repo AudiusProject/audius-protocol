@@ -26,7 +26,7 @@ class UserFactoryClient extends ContractClient {
     Utils.checkStrLen(handle, 16)
 
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.web3Manager.getWeb3().eth.net.getId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getAddUserRequestData(
       chainId,
@@ -299,7 +299,15 @@ class UserFactoryClient extends ContractClient {
    */
   async getUpdateNonceAndSig (generatorFn, userId, newValue, privateKey) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3Manager.getWeb3().eth.net.getId()
+    let chainId
+    // getUpdateNonceAndSig() may fail with a bad initial gateway
+    // if so, re-init logic
+    try {
+      chainId = await this.web3Manager.getWeb3().eth.net.getId()
+    } catch (e) {
+      this.init() // TODO: will go into infinite loop if all gateways are bad
+      return this.getUpdateNonceAndSig(generatorFn, userId, newValue, privateKey)
+    }
     const contractAddress = await this.getAddress()
     const signatureData = generatorFn(chainId, contractAddress, userId, newValue, nonce)
     let sig
