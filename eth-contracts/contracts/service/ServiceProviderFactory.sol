@@ -13,6 +13,7 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32 private governanceKey;
     bytes32 private serviceTypeManagerKey;
     address private deployerAddress;
+    uint private lockupDuration;
 
     /// @dev - Stores following entities
     ///        1) Directly staked amount by SP, not including delegators
@@ -30,7 +31,13 @@ contract ServiceProviderFactory is RegistryContract {
         uint maxAccountStake;
     }
 
-    // Mapping of service provider address to details
+    /// @dev - Data structure for time delay during withdrawal
+    struct DecreaseStakeRequest {
+        uint decreaseAmount;
+        uint lockupExpiryBlock;
+    }
+
+    //Mapping of service provider address to details
     mapping(address => ServiceProviderDetails) spDetails;
 
     /// @dev - Minimum staked by service provider account deployer
@@ -71,6 +78,8 @@ contract ServiceProviderFactory is RegistryContract {
     /// @notice - stores all the services registered by a provider. for each address,
     /// provides the ability to lookup by service type and see all registered services
     mapping(address => mapping(bytes32 => uint[])) serviceProviderAddressToId;
+
+    mapping(address => DecreaseStakeRequest) decreaseStakeRequests;
 
     event RegisteredServiceProvider(
       uint _spID,
@@ -122,6 +131,9 @@ contract ServiceProviderFactory is RegistryContract {
 
         // Configure direct minimum stake for deployer
         minDeployerStake = 5 * 10**uint256(DECIMALS);
+
+        // 10 blocks for lockup duration
+        lockupDuration = 10;
 
         RegistryContract.initialize();
     }
@@ -325,13 +337,14 @@ contract ServiceProviderFactory is RegistryContract {
         return newStakeAmount;
     }
 
-    function decreaseStake(
-        uint256 _decreaseStakeAmount
-    ) external returns (uint newTotalStake)
+    function requestDecreaseStake(uint _decreaseStakeAmount)
+    external returns (uint newStakeAmount)
     {
-        _requireIsInitialized();
-
-        // Confirm owner has an endpoint
+        // Confirm requester has an endpoint
+        require(
+            !decreaseRequestPending(msg.sender), 
+            "Request already pending"
+        );
         require(
             spDetails[msg.sender].numberOfEndpoints > 0,
             "Registered endpoint required to decrease stake"
@@ -348,20 +361,59 @@ contract ServiceProviderFactory is RegistryContract {
             currentStakeAmount - _decreaseStakeAmount > 0,
             "Please deregister endpoints to remove all stake");
 
+        decreaseStakeRequests[msg.sender] = DecreaseStakeRequest({
+            decreaseAmount: _decreaseStakeAmount,
+            lockupExpiryBlock: block.number + lockupDuration
+        });
+
+        return currentStakeAmount - _decreaseStakeAmount;
+    }
+
+    function cancelDecreaseStakeRequest() external
+    {
+        require(decreaseRequestPending(msg.sender), "Decrease stake request must be pending");
+
+        // Clear decrease stake request
+        decreaseStakeRequests[msg.sender] = DecreaseStakeRequest({
+            decreaseAmount: 0,
+            lockupExpiryBlock: 0
+        });
+    }
+
+    function decreaseStake() external returns (uint newTotalStake)
+    {
+        _requireIsInitialized();
+
+        require(decreaseRequestPending(msg.sender), "Decrease stake request must be pending");
+        require(
+            decreaseStakeRequests[msg.sender].lockupExpiryBlock <= block.number,
+            "Lockup must be expired"
+        );
+
+        StakingInterface stakingContract = StakingInterface(
+            registry.getContract(stakingProxyOwnerKey)
+        );
+
         // Decrease staked token amount for msg.sender
-        stakingContract.unstakeFor(msg.sender, _decreaseStakeAmount);
+        stakingContract.unstakeFor(msg.sender, decreaseStakeRequests[msg.sender].decreaseAmount);
 
         // Query current stake
         uint newStakeAmount = stakingContract.totalStakedFor(msg.sender);
 
         // Update deployer total
-        spDetails[msg.sender].deployerStake -= _decreaseStakeAmount;
+        spDetails[msg.sender].deployerStake -= decreaseStakeRequests[msg.sender].decreaseAmount;
 
         // Confirm both aggregate account balance and directly staked amount are valid
         this.validateAccountStakeBalance(msg.sender);
 
         // Indicate this service provider is within bounds
         spDetails[msg.sender].validBounds = true;
+
+        // Clear decrease stake request
+        decreaseStakeRequests[msg.sender] = DecreaseStakeRequest({
+            decreaseAmount: 0,
+            lockupExpiryBlock: 0
+        });
 
         emit UpdatedStakeAmount(
             msg.sender,
@@ -504,6 +556,15 @@ contract ServiceProviderFactory is RegistryContract {
         );
     }
 
+    function getPendingDecreaseStakeRequest(address _sp)
+    external view returns (uint amount, uint lockupExpiryBlock)
+    {
+        return (
+            decreaseStakeRequests[_sp].decreaseAmount,
+            decreaseStakeRequests[_sp].lockupExpiryBlock
+        ); 
+    }
+
     /// @notice Validate that the total service provider balance is between the min and max stakes for all their registered services
     //          Validates that direct stake for sp is also above minimum
     function validateAccountStakeBalance(address sp)
@@ -544,5 +605,16 @@ contract ServiceProviderFactory is RegistryContract {
             // Indicate this service provider is within bounds
             spDetails[_serviceProvider].validBounds = true;
         }
+    }
+
+    /**
+     * @notice Boolean indicating whether a decrease request has been initiated
+     */
+    function decreaseRequestPending(address _serviceProvider) internal view returns (bool pending) 
+    {
+        return (
+            (decreaseStakeRequests[_serviceProvider].lockupExpiryBlock > 0) &&
+            (decreaseStakeRequests[_serviceProvider].decreaseAmount > 0)
+        );
     }
 }
