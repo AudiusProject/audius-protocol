@@ -299,28 +299,28 @@ contract('DelegateManager', async (accounts) => {
     })
 
     it('single delegator basic operations', async () => {
-      // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
 
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       let initialSpStake = totalStakedForSP
-      let initialDelegateAmount = _lib.audToWeiBN(60)
+      let delegateAmount = _lib.audToWeiBN(60)
+
+      let minDel = await delegateManager.getMinDelegationAmount()
+      assert.isTrue(minDel.lte(delegateAmount), 'Must be above min delegation')
 
       // Approve staking transfer
       await token.approve(
         stakingAddress,
-        initialDelegateAmount,
+        delegateAmount,
         { from: delegatorAccount1 })
 
-      let delegators = await delegateManager.getDelegatorsList(stakerAccount)
       await delegateManager.delegateStake(
         stakerAccount,
-        initialDelegateAmount,
+        delegateAmount,
         { from: delegatorAccount1 })
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
-      delegators = await delegateManager.getDelegatorsList(stakerAccount)
-
+      let delegators = await delegateManager.getDelegatorsList(stakerAccount)
       let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
       let delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
       let delegatedStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(
@@ -341,23 +341,39 @@ contract('DelegateManager', async (accounts) => {
         'Sum of Staking.sol equals SPFactory and DelegateManager'
       )
 
-      // Submit request to undelegate
+      // Increase delegated stake
+      let increaseAmount = _lib.audToWeiBN(5)
+      await token.approve(
+        stakingAddress,
+        increaseAmount,
+        { from: delegatorAccount1 })
+      await delegateManager.delegateStake(
+        stakerAccount,
+        increaseAmount,
+        { from: delegatorAccount1 })
+      assert.isTrue(
+        (await delegateManager.getTotalDelegatorStake(delegatorAccount1)).eq(delegatedStake.add(increaseAmount)),
+        'Confirm increase')
+
+      delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+
+      // Submit request to undelegate all stake
       await delegateManager.requestUndelegateStake(
         stakerAccount,
-        initialDelegateAmount,
+        delegatedStake,
         { from: delegatorAccount1 }
       )
 
       // Confirm lockup amount is registered
       let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
       assert.isTrue(
-        undelegateRequestInfo.amount.eq(initialDelegateAmount),
+        undelegateRequestInfo.amount.eq(delegatedStake),
         'Expected amount not found in lockup')
 
       let totalLockedDelegation =
         await delegateManager.getTotalLockedDelegationForServiceProvider(stakerAccount)
       assert.isTrue(
-        totalLockedDelegation.eq(initialDelegateAmount),
+        totalLockedDelegation.eq(delegatedStake),
         'Expected amount not found in total lockup for SP')
 
       // Try to undelegate stake immediately, confirm failure
@@ -369,9 +385,9 @@ contract('DelegateManager', async (accounts) => {
       await _lib.assertRevert(
         delegateManager.requestUndelegateStake(
           stakerAccount,
-          initialDelegateAmount,
+          delegatedStake,
           { from: delegatorAccount1 }),
-          'No pending lockup expected'
+        'No pending lockup expected'
       )
 
       // Advance to valid block
@@ -391,7 +407,7 @@ contract('DelegateManager', async (accounts) => {
       assert.equal(delegators.length, 0, 'Expect no remaining delegators')
       assert.equal(delegatedStake, 0, 'Expect no remaining total delegate stake')
       assert.equal(totalLockedDelegation, 0, 'Expect no remaining locked stake for SP')
-      assert.isTrue(initialSpStake.eq(totalStakedForSP),'Staking.sol back to initial value')
+      assert.isTrue(initialSpStake.eq(totalStakedForSP), 'Staking.sol back to initial value')
     })
 
     it('single delegator + claim', async () => {
@@ -408,7 +424,7 @@ contract('DelegateManager', async (accounts) => {
         initialDelegateAmount,
         { from: delegatorAccount1 })
 
-      await delegateManager.delegateStake(
+      let tx = await delegateManager.delegateStake(
         stakerAccount,
         initialDelegateAmount,
         { from: delegatorAccount1 })
@@ -452,7 +468,6 @@ contract('DelegateManager', async (accounts) => {
     })
 
     it('single delegator + claim + slash', async () => {
-      // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
 
@@ -501,8 +516,82 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue((totalInStakingContract.sub(slashAmount)).eq(totalInStakingAfterSlash), 'Expected slash value')
     })
 
+    it('slash restrictions', async () => {
+      // Deregister endpoint, removing all stake
+      await _lib.deregisterServiceProvider(
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint,
+        stakerAccount)
+
+      // Perform slash functions
+      // Called from mockGovernance
+      await _lib.assertRevert(
+        mockGovernance.testSlash(DEFAULT_AMOUNT, slasherAccount),
+        'Cannot slash more than total currently staked')
+
+      await _lib.assertRevert(
+        mockGovernance.testSlash(DEFAULT_AMOUNT.add(_lib.toBN(4)), stakerAccount2),
+        'Cannot slash more than total currently staked')
+
+      // Transfer 1000 tokens to delegator
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
+
+      // Delegate equal stake to stakerAccount2
+      // Approve staking transfer
+      await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: delegatorAccount1 })
+
+      await delegateManager.delegateStake(
+        stakerAccount2,
+        DEFAULT_AMOUNT,
+        { from: delegatorAccount1 })
+
+      // Deregister endpoint, removing all direct stake
+      await _lib.deregisterServiceProvider(
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint1,
+        stakerAccount2)
+
+      await _lib.assertRevert(
+        mockGovernance.testSlash(DEFAULT_AMOUNT, stakerAccount2),
+        'Service Provider stake required')
+    })
+
+    // TODO: Revisit below test case and remove unneeded validation if necessary
+    // Test case still in progress
+    it.skip('WIP - claim restriction on staking balance', async () => {
+      // Transfer 1000 tokens to delegator
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
+
+      let initialDelegateAmount = _lib.audToWeiBN(60)
+
+      // Fund new claim
+      await claimsManager.initiateRound({ from: controllerAddress })
+      let fundBlock = await claimsManager.getLastFundBlock()
+      let stakedAtFundBlock = await staking.totalStakedForAt(stakerAccount, fundBlock)
+      console.log(stakedAtFundBlock)
+      console.log('deregstering')
+
+      // Deregister endpoint, removing all stake
+      await _lib.deregisterServiceProvider(
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint,
+        stakerAccount,
+        { from: stakerAccount })
+
+      console.log('deregistered')
+      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      console.log(spDetails)
+      assert.isTrue(
+        stakedAtFundBlock.lte(spDetails.maxAccountStake),
+        'Must be less than account max')
+      // This calls fails maximum bounds check since the max is now zero with no registered endpoint
+      await delegateManager.claimRewards({ from: stakerAccount })
+    })
+
     it('40 delegators to one SP + claim', async () => {
-      // TODO: Validate all
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
 
       let numDelegators = 40
@@ -715,6 +804,39 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
+    it('validate undelegate request restrictions', async () => {
+      await _lib.assertRevert(
+        delegateManager.cancelUndelegateStake({ from: delegatorAccount1 }),
+        'Pending lockup expected')
+      await _lib.assertRevert(
+        delegateManager.undelegateStake({ from: delegatorAccount1 }),
+        'Pending lockup expected')
+      await _lib.assertRevert(
+        delegateManager.requestUndelegateStake(stakerAccount, 10, { from: delegatorAccount1 }),
+        'Delegator must be staked for SP')
+
+      let initialDelegateAmount = _lib.audToWeiBN(60)
+      // Approve staking transfer for delegator 1
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      // Stake initial value for delegator 1
+      await delegateManager.delegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      // Try and undelegate more than available
+      await _lib.assertRevert(
+        delegateManager.requestUndelegateStake(
+          stakerAccount,
+          initialDelegateAmount.add(_lib.toBN(10)), { from: delegatorAccount1 }),
+        'Cannot decrease greater than currently staked for this ServiceProvider'
+      )
+    })
+
     it('3 delegators + pending claim + undelegate restrictions', async () => {
       const delegatorAccount2 = accounts[5]
       const delegatorAccount3 = accounts[6]
@@ -792,7 +914,7 @@ contract('DelegateManager', async (accounts) => {
         delegateManager.delegateStake(
           stakerAccount,
           initialDelegateAmount,
-          { from: delegatorAccount1 }),
+          { from: delegatorAccount2 }),
         'Delegation not permitted for SP pending claim'
       )
 
@@ -1059,6 +1181,21 @@ contract('DelegateManager', async (accounts) => {
       await delegateManager.undelegateStake({ from: delegatorAccount1 })
       assert.equal(_lib.fromBN(await delegateManager.getTotalDelegatorStake(delegatorAccount1)), 0, 'No stake expected')
       assert.equal((await delegateManager.getDelegatorsList(stakerAccount)).length, 0, 'No delegators expected')
+    })
+
+    it('caller restriction verification', async () => {
+      await _lib.assertRevert(
+        delegateManager.updateMaxDelegators(10, { from: accounts[3] }),
+        'Only callable from governance'
+      )
+      await _lib.assertRevert(
+        delegateManager.updateMinDelegationAmount(10, { from: accounts[3] }),
+        'Only callable from governance'
+      )
+      await _lib.assertRevert(
+        delegateManager.slash(10, slasherAccount),
+        'Only callable from governance'
+      )
     })
   })
 })

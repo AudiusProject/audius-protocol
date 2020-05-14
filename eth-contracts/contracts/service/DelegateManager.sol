@@ -260,11 +260,6 @@ contract DelegateManager is RegistryContract {
         address serviceProvider = undelegateRequests[delegator].serviceProvider;
         uint unstakeAmount = undelegateRequests[delegator].amount;
 
-        require(
-            delegatorExistsForSP(delegator, serviceProvider),
-            "Delegator must be staked for SP"
-        );
-
         // Stake on behalf of target service provider
         StakingInterface(
             registry.getContract(stakingProxyOwnerKey)
@@ -431,7 +426,7 @@ contract DelegateManager is RegistryContract {
         _requireIsInitialized();
         require(
             msg.sender == registry.getContract(governanceKey),
-            "Slash only callable from governance contract"
+            "Only callable from governance contract"
         );
         StakingInterface stakingContract = StakingInterface(
             registry.getContract(stakingProxyOwnerKey)
@@ -443,9 +438,8 @@ contract DelegateManager is RegistryContract {
 
         // Amount stored in staking contract for owner
         uint totalBalanceInStakingPreSlash = stakingContract.totalStakedFor(_slashAddress);
-        require(totalBalanceInStakingPreSlash > 0, "Stake required prior to slash");
         require(
-            totalBalanceInStakingPreSlash > _amount,
+            (totalBalanceInStakingPreSlash >= _amount),
             "Cannot slash more than total currently staked");
 
         // Amount in sp factory for slash target
@@ -453,6 +447,7 @@ contract DelegateManager is RegistryContract {
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
 
         // Decrease value in Staking contract
+        // A value of zero slash will fail in staking, reverting this transaction
         stakingContract.slash(_amount, _slashAddress);
         uint totalBalanceInStakingAfterSlash = stakingContract.totalStakedFor(_slashAddress);
 

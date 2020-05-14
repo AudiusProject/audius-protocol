@@ -122,7 +122,23 @@ contract('ClaimsManager', async (accounts) => {
     // Get funds per claim
     let fundsPerRound = await claimsManager.getFundsPerRound()
 
+    // Try and initiate from invalid address
+    await _lib.assertRevert(
+      claimsManager.initiateRound({ from: accounts[8] }),
+      'Round must be initiated from account with staked value or contract deployer')
+
+    assert.isFalse((await claimsManager.claimPending(staker)), 'Expect no pending claim')
+
     await claimsManager.initiateRound({ from: controllerAddress })
+
+    // Confirm a claim is pending
+    assert.isTrue((await claimsManager.claimPending(staker)), 'Expect pending claim')
+
+    // Try and directly initiate claim
+    await _lib.assertRevert(
+      claimsManager.processClaim(staker, 0),
+      'ProcessClaim only accessible to DelegateManager')
+
     await mockDelegateManager.testProcessClaim(staker, 0)
 
     totalStaked = await staking.totalStaked()
@@ -132,10 +148,19 @@ contract('ClaimsManager', async (accounts) => {
       'Expect single round of funding + initial stake at this time'
     )
 
+    assert.isTrue(
+      (await claimsManager.getTotalClaimedInRound()).eq(fundsPerRound),
+      'All funds expected to be claimed')
+
     // Confirm another claim cannot be immediately funded
     await _lib.assertRevert(
       claimsManager.initiateRound({ from: controllerAddress }),
       'Required block difference not met'
+    )
+
+    await _lib.assertRevert(
+      mockDelegateManager.testProcessClaim(staker, 0),
+      'Claim already processed for user'
     )
   })
 
@@ -241,5 +266,26 @@ contract('ClaimsManager', async (accounts) => {
     await claimsManager.updateFundingAmount(newAmount, { from: controllerAddress })
     let updatedFundingAmount = await claimsManager.getFundsPerRound()
     assert.isTrue(newAmount.eq(updatedFundingAmount), 'Expect updated funding amount')
+  })
+
+  it('minimum bound violation during claim processing,', async () => {
+    let invalidAmount = _lib.audToWeiBN(5)
+    // Stake default amount
+    await approveTransferAndStake(invalidAmount, staker)
+    await claimsManager.initiateRound({ from: controllerAddress })
+    await _lib.assertRevert(
+      mockDelegateManager.testProcessClaim(staker, 0),
+      'Minimum stake bounds violated at fund block')
+  })
+
+  it('maximum bound violation during claim processing,', async () => {
+    // Exactly 1 AUD over max bound
+    let invalidAmount = _lib.audToWeiBN(1000001)
+    // Stake default amount
+    await approveTransferAndStake(invalidAmount, staker)
+    await claimsManager.initiateRound({ from: controllerAddress })
+    await _lib.assertRevert(
+      mockDelegateManager.testProcessClaim(staker, 0),
+      'Maximum stake bounds violated at fund block')
   })
 })
