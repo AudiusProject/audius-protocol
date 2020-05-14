@@ -184,13 +184,20 @@ contract('DelegateManager', async (accounts) => {
   }
 
   const decreaseRegisteredProviderStake = async (decrease, account) => {
-    // Approve token transfer from staking contract to account
-    let tx = await serviceProviderFactory.decreaseStake(
-      decrease,
-      { from: account })
+    try {
+      // Request decrease in stake
+      await serviceProviderFactory.requestDecreaseStake(decrease, { from: account })
 
-    let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
-    // console.dir(args, { depth: 5 })
+      let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(account)
+      // Advance to valid block
+      await time.advanceBlockTo(requestInfo.lockupExpiryBlock)
+      // Approve token transfer from staking contract to account
+      await serviceProviderFactory.decreaseStake({ from: account })
+    } catch (e) {
+      // Cancel request
+      await serviceProviderFactory.cancelDecreaseStakeRequest({ from: account })
+      throw e
+    }
   }
 
   const getAccountStakeInfo = async (account, print = false) => {
