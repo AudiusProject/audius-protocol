@@ -248,7 +248,6 @@ contract ServiceProviderFactory is RegistryContract {
         delete serviceProviderInfo[_serviceType][deregisteredID];
         // Reset id, update array
         uint spTypeLength = serviceProviderAddressToId[msg.sender][_serviceType].length;
-        bool idFound = false;
         for (uint i = 0; i < spTypeLength; i ++) {
             if (serviceProviderAddressToId[msg.sender][_serviceType][i] == deregisteredID) {
                 // Overwrite element to be deleted with last element in array
@@ -256,11 +255,9 @@ contract ServiceProviderFactory is RegistryContract {
                 // Reduce array size, exit loop
                 serviceProviderAddressToId[msg.sender][_serviceType].length--;
                 // Confirm this ID has been found for the service provider
-                idFound = true;
                 break;
             }
         }
-        require(idFound == true, "Failed to find service type and ID for owner");
 
         // Decrement number of endpoints for this address
         spDetails[msg.sender].numberOfEndpoints -= 1;

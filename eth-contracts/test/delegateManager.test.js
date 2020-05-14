@@ -528,7 +528,7 @@ contract('DelegateManager', async (accounts) => {
       // Called from mockGovernance
       await _lib.assertRevert(
         mockGovernance.testSlash(DEFAULT_AMOUNT, slasherAccount),
-        'Stake required prior to slash')
+        'Cannot slash more than total currently staked')
 
       await _lib.assertRevert(
         mockGovernance.testSlash(DEFAULT_AMOUNT.add(_lib.toBN(4)), stakerAccount2),

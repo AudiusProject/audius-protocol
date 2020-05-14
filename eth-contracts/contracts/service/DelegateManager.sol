@@ -428,6 +428,7 @@ contract DelegateManager is RegistryContract {
             msg.sender == registry.getContract(governanceKey),
             "Only callable from governance contract"
         );
+        require(_amount > 0, "Cannot slash zero");
         StakingInterface stakingContract = StakingInterface(
             registry.getContract(stakingProxyOwnerKey)
         );
@@ -438,9 +439,8 @@ contract DelegateManager is RegistryContract {
 
         // Amount stored in staking contract for owner
         uint totalBalanceInStakingPreSlash = stakingContract.totalStakedFor(_slashAddress);
-        require(totalBalanceInStakingPreSlash > 0, "Stake required prior to slash");
         require(
-            totalBalanceInStakingPreSlash >= _amount,
+            (totalBalanceInStakingPreSlash >= _amount),
             "Cannot slash more than total currently staked");
 
         // Amount in sp factory for slash target
