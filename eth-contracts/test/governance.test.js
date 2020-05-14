@@ -837,10 +837,12 @@ contract('Governance.sol', async (accounts) => {
 
         // Reduce stake amount below proposed slash amount
         const decreaseStakeAmount = _lib.audToWeiBN(700)
-        await serviceProviderFactory.decreaseStake(
-          decreaseStakeAmount,
-          { from: stakerAccount2 }
-        )
+        // Request decrease in stake
+        await serviceProviderFactory.requestDecreaseStake(decreaseStakeAmount, { from: stakerAccount2 })
+        let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount2)
+        // Advance to valid block
+        await time.advanceBlockTo(requestInfo.lockupExpiryBlock)
+        await serviceProviderFactory.decreaseStake({ from: stakerAccount2 })
         const decreasedStakeAcct2 = await staking.totalStakedFor.call(stakerAccount2)
         assert.isTrue(decreasedStakeAcct2.eq(initialStakeAcct2.sub(decreaseStakeAmount)))
 
