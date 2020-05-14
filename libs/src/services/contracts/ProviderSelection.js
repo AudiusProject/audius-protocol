@@ -1,6 +1,5 @@
 
 const Web3 = require('web3')
-
 const ServiceSelection = require('../../service-selection/ServiceSelection')
 
 /**
@@ -26,7 +25,6 @@ class ProviderSelection extends ServiceSelection {
     const filteredServices = this.filterOutKnownUnhealthy(this.getServices())
     const web3 = new Web3(web3Manager.provider(filteredServices[0], 10000))
     web3Manager.setWeb3(web3)
-
   }
 
   getServicesSize () {

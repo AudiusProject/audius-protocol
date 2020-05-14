@@ -26,9 +26,7 @@ class ContractClient {
   }
 
   async getEthNetId () {
-    console.log(`ContractClient [getEthNetId] calling init`)
     await this.init()
-    console.log(`ContractClient [getEthNetId] done callinig init`)
     const netId = await this.web3Manager.getWeb3().eth.net.getId()
 
     return netId
