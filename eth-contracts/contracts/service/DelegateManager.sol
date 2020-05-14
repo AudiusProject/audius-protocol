@@ -428,7 +428,6 @@ contract DelegateManager is RegistryContract {
             msg.sender == registry.getContract(governanceKey),
             "Only callable from governance contract"
         );
-        require(_amount > 0, "Cannot slash zero");
         StakingInterface stakingContract = StakingInterface(
             registry.getContract(stakingProxyOwnerKey)
         );
@@ -448,6 +447,7 @@ contract DelegateManager is RegistryContract {
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
 
         // Decrease value in Staking contract
+        // A value of zero slash will fail in staking, reverting this transaction
         stakingContract.slash(_amount, _slashAddress);
         uint totalBalanceInStakingAfterSlash = stakingContract.totalStakedFor(_slashAddress);
 
