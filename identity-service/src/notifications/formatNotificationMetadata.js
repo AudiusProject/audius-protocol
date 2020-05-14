@@ -81,8 +81,8 @@ function formatRemixCreate (notification, metadata) {
   const {
     'entity_id': trackId,
     'entity_owner_id': userId,
-    'remix_author_user_id': parentTrackUserId,
-    'remix_original_track_id': parentTrackId
+    'remix_parent_track_user_id': parentTrackUserId,
+    'remix_parent_track_id': parentTrackId
   } = notification.metadata
 
   return {
@@ -96,12 +96,12 @@ function formatRemixCreate (notification, metadata) {
 
 function formatRemixCosign (notification, metadata) {
   const {
-    'entity_id': trackId,
-    'entity_owner_id': originalAuthorId
+    'entity_id': trackId
   } = notification.metadata
+  const parentTrackUserId = notification.initiator
   return {
     type: NotificationType.RemixCosign,
-    parentTrackUser: metadata.users[originalAuthorId],
+    parentTrackUser: metadata.users[parentTrackUserId],
     remixTrack: metadata.tracks[trackId]
   }
 }

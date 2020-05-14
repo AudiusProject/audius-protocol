@@ -47,15 +47,14 @@ async function indexNotifications (notifications, tx, audiusLibs) {
 
     // Handle the 'remix create' notification type
     if (notif.type === notificationTypes.RemixCreate) {
-      let notificationTarget = notif.metadata.remix_original_track_id
+      let notificationTarget = notif.metadata.remix_parent_track_user_id
       const shouldNotify = await shouldNotifyUser(notificationTarget, 'remixes', tx)
       await _processRemixCreateNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
     }
 
     // Handle the 'favorite' notification type, track/album/playlist
     if (notif.type === notificationTypes.RemixCosign) {
-      let notificationTarget = notif.metadata.remix_original_track_id
-      await _processCosignNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget)
+      await _processCosignNotifications(audiusLibs, notif, blocknumber, timestamp, tx)
     }
 
     // Handle the 'create' notification type, track/album/playlist
@@ -538,7 +537,7 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
         ...notifWithAddProps,
         ...(mapNotification(notifWithAddProps, metadata))
       }
-      logger.debug('processCreateNotifications - about to generate message for favorite push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
+      logger.debug('processCreateNotifications - about to generate message for create push notification', msgGenNotif, metadata, mapNotification(msgGenNoqtif, metadata))
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Create.base](msgGenNotif)
@@ -553,7 +552,7 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
         pending: true
       })
     } catch (e) {
-      logger.error('processCreateNotifications - Could not send push notification for _processFollowNotifications for target user', notificationTarget, e)
+      logger.error('processCreateNotifications - Could not send push notification for _processCreateNotifications for target user', notificationTarget, e)
     }
   }))
 
@@ -601,12 +600,14 @@ async function _processRemixCreateNotifications (audiusLibs, notif, blocknumber,
   const {
     entity_id: childTrackId,
     entity_owner_id: childTrackUserId,
-    remix_author_user_id: parentTrackUserId,
-    remix_original_track_id: parentTrackId
+    remix_parent_track_user_id: parentTrackUserId,
+    remix_parent_track_id: parentTrackId
   } = notif.metadata
 
   // Create/Find a Notification and NotificationAction for this remix create event
   // NOTE: RemixCreate Notifications do NOT stack. A new notification is created for each remix creation
+  const momentTimestamp = moment(timestamp)
+  const updatedTimestamp = momentTimestamp.add(1, 's').format('YYYY-MM-DD HH:mm:ss')
 
   const [notification, created] = await models.Notification.findOrCreate({
     where: {
@@ -614,7 +615,7 @@ async function _processRemixCreateNotifications (audiusLibs, notif, blocknumber,
       userId: parentTrackUserId,
       entityId: childTrackId,
       blocknumber,
-      timestamp
+      timestamp: updatedTimestamp
     },
     transaction: tx
   })
@@ -685,7 +686,7 @@ async function _processRemixCreateNotifications (audiusLibs, notif, blocknumber,
   }
 }
 
-async function _processCosignNotifications (audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget) {
+async function _processCosignNotifications (audiusLibs, notif, blocknumber, timestamp, tx) {
   const {
     entity_id: childTrackId,
     entity_owner_id: childTrackUserId
@@ -739,7 +740,7 @@ async function _processCosignNotifications (audiusLibs, notif, blocknumber, time
       ...notif,
       actions: [{
         actionEntityType: actionEntityTypes.User,
-        actionEntityId: childTrackUserId,
+        actionEntityId: parentTrackUserId,
         blocknumber
       }, {
         actionEntityType: actionEntityTypes.Track,
@@ -766,7 +767,7 @@ async function _processCosignNotifications (audiusLibs, notif, blocknumber, time
     let types = [deviceType.Mobile, deviceType.Browser]
     await publish(msg, childTrackUserId, tx, true, title, types)
   } catch (e) {
-    logger.error('processCosignNotification - Could not send push notification for _processCosignNotifications for target user', notificationTarget, e)
+    logger.error('processCosignNotification - Could not send push notification for _processCosignNotifications for target user', notif.metadata.entity_owner_id, e)
   }
 }
 

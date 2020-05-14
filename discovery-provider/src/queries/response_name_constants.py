@@ -63,8 +63,8 @@ notification_entity_id = 'entity_id'
 notification_entity_owner_id = 'entity_owner_id'
 notification_collection_content = 'collection_content'
 
-notification_remix_author_user_id = 'remix_author_user_id'
-notification_remix_original_track_id = 'remix_original_track_id'
+notification_remix_parent_track_user_id = 'remix_parent_track_user_id'
+notification_remix_parent_track_id = 'remix_parent_track_id'
 
 notification_follower_id = 'follower_user_id'
 notification_followee_id = 'followee_user_id'

@@ -546,8 +546,8 @@ def notifications():
                             const.notification_entity_type: 'track',
                             const.notification_entity_id: entry.track_id,
                             const.notification_entity_owner_id: entry.owner_id,
-                            const.notification_remix_author_user_id: remix_track_parent_owner,
-                            const.notification_remix_original_track_id: remix_track_parent_id
+                            const.notification_remix_parent_track_user_id: remix_track_parent_owner,
+                            const.notification_remix_parent_track_id: remix_track_parent_id
                         }
                     }
                     remix_created_notifications.append(remix_notif)
