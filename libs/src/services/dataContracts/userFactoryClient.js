@@ -299,8 +299,7 @@ class UserFactoryClient extends ContractClient {
    */
   async getUpdateNonceAndSig (generatorFn, userId, newValue, privateKey) {
     const nonce = signatureSchemas.getNonce()
-    let chainId
-    chainId = await this.getEthNetId()
+    let chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = generatorFn(chainId, contractAddress, userId, newValue, nonce)
     let sig

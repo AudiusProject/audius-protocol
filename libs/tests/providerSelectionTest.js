@@ -107,7 +107,6 @@ describe('Testing ContractClient class with ProviderSelection', () => {
     // Initializing ethWeb3Manager with dummy data
     const web3Config = { url: 'https://audius.eth.network', ownerWallet: '0xvicky' }
     const ethWeb3Manager = new EthWeb3Manager(web3Config)
-    // ethWeb3Manager.web3 = { currentProvider: { host: 'https://eth.network' } }
     ethWeb3Manager.web3 = createWeb3Obj('https://eth.network')
     contractClient.web3Manager = ethWeb3Manager
 
