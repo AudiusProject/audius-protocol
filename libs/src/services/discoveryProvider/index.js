@@ -230,7 +230,40 @@ class DiscoveryProvider {
    */
   async getStemsForTrack (trackId) {
     const req = {
-      endpoint: `stems/${trackId}`
+      endpoint: `stems/${trackId}`,
+      queryParams: {
+        with_users: true
+      }
+    }
+    return this._makeRequest(req)
+  }
+
+  /**
+   * Gets all the remixes of a given trackId as an array of tracks.
+   * @param {number} trackId
+   * @returns {(Array)} track
+   */
+  async getRemixesOfTrack (trackId) {
+    const req = {
+      endpoint: `remixes/${trackId}/children`,
+      queryParams: {
+        with_users: true
+      }
+    }
+    return this._makeRequest(req)
+  }
+
+  /**
+   * Gets the remix parents of a given trackId as an array of tracks.
+   * @param {number} trackId
+   * @returns {(Array)} track
+   */
+  async getRemixTrackParents (trackId) {
+    const req = {
+      endpoint: `remixes/${trackId}/parent`,
+      queryParams: {
+        with_users: true
+      }
     }
     return this._makeRequest(req)
   }
