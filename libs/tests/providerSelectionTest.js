@@ -83,12 +83,6 @@ describe('Testing ContractClient class with ProviderSelection', () => {
      * using the public gateway
      */
   // it.skip('should use public gateway when initial audius gateway is unhealthy', async () => {
-  //   // const Web3Mock = sinon.stub()
-  //   // Web3Mock.prototype.what = sinon.stub().callsFake(() => { console.log('what the fuck') })
-  //   // const web3Mock = new Web3Mock()
-
-  //   // web3Mock.what()
-
   //   sinon.stub(contractClient.web3Manager.web3.eth, 'Contract')
   //     .onFirstCall()
   //     .throws(new Error('Bad provider'))
