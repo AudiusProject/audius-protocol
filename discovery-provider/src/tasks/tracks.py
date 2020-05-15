@@ -145,7 +145,6 @@ def update_remixes_table(session, track_record, track_metadata):
                     )
                     session.add(remix)
 
-
 def parse_track_event(
         self, session, update_task, entry, event_type, track_record, block_timestamp
     ):

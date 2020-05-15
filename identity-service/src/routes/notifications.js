@@ -27,7 +27,9 @@ const NotificationType = Object.freeze({
   MilestoneRepost: 'MilestoneRepost',
   MilestoneFavorite: 'MilestoneFavorite',
   MilestoneListen: 'MilestoneListen',
-  MilestoneFollow: 'MilestoneFollow'
+  MilestoneFollow: 'MilestoneFollow',
+  RemixCreate: 'RemixCreate',
+  RemixCosign: 'RemixCosign'
 })
 
 const ClientNotificationTypes = new Set([
@@ -155,6 +157,24 @@ const formatMilestone = (notification) => {
   }
 }
 
+const formatRemixCreate = (notification) => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    type: NotificationType.RemixCreate,
+    parentTrackId: notification.actions[0].actionEntityId,
+    childTrackId: notification.entityId
+  }
+}
+
+const formatRemixCosign = (notification) => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    type: NotificationType.RemixCosign,
+    parentTrackUserId: notification.actions[0].actionEntityId,
+    childTrackId: notification.entityId
+  }
+}
+
 const getCommonNotificationsFields = (notification) => ({
   id: notification.id,
   isHidden: notification.isHidden,
@@ -177,7 +197,9 @@ const notificationResponseMap = {
   [NotificationType.MilestoneRepost]: formatMilestone,
   [NotificationType.MilestoneFavorite]: formatMilestone,
   [NotificationType.MilestoneListen]: formatMilestone,
-  [NotificationType.MilestoneFollow]: formatMilestone
+  [NotificationType.MilestoneFollow]: formatMilestone,
+  [NotificationType.RemixCreate]: formatRemixCreate,
+  [NotificationType.RemixCosign]: formatRemixCosign
 }
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).
