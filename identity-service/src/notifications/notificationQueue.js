@@ -1,4 +1,3 @@
-const { deviceType } = require('./constants')
 const { drainMessageObject: sendAwsSns } = require('../awsSNS')
 const { sendBrowserNotification, sendSafariNotification } = require('../webPush')
 
@@ -33,10 +32,10 @@ async function addNotificationToBuffer (message, userId, tx, buffer, playSound, 
 
 async function drainPublishedMessages () {
   for (let bufferObj of PUSH_NOTIFICATIONS_BUFFER) {
-    if (bufferObj.types.includes(deviceType.Mobile)) {
+    if (bufferObj.types.includes('mobile')) {
       await sendAwsSns(bufferObj)
     }
-    if (bufferObj.types.includes(deviceType.Browser)) {
+    if (bufferObj.types.includes('browser')) {
       await Promise.all([
         sendBrowserNotification(bufferObj),
         sendSafariNotification(bufferObj)

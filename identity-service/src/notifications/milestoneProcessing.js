@@ -2,7 +2,6 @@ const models = require('../models')
 const { logger } = require('../logging')
 
 const {
-  deviceType,
   notificationTypes,
   actionEntityTypes
 } = require('./constants')
@@ -386,8 +385,8 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
       logger.debug(`processMilestone - message: ${msg}`)
       const title = notificationResponseTitleMap[notificationTypes.Milestone]
       let types = []
-      if (notifyMobile) types.push(deviceType.Mobile)
-      if (notifyBrowserPush) types.push(deviceType.Browser)
+      if (notifyMobile) types.push('mobile')
+      if (notifyBrowserPush) types.push('browser')
       await publish(msg, userId, tx, true, title, types)
     } catch (e) {
       // Log on error instead of failing
