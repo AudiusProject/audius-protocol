@@ -33,15 +33,15 @@ class RegistryClient {
         return
       }
 
-      return this.retryInit()
+      return this.retryInit(contractRegistryKey)
     }
   }
-  async retryInit () {
+  async retryInit (contractRegistryKey) {
     try {
       await this.selectNewEndpoint()
       const web3 = this.web3Manager.getWeb3()
       this.Registry = new web3.eth.Contract(this.contractABI, this.contractAddress)
-      return await this.getContract()
+      return await this.getContract(contractRegistryKey)
     } catch (e) {
       console.error(e.message)
     }
