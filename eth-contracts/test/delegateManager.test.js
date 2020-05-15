@@ -529,6 +529,12 @@ contract('DelegateManager', async (accounts) => {
         testDiscProvType,
         testEndpoint,
         stakerAccount)
+      // Query the resulting deregister operation
+      let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+      // Advance to valid block
+      await time.advanceBlockTo(requestInfo.lockupExpiryBlock)
+      // Finalize withdrawal
+      await serviceProviderFactory.decreaseStake({ from: stakerAccount })
 
       // Perform slash functions
       // Called from mockGovernance
@@ -559,6 +565,12 @@ contract('DelegateManager', async (accounts) => {
         testEndpoint1,
         stakerAccount2)
 
+      // Query the resulting deregister operation
+      requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount2)
+      // Advance to valid block
+      await time.advanceBlockTo(requestInfo.lockupExpiryBlock)
+      // Finalize withdrawal
+      await serviceProviderFactory.decreaseStake({ from: stakerAccount2 })
       await _lib.assertRevert(
         mockGovernance.testSlash(DEFAULT_AMOUNT, stakerAccount2),
         'Service Provider stake required')
@@ -1202,6 +1214,27 @@ contract('DelegateManager', async (accounts) => {
         delegateManager.slash(10, slasherAccount),
         'Only callable from governance'
       )
+    })
+
+    describe('service provider decrease stake behavior', async () => {
+      it('claimReward disabled if no active stake for SP', async () => {
+        // Request decrease all of stake
+        await _lib.deregisterServiceProvider(
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint,
+          stakerAccount)
+        // Initiate round
+        await claimsManager.initiateRound({ from: controllerAddress })
+        let acctInfo = await getAccountStakeInfo(stakerAccount)
+        let spStake = acctInfo.spFactoryStake
+        assert.isTrue(spStake.gt(_lib.toBN(0)), 'Expect non-zero stake')
+        // Transaction will fail since maximum stake for the account is now zero after the deregister
+        await _lib.assertRevert(
+          delegateManager.claimRewards({ from: stakerAccount }),
+          'Maximum stake bounds violated at fund block'
+        )
+      })
     })
   })
 })

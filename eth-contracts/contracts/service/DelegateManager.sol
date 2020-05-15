@@ -190,12 +190,7 @@ contract DelegateManager is RegistryContract {
         require(delegatorExistsForSP(delegator, _target), "Delegator must be staked for SP");
 
         // Confirm no pending delegation request
-        require(
-            (undelegateRequests[delegator].lockupExpiryBlock == 0) &&
-            (undelegateRequests[delegator].amount == 0) &&
-            (undelegateRequests[delegator].serviceProvider == address(0)),
-            "No pending lockup expected"
-        );
+        require(!undelegateRequestPending(delegator), "No pending lockup expected");
 
         // Ensure valid bounds
         uint currentlyDelegatedToSP = delegateInfo[delegator][_target];
@@ -220,12 +215,7 @@ contract DelegateManager is RegistryContract {
         _requireIsInitialized();
         address delegator = msg.sender;
         // Confirm pending delegation request
-        require(
-            (undelegateRequests[delegator].lockupExpiryBlock != 0) &&
-            (undelegateRequests[delegator].amount != 0) &&
-            (undelegateRequests[delegator].serviceProvider != address(0)),
-            "Pending lockup expected"
-        );
+        require(undelegateRequestPending(delegator), "Pending lockup expected");
         // Remove pending request
         undelegateRequests[delegator] = UndelegateStakeRequest({
             lockupExpiryBlock: 0,
@@ -240,12 +230,7 @@ contract DelegateManager is RegistryContract {
         address delegator = msg.sender;
 
         // Confirm pending delegation request
-        require(
-            (undelegateRequests[delegator].lockupExpiryBlock != 0) &&
-            (undelegateRequests[delegator].amount != 0) &&
-            (undelegateRequests[delegator].serviceProvider != address(0)),
-            "Pending lockup expected"
-        );
+        require(undelegateRequestPending(delegator), "Pending lockup expected");
 
         // Confirm lockup expiry has expired
         require(
@@ -647,6 +632,18 @@ contract DelegateManager is RegistryContract {
             registry.getContract(claimsManagerKey)
         );
         return claimsManager.claimPending(_sp);
+    }
+
+    /**
+     * @notice Boolean indicating whether a decrease request has been initiated
+     */
+    function undelegateRequestPending(address _delegator) internal view returns (bool pending) 
+    {
+        return (
+            (undelegateRequests[_delegator].lockupExpiryBlock != 0) &&
+            (undelegateRequests[_delegator].amount != 0) &&
+            (undelegateRequests[_delegator].serviceProvider != address(0))
+        );
     }
 }
 

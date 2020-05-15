@@ -450,13 +450,16 @@ contract('ServiceProvider test', async (accounts) => {
         testEndpoint,
         stakerAccount
       )
-
+      // Query the resulting deregister operation
+      let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+      // Advance to valid block
+      await time.advanceBlockTo(requestInfo.lockupExpiryBlock)
+      // Finalize withdrawal
+      await serviceProviderFactory.decreaseStake({ from: stakerAccount })
       assert.isTrue(deregTx.spID.eq(regTx.spID))
       assert.isTrue(deregTx.unstakeAmount.eq(DEFAULT_AMOUNT))
-
       // Confirm no stake is remaining in staking contract
       assert.isTrue((await staking.totalStakedFor(stakerAccount)).isZero())
-
       // Test 3
       assert.isTrue(
         (await token.balanceOf(stakerAccount)).eq(INITIAL_BAL),

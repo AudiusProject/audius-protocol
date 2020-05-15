@@ -228,14 +228,14 @@ contract ServiceProviderFactory is RegistryContract {
         bool unstaked = false;
         // owned by the service provider
         if (spDetails[msg.sender].numberOfEndpoints == 1) {
-            StakingInterface stakingContract = StakingInterface(
-                registry.getContract(stakingProxyOwnerKey)
-            );
             unstakeAmount = spDetails[msg.sender].deployerStake;
-            stakingContract.unstakeFor(msg.sender, unstakeAmount);
 
-            // Update deployer total
-            spDetails[msg.sender].deployerStake -= unstakeAmount;
+            // Submit request to decrease stake, overriding any pending request
+            decreaseStakeRequests[msg.sender] = DecreaseStakeRequest({
+                decreaseAmount: unstakeAmount,
+                lockupExpiryBlock: block.number + lockupDuration
+            });
+
             unstaked = true;
         }
 
@@ -409,7 +409,10 @@ contract ServiceProviderFactory is RegistryContract {
         spDetails[msg.sender].deployerStake -= decreaseStakeRequests[msg.sender].decreaseAmount;
 
         // Confirm both aggregate account balance and directly staked amount are valid
-        this.validateAccountStakeBalance(msg.sender);
+        // During registration this validation is bypassed since no endpoints remain
+        if (spDetails[msg.sender].numberOfEndpoints > 0) {
+            this.validateAccountStakeBalance(msg.sender);
+        }
 
         // Indicate this service provider is within bounds
         spDetails[msg.sender].validBounds = true;
