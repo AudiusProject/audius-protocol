@@ -283,7 +283,7 @@ contract('DelegateManager', async (accounts) => {
       await serviceProviderFactory.updateServiceProviderCut(stakerAccount2, 10, { from: stakerAccount2 })
     })
 
-    it('initial state + claim', async () => {
+    it('Initial state + claim', async () => {
       // Validate basic claim w/SP path
       let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
 
@@ -303,7 +303,7 @@ contract('DelegateManager', async (accounts) => {
         'Stake value in SPFactory and Staking.sol must be equal')
     })
 
-    it('single delegator basic operations', async () => {
+    it('Single delegator basic operations', async () => {
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
 
@@ -415,7 +415,7 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(initialSpStake.eq(totalStakedForSP), 'Staking.sol back to initial value')
     })
 
-    it('single delegator + claim', async () => {
+    it('Single delegator + claim', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
@@ -472,7 +472,7 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
     })
 
-    it('single delegator + claim + slash', async () => {
+    it('Single delegator + claim + slash', async () => {
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
 
@@ -716,7 +716,7 @@ contract('DelegateManager', async (accounts) => {
     })
 
     // Confirm a pending undelegate operation negates any claimed value
-    it('single delegator + undelegate + claim', async () => {
+    it('Single delegator + undelegate + claim', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
@@ -761,7 +761,7 @@ contract('DelegateManager', async (accounts) => {
     })
 
     // Confirm a pending undelegate operation is negated by a slash to the account
-    it('single delegator + undelegate + slash', async () => {
+    it('Single delegator + undelegate + slash', async () => {
       let initialDelegateAmount = _lib.audToWeiBN(60)
       let slashAmount = _lib.audToWeiBN(100)
 
@@ -947,7 +947,7 @@ contract('DelegateManager', async (accounts) => {
       await delegateManager.claimRewards({ from: stakerAccount })
     })
 
-    it('slash below sp bounds', async () => {
+    it('Slash below sp bounds', async () => {
       let preSlashInfo = await getAccountStakeInfo(stakerAccount, false)
       // Set slash amount to all but 1 AUD for this SP
       let diffAmount = _lib.audToWeiBN(1)
@@ -1004,7 +1004,7 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('delegator increase/decrease + SP direct stake bound validation', async () => {
+    it('Delegator increase/decrease + SP direct stake bound validation', async () => {
       let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       let delegateAmount = spDetails.minAccountStake
       let info = await getAccountStakeInfo(stakerAccount, false)
