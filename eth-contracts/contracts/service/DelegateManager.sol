@@ -304,13 +304,9 @@ contract DelegateManager is RegistryContract {
         return delegateInfo[delegator][serviceProvider];
     }
 
-    /*
-      TODO: See if its worth splitting processClaim into a separate tx?
-      Primary concern is around gas consumption...
-      This tx ends up minting tokens, transferring to staking, and doing below updates
-      Can be stress tested and split out if needed
-    */
-    // Distribute proceeds of reward
+    /**
+     * @notice Claim and distribute rewards to delegators as necessary
+     */
     function claimRewards() external {
         _requireIsInitialized();
 
@@ -415,6 +411,9 @@ contract DelegateManager is RegistryContract {
         );
     }
 
+    /**
+     * @notice Reduce current stake amount, only callable by governance
+     */
     function slash(uint _amount, address _slashAddress)
     external
     {

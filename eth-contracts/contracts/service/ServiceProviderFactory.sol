@@ -13,7 +13,7 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32 private governanceKey;
     bytes32 private serviceTypeManagerKey;
     address private deployerAddress;
-    uint private lockupDuration;
+    uint private decreaseStakeLockupDuration;
 
     /// @dev - Stores following entities
     ///        1) Directly staked amount by SP, not including delegators
@@ -134,7 +134,7 @@ contract ServiceProviderFactory is RegistryContract {
         minDeployerStake = 5 * 10**uint256(DECIMALS);
 
         // 10 blocks for lockup duration
-        lockupDuration = 10;
+        decreaseStakeLockupDuration = 10;
 
         RegistryContract.initialize();
     }
@@ -233,7 +233,7 @@ contract ServiceProviderFactory is RegistryContract {
             // Submit request to decrease stake, overriding any pending request
             decreaseStakeRequests[msg.sender] = DecreaseStakeRequest({
                 decreaseAmount: unstakeAmount,
-                lockupExpiryBlock: block.number + lockupDuration
+                lockupExpiryBlock: block.number + decreaseStakeLockupDuration
             });
 
             unstaked = true;
@@ -364,7 +364,7 @@ contract ServiceProviderFactory is RegistryContract {
 
         decreaseStakeRequests[msg.sender] = DecreaseStakeRequest({
             decreaseAmount: _decreaseStakeAmount,
-            lockupExpiryBlock: block.number + lockupDuration
+            lockupExpiryBlock: block.number + decreaseStakeLockupDuration
         });
 
         return currentStakeAmount - _decreaseStakeAmount;
@@ -507,6 +507,16 @@ contract ServiceProviderFactory is RegistryContract {
         spDetails[_serviceProvider].deployerCut = _cut;
     }
 
+    /// @notice Update service provider lockup duration
+    function updateDecreaseStakeLockupDuration(uint _duration) external {
+        _requireIsInitialized();
+        require(
+            msg.sender == registry.getContract(governanceKey),
+            "Only callable from governance"
+        );
+        decreaseStakeLockupDuration = _duration;
+    }
+
     /// @notice Denominator for deployer cut calculations
     function getServiceProviderDeployerCutBase()
     external pure returns (uint base)
@@ -564,6 +574,7 @@ contract ServiceProviderFactory is RegistryContract {
         );
     }
 
+    /// @notice Pending decrease stake request
     function getPendingDecreaseStakeRequest(address _sp)
     external view returns (uint amount, uint lockupExpiryBlock)
     {
@@ -571,6 +582,13 @@ contract ServiceProviderFactory is RegistryContract {
             decreaseStakeRequests[_sp].decreaseAmount,
             decreaseStakeRequests[_sp].lockupExpiryBlock
         ); 
+    }
+
+    /// @notice Current unstake lockup duration
+    function getDecreaseStakeLockupDuration()
+    external view returns (uint duration)
+    {
+        return decreaseStakeLockupDuration;
     }
 
     /// @notice Validate that the total service provider balance is between the min and max stakes for all their registered services

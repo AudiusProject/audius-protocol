@@ -140,7 +140,7 @@ contract('DelegateManager', async (accounts) => {
     await token.addMinter(claimsManager.address, { from: deployerAddress })
 
     mockGovernance = await MockGovernance.new()
-    await mockGovernance.initialize(registry.address, delegateManagerKey)
+    await mockGovernance.initialize(registry.address, delegateManagerKey, serviceProviderFactoryKey)
     await registry.addContract(governanceKey, mockGovernance.address)
 
     const delegateManagerInitializeData = encodeCall(
@@ -1261,6 +1261,26 @@ contract('DelegateManager', async (accounts) => {
         requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
         assert.isTrue((requestInfo.lockupExpiryBlock).eq(_lib.toBN(0)), 'Expected lockup expiry block reset')
         assert.isTrue((requestInfo.amount).eq(_lib.toBN(0)), 'Expected amount reset')
+      })
+
+      it('update lockup duration', async () => {
+        let duration = await serviceProviderFactory.getDecreaseStakeLockupDuration()
+        // Double decrease stake duration
+        let newDuration = duration.add(duration)
+        await _lib.assertRevert(
+          serviceProviderFactory.updateDecreaseStakeLockupDuration(newDuration),
+          'Only callable from governance'
+        )
+        await mockGovernance.updateDecreaseStakeLockupDuration(newDuration)
+        let updatedDuration = await serviceProviderFactory.getDecreaseStakeLockupDuration()
+        assert.isTrue(updatedDuration.eq(newDuration), 'Update not reflected')
+        let tx = await serviceProviderFactory.requestDecreaseStake(DEFAULT_AMOUNT.div(_lib.toBN(2)), { from: stakerAccount })
+        let blocknumber = _lib.toBN(tx.receipt.blockNumber)
+        let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+        assert.isTrue(
+          (blocknumber.add(updatedDuration)).eq(requestInfo.lockupExpiryBlock),
+          'Unexpected blocknumber'
+        )
       })
     })
   })
