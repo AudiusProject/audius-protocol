@@ -337,12 +337,16 @@ contract DelegateManager is RegistryContract {
         (,,bool withinBounds,,,) = spFactory.getServiceProviderDetails(msg.sender);
         require(withinBounds, "Service provider must be within bounds");
 
+        // Account for any pending locked up stake for the service provider
+        (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
+
         // Process claim for msg.sender
+        // Total locked parameter is equal to delegate locked up stake + service provider locked up stake 
         ClaimsManager(
             registry.getContract(claimsManagerKey)
         ).processClaim(
             msg.sender,
-            spDelegateInfo[msg.sender].totalLockedUpStake
+            (spDelegateInfo[msg.sender].totalLockedUpStake + spLockedStake)
         );
 
         // Amount stored in staking contract for owner
@@ -353,6 +357,11 @@ contract DelegateManager is RegistryContract {
 
         // Amount in sp factory for claimer
         (uint totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(msg.sender);
+
+        // Decrease total balance by any locked up stake
+        totalBalanceInSPFactory -= spLockedStake;
+
+        // Require active stake to claim any rewards
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
 
         // Amount in delegate manager staked to service provider
@@ -410,6 +419,7 @@ contract DelegateManager is RegistryContract {
         // Update total delegated to this SP
         spDelegateInfo[msg.sender].totalDelegatedStake += totalDelegatedStakeIncrease;
 
+        // Rewards directly allocated to service provider for their stake
         uint spRewardShare = (
           totalBalanceInSPFactory.mul(totalRewards)
         ).div(totalActiveFunds);
@@ -441,6 +451,12 @@ contract DelegateManager is RegistryContract {
         require(
             (totalBalanceInStakingPreSlash >= _amount),
             "Cannot slash more than total currently staked");
+
+        // Cancel any withdrawal request for this service provider
+        (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
+        if (spLockedStake > 0) {
+            spFactory.cancelDecreaseStakeRequest(_slashAddress);
+        }
 
         // Amount in sp factory for slash target
         (uint totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(_slashAddress);

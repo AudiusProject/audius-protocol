@@ -180,7 +180,6 @@ contract('DelegateManager', async (accounts) => {
       { from: account })
 
     let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
-    // console.dir(args, { depth: 5 })
   }
 
   const decreaseRegisteredProviderStake = async (decrease, account) => {
@@ -195,7 +194,7 @@ contract('DelegateManager', async (accounts) => {
       await serviceProviderFactory.decreaseStake({ from: account })
     } catch (e) {
       // Cancel request
-      await serviceProviderFactory.cancelDecreaseStakeRequest({ from: account })
+      await serviceProviderFactory.cancelDecreaseStakeRequest(account, { from: account })
       throw e
     }
   }
