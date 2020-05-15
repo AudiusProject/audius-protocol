@@ -133,6 +133,7 @@ class Track(Base):
     genre = Column(String)
     mood = Column(String)
     credits_splits = Column(String)
+    remix_of = Column(postgresql.JSONB, nullable=True)
     create_date = Column(String)
     release_date = Column(String)
     file_type = Column(String)
@@ -170,6 +171,7 @@ class Track(Base):
             f"genre={self.genre},"
             f"mood={self.mood},"
             f"credits_splits={self.credits_splits},"
+            f"remix_of={self.remix_of},"
             f"create_date={self.create_date},"
             f"release_date={self.release_date},"
             f"file_type={self.file_type},"
@@ -315,10 +317,21 @@ is_delete={self.is_delete}>"
 class Stem(Base):
     __tablename__ = "stems"
 
-    parent_track_id = Column(Integer, nullable=False, index=True)
-    child_track_id = Column(Integer, nullable=False, index=True)
+    parent_track_id = Column(Integer, nullable=False, index=False)
+    child_track_id = Column(Integer, nullable=False, index=False)
     PrimaryKeyConstraint(parent_track_id, child_track_id)
 
     def __repr__(self):
         return f"<Remix(parent_track_id={self.parent_track_id},\
             child_track_id={self.child_track_id})"
+
+class Remix(Base):
+    __tablename__ = "remixes"
+
+    parent_track_id = Column(Integer, nullable=False, index=False)
+    child_track_id = Column(Integer, nullable=False, index=False)
+    PrimaryKeyConstraint(parent_track_id, child_track_id)
+
+    def __repr__(self):
+        return f"<Remix(parent_track_id={self.parent_track_id},\
+child_track_id={self.child_track_id}>"

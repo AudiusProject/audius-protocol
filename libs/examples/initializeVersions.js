@@ -1,4 +1,4 @@
-const Web3 = require('web3')
+const Web3 = require('../src/web3')
 const AudiusLibs = require('../src/index')
 const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service']
 const dataWeb3ProviderEndpoint = 'https://sokol.poa.network:443'
