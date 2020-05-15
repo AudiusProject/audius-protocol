@@ -27,7 +27,7 @@ contract MockGovernance is RegistryContract {
         address _slashAddress
     ) external
     {
-        requireIsInitialized();
+        _requireIsInitialized();
 
         DelegateManager delegateManager = DelegateManager(
             registry.getContract(delegateManagerKey)
@@ -38,21 +38,21 @@ contract MockGovernance is RegistryContract {
     // Test only function
     function updateUndelegateLockupDuration(uint _duration) external
     {
-        requireIsInitialized();
+        _requireIsInitialized();
         DelegateManager(
             registry.getContract(delegateManagerKey)
         ).updateUndelegateLockupDuration(_duration);
     }
 
     function updateMinDelegationAmount(uint _minDelegationAmount) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         DelegateManager(
             registry.getContract(delegateManagerKey)
         ).updateMinDelegationAmount(_minDelegationAmount);
     }
 
     function updateMaxDelegators(uint _maxDelegators) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         DelegateManager(
             registry.getContract(delegateManagerKey)
         ).updateMaxDelegators(_maxDelegators);

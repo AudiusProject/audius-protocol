@@ -1,17 +1,27 @@
 import * as _lib from './_lib/lib.js'
-import {
-  Registry,
-  TestContract
-} from './_lib/artifacts.js'
+const encodeCall = require('../utils/encodeCall')
+
+export const Registry = artifacts.require('./contract/Registry')
+const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+export const TestContract = artifacts.require('./contract/TestContract')
 
 contract('Registry', async (accounts) => {
   const contractName = _lib.strings.test
 
-  let registry
+  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+
+  let registry0, initializeCallData, registryProxy, registry
 
   beforeEach(async () => {
-    registry = await Registry.new({ from: accounts[0] })
-    await registry.initialize({ from: accounts[0] })
+    registry0 = await Registry.new({ from: proxyDeployerAddress })
+    initializeCallData = encodeCall('initialize', [], [])
+    registryProxy = await AdminUpgradeabilityProxy.new(
+      registry0.address,
+      proxyAdminAddress,
+      initializeCallData,
+      { from: proxyDeployerAddress }
+    )
+    registry = await Registry.at(registryProxy.address)
   })
 
   it('Confirm unregistered contract request returns 0 address', async () => {
@@ -32,7 +42,7 @@ contract('Registry', async (accounts) => {
     await testContract.initialize(registry.address)
     let testContractAddress = testContract.address
 
-    let tx = await registry.addContract(contractName, testContractAddress)
+    let tx = await registry.addContract(contractName, testContractAddress, { from: proxyDeployerAddress })
     let txInfo = _lib.parseTx(tx)
 
     // assert event params are as expected
@@ -64,18 +74,80 @@ contract('Registry', async (accounts) => {
     assert.equal(regContractAddressVersionLatest, regContractAddressVersion1, 'Expected same contract address')
   })
 
+  it('Fail to add contract under already registered key', async () => {
+    const testContract = await TestContract.new()
+    await testContract.initialize(registry.address)
+
+    await registry.addContract(contractName, testContract.address, { from: proxyDeployerAddress })
+
+    const testContract2 = await TestContract.new()
+    await testContract2.initialize(registry.address)
+
+    await _lib.assertRevert(
+      registry.addContract(contractName, testContract2.address, { from: proxyDeployerAddress }),
+      "Registry::addContract:Contract already registered with given name."
+    )
+  })
+
+  it('Fail to add register 0 address', async () => {
+    await _lib.assertRevert(
+      registry.addContract(contractName, _lib.addressZero, { from: proxyDeployerAddress }),
+      "Registry::addContract:Cannot register zero address."
+    )
+  })
+
+  it('Fail to fetch contract with invalid version', async () => {
+    await _lib.assertRevert(
+      registry.getContract.call(contractName, 2),
+      "Registry::getContract:Index out of range _version."
+    )
+  })
+
+  it('Fail to remove unregistered contract', async () => {
+    await _lib.assertRevert(
+      registry.removeContract(contractName, { from: proxyDeployerAddress }),
+      "Registry::removeContract:Cannot remove - no contract registered with given _name."
+    )
+  })
+
+  it('Fail to upgrade unregistered contract', async () => {
+    const testContract = await TestContract.new()
+
+    await _lib.assertRevert(
+      registry.upgradeContract(contractName, testContract.address, { from: proxyDeployerAddress }),
+      "Registry::upgradeContract:Cannot upgrade - no contract registered with given _name."
+    )
+  })
+
+  it('Fail to kill contract', async () => {
+    const testContract = await TestContract.new()
+    await testContract.initialize(registry.address)
+
+    await _lib.assertRevert(
+      testContract.kill(),
+      "RegistryContract::kill:Registry address has not yet been set."
+    )
+
+    await registry.addContract(contractName, testContract.address, { from: proxyDeployerAddress })
+
+    await _lib.assertRevert(
+      testContract.kill(),
+      "RegistryContract::kill:Only registry can kill."
+    )
+  } )
+
   it('Should remove registered contract', async () => {
     let testContract = await TestContract.new()
     await testContract.initialize(registry.address)
     let testContractAddress = testContract.address
 
     // register contract and confirm successful registration
-    await registry.addContract(contractName, testContractAddress)
+    await registry.addContract(contractName, testContractAddress, { from: proxyDeployerAddress })
     let regContractAddress = await registry.getContract.call(contractName)
     assert.equal(testContractAddress, regContractAddress, 'Expected same contract address')
 
     // unregister contract and confirm event params as expected and registered address = 0x0
-    let removeTx = await registry.removeContract(contractName)
+    let removeTx = await registry.removeContract(contractName, { from: proxyDeployerAddress })
     let removeTxInfo = _lib.parseTx(removeTx)
     assert.equal(removeTxInfo.event.name, 'ContractRemoved', 'Expected same event name')
     assert.equal(_lib.toStr(removeTxInfo.event.args._name), _lib.toStr(contractName), 'Expected same contract name')
@@ -109,12 +181,12 @@ contract('Registry', async (accounts) => {
     let regContractAddress
 
     // register testContract1 -> get registered contract -> assert addresses match
-    await registry.addContract(contractName, testContract1.address)
+    await registry.addContract(contractName, testContract1.address, { from: proxyDeployerAddress })
     regContractAddress = await registry.getContract.call(contractName)
     assert.equal(testContract1.address, regContractAddress, 'Expected same contract address')
 
     // upgrade registered contract to testContract2 -> assert event params are as expected
-    upgradeTx = await registry.upgradeContract(contractName, testContract2.address)
+    upgradeTx = await registry.upgradeContract(contractName, testContract2.address, { from: proxyDeployerAddress })
     upgradeTxInfo = _lib.parseTx(upgradeTx)
 
     regContractAddress = await registry.getContract.call(contractName)
@@ -127,7 +199,7 @@ contract('Registry', async (accounts) => {
 
     // upgrade registered contract from testContract2 to testContract3 -> assert event params are as expected
     // ensures an upgraded contract can be upgraded again
-    upgradeTx = await registry.upgradeContract(contractName, testContract3.address)
+    upgradeTx = await registry.upgradeContract(contractName, testContract3.address, { from: proxyDeployerAddress })
     upgradeTxInfo = _lib.parseTx(upgradeTx)
 
     regContractAddress = await registry.getContract.call(contractName)
@@ -155,28 +227,40 @@ contract('Registry', async (accounts) => {
 
   it('Should upgrade registry and re-point all registry contracts', async () => {
     // register contract
-    let testContract = await TestContract.new()
+    const testContract = await TestContract.new()
     await testContract.initialize(registry.address)
-    let tx = await registry.addContract(contractName, testContract.address)
+    const tx = await registry.addContract(contractName, testContract.address, { from: proxyDeployerAddress })
 
     // deploy new registry
-    let registry2 = await Registry.new()
-    await registry2.initialize()
+    const registry2_0 = await Registry.new({ from: proxyDeployerAddress })
+    const registry2Proxy = await AdminUpgradeabilityProxy.new(
+      registry2_0.address,
+      proxyAdminAddress,
+      initializeCallData,
+      { from: proxyDeployerAddress }
+    )
+    const registry2 = await Registry.at(registry2Proxy.address)
 
     // re-point testContract to new Registry
     await testContract.setRegistry(registry2.address)
-    await registry2.addContract(contractName, testContract.address)
+    await registry2.addContract(contractName, testContract.address, { from: proxyDeployerAddress })
   })
 
   it('Should fail when a foreign account tries to re-point registry contracts to new registry', async () => {
     // register contract
-    let testContract = await TestContract.new()
+    const testContract = await TestContract.new()
     await testContract.initialize(registry.address)
-    let tx = await registry.addContract(contractName, testContract.address)
+    const tx = await registry.addContract(contractName, testContract.address, { from: proxyDeployerAddress })
 
     // deploy new registry
-    let registry2 = await Registry.new()
-    await registry2.initialize()
+    const registry2_0 = await Registry.new({ from: proxyDeployerAddress })
+    const registry2Proxy = await AdminUpgradeabilityProxy.new(
+      registry2_0.address,
+      proxyAdminAddress,
+      initializeCallData,
+      { from: proxyDeployerAddress }
+    )
+    const registry2 = await Registry.at(registry2Proxy.address)
 
     // attempt to re-point testContract to new registry from different account
     await _lib.assertRevert(

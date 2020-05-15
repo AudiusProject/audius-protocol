@@ -22,7 +22,7 @@ contract TestContract is RegistryContract {
     }
 
     function setX(uint _x) external {
-        requireIsInitialized();
+        _requireIsInitialized();
 
         x = _x;
     }

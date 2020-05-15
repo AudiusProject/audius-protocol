@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-import "./Staking.sol";
+import "../staking/Staking.sol";
 
 
 contract StakingUpgraded is Staking {

@@ -124,7 +124,7 @@ contract Governance is RegistryContract {
         string calldata _description
     ) external returns (uint256 proposalId)
     {
-        requireIsInitialized();
+        _requireIsInitialized();
 
         address proposer = msg.sender;
 
@@ -182,7 +182,7 @@ contract Governance is RegistryContract {
      * @param _vote - can be any of the values of the Vote enum
      */
     function submitProposalVote(uint256 _proposalId, Vote _vote) external {
-        requireIsInitialized();
+        _requireIsInitialized();
 
         address voter = msg.sender;
 
@@ -212,11 +212,11 @@ contract Governance is RegistryContract {
         uint256 endBlockNumber = startBlockNumber + votingPeriod;
         require(
             block.number > startBlockNumber && block.number <= endBlockNumber,
-            "Proposal votingPeriod has ended"
+            "Governance::submitProposalVote:Proposal votingPeriod has ended"
         );
 
         // Require vote is not None.
-        require(_vote != Vote.None, "Cannot submit None vote");
+        require(_vote != Vote.None, "Governance::submitProposalVote:Cannot submit None vote");
 
         // Record previous vote.
         Vote previousVote = proposals[_proposalId].votes[voter];
@@ -263,11 +263,11 @@ contract Governance is RegistryContract {
     function evaluateProposalOutcome(uint256 _proposalId)
     external returns (Outcome proposalOutcome)
     {
-        requireIsInitialized();
+        _requireIsInitialized();
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
-            "Must provide valid non-zero _proposalId"
+            "Governance::evaluateProposalOutcome:Must provide valid non-zero _proposalId."
         );
 
         // Require proposal has not already been evaluated.
@@ -284,7 +284,7 @@ contract Governance is RegistryContract {
             stakingContract.totalStakedForAt(
                 msg.sender, proposals[_proposalId].startBlockNumber
             ) > 0,
-            "Caller must be active staker with non-zero stake."
+            "Governance::evaluateProposalOutcome:Caller must be active staker with non-zero stake."
         );
 
         // Require proposal votingPeriod has ended.
@@ -292,7 +292,7 @@ contract Governance is RegistryContract {
         uint256 endBlockNumber = startBlockNumber + votingPeriod;
         require(
             block.number > endBlockNumber,
-            "Proposal votingPeriod must end before evaluation."
+            "Governance::evaluateProposalOutcome:Proposal votingPeriod must end before evaluation."
         );
 
         // Require registered contract address for provided registryKey has not changed.
@@ -301,7 +301,7 @@ contract Governance is RegistryContract {
         );
         require(
             targetContractAddress == proposals[_proposalId].targetContractAddress,
-            "Registered contract address for targetContractRegistryKey has changed"
+            "Governance::evaluateProposalOutcome:Registered contract address for targetContractRegistryKey has changed"
         );
 
         // Calculate outcome
@@ -358,7 +358,7 @@ contract Governance is RegistryContract {
      * @param _proposalId - id of the proposal
      */
     function vetoProposal(uint256 _proposalId) external {
-        requireIsInitialized();
+        _requireIsInitialized();
 
         require(msg.sender == guardianAddress, "Governance::vetoProposal:Only guardian can veto proposals.");
 
@@ -392,7 +392,7 @@ contract Governance is RegistryContract {
         bytes calldata _callData
     ) external
     {
-        requireIsInitialized();
+        _requireIsInitialized();
 
         require(
             msg.sender == guardianAddress,
@@ -403,7 +403,7 @@ contract Governance is RegistryContract {
         address targetContractAddress = registry.getContract(_targetContractRegistryKey);
         require(
             targetContractAddress != address(0x00),
-            "_targetContractRegistryKey must point to valid registered contract"
+            "Governance::guardianExecuteTransaction:_targetContractRegistryKey must point to valid registered contract"
         );
 
         (bool success, bytes memory returnData) = _executeTransaction(
@@ -423,7 +423,7 @@ contract Governance is RegistryContract {
         );
     }
 
-    // ========================================= Getters =========================================
+    // ========================================= Getter Functions =========================================
 
     /**
      * @notice Get proposal information by proposal Id
@@ -484,7 +484,7 @@ contract Governance is RegistryContract {
         return proposals[_proposalId].votes[_voter];
     }
 
-    // ========================================= Internal =========================================
+    // ========================================= Internal Functions =========================================
 
     /**
      * @notice Function to execute transaction

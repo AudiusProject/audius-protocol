@@ -131,7 +131,7 @@ contract ClaimsManager is RegistryContract {
      * @dev Permissioned to stakers or contract deployer
      */
     function initiateRound() external {
-        requireIsInitialized();
+        _requireIsInitialized();
         bool senderStaked = StakingInterface(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(msg.sender) > 0;
@@ -167,7 +167,7 @@ contract ClaimsManager is RegistryContract {
         uint _totalLockedForSP
     ) external returns (uint newAccountTotal)
     {
-        requireIsInitialized();
+        _requireIsInitialized();
         require(
             msg.sender == registry.getContract(delegateManagerKey),
             "ProcessClaim only accessible to DelegateManager"

@@ -19,7 +19,7 @@ module.exports = (deployer, network, accounts) => {
     }
     const outputFilePath = path.join(__dirname, 'migration-output.json')
     fs.removeSync(outputFilePath)
-    console.log(`Migration output values: ${outputValues}`)
+    console.log(`Migration output values: ${JSON.stringify(outputValues)}`)
     fs.writeFile(outputFilePath, JSON.stringify(outputValues), (err) => {
       if (err != null) {
         console.log(err)

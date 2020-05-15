@@ -10,6 +10,7 @@ import "../staking/Staking.sol";
 // Forwards ServiceProviderFactory functions as well
 contract MockStakingCaller is RegistryContract {
     uint max;
+    uint min;
     using SafeERC20 for ERC20;
     Staking staking = Staking(0);
     ERC20 internal stakingToken;
@@ -22,8 +23,10 @@ contract MockStakingCaller is RegistryContract {
         stakingAddress = _stakingAddress;
         staking = Staking(_stakingAddress);
         stakingToken = ERC20(_tokenAddress);
-        // Configure test max
-        max = 100000000 * 10**uint256(18);
+        // Configure test max = 1 million AUD
+        max = 1000000 * 10**uint256(18);
+        // Configure test min = 10 AUD
+        min = 10 * 10**uint256(18);
         RegistryContract.initialize();
     }
 
@@ -32,7 +35,7 @@ contract MockStakingCaller is RegistryContract {
         uint _amount,
         address _staker
     ) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         // pull tokens into contract
         stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
         // Approve transfer
@@ -46,7 +49,7 @@ contract MockStakingCaller is RegistryContract {
         address _accountAddress,
         uint256 _amount
     ) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         staking.stakeFor(_accountAddress, _amount);
     }
 
@@ -55,7 +58,7 @@ contract MockStakingCaller is RegistryContract {
         address _accountAddress,
         uint256 _amount
     ) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         staking.unstakeFor(_accountAddress, _amount);
     }
 
@@ -63,7 +66,7 @@ contract MockStakingCaller is RegistryContract {
         uint256 _amount,
         address _slashAddress
     ) external {
-        requireIsInitialized();
+        _requireIsInitialized();
         staking.slash(_amount, _slashAddress);
     }
 
@@ -77,7 +80,11 @@ contract MockStakingCaller is RegistryContract {
         uint minAccountStake,
         uint maxAccountStake)
     {
-        return (0, 0, true, 0, 0, max);
+        return (0, 0, true, 0, min, max);
+    }
+
+    function isInitialized() external view returns (bool) {
+        return _isInitialized();
     }
 }
 
