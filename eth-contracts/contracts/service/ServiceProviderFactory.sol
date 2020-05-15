@@ -37,7 +37,7 @@ contract ServiceProviderFactory is RegistryContract {
         uint lockupExpiryBlock;
     }
 
-    //Mapping of service provider address to details
+    /// @dev - Mapping of service provider address to details
     mapping(address => ServiceProviderDetails) spDetails;
 
     /// @dev - Minimum staked by service provider account deployer
@@ -79,6 +79,7 @@ contract ServiceProviderFactory is RegistryContract {
     /// provides the ability to lookup by service type and see all registered services
     mapping(address => mapping(bytes32 => uint[])) serviceProviderAddressToId;
 
+    /// @dev - Mapping of service provider -> decrease stake request
     mapping(address => DecreaseStakeRequest) decreaseStakeRequests;
 
     event RegisteredServiceProvider(
@@ -138,8 +139,8 @@ contract ServiceProviderFactory is RegistryContract {
         RegistryContract.initialize();
     }
 
-    /// @dev - Register a new endpoint to the account of msg.sender
-    ///        Transfers stake into staking pool
+    /// @notice - Register a new endpoint to the account of msg.sender
+    ///           Transfers stake into staking pool
     function register(
         bytes32 _serviceType,
         string calldata _endpoint,
@@ -213,8 +214,8 @@ contract ServiceProviderFactory is RegistryContract {
         return newServiceProviderID;
     }
 
-    /// @dev - Deregister an endpoint from the account of msg.sender
-    ///        Removes stake if this is the final endpoint remaining for account
+    /// @notice - Deregister an endpoint from the account of msg.sender
+    ///           Removes stake if this is the final endpoint remaining for account
     function deregister(
         bytes32 _serviceType,
         string calldata _endpoint
