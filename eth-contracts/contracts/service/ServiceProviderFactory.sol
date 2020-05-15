@@ -369,12 +369,16 @@ contract ServiceProviderFactory is RegistryContract {
         return currentStakeAmount - _decreaseStakeAmount;
     }
 
-    function cancelDecreaseStakeRequest() external
+    function cancelDecreaseStakeRequest(address _account) external
     {
-        require(decreaseRequestPending(msg.sender), "Decrease stake request must be pending");
+        require(
+          msg.sender == _account || msg.sender == registry.getContract(delegateManagerKey),
+          "Only callable from owner or DelegateManager"
+        );
+        require(decreaseRequestPending(_account), "Decrease stake request must be pending");
 
         // Clear decrease stake request
-        decreaseStakeRequests[msg.sender] = DecreaseStakeRequest({
+        decreaseStakeRequests[_account] = DecreaseStakeRequest({
             decreaseAmount: 0,
             lockupExpiryBlock: 0
         });
