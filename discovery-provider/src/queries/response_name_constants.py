@@ -51,8 +51,6 @@ notification_type_follow = 'Follow'
 notification_type_favorite = 'Favorite'
 notification_type_repost = 'Repost'
 notification_type_create = 'Create'
-notification_type_remix_create = 'RemixCreate'
-notification_type_remix_cosign = 'RemixCosign'
 
 notification_blocknumber = 'blocknumber'
 notification_initiator = 'initiator'
@@ -62,9 +60,6 @@ notification_entity_type = 'entity_type'
 notification_entity_id = 'entity_id'
 notification_entity_owner_id = 'entity_owner_id'
 notification_collection_content = 'collection_content'
-
-notification_remix_parent_track_user_id = 'remix_parent_track_user_id'
-notification_remix_parent_track_id = 'remix_parent_track_id'
 
 notification_follower_id = 'follower_user_id'
 notification_followee_id = 'followee_user_id'
