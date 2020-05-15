@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from sqlalchemy.orm.session import make_transient
+from sqlalchemy.sql import null
 from src import contract_addresses
 from src.utils import multihash, helpers
 from src.models import Track, User, BlacklistedIPLD, Stem, Remix
@@ -293,8 +294,12 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.field_visibility = track_metadata["field_visibility"]
     if is_valid_json_field(track_metadata, "stem_of"):
         track_record.stem_of = track_metadata["stem_of"]
+    else:
+        track_record.stem_of = null()
     if is_valid_json_field(track_metadata, "remix_of"):
         track_record.remix_of = track_metadata["remix_of"]
+    else:
+        track_record.remix_of = null()
 
     if "download" in track_metadata:
         track_record.download = {
