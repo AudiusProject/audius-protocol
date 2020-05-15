@@ -186,7 +186,6 @@ contract('DelegateManager', async (accounts) => {
     try {
       // Request decrease in stake
       await serviceProviderFactory.requestDecreaseStake(decrease, { from: account })
-
       let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(account)
       // Advance to valid block
       await time.advanceBlockTo(requestInfo.lockupExpiryBlock)
@@ -522,7 +521,7 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue((totalInStakingContract.sub(slashAmount)).eq(totalInStakingAfterSlash), 'Expected slash value')
     })
 
-    it('slash restrictions', async () => {
+    it('Slash restrictions', async () => {
       // Deregister endpoint, removing all stake
       await _lib.deregisterServiceProvider(
         serviceProviderFactory,
@@ -1101,7 +1100,7 @@ contract('DelegateManager', async (accounts) => {
         'Minimum stake threshold exceeded')
     })
 
-    it('undelegate lockup duration changes', async () => {
+    it('Undelegate lockup duration changes', async () => {
       let currentDuration = await delegateManager.getUndelegateLockupDuration()
       let newDuration = currentDuration.mul(web3.utils.toBN(2))
 
@@ -1115,7 +1114,7 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(currentDuration.eq(newDuration))
     })
 
-    it('maximum delegators', async () => {
+    it('Maximum delegators', async () => {
       // Update max delegators to 4
       let maxDelegators = 4
       await mockGovernance.updateMaxDelegators(maxDelegators)
@@ -1150,7 +1149,7 @@ contract('DelegateManager', async (accounts) => {
       }
     })
 
-    it('min delegate stake', async () => {
+    it('Min delegate stake', async () => {
       // Update min delegation level configuration
       let minDelegateStake = _lib.audToWeiBN(100)
       await mockGovernance.updateMinDelegationAmount(minDelegateStake)
@@ -1201,7 +1200,7 @@ contract('DelegateManager', async (accounts) => {
       assert.equal((await delegateManager.getDelegatorsList(stakerAccount)).length, 0, 'No delegators expected')
     })
 
-    it('caller restriction verification', async () => {
+    it('Caller restriction verification', async () => {
       await _lib.assertRevert(
         delegateManager.updateMaxDelegators(10, { from: accounts[3] }),
         'Only callable from governance'
@@ -1216,7 +1215,7 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    describe('service provider decrease stake behavior', async () => {
+    describe('Service provider decrease stake behavior', async () => {
       it('claimReward disabled if no active stake for SP', async () => {
         // Request decrease all of stake
         await _lib.deregisterServiceProvider(
@@ -1234,6 +1233,36 @@ contract('DelegateManager', async (accounts) => {
           delegateManager.claimRewards({ from: stakerAccount }),
           'Maximum stake bounds violated at fund block'
         )
+      })
+
+      it('Decrease in reward for pending stake decrease', async () => {
+        // At the start of this test, we have 2 SPs each with DEFAULT_AMOUNT staked
+        let fundsPerRound = await claimsManager.getFundsPerRound()
+        let expectedIncrease = fundsPerRound.div(_lib.toBN(4))
+        // Request decrease in stake corresponding to 1/2 of DEFAULT_AMOUNT
+        await serviceProviderFactory.requestDecreaseStake(DEFAULT_AMOUNT.div(_lib.toBN(2)), { from: stakerAccount })
+        let info = await getAccountStakeInfo(stakerAccount)
+        await claimsManager.initiateRound({ from: controllerAddress })
+        await delegateManager.claimRewards({ from: stakerAccount })
+        let info2 = await getAccountStakeInfo(stakerAccount)
+        let stakingDiff = (info2.totalInStakingContract).sub(info.totalInStakingContract)
+        let spFactoryDiff = (info2.spFactoryStake).sub(info.spFactoryStake)
+        assert.isTrue(stakingDiff.eq(expectedIncrease), 'Expected increase not found in Staking.sol')
+        assert.isTrue(spFactoryDiff.eq(expectedIncrease), 'Expected increase not found in SPFactory')
+      })
+
+      it.only('Slash cancels pending undelegate request', async () => {
+        await serviceProviderFactory.requestDecreaseStake(DEFAULT_AMOUNT.div(_lib.toBN(2)), { from: stakerAccount })
+        let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+        assert.isTrue((requestInfo.lockupExpiryBlock).gt(_lib.toBN(0)), 'Expected lockup expiry block to be set')
+        assert.isTrue((requestInfo.amount).gt(_lib.toBN(0)), 'Expected amount to be set')
+        // Request to slash
+        let tx = await mockGovernance.testSlash(DEFAULT_AMOUNT.div(_lib.toBN(2)), slasherAccount)
+        // console.log(tx)
+        requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+        // console.log(requestInfo)
+        assert.isTrue((requestInfo.lockupExpiryBlock).eq(_lib.toBN(0)), 'Expected lockup expiry block reset')
+        assert.isTrue((requestInfo.amount).eq(_lib.toBN(0)), 'Expected amount reset')
       })
     })
   })
