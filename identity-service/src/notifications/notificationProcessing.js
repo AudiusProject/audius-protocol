@@ -537,7 +537,7 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
         ...notifWithAddProps,
         ...(mapNotification(notifWithAddProps, metadata))
       }
-      logger.debug('processCreateNotifications - about to generate message for create push notification', msgGenNotif, metadata, mapNotification(msgGenNoqtif, metadata))
+      logger.debug('processCreateNotifications - about to generate message for create push notification', msgGenNotif, metadata, mapNotification(msgGenNotif, metadata))
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Create.base](msgGenNotif)
