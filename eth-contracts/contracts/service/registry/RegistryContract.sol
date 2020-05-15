@@ -41,11 +41,11 @@ contract RegistryContract is InitializableV2, Ownable {
         _requireIsInitialized();
         require(
             registryAddress != address(0x00),
-            "RegistryContract::kill:Registry address has not yet been set."
+            "RegistryContract::kill: Registry address has not yet been set."
         );
         require(
             msg.sender == registryAddress,
-            "RegistryContract::kill:Only registry can kill."
+            "RegistryContract::kill: Only registry can kill."
         );
         selfdestruct(registryAddress);
     }

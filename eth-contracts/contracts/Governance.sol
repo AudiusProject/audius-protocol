@@ -197,7 +197,7 @@ contract Governance is RegistryContract {
         uint256 endBlockNumber = startBlockNumber + votingPeriod;
         require(
             block.number > startBlockNumber && block.number <= endBlockNumber,
-            "Governance::submitProposalVote:Proposal votingPeriod has ended"
+            "Governance::submitProposalVote: Proposal votingPeriod has ended"
         );
 
         // Require vote is not None.
