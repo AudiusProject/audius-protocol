@@ -10,43 +10,50 @@ class RegistryClient {
 
     const web3 = this.web3Manager.getWeb3()
     this.Registry = new web3.eth.Contract(contractABI, contractAddress)
+
+    if (this.web3Manager instanceof Web3Manager && !this.web3Manager.web3Config.useExternalWeb3) {
+      const providerEndpoints = this.web3Manager.web3Config.internalWeb3Config.web3ProviderEndpoints
+      this.providerSelector = new ProviderSelection(providerEndpoints)
+    } else {
+      this.providerSelector = null
+    }
   }
 
   async getContract (contractRegistryKey) {
-    let providerSelector
-    if (this.web3Manager instanceof Web3Manager && !this.web3Manager.web3Config.useExternalWeb3) {
-      const providerEndpoints = this.web3Manager.web3Config.internalWeb3Config.web3ProviderEndpoints
-      providerSelector = new ProviderSelection(providerEndpoints)
-    }
-
-    const contract = await this.getContractWithProviderSelection(providerSelector, contractRegistryKey)
-    return contract
-  }
-
-  async getContractWithProviderSelection (providerSelector, contractRegistryKey) {
     try {
       Utils.checkStrLen(contractRegistryKey, 32)
-      return await this.Registry.methods.getContract(
+      const contract = await this.Registry.methods.getContract(
         Utils.utf8ToHex(contractRegistryKey)
       ).call()
+      return contract
     } catch (e) {
-      if (!(this.web3Manager instanceof Web3Manager) || this.web3Manager.web3Config.useExternalWeb3) {
+      // If using ethWeb3Manager or useExternalWeb3 is true, do not do reselect provider logic and fail
+      if (!this.providerSelector) {
         console.error(`Failed to initialize contract ${JSON.stringify(this.contractABI)}`, e)
         return
       }
-      providerSelector.addUnhealthy(this.web3Manager.getWeb3().currentProvider.host)
 
-      if (providerSelector.getUnhealthySize() === providerSelector.getServicesSize()) {
-        console.error(`No available, healthy providers to get contract ${JSON.stringify(this.contractABI)}`, e)
-        return
-      }
-
-      await providerSelector.select(this)
+      return this.retryInit()
+    }
+  }
+  async retryInit () {
+    try {
+      await this.selectNewEndpoint()
       const web3 = this.web3Manager.getWeb3()
       this.Registry = new web3.eth.Contract(this.contractABI, this.contractAddress)
-      const contract = await this.getContractWithProviderSelection(providerSelector, contractRegistryKey)
-      return contract
+      return await this.getContract()
+    } catch (e) {
+      console.error(e.message)
     }
+  }
+  async selectNewEndpoint () {
+    this.providerSelector.addUnhealthy(this.web3Manager.getWeb3().currentProvider.host)
+
+    if (this.providerSelector.getUnhealthySize() === this.providerSelector.getServicesSize()) {
+      throw new Error(`No available, healthy providers to get contract ${JSON.stringify(this.contractABI)}`)
+    }
+
+    await this.providerSelector.select(this)
   }
 }
 

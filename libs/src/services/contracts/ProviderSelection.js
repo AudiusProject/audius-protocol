@@ -18,7 +18,7 @@ class ProviderSelection extends ServiceSelection {
    * Filters out previously tried providers, and then initializes the client
    * (ContractClient, RegistryClient) with a healthy POA provider.
    *
-   * @param {*} client object used for making transaction calls
+   * @param {Object} client object used for making transaction calls
    */
   async select (client) {
     const web3Manager = client.web3Manager

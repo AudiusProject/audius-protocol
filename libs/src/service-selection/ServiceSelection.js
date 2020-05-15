@@ -214,12 +214,6 @@ class ServiceSelection {
     return this.unhealthy.size
   }
 
-  /** Gets services size */
-  async getServicesSize () {
-    const services = await this.getServices()
-    return services.length
-  }
-
   /**
    * Adds a service to the list of backups
    * @param {string} service the service to add
