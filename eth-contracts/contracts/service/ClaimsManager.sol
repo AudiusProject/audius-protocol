@@ -125,8 +125,11 @@ contract ClaimsManager is RegistryContract {
         return totalClaimedInRound;
     }
 
-    /// @dev - Start a new funding round
-    //         Permissioned to stakers or contract deployer
+
+    /**
+     * @notice Start a new funding round
+     * @dev Permissioned to stakers or contract deployer
+     */
     function initiateRound() external {
         requireIsInitialized();
         bool senderStaked = StakingInterface(
@@ -153,8 +156,12 @@ contract ClaimsManager is RegistryContract {
         );
     }
 
-    /// @dev - Callable by DelegateManager only
-    ///        Mints new tokens and stakes on behalf of claimer
+    /**
+     * @notice Mints and stakes tokens on behalf of ServiceProvider + delegators
+     * @dev Callable through DelegateManager by Service Provider
+     * @param _claimer  - service provider address
+     * @param _totalLockedForSP - amount of tokens locked up in DelegateManager
+     */
     function processClaim(
         address _claimer,
         uint _totalLockedForSP
@@ -220,6 +227,9 @@ contract ClaimsManager is RegistryContract {
         return newTotal;
     }
 
+    /**
+     * @notice Update the funding amount distributed per round
+     */
     function updateFundingAmount(uint _newAmount)
     external returns (uint newAmount)
     {
@@ -231,6 +241,11 @@ contract ClaimsManager is RegistryContract {
         return _newAmount;
     }
 
+    /**
+     * @notice Returns if the service provider is eligible for a claim
+     * @dev _sp - address of the service provider to check
+     * @return boolean - true if eligible for claim, false if not
+     */
     function claimPending(address _sp) external view returns (bool pending) {
         uint lastClaimedForSP = StakingInterface(
             registry.getContract(stakingProxyOwnerKey)
