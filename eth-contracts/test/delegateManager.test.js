@@ -1251,16 +1251,14 @@ contract('DelegateManager', async (accounts) => {
         assert.isTrue(spFactoryDiff.eq(expectedIncrease), 'Expected increase not found in SPFactory')
       })
 
-      it.only('Slash cancels pending undelegate request', async () => {
+      it('Slash cancels pending undelegate request', async () => {
         await serviceProviderFactory.requestDecreaseStake(DEFAULT_AMOUNT.div(_lib.toBN(2)), { from: stakerAccount })
         let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
         assert.isTrue((requestInfo.lockupExpiryBlock).gt(_lib.toBN(0)), 'Expected lockup expiry block to be set')
         assert.isTrue((requestInfo.amount).gt(_lib.toBN(0)), 'Expected amount to be set')
         // Request to slash
-        let tx = await mockGovernance.testSlash(DEFAULT_AMOUNT.div(_lib.toBN(2)), slasherAccount)
-        // console.log(tx)
+        await mockGovernance.testSlash(DEFAULT_AMOUNT.div(_lib.toBN(2)), slasherAccount)
         requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
-        // console.log(requestInfo)
         assert.isTrue((requestInfo.lockupExpiryBlock).eq(_lib.toBN(0)), 'Expected lockup expiry block reset')
         assert.isTrue((requestInfo.amount).eq(_lib.toBN(0)), 'Expected amount reset')
       })
