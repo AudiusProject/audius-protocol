@@ -1,4 +1,4 @@
-const Web3 = require('web3')
+const Web3 = require('../../web3')
 const EthereumTx = require('ethereumjs-tx')
 const DEFAULT_GAS_AMOUNT = 200000
 const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, POA default gas price
