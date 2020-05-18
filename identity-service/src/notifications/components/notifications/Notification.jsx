@@ -204,7 +204,7 @@ const getTrackMessage = (notification) => {
 }
 
 export const getTrackLink = (track) => {
-  return `https://audius.co/${track.route_id}`
+  return `https://audius.co/${track.route_id}-${track.track_id}`
 }
 
 const getTwitter = (notification) => {

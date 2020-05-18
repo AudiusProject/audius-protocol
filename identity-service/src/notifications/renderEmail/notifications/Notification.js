@@ -255,7 +255,7 @@ var getTrackMessage = function getTrackMessage(notification) {
 };
 
 var getTrackLink = function getTrackLink(track) {
-  return "https://audius.co/".concat(track.route_id);
+  return "https://audius.co/".concat(track.route_id, "-").concat(track.track_id);
 };
 
 exports.getTrackLink = getTrackLink;
