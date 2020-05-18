@@ -228,7 +228,7 @@ var Body = function Body(props) {
     },
     bgcolor: "#7E1BCC"
   }, _react["default"].createElement("a", {
-    href: "https://audius.co",
+    href: "https://audius.co/feed?openNotifications=true",
     target: "_blank",
     style: {
       padding: '8px 24px',

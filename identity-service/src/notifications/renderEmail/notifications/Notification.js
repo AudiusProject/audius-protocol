@@ -206,7 +206,7 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
   }, _react["default"].createElement(HighlightText, {
     text: parentTrackUser.name
   }), _react["default"].createElement(BodyText, {
-    text: " Co-signed you Remix of "
+    text: " Co-signed your Remix of "
   }), _react["default"].createElement(HighlightText, {
     text: parentTrack.title
   }));

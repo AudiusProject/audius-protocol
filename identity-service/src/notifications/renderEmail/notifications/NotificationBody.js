@@ -94,7 +94,7 @@ var OpenAudiusLink = function OpenAudiusLink() {
 
 var WrapLink = function WrapLink(props) {
   return _react["default"].createElement("a", {
-    href: "https://audius.co",
+    href: "https://audius.co/feed?openNotifications=true",
     style: {
       textDecoration: 'none'
     }
@@ -220,16 +220,18 @@ var Body = function Body(props) {
     src: "https://download.audius.co/static-resources/email/iconTwitterWhite.png",
     alt: "twitter",
     style: {
-      height: '24px',
-      width: '24px',
+      height: '18px',
+      width: '18px',
       padding: '0px',
-      marginRight: '8px'
+      marginRight: '8px',
+      verticalAlign: 'text-bottom'
     }
   })), _react["default"].createElement("td", {
     valign: "center",
     style: {
       margin: '0px',
       fontSize: '14px',
+      fontWeight: '500',
       color: '#ffffff',
       textDecoration: 'none'
     }
