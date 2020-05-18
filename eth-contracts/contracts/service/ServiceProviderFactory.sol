@@ -341,7 +341,7 @@ contract ServiceProviderFactory is RegistryContract {
     function requestDecreaseStake(uint _decreaseStakeAmount)
     external returns (uint newStakeAmount)
     {
-        // Confirm requester has an endpoint
+        // Confirm no request is in flight
         require(
             !decreaseRequestPending(msg.sender), 
             "Request already pending"
