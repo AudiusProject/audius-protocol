@@ -158,7 +158,7 @@ const notificationMap = {
     return (
       <span className={'notificationText'}>
         <HighlightText text={parentTrackUser.name} />
-        <BodyText text={` Co-signed you Remix of `} />
+        <BodyText text={` Co-signed your Remix of `} />
         <HighlightText text={parentTrack.title} />
       </span>
     )

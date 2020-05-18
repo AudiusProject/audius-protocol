@@ -96,7 +96,7 @@ const OpenAudiusLink = () => (
 const WrapLink = (props) => {
   return (
     <a
-      href='https://audius.co'
+      href='https://audius.co/feed?openNotifications=true' 
       style={{ textDecoration: 'none' }}>
       {props.children}
     </a>
@@ -255,10 +255,11 @@ const Body = (props) => {
                                     src='https://download.audius.co/static-resources/email/iconTwitterWhite.png'
                                     alt='twitter'
                                     style={{
-                                      height: '24px',
-                                      width: '24px',
+                                      height: '18px',
+                                      width: '18px',
                                       padding: '0px',
-                                      marginRight: '8px'
+                                      marginRight: '8px',
+                                      verticalAlign: 'text-bottom'
                                     }}
                                   />
                                 </td>
@@ -267,6 +268,7 @@ const Body = (props) => {
                                   style={{
                                     margin: '0px',
                                     fontSize: '14px',
+                                    fontWeight: '500',
                                     color: '#ffffff',
                                     textDecoration: 'none'
                                   }}

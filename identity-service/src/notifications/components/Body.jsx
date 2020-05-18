@@ -185,7 +185,7 @@ const Body = (props) => {
                 <tr>
                   <td style={{ borderRadius: '17px', margin: '0px auto' }} bgcolor='#7E1BCC'>
                     <a
-                      href='https://audius.co'
+                      href='https://audius.co/feed?openNotifications=true'
                       target='_blank'
                       style={{
                         padding: '8px 24px',
