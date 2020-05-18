@@ -12,6 +12,7 @@ const { logger } = require('../logging')
 const USER_NODE_IPFS_GATEWAY = config.get('notificationDiscoveryProvider').includes('staging') ? 'https://usermetadata.staging.audius.co/ipfs/' : 'https://usermetadata.audius.co/ipfs/'
 
 const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/imageProfilePicEmpty.png'
+const DEFAULT_TRACK_IMAGE_URL = 'https://download.audius.co/static-resources/email/imageTrackEmpty.jpg'
 
 // The number of users to fetch / display per notification (The displayed number of users)
 const USER_FETCH_LIMIT = 10
@@ -99,6 +100,7 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
   let userIdsToFetch = [userId]
   let trackIdsToFetch = []
   let collectionIdsToFetch = []
+  let fetchTrackRemixParents = []
 
   for (let notification of notifications) {
     logger.debug('fetchNotificationMetadata.js#notification', notification)
@@ -148,8 +150,19 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
         trackIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId))
         break
       }
-      case NotificationType.RemixCreate:
+      case NotificationType.RemixCreate: {
+        for (const action of notification.actions) {
+          if (action.actionEntityType === Entity.Track) {
+            trackIdsToFetch.push(action.actionEntityId)
+          } else if (action.actionEntityType === Entity.User) {
+            userIdsToFetch.push(action.actionEntityId)
+          }
+        }
+        break
+      }
       case NotificationType.RemixCosign: {
+        trackIdsToFetch.push(notification.entityId)
+        fetchTrackRemixParents.push(notification.entityId)
         for (const action of notification.actions) {
           if (action.actionEntityType === Entity.Track) {
             trackIdsToFetch.push(action.actionEntityId)
@@ -164,11 +177,35 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
 
   const uniqueTrackIds = [...new Set(trackIdsToFetch)]
   logger.debug('fetchNotificationMetadata.js#uniqueTrackIds', uniqueTrackIds)
-  const tracks = await audius.Track.getTracks(
+  let tracks = await audius.Track.getTracks(
     /** limit */ uniqueTrackIds.length,
     /** offset */ 0,
     /** idsArray */ uniqueTrackIds
   )
+
+  const trackMap = tracks.reduce((tm, track) => {
+    tm[track.track_id] = track
+    return tm
+  }, {})
+
+  // Fetch the parents of the remix tracks & add to the tracks map
+  if (fetchTrackRemixParents.length > 0) {
+    const trackParentIds = fetchTrackRemixParents.reduce((parentTrackIds, remixTrackId) => {
+      const track = trackMap[remixTrackId]
+      const parentIds = track.remix_of.tracks.map(t => t.parent_track_id)
+      return parentTrackIds.concat(parentIds)
+    }, [])
+
+    const uniqueParentTrackIds = [...new Set(trackParentIds)]
+    let parentTracks = await audius.Track.getTracks(
+      /** limit */ uniqueParentTrackIds.length,
+      /** offset */ 0,
+      /** idsArray */ uniqueParentTrackIds
+    )
+    parentTracks.forEach(track => {
+      trackMap[track.track_id] = track
+    })
+  }
 
   const uniqueCollectionIds = [...new Set(collectionIdsToFetch)]
   logger.debug('fetchNotificationMetadata.js#uniqueCollectionIds', uniqueCollectionIds)
@@ -191,15 +228,24 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
     /** idsArray */ uniqueUserIds
   )
 
+  // Fetch all the social handles and attach to the users - For twitter sharing
+  const socialHandles = await models.SocialHandles.findAll({
+    where: {
+      handle: users.map(({ handle }) => handle)
+    }
+  })
+  const twitterHandleMap = socialHandles.reduce((handleMapping, socialHandle) => {
+    if (socialHandle.twitterHandle) handleMapping[socialHandle.handle] = socialHandle.twitterHandle
+    return handleMapping
+  }, {})
+
   users = await Promise.all(users.map(async (user) => {
     user.thumbnail = await getUserImage(user)
+    if (twitterHandleMap[user.handle]) {
+      user.twitterHandle = twitterHandleMap[user.handle]
+    }
     return user
   }))
-
-  const trackMap = tracks.reduce((tm, track) => {
-    tm[track.track_id] = track
-    return tm
-  }, {})
 
   const collectionMap = collections.reduce((cm, collection) => {
     cm[collection.playlist_id] = collection
@@ -210,6 +256,11 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
     um[user.user_id] = user
     return um
   }, {})
+
+  for (let trackId of Object.keys(trackMap)) {
+    const track = trackMap[trackId]
+    track.thumbnail = await getTrackImage(track, userMap)
+  }
 
   return {
     tracks: trackMap,
@@ -223,18 +274,18 @@ const formatGateway = (creatorNodeEndpoint) =>
     ? `${creatorNodeEndpoint.split(',')[0]}/ipfs/`
     : USER_NODE_IPFS_GATEWAY
 
-const getImageUrl = (cid, gateway) =>
+const getImageUrl = (cid, gateway, defaultImg) =>
   cid
     ? `${gateway}${cid}`
-    : DEFAULT_IMAGE_URL
+    : defaultImg
 
 async function getUserImage (user) {
-  const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
+  const gateway = formatGateway(user.creator_node_endpoint)
   const profilePicture = user.profile_picture_sizes
     ? `${user.profile_picture_sizes}/1000x1000.jpg`
     : user.profile_picture
 
-  let imageUrl = getImageUrl(profilePicture, gateway)
+  let imageUrl = getImageUrl(profilePicture, gateway, DEFAULT_IMAGE_URL)
   if (imageUrl === DEFAULT_IMAGE_URL) { return imageUrl }
 
   try {
@@ -246,6 +297,29 @@ async function getUserImage (user) {
     return imageUrl
   } catch (e) {
     return DEFAULT_IMAGE_URL
+  }
+}
+
+async function getTrackImage (track, usersMap) {
+  const trackOwnerId = track.owner_id
+  const trackOwner = usersMap[trackOwnerId]
+  const gateway = formatGateway(trackOwner.creator_node_endpoint)
+  const trackCoverArt = track.cover_art_sizes
+    ? `${track.cover_art_sizes}/480x480.jpg`
+    : track.cover_art
+
+  let imageUrl = getImageUrl(trackCoverArt, gateway, DEFAULT_TRACK_IMAGE_URL)
+  if (imageUrl === DEFAULT_TRACK_IMAGE_URL) { return imageUrl }
+
+  try {
+    await axios({
+      method: 'head',
+      url: imageUrl,
+      timeout: 5000
+    })
+    return imageUrl
+  } catch (e) {
+    return DEFAULT_TRACK_IMAGE_URL
   }
 }
 
