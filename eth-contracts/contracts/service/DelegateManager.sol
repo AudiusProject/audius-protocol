@@ -436,7 +436,7 @@ contract DelegateManager is RegistryContract {
             (totalBalanceInStakingPreSlash >= _amount),
             "Cannot slash more than total currently staked");
 
-        // Cancel any wihtdrawal request for this service provider
+        // Cancel any withdrawal request for this service provider
         (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(_slashAddress);
         if (spLockedStake > 0) {
             spFactory.cancelDecreaseStakeRequest(_slashAddress);
