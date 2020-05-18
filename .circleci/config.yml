@@ -362,6 +362,7 @@ jobs:
           name: setup identity
           command: |
             cd identity-service/
+            rm -rf ./node_modules/websocket/.git
             npm install --verbose
       - save_cache:
           paths:
