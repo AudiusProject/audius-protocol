@@ -5,7 +5,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol
 
 import "./registry/RegistryContract.sol";
 import "./interface/registry/RegistryInterface.sol";
-import "../staking/StakingInterface.sol";
+import "../staking/Staking.sol";
 import "./ServiceProviderFactory.sol";
 import "./ClaimsManager.sol";
 
@@ -125,7 +125,7 @@ contract DelegateManager is RegistryContract {
             "Delegation not permitted for SP pending claim"
         );
         address delegator = msg.sender;
-        StakingInterface stakingContract = StakingInterface(
+        Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
 
@@ -261,7 +261,7 @@ contract DelegateManager is RegistryContract {
         uint unstakeAmount = undelegateRequests[delegator].amount;
 
         // Stake on behalf of target service provider
-        StakingInterface(
+        Staking(
             registry.getContract(stakingProxyOwnerKey)
         ).undelegateStakeFor(
             serviceProvider,
@@ -346,7 +346,7 @@ contract DelegateManager is RegistryContract {
         );
 
         // Amount stored in staking contract for owner
-        uint totalBalanceInStaking = StakingInterface(
+        uint totalBalanceInStaking = Staking(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(msg.sender);
         require(totalBalanceInStaking > 0, "Stake required for claim");
@@ -428,7 +428,7 @@ contract DelegateManager is RegistryContract {
             msg.sender == registry.getContract(governanceKey),
             "Only callable from governance contract"
         );
-        StakingInterface stakingContract = StakingInterface(
+        Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
 
