@@ -89,6 +89,31 @@ class Tracks extends Base {
   }
 
   /**
+   * Gets all the remixes of a given trackId as an array of tracks.
+   * @param {number} trackId
+   * @param {number} limit
+   * @param {number} offset
+   * @returns {(Array)} track
+   */
+  async getRemixesOfTrack (trackId, limit = null, offset = null) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getRemixesOfTrack(trackId, limit, offset)
+  }
+
+  /**
+   * Gets the remix parents of a given trackId as an array of tracks.
+   * @param {number} trackId
+   * @param {number} limit
+   * @param {number} offset
+   * @returns {(Array)} track
+   * @returns {(Array)} track
+   */
+  async getRemixTrackParents (trackId, limit = null, offset = null) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getRemixTrackParents(trackId, limit, offset)
+  }
+
+  /**
    * Return saved tracks for current user
    * NOTE in returned JSON, SaveType string one of track, playlist, album
    * @param {number} limit - max # of items to return

@@ -26,7 +26,7 @@ class UserFactoryClient extends ContractClient {
     Utils.checkStrLen(handle, 16)
 
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getAddUserRequestData(
       chainId,
@@ -299,7 +299,7 @@ class UserFactoryClient extends ContractClient {
    */
   async getUpdateNonceAndSig (generatorFn, userId, newValue, privateKey) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3Manager.getWeb3().eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = generatorFn(chainId, contractAddress, userId, newValue, nonce)
     let sig
