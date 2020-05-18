@@ -35,6 +35,7 @@
   "devDependencies": {
     "mocha": "^5.2.0",
     "nock": "^10.0.6",
+    "sinon": "^9.0.2",
     "standard": "^12.0.1"
   },
   "repository": {

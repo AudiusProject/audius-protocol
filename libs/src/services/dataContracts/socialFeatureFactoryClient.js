@@ -5,7 +5,7 @@ class SocialFeatureFactoryClient extends ContractClient {
   async addTrackRepost (userId, trackId) {
     // generate new track repost request
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getAddTrackRepostRequestData(
       chainId,
@@ -33,7 +33,7 @@ class SocialFeatureFactoryClient extends ContractClient {
   async deleteTrackRepost (userId, trackId) {
     // generate new delete track repost request
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getDeleteTrackRepostRequestData(
       chainId,
@@ -61,7 +61,7 @@ class SocialFeatureFactoryClient extends ContractClient {
   async addPlaylistRepost (userId, playlistId) {
     // generate new playlist repost request
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getAddPlaylistRepostRequestData(
       chainId,
@@ -89,7 +89,7 @@ class SocialFeatureFactoryClient extends ContractClient {
   async deletePlaylistRepost (userId, playlistId) {
     // generate new delete playlist repost request
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getDeletePlaylistRepostRequestData(
       chainId,
@@ -120,7 +120,7 @@ class SocialFeatureFactoryClient extends ContractClient {
     }
     // generate new UserFollow request
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getUserFollowRequestData(
       chainId,
@@ -151,7 +151,7 @@ class SocialFeatureFactoryClient extends ContractClient {
     }
     // generate new deleteUserFollow request
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getDeleteUserFollowRequestData(
       chainId,

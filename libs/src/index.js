@@ -75,14 +75,18 @@ class AudiusLibs {
   /**
    * Configures an internal web3 to use (via Hedgehog)
    * @param {string} registryAddress
-   * @param {string} url web3 provider endpoint
+   * @param {Array} allProviderUrls web3 provider endpoints
    */
-  static configInternalWeb3 (registryAddress, url) {
+  static configInternalWeb3 (registryAddress, allProviderUrls) {
+    if (typeof allProviderUrls === 'string') {
+      allProviderUrls = [allProviderUrls]
+    }
+
     return {
       registryAddress,
       useExternalWeb3: false,
       internalWeb3Config: {
-        web3ProviderEndpoint: url
+        web3ProviderEndpoints: allProviderUrls
       }
     }
   }
