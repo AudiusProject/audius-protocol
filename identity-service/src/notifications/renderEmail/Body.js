@@ -103,8 +103,40 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
   }
 
   return "".concat(user.name, " released a new ").concat(notification.entity.type, "  ").concat(notification.entity.name);
-}), _snippetMap); // Generate snippet for email composed of the first three notification texts,
+}), _defineProperty(_snippetMap, _Notification.NotificationType.RemixCreate, function (notification) {
+  var parentTrack = notification.parentTrack;
+  return "New remix of your track ".concat(parentTrack.title);
+}), _defineProperty(_snippetMap, _Notification.NotificationType.RemixCosign, function (notification) {
+  var parentTrackUser = notification.parentTrackUser,
+      parentTracks = notification.parentTracks;
+  var parentTrack = parentTracks.find(function (t) {
+    return t.ownerId === parentTrackUser.userId;
+  });
+  return "".concat(parentTrackUser.name, " Co-signed your Remix of ").concat(parentTrack.title);
+}), _snippetMap);
+
+var mapNotification = function mapNotification(notification) {
+  switch (notification.type) {
+    case _Notification.NotificationType.RemixCreate:
+      {
+        notification.users = [notification.remixUser];
+        return notification;
+      }
+
+    case _Notification.NotificationType.RemixCosign:
+      {
+        notification.track = notification.remixTrack;
+        return notification;
+      }
+
+    default:
+      {
+        return notification;
+      }
+  }
+}; // Generate snippet for email composed of the first three notification texts,
 // but limited to 90 characters w/ an ellipsis
+
 
 var SNIPPET_ELLIPSIS_LENGTH = 90;
 
@@ -174,7 +206,7 @@ var Body = function Body(props) {
   }, props.notifications.map(function (notification, ind) {
     return _react["default"].createElement(_Notification["default"], _extends({
       key: ind
-    }, notification));
+    }, mapNotification(notification)));
   }))), _react["default"].createElement("tr", null, _react["default"].createElement("td", {
     align: "center",
     valign: "top",
@@ -196,7 +228,7 @@ var Body = function Body(props) {
     },
     bgcolor: "#7E1BCC"
   }, _react["default"].createElement("a", {
-    href: "https://audius.co",
+    href: "https://audius.co/feed?openNotifications=true",
     target: "_blank",
     style: {
       padding: '8px 24px',
