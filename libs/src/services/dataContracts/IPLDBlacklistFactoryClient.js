@@ -33,7 +33,7 @@ class IPLDBlacklistFactoryClient extends ContractClient {
    */
   async getUpdateNonceAndSig (generatorFn, multihashDigest, privateKey) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = generatorFn(chainId, contractAddress, multihashDigest, nonce)
     let sig

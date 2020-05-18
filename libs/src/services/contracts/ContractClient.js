@@ -1,3 +1,6 @@
+const ProviderSelection = require('./ProviderSelection')
+const Web3Manager = require('../web3Manager/index')
+
 const CONTRACT_INITIALIZING_INTERVAL = 100
 const CONTRACT_INITIALIZING_TIMEOUT = 10000
 
@@ -9,7 +12,6 @@ const CONTRACT_INITIALIZING_TIMEOUT = 10000
 class ContractClient {
   constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress) {
     this.web3Manager = web3Manager
-    this.web3 = web3Manager.getWeb3()
     this.contractABI = contractABI
     this.contractRegistryKey = contractRegistryKey
     this.getRegistryAddress = getRegistryAddress
@@ -21,6 +23,14 @@ class ContractClient {
     // Initialization setup
     this._isInitialized = false
     this._isInitializing = false
+
+    // Initializing this.providerSelector for POA provider fallback logic
+    if (this.web3Manager instanceof Web3Manager && !this.web3Manager.web3Config.useExternalWeb3) {
+      const providerEndpoints = this.web3Manager.web3Config.internalWeb3Config.web3ProviderEndpoints
+      this.providerSelector = new ProviderSelection(providerEndpoints)
+    } else {
+      this.providerSelector = null
+    }
   }
 
   /** Inits the contract if necessary */
@@ -43,19 +53,47 @@ class ContractClient {
       return
     }
 
-    // Perform init
     this._isInitializing = true
     try {
       this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
-      this._contract = new this.web3.eth.Contract(
+      const web3 = this.web3Manager.getWeb3()
+      this._contract = new web3.eth.Contract(
         this.contractABI,
         this._contractAddress
       )
+      this._isInitializing = false
       this._isInitialized = true
     } catch (e) {
-      console.error(`Failed to initialize contract ${JSON.stringify(this.contractABI)}`, e)
+      // If using ethWeb3Manager or useExternalWeb3 is true, do not do reselect provider logic and fail
+      if (!this.providerSelector) {
+        console.error(`Failed to initialize contract ${JSON.stringify(this.contractABI)}`, e)
+        return
+      }
+
+      await this.retryInit()
     }
+  }
+
+  async retryInit () {
+    try {
+      await this.selectNewEndpoint()
+      await this.init()
+    } catch (e) {
+      console.error(e.message)
+    }
+  }
+
+  /** Adds current provider into unhealthy set and selects the next healthy provider */
+  async selectNewEndpoint () {
+    this.providerSelector.addUnhealthy(this.web3Manager.getWeb3().currentProvider.host)
+
+    if (this.providerSelector.getUnhealthySize() === this.providerSelector.getServicesSize()) {
+      throw new Error(`No available, healthy providers to init contract ${JSON.stringify(this.contractABI)}`)
+    }
+
+    // Reset _isInitializing to false to retry init logic and avoid the _isInitialzing check
     this._isInitializing = false
+    await this.providerSelector.select(this)
   }
 
   /** Gets the contract address and ensures that the contract has initted. */
@@ -75,6 +113,13 @@ class ContractClient {
       throw new Error(`Contract method ${methodName} not found in ${Object.keys(this._contract.methods)}`)
     }
     return this._contract.methods[methodName](...args)
+  }
+
+  async getEthNetId () {
+    await this.init()
+    const netId = await this.web3Manager.getWeb3().eth.net.getId()
+
+    return netId
   }
 }
 
