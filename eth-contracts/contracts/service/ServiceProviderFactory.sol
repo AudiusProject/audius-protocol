@@ -356,7 +356,7 @@ contract ServiceProviderFactory is RegistryContract {
         uint currentStakeAmount = stakingContract.totalStakedFor(msg.sender);
 
         // Prohibit decreasing stake to invalid bounds
-        validateBalanceInternal(msg.sender, (currentStakeAmount.sub(_decreaseStakeAmount)));
+        _validateBalanceInternal(msg.sender, (currentStakeAmount.sub(_decreaseStakeAmount)));
 
         decreaseStakeRequests[msg.sender] = DecreaseStakeRequest({
             decreaseAmount: _decreaseStakeAmount,
@@ -372,7 +372,7 @@ contract ServiceProviderFactory is RegistryContract {
             msg.sender == _account || msg.sender == registry.getContract(delegateManagerKey),
             "Only callable from owner or DelegateManager"
         );
-        require(decreaseRequestIsPending(_account), "Decrease stake request must be pending");
+        require(_decreaseRequestIsPending(_account), "Decrease stake request must be pending");
 
         // Clear decrease stake request
         decreaseStakeRequests[_account] = DecreaseStakeRequest({
@@ -385,7 +385,7 @@ contract ServiceProviderFactory is RegistryContract {
     {
         _requireIsInitialized();
 
-        require(decreaseRequestIsPending(msg.sender), "Decrease stake request must be pending");
+        require(_decreaseRequestIsPending(msg.sender), "Decrease stake request must be pending");
         require(
             decreaseStakeRequests[msg.sender].lockupExpiryBlock <= block.number,
             "Lockup must be expired"
@@ -482,7 +482,7 @@ contract ServiceProviderFactory is RegistryContract {
         );
         // Update SP tracked total
         spDetails[_serviceProvider].deployerStake = _amount;
-        updateServiceProviderBoundStatus(_serviceProvider);
+        _updateServiceProviderBoundStatus(_serviceProvider);
     }
 
     /// @notice Update service provider cut
@@ -594,14 +594,14 @@ contract ServiceProviderFactory is RegistryContract {
         uint currentlyStakedForOwner = StakingInterface(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(_sp);
-        validateBalanceInternal(_sp, currentlyStakedForOwner);
+        _validateBalanceInternal(_sp, currentlyStakedForOwner);
         return currentlyStakedForOwner;
     }
 
     /**
      * @notice Update service provider bound status
      */
-    function updateServiceProviderBoundStatus(address _serviceProvider) internal {
+    function _updateServiceProviderBoundStatus(address _serviceProvider) internal {
         // Validate bounds for total stake
         uint totalSPStake = StakingInterface(
             registry.getContract(stakingProxyOwnerKey)
@@ -619,7 +619,7 @@ contract ServiceProviderFactory is RegistryContract {
     /**
      * @notice Compare a given service provider bounds to input amount
      */
-    function validateBalanceInternal(address _sp, uint _amount) internal view
+    function _validateBalanceInternal(address _sp, uint _amount) internal view
     {
         require(
             _amount >= spDetails[_sp].minAccountStake,
@@ -637,7 +637,7 @@ contract ServiceProviderFactory is RegistryContract {
     /**
      * @notice Boolean indicating whether a decrease request has been initiated
      */
-    function decreaseRequestIsPending(address _serviceProvider)
+    function _decreaseRequestIsPending(address _serviceProvider)
     internal view returns (bool pending)
     {
         return (

@@ -121,7 +121,7 @@ contract DelegateManager is RegistryContract {
     {
         _requireIsInitialized();
         require(
-            claimPending(_targetSP) == false,
+            _claimPending(_targetSP) == false,
             "Delegation not permitted for SP pending claim"
         );
         address delegator = msg.sender;
@@ -137,7 +137,7 @@ contract DelegateManager is RegistryContract {
         );
 
         // Update list of delegators to SP if necessary
-        if (!delegatorExistsForSP(delegator, _targetSP)) {
+        if (!_delegatorExistsForSP(delegator, _targetSP)) {
             // If not found, update list of delegates
             spDelegateInfo[_targetSP].delegators.push(delegator);
             require(
@@ -183,14 +183,14 @@ contract DelegateManager is RegistryContract {
     {
         _requireIsInitialized();
         require(
-            claimPending(_target) == false,
+            _claimPending(_target) == false,
             "Undelegate request not permitted for SP pending claim"
         );
         address delegator = msg.sender;
-        require(delegatorExistsForSP(delegator, _target), "Delegator must be staked for SP");
+        require(_delegatorExistsForSP(delegator, _target), "Delegator must be staked for SP");
 
         // Confirm no pending delegation request
-        require(!undelegateRequestIsPending(delegator), "No pending lockup expected");
+        require(!_undelegateRequestIsPending(delegator), "No pending lockup expected");
 
         // Ensure valid bounds
         uint currentlyDelegatedToSP = delegateInfo[delegator][_target];
@@ -215,7 +215,7 @@ contract DelegateManager is RegistryContract {
         _requireIsInitialized();
         address delegator = msg.sender;
         // Confirm pending delegation request
-        require(undelegateRequestIsPending(delegator), "Pending lockup expected");
+        require(_undelegateRequestIsPending(delegator), "Pending lockup expected");
         // Remove pending request
         undelegateRequests[delegator] = UndelegateStakeRequest({
             lockupExpiryBlock: 0,
@@ -230,7 +230,7 @@ contract DelegateManager is RegistryContract {
         address delegator = msg.sender;
 
         // Confirm pending delegation request
-        require(undelegateRequestIsPending(delegator), "Pending lockup expected");
+        require(_undelegateRequestIsPending(delegator), "Pending lockup expected");
 
         // Confirm lockup expiry has expired
         require(
@@ -238,7 +238,7 @@ contract DelegateManager is RegistryContract {
 
         // Confirm no pending claim for this service provider
         require(
-            claimPending(undelegateRequests[delegator].serviceProvider) == false,
+            _claimPending(undelegateRequests[delegator].serviceProvider) == false,
             "Undelegate not permitted for SP pending claim"
         );
 
@@ -612,7 +612,7 @@ contract DelegateManager is RegistryContract {
         return minDelegationAmount;
     }
 
-    function delegatorExistsForSP(
+    function _delegatorExistsForSP(
         address _delegator,
         address _serviceProvider
     ) internal view returns (bool exists)
@@ -629,7 +629,7 @@ contract DelegateManager is RegistryContract {
     /**
      * @notice Boolean indicating whether a claim is pending for this service provider
      */
-    function claimPending(address _sp) internal view returns (bool pending) {
+    function _claimPending(address _sp) internal view returns (bool pending) {
         ClaimsManager claimsManager = ClaimsManager(
             registry.getContract(claimsManagerKey)
         );
@@ -639,7 +639,7 @@ contract DelegateManager is RegistryContract {
     /**
      * @notice Boolean indicating whether a decrease request has been initiated
      */
-    function undelegateRequestIsPending(address _delegator) internal view returns (bool pending)
+    function _undelegateRequestIsPending(address _delegator) internal view returns (bool pending)
     {
         return (
             (undelegateRequests[_delegator].lockupExpiryBlock != 0) &&
