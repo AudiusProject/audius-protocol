@@ -1,11 +1,13 @@
 pragma solidity ^0.5.0;
 
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "./service/registry/RegistryContract.sol";
 import "./staking/StakingInterface.sol";
 import "./service/interface/registry/RegistryInterface.sol";
 
 
 contract Governance is RegistryContract {
+    using SafeMath for uint;
     RegistryInterface registry;
     bytes32 stakingProxyOwnerKey;
 

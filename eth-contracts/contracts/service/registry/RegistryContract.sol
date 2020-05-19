@@ -13,12 +13,6 @@ import "../interface/registry/RegistryInterface.sol";
  */
 contract RegistryContract is InitializableV2, Ownable {
 
-    struct Multihash {
-        bytes32 digest;
-        uint8 hashFn;
-        uint8 size;
-    }
-
     address payable internal registryAddress;
 
     function initialize() public initializer {

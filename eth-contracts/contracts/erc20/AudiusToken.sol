@@ -5,11 +5,14 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Deta
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Pausable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../InitializableV2.sol";
 
 
 /** Upgradeable ERC20 token that is Detailed, Mintable, Pausable, Burnable. */
 contract AudiusToken is InitializableV2, ERC20, ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable {
+    using SafeMath for uint;
+
     string constant NAME = "TestAudius";
     string constant SYMBOL = "TAUDS";
     // standard - imitates relationship between Ether and Wei

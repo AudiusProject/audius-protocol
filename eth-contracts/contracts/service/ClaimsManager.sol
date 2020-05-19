@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mint
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "./interface/registry/RegistryInterface.sol";
 import "./ServiceProviderFactory.sol";
+/** SafeMath imported via ServiceProviderFactory.sol */
 
 
 /**
