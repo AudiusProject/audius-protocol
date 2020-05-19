@@ -18,10 +18,10 @@ if [ $# -eq 0 ]
 		node_modules/.bin/truffle test-coverage
 elif [ $1 == '--verbose-rpc' ] && [ $# -eq 1 ]
 	then
-		node_modules/.bin/truffle test --verbose-rpc
+		node_modules/.bin/truffle test-coverage --verbose-rpc
 elif [ $1 == '--verbose-rpc' ] && [ $# -eq 2 ]
 	then
-		node_modules/.bin/truffle test --verbose-rpc $2
+		node_modules/.bin/truffle test-coverage --verbose-rpc $2
 else
-	node_modules/.bin/truffle test $1
+	node_modules/.bin/truffle test-coverage $1
 fi
