@@ -3,8 +3,8 @@ pragma solidity ^0.5.0;
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "./registry/RegistryContract.sol";
 import "./ServiceTypeManager.sol";
-import "../staking/StakingInterface.sol";
-import "./interface/registry/RegistryInterface.sol";
+import "./Staking.sol";
+import "./interface/RegistryInterface.sol";
 
 
 contract ServiceProviderFactory is RegistryContract {
@@ -160,7 +160,7 @@ contract ServiceProviderFactory is RegistryContract {
 
         // Stake token amount from msg.sender
         if (_stakeAmount > 0) {
-            StakingInterface(
+            Staking(
                 registry.getContract(stakingProxyOwnerKey)
             ).stakeFor(msg.sender, _stakeAmount);
         }
@@ -316,7 +316,7 @@ contract ServiceProviderFactory is RegistryContract {
             "Registered endpoint required to increase stake"
         );
 
-        StakingInterface stakingContract = StakingInterface(
+        Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
 
@@ -349,7 +349,7 @@ contract ServiceProviderFactory is RegistryContract {
     {
         _requireIsInitialized();
 
-        StakingInterface stakingContract = StakingInterface(
+        Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
 
@@ -391,7 +391,7 @@ contract ServiceProviderFactory is RegistryContract {
             "Lockup must be expired"
         );
 
-        StakingInterface stakingContract = StakingInterface(
+        Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
 
@@ -591,7 +591,7 @@ contract ServiceProviderFactory is RegistryContract {
     function validateAccountStakeBalance(address _sp)
     external view returns (uint stakedForOwner)
     {
-        uint currentlyStakedForOwner = StakingInterface(
+        uint currentlyStakedForOwner = Staking(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(_sp);
         _validateBalanceInternal(_sp, currentlyStakedForOwner);
@@ -603,7 +603,7 @@ contract ServiceProviderFactory is RegistryContract {
      */
     function _updateServiceProviderBoundStatus(address _serviceProvider) internal {
         // Validate bounds for total stake
-        uint totalSPStake = StakingInterface(
+        uint totalSPStake = Staking(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(_serviceProvider);
         if (totalSPStake < spDetails[_serviceProvider].minAccountStake ||

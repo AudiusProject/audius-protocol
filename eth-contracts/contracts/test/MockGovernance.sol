@@ -1,10 +1,10 @@
 pragma solidity ^0.5.0;
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
-import "../service/registry/RegistryContract.sol";
-import "../service/interface/registry/RegistryInterface.sol";
-import "../service/DelegateManager.sol";
-import "../service/ServiceProviderFactory.sol";
+import "../registry/RegistryContract.sol";
+import "../interface/RegistryInterface.sol";
+import "../DelegateManager.sol";
+import "../ServiceProviderFactory.sol";
 
 
 // TEST ONLY MOCK CONTRACT
