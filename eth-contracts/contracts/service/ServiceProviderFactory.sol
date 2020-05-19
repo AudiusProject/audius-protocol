@@ -187,10 +187,10 @@ contract ServiceProviderFactory is RegistryContract {
         serviceProviderAddressToId[msg.sender][_serviceType].push(newServiceProviderID);
 
         // Increment number of endpoints for this address
-        spDetails[msg.sender].numberOfEndpoints += 1;
+        spDetails[msg.sender].numberOfEndpoints = spDetails[msg.sender].numberOfEndpoints.add(1);
 
         // Update deployer total
-        spDetails[msg.sender].deployerStake += _stakeAmount;
+        spDetails[msg.sender].deployerStake = spDetails[msg.sender].deployerStake.add(_stakeAmount);
 
         // Update min and max totals for this service provider
         (uint typeMin, uint typeMax) = ServiceTypeManager(
