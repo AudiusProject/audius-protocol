@@ -159,7 +159,12 @@ jobs:
           paths:
             - eth-contracts/node_modules
           key: v1-dependencies-{{ checksum "eth-contracts/package.json" }}
-      # run tests!
+      - run:
+          name: run_lint
+          command: |
+            cd eth-contracts
+            npm run lint-circle-ci
+            cd ../
       - run:
           name: run_tests
           command: |
