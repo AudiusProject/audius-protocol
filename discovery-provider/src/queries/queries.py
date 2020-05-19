@@ -17,7 +17,8 @@ from src.queries.query_helpers import get_current_user_id, parse_sort_param, pop
     populate_track_metadata, populate_playlist_metadata, get_repost_counts, get_save_counts, \
     get_pagination_vars, paginate_query, get_users_by_id, get_users_ids, \
     create_save_repost_count_subquery, decayed_score, filter_to_playlist_mood, \
-    create_followee_playlists_subquery, add_users_to_tracks
+    create_followee_playlists_subquery, add_users_to_tracks, create_save_count_subquery, \
+    create_repost_count_subquery
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("queries", __name__)
@@ -2035,10 +2036,19 @@ def get_remixes_of(track_id):
             return api_helpers.error_response("Invalid track_id provided", 400)
 
         track_owner_id = parent_track.owner_id
+
+        # Create subquery for save counts for sorting
+        save_count_subquery = create_save_count_subquery(session, SaveType.track)
+
+        # Create subquery for repost counts for sorting
+        repost_count_subquery = create_repost_count_subquery(session, RepostType.track)
+
         # Get the 'children' remix tracks
         # Use the track owner id to fetch reposted/saved tracks returned first 
         base_query = (
-            session.query(Track)
+            session.query(
+                Track
+            )
             .join(
                 Remix,
                 and_(
@@ -2063,30 +2073,46 @@ def get_remixes_of(track_id):
                     Repost.is_current == True,
                     Repost.is_delete == False
                 )
-            ).filter(
+            ).outerjoin(
+                repost_count_subquery,
+                repost_count_subquery.c['id'] == Track.track_id
+            ).outerjoin(
+                save_count_subquery,
+                save_count_subquery.c['id'] == Track.track_id
+            )
+            .filter(
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.is_unlisted == False
             )
+            # 1. Co-signed tracks ordered by save + repost count
+            # 2. Other tracks ordered by save + repost count
             .order_by(
                 desc(
-                    case([
-                        (and_(Repost.created_at == None, Save.created_at == None), 0),
-                    ],
-                    else_ = 1)
+                    # If there is no "co-sign" for the track (no repost or save from the parent owner),
+                    # defer to secondary sort
+                    case(
+                        [
+                            (and_(Repost.created_at == None, Save.created_at == None), 0),
+                        ],
+                        else_ = (
+                            func.coalesce(repost_count_subquery.c.repost_count, 0) + \
+                            func.coalesce(save_count_subquery.c.save_count, 0)
+                        )
+                    )
                 ),
+                # Order by saves + reposts
                 desc(
-                    case([
-                        (or_(Repost.created_at == None, Repost.created_at <= Save.created_at), Save.created_at),
-                        (or_(Save.created_at == None, Repost.created_at >= Save.created_at), Repost.created_at)
-                    ],
-                    else_ = None)
+                    func.coalesce(repost_count_subquery.c.repost_count, 0) + \
+                    func.coalesce(save_count_subquery.c.save_count, 0)
                 ),
+                # Ties, pick latest track id
                 desc(Track.track_id)
             )
         )
 
-        tracks = paginate_query(base_query).all()
+        (tracks, count) = paginate_query(base_query, True, True)
+        tracks = tracks.all()
         tracks = helpers.query_result_to_list(tracks)
         track_ids = list(map(lambda track: track["track_id"], tracks))
         current_user_id = get_current_user_id(required=False)
@@ -2095,7 +2121,7 @@ def get_remixes_of(track_id):
         if "with_users" in request.args and request.args.get("with_users") != 'false':
             add_users_to_tracks(session, tracks)
 
-    return api_helpers.success_response(tracks)
+    return api_helpers.success_response({ 'tracks': tracks, 'count': count }, 200)
 
 # Get the tracks that are 'parent' remixes of the requested track
 @bp.route("/remixes/<int:track_id>/parents", methods=("GET",))

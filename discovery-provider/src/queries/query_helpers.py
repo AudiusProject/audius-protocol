@@ -875,10 +875,13 @@ def get_pagination_vars():
     return (limit, offset)
 
 
-def paginate_query(query_obj, apply_offset=True):
+def paginate_query(query_obj, apply_offset=True, include_count=False):
     (limit, offset) = get_pagination_vars()
-    query_obj = query_obj.limit(limit)
-    return query_obj.offset(offset) if apply_offset else query_obj
+    modified_query = query_obj.limit(limit)
+    modified_query = modified_query.offset(offset) if apply_offset else modified_query
+    if (include_count):
+        return (modified_query, query_obj.count())
+    return modified_query
 
 def get_genre_list(genre):
     genre_list = []
@@ -968,6 +971,76 @@ def create_save_repost_count_subquery(session, type):
         .subquery()
     )
     return subquery
+
+def create_save_count_subquery(session, type):
+    """
+    Creates a subquery for `type` that represents the save count.
+
+    For example, to get the tracks with the largest save count:
+        subquery = create_save_count_subquery(session, 'track')
+        session
+            .query(tracks)
+            .join(subquery, tracks.track_id = subquery.c.id)
+            .order_by(desc(subquery.c.save_count))
+
+    Args:
+        session: SQLAlchemy session.
+        type: (string) The type of save/repost (album, playlist, track)
+
+    Returns: A subquery with two fields `id` and `save_count`.
+    """
+    subquery = (
+        session.query(
+            Save.save_item_id.label('id'),
+            func.count(Save.save_item_id).label(response_name_constants.save_count)
+        )
+        .filter(
+            Save.is_current == True,
+            Save.is_delete == False,
+            Save.save_type == type
+        )
+        .group_by(
+            Save.save_item_id
+        )
+        .subquery()
+    )
+    return subquery
+
+
+def create_repost_count_subquery(session, type):
+    """
+    Creates a subquery for `type` that represents the repost count.
+
+    For example, to get the tracks with the largest repost count:
+        subquery = create_repost_count_subquery(session, 'track')
+        session
+            .query(tracks)
+            .join(subquery, tracks.track_id = subquery.c.id)
+            .order_by(desc(subquery.c.repost_count))
+
+    Args:
+        session: SQLAlchemy session.
+        type: (string) The type of save/repost (album, playlist, track)
+
+    Returns: A subquery with two fields `id` and `repost_count`.
+    """
+    subquery = (
+        session.query(
+            Repost.repost_item_id.label('id'),
+            func.count(Repost.repost_item_id).label(response_name_constants.repost_count)
+        )
+        .filter(
+            Repost.is_current == True,
+            Repost.is_delete == False,
+            Repost.repost_type == type
+        )
+        .group_by(
+            Repost.repost_item_id
+        )
+        .subquery()
+    )
+    return subquery
+
 
 def create_followee_playlists_subquery(session, current_user_id):
     """
