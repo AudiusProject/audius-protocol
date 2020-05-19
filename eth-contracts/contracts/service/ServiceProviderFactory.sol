@@ -190,14 +190,16 @@ contract ServiceProviderFactory is RegistryContract {
         spDetails[msg.sender].numberOfEndpoints = spDetails[msg.sender].numberOfEndpoints.add(1);
 
         // Update deployer total
-        spDetails[msg.sender].deployerStake = spDetails[msg.sender].deployerStake.add(_stakeAmount);
+        spDetails[msg.sender].deployerStake = (
+            spDetails[msg.sender].deployerStake.add(_stakeAmount)
+        );
 
         // Update min and max totals for this service provider
         (uint typeMin, uint typeMax) = ServiceTypeManager(
             registry.getContract(serviceTypeManagerKey)
         ).getServiceTypeStakeInfo(_serviceType);
-        spDetails[msg.sender].minAccountStake += typeMin;
-        spDetails[msg.sender].maxAccountStake += typeMax;
+        spDetails[msg.sender].minAccountStake = spDetails[msg.sender].minAccountStake.add(typeMin);
+        spDetails[msg.sender].maxAccountStake = spDetails[msg.sender].maxAccountStake.add(typeMax);
 
         // Confirm both aggregate account balance and directly staked amount are valid
         uint currentlyStakedForOwner = this.validateAccountStakeBalance(msg.sender);
@@ -235,7 +237,7 @@ contract ServiceProviderFactory is RegistryContract {
             // Submit request to decrease stake, overriding any pending request
             decreaseStakeRequests[msg.sender] = DecreaseStakeRequest({
                 decreaseAmount: unstakeAmount,
-                lockupExpiryBlock: block.number + decreaseStakeLockupDuration
+                lockupExpiryBlock: block.number.add(decreaseStakeLockupDuration)
             });
 
             unstaked = true;
@@ -252,8 +254,8 @@ contract ServiceProviderFactory is RegistryContract {
         serviceProviderEndpointToId[keccak256(bytes(_endpoint))] = 0;
 
         require(
-          keccak256(bytes(serviceProviderInfo[_serviceType][deregisteredID].endpoint)) == keccak256(bytes(_endpoint)),
-          "Invalid endpoint for service type");
+            keccak256(bytes(serviceProviderInfo[_serviceType][deregisteredID].endpoint)) == keccak256(bytes(_endpoint)),
+            "Invalid endpoint for service type");
 
         require (
             serviceProviderInfo[_serviceType][deregisteredID].owner == msg.sender,
@@ -281,8 +283,8 @@ contract ServiceProviderFactory is RegistryContract {
         (uint typeMin, uint typeMax) = ServiceTypeManager(
             registry.getContract(serviceTypeManagerKey)
         ).getServiceTypeStakeInfo(_serviceType);
-        spDetails[msg.sender].minAccountStake -= typeMin;
-        spDetails[msg.sender].maxAccountStake -= typeMax;
+        spDetails[msg.sender].minAccountStake = spDetails[msg.sender].minAccountStake.sub(typeMin);
+        spDetails[msg.sender].maxAccountStake = spDetails[msg.sender].maxAccountStake.sub(typeMax);
 
         emit DeregisteredServiceProvider(
             deregisteredID,
@@ -324,7 +326,9 @@ contract ServiceProviderFactory is RegistryContract {
         uint newStakeAmount = stakingContract.totalStakedFor(msg.sender);
 
         // Update deployer total
-        spDetails[msg.sender].deployerStake += _increaseStakeAmount;
+        spDetails[msg.sender].deployerStake = (
+            spDetails[msg.sender].deployerStake.add(_increaseStakeAmount)
+        );
 
         // Confirm both aggregate account balance and directly staked amount are valid
         this.validateAccountStakeBalance(msg.sender);
@@ -356,17 +360,17 @@ contract ServiceProviderFactory is RegistryContract {
 
         decreaseStakeRequests[msg.sender] = DecreaseStakeRequest({
             decreaseAmount: _decreaseStakeAmount,
-            lockupExpiryBlock: block.number + decreaseStakeLockupDuration
+            lockupExpiryBlock: block.number.add(decreaseStakeLockupDuration)
         });
 
-        return currentStakeAmount - _decreaseStakeAmount;
+        return currentStakeAmount.sub(_decreaseStakeAmount);
     }
 
     function cancelDecreaseStakeRequest(address _account) external
     {
         require(
-          msg.sender == _account || msg.sender == registry.getContract(delegateManagerKey),
-          "Only callable from owner or DelegateManager"
+            msg.sender == _account || msg.sender == registry.getContract(delegateManagerKey),
+            "Only callable from owner or DelegateManager"
         );
         require(decreaseRequestIsPending(_account), "Decrease stake request must be pending");
 
@@ -398,7 +402,9 @@ contract ServiceProviderFactory is RegistryContract {
         uint newStakeAmount = stakingContract.totalStakedFor(msg.sender);
 
         // Update deployer total
-        spDetails[msg.sender].deployerStake -= decreaseStakeRequests[msg.sender].decreaseAmount;
+        spDetails[msg.sender].deployerStake = (
+            spDetails[msg.sender].deployerStake.sub(decreaseStakeRequests[msg.sender].decreaseAmount)
+        );
 
         // Confirm both aggregate account balance and directly staked amount are valid
         // During registration this validation is bypassed since no endpoints remain
@@ -570,7 +576,7 @@ contract ServiceProviderFactory is RegistryContract {
         return (
             decreaseStakeRequests[_sp].decreaseAmount,
             decreaseStakeRequests[_sp].lockupExpiryBlock
-        ); 
+        );
     }
 
     /// @notice Current unstake lockup duration
@@ -631,7 +637,8 @@ contract ServiceProviderFactory is RegistryContract {
     /**
      * @notice Boolean indicating whether a decrease request has been initiated
      */
-    function decreaseRequestIsPending(address _serviceProvider) internal view returns (bool pending) 
+    function decreaseRequestIsPending(address _serviceProvider)
+    internal view returns (bool pending)
     {
         return (
             (decreaseStakeRequests[_serviceProvider].lockupExpiryBlock > 0) &&

@@ -322,7 +322,7 @@ contract DelegateManager is RegistryContract {
         (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
 
         // Process claim for msg.sender
-        // Total locked parameter is equal to delegate locked up stake + service provider locked up stake 
+        // Total locked parameter is equal to delegate locked up stake + service provider locked up stake
         ClaimsManager(
             registry.getContract(claimsManagerKey)
         ).processClaim(
@@ -639,7 +639,7 @@ contract DelegateManager is RegistryContract {
     /**
      * @notice Boolean indicating whether a decrease request has been initiated
      */
-    function undelegateRequestIsPending(address _delegator) internal view returns (bool pending) 
+    function undelegateRequestIsPending(address _delegator) internal view returns (bool pending)
     {
         return (
             (undelegateRequests[_delegator].lockupExpiryBlock != 0) &&
