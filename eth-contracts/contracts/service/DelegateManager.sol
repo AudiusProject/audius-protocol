@@ -121,7 +121,7 @@ contract DelegateManager is RegistryContract {
     {
         _requireIsInitialized();
         require(
-            claimPending(_targetSP) == false,
+            _claimPending(_targetSP) == false,
             "Delegation not permitted for SP pending claim"
         );
         address delegator = msg.sender;
@@ -137,7 +137,7 @@ contract DelegateManager is RegistryContract {
         );
 
         // Update list of delegators to SP if necessary
-        if (!delegatorExistsForSP(delegator, _targetSP)) {
+        if (!_delegatorExistsForSP(delegator, _targetSP)) {
             // If not found, update list of delegates
             spDelegateInfo[_targetSP].delegators.push(delegator);
             require(
@@ -183,19 +183,14 @@ contract DelegateManager is RegistryContract {
     {
         _requireIsInitialized();
         require(
-            claimPending(_target) == false,
+            _claimPending(_target) == false,
             "Undelegate request not permitted for SP pending claim"
         );
         address delegator = msg.sender;
-        require(delegatorExistsForSP(delegator, _target), "Delegator must be staked for SP");
+        require(_delegatorExistsForSP(delegator, _target), "Delegator must be staked for SP");
 
         // Confirm no pending delegation request
-        require(
-            (undelegateRequests[delegator].lockupExpiryBlock == 0) &&
-            (undelegateRequests[delegator].amount == 0) &&
-            (undelegateRequests[delegator].serviceProvider == address(0)),
-            "No pending lockup expected"
-        );
+        require(!_undelegateRequestIsPending(delegator), "No pending lockup expected");
 
         // Ensure valid bounds
         uint currentlyDelegatedToSP = delegateInfo[delegator][_target];
@@ -220,12 +215,7 @@ contract DelegateManager is RegistryContract {
         _requireIsInitialized();
         address delegator = msg.sender;
         // Confirm pending delegation request
-        require(
-            (undelegateRequests[delegator].lockupExpiryBlock != 0) &&
-            (undelegateRequests[delegator].amount != 0) &&
-            (undelegateRequests[delegator].serviceProvider != address(0)),
-            "Pending lockup expected"
-        );
+        require(_undelegateRequestIsPending(delegator), "Pending lockup expected");
         // Remove pending request
         undelegateRequests[delegator] = UndelegateStakeRequest({
             lockupExpiryBlock: 0,
@@ -240,12 +230,7 @@ contract DelegateManager is RegistryContract {
         address delegator = msg.sender;
 
         // Confirm pending delegation request
-        require(
-            (undelegateRequests[delegator].lockupExpiryBlock != 0) &&
-            (undelegateRequests[delegator].amount != 0) &&
-            (undelegateRequests[delegator].serviceProvider != address(0)),
-            "Pending lockup expected"
-        );
+        require(_undelegateRequestIsPending(delegator), "Pending lockup expected");
 
         // Confirm lockup expiry has expired
         require(
@@ -253,7 +238,7 @@ contract DelegateManager is RegistryContract {
 
         // Confirm no pending claim for this service provider
         require(
-            claimPending(undelegateRequests[delegator].serviceProvider) == false,
+            _claimPending(undelegateRequests[delegator].serviceProvider) == false,
             "Undelegate not permitted for SP pending claim"
         );
 
@@ -319,13 +304,9 @@ contract DelegateManager is RegistryContract {
         return delegateInfo[delegator][serviceProvider];
     }
 
-    /*
-      TODO: See if its worth splitting processClaim into a separate tx?
-      Primary concern is around gas consumption...
-      This tx ends up minting tokens, transferring to staking, and doing below updates
-      Can be stress tested and split out if needed
-    */
-    // Distribute proceeds of reward
+    /**
+     * @notice Claim and distribute rewards to delegators as necessary
+     */
     function claimRewards() external {
         _requireIsInitialized();
 
@@ -337,12 +318,16 @@ contract DelegateManager is RegistryContract {
         (,,bool withinBounds,,,) = spFactory.getServiceProviderDetails(msg.sender);
         require(withinBounds, "Service provider must be within bounds");
 
+        // Account for any pending locked up stake for the service provider
+        (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
+
         // Process claim for msg.sender
+        // Total locked parameter is equal to delegate locked up stake + service provider locked up stake
         ClaimsManager(
             registry.getContract(claimsManagerKey)
         ).processClaim(
             msg.sender,
-            spDelegateInfo[msg.sender].totalLockedUpStake
+            (spDelegateInfo[msg.sender].totalLockedUpStake + spLockedStake)
         );
 
         // Amount stored in staking contract for owner
@@ -353,6 +338,11 @@ contract DelegateManager is RegistryContract {
 
         // Amount in sp factory for claimer
         (uint totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(msg.sender);
+
+        // Decrease total balance by any locked up stake
+        totalBalanceInSPFactory -= spLockedStake;
+
+        // Require active stake to claim any rewards
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
 
         // Amount in delegate manager staked to service provider
@@ -410,6 +400,7 @@ contract DelegateManager is RegistryContract {
         // Update total delegated to this SP
         spDelegateInfo[msg.sender].totalDelegatedStake += totalDelegatedStakeIncrease;
 
+        // Rewards directly allocated to service provider for their stake
         uint spRewardShare = (
           totalBalanceInSPFactory.mul(totalRewards)
         ).div(totalActiveFunds);
@@ -420,6 +411,9 @@ contract DelegateManager is RegistryContract {
         );
     }
 
+    /**
+     * @notice Reduce current stake amount, only callable by governance
+     */
     function slash(uint _amount, address _slashAddress)
     external
     {
@@ -441,6 +435,12 @@ contract DelegateManager is RegistryContract {
         require(
             (totalBalanceInStakingPreSlash >= _amount),
             "Cannot slash more than total currently staked");
+
+        // Cancel any withdrawal request for this service provider
+        (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(_slashAddress);
+        if (spLockedStake > 0) {
+            spFactory.cancelDecreaseStakeRequest(_slashAddress);
+        }
 
         // Amount in sp factory for slash target
         (uint totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(_slashAddress);
@@ -612,7 +612,7 @@ contract DelegateManager is RegistryContract {
         return minDelegationAmount;
     }
 
-    function delegatorExistsForSP(
+    function _delegatorExistsForSP(
         address _delegator,
         address _serviceProvider
     ) internal view returns (bool exists)
@@ -626,11 +626,26 @@ contract DelegateManager is RegistryContract {
         return false;
     }
 
-    function claimPending(address _sp) internal view returns (bool pending) {
+    /**
+     * @notice Boolean indicating whether a claim is pending for this service provider
+     */
+    function _claimPending(address _sp) internal view returns (bool pending) {
         ClaimsManager claimsManager = ClaimsManager(
             registry.getContract(claimsManagerKey)
         );
         return claimsManager.claimPending(_sp);
+    }
+
+    /**
+     * @notice Boolean indicating whether a decrease request has been initiated
+     */
+    function _undelegateRequestIsPending(address _delegator) internal view returns (bool pending)
+    {
+        return (
+            (undelegateRequests[_delegator].lockupExpiryBlock != 0) &&
+            (undelegateRequests[_delegator].amount != 0) &&
+            (undelegateRequests[_delegator].serviceProvider != address(0))
+        );
     }
 }
 

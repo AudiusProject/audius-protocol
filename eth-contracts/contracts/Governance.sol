@@ -128,6 +128,12 @@ contract Governance is RegistryContract {
             "_targetContractRegistryKey must point to valid registered contract"
         );
 
+        // Signature cannot be empty
+        require(
+            bytes(_signature).length != 0,
+            "Governance::submitProposal: _signature cannot be empty."
+        );
+
         // set proposalId
         uint256 newProposalId = lastProposalId + 1;
 
@@ -183,7 +189,7 @@ contract Governance is RegistryContract {
         // Require proposal is still active
         require(
             proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance::submitProposalVote:Cannot vote on inactive proposal."
+            "Governance::submitProposalVote: Cannot vote on inactive proposal."
         );
 
         // Require proposal votingPeriod is still active.
@@ -191,11 +197,11 @@ contract Governance is RegistryContract {
         uint256 endBlockNumber = startBlockNumber + votingPeriod;
         require(
             block.number > startBlockNumber && block.number <= endBlockNumber,
-            "Governance::submitProposalVote:Proposal votingPeriod has ended"
+            "Governance::submitProposalVote: Proposal votingPeriod has ended"
         );
 
         // Require vote is not None.
-        require(_vote != Vote.None, "Governance::submitProposalVote:Cannot submit None vote");
+        require(_vote != Vote.None, "Governance::submitProposalVote: Cannot submit None vote");
 
         // Record previous vote.
         Vote previousVote = proposals[_proposalId].votes[voter];
@@ -240,13 +246,13 @@ contract Governance is RegistryContract {
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
-            "Governance::evaluateProposalOutcome:Must provide valid non-zero _proposalId."
+            "Governance::evaluateProposalOutcome: Must provide valid non-zero _proposalId."
         );
 
         // Require proposal has not already been evaluated.
         require(
             proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance::evaluateProposalOutcome:Cannot evaluate inactive proposal."
+            "Governance::evaluateProposalOutcome: Cannot evaluate inactive proposal."
         );
 
         // Require msg.sender is active Staker.
@@ -257,7 +263,7 @@ contract Governance is RegistryContract {
             stakingContract.totalStakedForAt(
                 msg.sender, proposals[_proposalId].startBlockNumber
             ) > 0,
-            "Governance::evaluateProposalOutcome:Caller must be active staker with non-zero stake."
+            "Governance::evaluateProposalOutcome: Caller must be active staker with non-zero stake."
         );
 
         // Require proposal votingPeriod has ended.
@@ -265,7 +271,7 @@ contract Governance is RegistryContract {
         uint256 endBlockNumber = startBlockNumber + votingPeriod;
         require(
             block.number > endBlockNumber,
-            "Governance::evaluateProposalOutcome:Proposal votingPeriod must end before evaluation."
+            "Governance::evaluateProposalOutcome: Proposal votingPeriod must end before evaluation."
         );
 
         // Require registered contract address for provided registryKey has not changed.
@@ -274,7 +280,7 @@ contract Governance is RegistryContract {
         );
         require(
             targetContractAddress == proposals[_proposalId].targetContractAddress,
-            "Governance::evaluateProposalOutcome:Registered contract address for targetContractRegistryKey has changed"
+            "Governance::evaluateProposalOutcome: Registered contract address for targetContractRegistryKey has changed"
         );
 
         // Calculate outcome
@@ -329,16 +335,16 @@ contract Governance is RegistryContract {
     function vetoProposal(uint256 _proposalId) external {
         _requireIsInitialized();
 
-        require(msg.sender == guardianAddress, "Governance::vetoProposal:Only guardian can veto proposals.");
+        require(msg.sender == guardianAddress, "Governance::vetoProposal: Only guardian can veto proposals.");
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
-            "Governance::vetoProposal:Must provide valid non-zero _proposalId."
+            "Governance::vetoProposal: Must provide valid non-zero _proposalId."
         );
 
         require(
             proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance::vetoProposal:Cannot veto inactive proposal."
+            "Governance::vetoProposal: Cannot veto inactive proposal."
         );
 
         proposals[_proposalId].outcome = Outcome.No;
@@ -359,14 +365,20 @@ contract Governance is RegistryContract {
 
         require(
             msg.sender == guardianAddress,
-            "Governance::guardianExecuteTransaction:Only guardian."
+            "Governance::guardianExecuteTransaction: Only guardian."
         );
 
         // Require _targetContractRegistryKey points to a valid registered contract
         address targetContractAddress = registry.getContract(_targetContractRegistryKey);
         require(
             targetContractAddress != address(0x00),
-            "Governance::guardianExecuteTransaction:_targetContractRegistryKey must point to valid registered contract"
+            "Governance::guardianExecuteTransaction: _targetContractRegistryKey must point to valid registered contract"
+        );
+
+        // Signature cannot be empty
+        require(
+            bytes(_signature).length != 0,
+            "Governance::guardianExecuteTransaction: _signature cannot be empty."
         );
 
         (bool success, bytes memory returnData) = _executeTransaction(
@@ -446,13 +458,7 @@ contract Governance is RegistryContract {
         bytes memory _callData
     ) internal returns (bool /** success */, bytes memory /** returnData */)
     {
-        bytes memory encodedCallData;
-        if (bytes(_signature).length == 0) {
-            encodedCallData = _callData;
-        } else {
-            encodedCallData = abi.encodePacked(bytes4(keccak256(bytes(_signature))), _callData);
-        }
-
+        bytes memory encodedCallData = abi.encodePacked(bytes4(keccak256(bytes(_signature))), _callData);
         (bool success, bytes memory returnData) = (
             // solium-disable-next-line security/no-call-value
             _targetContractAddress.call.value(_callValue)(encodedCallData)

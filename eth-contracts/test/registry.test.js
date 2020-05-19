@@ -85,28 +85,28 @@ contract('Registry', async (accounts) => {
 
     await _lib.assertRevert(
       registry.addContract(contractName, testContract2.address, { from: proxyDeployerAddress }),
-      "Registry::addContract:Contract already registered with given name."
+      "Registry::addContract: Contract already registered with given name."
     )
   })
 
   it('Fail to add register 0 address', async () => {
     await _lib.assertRevert(
       registry.addContract(contractName, _lib.addressZero, { from: proxyDeployerAddress }),
-      "Registry::addContract:Cannot register zero address."
+      "Registry::addContract: Cannot register zero address."
     )
   })
 
   it('Fail to fetch contract with invalid version', async () => {
     await _lib.assertRevert(
       registry.getContract.call(contractName, 2),
-      "Registry::getContract:Index out of range _version."
+      "Registry::getContract: Index out of range _version."
     )
   })
 
   it('Fail to remove unregistered contract', async () => {
     await _lib.assertRevert(
       registry.removeContract(contractName, { from: proxyDeployerAddress }),
-      "Registry::removeContract:Cannot remove - no contract registered with given _name."
+      "Registry::removeContract: Cannot remove - no contract registered with given _name."
     )
   })
 
@@ -115,7 +115,7 @@ contract('Registry', async (accounts) => {
 
     await _lib.assertRevert(
       registry.upgradeContract(contractName, testContract.address, { from: proxyDeployerAddress }),
-      "Registry::upgradeContract:Cannot upgrade - no contract registered with given _name."
+      "Registry::upgradeContract: Cannot upgrade - no contract registered with given _name."
     )
   })
 
@@ -125,14 +125,14 @@ contract('Registry', async (accounts) => {
 
     await _lib.assertRevert(
       testContract.kill(),
-      "RegistryContract::kill:Registry address has not yet been set."
+      "RegistryContract::kill: Registry address has not yet been set."
     )
 
     await registry.addContract(contractName, testContract.address, { from: proxyDeployerAddress })
 
     await _lib.assertRevert(
       testContract.kill(),
-      "RegistryContract::kill:Only registry can kill."
+      "RegistryContract::kill: Only registry can kill."
     )
   } )
 

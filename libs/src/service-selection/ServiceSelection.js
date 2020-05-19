@@ -209,6 +209,11 @@ class ServiceSelection {
     this.unhealthy.add(service)
   }
 
+  /** Gets unhealthy set size */
+  getUnhealthySize () {
+    return this.unhealthy.size
+  }
+
   /**
    * Adds a service to the list of backups
    * @param {string} service the service to add

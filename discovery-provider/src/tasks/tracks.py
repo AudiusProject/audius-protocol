@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from sqlalchemy.orm.session import make_transient
+from sqlalchemy.sql import null
 from src import contract_addresses
 from src.utils import multihash, helpers
 from src.models import Track, User, BlacklistedIPLD, Stem, Remix
@@ -145,7 +146,6 @@ def update_remixes_table(session, track_record, track_metadata):
                     )
                     session.add(remix)
 
-
 def parse_track_event(
         self, session, update_task, entry, event_type, track_record, block_timestamp
     ):
@@ -255,6 +255,10 @@ def parse_track_event(
 
     if event_type == track_event_types_lookup["delete_track"]:
         track_record.is_delete = True
+        if not track_record.stem_of:
+            track_record.stem_of = null()
+        if not track_record.remix_of:
+            track_record.remix_of = null()
         logger.info(f"Removing track : {track_record.track_id}")
 
     track_record.updated_at = block_datetime
@@ -294,8 +298,12 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.field_visibility = track_metadata["field_visibility"]
     if is_valid_json_field(track_metadata, "stem_of"):
         track_record.stem_of = track_metadata["stem_of"]
+    else:
+        track_record.stem_of = null()
     if is_valid_json_field(track_metadata, "remix_of"):
         track_record.remix_of = track_metadata["remix_of"]
+    else:
+        track_record.remix_of = null()
 
     if "download" in track_metadata:
         track_record.download = {

@@ -45,11 +45,11 @@ contract Registry is InitializableV2, Ownable {
         _requireIsInitialized();
         require(
             addressStorage[_name] == address(0x00),
-            "Registry::addContract:Contract already registered with given name."
+            "Registry::addContract: Contract already registered with given name."
         );
         require(
             _address != address(0x00),
-            "Registry::addContract:Cannot register zero address."
+            "Registry::addContract: Cannot register zero address."
         );
         RegistryContractInterface(_address).setRegistry(address(this));
         setAddress(_name, _address);
@@ -72,7 +72,7 @@ contract Registry is InitializableV2, Ownable {
         // array length for key implies version number
         require(
             _version <= addressStorageHistory[_name].length,
-            "Registry::getContract:Index out of range _version."
+            "Registry::getContract: Index out of range _version."
         );
         return addressStorageHistory[_name][_version - 1];
     }
@@ -90,7 +90,7 @@ contract Registry is InitializableV2, Ownable {
         address contractAddress = addressStorage[_name];
         require(
             contractAddress != address(0x00),
-            "Registry::removeContract:Cannot remove - no contract registered with given _name."
+            "Registry::removeContract: Cannot remove - no contract registered with given _name."
         );
         RegistryContractInterface(contractAddress).kill();
         setAddress(_name, address(0x00));
@@ -107,7 +107,7 @@ contract Registry is InitializableV2, Ownable {
         address oldAddress = addressStorage[_name];
         require(
             oldAddress != address(0x00),
-            "Registry::upgradeContract:Cannot upgrade - no contract registered with given _name."
+            "Registry::upgradeContract: Cannot upgrade - no contract registered with given _name."
         );
         RegistryContractInterface(oldAddress).kill();
         RegistryContractInterface(_newAddress).setRegistry(address(this));

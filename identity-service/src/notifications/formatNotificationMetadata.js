@@ -77,6 +77,35 @@ function formatAnnouncement (notification) {
   }
 }
 
+function formatRemixCreate (notification, metadata) {
+  const {
+    'entity_id': trackId,
+    'entity_owner_id': userId,
+    'remix_parent_track_user_id': parentTrackUserId,
+    'remix_parent_track_id': parentTrackId
+  } = notification.metadata
+
+  return {
+    type: NotificationType.RemixCreate,
+    remixUser: metadata.users[userId],
+    remixTrack: metadata.tracks[trackId],
+    parentTrackUser: metadata.users[parentTrackUserId],
+    parentTrack: metadata.tracks[parentTrackId]
+  }
+}
+
+function formatRemixCosign (notification, metadata) {
+  const {
+    'entity_id': trackId
+  } = notification.metadata
+  const parentTrackUserId = notification.initiator
+  return {
+    type: NotificationType.RemixCosign,
+    parentTrackUser: metadata.users[parentTrackUserId],
+    remixTrack: metadata.tracks[trackId]
+  }
+}
+
 const notificationResponseMap = {
   [NotificationType.Follow]: formatFollow,
   [NotificationType.FavoriteTrack]: (notification, metadata) => {
@@ -129,6 +158,12 @@ const notificationResponseMap = {
     })
     return formatUserSubscription(notification, metadata, { type: Entity.Playlist, count: 1, name: collection.playlist_name }, users)
   },
+  [NotificationType.RemixCreate]: (notification, metadata) => {
+    return formatRemixCreate(notification, metadata)
+  },
+  [NotificationType.RemixCosign]: (notification, metadata) => {
+    return formatRemixCosign(notification, metadata)
+  },
   [NotificationType.Announcement]: formatAnnouncement,
   [NotificationType.MilestoneRepost]: formatMilestone('Repost'),
   [NotificationType.MilestoneFavorite]: formatMilestone('Favorite'),
@@ -142,6 +177,10 @@ const NewFollowerTitle = 'New Follower'
 const NewMilestoneTitle = 'Congratulations! 🎉'
 const NewSubscriptionUpdateTitle = 'New Artist Update'
 
+// TODO verify these...
+const RemixCreateTitle = 'New Remix Of Your Track ♻️'
+const RemixCosignTitle = 'New Track Co-Sign! 🔥'
+
 const notificationResponseTitleMap = {
   [NotificationType.Follow]: NewFollowerTitle,
   [NotificationType.FavoriteTrack]: NewFavoriteTitle,
@@ -153,7 +192,9 @@ const notificationResponseTitleMap = {
   [NotificationType.CreateTrack]: NewSubscriptionUpdateTitle,
   [NotificationType.CreateAlbum]: NewSubscriptionUpdateTitle,
   [NotificationType.CreatePlaylist]: NewSubscriptionUpdateTitle,
-  [NotificationType.Milestone]: NewMilestoneTitle
+  [NotificationType.Milestone]: NewMilestoneTitle,
+  [NotificationType.RemixCreate]: RemixCreateTitle,
+  [NotificationType.RemixCosign]: RemixCosignTitle
 }
 
 function formatNotificationProps (notifications, metadata) {
@@ -196,6 +237,12 @@ const pushNotificationMessagesMap = {
       return `${user.name} released ${notification.entity.count} new ${type}s`
     }
     return `${user.name} released a new ${type} ${notification.entity.name}`
+  },
+  [notificationTypes.RemixCreate] (notification) {
+    return `New remix of your track ${notification.parentTrack.title}: ${notification.remixUser.name} uploaded ${notification.remixTrack.title}`
+  },
+  [notificationTypes.RemixCosign] (notification) {
+    return `${notification.parentTrackUser.name} Co-Signed your Remix of ${notification.remixTrack.title}`
   }
 }
 
