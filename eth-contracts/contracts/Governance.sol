@@ -1,8 +1,8 @@
 pragma solidity ^0.5.0;
 
-import "./service/registry/RegistryContract.sol";
-import "./staking/Staking.sol";
-import "./service/interface/registry/RegistryInterface.sol";
+import "./registry/RegistryContract.sol";
+import "./Staking.sol";
+import "./interface/RegistryInterface.sol";
 
 
 contract Governance is RegistryContract {

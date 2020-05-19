@@ -2,7 +2,7 @@ pragma solidity ^0.5.0;
 
 import "@openzeppelin/upgrades/contracts/upgradeability/AdminUpgradeabilityProxy.sol";
 
-import "./service/interface/registry/RegistryInterface.sol";
+import "./interface/RegistryInterface.sol";
 
 
 /**

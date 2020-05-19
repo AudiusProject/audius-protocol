@@ -4,8 +4,8 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mint
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 
 import "./registry/RegistryContract.sol";
-import "./interface/registry/RegistryInterface.sol";
-import "../staking/Staking.sol";
+import "./interface/RegistryInterface.sol";
+import "./Staking.sol";
 import "./ServiceProviderFactory.sol";
 import "./ClaimsManager.sol";
 

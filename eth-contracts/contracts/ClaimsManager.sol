@@ -1,9 +1,9 @@
 pragma solidity ^0.5.0;
-import "../staking/Staking.sol";
+import "./Staking.sol";
 import "./registry/RegistryContract.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
-import "./interface/registry/RegistryInterface.sol";
+import "./interface/RegistryInterface.sol";
 import "./ServiceProviderFactory.sol";
 
 

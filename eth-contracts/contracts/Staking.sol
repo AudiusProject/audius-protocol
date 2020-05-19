@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-import "../service/interface/registry/RegistryInterface.sol";
+import "./interface/RegistryInterface.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
@@ -8,7 +8,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burn
 import "@openzeppelin/contracts-ethereum-package/contracts/utils/Address.sol";
 import "@aragon/court/contracts/lib/Checkpointing.sol";
 import "@aragon/court/contracts/lib/os/Uint256Helpers.sol";
-import "../service/registry/RegistryContract.sol";
+import "./registry/RegistryContract.sol";
 
 
 /** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */

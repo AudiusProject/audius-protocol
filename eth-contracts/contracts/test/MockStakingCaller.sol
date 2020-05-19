@@ -1,8 +1,8 @@
 pragma solidity ^0.5.0;
-import "../service/registry/RegistryContract.sol";
+import "../registry/RegistryContract.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
-import "../staking/Staking.sol";
+import "../Staking.sol";
 
 
 // TEST ONLY MOCK CONTRACT

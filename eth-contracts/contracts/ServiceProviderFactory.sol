@@ -3,8 +3,8 @@ pragma solidity ^0.5.0;
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "./registry/RegistryContract.sol";
 import "./ServiceTypeManager.sol";
-import "../staking/Staking.sol";
-import "./interface/registry/RegistryInterface.sol";
+import "./Staking.sol";
+import "./interface/RegistryInterface.sol";
 
 
 contract ServiceProviderFactory is RegistryContract {
