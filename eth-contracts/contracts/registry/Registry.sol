@@ -4,8 +4,8 @@ import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 
-import "../../InitializableV2.sol";
-import "../interface/registry/RegistryContractInterface.sol";
+import "../InitializableV2.sol";
+import "../interface/RegistryContractInterface.sol";
 
 
 /**

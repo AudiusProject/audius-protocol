@@ -2,7 +2,7 @@ pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "./registry/RegistryContract.sol";
-import "./interface/registry/RegistryInterface.sol";
+import "./interface/RegistryInterface.sol";
 
 
 /** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */

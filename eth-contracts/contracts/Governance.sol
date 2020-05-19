@@ -1,9 +1,9 @@
 pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
-import "./service/registry/RegistryContract.sol";
-import "./staking/StakingInterface.sol";
-import "./service/interface/registry/RegistryInterface.sol";
+import "./registry/RegistryContract.sol";
+import "./Staking.sol";
+import "./interface/RegistryInterface.sol";
 
 
 contract Governance is RegistryContract {
@@ -115,7 +115,7 @@ contract Governance is RegistryContract {
         address proposer = msg.sender;
 
         // Require proposer is active Staker
-        StakingInterface stakingContract = StakingInterface(
+        Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
         require(
@@ -179,7 +179,7 @@ contract Governance is RegistryContract {
         );
 
         // Require voter is active Staker + get voterStake.
-        StakingInterface stakingContract = StakingInterface(
+        Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
         uint256 voterStake = stakingContract.totalStakedForAt(
@@ -258,7 +258,7 @@ contract Governance is RegistryContract {
         );
 
         // Require msg.sender is active Staker.
-        StakingInterface stakingContract = StakingInterface(
+        Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
         require(
