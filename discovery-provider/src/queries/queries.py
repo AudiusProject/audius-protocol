@@ -2086,7 +2086,8 @@ def get_remixes_of(track_id):
             )
         )
 
-        tracks = paginate_query(base_query).all()
+        (tracks, count) = paginate_query(base_query, True, True)
+        tracks = tracks.all()
         tracks = helpers.query_result_to_list(tracks)
         track_ids = list(map(lambda track: track["track_id"], tracks))
         current_user_id = get_current_user_id(required=False)
@@ -2095,7 +2096,7 @@ def get_remixes_of(track_id):
         if "with_users" in request.args and request.args.get("with_users") != 'false':
             add_users_to_tracks(session, tracks)
 
-    return api_helpers.success_response(tracks)
+    return api_helpers.success_response({ 'tracks': tracks, 'count': count }, 200)
 
 # Get the tracks that are 'parent' remixes of the requested track
 @bp.route("/remixes/<int:track_id>/parents", methods=("GET",))
