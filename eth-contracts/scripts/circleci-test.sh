@@ -15,7 +15,7 @@ printf '\nSTART Truffle tests:\n\n'
 
 if [ $# -eq 0 ]
 	then
-		node_modules/.bin/truffle test
+		node_modules/.bin/truffle test-coverage
 elif [ $1 == '--verbose-rpc' ] && [ $# -eq 1 ]
 	then
 		node_modules/.bin/truffle test --verbose-rpc
