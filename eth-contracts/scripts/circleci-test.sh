@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 <<COMMENT
 CircleCI Specific Test Script
@@ -13,15 +14,4 @@ sh ./scripts/lint.sh
 
 printf '\nSTART Truffle tests:\n\n'
 
-if [ $# -eq 0 ]
-	then
-		node_modules/.bin/truffle test-coverage
-elif [ $1 == '--verbose-rpc' ] && [ $# -eq 1 ]
-	then
-		node_modules/.bin/truffle test-coverage --verbose-rpc
-elif [ $1 == '--verbose-rpc' ] && [ $# -eq 2 ]
-	then
-		node_modules/.bin/truffle test-coverage --verbose-rpc $2
-else
-	node_modules/.bin/truffle test-coverage $1
-fi
+npm run test-coverage
