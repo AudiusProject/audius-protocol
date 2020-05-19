@@ -190,7 +190,7 @@ contract DelegateManager is RegistryContract {
         require(delegatorExistsForSP(delegator, _target), "Delegator must be staked for SP");
 
         // Confirm no pending delegation request
-        require(!undelegateRequestPending(delegator), "No pending lockup expected");
+        require(!undelegateRequestIsPending(delegator), "No pending lockup expected");
 
         // Ensure valid bounds
         uint currentlyDelegatedToSP = delegateInfo[delegator][_target];
@@ -215,7 +215,7 @@ contract DelegateManager is RegistryContract {
         _requireIsInitialized();
         address delegator = msg.sender;
         // Confirm pending delegation request
-        require(undelegateRequestPending(delegator), "Pending lockup expected");
+        require(undelegateRequestIsPending(delegator), "Pending lockup expected");
         // Remove pending request
         undelegateRequests[delegator] = UndelegateStakeRequest({
             lockupExpiryBlock: 0,
@@ -230,7 +230,7 @@ contract DelegateManager is RegistryContract {
         address delegator = msg.sender;
 
         // Confirm pending delegation request
-        require(undelegateRequestPending(delegator), "Pending lockup expected");
+        require(undelegateRequestIsPending(delegator), "Pending lockup expected");
 
         // Confirm lockup expiry has expired
         require(
@@ -626,6 +626,9 @@ contract DelegateManager is RegistryContract {
         return false;
     }
 
+    /**
+     * @notice Boolean indicating whether a claim is pending for this service provider
+     */
     function claimPending(address _sp) internal view returns (bool pending) {
         ClaimsManager claimsManager = ClaimsManager(
             registry.getContract(claimsManagerKey)
@@ -636,7 +639,7 @@ contract DelegateManager is RegistryContract {
     /**
      * @notice Boolean indicating whether a decrease request has been initiated
      */
-    function undelegateRequestPending(address _delegator) internal view returns (bool pending) 
+    function undelegateRequestIsPending(address _delegator) internal view returns (bool pending) 
     {
         return (
             (undelegateRequests[_delegator].lockupExpiryBlock != 0) &&
