@@ -41,6 +41,15 @@ contract ClaimsManager is RegistryContract {
     // Staking contract ref
     ERC20Mintable private audiusToken;
 
+    // Struct representing round state
+    struct Round {
+        uint fundBlock;
+        uint fundingAmount;
+    }
+
+    // Current round information
+    Round currentRound;
+
     event RoundInitiated(
       uint _blockNumber,
       uint _roundNumber,
