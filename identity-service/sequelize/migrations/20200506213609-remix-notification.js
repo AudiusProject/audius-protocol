@@ -14,14 +14,14 @@ module.exports = {
       await queryInterface.addColumn('UserNotificationBrowserSettings', 'remixes', {
         type: Sequelize.BOOLEAN,
         allowNull: false,
-        default: true
+        defaultValue: true
       },
       { transaction }
       )
       await queryInterface.addColumn('UserNotificationMobileSettings', 'remixes', {
         type: Sequelize.BOOLEAN,
         allowNull: false,
-        default: true
+        defaultValue: true
       },
       { transaction }
       )
