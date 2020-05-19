@@ -155,7 +155,7 @@ contract ServiceProviderFactory is RegistryContract {
         require(
             ServiceTypeManager(
                 registry.getContract(serviceTypeManagerKey)
-            ).isValidServiceType(_serviceType),
+            ).serviceTypeIsValid(_serviceType),
             "Valid service type required");
 
         // Stake token amount from msg.sender

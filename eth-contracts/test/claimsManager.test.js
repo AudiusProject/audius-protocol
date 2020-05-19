@@ -23,12 +23,7 @@ contract('ClaimsManager', async (accounts) => {
   let token, registry, staking0, stakingProxy, staking, claimsManager0, claimsManagerProxy, claimsManager
   let mockDelegateManager, mockStakingCaller
 
-  const BN = web3.utils.BN
   const [controllerAddress, proxyAdminAddress, proxyDeployerAddress, staker] = accounts
-
-  const getLatestBlock = async () => {
-    return web3.eth.getBlock('latest')
-  }
 
   const approveTransferAndStake = async (amount, staker) => {
     // Transfer default tokens to
@@ -234,7 +229,7 @@ contract('ClaimsManager', async (accounts) => {
 
     let lastClaimBlock = await claimsManager.getLastFundBlock()
     let claimDiff = await claimsManager.getFundingRoundBlockDiff()
-    let twiceClaimDiff = claimDiff.mul(new BN('2'))
+    let twiceClaimDiff = claimDiff.mul(_lib.toBN(2))
     let nextClaimBlockTwiceDiff = lastClaimBlock.add(twiceClaimDiff)
 
     // Advance blocks to the target
@@ -266,6 +261,21 @@ contract('ClaimsManager', async (accounts) => {
     await claimsManager.updateFundingAmount(newAmount, { from: controllerAddress })
     let updatedFundingAmount = await claimsManager.getFundsPerRound()
     assert.isTrue(newAmount.eq(updatedFundingAmount), 'Expect updated funding amount')
+  })
+
+  it('updates fundRoundBlockDiff', async () => {
+    const curBlockDiff = await claimsManager.getFundingRoundBlockDiff.call()
+    const proposedBlockDiff = curBlockDiff.mul(_lib.toBN(2))
+    await _lib.assertRevert(
+      claimsManager.updateFundingRoundBlockDiff(proposedBlockDiff, { from: accounts[7] }),
+      "Only accessible from controllerAddress"
+    )
+    await claimsManager.updateFundingRoundBlockDiff(proposedBlockDiff, { from: controllerAddress })
+    const newBlockDiff = await claimsManager.getFundingRoundBlockDiff.call()
+    assert.isTrue(
+      newBlockDiff.eq(proposedBlockDiff),
+      "Expected updated block diff"
+    )
   })
 
   it('minimum bound violation during claim processing,', async () => {

@@ -27,7 +27,7 @@ contract ClaimsManager is RegistryContract {
     bytes32 private delegateManagerKey;
 
     // Claim related configurations
-    uint private fundRoundBlockDiff;
+    uint private fundingRoundBlockDiff;
     uint private fundBlock;
 
     // TODO: Make this modifiable based on total staking pool?
@@ -72,7 +72,7 @@ contract ClaimsManager is RegistryContract {
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
 
-        fundRoundBlockDiff = 10;
+        fundingRoundBlockDiff = 10;
         fundBlock = 0;
         fundingAmount = 20 * 10**uint256(DECIMALS); // 20 AUDS = 20 * 10**uint256(DECIMALS)
         roundNumber = 0;
@@ -84,7 +84,7 @@ contract ClaimsManager is RegistryContract {
     function getFundingRoundBlockDiff()
     external view returns (uint blockDiff)
     {
-        return fundRoundBlockDiff;
+        return fundingRoundBlockDiff;
     }
 
     function getLastFundBlock()
@@ -118,7 +118,7 @@ contract ClaimsManager is RegistryContract {
             "Round must be initiated from account with staked value or contract deployer"
         );
         require(
-            block.number.sub(fundBlock) > fundRoundBlockDiff,
+            block.number.sub(fundBlock) > fundingRoundBlockDiff,
             "Required block difference not met"
         );
 
@@ -216,5 +216,13 @@ contract ClaimsManager is RegistryContract {
             registry.getContract(stakingProxyOwnerKey)
         ).lastClaimedFor(_sp);
         return (lastClaimedForSP < fundBlock);
+    }
+
+    function updateFundingRoundBlockDiff(uint _newFundingRoundBlockDiff) external {
+        require(
+            msg.sender == controllerAddress,
+            "Only accessible from controllerAddress"
+        );
+        fundingRoundBlockDiff = _newFundingRoundBlockDiff;
     }
 }
