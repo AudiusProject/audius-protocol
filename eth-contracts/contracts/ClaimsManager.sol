@@ -118,13 +118,13 @@ contract ClaimsManager is RegistryContract {
             "Round must be initiated from account with staked value or contract deployer"
         );
         require(
-            block.number - fundBlock > fundRoundBlockDiff,
+            block.number.sub(fundBlock) > fundRoundBlockDiff,
             "Required block difference not met"
         );
 
         fundBlock = block.number;
         totalClaimedInRound = 0;
-        roundNumber += 1;
+        roundNumber = roundNumber.add(1);
 
         emit RoundInitiated(
             fundBlock,
@@ -166,7 +166,7 @@ contract ClaimsManager is RegistryContract {
             "Maximum stake bounds violated at fund block");
 
         // Subtract total locked amount for SP from stake at fund block
-        uint claimerTotalStake = totalStakedAtFundBlockForClaimer - _totalLockedForSP;
+        uint claimerTotalStake = totalStakedAtFundBlockForClaimer.sub(_totalLockedForSP);
         uint totalStakedAtFundBlock = stakingContract.totalStakedAt(fundBlock);
 
         // Calculate claimer rewards
@@ -185,7 +185,7 @@ contract ClaimsManager is RegistryContract {
         stakingContract.stakeRewards(rewardsForClaimer, _claimer);
 
         // Update round claim value
-        totalClaimedInRound += rewardsForClaimer;
+        totalClaimedInRound = totalClaimedInRound.add(rewardsForClaimer);
 
         // Update round claim value
         uint newTotal = stakingContract.totalStakedFor(_claimer);
