@@ -337,7 +337,10 @@ contract Governance is RegistryContract {
     function vetoProposal(uint256 _proposalId) external {
         _requireIsInitialized();
 
-        require(msg.sender == guardianAddress, "Governance::vetoProposal: Only guardian can veto proposals.");
+        require(
+            msg.sender == guardianAddress,
+            "Governance::vetoProposal: Only guardian can veto proposals."
+        );
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
@@ -460,7 +463,9 @@ contract Governance is RegistryContract {
         bytes memory _callData
     ) internal returns (bool /** success */, bytes memory /** returnData */)
     {
-        bytes memory encodedCallData = abi.encodePacked(bytes4(keccak256(bytes(_signature))), _callData);
+        bytes memory encodedCallData = abi.encodePacked(
+            bytes4(keccak256(bytes(_signature))),
+            _callData);
         (bool success, bytes memory returnData) = (
             // solium-disable-next-line security/no-call-value
             _targetContractAddress.call.value(_callValue)(encodedCallData)
