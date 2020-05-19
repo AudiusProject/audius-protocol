@@ -53,26 +53,7 @@ contract ServiceTypeManager is RegistryContract {
         RegistryContract.initialize();
     }
 
-    function setServiceVersion(
-        bytes32 _serviceType,
-        bytes32 _serviceVersion
-    ) external
-    {
-        _requireIsInitialized();
-        require(controllerAddress == msg.sender, "Invalid signature for controller");
-
-        require(
-            serviceTypeVersionInfo[_serviceType][_serviceVersion] == false,
-            "Already registered");
-
-         // Update array of known types
-        serviceTypeVersions[_serviceType].push(_serviceVersion);
-
-        // Update status for this specific service version 
-        serviceTypeVersionInfo[_serviceType][_serviceVersion] = true;
-
-        emit SetServiceVersion(_serviceType, _serviceVersion);
-    }
+    // ========================================= Service Type Logic =========================================
 
     /// @notice Add a new service type
     function addServiceType(
@@ -85,7 +66,7 @@ contract ServiceTypeManager is RegistryContract {
         require(
             (msg.sender == controllerAddress || msg.sender == registry.getContract(governanceKey)),
             "Only controller or governance");
-        require(!this.isValidServiceType(_serviceType), "Already known service type");
+        require(!this.serviceTypeIsValid(_serviceType), "Already known service type");
         validServiceTypes.push(_serviceType);
         serviceTypeStakeRequirements[_serviceType] = ServiceTypeStakeRequirements({
             minStake: _serviceTypeMin,
@@ -129,9 +110,57 @@ contract ServiceTypeManager is RegistryContract {
         require(
             msg.sender == controllerAddress || msg.sender == registry.getContract(governanceKey),
             "Only controller or governance");
-        require(this.isValidServiceType(_serviceType), "Invalid service type");
+        require(this.serviceTypeIsValid(_serviceType), "Invalid service type");
         serviceTypeStakeRequirements[_serviceType].minStake = _serviceTypeMin;
         serviceTypeStakeRequirements[_serviceType].maxStake = _serviceTypeMax;
+    }
+
+    /// @notice Get min and max stake for a given service type
+    /// @return min/max stake for type
+    function getServiceTypeStakeInfo(bytes32 _serviceType)
+    external view returns (uint min, uint max)
+    {
+        return (
+            serviceTypeStakeRequirements[_serviceType].minStake,
+            serviceTypeStakeRequirements[_serviceType].maxStake
+        );
+    }
+
+    /// @notice Get list of valid service types
+    function getValidServiceTypes()
+    external view returns (bytes32[] memory types)
+    {
+        return validServiceTypes;
+    }
+
+    /// @notice Return indicating whether this is a valid service type
+    function serviceTypeIsValid(bytes32 _serviceType)
+    external view returns (bool isValid)
+    {
+        return serviceTypeStakeRequirements[_serviceType].maxStake > 0;
+    }
+
+    // ========================================= Service Version Logic =========================================
+
+    function setServiceVersion(
+        bytes32 _serviceType,
+        bytes32 _serviceVersion
+    ) external
+    {
+        _requireIsInitialized();
+        require(controllerAddress == msg.sender, "Invalid signature for controller");
+
+        require(
+            serviceTypeVersionInfo[_serviceType][_serviceVersion] == false,
+            "Already registered");
+
+         // Update array of known types
+        serviceTypeVersions[_serviceType].push(_serviceVersion);
+
+        // Update status for this specific service version 
+        serviceTypeVersionInfo[_serviceType][_serviceVersion] = true;
+
+        emit SetServiceVersion(_serviceType, _serviceVersion);
     }
 
     function getVersion(bytes32 _serviceType, uint _versionIndex)
@@ -161,33 +190,8 @@ contract ServiceTypeManager is RegistryContract {
         return serviceTypeVersions[_serviceType].length;
     }
 
-    /// @notice Get min and max stake for a given service type
-    /// @return min/max stake for type
-    function getServiceTypeStakeInfo(bytes32 _serviceType)
-    external view returns (uint min, uint max)
-    {
-        return (
-            serviceTypeStakeRequirements[_serviceType].minStake,
-            serviceTypeStakeRequirements[_serviceType].maxStake
-        );
-    }
-
-    /// @notice Get list of valid service types
-    function getValidServiceTypes()
-    external view returns (bytes32[] memory types)
-    {
-        return validServiceTypes;
-    }
-
-    /// @notice Return indicating whether this is a valid service type
-    function isValidServiceType(bytes32 _serviceType)
-    external view returns (bool isValid)
-    {
-        return serviceTypeStakeRequirements[_serviceType].maxStake > 0;
-    }
-
-    /// @notice Return boolean indicating whether this is a valid service version
-    function isValidVersion(bytes32 _serviceType, bytes32 _serviceVersion)
+    /** @notice Return boolean indicating whether given version is valid for given type. */
+    function serviceVersionIsValid(bytes32 _serviceType, bytes32 _serviceVersion)
     external view returns (bool isValidServiceVersion)
     {
         return serviceTypeVersionInfo[_serviceType][_serviceVersion];
