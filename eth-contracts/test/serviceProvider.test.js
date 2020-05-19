@@ -783,7 +783,7 @@ contract('ServiceProvider test', async (accounts) => {
       let typeMin = _lib.audToWeiBN(200)
       let typeMax = _lib.audToWeiBN(20000)
       let testType = web3.utils.utf8ToHex('test-service')
-      let isValid = await serviceTypeManager.isValidServiceType(testType)
+      let isValid = await serviceTypeManager.serviceTypeIsValid(testType)
       assert.isTrue(!isValid, 'Invalid type expected')
 
       // Expect failure as service type has not been registered
@@ -815,15 +815,17 @@ contract('ServiceProvider test', async (accounts) => {
 
       // bytes32 version string
       let testVersion = web3.utils.utf8ToHex('0.0.1')
-
-      // Confirm invalid address fails set operation
-      await _lib.assertRevert(
-        serviceTypeManager.setServiceVersion(testType, testVersion, { from: accounts[3] }),
-        'Invalid signature'
+      assert.isFalse(
+        await serviceTypeManager.serviceVersionIsValid(testType, testVersion),
+        'Expect invalid version prior to registration'
       )
 
-      // Set service version
       await serviceTypeManager.setServiceVersion(testType, testVersion, { from: controllerAddress })
+
+      assert.isTrue(
+        await serviceTypeManager.serviceVersionIsValid(testType, testVersion),
+        'Expect version after registration'
+      )
       await _lib.assertRevert(
         serviceTypeManager.setServiceVersion(testType, testVersion, { from: controllerAddress }),
         'Already registered')
@@ -864,7 +866,7 @@ contract('ServiceProvider test', async (accounts) => {
         await serviceTypeManager.getCurrentVersion(testType),
         'Expect equal current and last index')
 
-      isValid = await serviceTypeManager.isValidServiceType(testType)
+      isValid = await serviceTypeManager.serviceTypeIsValid(testType)
       assert.isTrue(isValid, 'Expect valid type after registration')
 
       let info = await serviceTypeManager.getServiceTypeStakeInfo(testType)
@@ -901,7 +903,7 @@ contract('ServiceProvider test', async (accounts) => {
 
       await serviceTypeManager.removeServiceType(testType, { from: controllerAddress })
 
-      isValid = await serviceTypeManager.isValidServiceType(testType)
+      isValid = await serviceTypeManager.serviceTypeIsValid(testType)
       assert.isTrue(!isValid, 'Expect invalid type after deregistration')
     })
   })
