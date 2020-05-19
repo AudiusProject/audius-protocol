@@ -349,7 +349,7 @@ contract ServiceProviderFactory is RegistryContract {
     {
         _requireIsInitialized();
 
-        StakingInterface stakingContract = StakingInterface(
+        Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
 
@@ -391,7 +391,7 @@ contract ServiceProviderFactory is RegistryContract {
             "Lockup must be expired"
         );
 
-        StakingInterface stakingContract = StakingInterface(
+        Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
 
