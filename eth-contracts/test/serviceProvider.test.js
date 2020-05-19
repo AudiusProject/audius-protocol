@@ -588,9 +588,10 @@ contract('ServiceProvider test', async (accounts) => {
       const initialBal = await token.balanceOf(stakerAccount)
       const decreaseStakeAmount = DEFAULT_AMOUNT.div(_lib.toBN(2))
 
+      // Subtraction overflow when subtracting decrease amount of 10 AUD from 0 balance
       await _lib.assertRevert(
         decreaseRegisteredProviderStake(_lib.audToWeiBN(10), accounts[4]),
-        'Registered endpoint required to decrease stake'
+        'SafeMath: subtraction overflow'
       )
 
       await decreaseRegisteredProviderStake(decreaseStakeAmount, stakerAccount)
@@ -626,7 +627,7 @@ contract('ServiceProvider test', async (accounts) => {
           initialStake,
           stakerAccount
         ),
-        'Please deregister endpoints to remove all stake'
+        'Minimum stake threshold exceeded'
       )
     })
 

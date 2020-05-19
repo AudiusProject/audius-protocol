@@ -1,5 +1,6 @@
 pragma solidity ^0.5.0;
 
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "./registry/RegistryContract.sol";
 import "./ServiceTypeManager.sol";
 import "../staking/StakingInterface.sol";
@@ -7,6 +8,7 @@ import "./interface/registry/RegistryInterface.sol";
 
 
 contract ServiceProviderFactory is RegistryContract {
+    using SafeMath for uint;
     RegistryInterface private registry = RegistryInterface(0);
     bytes32 private stakingProxyOwnerKey;
     bytes32 private delegateManagerKey;
@@ -167,7 +169,7 @@ contract ServiceProviderFactory is RegistryContract {
             serviceProviderEndpointToId[keccak256(bytes(_endpoint))] == 0,
             "Endpoint already registered");
 
-        uint newServiceProviderID = serviceProviderTypeIDs[_serviceType] + 1;
+        uint newServiceProviderID = serviceProviderTypeIDs[_serviceType].add(1);
         serviceProviderTypeIDs[_serviceType] = newServiceProviderID;
 
         // Index spInfo
@@ -350,7 +352,7 @@ contract ServiceProviderFactory is RegistryContract {
         uint currentStakeAmount = stakingContract.totalStakedFor(msg.sender);
 
         // Prohibit decreasing stake to invalid bounds
-        validateBalanceInternal(msg.sender, (currentStakeAmount - _decreaseStakeAmount));
+        validateBalanceInternal(msg.sender, (currentStakeAmount.sub(_decreaseStakeAmount)));
 
         decreaseStakeRequests[msg.sender] = DecreaseStakeRequest({
             decreaseAmount: _decreaseStakeAmount,
