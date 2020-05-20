@@ -169,7 +169,6 @@ jobs:
       - run:
           name: run_tests
           command: |
-            set +e # remove this
             cd eth-contracts
             npm run test-circle-ci
             cd ../
