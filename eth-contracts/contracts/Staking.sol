@@ -23,9 +23,6 @@ contract Staking is RegistryContract {
     string private constant ERROR_TOKEN_TRANSFER = "STAKING_TOKEN_TRANSFER";
     string private constant ERROR_NOT_ENOUGH_BALANCE = "STAKING_NOT_ENOUGH_BALANCE";
 
-    // Reward tracking info
-    uint256 internal currentClaimBlock;
-
     struct Account {
         Checkpointing.History stakedHistory;
         Checkpointing.History claimHistory;
@@ -37,7 +34,6 @@ contract Staking is RegistryContract {
     mapping (address => Account) internal accounts;
     Checkpointing.History internal totalStakedHistory;
 
-    address registryAddress;
     bytes32 claimsManagerProxyKey;
     bytes32 delegateManagerKey;
     bytes32 serviceProviderFactoryKey;
@@ -57,7 +53,6 @@ contract Staking is RegistryContract {
         require(Address.isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         stakingToken = ERC20(_stakingToken);
         registry = RegistryInterface(_registryAddress);
-        registryAddress = _registryAddress;
         claimsManagerProxyKey = _claimsManagerProxyKey;
         delegateManagerKey = _delegateManagerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
