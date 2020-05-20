@@ -1,6 +1,6 @@
 {
   "cwd": "eth-contracts",
   "echidna": {
-    "contract": "Migrations"
+    "contract": "InitializableV2"
   }
 }
