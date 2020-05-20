@@ -17,7 +17,7 @@ contract Governance is RegistryContract {
     address guardianAddress;
 
     /***** Enums *****/
-    enum Outcome {InProgress, No, Yes, Invalid, TxFailed}
+    enum Outcome {InProgress, No, Yes, Invalid, TxFailed, Evaluating}
     // Enum values map to uints, so first value in Enum always is 0.
     enum Vote {None, No, Yes}
 
@@ -269,6 +269,10 @@ contract Governance is RegistryContract {
             "Governance::evaluateProposalOutcome: Cannot evaluate inactive proposal."
         );
 
+        /// Re-entrancy should not be possible here since this switches the status of the
+        /// proposal to 'Evaluating' so it should fail the status is 'InProgress' check
+        proposals[_proposalId].outcome = Outcome.Evaluating;
+
         // Require msg.sender is active Staker.
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
@@ -321,7 +325,7 @@ contract Governance is RegistryContract {
             );
 
             // Proposal outcome depends on success of transaction execution.
-            if (success == true) {
+            if (success) {
                 outcome = Outcome.Yes;
             } else {
                 outcome = Outcome.TxFailed;
@@ -332,7 +336,7 @@ contract Governance is RegistryContract {
             outcome = Outcome.No;
         }
 
-        // Record outcome
+        /// This records the final outcome in the proposals mapping
         proposals[_proposalId].outcome = outcome;
 
         emit ProposalOutcomeEvaluated(
@@ -467,7 +471,14 @@ contract Governance is RegistryContract {
     }
 
     // ========================================= Internal Functions =========================================
-
+    /**
+     * @notice Execute a transaction attached to a governanace proposal
+     * @dev We are aware of both potential re-entrancy issues and the risks associated with low-level solidity
+     *      function calls here, but have chosen to keep this code with those issues in mind. All governance
+     *      proposals go through a voting process, and all will be reviewed carefully to ensure that they
+     *      adhere to the expected behaviors of this call - but adding restrictions here would limit the ability
+     *      of the governance system to do required work in a generic way.
+     */
     function _executeTransaction(
         address _targetContractAddress,
         uint256 _callValue,
