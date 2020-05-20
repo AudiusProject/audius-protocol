@@ -1,8 +1,5 @@
 {
   "cwd": "eth-contracts",
-  "truffle": {
-    "enabled": true
-  },
   "echidna": {
     "contract": "DelegateManager"
   }
