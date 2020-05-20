@@ -505,8 +505,7 @@ contract DelegateManager is RegistryContract {
         }
 
         // Update total delegated to this SP
-        require(spDelegateInfo[msg.sender].totalDelegatedStake >= totalDelegatedStakeDecrease, "subtraction overflow");
-        spDelegateInfo[msg.sender].totalDelegatedStake -= totalDelegatedStakeDecrease;
+        spDelegateInfo[_slashAddress].totalDelegatedStake -= totalDelegatedStakeDecrease;
 
         // Recalculate SP direct stake
         uint newSpBalance = (
