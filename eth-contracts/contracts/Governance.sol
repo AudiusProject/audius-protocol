@@ -137,7 +137,7 @@ contract Governance is RegistryContract {
         );
 
         // set proposalId
-        uint256 newProposalId = lastProposalId + 1;
+        uint256 newProposalId = lastProposalId.add(1);
 
         // Store new Proposal obj in proposals mapping
         proposals[newProposalId] = Proposal({
@@ -163,7 +163,7 @@ contract Governance is RegistryContract {
             _description
         );
 
-        lastProposalId += 1;
+        lastProposalId = lastProposalId.add(1);
 
         return newProposalId;
     }
@@ -196,7 +196,7 @@ contract Governance is RegistryContract {
 
         // Require proposal votingPeriod is still active.
         uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;
-        uint256 endBlockNumber = startBlockNumber + votingPeriod;
+        uint256 endBlockNumber = startBlockNumber.add(votingPeriod);
         require(
             block.number > startBlockNumber && block.number <= endBlockNumber,
             "Governance::submitProposalVote: Proposal votingPeriod has ended"
@@ -216,18 +216,30 @@ contract Governance is RegistryContract {
         // New voter (Vote enum defaults to 0)
         if (previousVote == Vote.None) {
             if (_vote == Vote.Yes) {
-                proposals[_proposalId].voteMagnitudeYes += voterStake;
+                proposals[_proposalId].voteMagnitudeYes = (
+                    proposals[_proposalId].voteMagnitudeYes.add(voterStake)
+                );
             } else {
-                proposals[_proposalId].voteMagnitudeNo += voterStake;
+                proposals[_proposalId].voteMagnitudeNo = (
+                    proposals[_proposalId].voteMagnitudeNo.add(voterStake)
+                );
             }
-            proposals[_proposalId].numVotes += 1;
+            proposals[_proposalId].numVotes = proposals[_proposalId].numVotes.add(1);
         } else { // Repeat voter
             if (previousVote == Vote.Yes && _vote == Vote.No) {
-                proposals[_proposalId].voteMagnitudeYes -= voterStake;
-                proposals[_proposalId].voteMagnitudeNo += voterStake;
+                proposals[_proposalId].voteMagnitudeYes = (
+                    proposals[_proposalId].voteMagnitudeYes.sub(voterStake)
+                );
+                proposals[_proposalId].voteMagnitudeNo = (
+                    proposals[_proposalId].voteMagnitudeNo.add(voterStake)
+                );
             } else if (previousVote == Vote.No && _vote == Vote.Yes) {
-                proposals[_proposalId].voteMagnitudeYes += voterStake;
-                proposals[_proposalId].voteMagnitudeNo -= voterStake;
+                proposals[_proposalId].voteMagnitudeYes = (
+                    proposals[_proposalId].voteMagnitudeYes.add(voterStake)
+                );
+                proposals[_proposalId].voteMagnitudeNo = (
+                    proposals[_proposalId].voteMagnitudeNo.sub(voterStake)
+                );
             }
             // If _vote == previousVote, no changes needed to vote magnitudes.
         }
@@ -270,7 +282,7 @@ contract Governance is RegistryContract {
 
         // Require proposal votingPeriod has ended.
         uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;
-        uint256 endBlockNumber = startBlockNumber + votingPeriod;
+        uint256 endBlockNumber = startBlockNumber.add(votingPeriod);
         require(
             block.number > endBlockNumber,
             "Governance::evaluateProposalOutcome: Proposal votingPeriod must end before evaluation."
