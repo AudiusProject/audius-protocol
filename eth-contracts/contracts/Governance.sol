@@ -202,8 +202,8 @@ contract Governance is RegistryContract {
             "Governance::submitProposalVote: Proposal votingPeriod has ended"
         );
 
-        // Require vote is not None.
-        require(_vote != Vote.None, "Governance::submitProposalVote: Cannot submit None vote");
+        // Require vote is either Yes or No
+        require(_vote == Vote.Yes || _vote == Vote.No, "Governance::submitProposalVote: Can only submit a Yes or No vote");
 
         // Record previous vote.
         Vote previousVote = proposals[_proposalId].votes[voter];

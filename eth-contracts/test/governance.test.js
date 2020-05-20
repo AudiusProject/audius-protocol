@@ -489,10 +489,10 @@ contract('Governance.sol', async (accounts) => {
         )
       })
 
-      it('Fail to submit invalid vote', async () => {
+      it.only('Fail to submit invalid vote', async () => {
         await _lib.assertRevert(
           governance.submitProposalVote(proposalId, Vote.None, { from: stakerAccount1 }),
-          "Governance::submitProposalVote: Cannot submit None vote"
+          "Governance::submitProposalVote: Can only submit a Yes or No vote"
         )
       })
 
