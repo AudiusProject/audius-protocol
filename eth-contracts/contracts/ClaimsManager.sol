@@ -28,6 +28,8 @@ contract ClaimsManager is RegistryContract {
     // Claim related configurations
     uint private fundingRoundBlockDiff;
 
+    uint private fundingAmount;
+
     // Denotes current round
     uint private roundNumber;
 
