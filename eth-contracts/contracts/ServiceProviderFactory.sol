@@ -3,6 +3,7 @@ pragma solidity ^0.5.0;
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "./registry/RegistryContract.sol";
 import "./ServiceTypeManager.sol";
+import "./ClaimsManager.sol";
 import "./Staking.sol";
 import "./interface/RegistryInterface.sol";
 
@@ -14,6 +15,7 @@ contract ServiceProviderFactory is RegistryContract {
     bytes32 private delegateManagerKey;
     bytes32 private governanceKey;
     bytes32 private serviceTypeManagerKey;
+    bytes32 private claimsManagerKey;
     address private deployerAddress;
     uint private decreaseStakeLockupDuration;
 
@@ -118,7 +120,8 @@ contract ServiceProviderFactory is RegistryContract {
         bytes32 _stakingProxyOwnerKey,
         bytes32 _delegateManagerKey,
         bytes32 _governanceKey,
-        bytes32 _serviceTypeManagerKey
+        bytes32 _serviceTypeManagerKey,
+        bytes32 _claimsManagerKey
     ) public initializer
     {
         require(
@@ -131,6 +134,7 @@ contract ServiceProviderFactory is RegistryContract {
         delegateManagerKey = _delegateManagerKey;
         governanceKey = _governanceKey;
         serviceTypeManagerKey = _serviceTypeManagerKey;
+        claimsManagerKey = _claimsManagerKey;
 
         // Configure direct minimum stake for deployer
         minDeployerStake = 5 * 10**uint256(DECIMALS);
@@ -160,9 +164,8 @@ contract ServiceProviderFactory is RegistryContract {
 
         // Stake token amount from msg.sender
         if (_stakeAmount > 0) {
-            Staking(
-                registry.getContract(stakingProxyOwnerKey)
-            ).stakeFor(msg.sender, _stakeAmount);
+            require(!_claimPending(msg.sender), "No claim expected to be pending prior to stake transfer");
+            Staking(registry.getContract(stakingProxyOwnerKey)).stakeFor(msg.sender, _stakeAmount);
         }
 
         require (
@@ -315,6 +318,10 @@ contract ServiceProviderFactory is RegistryContract {
             spDetails[msg.sender].numberOfEndpoints > 0,
             "Registered endpoint required to increase stake"
         );
+        require(
+            !_claimPending(msg.sender),
+            "No claim expected to be pending prior to stake transfer"
+        );
 
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
@@ -348,6 +355,10 @@ contract ServiceProviderFactory is RegistryContract {
     external returns (uint newStakeAmount)
     {
         _requireIsInitialized();
+        require(
+            !_claimPending(msg.sender),
+            "No claim expected to be pending prior to stake transfer"
+        );
 
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
@@ -644,5 +655,14 @@ contract ServiceProviderFactory is RegistryContract {
             (decreaseStakeRequests[_serviceProvider].lockupExpiryBlock > 0) &&
             (decreaseStakeRequests[_serviceProvider].decreaseAmount > 0)
         );
+    }
+
+    /**
+     * @notice Boolean indicating whether a claim is pending for this service provider
+     */
+    function _claimPending(address _sp) internal view returns (bool pending) {
+        return ClaimsManager(
+            registry.getContract(claimsManagerKey)
+        ).claimPending(_sp);
     }
 }
