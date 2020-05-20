@@ -483,16 +483,16 @@ contract DelegateManager is RegistryContract {
             uint newDelegateStake = (
              totalBalanceInStakingAfterSlash.mul(preSlashDelegateStake)
             ).div(totalBalanceInStakingPreSlash);
-            uint slashAmountForDelegator = preSlashDelegateStake.sub(newDelegateStake);
+            // uint slashAmountForDelegator = preSlashDelegateStake.sub(newDelegateStake);
 
             // TODO - why does this not work
             // delegateInfo[delegator][_slashAddress] -= (slashAmountForDelegator);
-            delegateInfo[delegator][_slashAddress] = delegateInfo[delegator][_slashAddress].sub((slashAmountForDelegator));
+            delegateInfo[delegator][_slashAddress] = delegateInfo[delegator][_slashAddress].sub(preSlashDelegateStake.sub(newDelegateStake));
             delegatorStakeTotal[delegator] = (
-                delegatorStakeTotal[delegator].sub(slashAmountForDelegator)
+                delegatorStakeTotal[delegator].sub(preSlashDelegateStake.sub(newDelegateStake))
             );
             // Update total decrease amount
-            totalDelegatedStakeDecrease = totalDelegatedStakeDecrease.add(slashAmountForDelegator);
+            totalDelegatedStakeDecrease = totalDelegatedStakeDecrease.add(preSlashDelegateStake.sub(newDelegateStake));
             // Check for any locked up funds for this slashed delegator
             // Slash overrides any pending withdrawal requests
             if (undelegateRequests[delegator].amount != 0) {
