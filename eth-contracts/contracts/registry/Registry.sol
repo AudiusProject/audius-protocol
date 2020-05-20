@@ -77,7 +77,7 @@ contract Registry is InitializableV2, Ownable {
             _version <= addressStorageHistory[_name].length,
             "Registry::getContract: Index out of range _version."
         );
-        return addressStorageHistory[_name][_version - 1];
+        return addressStorageHistory[_name][_version.sub(1)];
     }
 
     function getContractVersionCount(bytes32 _name) external view returns (uint) {
