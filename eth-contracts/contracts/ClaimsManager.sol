@@ -27,21 +27,17 @@ contract ClaimsManager is RegistryContract {
 
     // Claim related configurations
     uint private fundingRoundBlockDiff;
-    // uint private fundBlock;
-
-    // TODO: Make this modifiable based on total staking pool?
-    uint private fundingAmount;
 
     // Denotes current round
     uint private roundNumber;
-
-    // Total claimed so far in round
-    // uint private totalClaimedInRound;
 
     // Staking contract ref
     ERC20Mintable private audiusToken;
 
     // Struct representing round state
+    // 1) Block at which round was funded
+    // 2) Total funded for this round
+    // 3) Total claimed in round
     struct Round {
         uint fundBlock;
         uint fundingAmount;
