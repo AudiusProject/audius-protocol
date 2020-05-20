@@ -77,7 +77,6 @@ jobs:
             cd eth-contracts/
             rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
             npm install
-      - coveralls/upload
       - save_cache:
           paths:
             - eth-contracts/node_modules
@@ -173,6 +172,7 @@ jobs:
             cd eth-contracts
             npm run test-circle-ci
             cd ../
+      - coveralls/upload
 
   # Disabled - not included in any workflows below
   # Not removing code in case of potential re-enabling
