@@ -1,13 +1,11 @@
 pragma solidity ^0.5.0;
 
-import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "./registry/RegistryContract.sol";
 import "./interface/RegistryInterface.sol";
 
 
 /** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
 contract ServiceTypeManager is RegistryContract {
-    using SafeMath for uint;
     RegistryInterface registry;
     address private controllerAddress;
     bytes32 private governanceKey;
