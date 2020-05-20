@@ -9,7 +9,13 @@ import "../InitializableV2.sol";
 
 
 /** Upgradeable ERC20 token that is Detailed, Mintable, Pausable, Burnable. */
-contract AudiusToken is InitializableV2, ERC20, ERC20Detailed, ERC20Mintable, ERC20Pausable, ERC20Burnable {
+contract AudiusToken is InitializableV2,
+    ERC20,
+    ERC20Detailed,
+    ERC20Mintable,
+    ERC20Pausable,
+    ERC20Burnable
+{
     string constant NAME = "TestAudius";
     string constant SYMBOL = "TAUDS";
     // standard - imitates relationship between Ether and Wei

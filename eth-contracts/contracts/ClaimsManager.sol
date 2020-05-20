@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mint
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "./interface/RegistryInterface.sol";
 import "./ServiceProviderFactory.sol";
+/** SafeMath imported via ServiceProviderFactory.sol */
 
 
 /**
@@ -129,7 +130,7 @@ contract ClaimsManager is RegistryContract {
             "Round must be initiated from account with staked value or contract deployer"
         );
         require(
-            block.number - currentRound.fundBlock > fundingRoundBlockDiff,
+            block.number.sub(currentRound.fundBlock) > fundingRoundBlockDiff,
             "Required block difference not met"
         );
 
@@ -139,7 +140,7 @@ contract ClaimsManager is RegistryContract {
             totalClaimedInRound: 0
         });
 
-        roundNumber += 1;
+        roundNumber = roundNumber.add(1);
 
         emit RoundInitiated(
             currentRound.fundBlock,
@@ -181,7 +182,7 @@ contract ClaimsManager is RegistryContract {
             "Maximum stake bounds violated at fund block");
 
         // Subtract total locked amount for SP from stake at fund block
-        uint claimerTotalStake = totalStakedAtFundBlockForClaimer - _totalLockedForSP;
+        uint claimerTotalStake = totalStakedAtFundBlockForClaimer.sub(_totalLockedForSP);
         uint totalStakedAtFundBlock = stakingContract.totalStakedAt(currentRound.fundBlock);
 
         // Calculate claimer rewards
@@ -200,7 +201,7 @@ contract ClaimsManager is RegistryContract {
         stakingContract.stakeRewards(rewardsForClaimer, _claimer);
 
         // Update round claim value
-        currentRound.totalClaimedInRound += rewardsForClaimer;
+        currentRound.totalClaimedInRound = currentRound.totalClaimedInRound.add(rewardsForClaimer);
 
         // Update round claim value
         uint newTotal = stakingContract.totalStakedFor(_claimer);

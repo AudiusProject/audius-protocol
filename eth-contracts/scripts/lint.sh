@@ -8,6 +8,8 @@ printline() {
   printf '\n%40s\n' | tr ' ' -
 }
 
+npm run truffle-compile
+
 printline
 printf 'START Standard Lint'
 npm run lint ./

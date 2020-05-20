@@ -157,7 +157,7 @@ contract ServiceTypeManager is RegistryContract {
          // Update array of known types
         serviceTypeVersions[_serviceType].push(_serviceVersion);
 
-        // Update status for this specific service version 
+        // Update status for this specific service version
         serviceTypeVersionInfo[_serviceType][_serviceVersion] = true;
 
         emit SetServiceVersion(_serviceType, _serviceVersion);

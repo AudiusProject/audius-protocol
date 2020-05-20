@@ -7,6 +7,7 @@ orbs:
   aws-eks: circleci/aws-eks@0.1.0
   helm: circleci/helm@0.1.2
   kubernetes: circleci/kubernetes@0.3.0
+  coveralls: coveralls/coveralls@1.0.6
 jobs:
   test-libs:
     docker:
@@ -159,13 +160,20 @@ jobs:
           paths:
             - eth-contracts/node_modules
           key: v1-dependencies-{{ checksum "eth-contracts/package.json" }}
-      # run tests!
+      - run:
+          name: run_lint
+          command: |
+            cd eth-contracts
+            npm run lint-circle-ci
+            cd ../
       - run:
           name: run_tests
           command: |
             cd eth-contracts
             npm run test-circle-ci
             cd ../
+      - coveralls/upload:
+          path_to_lcov: ./eth-contracts/coverage/lcov.info
 
   # Disabled - not included in any workflows below
   # Not removing code in case of potential re-enabling

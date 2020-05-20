@@ -1,6 +1,8 @@
 pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+
 
 import "../InitializableV2.sol";
 import "../interface/RegistryContractInterface.sol";
@@ -17,6 +19,7 @@ import "../interface/RegistryContractInterface.sol";
 *    upgrade existing contracts and remove contracts
 */
 contract Registry is InitializableV2, Ownable {
+    using SafeMath for uint;
 
     /**
      * @dev addressStorage mapping allows efficient lookup of current contract version
@@ -74,7 +77,7 @@ contract Registry is InitializableV2, Ownable {
             _version <= addressStorageHistory[_name].length,
             "Registry::getContract: Index out of range _version."
         );
-        return addressStorageHistory[_name][_version - 1];
+        return addressStorageHistory[_name][_version.sub(1)];
     }
 
     function getContractVersionCount(bytes32 _name) external view returns (uint) {
