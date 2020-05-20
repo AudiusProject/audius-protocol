@@ -483,10 +483,9 @@ contract DelegateManager is RegistryContract {
             uint newDelegateStake = (
              totalBalanceInStakingAfterSlash.mul(preSlashDelegateStake)
             ).div(totalBalanceInStakingPreSlash);
+            // remove this var and insert this inline, otherwise we run into stack too deep
             // uint slashAmountForDelegator = preSlashDelegateStake.sub(newDelegateStake);
 
-            // TODO - why does this not work
-            // delegateInfo[delegator][_slashAddress] -= (slashAmountForDelegator);
             delegateInfo[delegator][_slashAddress] = delegateInfo[delegator][_slashAddress].sub(preSlashDelegateStake.sub(newDelegateStake));
             delegatorStakeTotal[delegator] = (
                 delegatorStakeTotal[delegator].sub(preSlashDelegateStake.sub(newDelegateStake))
