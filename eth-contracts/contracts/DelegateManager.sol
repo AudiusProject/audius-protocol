@@ -483,24 +483,18 @@ contract DelegateManager is RegistryContract {
             uint newDelegateStake = (
              totalBalanceInStakingAfterSlash.mul(preSlashDelegateStake)
             ).div(totalBalanceInStakingPreSlash);
-            // remove this var and insert this inline, otherwise we run into stack too deep
-            // uint slashAmountForDelegator = preSlashDelegateStake.sub(newDelegateStake);
-
-            delegateInfo[delegator][_slashAddress] = delegateInfo[delegator][_slashAddress].sub(preSlashDelegateStake.sub(newDelegateStake));
-            delegatorStakeTotal[delegator] = (
-                delegatorStakeTotal[delegator].sub(preSlashDelegateStake.sub(newDelegateStake))
-            );
+            uint slashAmountForDelegator = preSlashDelegateStake.sub(newDelegateStake);
+            delegateInfo[delegator][_slashAddress] -= (slashAmountForDelegator);
+            delegatorStakeTotal[delegator] -= (slashAmountForDelegator);
             // Update total decrease amount
-            totalDelegatedStakeDecrease = totalDelegatedStakeDecrease.add(preSlashDelegateStake.sub(newDelegateStake));
+            totalDelegatedStakeDecrease += slashAmountForDelegator;
             // Check for any locked up funds for this slashed delegator
             // Slash overrides any pending withdrawal requests
             if (undelegateRequests[delegator].amount != 0) {
                 address unstakeSP = undelegateRequests[delegator].serviceProvider;
                 uint unstakeAmount = undelegateRequests[delegator].amount;
                 // Reset total locked up stake
-                spDelegateInfo[unstakeSP].totalLockedUpStake = (
-                    spDelegateInfo[unstakeSP].totalLockedUpStake.sub(unstakeAmount)
-                );
+                spDelegateInfo[unstakeSP].totalLockedUpStake -= unstakeAmount;
                 // Remove pending request
                 undelegateRequests[delegator] = UndelegateStakeRequest({
                     lockupExpiryBlock: 0,
@@ -511,9 +505,8 @@ contract DelegateManager is RegistryContract {
         }
 
         // Update total delegated to this SP
-        spDelegateInfo[msg.sender].totalDelegatedStake = (
-            spDelegateInfo[msg.sender].totalDelegatedStake.sub(totalDelegatedStakeDecrease)
-        );
+        require(spDelegateInfo[msg.sender].totalDelegatedStake >= totalDelegatedStakeDecrease, "subtraction overflow");
+        spDelegateInfo[msg.sender].totalDelegatedStake -= totalDelegatedStakeDecrease;
 
         // Recalculate SP direct stake
         uint newSpBalance = (
