@@ -467,7 +467,14 @@ contract Governance is RegistryContract {
     }
 
     // ========================================= Internal Functions =========================================
-
+    /**
+     * @notice Execute a transaction attached to a governanace proposal
+     * @dev We are aware of both potential re-entrancy issues and the risks associated with low-level solidity
+     *      function calls here, but have chosen to keep this code with those issues in mind. All governance
+     *      proposals go through a voting process, and all will be reviewed carefully to ensure that they
+     *      adhere to the expected behaviors of this call - but adding restrictions here would limit the ability
+     *      of the governance system to do required work in a generic way.
+     */
     function _executeTransaction(
         address _targetContractAddress,
         uint256 _callValue,
