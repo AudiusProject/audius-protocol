@@ -17,7 +17,7 @@ contract Governance is RegistryContract {
     address guardianAddress;
 
     /***** Enums *****/
-    enum Outcome {InProgress, No, Yes, Invalid, TxFailed}
+    enum Outcome {InProgress, No, Yes, Invalid, TxFailed, Evaluating}
     // Enum values map to uints, so first value in Enum always is 0.
     enum Vote {None, No, Yes}
 
@@ -269,6 +269,9 @@ contract Governance is RegistryContract {
             "Governance::evaluateProposalOutcome: Cannot evaluate inactive proposal."
         );
 
+        // change the state of the proposal to Evaluating
+        proposals[_proposalId].outcome = Outcome.Evaluating;
+
         // Require msg.sender is active Staker.
         Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
@@ -321,7 +324,7 @@ contract Governance is RegistryContract {
             );
 
             // Proposal outcome depends on success of transaction execution.
-            if (success == true) {
+            if (success) {
                 outcome = Outcome.Yes;
             } else {
                 outcome = Outcome.TxFailed;
@@ -332,7 +335,9 @@ contract Governance is RegistryContract {
             outcome = Outcome.No;
         }
 
-        // Record outcome
+        /// Re-entrancy should not be possible here since the function switches the status of the
+        /// proposal to 'Evaluating' so it should fail the status is 'InProgress' check. This
+        /// records the final outcome in the proposals mapping
         proposals[_proposalId].outcome = outcome;
 
         emit ProposalOutcomeEvaluated(
