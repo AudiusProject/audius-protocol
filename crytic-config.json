@@ -1,6 +1,6 @@
 {
   "cwd": "eth-contracts",
   "echidna": {
-    "contract": "ClaimsManager"
+    "contract": "Governance"
   }
 }
