@@ -1004,7 +1004,7 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('Delegator increase/decrease + SP direct stake bound validation', async () => {
+    it.only('Delegator increase/decrease + SP direct stake bound validation', async () => {
       let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       let delegateAmount = spDetails.minAccountStake
       let info = await getAccountStakeInfo(stakerAccount, false)

@@ -27,7 +27,7 @@ contract ClaimsManager is RegistryContract {
 
     // Claim related configurations
     uint private fundingRoundBlockDiff;
-    uint private fundBlock;
+    // uint private fundBlock;
 
     // TODO: Make this modifiable based on total staking pool?
     uint private fundingAmount;
@@ -36,7 +36,7 @@ contract ClaimsManager is RegistryContract {
     uint private roundNumber;
 
     // Total claimed so far in round
-    uint private totalClaimedInRound;
+    // uint private totalClaimedInRound;
 
     // Staking contract ref
     ERC20Mintable private audiusToken;
@@ -45,6 +45,7 @@ contract ClaimsManager is RegistryContract {
     struct Round {
         uint fundBlock;
         uint fundingAmount;
+        uint totalClaimedInRound;
     }
 
     // Current round information
@@ -81,10 +82,14 @@ contract ClaimsManager is RegistryContract {
         registry = RegistryInterface(_registryAddress);
 
         fundingRoundBlockDiff = 10;
-        fundBlock = 0;
         fundingAmount = 20 * 10**uint256(DECIMALS); // 20 AUDS = 20 * 10**uint256(DECIMALS)
         roundNumber = 0;
-        totalClaimedInRound = 0;
+
+        currentRound = Round({
+            fundBlock: 0,
+            fundingAmount: 0,
+            totalClaimedInRound: 0
+        });
 
         RegistryContract.initialize();
     }
@@ -98,7 +103,7 @@ contract ClaimsManager is RegistryContract {
     function getLastFundBlock()
     external view returns (uint lastFundBlock)
     {
-        return fundBlock;
+        return currentRound.fundBlock;
     }
 
     function getFundsPerRound()
@@ -110,7 +115,7 @@ contract ClaimsManager is RegistryContract {
     function getTotalClaimedInRound()
     external view returns (uint claimedAmount)
     {
-        return totalClaimedInRound;
+        return currentRound.totalClaimedInRound;
     }
 
     /// @dev - Start a new funding round
@@ -126,18 +131,22 @@ contract ClaimsManager is RegistryContract {
             "Round must be initiated from account with staked value or contract deployer"
         );
         require(
-            block.number - fundBlock > fundingRoundBlockDiff,
+            block.number - currentRound.fundBlock > fundingRoundBlockDiff,
             "Required block difference not met"
         );
 
-        fundBlock = block.number;
-        totalClaimedInRound = 0;
+        currentRound = Round({
+            fundBlock: block.number,
+            fundingAmount: fundingAmount,
+            totalClaimedInRound: 0
+        });
+
         roundNumber += 1;
 
         emit RoundInitiated(
-            fundBlock,
+            currentRound.fundBlock,
             roundNumber,
-            fundingAmount
+            currentRound.fundingAmount
         );
     }
 
@@ -158,10 +167,10 @@ contract ClaimsManager is RegistryContract {
         Staking stakingContract = Staking(stakingAddress);
         // Prevent duplicate claim
         uint lastUserClaimBlock = stakingContract.lastClaimedFor(_claimer);
-        require(lastUserClaimBlock <= fundBlock, "Claim already processed for user");
+        require(lastUserClaimBlock <= currentRound.fundBlock, "Claim already processed for user");
         uint totalStakedAtFundBlockForClaimer = stakingContract.totalStakedForAt(
             _claimer,
-            fundBlock);
+            currentRound.fundBlock);
 
         ( , , , ,uint spMin, uint spMax) = ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)
@@ -175,7 +184,7 @@ contract ClaimsManager is RegistryContract {
 
         // Subtract total locked amount for SP from stake at fund block
         uint claimerTotalStake = totalStakedAtFundBlockForClaimer - _totalLockedForSP;
-        uint totalStakedAtFundBlock = stakingContract.totalStakedAt(fundBlock);
+        uint totalStakedAtFundBlock = stakingContract.totalStakedAt(currentRound.fundBlock);
 
         // Calculate claimer rewards
         uint rewardsForClaimer = (
@@ -193,7 +202,7 @@ contract ClaimsManager is RegistryContract {
         stakingContract.stakeRewards(rewardsForClaimer, _claimer);
 
         // Update round claim value
-        totalClaimedInRound += rewardsForClaimer;
+        currentRound.totalClaimedInRound += rewardsForClaimer;
 
         // Update round claim value
         uint newTotal = stakingContract.totalStakedFor(_claimer);
@@ -223,7 +232,7 @@ contract ClaimsManager is RegistryContract {
         uint lastClaimedForSP = Staking(
             registry.getContract(stakingProxyOwnerKey)
         ).lastClaimedFor(_sp);
-        return (lastClaimedForSP < fundBlock);
+        return (lastClaimedForSP < currentRound.fundBlock);
     }
 
     function updateFundingRoundBlockDiff(uint _newFundingRoundBlockDiff) external {
