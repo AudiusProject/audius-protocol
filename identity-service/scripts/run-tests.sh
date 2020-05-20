@@ -36,7 +36,7 @@ elif [ -x "$(command -v psql)" ]; then
 fi
 
  # tests
-./node_modules/mocha/bin/mocha test/index.js --timeout 10000 --exit
+./node_modules/mocha/bin/mocha test/index.js --timeout 20000 --exit
 
  # linter
 
