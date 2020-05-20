@@ -441,7 +441,7 @@ contract ServiceProviderFactory is RegistryContract {
         bytes32 _serviceType,
         string calldata _endpoint,
         address _updatedDelegateOwnerWallet
-    ) external returns (address)
+    ) external
     {
         uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
 

@@ -1,11 +1,13 @@
 pragma solidity ^0.5.0;
 
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "./registry/RegistryContract.sol";
 import "./Staking.sol";
 import "./interface/RegistryInterface.sol";
 
 
 contract Governance is RegistryContract {
+    using SafeMath for uint;
     RegistryInterface registry;
     bytes32 stakingProxyOwnerKey;
 
@@ -135,7 +137,7 @@ contract Governance is RegistryContract {
         );
 
         // set proposalId
-        uint256 newProposalId = lastProposalId + 1;
+        uint256 newProposalId = lastProposalId.add(1);
 
         // Store new Proposal obj in proposals mapping
         proposals[newProposalId] = Proposal({
@@ -161,7 +163,7 @@ contract Governance is RegistryContract {
             _description
         );
 
-        lastProposalId += 1;
+        lastProposalId = lastProposalId.add(1);
 
         return newProposalId;
     }
@@ -194,7 +196,7 @@ contract Governance is RegistryContract {
 
         // Require proposal votingPeriod is still active.
         uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;
-        uint256 endBlockNumber = startBlockNumber + votingPeriod;
+        uint256 endBlockNumber = startBlockNumber.add(votingPeriod);
         require(
             block.number > startBlockNumber && block.number <= endBlockNumber,
             "Governance::submitProposalVote: Proposal votingPeriod has ended"
@@ -214,18 +216,30 @@ contract Governance is RegistryContract {
         // New voter (Vote enum defaults to 0)
         if (previousVote == Vote.None) {
             if (_vote == Vote.Yes) {
-                proposals[_proposalId].voteMagnitudeYes += voterStake;
+                proposals[_proposalId].voteMagnitudeYes = (
+                    proposals[_proposalId].voteMagnitudeYes.add(voterStake)
+                );
             } else {
-                proposals[_proposalId].voteMagnitudeNo += voterStake;
+                proposals[_proposalId].voteMagnitudeNo = (
+                    proposals[_proposalId].voteMagnitudeNo.add(voterStake)
+                );
             }
-            proposals[_proposalId].numVotes += 1;
+            proposals[_proposalId].numVotes = proposals[_proposalId].numVotes.add(1);
         } else { // Repeat voter
             if (previousVote == Vote.Yes && _vote == Vote.No) {
-                proposals[_proposalId].voteMagnitudeYes -= voterStake;
-                proposals[_proposalId].voteMagnitudeNo += voterStake;
+                proposals[_proposalId].voteMagnitudeYes = (
+                    proposals[_proposalId].voteMagnitudeYes.sub(voterStake)
+                );
+                proposals[_proposalId].voteMagnitudeNo = (
+                    proposals[_proposalId].voteMagnitudeNo.add(voterStake)
+                );
             } else if (previousVote == Vote.No && _vote == Vote.Yes) {
-                proposals[_proposalId].voteMagnitudeYes += voterStake;
-                proposals[_proposalId].voteMagnitudeNo -= voterStake;
+                proposals[_proposalId].voteMagnitudeYes = (
+                    proposals[_proposalId].voteMagnitudeYes.add(voterStake)
+                );
+                proposals[_proposalId].voteMagnitudeNo = (
+                    proposals[_proposalId].voteMagnitudeNo.sub(voterStake)
+                );
             }
             // If _vote == previousVote, no changes needed to vote magnitudes.
         }
@@ -268,7 +282,7 @@ contract Governance is RegistryContract {
 
         // Require proposal votingPeriod has ended.
         uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;
-        uint256 endBlockNumber = startBlockNumber + votingPeriod;
+        uint256 endBlockNumber = startBlockNumber.add(votingPeriod);
         require(
             block.number > endBlockNumber,
             "Governance::evaluateProposalOutcome: Proposal votingPeriod must end before evaluation."
@@ -335,7 +349,10 @@ contract Governance is RegistryContract {
     function vetoProposal(uint256 _proposalId) external {
         _requireIsInitialized();
 
-        require(msg.sender == guardianAddress, "Governance::vetoProposal: Only guardian can veto proposals.");
+        require(
+            msg.sender == guardianAddress,
+            "Governance::vetoProposal: Only guardian can veto proposals."
+        );
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
@@ -458,7 +475,9 @@ contract Governance is RegistryContract {
         bytes memory _callData
     ) internal returns (bool /** success */, bytes memory /** returnData */)
     {
-        bytes memory encodedCallData = abi.encodePacked(bytes4(keccak256(bytes(_signature))), _callData);
+        bytes memory encodedCallData = abi.encodePacked(
+            bytes4(keccak256(bytes(_signature))),
+            _callData);
         (bool success, bytes memory returnData) = (
             // solium-disable-next-line security/no-call-value
             _targetContractAddress.call.value(_callValue)(encodedCallData)
