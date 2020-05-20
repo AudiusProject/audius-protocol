@@ -269,7 +269,8 @@ contract Governance is RegistryContract {
             "Governance::evaluateProposalOutcome: Cannot evaluate inactive proposal."
         );
 
-        // change the state of the proposal to Evaluating
+        /// Re-entrancy should not be possible here since this switches the status of the
+        /// proposal to 'Evaluating' so it should fail the status is 'InProgress' check
         proposals[_proposalId].outcome = Outcome.Evaluating;
 
         // Require msg.sender is active Staker.
@@ -335,9 +336,7 @@ contract Governance is RegistryContract {
             outcome = Outcome.No;
         }
 
-        /// Re-entrancy should not be possible here since the function switches the status of the
-        /// proposal to 'Evaluating' so it should fail the status is 'InProgress' check. This
-        /// records the final outcome in the proposals mapping
+        /// This records the final outcome in the proposals mapping
         proposals[_proposalId].outcome = outcome;
 
         emit ProposalOutcomeEvaluated(
