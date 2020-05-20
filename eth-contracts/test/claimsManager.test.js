@@ -250,7 +250,7 @@ contract('ClaimsManager', async (accounts) => {
       'Required block difference not met')
   })
 
-  it('updates funding amount', async () => {
+  it('Updates funding amount', async () => {
     let currentFunding = await claimsManager.getFundsPerRound()
     let newAmount = _lib.audToWeiBN(1000)
     assert.isTrue(!newAmount.eq(currentFunding), 'Expect change in funding value')
@@ -263,7 +263,7 @@ contract('ClaimsManager', async (accounts) => {
     assert.isTrue(newAmount.eq(updatedFundingAmount), 'Expect updated funding amount')
   })
 
-  it('updates fundRoundBlockDiff', async () => {
+  it('Updates fundRoundBlockDiff', async () => {
     const curBlockDiff = await claimsManager.getFundingRoundBlockDiff.call()
     const proposedBlockDiff = curBlockDiff.mul(_lib.toBN(2))
     await _lib.assertRevert(
@@ -278,7 +278,7 @@ contract('ClaimsManager', async (accounts) => {
     )
   })
 
-  it('minimum bound violation during claim processing,', async () => {
+  it('Minimum bound violation during claim processing,', async () => {
     let invalidAmount = _lib.audToWeiBN(5)
     // Stake default amount
     await approveTransferAndStake(invalidAmount, staker)
@@ -288,7 +288,7 @@ contract('ClaimsManager', async (accounts) => {
       'Minimum stake bounds violated at fund block')
   })
 
-  it('maximum bound violation during claim processing,', async () => {
+  it('Maximum bound violation during claim processing,', async () => {
     // Exactly 1 AUD over max bound
     let invalidAmount = _lib.audToWeiBN(1000001)
     // Stake default amount
