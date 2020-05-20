@@ -91,7 +91,7 @@ contract('DelegateManager', async (accounts) => {
     // Register discovery provider
     await serviceTypeManager.addServiceType(
       testDiscProvType,
-      _lib.audToWeiBN(5),
+      _lib.audToWeiBN(4),
       _lib.audToWeiBN(10000000),
       { from: controllerAddress })
 
@@ -821,7 +821,7 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('validate undelegate request restrictions', async () => {
+    it('Validate undelegate request restrictions', async () => {
       await _lib.assertRevert(
         delegateManager.cancelUndelegateStake({ from: delegatorAccount1 }),
         'Pending lockup expected')
@@ -986,6 +986,11 @@ contract('DelegateManager', async (accounts) => {
       spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       let info = await getAccountStakeInfo(stakerAccount, false)
       let increase = (spDetails.minAccountStake).sub(info.spFactoryStake)
+      let minDirectStake = await serviceProviderFactory.getMinDeployerStake()
+      // Ensure minDirect stake isn't violated
+      if ((info.spFactoryStake.add(increase)).lt(minDirectStake)) {
+        increase = minDirectStake.sub(info.spFactoryStake)
+      }
       // Increase to minimum bound
       await increaseRegisteredProviderStake(
         increase,
