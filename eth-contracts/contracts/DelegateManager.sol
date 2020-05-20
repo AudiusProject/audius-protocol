@@ -483,18 +483,26 @@ contract DelegateManager is RegistryContract {
             uint newDelegateStake = (
              totalBalanceInStakingAfterSlash.mul(preSlashDelegateStake)
             ).div(totalBalanceInStakingPreSlash);
-            uint slashAmountForDelegator = preSlashDelegateStake.sub(newDelegateStake);
-            delegateInfo[delegator][_slashAddress] -= (slashAmountForDelegator);
-            delegatorStakeTotal[delegator] -= (slashAmountForDelegator);
+            // uint slashAmountForDelegator = preSlashDelegateStake.sub(newDelegateStake);
+            delegateInfo[delegator][_slashAddress] = (
+                delegateInfo[delegator][_slashAddress].sub(preSlashDelegateStake.sub(newDelegateStake))
+            );
+            delegatorStakeTotal[delegator] = (
+                delegatorStakeTotal[delegator].sub(preSlashDelegateStake.sub(newDelegateStake))
+            );
             // Update total decrease amount
-            totalDelegatedStakeDecrease += slashAmountForDelegator;
+            totalDelegatedStakeDecrease = (
+                totalDelegatedStakeDecrease.add(preSlashDelegateStake.sub(newDelegateStake))
+            );
             // Check for any locked up funds for this slashed delegator
             // Slash overrides any pending withdrawal requests
             if (undelegateRequests[delegator].amount != 0) {
                 address unstakeSP = undelegateRequests[delegator].serviceProvider;
                 uint unstakeAmount = undelegateRequests[delegator].amount;
                 // Reset total locked up stake
-                spDelegateInfo[unstakeSP].totalLockedUpStake -= unstakeAmount;
+                spDelegateInfo[unstakeSP].totalLockedUpStake = (
+                    spDelegateInfo[unstakeSP].totalLockedUpStake.sub(unstakeAmount)
+                );
                 // Remove pending request
                 undelegateRequests[delegator] = UndelegateStakeRequest({
                     lockupExpiryBlock: 0,
@@ -505,7 +513,9 @@ contract DelegateManager is RegistryContract {
         }
 
         // Update total delegated to this SP
-        spDelegateInfo[_slashAddress].totalDelegatedStake -= totalDelegatedStakeDecrease;
+        spDelegateInfo[_slashAddress].totalDelegatedStake = (
+            spDelegateInfo[_slashAddress].totalDelegatedStake.sub(totalDelegatedStakeDecrease)
+        );
 
         // Recalculate SP direct stake
         uint newSpBalance = (
