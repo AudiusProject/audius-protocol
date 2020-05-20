@@ -99,8 +99,8 @@ contract('DelegateManager', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: deployerAddress })
     const serviceProviderFactoryCalldata = encodeCall(
       'initialize',
-      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
+      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey, claimsManagerProxyKey]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
@@ -947,7 +947,7 @@ contract('DelegateManager', async (accounts) => {
       await delegateManager.claimRewards({ from: stakerAccount })
     })
 
-    it('Slash below sp bounds', async () => {
+    it.only('Slash below sp bounds', async () => {
       let preSlashInfo = await getAccountStakeInfo(stakerAccount, false)
       // Set slash amount to all but 1 AUD for this SP
       let diffAmount = _lib.audToWeiBN(1)
