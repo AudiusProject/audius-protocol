@@ -174,7 +174,7 @@ jobs:
             npm run test-circle-ci
             cd ../
       - coveralls/upload
-          path_to_lcov: ./eth-contracts/coverage/lcov.info
+          path_to_lcov: eth-contracts/coverage/lcov.info
 
   # Disabled - not included in any workflows below
   # Not removing code in case of potential re-enabling
