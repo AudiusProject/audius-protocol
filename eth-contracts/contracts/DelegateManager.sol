@@ -122,7 +122,7 @@ contract DelegateManager is RegistryContract {
     {
         _requireIsInitialized();
         require(
-            _claimPending(_targetSP) == false,
+            !_claimPending(_targetSP),
             "Delegation not permitted for SP pending claim"
         );
         address delegator = msg.sender;
@@ -186,7 +186,7 @@ contract DelegateManager is RegistryContract {
     {
         _requireIsInitialized();
         require(
-            _claimPending(_target) == false,
+            !_claimPending(_target),
             "Undelegate request not permitted for SP pending claim"
         );
         address delegator = msg.sender;
@@ -243,7 +243,7 @@ contract DelegateManager is RegistryContract {
 
         // Confirm no pending claim for this service provider
         require(
-            _claimPending(undelegateRequests[delegator].serviceProvider) == false,
+            !_claimPending(undelegateRequests[delegator].serviceProvider),
             "Undelegate not permitted for SP pending claim"
         );
 
