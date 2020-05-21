@@ -7,7 +7,6 @@ import "./interface/RegistryInterface.sol";
 /** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
 contract ServiceTypeManager is RegistryContract {
     RegistryInterface registry;
-    address private controllerAddress;
     bytes32 private governanceKey;
 
     /**
@@ -40,14 +39,12 @@ contract ServiceTypeManager is RegistryContract {
 
     function initialize(
         address _registryAddress,
-        address _controllerAddress,
         bytes32 _governanceKey
     ) public initializer
     {
         // TODO move to RegistryContract as modifier
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
         registry = RegistryInterface(_registryAddress);
-        controllerAddress = _controllerAddress;
         governanceKey = _governanceKey;
 
         RegistryContract.initialize();
@@ -63,10 +60,14 @@ contract ServiceTypeManager is RegistryContract {
     ) external
     {
         _requireIsInitialized();
+
         require(
-            (msg.sender == controllerAddress || msg.sender == registry.getContract(governanceKey)),
-            "Only controller or governance");
+            msg.sender == registry.getContract(governanceKey),
+            "Only callable by Governance contract"
+        );
+
         require(!this.serviceTypeIsValid(_serviceType), "Already known service type");
+
         validServiceTypes.push(_serviceType);
         serviceTypeStakeRequirements[_serviceType] = ServiceTypeStakeRequirements({
             minStake: _serviceTypeMin,
@@ -77,9 +78,12 @@ contract ServiceTypeManager is RegistryContract {
     /// @notice Remove an existing service type
     function removeServiceType(bytes32 _serviceType) external {
         _requireIsInitialized();
+
         require(
-            msg.sender == controllerAddress || msg.sender == registry.getContract(governanceKey),
-            "Only controller or governance");
+            msg.sender == registry.getContract(governanceKey),
+            "Only callable by Governance contract"
+        );
+
         uint serviceIndex = 0;
         bool foundService = false;
         for (uint i = 0; i < validServiceTypes.length; i ++) {
@@ -108,9 +112,12 @@ contract ServiceTypeManager is RegistryContract {
     {
         _requireIsInitialized();
         require(
-            msg.sender == controllerAddress || msg.sender == registry.getContract(governanceKey),
-            "Only controller or governance");
+            msg.sender == registry.getContract(governanceKey),
+            "Only callable by Governance contract"
+        );
+
         require(this.serviceTypeIsValid(_serviceType), "Invalid service type");
+
         serviceTypeStakeRequirements[_serviceType].minStake = _serviceTypeMin;
         serviceTypeStakeRequirements[_serviceType].maxStake = _serviceTypeMax;
     }
@@ -148,11 +155,16 @@ contract ServiceTypeManager is RegistryContract {
     ) external
     {
         _requireIsInitialized();
-        require(controllerAddress == msg.sender, "Invalid signature for controller");
+
+        require(
+            msg.sender == registry.getContract(governanceKey),
+            "Only callable by Governance contract"
+        );
 
         require(
             serviceTypeVersionInfo[_serviceType][_serviceVersion] == false,
-            "Already registered");
+            "Already registered"
+        );
 
          // Update array of known types
         serviceTypeVersions[_serviceType].push(_serviceVersion);

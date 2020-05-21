@@ -1,5 +1,4 @@
-import * as _lib from './_lib/lib.js'
-const encodeCall = require('../utils/encodeCall')
+import * as _lib from '../utils/lib.js'
 
 export const Registry = artifacts.require('./contract/Registry')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
@@ -14,7 +13,7 @@ contract('Registry', async (accounts) => {
 
   beforeEach(async () => {
     registry0 = await Registry.new({ from: proxyDeployerAddress })
-    initializeCallData = encodeCall('initialize', [], [])
+    initializeCallData = _lib.encodeCall('initialize', [], [])
     registryProxy = await AdminUpgradeabilityProxy.new(
       registry0.address,
       proxyAdminAddress,
