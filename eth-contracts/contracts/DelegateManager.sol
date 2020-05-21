@@ -326,8 +326,8 @@ contract DelegateManager is RegistryContract {
         );
 
         // Confirm service provider is valid
-        (,,bool withinBounds,,,) = spFactory.getServiceProviderDetails(msg.sender);
-        require(withinBounds, "Service provider must be within bounds");
+        // (,,bool withinBounds,,,) = spFactory.getServiceProviderDetails(msg.sender);
+        // require(withinBounds, "Service provider must be within bounds");
 
         // Account for any pending locked up stake for the service provider
         (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
@@ -362,7 +362,12 @@ contract DelegateManager is RegistryContract {
         );
 
         // Require claim availability
-        require(totalBalanceInStaking > totalBalanceOutsideStaking, "No stake available to claim");
+        // require(totalBalanceInStaking > totalBalanceOutsideStaking, "No stake available to claim");
+        // No-op if balance is already equivalent
+        // This case can occur if no rewards due to bound violation
+        if (totalBalanceInStaking == totalBalanceOutsideStaking) {
+            return;
+        }
 
         // Total rewards
         // Equal to (balance in staking) - ((balance in sp factory) + (balance in delegate manager))

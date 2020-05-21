@@ -641,7 +641,7 @@ contract ServiceProviderFactory is RegistryContract {
             "Maximum stake amount exceeded");
 
         require(
-            spDetails[_sp].deployerStake >= minDeployerStake,
+            spDetails[_sp].deployerStake == 0 || spDetails[_sp].deployerStake >= minDeployerStake,
             "Direct stake restriction violated for this service provider");
     }
 

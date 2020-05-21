@@ -201,7 +201,9 @@ contract('DelegateManager', async (accounts) => {
   const getAccountStakeInfo = async (account, print = false) => {
     let spFactoryStake
     let totalInStakingContract
-    spFactoryStake = (await serviceProviderFactory.getServiceProviderDetails(account)).deployerStake
+
+    let spDetails = await serviceProviderFactory.getServiceProviderDetails(account)
+    spFactoryStake = spDetails.deployerStake
     totalInStakingContract = await staking.totalStakedFor(account)
 
     let delegatedStake = await delegateManager.getTotalDelegatedToServiceProvider(account)
@@ -237,7 +239,8 @@ contract('DelegateManager', async (accounts) => {
       console.log(`(Staking) vs (DelegateManager + SPFactory) Stake discrepancy: ${stakeDiscrepancy}`)
       console.dir(accountSummary, { depth: 5 })
     }
-    return accountSummary
+
+    return Object.assign(accountSummary, spDetails)
   }
 
   describe('Delegation tests', () => {
@@ -470,6 +473,79 @@ contract('DelegateManager', async (accounts) => {
 
       assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
       assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
+    })
+
+    it('Undelegate after SP has deregistered', async () => {
+      let initialDelegateAmount = _lib.audToWeiBN(60)
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      await delegateManager.delegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      let accountInfo = await getAccountStakeInfo(stakerAccount, false)
+      assert.isTrue(
+        accountInfo.delegatorInfo[delegatorAccount1].amountDelegated.eq(initialDelegateAmount),
+        'Expect initial delegate amount reflected')
+
+      // Request decrease all of stake by deregistering SP
+      await _lib.deregisterServiceProvider(
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint,
+        stakerAccount)
+      let deregisterRequestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+      await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
+
+      // Withdraw all SP stake
+      await serviceProviderFactory.decreaseStake({ from: stakerAccount })
+
+      // Submit request to undelegate all stake
+      await delegateManager.requestUndelegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 }
+      )
+
+      // Confirm lockup amount is registered
+      let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
+      // Finalize undelegation, confirm operation is allowed
+      await delegateManager.undelegateStake({ from: delegatorAccount1 })
+      let finalDelegateStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      assert.isTrue(finalDelegateStake.eq(_lib.toBN(0)), 'No remaining stake expected')
+    })
+
+    it('Register 3rd service provider after round has completed', async () => {
+      let stakerAccount3 = accounts[8]
+      // Transfer 1000 tokens to delegator
+      await token.transfer(stakerAccount3, INITIAL_BAL, { from: deployerAddress })
+      // Fund new claim
+      await claimsManager.initiateRound({ from: controllerAddress })
+      // Get rewards
+      await delegateManager.claimRewards({ from: stakerAccount })
+      await delegateManager.claimRewards({ from: stakerAccount2 })
+      let fundBlock = await claimsManager.getLastFundBlock()
+      let blockDiff = await claimsManager.getFundingRoundBlockDiff()
+      let roundEndBlock = fundBlock.add(blockDiff)
+      await time.advanceBlockTo(roundEndBlock)
+      // Confirm a new SP can be registered
+      await _lib.registerServiceProvider(
+        token,
+        staking,
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint3,
+        DEFAULT_AMOUNT,
+        stakerAccount3)
+      let info = await getAccountStakeInfo(stakerAccount3, false)
+      assert.isTrue((info.totalInStakingContract).eq(DEFAULT_AMOUNT), 'Expect stake')
+      assert.isTrue((info.spFactoryStake).eq(DEFAULT_AMOUNT), 'Expect sp factory stake')
     })
 
     it('Single delegator + claim + slash', async () => {
@@ -947,7 +1023,7 @@ contract('DelegateManager', async (accounts) => {
       await delegateManager.claimRewards({ from: stakerAccount })
     })
 
-    it.only('Slash below sp bounds', async () => {
+    it('Slash below sp bounds', async () => {
       let preSlashInfo = await getAccountStakeInfo(stakerAccount, false)
       // Set slash amount to all but 1 AUD for this SP
       let diffAmount = _lib.audToWeiBN(1)
@@ -957,7 +1033,7 @@ contract('DelegateManager', async (accounts) => {
       // Called from mockGovernance
       await mockGovernance.testSlash(slashAmount, slasherAccount)
 
-      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      let spDetails = await getAccountStakeInfo(stakerAccount, false)
       assert.isFalse(
         spDetails.validBounds,
         'Bound violation expected')
@@ -965,15 +1041,33 @@ contract('DelegateManager', async (accounts) => {
       // Initiate round
       await claimsManager.initiateRound({ from: controllerAddress })
 
+      await _lib.assertRevert(
+        increaseRegisteredProviderStake(
+          diffAmount,
+          stakerAccount),
+        'No claim expected to be pending prior to stake transfer')
+
       // Confirm claim is pending
       let pendingClaim = await claimsManager.claimPending(stakerAccount)
       assert.isTrue(pendingClaim, 'ClaimsManager expected to consider claim pending')
 
-      // Confirm claim fails due to bound violation
-      await _lib.assertRevert(
-        delegateManager.claimRewards({ from: stakerAccount }),
-        'Service provider must be within bounds'
-      )
+      // Claim reward even though we are below bounds
+      await delegateManager.claimRewards({ from: stakerAccount })
+
+      let spDetailsAfterClaim = await getAccountStakeInfo(stakerAccount, false)
+      assert.isTrue(
+        (spDetails.totalInStakingContract).eq(spDetailsAfterClaim.totalInStakingContract),
+        'Expect NO reward since bounds were violated')
+
+      // Confirm claim is considered NOT pending even though nothing was claimed
+      assert.isFalse(
+        await claimsManager.claimPending(stakerAccount),
+        'ClaimsManager expected to consider claim pending')
+
+      // Confirm bounds are still violated after rewards
+      assert.isFalse(
+        (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).validBounds,
+        'Bound violation expected')
 
       // Try to increase by diffAmount, but expect rejection since lower bound is unmet
       await _lib.assertRevert(
@@ -990,18 +1084,11 @@ contract('DelegateManager', async (accounts) => {
       await increaseRegisteredProviderStake(
         increase,
         stakerAccount)
-
       // Validate increase
       spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       assert.isTrue(
         spDetails.validBounds,
         'Valid bound expected')
-
-      // Confirm claim STILL fails due to bound violation at fundblock
-      await _lib.assertRevert(
-        delegateManager.claimRewards({ from: stakerAccount }),
-        'Minimum stake bounds violated at fund block'
-      )
     })
 
     it('Delegator increase/decrease + SP direct stake bound validation', async () => {
@@ -1030,7 +1117,7 @@ contract('DelegateManager', async (accounts) => {
         stakingAddress,
         delegateAmount,
         { from: delegatorAccount1 })
-      delegateManager.delegateStake(
+      await delegateManager.delegateStake(
         stakerAccount,
         delegateAmount,
         { from: delegatorAccount1 })
@@ -1231,8 +1318,69 @@ contract('DelegateManager', async (accounts) => {
         // Transaction will fail since maximum stake for the account is now zero after the deregister
         await _lib.assertRevert(
           delegateManager.claimRewards({ from: stakerAccount }),
-          'Maximum stake bounds violated at fund block'
+          'Service Provider stake required'
         )
+
+        let deregisterRequestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+        await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
+        // Withdraw all stake
+        await serviceProviderFactory.decreaseStake({ from: stakerAccount })
+        // Attempt to re-register endpoint
+        // Confirm re-registration is allowed
+        await _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint,
+          DEFAULT_AMOUNT,
+          stakerAccount
+        )
+        acctInfo = await getAccountStakeInfo(stakerAccount)
+        assert.isTrue(acctInfo.totalInStakingContract.eq(DEFAULT_AMOUNT), 'Expect default in staking')
+        assert.isTrue(acctInfo.spFactoryStake.eq(DEFAULT_AMOUNT), 'Expect default in sp factory')
+      })
+
+      it('Re-registration after removing all stake and claim', async () => {
+        // Initiate round
+        await claimsManager.initiateRound({ from: controllerAddress })
+        // Claim reward immediately
+        await delegateManager.claimRewards({ from: stakerAccount })
+        // Request decrease all of stake
+        await _lib.deregisterServiceProvider(
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint,
+          stakerAccount)
+        let deregisterRequestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+        await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
+        assert.isFalse(await claimsManager.claimPending(stakerAccount), 'Expect no claim pending')
+        // Withdraw all stake
+        await serviceProviderFactory.decreaseStake({ from: stakerAccount })
+        let acctInfo = await getAccountStakeInfo(stakerAccount)
+        assert.isTrue(acctInfo.totalInStakingContract.eq(_lib.toBN(0)), 'Expect default in staking')
+        assert.isTrue(acctInfo.spFactoryStake.eq(_lib.toBN(0)), 'Expect default in sp factory')
+        assert.isTrue(acctInfo.numberOfEndpoints.eq(_lib.toBN(0)), 'Expect no endpoints in sp factory')
+
+        // Initiate round
+        await claimsManager.initiateRound({ from: controllerAddress })
+        // Expect no claim pending even though lastClaimed for this SP is < the round initiated
+        // Achieved by number of endpoints check in ClaimsManager
+        assert.isFalse(await claimsManager.claimPending(stakerAccount), 'Expect no claim pending')
+        // Attempt to re-register endpoint
+        // Confirm re-registration is allowed
+        await _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint,
+          DEFAULT_AMOUNT,
+          stakerAccount
+        )
+        acctInfo = await getAccountStakeInfo(stakerAccount)
+        assert.isTrue(acctInfo.totalInStakingContract.eq(DEFAULT_AMOUNT), 'Expect default in staking')
+        assert.isTrue(acctInfo.spFactoryStake.eq(DEFAULT_AMOUNT), 'Expect default in sp factory')
       })
 
       it('Decrease in reward for pending stake decrease', async () => {
@@ -1263,7 +1411,7 @@ contract('DelegateManager', async (accounts) => {
         assert.isTrue((requestInfo.amount).eq(_lib.toBN(0)), 'Expected amount reset')
       })
 
-      it('update lockup duration', async () => {
+      it('Update lockup duration', async () => {
         let duration = await serviceProviderFactory.getDecreaseStakeLockupDuration()
         // Double decrease stake duration
         let newDuration = duration.add(duration)

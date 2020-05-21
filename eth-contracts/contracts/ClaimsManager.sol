@@ -154,7 +154,7 @@ contract ClaimsManager is RegistryContract {
     function processClaim(
         address _claimer,
         uint _totalLockedForSP
-    ) external returns (uint newAccountTotal)
+    ) external
     {
         _requireIsInitialized();
         require(
@@ -171,6 +171,11 @@ contract ClaimsManager is RegistryContract {
             _claimer,
             currentRound.fundBlock);
 
+        (,,bool withinBounds,,,) = ServiceProviderFactory(
+            registry.getContract(serviceProviderFactoryKey)
+        ).getServiceProviderDetails(_claimer);
+
+        /*
         ( , , , ,uint spMin, uint spMax) = ServiceProviderFactory(
             registry.getContract(serviceProviderFactoryKey)
         ).getServiceProviderDetails(_claimer);
@@ -180,7 +185,9 @@ contract ClaimsManager is RegistryContract {
         require(
             (totalStakedAtFundBlockForClaimer <= spMax),
             "Maximum stake bounds violated at fund block");
+          */
 
+        // Once they claim the zero reward amount, stake can be modified once again
         // Subtract total locked amount for SP from stake at fund block
         uint claimerTotalStake = totalStakedAtFundBlockForClaimer.sub(_totalLockedForSP);
         uint totalStakedAtFundBlock = stakingContract.totalStakedAt(currentRound.fundBlock);
@@ -189,6 +196,14 @@ contract ClaimsManager is RegistryContract {
         uint rewardsForClaimer = (
           claimerTotalStake.mul(fundingAmount)
         ).div(totalStakedAtFundBlock);
+
+        // For a claimer violating bounds, no new tokens are minted
+        // Claim history is marked to zero and function is short-circuited
+        // Total rewards can be zero if all stake is currently locked up
+        if (withinBounds == false || rewardsForClaimer == 0) {
+            stakingContract.updateClaimHistory(0, _claimer);
+            return;
+        }
 
         require(
             audiusToken.mint(address(this), rewardsForClaimer),
@@ -212,8 +227,6 @@ contract ClaimsManager is RegistryContract {
             totalStakedAtFundBlockForClaimer,
             newTotal
         );
-
-        return newTotal;
     }
 
     function updateFundingAmount(uint _newAmount)
@@ -231,7 +244,10 @@ contract ClaimsManager is RegistryContract {
         uint lastClaimedForSP = Staking(
             registry.getContract(stakingProxyOwnerKey)
         ).lastClaimedFor(_sp);
-        return (lastClaimedForSP < currentRound.fundBlock);
+        (,,,uint numEndpoints,,) = ServiceProviderFactory(
+            registry.getContract(serviceProviderFactoryKey)
+        ).getServiceProviderDetails(_sp);
+        return (lastClaimedForSP < currentRound.fundBlock && numEndpoints > 0);
     }
 
     function updateFundingRoundBlockDiff(uint _newFundingRoundBlockDiff) external {
