@@ -175,18 +175,6 @@ contract ClaimsManager is RegistryContract {
             registry.getContract(serviceProviderFactoryKey)
         ).getServiceProviderDetails(_claimer);
 
-        /*
-        ( , , , ,uint spMin, uint spMax) = ServiceProviderFactory(
-            registry.getContract(serviceProviderFactoryKey)
-        ).getServiceProviderDetails(_claimer);
-        require(
-            (totalStakedAtFundBlockForClaimer >= spMin),
-            "Minimum stake bounds violated at fund block");
-        require(
-            (totalStakedAtFundBlockForClaimer <= spMax),
-            "Maximum stake bounds violated at fund block");
-          */
-
         // Once they claim the zero reward amount, stake can be modified once again
         // Subtract total locked amount for SP from stake at fund block
         uint claimerTotalStake = totalStakedAtFundBlockForClaimer.sub(_totalLockedForSP);
