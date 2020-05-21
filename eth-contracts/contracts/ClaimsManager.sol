@@ -217,6 +217,9 @@ contract ClaimsManager is RegistryContract {
         );
     }
 
+    /**
+     * @notice Modify funding amount per round
+     */
     function updateFundingAmount(uint _newAmount)
     external returns (uint newAmount)
     {
@@ -228,6 +231,10 @@ contract ClaimsManager is RegistryContract {
         return _newAmount;
     }
 
+    /**
+     * @notice Returns boolean indicating whether a claim is considered pending
+     * Note that an address with no endpoints can never have a pending claim
+     */
     function claimPending(address _sp) external view returns (bool pending) {
         uint lastClaimedForSP = Staking(
             registry.getContract(stakingProxyOwnerKey)
@@ -238,6 +245,9 @@ contract ClaimsManager is RegistryContract {
         return (lastClaimedForSP < currentRound.fundBlock && numEndpoints > 0);
     }
 
+    /**
+     * @notice Modify minimum block difference between funding rounds
+     */
     function updateFundingRoundBlockDiff(uint _newFundingRoundBlockDiff) external {
         require(
             msg.sender == controllerAddress,
