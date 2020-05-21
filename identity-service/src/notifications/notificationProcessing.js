@@ -738,6 +738,7 @@ async function _processCosignNotifications (audiusLibs, notif, blocknumber, time
     logger.debug('processCosignNotification - About to send a push notification for cosign', notif)
     let notifWithAddProps = {
       ...notif,
+      entityId: childTrackId,
       actions: [{
         actionEntityType: actionEntityTypes.User,
         actionEntityId: parentTrackUserId,

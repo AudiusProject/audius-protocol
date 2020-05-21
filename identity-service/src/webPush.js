@@ -47,9 +47,11 @@ const sendBrowserNotification = async ({ userId, notificationParams }) => {
       try {
         await webpush.sendNotification(pushSubscription, JSON.stringify({ message, title: `${title} • Audius` }))
       } catch (err) {
-        // If the send Notification response was not successful
-        // delete the browser subscription as it is no longer valid
-        await notificationBrowser.destroy()
+        if (err.statusCode === 410) {
+          // If the send Notification response was not successful
+          // delete the browser subscription as it is no longer valid
+          await notificationBrowser.destroy()
+        }
       }
     }))
   } catch (err) {
