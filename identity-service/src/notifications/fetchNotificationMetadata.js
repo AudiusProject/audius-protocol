@@ -192,7 +192,9 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
   if (fetchTrackRemixParents.length > 0) {
     const trackParentIds = fetchTrackRemixParents.reduce((parentTrackIds, remixTrackId) => {
       const track = trackMap[remixTrackId]
-      const parentIds = track.remix_of.tracks.map(t => t.parent_track_id)
+      const parentIds = (track.remix_of && Array.isArray(track.remix_of.tracks))
+        ? track.remix_of.tracks.map(t => t.parent_track_id)
+        : []
       return parentTrackIds.concat(parentIds)
     }, [])
 

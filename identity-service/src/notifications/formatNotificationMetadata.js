@@ -79,7 +79,10 @@ function formatAnnouncement (notification) {
 
 function formatRemixCreate (notification, metadata) {
   const trackId = notification.entityId
-  const parentTrackId = notification.actions[0].actionEntityId
+  const parentTrackAction = notification.actions.find(action =>
+    action.actionEntityType === actionEntityTypes.Track &&
+    action.actionEntityId !== trackId)
+  const parentTrackId = parentTrackAction.actionEntityId
   const remixTrack = metadata.tracks[trackId]
   const parentTrack = metadata.tracks[parentTrackId]
   const userId = remixTrack.owner_id
@@ -96,7 +99,10 @@ function formatRemixCreate (notification, metadata) {
 
 function formatRemixCosign (notification, metadata) {
   const trackId = notification.entityId
-  const parentTrackUserId = notification.actions[0].actionEntityId
+  const parentTrackUserAction = notification.actions.find(action =>
+    action.actionEntityType === actionEntityTypes.User
+  )
+  const parentTrackUserId = parentTrackUserAction.actionEntityId
   const remixTrack = metadata.tracks[trackId]
   const parentTracks = remixTrack.remix_of.tracks.map(t => metadata.tracks[t.parent_track_id])
   return {
