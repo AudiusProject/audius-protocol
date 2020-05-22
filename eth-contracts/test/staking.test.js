@@ -1,5 +1,4 @@
-import * as _lib from './_lib/lib.js'
-const encodeCall = require('../utils/encodeCall')
+import * as _lib from '../utils/lib.js'
 
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
@@ -53,7 +52,7 @@ contract('Staking test', async (accounts) => {
 
     // Create initialization data
     staking0 = await Staking.new({ from: proxyAdminAddress })
-    stakingInitializeData = encodeCall(
+    stakingInitializeData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [
@@ -389,7 +388,7 @@ contract('Staking test', async (accounts) => {
 
     it('invalid token address', async () => {
       let testStaking = await Staking.new({ from: proxyAdminAddress })
-      let invalidStakingInitializeData = encodeCall(
+      let invalidStakingInitializeData = _lib.encodeCall(
         'initialize',
         ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
         [

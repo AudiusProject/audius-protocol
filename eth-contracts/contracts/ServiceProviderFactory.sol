@@ -516,10 +516,12 @@ contract ServiceProviderFactory is RegistryContract {
     /// @notice Update service provider lockup duration
     function updateDecreaseStakeLockupDuration(uint _duration) external {
         _requireIsInitialized();
+
         require(
             msg.sender == registry.getContract(governanceKey),
-            "Only callable from governance"
+            "Only callable by Governance contract"
         );
+
         decreaseStakeLockupDuration = _duration;
     }
 

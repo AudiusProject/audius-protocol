@@ -10,20 +10,20 @@ import "@openzeppelin/upgrades/contracts/Initializable.sol";
  * https://github.com/OpenZeppelin/openzeppelin-sdk/blob/v2.8.0/packages/lib/contracts/Initializable.sol
  */
 contract InitializableV2 is Initializable {
-    bool private initialized;
+    bool private isInitialized;
 
     string private constant ERROR_NOT_INITIALIZED = "INIT_NOT_INITIALIZED";
     string private constant ERROR_ALREADY_INITIALIZED = "ERROR_ALREADY_INITIALIZED";
 
     function initialize() public initializer {
-        initialized = true;
+        isInitialized = true;
     }
 
     function _requireIsInitialized() internal view {
-        require(initialized == true, ERROR_NOT_INITIALIZED);
+        require(isInitialized == true, ERROR_NOT_INITIALIZED);
     }
 
     function _isInitialized() internal view returns (bool) {
-        return initialized;
+        return isInitialized;
     }
 }

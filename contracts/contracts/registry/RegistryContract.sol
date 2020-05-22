@@ -11,12 +11,6 @@ import "../interface/RegistryInterface.sol";
  */
 contract RegistryContract is Ownable {
 
-    struct Multihash {
-        bytes32 digest;
-        uint8 hashFn;
-        uint8 size;
-    }
-
     address payable internal registryAddress;
 
     /// @notice all contracts that inherit from RegistryContract are automatically Ownable()

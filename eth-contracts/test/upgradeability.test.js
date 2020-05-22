@@ -1,5 +1,4 @@
-import * as _lib from './_lib/lib.js'
-const encodeCall = require('../utils/encodeCall')
+import * as _lib from '../utils/lib.js'
 
 const Registry = artifacts.require('Registry')
 const Staking = artifacts.require('Staking')
@@ -51,7 +50,7 @@ contract('Upgrade proxy test', async (accounts) => {
     assert.notEqual(staking0.address, stakingUpgraded.address)
 
     // Create initialization data
-    stakingInitializeData = encodeCall(
+    stakingInitializeData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [
