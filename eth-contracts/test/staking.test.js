@@ -69,8 +69,7 @@ contract('Staking test', async (accounts) => {
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
-      registry.address,
-      governanceKey,
+      mockGovAddress,
       { from: proxyDeployerAddress }
     )
 
@@ -78,6 +77,9 @@ contract('Staking test', async (accounts) => {
     await registry.addContract(claimsManagerProxyKey, mockStakingCaller.address)
     await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
     await registry.addContract(delegateManagerKey, mockStakingCaller.address)
+
+    // Configure all addresses to mockStakingCaller
+    await mockStakingCaller.configurePermissions()
 
     // Permission test address as caller
     staking = await Staking.at(proxy.address)
@@ -403,8 +405,7 @@ contract('Staking test', async (accounts) => {
           testStaking.address,
           proxyAdminAddress,
           invalidStakingInitializeData,
-          registry.address,
-          governanceKey,
+          mockStakingCaller.address,
           { from: proxyDeployerAddress }
         )
       )

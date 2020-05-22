@@ -92,5 +92,13 @@ contract MockStakingCaller is RegistryContract {
     function isInitialized() external view returns (bool) {
         return _isInitialized();
     }
+
+    function configurePermissions() external {
+        _requireIsInitialized();
+        staking.setClaimsManagerAddress(address(this));
+        staking.setServiceProviderFactoryAddress(address(this));
+        staking.setDelegateManagerAddress(address(this));
+        staking.setGovernanceAddress(address(this));
+    }
 }
 
