@@ -80,13 +80,10 @@ contract('Governance.sol', async (accounts) => {
     // Deploy + register Staking
     let stakingInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      ['address', 'address'],
       [
         token.address,
-        registry.address,
-        claimsManagerProxyKey,
-        delegateManagerKey,
-        serviceProviderFactoryKey
+        governance.address
       ]
     )
     staking0 = await Staking.new({ from: proxyDeployerAddress })
@@ -94,8 +91,7 @@ contract('Governance.sol', async (accounts) => {
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     staking = await Staking.at(stakingProxy.address)

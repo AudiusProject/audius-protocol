@@ -226,19 +226,20 @@ export const deployGovernance = async (
   const governance0 = await Governance.new({ from: proxyDeployerAddress })
   const governanceInitializeData = encodeCall(
     'initialize',
-    ['address', 'bytes32', 'uint256', 'uint256', 'address'],
-    [registry.address, stakingRegKey, votingPeriod, votingQuorum, guardianAddress]
+    ['address', 'uint256', 'uint256', 'address'],
+    [registry.address, votingPeriod, votingQuorum, guardianAddress]
   )
+  // Initialize proxy with zero address
   const governanceProxy = await AudiusAdminUpgradeabilityProxy.new(
     governance0.address,
     proxyAdminAddress,
     governanceInitializeData,
-    registry.address,
-    governanceRegKey,
+    addressZero,
     { from: proxyDeployerAddress }
   )
-  const governance = await Governance.at(governanceProxy.address)
+  await governanceProxy.setAudiusGovernanceAddress(governanceProxy.address, { from: proxyAdminAddress })
 
+  const governance = await Governance.at(governanceProxy.address)
   return governance
 }
 
