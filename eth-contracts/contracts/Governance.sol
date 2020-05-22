@@ -95,9 +95,15 @@ contract Governance is RegistryContract {
         require(_votingQuorum > 0, "Requires non-zero _votingQuorum");
         votingQuorum = _votingQuorum;
 
-        guardianAddress = _guardianAddress;
+        guardianAddress = _guardianAddress;  //Guardian address becomes the only party 
 
         RegistryContract.initialize();
+    }
+
+    function setStakingAddress(address _address) external {
+        require(msg.sender == address(this), "Only callable by self");
+        // Set staking owner address
+        // Confirm this works through test executing guardian update
     }
 
     // ========================================= Governance Actions =========================================

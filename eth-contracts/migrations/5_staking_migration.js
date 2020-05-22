@@ -56,5 +56,7 @@ module.exports = (deployer, network, accounts) => {
       stakingProxy.address,
       { from: proxyDeployerAddress }
     )
+
+    // Set stakingAddress in Governance
   })
 }

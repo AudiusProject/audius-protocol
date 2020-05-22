@@ -13,7 +13,7 @@ import "./interface/RegistryInterface.sol";
  */
 contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
     RegistryInterface private audiusRegistry;
-    bytes32 private controllerRegistryKey;
+    bytes32 private controllerRegistryKey; // TODO: This would move to governance address
 
     constructor(
       address _logic,
@@ -34,7 +34,7 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
      */
     function upgradeTo(address _newImplementation) external {
         require(
-            msg.sender == audiusRegistry.getContract(controllerRegistryKey) || msg.sender == _admin(),
+            msg.sender == audiusRegistry.getContract(controllerRegistryKey) || msg.sender == _admin(),      // This has to be from governance
             "Caller must be proxy admin or proxy upgrader"
         );
         _upgradeTo(_newImplementation);
