@@ -1,10 +1,13 @@
 const contractConfig = require('../contract-config.js')
 const { encodeCall } = require('../utils/lib')
+const _lib = require('../utils/lib')
+const assert = require('assert')
 
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
 const ClaimsManager = artifacts.require('ClaimsManager')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+const Governance = artifacts.require('Governance')
 
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
@@ -17,12 +20,15 @@ module.exports = (deployer, network, accounts) => {
     const config = contractConfig[network]
     const proxyAdminAddress = config.proxyAdminAddress || accounts[10]
     const proxyDeployerAddress = config.proxyDeployerAddress || accounts[11]
+    const guardianAddress = proxyDeployerAddress
 
     const tokenAddress = process.env.tokenAddress
     const registryAddress = process.env.registryAddress
+    const governanceAddress = process.env.governanceAddress
 
     const token = await AudiusToken.at(tokenAddress)
     const registry = await Registry.at(registryAddress)
+    const governance = await Governance.at(governanceAddress)
 
     // Deploy ClaimsManager logic and proxy contracts + register proxy
     const claimsManager0 = await deployer.deploy(ClaimsManager, { from: proxyDeployerAddress })
@@ -45,6 +51,13 @@ module.exports = (deployer, network, accounts) => {
     // Register ClaimsManager as minter
     // Note that by default this is called from proxyDeployerAddress in ganache
     // During an actual migration, this step should be run independently
-    await token.addMinter(claimsManagerProxy.address, { from: proxyDeployerAddress })
+    const addMinterTxR = await governance.guardianExecuteTransactionOnAddress(
+      token.address,
+      _lib.toBN(0),
+      'addMinter(address)',
+      _lib.abiEncode(['address'], [claimsManagerProxy.address]),
+      { from: guardianAddress }
+    )
+    assert.equal(_lib.parseTx(addMinterTxR).event.args.success, true)
   })
 }
