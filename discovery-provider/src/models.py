@@ -1,7 +1,10 @@
+import logging
+
 import enum
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import validates
 from sqlalchemy import (
     Column,
     Integer,
@@ -15,6 +18,7 @@ from sqlalchemy import (
 )
 
 Base = declarative_base()
+logger = logging.getLogger(__name__)
 
 class BlockMixin():
 
@@ -152,6 +156,40 @@ class Track(Base):
 
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, track_id, blockhash)
+
+    # Will pass in all fields into @validates; hardcoded for now
+    @validates('title', 'length')
+    def validate_field(self, key, field):
+
+        # This mapping will abstracted out; will be the flattened schema for Track
+        mapping = {
+            "track": str,
+            "length": int,
+            "download": dict,
+            # TODO: working on logic to validate json
+            # plan is to recursively validate the inner contents
+            "download.is_downloadable": bool
+        }
+
+        try:
+            assert isinstance(field, mapping[key])
+        except AssertionError as e:
+            e.args = ('Wrong data type {0} for field "{1}" with value "{2}"'.format(type(field), key, field),)
+            logger.warning(e.args[0])
+            field = self.get_default_for_type(mapping[key])
+        
+        return field
+
+    # switch case to grab a specific default value
+    def get_default_for_type(self, schema_type):
+        switcher = {
+            str: 'default_string',
+            int: 59
+        }
+
+        # ideally, would never set None as the final value unless specified in switcher
+        return switcher.get(schema_type, None)
+
 
     def __repr__(self):
         return (
