@@ -23,20 +23,20 @@ contract Staking is RegistryContract {
     string private constant ERROR_TOKEN_TRANSFER = "STAKING_TOKEN_TRANSFER";
     string private constant ERROR_NOT_ENOUGH_BALANCE = "STAKING_NOT_ENOUGH_BALANCE";
 
-    // stores the history of staking and claims for a given address
+    /// @dev stores the history of staking and claims for a given address
     struct Account {
         Checkpointing.History stakedHistory;
         Checkpointing.History claimHistory;
     }
 
-    // ERC-20 token that will be used to stake with
+    /// @dev ERC-20 token that will be used to stake with
     ERC20 internal stakingToken;
     RegistryInterface registry = RegistryInterface(0);
 
-    // maps addresses to staking and claims history
+    /// @dev maps addresses to staking and claims history
     mapping (address => Account) internal accounts;
-    
-    // total staked tokens at a given block
+
+    /// @dev total staked tokens at a given block
     Checkpointing.History internal totalStakedHistory;
 
     bytes32 claimsManagerProxyKey;
@@ -47,6 +47,14 @@ contract Staking is RegistryContract {
     event Unstaked(address indexed user, uint256 amount, uint256 total);
     event Slashed(address indexed user, uint256 amount, uint256 total);
 
+    /**
+     * @notice Function to initialize the contract
+     * @param _stakingToken - address of ERC20 token that will be staked
+     * @param _registryAddress - address for registry proxy contract
+     * @param _claimsManagerProxyKey - registry key for ClaimsManager proxy
+     * @param _delegateManagerKey - registry key for DelegateManager
+     * @param _serviceProviderFactoryKey - registry key for ServiceProvider proxy
+     */
     function initialize(
         address _stakingToken,
         address _registryAddress,
@@ -69,6 +77,8 @@ contract Staking is RegistryContract {
 
     /**
      * @notice Funds `_amount` of tokens from ClaimsManager to target account
+     * @param _amount - amount of rewards to  add to stake
+     * @param _stakerAccount - address of staker
      */
     function stakeRewards(uint256 _amount, address _stakerAccount) external {
         _requireIsInitialized();
@@ -82,7 +92,9 @@ contract Staking is RegistryContract {
     }
 
     /**
-     * @notice Update history
+     * @notice Update claim history by adding an event to the claim historry
+     * @param _amount - amount to add to claim history
+     * @param _stakerAccount - address of staker
      */
     function updateClaimHistory(uint256 _amount, address _stakerAccount) external {
         _requireIsInitialized();
@@ -97,9 +109,9 @@ contract Staking is RegistryContract {
 
     /**
      * @notice Slashes `_amount` tokens from _slashAddress
-     * Callable from DelegateManager
-     * @param _amount Number of tokens slashed
-     * @param _slashAddress address being slashed
+     * @dev Callable from DelegateManager
+     * @param _amount - Number of tokens slashed
+     * @param _slashAddress - Address being slashed
      */
     function slash(
         uint256 _amount,
@@ -124,8 +136,8 @@ contract Staking is RegistryContract {
 
     /**
      * @notice Stakes `_amount` tokens, transferring them from _accountAddress, and assigns them to `_accountAddress`
-     * @param _accountAddress The final staker of the tokens
-     * @param _amount Number of tokens staked
+     * @param _accountAddress - The final staker of the tokens
+     * @param _amount - Number of tokens staked
      */
     function stakeFor(
         address _accountAddress,
@@ -145,8 +157,8 @@ contract Staking is RegistryContract {
 
     /**
      * @notice Unstakes `_amount` tokens, returning them to the desired account.
-     * @param _accountAddress Account unstaked for, and token recipient
-     * @param _amount Number of tokens staked
+     * @param _accountAddress - Account unstaked for, and token recipient
+     * @param _amount - Number of tokens staked
      */
     function unstakeFor(
         address _accountAddress,
@@ -167,9 +179,9 @@ contract Staking is RegistryContract {
 
     /**
      * @notice Stakes `_amount` tokens, transferring them from caller, and assigns them to `_accountAddress`
-     * @param _accountAddress The final staker of the tokens
-     * @param _delegatorAddress Address from which to transfer tokens
-     * @param _amount Number of tokens staked
+     * @param _accountAddress - The final staker of the tokens
+     * @param _delegatorAddress - Address from which to transfer tokens
+     * @param _amount - Number of tokens staked
      */
     function delegateStakeFor(
         address _accountAddress,
@@ -189,9 +201,9 @@ contract Staking is RegistryContract {
 
     /**
      * @notice Stakes `_amount` tokens, transferring them from caller, and assigns them to `_accountAddress`
-     * @param _accountAddress The staker of the tokens
-     * @param _delegatorAddress Address from which to transfer tokens
-     * @param _amount Number of tokens unstaked
+     * @param _accountAddress - The staker of the tokens
+     * @param _delegatorAddress - Address from which to transfer tokens
+     * @param _amount - Number of tokens unstaked
      */
     function undelegateStakeFor(
         address _accountAddress,
@@ -227,7 +239,7 @@ contract Staking is RegistryContract {
 
     /**
      * @notice Get last time `_accountAddress` modified its staked balance
-     * @param _accountAddress Account requesting for
+     * @param _accountAddress - Account requesting for
      * @return Last block number when account's balance was modified
      */
     function lastStakedFor(address _accountAddress) external view returns (uint256) {
@@ -240,7 +252,7 @@ contract Staking is RegistryContract {
 
     /**
      * @notice Get last time `_accountAddress` claimed a staking reward
-     * @param _accountAddress Account requesting for
+     * @param _accountAddress - Account requesting for
      * @return Last block number when claim requested
      */
     function lastClaimedFor(address _accountAddress) external view returns (uint256) {
@@ -253,8 +265,8 @@ contract Staking is RegistryContract {
 
     /**
      * @notice Get the total amount of tokens staked by `_accountAddress` at block number `_blockNumber`
-     * @param _accountAddress Account requesting for
-     * @param _blockNumber Block number at which we are requesting
+     * @param _accountAddress - Account requesting for
+     * @param _blockNumber - Block number at which we are requesting
      * @return The amount of tokens staked by the account at the given block number
      */
     function totalStakedForAt(
@@ -266,7 +278,7 @@ contract Staking is RegistryContract {
 
     /**
      * @notice Get the total amount of tokens staked by all users at block number `_blockNumber`
-     * @param _blockNumber Block number at which we are requesting
+     * @param _blockNumber - Block number at which we are requesting
      * @return The amount of tokens staked at the given block number
      */
     function totalStakedAt(uint256 _blockNumber) external view returns (uint256) {
@@ -277,7 +289,7 @@ contract Staking is RegistryContract {
 
     /**
      * @notice Get the amount of tokens staked by `_accountAddress`
-     * @param _accountAddress The owner of the tokens
+     * @param _accountAddress - The owner of the tokens
      * @return The amount of tokens staked by the given account
      */
     function totalStakedFor(address _accountAddress) public view returns (uint256) {
@@ -296,6 +308,12 @@ contract Staking is RegistryContract {
 
     /* Internal functions */
 
+    /**
+     * @notice Adds stake from a transfer account to the stake account
+     * @param _stakeAccount - Account that funds will be staked for
+     * @param _transferAccount - Account that funds will be transferred from
+     * @param _amount - amount to stake
+     */
     function _stakeFor(
         address _stakeAccount,
         address _transferAccount,
@@ -320,6 +338,12 @@ contract Staking is RegistryContract {
             totalStakedFor(_stakeAccount));
     }
 
+    /**
+     * @notice Unstakes tokens from a stake account to a transfer account
+     * @param _stakeAccount - Account that staked funds will be transferred from
+     * @param _transferAccount - Account that funds will be transferred to
+     * @param _amount - amount to unstake
+     */
     function _unstakeFor(
         address _stakeAccount,
         address _transferAccount,
@@ -344,6 +368,12 @@ contract Staking is RegistryContract {
         );
     }
 
+    /**
+     * @notice Burn tokens for a given staker
+     * @dev Called when slash occurs
+     * @param _stakeAccount - Account for which funds will be burned
+     * @param _amount - amount to burn
+     */
     function _burnFor(address _stakeAccount, uint256 _amount) internal {
         // burning zero tokens is not allowed
         require(_amount > 0, ERROR_AMOUNT_ZERO);
@@ -360,6 +390,12 @@ contract Staking is RegistryContract {
         /** No event emitted since token.burn() call already emits a Transfer event */
     }
 
+    /**
+     * @notice Increase or decrease the staked balance for an account
+     * @param _accountAddress - Account to modify
+     * @param _by - amount to modify
+     * @param _increase - true if increase in stake, false if decrease
+     */
     function _modifyStakeBalance(address _accountAddress, uint256 _by, bool _increase) internal {
         uint256 currentInternalStake = accounts[_accountAddress].stakedHistory.getLast();
 
@@ -377,6 +413,11 @@ contract Staking is RegistryContract {
         accounts[_accountAddress].stakedHistory.add(block.number.toUint64(), newStake);
     }
 
+    /**
+     * @notice Increase or decrease the staked balance across all accounts
+     * @param _by - amount to modify
+     * @param _increase - true if increase in stake, false if decrease
+     */
     function _modifyTotalStaked(uint256 _by, bool _increase) internal {
         uint256 currentStake = totalStaked();
 
