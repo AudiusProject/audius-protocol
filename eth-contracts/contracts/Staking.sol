@@ -73,6 +73,19 @@ contract Staking is RegistryContract {
         );
         _stakeFor(_stakerAccount, msg.sender, _amount);
 
+        this.updateClaimHistory(_amount, _stakerAccount);
+    }
+
+    /**
+     * @notice Update history
+     */
+    function updateClaimHistory(uint256 _amount, address _stakerAccount) external {
+        _requireIsInitialized();
+        require(
+            msg.sender == registry.getContract(claimsManagerProxyKey) || msg.sender == address(this),
+            "Only callable from ClaimsManager or Staking.sol"
+        );
+
         // Update claim history even if no value claimed
         accounts[_stakerAccount].claimHistory.add(block.number.toUint64(), _amount);
     }

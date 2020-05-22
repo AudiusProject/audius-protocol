@@ -8,6 +8,7 @@ const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
+const ClaimsManager = artifacts.require('ClaimsManager')
 const Governance = artifacts.require('Governance')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
@@ -32,7 +33,7 @@ const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
 
 contract('ServiceProvider test', async (accounts) => {
-  let token, registry, governance, staking0, stakingInitializeData, proxy
+  let token, registry, staking0, stakingInitializeData, proxy, claimsManager0, claimsManagerProxy, claimsManager, governance
   let staking, serviceProviderFactory, serviceTypeManager
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
@@ -106,7 +107,7 @@ contract('ServiceProvider test', async (accounts) => {
       { from: proxyDeployerAddress }
     )
     token = await AudiusToken.at(tokenProxy.address)
-    
+
     const registry0 = await Registry.new({ from: proxyDeployerAddress })
     const registryInitData = _lib.encodeCall('initialize', [], [])
     const registryProxy = await AdminUpgradeabilityProxy.new(
@@ -160,7 +161,6 @@ contract('ServiceProvider test', async (accounts) => {
 
     staking = await Staking.at(proxy.address)
     await registry.addContract(stakingProxyKey, proxy.address, { from: proxyDeployerAddress })
-
     // Deploy + register ServiceTypeManager
     let serviceTypeInitializeData = _lib.encodeCall(
       'initialize',
@@ -179,6 +179,25 @@ contract('ServiceProvider test', async (accounts) => {
     serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManager.address, { from: proxyDeployerAddress })
 
+    // Deploy claimsManagerProxy
+    claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
+    const claimsInitializeCallData = _lib.encodeCall(
+      'initialize',
+      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey, governanceKey]
+    )
+    claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
+      claimsManager0.address,
+      proxyAdminAddress,
+      claimsInitializeCallData,
+      registry.address,
+      governanceKey,
+      { from: proxyDeployerAddress }
+    )
+    claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
+
+    // Register claimsManagerProxy
+    await registry.addContract(claimsManagerProxyKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
 
     /** addServiceTypes creatornode and discprov via Governance */
     await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey, true)
@@ -197,8 +216,8 @@ contract('ServiceProvider test', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
+      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey, claimsManagerProxyKey]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
