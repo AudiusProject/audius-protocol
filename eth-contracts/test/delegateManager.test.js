@@ -1080,7 +1080,7 @@ contract('DelegateManager', async (accounts) => {
         increaseRegisteredProviderStake(
           diffAmount,
           stakerAccount),
-        'Minimum stake threshold exceeded')
+        'Minimum stake requirement not met')
 
       // Increase to minimum
       spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
@@ -1190,7 +1190,7 @@ contract('DelegateManager', async (accounts) => {
       // Try to execute undelegate stake, but fail due to min bound violation
       await _lib.assertRevert(
         delegateManager.undelegateStake({ from: delegatorAccount1 }),
-        'Minimum stake threshold exceeded')
+        'Minimum stake requirement not met')
     })
 
     it('Undelegate lockup duration changes', async () => {

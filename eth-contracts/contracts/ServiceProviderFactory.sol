@@ -636,7 +636,7 @@ contract ServiceProviderFactory is RegistryContract {
     {
         require(
             _amount >= spDetails[_sp].minAccountStake,
-            "Minimum stake threshold not met");
+            "Minimum stake requirement not met");
 
         require(
             _amount <= spDetails[_sp].maxAccountStake,
