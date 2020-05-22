@@ -1396,7 +1396,7 @@ contract('DelegateManager', async (accounts) => {
         assert.isTrue(acctInfo.numberOfEndpoints.eq(_lib.toBN(0)), 'Expect no endpoints in sp factory')
 
         // Initiate round
-        await claimsManager.initiateRound({ from: stakerAccount })
+        await claimsManager.initiateRound({ from: stakerAccount2 })
         // Expect no claim pending even though lastClaimed for this SP is < the round initiated
         // Achieved by number of endpoints check in ClaimsManager
         assert.isFalse(await claimsManager.claimPending(stakerAccount), 'Expect no claim pending')
