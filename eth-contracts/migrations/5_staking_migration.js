@@ -1,9 +1,11 @@
 const contractConfig = require('../contract-config.js')
 const { encodeCall } = require('../utils/lib')
+const _lib = require('../utils/lib')
 
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
 const Staking = artifacts.require('Staking')
+const Governance = artifacts.require('Governance')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
@@ -58,5 +60,19 @@ module.exports = (deployer, network, accounts) => {
     )
 
     // Set stakingAddress in Governance
+    const governance = await Governance.at(process.env.governanceAddress)
+    const guardianAddress = proxyDeployerAddress
+    const signatureSetStakingAddress = 'setStakingAddress(address)'
+    const callValue0 = _lib.toBN(0)
+    console.log(`StakingAddress ${stakingProxy.address}`)
+    const callDataSetStakingAddr = _lib.abiEncode(['address'], [stakingProxy.address])
+    const setStakingAddressTxReceeipt = await governance.guardianExecuteTransaction(
+      governanceKey,
+      callValue0,
+      signatureSetStakingAddress,
+      callDataSetStakingAddr,
+      { from: guardianAddress })
+    let stakingFromGov = await governance.getStakingAddress()
+    console.log(`StakingAddressFromGov ${stakingFromGov}`)
   })
 }

@@ -38,6 +38,11 @@ contract Staking is RegistryContract {
     bytes32 delegateManagerKey;
     bytes32 serviceProviderFactoryKey;
 
+    address governanceAddress;
+    address claimsManagerAddress;
+    address delegateManagerAddress;
+    address serviceProviderFactoryAddress;
+
     event Staked(address indexed user, uint256 amount, uint256 total);
     event Unstaked(address indexed user, uint256 amount, uint256 total);
     event Slashed(address indexed user, uint256 amount, uint256 total);

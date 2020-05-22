@@ -37,8 +37,8 @@ module.exports = (deployer, network, accounts) => {
     const serviceTypeManager0 = await deployer.deploy(ServiceTypeManager, { from: proxyDeployerAddress })
     const serviceTypeCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32'],
-      [registryAddress, governanceKey]
+      ['address'],
+      [process.env.governanceAddress]
     )
     const serviceTypeManagerProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,

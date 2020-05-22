@@ -58,11 +58,7 @@ contract ServiceTypeManager is RegistryContract {
     {
         _requireIsInitialized();
 
-        require(
-            msg.sender == registry.getContract(governanceKey),
-            "Only callable by Governance contract"
-        );
-
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
         require(!this.serviceTypeIsValid(_serviceType), "Already known service type");
 
         validServiceTypes.push(_serviceType);
@@ -76,10 +72,7 @@ contract ServiceTypeManager is RegistryContract {
     function removeServiceType(bytes32 _serviceType) external {
         _requireIsInitialized();
 
-        require(
-            msg.sender == registry.getContract(governanceKey),
-            "Only callable by Governance contract"
-        );
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
 
         uint serviceIndex = 0;
         bool foundService = false;
@@ -109,7 +102,7 @@ contract ServiceTypeManager is RegistryContract {
     {
         _requireIsInitialized();
         require(
-            msg.sender == registry.getContract(governanceKey),
+            msg.sender == governanceAddress,
             "Only callable by Governance contract"
         );
 
@@ -153,10 +146,7 @@ contract ServiceTypeManager is RegistryContract {
     {
         _requireIsInitialized();
 
-        require(
-            msg.sender == registry.getContract(governanceKey),
-            "Only callable by Governance contract"
-        );
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
 
         require(
             serviceTypeVersionInfo[_serviceType][_serviceVersion] == false,

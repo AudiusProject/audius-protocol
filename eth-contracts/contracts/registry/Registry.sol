@@ -55,7 +55,6 @@ contract Registry is InitializableV2, Ownable {
             "Registry::addContract: Cannot register zero address."
         );
         setAddress(_name, _address);
-        RegistryContractInterface(_address).setRegistry(address(this));
         emit ContractAdded(_name, _address);
     }
 

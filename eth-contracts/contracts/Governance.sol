@@ -9,7 +9,7 @@ import "./interface/RegistryInterface.sol";
 contract Governance is RegistryContract {
     using SafeMath for uint;
     RegistryInterface registry;
-    bytes32 stakingProxyOwnerKey;
+    address stakingAddress;
 
     uint256 votingPeriod;
     uint256 votingQuorum;
@@ -79,15 +79,12 @@ contract Governance is RegistryContract {
 
     function initialize(
         address _registryAddress,
-        bytes32 _stakingProxyOwnerKey,
         uint256 _votingPeriod,
         uint256 _votingQuorum,
         address _guardianAddress
     ) public initializer {
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
         registry = RegistryInterface(_registryAddress);
-
-        stakingProxyOwnerKey = _stakingProxyOwnerKey;
 
         require(_votingPeriod > 0, "Requires non-zero _votingPeriod");
         votingPeriod = _votingPeriod;
@@ -100,10 +97,10 @@ contract Governance is RegistryContract {
         RegistryContract.initialize();
     }
 
+    // Set staking owner address
     function setStakingAddress(address _address) external {
         require(msg.sender == address(this), "Only callable by self");
-        // Set staking owner address
-        // Confirm this works through test executing guardian update
+        stakingAddress = _address;
     }
 
     // ========================================= Governance Actions =========================================
@@ -121,9 +118,7 @@ contract Governance is RegistryContract {
         address proposer = msg.sender;
 
         // Require proposer is active Staker
-        Staking stakingContract = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        );
+        Staking stakingContract = Staking(stakingAddress);
         require(
             stakingContract.totalStakedFor(proposer) > 0,
             "Proposer must be active staker with non-zero stake."
@@ -185,9 +180,8 @@ contract Governance is RegistryContract {
         );
 
         // Require voter is active Staker + get voterStake.
-        Staking stakingContract = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        );
+        Staking stakingContract = Staking(stakingAddress);
+
         uint256 voterStake = stakingContract.totalStakedForAt(
             voter,
             proposals[_proposalId].startBlockNumber
@@ -280,9 +274,8 @@ contract Governance is RegistryContract {
         proposals[_proposalId].outcome = Outcome.Evaluating;
 
         // Require msg.sender is active Staker.
-        Staking stakingContract = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        );
+        Staking stakingContract = Staking(stakingAddress);
+
         require(
             stakingContract.totalStakedForAt(
                 msg.sender, proposals[_proposalId].startBlockNumber
@@ -474,6 +467,11 @@ contract Governance is RegistryContract {
             "Must provide valid non-zero _proposalId"
         );
         return proposals[_proposalId].votes[_voter];
+    }
+
+    function getStakingAddress() external view returns (address addr)
+    {
+        return stakingAddress;
     }
 
     // ========================================= Internal Functions =========================================
