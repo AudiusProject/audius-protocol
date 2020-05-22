@@ -8,13 +8,14 @@ import "./interface/RegistryInterface.sol";
 
 contract Governance is RegistryContract {
     using SafeMath for uint;
-    RegistryInterface registry;
-    bytes32 stakingProxyOwnerKey;
 
-    uint256 votingPeriod;
-    uint256 votingQuorum;
+    RegistryInterface private registry;
+    bytes32 private stakingProxyOwnerKey;
 
-    address guardianAddress;
+    uint256 private votingPeriod;
+    uint256 private votingQuorum;
+
+    address private guardianAddress;
 
     /***** Enums *****/
     enum Outcome {InProgress, No, Yes, Invalid, TxFailed, Evaluating}
@@ -373,6 +374,8 @@ contract Governance is RegistryContract {
         emit ProposalVetoed(_proposalId);
     }
 
+    /** TODO setters for state vars (votingPeriod, votingQuorum) */
+
     // ========================================= Guardian Actions =========================================
 
     function guardianExecuteTransaction(
@@ -417,6 +420,19 @@ contract Governance is RegistryContract {
             success,
             returnData
         );
+    }
+
+    function transferGuardianship(address _newGuardianAddress) external {
+        _requireIsInitialized();
+
+        require(
+            msg.sender == guardianAddress,
+            "Governance::guardianExecuteTransaction: Only guardian."
+        );
+
+        // TODO - ensure _newGuardianAddress is not a contract (maybe not possible?)
+
+        guardianAddress = _newGuardianAddress;
     }
 
     // ========================================= Getter Functions =========================================
@@ -468,6 +484,24 @@ contract Governance is RegistryContract {
             "Must provide valid non-zero _proposalId"
         );
         return proposals[_proposalId].votes[_voter];
+    }
+
+    function getGuardianAddress() external view returns (address) {
+        _requireIsInitialized();
+
+        return guardianAddress;
+    }
+
+    function getVotingPeriod() external view returns (uint) {
+        _requireIsInitialized();
+
+        return votingPeriod;
+    }
+
+    function getVotingQuorum() external view returns (uint) {
+        _requireIsInitialized();
+
+        return votingQuorum;
     }
 
     // ========================================= Internal Functions =========================================
