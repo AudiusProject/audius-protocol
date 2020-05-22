@@ -140,7 +140,6 @@ contract ClaimsManager is RegistryContract {
         return currentRound.totalClaimedInRound;
     }
 
-
     /**
      * @notice Start a new funding round
      * @dev Permissioned to be callable by stakers or governance contract
@@ -250,7 +249,7 @@ contract ClaimsManager is RegistryContract {
 
     /**
      * @notice Modify funding amount per round
-     * @param _newAmount - new amount to fund per round in wei 
+     * @param _newAmount - new amount to fund per round in wei
      */
     function updateFundingAmount(uint _newAmount)
     external returns (uint newAmount)

@@ -224,7 +224,10 @@ contract Governance is RegistryContract {
         );
 
         // Require vote is either Yes or No
-        require(_vote == Vote.Yes || _vote == Vote.No, "Governance::submitProposalVote: Can only submit a Yes or No vote");
+        require(
+            _vote == Vote.Yes || _vote == Vote.No,
+            "Governance::submitProposalVote: Can only submit a Yes or No vote"
+        );
 
         // Record previous vote.
         Vote previousVote = proposals[_proposalId].votes[voter];
