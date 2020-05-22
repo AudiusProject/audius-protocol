@@ -535,9 +535,9 @@ contract('DelegateManager', async (accounts) => {
     it('Register 3rd service provider after round has completed', async () => {
       let stakerAccount3 = accounts[8]
       // Transfer 1000 tokens to delegator
-      await token.transfer(stakerAccount3, INITIAL_BAL, { from: deployerAddress })
+      await token.transfer(stakerAccount3, INITIAL_BAL, { from: proxyDeployerAddress })
       // Fund new claim
-      await claimsManager.initiateRound({ from: controllerAddress })
+      await claimsManager.initiateRound({ from: stakerAccount })
       // Get rewards
       await delegateManager.claimRewards({ from: stakerAccount })
       await delegateManager.claimRewards({ from: stakerAccount2 })
@@ -1376,7 +1376,7 @@ contract('DelegateManager', async (accounts) => {
 
       it('Re-registration after removing all stake and claim', async () => {
         // Initiate round
-        await claimsManager.initiateRound({ from: controllerAddress })
+        await claimsManager.initiateRound({ from: stakerAccount })
         // Claim reward immediately
         await delegateManager.claimRewards({ from: stakerAccount })
         // Request decrease all of stake
@@ -1396,7 +1396,7 @@ contract('DelegateManager', async (accounts) => {
         assert.isTrue(acctInfo.numberOfEndpoints.eq(_lib.toBN(0)), 'Expect no endpoints in sp factory')
 
         // Initiate round
-        await claimsManager.initiateRound({ from: controllerAddress })
+        await claimsManager.initiateRound({ from: stakerAccount })
         // Expect no claim pending even though lastClaimed for this SP is < the round initiated
         // Achieved by number of endpoints check in ClaimsManager
         assert.isFalse(await claimsManager.claimPending(stakerAccount), 'Expect no claim pending')
