@@ -205,7 +205,7 @@ contract ServiceProviderFactory is RegistryContract {
         spDetails[msg.sender].maxAccountStake = spDetails[msg.sender].maxAccountStake.add(typeMax);
 
         // Confirm both aggregate account balance and directly staked amount are valid
-        uint currentlyStakedForOwner = this.validateAccountStakeBalance(msg.sender);
+        uint currentlyStakedForOwner = this.validateAndGetAccountStakeBalance(msg.sender);
 
         // Indicate this service provider is within bounds
         spDetails[msg.sender].validBounds = true;
@@ -602,12 +602,26 @@ contract ServiceProviderFactory is RegistryContract {
     /// @notice Validate that the total service provider balance is between the min and max stakes for all their registered services
     //          Validates that direct stake for sp is also above minimum
     function validateAccountStakeBalance(address _sp)
-    external view returns (uint stakedForOwner)
+    external view
     {
         uint currentlyStakedForOwner = Staking(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(_sp);
         _validateBalanceInternal(_sp, currentlyStakedForOwner);
+        return currentlyStakedForOwner;
+    }
+
+    /**
+     * @notice Validate that the total service provider balance is between the min and max stakes
+               for all their registered services. Also Validates that direct stake for sp is also
+               above minimum
+     * @param _sp - address of service provider
+     * @return amount currently staked for service provider
+     */
+    function validateAndGetAccountStakeBalance(address _sp)
+    external view returns (uint stakedForOwner)
+    {
+        this.validateAccountStakeBalance(msg.sender)
         return currentlyStakedForOwner;
     }
 
@@ -636,7 +650,7 @@ contract ServiceProviderFactory is RegistryContract {
     {
         require(
             _amount >= spDetails[_sp].minAccountStake,
-            "Minimum stake threshold exceeded");
+            "Minimum stake threshold not met");
 
         require(
             _amount <= spDetails[_sp].maxAccountStake,

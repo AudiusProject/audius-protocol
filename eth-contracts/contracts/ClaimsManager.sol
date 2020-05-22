@@ -198,10 +198,14 @@ contract ClaimsManager is RegistryContract {
 
         require(
             audiusToken.mint(address(this), rewardsForClaimer),
-            "New tokens must be minted");
+            "New tokens must be minted"
+        );
 
         // Approve token transfer to staking contract address
-        audiusToken.approve(stakingAddress, rewardsForClaimer);
+        require(
+            audiusToken.approve(stakingAddress, rewardsForClaimer),
+            "Token transfer must be approved"
+        );
 
         // Transfer rewards
         stakingContract.stakeRewards(rewardsForClaimer, _claimer);
