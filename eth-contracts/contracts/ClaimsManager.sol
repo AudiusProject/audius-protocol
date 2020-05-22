@@ -21,10 +21,11 @@ contract ClaimsManager is RegistryContract {
     RegistryInterface private registry;
 
     address private tokenAddress;
-    address private controllerAddress;
+
     bytes32 private stakingProxyOwnerKey;
     bytes32 private serviceProviderFactoryKey;
     bytes32 private delegateManagerKey;
+    bytes32 private governanceKey;
 
     // Claim related configurations
     uint private fundingRoundBlockDiff;
@@ -66,17 +67,18 @@ contract ClaimsManager is RegistryContract {
     function initialize(
         address _tokenAddress,
         address _registryAddress,
-        address _controllerAddress,
         bytes32 _stakingProxyOwnerKey,
         bytes32 _serviceProviderFactoryKey,
-        bytes32 _delegateManagerKey
+        bytes32 _delegateManagerKey,
+        bytes32 _governanceKey
     ) public initializer
     {
         tokenAddress = _tokenAddress;
-        controllerAddress = _controllerAddress;
         stakingProxyOwnerKey = _stakingProxyOwnerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
         delegateManagerKey = _delegateManagerKey;
+        governanceKey = _governanceKey;
+
         audiusToken = ERC20Mintable(tokenAddress);
         registry = RegistryInterface(_registryAddress);
 
@@ -121,14 +123,15 @@ contract ClaimsManager is RegistryContract {
     //         Permissioned to stakers or contract deployer
     function initiateRound() external {
         _requireIsInitialized();
+
         bool senderStaked = Staking(
             registry.getContract(stakingProxyOwnerKey)
         ).totalStakedFor(msg.sender) > 0;
-
         require(
-            senderStaked || (msg.sender == controllerAddress),
-            "Round must be initiated from account with staked value or contract deployer"
+            senderStaked || (msg.sender == registry.getContract(governanceKey)),
+            "Only callable by staked account or Governance contract"
         );
+
         require(
             block.number.sub(currentRound.fundBlock) > fundingRoundBlockDiff,
             "Required block difference not met"
@@ -220,8 +223,8 @@ contract ClaimsManager is RegistryContract {
     external returns (uint newAmount)
     {
         require(
-            msg.sender == controllerAddress,
-            "UpdateFundingAmount only accessible from controllerAddress"
+            msg.sender == registry.getContract(governanceKey),
+            "Only callable by Governance contract"
         );
         fundingAmount = _newAmount;
         return _newAmount;
@@ -236,8 +239,8 @@ contract ClaimsManager is RegistryContract {
 
     function updateFundingRoundBlockDiff(uint _newFundingRoundBlockDiff) external {
         require(
-            msg.sender == controllerAddress,
-            "Only accessible from controllerAddress"
+            msg.sender == registry.getContract(governanceKey),
+            "Only callable by Governance contract"
         );
         fundingRoundBlockDiff = _newFundingRoundBlockDiff;
     }

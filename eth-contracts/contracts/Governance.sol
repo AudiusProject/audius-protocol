@@ -488,7 +488,8 @@ contract Governance is RegistryContract {
     {
         bytes memory encodedCallData = abi.encodePacked(
             bytes4(keccak256(bytes(_signature))),
-            _callData);
+            _callData
+        );
         (bool success, bytes memory returnData) = (
             // solium-disable-next-line security/no-call-value
             _targetContractAddress.call.value(_callValue)(encodedCallData)

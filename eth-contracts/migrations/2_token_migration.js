@@ -1,5 +1,5 @@
 const contractConfig = require('../contract-config.js')
-const encodeCall = require('../utils/encodeCall')
+const { encodeCall } = require('../utils/lib')
 
 const AudiusToken = artifacts.require('AudiusToken')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
