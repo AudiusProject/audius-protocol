@@ -660,7 +660,7 @@ contract('DelegateManager', async (accounts) => {
 
     // TODO: Revisit below test case and remove unneeded validation if necessary
     // Test case still in progress
-    it.skip('WIP - claim restriction on staking balance', async () => {
+    it.skip('TODO WIP - claim restriction on staking balance', async () => {
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
 
