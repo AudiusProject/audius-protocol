@@ -1,12 +1,11 @@
 import * as _lib from '../utils/lib.js'
 const { time } = require('@openzeppelin/test-helpers')
 
-const Registry = artifacts.require('Registry')
-const AudiusToken = artifacts.require('AudiusToken')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const StakingUpgraded = artifacts.require('StakingUpgraded')
 const Governance = artifacts.require('Governance')
+const GovernanceUpgraded = artifacts.require('GovernanceUpgraded')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const DelegateManager = artifacts.require('DelegateManager')
@@ -34,6 +33,7 @@ const Vote = Object.freeze({
   Yes: 2
 })
 
+const callValue0 = _lib.toBN(0)
 
 contract('Governance.sol', async (accounts) => {
   let token, registry, staking0, staking, stakingProxy, claimsManager0, claimsManagerProxy
@@ -1064,7 +1064,7 @@ contract('Governance.sol', async (accounts) => {
     })
   })
 
-  describe('Guardian execute transactions', async () => {    
+  describe.only('Guardian execute transactions', async () => {    
     let slashAmount, targetAddress, targetContractRegistryKey, targetContractAddress
     let callValue, signature, callData, returnData
 
@@ -1109,6 +1109,7 @@ contract('Governance.sol', async (accounts) => {
         { from: guardianAddress }
       )
 
+      // Confirm tx logs
       const guardianExecTx = _lib.parseTx(guardianExecTxReceipt)
       assert.equal(guardianExecTx.event.name, 'GuardianTransactionExecuted', 'event.name')
       assert.equal(guardianExecTx.event.args.targetContractAddress, targetContractAddress, 'event.args.targetContractAddress')
@@ -1173,8 +1174,67 @@ contract('Governance.sol', async (accounts) => {
 
     })
 
-    it.skip('TODO - Upgrade contract', async () => { })
-  })
+    it('Upgrade contract', async () => {
+      // Confirm staking.newFunction() not callable before upgrade
+      const stakingCopy = await StakingUpgraded.at(staking.address)
+      await _lib.assertRevert(stakingCopy.newFunction.call({ from: proxyDeployerAddress }), 'revert')
+  
+      // Deploy new logic contract to later upgrade to
+      const stakingUpgraded0 = await StakingUpgraded.new({ from: proxyAdminAddress })
+      
+      // Execute tx to upgrade
+      const guardianExecTxReceipt = await governance.guardianExecuteTransaction(
+        stakingProxyKey,
+        callValue0,
+        'upgradeTo(address)',
+        _lib.abiEncode(['address'], [stakingUpgraded0.address]),
+        { from: guardianAddress }
+      )
+      assert.isTrue(_lib.parseTx(guardianExecTxReceipt).event.args.success, 'event.args.success')
 
-  describe.skip('Proposal to upgrade governance contract', async () => { })
+      // Confirm that contract was upgraded by ensuring staking.newFunction() call succeeds
+      const stakingCopy2 = await StakingUpgraded.at(staking.address)
+      const newFnResp = await stakingCopy2.newFunction.call({ from: proxyDeployerAddress })
+      assert.equal(newFnResp, 5)
+
+      // Confirm that proxy contract's implementation address has upgraded
+      assert.equal(
+        await stakingProxy.implementation.call({ from: proxyAdminAddress }),
+        stakingUpgraded0.address,
+        'Expected updated proxy implementation address'
+      )
+    })
+
+    it('Upgrade governance contract', async () => {
+      // Confirm governance.newFunction() not callable before upgrade
+      const governanceCopy = await GovernanceUpgraded.at(governance.address)
+      await _lib.assertRevert(governanceCopy.newFunction.call({ from: proxyDeployerAddress }), 'revert')
+
+      // Deploy new logic contract to later upgrade to
+      const governanceUpgraded0 = await GovernanceUpgraded.new({ from: proxyDeployerAddress })
+
+      // Execute tx to upgrade
+      const txReceipt = await governance.guardianExecuteTransaction(
+        governanceKey,
+        callValue0,
+        'upgradeTo(address)',
+        _lib.abiEncode(['address'], [governanceUpgraded0.address]),
+        { from: guardianAddress }
+      )
+      assert.isTrue(_lib.parseTx(txReceipt).event.args.success, 'Expected tx to succeed')
+
+      // Confirm governance.newFunction() is callable after upgrade
+      const governanceCopy2 = await GovernanceUpgraded.at(governance.address)
+      const newFnResp = await governanceCopy2.newFunction.call({ from: proxyDeployerAddress })
+      assert.equal(newFnResp, 5)
+
+      // Confirm that proxy contract's implementation address has upgraded
+      const govProxy = await AudiusAdminUpgradeabilityProxy.at(governance.address)
+      assert.equal(
+        await govProxy.implementation.call({ from: proxyAdminAddress }),
+        governanceUpgraded0.address,
+        'Expected updated proxy implementation address'
+      )
+    })
+  })
 })
