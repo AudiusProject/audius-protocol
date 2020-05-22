@@ -15,6 +15,7 @@ const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy
 
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
+const { expectEvent } = require('@openzeppelin/test-helpers')
 
 contract('Upgrade proxy test', async (accounts) => {
   let proxy
@@ -127,12 +128,8 @@ contract('Upgrade proxy test', async (accounts) => {
     staking = await StakingUpgraded.at(proxy.address)
     await _lib.assertRevert(staking.newFunction.call({ from: proxyDeployerAddress }), 'revert')
 
-    const upgradeTxReceipt = await proxy.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
-
-    // Confirm event log
-    const txParsed = _lib.parseTx(upgradeTxReceipt)
-    assert.equal(txParsed.event.name, 'Upgraded', 'event.name')
-    assert.equal(txParsed.event.args.implementation, stakingUpgraded.address, 'event.args.implementation')
+    const upgradeTxReceipt = await mockStakingCaller.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
+    await expectEvent.inTransaction(upgradeTxReceipt.tx, AudiusAdminUpgradeabilityProxy, 'Upgraded', { implementation: stakingUpgraded.address })
 
     // Confirm proxy implementation's address has updated to new logic contract
     assert.equal(await proxy.implementation.call({ from: proxyAdminAddress }), stakingUpgraded.address)
@@ -141,6 +138,26 @@ contract('Upgrade proxy test', async (accounts) => {
     staking = await StakingUpgraded.at(proxy.address)
     const newFunctionResp = await staking.newFunction.call({ from: proxyDeployerAddress })
     assert.equal(newFunctionResp, 5)
+  })
+
+  it('Initialize with no governance address and set value from admin', async () => {
+    let noGovProxy = await AudiusAdminUpgradeabilityProxy.new(
+      staking0.address,
+      proxyAdminAddress,
+      stakingInitializeData,
+      _lib.addressZero,
+      { from: proxyDeployerAddress }
+    )
+
+    let govAddress = await noGovProxy.getAudiusGovernanceAddress()
+    assert.equal(govAddress, _lib.addressZero, 'Expect zero governance addr')
+
+    await _lib.assertRevert(
+      noGovProxy.setAudiusGovernanceAddress(mockStakingCaller.address, { from: accounts[7] }),
+      'Caller must be proxy admin or proxy upgrade')
+    await noGovProxy.setAudiusGovernanceAddress(mockStakingCaller.address, { from: proxyAdminAddress })
+    govAddress = await noGovProxy.getAudiusGovernanceAddress()
+    assert.equal(govAddress, mockStakingCaller.address, 'Expect updated governance addr')
   })
 
   it('Get & set contract governance address', async () => {
@@ -153,7 +170,11 @@ contract('Upgrade proxy test', async (accounts) => {
     let mockStakingCaller2 = await MockStakingCaller.new()
     let mockGovAddr2 = mockStakingCaller2.address
 
-    await proxy.setAudiusGovernanceAddress(mockGovAddr2, { from: proxyAdminAddress })
+    await _lib.assertRevert(
+      proxy.setAudiusGovernanceAddress(mockGovAddr2, { from: proxyAdminAddress }),
+      'Caller must be proxy admin or proxy upgrader')
+
+    await mockStakingCaller.setAudiusGovernanceAddress(mockGovAddr2, { from: proxyAdminAddress })
 
     proxyGovAddr = await proxy.getAudiusGovernanceAddress.call({ from: proxyAdminAddress })
     assert.equal(proxyGovAddr, mockGovAddr2)
@@ -184,7 +205,7 @@ contract('Upgrade proxy test', async (accounts) => {
       const otherAccount = accounts[4]
 
       await approveAndStake(DEFAULT_AMOUNT, staker, staking)
-      await proxy.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
+      await mockStakingCaller.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
 
       staking = await StakingUpgraded.at(proxy.address)
 
