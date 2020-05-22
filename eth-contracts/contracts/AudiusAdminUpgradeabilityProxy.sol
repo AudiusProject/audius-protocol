@@ -19,7 +19,7 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
       address _governanceAddress
     )
     AdminUpgradeabilityProxy(_logic, _admin, _data) public payable
-    {
+    { 
         governanceAddress = _governanceAddress;
     }
 
@@ -29,7 +29,7 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
      */
     function upgradeTo(address _newImplementation) external {
         require(
-            msg.sender == governanceAddress || msg.sender == _admin(),
+            msg.sender == governanceAddress,
             "Caller must be proxy admin or proxy upgrader"
         );
         _upgradeTo(_newImplementation);
@@ -41,7 +41,8 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
 
     function setAudiusGovernanceAddress(address _governanceAddress) external {
         require(
-            msg.sender == governanceAddress || msg.sender == _admin(),
+            msg.sender == governanceAddress ||
+            (governanceAddress == address(0x0) && msg.sender == _admin()),
             "Caller must be proxy admin or proxy upgrader"
         );
         governanceAddress = _governanceAddress;

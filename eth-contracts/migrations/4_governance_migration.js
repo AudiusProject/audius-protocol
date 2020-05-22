@@ -1,5 +1,6 @@
 const contractConfig = require('../contract-config.js')
 const { encodeCall } = require('../utils/lib')
+const _lib = require('../utils/lib')
 
 const Registry = artifacts.require('Registry')
 const Governance = artifacts.require('Governance')
@@ -18,6 +19,7 @@ module.exports = (deployer, network, accounts) => {
     const config = contractConfig[network]
     const proxyAdminAddress = config.proxyAdminAddress || accounts[10]
     const proxyDeployerAddress = config.proxyDeployerAddress || accounts[11]
+    const guardianAddress = config.guardianAddress || proxyDeployerAddress
 
     const registryAddress = process.env.registryAddress
     const registry = await Registry.at(registryAddress)
@@ -34,13 +36,19 @@ module.exports = (deployer, network, accounts) => {
       governance0.address,
       proxyAdminAddress,
       initializeCallData,
-      governance0.address,
+      _lib.addressZero,
       { from: proxyDeployerAddress }
     )
     await registry.addContract(governanceKey, governanceProxy.address, { from: proxyDeployerAddress })
 
+    console.log(`Governance proxy address: ${governanceProxy.address}`)
     let proxyAtGovernanceAddress = await AudiusAdminUpgradeabilityProxy.at(governanceProxy.address)
+    let govAddrFromProxy = await proxyAtGovernanceAddress.getAudiusGovernanceAddress()
+
+    console.log(`Governance address from proxy: ${govAddrFromProxy}`)
     await proxyAtGovernanceAddress.setAudiusGovernanceAddress(governanceProxy.address, { from: proxyAdminAddress })
+    govAddrFromProxy = await proxyAtGovernanceAddress.getAudiusGovernanceAddress()
+    console.log(`Governance address from proxy: ${govAddrFromProxy}`)
 
     // Export to env for reference in future migrations
     process.env.governanceAddress = governanceProxy.address
