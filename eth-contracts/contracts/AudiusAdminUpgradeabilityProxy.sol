@@ -39,7 +39,11 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
         return governanceAddress;
     }
 
-    function setAudiusGovernanceAddress(address _governanceAddress) external ifAdmin {
+    function setAudiusGovernanceAddress(address _governanceAddress) external {
+        require(
+            msg.sender == governanceAddress || msg.sender == _admin(),
+            "Caller must be proxy admin or proxy upgrader"
+        );
         governanceAddress = _governanceAddress;
     }
 }
