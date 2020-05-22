@@ -1,9 +1,9 @@
 pragma solidity ^0.5.0;
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
-import "../service/registry/RegistryContract.sol";
-import "../service/interface/registry/RegistryInterface.sol";
-import "../service/ClaimsManager.sol";
+import "../registry/RegistryContract.sol";
+import "../interface/RegistryInterface.sol";
+import "../ClaimsManager.sol";
 
 
 // TEST ONLY MOCK CONTRACT
@@ -25,7 +25,7 @@ contract MockDelegateManager is RegistryContract {
     function testProcessClaim(
         address _claimer,
         uint _totalLockedForSP
-    ) external returns (uint newAccountTotal) {
+    ) external {
         ClaimsManager claimsManager = ClaimsManager(
             registry.getContract(claimsManagerProxyKey)
         );

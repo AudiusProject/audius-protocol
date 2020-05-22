@@ -1,5 +1,4 @@
-import * as _lib from './_lib/lib.js'
-const encodeCall = require('../utils/encodeCall')
+import * as _lib from '../utils/lib.js'
 const { time } = require('@openzeppelin/test-helpers')
 
 const Registry = artifacts.require('Registry')
@@ -38,13 +37,15 @@ const Vote = Object.freeze({
 
 contract('Governance.sol', async (accounts) => {
   let token, registry, staking0, staking, stakingProxy, claimsManager0, claimsManagerProxy
-  let serviceProviderFactory, claimsManager, delegateManager, governance0, governanceProxy, governance
+  let serviceProviderFactory, claimsManager, delegateManager, governance
 
   const votingPeriod = 10
   const votingQuorum = 1
-  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+
+  // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
+  const [, proxyAdminAddress, proxyDeployerAddress] = accounts
   const guardianAddress = proxyDeployerAddress
-  const protocolOwnerAddress = treasuryAddress
+
   const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
   const testEndpoint1 = 'https://localhost:5000'
   const testEndpoint2 = 'https://localhost:5001'
@@ -59,31 +60,25 @@ contract('Governance.sol', async (accounts) => {
    * Deploy Registry, AudiusAdminUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts
    */
   beforeEach(async () => {
-    token = await AudiusToken.new({ from: treasuryAddress })
-    await token.initialize()
-    registry = await Registry.new({ from: treasuryAddress })
-    await registry.initialize()
+    token = await _lib.deployToken(artifacts, proxyAdminAddress, proxyDeployerAddress)
+    registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
 
-    // Deploy Governance contract
-    governance0 = await Governance.new({ from: proxyDeployerAddress })
-    const governanceCallData = encodeCall(
-      'initialize',
-      ['address', 'bytes32', 'uint256', 'uint256', 'address'],
-      [registry.address, stakingProxyKey, votingPeriod, votingQuorum, proxyDeployerAddress]
-    )
-    governanceProxy = await AudiusAdminUpgradeabilityProxy.new(
-      governance0.address,
+    // Deploy + register Governance contract
+    governance = await _lib.deployGovernance(
+      artifacts,
       proxyAdminAddress,
-      governanceCallData,
-      registry.address,
+      proxyDeployerAddress,
+      registry,
+      stakingProxyKey,
       governanceKey,
-      { from: proxyDeployerAddress }
+      votingPeriod,
+      votingQuorum,
+      guardianAddress
     )
-    governance = await Governance.at(governanceProxy.address)
-    await registry.addContract(governanceKey, governance.address, { from: protocolOwnerAddress })
+    await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
 
-    // Create initialization data
-    let stakingInitializeData = encodeCall(
+    // Deploy + register Staking
+    let stakingInitializeData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [
@@ -94,8 +89,7 @@ contract('Governance.sol', async (accounts) => {
         serviceProviderFactoryKey
       ]
     )
-    // Set up staking
-    staking0 = await Staking.new({ from: proxyAdminAddress })
+    staking0 = await Staking.new({ from: proxyDeployerAddress })
     stakingProxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
@@ -105,16 +99,15 @@ contract('Governance.sol', async (accounts) => {
       { from: proxyDeployerAddress }
     )
     staking = await Staking.at(stakingProxy.address)
-    await registry.addContract(stakingProxyKey, stakingProxy.address, { from: treasuryAddress })
+    await registry.addContract(stakingProxyKey, stakingProxy.address, { from: proxyDeployerAddress })
 
-    // Deploy service type manager
-    let controllerAddress = accounts[9]
-    let serviceTypeInitializeData = encodeCall(
+    // Deploy + register ServiceTypeManager
+    let serviceTypeInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32'],
-      [registry.address, controllerAddress, governanceKey]
+      ['address', 'bytes32'],
+      [registry.address, governanceKey]
     )
-    let serviceTypeManager0 = await ServiceTypeManager.new({ from: treasuryAddress })
+    let serviceTypeManager0 = await ServiceTypeManager.new({ from: proxyDeployerAddress })
     let serviceTypeManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceTypeManager0.address,
       proxyAdminAddress,
@@ -123,21 +116,18 @@ contract('Governance.sol', async (accounts) => {
       governanceKey,
       { from: proxyAdminAddress }
     )
-    await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: treasuryAddress })
+    await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: proxyDeployerAddress })
     let serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
-    // Register discovery provider
-    await serviceTypeManager.addServiceType(
-      testDiscProvType,
-      _lib.audToWeiBN(5),
-      _lib.audToWeiBN(10000000),
-      { from: controllerAddress })
+
+    // Register discprov serviceType
+    await _lib.addServiceType(testDiscProvType, _lib.audToWei(5), _lib.audToWei(10000000), governance, guardianAddress, serviceTypeManagerProxyKey, true)
 
     // Deploy + Register ServiceProviderFactory contract
-    let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: treasuryAddress })
-    const serviceProviderFactoryCalldata = encodeCall(
+    let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
+    const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
+      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey, claimsManagerProxyKey]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
@@ -148,14 +138,14 @@ contract('Governance.sol', async (accounts) => {
       { from: proxyAdminAddress }
     )
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
-    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: treasuryAddress })
+    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: proxyDeployerAddress })
 
     // Deploy + register claimsManagerProxy
     claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
-    const claimsInitializeCallData = encodeCall(
+    const claimsInitializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, controllerAddress, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey]
+      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey, governanceKey]
     )
     claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       claimsManager0.address,
@@ -169,14 +159,14 @@ contract('Governance.sol', async (accounts) => {
     await registry.addContract(
       claimsManagerProxyKey,
       claimsManagerProxy.address,
-      { from: protocolOwnerAddress }
+      { from: proxyDeployerAddress }
     )
 
     // Register new contract as a minter, from the same address that deployed the contract
-    await token.addMinter(claimsManager.address, { from: protocolOwnerAddress })
+    await token.addMinter(claimsManager.address, { from: proxyDeployerAddress })
 
-    // Deploy DelegateManager contract
-    const delegateManagerInitializeData = encodeCall(
+    // Deploy + register DelegateManager contract
+    const delegateManagerInitializeData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
       [token.address, registry.address, governanceKey, stakingProxyKey, serviceProviderFactoryKey, claimsManagerProxyKey]
@@ -191,7 +181,7 @@ contract('Governance.sol', async (accounts) => {
       { from: proxyDeployerAddress }
     )
     delegateManager = await DelegateManager.at(delegateManagerProxy.address)
-    await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: protocolOwnerAddress })
+    await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: proxyDeployerAddress })
   })
 
   /**
@@ -199,9 +189,9 @@ contract('Governance.sol', async (accounts) => {
    */
   beforeEach(async () => {
     // Transfer 1000 tokens to stakerAccount1, stakerAccount2, and delegatorAccount1
-    await token.transfer(stakerAccount1, defaultStakeAmount, { from: treasuryAddress })
-    await token.transfer(stakerAccount2, defaultStakeAmount, { from: treasuryAddress })
-    await token.transfer(delegatorAccount1, defaultStakeAmount, { from: treasuryAddress })
+    await token.transfer(stakerAccount1, defaultStakeAmount, { from: proxyDeployerAddress })
+    await token.transfer(stakerAccount2, defaultStakeAmount, { from: proxyDeployerAddress })
+    await token.transfer(delegatorAccount1, defaultStakeAmount, { from: proxyDeployerAddress })
 
     // Record initial staker account token balance
     const initialBalance = await token.balanceOf(stakerAccount1)
@@ -241,8 +231,8 @@ contract('Governance.sol', async (accounts) => {
 
   it('Initialize require statements', async () => {
     // Requires non-zero _registryAddress
-    governance0 = await Governance.new({ from: proxyDeployerAddress })
-    let governanceCallData = encodeCall(
+    let governance0 = await Governance.new({ from: proxyDeployerAddress })
+    let governanceCallData = _lib.encodeCall(
       'initialize',
       ['address', 'bytes32', 'uint256', 'uint256', 'address'],
       [0x0, stakingProxyKey, votingPeriod, votingQuorum, proxyDeployerAddress]
@@ -261,7 +251,7 @@ contract('Governance.sol', async (accounts) => {
 
     // Requires non-zero _votingPeriod
     governance0 = await Governance.new({ from: proxyDeployerAddress })
-    governanceCallData = encodeCall(
+    governanceCallData = _lib.encodeCall(
       'initialize',
       ['address', 'bytes32', 'uint256', 'uint256', 'address'],
       [registry.address, stakingProxyKey, 0, votingQuorum, proxyDeployerAddress]
@@ -280,7 +270,7 @@ contract('Governance.sol', async (accounts) => {
 
     // Requires non-zero _votingQuorum
     governance0 = await Governance.new({ from: proxyDeployerAddress })
-    governanceCallData = encodeCall(
+    governanceCallData = _lib.encodeCall(
       'initialize',
       ['address', 'bytes32', 'uint256', 'uint256', 'address'],
       [registry.address, stakingProxyKey, votingPeriod, 0, proxyDeployerAddress]
@@ -320,10 +310,10 @@ contract('Governance.sol', async (accounts) => {
       const proposerAddress = accounts[10]
       const slashAmount = _lib.toBN(1)
       const targetAddress = accounts[11]
-      const targetContractRegistryKey = web3.utils.utf8ToHex("invalidKey")
+      const targetContractRegistryKey = web3.utils.utf8ToHex('invalidKey')
       const callValue = _lib.toBN(0)
       const signature = 'slash(uint256,address)'
-      const callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
+      const callData = _lib.abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
 
       await _lib.assertRevert(
         governance.submitProposal(
@@ -335,6 +325,27 @@ contract('Governance.sol', async (accounts) => {
           { from: proposerAddress }
         ),
         "_targetContractRegistryKey must point to valid registered contract"
+      )
+    })
+
+    it('Fail to submitProposal with no signature', async () => {
+      const proposerAddress = accounts[10]
+      const slashAmount = _lib.toBN(1)
+      const targetAddress = accounts[11]
+      const targetContractRegistryKey = delegateManagerKey
+      const callValue = _lib.toBN(0)
+      const callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
+      
+      await _lib.assertRevert(
+        governance.submitProposal(
+          targetContractRegistryKey,
+          callValue,
+          '',
+          callData,
+          proposalDescription,
+          { from: proposerAddress }
+        ),
+        "Governance::submitProposal: _signature cannot be empty."
       )
     })
 
@@ -464,14 +475,14 @@ contract('Governance.sol', async (accounts) => {
 
         await _lib.assertRevert(
           governance.submitProposalVote(proposalId, Vote.Yes, { from: stakerAccount1 }),
-          "Governance::submitProposalVote:Proposal votingPeriod has ended"
+          "Governance::submitProposalVote: Proposal votingPeriod has ended"
         )
       })
 
       it('Fail to submit invalid vote', async () => {
         await _lib.assertRevert(
           governance.submitProposalVote(proposalId, Vote.None, { from: stakerAccount1 }),
-          "Governance::submitProposalVote:Cannot submit None vote"
+          "Governance::submitProposalVote: Can only submit a Yes or No vote"
         )
       })
 
@@ -615,14 +626,14 @@ contract('Governance.sol', async (accounts) => {
       it('Fail to evaluate proposal with invalid proposalId', async () => {
         await _lib.assertRevert(
           governance.evaluateProposalOutcome(5, { from: proposerAddress }),
-          "Governance::evaluateProposalOutcome:Must provide valid non-zero _proposalId."
+          "Governance::evaluateProposalOutcome: Must provide valid non-zero _proposalId."
         )
       })
 
       it('Fail to call evaluate proposal from non-staker', async () => {
         await _lib.assertRevert(
           governance.evaluateProposalOutcome(proposalId, { from: accounts[15] }),
-          "Governance::evaluateProposalOutcome:Caller must be active staker with non-zero stake."
+          "Governance::evaluateProposalOutcome: Caller must be active staker with non-zero stake."
         )
       })
 
@@ -641,7 +652,7 @@ contract('Governance.sol', async (accounts) => {
             _lib.parseTx(submitProposalTxReceipt).event.args.proposalId,
             { from: proposerAddress }
           ),
-          "Governance::evaluateProposalOutcome:Proposal votingPeriod must end before evaluation."
+          "Governance::evaluateProposalOutcome: Proposal votingPeriod must end before evaluation."
         )
       })
 
@@ -792,7 +803,7 @@ contract('Governance.sol', async (accounts) => {
         
         await _lib.assertRevert(
           governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
-          "Governance::evaluateProposalOutcome:Cannot evaluate inactive proposal."
+          "Governance::evaluateProposalOutcome: Cannot evaluate inactive proposal."
         )
       })
 
@@ -801,7 +812,7 @@ contract('Governance.sol', async (accounts) => {
         await testContract.initialize(registry.address)
 
         // Upgrade contract registered at targetContractRegistryKey
-        await registry.upgradeContract(targetContractRegistryKey, testContract.address)
+        await registry.upgradeContract(targetContractRegistryKey, testContract.address, { from: proxyDeployerAddress })
         
         await _lib.assertRevert(
           // Call evaluateProposalOutcome()
@@ -816,10 +827,12 @@ contract('Governance.sol', async (accounts) => {
 
         // Reduce stake amount below proposed slash amount
         const decreaseStakeAmount = _lib.audToWeiBN(700)
-        await serviceProviderFactory.decreaseStake(
-          decreaseStakeAmount,
-          { from: stakerAccount2 }
-        )
+        // Request decrease in stake
+        await serviceProviderFactory.requestDecreaseStake(decreaseStakeAmount, { from: stakerAccount2 })
+        let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount2)
+        // Advance to valid block
+        await time.advanceBlockTo(requestInfo.lockupExpiryBlock)
+        await serviceProviderFactory.decreaseStake({ from: stakerAccount2 })
         const decreasedStakeAcct2 = await staking.totalStakedFor.call(stakerAccount2)
         assert.isTrue(decreasedStakeAcct2.eq(initialStakeAcct2.sub(decreaseStakeAmount)))
 
@@ -831,10 +844,9 @@ contract('Governance.sol', async (accounts) => {
         assert.equal(txParsedEvent0.event.name, 'ProposalTransactionExecuted', 'Expected same event name')
         assert.equal(txParsedEvent0.event.args.proposalId, proposalId, 'Expected same txParsedEvent0.event.args.proposalId')
         assert.equal(txParsedEvent0.event.args.success, false, 'Expected same txParsedEvent0.event.args.success')
-
-        // TODO - confirm that returnData = "Cannot slash more than total currently staked"
+        // TODO - confirm that returnData = web3.utils.utf8ToHex("Cannot slash more than total currently staked")
+        // reference: https://solidity.readthedocs.io/en/develop/abi-spec.html#use-of-dynamic-types
         // assert.equal(txParsedEvent0.event.args.returnData, returnData, 'Expected same txParsedEvent0.event.args.returnData')
-
         assert.equal(txParsedEvent1.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
         assert.equal(parseInt(txParsedEvent1.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
         assert.equal(txParsedEvent1.event.args.outcome, Outcome.TxFailed, 'Expected same event.args.outcome')
@@ -882,7 +894,7 @@ contract('Governance.sol', async (accounts) => {
           // Fail to veto from non-guardian address
           await _lib.assertRevert(
             governance.vetoProposal(proposalId, { from: stakerAccount1 }),
-            'Governance::vetoProposal:Only guardian can veto proposals'
+            'Governance::vetoProposal: Only guardian can veto proposals'
           )
         })
 
@@ -890,7 +902,7 @@ contract('Governance.sol', async (accounts) => {
           const invalidProposalId = 5
           await _lib.assertRevert(
             governance.vetoProposal(invalidProposalId, { from: guardianAddress }),
-            "Governance::vetoProposal:Must provide valid non-zero _proposalId."
+            "Governance::vetoProposal: Must provide valid non-zero _proposalId."
           )
         })
 
@@ -907,7 +919,7 @@ contract('Governance.sol', async (accounts) => {
           // Fail to veto due to inactive proposal
           await _lib.assertRevert(
             governance.vetoProposal(proposalId, { from: guardianAddress }),
-            'Governance::vetoProposal:Cannot veto inactive proposal.'
+            'Governance::vetoProposal: Cannot veto inactive proposal.'
           )
         })
 
@@ -929,12 +941,12 @@ contract('Governance.sol', async (accounts) => {
           // Confirm that further actions are blocked
           await _lib.assertRevert(
             governance.submitProposalVote(proposalId, voter1Vote, { from: voter1Address }),
-            "Governance::submitProposalVote:Cannot vote on inactive proposal."
+            "Governance::submitProposalVote: Cannot vote on inactive proposal."
           )
           
           await _lib.assertRevert(
             governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
-            "Governance::evaluateProposalOutcome:Cannot evaluate inactive proposal."
+            "Governance::evaluateProposalOutcome: Cannot evaluate inactive proposal."
           )
         })
       })
@@ -1050,7 +1062,7 @@ contract('Governance.sol', async (accounts) => {
           callData,
           { from: stakerAccount1 }
         ),
-        "Governance::guardianExecuteTransaction:Only guardian."
+        "Governance::guardianExecuteTransaction: Only guardian."
       )
     })
 
@@ -1075,8 +1087,16 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(guardianExecTx.event.name, 'GuardianTransactionExecuted', 'event.name')
       assert.equal(guardianExecTx.event.args.targetContractAddress, targetContractAddress, 'event.args.targetContractAddress')
       assert.isTrue(guardianExecTx.event.args.callValue.eq(callValue), 'event.args.callValue')
-      // assert.equal(guardianExecTx.event.args.signature, web3.utils.utf8ToHex(signature), 'event.args.signature')
-      // assert.equal(guardianExecTx.event.args.callData, callData, 'event.args.callData')
+      assert.equal(
+        guardianExecTx.event.args.signature,
+        _lib.keccak256(web3.utils.utf8ToHex(signature)),
+        'event.args.signature'
+      )
+      assert.equal(
+        guardianExecTx.event.args.callData,
+        _lib.keccak256(callData),
+        'event.args.callData'
+      )
       assert.equal(guardianExecTx.event.args.success, true, 'event.args.success')
       assert.equal(guardianExecTx.event.args.returnData, returnData, 'event.args.returnData')
 
@@ -1106,23 +1126,26 @@ contract('Governance.sol', async (accounts) => {
           callData,
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction:_targetContractRegistryKey must point to valid registered contract"
+        "Governance::guardianExecuteTransaction: _targetContractRegistryKey must point to valid registered contract"
       )
     })
 
-    it.skip('TODO - exec tx with no signature', async () => {
-      const resp = await governance.guardianExecuteTransaction(
-        targetContractRegistryKey,
-        callValue,
-        '',
-        callData,
-        { from: guardianAddress }
+    it('Fail to execute transaction with no signature', async () => {
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          targetContractRegistryKey,
+          callValue,
+          '',
+          callData,
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: _signature cannot be empty."
       )
-
-      console.log(JSON.stringify(resp))
     })
 
-    it.skip('TODO - Fail to slash too large amount', async () => { })
+    it.skip('Fail to slash too large amount', async () => {
+
+    })
 
     it.skip('TODO - Upgrade contract', async () => { })
   })

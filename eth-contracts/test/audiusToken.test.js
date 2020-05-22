@@ -1,4 +1,4 @@
-import * as _lib from './_lib/lib.js'
+import * as _lib from '../utils/lib.js'
 const AudiusToken = artifacts.require('AudiusToken')
 
 contract('AudiusToken', async (accounts) => {

@@ -1,5 +1,5 @@
 const contractConfig = require('../contract-config.js')
-const encodeCall = require('../utils/encodeCall')
+const { encodeCall } = require('../utils/lib')
 
 const Registry = artifacts.require('Registry')
 const Governance = artifacts.require('Governance')
@@ -39,5 +39,8 @@ module.exports = (deployer, network, accounts) => {
       { from: proxyDeployerAddress }
     )
     await registry.addContract(governanceKey, governanceProxy.address, { from: proxyDeployerAddress })
+
+    // Export to env for reference in future migrations
+    process.env.governanceAddress = governanceProxy.address
   })
 }

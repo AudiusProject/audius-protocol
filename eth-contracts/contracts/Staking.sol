@@ -1,7 +1,6 @@
 pragma solidity ^0.5.0;
 
-import "./StakingInterface.sol";
-import "../service/interface/registry/RegistryInterface.sol";
+import "./interface/RegistryInterface.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
@@ -9,11 +8,11 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burn
 import "@openzeppelin/contracts-ethereum-package/contracts/utils/Address.sol";
 import "@aragon/court/contracts/lib/Checkpointing.sol";
 import "@aragon/court/contracts/lib/os/Uint256Helpers.sol";
-import "../service/registry/RegistryContract.sol";
+import "./registry/RegistryContract.sol";
 
 
 /** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
-contract Staking is RegistryContract, StakingInterface {
+contract Staking is RegistryContract {
     using SafeMath for uint256;
     using Uint256Helpers for uint256;
     using Checkpointing for Checkpointing.History;
@@ -24,10 +23,7 @@ contract Staking is RegistryContract, StakingInterface {
     string private constant ERROR_TOKEN_TRANSFER = "STAKING_TOKEN_TRANSFER";
     string private constant ERROR_NOT_ENOUGH_BALANCE = "STAKING_NOT_ENOUGH_BALANCE";
 
-    // Reward tracking info
-    uint256 internal currentClaimBlock;
-
-    // stores the history of staking and claim for a given address
+    // stores the history of staking and claims for a given address
     struct Account {
         Checkpointing.History stakedHistory;
         Checkpointing.History claimHistory;
@@ -43,11 +39,12 @@ contract Staking is RegistryContract, StakingInterface {
     // total staked tokens at a given block
     Checkpointing.History internal totalStakedHistory;
 
-    address registryAddress;
     bytes32 claimsManagerProxyKey;
     bytes32 delegateManagerKey;
     bytes32 serviceProviderFactoryKey;
 
+    event Staked(address indexed user, uint256 amount, uint256 total);
+    event Unstaked(address indexed user, uint256 amount, uint256 total);
     event Slashed(address indexed user, uint256 amount, uint256 total);
 
     function initialize(
@@ -61,7 +58,6 @@ contract Staking is RegistryContract, StakingInterface {
         require(Address.isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         stakingToken = ERC20(_stakingToken);
         registry = RegistryInterface(_registryAddress);
-        registryAddress = _registryAddress;
         claimsManagerProxyKey = _claimsManagerProxyKey;
         delegateManagerKey = _delegateManagerKey;
         serviceProviderFactoryKey = _serviceProviderFactoryKey;
@@ -81,6 +77,19 @@ contract Staking is RegistryContract, StakingInterface {
             "Only callable from ClaimsManager"
         );
         _stakeFor(_stakerAccount, msg.sender, _amount);
+
+        this.updateClaimHistory(_amount, _stakerAccount);
+    }
+
+    /**
+     * @notice Update history
+     */
+    function updateClaimHistory(uint256 _amount, address _stakerAccount) external {
+        _requireIsInitialized();
+        require(
+            msg.sender == registry.getContract(claimsManagerProxyKey) || msg.sender == address(this),
+            "Only callable from ClaimsManager or Staking.sol"
+        );
 
         // Update claim history even if no value claimed
         accounts[_stakerAccount].claimHistory.add(block.number.toUint64(), _amount);

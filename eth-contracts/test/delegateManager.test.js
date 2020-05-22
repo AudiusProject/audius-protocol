@@ -1,16 +1,12 @@
-import * as _lib from './_lib/lib.js'
-const encodeCall = require('../utils/encodeCall')
+import * as _lib from '../utils/lib.js'
 const { time } = require('@openzeppelin/test-helpers')
 
-const Registry = artifacts.require('Registry')
-const AudiusToken = artifacts.require('AudiusToken')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const Staking = artifacts.require('Staking')
 const DelegateManager = artifacts.require('DelegateManager')
 const ClaimsManager = artifacts.require('ClaimsManager')
-const MockGovernance = artifacts.require('MockGovernance')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -25,28 +21,45 @@ const testEndpoint1 = 'https://localhost:5001'
 const testEndpoint3 = 'https://localhost:5002'
 
 const INITIAL_BAL = _lib.audToWeiBN(1000)
-const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
+const DEFAULT_AMOUNT_VAL = _lib.audToWei(120)
+const DEFAULT_AMOUNT = _lib.toBN(DEFAULT_AMOUNT_VAL)
+const VOTING_PERIOD = 10
+const VOTING_QUORUM = 1
 
 
 contract('DelegateManager', async (accounts) => {
-  let proxy, staking0, staking, stakingAddress, token, registry, claimsManager0, claimsManagerProxy
-  let serviceProviderFactory, claimsManager, delegateManager, mockGovernance
-  const [deployerAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
-  let controllerAddress = accounts[9]
+  let staking, stakingAddress, token, registry, governance, claimsManager0, claimsManagerProxy
+  let serviceProviderFactory, claimsManager, delegateManager
+  
+  // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
+  const [, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const guardianAddress = proxyDeployerAddress
   const stakerAccount = accounts[10]
   const stakerAccount2 = accounts[12]
   const delegatorAccount1 = accounts[11]
   const slasherAccount = stakerAccount
 
   beforeEach(async () => {
-    token = await AudiusToken.new({ from: deployerAddress })
-    await token.initialize()
-    registry = await Registry.new({ from: deployerAddress })
-    await registry.initialize()
+    token = await _lib.deployToken(artifacts, proxyAdminAddress, proxyDeployerAddress)
+    registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
 
-    // Set up staking
-    staking0 = await Staking.new({ from: proxyAdminAddress })
-    const stakingInitializeData = encodeCall(
+    // Deploy + register Governance
+    governance = await _lib.deployGovernance(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress,
+      registry,
+      stakingProxyKey,
+      governanceKey,
+      VOTING_PERIOD,
+      VOTING_QUORUM,
+      guardianAddress
+    )
+    await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
+
+    // Deploy + register Staking
+    const staking0 = await Staking.new({ from: proxyDeployerAddress })
+    const stakingInitializeData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
       [
@@ -57,8 +70,7 @@ contract('DelegateManager', async (accounts) => {
         serviceProviderFactoryKey
       ]
     )
-
-    proxy = await AudiusAdminUpgradeabilityProxy.new(
+    const stakingProxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
@@ -66,41 +78,37 @@ contract('DelegateManager', async (accounts) => {
       governanceKey,
       { from: proxyDeployerAddress }
     )
-
-    staking = await Staking.at(proxy.address)
-    await registry.addContract(stakingProxyKey, proxy.address, { from: deployerAddress })
+    staking = await Staking.at(stakingProxy.address)
+    await registry.addContract(stakingProxyKey, stakingProxy.address, { from: proxyDeployerAddress })
     stakingAddress = staking.address
 
-    // Deploy service type manager
-    let serviceTypeInitializeData = encodeCall(
+    // Deploy + register ServiceTypeManager
+    let serviceTypeInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32'],
-      [registry.address, controllerAddress, governanceKey]
+      ['address', 'bytes32'],
+      [registry.address, governanceKey]
     )
-    let serviceTypeManager0 = await ServiceTypeManager.new({ from: deployerAddress })
+    let serviceTypeManager0 = await ServiceTypeManager.new({ from: proxyDeployerAddress })
     let serviceTypeManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceTypeManager0.address,
       proxyAdminAddress,
       serviceTypeInitializeData,
       registry.address,
       governanceKey,
-      { from: proxyAdminAddress }
+      { from: proxyDeployerAddress }
     )
-    await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: deployerAddress })
+    await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: proxyDeployerAddress })
     let serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
-    // Register discovery provider
-    await serviceTypeManager.addServiceType(
-      testDiscProvType,
-      _lib.audToWeiBN(5),
-      _lib.audToWeiBN(10000000),
-      { from: controllerAddress })
+
+    // Register discprov serviceType
+    await _lib.addServiceType(testDiscProvType, _lib.audToWei(5), _lib.audToWei(10000000), governance, guardianAddress, serviceTypeManagerProxyKey, true)
 
     // Deploy ServiceProviderFactory
-    let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: deployerAddress })
-    const serviceProviderFactoryCalldata = encodeCall(
+    let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
+    const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey]
+      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey, claimsManagerProxyKey]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
@@ -108,17 +116,17 @@ contract('DelegateManager', async (accounts) => {
       serviceProviderFactoryCalldata,
       registry.address,
       governanceKey,
-      { from: proxyAdminAddress }
+      { from: proxyDeployerAddress }
     )
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
-    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: deployerAddress })
+    await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: proxyDeployerAddress })
 
     // Deploy new claimsManager proxy
     claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
-    const claimsInitializeCallData = encodeCall(
+    const claimsInitializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'address', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, controllerAddress, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey]
+      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
+      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey, governanceKey]
     )
     claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       claimsManager0.address,
@@ -133,22 +141,18 @@ contract('DelegateManager', async (accounts) => {
     // Register claimsManagerProxy
     await registry.addContract(
       claimsManagerProxyKey,
-      claimsManagerProxy.address
+      claimsManagerProxy.address,
+      { from: proxyDeployerAddress }
     )
 
     // Register new contract as a minter, from the same address that deployed the contract
-    await token.addMinter(claimsManager.address, { from: deployerAddress })
+    await token.addMinter(claimsManager.address, { from: proxyDeployerAddress })
 
-    mockGovernance = await MockGovernance.new()
-    await mockGovernance.initialize(registry.address, delegateManagerKey)
-    await registry.addContract(governanceKey, mockGovernance.address)
-
-    const delegateManagerInitializeData = encodeCall(
+    const delegateManagerInitializeData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
       [token.address, registry.address, governanceKey, stakingProxyKey, serviceProviderFactoryKey, claimsManagerProxyKey]
     )
-
     let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
     let delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       delegateManager0.address,
@@ -160,10 +164,17 @@ contract('DelegateManager', async (accounts) => {
     )
 
     delegateManager = await DelegateManager.at(delegateManagerProxy.address)
-    await registry.addContract(delegateManagerKey, delegateManagerProxy.address)
+    await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: proxyDeployerAddress })
 
     // Clear min delegation amount for testing
-    await mockGovernance.updateMinDelegationAmount(0)
+    const updateMinDelAmountTxReceipt = await governance.guardianExecuteTransaction(
+      delegateManagerKey,
+      _lib.toBN(0),
+      'updateMinDelegationAmount(uint256)',
+      _lib.abiEncode(['uint256'], [0]),
+      { from: guardianAddress }
+    )
+    assert.isTrue(_lib.parseTx(updateMinDelAmountTxReceipt).event.args.success, 'Expected tx to succeed')
   })
 
   /* Helper functions */
@@ -180,23 +191,30 @@ contract('DelegateManager', async (accounts) => {
       { from: account })
 
     let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
-    // console.dir(args, { depth: 5 })
   }
 
   const decreaseRegisteredProviderStake = async (decrease, account) => {
-    // Approve token transfer from staking contract to account
-    let tx = await serviceProviderFactory.decreaseStake(
-      decrease,
-      { from: account })
-
-    let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
-    // console.dir(args, { depth: 5 })
+    try {
+      // Request decrease in stake
+      await serviceProviderFactory.requestDecreaseStake(decrease, { from: account })
+      let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(account)
+      // Advance to valid block
+      await time.advanceBlockTo(requestInfo.lockupExpiryBlock)
+      // Approve token transfer from staking contract to account
+      await serviceProviderFactory.decreaseStake({ from: account })
+    } catch (e) {
+      // Cancel request
+      await serviceProviderFactory.cancelDecreaseStakeRequest(account, { from: account })
+      throw e
+    }
   }
 
   const getAccountStakeInfo = async (account, print = false) => {
     let spFactoryStake
     let totalInStakingContract
-    spFactoryStake = (await serviceProviderFactory.getServiceProviderDetails(account)).deployerStake
+
+    let spDetails = await serviceProviderFactory.getServiceProviderDetails(account)
+    spFactoryStake = spDetails.deployerStake
     totalInStakingContract = await staking.totalStakedFor(account)
 
     let delegatedStake = await delegateManager.getTotalDelegatedToServiceProvider(account)
@@ -232,7 +250,8 @@ contract('DelegateManager', async (accounts) => {
       console.log(`(Staking) vs (DelegateManager + SPFactory) Stake discrepancy: ${stakeDiscrepancy}`)
       console.dir(accountSummary, { depth: 5 })
     }
-    return accountSummary
+
+    return Object.assign(accountSummary, spDetails)
   }
 
   describe('Delegation tests', () => {
@@ -240,10 +259,10 @@ contract('DelegateManager', async (accounts) => {
 
     beforeEach(async () => {
       // Transfer 1000 tokens to stakers
-      await token.transfer(stakerAccount, INITIAL_BAL, { from: deployerAddress })
-      await token.transfer(stakerAccount2, INITIAL_BAL, { from: deployerAddress })
+      await token.transfer(stakerAccount, INITIAL_BAL, { from: proxyDeployerAddress })
+      await token.transfer(stakerAccount2, INITIAL_BAL, { from: proxyDeployerAddress })
       // Transfer 1000 tokens to delegator
-      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
 
       let initialBal = await token.balanceOf(stakerAccount)
 
@@ -278,13 +297,13 @@ contract('DelegateManager', async (accounts) => {
       await serviceProviderFactory.updateServiceProviderCut(stakerAccount2, 10, { from: stakerAccount2 })
     })
 
-    it('initial state + claim', async () => {
+    it('Initial state + claim', async () => {
       // Validate basic claim w/SP path
       let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
 
       let totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
 
-      await claimsManager.initiateRound({ from: controllerAddress })
+      await claimsManager.initiateRound({ from: stakerAccount })
 
       totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
       spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
@@ -298,9 +317,9 @@ contract('DelegateManager', async (accounts) => {
         'Stake value in SPFactory and Staking.sol must be equal')
     })
 
-    it('single delegator basic operations', async () => {
+    it('Single delegator basic operations', async () => {
       // Transfer 1000 tokens to delegator
-      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
 
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       let initialSpStake = totalStakedForSP
@@ -410,10 +429,10 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(initialSpStake.eq(totalStakedForSP), 'Staking.sol back to initial value')
     })
 
-    it('single delegator + claim', async () => {
+    it('Single delegator + claim', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
-      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
 
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       let initialDelegateAmount = _lib.audToWeiBN(60)
@@ -435,7 +454,7 @@ contract('DelegateManager', async (accounts) => {
       let deployerCutBase = await serviceProviderFactory.getServiceProviderDeployerCutBase()
 
       // Initiate round
-      await claimsManager.initiateRound({ from: controllerAddress })
+      await claimsManager.initiateRound({ from: stakerAccount })
 
       // Confirm claim is pending
       let pendingClaim = await claimsManager.claimPending(stakerAccount)
@@ -467,9 +486,82 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
     })
 
-    it('single delegator + claim + slash', async () => {
+    it('Undelegate after SP has deregistered', async () => {
+      let initialDelegateAmount = _lib.audToWeiBN(60)
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      await delegateManager.delegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      let accountInfo = await getAccountStakeInfo(stakerAccount, false)
+      assert.isTrue(
+        accountInfo.delegatorInfo[delegatorAccount1].amountDelegated.eq(initialDelegateAmount),
+        'Expect initial delegate amount reflected')
+
+      // Request decrease all of stake by deregistering SP
+      await _lib.deregisterServiceProvider(
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint,
+        stakerAccount)
+      let deregisterRequestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+      await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
+
+      // Withdraw all SP stake
+      await serviceProviderFactory.decreaseStake({ from: stakerAccount })
+
+      // Submit request to undelegate all stake
+      await delegateManager.requestUndelegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 }
+      )
+
+      // Confirm lockup amount is registered
+      let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
+      // Finalize undelegation, confirm operation is allowed
+      await delegateManager.undelegateStake({ from: delegatorAccount1 })
+      let finalDelegateStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      assert.isTrue(finalDelegateStake.eq(_lib.toBN(0)), 'No remaining stake expected')
+    })
+
+    it('Register 3rd service provider after round has completed', async () => {
+      let stakerAccount3 = accounts[8]
       // Transfer 1000 tokens to delegator
-      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
+      await token.transfer(stakerAccount3, INITIAL_BAL, { from: proxyDeployerAddress })
+      // Fund new claim
+      await claimsManager.initiateRound({ from: stakerAccount })
+      // Get rewards
+      await delegateManager.claimRewards({ from: stakerAccount })
+      await delegateManager.claimRewards({ from: stakerAccount2 })
+      let fundBlock = await claimsManager.getLastFundBlock()
+      let blockDiff = await claimsManager.getFundingRoundBlockDiff()
+      let roundEndBlock = fundBlock.add(blockDiff)
+      await time.advanceBlockTo(roundEndBlock)
+      // Confirm a new SP can be registered
+      await _lib.registerServiceProvider(
+        token,
+        staking,
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint3,
+        DEFAULT_AMOUNT,
+        stakerAccount3)
+      let info = await getAccountStakeInfo(stakerAccount3, false)
+      assert.isTrue((info.totalInStakingContract).eq(DEFAULT_AMOUNT), 'Expect stake')
+      assert.isTrue((info.spFactoryStake).eq(DEFAULT_AMOUNT), 'Expect sp factory stake')
+    })
+
+    it('Single delegator + claim + slash', async () => {
+      // Transfer 1000 tokens to delegator
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
 
       let initialDelegateAmount = _lib.audToWeiBN(60)
 
@@ -485,21 +577,19 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 })
 
       // Fund new claim
-      await claimsManager.initiateRound({ from: controllerAddress })
+      await claimsManager.initiateRound({ from: stakerAccount })
 
       // Get rewards
       await delegateManager.claimRewards({ from: stakerAccount })
       await delegateManager.claimRewards({ from: stakerAccount2 })
 
       // Slash 30% of total
-      let slashNumerator = web3.utils.toBN(30)
-      let slashDenominator = web3.utils.toBN(100)
-      let totalInStakingContract = await staking.totalStakedFor(slasherAccount)
-      let slashAmount = (totalInStakingContract.mul(slashNumerator)).div(slashDenominator)
+      const totalInStakingContract = await staking.totalStakedFor(slasherAccount)
+      const slashAmountVal = _lib.audToWei((_lib.fromWei(totalInStakingContract)) * 30 / 100)
+      const slashAmount = _lib.toBN(slashAmountVal)
 
       // Perform slash functions
-      // Called from mockGovernance
-      await mockGovernance.testSlash(slashAmount, slasherAccount)
+      await _lib.slash(slashAmountVal, slasherAccount, governance, delegateManagerKey, guardianAddress, true)
 
       // Summarize after execution
       let spFactoryStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
@@ -516,26 +606,30 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue((totalInStakingContract.sub(slashAmount)).eq(totalInStakingAfterSlash), 'Expected slash value')
     })
 
-    it('slash restrictions', async () => {
+    it('Slash restrictions', async () => {
       // Deregister endpoint, removing all stake
       await _lib.deregisterServiceProvider(
         serviceProviderFactory,
         testDiscProvType,
         testEndpoint,
         stakerAccount)
+      // Query the resulting deregister operation
+      let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+      // Advance to valid block
+      await time.advanceBlockTo(requestInfo.lockupExpiryBlock)
+      // Finalize withdrawal
+      await serviceProviderFactory.decreaseStake({ from: stakerAccount })
 
-      // Perform slash functions
-      // Called from mockGovernance
-      await _lib.assertRevert(
-        mockGovernance.testSlash(DEFAULT_AMOUNT, slasherAccount),
-        'Cannot slash more than total currently staked')
+      /** Perform slash functions */
 
-      await _lib.assertRevert(
-        mockGovernance.testSlash(DEFAULT_AMOUNT.add(_lib.toBN(4)), stakerAccount2),
-        'Cannot slash more than total currently staked')
+      // Fail to slash more than currently staked
+      await _lib.slash(DEFAULT_AMOUNT_VAL, slasherAccount, governance, delegateManagerKey, guardianAddress, false)
+
+      // Fail to slash more than currently staked
+      await _lib.slash(DEFAULT_AMOUNT_VAL + 4, stakerAccount2, governance, delegateManagerKey, guardianAddress, false)
 
       // Transfer 1000 tokens to delegator
-      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
 
       // Delegate equal stake to stakerAccount2
       // Approve staking transfer
@@ -553,21 +647,27 @@ contract('DelegateManager', async (accounts) => {
         testEndpoint1,
         stakerAccount2)
 
-      await _lib.assertRevert(
-        mockGovernance.testSlash(DEFAULT_AMOUNT, stakerAccount2),
-        'Service Provider stake required')
+      // Query the resulting deregister operation
+      requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount2)
+      // Advance to valid block
+      await time.advanceBlockTo(requestInfo.lockupExpiryBlock)
+      // Finalize withdrawal
+      await serviceProviderFactory.decreaseStake({ from: stakerAccount2 })
+
+      // Fail to slash account with zero stake
+      await _lib.slash(DEFAULT_AMOUNT_VAL, stakerAccount2, governance, delegateManagerKey, guardianAddress, false)
     })
 
     // TODO: Revisit below test case and remove unneeded validation if necessary
     // Test case still in progress
     it.skip('WIP - claim restriction on staking balance', async () => {
       // Transfer 1000 tokens to delegator
-      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
 
       let initialDelegateAmount = _lib.audToWeiBN(60)
 
       // Fund new claim
-      await claimsManager.initiateRound({ from: controllerAddress })
+      await claimsManager.initiateRound({ from: stakerAccount })
       let fundBlock = await claimsManager.getLastFundBlock()
       let stakedAtFundBlock = await staking.totalStakedForAt(stakerAccount, fundBlock)
       console.log(stakedAtFundBlock)
@@ -608,7 +708,7 @@ contract('DelegateManager', async (accounts) => {
 
       for (var delegator of delegatorAccounts) {
         // Transfer 1000 tokens to each delegator
-        await token.transfer(delegator, INITIAL_BAL, { from: deployerAddress })
+        await token.transfer(delegator, INITIAL_BAL, { from: proxyDeployerAddress })
         // Approve staking transfer
         await token.approve(
           stakingAddress,
@@ -639,7 +739,7 @@ contract('DelegateManager', async (accounts) => {
         `Total value inconsistent after all delegation. Expected ${expectedTotalStakeAfterDelegation}, found ${totalSPStakeAfterDelegation}`)
 
       // Initiate round
-      await claimsManager.initiateRound({ from: controllerAddress })
+      await claimsManager.initiateRound({ from: stakerAccount })
 
       let deployerCut = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerCut
       let deployerCutBase = await serviceProviderFactory.getServiceProviderDeployerCutBase()
@@ -699,10 +799,10 @@ contract('DelegateManager', async (accounts) => {
     })
 
     // Confirm a pending undelegate operation negates any claimed value
-    it('single delegator + undelegate + claim', async () => {
+    it('Single delegator + undelegate + claim', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
-      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: deployerAddress })
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
 
       let initialDelegateAmount = _lib.audToWeiBN(60)
 
@@ -727,7 +827,7 @@ contract('DelegateManager', async (accounts) => {
       let preRewardInfo = await getAccountStakeInfo(stakerAccount, false)
 
       // Initiate round
-      await claimsManager.initiateRound({ from: controllerAddress })
+      await claimsManager.initiateRound({ from: stakerAccount })
       await delegateManager.claimRewards({ from: stakerAccount })
       let postRewardInfo = await getAccountStakeInfo(stakerAccount, false)
 
@@ -744,9 +844,10 @@ contract('DelegateManager', async (accounts) => {
     })
 
     // Confirm a pending undelegate operation is negated by a slash to the account
-    it('single delegator + undelegate + slash', async () => {
+    it('Single delegator + undelegate + slash', async () => {
       let initialDelegateAmount = _lib.audToWeiBN(60)
-      let slashAmount = _lib.audToWeiBN(100)
+      let slashAmountVal = _lib.audToWei(100)
+      let slashAmount = _lib.toBN(slashAmountVal)
 
       // Approve staking transfer
       await token.approve(
@@ -773,8 +874,7 @@ contract('DelegateManager', async (accounts) => {
         'Initial delegate amount not found')
 
       // Perform slash functions
-      // Called from mockGovernance
-      await mockGovernance.testSlash(slashAmount, slasherAccount)
+      await _lib.slash(slashAmountVal, slasherAccount, governance, delegateManagerKey, guardianAddress, true)
 
       let postRewardInfo = await getAccountStakeInfo(stakerAccount, false)
 
@@ -841,8 +941,8 @@ contract('DelegateManager', async (accounts) => {
       const delegatorAccount2 = accounts[5]
       const delegatorAccount3 = accounts[6]
       // Transfer 1000 tokens to delegator2, delegator3
-      await token.transfer(delegatorAccount2, INITIAL_BAL, { from: deployerAddress })
-      await token.transfer(delegatorAccount3, INITIAL_BAL, { from: deployerAddress })
+      await token.transfer(delegatorAccount2, INITIAL_BAL, { from: proxyDeployerAddress })
+      await token.transfer(delegatorAccount3, INITIAL_BAL, { from: proxyDeployerAddress })
       let initialDelegateAmount = _lib.audToWeiBN(60)
 
       // Approve staking transfer for delegator 1
@@ -891,7 +991,7 @@ contract('DelegateManager', async (accounts) => {
         'Confirm expired lockup period')
 
       // Initiate round
-      await claimsManager.initiateRound({ from: controllerAddress })
+      await claimsManager.initiateRound({ from: stakerAccount })
 
       // Confirm claim is pending
       let pendingClaim = await claimsManager.claimPending(stakerAccount)
@@ -930,33 +1030,50 @@ contract('DelegateManager', async (accounts) => {
       await delegateManager.claimRewards({ from: stakerAccount })
     })
 
-    it('slash below sp bounds', async () => {
+    it('Slash below sp bounds', async () => {
       let preSlashInfo = await getAccountStakeInfo(stakerAccount, false)
       // Set slash amount to all but 1 AUD for this SP
       let diffAmount = _lib.audToWeiBN(1)
       let slashAmount = (preSlashInfo.spFactoryStake).sub(diffAmount)
 
       // Perform slash functions
-      // Called from mockGovernance
-      await mockGovernance.testSlash(slashAmount, slasherAccount)
+      await _lib.slash(_lib.audToWei(_lib.fromWei(slashAmount)), slasherAccount, governance, delegateManagerKey, guardianAddress, true)
 
-      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      let spDetails = await getAccountStakeInfo(stakerAccount, false)
       assert.isFalse(
         spDetails.validBounds,
         'Bound violation expected')
 
       // Initiate round
-      await claimsManager.initiateRound({ from: controllerAddress })
+      await claimsManager.initiateRound({ from: stakerAccount })
+
+      await _lib.assertRevert(
+        increaseRegisteredProviderStake(
+          diffAmount,
+          stakerAccount),
+        'No claim expected to be pending prior to stake transfer')
 
       // Confirm claim is pending
       let pendingClaim = await claimsManager.claimPending(stakerAccount)
       assert.isTrue(pendingClaim, 'ClaimsManager expected to consider claim pending')
 
-      // Confirm claim fails due to bound violation
-      await _lib.assertRevert(
-        delegateManager.claimRewards({ from: stakerAccount }),
-        'Service provider must be within bounds'
-      )
+      // Claim reward even though we are below bounds
+      await delegateManager.claimRewards({ from: stakerAccount })
+
+      let spDetailsAfterClaim = await getAccountStakeInfo(stakerAccount, false)
+      assert.isTrue(
+        (spDetails.totalInStakingContract).eq(spDetailsAfterClaim.totalInStakingContract),
+        'Expect NO reward since bounds were violated')
+
+      // Confirm claim is considered NOT pending even though nothing was claimed
+      assert.isFalse(
+        await claimsManager.claimPending(stakerAccount),
+        'ClaimsManager expected to consider claim pending')
+
+      // Confirm bounds are still violated after rewards
+      assert.isFalse(
+        (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).validBounds,
+        'Bound violation expected')
 
       // Try to increase by diffAmount, but expect rejection since lower bound is unmet
       await _lib.assertRevert(
@@ -973,27 +1090,20 @@ contract('DelegateManager', async (accounts) => {
       await increaseRegisteredProviderStake(
         increase,
         stakerAccount)
-
       // Validate increase
       spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       assert.isTrue(
         spDetails.validBounds,
         'Valid bound expected')
-
-      // Confirm claim STILL fails due to bound violation at fundblock
-      await _lib.assertRevert(
-        delegateManager.claimRewards({ from: stakerAccount }),
-        'Minimum stake bounds violated at fund block'
-      )
     })
 
-    it('delegator increase/decrease + SP direct stake bound validation', async () => {
+    it('Delegator increase/decrease + SP direct stake bound validation', async () => {
       let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       let delegateAmount = spDetails.minAccountStake
       let info = await getAccountStakeInfo(stakerAccount, false)
       let failedIncreaseAmount = spDetails.maxAccountStake
       // Transfer sufficient funds
-      await token.transfer(delegatorAccount1, failedIncreaseAmount, { from: deployerAddress })
+      await token.transfer(delegatorAccount1, failedIncreaseAmount, { from: proxyDeployerAddress })
       // Approve staking transfer
       await token.approve(stakingAddress, failedIncreaseAmount, { from: delegatorAccount1 })
       await _lib.assertRevert(
@@ -1013,7 +1123,7 @@ contract('DelegateManager', async (accounts) => {
         stakingAddress,
         delegateAmount,
         { from: delegatorAccount1 })
-      delegateManager.delegateStake(
+      await delegateManager.delegateStake(
         stakerAccount,
         delegateAmount,
         { from: delegatorAccount1 })
@@ -1083,24 +1193,41 @@ contract('DelegateManager', async (accounts) => {
         'Minimum stake threshold exceeded')
     })
 
-    it('undelegate lockup duration changes', async () => {
+    it('Undelegate lockup duration changes', async () => {
       let currentDuration = await delegateManager.getUndelegateLockupDuration()
-      let newDuration = currentDuration.mul(web3.utils.toBN(2))
+      const newDurationVal = _lib.fromBN(currentDuration) * 2
+      const newDuration = _lib.toBN(newDurationVal)
 
       await _lib.assertRevert(
         delegateManager.updateUndelegateLockupDuration(newDuration),
-        'Only callable from governance'
+        "Only callable by Governance contract"
       )
 
-      await mockGovernance.updateUndelegateLockupDuration(newDuration)
+      const txReceipt = await governance.guardianExecuteTransaction(
+        delegateManagerKey,
+        _lib.toBN(0),
+        'updateUndelegateLockupDuration(uint256)',
+        _lib.abiEncode(['uint256'], [newDurationVal]),
+        { from: guardianAddress }
+      )
+      assert.isTrue(_lib.parseTx(txReceipt).event.args.success, 'Expected tx to succeed')
+
       currentDuration = await delegateManager.getUndelegateLockupDuration()
       assert.isTrue(currentDuration.eq(newDuration))
     })
 
-    it('maximum delegators', async () => {
+    it('Maximum delegators', async () => {
       // Update max delegators to 4
-      let maxDelegators = 4
-      await mockGovernance.updateMaxDelegators(maxDelegators)
+      const maxDelegators = 4
+      const tx = await governance.guardianExecuteTransaction(
+        delegateManagerKey,
+        _lib.toBN(0),
+        'updateMaxDelegators(uint256)',
+        _lib.abiEncode(['uint256'], [maxDelegators]),
+        { from: guardianAddress }
+      )
+      assert.isTrue(_lib.parseTx(tx).event.args.success, 'Expected tx to succeed')
+
       assert.equal(
         _lib.fromBN(await delegateManager.getMaxDelegators()),
         maxDelegators,
@@ -1112,7 +1239,7 @@ contract('DelegateManager', async (accounts) => {
       for (var i = 0; i < delegatorAccounts.length; i++) {
         let delegator = delegatorAccounts[i]
         // Transfer 1000 tokens to each delegator
-        await token.transfer(delegator, singleDelegateAmount, { from: deployerAddress })
+        await token.transfer(delegator, singleDelegateAmount, { from: proxyDeployerAddress })
         // Approve staking transfer
         await token.approve(stakingAddress, singleDelegateAmount, { from: delegator })
         if (i === (delegatorAccounts.length - 1)) {
@@ -1132,10 +1259,20 @@ contract('DelegateManager', async (accounts) => {
       }
     })
 
-    it('min delegate stake', async () => {
+    it('Min delegate stake', async () => {
       // Update min delegation level configuration
-      let minDelegateStake = _lib.audToWeiBN(100)
-      await mockGovernance.updateMinDelegationAmount(minDelegateStake)
+      let minDelegateStakeVal = _lib.audToWei(100)
+      let minDelegateStake = _lib.toBN(minDelegateStakeVal)
+      
+      const updateMinDelTxReceipt = await governance.guardianExecuteTransaction(
+        delegateManagerKey,
+        _lib.toBN(0),
+        'updateMinDelegationAmount(uint256)',
+        _lib.abiEncode(['uint256'], [minDelegateStakeVal]),
+        { from: guardianAddress }
+      )
+      assert.isTrue(_lib.parseTx(updateMinDelTxReceipt).event.args.success, 'Expected tx to succeed')
+
       assert.isTrue(
         minDelegateStake.eq(await delegateManager.getMinDelegationAmount()),
         'Min delegation not updated')
@@ -1183,19 +1320,161 @@ contract('DelegateManager', async (accounts) => {
       assert.equal((await delegateManager.getDelegatorsList(stakerAccount)).length, 0, 'No delegators expected')
     })
 
-    it('caller restriction verification', async () => {
+    it('Caller restriction verification', async () => {
       await _lib.assertRevert(
         delegateManager.updateMaxDelegators(10, { from: accounts[3] }),
-        'Only callable from governance'
+        "Only callable by Governance contract"
       )
       await _lib.assertRevert(
         delegateManager.updateMinDelegationAmount(10, { from: accounts[3] }),
-        'Only callable from governance'
+        "Only callable by Governance contract"
       )
       await _lib.assertRevert(
         delegateManager.slash(10, slasherAccount),
-        'Only callable from governance'
+        "Only callable by Governance contract"
       )
+    })
+
+    describe('Service provider decrease stake behavior', async () => {
+      it('claimReward disabled if no active stake for SP', async () => {
+        // Request decrease all of stake
+        await _lib.deregisterServiceProvider(
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint,
+          stakerAccount)
+        // Initiate round
+        await claimsManager.initiateRound({ from: stakerAccount })
+        let acctInfo = await getAccountStakeInfo(stakerAccount)
+        let spStake = acctInfo.spFactoryStake
+        assert.isTrue(spStake.gt(_lib.toBN(0)), 'Expect non-zero stake')
+        // Transaction will fail since maximum stake for the account is now zero after the deregister
+        await _lib.assertRevert(
+          delegateManager.claimRewards({ from: stakerAccount }),
+          'Service Provider stake required'
+        )
+
+        let deregisterRequestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+        await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
+        // Withdraw all stake
+        await serviceProviderFactory.decreaseStake({ from: stakerAccount })
+        // Attempt to re-register endpoint
+        // Confirm re-registration is allowed
+        await _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint,
+          DEFAULT_AMOUNT,
+          stakerAccount
+        )
+        acctInfo = await getAccountStakeInfo(stakerAccount)
+        assert.isTrue(acctInfo.totalInStakingContract.eq(DEFAULT_AMOUNT), 'Expect default in staking')
+        assert.isTrue(acctInfo.spFactoryStake.eq(DEFAULT_AMOUNT), 'Expect default in sp factory')
+      })
+
+      it('Re-registration after removing all stake and claim', async () => {
+        // Initiate round
+        await claimsManager.initiateRound({ from: stakerAccount })
+        // Claim reward immediately
+        await delegateManager.claimRewards({ from: stakerAccount })
+        // Request decrease all of stake
+        await _lib.deregisterServiceProvider(
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint,
+          stakerAccount)
+        let deregisterRequestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+        await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
+        assert.isFalse(await claimsManager.claimPending(stakerAccount), 'Expect no claim pending')
+        // Withdraw all stake
+        await serviceProviderFactory.decreaseStake({ from: stakerAccount })
+        let acctInfo = await getAccountStakeInfo(stakerAccount)
+        assert.isTrue(acctInfo.totalInStakingContract.eq(_lib.toBN(0)), 'Expect default in staking')
+        assert.isTrue(acctInfo.spFactoryStake.eq(_lib.toBN(0)), 'Expect default in sp factory')
+        assert.isTrue(acctInfo.numberOfEndpoints.eq(_lib.toBN(0)), 'Expect no endpoints in sp factory')
+
+        // Initiate round
+        await claimsManager.initiateRound({ from: stakerAccount2 })
+        // Expect no claim pending even though lastClaimed for this SP is < the round initiated
+        // Achieved by number of endpoints check in ClaimsManager
+        assert.isFalse(await claimsManager.claimPending(stakerAccount), 'Expect no claim pending')
+        // Attempt to re-register endpoint
+        // Confirm re-registration is allowed
+        await _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint,
+          DEFAULT_AMOUNT,
+          stakerAccount
+        )
+        acctInfo = await getAccountStakeInfo(stakerAccount)
+        assert.isTrue(acctInfo.totalInStakingContract.eq(DEFAULT_AMOUNT), 'Expect default in staking')
+        assert.isTrue(acctInfo.spFactoryStake.eq(DEFAULT_AMOUNT), 'Expect default in sp factory')
+      })
+
+      it('Decrease in reward for pending stake decrease', async () => {
+        // At the start of this test, we have 2 SPs each with DEFAULT_AMOUNT staked
+        let fundsPerRound = await claimsManager.getFundsPerRound()
+        let expectedIncrease = fundsPerRound.div(_lib.toBN(4))
+        // Request decrease in stake corresponding to 1/2 of DEFAULT_AMOUNT
+        await serviceProviderFactory.requestDecreaseStake(DEFAULT_AMOUNT.div(_lib.toBN(2)), { from: stakerAccount })
+        let info = await getAccountStakeInfo(stakerAccount)
+        await claimsManager.initiateRound({ from: stakerAccount })
+        await delegateManager.claimRewards({ from: stakerAccount })
+        let info2 = await getAccountStakeInfo(stakerAccount)
+        let stakingDiff = (info2.totalInStakingContract).sub(info.totalInStakingContract)
+        let spFactoryDiff = (info2.spFactoryStake).sub(info.spFactoryStake)
+        assert.isTrue(stakingDiff.eq(expectedIncrease), 'Expected increase not found in Staking.sol')
+        assert.isTrue(spFactoryDiff.eq(expectedIncrease), 'Expected increase not found in SPFactory')
+      })
+
+      it('Slash cancels pending undelegate request', async () => {
+        await serviceProviderFactory.requestDecreaseStake(DEFAULT_AMOUNT.div(_lib.toBN(2)), { from: stakerAccount })
+        let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+        assert.isTrue((requestInfo.lockupExpiryBlock).gt(_lib.toBN(0)), 'Expected lockup expiry block to be set')
+        assert.isTrue((requestInfo.amount).gt(_lib.toBN(0)), 'Expected amount to be set')
+        
+        // Slash
+        await _lib.slash(_lib.audToWei(5), slasherAccount, governance, delegateManagerKey, guardianAddress, true)
+
+        requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+        assert.isTrue((requestInfo.lockupExpiryBlock).eq(_lib.toBN(0)), 'Expected lockup expiry block reset')
+        assert.isTrue((requestInfo.amount).eq(_lib.toBN(0)), 'Expected amount reset')
+      })
+
+      it('Update lockup duration', async () => {
+        let duration = await serviceProviderFactory.getDecreaseStakeLockupDuration()
+        // Double decrease stake duration
+        let newDuration = duration.add(duration)
+        
+        await _lib.assertRevert(
+          serviceProviderFactory.updateDecreaseStakeLockupDuration(newDuration),
+          "Only callable by Governance contract"
+        )
+
+        const updateDSLDTxReceipt = await governance.guardianExecuteTransaction(
+          serviceProviderFactoryKey,
+          _lib.toBN(0),
+          'updateDecreaseStakeLockupDuration(uint256)',
+          _lib.abiEncode(['uint256'], [_lib.fromBN(newDuration)]),
+          { from: guardianAddress }
+        )
+        assert.isTrue(_lib.parseTx(updateDSLDTxReceipt).event.args.success, 'Expected tx to succeed')
+
+        let updatedDuration = await serviceProviderFactory.getDecreaseStakeLockupDuration()
+        assert.isTrue(updatedDuration.eq(newDuration), 'Update not reflected')
+        let tx = await serviceProviderFactory.requestDecreaseStake(DEFAULT_AMOUNT.div(_lib.toBN(2)), { from: stakerAccount })
+        let blocknumber = _lib.toBN(tx.receipt.blockNumber)
+        let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+        assert.isTrue(
+          (blocknumber.add(updatedDuration)).eq(requestInfo.lockupExpiryBlock),
+          'Unexpected blocknumber'
+        )
+      })
     })
   })
 })

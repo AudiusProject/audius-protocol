@@ -1,4 +1,5 @@
 const ethers = require('ethers')
+const abi = require('ethereumjs-abi')
 
 /** ensures use of pre-configured web3 if provided */
 let web3New
@@ -91,11 +92,11 @@ export const assertRevert = async (blockOrPromise, expectedReason) => {
   assert.isTrue(expectedMsgFound, `Expected revert reason not found. Expected '${expectedReason}'. Found '${error.message}'`)
 }
 
-export const toBN = (val) => web3.utils.toBN(val)
+export const toBN = (val) => web3New.utils.toBN(val)
 
 export const fromBN = (val) => val.toNumber()
 
-export const audToWei = (val) => web3.utils.toWei(val.toString(), 'ether')
+export const audToWei = (val) => web3New.utils.toWei(val.toString(), 'ether')
 
 export const audToWeiBN = (aud) => toBN(audToWei(aud))
 
@@ -113,6 +114,12 @@ export const abiDecode = (types, data) => {
 
 export const keccak256 = (values) => {
   return ethers.utils.keccak256(values)
+}
+
+export const encodeCall = (name, args, values) => {
+  const methodId = abi.methodID(name, args).toString('hex')
+  const params = abi.rawEncode(args, values).toString('hex')
+  return '0x' + methodId + params
 }
 
 export const registerServiceProvider = async (token, staking, serviceProviderFactory, type, endpoint, amount, account) => {
@@ -147,4 +154,127 @@ export const deregisterServiceProvider = async (serviceProviderFactory, type, en
   args.unstakeAmount = args._unstakeAmount
   args.spID = args._spID
   return args
+}
+
+export const initiateFundingRound = async (governance, claimsManagerRegKey, guardianAddress, expectedSuccess) => {
+  const callValue0 = toBN(0)
+  const signature = 'initiateRound()'
+  const callData = abiEncode([], [])
+
+  const txReceipt = await governance.guardianExecuteTransaction(
+    claimsManagerRegKey,
+    callValue0,
+    signature,
+    callData,
+    { from: guardianAddress }
+  )
+  const tx = parseTx(txReceipt)
+
+  assert.equal(tx.event.args.success, expectedSuccess, 'Expected event.args.success')
+  
+  return tx
+}
+
+export const deployToken = async (artifacts, proxyAdminAddress, proxyDeployerAddress) => {
+  const AudiusToken = artifacts.require('AudiusToken')
+  const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+
+  const token0 = await AudiusToken.new({ from: proxyDeployerAddress })
+  const tokenInitData = encodeCall('initialize', [], [])
+  const tokenProxy = await AdminUpgradeabilityProxy.new(
+    token0.address,
+    proxyAdminAddress,
+    tokenInitData,
+    { from: proxyDeployerAddress }
+  )
+  const token = await AudiusToken.at(tokenProxy.address)
+
+  return token
+}
+
+export const deployRegistry = async (artifacts, proxyAdminAddress, proxyDeployerAddress) => {
+  const Registry = artifacts.require('Registry')
+  const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+
+  const registry0 = await Registry.new({ from: proxyDeployerAddress })
+  const registryInitData = encodeCall('initialize', [], [])
+  const registryProxy = await AdminUpgradeabilityProxy.new(
+    registry0.address,
+    proxyAdminAddress,
+    registryInitData,
+    { from: proxyDeployerAddress }
+  )
+  const registry = await Registry.at(registryProxy.address)
+
+  return registry
+}
+
+export const deployGovernance = async (
+  artifacts,
+  proxyAdminAddress,
+  proxyDeployerAddress,
+  registry,
+  stakingRegKey,
+  governanceRegKey,
+  votingPeriod,
+  votingQuorum,
+  guardianAddress
+) => {
+  const Governance = artifacts.require('Governance')
+  const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+
+  const governance0 = await Governance.new({ from: proxyDeployerAddress })
+  const governanceInitializeData = encodeCall(
+    'initialize',
+    ['address', 'bytes32', 'uint256', 'uint256', 'address'],
+    [registry.address, stakingRegKey, votingPeriod, votingQuorum, guardianAddress]
+  )
+  const governanceProxy = await AudiusAdminUpgradeabilityProxy.new(
+    governance0.address,
+    proxyAdminAddress,
+    governanceInitializeData,
+    registry.address,
+    governanceRegKey,
+    { from: proxyDeployerAddress }
+  )
+  const governance = await Governance.at(governanceProxy.address)
+
+  return governance
+}
+
+export const addServiceType = async (serviceType, typeMin, typeMax, governance, guardianAddress, serviceTypeManagerRegKey, expectedSuccess) => {
+  const addServiceTypeSignature = 'addServiceType(bytes32,uint256,uint256)'
+  const callValue0 = toBN(0)
+
+  const callData = abiEncode(
+    ['bytes32', 'uint256', 'uint256'],
+    [serviceType, typeMin, typeMax]
+  )
+  const addServiceTypeTxReceipt = await governance.guardianExecuteTransaction(
+    serviceTypeManagerRegKey,
+    callValue0,
+    addServiceTypeSignature,
+    callData,
+    { from: guardianAddress }
+  )
+  assert.equal(parseTx(addServiceTypeTxReceipt).event.args.success, expectedSuccess, 'Expected event.args.success')
+}
+
+export const slash = async (slashAmount, slashAccount, governance, delegateManagerRegKey, guardianAddress, expectedSuccess) => {
+  const callValue0 = toBN(0)
+  const signature = 'slash(uint256,address)'
+  const callData = abiEncode(['uint256', 'address'], [slashAmount, slashAccount])
+
+  const txReceipt = await governance.guardianExecuteTransaction(
+    delegateManagerRegKey,
+    callValue0,
+    signature,
+    callData,
+    { from: guardianAddress }
+  )
+  const tx = parseTx(txReceipt)
+
+  assert.equal(tx.event.args.success, expectedSuccess, 'Expected event.args.success')
+
+  return tx
 }

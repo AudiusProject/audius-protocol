@@ -2,8 +2,8 @@ pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 
-import "../../InitializableV2.sol";
-import "../interface/registry/RegistryInterface.sol";
+import "../InitializableV2.sol";
+import "../interface/RegistryInterface.sol";
 
 
 /**
@@ -12,12 +12,6 @@ import "../interface/registry/RegistryInterface.sol";
  * @dev The Registry uses this to talk to all contracts that inherit from this contract.
  */
 contract RegistryContract is InitializableV2, Ownable {
-
-    struct Multihash {
-        bytes32 digest;
-        uint8 hashFn;
-        uint8 size;
-    }
 
     address payable internal registryAddress;
 
@@ -52,11 +46,11 @@ contract RegistryContract is InitializableV2, Ownable {
         _requireIsInitialized();
         require(
             registryAddress != address(0x00),
-            "RegistryContract::kill:Registry address has not yet been set."
+            "RegistryContract::kill: Registry address has not yet been set."
         );
         require(
             msg.sender == registryAddress,
-            "RegistryContract::kill:Only registry can kill."
+            "RegistryContract::kill: Only registry can kill."
         );
         selfdestruct(registryAddress);
     }

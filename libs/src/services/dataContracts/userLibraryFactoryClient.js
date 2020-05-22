@@ -6,7 +6,7 @@ class UserLibraryFactoryClient extends ContractClient {
 
   async addTrackSave (userId, trackId) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getTrackSaveRequestData(
       chainId,
@@ -29,7 +29,7 @@ class UserLibraryFactoryClient extends ContractClient {
 
   async deleteTrackSave (userId, trackId) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getDeleteTrackSaveRequestData(
       chainId,
@@ -52,7 +52,7 @@ class UserLibraryFactoryClient extends ContractClient {
 
   async addPlaylistSave (userId, playlistId) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getPlaylistSaveRequestData(
       chainId,
@@ -75,7 +75,7 @@ class UserLibraryFactoryClient extends ContractClient {
 
   async deletePlaylistSave (userId, playlistId) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getDeletePlaylistSaveRequestData(
       chainId,

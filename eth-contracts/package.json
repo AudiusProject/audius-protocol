@@ -23,7 +23,7 @@
     "test-circle-ci": "./scripts/circleci-test.sh",
     "solidity-lint": "./node_modules/.bin/solium -d contracts",
     "lint": "./node_modules/.bin/standard",
-    "lint-fix": "./node_modules/.bin/standard --fix"
+    "lint-circle-ci": "./scripts/lint.sh"
   },
   "dependencies": {
     "@aragon/court": "^1.1.2",

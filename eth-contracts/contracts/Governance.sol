@@ -1,11 +1,13 @@
 pragma solidity ^0.5.0;
 
-import "./service/registry/RegistryContract.sol";
-import "./staking/StakingInterface.sol";
-import "./service/interface/registry/RegistryInterface.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+import "./registry/RegistryContract.sol";
+import "./Staking.sol";
+import "./interface/RegistryInterface.sol";
 
 
 contract Governance is RegistryContract {
+    using SafeMath for uint;
     RegistryInterface registry;
     bytes32 stakingProxyOwnerKey;
 
@@ -15,7 +17,7 @@ contract Governance is RegistryContract {
     address guardianAddress;
 
     /***** Enums *****/
-    enum Outcome {InProgress, No, Yes, Invalid, TxFailed}
+    enum Outcome {InProgress, No, Yes, Invalid, TxFailed, Evaluating}
     // Enum values map to uints, so first value in Enum always is 0.
     enum Vote {None, No, Yes}
 
@@ -129,7 +131,7 @@ contract Governance is RegistryContract {
         address proposer = msg.sender;
 
         // Require proposer is active Staker
-        StakingInterface stakingContract = StakingInterface(
+        Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
         require(
@@ -144,8 +146,14 @@ contract Governance is RegistryContract {
             "_targetContractRegistryKey must point to valid registered contract"
         );
 
+        // Signature cannot be empty
+        require(
+            bytes(_signature).length != 0,
+            "Governance::submitProposal: _signature cannot be empty."
+        );
+
         // set proposalId
-        uint256 newProposalId = lastProposalId + 1;
+        uint256 newProposalId = lastProposalId.add(1);
 
         // Store new Proposal obj in proposals mapping
         proposals[newProposalId] = Proposal({
@@ -171,7 +179,7 @@ contract Governance is RegistryContract {
             _description
         );
 
-        lastProposalId += 1;
+        lastProposalId = lastProposalId.add(1);
 
         return newProposalId;
     }
@@ -192,7 +200,7 @@ contract Governance is RegistryContract {
         );
 
         // Require voter is active Staker + get voterStake.
-        StakingInterface stakingContract = StakingInterface(
+        Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
         uint256 voterStake = stakingContract.totalStakedForAt(
@@ -204,19 +212,19 @@ contract Governance is RegistryContract {
         // Require proposal is still active
         require(
             proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance::submitProposalVote:Cannot vote on inactive proposal."
+            "Governance::submitProposalVote: Cannot vote on inactive proposal."
         );
 
         // Require proposal votingPeriod is still active.
         uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;
-        uint256 endBlockNumber = startBlockNumber + votingPeriod;
+        uint256 endBlockNumber = startBlockNumber.add(votingPeriod);
         require(
             block.number > startBlockNumber && block.number <= endBlockNumber,
-            "Governance::submitProposalVote:Proposal votingPeriod has ended"
+            "Governance::submitProposalVote: Proposal votingPeriod has ended"
         );
 
-        // Require vote is not None.
-        require(_vote != Vote.None, "Governance::submitProposalVote:Cannot submit None vote");
+        // Require vote is either Yes or No
+        require(_vote == Vote.Yes || _vote == Vote.No, "Governance::submitProposalVote: Can only submit a Yes or No vote");
 
         // Record previous vote.
         Vote previousVote = proposals[_proposalId].votes[voter];
@@ -229,18 +237,30 @@ contract Governance is RegistryContract {
         // New voter (Vote enum defaults to 0)
         if (previousVote == Vote.None) {
             if (_vote == Vote.Yes) {
-                proposals[_proposalId].voteMagnitudeYes += voterStake;
+                proposals[_proposalId].voteMagnitudeYes = (
+                    proposals[_proposalId].voteMagnitudeYes.add(voterStake)
+                );
             } else {
-                proposals[_proposalId].voteMagnitudeNo += voterStake;
+                proposals[_proposalId].voteMagnitudeNo = (
+                    proposals[_proposalId].voteMagnitudeNo.add(voterStake)
+                );
             }
-            proposals[_proposalId].numVotes += 1;
+            proposals[_proposalId].numVotes = proposals[_proposalId].numVotes.add(1);
         } else { // Repeat voter
             if (previousVote == Vote.Yes && _vote == Vote.No) {
-                proposals[_proposalId].voteMagnitudeYes -= voterStake;
-                proposals[_proposalId].voteMagnitudeNo += voterStake;
+                proposals[_proposalId].voteMagnitudeYes = (
+                    proposals[_proposalId].voteMagnitudeYes.sub(voterStake)
+                );
+                proposals[_proposalId].voteMagnitudeNo = (
+                    proposals[_proposalId].voteMagnitudeNo.add(voterStake)
+                );
             } else if (previousVote == Vote.No && _vote == Vote.Yes) {
-                proposals[_proposalId].voteMagnitudeYes += voterStake;
-                proposals[_proposalId].voteMagnitudeNo -= voterStake;
+                proposals[_proposalId].voteMagnitudeYes = (
+                    proposals[_proposalId].voteMagnitudeYes.add(voterStake)
+                );
+                proposals[_proposalId].voteMagnitudeNo = (
+                    proposals[_proposalId].voteMagnitudeNo.sub(voterStake)
+                );
             }
             // If _vote == previousVote, no changes needed to vote magnitudes.
         }
@@ -267,32 +287,36 @@ contract Governance is RegistryContract {
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
-            "Governance::evaluateProposalOutcome:Must provide valid non-zero _proposalId."
+            "Governance::evaluateProposalOutcome: Must provide valid non-zero _proposalId."
         );
 
         // Require proposal has not already been evaluated.
         require(
             proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance::evaluateProposalOutcome:Cannot evaluate inactive proposal."
+            "Governance::evaluateProposalOutcome: Cannot evaluate inactive proposal."
         );
 
+        /// Re-entrancy should not be possible here since this switches the status of the
+        /// proposal to 'Evaluating' so it should fail the status is 'InProgress' check
+        proposals[_proposalId].outcome = Outcome.Evaluating;
+
         // Require msg.sender is active Staker.
-        StakingInterface stakingContract = StakingInterface(
+        Staking stakingContract = Staking(
             registry.getContract(stakingProxyOwnerKey)
         );
         require(
             stakingContract.totalStakedForAt(
                 msg.sender, proposals[_proposalId].startBlockNumber
             ) > 0,
-            "Governance::evaluateProposalOutcome:Caller must be active staker with non-zero stake."
+            "Governance::evaluateProposalOutcome: Caller must be active staker with non-zero stake."
         );
 
         // Require proposal votingPeriod has ended.
         uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;
-        uint256 endBlockNumber = startBlockNumber + votingPeriod;
+        uint256 endBlockNumber = startBlockNumber.add(votingPeriod);
         require(
             block.number > endBlockNumber,
-            "Governance::evaluateProposalOutcome:Proposal votingPeriod must end before evaluation."
+            "Governance::evaluateProposalOutcome: Proposal votingPeriod must end before evaluation."
         );
 
         // Require registered contract address for provided registryKey has not changed.
@@ -301,7 +325,7 @@ contract Governance is RegistryContract {
         );
         require(
             targetContractAddress == proposals[_proposalId].targetContractAddress,
-            "Governance::evaluateProposalOutcome:Registered contract address for targetContractRegistryKey has changed"
+            "Governance::evaluateProposalOutcome: Registered contract address for targetContractRegistryKey has changed"
         );
 
         // Calculate outcome
@@ -328,7 +352,7 @@ contract Governance is RegistryContract {
             );
 
             // Proposal outcome depends on success of transaction execution.
-            if (success == true) {
+            if (success) {
                 outcome = Outcome.Yes;
             } else {
                 outcome = Outcome.TxFailed;
@@ -339,7 +363,7 @@ contract Governance is RegistryContract {
             outcome = Outcome.No;
         }
 
-        // Record outcome
+        /// This records the final outcome in the proposals mapping
         proposals[_proposalId].outcome = outcome;
 
         emit ProposalOutcomeEvaluated(
@@ -360,16 +384,19 @@ contract Governance is RegistryContract {
     function vetoProposal(uint256 _proposalId) external {
         _requireIsInitialized();
 
-        require(msg.sender == guardianAddress, "Governance::vetoProposal:Only guardian can veto proposals.");
+        require(
+            msg.sender == guardianAddress,
+            "Governance::vetoProposal: Only guardian can veto proposals."
+        );
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
-            "Governance::vetoProposal:Must provide valid non-zero _proposalId."
+            "Governance::vetoProposal: Must provide valid non-zero _proposalId."
         );
 
         require(
             proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance::vetoProposal:Cannot veto inactive proposal."
+            "Governance::vetoProposal: Cannot veto inactive proposal."
         );
 
         proposals[_proposalId].outcome = Outcome.No;
@@ -396,14 +423,20 @@ contract Governance is RegistryContract {
 
         require(
             msg.sender == guardianAddress,
-            "Governance::guardianExecuteTransaction:Only guardian."
+            "Governance::guardianExecuteTransaction: Only guardian."
         );
 
         // Require _targetContractRegistryKey points to a valid registered contract
         address targetContractAddress = registry.getContract(_targetContractRegistryKey);
         require(
             targetContractAddress != address(0x00),
-            "Governance::guardianExecuteTransaction:_targetContractRegistryKey must point to valid registered contract"
+            "Governance::guardianExecuteTransaction: _targetContractRegistryKey must point to valid registered contract"
+        );
+
+        // Signature cannot be empty
+        require(
+            bytes(_signature).length != 0,
+            "Governance::guardianExecuteTransaction: _signature cannot be empty."
         );
 
         (bool success, bytes memory returnData) = _executeTransaction(
@@ -487,7 +520,12 @@ contract Governance is RegistryContract {
     // ========================================= Internal Functions =========================================
 
     /**
-     * @notice Function to execute transaction
+     * @notice Execute a transaction attached to a governanace proposal
+     * @dev We are aware of both potential re-entrancy issues and the risks associated with low-level solidity
+     *      function calls here, but have chosen to keep this code with those issues in mind. All governance
+     *      proposals go through a voting process, and all will be reviewed carefully to ensure that they
+     *      adhere to the expected behaviors of this call - but adding restrictions here would limit the ability
+     *      of the governance system to do required work in a generic way.
      * @param _targetContractAddress - address of registry proxy contract to execute transaction on
      * @param _callValue - amount of wei if a token transfer is involved
      * @param _signature - function signature of the function to be executed if proposal is successful
@@ -500,13 +538,10 @@ contract Governance is RegistryContract {
         bytes memory _callData
     ) internal returns (bool /** success */, bytes memory /** returnData */)
     {
-        bytes memory encodedCallData;
-        if (bytes(_signature).length == 0) {
-            encodedCallData = _callData;
-        } else {
-            encodedCallData = abi.encodePacked(bytes4(keccak256(bytes(_signature))), _callData);
-        }
-
+        bytes memory encodedCallData = abi.encodePacked(
+            bytes4(keccak256(bytes(_signature))),
+            _callData
+        );
         (bool success, bytes memory returnData) = (
             // solium-disable-next-line security/no-call-value
             _targetContractAddress.call.value(_callValue)(encodedCallData)
