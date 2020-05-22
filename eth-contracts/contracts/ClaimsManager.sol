@@ -68,10 +68,10 @@ contract ClaimsManager is RegistryContract {
      * @notice Function to initialize the contract
      * @param _tokenAddress - address of ERC20 token that will be claimed
      * @param _registryAddress - address for registry proxy contract
-     * @param _controllerAddress - address that can initiate rounds in addition to any staker
      * @param _stakingProxyOwnerKey - registry key for Staking proxy
      * @param _serviceProviderFactoryKey - registry key for ServiceProvider proxy
      * @param _delegateManagerKey - registry key for DelegateManager proxy
+     * @param _governanceKey - registry key for Governance
      */
     function initialize(
         address _tokenAddress,
@@ -143,7 +143,7 @@ contract ClaimsManager is RegistryContract {
 
     /**
      * @notice Start a new funding round
-     * @dev Permissioned to stakers or contract deployer
+     * @dev Permissioned to be callable by stakers or governance contract
      */
     function initiateRound() external {
         _requireIsInitialized();
@@ -250,6 +250,7 @@ contract ClaimsManager is RegistryContract {
 
     /**
      * @notice Modify funding amount per round
+     * @param _newAmount - new amount to fund per round in wei 
      */
     function updateFundingAmount(uint _newAmount)
     external returns (uint newAmount)
@@ -265,7 +266,7 @@ contract ClaimsManager is RegistryContract {
     /**
      * @notice Returns boolean indicating whether a claim is considered pending
      * @dev Note that an address with no endpoints can never have a pending claim
-     * @dev _sp - address of the service provider to check
+     * @param _sp - address of the service provider to check
      * @return boolean - true if eligible for claim, false if not
      */
     function claimPending(address _sp) external view returns (bool pending) {
@@ -280,6 +281,7 @@ contract ClaimsManager is RegistryContract {
 
     /**
      * @notice Modify minimum block difference between funding rounds
+     * @param _newFundingRoundBlockDiff - new min block difference to set
      */
     function updateFundingRoundBlockDiff(uint _newFundingRoundBlockDiff) external {
         require(

@@ -187,7 +187,7 @@ contract Governance is RegistryContract {
     /**
      * @notice Vote on a proposal if you are an active staker when the proposal is submitted
      * @param _proposalId - id of the proposal this vote is for
-     * @param _vote - can be any of the values of the Vote enum
+     * @param _vote - can be either {Yes, No} from Vote enum. No other values allowed
      */
     function submitProposalVote(uint256 _proposalId, Vote _vote) external {
         _requireIsInitialized();

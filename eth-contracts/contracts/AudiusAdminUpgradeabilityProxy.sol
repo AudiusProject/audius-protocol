@@ -29,8 +29,10 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
     }
 
     /**
-     * Wrapper on AdminUpgradeabilityProxy._upgradeTo.
-     * Adds a check to ensure msg.sender is admin or a registered controller contract.
+     * @notice Upgrade the address of the logic contract  for this proxy
+     * @dev Wrapper on AdminUpgradeabilityProxy._upgradeTo.
+     *      Adds a check to ensure msg.sender is admin or a registered controller contract.
+     * @param _newImplementation - new address of logic contract that the proxy will point to
      */
     function upgradeTo(address _newImplementation) external {
         require(
@@ -40,18 +42,34 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
         _upgradeTo(_newImplementation);
     }
 
+    /**
+     * @notice Get audius registry address
+     * @return adadress - address of audius registry
+     */
     function getAudiusRegistry() external view returns (address) {
         return address(audiusRegistry);
     }
 
+    /**
+     * @notice Set audius registry address
+     * @param _registryAddress - address of audius registry
+     */
     function setAudiusRegistry(address _registryAddress) external ifAdmin {
         audiusRegistry = RegistryInterface(_registryAddress);
     }
 
+    /**
+     * @notice Get key of controller contract from the registry
+     * @return bytes32 - key of controller contract in registry
+     */
     function getControllerRegistryKey() external view returns (bytes32) {
         return controllerRegistryKey;
     }
 
+    /**
+     * @notice Set key of controller contract in the registry
+     * @param _controllerRegistryKey - key of controller contract in registry
+     */
     function setControllerRegistryKey(bytes32 _controllerRegistryKey) external ifAdmin {
         require(
             audiusRegistry.getContract(_controllerRegistryKey) != address(0x00),

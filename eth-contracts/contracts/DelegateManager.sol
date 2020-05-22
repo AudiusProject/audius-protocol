@@ -92,6 +92,15 @@ contract DelegateManager is RegistryContract {
       uint _newTotal
     );
 
+    /**
+     * @notice Function to initialize the contract
+     * @param _tokenAddress - address of ERC20 token that will be claimed
+     * @param _registryAddress - address for registry proxy contract
+     * @param _governanceKey - registry key for Governance
+     * @param _stakingProxyOwnerKey - registry key for Staking proxy
+     * @param _serviceProviderFactoryKey - registry key for ServiceProvider proxy
+     * @param _claimsManagerKey - registry key for ClaimsManager proxy
+     */
     function initialize (
         address _tokenAddress,
         address _registryAddress,
@@ -115,6 +124,12 @@ contract DelegateManager is RegistryContract {
         RegistryContract.initialize();
     }
 
+    /**
+     * @notice Allow a delegator to delegate stake to a service provider
+     * @param _targetSP - address of service provider to delegate to
+     * @param _amount - amount in wei to delegate
+     * @return Updated total amount delegated to the service provider by delegator
+     */
     function delegateStake(
         address _targetSP,
         uint _amount
@@ -178,7 +193,12 @@ contract DelegateManager is RegistryContract {
         return delegateInfo[delegator][_targetSP];
     }
 
-    // Submit request for undelegation
+    /**
+     * @notice Submit request for undelegation
+     * @param _target - address of service provider to undelegate stake from
+     * @param _amount - amount in wei to undelegate
+     * @return Updated total amount delegated to the service provider by delegator
+     */
     function requestUndelegateStake(
         address _target,
         uint _amount
@@ -316,7 +336,9 @@ contract DelegateManager is RegistryContract {
     }
 
     /**
-     * @notice Claim and distribute rewards to delegators as necessary
+     * @notice Claim and distribute rewards to delegators anad service provider as necessary
+     * @dev Only callable by service provider. msg.sender is passed into processClaim
+     * @dev Also factors in service provider rewards and cut and transfers service provider cut
      */
     function claimRewards() external {
         _requireIsInitialized();
@@ -431,7 +453,10 @@ contract DelegateManager is RegistryContract {
     }
 
     /**
-     * @notice Reduce current stake amount, only callable by governance
+     * @notice Reduce current stake amount
+     * @dev Only callable by governance. Slashes service provider and delegators equally
+     * @param _amount - amount in wei to slash
+     * @param _slashAddress - address of service provider to slash
      */
     function slash(uint _amount, address _slashAddress)
     external
@@ -527,6 +552,7 @@ contract DelegateManager is RegistryContract {
 
     /**
      * @notice Update duration for undelegate request lockup
+     * @param _duration - new lockup duration
      */
     function updateUndelegateLockupDuration(uint _duration) external {
         _requireIsInitialized();
@@ -541,6 +567,7 @@ contract DelegateManager is RegistryContract {
 
     /**
      * @notice Update maximum delegators allowed
+     * @param _maxDelegators - new max delegators
      */
     function updateMaxDelegators(uint _maxDelegators) external {
         _requireIsInitialized();
@@ -555,6 +582,7 @@ contract DelegateManager is RegistryContract {
 
     /**
      * @notice Update minimum delegation amount
+     * @param _minDelegationAmount - min new min delegation amount
      */
     function updateMinDelegationAmount(uint _minDelegationAmount) external {
         _requireIsInitialized();
@@ -568,7 +596,7 @@ contract DelegateManager is RegistryContract {
     }
 
     /**
-     * @notice List of delegators for a given service provider
+     * @notice Get list of delegators for a given service provider
      */
     function getDelegatorsList(address _sp)
     external view returns (address[] memory dels)
@@ -577,7 +605,7 @@ contract DelegateManager is RegistryContract {
     }
 
     /**
-     * @notice Total delegated to a service provider
+     * @notice Get total amount delegated to a service provider
      */
     function getTotalDelegatedToServiceProvider(address _sp)
     external view returns (uint total)
@@ -586,7 +614,7 @@ contract DelegateManager is RegistryContract {
     }
 
     /**
-     * @notice Total delegated stake locked up for a service provider
+     * @notice Get total delegated stake locked up for a service provider
      */
     function getTotalLockedDelegationForServiceProvider(address _sp)
     external view returns (uint total)
@@ -595,7 +623,7 @@ contract DelegateManager is RegistryContract {
     }
 
     /**
-     * @notice Total currently staked for a delegator, across service providers
+     * @notice Get total currently staked for a delegator, across service providers
      */
     function getTotalDelegatorStake(address _delegator)
     external view returns (uint amount)
@@ -604,7 +632,7 @@ contract DelegateManager is RegistryContract {
     }
 
     /**
-     * @notice Total currently staked for a delegator, for a given service provider
+     * @notice Get total currently staked for a delegator, for a given service provider
      */
     function getDelegatorStakeForServiceProvider(address _delegator, address _serviceProvider)
     external view returns (uint amount)
@@ -623,7 +651,7 @@ contract DelegateManager is RegistryContract {
     }
 
     /**
-     * @notice Current undelegate lockup duration
+     * @notice Get current undelegate lockup duration
      */
     function getUndelegateLockupDuration()
     external view returns (uint duration)
@@ -649,6 +677,13 @@ contract DelegateManager is RegistryContract {
         return minDelegationAmount;
     }
 
+    // ========================================= Internal Functions =========================================
+
+    /**
+     * @notice Returns if delegator has delegated to a service provider
+     * @param _delegator - address of delegator
+     * @param _serviceProvider - address of service provider
+     */
     function _delegatorExistsForSP(
         address _delegator,
         address _serviceProvider
@@ -665,6 +700,7 @@ contract DelegateManager is RegistryContract {
 
     /**
      * @notice Boolean indicating whether a claim is pending for this service provider
+     * @param _sp - address of service provider
      */
     function _claimPending(address _sp) internal view returns (bool pending) {
         ClaimsManager claimsManager = ClaimsManager(
@@ -675,6 +711,7 @@ contract DelegateManager is RegistryContract {
 
     /**
      * @notice Boolean indicating whether a decrease request has been initiated
+     * @param _delegator - address of delegator
      */
     function _undelegateRequestIsPending(address _delegator) internal view returns (bool pending)
     {

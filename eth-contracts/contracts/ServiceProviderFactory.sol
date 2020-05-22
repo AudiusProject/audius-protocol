@@ -56,6 +56,7 @@ contract ServiceProviderFactory is RegistryContract {
     uint private constant DEPLOYER_CUT_BASE = 100;
 
     /// @dev - Struct maintaining information about sp
+    /// @dev - blocknumber is block.number when endpoint registered
     struct ServiceEndpoint {
         address owner;
         string endpoint;
@@ -115,6 +116,15 @@ contract ServiceProviderFactory is RegistryContract {
       uint spId
     );
 
+    /**
+     * @notice Function to initialize the contract
+     * @param _registryAddress - address for registry proxy contract
+     * @param _stakingProxyOwnerKey - registry key for Staking proxy
+     * @param _delegateManagerKey - registry key for DelegateManager proxy
+     * @param _governanceKey - registry key for Governance proxy
+     * @param _serviceTypeManagerKey - registry key for ServiceTypeManager proxy
+     * @param _claimsManagerKey - registry key for ClaimsManager proxy
+     */
     function initialize (
         address _registryAddress,
         bytes32 _stakingProxyOwnerKey,
@@ -145,8 +155,13 @@ contract ServiceProviderFactory is RegistryContract {
         RegistryContract.initialize();
     }
 
-    /// @notice - Register a new endpoint to the account of msg.sender
-    ///           Transfers stake into staking pool
+    /**
+     * @notice Register a new endpoint to the account of msg.sender
+     * @dev Transfers stake from service provider into staking pool
+     * @param _serviceType - type of service to register, must be valid in ServiceTypeManager
+     * @param _endpoint - url of the service to register - url of the service to register
+     * @param _stakeAmount - amount to stake, must be within bounds in ServiceTypeManager
+     */
     function register(
         bytes32 _serviceType,
         string calldata _endpoint,
@@ -223,6 +238,10 @@ contract ServiceProviderFactory is RegistryContract {
 
     /// @notice - Deregister an endpoint from the account of msg.sender
     ///           Removes stake if this is the final endpoint remaining for account
+    /**
+     * @notice Deregister an endpoint from the account of msg.sender
+     * @dev Unstakes all tokens for service provider if this is the last endpoint
+     */
     function deregister(
         bytes32 _serviceType,
         string calldata _endpoint
@@ -307,6 +326,11 @@ contract ServiceProviderFactory is RegistryContract {
         return deregisteredID;
     }
 
+    /**
+     * @notice Increase stake for service provider
+     * @param _increaseStakeAmount - amount to increase staked amount by
+     * @return New total stake for service provider
+     */
     function increaseStake(
         uint256 _increaseStakeAmount
     ) external returns (uint newTotalStake)
@@ -351,6 +375,13 @@ contract ServiceProviderFactory is RegistryContract {
         return newStakeAmount;
     }
 
+    /**
+     * @notice Request to decrease stake. This sets a lockup for decreaseStakeLockupDuration after
+               which the actual decreaseStake can be called
+     * @dev Decreasing stake is only processed in a service provider is within valid bounds
+     * @param _decreaseStakeAmount - amount to decrease stake by in wei
+     * @return New total stake amount after the lockup
+     */
     function requestDecreaseStake(uint _decreaseStakeAmount)
     external returns (uint newStakeAmount)
     {
@@ -377,6 +408,11 @@ contract ServiceProviderFactory is RegistryContract {
         return currentStakeAmount.sub(_decreaseStakeAmount);
     }
 
+    /**
+     * @notice Cancel a decrease stake request during the lockup
+     * @dev Either called by the service provider directly or governance during a slash action
+     * @param _account - address of service provider
+     */
     function cancelDecreaseStakeRequest(address _account) external
     {
         require(
@@ -392,6 +428,11 @@ contract ServiceProviderFactory is RegistryContract {
         });
     }
 
+    /**
+     * @notice Actually decrease a stake. Must have called requestDecreaseStake and waited for the
+               lockup period to expire
+     * @return New total stake after decrease
+     */
     function decreaseStake() external returns (uint newTotalStake)
     {
         _requireIsInitialized();
@@ -437,6 +478,12 @@ contract ServiceProviderFactory is RegistryContract {
         return newStakeAmount;
     }
 
+    /**
+     * @notice Update delegate owner wallet for a given endpoint
+     * @param _serviceType - type of service to register, must be valid in ServiceTypeManager
+     * @param _endpoint - url of the service to register - url of the service to register
+     * @param _updatedDelegateOwnerWallet - address of new delegate wallet
+     */
     function updateDelegateOwnerWallet(
         bytes32 _serviceType,
         string calldata _endpoint,
@@ -452,6 +499,12 @@ contract ServiceProviderFactory is RegistryContract {
         serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
     }
 
+    /**
+     * @notice Update the endpoint for a given service
+     * @param _serviceType - type of service to register, must be valid in ServiceTypeManager
+     * @param _oldEndpoint - old endpoint currently registered
+     * @param _oldEndpoint - new endpoint to replace old endpoint
+     */
     function updateEndpoint(
         bytes32 _serviceType,
         string calldata _oldEndpoint,
@@ -481,7 +534,12 @@ contract ServiceProviderFactory is RegistryContract {
         return spId;
     }
 
-    /// @notice Update service provider balance
+    /**
+     * @notice Update service provider balance
+     * @dev Called by DelegateManager by functions modifying entire stake like claim and slash
+     * @param _serviceProvider - address of service provider
+     * @param _amount - new amount of direct state for service provider
+     */
     function updateServiceProviderStake(
         address _serviceProvider,
         uint _amount
@@ -525,37 +583,55 @@ contract ServiceProviderFactory is RegistryContract {
         decreaseStakeLockupDuration = _duration;
     }
 
-    /// @notice Denominator for deployer cut calculations
+    /**
+     * @notice Get denominator for deployer cut calculations
+     */
     function getServiceProviderDeployerCutBase()
     external pure returns (uint base)
     {
         return DEPLOYER_CUT_BASE;
     }
 
+    /**
+     * @notice Get total number of service providers for a given serviceType
+     */
     function getTotalServiceTypeProviders(bytes32 _serviceType)
     external view returns (uint numberOfProviders)
     {
         return serviceProviderTypeIDs[_serviceType];
     }
 
+    /**
+     * @notice Get service provider id for an endpoint
+     */
     function getServiceProviderIdFromEndpoint(string calldata _endpoint)
     external view returns (uint spID)
     {
         return serviceProviderEndpointToId[keccak256(bytes(_endpoint))];
     }
 
+    /**
+     * @notice Get minDeployerStake
+     */
     function getMinDeployerStake()
     external view returns (uint min)
     {
         return minDeployerStake;
     }
 
+    /**
+     * @notice Get service provider ids for a given service provider and service type
+     * @return List of service ids of that type for a service provider
+     */
     function getServiceProviderIdsFromAddress(address _ownerAddress, bytes32 _serviceType)
     external view returns (uint[] memory spIds)
     {
         return serviceProviderAddressToId[_ownerAddress][_serviceType];
     }
 
+    /**
+     * @notice Get information about a service endpoint given its service id
+     */
     function getServiceEndpointInfo(bytes32 _serviceType, uint _serviceId)
     external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet)
     {
@@ -563,6 +639,10 @@ contract ServiceProviderFactory is RegistryContract {
         return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet);
     }
 
+    /**
+     * @notice Get information about a service provider given their address
+     * @param _sp - address of service provider
+     */
     function getServiceProviderDetails(address _sp)
     external view returns (
         uint deployerStake,
@@ -582,7 +662,10 @@ contract ServiceProviderFactory is RegistryContract {
         );
     }
 
-    /// @notice Pending decrease stake request
+    /**
+     * @notice Get information about pending decrease stake requests for service provider
+     * @param _sp - address of service provider
+     */
     function getPendingDecreaseStakeRequest(address _sp)
     external view returns (uint amount, uint lockupExpiryBlock)
     {
@@ -592,15 +675,21 @@ contract ServiceProviderFactory is RegistryContract {
         );
     }
 
-    /// @notice Current unstake lockup duration
+    /**
+     * @notice Get current unstake lockup duration
+     */
     function getDecreaseStakeLockupDuration()
     external view returns (uint duration)
     {
         return decreaseStakeLockupDuration;
     }
 
-    /// @notice Validate that the total service provider balance is between the min and max stakes for all their registered services
-    //          Validates that direct stake for sp is also above minimum
+    /**
+     * @notice Validate that the total service provider balance is between the min and max stakes
+               for all their registered services. Also Validates that direct stake for sp is also
+               above minimum
+     * @param _sp - address of service provider
+     */
     function validateAccountStakeBalance(address _sp)
     external view returns (uint stakedForOwner)
     {
@@ -630,7 +719,9 @@ contract ServiceProviderFactory is RegistryContract {
     }
 
     /**
-     * @notice Compare a given service provider bounds to input amount
+     * @notice Compare a given amount input against valid min and max bounds for service provider
+     * @param _sp - address of service provider
+     * @param _amount - amount in wei to compare
      */
     function _validateBalanceInternal(address _sp, uint _amount) internal view
     {
@@ -648,7 +739,9 @@ contract ServiceProviderFactory is RegistryContract {
     }
 
     /**
-     * @notice Boolean indicating whether a decrease request has been initiated
+     * @notice Get whether a decrease request has been initiated for service provider
+     * @param _serviceProvider - address of service provider
+     * return Boolean of whether decrease request has been initiated
      */
     function _decreaseRequestIsPending(address _serviceProvider)
     internal view returns (bool pending)
@@ -661,6 +754,11 @@ contract ServiceProviderFactory is RegistryContract {
 
     /**
      * @notice Boolean indicating whether a claim is pending for this service provider
+     */
+     /**
+     * @notice Get whether a claim is pending for this service provider
+     * @param _sp - address of service provider
+     * return Boolean of whether claim is pending
      */
     function _claimPending(address _sp) internal view returns (bool pending) {
         return ClaimsManager(
