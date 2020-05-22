@@ -30,20 +30,9 @@ module.exports = (deployer, network, accounts) => {
     const staking0 = await deployer.deploy(Staking, { from: proxyDeployerAddress })
     const initializeCallData = encodeCall(
       'initialize',
-      [
-        'address',
-        'address',
-        'bytes32',
-        'bytes32',
-        'bytes32'
-      ],
-      [
-        token.address,
-        registry.address,
-        claimsManagerProxyKey,
-        delegateManagerKey,
-        serviceProviderFactoryKey
-      ])
+      ['address', 'address'],
+      [token.address, process.env.governanceAddress]
+    )
     const stakingProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
       staking0.address,
@@ -58,6 +47,8 @@ module.exports = (deployer, network, accounts) => {
       stakingProxy.address,
       { from: proxyDeployerAddress }
     )
+
+    process.env.stakingAddress = stakingProxy.address
 
     // Set stakingAddress in Governance
     const governance = await Governance.at(process.env.governanceAddress)

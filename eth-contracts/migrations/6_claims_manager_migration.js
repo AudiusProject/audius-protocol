@@ -1,10 +1,12 @@
 const contractConfig = require('../contract-config.js')
 const { encodeCall } = require('../utils/lib')
+const _lib = require('../utils/lib')
 
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
 const ClaimsManager = artifacts.require('ClaimsManager')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+const Governance = artifacts.require('Governance')
 
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
@@ -46,5 +48,16 @@ module.exports = (deployer, network, accounts) => {
     // Note that by default this is called from proxyDeployerAddress in ganache
     // During an actual migration, this step should be run independently
     await token.addMinter(claimsManagerProxy.address, { from: proxyDeployerAddress })
+
+    const guardianAddress = proxyDeployerAddress
+
+    // Set claims manager addreess in Staking.sol through governance
+    const governance = await Governance.at(process.env.governanceAddress)
+    const setStakingAddressTxReceeipt = await governance.guardianExecuteTransaction(
+      claimsManagerProxyKey,
+      _lib.toBN(0),
+      'setClaimsManagerAddress(address)',
+      _lib.abiEncode(['address'], [claimsManagerProxy.address]),
+      { from: guardianAddress })
   })
 }

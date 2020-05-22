@@ -1,6 +1,5 @@
 pragma solidity ^0.5.0;
 
-import "./interface/RegistryInterface.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
@@ -29,14 +28,9 @@ contract Staking is RegistryContract {
     }
 
     ERC20 internal stakingToken;
-    RegistryInterface registry = RegistryInterface(0);
 
     mapping (address => Account) internal accounts;
     Checkpointing.History internal totalStakedHistory;
-
-    bytes32 claimsManagerProxyKey;
-    bytes32 delegateManagerKey;
-    bytes32 serviceProviderFactoryKey;
 
     address governanceAddress;
     address claimsManagerAddress;
@@ -49,20 +43,34 @@ contract Staking is RegistryContract {
 
     function initialize(
         address _stakingToken,
-        address _registryAddress,
-        bytes32 _claimsManagerProxyKey,
-        bytes32 _delegateManagerKey,
-        bytes32 _serviceProviderFactoryKey
+        address _governanceAddress
     ) public initializer
     {
         require(Address.isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         stakingToken = ERC20(_stakingToken);
-        registry = RegistryInterface(_registryAddress);
-        claimsManagerProxyKey = _claimsManagerProxyKey;
-        delegateManagerKey = _delegateManagerKey;
-        serviceProviderFactoryKey = _serviceProviderFactoryKey;
+        governanceAddress = _governanceAddress;
 
         RegistryContract.initialize();
+    }
+
+    function setGovernanceAddress(address _governanceAddress) external {
+        require(msg.sender == governanceAddress, "Only governance");
+        governanceAddress = _governanceAddress;
+    }
+
+    function setClaimsManagerAddress(address _claimsManager) external {
+        require(msg.sender == governanceAddress, "Only governance");
+        claimsManagerAddress = _claimsManager;
+    }
+
+    function setServiceProviderFactoryAddress(address _spFactory) external {
+        require(msg.sender == governanceAddress, "Only governance");
+        serviceProviderFactoryAddress = _spFactory;
+    }
+
+    function setDelegateManagerAddress(address _delegateManager) external {
+        require(msg.sender == governanceAddress, "Only governance");
+        delegateManagerAddress = _delegateManager;
     }
 
     /* External functions */
@@ -73,7 +81,7 @@ contract Staking is RegistryContract {
     function stakeRewards(uint256 _amount, address _stakerAccount) external {
         _requireIsInitialized();
         require(
-            msg.sender == registry.getContract(claimsManagerProxyKey),
+            msg.sender == claimsManagerAddress,
             "Only callable from ClaimsManager"
         );
         _stakeFor(_stakerAccount, msg.sender, _amount);
@@ -87,7 +95,7 @@ contract Staking is RegistryContract {
     function updateClaimHistory(uint256 _amount, address _stakerAccount) external {
         _requireIsInitialized();
         require(
-            msg.sender == registry.getContract(claimsManagerProxyKey) || msg.sender == address(this),
+            msg.sender == claimsManagerAddress || msg.sender == address(this),
             "Only callable from ClaimsManager or Staking.sol"
         );
 
@@ -108,7 +116,7 @@ contract Staking is RegistryContract {
     {
         _requireIsInitialized();
         require(
-            msg.sender == registry.getContract(delegateManagerKey),
+            msg.sender == delegateManagerAddress,
             "Only callable from DelegateManager"
         );
 
@@ -134,7 +142,7 @@ contract Staking is RegistryContract {
     {
         _requireIsInitialized();
         require(
-            msg.sender == registry.getContract(serviceProviderFactoryKey),
+            msg.sender == serviceProviderFactoryAddress,
             "Only callable from ServiceProviderFactory"
         );
         _stakeFor(
@@ -155,7 +163,7 @@ contract Staking is RegistryContract {
     {
         _requireIsInitialized();
         require(
-            msg.sender == registry.getContract(serviceProviderFactoryKey),
+            msg.sender == serviceProviderFactoryAddress,
             "Only callable from ServiceProviderFactory"
         );
         _unstakeFor(
@@ -178,7 +186,7 @@ contract Staking is RegistryContract {
     ) external {
         _requireIsInitialized();
         require(
-            msg.sender == registry.getContract(delegateManagerKey),
+            msg.sender == delegateManagerAddress,
             "delegateStakeFor - Only callable from DelegateManager"
         );
         _stakeFor(
@@ -200,7 +208,7 @@ contract Staking is RegistryContract {
     ) external {
         _requireIsInitialized();
         require(
-            msg.sender == registry.getContract(delegateManagerKey),
+            msg.sender == delegateManagerAddress,
             "undelegateStakeFor - Only callable from DelegateManager"
         );
         _unstakeFor(
@@ -292,6 +300,22 @@ contract Staking is RegistryContract {
     function totalStaked() public view returns (uint256) {
         // we assume it's not possible to stake in the future
         return totalStakedHistory.getLast();
+    }
+
+    function getGovernanceAddress() external view returns (address addr) {
+        return governanceAddress;
+    }
+
+    function getClaimsManagerAddress() external view returns (address addr) {
+        return claimsManagerAddress;
+    }
+
+    function getServiceProviderFactoryAddress() external view returns (address addr) {
+        return serviceProviderFactoryAddress;
+    }
+
+    function getDelegateManagerAddress() external view returns (address addr) {
+        return delegateManagerAddress;
     }
 
     /* Internal functions */
