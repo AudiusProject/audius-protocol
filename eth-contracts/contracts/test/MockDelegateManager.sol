@@ -25,7 +25,7 @@ contract MockDelegateManager is RegistryContract {
     function testProcessClaim(
         address _claimer,
         uint _totalLockedForSP
-    ) external returns (uint newAccountTotal) {
+    ) external {
         ClaimsManager claimsManager = ClaimsManager(
             registry.getContract(claimsManagerProxyKey)
         );

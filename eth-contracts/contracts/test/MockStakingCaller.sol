@@ -15,6 +15,7 @@ contract MockStakingCaller is RegistryContract {
     Staking staking = Staking(0);
     ERC20 internal stakingToken;
     address stakingAddress;
+    bool withinBounds;
 
     function initialize(
         address _stakingAddress,
@@ -28,6 +29,7 @@ contract MockStakingCaller is RegistryContract {
         // Configure test min = 10 AUD
         min = 10 * 10**uint256(18);
         RegistryContract.initialize();
+        withinBounds = true;
     }
 
     // Test only function
@@ -70,6 +72,10 @@ contract MockStakingCaller is RegistryContract {
         staking.slash(_amount, _slashAddress);
     }
 
+    function updateBounds(bool _withinBounds) external {
+        withinBounds = _withinBounds;
+    }
+
     /// @notice Calculate the stake for an account based on total number of registered services
     function getServiceProviderDetails(address)
     external view returns (
@@ -80,7 +86,7 @@ contract MockStakingCaller is RegistryContract {
         uint minAccountStake,
         uint maxAccountStake)
     {
-        return (0, 0, true, 0, min, max);
+        return (0, 0, withinBounds, 1, min, max);
     }
 
     function isInitialized() external view returns (bool) {
