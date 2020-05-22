@@ -55,6 +55,6 @@ module.exports = (deployer, network, accounts) => {
     assert.equal(await token.isMinter.call(tokenOwnerAddress), false)
 
     // Export to env for reference in future migrations
-    process.env.tokenAddress = tokenProxy.address
+    process.env.tokenAddress = token.address
   })
 }

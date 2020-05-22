@@ -434,6 +434,48 @@ contract Governance is InitializableV2 {
         );
     }
 
+    function guardianExecuteTransactionOnAddress(
+        address _targetContractAddress,
+        uint256 _callValue,
+        string calldata _signature,
+        bytes calldata _callData
+    ) external
+    {
+        _requireIsInitialized();
+
+        require(
+            msg.sender == guardianAddress,
+            "Governance::guardianExecuteTransactionOnAddress: Only guardian."
+        );
+
+        require(
+            _targetContractAddress != address(0x00),
+            "Governance::guardianExecuteTransactionOnAddress: _targetContractRegistryKey must point to valid registered contract"
+        );
+
+        // Signature cannot be empty
+        require(
+            bytes(_signature).length != 0,
+            "Governance::guardianExecuteTransactionOnAddress: _signature cannot be empty."
+        );
+
+        (bool success, bytes memory returnData) = _executeTransaction(
+            _targetContractAddress,
+            _callValue,
+            _signature,
+            _callData
+        );
+
+        emit GuardianTransactionExecuted(
+            _targetContractAddress,
+            _callValue,
+            _signature,
+            _callData,
+            success,
+            returnData
+        );
+    }
+
     function transferGuardianship(address _newGuardianAddress) external {
         _requireIsInitialized();
 

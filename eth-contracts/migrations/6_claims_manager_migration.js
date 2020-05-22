@@ -1,4 +1,5 @@
 const contractConfig = require('../contract-config.js')
+const { encodeCall } = require('../utils/lib')
 const _lib = require('../utils/lib')
 const assert = require('assert')
 
@@ -31,6 +32,7 @@ module.exports = (deployer, network, accounts) => {
 
     const token = await AudiusToken.at(tokenAddress)
     const registry = await Registry.at(registryAddress)
+    const governance = await Governance.at(governanceAddress)
 
     // Deploy ClaimsManager logic and proxy contracts + register proxy
     const claimsManager0 = await deployer.deploy(ClaimsManager, { from: proxyDeployerAddress })
