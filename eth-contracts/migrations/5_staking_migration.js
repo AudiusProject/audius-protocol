@@ -19,6 +19,7 @@ module.exports = (deployer, network, accounts) => {
     const config = contractConfig[network]
     const proxyAdminAddress = config.proxyAdminAddress || accounts[10]
     const proxyDeployerAddress = config.proxyDeployerAddress || accounts[11]
+    const guardianAddress = config.guardianAddress || proxyDeployerAddress
 
     const tokenAddress = process.env.tokenAddress
     const registryAddress = process.env.registryAddress
@@ -38,8 +39,7 @@ module.exports = (deployer, network, accounts) => {
       staking0.address,
       proxyAdminAddress,
       initializeCallData,
-      registry.address,
-      governanceKey,
+      process.env.governanceAddress,
       { from: proxyDeployerAddress }
     )
     await registry.addContract(
@@ -52,7 +52,6 @@ module.exports = (deployer, network, accounts) => {
 
     // Set stakingAddress in Governance
     const governance = await Governance.at(process.env.governanceAddress)
-    const guardianAddress = proxyDeployerAddress
     const signatureSetStakingAddress = 'setStakingAddress(address)'
     const callValue0 = _lib.toBN(0)
     console.log(`StakingAddress ${stakingProxy.address}`)

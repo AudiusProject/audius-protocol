@@ -1,10 +1,12 @@
 const contractConfig = require('../contract-config.js')
-const { encodeCall } = require('../utils/lib')
+const _lib = require('../utils/lib')
 
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
 const DelegateManager = artifacts.require('DelegateManager')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+const Staking = artifacts.require('Staking')
+const Governance = artifacts.require('Governance')
 
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
@@ -17,6 +19,7 @@ module.exports = (deployer, network, accounts) => {
     const config = contractConfig[network]
     const proxyAdminAddress = config.proxyAdminAddress || accounts[10]
     const proxyDeployerAddress = config.proxyDeployerAddress || accounts[11]
+    const guardianAddress = config.guardianAddress || proxyDeployerAddress
 
     const tokenAddress = process.env.tokenAddress
     const registryAddress = process.env.registryAddress
@@ -26,7 +29,7 @@ module.exports = (deployer, network, accounts) => {
 
     // Deploy DelegateManager logic and proxy contracts + register proxy
     const delegateManager0 = await deployer.deploy(DelegateManager, { from: proxyDeployerAddress })
-    const initializeCallData = encodeCall(
+    const initializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
       [token.address, registry.address, governanceKey, stakingProxyKey, serviceProviderFactoryKey, claimsManagerProxyKey]
@@ -36,10 +39,22 @@ module.exports = (deployer, network, accounts) => {
       delegateManager0.address,
       proxyAdminAddress,
       initializeCallData,
-      registry.address,
-      governanceKey,
+      process.env.governanceAddress,
       { from: proxyDeployerAddress }
     )
     await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: proxyDeployerAddress })
+
+    // Set delegate manager address in Staking.sol through governance
+    const governance = await Governance.at(process.env.governanceAddress)
+    const setDelManagerAddressTxReceipt = await governance.guardianExecuteTransaction(
+      stakingProxyKey,
+      _lib.toBN(0),
+      'setDelegateManagerAddress(address)',
+      _lib.abiEncode(['address'], [delegateManagerProxy.address]),
+      { from: guardianAddress })
+    console.log(`DelegateManagerProxy Address: ${delegateManagerProxy.address}`)
+    const staking = await Staking.at(process.env.stakingAddress)
+    let delManAddrFromStaking = await staking.getDelegateManagerAddress()
+    console.log(`DelegateManagerProxy Address from Staking.sol: ${delManAddrFromStaking}`)
   })
 }

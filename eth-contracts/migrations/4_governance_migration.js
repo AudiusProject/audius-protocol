@@ -34,11 +34,13 @@ module.exports = (deployer, network, accounts) => {
       governance0.address,
       proxyAdminAddress,
       initializeCallData,
-      registry.address,
-      governanceKey,
+      governance0.address,
       { from: proxyDeployerAddress }
     )
     await registry.addContract(governanceKey, governanceProxy.address, { from: proxyDeployerAddress })
+
+    let proxyAtGovernanceAddress = await AudiusAdminUpgradeabilityProxy.at(governanceProxy.address)
+    await proxyAtGovernanceAddress.setAudiusGovernanceAddress(governanceProxy.address, { from: proxyAdminAddress })
 
     // Export to env for reference in future migrations
     process.env.governanceAddress = governanceProxy.address

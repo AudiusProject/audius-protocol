@@ -50,17 +50,18 @@ contract('Staking test', async (accounts) => {
     registry = await Registry.new()
     await registry.initialize()
 
+    // Register mock contract as claimsManager, spFactory, delegateManager
+    mockStakingCaller = await MockStakingCaller.new()
+    let mockGovAddress = mockStakingCaller.address
+
     // Create initialization data
     staking0 = await Staking.new({ from: proxyAdminAddress })
     stakingInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      ['address', 'address'],
       [
         token.address,
-        registry.address,
-        claimsManagerProxyKey,
-        delegateManagerKey,
-        serviceProviderFactoryKey
+        mockGovAddress
       ]
     )
 
@@ -73,8 +74,6 @@ contract('Staking test', async (accounts) => {
       { from: proxyDeployerAddress }
     )
 
-    // Register mock contract as claimsManager, spFactory, delegateManager
-    mockStakingCaller = await MockStakingCaller.new()
     await mockStakingCaller.initialize(proxy.address, token.address)
     await registry.addContract(claimsManagerProxyKey, mockStakingCaller.address)
     await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)

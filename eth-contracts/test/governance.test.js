@@ -229,7 +229,7 @@ contract('Governance.sol', async (accounts) => {
     )
   })
 
-  it('Initialize require statements', async () => {
+  it.only('Initialize require statements', async () => {
     // Requires non-zero _registryAddress
     let governance0 = await Governance.new({ from: proxyDeployerAddress })
     let governanceCallData = _lib.encodeCall(
