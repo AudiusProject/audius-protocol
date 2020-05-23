@@ -325,37 +325,11 @@ contract DelegateManager is RegistryContract {
             registry.getContract(serviceProviderFactoryKey)
         );
 
-        // Account for any pending locked up stake for the service provider
-        (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
-
-        // Process claim for msg.sender
-        // Total locked parameter is equal to delegate locked up stake + service provider locked up stake
-        ClaimsManager(
-            registry.getContract(claimsManagerKey)
-        ).processClaim(
-            msg.sender,
-            (spDelegateInfo[msg.sender].totalLockedUpStake.add(spLockedStake))
-        );
-
-        // Amount stored in staking contract for owner
-        uint totalBalanceInStaking = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        ).totalStakedFor(msg.sender);
-        require(totalBalanceInStaking > 0, "Stake required for claim");
-
-        // Amount in sp factory for claimer
-        (uint totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(msg.sender);
-
-        // Decrease total balance by any locked up stake
-        totalBalanceInSPFactory = totalBalanceInSPFactory.sub(spLockedStake);
-
-        // Require active stake to claim any rewards
-        require(totalBalanceInSPFactory > 0, "Service Provider stake required");
-
-        // Amount in delegate manager staked to service provider
-        uint totalBalanceOutsideStaking = (
-            totalBalanceInSPFactory.add(spDelegateInfo[msg.sender].totalDelegatedStake)
-        );
+        (
+            uint totalBalanceInStaking,
+            uint totalBalanceInSPFactory,
+            uint totalBalanceOutsideStaking
+        ) = _validateClaimRewards(msg.sender);
 
         // No-op if balance is already equivalent
         // This case can occur if no rewards due to bound violation or all stake is locked
@@ -391,7 +365,7 @@ contract DelegateManager is RegistryContract {
                 delegateStakeToSP = delegateStakeToSP.sub(undelegateRequests[delegator].amount);
             }
 
-            // Calculate rewards by ((delegateStakeToSP / totalBalanceOutsideStaking) * totalRewards)
+            // Calculate rewards by ((delegateStakeToSP / totalActiveFunds) * totalRewards)
             uint rewardsPriorToSPCut = (
               delegateStakeToSP.mul(totalRewards)
             ).div(totalActiveFunds);
@@ -428,6 +402,49 @@ contract DelegateManager is RegistryContract {
             /// newSpBalance = totalBalanceInSPFactory + spRewardShare + spDeployerCutRewards;
             totalBalanceInSPFactory.add(spRewardShare.add(spDeployerCutRewards))
         );
+    }
+
+    function _validateClaimRewards(address _sp)
+    internal returns (uint totalBalanceInStaking, uint totalBalanceInSPFactory, uint totalBalanceOutsideStaking)
+        {
+
+        ServiceProviderFactory spFactory = ServiceProviderFactory(
+            registry.getContract(serviceProviderFactoryKey)
+        );
+
+        // Account for any pending locked up stake for the service provider
+        (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(_sp);
+
+        // Process claim for _sp
+        // Total locked parameter is equal to delegate locked up stake + service provider locked up stake
+        ClaimsManager(
+            registry.getContract(claimsManagerKey)
+        ).processClaim(
+            _sp,
+            (spDelegateInfo[_sp].totalLockedUpStake.add(spLockedStake))
+        );
+
+        // Amount stored in staking contract for owner
+        uint _totalBalanceInStaking = Staking(
+            registry.getContract(stakingProxyOwnerKey)
+        ).totalStakedFor(_sp);
+        require(_totalBalanceInStaking > 0, "Stake required for claim");
+
+        // Amount in sp factory for claimer
+        (uint _totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(_sp);
+
+        // Decrease total balance by any locked up stake
+        _totalBalanceInSPFactory = _totalBalanceInSPFactory.sub(spLockedStake);
+
+        // Require active stake to claim any rewards
+        require(_totalBalanceInSPFactory > 0, "Service Provider stake required");
+
+        // Amount in delegate manager staked to service provider
+        uint _totalBalanceOutsideStaking = (
+            _totalBalanceInSPFactory.add(spDelegateInfo[_sp].totalDelegatedStake)
+        );
+
+        return (_totalBalanceInStaking, _totalBalanceInSPFactory, _totalBalanceOutsideStaking);
     }
 
     /**
