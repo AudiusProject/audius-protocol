@@ -19,16 +19,18 @@ const { expectEvent } = require('@openzeppelin/test-helpers')
 
 contract('Upgrade proxy test', async (accounts) => {
   let proxy
-  let token
   let staking0
   let staking
   let stakingUpgraded
   let stakingInitializeData
   let mockStakingCaller
   let mockGovAddr
-  let registry
+  let registry, governance, token
 
-  const [deployerAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
+  const [, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const tokenOwnerAddress = proxyDeployerAddress
+  const guardianAddress = proxyDeployerAddress
 
   const approveAndStake = async (amount, staker, staking) => {
     // Transfer default tokens to
@@ -42,10 +44,30 @@ contract('Upgrade proxy test', async (accounts) => {
   }
 
   beforeEach(async () => {
-    token = await AudiusToken.new({ from: accounts[0] })
-    await token.initialize()
-    registry = await Registry.new()
-    await registry.initialize()
+    // Deploy registry
+    registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
+
+    // Deploy + register Governance
+    governance = await _lib.deployGovernance(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress,
+      registry,
+      votingPeriod,
+      votingQuorum,
+      guardianAddress
+    )
+    // await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
+
+    // Deploy + register AudiusToken
+    token = await _lib.deployToken(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress,
+      tokenOwnerAddress,
+      governance.address
+    )
+    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
 
     staking0 = await Staking.new({ from: proxyAdminAddress })
     stakingUpgraded = await StakingUpgraded.new({ from: proxyAdminAddress })
