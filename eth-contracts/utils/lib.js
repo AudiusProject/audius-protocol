@@ -171,7 +171,7 @@ export const initiateFundingRound = async (governance, claimsManagerRegKey, guar
   const tx = parseTx(txReceipt)
 
   assert.equal(tx.event.args.success, expectedSuccess, 'Expected event.args.success')
-  
+
   return tx
 }
 
@@ -306,13 +306,15 @@ export const configureStakingContractAddresses = async (
   claimsManagerAddress,
   delegateManagerAddress
 ) => {
+  console.log(`configureStakingContractAddresses::guardianAddress : ${guardianAddress}`)
   // Configure staking address references from governance contract
-  await governance.guardianExecuteTransaction(
+  let tx = await governance.guardianExecuteTransaction(
     stakingProxyKey,
     toBN(0),
     'setServiceProviderFactoryAddress(address)',
     abiEncode(['address'], [spAddress]),
     { from: guardianAddress })
+  // console.dir(tx, { depth: 5 })
   await governance.guardianExecuteTransaction(
     stakingProxyKey,
     toBN(0),

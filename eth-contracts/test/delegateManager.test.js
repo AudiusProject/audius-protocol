@@ -55,6 +55,7 @@ contract('DelegateManager', async (accounts) => {
       VOTING_QUORUM,
       guardianAddress
     )
+    console.log(await governance.getGuardianAddress())
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
 
     // Deploy + register Staking
@@ -170,6 +171,7 @@ contract('DelegateManager', async (accounts) => {
       stakingProxy.address
     )
     // ---- Set up staking contract permissions
+    // TODO: FIGURE OUT WHY BELOW IS FAILING ONLY HERE
     await _lib.configureStakingContractAddresses(
       governance,
       guardianAddress,
@@ -179,9 +181,6 @@ contract('DelegateManager', async (accounts) => {
       claimsManagerProxy.address,
       delegateManagerProxy.address
     )
-    console.log(serviceProviderFactory.address)
-    console.log(await staking.getServiceProviderFactoryAddress())
-    console.log(await staking.getClaimsManagerAddress())
   })
 
   /* Helper functions */

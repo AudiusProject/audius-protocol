@@ -119,34 +119,27 @@ contract('ServiceProvider test', async (accounts) => {
     registry = await Registry.at(registryProxy.address)
 
     // Deploy + register Governance
-    const governance0 = await Governance.new({ from: proxyDeployerAddress })
-    const governanceInitializeData = _lib.encodeCall(
-      'initialize',
-      ['address', 'bytes32', 'uint256', 'uint256', 'address'],
-      [registry.address, stakingProxyKey, votingPeriod, votingQuorum, guardianAddress]
-    )
-    const governanceProxy = await AudiusAdminUpgradeabilityProxy.new(
-      governance0.address,
+    governance = await _lib.deployGovernance(
+      artifacts,
       proxyAdminAddress,
-      governanceInitializeData,
-      registry.address,
+      proxyDeployerAddress,
+      registry,
+      stakingProxyKey,
       governanceKey,
-      { from: proxyDeployerAddress }
+      votingPeriod,
+      votingQuorum,
+      guardianAddress
     )
-    governance = await Governance.at(governanceProxy.address)
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
 
     // Deploy + register Staking
     staking0 = await Staking.new({ from: proxyDeployerAddress })
     stakingInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      ['address', 'address'],
       [
         token.address,
-        registry.address,
-        claimsManagerProxyKey,
-        delegateManagerKey,
-        serviceProviderFactoryKey
+        governance.address
       ]
     )
 
@@ -154,8 +147,7 @@ contract('ServiceProvider test', async (accounts) => {
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
 
@@ -163,17 +155,14 @@ contract('ServiceProvider test', async (accounts) => {
     await registry.addContract(stakingProxyKey, proxy.address, { from: proxyDeployerAddress })
     // Deploy + register ServiceTypeManager
     let serviceTypeInitializeData = _lib.encodeCall(
-      'initialize',
-      ['address', 'bytes32'],
-      [registry.address, governanceKey]
+      'initialize', ['address'], [governance.address]
     )
     let serviceTypeManager0 = await ServiceTypeManager.new({ from: proxyDeployerAddress })
     let serviceTypeManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceTypeManager0.address,
       proxyAdminAddress,
       serviceTypeInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyAdminAddress }
     )
     serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
@@ -190,8 +179,7 @@ contract('ServiceProvider test', async (accounts) => {
       claimsManager0.address,
       proxyAdminAddress,
       claimsInitializeCallData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
@@ -223,8 +211,7 @@ contract('ServiceProvider test', async (accounts) => {
       serviceProviderFactory0.address,
       proxyAdminAddress,
       serviceProviderFactoryCalldata,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyAdminAddress }
     )
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
@@ -232,6 +219,23 @@ contract('ServiceProvider test', async (accounts) => {
 
     // Transfer 1000 tokens to accounts[11]
     await token.transfer(accounts[11], INITIAL_BAL, { from: proxyDeployerAddress })
+    // ---- Configuring addresses
+    await _lib.configureGovernanceStakingAddress(
+      governance,
+      governanceKey,
+      guardianAddress,
+      staking.address
+    )
+    // ---- Set up staking contract permissions
+    await _lib.configureStakingContractAddresses(
+      governance,
+      guardianAddress,
+      stakingProxyKey,
+      staking,
+      serviceProviderFactoryProxy.address,
+      claimsManagerProxy.address,
+      _lib.addressZero
+    )
   })
 
   describe('Registration flow', () => {
@@ -475,7 +479,7 @@ contract('ServiceProvider test', async (accounts) => {
       )
     })
 
-    it.only('Confirm correct stake for account', async () => {
+    it('Confirm correct stake for account', async () => {
       assert.isTrue((await getStakeAmountForAccount(stakerAccount)).eq(DEFAULT_AMOUNT))
     })
 
