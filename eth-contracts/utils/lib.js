@@ -1,5 +1,6 @@
 const ethers = require('ethers')
 const abi = require('ethereumjs-abi')
+const assert = require('assert')
 
 /** ensures use of pre-configured web3 if provided */
 let web3New
@@ -340,4 +341,19 @@ export const configureStakingContractAddresses = async (
   assert.equal(spAddress, await staking.getServiceProviderFactoryAddress(), 'Unexpected sp address')
   assert.equal(claimsManagerAddress, await staking.getClaimsManagerAddress(), 'Unexpected claims address')
   assert.equal(delegateManagerAddress, await staking.getDelegateManagerAddress(), 'Unexpected delegate manager address')
+}
+
+export const registerContract = async (governance, contractKey, contractAddress, guardianAddress, expectedSuccess = true) => {
+  const txR = await governance.guardianExecuteTransaction(
+    web3New.utils.utf8ToHex("registry"),
+    toBN(0),
+    'addContract(bytes32,address)',
+    abiEncode(['bytes32', 'address'], [contractKey, contractAddress]),
+    { from: guardianAddress }
+  )
+
+  const tx = parseTx(txR)
+  assert.equal(tx.event.args.success, expectedSuccess)
+
+  return tx
 }

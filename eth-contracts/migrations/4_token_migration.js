@@ -1,10 +1,11 @@
 const contractConfig = require('../contract-config.js')
-const { encodeCall } = require('../utils/lib')
+const _lib = require('../utils/lib')
 const assert = require('assert')
 
 const AudiusToken = artifacts.require('AudiusToken')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Registry = artifacts.require('Registry')
+const Governance = artifacts.require('Governance')
 
 const tokenRegKey = web3.utils.utf8ToHex('Token')
 
@@ -15,16 +16,15 @@ module.exports = (deployer, network, accounts) => {
     const config = contractConfig[network]
     const proxyAdminAddress = config.proxyAdminAddress || accounts[10]
     const proxyDeployerAddress = config.proxyDeployerAddress || accounts[11]
+    const guardianAddress = config.guardianAddress || proxyDeployerAddress
     const tokenOwnerAddress = proxyDeployerAddress
 
-    const registryAddress = process.env.registryAddress
     const governanceAddress = process.env.governanceAddress
-
-    const registry = await Registry.at(registryAddress)
+    const governance = await Governance.at(governanceAddress)
 
     // Deploy AudiusToken logic and proxy contracts
     const token0 = await deployer.deploy(AudiusToken, { from: proxyDeployerAddress })
-    const initializeCallData = encodeCall(
+    const initializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address'],
       [tokenOwnerAddress, governanceAddress]
@@ -40,7 +40,7 @@ module.exports = (deployer, network, accounts) => {
     const token = await AudiusToken.at(tokenProxy.address)
 
     // Register token
-    await registry.addContract(tokenRegKey, tokenProxy.address, { from: proxyDeployerAddress })
+    await _lib.registerContract(governance, tokenRegKey, tokenProxy.address, guardianAddress)
 
     // Confirm initial token supply
     assert.equal(await token.totalSupply.call(), INITIAL_SUPPLY)

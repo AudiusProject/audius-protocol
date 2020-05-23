@@ -1266,7 +1266,7 @@ contract('Governance.sol', async (accounts) => {
       
       // Confirm only current guardianAddress can transfer guardianship
       await _lib.assertRevert(
-        governance.transferGuardianship(newGuardianAddress, { from: accounts[30] }),
+        governance.transferGuardianship(newGuardianAddress, { from: accounts[18] }),
         "Governance::guardianExecuteTransaction: Only guardian."
       )
       
