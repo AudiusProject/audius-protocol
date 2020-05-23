@@ -147,11 +147,13 @@ contract('ClaimsManager', async (accounts) => {
       guardianAddress,
       claimsManagerProxyKey,
       claimsManager,
-      staking.address
+      staking.address,
+      mockStakingCaller.address,
+      mockDelegateManager.address
     )
   })
 
-  it.only('Initiate a claim', async () => {
+  it('Initiate a claim', async () => {
     // Get amount staked
     let totalStaked = await staking.totalStaked()
     assert.isTrue(

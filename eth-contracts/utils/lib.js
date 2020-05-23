@@ -348,7 +348,9 @@ export const configureClaimsManagerContractAddresses = async (
   guardianAddress,
   claimsManagerRegKey,
   claimsManager,
-  stakingAddress
+  stakingAddress,
+  spFactoryAddress,
+  delegateManagerAddress
 ) => {
   await governance.guardianExecuteTransaction(
     claimsManagerRegKey,
@@ -357,4 +359,18 @@ export const configureClaimsManagerContractAddresses = async (
     abiEncode(['address'], [stakingAddress]),
     { from: guardianAddress })
   assert.equal(stakingAddress, await claimsManager.getStakingAddress(), 'Unexpected staking address')
+  await governance.guardianExecuteTransaction(
+    claimsManagerRegKey,
+    toBN(0),
+    'setServiceProviderFactoryAddress(address)',
+    abiEncode(['address'], [spFactoryAddress]),
+    { from: guardianAddress })
+  assert.equal(spFactoryAddress, await claimsManager.getServiceProviderFactoryAddress(), 'Unexpected sp address')
+  await governance.guardianExecuteTransaction(
+    claimsManagerRegKey,
+    toBN(0),
+    'setDelegateManagerAddress(address)',
+    abiEncode(['address'], [delegateManagerAddress]),
+    { from: guardianAddress })
+  assert.equal(delegateManagerAddress, await claimsManager.getDelegateManagerAddress(), 'Unexpected delegate managere')
 }
