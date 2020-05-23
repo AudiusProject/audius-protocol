@@ -280,6 +280,22 @@ contract Staking is InitializableV2 {
         return totalStakedHistory.get(_blockNumber.toUint64());
     }
 
+    function getGovernanceAddress() external view returns (address addr) {
+        return governanceAddress;
+    }
+
+    function getClaimsManagerAddress() external view returns (address addr) {
+        return claimsManagerAddress;
+    }
+
+    function getServiceProviderFactoryAddress() external view returns (address addr) {
+        return serviceProviderFactoryAddress;
+    }
+
+    function getDelegateManagerAddress() external view returns (address addr) {
+        return delegateManagerAddress;
+    }
+
     /* Public functions */
 
     /**
@@ -299,22 +315,6 @@ contract Staking is InitializableV2 {
     function totalStaked() public view returns (uint256) {
         // we assume it's not possible to stake in the future
         return totalStakedHistory.getLast();
-    }
-
-    function getGovernanceAddress() external view returns (address addr) {
-        return governanceAddress;
-    }
-
-    function getClaimsManagerAddress() external view returns (address addr) {
-        return claimsManagerAddress;
-    }
-
-    function getServiceProviderFactoryAddress() external view returns (address addr) {
-        return serviceProviderFactoryAddress;
-    }
-
-    function getDelegateManagerAddress() external view returns (address addr) {
-        return delegateManagerAddress;
     }
 
     /* Internal functions */
