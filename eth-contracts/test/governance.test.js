@@ -18,6 +18,7 @@ const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManagerKey')
+const tokenRegKey = web3.utils.utf8ToHex('Token')
 
 const Outcome = Object.freeze({
   InProgress: 0,
@@ -34,7 +35,7 @@ const Vote = Object.freeze({
 })
 
 contract('Governance.sol', async (accounts) => {
-  let token, registry, staking, serviceTypeManager, serviceProviderFactory
+  let token, registry, staking, stakingProxy, serviceTypeManager, serviceProviderFactory
   let claimsManager, delegateManager, governance
 
   const votingPeriod = 10
@@ -42,6 +43,7 @@ contract('Governance.sol', async (accounts) => {
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
 
   const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
@@ -62,7 +64,6 @@ contract('Governance.sol', async (accounts) => {
    * Deploy Registry, AudiusAdminUpgradeabilityProxy, AudiusToken, Staking, and Governance contracts
    */
   beforeEach(async () => {
-    token = await _lib.deployToken(artifacts, proxyAdminAddress, proxyDeployerAddress)
     registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
 
     // Deploy + register Governance contract
@@ -71,13 +72,21 @@ contract('Governance.sol', async (accounts) => {
       proxyAdminAddress,
       proxyDeployerAddress,
       registry,
-      stakingProxyKey,
-      governanceKey,
       votingPeriod,
       votingQuorum,
       guardianAddress
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
+
+    // Deploy + register token
+    token = await _lib.deployToken(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress,
+      tokenOwnerAddress,
+      governance.address
+    )
+    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
 
     // Deploy + register Staking
     const staking0 = await Staking.new({ from: proxyDeployerAddress })
@@ -89,7 +98,7 @@ contract('Governance.sol', async (accounts) => {
         governance.address
       ]
     )
-    const stakingProxy = await AudiusAdminUpgradeabilityProxy.new(
+    stakingProxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
@@ -167,7 +176,14 @@ contract('Governance.sol', async (accounts) => {
     )
 
     // Register new contract as a minter, from the same address that deployed the contract
-    await token.addMinter(claimsManager.address, { from: proxyDeployerAddress })
+    const addMinterTxR = await governance.guardianExecuteTransaction(
+      tokenRegKey,
+      callValue0,
+      'addMinter(address)',
+      _lib.abiEncode(['address'], [claimsManager.address]),
+      { from: guardianAddress }
+    )
+    assert.equal(_lib.parseTx(addMinterTxR).event.args.success, true)
 
     // Deploy + register DelegateManager contract
     const delegateManagerInitializeData = _lib.encodeCall(
@@ -984,7 +1000,7 @@ contract('Governance.sol', async (accounts) => {
       
       // Define vars
       const targetContractRegistryKey = stakingProxyKey
-      const targetContractAddress = stakingProxy.address
+      const targetContractAddress = staking.address
       const callValue = _lib.audToWei(0)
       const signature = 'upgradeTo(address)'
       const callData = _lib.abiEncode(['address'], [stakingUpgraded0.address])
@@ -1058,7 +1074,7 @@ contract('Governance.sol', async (accounts) => {
     })
   })
 
-  describe.only('Guardian execute transactions', async () => {    
+  describe('Guardian execute transactions', async () => {    
     let slashAmount, targetAddress, targetContractRegistryKey, targetContractAddress
     let callValue, signature, callData, returnData
 

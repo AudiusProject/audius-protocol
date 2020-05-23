@@ -175,11 +175,10 @@ export const initiateFundingRound = async (governance, claimsManagerRegKey, guar
   return tx
 }
 
-export const deployToken = async (artifacts,
+export const deployToken = async (
+  artifacts,
   proxyAdminAddress,
   proxyDeployerAddress,
-  registry,
-  governanceRegKey,
   tokenOwnerAddress,
   governanceAddress
 ) => {
@@ -196,8 +195,7 @@ export const deployToken = async (artifacts,
     token0.address,
     proxyAdminAddress,
     tokenInitData,
-    registry.address,
-    governanceRegKey,
+    governanceAddress,
     { from: proxyDeployerAddress }
   )
   const token = await AudiusToken.at(tokenProxy.address)
@@ -227,8 +225,6 @@ export const deployGovernance = async (
   proxyAdminAddress,
   proxyDeployerAddress,
   registry,
-  stakingRegKey,
-  governanceRegKey,
   votingPeriod,
   votingQuorum,
   guardianAddress

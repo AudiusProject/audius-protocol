@@ -18,6 +18,7 @@ module.exports = (deployer, network, accounts) => {
     const config = contractConfig[network]
     const proxyAdminAddress = config.proxyAdminAddress || accounts[10]
     const proxyDeployerAddress = config.proxyDeployerAddress || accounts[11]
+    const guardianAddress = config.guardianAddress || proxyDeployerAddress
 
     const registryAddress = process.env.registryAddress
     const registry = await Registry.at(registryAddress)
@@ -27,7 +28,7 @@ module.exports = (deployer, network, accounts) => {
     const initializeCallData = encodeCall(
       'initialize',
       ['address', 'uint256', 'uint256', 'address'],
-      [registryAddress, VotingPeriod, VotingQuorum, proxyDeployerAddress]
+      [registryAddress, VotingPeriod, VotingQuorum, guardianAddress]
     )
     const governanceProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,

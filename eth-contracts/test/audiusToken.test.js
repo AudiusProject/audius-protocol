@@ -1,7 +1,6 @@
 import * as _lib from '../utils/lib.js'
 
-const governanceRegKey = web3.utils.utf8ToHex('Governance')
-const stakingRegKey = web3.utils.utf8ToHex('StakingProxy')
+const tokenRegKey = web3.utils.utf8ToHex('Token')
 
 contract('AudiusToken', async (accounts) => {
   let token, governance
@@ -29,21 +28,22 @@ contract('AudiusToken', async (accounts) => {
       proxyAdminAddress,
       proxyDeployerAddress,
       registry,
-      stakingRegKey,
-      governanceRegKey,
       votingPeriod,
       votingQuorum,
       guardianAddress
     )
 
-    token = await _lib.deployToken(artifacts,
+    token = await _lib.deployToken(
+      artifacts,
       proxyAdminAddress,
       proxyDeployerAddress,
       registry,
-      governanceRegKey,
       tokenOwnerAddress,
       governance.address
     )
+
+    // Register token
+    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
   })
 
   it('Initial token properties', async () => {
@@ -119,8 +119,8 @@ contract('AudiusToken', async (accounts) => {
     )
 
     // mint tokens from governance
-    const mintTxR = await governance.guardianExecuteTransactionOnAddress(
-      token.address,
+    const mintTxR = await governance.guardianExecuteTransaction(
+      tokenRegKey,
       callValue0,
       'mint(address,uint256)',
       _lib.abiEncode(['address', 'uint256'], [accounts[11], 1000]),
@@ -140,8 +140,8 @@ contract('AudiusToken', async (accounts) => {
     )
 
     // add new minter from governance
-    const addMinterTxR = await governance.guardianExecuteTransactionOnAddress(
-      token.address,
+    const addMinterTxR = await governance.guardianExecuteTransaction(
+      tokenRegKey,
       callValue0,
       'addMinter(address)',
       _lib.abiEncode(['address'], [accounts[12]]),
@@ -179,8 +179,8 @@ contract('AudiusToken', async (accounts) => {
     )
 
     // Pause token contract from governance
-    const pauseTxR = await governance.guardianExecuteTransactionOnAddress(
-      token.address,
+    const pauseTxR = await governance.guardianExecuteTransaction(
+      tokenRegKey,
       callValue0,
       'pause()',
       _lib.abiEncode([], []),
@@ -199,8 +199,8 @@ contract('AudiusToken', async (accounts) => {
 
     // Add new pauser from governance
     const newPauser = accounts[5]
-    const addPauserTxR = await governance.guardianExecuteTransactionOnAddress(
-      token.address,
+    const addPauserTxR = await governance.guardianExecuteTransaction(
+      tokenRegKey,
       callValue0,
       'addPauser(address)',
       _lib.abiEncode(['address'], [newPauser]),
