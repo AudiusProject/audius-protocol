@@ -258,7 +258,7 @@ contract('Governance.sol', async (accounts) => {
     )
   })
 
-  it.only('Initialize require statements', async () => {
+  it('Initialize require statements', async () => {
     // Requires non-zero _registryAddress
     let governance0 = await Governance.new({ from: proxyDeployerAddress })
     let governanceCallData = _lib.encodeCall(
@@ -833,13 +833,17 @@ contract('Governance.sol', async (accounts) => {
         )
       })
 
-      it('evaluateProposal fails after targetContract has been upgraded', async () => {
+      it.only('evaluateProposal fails after targetContract has been upgraded', async () => {
         const testContract = await TestContract.new()
         await testContract.initialize(registry.address)
 
+        console.log('1')
+        console.log(targetContractRegistryKey)
+        console.log(delegateManagerKey)
         // Upgrade contract registered at targetContractRegistryKey
         await registry.upgradeContract(targetContractRegistryKey, testContract.address, { from: proxyDeployerAddress })
-        
+        console.log('2')
+
         await _lib.assertRevert(
           // Call evaluateProposalOutcome()
           governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
