@@ -615,27 +615,27 @@ contract ServiceProviderFactory is InitializableV2 {
     }
 
     function setGovernanceAddress(address _address) external {
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
         governanceAddress = _address;
     }
 
     function setStakingAddress(address _address) external {
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
         stakingAddress = _address;
     }
 
     function setDelegateManagerAddress(address _address) external {
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
         delegateManagerAddress = _address;
     }
 
     function setServiceTypeManagerAddress(address _address) external {
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
         serviceTypeManagerAddress = _address;
     }
 
     function setClaimsManagerAddress(address _address) external {
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
         claimsManagerAddress = _address;
     }
 

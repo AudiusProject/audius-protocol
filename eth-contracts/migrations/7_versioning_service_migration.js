@@ -8,6 +8,7 @@ const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Governance = artifacts.require('Governance')
+const ClaimsManager = artifacts.require('ClaimsManager')
 
 const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -156,7 +157,17 @@ module.exports = (deployer, network, accounts) => {
     console.log(`ServiceTypeManager Address: ${serviceTypeManager.address}`)
     let serviceManagerAddressFromSPFactory = await serviceProviderFactory.getServiceTypeManagerAddress()
     console.log(`ServiceTypeManager Address from ServiceProviderFactory.sol: ${serviceManagerAddressFromSPFactory}`)
-    // TODO - add ClaimsManager
+
+    // Set ClaimsManager address in ServiceProviderFactory.sol through governance
+    const setClaimsManagerInSPFactoryTxReceipt = await governance.guardianExecuteTransaction(
+      serviceProviderFactoryKey,
+      _lib.toBN(0),
+      'setClaimsManagerAddress(address)',
+      _lib.abiEncode(['address'], [process.env.claimsManagerAddress]),
+      { from: guardianAddress })
+    const claimsManager = await ClaimsManager.at(process.env.claimsManagerAddress)
+    let claimsManagerAddressFromSPFactory = await serviceProviderFactory.getClaimsManagerAddress()
+    console.log(`ClaimsManager Address from ServiceProviderFactory.sol: ${claimsManagerAddressFromSPFactory}`)
     // TODO - add DelegateManager
   })
 }

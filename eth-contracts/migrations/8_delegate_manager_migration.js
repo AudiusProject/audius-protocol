@@ -7,6 +7,7 @@ const DelegateManager = artifacts.require('DelegateManager')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const Governance = artifacts.require('Governance')
+const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
@@ -56,5 +57,16 @@ module.exports = (deployer, network, accounts) => {
     const staking = await Staking.at(process.env.stakingAddress)
     let delManAddrFromStaking = await staking.getDelegateManagerAddress()
     console.log(`DelegateManagerProxy Address from Staking.sol: ${delManAddrFromStaking}`)
+
+    // Set delegate manager address in ServiceProviderFactory.sol through governance
+    const setDelManagerAddressInSPFactoryTxReceipt = await governance.guardianExecuteTransaction(
+      serviceProviderFactoryKey,
+      _lib.toBN(0),
+      'setDelegateManagerAddress(address)',
+      _lib.abiEncode(['address'], [delegateManagerProxy.address]),
+      { from: guardianAddress })
+    const SPFactory = await ServiceProviderFactory.at(process.env.serviceProviderFactoryAddress)
+    let delManAddrFromSPFactory = await SPFactory.getDelegateManagerAddress()
+    console.log(`DelegateManagerProxy Address from ServiceProviderFactory.sol: ${delManAddrFromSPFactory}`)
   })
 }
