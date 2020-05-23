@@ -12,8 +12,11 @@ const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
+const tokenRegKey = web3.utils.utf8ToHex('TokenKey')
 
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
+const VOTING_PERIOD = 10
+const VOTING_QUORUM = 1
 
 const { expectEvent } = require('@openzeppelin/test-helpers')
 
@@ -34,7 +37,7 @@ contract('Upgrade proxy test', async (accounts) => {
 
   const approveAndStake = async (amount, staker, staking) => {
     // Transfer default tokens to
-    await token.transfer(staker, amount, { from: deployerAddress })
+    await token.transfer(staker, amount, { from: proxyDeployerAddress })
     // allow Staking app to move owner tokens
     await token.approve(staking.address, amount, { from: staker })
     // stake tokens
@@ -53,8 +56,8 @@ contract('Upgrade proxy test', async (accounts) => {
       proxyAdminAddress,
       proxyDeployerAddress,
       registry,
-      votingPeriod,
-      votingQuorum,
+      VOTING_PERIOD,
+      VOTING_QUORUM,
       guardianAddress
     )
     // await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
@@ -93,10 +96,10 @@ contract('Upgrade proxy test', async (accounts) => {
 
     // Register mock contract as claimsManager, spFactory, delegateManager
     await mockStakingCaller.initialize(proxy.address, token.address)
-    await registry.addContract(claimsManagerProxyKey, mockStakingCaller.address)
-    await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
-    await registry.addContract(delegateManagerKey, mockStakingCaller.address)
-    await registry.addContract(governanceKey, mockStakingCaller.address)
+    await registry.addContract(claimsManagerProxyKey, mockStakingCaller.address, { from: proxyDeployerAddress })
+    await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address, { from: proxyDeployerAddress })
+    await registry.addContract(delegateManagerKey, mockStakingCaller.address, { from: proxyDeployerAddress })
+    await registry.addContract(governanceKey, mockStakingCaller.address, { from: proxyDeployerAddress })
 
     // Setup permissioning to mock caller
     await mockStakingCaller.configurePermissions()
@@ -208,8 +211,8 @@ contract('Upgrade proxy test', async (accounts) => {
       const spAccount2 = accounts[4]
 
       // Transfer 1000 tokens to accounts[1] and accounts[2]
-      await token.transfer(spAccount1, 1000, { from: deployerAddress })
-      await token.transfer(spAccount2, 1000, { from: deployerAddress })
+      await token.transfer(spAccount1, 1000, { from: proxyDeployerAddress })
+      await token.transfer(spAccount2, 1000, { from: proxyDeployerAddress })
 
       // Permission test address as caller
       staking = await Staking.at(proxy.address)
