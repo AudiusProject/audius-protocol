@@ -72,10 +72,7 @@ contract('ClaimsManager', async (accounts) => {
     const stakingInitializeData = _lib.encodeCall(
       'initialize',
       ['address', 'address'],
-      [
-        token.address,
-        governance.address
-      ]
+      [token.address, governance.address]
     )
     stakingProxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
@@ -101,8 +98,8 @@ contract('ClaimsManager', async (accounts) => {
     claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
     const claimsInitializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey, governanceKey]
+      ['address', 'address'],
+      [token.address, governance.address]
     )
     claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       claimsManager0.address,
@@ -143,9 +140,18 @@ contract('ClaimsManager', async (accounts) => {
       claimsManagerProxy.address,
       mockDelegateManager.address
     )
+
+    // --- Set up claims manager contract permissions
+    await _lib.configureClaimsManagerContractAddresses(
+      governance,
+      guardianAddress,
+      claimsManagerProxyKey,
+      claimsManager,
+      staking.address
+    )
   })
 
-  it('Initiate a claim', async () => {
+  it.only('Initiate a claim', async () => {
     // Get amount staked
     let totalStaked = await staking.totalStaked()
     assert.isTrue(
