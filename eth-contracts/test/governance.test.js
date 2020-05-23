@@ -833,7 +833,7 @@ contract('Governance.sol', async (accounts) => {
         )
       })
 
-      it.only('evaluateProposal fails after targetContract has been upgraded', async () => {
+      it('evaluateProposal fails after targetContract has been upgraded', async () => {
         const testContract = await TestContract.new()
         await testContract.initialize(registry.address)
 
