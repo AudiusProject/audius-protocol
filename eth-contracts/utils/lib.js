@@ -279,3 +279,49 @@ export const slash = async (slashAmount, slashAccount, governance, delegateManag
 
   return tx
 }
+
+// Set staking address in Governance
+export const configureGovernanceStakingAddress = async (
+  governance,
+  governanceKey,
+  guardianAddress,
+  stakingAddress
+) => {
+  await governance.guardianExecuteTransaction(
+    governanceKey,
+    toBN(0),
+    'setStakingAddress(address)',
+    abiEncode(['address'], [stakingAddress]),
+    { from: guardianAddress }
+  )
+}
+
+// Test helper to set staking addresses
+export const configureStakingContractAddresses = async (
+  governance,
+  guardianAddress,
+  stakingProxyKey,
+  spAddress,
+  claimsManagerAddress,
+  delegateManagerAddress
+) => {
+  // Configure staking address references from governance contract
+  await governance.guardianExecuteTransaction(
+    stakingProxyKey,
+    toBN(0),
+    'setServiceProviderFactoryAddress(address)',
+    abiEncode(['address'], [spAddress]),
+    { from: guardianAddress })
+  await governance.guardianExecuteTransaction(
+    stakingProxyKey,
+    toBN(0),
+    'setClaimsManagerAddress(address)',
+    abiEncode(['address'], [claimsManagerAddress]),
+    { from: guardianAddress })
+  await governance.guardianExecuteTransaction(
+    stakingProxyKey,
+    toBN(0),
+    'setDelegateManagerAddress(address)',
+    abiEncode(['address'], [delegateManagerAddress]),
+    { from: guardianAddress })
+}
