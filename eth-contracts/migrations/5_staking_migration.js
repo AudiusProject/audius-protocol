@@ -52,15 +52,17 @@ module.exports = (deployer, network, accounts) => {
 
     // Set stakingAddress in Governance
     const governance = await Governance.at(process.env.governanceAddress)
-    const callValue0 = _lib.toBN(0)
+    
     console.log(`StakingAddress ${stakingProxy.address}`)
-    const callDataSetStakingAddr = _lib.abiEncode(['address'], [stakingProxy.address])
     const setStakingAddressTxReceeipt = await governance.guardianExecuteTransaction(
       governanceKey,
       _lib.toBN(0),
       'setStakingAddress(address)',
-      callDataSetStakingAddr,
-      { from: guardianAddress })
+      _lib.abiEncode(['address'], [stakingProxy.address]),
+      { from: guardianAddress }
+    )
+    // TODO assert
+
     let stakingFromGov = await governance.getStakingAddress()
     console.log(`StakingAddressFromGov ${stakingFromGov}`)
   })

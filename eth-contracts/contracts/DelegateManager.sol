@@ -567,6 +567,8 @@ contract DelegateManager is RegistryContract {
         minDelegationAmount = _minDelegationAmount;
     }
 
+    // ========================================= View Functions =========================================
+
     /**
      * @notice List of delegators for a given service provider
      */
@@ -662,6 +664,8 @@ contract DelegateManager is RegistryContract {
         // Not found
         return false;
     }
+
+    // ========================================= Internal functions =========================================
 
     /**
      * @notice Boolean indicating whether a claim is pending for this service provider

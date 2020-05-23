@@ -2,19 +2,20 @@ pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "./Staking.sol";
-import "./interface/RegistryInterface.sol";
+import "./registry/Registry.sol";
 import "./InitializableV2.sol";
 
 
 contract Governance is InitializableV2 {
     using SafeMath for uint;
-    RegistryInterface registry;
+
+    Registry private registry;
     address stakingAddress;
 
-    uint256 votingPeriod;
-    uint256 votingQuorum;
+    uint256 private votingPeriod;
+    uint256 private votingQuorum;
 
-    address guardianAddress;
+    address private guardianAddress;
 
     /***** Enums *****/
     enum Outcome {InProgress, No, Yes, Invalid, TxFailed, Evaluating}
@@ -84,7 +85,7 @@ contract Governance is InitializableV2 {
         address _guardianAddress
     ) public initializer {
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
-        registry = RegistryInterface(_registryAddress);
+        registry = Registry(_registryAddress);
 
         require(_votingPeriod > 0, "Requires non-zero _votingPeriod");
         votingPeriod = _votingPeriod;
@@ -92,15 +93,10 @@ contract Governance is InitializableV2 {
         require(_votingQuorum > 0, "Requires non-zero _votingQuorum");
         votingQuorum = _votingQuorum;
 
+        require(_guardianAddress != address(0x00), "Requires non-zero _guardianAddress");
         guardianAddress = _guardianAddress;  //Guardian address becomes the only party 
 
         InitializableV2.initialize();
-    }
-
-    // Set staking owner address
-    function setStakingAddress(address _address) external {
-        require(msg.sender == address(this), "Only callable by self");
-        stakingAddress = _address;
     }
 
     // ========================================= Governance Actions =========================================
@@ -372,6 +368,26 @@ contract Governance is InitializableV2 {
         emit ProposalVetoed(_proposalId);
     }
 
+    // ========================================= Config Setters =========================================
+
+    // Set staking owner address
+    function setStakingAddress(address _address) external {
+        require(msg.sender == address(this), "Only callable by self");
+        stakingAddress = _address;
+    }
+
+    // Set votingPeriod
+    function setVotingPeriod(uint256 _votingPeriod) external {
+        require(msg.sender == address(this), "Only callable by self");
+        votingPeriod = _votingPeriod;
+    }
+
+    // Set votingQuorum
+    function setVotingQuorum(uint256 _votingQuorum) external {
+        require(msg.sender == address(this), "Only callable by self");
+        votingQuorum = _votingQuorum;
+    }
+
     // ========================================= Guardian Actions =========================================
 
     function guardianExecuteTransaction(
@@ -416,6 +432,19 @@ contract Governance is InitializableV2 {
             success,
             returnData
         );
+    }
+
+    function transferGuardianship(address _newGuardianAddress) external {
+        _requireIsInitialized();
+
+        require(
+            msg.sender == guardianAddress,
+            "Governance::guardianExecuteTransaction: Only guardian."
+        );
+
+        // TODO - ensure _newGuardianAddress is not a contract (maybe not possible?)
+
+        guardianAddress = _newGuardianAddress;
     }
 
     // ========================================= Getter Functions =========================================
@@ -469,9 +498,26 @@ contract Governance is InitializableV2 {
         return proposals[_proposalId].votes[_voter];
     }
 
-    function getStakingAddress() external view returns (address addr)
-    {
+    function getGuardianAddress() external view returns (address) {
+        _requireIsInitialized();
+
+        return guardianAddress;
+    }
+
+    function getStakingAddress() external view returns (address) {
         return stakingAddress;
+    }
+
+    function getVotingPeriod() external view returns (uint) {
+        _requireIsInitialized();
+
+        return votingPeriod;
+    }
+
+    function getVotingQuorum() external view returns (uint) {
+        _requireIsInitialized();
+
+        return votingQuorum;
     }
 
     // ========================================= Internal Functions =========================================

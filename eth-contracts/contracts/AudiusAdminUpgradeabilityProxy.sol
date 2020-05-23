@@ -5,8 +5,7 @@ import "@openzeppelin/upgrades/contracts/upgradeability/AdminUpgradeabilityProxy
 
 /**
  * Wrapper around OpenZeppelin's AdminUpgradeabilityProxy contract.
- * Exposes state management for an additional controller address that allows logic contract to be upgraded by
- *    another contract. Controller contract must be registered in Audius registry.
+ * Permissions proxy upgrade logic to Audius Governance contract.
  * https://github.com/OpenZeppelin/openzeppelin-sdk/blob/release/2.8/packages/lib/contracts/upgradeability/AdminUpgradeabilityProxy.sol
  */
 contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
