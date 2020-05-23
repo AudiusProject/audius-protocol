@@ -6,8 +6,7 @@ const Registry = artifacts.require('Registry')
 const Governance = artifacts.require('Governance')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 
-const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
-const governanceKey = web3.utils.utf8ToHex('Governance')
+const governanceRegKey = web3.utils.utf8ToHex('Governance')
 
 // 48hr * 60 min/hr * 60 sec/min / ~15 sec/block = 11520 blocks
 const VotingPeriod = 11520
@@ -19,7 +18,6 @@ module.exports = (deployer, network, accounts) => {
     const config = contractConfig[network]
     const proxyAdminAddress = config.proxyAdminAddress || accounts[10]
     const proxyDeployerAddress = config.proxyDeployerAddress || accounts[11]
-    const guardianAddress = config.guardianAddress || proxyDeployerAddress
 
     const registryAddress = process.env.registryAddress
     const registry = await Registry.at(registryAddress)
@@ -29,7 +27,7 @@ module.exports = (deployer, network, accounts) => {
     const initializeCallData = encodeCall(
       'initialize',
       ['address', 'uint256', 'uint256', 'address'],
-      [registry.address, VotingPeriod, VotingQuorum, proxyDeployerAddress]
+      [registryAddress, VotingPeriod, VotingQuorum, proxyDeployerAddress]
     )
     const governanceProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
@@ -39,7 +37,7 @@ module.exports = (deployer, network, accounts) => {
       _lib.addressZero,
       { from: proxyDeployerAddress }
     )
-    await registry.addContract(governanceKey, governanceProxy.address, { from: proxyDeployerAddress })
+    await registry.addContract(governanceRegKey, governanceProxy.address, { from: proxyDeployerAddress })
 
     console.log(`Governance proxy address: ${governanceProxy.address}`)
     let proxyAtGovernanceAddress = await AudiusAdminUpgradeabilityProxy.at(governanceProxy.address)

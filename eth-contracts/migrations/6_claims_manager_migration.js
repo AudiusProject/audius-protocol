@@ -64,7 +64,6 @@ module.exports = (deployer, network, accounts) => {
     assert.equal(_lib.parseTx(addMinterTxR).event.args.success, true)
 
     // Set claims manager address in Staking.sol through governance
-    const governance = await Governance.at(governanceAddress)
     const setClaimsManagerAddressTxReceipt = await governance.guardianExecuteTransaction(
       stakingProxyKey,
       callValue0,

@@ -6,7 +6,6 @@ const AudiusToken = artifacts.require('AudiusToken')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Registry = artifacts.require('Registry')
 
-const governanceRegKey = web3.utils.utf8ToHex('Governance')
 const tokenRegKey = web3.utils.utf8ToHex('Token')
 
 const INITIAL_SUPPLY = Math.pow(10,27)
@@ -35,8 +34,7 @@ module.exports = (deployer, network, accounts) => {
       token0.address,
       proxyAdminAddress,
       initializeCallData,
-      registryAddress,
-      governanceRegKey,
+      governanceAddress,
       { from: proxyDeployerAddress }
     )
     const token = await AudiusToken.at(tokenProxy.address)
