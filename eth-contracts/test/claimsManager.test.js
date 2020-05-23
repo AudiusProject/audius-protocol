@@ -59,21 +59,17 @@ contract('ClaimsManager', async (accounts) => {
     staking0 = await Staking.new({ from: proxyDeployerAddress })
     const stakingInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      ['address', 'address'],
       [
         token.address,
-        registry.address,
-        claimsManagerProxyKey,
-        delegateManagerKey,
-        serviceProviderFactoryKey
+        governance.address
       ]
     )
     stakingProxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     await registry.addContract(stakingProxyKey, stakingProxy.address, { from: proxyDeployerAddress })
@@ -100,8 +96,7 @@ contract('ClaimsManager', async (accounts) => {
       claimsManager0.address,
       proxyAdminAddress,
       claimsInitializeCallData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
@@ -111,6 +106,24 @@ contract('ClaimsManager', async (accounts) => {
 
     // Register new contract as a minter, from the same address that deployed the contract
     await token.addMinter(claimsManagerProxy.address, { from: proxyDeployerAddress })
+
+    // ---- Configuring addresses
+    await _lib.configureGovernanceStakingAddress(
+      governance,
+      governanceKey,
+      guardianAddress,
+      stakingProxy.address
+    )
+    // ---- Set up staking contract permissions
+    await _lib.configureStakingContractAddresses(
+      governance,
+      guardianAddress,
+      stakingProxyKey,
+      staking,
+      mockStakingCaller.address,
+      claimsManagerProxy.address,
+      mockDelegateManager.address
+    )
   })
 
   it('Initiate a claim', async () => {

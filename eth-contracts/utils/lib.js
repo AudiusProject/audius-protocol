@@ -171,7 +171,7 @@ export const initiateFundingRound = async (governance, claimsManagerRegKey, guar
   const tx = parseTx(txReceipt)
 
   assert.equal(tx.event.args.success, expectedSuccess, 'Expected event.args.success')
-  
+
   return tx
 }
 
@@ -287,4 +287,57 @@ export const slash = async (slashAmount, slashAccount, governance, delegateManag
   assert.equal(tx.event.args.success, expectedSuccess, 'Expected event.args.success')
 
   return tx
+}
+
+// Set staking address in Governance
+export const configureGovernanceStakingAddress = async (
+  governance,
+  governanceKey,
+  guardianAddress,
+  stakingAddress
+) => {
+  await governance.guardianExecuteTransaction(
+    governanceKey,
+    toBN(0),
+    'setStakingAddress(address)',
+    abiEncode(['address'], [stakingAddress]),
+    { from: guardianAddress }
+  )
+  assert.equal(stakingAddress, await governance.getStakingAddress(), 'Expect staking in governance to be set')
+}
+
+// Test helper to set staking addresses
+export const configureStakingContractAddresses = async (
+  governance,
+  guardianAddress,
+  stakingProxyKey,
+  staking,
+  spAddress,
+  claimsManagerAddress,
+  delegateManagerAddress
+) => {
+  // console.log(`configureStakingContractAddresses::guardianAddress : ${guardianAddress}`)
+  // Configure staking address references from governance contract
+  let tx = await governance.guardianExecuteTransaction(
+    stakingProxyKey,
+    toBN(0),
+    'setServiceProviderFactoryAddress(address)',
+    abiEncode(['address'], [spAddress]),
+    { from: guardianAddress })
+  // console.dir(tx, { depth: 5 })
+  await governance.guardianExecuteTransaction(
+    stakingProxyKey,
+    toBN(0),
+    'setClaimsManagerAddress(address)',
+    abiEncode(['address'], [claimsManagerAddress]),
+    { from: guardianAddress })
+  await governance.guardianExecuteTransaction(
+    stakingProxyKey,
+    toBN(0),
+    'setDelegateManagerAddress(address)',
+    abiEncode(['address'], [delegateManagerAddress]),
+    { from: guardianAddress })
+  assert.equal(spAddress, await staking.getServiceProviderFactoryAddress(), 'Unexpected sp address')
+  assert.equal(claimsManagerAddress, await staking.getClaimsManagerAddress(), 'Unexpected claims address')
+  assert.equal(delegateManagerAddress, await staking.getDelegateManagerAddress(), 'Unexpected delegate manager address')
 }
