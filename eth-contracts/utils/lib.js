@@ -294,6 +294,7 @@ export const configureGovernanceStakingAddress = async (
     abiEncode(['address'], [stakingAddress]),
     { from: guardianAddress }
   )
+  assert.equal(stakingAddress, await governance.getStakingAddress(), 'Expect staking in governance to be set')
 }
 
 // Test helper to set staking addresses
@@ -306,7 +307,7 @@ export const configureStakingContractAddresses = async (
   claimsManagerAddress,
   delegateManagerAddress
 ) => {
-  console.log(`configureStakingContractAddresses::guardianAddress : ${guardianAddress}`)
+  // console.log(`configureStakingContractAddresses::guardianAddress : ${guardianAddress}`)
   // Configure staking address references from governance contract
   let tx = await governance.guardianExecuteTransaction(
     stakingProxyKey,

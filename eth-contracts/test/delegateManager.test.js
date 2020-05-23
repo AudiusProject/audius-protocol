@@ -55,7 +55,6 @@ contract('DelegateManager', async (accounts) => {
       VOTING_QUORUM,
       guardianAddress
     )
-    console.log(await governance.getGuardianAddress())
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
 
     // Deploy + register Staking
@@ -63,7 +62,7 @@ contract('DelegateManager', async (accounts) => {
     const stakingInitializeData = _lib.encodeCall(
       'initialize',
       ['address', 'address'],
-      [token.address, registry.address]
+      [token.address, governance.address]
     )
     const stakingProxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
@@ -303,7 +302,7 @@ contract('DelegateManager', async (accounts) => {
       await serviceProviderFactory.updateServiceProviderCut(stakerAccount2, 10, { from: stakerAccount2 })
     })
 
-    it.only('Initial state + claim', async () => {
+    it('Initial state + claim', async () => {
       // Validate basic claim w/SP path
       let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
 
