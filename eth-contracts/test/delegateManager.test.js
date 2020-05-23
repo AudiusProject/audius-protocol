@@ -14,6 +14,7 @@ const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
+const tokenRegKey = web3.utils.utf8ToHex('Token')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
 const testEndpoint = 'https://localhost:5000'
@@ -26,6 +27,8 @@ const DEFAULT_AMOUNT = _lib.toBN(DEFAULT_AMOUNT_VAL)
 const VOTING_PERIOD = 10
 const VOTING_QUORUM = 1
 
+const callValue0 = _lib.toBN(0)
+
 
 contract('DelegateManager', async (accounts) => {
   let staking, stakingAddress, token, registry, governance, claimsManager0, claimsManagerProxy
@@ -33,6 +36,7 @@ contract('DelegateManager', async (accounts) => {
   
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
   const stakerAccount = accounts[10]
   const stakerAccount2 = accounts[12]
@@ -40,22 +44,29 @@ contract('DelegateManager', async (accounts) => {
   const slasherAccount = stakerAccount
 
   beforeEach(async () => {
-    token = await _lib.deployToken(artifacts, proxyAdminAddress, proxyDeployerAddress)
     registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
 
-    // Deploy + register Governance
+    // Deploy + register Governance contract
     governance = await _lib.deployGovernance(
       artifacts,
       proxyAdminAddress,
       proxyDeployerAddress,
       registry,
-      stakingProxyKey,
-      governanceKey,
       VOTING_PERIOD,
       VOTING_QUORUM,
       guardianAddress
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
+
+    // Deploy + register token
+    token = await _lib.deployToken(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress,
+      tokenOwnerAddress,
+      governance.address
+    )
+    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
 
     // Deploy + register Staking
     const staking0 = await Staking.new({ from: proxyDeployerAddress })
@@ -134,7 +145,14 @@ contract('DelegateManager', async (accounts) => {
     )
 
     // Register new contract as a minter, from the same address that deployed the contract
-    await token.addMinter(claimsManager.address, { from: proxyDeployerAddress })
+    const addMinterTxR = await governance.guardianExecuteTransaction(
+      tokenRegKey,
+      callValue0,
+      'addMinter(address)',
+      _lib.abiEncode(['address'], [claimsManager.address]),
+      { from: guardianAddress }
+    )
+    assert.equal(_lib.parseTx(addMinterTxR).event.args.success, true)
 
     const delegateManagerInitializeData = _lib.encodeCall(
       'initialize',
@@ -665,7 +683,7 @@ contract('DelegateManager', async (accounts) => {
 
     // TODO: Revisit below test case and remove unneeded validation if necessary
     // Test case still in progress
-    it.skip('WIP - claim restriction on staking balance', async () => {
+    it.skip('TODO WIP - claim restriction on staking balance', async () => {
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
 

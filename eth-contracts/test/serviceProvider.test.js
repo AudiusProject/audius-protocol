@@ -17,6 +17,7 @@ const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const governanceKey = web3.utils.utf8ToHex('Governance')
+const tokenRegKey = web3.utils.utf8ToHex('TokenKey')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
 const testCreatorNodeType = web3.utils.utf8ToHex('creator-node')
@@ -25,8 +26,8 @@ const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'
 
 const MIN_STAKE_AMOUNT = 10
-const votingPeriod = 10
-const votingQuorum = 1
+const VOTING_PERIOD = 10
+const VOTING_QUORUM = 1
 
 const INITIAL_BAL = _lib.audToWeiBN(1000)
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
@@ -38,6 +39,7 @@ contract('ServiceProvider test', async (accounts) => {
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
 
   const callValue = _lib.toBN(0)
@@ -98,39 +100,30 @@ contract('ServiceProvider test', async (accounts) => {
   }
 
   beforeEach(async () => {
-    const token0 = await AudiusToken.new({ from: proxyDeployerAddress })
-    const tokenInitData = _lib.encodeCall('initialize', [], [])
-    const tokenProxy = await AdminUpgradeabilityProxy.new(
-      token0.address,
-      proxyAdminAddress,
-      tokenInitData,
-      { from: proxyDeployerAddress }
-    )
-    token = await AudiusToken.at(tokenProxy.address)
+    // Deploy registry
+    registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
 
-    const registry0 = await Registry.new({ from: proxyDeployerAddress })
-    const registryInitData = _lib.encodeCall('initialize', [], [])
-    const registryProxy = await AdminUpgradeabilityProxy.new(
-      registry0.address,
-      proxyAdminAddress,
-      registryInitData,
-      { from: proxyDeployerAddress }
-    )
-    registry = await Registry.at(registryProxy.address)
-
-    // Deploy + register Governance
+    // Deploy + register governance
     governance = await _lib.deployGovernance(
       artifacts,
       proxyAdminAddress,
       proxyDeployerAddress,
       registry,
-      stakingProxyKey,
-      governanceKey,
-      votingPeriod,
-      votingQuorum,
+      VOTING_PERIOD,
+      VOTING_QUORUM,
       guardianAddress
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
+
+    // Deploy + register token
+    token = await _lib.deployToken(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress,
+      tokenOwnerAddress,
+      governance.address
+    )
+    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
 
     // Deploy + register Staking
     staking0 = await Staking.new({ from: proxyDeployerAddress })

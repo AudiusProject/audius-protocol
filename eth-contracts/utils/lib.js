@@ -100,7 +100,7 @@ export const audToWei = (val) => web3New.utils.toWei(val.toString(), 'ether')
 
 export const audToWeiBN = (aud) => toBN(audToWei(aud))
 
-export const fromWei = (wei) => web3.utils.fromWei(wei)
+export const fromWei = (wei) => web3New.utils.fromWei(wei)
 
 export const abiEncode = (types, values) => {
   const abi = new ethers.utils.AbiCoder()
@@ -175,16 +175,27 @@ export const initiateFundingRound = async (governance, claimsManagerRegKey, guar
   return tx
 }
 
-export const deployToken = async (artifacts, proxyAdminAddress, proxyDeployerAddress) => {
+export const deployToken = async (
+  artifacts,
+  proxyAdminAddress,
+  proxyDeployerAddress,
+  tokenOwnerAddress,
+  governanceAddress
+) => {
   const AudiusToken = artifacts.require('AudiusToken')
-  const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+  const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 
   const token0 = await AudiusToken.new({ from: proxyDeployerAddress })
-  const tokenInitData = encodeCall('initialize', [], [])
-  const tokenProxy = await AdminUpgradeabilityProxy.new(
+  const tokenInitData = encodeCall(
+    'initialize',
+    ['address', 'address'],
+    [tokenOwnerAddress, governanceAddress]
+  )
+  const tokenProxy = await AudiusAdminUpgradeabilityProxy.new(
     token0.address,
     proxyAdminAddress,
     tokenInitData,
+    governanceAddress,
     { from: proxyDeployerAddress }
   )
   const token = await AudiusToken.at(tokenProxy.address)
@@ -214,8 +225,6 @@ export const deployGovernance = async (
   proxyAdminAddress,
   proxyDeployerAddress,
   registry,
-  stakingRegKey,
-  governanceRegKey,
   votingPeriod,
   votingQuorum,
   guardianAddress

@@ -12,27 +12,32 @@ const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
+const tokenRegKey = web3.utils.utf8ToHex('TokenKey')
 
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
+const VOTING_PERIOD = 10
+const VOTING_QUORUM = 1
 
 const { expectEvent } = require('@openzeppelin/test-helpers')
 
 contract('Upgrade proxy test', async (accounts) => {
   let proxy
-  let token
   let staking0
   let staking
   let stakingUpgraded
   let stakingInitializeData
   let mockStakingCaller
   let mockGovAddr
-  let registry
+  let registry, governance, token
 
-  const [deployerAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
+  const [, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const tokenOwnerAddress = proxyDeployerAddress
+  const guardianAddress = proxyDeployerAddress
 
   const approveAndStake = async (amount, staker, staking) => {
     // Transfer default tokens to
-    await token.transfer(staker, amount, { from: deployerAddress })
+    await token.transfer(staker, amount, { from: proxyDeployerAddress })
     // allow Staking app to move owner tokens
     await token.approve(staking.address, amount, { from: staker })
     // stake tokens
@@ -42,10 +47,30 @@ contract('Upgrade proxy test', async (accounts) => {
   }
 
   beforeEach(async () => {
-    token = await AudiusToken.new({ from: accounts[0] })
-    await token.initialize()
-    registry = await Registry.new()
-    await registry.initialize()
+    // Deploy registry
+    registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
+
+    // Deploy + register Governance
+    governance = await _lib.deployGovernance(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress,
+      registry,
+      VOTING_PERIOD,
+      VOTING_QUORUM,
+      guardianAddress
+    )
+    // await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
+
+    // Deploy + register AudiusToken
+    token = await _lib.deployToken(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress,
+      tokenOwnerAddress,
+      governance.address
+    )
+    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
 
     staking0 = await Staking.new({ from: proxyAdminAddress })
     stakingUpgraded = await StakingUpgraded.new({ from: proxyAdminAddress })
@@ -71,10 +96,10 @@ contract('Upgrade proxy test', async (accounts) => {
 
     // Register mock contract as claimsManager, spFactory, delegateManager
     await mockStakingCaller.initialize(proxy.address, token.address)
-    await registry.addContract(claimsManagerProxyKey, mockStakingCaller.address)
-    await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address)
-    await registry.addContract(delegateManagerKey, mockStakingCaller.address)
-    await registry.addContract(governanceKey, mockStakingCaller.address)
+    await registry.addContract(claimsManagerProxyKey, mockStakingCaller.address, { from: proxyDeployerAddress })
+    await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address, { from: proxyDeployerAddress })
+    await registry.addContract(delegateManagerKey, mockStakingCaller.address, { from: proxyDeployerAddress })
+    await registry.addContract(governanceKey, mockStakingCaller.address, { from: proxyDeployerAddress })
 
     // Setup permissioning to mock caller
     await mockStakingCaller.configurePermissions()
@@ -186,8 +211,8 @@ contract('Upgrade proxy test', async (accounts) => {
       const spAccount2 = accounts[4]
 
       // Transfer 1000 tokens to accounts[1] and accounts[2]
-      await token.transfer(spAccount1, 1000, { from: deployerAddress })
-      await token.transfer(spAccount2, 1000, { from: deployerAddress })
+      await token.transfer(spAccount1, 1000, { from: proxyDeployerAddress })
+      await token.transfer(spAccount2, 1000, { from: proxyDeployerAddress })
 
       // Permission test address as caller
       staking = await Staking.at(proxy.address)

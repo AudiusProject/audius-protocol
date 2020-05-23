@@ -12,10 +12,13 @@ const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
+const tokenRegKey = web3.utils.utf8ToHex('TokenKey')
 
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 const VOTING_PERIOD = 10
 const VOTING_QUORUM = 1
+
+const callValue0 = _lib.toBN(0)
 
 
 contract('ClaimsManager', async (accounts) => {
@@ -24,6 +27,7 @@ contract('ClaimsManager', async (accounts) => {
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress, staker] = accounts
+  const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
 
   const approveTransferAndStake = async (amount, staker) => {
@@ -38,24 +42,32 @@ contract('ClaimsManager', async (accounts) => {
   }
 
   beforeEach(async () => {
-    token = await _lib.deployToken(artifacts, proxyAdminAddress, proxyDeployerAddress)
+    // Deploy registry
     registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
 
-    // Deploy + register Governance
+    // Deploy + register governance
     governance = await _lib.deployGovernance(
       artifacts,
       proxyAdminAddress,
       proxyDeployerAddress,
       registry,
-      stakingProxyKey,
-      governanceKey,
       VOTING_PERIOD,
       VOTING_QUORUM,
       guardianAddress
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
 
-    // Deploy and register stakingProxy
+    // Deploy + register token
+    token = await _lib.deployToken(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress,
+      tokenOwnerAddress,
+      governance.address
+    )
+    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
+
+    // Deploy and register staking
     staking0 = await Staking.new({ from: proxyDeployerAddress })
     const stakingInitializeData = _lib.encodeCall(
       'initialize',
@@ -105,7 +117,14 @@ contract('ClaimsManager', async (accounts) => {
     await registry.addContract(claimsManagerProxyKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
 
     // Register new contract as a minter, from the same address that deployed the contract
-    await token.addMinter(claimsManagerProxy.address, { from: proxyDeployerAddress })
+    const addMinterTxR = await governance.guardianExecuteTransaction(
+      tokenRegKey,
+      callValue0,
+      'addMinter(address)',
+      _lib.abiEncode(['address'], [claimsManager.address]),
+      { from: guardianAddress }
+    )
+    assert.equal(_lib.parseTx(addMinterTxR).event.args.success, true)
 
     // ---- Configuring addresses
     await _lib.configureGovernanceStakingAddress(
