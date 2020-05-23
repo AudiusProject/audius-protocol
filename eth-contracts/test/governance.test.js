@@ -97,20 +97,9 @@ contract('Governance.sol', async (accounts) => {
     staking = await Staking.at(stakingProxy.address)
     await registry.addContract(stakingProxyKey, stakingProxy.address, { from: proxyDeployerAddress })
 
-    // Set stakingAddress in governance
-    await governance.guardianExecuteTransaction(
-      governanceKey,
-      _lib.toBN(0),
-      'setStakingAddress(address)',
-      _lib.abiEncode(['address'], [stakingProxy.address]),
-      { from: guardianAddress }
-    )
-
     // Deploy + register ServiceTypeManager
     let serviceTypeInitializeData = _lib.encodeCall(
-      'initialize',
-      ['address'],
-      [governance.address]
+      'initialize', ['address'], [governance.address]
     )
     let serviceTypeManager0 = await ServiceTypeManager.new({ from: proxyDeployerAddress })
     let serviceTypeManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
@@ -192,25 +181,23 @@ contract('Governance.sol', async (accounts) => {
     delegateManager = await DelegateManager.at(delegateManagerProxy.address)
     await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: proxyDeployerAddress })
 
-    // Configure staking address references from governance contract
-    await governance.guardianExecuteTransaction(
+    // ---- Configuring addresses
+    await _lib.configureGovernanceStakingAddress(
+      governance,
+      governanceKey,
+      guardianAddress,
+      stakingProxy.address
+    )
+    // ---- Set up staking contract permissions
+    await _lib.configureStakingContractAddresses(
+      governance,
+      guardianAddress,
       stakingProxyKey,
-      _lib.toBN(0),
-      'setServiceProviderFactoryAddress(address)',
-      _lib.abiEncode(['address'], [serviceProviderFactoryProxy.address]),
-      { from: guardianAddress })
-    await governance.guardianExecuteTransaction(
-      stakingProxyKey,
-      _lib.toBN(0),
-      'setClaimsManagerAddress(address)',
-      _lib.abiEncode(['address'], [claimsManagerProxy.address]),
-      { from: guardianAddress })
-    await governance.guardianExecuteTransaction(
-      stakingProxyKey,
-      _lib.toBN(0),
-      'setDelegateManagerAddress(address)',
-      _lib.abiEncode(['address'], [delegateManagerProxy.address]),
-      { from: guardianAddress })
+      staking,
+      serviceProviderFactoryProxy.address,
+      claimsManagerProxy.address,
+      delegateManagerProxy.address
+    )
   })
 
   /**

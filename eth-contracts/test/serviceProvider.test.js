@@ -475,7 +475,7 @@ contract('ServiceProvider test', async (accounts) => {
       )
     })
 
-    it('Confirm correct stake for account', async () => {
+    it.only('Confirm correct stake for account', async () => {
       assert.isTrue((await getStakeAmountForAccount(stakerAccount)).eq(DEFAULT_AMOUNT))
     })
 

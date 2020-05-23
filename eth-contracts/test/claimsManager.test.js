@@ -114,11 +114,12 @@ contract('ClaimsManager', async (accounts) => {
       guardianAddress,
       stakingProxy.address
     )
-    // Set up staking contract permissions
+    // ---- Set up staking contract permissions
     await _lib.configureStakingContractAddresses(
       governance,
       guardianAddress,
       stakingProxyKey,
+      staking,
       mockStakingCaller.address,
       claimsManagerProxy.address,
       mockDelegateManager.address

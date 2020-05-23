@@ -61,21 +61,14 @@ contract('DelegateManager', async (accounts) => {
     const staking0 = await Staking.new({ from: proxyDeployerAddress })
     const stakingInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
-      [
-        token.address,
-        registry.address,
-        claimsManagerProxyKey,
-        delegateManagerKey,
-        serviceProviderFactoryKey
-      ]
+      ['address', 'address'],
+      [token.address, registry.address]
     )
     const stakingProxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     staking = await Staking.at(stakingProxy.address)
@@ -84,17 +77,14 @@ contract('DelegateManager', async (accounts) => {
 
     // Deploy + register ServiceTypeManager
     let serviceTypeInitializeData = _lib.encodeCall(
-      'initialize',
-      ['address', 'bytes32'],
-      [registry.address, governanceKey]
+      'initialize', ['address'], [governance.address]
     )
     let serviceTypeManager0 = await ServiceTypeManager.new({ from: proxyDeployerAddress })
     let serviceTypeManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceTypeManager0.address,
       proxyAdminAddress,
       serviceTypeInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: proxyDeployerAddress })
@@ -114,8 +104,7 @@ contract('DelegateManager', async (accounts) => {
       serviceProviderFactory0.address,
       proxyAdminAddress,
       serviceProviderFactoryCalldata,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
@@ -132,8 +121,7 @@ contract('DelegateManager', async (accounts) => {
       claimsManager0.address,
       proxyAdminAddress,
       claimsInitializeCallData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
@@ -158,8 +146,7 @@ contract('DelegateManager', async (accounts) => {
       delegateManager0.address,
       proxyAdminAddress,
       delegateManagerInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
 
@@ -175,6 +162,26 @@ contract('DelegateManager', async (accounts) => {
       { from: guardianAddress }
     )
     assert.isTrue(_lib.parseTx(updateMinDelAmountTxReceipt).event.args.success, 'Expected tx to succeed')
+    // ---- Configuring addresses
+    await _lib.configureGovernanceStakingAddress(
+      governance,
+      governanceKey,
+      guardianAddress,
+      stakingProxy.address
+    )
+    // ---- Set up staking contract permissions
+    await _lib.configureStakingContractAddresses(
+      governance,
+      guardianAddress,
+      stakingProxyKey,
+      staking,
+      serviceProviderFactoryProxy.address,
+      claimsManagerProxy.address,
+      delegateManagerProxy.address
+    )
+    console.log(serviceProviderFactory.address)
+    console.log(await staking.getServiceProviderFactoryAddress())
+    console.log(await staking.getClaimsManagerAddress())
   })
 
   /* Helper functions */
@@ -297,7 +304,7 @@ contract('DelegateManager', async (accounts) => {
       await serviceProviderFactory.updateServiceProviderCut(stakerAccount2, 10, { from: stakerAccount2 })
     })
 
-    it('Initial state + claim', async () => {
+    it.only('Initial state + claim', async () => {
       // Validate basic claim w/SP path
       let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
 
