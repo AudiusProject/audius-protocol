@@ -325,10 +325,6 @@ contract DelegateManager is RegistryContract {
             registry.getContract(serviceProviderFactoryKey)
         );
 
-        // Confirm caller is service provider with valid stake
-        (,,bool withinBounds,,,) = spFactory.getServiceProviderDetails(msg.sender);
-        require(withinBounds, "Service provider must be within bounds");
-
         // Account for any pending locked up stake for the service provider
         (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
 
