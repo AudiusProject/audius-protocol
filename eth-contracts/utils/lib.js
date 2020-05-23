@@ -279,3 +279,4 @@ export const slash = async (slashAmount, slashAccount, governance, delegateManag
 
   return tx
 }
+

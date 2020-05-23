@@ -97,26 +97,42 @@ contract('Governance.sol', async (accounts) => {
     staking = await Staking.at(stakingProxy.address)
     await registry.addContract(stakingProxyKey, stakingProxy.address, { from: proxyDeployerAddress })
 
+    // Set stakingAddress in governance
+    await governance.guardianExecuteTransaction(
+      governanceKey,
+      _lib.toBN(0),
+      'setStakingAddress(address)',
+      _lib.abiEncode(['address'], [stakingProxy.address]),
+      { from: guardianAddress }
+    )
+
     // Deploy + register ServiceTypeManager
     let serviceTypeInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32'],
-      [registry.address, governanceKey]
+      ['address'],
+      [governance.address]
     )
     let serviceTypeManager0 = await ServiceTypeManager.new({ from: proxyDeployerAddress })
     let serviceTypeManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceTypeManager0.address,
       proxyAdminAddress,
       serviceTypeInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyAdminAddress }
     )
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: proxyDeployerAddress })
     let serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
 
     // Register discprov serviceType
-    await _lib.addServiceType(testDiscProvType, _lib.audToWei(5), _lib.audToWei(10000000), governance, guardianAddress, serviceTypeManagerProxyKey, true)
+    await _lib.addServiceType(
+      testDiscProvType,
+      _lib.audToWei(5),
+      _lib.audToWei(10000000),
+      governance,
+      guardianAddress,
+      serviceTypeManagerProxyKey,
+      true
+    )
 
     // Deploy + Register ServiceProviderFactory contract
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
@@ -129,8 +145,7 @@ contract('Governance.sol', async (accounts) => {
       serviceProviderFactory0.address,
       proxyAdminAddress,
       serviceProviderFactoryCalldata,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyAdminAddress }
     )
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
@@ -147,8 +162,7 @@ contract('Governance.sol', async (accounts) => {
       claimsManager0.address,
       proxyAdminAddress,
       claimsInitializeCallData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
@@ -172,12 +186,31 @@ contract('Governance.sol', async (accounts) => {
       delegateManager0.address,
       proxyAdminAddress,
       delegateManagerInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     delegateManager = await DelegateManager.at(delegateManagerProxy.address)
     await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: proxyDeployerAddress })
+
+    // Configure staking address references from governance contract
+    await governance.guardianExecuteTransaction(
+      stakingProxyKey,
+      _lib.toBN(0),
+      'setServiceProviderFactoryAddress(address)',
+      _lib.abiEncode(['address'], [serviceProviderFactoryProxy.address]),
+      { from: guardianAddress })
+    await governance.guardianExecuteTransaction(
+      stakingProxyKey,
+      _lib.toBN(0),
+      'setClaimsManagerAddress(address)',
+      _lib.abiEncode(['address'], [claimsManagerProxy.address]),
+      { from: guardianAddress })
+    await governance.guardianExecuteTransaction(
+      stakingProxyKey,
+      _lib.toBN(0),
+      'setDelegateManagerAddress(address)',
+      _lib.abiEncode(['address'], [delegateManagerProxy.address]),
+      { from: guardianAddress })
   })
 
   /**
@@ -230,35 +263,33 @@ contract('Governance.sol', async (accounts) => {
     let governance0 = await Governance.new({ from: proxyDeployerAddress })
     let governanceCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32', 'uint256', 'uint256', 'address'],
-      [0x0, stakingProxyKey, votingPeriod, votingQuorum, proxyDeployerAddress]
+      ['address', 'uint256', 'uint256', 'address'],
+      [0x0, votingPeriod, votingQuorum, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
         governance0.address,
         proxyAdminAddress,
         governanceCallData,
-        registry.address,
-        governanceKey,
+        _lib.addressZero,
         { from: proxyDeployerAddress }
       ),
-      "revert"
+      'revert'
     )
 
     // Requires non-zero _votingPeriod
     governance0 = await Governance.new({ from: proxyDeployerAddress })
     governanceCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32', 'uint256', 'uint256', 'address'],
-      [registry.address, stakingProxyKey, 0, votingQuorum, proxyDeployerAddress]
+      ['address', 'uint256', 'uint256', 'address'],
+      [registry.address, 0, votingQuorum, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
         governance0.address,
         proxyAdminAddress,
         governanceCallData,
-        registry.address,
-        governanceKey,
+        governance.address,
         { from: proxyDeployerAddress }
       ),
       "revert"
@@ -268,16 +299,15 @@ contract('Governance.sol', async (accounts) => {
     governance0 = await Governance.new({ from: proxyDeployerAddress })
     governanceCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32', 'uint256', 'uint256', 'address'],
-      [registry.address, stakingProxyKey, votingPeriod, 0, proxyDeployerAddress]
+      ['address', 'uint256', 'uint256', 'address'],
+      [registry.address, votingPeriod, 0, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
         governance0.address,
         proxyAdminAddress,
         governanceCallData,
-        registry.address,
-        governanceKey,
+        governance.address,
         { from: proxyDeployerAddress }
       ),
       "revert"
