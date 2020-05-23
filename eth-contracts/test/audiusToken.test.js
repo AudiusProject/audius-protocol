@@ -3,7 +3,7 @@ import * as _lib from '../utils/lib.js'
 const tokenRegKey = web3.utils.utf8ToHex('Token')
 
 contract('AudiusToken', async (accounts) => {
-  let token, governance
+  let registry, token, governance
 
   // expected initial token values
   const NAME = "TestAudius"
@@ -22,7 +22,7 @@ contract('AudiusToken', async (accounts) => {
   const callValue0 = _lib.toBN(0)
 
   beforeEach(async () => {
-    const registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
+    registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
     governance = await _lib.deployGovernance(
       artifacts,
       proxyAdminAddress,
@@ -37,7 +37,6 @@ contract('AudiusToken', async (accounts) => {
       artifacts,
       proxyAdminAddress,
       proxyDeployerAddress,
-      registry,
       tokenOwnerAddress,
       governance.address
     )
