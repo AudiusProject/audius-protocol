@@ -95,7 +95,6 @@ contract Registry is InitializableV2, Ownable {
             "Registry::removeContract: Cannot remove - no contract registered with given _name."
         );
         setAddress(_name, address(0x00));
-        RegistryContractInterface(contractAddress).kill();
         emit ContractRemoved(_name, contractAddress);
     }
 
@@ -112,8 +111,6 @@ contract Registry is InitializableV2, Ownable {
             "Registry::upgradeContract: Cannot upgrade - no contract registered with given _name."
         );
         setAddress(_name, _newAddress);
-        RegistryContractInterface(oldAddress).kill();
-        RegistryContractInterface(_newAddress).setRegistry(address(this));
         emit ContractUpgraded(_name, oldAddress, _newAddress);
     }
 

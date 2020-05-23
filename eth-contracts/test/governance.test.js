@@ -837,12 +837,8 @@ contract('Governance.sol', async (accounts) => {
         const testContract = await TestContract.new()
         await testContract.initialize(registry.address)
 
-        console.log('1')
-        console.log(targetContractRegistryKey)
-        console.log(delegateManagerKey)
         // Upgrade contract registered at targetContractRegistryKey
         await registry.upgradeContract(targetContractRegistryKey, testContract.address, { from: proxyDeployerAddress })
-        console.log('2')
 
         await _lib.assertRevert(
           // Call evaluateProposalOutcome()

@@ -1,12 +1,12 @@
 pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
-import "./registry/RegistryContract.sol";
 import "./Staking.sol";
 import "./interface/RegistryInterface.sol";
+import "./InitializableV2.sol";
 
 
-contract Governance is RegistryContract {
+contract Governance is InitializableV2 {
     using SafeMath for uint;
     RegistryInterface registry;
     address stakingAddress;
@@ -94,7 +94,7 @@ contract Governance is RegistryContract {
 
         guardianAddress = _guardianAddress;  //Guardian address becomes the only party 
 
-        RegistryContract.initialize();
+        InitializableV2.initialize();
     }
 
     // Set staking owner address

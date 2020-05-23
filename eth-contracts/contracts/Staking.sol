@@ -7,11 +7,11 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burn
 import "@openzeppelin/contracts-ethereum-package/contracts/utils/Address.sol";
 import "@aragon/court/contracts/lib/Checkpointing.sol";
 import "@aragon/court/contracts/lib/os/Uint256Helpers.sol";
-import "./registry/RegistryContract.sol";
+import "./InitializableV2.sol";
 
 
-/** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
-contract Staking is RegistryContract {
+/** NOTE - will call InitializableV2.constructor */
+contract Staking is InitializableV2 {
     using SafeMath for uint256;
     using Uint256Helpers for uint256;
     using Checkpointing for Checkpointing.History;
@@ -49,8 +49,7 @@ contract Staking is RegistryContract {
         require(Address.isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         stakingToken = ERC20(_stakingToken);
         governanceAddress = _governanceAddress;
-
-        RegistryContract.initialize();
+        InitializableV2.initialize();
     }
 
     function setGovernanceAddress(address _governanceAddress) external {
