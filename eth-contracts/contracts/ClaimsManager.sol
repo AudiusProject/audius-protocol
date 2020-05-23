@@ -8,7 +8,7 @@ import "./ServiceProviderFactory.sol";
 
 /**
  * Designed to automate claim funding, minting tokens as necessary
- * @notice - will call RegistryContract.constructor, which calls Ownable constructor
+ * @notice - will call InitializableV2 constructor
  */
 contract ClaimsManager is InitializableV2 {
     using SafeMath for uint256;
