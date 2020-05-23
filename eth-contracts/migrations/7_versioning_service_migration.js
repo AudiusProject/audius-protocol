@@ -8,6 +8,7 @@ const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Governance = artifacts.require('Governance')
+const ClaimsManager = artifacts.require('ClaimsManager')
 
 const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -33,6 +34,7 @@ module.exports = (deployer, network, accounts) => {
     const guardianAddress = config.guardianAddress || proxyDeployerAddress
 
     const registryAddress = process.env.registryAddress
+    const claimsManagerAddress = process.env.claimsManagerAddress
     const registry = await Registry.at(registryAddress)
 
     // Deploy ServiceTypeManager logic and proxy contracts + register proxy
@@ -129,5 +131,20 @@ module.exports = (deployer, network, accounts) => {
     const staking = await Staking.at(process.env.stakingAddress)
     let spFactoryAddressFromStaking = await staking.getServiceProviderFactoryAddress()
     console.log(`ServiceProviderFactoryProxy Address from Staking.sol: ${spFactoryAddressFromStaking}`)
+
+    // Set service provider address in ClaimsManager.sol through governance
+    const setSPFactoryClaimsManagerTxReceipt = await governance.guardianExecuteTransaction(
+      claimsManagerProxyKey,
+      _lib.toBN(0),
+      'setServiceProviderFactoryAddress(address)',
+      _lib.abiEncode(['address'], [serviceProviderFactoryProxy.address]),
+      { from: guardianAddress }
+    )
+    const claimsManager = await ClaimsManager.at(claimsManagerAddress)
+    assert.strict.equal(
+      serviceProviderFactoryProxy.address,
+      await claimsManager.getServiceProviderFactoryAddress(),
+      'Expect updated claims manager'
+    )
   })
 }

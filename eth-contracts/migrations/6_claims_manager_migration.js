@@ -29,6 +29,7 @@ module.exports = (deployer, network, accounts) => {
     const tokenAddress = process.env.tokenAddress
     const registryAddress = process.env.registryAddress
     const governanceAddress = process.env.governanceAddress
+    const stakingAddress = process.env.stakingAddress
 
     const token = await AudiusToken.at(tokenAddress)
     const registry = await Registry.at(registryAddress)
@@ -49,7 +50,11 @@ module.exports = (deployer, network, accounts) => {
       governanceAddress,
       { from: proxyDeployerAddress }
     )
+    const claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
     await registry.addContract(claimsManagerProxyKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
+
+    // Set environment variable
+    process.env.claimsManagerAddress = claimsManagerProxy.address
 
     // Register ClaimsManager as minter
     // Note that by default this is called from proxyDeployerAddress in ganache
@@ -74,8 +79,19 @@ module.exports = (deployer, network, accounts) => {
     assert.equal(_lib.parseTx(setClaimsManagerAddressTxReceipt).event.args.success, true, 'Expected tx to succeed')
 
     console.log(`ClaimsManagerProxy Address: ${claimsManagerProxy.address}`)
-    const staking = await Staking.at(process.env.stakingAddress)
+    const staking = await Staking.at(stakingAddress)
     let claimsManagerAddressFromStaking = await staking.getClaimsManagerAddress()
     console.log(`ClaimsManagerProxy Address from Staking.sol: ${claimsManagerAddressFromStaking}`)
+
+    // Set staking address in ClaimsManager.sol through governance
+    const setStakingAddressInClaimsManagerTxReceipt = await governance.guardianExecuteTransaction(
+      claimsManagerProxyKey,
+      callValue0,
+      'setStakingAddress(address)',
+      _lib.abiEncode(['address'], [stakingAddress]),
+      { from: guardianAddress }
+    )
+    const stakingAddressFromClaimsManager = await claimsManager.getStakingAddress()
+    assert.strict.equal(stakingAddress, stakingAddressFromClaimsManager, 'Failed to set staking address')
   })
 }
