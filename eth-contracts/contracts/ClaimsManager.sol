@@ -1,9 +1,7 @@
 pragma solidity ^0.5.0;
 import "./Staking.sol";
-import "./registry/RegistryContract.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
-import "./interface/RegistryInterface.sol";
 import "./ServiceProviderFactory.sol";
 /** SafeMath imported via ServiceProviderFactory.sol */
 
@@ -12,20 +10,17 @@ import "./ServiceProviderFactory.sol";
  * Designed to automate claim funding, minting tokens as necessary
  * @notice - will call RegistryContract.constructor, which calls Ownable constructor
  */
-contract ClaimsManager is RegistryContract {
+contract ClaimsManager is InitializableV2 {
     using SafeMath for uint256;
 
     // standard - imitates relationship between Ether and Wei
     uint8 private constant DECIMALS = 18;
 
-    RegistryInterface private registry;
-
     address private tokenAddress;
-
-    bytes32 private stakingProxyOwnerKey;
-    bytes32 private serviceProviderFactoryKey;
-    bytes32 private delegateManagerKey;
-    bytes32 private governanceKey;
+    address private governanceAddress;
+    address private stakingAddress;
+    address private serviceProviderFactoryAddress;
+    address private delegateManagerAddress;
 
     // Claim related configurations
     uint private fundingRoundBlockDiff;
@@ -66,21 +61,13 @@ contract ClaimsManager is RegistryContract {
 
     function initialize(
         address _tokenAddress,
-        address _registryAddress,
-        bytes32 _stakingProxyOwnerKey,
-        bytes32 _serviceProviderFactoryKey,
-        bytes32 _delegateManagerKey,
-        bytes32 _governanceKey
+        address _governanceAddress
     ) public initializer
     {
         tokenAddress = _tokenAddress;
-        stakingProxyOwnerKey = _stakingProxyOwnerKey;
-        serviceProviderFactoryKey = _serviceProviderFactoryKey;
-        delegateManagerKey = _delegateManagerKey;
-        governanceKey = _governanceKey;
+        governanceAddress = _governanceAddress;
 
         audiusToken = ERC20Mintable(tokenAddress);
-        registry = RegistryInterface(_registryAddress);
 
         fundingRoundBlockDiff = 10;
         fundingAmount = 20 * 10**uint256(DECIMALS); // 20 AUDS = 20 * 10**uint256(DECIMALS)
@@ -92,31 +79,64 @@ contract ClaimsManager is RegistryContract {
             totalClaimedInRound: 0
         });
 
-        RegistryContract.initialize();
+        InitializableV2.initialize();
     }
 
-    function getFundingRoundBlockDiff()
-    external view returns (uint blockDiff)
+    function getFundingRoundBlockDiff() external view returns (uint blockDiff)
     {
         return fundingRoundBlockDiff;
     }
 
-    function getLastFundBlock()
-    external view returns (uint lastFundBlock)
+    function getLastFundBlock() external view returns (uint lastFundBlock)
     {
         return currentRound.fundBlock;
     }
 
-    function getFundsPerRound()
-    external view returns (uint amount)
+    function getFundsPerRound() external view returns (uint amount)
     {
         return fundingAmount;
     }
 
-    function getTotalClaimedInRound()
-    external view returns (uint claimedAmount)
+    function getTotalClaimedInRound() external view returns (uint claimedAmount)
     {
         return currentRound.totalClaimedInRound;
+    }
+
+    function getGovernanceAddress() external view returns (address addr) {
+        return governanceAddress;
+    }
+
+    function getServiceProviderFactoryAddress() external view returns (address addr) {
+        return serviceProviderFactoryAddress;
+    }
+
+    function getDelegateManagerAddress() external view returns (address addr) {
+        return delegateManagerAddress;
+    }
+
+    function getStakingAddress() external view returns (address addr)
+    {
+        return stakingAddress;
+    }
+
+    function setGovernanceAddress(address _governanceAddress) external {
+        require(msg.sender == governanceAddress, "Only governance");
+        governanceAddress = _governanceAddress;
+    }
+
+    function setStakingAddress(address _address) external {
+        require(msg.sender == governanceAddress, "Only callable by self");
+        stakingAddress = _address;
+    }
+
+    function setServiceProviderFactoryAddress(address _spFactory) external {
+        require(msg.sender == governanceAddress, "Only governance");
+        serviceProviderFactoryAddress = _spFactory;
+    }
+
+    function setDelegateManagerAddress(address _delegateManager) external {
+        require(msg.sender == governanceAddress, "Only governance");
+        delegateManagerAddress = _delegateManager;
     }
 
     /// @dev - Start a new funding round
@@ -124,11 +144,9 @@ contract ClaimsManager is RegistryContract {
     function initiateRound() external {
         _requireIsInitialized();
 
-        bool senderStaked = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        ).totalStakedFor(msg.sender) > 0;
+        bool senderStaked = Staking(stakingAddress).totalStakedFor(msg.sender) > 0;
         require(
-            senderStaked || (msg.sender == registry.getContract(governanceKey)),
+            senderStaked || (msg.sender == governanceAddress),
             "Only callable by staked account or Governance contract"
         );
 
@@ -161,11 +179,10 @@ contract ClaimsManager is RegistryContract {
     {
         _requireIsInitialized();
         require(
-            msg.sender == registry.getContract(delegateManagerKey),
+            msg.sender == delegateManagerAddress,
             "ProcessClaim only accessible to DelegateManager"
         );
 
-        address stakingAddress = registry.getContract(stakingProxyOwnerKey);
         Staking stakingContract = Staking(stakingAddress);
         // Prevent duplicate claim
         uint lastUserClaimBlock = stakingContract.lastClaimedFor(_claimer);
@@ -174,9 +191,9 @@ contract ClaimsManager is RegistryContract {
             _claimer,
             currentRound.fundBlock);
 
-        (,,bool withinBounds,,,) = ServiceProviderFactory(
-            registry.getContract(serviceProviderFactoryKey)
-        ).getServiceProviderDetails(_claimer);
+        (,,bool withinBounds,,,) = (
+            ServiceProviderFactory(serviceProviderFactoryAddress).getServiceProviderDetails(_claimer)
+        );
 
         // Once they claim the zero reward amount, stake can be modified once again
         // Subtract total locked amount for SP from stake at fund block
@@ -227,7 +244,7 @@ contract ClaimsManager is RegistryContract {
     external returns (uint newAmount)
     {
         require(
-            msg.sender == registry.getContract(governanceKey),
+            msg.sender == governanceAddress,
             "Only callable by Governance contract"
         );
         fundingAmount = _newAmount;
@@ -239,12 +256,10 @@ contract ClaimsManager is RegistryContract {
      * Note that an address with no endpoints can never have a pending claim
      */
     function claimPending(address _sp) external view returns (bool pending) {
-        uint lastClaimedForSP = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        ).lastClaimedFor(_sp);
-        (,,,uint numEndpoints,,) = ServiceProviderFactory(
-            registry.getContract(serviceProviderFactoryKey)
-        ).getServiceProviderDetails(_sp);
+        uint lastClaimedForSP = Staking(stakingAddress).lastClaimedFor(_sp);
+        (,,,uint numEndpoints,,) = (
+            ServiceProviderFactory(serviceProviderFactoryAddress).getServiceProviderDetails(_sp)
+        );
         return (lastClaimedForSP < currentRound.fundBlock && numEndpoints > 0);
     }
 
@@ -253,7 +268,7 @@ contract ClaimsManager is RegistryContract {
      */
     function updateFundingRoundBlockDiff(uint _newFundingRoundBlockDiff) external {
         require(
-            msg.sender == registry.getContract(governanceKey),
+            msg.sender == governanceAddress,
             "Only callable by Governance contract"
         );
         fundingRoundBlockDiff = _newFundingRoundBlockDiff;
