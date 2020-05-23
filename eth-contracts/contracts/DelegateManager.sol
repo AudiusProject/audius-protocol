@@ -329,7 +329,7 @@ contract DelegateManager is RegistryContract {
             uint totalBalanceInStaking,
             uint totalBalanceInSPFactory,
             uint totalBalanceOutsideStaking
-        ) = _validateClaimRewards(msg.sender);
+        ) = _validateClaimRewards(msg.sender, spFactory);
 
         // No-op if balance is already equivalent
         // This case can occur if no rewards due to bound violation or all stake is locked
@@ -404,13 +404,9 @@ contract DelegateManager is RegistryContract {
         );
     }
 
-    function _validateClaimRewards(address _sp)
+    function _validateClaimRewards(address _sp, ServiceProviderFactory spFactory)
     internal returns (uint totalBalanceInStaking, uint totalBalanceInSPFactory, uint totalBalanceOutsideStaking)
         {
-
-        ServiceProviderFactory spFactory = ServiceProviderFactory(
-            registry.getContract(serviceProviderFactoryKey)
-        );
 
         // Account for any pending locked up stake for the service provider
         (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(_sp);
