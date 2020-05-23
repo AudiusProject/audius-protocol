@@ -205,7 +205,7 @@ contract ServiceProviderFactory is RegistryContract {
         spDetails[msg.sender].maxAccountStake = spDetails[msg.sender].maxAccountStake.add(typeMax);
 
         // Confirm both aggregate account balance and directly staked amount are valid
-        uint currentlyStakedForOwner = this.validateAccountStakeBalance(msg.sender);
+        uint currentlyStakedForOwner = this.validateAndGetAccountStakeBalance(msg.sender);
 
         // Indicate this service provider is within bounds
         spDetails[msg.sender].validBounds = true;
@@ -599,9 +599,7 @@ contract ServiceProviderFactory is RegistryContract {
         return decreaseStakeLockupDuration;
     }
 
-    /// @notice Validate that the total service provider balance is between the min and max stakes for all their registered services
-    //          Validates that direct stake for sp is also above minimum
-    function validateAccountStakeBalance(address _sp)
+    function validateAndGetAccountStakeBalance(address _sp)
     external view returns (uint stakedForOwner)
     {
         uint currentlyStakedForOwner = Staking(
@@ -609,6 +607,14 @@ contract ServiceProviderFactory is RegistryContract {
         ).totalStakedFor(_sp);
         _validateBalanceInternal(_sp, currentlyStakedForOwner);
         return currentlyStakedForOwner;
+    }
+
+    /// @notice Validate that the total service provider balance is between the min and max stakes for all their registered services
+    //          Validates that direct stake for sp is also above minimum
+    function validateAccountStakeBalance(address _sp)
+    external view
+    {
+        this.validateAndGetAccountStakeBalance(_sp);
     }
 
     /**
