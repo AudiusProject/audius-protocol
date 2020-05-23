@@ -149,8 +149,8 @@ contract('Governance.sol', async (accounts) => {
     const claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
     const claimsInitializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey, governanceKey]
+      ['address', 'address'],
+      [token.address, governance.address]
     )
     const claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       claimsManager0.address,
@@ -209,6 +209,16 @@ contract('Governance.sol', async (accounts) => {
       serviceProviderFactoryProxy.address,
       claimsManagerProxy.address,
       delegateManagerProxy.address
+    )
+    // ---- Set up claims manageer contract permissions
+    await _lib.configureClaimsManagerContractAddresses(
+      governance,
+      guardianAddress,
+      claimsManagerProxyKey,
+      claimsManager,
+      staking.address,
+      serviceProviderFactory.address,
+      delegateManager.address
     )
   })
 
