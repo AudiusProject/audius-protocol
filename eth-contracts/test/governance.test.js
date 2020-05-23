@@ -1063,7 +1063,7 @@ contract('Governance.sol', async (accounts) => {
     })
   })
 
-  describe('Guardian execute transactions', async () => {    
+  describe('Guardian execute transactions', async () => {
     let slashAmount, targetAddress, targetContractRegistryKey, targetContractAddress
     let callValue, signature, callData, returnData
 
