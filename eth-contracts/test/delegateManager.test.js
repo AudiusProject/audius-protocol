@@ -125,8 +125,8 @@ contract('DelegateManager', async (accounts) => {
     claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
     const claimsInitializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey, governanceKey]
+      ['address', 'address'],
+      [token.address, governance.address]
     )
     claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       claimsManager0.address,
@@ -156,8 +156,8 @@ contract('DelegateManager', async (accounts) => {
 
     const delegateManagerInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, governanceKey, stakingProxyKey, serviceProviderFactoryKey, claimsManagerProxyKey]
+      ['address', 'address'],
+      [token.address, governance.address]
     )
     let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
     let delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
@@ -188,7 +188,6 @@ contract('DelegateManager', async (accounts) => {
       stakingProxy.address
     )
     // ---- Set up staking contract permissions
-    // TODO: FIGURE OUT WHY BELOW IS FAILING ONLY HERE
     await _lib.configureStakingContractAddresses(
       governance,
       guardianAddress,
@@ -197,6 +196,28 @@ contract('DelegateManager', async (accounts) => {
       serviceProviderFactoryProxy.address,
       claimsManagerProxy.address,
       delegateManagerProxy.address
+    )
+
+    // ---- Set up claims manageer contract permissions
+    await _lib.configureClaimsManagerContractAddresses(
+      governance,
+      guardianAddress,
+      claimsManagerProxyKey,
+      claimsManager,
+      staking.address,
+      serviceProviderFactory.address,
+      delegateManager.address
+    )
+
+    // ---- Set up delegateManager  contract permissions
+    await _lib.configureDelegateManagerAddresses(
+      governance,
+      guardianAddress,
+      delegateManagerKey,
+      delegateManager,
+      staking.address,
+      serviceProviderFactory.address,
+      claimsManager.address
     )
   })
 
@@ -908,7 +929,7 @@ contract('DelegateManager', async (accounts) => {
         'Expect no lockup funds to carry over')
     })
 
-    it('single delegator to invalid SP', async () => {
+    it('Single delegator to invalid SP', async () => {
       let initialDelegateAmount = _lib.audToWeiBN(60)
 
       // Approve staking transfer
@@ -927,7 +948,7 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('validate undelegate request restrictions', async () => {
+    it('Validate undelegate request restrictions', async () => {
       await _lib.assertRevert(
         delegateManager.cancelUndelegateStake({ from: delegatorAccount1 }),
         'Pending lockup expected')
