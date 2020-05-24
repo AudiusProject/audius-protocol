@@ -35,7 +35,7 @@ contract('ServiceProvider test', async (accounts) => {
   let staking, serviceProviderFactory, serviceTypeManager, mockDelegateManager
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
-  const [, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const [, proxyAdminAddress, proxyDeployerAddress, fakeGovernanceAddress] = accounts
   const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
 
@@ -855,6 +855,35 @@ contract('ServiceProvider test', async (accounts) => {
       await _lib.assertRevert(
         serviceProviderFactory.updateEndpoint(testDiscProvType, fakeEndpoint, testEndpoint1),
         'Could not find service provider with that endpoint'
+      )
+    })
+
+    it('will fail to set the governance address from not current governance contract', async () => {
+      await _lib.assertRevert(
+        serviceProviderFactory.setGovernanceAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
+    })
+
+    it('will set the new governance address if called from current governance contract', async () => {
+      assert.equal(
+        governance.address,
+        await serviceProviderFactory.getGovernanceAddress(),
+        "expected governance address before changing"  
+      )
+
+      await governance.guardianExecuteTransaction(
+        serviceProviderFactoryKey,
+        callValue,
+        'setGovernanceAddress(address)',
+        _lib.abiEncode(['address'], [fakeGovernanceAddress]),
+        { from: guardianAddress }
+      )
+
+      assert.equal(
+        fakeGovernanceAddress,
+        await serviceProviderFactory.getGovernanceAddress(),
+        "updated governance addresses don't match"
       )
     })
 
