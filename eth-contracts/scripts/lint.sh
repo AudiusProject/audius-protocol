@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -e
+set -o pipefail
+
 
 <<COMMENT
 Lint all files in the audius_contracts repository
