@@ -387,41 +387,6 @@ contract DelegateManager is InitializableV2 {
         );
     }
 
-    function _validateClaimRewards(address _sp, ServiceProviderFactory spFactory)
-    internal returns (uint totalBalanceInStaking, uint totalBalanceInSPFactory, uint totalBalanceOutsideStaking)
-        {
-
-        // Account for any pending locked up stake for the service provider
-        (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
-
-        // Process claim for msg.sender
-        // Total locked parameter is equal to delegate locked up stake + service provider locked up stake
-        ClaimsManager(claimsManagerAddress).processClaim(
-            msg.sender,
-            (spDelegateInfo[msg.sender].totalLockedUpStake.add(spLockedStake))
-        );
-
-        // Amount stored in staking contract for owner
-        uint _totalBalanceInStaking = Staking(stakingAddress).totalStakedFor(msg.sender);
-        require(_totalBalanceInStaking > 0, "Stake required for claim");
-
-        // Amount in sp factory for claimer
-        (uint _totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(msg.sender);
-
-        // Decrease total balance by any locked up stake
-        _totalBalanceInSPFactory = _totalBalanceInSPFactory.sub(spLockedStake);
-
-        // Require active stake to claim any rewards
-        require(_totalBalanceInSPFactory > 0, "Service Provider stake required");
-
-        // Amount in delegate manager staked to service provider
-        uint _totalBalanceOutsideStaking = (
-            _totalBalanceInSPFactory.add(spDelegateInfo[msg.sender].totalDelegatedStake)
-        );
-
-        return (_totalBalanceInStaking, _totalBalanceInSPFactory, _totalBalanceOutsideStaking);
-    }
-
     /**
      * @notice Reduce current stake amount, only callable by governance
      */
@@ -676,6 +641,43 @@ contract DelegateManager is InitializableV2 {
         return stakingAddress;
     }
 
+    // ========================================= Internal functions =========================================
+
+    function _validateClaimRewards(address _sp, ServiceProviderFactory spFactory)
+    internal returns (uint totalBalanceInStaking, uint totalBalanceInSPFactory, uint totalBalanceOutsideStaking)
+        {
+
+        // Account for any pending locked up stake for the service provider
+        (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
+
+        // Process claim for msg.sender
+        // Total locked parameter is equal to delegate locked up stake + service provider locked up stake
+        ClaimsManager(claimsManagerAddress).processClaim(
+            msg.sender,
+            (spDelegateInfo[msg.sender].totalLockedUpStake.add(spLockedStake))
+        );
+
+        // Amount stored in staking contract for owner
+        uint _totalBalanceInStaking = Staking(stakingAddress).totalStakedFor(msg.sender);
+        require(_totalBalanceInStaking > 0, "Stake required for claim");
+
+        // Amount in sp factory for claimer
+        (uint _totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(msg.sender);
+
+        // Decrease total balance by any locked up stake
+        _totalBalanceInSPFactory = _totalBalanceInSPFactory.sub(spLockedStake);
+
+        // Require active stake to claim any rewards
+        require(_totalBalanceInSPFactory > 0, "Service Provider stake required");
+
+        // Amount in delegate manager staked to service provider
+        uint _totalBalanceOutsideStaking = (
+            _totalBalanceInSPFactory.add(spDelegateInfo[msg.sender].totalDelegatedStake)
+        );
+
+        return (_totalBalanceInStaking, _totalBalanceInSPFactory, _totalBalanceOutsideStaking);
+    }
+
     function _delegatorExistsForSP(
         address _delegator,
         address _serviceProvider
@@ -689,8 +691,6 @@ contract DelegateManager is InitializableV2 {
         // Not found
         return false;
     }
-
-    // ========================================= Internal functions =========================================
 
     /**
      * @notice Boolean indicating whether a claim is pending for this service provider
