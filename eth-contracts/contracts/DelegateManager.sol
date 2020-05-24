@@ -4,8 +4,6 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mint
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 /** SafeMath imported via ServiceProviderFactory.sol */
 
-import "./registry/RegistryContract.sol";
-import "./interface/RegistryInterface.sol";
 import "./Staking.sol";
 import "./ServiceProviderFactory.sol";
 import "./ClaimsManager.sol";
@@ -15,17 +13,14 @@ import "./ClaimsManager.sol";
  * Designed to manage delegation to staking contract
  * @notice - will call RegistryContract.initialize(), which calls Ownable.initialize()
  */
-contract DelegateManager is RegistryContract {
+contract DelegateManager is InitializableV2 {
     using SafeMath for uint256;
-    RegistryInterface registry = RegistryInterface(0);
 
     address private tokenAddress;
+    address private governanceAddress;
     address private stakingAddress;
-
-    bytes32 private stakingProxyOwnerKey;
-    bytes32 private serviceProviderFactoryKey;
-    bytes32 private claimsManagerKey;
-    bytes32 private governanceKey;
+    address private serviceProviderFactoryAddress;
+    address private claimsManagerAddress;
 
     /**
      * Number of blocks an undelegate operation has to wait
@@ -97,25 +92,17 @@ contract DelegateManager is RegistryContract {
 
     function initialize (
         address _tokenAddress,
-        address _registryAddress,
-        bytes32 _governanceKey,
-        bytes32 _stakingProxyOwnerKey,
-        bytes32 _serviceProviderFactoryKey,
-        bytes32 _claimsManagerKey
+        address _governanceAddress
     ) public initializer
     {
         tokenAddress = _tokenAddress;
+        governanceAddress = _governanceAddress;
         audiusToken = ERC20Mintable(tokenAddress);
-        registry = RegistryInterface(_registryAddress);
-        governanceKey = _governanceKey;
-        stakingProxyOwnerKey = _stakingProxyOwnerKey;
-        serviceProviderFactoryKey = _serviceProviderFactoryKey;
-        claimsManagerKey = _claimsManagerKey;
         undelegateLockupDuration = 10;
         maxDelegators = 175;
         // Default minimum delegation amount set to 100AUD
         minDelegationAmount = 100 * 10**uint256(18);
-        RegistryContract.initialize();
+        InitializableV2.initialize();
     }
 
     function delegateStake(
@@ -129,9 +116,7 @@ contract DelegateManager is RegistryContract {
             "Delegation not permitted for SP pending claim"
         );
         address delegator = msg.sender;
-        Staking stakingContract = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        );
+        Staking stakingContract = Staking(stakingAddress);
 
         // Stake on behalf of target service provider
         stakingContract.delegateStakeFor(
@@ -167,9 +152,7 @@ contract DelegateManager is RegistryContract {
         );
 
         // Validate balance
-        ServiceProviderFactory(
-            registry.getContract(serviceProviderFactoryKey)
-        ).validateAccountStakeBalance(_targetSP);
+        ServiceProviderFactory(serviceProviderFactoryAddress).validateAccountStakeBalance(_targetSP);
 
         emit IncreaseDelegatedStake(
             delegator,
@@ -254,9 +237,7 @@ contract DelegateManager is RegistryContract {
         uint unstakeAmount = undelegateRequests[delegator].amount;
 
         // Stake on behalf of target service provider
-        Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        ).undelegateStakeFor(
+        Staking(stakingAddress).undelegateStakeFor(
             serviceProvider,
             delegator,
             unstakeAmount
@@ -305,9 +286,7 @@ contract DelegateManager is RegistryContract {
         });
 
         // Validate balance
-        ServiceProviderFactory(
-            registry.getContract(serviceProviderFactoryKey)
-        ).validateAccountStakeBalance(serviceProvider);
+        ServiceProviderFactory(serviceProviderFactoryAddress).validateAccountStakeBalance(serviceProvider);
 
         emit DecreaseDelegatedStake(
             delegator,
@@ -324,26 +303,20 @@ contract DelegateManager is RegistryContract {
     function claimRewards() external {
         _requireIsInitialized();
 
-        ServiceProviderFactory spFactory = ServiceProviderFactory(
-            registry.getContract(serviceProviderFactoryKey)
-        );
+        ServiceProviderFactory spFactory = ServiceProviderFactory(serviceProviderFactoryAddress);
 
         // Account for any pending locked up stake for the service provider
         (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
 
         // Process claim for msg.sender
         // Total locked parameter is equal to delegate locked up stake + service provider locked up stake
-        ClaimsManager(
-            registry.getContract(claimsManagerKey)
-        ).processClaim(
+        ClaimsManager(claimsManagerAddress).processClaim(
             msg.sender,
             (spDelegateInfo[msg.sender].totalLockedUpStake.add(spLockedStake))
         );
 
         // Amount stored in staking contract for owner
-        uint totalBalanceInStaking = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        ).totalStakedFor(msg.sender);
+        uint totalBalanceInStaking = Staking(stakingAddress).totalStakedFor(msg.sender);
         require(totalBalanceInStaking > 0, "Stake required for claim");
 
         // Amount in sp factory for claimer
@@ -442,17 +415,12 @@ contract DelegateManager is RegistryContract {
         _requireIsInitialized();
 
         require(
-            msg.sender == registry.getContract(governanceKey),
+            msg.sender == governanceAddress,
             "Only callable by Governance contract"
         );
 
-        Staking stakingContract = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        );
-
-        ServiceProviderFactory spFactory = ServiceProviderFactory(
-            registry.getContract(serviceProviderFactoryKey)
-        );
+        Staking stakingContract = Staking(stakingAddress);
+        ServiceProviderFactory spFactory = ServiceProviderFactory(serviceProviderFactoryAddress);
 
         // Amount stored in staking contract for owner
         uint totalBalanceInStakingPreSlash = stakingContract.totalStakedFor(_slashAddress);
@@ -535,7 +503,7 @@ contract DelegateManager is RegistryContract {
         _requireIsInitialized();
 
         require(
-            msg.sender == registry.getContract(governanceKey),
+            msg.sender == governanceAddress,
             "Only callable by Governance contract"
         );
 
@@ -549,7 +517,7 @@ contract DelegateManager is RegistryContract {
         _requireIsInitialized();
 
         require(
-            msg.sender == registry.getContract(governanceKey),
+            msg.sender == governanceAddress,
             "Only callable by Governance contract"
         );
 
@@ -563,12 +531,33 @@ contract DelegateManager is RegistryContract {
         _requireIsInitialized();
 
         require(
-            msg.sender == registry.getContract(governanceKey),
+            msg.sender == governanceAddress,
             "Only callable by Governance contract"
         );
 
         minDelegationAmount = _minDelegationAmount;
     }
+
+    function setGovernanceAddress(address _governanceAddress) external {
+        require(msg.sender == governanceAddress, "Only governance");
+        governanceAddress = _governanceAddress;
+    }
+
+    function setStakingAddress(address _address) external {
+        require(msg.sender == governanceAddress, "Only callable by self");
+        stakingAddress = _address;
+    }
+
+    function setServiceProviderFactoryAddress(address _spFactory) external {
+        require(msg.sender == governanceAddress, "Only governance");
+        serviceProviderFactoryAddress = _spFactory;
+    }
+
+    function setClaimsManagerAddress(address _claimsManagerAddress) external {
+        require(msg.sender == governanceAddress, "Only governance");
+        claimsManagerAddress = _claimsManagerAddress;
+    }
+
 
     // ========================================= View Functions =========================================
 
@@ -654,6 +643,23 @@ contract DelegateManager is RegistryContract {
         return minDelegationAmount;
     }
 
+    function getGovernanceAddress() external view returns (address addr) {
+        return governanceAddress;
+    }
+
+    function getServiceProviderFactoryAddress() external view returns (address addr) {
+        return serviceProviderFactoryAddress;
+    }
+
+    function getClaimsManagerAddress() external view returns (address addr) {
+        return claimsManagerAddress;
+    }
+
+    function getStakingAddress() external view returns (address addr)
+    {
+        return stakingAddress;
+    }
+
     function _delegatorExistsForSP(
         address _delegator,
         address _serviceProvider
@@ -674,9 +680,7 @@ contract DelegateManager is RegistryContract {
      * @notice Boolean indicating whether a claim is pending for this service provider
      */
     function _claimPending(address _sp) internal view returns (bool pending) {
-        ClaimsManager claimsManager = ClaimsManager(
-            registry.getContract(claimsManagerKey)
-        );
+        ClaimsManager claimsManager = ClaimsManager(claimsManagerAddress);
         return claimsManager.claimPending(_sp);
     }
 

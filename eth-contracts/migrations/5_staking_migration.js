@@ -41,6 +41,7 @@ module.exports = (deployer, network, accounts) => {
     )
     _lib.registerContract(governance, stakingProxyKey, stakingProxy.address, guardianAddress)
 
+    // Set environment variable
     process.env.stakingAddress = stakingProxy.address
 
     // Set stakingAddress in Governance
