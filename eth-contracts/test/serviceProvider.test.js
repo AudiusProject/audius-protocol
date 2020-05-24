@@ -197,8 +197,8 @@ contract('ServiceProvider test', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey, claimsManagerProxyKey]
+      ['address', 'address'],
+      [registry.address, governance.address]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
@@ -248,7 +248,7 @@ contract('ServiceProvider test', async (accounts) => {
         DEFAULT_AMOUNT,
         stakerAccount
       )
-
+      console.log(regTx)
       // Confirm event has correct amount
       assert.isTrue(regTx.stakeAmount.eq(DEFAULT_AMOUNT))
 

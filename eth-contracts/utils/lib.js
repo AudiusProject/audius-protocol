@@ -124,22 +124,26 @@ export const encodeCall = (name, args, values) => {
 
 export const registerServiceProvider = async (token, staking, serviceProviderFactory, type, endpoint, amount, account) => {
   // Approve staking transfer
-  await token.approve(staking.address, amount, { from: account })
+  try{
+    await token.approve(staking.address, amount, { from: account })
+    console.log("getServiceTypeManagerAddress", await serviceProviderFactory.getServiceTypeManagerAddress())
+    // register service provider
+    const tx = await serviceProviderFactory.register(
+      type,
+      endpoint,
+      amount,
+      account,
+      { from: account }
+    )
 
-  // register service provider
-  const tx = await serviceProviderFactory.register(
-    type,
-    endpoint,
-    amount,
-    account,
-    { from: account }
-  )
-
-  // parse and return args
-  const args = tx.logs.find(log => log.event === 'RegisteredServiceProvider').args
-  args.stakeAmount = args._stakeAmount
-  args.spID = args._spID
-  return args
+    // parse and return args
+    const args = tx.logs.find(log => log.event === 'RegisteredServiceProvider').args
+    args.stakeAmount = args._stakeAmount
+    args.spID = args._spID
+    return args
+  } catch(e) {
+    console.error(e)
+  }
 }
 
 export const deregisterServiceProvider = async (serviceProviderFactory, type, endpoint, account) => {
@@ -340,4 +344,33 @@ export const configureStakingContractAddresses = async (
   assert.equal(spAddress, await staking.getServiceProviderFactoryAddress(), 'Unexpected sp address')
   assert.equal(claimsManagerAddress, await staking.getClaimsManagerAddress(), 'Unexpected claims address')
   assert.equal(delegateManagerAddress, await staking.getDelegateManagerAddress(), 'Unexpected delegate manager address')
+}
+
+// if you're trying to set the Staking address in ServiceProviderFactory
+// contractName - Staking
+// contractToUpdateName - ServiceProviderFactory
+export const executeGuardianTxHelper = async (
+  governance,
+  guardianAddress,
+  registryKey,
+  callValue,
+  signature,
+  callData,
+  contractName,
+  contractAddress,
+  contractToUpdateName,
+  getterFn // getter function to get address from contract
+  ) => {
+  const txReceipt = await governance.guardianExecuteTransaction(
+    registryKey,
+    callValue,
+    signature,
+    callData,
+    { from: guardianAddress })
+  console.log(`${contractName} Address: ${contractAddress}`)
+  let addressFromGetter = await getterFn()
+  console.log(`${contractName} Address from ${contractToUpdateName}.sol: ${addressFromGetter}`)
+  assert(contractAddress === addressFromGetter, "Addresses don't match")
+
+  return txReceipt
 }
