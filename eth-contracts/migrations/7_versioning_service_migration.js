@@ -38,6 +38,7 @@ module.exports = (deployer, network, accounts) => {
     const claimsManagerAddress = process.env.claimsManagerAddress
     const governanceAddress = process.env.governanceAddress
 
+    const claimsManager = await ClaimsManager.at(process.env.claimsManagerAddress)
     const registry = await Registry.at(registryAddress)
     const governance = await Governance.at(governanceAddress)
 
@@ -102,8 +103,8 @@ module.exports = (deployer, network, accounts) => {
     const serviceProviderFactory0 = await deployer.deploy(ServiceProviderFactory, { from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [registryAddress, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey, claimsManagerProxyKey]
+      ['address', 'address'],
+      [registryAddress, process.env.governanceAddress]
     )
     const serviceProviderFactoryProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
@@ -117,6 +118,11 @@ module.exports = (deployer, network, accounts) => {
 
     // Set environment variable
     process.env.serviceProviderFactoryAddress = serviceProviderFactoryProxy.address
+
+    const serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
+    // Set environment variable
+    process.env.serviceProviderFactoryAddress = serviceProviderFactory.address
+
 
     // Set service provider factory in Staking.sol through governance
     const setSPFactoryStakingTxReceipt = await governance.guardianExecuteTransaction(
@@ -133,6 +139,40 @@ module.exports = (deployer, network, accounts) => {
     let spFactoryAddressFromStaking = await staking.getServiceProviderFactoryAddress()
     console.log(`ServiceProviderFactoryProxy Address from Staking.sol: ${spFactoryAddressFromStaking}`)
 
+    // Set Staking address in ServiceProviderFactory.sol through governance
+    const setStakingInSPFactoryTxReceipt = await governance.guardianExecuteTransaction(
+      serviceProviderFactoryKey,
+      _lib.toBN(0),
+      'setStakingAddress(address)',
+      _lib.abiEncode(['address'], [process.env.stakingAddress]),
+      { from: guardianAddress })
+    console.log(`Staking Address: ${staking.address}`)
+    let stakingAddressFromSPFactory = await serviceProviderFactory.getStakingAddress()
+    console.log(`Staking Address from ServiceProviderFactory.sol: ${stakingAddressFromSPFactory}`)
+
+    // Set ServiceTypeManager address in ServiceProviderFactory.sol through governance
+    const setServiceTypeManagerInSPFactoryTxReceipt = await governance.guardianExecuteTransaction(
+      serviceProviderFactoryKey,
+      _lib.toBN(0),
+      'setServiceTypeManagerAddress(address)',
+      _lib.abiEncode(['address'], [serviceTypeManager.address]),
+      { from: guardianAddress })
+    console.log(`ServiceTypeManager Address: ${serviceTypeManager.address}`)
+    let serviceManagerAddressFromSPFactory = await serviceProviderFactory.getServiceTypeManagerAddress()
+    console.log(`ServiceTypeManager Address from ServiceProviderFactory.sol: ${serviceManagerAddressFromSPFactory}`)
+
+    // Set ClaimsManager address in ServiceProviderFactory.sol through governance
+    const setClaimsManagerInSPFactoryTxReceipt = await governance.guardianExecuteTransaction(
+      serviceProviderFactoryKey,
+      _lib.toBN(0),
+      'setClaimsManagerAddress(address)',
+      _lib.abiEncode(['address'], [process.env.claimsManagerAddress]),
+      { from: guardianAddress })
+    
+    let claimsManagerAddressFromSPFactory = await serviceProviderFactory.getClaimsManagerAddress()
+    console.log(`ClaimsManager Address from ServiceProviderFactory.sol: ${claimsManagerAddressFromSPFactory}`);
+    // TODO - add DelegateManager
+    
     // Set service provider address in ClaimsManager.sol through governance
     const setSPFactoryClaimsManagerTxReceipt = await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
@@ -141,7 +181,6 @@ module.exports = (deployer, network, accounts) => {
       _lib.abiEncode(['address'], [serviceProviderFactoryProxy.address]),
       { from: guardianAddress }
     )
-    const claimsManager = await ClaimsManager.at(claimsManagerAddress)
     assert.strict.equal(
       serviceProviderFactoryProxy.address,
       await claimsManager.getServiceProviderFactoryAddress(),

@@ -1,15 +1,12 @@
 import * as _lib from '../utils/lib.js'
 const { time } = require('@openzeppelin/test-helpers')
 
-const AudiusToken = artifacts.require('AudiusToken')
-const Registry = artifacts.require('Registry')
 const Staking = artifacts.require('Staking')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const ClaimsManager = artifacts.require('ClaimsManager')
-const Governance = artifacts.require('Governance')
+const MockDelegateManager = artifacts.require('MockDelegateManager')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -35,10 +32,10 @@ const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
 contract('ServiceProvider test', async (accounts) => {
   let token, registry, staking0, stakingInitializeData, proxy, claimsManager0, claimsManagerProxy, claimsManager, governance
-  let staking, serviceProviderFactory, serviceTypeManager
+  let staking, serviceProviderFactory, serviceTypeManager, mockDelegateManager
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
-  const [, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const [, proxyAdminAddress, proxyDeployerAddress, fakeGovernanceAddress] = accounts
   const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
 
@@ -180,6 +177,11 @@ contract('ServiceProvider test', async (accounts) => {
     // Register claimsManagerProxy
     await registry.addContract(claimsManagerProxyKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
 
+    // Deploy mock delegate manager with only function to forward processClaim call
+    mockDelegateManager = await MockDelegateManager.new()
+    await mockDelegateManager.initialize(registry.address, claimsManagerProxyKey)
+    await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
+
     /** addServiceTypes creatornode and discprov via Governance */
     await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey, true)
     const serviceTypeCNStakeInfo = await serviceTypeManager.getServiceTypeStakeInfo.call(testCreatorNodeType)
@@ -197,8 +199,8 @@ contract('ServiceProvider test', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey, claimsManagerProxyKey]
+      ['address', 'address'],
+      [registry.address, governance.address]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
@@ -239,6 +241,17 @@ contract('ServiceProvider test', async (accounts) => {
       serviceProviderFactory.address,
       _lib.addressZero
     )
+
+    await _lib.configureServiceProviderFactoryAddresses(
+      governance,
+      guardianAddress,
+      serviceProviderFactoryKey,
+      serviceProviderFactory,
+      staking.address,
+      serviceTypeManagerProxy.address,
+      claimsManagerProxy.address,
+      mockDelegateManager.address
+    )
   })
 
   describe('Registration flow', () => {
@@ -258,7 +271,6 @@ contract('ServiceProvider test', async (accounts) => {
         DEFAULT_AMOUNT,
         stakerAccount
       )
-
       // Confirm event has correct amount
       assert.isTrue(regTx.stakeAmount.eq(DEFAULT_AMOUNT))
 
@@ -843,6 +855,35 @@ contract('ServiceProvider test', async (accounts) => {
       await _lib.assertRevert(
         serviceProviderFactory.updateEndpoint(testDiscProvType, fakeEndpoint, testEndpoint1),
         'Could not find service provider with that endpoint'
+      )
+    })
+
+    it('will fail to set the governance address from not current governance contract', async () => {
+      await _lib.assertRevert(
+        serviceProviderFactory.setGovernanceAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
+    })
+
+    it('will set the new governance address if called from current governance contract', async () => {
+      assert.equal(
+        governance.address,
+        await serviceProviderFactory.getGovernanceAddress(),
+        "expected governance address before changing"  
+      )
+
+      await governance.guardianExecuteTransaction(
+        serviceProviderFactoryKey,
+        callValue,
+        'setGovernanceAddress(address)',
+        _lib.abiEncode(['address'], [fakeGovernanceAddress]),
+        { from: guardianAddress }
+      )
+
+      assert.equal(
+        fakeGovernanceAddress,
+        await serviceProviderFactory.getGovernanceAddress(),
+        "updated governance addresses don't match"
       )
     })
 

@@ -108,8 +108,8 @@ contract('DelegateManager', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey, claimsManagerProxyKey]
+      ['address', 'address'],
+      [registry.address, governance.address]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
@@ -218,6 +218,18 @@ contract('DelegateManager', async (accounts) => {
       staking.address,
       serviceProviderFactory.address,
       claimsManager.address
+    )
+
+    // ---- Set up spFactory  contract permissions
+    await _lib.configureServiceProviderFactoryAddresses(
+      governance,
+      guardianAddress,
+      serviceProviderFactoryKey,
+      serviceProviderFactory,
+      staking.address,
+      serviceTypeManagerProxy.address,
+      claimsManagerProxy.address,
+      delegateManagerProxy.address
     )
   })
 

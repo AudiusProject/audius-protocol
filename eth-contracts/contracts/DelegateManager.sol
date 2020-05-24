@@ -302,6 +302,9 @@ contract DelegateManager is InitializableV2 {
      */
     function claimRewards() external {
         _requireIsInitialized();
+        require(serviceProviderFactoryAddress != address(0x00), "serviceProviderFactoryAddress not set");
+        require(claimsManagerAddress != address(0x00), "claimsManagerAddress not set");
+        require(stakingAddress != address(0x00), "stakingAddress not set");
 
         ServiceProviderFactory spFactory = ServiceProviderFactory(serviceProviderFactoryAddress);
 

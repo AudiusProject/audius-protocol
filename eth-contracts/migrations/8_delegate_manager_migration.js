@@ -7,6 +7,7 @@ const DelegateManager = artifacts.require('DelegateManager')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const Governance = artifacts.require('Governance')
+const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const ClaimsManager = artifacts.require('ClaimsManager')
 
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
@@ -66,6 +67,17 @@ module.exports = (deployer, network, accounts) => {
     const staking = await Staking.at(stakingAddress)
     let delManAddrFromStaking = await staking.getDelegateManagerAddress()
     console.log(`DelegateManagerProxy Address from Staking.sol: ${delManAddrFromStaking}`)
+
+    // Set delegate manager address in ServiceProviderFactory.sol through governance
+    const setDelManagerAddressInSPFactoryTxReceipt = await governance.guardianExecuteTransaction(
+      serviceProviderFactoryKey,
+      _lib.toBN(0),
+      'setDelegateManagerAddress(address)',
+      _lib.abiEncode(['address'], [delegateManagerProxy.address]),
+      { from: guardianAddress })
+    const SPFactory = await ServiceProviderFactory.at(process.env.serviceProviderFactoryAddress)
+    let delManAddrFromSPFactory = await SPFactory.getDelegateManagerAddress()
+    console.log(`DelegateManagerProxy Address from ServiceProviderFactory.sol: ${delManAddrFromSPFactory}`)
     assert.strict.equal(delegateManager.address, delManAddrFromStaking, 'Failed to set staking address')
 
     // Set delegate manager address in ClaimsManager.sol through governance
@@ -74,8 +86,11 @@ module.exports = (deployer, network, accounts) => {
       claimsManagerProxyKey,
       _lib.toBN(0),
       'setDelegateManagerAddress(address)',
-      _lib.abiEncode(['address'], [claimsManagerAddress]),
+      _lib.abiEncode(['address'], [delegateManagerProxy.address]),
       { from: guardianAddress })
+      const delManAddrFromClaimsManager = await claimsManager.getDelegateManagerAddress()
+      console.log(`DelegateManagerProxy Address from ClaimsManager.sol: ${delManAddrFromSPFactory}`)
+      assert.strict.equal(delegateManagerProxy.address, delManAddrFromClaimsManager, 'Failed to set delegate manager address in claims manager')
 
     // Configure addresses in DelegateManager.sol through governance
     const setStakingAddressInDelegateManagerReceipt = await governance.guardianExecuteTransaction(
