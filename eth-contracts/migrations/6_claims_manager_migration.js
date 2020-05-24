@@ -1,8 +1,6 @@
 const assert = require('assert')
-
 const contractConfig = require('../contract-config.js')
 const _lib = require('../utils/lib')
-
 const Registry = artifacts.require('Registry')
 const ClaimsManager = artifacts.require('ClaimsManager')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')

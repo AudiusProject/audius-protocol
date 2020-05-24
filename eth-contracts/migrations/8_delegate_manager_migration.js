@@ -1,9 +1,6 @@
 const assert = require('assert')
-
 const contractConfig = require('../contract-config.js')
 const _lib = require('../utils/lib')
-const assert = require('assert')
-
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
 const DelegateManager = artifacts.require('DelegateManager')
@@ -31,7 +28,6 @@ module.exports = (deployer, network, accounts) => {
     const governanceAddress = process.env.governanceAddress
     const claimsManagerAddress = process.env.claimsManagerAddress
     const serviceProviderFactoryAddress = process.env.serviceProviderFactoryAddress
-    const governanceAddress = process.env.governanceAddress
 
     const token = await AudiusToken.at(tokenAddress)
     const registry = await Registry.at(registryAddress)
