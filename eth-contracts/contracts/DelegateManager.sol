@@ -312,7 +312,7 @@ contract DelegateManager is InitializableV2 {
             uint totalBalanceInStaking,
             uint totalBalanceInSPFactory,
             uint totalBalanceOutsideStaking
-        ) = _validateClaimRewards(msg.sender, spFactory);
+        ) = _validateClaimRewards(spFactory);
 
         // No-op if balance is already equivalent
         // This case can occur if no rewards due to bound violation or all stake is locked
@@ -643,7 +643,7 @@ contract DelegateManager is InitializableV2 {
 
     // ========================================= Internal functions =========================================
 
-    function _validateClaimRewards(address _sp, ServiceProviderFactory spFactory)
+    function _validateClaimRewards(ServiceProviderFactory spFactory)
     internal returns (uint totalBalanceInStaking, uint totalBalanceInSPFactory, uint totalBalanceOutsideStaking)
         {
 
