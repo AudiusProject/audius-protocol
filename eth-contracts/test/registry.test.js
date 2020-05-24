@@ -1,26 +1,31 @@
 import * as _lib from '../utils/lib.js'
 
-export const Registry = artifacts.require('./contract/Registry')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
-export const TestContract = artifacts.require('./contract/TestContract')
+const Registry = artifacts.require('./contract/Registry')
+const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+const TestContract = artifacts.require('./contract/TestContract')
 
 contract('Registry', async (accounts) => {
   const contractName = _lib.strings.test
 
-  const [treasuryAddress, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const [, proxyAdminAddress, proxyDeployerAddress] = accounts
 
-  let registry0, initializeCallData, registryProxy, registry
+  let registry, initializeCallData
 
   beforeEach(async () => {
-    registry0 = await Registry.new({ from: proxyDeployerAddress })
+    const registry0 = await Registry.new({ from: proxyDeployerAddress })
     initializeCallData = _lib.encodeCall('initialize', [], [])
-    registryProxy = await AdminUpgradeabilityProxy.new(
+    const registryProxy = await AudiusAdminUpgradeabilityProxy.new(
       registry0.address,
       proxyAdminAddress,
       initializeCallData,
+      _lib.addressZero,
       { from: proxyDeployerAddress }
     )
+
     registry = await Registry.at(registryProxy.address)
+
+    assert.equal(await registry.owner.call(), proxyDeployerAddress)
+    assert.equal(await registryProxy.getAudiusGovernanceAddress.call(), _lib.addressZero)
   })
 
   it('Confirm unregistered contract request returns 0 address', async () => {
@@ -38,7 +43,7 @@ contract('Registry', async (accounts) => {
 
   it('Should add newly deployed contract to Registry', async () => {
     let testContract = await TestContract.new()
-    await testContract.initialize(registry.address)
+    await testContract.initialize()
     let testContractAddress = testContract.address
 
     let tx = await registry.addContract(contractName, testContractAddress, { from: proxyDeployerAddress })
@@ -75,12 +80,12 @@ contract('Registry', async (accounts) => {
 
   it('Fail to add contract under already registered key', async () => {
     const testContract = await TestContract.new()
-    await testContract.initialize(registry.address)
+    await testContract.initialize()
 
     await registry.addContract(contractName, testContract.address, { from: proxyDeployerAddress })
 
     const testContract2 = await TestContract.new()
-    await testContract2.initialize(registry.address)
+    await testContract2.initialize()
 
     await _lib.assertRevert(
       registry.addContract(contractName, testContract2.address, { from: proxyDeployerAddress }),
@@ -118,26 +123,9 @@ contract('Registry', async (accounts) => {
     )
   })
 
-  it('Fail to kill contract', async () => {
-    const testContract = await TestContract.new()
-    await testContract.initialize(registry.address)
-
-    await _lib.assertRevert(
-      testContract.kill(),
-      "RegistryContract::kill: Registry address has not yet been set."
-    )
-
-    await registry.addContract(contractName, testContract.address, { from: proxyDeployerAddress })
-
-    await _lib.assertRevert(
-      testContract.kill(),
-      "RegistryContract::kill: Only registry can kill."
-    )
-  } )
-
   it('Should remove registered contract', async () => {
     let testContract = await TestContract.new()
-    await testContract.initialize(registry.address)
+    await testContract.initialize()
     let testContractAddress = testContract.address
 
     // register contract and confirm successful registration
@@ -170,11 +158,11 @@ contract('Registry', async (accounts) => {
   it('Should upgrade registered contract', async () => {
     // declare three contracts. These are not added to the registry yet
     let testContract1 = await TestContract.new()
-    await testContract1.initialize(registry.address)
+    await testContract1.initialize()
     let testContract2 = await TestContract.new()
-    await testContract2.initialize(registry.address)
+    await testContract2.initialize()
     let testContract3 = await TestContract.new()
-    await testContract3.initialize(registry.address)
+    await testContract3.initialize()
 
     let upgradeTx, upgradeTxInfo
     let regContractAddress
@@ -224,47 +212,24 @@ contract('Registry', async (accounts) => {
     assert.equal(regContractAddressVersionLatest, regContractAddressVersion3, 'Expected same contract address')
   })
 
-  it('Should upgrade registry and re-point all registry contracts', async () => {
+  it('Should upgrade registry and register contracts in two', async () => {
     // register contract
     const testContract = await TestContract.new()
-    await testContract.initialize(registry.address)
-    const tx = await registry.addContract(contractName, testContract.address, { from: proxyDeployerAddress })
+    await testContract.initialize()
+    await registry.addContract(contractName, testContract.address, { from: proxyDeployerAddress })
 
     // deploy new registry
     const registry2_0 = await Registry.new({ from: proxyDeployerAddress })
-    const registry2Proxy = await AdminUpgradeabilityProxy.new(
+    const registry2Proxy = await AudiusAdminUpgradeabilityProxy.new(
       registry2_0.address,
       proxyAdminAddress,
       initializeCallData,
+      _lib.addressZero,
       { from: proxyDeployerAddress }
     )
     const registry2 = await Registry.at(registry2Proxy.address)
 
-    // re-point testContract to new Registry
-    await testContract.setRegistry(registry2.address)
+    // register in new registry
     await registry2.addContract(contractName, testContract.address, { from: proxyDeployerAddress })
-  })
-
-  it('Should fail when a foreign account tries to re-point registry contracts to new registry', async () => {
-    // register contract
-    const testContract = await TestContract.new()
-    await testContract.initialize(registry.address)
-    const tx = await registry.addContract(contractName, testContract.address, { from: proxyDeployerAddress })
-
-    // deploy new registry
-    const registry2_0 = await Registry.new({ from: proxyDeployerAddress })
-    const registry2Proxy = await AdminUpgradeabilityProxy.new(
-      registry2_0.address,
-      proxyAdminAddress,
-      initializeCallData,
-      { from: proxyDeployerAddress }
-    )
-    const registry2 = await Registry.at(registry2Proxy.address)
-
-    // attempt to re-point testContract to new registry from different account
-    await _lib.assertRevert(
-      testContract.setRegistry(registry2.address, {from: accounts[5]}),
-      'Can only be called if registryAddress is empty, msg.sender or owner'
-    ) 
   })
 })

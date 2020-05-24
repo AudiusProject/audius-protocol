@@ -1,15 +1,12 @@
 import * as _lib from '../utils/lib.js'
 const { time } = require('@openzeppelin/test-helpers')
 
-const AudiusToken = artifacts.require('AudiusToken')
-const Registry = artifacts.require('Registry')
 const Staking = artifacts.require('Staking')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const ClaimsManager = artifacts.require('ClaimsManager')
-const Governance = artifacts.require('Governance')
+const MockDelegateManager = artifacts.require('MockDelegateManager')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -17,6 +14,7 @@ const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const governanceKey = web3.utils.utf8ToHex('Governance')
+const tokenRegKey = web3.utils.utf8ToHex('TokenKey')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
 const testCreatorNodeType = web3.utils.utf8ToHex('creator-node')
@@ -25,8 +23,8 @@ const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'
 
 const MIN_STAKE_AMOUNT = 10
-const votingPeriod = 10
-const votingQuorum = 1
+const VOTING_PERIOD = 10
+const VOTING_QUORUM = 1
 
 const INITIAL_BAL = _lib.audToWeiBN(1000)
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
@@ -34,10 +32,11 @@ const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
 contract('ServiceProvider test', async (accounts) => {
   let token, registry, staking0, stakingInitializeData, proxy, claimsManager0, claimsManagerProxy, claimsManager, governance
-  let staking, serviceProviderFactory, serviceTypeManager
+  let staking, serviceProviderFactory, serviceTypeManager, mockDelegateManager
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
-  const [, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const [, proxyAdminAddress, proxyDeployerAddress, fakeGovernanceAddress] = accounts
+  const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
 
   const callValue = _lib.toBN(0)
@@ -98,55 +97,39 @@ contract('ServiceProvider test', async (accounts) => {
   }
 
   beforeEach(async () => {
-    const token0 = await AudiusToken.new({ from: proxyDeployerAddress })
-    const tokenInitData = _lib.encodeCall('initialize', [], [])
-    const tokenProxy = await AdminUpgradeabilityProxy.new(
-      token0.address,
-      proxyAdminAddress,
-      tokenInitData,
-      { from: proxyDeployerAddress }
-    )
-    token = await AudiusToken.at(tokenProxy.address)
+    // Deploy registry
+    registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
 
-    const registry0 = await Registry.new({ from: proxyDeployerAddress })
-    const registryInitData = _lib.encodeCall('initialize', [], [])
-    const registryProxy = await AdminUpgradeabilityProxy.new(
-      registry0.address,
+    // Deploy + register governance
+    governance = await _lib.deployGovernance(
+      artifacts,
       proxyAdminAddress,
-      registryInitData,
-      { from: proxyDeployerAddress }
+      proxyDeployerAddress,
+      registry,
+      VOTING_PERIOD,
+      VOTING_QUORUM,
+      guardianAddress
     )
-    registry = await Registry.at(registryProxy.address)
-
-    // Deploy + register Governance
-    const governance0 = await Governance.new({ from: proxyDeployerAddress })
-    const governanceInitializeData = _lib.encodeCall(
-      'initialize',
-      ['address', 'bytes32', 'uint256', 'uint256', 'address'],
-      [registry.address, stakingProxyKey, votingPeriod, votingQuorum, guardianAddress]
-    )
-    const governanceProxy = await AudiusAdminUpgradeabilityProxy.new(
-      governance0.address,
-      proxyAdminAddress,
-      governanceInitializeData,
-      registry.address,
-      governanceKey,
-      { from: proxyDeployerAddress }
-    )
-    governance = await Governance.at(governanceProxy.address)
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
+
+    // Deploy + register token
+    token = await _lib.deployToken(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress,
+      tokenOwnerAddress,
+      governance.address
+    )
+    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
 
     // Deploy + register Staking
     staking0 = await Staking.new({ from: proxyDeployerAddress })
     stakingInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      ['address', 'address'],
       [
         token.address,
-        registry.address,
-        claimsManagerProxyKey,
-        delegateManagerKey,
-        serviceProviderFactoryKey
+        governance.address
       ]
     )
 
@@ -154,8 +137,7 @@ contract('ServiceProvider test', async (accounts) => {
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
 
@@ -163,17 +145,14 @@ contract('ServiceProvider test', async (accounts) => {
     await registry.addContract(stakingProxyKey, proxy.address, { from: proxyDeployerAddress })
     // Deploy + register ServiceTypeManager
     let serviceTypeInitializeData = _lib.encodeCall(
-      'initialize',
-      ['address', 'bytes32'],
-      [registry.address, governanceKey]
+      'initialize', ['address'], [governance.address]
     )
     let serviceTypeManager0 = await ServiceTypeManager.new({ from: proxyDeployerAddress })
     let serviceTypeManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceTypeManager0.address,
       proxyAdminAddress,
       serviceTypeInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyAdminAddress }
     )
     serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
@@ -183,21 +162,25 @@ contract('ServiceProvider test', async (accounts) => {
     claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
     const claimsInitializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey, governanceKey]
+      ['address', 'address'],
+      [token.address, governance.address]
     )
     claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       claimsManager0.address,
       proxyAdminAddress,
       claimsInitializeCallData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
 
     // Register claimsManagerProxy
     await registry.addContract(claimsManagerProxyKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
+
+    // Deploy mock delegate manager with only function to forward processClaim call
+    mockDelegateManager = await MockDelegateManager.new()
+    await mockDelegateManager.initialize(registry.address, claimsManagerProxyKey)
+    await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
 
     /** addServiceTypes creatornode and discprov via Governance */
     await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey, true)
@@ -216,15 +199,14 @@ contract('ServiceProvider test', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey, claimsManagerProxyKey]
+      ['address', 'address'],
+      [registry.address, governance.address]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
       proxyAdminAddress,
       serviceProviderFactoryCalldata,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyAdminAddress }
     )
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
@@ -232,6 +214,44 @@ contract('ServiceProvider test', async (accounts) => {
 
     // Transfer 1000 tokens to accounts[11]
     await token.transfer(accounts[11], INITIAL_BAL, { from: proxyDeployerAddress })
+    // ---- Configuring addresses
+    await _lib.configureGovernanceStakingAddress(
+      governance,
+      governanceKey,
+      guardianAddress,
+      staking.address
+    )
+    // ---- Set up staking contract permissions
+    await _lib.configureStakingContractAddresses(
+      governance,
+      guardianAddress,
+      stakingProxyKey,
+      staking,
+      serviceProviderFactoryProxy.address,
+      claimsManagerProxy.address,
+      _lib.addressZero
+    )
+    // ---- Set up claims manager contract permissions
+    await _lib.configureClaimsManagerContractAddresses(
+      governance,
+      guardianAddress,
+      claimsManagerProxyKey,
+      claimsManager,
+      staking.address,
+      serviceProviderFactory.address,
+      _lib.addressZero
+    )
+
+    await _lib.configureServiceProviderFactoryAddresses(
+      governance,
+      guardianAddress,
+      serviceProviderFactoryKey,
+      serviceProviderFactory,
+      staking.address,
+      serviceTypeManagerProxy.address,
+      claimsManagerProxy.address,
+      mockDelegateManager.address
+    )
   })
 
   describe('Registration flow', () => {
@@ -251,7 +271,6 @@ contract('ServiceProvider test', async (accounts) => {
         DEFAULT_AMOUNT,
         stakerAccount
       )
-
       // Confirm event has correct amount
       assert.isTrue(regTx.stakeAmount.eq(DEFAULT_AMOUNT))
 
@@ -836,6 +855,35 @@ contract('ServiceProvider test', async (accounts) => {
       await _lib.assertRevert(
         serviceProviderFactory.updateEndpoint(testDiscProvType, fakeEndpoint, testEndpoint1),
         'Could not find service provider with that endpoint'
+      )
+    })
+
+    it('will fail to set the governance address from not current governance contract', async () => {
+      await _lib.assertRevert(
+        serviceProviderFactory.setGovernanceAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
+    })
+
+    it('will set the new governance address if called from current governance contract', async () => {
+      assert.equal(
+        governance.address,
+        await serviceProviderFactory.getGovernanceAddress(),
+        "expected governance address before changing"  
+      )
+
+      await governance.guardianExecuteTransaction(
+        serviceProviderFactoryKey,
+        callValue,
+        'setGovernanceAddress(address)',
+        _lib.abiEncode(['address'], [fakeGovernanceAddress]),
+        { from: guardianAddress }
+      )
+
+      assert.equal(
+        fakeGovernanceAddress,
+        await serviceProviderFactory.getGovernanceAddress(),
+        "updated governance addresses don't match"
       )
     })
 
