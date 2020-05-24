@@ -834,7 +834,7 @@ contract('Governance.sol', async (accounts) => {
 
       it('evaluateProposal fails after targetContract has been upgraded', async () => {
         const testContract = await TestContract.new()
-        await testContract.initialize(registry.address)
+        await testContract.initialize()
 
         // Upgrade contract registered at targetContractRegistryKey
         await registry.upgradeContract(targetContractRegistryKey, testContract.address, { from: proxyDeployerAddress })
