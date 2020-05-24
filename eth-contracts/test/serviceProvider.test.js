@@ -388,7 +388,7 @@ contract('ServiceProvider test', async (accounts) => {
           testCnodeEndpoint1,
           0,
           stakerAccount),
-        'Minimum stake threshold')
+        'Minimum stake requirement not met')
 
       // 3rd endpoint for stakerAccount = https://localhost:4001
       // creator-node
@@ -623,7 +623,7 @@ contract('ServiceProvider test', async (accounts) => {
           MIN_STAKE_AMOUNT - 1,
           stakerAccount2
         ),
-        'Minimum stake threshold exceeded'
+        'Minimum stake requirement not met'
       )
     })
 
@@ -638,7 +638,7 @@ contract('ServiceProvider test', async (accounts) => {
           0,
           stakerAccount2
         ),
-        'Minimum stake threshold exceeded'
+        'Minimum stake requirement not met'
       )
     })
 
@@ -706,7 +706,7 @@ contract('ServiceProvider test', async (accounts) => {
           initialStake,
           stakerAccount
         ),
-        'Minimum stake threshold exceeded'
+        'Minimum stake requirement not met'
       )
     })
 
