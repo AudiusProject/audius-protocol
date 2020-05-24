@@ -1,22 +1,19 @@
 pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
-import "./registry/RegistryContract.sol";
 import "./ServiceTypeManager.sol";
 import "./ClaimsManager.sol";
 import "./Staking.sol";
-import "./interface/RegistryInterface.sol";
 
 
-contract ServiceProviderFactory is RegistryContract {
+contract ServiceProviderFactory is InitializableV2 {
     using SafeMath for uint;
-    RegistryInterface private registry = RegistryInterface(0);
-    bytes32 private stakingProxyOwnerKey;
-    bytes32 private delegateManagerKey;
-    bytes32 private governanceKey;
-    bytes32 private serviceTypeManagerKey;
-    bytes32 private claimsManagerKey;
-    address private deployerAddress;
+
+    address private stakingAddress;
+    address private delegateManagerAddress;
+    address private governanceAddress;
+    address private serviceTypeManagerAddress;
+    address private claimsManagerAddress;
     uint private decreaseStakeLockupDuration;
 
     /// @dev - Stores following entities
@@ -117,24 +114,14 @@ contract ServiceProviderFactory is RegistryContract {
 
     function initialize (
         address _registryAddress,
-        bytes32 _stakingProxyOwnerKey,
-        bytes32 _delegateManagerKey,
-        bytes32 _governanceKey,
-        bytes32 _serviceTypeManagerKey,
-        bytes32 _claimsManagerKey
+        address _governanceAddress
     ) public initializer
     {
         require(
             _registryAddress != address(0x00),
             "Requires non-zero _registryAddress"
         );
-        deployerAddress = msg.sender;
-        registry = RegistryInterface(_registryAddress);
-        stakingProxyOwnerKey = _stakingProxyOwnerKey;
-        delegateManagerKey = _delegateManagerKey;
-        governanceKey = _governanceKey;
-        serviceTypeManagerKey = _serviceTypeManagerKey;
-        claimsManagerKey = _claimsManagerKey;
+        governanceAddress = _governanceAddress;
 
         // Configure direct minimum stake for deployer
         minDeployerStake = 5 * 10**uint256(DECIMALS);
@@ -142,7 +129,7 @@ contract ServiceProviderFactory is RegistryContract {
         // 10 blocks for lockup duration
         decreaseStakeLockupDuration = 10;
 
-        RegistryContract.initialize();
+        InitializableV2.initialize();
     }
 
     /// @notice - Register a new endpoint to the account of msg.sender
@@ -155,17 +142,17 @@ contract ServiceProviderFactory is RegistryContract {
     ) external returns (uint spID)
     {
         _requireIsInitialized();
+        require(serviceTypeManagerAddress != address(0x00), "serviceTypeManagerAddress not set");
+        require(stakingAddress != address(0x00), "stakingAddress not set");
 
         require(
-            ServiceTypeManager(
-                registry.getContract(serviceTypeManagerKey)
-            ).serviceTypeIsValid(_serviceType),
+            ServiceTypeManager(serviceTypeManagerAddress).serviceTypeIsValid(_serviceType),
             "Valid service type required");
 
         // Stake token amount from msg.sender
         if (_stakeAmount > 0) {
             require(!_claimPending(msg.sender), "No claim expected to be pending prior to stake transfer");
-            Staking(registry.getContract(stakingProxyOwnerKey)).stakeFor(msg.sender, _stakeAmount);
+            Staking(stakingAddress).stakeFor(msg.sender, _stakeAmount);
         }
 
         require (
@@ -199,7 +186,7 @@ contract ServiceProviderFactory is RegistryContract {
 
         // Update min and max totals for this service provider
         (uint typeMin, uint typeMax) = ServiceTypeManager(
-            registry.getContract(serviceTypeManagerKey)
+            serviceTypeManagerAddress
         ).getServiceTypeStakeInfo(_serviceType);
         spDetails[msg.sender].minAccountStake = spDetails[msg.sender].minAccountStake.add(typeMin);
         spDetails[msg.sender].maxAccountStake = spDetails[msg.sender].maxAccountStake.add(typeMax);
@@ -284,7 +271,7 @@ contract ServiceProviderFactory is RegistryContract {
 
         // Update min and max totals for this service provider
         (uint typeMin, uint typeMax) = ServiceTypeManager(
-            registry.getContract(serviceTypeManagerKey)
+            serviceTypeManagerAddress
         ).getServiceTypeStakeInfo(_serviceType);
         spDetails[msg.sender].minAccountStake = spDetails[msg.sender].minAccountStake.sub(typeMin);
         spDetails[msg.sender].maxAccountStake = spDetails[msg.sender].maxAccountStake.sub(typeMax);
@@ -324,7 +311,7 @@ contract ServiceProviderFactory is RegistryContract {
         );
 
         Staking stakingContract = Staking(
-            registry.getContract(stakingProxyOwnerKey)
+            stakingAddress
         );
 
         // Stake increased token amount for msg.sender
@@ -361,7 +348,7 @@ contract ServiceProviderFactory is RegistryContract {
         );
 
         Staking stakingContract = Staking(
-            registry.getContract(stakingProxyOwnerKey)
+            stakingAddress
         );
 
         uint currentStakeAmount = stakingContract.totalStakedFor(msg.sender);
@@ -380,7 +367,7 @@ contract ServiceProviderFactory is RegistryContract {
     function cancelDecreaseStakeRequest(address _account) external
     {
         require(
-            msg.sender == _account || msg.sender == registry.getContract(delegateManagerKey),
+            msg.sender == _account || msg.sender == delegateManagerAddress,
             "Only callable from owner or DelegateManager"
         );
         require(_decreaseRequestIsPending(_account), "Decrease stake request must be pending");
@@ -403,7 +390,7 @@ contract ServiceProviderFactory is RegistryContract {
         );
 
         Staking stakingContract = Staking(
-            registry.getContract(stakingProxyOwnerKey)
+            stakingAddress
         );
 
         // Decrease staked token amount for msg.sender
@@ -487,8 +474,9 @@ contract ServiceProviderFactory is RegistryContract {
         uint _amount
      ) external
     {
+        require(delegateManagerAddress != address(0x00), "delegateManagerAddress not set");
         require(
-            msg.sender == registry.getContract(delegateManagerKey),
+            msg.sender == delegateManagerAddress,
             "updateServiceProviderStake - only callable by DelegateManager"
         );
         // Update SP tracked total
@@ -518,7 +506,7 @@ contract ServiceProviderFactory is RegistryContract {
         _requireIsInitialized();
 
         require(
-            msg.sender == registry.getContract(governanceKey),
+            msg.sender == governanceAddress,
             "Only callable by Governance contract"
         );
 
@@ -602,9 +590,7 @@ contract ServiceProviderFactory is RegistryContract {
     function validateAndGetAccountStakeBalance(address _sp)
     external view returns (uint stakedForOwner)
     {
-        uint currentlyStakedForOwner = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        ).totalStakedFor(_sp);
+        uint currentlyStakedForOwner = Staking(stakingAddress).totalStakedFor(_sp);
         _validateBalanceInternal(_sp, currentlyStakedForOwner);
         return currentlyStakedForOwner;
     }
@@ -617,14 +603,57 @@ contract ServiceProviderFactory is RegistryContract {
         this.validateAndGetAccountStakeBalance(_sp);
     }
 
+    function getGovernanceAddress() external view returns (address addr) {
+        return governanceAddress;
+    }
+
+    function getStakingAddress() external view returns (address addr) {
+        return stakingAddress;
+    }
+
+    function getDelegateManagerAddress() external view returns (address addr) {
+        return delegateManagerAddress;
+    }
+
+    function getServiceTypeManagerAddress() external view returns (address addr) {
+        return serviceTypeManagerAddress;
+    }
+
+    function getClaimsManagerAddress() external view returns (address addr) {
+        return claimsManagerAddress;
+    }
+
+    function setGovernanceAddress(address _address) external {
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
+        governanceAddress = _address;
+    }
+
+    function setStakingAddress(address _address) external {
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
+        stakingAddress = _address;
+    }
+
+    function setDelegateManagerAddress(address _address) external {
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
+        delegateManagerAddress = _address;
+    }
+
+    function setServiceTypeManagerAddress(address _address) external {
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
+        serviceTypeManagerAddress = _address;
+    }
+
+    function setClaimsManagerAddress(address _address) external {
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
+        claimsManagerAddress = _address;
+    }
+
     /**
      * @notice Update service provider bound status
      */
     function _updateServiceProviderBoundStatus(address _serviceProvider) internal {
         // Validate bounds for total stake
-        uint totalSPStake = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        ).totalStakedFor(_serviceProvider);
+        uint totalSPStake = Staking(stakingAddress).totalStakedFor(_serviceProvider);
         if (totalSPStake < spDetails[_serviceProvider].minAccountStake ||
             totalSPStake > spDetails[_serviceProvider].maxAccountStake) {
             // Indicate this service provider is out of bounds
@@ -669,8 +698,6 @@ contract ServiceProviderFactory is RegistryContract {
      * @notice Boolean indicating whether a claim is pending for this service provider
      */
     function _claimPending(address _sp) internal view returns (bool pending) {
-        return ClaimsManager(
-            registry.getContract(claimsManagerKey)
-        ).claimPending(_sp);
+        return ClaimsManager(claimsManagerAddress).claimPending(_sp);
     }
 }

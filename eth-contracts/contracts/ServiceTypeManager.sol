@@ -6,8 +6,7 @@ import "./interface/RegistryInterface.sol";
 
 /** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
 contract ServiceTypeManager is RegistryContract {
-    RegistryInterface registry;
-    bytes32 private governanceKey;
+    address governanceAddress;
 
     /**
      * @dev - mapping of serviceType - serviceTypeVersion
@@ -37,17 +36,15 @@ contract ServiceTypeManager is RegistryContract {
     event Test(string msg, bool value);
     event TestAddr(string msg, address addr);
 
-    function initialize(
-        address _registryAddress,
-        bytes32 _governanceKey
-    ) public initializer
+    function initialize(address _governanceAddress) public initializer
     {
-        // TODO move to RegistryContract as modifier
-        require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
-        registry = RegistryInterface(_registryAddress);
-        governanceKey = _governanceKey;
-
+        governanceAddress = _governanceAddress;
         RegistryContract.initialize();
+    }
+
+    function setGovernanceAddress(address _governanceAddress) external {
+        require(msg.sender == governanceAddress, "Only governance");
+        governanceAddress = _governanceAddress;
     }
 
     // ========================================= Service Type Logic =========================================
@@ -61,11 +58,7 @@ contract ServiceTypeManager is RegistryContract {
     {
         _requireIsInitialized();
 
-        require(
-            msg.sender == registry.getContract(governanceKey),
-            "Only callable by Governance contract"
-        );
-
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
         require(!this.serviceTypeIsValid(_serviceType), "Already known service type");
 
         validServiceTypes.push(_serviceType);
@@ -79,10 +72,7 @@ contract ServiceTypeManager is RegistryContract {
     function removeServiceType(bytes32 _serviceType) external {
         _requireIsInitialized();
 
-        require(
-            msg.sender == registry.getContract(governanceKey),
-            "Only callable by Governance contract"
-        );
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
 
         uint serviceIndex = 0;
         bool foundService = false;
@@ -112,7 +102,7 @@ contract ServiceTypeManager is RegistryContract {
     {
         _requireIsInitialized();
         require(
-            msg.sender == registry.getContract(governanceKey),
+            msg.sender == governanceAddress,
             "Only callable by Governance contract"
         );
 
@@ -156,10 +146,7 @@ contract ServiceTypeManager is RegistryContract {
     {
         _requireIsInitialized();
 
-        require(
-            msg.sender == registry.getContract(governanceKey),
-            "Only callable by Governance contract"
-        );
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
 
         require(
             serviceTypeVersionInfo[_serviceType][_serviceVersion] == false,
