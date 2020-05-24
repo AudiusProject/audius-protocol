@@ -648,7 +648,7 @@ contract DelegateManager is InitializableV2 {
         return serviceProviderFactoryAddress;
     }
 
-    function getClaismManagerAddress() external view returns (address addr) {
+    function getClaimsManagerAddress() external view returns (address addr) {
         return claimsManagerAddress;
     }
 

@@ -120,6 +120,9 @@ module.exports = (deployer, network, accounts) => {
       { from: proxyDeployerAddress }
     )
 
+    // Set environment variable
+    process.env.serviceProviderFactoryAddress = serviceProviderFactoryProxy.address
+
     // Set service provider factory in Staking.sol through governance
     const setSPFactoryStakingTxReceipt = await governance.guardianExecuteTransaction(
       stakingProxyKey,
