@@ -89,11 +89,6 @@ contract('ClaimsManager', async (accounts) => {
     await mockStakingCaller.initialize(stakingProxy.address, token.address)
     await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address, { from: proxyDeployerAddress })
 
-    // Deploy mock delegate manager with only function to forward processClaim call
-    mockDelegateManager = await MockDelegateManager.new()
-    await mockDelegateManager.initialize(registry.address, claimsManagerProxyKey)
-    await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
-
     // Deploy claimsManagerProxy
     claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
     const claimsInitializeCallData = _lib.encodeCall(
@@ -112,6 +107,11 @@ contract('ClaimsManager', async (accounts) => {
 
     // Register claimsManagerProxy
     await registry.addContract(claimsManagerProxyKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
+
+    // Deploy mock delegate manager with only function to forward processClaim call
+    mockDelegateManager = await MockDelegateManager.new()
+    await mockDelegateManager.initialize(registry.address, claimsManagerProxy.address)
+    await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
 
     // Register new contract as a minter, from the same address that deployed the contract
     const addMinterTxR = await governance.guardianExecuteTransaction(

@@ -11,7 +11,6 @@ import "./ClaimsManager.sol";
 
 /**
  * Designed to manage delegation to staking contract
- * @notice - will call RegistryContract.initialize(), which calls Ownable.initialize()
  */
 contract DelegateManager is InitializableV2 {
     using SafeMath for uint256;
