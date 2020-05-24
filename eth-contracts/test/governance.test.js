@@ -179,8 +179,8 @@ contract('Governance.sol', async (accounts) => {
     // Deploy + register DelegateManager contract
     const delegateManagerInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, governanceKey, stakingProxyKey, serviceProviderFactoryKey, claimsManagerProxyKey]
+      ['address', 'address'],
+      [token.address, governance.address]
     )
     let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
     let delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
@@ -219,6 +219,17 @@ contract('Governance.sol', async (accounts) => {
       staking.address,
       serviceProviderFactory.address,
       delegateManager.address
+    )
+
+    // ---- Set up delegateManager  contract permissions
+    await _lib.configureDelegateManagerAddresses(
+      governance,
+      guardianAddress,
+      delegateManagerKey,
+      delegateManager,
+      staking.address,
+      serviceProviderFactory.address,
+      claimsManager.address
     )
   })
 

@@ -374,3 +374,36 @@ export const configureClaimsManagerContractAddresses = async (
     { from: guardianAddress })
   assert.equal(delegateManagerAddress, await claimsManager.getDelegateManagerAddress(), 'Unexpected delegate managere')
 }
+
+// Test helper to set delegateManager contract addresses
+export const configureDelegateManagerAddresses = async (
+  governance,
+  guardianAddress,
+  key,
+  delegateManager,
+  stakingAddress,
+  spFactoryAddress,
+  claimsManagerAddress
+) => {
+  await governance.guardianExecuteTransaction(
+    key,
+    toBN(0),
+    'setStakingAddress(address)',
+    abiEncode(['address'], [stakingAddress]),
+    { from: guardianAddress })
+  assert.equal(stakingAddress, await delegateManager.getStakingAddress(), 'Unexpected staking address')
+  await governance.guardianExecuteTransaction(
+    key,
+    toBN(0),
+    'setServiceProviderFactoryAddress(address)',
+    abiEncode(['address'], [spFactoryAddress]),
+    { from: guardianAddress })
+  assert.equal(spFactoryAddress, await delegateManager.getServiceProviderFactoryAddress(), 'Unexpected sp address')
+  await governance.guardianExecuteTransaction(
+    key,
+    toBN(0),
+    'setClaimsManagerAddress(address)',
+    abiEncode(['address'], [claimsManagerAddress]),
+    { from: guardianAddress })
+  assert.equal(claimsManagerAddress, await delegateManager.getClaimsManagerAddress(), 'Unexpected claim manager addr')
+}
