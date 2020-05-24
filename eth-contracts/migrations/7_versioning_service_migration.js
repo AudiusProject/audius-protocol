@@ -1,6 +1,7 @@
+const assert = require('assert')
+
 const contractConfig = require('../contract-config.js')
 const _lib = require('../utils/lib')
-const assert = require('assert').strict
 
 const Registry = artifacts.require('Registry')
 const Staking = artifacts.require('Staking')
@@ -34,7 +35,12 @@ module.exports = (deployer, network, accounts) => {
     const guardianAddress = config.guardianAddress || proxyDeployerAddress
 
     const registryAddress = process.env.registryAddress
+    const claimsManagerAddress = process.env.claimsManagerAddress
+    const governanceAddress = process.env.governanceAddress
+
+    const claimsManager = await ClaimsManager.at(process.env.claimsManagerAddress)
     const registry = await Registry.at(registryAddress)
+    const governance = await Governance.at(governanceAddress)
 
     // Deploy ServiceTypeManager logic and proxy contracts + register proxy
     const serviceTypeManager0 = await deployer.deploy(ServiceTypeManager, { from: proxyDeployerAddress })
@@ -52,15 +58,10 @@ module.exports = (deployer, network, accounts) => {
       { from: proxyDeployerAddress }
     )
     const serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
-    await registry.addContract(
-      serviceTypeManagerProxyKey,
-      serviceTypeManager.address,
-      { from: proxyDeployerAddress }
-    )
+    await _lib.registerContract(governance, serviceTypeManagerProxyKey, serviceTypeManager.address, guardianAddress)
 
-    // Register creatorNode and discoveryProvider service types via governance
+    /* Register creatorNode and discoveryProvider service types via governance */
 
-    const governance = await Governance.at(process.env.governanceAddress)
     const callValue0 = _lib.toBN(0)
     const signatureAddServiceType = 'addServiceType(bytes32,uint256,uint256)'
 
@@ -113,11 +114,10 @@ module.exports = (deployer, network, accounts) => {
       process.env.governanceAddress,
       { from: proxyDeployerAddress }
     )
-    await registry.addContract(
-      serviceProviderFactoryKey,
-      serviceProviderFactoryProxy.address,
-      { from: proxyDeployerAddress }
-    )
+    await _lib.registerContract(governance, serviceProviderFactoryKey, serviceProviderFactoryProxy.address, guardianAddress)
+
+    // Set environment variable
+    process.env.serviceProviderFactoryAddress = serviceProviderFactoryProxy.address
 
     const serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
     // Set environment variable
@@ -130,7 +130,10 @@ module.exports = (deployer, network, accounts) => {
       _lib.toBN(0),
       'setServiceProviderFactoryAddress(address)',
       _lib.abiEncode(['address'], [serviceProviderFactoryProxy.address]),
-      { from: guardianAddress })
+      { from: guardianAddress }
+    )
+    assert.equal(_lib.parseTx(setSPFactoryStakingTxReceipt).event.args.success, true)
+
     console.log(`ServiceProviderFactoryProxy Address: ${serviceProviderFactoryProxy.address}`)
     const staking = await Staking.at(process.env.stakingAddress)
     let spFactoryAddressFromStaking = await staking.getServiceProviderFactoryAddress()
@@ -165,9 +168,23 @@ module.exports = (deployer, network, accounts) => {
       'setClaimsManagerAddress(address)',
       _lib.abiEncode(['address'], [process.env.claimsManagerAddress]),
       { from: guardianAddress })
-    const claimsManager = await ClaimsManager.at(process.env.claimsManagerAddress)
+    
     let claimsManagerAddressFromSPFactory = await serviceProviderFactory.getClaimsManagerAddress()
-    console.log(`ClaimsManager Address from ServiceProviderFactory.sol: ${claimsManagerAddressFromSPFactory}`)
+    console.log(`ClaimsManager Address from ServiceProviderFactory.sol: ${claimsManagerAddressFromSPFactory}`);
     // TODO - add DelegateManager
+    
+    // Set service provider address in ClaimsManager.sol through governance
+    const setSPFactoryClaimsManagerTxReceipt = await governance.guardianExecuteTransaction(
+      claimsManagerProxyKey,
+      _lib.toBN(0),
+      'setServiceProviderFactoryAddress(address)',
+      _lib.abiEncode(['address'], [serviceProviderFactoryProxy.address]),
+      { from: guardianAddress }
+    )
+    assert.strict.equal(
+      serviceProviderFactoryProxy.address,
+      await claimsManager.getServiceProviderFactoryAddress(),
+      'Expect updated claims manager'
+    )
   })
 }

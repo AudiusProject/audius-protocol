@@ -149,8 +149,8 @@ contract('Governance.sol', async (accounts) => {
     const claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
     const claimsInitializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey, governanceKey]
+      ['address', 'address'],
+      [token.address, governance.address]
     )
     const claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       claimsManager0.address,
@@ -179,8 +179,8 @@ contract('Governance.sol', async (accounts) => {
     // Deploy + register DelegateManager contract
     const delegateManagerInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, governanceKey, stakingProxyKey, serviceProviderFactoryKey, claimsManagerProxyKey]
+      ['address', 'address'],
+      [token.address, governance.address]
     )
     let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
     let delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
@@ -209,6 +209,27 @@ contract('Governance.sol', async (accounts) => {
       serviceProviderFactoryProxy.address,
       claimsManagerProxy.address,
       delegateManagerProxy.address
+    )
+    // ---- Set up claims manageer contract permissions
+    await _lib.configureClaimsManagerContractAddresses(
+      governance,
+      guardianAddress,
+      claimsManagerProxyKey,
+      claimsManager,
+      staking.address,
+      serviceProviderFactory.address,
+      delegateManager.address
+    )
+
+    // ---- Set up delegateManager  contract permissions
+    await _lib.configureDelegateManagerAddresses(
+      governance,
+      guardianAddress,
+      delegateManagerKey,
+      delegateManager,
+      staking.address,
+      serviceProviderFactory.address,
+      claimsManager.address
     )
   })
 
@@ -834,7 +855,7 @@ contract('Governance.sol', async (accounts) => {
 
       it('evaluateProposal fails after targetContract has been upgraded', async () => {
         const testContract = await TestContract.new()
-        await testContract.initialize(registry.address)
+        await testContract.initialize()
 
         // Upgrade contract registered at targetContractRegistryKey
         await registry.upgradeContract(targetContractRegistryKey, testContract.address, { from: proxyDeployerAddress })
@@ -1266,7 +1287,7 @@ contract('Governance.sol', async (accounts) => {
       
       // Confirm only current guardianAddress can transfer guardianship
       await _lib.assertRevert(
-        governance.transferGuardianship(newGuardianAddress, { from: accounts[30] }),
+        governance.transferGuardianship(newGuardianAddress, { from: accounts[18] }),
         "Governance::guardianExecuteTransaction: Only guardian."
       )
       

@@ -18,7 +18,7 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
       address _governanceAddress
     )
     AdminUpgradeabilityProxy(_logic, _admin, _data) public payable
-    { 
+    {
         governanceAddress = _governanceAddress;
     }
 

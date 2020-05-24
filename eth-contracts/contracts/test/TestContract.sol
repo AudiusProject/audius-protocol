@@ -1,24 +1,15 @@
 pragma solidity ^0.5.0;
 
-import "../registry/RegistryContract.sol";
-import "../interface/RegistryInterface.sol";
+import "../InitializableV2.sol";
 
 
-/** Simple test RegistryContract w/o storage */
-contract TestContract is RegistryContract {
-
-    RegistryInterface registry = RegistryInterface(0);
+/** Simple test w/o storage */
+contract TestContract is InitializableV2 {
 
     uint public x = 1;
 
-    function initialize(address _registryAddress) public initializer {
-        require(
-            _registryAddress != address(0x00),
-            "Requires non-zero _registryAddress"
-        );
-        registry = RegistryInterface(_registryAddress);
-
-        RegistryContract.initialize();
+    function initialize() public initializer {
+        InitializableV2.initialize();
     }
 
     function setX(uint _x) external {
