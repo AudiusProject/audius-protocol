@@ -1,17 +1,12 @@
 import * as _lib from '../utils/lib.js'
 const { time } = require('@openzeppelin/test-helpers')
 
-const AudiusToken = artifacts.require('AudiusToken')
-const Registry = artifacts.require('Registry')
 const Staking = artifacts.require('Staking')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const ClaimsManager = artifacts.require('ClaimsManager')
-const Governance = artifacts.require('Governance')
 const MockDelegateManager = artifacts.require('MockDelegateManager')
-
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
