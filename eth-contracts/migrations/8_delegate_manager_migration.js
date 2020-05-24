@@ -8,6 +8,7 @@ const DelegateManager = artifacts.require('DelegateManager')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const Governance = artifacts.require('Governance')
+const ClaimsManager = artifacts.require('ClaimsManager')
 
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
@@ -48,6 +49,7 @@ module.exports = (deployer, network, accounts) => {
       { from: proxyDeployerAddress }
     )
     await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: proxyDeployerAddress })
+    const delegateManager = await DelegateManager.at(delegateManagerProxy.address)
 
     // Set delegate manager address in Staking.sol through governance
     const governance = await Governance.at(process.env.governanceAddress)
@@ -61,6 +63,16 @@ module.exports = (deployer, network, accounts) => {
     const staking = await Staking.at(stakingAddress)
     let delManAddrFromStaking = await staking.getDelegateManagerAddress()
     console.log(`DelegateManagerProxy Address from Staking.sol: ${delManAddrFromStaking}`)
+    assert.strict.equal(delegateManager.address, delManAddrFromStaking, 'Failed to set staking address')
+
+    // Set delegate manager address in ClaimsManager.sol through governance
+    const claimsManager = await ClaimsManager.at(claimsManagerAddress)
+    const setDelManagerInClaimsManagerTx = await governance.guardianExecuteTransaction(
+      claimsManagerProxyKey,
+      _lib.toBN(0),
+      'setDelegateManagerAddress(address)',
+      _lib.abiEncode(['address'], [claimsManagerAddress]),
+      { from: guardianAddress })
 
     // Configure addresses in DelegateManager.sol through governance
     const setStakingAddressInDelegateManagerReceipt = await governance.guardianExecuteTransaction(
@@ -70,8 +82,7 @@ module.exports = (deployer, network, accounts) => {
       _lib.abiEncode(['address'], [stakingAddress]),
       { from: guardianAddress }
     )
-    const delegateManger = await DelegateManager.at(delegateManagerProxy.address)
-    assert.strict.equal(stakingAddress, await delegateManger.getStakingAddress(), 'Failed to set staking address')
+    assert.strict.equal(stakingAddress, await delegateManager.getStakingAddress(), 'Failed to set staking address')
 
     const setSPFactoryAddr = await governance.guardianExecuteTransaction(
       delegateManagerKey,
@@ -82,7 +93,7 @@ module.exports = (deployer, network, accounts) => {
     )
     assert.strict.equal(
       serviceProviderFactoryAddress,
-      await delegateManger.getServiceProviderFactoryAddress(),
+      await delegateManager.getServiceProviderFactoryAddress(),
       'Failed to set sp address'
     )
     const spClaimsManagerAddress = await governance.guardianExecuteTransaction(
@@ -94,7 +105,7 @@ module.exports = (deployer, network, accounts) => {
     )
     assert.strict.equal(
       claimsManagerAddress,
-      await delegateManger.getClaimsManagerAddress(),
+      await delegateManager.getClaimsManagerAddress(),
       'Failed to set claims address'
     )
   })
