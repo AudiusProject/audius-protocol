@@ -1,8 +1,10 @@
+const assert = require('assert')
+
 const contractConfig = require('../contract-config.js')
-const { encodeCall } = require('../utils/lib')
+const _lib = require('../utils/lib')
 
 const Registry = artifacts.require('Registry')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
@@ -12,16 +14,21 @@ module.exports = (deployer, network, accounts) => {
 
     // Deploy Registry logic and proxy contracts
     const registry0 = await deployer.deploy(Registry, { from: proxyDeployerAddress })
-    const initializeCallData = encodeCall('initialize', [], [])
+    const initializeCallData = _lib.encodeCall('initialize', [], [])
     const registryProxy = await deployer.deploy(
-      AdminUpgradeabilityProxy,
+      AudiusAdminUpgradeabilityProxy,
       registry0.address,
       proxyAdminAddress,
       initializeCallData,
+      _lib.addressZero,
       { from: proxyDeployerAddress }
     )
+    const registry = await Registry.at(registryProxy.address)
+
+    assert.equal(await registry.owner.call(), proxyDeployerAddress)
+    assert.equal(await registryProxy.getAudiusGovernanceAddress.call(), _lib.addressZero)
 
     // Export to env for reference in future migrations
-    process.env.registryAddress = registryProxy.address
+    process.env.registryAddress = registry.address
   })
 }

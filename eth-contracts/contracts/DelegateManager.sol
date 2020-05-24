@@ -22,8 +22,11 @@ contract DelegateManager is InitializableV2 {
     address private serviceProviderFactoryAddress;
     address private claimsManagerAddress;
 
-    // Number of blocks an undelegate operation has to wait
-    // TODO: Move this value to Staking.sol as SPFactory may need as well
+    /**
+     * Number of blocks an undelegate operation has to wait
+     * TODO: Move this value to Staking.sol as SPFactory may need as well
+     * @notice must be >= Governance.votingPeriod
+     */
     uint private undelegateLockupDuration;
 
     // Maximum number of delegators a single account can handle

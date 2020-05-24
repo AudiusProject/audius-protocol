@@ -1,6 +1,7 @@
+const assert = require('assert')
+
 const contractConfig = require('../contract-config.js')
 const _lib = require('../utils/lib')
-const assert = require('assert').strict
 
 const Registry = artifacts.require('Registry')
 const Staking = artifacts.require('Staking')
@@ -35,7 +36,10 @@ module.exports = (deployer, network, accounts) => {
 
     const registryAddress = process.env.registryAddress
     const claimsManagerAddress = process.env.claimsManagerAddress
+    const governanceAddress = process.env.governanceAddress
+
     const registry = await Registry.at(registryAddress)
+    const governance = await Governance.at(governanceAddress)
 
     // Deploy ServiceTypeManager logic and proxy contracts + register proxy
     const serviceTypeManager0 = await deployer.deploy(ServiceTypeManager, { from: proxyDeployerAddress })
@@ -53,15 +57,10 @@ module.exports = (deployer, network, accounts) => {
       { from: proxyDeployerAddress }
     )
     const serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
-    await registry.addContract(
-      serviceTypeManagerProxyKey,
-      serviceTypeManager.address,
-      { from: proxyDeployerAddress }
-    )
+    await _lib.registerContract(governance, serviceTypeManagerProxyKey, serviceTypeManager.address, guardianAddress)
 
-    // Register creatorNode and discoveryProvider service types via governance
+    /* Register creatorNode and discoveryProvider service types via governance */
 
-    const governance = await Governance.at(process.env.governanceAddress)
     const callValue0 = _lib.toBN(0)
     const signatureAddServiceType = 'addServiceType(bytes32,uint256,uint256)'
 
@@ -114,11 +113,7 @@ module.exports = (deployer, network, accounts) => {
       process.env.governanceAddress,
       { from: proxyDeployerAddress }
     )
-    await registry.addContract(
-      serviceProviderFactoryKey,
-      serviceProviderFactoryProxy.address,
-      { from: proxyDeployerAddress }
-    )
+    await _lib.registerContract(governance, serviceProviderFactoryKey, serviceProviderFactoryProxy.address, guardianAddress)
 
     // Set environment variable
     process.env.serviceProviderFactoryAddress = serviceProviderFactoryProxy.address
@@ -129,7 +124,10 @@ module.exports = (deployer, network, accounts) => {
       _lib.toBN(0),
       'setServiceProviderFactoryAddress(address)',
       _lib.abiEncode(['address'], [serviceProviderFactoryProxy.address]),
-      { from: guardianAddress })
+      { from: guardianAddress }
+    )
+    assert.equal(_lib.parseTx(setSPFactoryStakingTxReceipt).event.args.success, true)
+
     console.log(`ServiceProviderFactoryProxy Address: ${serviceProviderFactoryProxy.address}`)
     const staking = await Staking.at(process.env.stakingAddress)
     let spFactoryAddressFromStaking = await staking.getServiceProviderFactoryAddress()

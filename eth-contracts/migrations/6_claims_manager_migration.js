@@ -1,9 +1,8 @@
-const contractConfig = require('../contract-config.js')
-const { encodeCall } = require('../utils/lib')
-const _lib = require('../utils/lib')
 const assert = require('assert')
 
-const AudiusToken = artifacts.require('AudiusToken')
+const contractConfig = require('../contract-config.js')
+const _lib = require('../utils/lib')
+
 const Registry = artifacts.require('Registry')
 const ClaimsManager = artifacts.require('ClaimsManager')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
@@ -31,7 +30,6 @@ module.exports = (deployer, network, accounts) => {
     const governanceAddress = process.env.governanceAddress
     const stakingAddress = process.env.stakingAddress
 
-    const token = await AudiusToken.at(tokenAddress)
     const registry = await Registry.at(registryAddress)
     const governance = await Governance.at(governanceAddress)
 
@@ -50,8 +48,9 @@ module.exports = (deployer, network, accounts) => {
       governanceAddress,
       { from: proxyDeployerAddress }
     )
+
     const claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
-    await registry.addContract(claimsManagerProxyKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
+    _lib.registerContract(governance, claimsManagerProxyKey, claimsManagerProxy.address, guardianAddress)
 
     // Set environment variable
     process.env.claimsManagerAddress = claimsManagerProxy.address

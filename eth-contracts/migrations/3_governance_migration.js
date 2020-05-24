@@ -1,5 +1,6 @@
+const assert = require('assert')
+
 const contractConfig = require('../contract-config.js')
-const { encodeCall } = require('../utils/lib')
 const _lib = require('../utils/lib')
 
 const Registry = artifacts.require('Registry')
@@ -23,9 +24,9 @@ module.exports = (deployer, network, accounts) => {
     const registryAddress = process.env.registryAddress
     const registry = await Registry.at(registryAddress)
 
-    // Deploy Governance logic and proxy contracts + register proxy
+    // Deploy + register Governance
     const governance0 = await deployer.deploy(Governance, { from: proxyDeployerAddress })
-    const initializeCallData = encodeCall(
+    const initializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'uint256', 'uint256', 'address'],
       [registryAddress, VotingPeriod, VotingQuorum, guardianAddress]
@@ -38,18 +39,23 @@ module.exports = (deployer, network, accounts) => {
       _lib.addressZero,
       { from: proxyDeployerAddress }
     )
-    await registry.addContract(governanceRegKey, governanceProxy.address, { from: proxyDeployerAddress })
+    const governance = await Governance.at(governanceProxy.address)
 
-    console.log(`Governance proxy address: ${governanceProxy.address}`)
-    let proxyAtGovernanceAddress = await AudiusAdminUpgradeabilityProxy.at(governanceProxy.address)
-    let govAddrFromProxy = await proxyAtGovernanceAddress.getAudiusGovernanceAddress()
+    // Set governance Address on Governance proxy contract to enable self-upgradeability
+    let govAddrFromProxy = await governanceProxy.getAudiusGovernanceAddress.call()
+    assert.equal(govAddrFromProxy, _lib.addressZero)
+    await governanceProxy.setAudiusGovernanceAddress(governanceProxy.address, { from: proxyAdminAddress })
+    govAddrFromProxy = await governanceProxy.getAudiusGovernanceAddress.call()
+    assert.equal(govAddrFromProxy, governanceProxy.address)
 
-    console.log(`Governance address from proxy: ${govAddrFromProxy}`)
-    await proxyAtGovernanceAddress.setAudiusGovernanceAddress(governanceProxy.address, { from: proxyAdminAddress })
-    govAddrFromProxy = await proxyAtGovernanceAddress.getAudiusGovernanceAddress()
-    console.log(`Governance address from proxy: ${govAddrFromProxy}`)
+    // Transfer registry ownership to Governance
+    await registry.transferOwnership(governance.address, { from: proxyDeployerAddress })
+    assert.equal(await registry.owner.call(), governance.address)
+
+    // Register contract via governance
+    await _lib.registerContract(governance, governanceRegKey, governance.address, guardianAddress)
 
     // Export to env for reference in future migrations
-    process.env.governanceAddress = governanceProxy.address
+    process.env.governanceAddress = governance.address
   })
 }
