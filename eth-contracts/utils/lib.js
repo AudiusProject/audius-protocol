@@ -90,7 +90,7 @@ export const assertRevert = async (blockOrPromise, expectedReason) => {
     return
   }
   const expectedMsgFound = error.message.indexOf(expectedReason) >= 0
-  assert.isTrue(expectedMsgFound, `Expected revert reason not found. Expected '${expectedReason}'. Found '${error.message}'`)
+  assert.equal(expectedMsgFound, true, `Expected revert reason not found. Expected '${expectedReason}'. Found '${error.message}'`)
 }
 
 export const toBN = (val) => web3New.utils.toBN(val)
