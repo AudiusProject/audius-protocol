@@ -9,8 +9,7 @@ import "../InitializableV2.sol";
 
 
 /** Upgradeable ERC20 token that is Detailed, Mintable, Pausable, Burnable. */
-contract AudiusToken
-is  InitializableV2,
+contract AudiusToken is InitializableV2,
     ERC20,
     ERC20Detailed,
     ERC20Mintable,

@@ -1,3 +1,5 @@
+const assert = require('assert')
+
 const contractConfig = require('../contract-config.js')
 const _lib = require('../utils/lib')
 
@@ -23,9 +25,11 @@ module.exports = (deployer, network, accounts) => {
 
     const tokenAddress = process.env.tokenAddress
     const registryAddress = process.env.registryAddress
+    const governanceAddress = process.env.governanceAddress
 
     const token = await AudiusToken.at(tokenAddress)
     const registry = await Registry.at(registryAddress)
+    const governance = await Governance.at(governanceAddress)
 
     // Deploy DelegateManager logic and proxy contracts + register proxy
     const delegateManager0 = await deployer.deploy(DelegateManager, { from: proxyDeployerAddress })
@@ -42,16 +46,18 @@ module.exports = (deployer, network, accounts) => {
       process.env.governanceAddress,
       { from: proxyDeployerAddress }
     )
-    await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: proxyDeployerAddress })
+    await _lib.registerContract(governance, delegateManagerKey, delegateManagerProxy.address, guardianAddress)
 
     // Set delegate manager address in Staking.sol through governance
-    const governance = await Governance.at(process.env.governanceAddress)
     const setDelManagerAddressTxReceipt = await governance.guardianExecuteTransaction(
       stakingProxyKey,
       _lib.toBN(0),
       'setDelegateManagerAddress(address)',
       _lib.abiEncode(['address'], [delegateManagerProxy.address]),
-      { from: guardianAddress })
+      { from: guardianAddress }
+    )
+    assert.equal(_lib.parseTx(setDelManagerAddressTxReceipt).event.args.success, true)
+    
     console.log(`DelegateManagerProxy Address: ${delegateManagerProxy.address}`)
     const staking = await Staking.at(process.env.stakingAddress)
     let delManAddrFromStaking = await staking.getDelegateManagerAddress()

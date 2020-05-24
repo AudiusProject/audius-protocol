@@ -834,7 +834,7 @@ contract('Governance.sol', async (accounts) => {
 
       it('evaluateProposal fails after targetContract has been upgraded', async () => {
         const testContract = await TestContract.new()
-        await testContract.initialize(registry.address)
+        await testContract.initialize()
 
         // Upgrade contract registered at targetContractRegistryKey
         await registry.upgradeContract(targetContractRegistryKey, testContract.address, { from: proxyDeployerAddress })
@@ -1266,7 +1266,7 @@ contract('Governance.sol', async (accounts) => {
       
       // Confirm only current guardianAddress can transfer guardianship
       await _lib.assertRevert(
-        governance.transferGuardianship(newGuardianAddress, { from: accounts[30] }),
+        governance.transferGuardianship(newGuardianAddress, { from: accounts[18] }),
         "Governance::guardianExecuteTransaction: Only guardian."
       )
       
