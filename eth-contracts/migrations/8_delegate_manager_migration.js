@@ -86,8 +86,11 @@ module.exports = (deployer, network, accounts) => {
       claimsManagerProxyKey,
       _lib.toBN(0),
       'setDelegateManagerAddress(address)',
-      _lib.abiEncode(['address'], [claimsManagerAddress]),
+      _lib.abiEncode(['address'], [delegateManagerProxy.address]),
       { from: guardianAddress })
+      const delManAddrFromClaimsManager = await claimsManager.getDelegateManagerAddress()
+      console.log(`DelegateManagerProxy Address from ClaimsManager.sol: ${delManAddrFromSPFactory}`)
+      assert.strict.equal(delegateManagerProxy.address, delManAddrFromClaimsManager, 'Failed to set delegate manager address in claims manager')
 
     // Configure addresses in DelegateManager.sol through governance
     const setStakingAddressInDelegateManagerReceipt = await governance.guardianExecuteTransaction(
