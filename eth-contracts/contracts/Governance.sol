@@ -99,7 +99,7 @@ contract Governance is InitializableV2 {
         votingQuorum = _votingQuorum;
 
         require(_guardianAddress != address(0x00), "Requires non-zero _guardianAddress");
-        guardianAddress = _guardianAddress;  //Guardian address becomes the only party 
+        guardianAddress = _guardianAddress;  //Guardian address becomes the only party
 
         InitializableV2.initialize();
     }
@@ -208,7 +208,10 @@ contract Governance is InitializableV2 {
         );
 
         // Require vote is either Yes or No
-        require(_vote == Vote.Yes || _vote == Vote.No, "Governance::submitProposalVote: Can only submit a Yes or No vote");
+        require(
+            _vote == Vote.Yes || _vote == Vote.No,
+            "Governance::submitProposalVote: Can only submit a Yes or No vote"
+        );
 
         // Record previous vote.
         Vote previousVote = proposals[_proposalId].votes[voter];

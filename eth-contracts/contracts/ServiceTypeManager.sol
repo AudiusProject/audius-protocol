@@ -1,6 +1,8 @@
 pragma solidity ^0.5.0;
 
 import "./interface/RegistryInterface.sol";
+import "./InitializableV2.sol";
+
 
 contract ServiceTypeManager is InitializableV2 {
     address governanceAddress;

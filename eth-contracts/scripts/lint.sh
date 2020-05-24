@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 <<COMMENT
 Lint all files in the audius_contracts repository
