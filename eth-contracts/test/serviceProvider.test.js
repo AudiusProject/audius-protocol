@@ -10,6 +10,8 @@ const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const ClaimsManager = artifacts.require('ClaimsManager')
 const Governance = artifacts.require('Governance')
+const MockDelegateManager = artifacts.require('MockDelegateManager')
+
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -35,7 +37,7 @@ const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
 contract('ServiceProvider test', async (accounts) => {
   let token, registry, staking0, stakingInitializeData, proxy, claimsManager0, claimsManagerProxy, claimsManager, governance
-  let staking, serviceProviderFactory, serviceTypeManager
+  let staking, serviceProviderFactory, serviceTypeManager, mockDelegateManager
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress] = accounts
@@ -180,6 +182,11 @@ contract('ServiceProvider test', async (accounts) => {
     // Register claimsManagerProxy
     await registry.addContract(claimsManagerProxyKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
 
+    // Deploy mock delegate manager with only function to forward processClaim call
+    mockDelegateManager = await MockDelegateManager.new()
+    await mockDelegateManager.initialize(registry.address, claimsManagerProxyKey)
+    await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
+
     /** addServiceTypes creatornode and discprov via Governance */
     await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey, true)
     const serviceTypeCNStakeInfo = await serviceTypeManager.getServiceTypeStakeInfo.call(testCreatorNodeType)
@@ -239,6 +246,17 @@ contract('ServiceProvider test', async (accounts) => {
       serviceProviderFactory.address,
       _lib.addressZero
     )
+
+    await _lib.configureServiceProviderFactoryAddresses(
+      governance,
+      guardianAddress,
+      serviceProviderFactoryKey,
+      serviceProviderFactory,
+      staking.address,
+      serviceTypeManagerProxy.address,
+      claimsManagerProxy.address,
+      mockDelegateManager.address
+    )
   })
 
   describe('Registration flow', () => {
@@ -258,7 +276,6 @@ contract('ServiceProvider test', async (accounts) => {
         DEFAULT_AMOUNT,
         stakerAccount
       )
-      console.log(regTx)
       // Confirm event has correct amount
       assert.isTrue(regTx.stakeAmount.eq(DEFAULT_AMOUNT))
 

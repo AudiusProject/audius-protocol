@@ -142,6 +142,8 @@ contract ServiceProviderFactory is InitializableV2 {
     ) external returns (uint spID)
     {
         _requireIsInitialized();
+        require(serviceTypeManagerAddress != address(0x00), "serviceTypeManagerAddress not set");
+        require(stakingAddress != address(0x00), "stakingAddress not set");
 
         require(
             ServiceTypeManager(serviceTypeManagerAddress).serviceTypeIsValid(_serviceType),
@@ -472,6 +474,7 @@ contract ServiceProviderFactory is InitializableV2 {
         uint _amount
      ) external
     {
+        require(delegateManagerAddress != address(0x00), "delegateManagerAddress not set");
         require(
             msg.sender == delegateManagerAddress,
             "updateServiceProviderStake - only callable by DelegateManager"

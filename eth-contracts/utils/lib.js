@@ -125,9 +125,7 @@ export const encodeCall = (name, args, values) => {
 
 export const registerServiceProvider = async (token, staking, serviceProviderFactory, type, endpoint, amount, account) => {
   // Approve staking transfer
-  try{
-    await token.approve(staking.address, amount, { from: account })
-    console.log("getServiceTypeManagerAddress", await serviceProviderFactory.getServiceTypeManagerAddress())
+  await token.approve(staking.address, amount, { from: account })
     // register service provider
     const tx = await serviceProviderFactory.register(
       type,
@@ -142,9 +140,6 @@ export const registerServiceProvider = async (token, staking, serviceProviderFac
     args.stakeAmount = args._stakeAmount
     args.spID = args._spID
     return args
-  } catch(e) {
-    console.error(e)
-  }
 }
 
 export const deregisterServiceProvider = async (serviceProviderFactory, type, endpoint, account) => {
@@ -411,6 +406,47 @@ export const configureDelegateManagerAddresses = async (
     abiEncode(['address'], [claimsManagerAddress]),
     { from: guardianAddress })
   assert.equal(claimsManagerAddress, await delegateManager.getClaimsManagerAddress(), 'Unexpected claim manager addr')
+}
+
+// Test helper to set serviceProviderFactory contract addresses
+export const configureServiceProviderFactoryAddresses = async (
+  governance,
+  guardianAddress,
+  key,
+  spFactory,
+  stakingAddress,
+  serviceTypeManagerAddress,
+  claimsManagerAddress,
+  delegateManagerAddress
+) => {
+  await governance.guardianExecuteTransaction(
+    key,
+    toBN(0),
+    'setStakingAddress(address)',
+    abiEncode(['address'], [stakingAddress]),
+    { from: guardianAddress })
+  assert.equal(stakingAddress, await spFactory.getStakingAddress(), 'Unexpected staking address')
+  await governance.guardianExecuteTransaction(
+    key,
+    toBN(0),
+    'setServiceTypeManagerAddress(address)',
+    abiEncode(['address'], [serviceTypeManagerAddress]),
+    { from: guardianAddress })
+  assert.equal(serviceTypeManagerAddress, await spFactory.getServiceTypeManagerAddress(), 'Unexpected service type manager address')
+  await governance.guardianExecuteTransaction(
+    key,
+    toBN(0),
+    'setClaimsManagerAddress(address)',
+    abiEncode(['address'], [claimsManagerAddress]),
+    { from: guardianAddress })
+  assert.equal(claimsManagerAddress, await spFactory.getClaimsManagerAddress(), 'Unexpected claim manager addr')
+  await governance.guardianExecuteTransaction(
+    key,
+    toBN(0),
+    'setDelegateManagerAddress(address)',
+    abiEncode(['address'], [delegateManagerAddress]),
+    { from: guardianAddress })
+  assert.equal(delegateManagerAddress, await spFactory.getDelegateManagerAddress(), 'Unexpected delegate manager addr')
 }
 
 export const registerContract = async (governance, contractKey, contractAddress, guardianAddress, expectedSuccess = true) => {
