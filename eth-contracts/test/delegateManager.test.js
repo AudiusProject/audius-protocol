@@ -102,7 +102,7 @@ contract('DelegateManager', async (accounts) => {
     let serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
 
     // Register discprov serviceType
-    await _lib.addServiceType(testDiscProvType, _lib.audToWei(5), _lib.audToWei(10000000), governance, guardianAddress, serviceTypeManagerProxyKey, true)
+    await _lib.addServiceType(testDiscProvType, _lib.audToWei(5), _lib.audToWei(10000000), governance, guardianAddress, serviceTypeManagerProxyKey)
 
     // Deploy ServiceProviderFactory
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
@@ -145,14 +145,13 @@ contract('DelegateManager', async (accounts) => {
     )
 
     // Register new contract as a minter, from the same address that deployed the contract
-    const addMinterTxR = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       tokenRegKey,
       callValue0,
       'addMinter(address)',
       _lib.abiEncode(['address'], [claimsManager.address]),
       { from: guardianAddress }
     )
-    assert.equal(_lib.parseTx(addMinterTxR).event.args.success, true)
 
     const delegateManagerInitializeData = _lib.encodeCall(
       'initialize',
@@ -172,14 +171,13 @@ contract('DelegateManager', async (accounts) => {
     await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: proxyDeployerAddress })
 
     // Clear min delegation amount for testing
-    const updateMinDelAmountTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       delegateManagerKey,
       _lib.toBN(0),
       'updateMinDelegationAmount(uint256)',
       _lib.abiEncode(['uint256'], [0]),
       { from: guardianAddress }
     )
-    assert.isTrue(_lib.parseTx(updateMinDelAmountTxReceipt).event.args.success, 'Expected tx to succeed')
     // ---- Configuring addresses
     await _lib.configureGovernanceStakingAddress(
       governance,
@@ -651,7 +649,7 @@ contract('DelegateManager', async (accounts) => {
       const slashAmount = _lib.toBN(slashAmountVal)
 
       // Perform slash functions
-      await _lib.slash(slashAmountVal, slasherAccount, governance, delegateManagerKey, guardianAddress, true)
+      await _lib.slash(slashAmountVal, slasherAccount, governance, delegateManagerKey, guardianAddress)
 
       // Summarize after execution
       let spFactoryStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
@@ -674,7 +672,8 @@ contract('DelegateManager', async (accounts) => {
         serviceProviderFactory,
         testDiscProvType,
         testEndpoint,
-        stakerAccount)
+        stakerAccount
+      )
       // Query the resulting deregister operation
       let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
       // Advance to valid block
@@ -685,10 +684,16 @@ contract('DelegateManager', async (accounts) => {
       /** Perform slash functions */
 
       // Fail to slash more than currently staked
-      await _lib.slash(DEFAULT_AMOUNT_VAL, slasherAccount, governance, delegateManagerKey, guardianAddress, false)
+      await _lib.assertRevert(
+        _lib.slash(DEFAULT_AMOUNT_VAL, slasherAccount, governance, delegateManagerKey, guardianAddress),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
 
       // Fail to slash more than currently staked
-      await _lib.slash(DEFAULT_AMOUNT_VAL + 4, stakerAccount2, governance, delegateManagerKey, guardianAddress, false)
+      await _lib.assertRevert(
+        _lib.slash(DEFAULT_AMOUNT_VAL + 4, stakerAccount2, governance, delegateManagerKey, guardianAddress),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
 
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
@@ -717,7 +722,10 @@ contract('DelegateManager', async (accounts) => {
       await serviceProviderFactory.decreaseStake({ from: stakerAccount2 })
 
       // Fail to slash account with zero stake
-      await _lib.slash(DEFAULT_AMOUNT_VAL, stakerAccount2, governance, delegateManagerKey, guardianAddress, false)
+      _lib.assertRevert(
+        _lib.slash(DEFAULT_AMOUNT_VAL, stakerAccount2, governance, delegateManagerKey, guardianAddress),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
     })
 
     // TODO: Revisit below test case and remove unneeded validation if necessary
@@ -936,7 +944,7 @@ contract('DelegateManager', async (accounts) => {
         'Initial delegate amount not found')
 
       // Perform slash functions
-      await _lib.slash(slashAmountVal, slasherAccount, governance, delegateManagerKey, guardianAddress, true)
+      await _lib.slash(slashAmountVal, slasherAccount, governance, delegateManagerKey, guardianAddress)
 
       let postRewardInfo = await getAccountStakeInfo(stakerAccount, false)
 
@@ -1099,7 +1107,7 @@ contract('DelegateManager', async (accounts) => {
       let slashAmount = (preSlashInfo.spFactoryStake).sub(diffAmount)
 
       // Perform slash functions
-      await _lib.slash(_lib.audToWei(_lib.fromWei(slashAmount)), slasherAccount, governance, delegateManagerKey, guardianAddress, true)
+      await _lib.slash(_lib.audToWei(_lib.fromWei(slashAmount)), slasherAccount, governance, delegateManagerKey, guardianAddress)
 
       let spDetails = await getAccountStakeInfo(stakerAccount, false)
       assert.isFalse(
@@ -1265,14 +1273,13 @@ contract('DelegateManager', async (accounts) => {
         "Only callable by Governance contract"
       )
 
-      const txReceipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         delegateManagerKey,
         _lib.toBN(0),
         'updateUndelegateLockupDuration(uint256)',
         _lib.abiEncode(['uint256'], [newDurationVal]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(txReceipt).event.args.success, 'Expected tx to succeed')
 
       currentDuration = await delegateManager.getUndelegateLockupDuration()
       assert.isTrue(currentDuration.eq(newDuration))
@@ -1281,14 +1288,13 @@ contract('DelegateManager', async (accounts) => {
     it('Maximum delegators', async () => {
       // Update max delegators to 4
       const maxDelegators = 4
-      const tx = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         delegateManagerKey,
         _lib.toBN(0),
         'updateMaxDelegators(uint256)',
         _lib.abiEncode(['uint256'], [maxDelegators]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(tx).event.args.success, 'Expected tx to succeed')
 
       assert.equal(
         _lib.fromBN(await delegateManager.getMaxDelegators()),
@@ -1326,14 +1332,13 @@ contract('DelegateManager', async (accounts) => {
       let minDelegateStakeVal = _lib.audToWei(100)
       let minDelegateStake = _lib.toBN(minDelegateStakeVal)
       
-      const updateMinDelTxReceipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         delegateManagerKey,
         _lib.toBN(0),
         'updateMinDelegationAmount(uint256)',
         _lib.abiEncode(['uint256'], [minDelegateStakeVal]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(updateMinDelTxReceipt).event.args.success, 'Expected tx to succeed')
 
       assert.isTrue(
         minDelegateStake.eq(await delegateManager.getMinDelegationAmount()),
@@ -1520,7 +1525,7 @@ contract('DelegateManager', async (accounts) => {
         assert.isTrue((requestInfo.amount).gt(_lib.toBN(0)), 'Expected amount to be set')
         
         // Slash
-        await _lib.slash(_lib.audToWei(5), slasherAccount, governance, delegateManagerKey, guardianAddress, true)
+        await _lib.slash(_lib.audToWei(5), slasherAccount, governance, delegateManagerKey, guardianAddress)
 
         requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
         assert.isTrue((requestInfo.lockupExpiryBlock).eq(_lib.toBN(0)), 'Expected lockup expiry block reset')
@@ -1537,14 +1542,13 @@ contract('DelegateManager', async (accounts) => {
           "Only callable by Governance contract"
         )
 
-        const updateDSLDTxReceipt = await governance.guardianExecuteTransaction(
+        await governance.guardianExecuteTransaction(
           serviceProviderFactoryKey,
           _lib.toBN(0),
           'updateDecreaseStakeLockupDuration(uint256)',
           _lib.abiEncode(['uint256'], [_lib.fromBN(newDuration)]),
           { from: guardianAddress }
         )
-        assert.isTrue(_lib.parseTx(updateDSLDTxReceipt).event.args.success, 'Expected tx to succeed')
 
         let updatedDuration = await serviceProviderFactory.getDecreaseStakeLockupDuration()
         assert.isTrue(updatedDuration.eq(newDuration), 'Update not reflected')

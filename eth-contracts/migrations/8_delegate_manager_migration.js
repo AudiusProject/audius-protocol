@@ -54,14 +54,13 @@ module.exports = (deployer, network, accounts) => {
     const delegateManager = await DelegateManager.at(delegateManagerProxy.address)
 
     // Set delegate manager address in Staking.sol through governance
-    const setDelManagerAddressTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       stakingProxyKey,
       _lib.toBN(0),
       'setDelegateManagerAddress(address)',
       _lib.abiEncode(['address'], [delegateManagerProxy.address]),
       { from: guardianAddress }
     )
-    assert.equal(_lib.parseTx(setDelManagerAddressTxReceipt).event.args.success, true)
     
     console.log(`DelegateManagerProxy Address: ${delegateManagerProxy.address}`)
     const staking = await Staking.at(stakingAddress)
@@ -69,7 +68,7 @@ module.exports = (deployer, network, accounts) => {
     console.log(`DelegateManagerProxy Address from Staking.sol: ${delManAddrFromStaking}`)
 
     // Set delegate manager address in ServiceProviderFactory.sol through governance
-    const setDelManagerAddressInSPFactoryTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       serviceProviderFactoryKey,
       _lib.toBN(0),
       'setDelegateManagerAddress(address)',
@@ -82,7 +81,7 @@ module.exports = (deployer, network, accounts) => {
 
     // Set delegate manager address in ClaimsManager.sol through governance
     const claimsManager = await ClaimsManager.at(claimsManagerAddress)
-    const setDelManagerInClaimsManagerTx = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
       _lib.toBN(0),
       'setDelegateManagerAddress(address)',
@@ -93,7 +92,7 @@ module.exports = (deployer, network, accounts) => {
       assert.strict.equal(delegateManagerProxy.address, delManAddrFromClaimsManager, 'Failed to set delegate manager address in claims manager')
 
     // Configure addresses in DelegateManager.sol through governance
-    const setStakingAddressInDelegateManagerReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       delegateManagerKey,
       _lib.toBN(0),
       'setStakingAddress(address)',
@@ -102,7 +101,7 @@ module.exports = (deployer, network, accounts) => {
     )
     assert.strict.equal(stakingAddress, await delegateManager.getStakingAddress(), 'Failed to set staking address')
 
-    const setSPFactoryAddr = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       delegateManagerKey,
       _lib.toBN(0),
       'setServiceProviderFactoryAddress(address)',
@@ -114,7 +113,7 @@ module.exports = (deployer, network, accounts) => {
       await delegateManager.getServiceProviderFactoryAddress(),
       'Failed to set sp address'
     )
-    const spClaimsManagerAddress = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       delegateManagerKey,
       _lib.toBN(0),
       'setClaimsManagerAddress(address)',

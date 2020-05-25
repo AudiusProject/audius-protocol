@@ -184,13 +184,13 @@ contract('ServiceProvider test', async (accounts) => {
     await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
 
     /** addServiceTypes creatornode and discprov via Governance */
-    await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey, true)
+    await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey)
     const serviceTypeCNStakeInfo = await serviceTypeManager.getServiceTypeStakeInfo.call(testCreatorNodeType)
     const [cnTypeMinV, cnTypeMaxV] = [serviceTypeCNStakeInfo[0], serviceTypeCNStakeInfo[1]]
     assert.equal(cnTypeMin, cnTypeMinV, 'Expected same minStake')
     assert.equal(cnTypeMax, cnTypeMaxV, 'Expected same maxStake')
 
-    await _lib.addServiceType(testDiscProvType, dpTypeMin, dpTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey, true)
+    await _lib.addServiceType(testDiscProvType, dpTypeMin, dpTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey)
     const serviceTypeDPStakeInfo = await serviceTypeManager.getServiceTypeStakeInfo.call(testDiscProvType)
     const [dpTypeMinV, dpTypeMaxV] = [serviceTypeDPStakeInfo[0], serviceTypeDPStakeInfo[1]]
     assert.equal(dpTypeMin, dpTypeMinV, 'Expected same minStake')
@@ -991,28 +991,29 @@ contract('ServiceProvider test', async (accounts) => {
         ['bytes32', 'uint256', 'uint256'],
         [testDiscProvType, typeMinVal, typeMaxVal]
       )
-      const addSPDPTxReceipt = await governance.guardianExecuteTransaction(
-        serviceTypeManagerProxyKey,
-        callValue,
-        addServiceTypeSignature,
-        callDataDP,
-        { from: guardianAddress }
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          addServiceTypeSignature,
+          callDataDP,
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
       )
-      assert.isFalse(_lib.parseTx(addSPDPTxReceipt).event.args.success, 'Expected tx to fail')
 
       // Add new serviceType
       const callDataT = _lib.abiEncode(
         ['bytes32', 'uint256', 'uint256'],
         [testType, typeMinVal, typeMaxVal]
       )
-      const addSPTTxReceipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue,
         addServiceTypeSignature,
         callDataT,
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(addSPTTxReceipt).event.args.success, 'Expected tx to succeed')
 
       // Confirm presence of test type in list
       let validTypes = (await serviceTypeManager.getValidServiceTypes()).map(x => web3.utils.hexToUtf8(x))
@@ -1039,14 +1040,13 @@ contract('ServiceProvider test', async (accounts) => {
         'Only callable by Governance contract'
       )
 
-      const setServiceVersionTxR = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue,
         'setServiceVersion(bytes32,bytes32)',
         _lib.abiEncode(['bytes32', 'bytes32'], [testType, testVersion]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(setServiceVersionTxR).event.args.success, 'Expected tx to succeed')
 
       assert.isTrue(
         await serviceTypeManager.serviceVersionIsValid(testType, testVersion),
@@ -1054,14 +1054,16 @@ contract('ServiceProvider test', async (accounts) => {
       )
 
       // Fail to setServiceVersion to version that is already registered
-      const setServiceVersionTxR2 = await governance.guardianExecuteTransaction(
-        serviceTypeManagerProxyKey,
-        callValue,
-        'setServiceVersion(bytes32,bytes32)',
-        _lib.abiEncode(['bytes32', 'bytes32'], [testType, testVersion]),
-        { from: guardianAddress }
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          'setServiceVersion(bytes32,bytes32)',
+          _lib.abiEncode(['bytes32', 'bytes32'], [testType, testVersion]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
       )
-      assert.isFalse(_lib.parseTx(setServiceVersionTxR2).event.args.success, 'Expected tx to fail')
 
       let chainVersion = await serviceTypeManager.getCurrentVersion(testType)
       assert.equal(
@@ -1084,14 +1086,13 @@ contract('ServiceProvider test', async (accounts) => {
       let testVersion2 = web3.utils.utf8ToHex('0.0.2')
 
       // Update version again
-      const setServiceVersionTxR3 = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue,
         'setServiceVersion(bytes32,bytes32)',
         _lib.abiEncode(['bytes32', 'bytes32'], [testType, testVersion2]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(setServiceVersionTxR3).event.args.success, 'Expected tx to succeed')
 
       // Validate number of versions
       let numVersions = await serviceTypeManager.getNumberOfVersions(testType)
@@ -1128,24 +1129,25 @@ contract('ServiceProvider test', async (accounts) => {
 
       // updateServiceType should fail with unregistered serviceType
       const unregisteredType = web3.utils.utf8ToHex('invalid-service')
-      let updateServiceTypeTxReceipt = await governance.guardianExecuteTransaction(
-        serviceTypeManagerProxyKey,
-        callValue,
-        'updateServiceType(bytes32,uint256,uint256)',
-        _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [unregisteredType, newMinVal, newMaxVal]),
-        { from: guardianAddress }
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          'updateServiceType(bytes32,uint256,uint256)',
+          _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [unregisteredType, newMinVal, newMaxVal]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
       )
-      assert.isFalse(_lib.parseTx(updateServiceTypeTxReceipt).event.args.success, 'Expected tx to fail')
 
       // updateServiceType successfully
-      updateServiceTypeTxReceipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue,
         'updateServiceType(bytes32,uint256,uint256)',
         _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [testType, newMinVal, newMaxVal]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(updateServiceTypeTxReceipt).event.args.success, 'Expected tx to succeed')
 
       // Confirm serviceType was updated
       info = await serviceTypeManager.getServiceTypeStakeInfo(testType)
@@ -1158,24 +1160,25 @@ contract('ServiceProvider test', async (accounts) => {
       )
 
       // removeServiceType fails with unregistered serviceType
-      let removeServiceTypeTxReceipt = await governance.guardianExecuteTransaction(
-        serviceTypeManagerProxyKey,
-        callValue,
-        'removeServiceType(bytes32)',
-        _lib.abiEncode(['bytes32'], [unregisteredType]),
-        { from: guardianAddress }
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          'removeServiceType(bytes32)',
+          _lib.abiEncode(['bytes32'], [unregisteredType]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
       )
-      assert.isFalse(_lib.parseTx(removeServiceTypeTxReceipt).event.args.success, 'Expected tx to fail')
 
       // removeServiceType successfully
-      removeServiceTypeTxReceipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue,
         'removeServiceType(bytes32)',
         _lib.abiEncode(['bytes32'], [testType]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(removeServiceTypeTxReceipt).event.args.success, 'Expected tx to succeed')
 
       // Confirm serviceType is no longer valid after removal
       isValid = await serviceTypeManager.serviceTypeIsValid(testType)

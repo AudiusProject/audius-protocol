@@ -74,7 +74,6 @@ contract Governance is InitializableV2 {
         uint256 callValue,
         string indexed signature,
         bytes indexed callData,
-        bool success,
         bytes returnData
     );
     event ProposalVetoed(uint256 indexed proposalId);
@@ -89,8 +88,8 @@ contract Governance is InitializableV2 {
         address _guardianAddress
     ) public initializer {
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
-        registry = Registry(_registryAddress);
         registryAddress = _registryAddress;
+        registry = Registry(_registryAddress);
 
         require(_votingPeriod > 0, "Requires non-zero _votingPeriod");
         votingPeriod = _votingPeriod;
@@ -400,7 +399,11 @@ contract Governance is InitializableV2 {
         votingQuorum = _votingQuorum;
     }
 
-    /** TODO - get & set registry/registryAddress state vars - need this? */
+    function setRegistryAddress(address _registryAddress) external {
+        require(msg.sender == address(this), "Only callable by self");
+        registryAddress = _registryAddress;
+        registry = Registry(_registryAddress);
+    }
 
     // ========================================= Guardian Actions =========================================
 
@@ -418,17 +421,12 @@ contract Governance is InitializableV2 {
             "Governance::guardianExecuteTransaction: Only guardian."
         );
 
-        // Require _targetContractRegistryKey points to a valid registered contract or to registry itself
-        address targetContractAddress;
-        if (_targetContractRegistryKey == "registry") {
-            targetContractAddress = registryAddress;
-        } else {
-            targetContractAddress = registry.getContract(_targetContractRegistryKey);
-            require(
-                targetContractAddress != address(0x00),
-                "Governance::guardianExecuteTransaction: _targetContractRegistryKey must point to valid registered contract"
-            );
-        }
+        // _targetContractRegistryKey must point to a valid registered contract
+        address targetContractAddress = registry.getContract(_targetContractRegistryKey);
+        require(
+            targetContractAddress != address(0x00),
+            "Governance::guardianExecuteTransaction: _targetContractRegistryKey must point to valid registered contract"
+        );
 
         // Signature cannot be empty
         require(
@@ -443,12 +441,13 @@ contract Governance is InitializableV2 {
             _callData
         );
 
+        require(success == true, "Governance::guardianExecuteTransaction: Transaction failed.");
+
         emit GuardianTransactionExecuted(
             targetContractAddress,
             _callValue,
             _signature,
             _callData,
-            success,
             returnData
         );
     }
@@ -537,6 +536,10 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         return votingQuorum;
+    }
+
+    function getRegistryAddress() external view returns (address) {
+        return registryAddress;
     }
 
     // ========================================= Internal Functions =========================================

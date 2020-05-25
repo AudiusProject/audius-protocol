@@ -56,24 +56,22 @@ module.exports = (deployer, network, accounts) => {
     // Register ClaimsManager as minter
     // Note that by default this is called from proxyDeployerAddress in ganache
     // During an actual migration, this step should be run independently
-    const addMinterTxR = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       tokenRegKey,
       callValue0,
       'addMinter(address)',
       _lib.abiEncode(['address'], [claimsManagerProxy.address]),
       { from: guardianAddress }
     )
-    assert.equal(_lib.parseTx(addMinterTxR).event.args.success, true)
 
     // Set claims manager address in Staking.sol through governance
-    const setClaimsManagerAddressTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       stakingProxyKey,
       callValue0,
       'setClaimsManagerAddress(address)',
       _lib.abiEncode(['address'], [claimsManagerProxy.address]),
       { from: guardianAddress }
     )
-    assert.equal(_lib.parseTx(setClaimsManagerAddressTxReceipt).event.args.success, true, 'Expected tx to succeed')
 
     console.log(`ClaimsManagerProxy Address: ${claimsManagerProxy.address}`)
     const staking = await Staking.at(stakingAddress)
@@ -81,7 +79,7 @@ module.exports = (deployer, network, accounts) => {
     console.log(`ClaimsManagerProxy Address from Staking.sol: ${claimsManagerAddressFromStaking}`)
 
     // Set staking address in ClaimsManager.sol through governance
-    const setStakingAddressInClaimsManagerTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
       callValue0,
       'setStakingAddress(address)',
