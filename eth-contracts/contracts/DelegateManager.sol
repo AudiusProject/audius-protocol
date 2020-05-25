@@ -531,7 +531,7 @@ contract DelegateManager is InitializableV2 {
     }
 
     function setStakingAddress(address _address) external {
-        require(msg.sender == governanceAddress, "Only callable by self");
+        require(msg.sender == governanceAddress, "Only governance");
         stakingAddress = _address;
     }
 

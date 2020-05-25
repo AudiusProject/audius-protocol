@@ -108,8 +108,8 @@ contract('DelegateManager', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'address'],
-      [registry.address, governance.address]
+      ['address'],
+      [governance.address]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
@@ -567,6 +567,12 @@ contract('DelegateManager', async (accounts) => {
         testEndpoint,
         stakerAccount)
       let deregisterRequestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+
+      await _lib.assertRevert(
+        serviceProviderFactory.decreaseStake({ from: stakerAccount }),
+        'Lockup must be expired'
+      )
+
       await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
 
       // Withdraw all SP stake
@@ -1388,6 +1394,25 @@ contract('DelegateManager', async (accounts) => {
       await _lib.assertRevert(
         delegateManager.slash(10, slasherAccount),
         "Only callable by Governance contract"
+      )
+    })
+
+    it('Fail to set service addresses from non-governance contract', async () => {
+      await _lib.assertRevert(
+        delegateManager.setGovernanceAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        delegateManager.setClaimsManagerAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        delegateManager.setServiceProviderFactoryAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        delegateManager.setStakingAddress(_lib.addressZero),
+        'Only governance'
       )
     })
 
