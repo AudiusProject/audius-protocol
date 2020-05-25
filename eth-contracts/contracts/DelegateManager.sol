@@ -11,7 +11,6 @@ import "./ClaimsManager.sol";
 
 /**
  * Designed to manage delegation to staking contract
- * @notice - will call RegistryContract.initialize(), which calls Ownable.initialize()
  */
 contract DelegateManager is InitializableV2 {
     using SafeMath for uint256;
@@ -152,7 +151,9 @@ contract DelegateManager is InitializableV2 {
         );
 
         // Validate balance
-        ServiceProviderFactory(serviceProviderFactoryAddress).validateAccountStakeBalance(_targetSP);
+        ServiceProviderFactory(
+            serviceProviderFactoryAddress
+        ).validateAccountStakeBalance(_targetSP);
 
         emit IncreaseDelegatedStake(
             delegator,
@@ -286,7 +287,9 @@ contract DelegateManager is InitializableV2 {
         });
 
         // Validate balance
-        ServiceProviderFactory(serviceProviderFactoryAddress).validateAccountStakeBalance(serviceProvider);
+        ServiceProviderFactory(
+            serviceProviderFactoryAddress
+        ).validateAccountStakeBalance(serviceProvider);
 
         emit DecreaseDelegatedStake(
             delegator,
@@ -302,7 +305,10 @@ contract DelegateManager is InitializableV2 {
      */
     function claimRewards() external {
         _requireIsInitialized();
-        require(serviceProviderFactoryAddress != address(0x00), "serviceProviderFactoryAddress not set");
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "serviceProviderFactoryAddress not set"
+        );
         require(claimsManagerAddress != address(0x00), "claimsManagerAddress not set");
         require(stakingAddress != address(0x00), "stakingAddress not set");
 
@@ -525,7 +531,7 @@ contract DelegateManager is InitializableV2 {
     }
 
     function setStakingAddress(address _address) external {
-        require(msg.sender == governanceAddress, "Only callable by self");
+        require(msg.sender == governanceAddress, "Only governance");
         stakingAddress = _address;
     }
 
@@ -538,7 +544,6 @@ contract DelegateManager is InitializableV2 {
         require(msg.sender == governanceAddress, "Only governance");
         claimsManagerAddress = _claimsManagerAddress;
     }
-
 
     // ========================================= View Functions =========================================
 

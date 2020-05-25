@@ -382,6 +382,48 @@ contract('Staking test', async (accounts) => {
       )
     })
 
+    it('Fail to set service addresses from non-governance contract, init test', async () => {
+      await _lib.assertRevert(
+        staking.setGovernanceAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        staking.setClaimsManagerAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        staking.setDelegateManagerAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        staking.setServiceProviderFactoryAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        staking.updateClaimHistory(0, accounts[5]),
+        'Only callable from ClaimsManager or Staking.sol'
+      )
+      let invalidStakingInitializeData = _lib.encodeCall(
+        'initialize',
+        ['address', 'address'],
+        [
+          accounts[5],
+          mockStakingCaller.address
+        ]
+      )
+      let staking1 = await Staking.new({ from: proxyAdminAddress })
+      // Confirm invalid token address fails on init
+      await _lib.assertRevert(
+        AudiusAdminUpgradeabilityProxy.new(
+          staking1.address,
+          proxyAdminAddress,
+          invalidStakingInitializeData,
+          mockStakingCaller.address,
+          { from: proxyDeployerAddress }
+        ),
+      )
+    })
+
     it('stakeRewards called from invalid address, ClaimsManager restriction', async () => {
       let staker = accounts[11]
       // Transfer 1000 tokens to accounts[11]

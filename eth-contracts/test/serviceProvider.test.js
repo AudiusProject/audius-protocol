@@ -38,7 +38,8 @@ contract('ServiceProvider test', async (accounts) => {
   const [, proxyAdminAddress, proxyDeployerAddress, fakeGovernanceAddress] = accounts
   const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
-
+  const stakerAccount = accounts[11]
+  const stakerAccount2 = accounts[12]
   const callValue = _lib.toBN(0)
   const cnTypeMin = _lib.audToWei(10)
   const cnTypeMax = _lib.audToWei(10000000)
@@ -179,7 +180,7 @@ contract('ServiceProvider test', async (accounts) => {
 
     // Deploy mock delegate manager with only function to forward processClaim call
     mockDelegateManager = await MockDelegateManager.new()
-    await mockDelegateManager.initialize(registry.address, claimsManagerProxyKey)
+    await mockDelegateManager.initialize(claimsManagerProxy.address)
     await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
 
     /** addServiceTypes creatornode and discprov via Governance */
@@ -199,8 +200,8 @@ contract('ServiceProvider test', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'address'],
-      [registry.address, governance.address]
+      ['address'],
+      [governance.address]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
@@ -242,6 +243,26 @@ contract('ServiceProvider test', async (accounts) => {
       _lib.addressZero
     )
 
+    await _lib.assertRevert(
+      _lib.registerServiceProvider(
+        token,
+        staking,
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint,
+        DEFAULT_AMOUNT,
+        stakerAccount
+      ),
+      'serviceTypeManagerAddress not set'
+    )
+
+    await _lib.assertRevert(
+      serviceProviderFactory.updateServiceProviderStake(
+        stakerAccount,
+        _lib.toBN(200)
+      ),
+      'delegateManagerAddress not set')
+
     await _lib.configureServiceProviderFactoryAddresses(
       governance,
       guardianAddress,
@@ -255,8 +276,6 @@ contract('ServiceProvider test', async (accounts) => {
   })
 
   describe('Registration flow', () => {
-    const stakerAccount = accounts[11]
-    const stakerAccount2 = accounts[12]
     let regTx
 
     beforeEach(async () => {
@@ -478,6 +497,10 @@ contract('ServiceProvider test', async (accounts) => {
       assert.isTrue(stakedAmount.eq(await staking.totalStakedFor(stakerAccount)), 'Expect no stake change')
     }
 
+    it('Confirm correct stake for account', async () => {
+      assert.isTrue((await getStakeAmountForAccount(stakerAccount)).eq(DEFAULT_AMOUNT))
+    })
+
     it('Fail to register invalid type', async () => {
       // Confirm invalid type cannot be registered
       await _lib.assertRevert(
@@ -492,10 +515,6 @@ contract('ServiceProvider test', async (accounts) => {
         ),
         'Valid service type required'
       )
-    })
-
-    it('Confirm correct stake for account', async () => {
-      assert.isTrue((await getStakeAmountForAccount(stakerAccount)).eq(DEFAULT_AMOUNT))
     })
 
     it('Deregister endpoint and confirm transfer of staking balance to owner', async () => {
@@ -858,14 +877,33 @@ contract('ServiceProvider test', async (accounts) => {
       )
     })
 
-    it('will fail to set the governance address from not current governance contract', async () => {
+    it('Fail to set service addresses from non-governance contract', async () => {
       await _lib.assertRevert(
         serviceProviderFactory.setGovernanceAddress(fakeGovernanceAddress),
         'Only callable by Governance contract'
       )
+      await _lib.assertRevert(
+        serviceProviderFactory.setStakingAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.setDelegateManagerAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.setServiceTypeManagerAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.setClaimsManagerAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
     })
 
-    it('will set the new governance address if called from current governance contract', async () => {
+    it('Will set the new governance address if called from current governance contract', async () => {
       assert.equal(
         governance.address,
         await serviceProviderFactory.getGovernanceAddress(),
@@ -884,6 +922,44 @@ contract('ServiceProvider test', async (accounts) => {
         fakeGovernanceAddress,
         await serviceProviderFactory.getGovernanceAddress(),
         "updated governance addresses don't match"
+      )
+    })
+
+    it('Claim pending and decrease stake restrictions', async () => {
+      await claimsManager.initiateRound({ from: stakerAccount })
+      await _lib.assertRevert(
+        _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint,
+          DEFAULT_AMOUNT,
+          stakerAccount
+        ),
+        'No claim expected to be pending prior to stake transfer'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.requestDecreaseStake(
+          DEFAULT_AMOUNT.div(_lib.toBN(2)),
+          { from: stakerAccount }
+        ),
+        'No claim expected to be pending prior to stake transfer'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.decreaseStake({ from: stakerAccount }),
+        'Decrease stake request must be pending'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.cancelDecreaseStakeRequest(stakerAccount),
+        'Only callable from owner or DelegateManager'
+      )
+      await _lib.assertRevert(
+        serviceProviderFactory.cancelDecreaseStakeRequest(stakerAccount, { from: stakerAccount }),
+        'Decrease stake request must be pending'
       )
     })
 
@@ -952,6 +1028,16 @@ contract('ServiceProvider test', async (accounts) => {
       assert.isFalse(
         await serviceTypeManager.serviceVersionIsValid(testType, testVersion),
         'Expect invalid version prior to registration'
+      )
+
+      // Confirm only governance can call set functions
+      await _lib.assertRevert(
+        serviceTypeManager.setGovernanceAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        serviceTypeManager.setServiceVersion(web3.utils.utf8ToHex('fake-type'), web3.utils.utf8ToHex('0.0')),
+        'Only callable by Governance contract'
       )
 
       await governance.guardianExecuteTransaction(

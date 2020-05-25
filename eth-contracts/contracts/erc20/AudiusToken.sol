@@ -19,7 +19,7 @@ contract AudiusToken is InitializableV2,
     string constant NAME = "TestAudius";
 
     string constant SYMBOL = "TAUDS";
-    
+
     // Defines number of Wei in 1 token
     // 18 decimals is standard - imitates relationship between Ether and Wei
     uint8 constant DECIMALS = 18;

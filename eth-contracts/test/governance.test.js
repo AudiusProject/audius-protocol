@@ -132,8 +132,8 @@ contract('Governance.sol', async (accounts) => {
     const serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'address'],
-      [registry.address, governance.address]
+      ['address'],
+      [governance.address]
     )
     const serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,

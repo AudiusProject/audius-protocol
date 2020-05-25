@@ -1,11 +1,10 @@
 pragma solidity ^0.5.0;
 
-import "./registry/RegistryContract.sol";
 import "./interface/RegistryInterface.sol";
+import "./InitializableV2.sol";
 
 
-/** NOTE - will call RegistryContract.constructor, which calls Ownable constructor */
-contract ServiceTypeManager is RegistryContract {
+contract ServiceTypeManager is InitializableV2 {
     address governanceAddress;
 
     /**
@@ -39,7 +38,7 @@ contract ServiceTypeManager is RegistryContract {
     function initialize(address _governanceAddress) public initializer
     {
         governanceAddress = _governanceAddress;
-        RegistryContract.initialize();
+        InitializableV2.initialize();
     }
 
     function setGovernanceAddress(address _governanceAddress) external {

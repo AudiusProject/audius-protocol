@@ -112,15 +112,8 @@ contract ServiceProviderFactory is InitializableV2 {
       uint spId
     );
 
-    function initialize (
-        address _registryAddress,
-        address _governanceAddress
-    ) public initializer
+    function initialize (address _governanceAddress) public initializer
     {
-        require(
-            _registryAddress != address(0x00),
-            "Requires non-zero _registryAddress"
-        );
         governanceAddress = _governanceAddress;
 
         // Configure direct minimum stake for deployer
