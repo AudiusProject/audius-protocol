@@ -1,24 +1,20 @@
 pragma solidity ^0.5.0;
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
-import "../registry/RegistryContract.sol";
-import "../interface/RegistryInterface.sol";
+import "../InitializableV2.sol";
 import "../ClaimsManager.sol";
 
 
 // TEST ONLY MOCK CONTRACT
-contract MockDelegateManager is RegistryContract {
-    RegistryInterface registry = RegistryInterface(0);
-    bytes32 claimsManagerProxyKey;
+contract MockDelegateManager is InitializableV2 {
+    address claimsManagerAddress;
 
     function initialize(
-        address _registryAddress,
-        bytes32 _claimsManagerProxyKey
+        address _claimsManagerAddress
     ) public initializer {
-        registry = RegistryInterface(_registryAddress);
-        claimsManagerProxyKey = _claimsManagerProxyKey;
+        claimsManagerAddress = _claimsManagerAddress;
 
-        RegistryContract.initialize();
+        InitializableV2.initialize();
     }
 
     // Test only function
@@ -27,7 +23,7 @@ contract MockDelegateManager is RegistryContract {
         uint _totalLockedForSP
     ) external {
         ClaimsManager claimsManager = ClaimsManager(
-            registry.getContract(claimsManagerProxyKey)
+            claimsManagerAddress
         );
         return claimsManager.processClaim(_claimer, _totalLockedForSP);
     }

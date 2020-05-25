@@ -1,5 +1,5 @@
 pragma solidity ^0.5.0;
-import "../registry/RegistryContract.sol";
+import "../InitializableV2.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "../Staking.sol";
@@ -9,7 +9,7 @@ import "../AudiusAdminUpgradeabilityProxy.sol";
 // TEST ONLY MOCK CONTRACT
 // Forwards basic staking functions
 // Forwards ServiceProviderFactory functions as well
-contract MockStakingCaller is RegistryContract {
+contract MockStakingCaller is InitializableV2 {
     uint max;
     uint min;
     using SafeERC20 for ERC20;
@@ -29,7 +29,7 @@ contract MockStakingCaller is RegistryContract {
         max = 1000000 * 10**uint256(18);
         // Configure test min = 10 AUD
         min = 10 * 10**uint256(18);
-        RegistryContract.initialize();
+        InitializableV2.initialize();
         withinBounds = true;
     }
 
