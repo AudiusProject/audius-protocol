@@ -38,8 +38,6 @@ contract Registry is InitializableV2, Ownable {
     function addContract(bytes32 _name, address _address) external onlyOwner {
         _requireIsInitialized();
 
-        // require(msg.sender == governance, "Registry::addContract: Only callable by Governance contract.")
-
         require(
             addressStorage[_name] == address(0x00),
             "Registry::addContract: Contract already registered with given name."
@@ -61,8 +59,6 @@ contract Registry is InitializableV2, Ownable {
     function removeContract(bytes32 _name) external onlyOwner {
         _requireIsInitialized();
 
-        // require(msg.sender == governance, "Registry::removeContract: Only callable by Governance contract.")
-
         address contractAddress = addressStorage[_name];
         require(
             contractAddress != address(0x00),
@@ -81,8 +77,6 @@ contract Registry is InitializableV2, Ownable {
      */
     function upgradeContract(bytes32 _name, address _newAddress) external onlyOwner {
         _requireIsInitialized();
-
-        // require(msg.sender == governance, "Registry::upgradeContract: Only callable by Governance contract.")
 
         address oldAddress = addressStorage[_name];
         require(

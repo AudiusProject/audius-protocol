@@ -114,14 +114,13 @@ contract('ClaimsManager', async (accounts) => {
     await registry.addContract(claimsManagerProxyKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
 
     // Register new contract as a minter, from the same address that deployed the contract
-    const addMinterTxR = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       tokenRegKey,
       callValue0,
       'addMinter(address)',
       _lib.abiEncode(['address'], [claimsManager.address]),
       { from: guardianAddress }
     )
-    assert.equal(_lib.parseTx(addMinterTxR).event.args.success, true)
 
     // ---- Configuring addresses
     await _lib.configureGovernanceStakingAddress(
@@ -306,14 +305,13 @@ contract('ClaimsManager', async (accounts) => {
       'Only callable by Governance contract'
     )
 
-    const updateFundingAmountTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
       _lib.toBN(0),
       'updateFundingAmount(uint256)',
       _lib.abiEncode(['uint256'], [newAmountVal]),
       { from: guardianAddress }
     )
-    assert.isTrue(_lib.parseTx(updateFundingAmountTxReceipt).event.args.success, 'Expected tx to succeed')
 
     let updatedFundingAmount = await claimsManager.getFundsPerRound()
     assert.isTrue(newAmount.eq(updatedFundingAmount), 'Expect updated funding amount')
@@ -328,14 +326,13 @@ contract('ClaimsManager', async (accounts) => {
       'Only callable by Governance contract'
     )
 
-    const updateBlockDiffTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
       _lib.toBN(0),
       'updateFundingRoundBlockDiff(uint256)',
       _lib.abiEncode(['uint256'], [_lib.fromBN(proposedBlockDiff)]),
       { from: guardianAddress }
     )
-    assert.isTrue(_lib.parseTx(updateBlockDiffTxReceipt).event.args.success, 'Expected tx to succeed')
 
     const newBlockDiff = await claimsManager.getFundingRoundBlockDiff.call()
     assert.isTrue(newBlockDiff.eq(proposedBlockDiff), 'Expected updated block diff')

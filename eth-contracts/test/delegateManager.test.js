@@ -145,14 +145,13 @@ contract('DelegateManager', async (accounts) => {
     )
 
     // Register new contract as a minter, from the same address that deployed the contract
-    const addMinterTxR = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       tokenRegKey,
       callValue0,
       'addMinter(address)',
       _lib.abiEncode(['address'], [claimsManager.address]),
       { from: guardianAddress }
     )
-    assert.equal(_lib.parseTx(addMinterTxR).event.args.success, true)
 
     const delegateManagerInitializeData = _lib.encodeCall(
       'initialize',
@@ -172,14 +171,13 @@ contract('DelegateManager', async (accounts) => {
     await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: proxyDeployerAddress })
 
     // Clear min delegation amount for testing
-    const updateMinDelAmountTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       delegateManagerKey,
       _lib.toBN(0),
       'updateMinDelegationAmount(uint256)',
       _lib.abiEncode(['uint256'], [0]),
       { from: guardianAddress }
     )
-    assert.isTrue(_lib.parseTx(updateMinDelAmountTxReceipt).event.args.success, 'Expected tx to succeed')
     // ---- Configuring addresses
     await _lib.configureGovernanceStakingAddress(
       governance,
@@ -1259,14 +1257,13 @@ contract('DelegateManager', async (accounts) => {
         "Only callable by Governance contract"
       )
 
-      const txReceipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         delegateManagerKey,
         _lib.toBN(0),
         'updateUndelegateLockupDuration(uint256)',
         _lib.abiEncode(['uint256'], [newDurationVal]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(txReceipt).event.args.success, 'Expected tx to succeed')
 
       currentDuration = await delegateManager.getUndelegateLockupDuration()
       assert.isTrue(currentDuration.eq(newDuration))
@@ -1275,14 +1272,13 @@ contract('DelegateManager', async (accounts) => {
     it('Maximum delegators', async () => {
       // Update max delegators to 4
       const maxDelegators = 4
-      const tx = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         delegateManagerKey,
         _lib.toBN(0),
         'updateMaxDelegators(uint256)',
         _lib.abiEncode(['uint256'], [maxDelegators]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(tx).event.args.success, 'Expected tx to succeed')
 
       assert.equal(
         _lib.fromBN(await delegateManager.getMaxDelegators()),
@@ -1320,14 +1316,13 @@ contract('DelegateManager', async (accounts) => {
       let minDelegateStakeVal = _lib.audToWei(100)
       let minDelegateStake = _lib.toBN(minDelegateStakeVal)
       
-      const updateMinDelTxReceipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         delegateManagerKey,
         _lib.toBN(0),
         'updateMinDelegationAmount(uint256)',
         _lib.abiEncode(['uint256'], [minDelegateStakeVal]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(updateMinDelTxReceipt).event.args.success, 'Expected tx to succeed')
 
       assert.isTrue(
         minDelegateStake.eq(await delegateManager.getMinDelegationAmount()),
@@ -1512,14 +1507,13 @@ contract('DelegateManager', async (accounts) => {
           "Only callable by Governance contract"
         )
 
-        const updateDSLDTxReceipt = await governance.guardianExecuteTransaction(
+        await governance.guardianExecuteTransaction(
           serviceProviderFactoryKey,
           _lib.toBN(0),
           'updateDecreaseStakeLockupDuration(uint256)',
           _lib.abiEncode(['uint256'], [_lib.fromBN(newDuration)]),
           { from: guardianAddress }
         )
-        assert.isTrue(_lib.parseTx(updateDSLDTxReceipt).event.args.success, 'Expected tx to succeed')
 
         let updatedDuration = await serviceProviderFactory.getDecreaseStakeLockupDuration()
         assert.isTrue(updatedDuration.eq(newDuration), 'Update not reflected')

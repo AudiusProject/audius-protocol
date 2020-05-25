@@ -167,14 +167,13 @@ contract('Governance.sol', async (accounts) => {
     )
 
     // Register new contract as a minter, from the same address that deployed the contract
-    const addMinterTxR = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       tokenRegKey,
       callValue0,
       'addMinter(address)',
       _lib.abiEncode(['address'], [claimsManager.address]),
       { from: guardianAddress }
     )
-    assert.equal(_lib.parseTx(addMinterTxR).event.args.success, true)
 
     // Deploy + register DelegateManager contract
     const delegateManagerInitializeData = _lib.encodeCall(
@@ -1012,7 +1011,7 @@ contract('Governance.sol', async (accounts) => {
   })
 
   describe('Upgrade Contract Proposal', async () => {
-    it('Upgrade Contract Proposal', async () => {
+    it('Upgrade Staking', async () => {
       // Confirm staking.newFunction() not callable before upgrade
       const stakingCopy = await StakingUpgraded.at(staking.address)
       await _lib.assertRevert(stakingCopy.newFunction.call({ from: proxyDeployerAddress }), 'revert')
@@ -1094,6 +1093,10 @@ contract('Governance.sol', async (accounts) => {
         'Expected updated proxy implementation address'
       )
     })
+
+    it('Upgrade AudiusToken', async () => {
+      
+    })
   })
 
   describe('Guardian execute transactions', async () => {
@@ -1156,7 +1159,6 @@ contract('Governance.sol', async (accounts) => {
         _lib.keccak256(callData),
         'event.args.callData'
       )
-      assert.equal(guardianExecTx.event.args.success, true, 'event.args.success')
       assert.equal(guardianExecTx.event.args.returnData, returnData, 'event.args.returnData')
 
       // Confirm Slash action succeeded by checking new Stake + Token values
@@ -1215,14 +1217,13 @@ contract('Governance.sol', async (accounts) => {
       const stakingUpgraded0 = await StakingUpgraded.new({ from: proxyAdminAddress })
       
       // Execute tx to upgrade
-      const guardianExecTxReceipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         stakingProxyKey,
         callValue0,
         'upgradeTo(address)',
         _lib.abiEncode(['address'], [stakingUpgraded0.address]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(guardianExecTxReceipt).event.args.success, 'event.args.success')
 
       // Confirm that contract was upgraded by ensuring staking.newFunction() call succeeds
       const stakingCopy2 = await StakingUpgraded.at(staking.address)
@@ -1246,14 +1247,13 @@ contract('Governance.sol', async (accounts) => {
       const governanceUpgraded0 = await GovernanceUpgraded.new({ from: proxyDeployerAddress })
 
       // Execute tx to upgrade
-      const txReceipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         governanceKey,
         callValue0,
         'upgradeTo(address)',
         _lib.abiEncode(['address'], [governanceUpgraded0.address]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(txReceipt).event.args.success, 'Expected tx to succeed')
 
       // Confirm governance.newFunction() is callable after upgrade
       const governanceCopy2 = await GovernanceUpgraded.at(governance.address)
@@ -1276,14 +1276,13 @@ contract('Governance.sol', async (accounts) => {
 
       // Confirm current guardianAddress is active
       assert.equal(await governance.getGuardianAddress(), guardianAddress, 'Expected same guardianAddress')
-      const tx1Receipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue0,
         'updateServiceType(bytes32,uint256,uint256)',
         _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [testDiscProvType, newSpMinStake, newSpMaxStake]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(tx1Receipt).event.args.success, 'Expected tx to succeed')
 
       // Confirm new guardianAddress not yet active
       await _lib.assertRevert(
@@ -1320,14 +1319,13 @@ contract('Governance.sol', async (accounts) => {
       )
 
       // Confirm new guardianAddress is now active
-      const tx2Receipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue0,
         'updateServiceType(bytes32,uint256,uint256)',
         _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [testDiscProvType, newSpMinStake, newSpMaxStake]),
         { from: newGuardianAddress }
       )
-      assert.isTrue(_lib.parseTx(tx2Receipt).event.args.success, 'Expected tx to succeed')
     })
   })
 })
