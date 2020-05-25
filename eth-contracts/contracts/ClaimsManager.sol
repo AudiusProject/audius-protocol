@@ -213,16 +213,11 @@ contract ClaimsManager is InitializableV2 {
             return;
         }
 
-        require(
-            audiusToken.mint(address(this), rewardsForClaimer),
-            "New tokens must be minted"
-        );
+        // ERC20Mintable always returns true
+        audiusToken.mint(address(this), rewardsForClaimer);
 
-        // Approve token transfer to staking contract address
-        require(
-            audiusToken.approve(stakingAddress, rewardsForClaimer),
-            "Token transfer must be approved"
-        );
+        // ERC20 always returns true
+        audiusToken.approve(stakingAddress, rewardsForClaimer);
 
         // Transfer rewards
         stakingContract.stakeRewards(rewardsForClaimer, _claimer);
