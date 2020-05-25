@@ -1180,6 +1180,20 @@ contract('ServiceProvider test', async (accounts) => {
       // Confirm serviceType is no longer valid after removal
       isValid = await serviceTypeManager.serviceTypeIsValid(testType)
       assert.isTrue(!isValid, 'Expect invalid type after deregistration')
+
+      // setGovernanceAddress in ServiceTypeManager.sol
+      await governance.guardianExecuteTransaction(
+        serviceTypeManagerProxyKey,
+        callValue,
+        'setGovernanceAddress(address)',
+        _lib.abiEncode(['address'], [fakeGovernanceAddress]),
+        { from: guardianAddress }
+      )
+      assert.equal(
+        await serviceTypeManager.getGovernanceAddress(),
+        fakeGovernanceAddress,
+        "Didn't update governance address correctly in ServiceTypeManager"
+      )
     })
   })
 })
