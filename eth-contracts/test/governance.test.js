@@ -1335,7 +1335,7 @@ contract('Governance.sol', async (accounts) => {
       )
 
       await _lib.assertRevert(
-        governance.getVotingPeriod(newVotingPeriod),
+        governance.setVotingPeriod(newVotingPeriod),
         "Only callable by self"
       )
       
