@@ -567,6 +567,12 @@ contract('DelegateManager', async (accounts) => {
         testEndpoint,
         stakerAccount)
       let deregisterRequestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+
+      await _lib.assertRevert(
+        serviceProviderFactory.decreaseStake({ from: stakerAccount }),
+        'Lockup must be expired'
+      )
+
       await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
 
       // Withdraw all SP stake
