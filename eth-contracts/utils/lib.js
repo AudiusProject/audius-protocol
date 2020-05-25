@@ -337,9 +337,16 @@ export const configureStakingContractAddresses = async (
     'setDelegateManagerAddress(address)',
     abiEncode(['address'], [delegateManagerAddress]),
     { from: guardianAddress })
+  await governance.guardianExecuteTransaction(
+    stakingProxyKey,
+    toBN(0),
+    'setGovernanceAddress(address)',
+    abiEncode(['address'], [governance.address]),
+    { from: guardianAddress })
   assert.equal(spAddress, await staking.getServiceProviderFactoryAddress(), 'Unexpected sp address')
   assert.equal(claimsManagerAddress, await staking.getClaimsManagerAddress(), 'Unexpected claims address')
   assert.equal(delegateManagerAddress, await staking.getDelegateManagerAddress(), 'Unexpected delegate manager address')
+  assert.equal(governance.address, await staking.getGovernanceAddress(), 'Unexpected gov address')
 }
 
 // Test helper to set claimsManager contract addresses
