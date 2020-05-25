@@ -45,6 +45,10 @@ contract ServiceTypeManager is InitializableV2 {
         InitializableV2.initialize();
     }
 
+    function getGovernanceAddress() external view returns (address addr) {
+        return governanceAddress;
+    }
+
     function setGovernanceAddress(address _governanceAddress) external {
         require(msg.sender == governanceAddress, "Only governance");
         governanceAddress = _governanceAddress;

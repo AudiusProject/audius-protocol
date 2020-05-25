@@ -42,7 +42,7 @@ contract('Governance.sol', async (accounts) => {
   const votingQuorum = 1
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
-  const [, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const [, proxyAdminAddress, proxyDeployerAddress, newUpdateAddress] = accounts
   const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
 
@@ -1323,6 +1323,80 @@ contract('Governance.sol', async (accounts) => {
         'updateServiceType(bytes32,uint256,uint256)',
         _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [testDiscProvType, newSpMinStake, newSpMaxStake]),
         { from: newGuardianAddress }
+      )
+    })
+
+    it('Update voting period', async () => {
+      const newVotingPeriod = 15
+      assert.equal(
+        await governance.getVotingPeriod(),
+        votingPeriod,
+        "Incorrect expected voting period before update"
+      )
+
+      await _lib.assertRevert(
+        governance.setVotingPeriod(newVotingPeriod),
+        "Only callable by self"
+      )
+      
+      await governance.guardianExecuteTransaction(
+        governanceKey,
+        callValue0,
+        'setVotingPeriod(uint256)',
+        _lib.abiEncode(['uint256'], [newVotingPeriod]),
+        { from: guardianAddress }
+      )
+
+      assert.equal(
+        await governance.getVotingPeriod(),
+        newVotingPeriod,
+        "Incorrect expected voting period after update"
+      )
+
+      // set original value
+      await governance.guardianExecuteTransaction(
+        governanceKey,
+        callValue0,
+        'setVotingPeriod(uint256)',
+        _lib.abiEncode(['uint256'], [votingPeriod]),
+        { from: guardianAddress }
+      )
+    })
+
+    it('Update voting quorum', async () => {
+      const newVotingQuorum = 2
+      assert.equal(
+        await governance.getVotingQuorum(),
+        votingQuorum,
+        "Incorrect expected voting quorum before update"
+      )
+
+      await _lib.assertRevert(
+        governance.setVotingQuorum(newVotingQuorum),
+        "Only callable by self"
+      )
+      
+      await governance.guardianExecuteTransaction(
+        governanceKey,
+        callValue0,
+        'setVotingQuorum(uint256)',
+        _lib.abiEncode(['uint256'], [newVotingQuorum]),
+        { from: guardianAddress }
+      )
+
+      assert.equal(
+        await governance.getVotingQuorum(),
+        newVotingQuorum,
+        "Incorrect expected voting quorum after update"
+      )
+
+      // set original value
+      await governance.guardianExecuteTransaction(
+        governanceKey,
+        callValue0,
+        'setVotingQuorum(uint256)',
+        _lib.abiEncode(['uint256'], [votingQuorum]),
+        { from: guardianAddress }
       )
     })
   })
