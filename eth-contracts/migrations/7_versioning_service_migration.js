@@ -69,14 +69,13 @@ module.exports = (deployer, network, accounts) => {
       ['bytes32', 'uint256', 'uint256'],
       [serviceTypeCN, cnTypeMin, cnTypeMax]
     )
-    const addServiceTypeCNTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       serviceTypeManagerProxyKey,
       callValue0,
       signatureAddServiceType,
       callDataCN,
       { from: guardianAddress }
     )
-    assert.equal(_lib.parseTx(addServiceTypeCNTxReceipt).event.args.success, true, 'event.args.success')
     const serviceTypeCNStakeInfo = await serviceTypeManager.getServiceTypeStakeInfo.call(serviceTypeCN)
     const [cnTypeMinV, cnTypeMaxV] = [serviceTypeCNStakeInfo[0], serviceTypeCNStakeInfo[1]]
     assert.ok(_lib.toBN(cnTypeMin).eq(cnTypeMinV), 'Expected same minStake')
@@ -86,14 +85,13 @@ module.exports = (deployer, network, accounts) => {
       ['bytes32', 'uint256', 'uint256'],
       [serviceTypeDP, dpTypeMin, dpTypeMax]
     )
-    const addServiceTypeDPTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       serviceTypeManagerProxyKey,
       callValue0,
       signatureAddServiceType,
       callDataDP,
       { from: guardianAddress }
     )
-    assert.equal(_lib.parseTx(addServiceTypeDPTxReceipt).event.args.success, true, 'event.args.success')
     const serviceTypeDPStakeInfo = await serviceTypeManager.getServiceTypeStakeInfo.call(serviceTypeDP)
     const [dpTypeMinV, dpTypeMaxV] = [serviceTypeDPStakeInfo[0], serviceTypeDPStakeInfo[1]]
     assert.ok(_lib.toBN(dpTypeMin).eq(dpTypeMinV), 'Expected same minStake')
@@ -125,14 +123,13 @@ module.exports = (deployer, network, accounts) => {
 
 
     // Set service provider factory in Staking.sol through governance
-    const setSPFactoryStakingTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       stakingProxyKey,
       _lib.toBN(0),
       'setServiceProviderFactoryAddress(address)',
       _lib.abiEncode(['address'], [serviceProviderFactoryProxy.address]),
       { from: guardianAddress }
     )
-    assert.equal(_lib.parseTx(setSPFactoryStakingTxReceipt).event.args.success, true)
 
     console.log(`ServiceProviderFactoryProxy Address: ${serviceProviderFactoryProxy.address}`)
     const staking = await Staking.at(process.env.stakingAddress)
@@ -140,7 +137,7 @@ module.exports = (deployer, network, accounts) => {
     console.log(`ServiceProviderFactoryProxy Address from Staking.sol: ${spFactoryAddressFromStaking}`)
 
     // Set Staking address in ServiceProviderFactory.sol through governance
-    const setStakingInSPFactoryTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       serviceProviderFactoryKey,
       _lib.toBN(0),
       'setStakingAddress(address)',
@@ -151,7 +148,7 @@ module.exports = (deployer, network, accounts) => {
     console.log(`Staking Address from ServiceProviderFactory.sol: ${stakingAddressFromSPFactory}`)
 
     // Set ServiceTypeManager address in ServiceProviderFactory.sol through governance
-    const setServiceTypeManagerInSPFactoryTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       serviceProviderFactoryKey,
       _lib.toBN(0),
       'setServiceTypeManagerAddress(address)',
@@ -162,7 +159,7 @@ module.exports = (deployer, network, accounts) => {
     console.log(`ServiceTypeManager Address from ServiceProviderFactory.sol: ${serviceManagerAddressFromSPFactory}`)
 
     // Set ClaimsManager address in ServiceProviderFactory.sol through governance
-    const setClaimsManagerInSPFactoryTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       serviceProviderFactoryKey,
       _lib.toBN(0),
       'setClaimsManagerAddress(address)',
@@ -174,7 +171,7 @@ module.exports = (deployer, network, accounts) => {
     // TODO - add DelegateManager
     
     // Set service provider address in ClaimsManager.sol through governance
-    const setSPFactoryClaimsManagerTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
       _lib.toBN(0),
       'setServiceProviderFactoryAddress(address)',

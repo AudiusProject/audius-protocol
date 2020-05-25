@@ -114,14 +114,13 @@ contract('ClaimsManager', async (accounts) => {
     await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
 
     // Register new contract as a minter, from the same address that deployed the contract
-    const addMinterTxR = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       tokenRegKey,
       callValue0,
       'addMinter(address)',
       _lib.abiEncode(['address'], [claimsManager.address]),
       { from: guardianAddress }
     )
-    assert.equal(_lib.parseTx(addMinterTxR).event.args.success, true)
 
     // ---- Configuring addresses
     await _lib.configureGovernanceStakingAddress(
@@ -175,7 +174,7 @@ contract('ClaimsManager', async (accounts) => {
 
     assert.isFalse((await claimsManager.claimPending(staker)), 'Expect no pending claim')
 
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, true)
+    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
 
     // Confirm a claim is pending
     assert.isTrue((await claimsManager.claimPending(staker)), 'Expect pending claim')
@@ -199,7 +198,10 @@ contract('ClaimsManager', async (accounts) => {
       'All funds expected to be claimed')
 
     // Confirm another claim cannot be immediately funded
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, false)
+    await _lib.assertRevert(
+      _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress),
+      "Governance::guardianExecuteTransaction: Transaction failed."
+    )
 
     await _lib.assertRevert(
       mockDelegateManager.testProcessClaim(staker, 0),
@@ -222,7 +224,7 @@ contract('ClaimsManager', async (accounts) => {
     let fundsPerClaim = await claimsManager.getFundsPerRound()
 
     // Initiate round
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, true)
+    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
     await mockDelegateManager.testProcessClaim(staker, 0)
     totalStaked = await staking.totalStaked()
 
@@ -231,7 +233,10 @@ contract('ClaimsManager', async (accounts) => {
       'Expect single round of funding + initial stake at this time')
 
     // Confirm another round cannot be immediately funded
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, false)
+    await _lib.assertRevert(
+      _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress),
+      "Governance::guardianExecuteTransaction: Transaction failed."
+    )
     
     let lastClaimBlock = await claimsManager.getLastFundBlock()
     let claimDiff = await claimsManager.getFundingRoundBlockDiff()
@@ -249,7 +254,7 @@ contract('ClaimsManager', async (accounts) => {
     let accountStakeBeforeSecondClaim = await staking.totalStakedFor(staker)
 
     // Initiate another round
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, true)
+    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
     await mockDelegateManager.testProcessClaim(staker, 0)
     totalStaked = await staking.totalStaked()
     let finalAcctStake = await staking.totalStakedFor(staker)
@@ -271,7 +276,7 @@ contract('ClaimsManager', async (accounts) => {
     await approveTransferAndStake(DEFAULT_AMOUNT, staker)
 
     // Initiate 1st claim
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, true)
+    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
 
     let lastClaimBlock = await claimsManager.getLastFundBlock()
     let claimDiff = await claimsManager.getFundingRoundBlockDiff()
@@ -282,7 +287,7 @@ contract('ClaimsManager', async (accounts) => {
     await time.advanceBlockTo(nextClaimBlockTwiceDiff)
 
     // Initiate claim
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, true)
+    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
     await mockDelegateManager.testProcessClaim(staker, 0)
     totalStaked = await staking.totalStaked()
 
@@ -291,7 +296,10 @@ contract('ClaimsManager', async (accounts) => {
       'Expect single round of funding + initial stake at this time')
 
     // Confirm another round cannot be immediately funded, despite 2x block diff
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, false)
+    await _lib.assertRevert(
+      _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress),
+      "Governance::guardianExecuteTransaction: Transaction failed."
+    )
   })
 
   it('Updates funding amount', async () => {
@@ -306,14 +314,13 @@ contract('ClaimsManager', async (accounts) => {
       'Only callable by Governance contract'
     )
 
-    const updateFundingAmountTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
       _lib.toBN(0),
       'updateFundingAmount(uint256)',
       _lib.abiEncode(['uint256'], [newAmountVal]),
       { from: guardianAddress }
     )
-    assert.isTrue(_lib.parseTx(updateFundingAmountTxReceipt).event.args.success, 'Expected tx to succeed')
 
     let updatedFundingAmount = await claimsManager.getFundsPerRound()
     assert.isTrue(newAmount.eq(updatedFundingAmount), 'Expect updated funding amount')
@@ -328,14 +335,13 @@ contract('ClaimsManager', async (accounts) => {
       'Only callable by Governance contract'
     )
 
-    const updateBlockDiffTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
       _lib.toBN(0),
       'updateFundingRoundBlockDiff(uint256)',
       _lib.abiEncode(['uint256'], [_lib.fromBN(proposedBlockDiff)]),
       { from: guardianAddress }
     )
-    assert.isTrue(_lib.parseTx(updateBlockDiffTxReceipt).event.args.success, 'Expected tx to succeed')
 
     const newBlockDiff = await claimsManager.getFundingRoundBlockDiff.call()
     assert.isTrue(newBlockDiff.eq(proposedBlockDiff), 'Expected updated block diff')

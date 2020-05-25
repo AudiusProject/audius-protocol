@@ -45,14 +45,12 @@ contract('AudiusToken', async (accounts) => {
     await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
   })
 
-  it('Initial token properties', async () => {
+  it('Initial token properties + account balances', async () => {
     assert.equal(await token.name(), NAME)
     assert.equal(await token.symbol(), SYMBOL)
     assert.equal(await token.decimals(), DECIMALS)
     assert.equal(await token.totalSupply(), INITIAL_SUPPLY)
-  })
 
-  it('initial account balances', async () => {
     assert.equal(await token.balanceOf(tokenOwnerAddress), INITIAL_SUPPLY)
     assert.equal(await token.balanceOf(accounts[11]), 0)
   })
@@ -71,14 +69,14 @@ contract('AudiusToken', async (accounts) => {
     )
   })
 
-  it('Burn from treasury', async () => {
+  it('Burn from tokenOwner', async () => {
     const burnAmount = Math.pow(10,3)
 
     // Confirm token state before burn
     assert.equal(await token.balanceOf(tokenOwnerAddress), INITIAL_SUPPLY)
     assert.equal(await token.totalSupply(), INITIAL_SUPPLY)
 
-    // Decrease total supply by burning from treasury
+    // Decrease total supply by burning from tokenOwner
     await token.burn(burnAmount, { from: tokenOwnerAddress })
 
     // Confirm token state after burn
@@ -118,14 +116,13 @@ contract('AudiusToken', async (accounts) => {
     )
 
     // mint tokens from governance
-    const mintTxR = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       tokenRegKey,
       callValue0,
       'mint(address,uint256)',
       _lib.abiEncode(['address', 'uint256'], [accounts[11], 1000]),
       { from: guardianAddress }
     )
-    assert.isTrue(_lib.parseTx(mintTxR).event.args.success, 'Expected tx to succeed')
 
     // Confirm state after mint
     assert.equal(await token.balanceOf(tokenOwnerAddress), INITIAL_SUPPLY)
@@ -139,14 +136,13 @@ contract('AudiusToken', async (accounts) => {
     )
 
     // add new minter from governance
-    const addMinterTxR = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       tokenRegKey,
       callValue0,
       'addMinter(address)',
       _lib.abiEncode(['address'], [accounts[12]]),
       { from: guardianAddress }
     )
-    assert.isTrue(_lib.parseTx(addMinterTxR).event.args.success, 'Expected tx to succeed')
 
     // Confirm minter state
     assert.isTrue(await token.isMinter(accounts[12]))
@@ -178,14 +174,13 @@ contract('AudiusToken', async (accounts) => {
     )
 
     // Pause token contract from governance
-    const pauseTxR = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       tokenRegKey,
       callValue0,
       'pause()',
       _lib.abiEncode([], []),
       { from: guardianAddress }
     )
-    assert.isTrue(_lib.parseTx(pauseTxR).event.args.success, 'Expected tx to succeed')
 
     // Confirm state after pause
     assert.isTrue(await token.paused.call())
@@ -198,14 +193,13 @@ contract('AudiusToken', async (accounts) => {
 
     // Add new pauser from governance
     const newPauser = accounts[5]
-    const addPauserTxR = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
       tokenRegKey,
       callValue0,
       'addPauser(address)',
       _lib.abiEncode(['address'], [newPauser]),
       { from: guardianAddress }
     )
-    assert.isTrue(_lib.parseTx(addPauserTxR).event.args.success, 'Expected tx to succeed')
 
     // Confirm pauser state
     assert.isFalse(await token.isPauser(tokenOwnerAddress))

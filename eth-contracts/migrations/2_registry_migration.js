@@ -6,6 +6,8 @@ const _lib = require('../utils/lib')
 const Registry = artifacts.require('Registry')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 
+const registryRegKey = web3.utils.utf8ToHex('Registry')
+
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
     const config = contractConfig[network]
@@ -27,6 +29,9 @@ module.exports = (deployer, network, accounts) => {
 
     assert.equal(await registry.owner.call(), proxyDeployerAddress)
     assert.equal(await registryProxy.getAudiusGovernanceAddress.call(), _lib.addressZero)
+
+    // Register Registry in self to enable governance by key
+    await registry.addContract(registryRegKey, registry.address, { from: proxyDeployerAddress })
 
     // Export to env for reference in future migrations
     process.env.registryAddress = registry.address
