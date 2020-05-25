@@ -10,7 +10,6 @@ contract MockDelegateManager is InitializableV2 {
     address claimsManagerAddress;
 
     function initialize(
-        address _registryAddress,
         address _claimsManagerAddress
     ) public initializer {
         claimsManagerAddress = _claimsManagerAddress;

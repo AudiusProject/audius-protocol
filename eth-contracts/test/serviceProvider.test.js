@@ -179,7 +179,7 @@ contract('ServiceProvider test', async (accounts) => {
 
     // Deploy mock delegate manager with only function to forward processClaim call
     mockDelegateManager = await MockDelegateManager.new()
-    await mockDelegateManager.initialize(registry.address, claimsManagerProxy.address)
+    await mockDelegateManager.initialize(claimsManagerProxy.address)
     await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
 
     /** addServiceTypes creatornode and discprov via Governance */

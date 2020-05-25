@@ -120,22 +120,22 @@ contract ClaimsManager is InitializableV2 {
     }
 
     function setGovernanceAddress(address _governanceAddress) external {
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
         governanceAddress = _governanceAddress;
     }
 
     function setStakingAddress(address _address) external {
-        require(msg.sender == governanceAddress, "Only callable by self");
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
         stakingAddress = _address;
     }
 
     function setServiceProviderFactoryAddress(address _spFactory) external {
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
         serviceProviderFactoryAddress = _spFactory;
     }
 
     function setDelegateManagerAddress(address _delegateManager) external {
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, "Only callable by Governance contract");
         delegateManagerAddress = _delegateManager;
     }
 
