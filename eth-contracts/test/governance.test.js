@@ -1094,9 +1094,7 @@ contract('Governance.sol', async (accounts) => {
       )
     })
 
-    it('Upgrade AudiusToken', async () => {
-      
-    })
+    it.skip('TODO - Upgrade AudiusToken', async () => {})
   })
 
   describe('Guardian execute transactions', async () => {

@@ -45,7 +45,6 @@ module.exports = (deployer, network, accounts) => {
     process.env.stakingAddress = stakingProxy.address
 
     // Set stakingAddress in Governance
-    console.log(`StakingAddress ${stakingProxy.address}`)
     await governance.guardianExecuteTransaction(
       governanceKey,
       _lib.toBN(0),
@@ -54,7 +53,6 @@ module.exports = (deployer, network, accounts) => {
       { from: guardianAddress }
     )
 
-    let stakingFromGov = await governance.getStakingAddress()
-    console.log(`StakingAddressFromGov ${stakingFromGov}`)
+    assert.equal(await governance.getStakingAddress.call(), stakingProxy.address)
   })
 }
