@@ -1397,6 +1397,25 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
+    it('Fail to set service addresses from non-governance contract', async () => {
+      await _lib.assertRevert(
+        delegateManager.setGovernanceAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        delegateManager.setClaimsManagerAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        delegateManager.setServiceProviderFactoryAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        delegateManager.setStakingAddress(_lib.addressZero),
+        'Only governance'
+      )
+    })
+
     describe('Service provider decrease stake behavior', async () => {
       it('claimReward disabled if no active stake for SP', async () => {
         // Request decrease all of stake

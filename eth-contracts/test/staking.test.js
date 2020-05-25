@@ -383,7 +383,6 @@ contract('Staking test', async (accounts) => {
     })
 
     it('Fail to set service addresses from non-governance contract, init test', async () => {
-      let staker = accounts[10]
       await _lib.assertRevert(
         staking.setGovernanceAddress(_lib.addressZero),
         'Only governance'

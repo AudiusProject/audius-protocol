@@ -963,7 +963,6 @@ contract('ServiceProvider test', async (accounts) => {
       )
     })
 
-
     it('Service type operations test', async () => {
       let typeMinVal = _lib.audToWei(200)
       let typeMaxVal = _lib.audToWei(20000)
@@ -1028,6 +1027,16 @@ contract('ServiceProvider test', async (accounts) => {
       assert.isFalse(
         await serviceTypeManager.serviceVersionIsValid(testType, testVersion),
         'Expect invalid version prior to registration'
+      )
+
+      // Confirm only governance can call set functions
+      await _lib.assertRevert(
+        serviceTypeManager.setGovernanceAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        serviceTypeManager.setServiceVersion(web3.utils.utf8ToHex('fake-type'), web3.utils.utf8ToHex('0.0')),
+        'Only callable by Governance contract'
       )
 
       const setServiceVersionTxR = await governance.guardianExecuteTransaction(

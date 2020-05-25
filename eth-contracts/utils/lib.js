@@ -392,6 +392,23 @@ export const configureDelegateManagerAddresses = async (
   spFactoryAddress,
   claimsManagerAddress
 ) => {
+  await assertRevert(delegateManager.claimRewards(), 'serviceProviderFactoryAddress not set')
+  await governance.guardianExecuteTransaction(
+    key,
+    toBN(0),
+    'setServiceProviderFactoryAddress(address)',
+    abiEncode(['address'], [spFactoryAddress]),
+    { from: guardianAddress })
+  assert.equal(spFactoryAddress, await delegateManager.getServiceProviderFactoryAddress(), 'Unexpected sp address')
+  await assertRevert(delegateManager.claimRewards(), 'claimsManagerAddress not set')
+  await governance.guardianExecuteTransaction(
+    key,
+    toBN(0),
+    'setClaimsManagerAddress(address)',
+    abiEncode(['address'], [claimsManagerAddress]),
+    { from: guardianAddress })
+  assert.equal(claimsManagerAddress, await delegateManager.getClaimsManagerAddress(), 'Unexpected claim manager addr')
+  await assertRevert(delegateManager.claimRewards(), 'stakingAddress not set')
   await governance.guardianExecuteTransaction(
     key,
     toBN(0),
@@ -402,17 +419,10 @@ export const configureDelegateManagerAddresses = async (
   await governance.guardianExecuteTransaction(
     key,
     toBN(0),
-    'setServiceProviderFactoryAddress(address)',
-    abiEncode(['address'], [spFactoryAddress]),
+    'setGovernanceAddress(address)',
+    abiEncode(['address'], [governance.address]),
     { from: guardianAddress })
-  assert.equal(spFactoryAddress, await delegateManager.getServiceProviderFactoryAddress(), 'Unexpected sp address')
-  await governance.guardianExecuteTransaction(
-    key,
-    toBN(0),
-    'setClaimsManagerAddress(address)',
-    abiEncode(['address'], [claimsManagerAddress]),
-    { from: guardianAddress })
-  assert.equal(claimsManagerAddress, await delegateManager.getClaimsManagerAddress(), 'Unexpected claim manager addr')
+  assert.equal(governance.address, await delegateManager.getGovernanceAddress(), 'Unexpected governance address')
 }
 
 // Test helper to set serviceProviderFactory contract addresses
