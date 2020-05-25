@@ -1,24 +1,25 @@
 pragma solidity ^0.5.0;
-import "../registry/RegistryContract.sol";
+import "../InitializableV2.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "../Staking.sol";
+import "../AudiusAdminUpgradeabilityProxy.sol";
 
 
 // TEST ONLY MOCK CONTRACT
 // Forwards basic staking functions
 // Forwards ServiceProviderFactory functions as well
-contract MockStakingCaller is RegistryContract {
+contract MockStakingCaller is InitializableV2 {
     uint max;
     uint min;
     using SafeERC20 for ERC20;
     Staking staking = Staking(0);
     ERC20 internal stakingToken;
-    address stakingAddress;
+    address payable stakingAddress;
     bool withinBounds;
 
     function initialize(
-        address _stakingAddress,
+        address payable _stakingAddress,
         address _tokenAddress
     ) public initializer {
         stakingAddress = _stakingAddress;
@@ -28,7 +29,7 @@ contract MockStakingCaller is RegistryContract {
         max = 1000000 * 10**uint256(18);
         // Configure test min = 10 AUD
         min = 10 * 10**uint256(18);
-        RegistryContract.initialize();
+        InitializableV2.initialize();
         withinBounds = true;
     }
 
@@ -91,6 +92,25 @@ contract MockStakingCaller is RegistryContract {
 
     function isInitialized() external view returns (bool) {
         return _isInitialized();
+    }
+
+    function configurePermissions() external {
+        _requireIsInitialized();
+        staking.setClaimsManagerAddress(address(this));
+        staking.setServiceProviderFactoryAddress(address(this));
+        staking.setDelegateManagerAddress(address(this));
+        staking.setGovernanceAddress(address(this));
+    }
+
+    /// Governance mock functions
+    function upgradeTo(address _newImplementation) external {
+        return AudiusAdminUpgradeabilityProxy(stakingAddress).upgradeTo(_newImplementation);
+    }
+
+    function setAudiusGovernanceAddress(address _governanceAddress) external {
+        return AudiusAdminUpgradeabilityProxy(
+            stakingAddress
+        ).setAudiusGovernanceAddress(_governanceAddress);
     }
 }
 

@@ -1,15 +1,12 @@
 import * as _lib from '../utils/lib.js'
 const { time } = require('@openzeppelin/test-helpers')
 
-const AudiusToken = artifacts.require('AudiusToken')
-const Registry = artifacts.require('Registry')
 const Staking = artifacts.require('Staking')
-const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const ClaimsManager = artifacts.require('ClaimsManager')
-const Governance = artifacts.require('Governance')
+const MockDelegateManager = artifacts.require('MockDelegateManager')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -17,6 +14,7 @@ const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const governanceKey = web3.utils.utf8ToHex('Governance')
+const tokenRegKey = web3.utils.utf8ToHex('TokenKey')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
 const testCreatorNodeType = web3.utils.utf8ToHex('creator-node')
@@ -25,8 +23,8 @@ const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'
 
 const MIN_STAKE_AMOUNT = 10
-const votingPeriod = 10
-const votingQuorum = 1
+const VOTING_PERIOD = 10
+const VOTING_QUORUM = 1
 
 const INITIAL_BAL = _lib.audToWeiBN(1000)
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
@@ -34,12 +32,14 @@ const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
 contract('ServiceProvider test', async (accounts) => {
   let token, registry, staking0, stakingInitializeData, proxy, claimsManager0, claimsManagerProxy, claimsManager, governance
-  let staking, serviceProviderFactory, serviceTypeManager
+  let staking, serviceProviderFactory, serviceTypeManager, mockDelegateManager
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
-  const [, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const [, proxyAdminAddress, proxyDeployerAddress, fakeGovernanceAddress] = accounts
+  const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
-
+  const stakerAccount = accounts[11]
+  const stakerAccount2 = accounts[12]
   const callValue = _lib.toBN(0)
   const cnTypeMin = _lib.audToWei(10)
   const cnTypeMax = _lib.audToWei(10000000)
@@ -98,55 +98,39 @@ contract('ServiceProvider test', async (accounts) => {
   }
 
   beforeEach(async () => {
-    const token0 = await AudiusToken.new({ from: proxyDeployerAddress })
-    const tokenInitData = _lib.encodeCall('initialize', [], [])
-    const tokenProxy = await AdminUpgradeabilityProxy.new(
-      token0.address,
-      proxyAdminAddress,
-      tokenInitData,
-      { from: proxyDeployerAddress }
-    )
-    token = await AudiusToken.at(tokenProxy.address)
+    // Deploy registry
+    registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
 
-    const registry0 = await Registry.new({ from: proxyDeployerAddress })
-    const registryInitData = _lib.encodeCall('initialize', [], [])
-    const registryProxy = await AdminUpgradeabilityProxy.new(
-      registry0.address,
+    // Deploy + register governance
+    governance = await _lib.deployGovernance(
+      artifacts,
       proxyAdminAddress,
-      registryInitData,
-      { from: proxyDeployerAddress }
+      proxyDeployerAddress,
+      registry,
+      VOTING_PERIOD,
+      VOTING_QUORUM,
+      guardianAddress
     )
-    registry = await Registry.at(registryProxy.address)
-
-    // Deploy + register Governance
-    const governance0 = await Governance.new({ from: proxyDeployerAddress })
-    const governanceInitializeData = _lib.encodeCall(
-      'initialize',
-      ['address', 'bytes32', 'uint256', 'uint256', 'address'],
-      [registry.address, stakingProxyKey, votingPeriod, votingQuorum, guardianAddress]
-    )
-    const governanceProxy = await AudiusAdminUpgradeabilityProxy.new(
-      governance0.address,
-      proxyAdminAddress,
-      governanceInitializeData,
-      registry.address,
-      governanceKey,
-      { from: proxyDeployerAddress }
-    )
-    governance = await Governance.at(governanceProxy.address)
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
+
+    // Deploy + register token
+    token = await _lib.deployToken(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress,
+      tokenOwnerAddress,
+      governance.address
+    )
+    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
 
     // Deploy + register Staking
     staking0 = await Staking.new({ from: proxyDeployerAddress })
     stakingInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
+      ['address', 'address'],
       [
         token.address,
-        registry.address,
-        claimsManagerProxyKey,
-        delegateManagerKey,
-        serviceProviderFactoryKey
+        governance.address
       ]
     )
 
@@ -154,8 +138,7 @@ contract('ServiceProvider test', async (accounts) => {
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
 
@@ -163,17 +146,14 @@ contract('ServiceProvider test', async (accounts) => {
     await registry.addContract(stakingProxyKey, proxy.address, { from: proxyDeployerAddress })
     // Deploy + register ServiceTypeManager
     let serviceTypeInitializeData = _lib.encodeCall(
-      'initialize',
-      ['address', 'bytes32'],
-      [registry.address, governanceKey]
+      'initialize', ['address'], [governance.address]
     )
     let serviceTypeManager0 = await ServiceTypeManager.new({ from: proxyDeployerAddress })
     let serviceTypeManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceTypeManager0.address,
       proxyAdminAddress,
       serviceTypeInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyAdminAddress }
     )
     serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
@@ -183,15 +163,14 @@ contract('ServiceProvider test', async (accounts) => {
     claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
     const claimsInitializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey, governanceKey]
+      ['address', 'address'],
+      [token.address, governance.address]
     )
     claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       claimsManager0.address,
       proxyAdminAddress,
       claimsInitializeCallData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
@@ -199,14 +178,19 @@ contract('ServiceProvider test', async (accounts) => {
     // Register claimsManagerProxy
     await registry.addContract(claimsManagerProxyKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
 
+    // Deploy mock delegate manager with only function to forward processClaim call
+    mockDelegateManager = await MockDelegateManager.new()
+    await mockDelegateManager.initialize(claimsManagerProxy.address)
+    await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
+
     /** addServiceTypes creatornode and discprov via Governance */
-    await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey, true)
+    await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey)
     const serviceTypeCNStakeInfo = await serviceTypeManager.getServiceTypeStakeInfo.call(testCreatorNodeType)
     const [cnTypeMinV, cnTypeMaxV] = [serviceTypeCNStakeInfo[0], serviceTypeCNStakeInfo[1]]
     assert.equal(cnTypeMin, cnTypeMinV, 'Expected same minStake')
     assert.equal(cnTypeMax, cnTypeMaxV, 'Expected same maxStake')
 
-    await _lib.addServiceType(testDiscProvType, dpTypeMin, dpTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey, true)
+    await _lib.addServiceType(testDiscProvType, dpTypeMin, dpTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey)
     const serviceTypeDPStakeInfo = await serviceTypeManager.getServiceTypeStakeInfo.call(testDiscProvType)
     const [dpTypeMinV, dpTypeMaxV] = [serviceTypeDPStakeInfo[0], serviceTypeDPStakeInfo[1]]
     assert.equal(dpTypeMin, dpTypeMinV, 'Expected same minStake')
@@ -216,15 +200,14 @@ contract('ServiceProvider test', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey, claimsManagerProxyKey]
+      ['address'],
+      [governance.address]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
       proxyAdminAddress,
       serviceProviderFactoryCalldata,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyAdminAddress }
     )
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
@@ -232,11 +215,67 @@ contract('ServiceProvider test', async (accounts) => {
 
     // Transfer 1000 tokens to accounts[11]
     await token.transfer(accounts[11], INITIAL_BAL, { from: proxyDeployerAddress })
+    // ---- Configuring addresses
+    await _lib.configureGovernanceStakingAddress(
+      governance,
+      governanceKey,
+      guardianAddress,
+      staking.address
+    )
+    // ---- Set up staking contract permissions
+    await _lib.configureStakingContractAddresses(
+      governance,
+      guardianAddress,
+      stakingProxyKey,
+      staking,
+      serviceProviderFactoryProxy.address,
+      claimsManagerProxy.address,
+      _lib.addressZero
+    )
+    // ---- Set up claims manager contract permissions
+    await _lib.configureClaimsManagerContractAddresses(
+      governance,
+      guardianAddress,
+      claimsManagerProxyKey,
+      claimsManager,
+      staking.address,
+      serviceProviderFactory.address,
+      _lib.addressZero
+    )
+
+    await _lib.assertRevert(
+      _lib.registerServiceProvider(
+        token,
+        staking,
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint,
+        DEFAULT_AMOUNT,
+        stakerAccount
+      ),
+      'serviceTypeManagerAddress not set'
+    )
+
+    await _lib.assertRevert(
+      serviceProviderFactory.updateServiceProviderStake(
+        stakerAccount,
+        _lib.toBN(200)
+      ),
+      'delegateManagerAddress not set')
+
+    await _lib.configureServiceProviderFactoryAddresses(
+      governance,
+      guardianAddress,
+      serviceProviderFactoryKey,
+      serviceProviderFactory,
+      staking.address,
+      serviceTypeManagerProxy.address,
+      claimsManagerProxy.address,
+      mockDelegateManager.address
+    )
   })
 
   describe('Registration flow', () => {
-    const stakerAccount = accounts[11]
-    const stakerAccount2 = accounts[12]
     let regTx
 
     beforeEach(async () => {
@@ -251,7 +290,6 @@ contract('ServiceProvider test', async (accounts) => {
         DEFAULT_AMOUNT,
         stakerAccount
       )
-
       // Confirm event has correct amount
       assert.isTrue(regTx.stakeAmount.eq(DEFAULT_AMOUNT))
 
@@ -369,7 +407,7 @@ contract('ServiceProvider test', async (accounts) => {
           testCnodeEndpoint1,
           0,
           stakerAccount),
-        'Minimum stake threshold')
+        'Minimum stake requirement not met')
 
       // 3rd endpoint for stakerAccount = https://localhost:4001
       // creator-node
@@ -459,6 +497,10 @@ contract('ServiceProvider test', async (accounts) => {
       assert.isTrue(stakedAmount.eq(await staking.totalStakedFor(stakerAccount)), 'Expect no stake change')
     }
 
+    it('Confirm correct stake for account', async () => {
+      assert.isTrue((await getStakeAmountForAccount(stakerAccount)).eq(DEFAULT_AMOUNT))
+    })
+
     it('Fail to register invalid type', async () => {
       // Confirm invalid type cannot be registered
       await _lib.assertRevert(
@@ -473,10 +515,6 @@ contract('ServiceProvider test', async (accounts) => {
         ),
         'Valid service type required'
       )
-    })
-
-    it('Confirm correct stake for account', async () => {
-      assert.isTrue((await getStakeAmountForAccount(stakerAccount)).eq(DEFAULT_AMOUNT))
     })
 
     it('Deregister endpoint and confirm transfer of staking balance to owner', async () => {
@@ -604,7 +642,7 @@ contract('ServiceProvider test', async (accounts) => {
           MIN_STAKE_AMOUNT - 1,
           stakerAccount2
         ),
-        'Minimum stake threshold exceeded'
+        'Minimum stake requirement not met'
       )
     })
 
@@ -619,7 +657,7 @@ contract('ServiceProvider test', async (accounts) => {
           0,
           stakerAccount2
         ),
-        'Minimum stake threshold exceeded'
+        'Minimum stake requirement not met'
       )
     })
 
@@ -687,7 +725,7 @@ contract('ServiceProvider test', async (accounts) => {
           initialStake,
           stakerAccount
         ),
-        'Minimum stake threshold exceeded'
+        'Minimum stake requirement not met'
       )
     })
 
@@ -839,6 +877,92 @@ contract('ServiceProvider test', async (accounts) => {
       )
     })
 
+    it('Fail to set service addresses from non-governance contract', async () => {
+      await _lib.assertRevert(
+        serviceProviderFactory.setGovernanceAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
+      await _lib.assertRevert(
+        serviceProviderFactory.setStakingAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.setDelegateManagerAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.setServiceTypeManagerAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.setClaimsManagerAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
+    })
+
+    it('Will set the new governance address if called from current governance contract', async () => {
+      assert.equal(
+        governance.address,
+        await serviceProviderFactory.getGovernanceAddress(),
+        "expected governance address before changing"  
+      )
+
+      await governance.guardianExecuteTransaction(
+        serviceProviderFactoryKey,
+        callValue,
+        'setGovernanceAddress(address)',
+        _lib.abiEncode(['address'], [fakeGovernanceAddress]),
+        { from: guardianAddress }
+      )
+
+      assert.equal(
+        fakeGovernanceAddress,
+        await serviceProviderFactory.getGovernanceAddress(),
+        "updated governance addresses don't match"
+      )
+    })
+
+    it('Claim pending and decrease stake restrictions', async () => {
+      await claimsManager.initiateRound({ from: stakerAccount })
+      await _lib.assertRevert(
+        _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint,
+          DEFAULT_AMOUNT,
+          stakerAccount
+        ),
+        'No claim expected to be pending prior to stake transfer'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.requestDecreaseStake(
+          DEFAULT_AMOUNT.div(_lib.toBN(2)),
+          { from: stakerAccount }
+        ),
+        'No claim expected to be pending prior to stake transfer'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.decreaseStake({ from: stakerAccount }),
+        'Decrease stake request must be pending'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.cancelDecreaseStakeRequest(stakerAccount),
+        'Only callable from owner or DelegateManager'
+      )
+      await _lib.assertRevert(
+        serviceProviderFactory.cancelDecreaseStakeRequest(stakerAccount, { from: stakerAccount }),
+        'Decrease stake request must be pending'
+      )
+    })
+
     it('Service type operations test', async () => {
       let typeMinVal = _lib.audToWei(200)
       let typeMaxVal = _lib.audToWei(20000)
@@ -867,28 +991,29 @@ contract('ServiceProvider test', async (accounts) => {
         ['bytes32', 'uint256', 'uint256'],
         [testDiscProvType, typeMinVal, typeMaxVal]
       )
-      const addSPDPTxReceipt = await governance.guardianExecuteTransaction(
-        serviceTypeManagerProxyKey,
-        callValue,
-        addServiceTypeSignature,
-        callDataDP,
-        { from: guardianAddress }
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          addServiceTypeSignature,
+          callDataDP,
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
       )
-      assert.isFalse(_lib.parseTx(addSPDPTxReceipt).event.args.success, 'Expected tx to fail')
 
       // Add new serviceType
       const callDataT = _lib.abiEncode(
         ['bytes32', 'uint256', 'uint256'],
         [testType, typeMinVal, typeMaxVal]
       )
-      const addSPTTxReceipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue,
         addServiceTypeSignature,
         callDataT,
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(addSPTTxReceipt).event.args.success, 'Expected tx to succeed')
 
       // Confirm presence of test type in list
       let validTypes = (await serviceTypeManager.getValidServiceTypes()).map(x => web3.utils.hexToUtf8(x))
@@ -905,14 +1030,23 @@ contract('ServiceProvider test', async (accounts) => {
         'Expect invalid version prior to registration'
       )
 
-      const setServiceVersionTxR = await governance.guardianExecuteTransaction(
+      // Confirm only governance can call set functions
+      await _lib.assertRevert(
+        serviceTypeManager.setGovernanceAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        serviceTypeManager.setServiceVersion(web3.utils.utf8ToHex('fake-type'), web3.utils.utf8ToHex('0.0')),
+        'Only callable by Governance contract'
+      )
+
+      await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue,
         'setServiceVersion(bytes32,bytes32)',
         _lib.abiEncode(['bytes32', 'bytes32'], [testType, testVersion]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(setServiceVersionTxR).event.args.success, 'Expected tx to succeed')
 
       assert.isTrue(
         await serviceTypeManager.serviceVersionIsValid(testType, testVersion),
@@ -920,14 +1054,16 @@ contract('ServiceProvider test', async (accounts) => {
       )
 
       // Fail to setServiceVersion to version that is already registered
-      const setServiceVersionTxR2 = await governance.guardianExecuteTransaction(
-        serviceTypeManagerProxyKey,
-        callValue,
-        'setServiceVersion(bytes32,bytes32)',
-        _lib.abiEncode(['bytes32', 'bytes32'], [testType, testVersion]),
-        { from: guardianAddress }
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          'setServiceVersion(bytes32,bytes32)',
+          _lib.abiEncode(['bytes32', 'bytes32'], [testType, testVersion]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
       )
-      assert.isFalse(_lib.parseTx(setServiceVersionTxR2).event.args.success, 'Expected tx to fail')
 
       let chainVersion = await serviceTypeManager.getCurrentVersion(testType)
       assert.equal(
@@ -950,14 +1086,13 @@ contract('ServiceProvider test', async (accounts) => {
       let testVersion2 = web3.utils.utf8ToHex('0.0.2')
 
       // Update version again
-      const setServiceVersionTxR3 = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue,
         'setServiceVersion(bytes32,bytes32)',
         _lib.abiEncode(['bytes32', 'bytes32'], [testType, testVersion2]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(setServiceVersionTxR3).event.args.success, 'Expected tx to succeed')
 
       // Validate number of versions
       let numVersions = await serviceTypeManager.getNumberOfVersions(testType)
@@ -994,24 +1129,25 @@ contract('ServiceProvider test', async (accounts) => {
 
       // updateServiceType should fail with unregistered serviceType
       const unregisteredType = web3.utils.utf8ToHex('invalid-service')
-      let updateServiceTypeTxReceipt = await governance.guardianExecuteTransaction(
-        serviceTypeManagerProxyKey,
-        callValue,
-        'updateServiceType(bytes32,uint256,uint256)',
-        _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [unregisteredType, newMinVal, newMaxVal]),
-        { from: guardianAddress }
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          'updateServiceType(bytes32,uint256,uint256)',
+          _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [unregisteredType, newMinVal, newMaxVal]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
       )
-      assert.isFalse(_lib.parseTx(updateServiceTypeTxReceipt).event.args.success, 'Expected tx to fail')
 
       // updateServiceType successfully
-      updateServiceTypeTxReceipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue,
         'updateServiceType(bytes32,uint256,uint256)',
         _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [testType, newMinVal, newMaxVal]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(updateServiceTypeTxReceipt).event.args.success, 'Expected tx to succeed')
 
       // Confirm serviceType was updated
       info = await serviceTypeManager.getServiceTypeStakeInfo(testType)
@@ -1024,24 +1160,25 @@ contract('ServiceProvider test', async (accounts) => {
       )
 
       // removeServiceType fails with unregistered serviceType
-      let removeServiceTypeTxReceipt = await governance.guardianExecuteTransaction(
-        serviceTypeManagerProxyKey,
-        callValue,
-        'removeServiceType(bytes32)',
-        _lib.abiEncode(['bytes32'], [unregisteredType]),
-        { from: guardianAddress }
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          'removeServiceType(bytes32)',
+          _lib.abiEncode(['bytes32'], [unregisteredType]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
       )
-      assert.isFalse(_lib.parseTx(removeServiceTypeTxReceipt).event.args.success, 'Expected tx to fail')
 
       // removeServiceType successfully
-      removeServiceTypeTxReceipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue,
         'removeServiceType(bytes32)',
         _lib.abiEncode(['bytes32'], [testType]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(removeServiceTypeTxReceipt).event.args.success, 'Expected tx to succeed')
 
       // Confirm serviceType is no longer valid after removal
       isValid = await serviceTypeManager.serviceTypeIsValid(testType)

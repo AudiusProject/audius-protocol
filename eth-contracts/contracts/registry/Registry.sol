@@ -3,20 +3,12 @@ pragma solidity ^0.5.0;
 import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
-
 import "../InitializableV2.sol";
-import "../interface/RegistryContractInterface.sol";
 
 
 /**
-* @title Central hub for RegistryContracts that stores all contract addresses
-*    and facilitates inter-contract communication
-* @dev The registry acts as the central hub for all RegistryContracts.
-*    It stores the addresses for all contracts so when one contract wants to
-*    communicate with with another, it must go:
-*      Calling Contract -> Registry -> Destination Contract
-*    It also serves as a communication hub and a version manager that can
-*    upgrade existing contracts and remove contracts
+* @title Central hub for Audius protocol. It stores all contract addresses to facilitate
+*   external access and enable version management.
 */
 contract Registry is InitializableV2, Ownable {
     using SafeMath for uint;
@@ -33,19 +25,19 @@ contract Registry is InitializableV2, Ownable {
     event ContractUpgraded(bytes32 _name, address _oldAddress, address _newAddress);
 
     function initialize() public initializer {
-        // Ownable.initialize(address _sender) sets contract owner to address passed as argument.
+        // Ownable.initialize(address _sender) sets contract owner to _sender.
         Ownable.initialize(msg.sender);
         InitializableV2.initialize();
     }
 
+    // ========================================= Setters =========================================
+
     /**
-     * @dev addContract does two things:
-     *      1.) registers the address of given RegistryContract in the registry
-     *      2.) sets the registry address in given RegistryContract so only
-     *          the registry can call functions on given contract
+     * @dev addContract registers contract name to address mapping
      */
     function addContract(bytes32 _name, address _address) external onlyOwner {
         _requireIsInitialized();
+
         require(
             addressStorage[_name] == address(0x00),
             "Registry::addContract: Contract already registered with given name."
@@ -54,10 +46,50 @@ contract Registry is InitializableV2, Ownable {
             _address != address(0x00),
             "Registry::addContract: Cannot register zero address."
         );
+
         setAddress(_name, _address);
-        RegistryContractInterface(_address).setRegistry(address(this));
+
         emit ContractAdded(_name, _address);
     }
+
+    /**
+     * @notice removes contract address registered under given registry key
+     * @param _name - registry key for lookup
+     */
+    function removeContract(bytes32 _name) external onlyOwner {
+        _requireIsInitialized();
+
+        address contractAddress = addressStorage[_name];
+        require(
+            contractAddress != address(0x00),
+            "Registry::removeContract: Cannot remove - no contract registered with given _name."
+        );
+
+        setAddress(_name, address(0x00));
+
+        emit ContractRemoved(_name, contractAddress);
+    }
+
+    /**
+     * @notice replaces contract address registered under given key with provided address
+     * @param _name - registry key for lookup
+     * @param _newAddress - new contract address to register under given key
+     */
+    function upgradeContract(bytes32 _name, address _newAddress) external onlyOwner {
+        _requireIsInitialized();
+
+        address oldAddress = addressStorage[_name];
+        require(
+            oldAddress != address(0x00),
+            "Registry::upgradeContract: Cannot upgrade - no contract registered with given _name."
+        );
+
+        setAddress(_name, _newAddress);
+
+        emit ContractUpgraded(_name, oldAddress, _newAddress);
+    }
+
+    // ========================================= Getters =========================================
 
     /**
      * @notice returns contract address registered under given registry key
@@ -84,39 +116,7 @@ contract Registry is InitializableV2, Ownable {
         return addressStorageHistory[_name].length;
     }
 
-    /**
-     * @notice removes contract address registered under given registry key
-     * @param _name - registry key for lookup
-     */
-    function removeContract(bytes32 _name) external onlyOwner {
-        _requireIsInitialized();
-        address contractAddress = addressStorage[_name];
-        require(
-            contractAddress != address(0x00),
-            "Registry::removeContract: Cannot remove - no contract registered with given _name."
-        );
-        setAddress(_name, address(0x00));
-        RegistryContractInterface(contractAddress).kill();
-        emit ContractRemoved(_name, contractAddress);
-    }
-
-    /**
-     * @notice replaces contract address registered under given key with provided address
-     * @param _name - registry key for lookup
-     * @param _newAddress - new contract address to register under given key
-     */
-    function upgradeContract(bytes32 _name, address _newAddress) external onlyOwner {
-        _requireIsInitialized();
-        address oldAddress = addressStorage[_name];
-        require(
-            oldAddress != address(0x00),
-            "Registry::upgradeContract: Cannot upgrade - no contract registered with given _name."
-        );
-        setAddress(_name, _newAddress);
-        RegistryContractInterface(oldAddress).kill();
-        RegistryContractInterface(_newAddress).setRegistry(address(this));
-        emit ContractUpgraded(_name, oldAddress, _newAddress);
-    }
+    // ========================================= Private functions =========================================
 
     /**
      * @param _key the key for the contract address

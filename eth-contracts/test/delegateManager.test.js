@@ -14,6 +14,7 @@ const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
+const tokenRegKey = web3.utils.utf8ToHex('Token')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
 const testEndpoint = 'https://localhost:5000'
@@ -26,6 +27,8 @@ const DEFAULT_AMOUNT = _lib.toBN(DEFAULT_AMOUNT_VAL)
 const VOTING_PERIOD = 10
 const VOTING_QUORUM = 1
 
+const callValue0 = _lib.toBN(0)
+
 
 contract('DelegateManager', async (accounts) => {
   let staking, stakingAddress, token, registry, governance, claimsManager0, claimsManagerProxy
@@ -33,6 +36,7 @@ contract('DelegateManager', async (accounts) => {
   
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress] = accounts
+  const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
   const stakerAccount = accounts[10]
   const stakerAccount2 = accounts[12]
@@ -40,42 +44,42 @@ contract('DelegateManager', async (accounts) => {
   const slasherAccount = stakerAccount
 
   beforeEach(async () => {
-    token = await _lib.deployToken(artifacts, proxyAdminAddress, proxyDeployerAddress)
     registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
 
-    // Deploy + register Governance
+    // Deploy + register Governance contract
     governance = await _lib.deployGovernance(
       artifacts,
       proxyAdminAddress,
       proxyDeployerAddress,
       registry,
-      stakingProxyKey,
-      governanceKey,
       VOTING_PERIOD,
       VOTING_QUORUM,
       guardianAddress
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
 
+    // Deploy + register token
+    token = await _lib.deployToken(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress,
+      tokenOwnerAddress,
+      governance.address
+    )
+    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
+
     // Deploy + register Staking
     const staking0 = await Staking.new({ from: proxyDeployerAddress })
     const stakingInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32'],
-      [
-        token.address,
-        registry.address,
-        claimsManagerProxyKey,
-        delegateManagerKey,
-        serviceProviderFactoryKey
-      ]
+      ['address', 'address'],
+      [token.address, governance.address]
     )
     const stakingProxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     staking = await Staking.at(stakingProxy.address)
@@ -84,38 +88,34 @@ contract('DelegateManager', async (accounts) => {
 
     // Deploy + register ServiceTypeManager
     let serviceTypeInitializeData = _lib.encodeCall(
-      'initialize',
-      ['address', 'bytes32'],
-      [registry.address, governanceKey]
+      'initialize', ['address'], [governance.address]
     )
     let serviceTypeManager0 = await ServiceTypeManager.new({ from: proxyDeployerAddress })
     let serviceTypeManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceTypeManager0.address,
       proxyAdminAddress,
       serviceTypeInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: proxyDeployerAddress })
     let serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
 
     // Register discprov serviceType
-    await _lib.addServiceType(testDiscProvType, _lib.audToWei(5), _lib.audToWei(10000000), governance, guardianAddress, serviceTypeManagerProxyKey, true)
+    await _lib.addServiceType(testDiscProvType, _lib.audToWei(5), _lib.audToWei(10000000), governance, guardianAddress, serviceTypeManagerProxyKey)
 
     // Deploy ServiceProviderFactory
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'bytes32', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [registry.address, stakingProxyKey, delegateManagerKey, governanceKey, serviceTypeManagerProxyKey, claimsManagerProxyKey]
+      ['address'],
+      [governance.address]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
       proxyAdminAddress,
       serviceProviderFactoryCalldata,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
@@ -125,15 +125,14 @@ contract('DelegateManager', async (accounts) => {
     claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
     const claimsInitializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, stakingProxyKey, serviceProviderFactoryKey, delegateManagerKey, governanceKey]
+      ['address', 'address'],
+      [token.address, governance.address]
     )
     claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       claimsManager0.address,
       proxyAdminAddress,
       claimsInitializeCallData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
@@ -146,20 +145,25 @@ contract('DelegateManager', async (accounts) => {
     )
 
     // Register new contract as a minter, from the same address that deployed the contract
-    await token.addMinter(claimsManager.address, { from: proxyDeployerAddress })
+    await governance.guardianExecuteTransaction(
+      tokenRegKey,
+      callValue0,
+      'addMinter(address)',
+      _lib.abiEncode(['address'], [claimsManager.address]),
+      { from: guardianAddress }
+    )
 
     const delegateManagerInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'bytes32', 'bytes32', 'bytes32', 'bytes32'],
-      [token.address, registry.address, governanceKey, stakingProxyKey, serviceProviderFactoryKey, claimsManagerProxyKey]
+      ['address', 'address'],
+      [token.address, governance.address]
     )
     let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
     let delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       delegateManager0.address,
       proxyAdminAddress,
       delegateManagerInitializeData,
-      registry.address,
-      governanceKey,
+      governance.address,
       { from: proxyDeployerAddress }
     )
 
@@ -167,14 +171,64 @@ contract('DelegateManager', async (accounts) => {
     await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: proxyDeployerAddress })
 
     // Clear min delegation amount for testing
-    const updateMinDelAmountTxReceipt = await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       delegateManagerKey,
       _lib.toBN(0),
       'updateMinDelegationAmount(uint256)',
       _lib.abiEncode(['uint256'], [0]),
       { from: guardianAddress }
     )
-    assert.isTrue(_lib.parseTx(updateMinDelAmountTxReceipt).event.args.success, 'Expected tx to succeed')
+    // ---- Configuring addresses
+    await _lib.configureGovernanceStakingAddress(
+      governance,
+      governanceKey,
+      guardianAddress,
+      stakingProxy.address
+    )
+    // ---- Set up staking contract permissions
+    await _lib.configureStakingContractAddresses(
+      governance,
+      guardianAddress,
+      stakingProxyKey,
+      staking,
+      serviceProviderFactoryProxy.address,
+      claimsManagerProxy.address,
+      delegateManagerProxy.address
+    )
+
+    // ---- Set up claims manageer contract permissions
+    await _lib.configureClaimsManagerContractAddresses(
+      governance,
+      guardianAddress,
+      claimsManagerProxyKey,
+      claimsManager,
+      staking.address,
+      serviceProviderFactory.address,
+      delegateManager.address
+    )
+
+    // ---- Set up delegateManager  contract permissions
+    await _lib.configureDelegateManagerAddresses(
+      governance,
+      guardianAddress,
+      delegateManagerKey,
+      delegateManager,
+      staking.address,
+      serviceProviderFactory.address,
+      claimsManager.address
+    )
+
+    // ---- Set up spFactory  contract permissions
+    await _lib.configureServiceProviderFactoryAddresses(
+      governance,
+      guardianAddress,
+      serviceProviderFactoryKey,
+      serviceProviderFactory,
+      staking.address,
+      serviceTypeManagerProxy.address,
+      claimsManagerProxy.address,
+      delegateManagerProxy.address
+    )
   })
 
   /* Helper functions */
@@ -511,6 +565,12 @@ contract('DelegateManager', async (accounts) => {
         testEndpoint,
         stakerAccount)
       let deregisterRequestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+
+      await _lib.assertRevert(
+        serviceProviderFactory.decreaseStake({ from: stakerAccount }),
+        'Lockup must be expired'
+      )
+
       await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
 
       // Withdraw all SP stake
@@ -589,7 +649,7 @@ contract('DelegateManager', async (accounts) => {
       const slashAmount = _lib.toBN(slashAmountVal)
 
       // Perform slash functions
-      await _lib.slash(slashAmountVal, slasherAccount, governance, delegateManagerKey, guardianAddress, true)
+      await _lib.slash(slashAmountVal, slasherAccount, governance, delegateManagerKey, guardianAddress)
 
       // Summarize after execution
       let spFactoryStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
@@ -612,7 +672,8 @@ contract('DelegateManager', async (accounts) => {
         serviceProviderFactory,
         testDiscProvType,
         testEndpoint,
-        stakerAccount)
+        stakerAccount
+      )
       // Query the resulting deregister operation
       let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
       // Advance to valid block
@@ -623,10 +684,16 @@ contract('DelegateManager', async (accounts) => {
       /** Perform slash functions */
 
       // Fail to slash more than currently staked
-      await _lib.slash(DEFAULT_AMOUNT_VAL, slasherAccount, governance, delegateManagerKey, guardianAddress, false)
+      await _lib.assertRevert(
+        _lib.slash(DEFAULT_AMOUNT_VAL, slasherAccount, governance, delegateManagerKey, guardianAddress),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
 
       // Fail to slash more than currently staked
-      await _lib.slash(DEFAULT_AMOUNT_VAL + 4, stakerAccount2, governance, delegateManagerKey, guardianAddress, false)
+      await _lib.assertRevert(
+        _lib.slash(DEFAULT_AMOUNT_VAL + 4, stakerAccount2, governance, delegateManagerKey, guardianAddress),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
 
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
@@ -655,12 +722,15 @@ contract('DelegateManager', async (accounts) => {
       await serviceProviderFactory.decreaseStake({ from: stakerAccount2 })
 
       // Fail to slash account with zero stake
-      await _lib.slash(DEFAULT_AMOUNT_VAL, stakerAccount2, governance, delegateManagerKey, guardianAddress, false)
+      _lib.assertRevert(
+        _lib.slash(DEFAULT_AMOUNT_VAL, stakerAccount2, governance, delegateManagerKey, guardianAddress),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
     })
 
     // TODO: Revisit below test case and remove unneeded validation if necessary
     // Test case still in progress
-    it.skip('WIP - claim restriction on staking balance', async () => {
+    it.skip('TODO WIP - claim restriction on staking balance', async () => {
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
 
@@ -874,7 +944,7 @@ contract('DelegateManager', async (accounts) => {
         'Initial delegate amount not found')
 
       // Perform slash functions
-      await _lib.slash(slashAmountVal, slasherAccount, governance, delegateManagerKey, guardianAddress, true)
+      await _lib.slash(slashAmountVal, slasherAccount, governance, delegateManagerKey, guardianAddress)
 
       let postRewardInfo = await getAccountStakeInfo(stakerAccount, false)
 
@@ -885,7 +955,7 @@ contract('DelegateManager', async (accounts) => {
         'Expect no lockup funds to carry over')
     })
 
-    it('single delegator to invalid SP', async () => {
+    it('Single delegator to invalid SP', async () => {
       let initialDelegateAmount = _lib.audToWeiBN(60)
 
       // Approve staking transfer
@@ -904,7 +974,7 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('validate undelegate request restrictions', async () => {
+    it('Validate undelegate request restrictions', async () => {
       await _lib.assertRevert(
         delegateManager.cancelUndelegateStake({ from: delegatorAccount1 }),
         'Pending lockup expected')
@@ -1037,7 +1107,7 @@ contract('DelegateManager', async (accounts) => {
       let slashAmount = (preSlashInfo.spFactoryStake).sub(diffAmount)
 
       // Perform slash functions
-      await _lib.slash(_lib.audToWei(_lib.fromWei(slashAmount)), slasherAccount, governance, delegateManagerKey, guardianAddress, true)
+      await _lib.slash(_lib.audToWei(_lib.fromWei(slashAmount)), slasherAccount, governance, delegateManagerKey, guardianAddress)
 
       let spDetails = await getAccountStakeInfo(stakerAccount, false)
       assert.isFalse(
@@ -1080,7 +1150,7 @@ contract('DelegateManager', async (accounts) => {
         increaseRegisteredProviderStake(
           diffAmount,
           stakerAccount),
-        'Minimum stake threshold exceeded')
+        'Minimum stake requirement not met')
 
       // Increase to minimum
       spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
@@ -1190,7 +1260,7 @@ contract('DelegateManager', async (accounts) => {
       // Try to execute undelegate stake, but fail due to min bound violation
       await _lib.assertRevert(
         delegateManager.undelegateStake({ from: delegatorAccount1 }),
-        'Minimum stake threshold exceeded')
+        'Minimum stake requirement not met')
     })
 
     it('Undelegate lockup duration changes', async () => {
@@ -1203,14 +1273,13 @@ contract('DelegateManager', async (accounts) => {
         "Only callable by Governance contract"
       )
 
-      const txReceipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         delegateManagerKey,
         _lib.toBN(0),
         'updateUndelegateLockupDuration(uint256)',
         _lib.abiEncode(['uint256'], [newDurationVal]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(txReceipt).event.args.success, 'Expected tx to succeed')
 
       currentDuration = await delegateManager.getUndelegateLockupDuration()
       assert.isTrue(currentDuration.eq(newDuration))
@@ -1219,14 +1288,13 @@ contract('DelegateManager', async (accounts) => {
     it('Maximum delegators', async () => {
       // Update max delegators to 4
       const maxDelegators = 4
-      const tx = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         delegateManagerKey,
         _lib.toBN(0),
         'updateMaxDelegators(uint256)',
         _lib.abiEncode(['uint256'], [maxDelegators]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(tx).event.args.success, 'Expected tx to succeed')
 
       assert.equal(
         _lib.fromBN(await delegateManager.getMaxDelegators()),
@@ -1264,14 +1332,13 @@ contract('DelegateManager', async (accounts) => {
       let minDelegateStakeVal = _lib.audToWei(100)
       let minDelegateStake = _lib.toBN(minDelegateStakeVal)
       
-      const updateMinDelTxReceipt = await governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         delegateManagerKey,
         _lib.toBN(0),
         'updateMinDelegationAmount(uint256)',
         _lib.abiEncode(['uint256'], [minDelegateStakeVal]),
         { from: guardianAddress }
       )
-      assert.isTrue(_lib.parseTx(updateMinDelTxReceipt).event.args.success, 'Expected tx to succeed')
 
       assert.isTrue(
         minDelegateStake.eq(await delegateManager.getMinDelegationAmount()),
@@ -1332,6 +1399,25 @@ contract('DelegateManager', async (accounts) => {
       await _lib.assertRevert(
         delegateManager.slash(10, slasherAccount),
         "Only callable by Governance contract"
+      )
+    })
+
+    it('Fail to set service addresses from non-governance contract', async () => {
+      await _lib.assertRevert(
+        delegateManager.setGovernanceAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        delegateManager.setClaimsManagerAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        delegateManager.setServiceProviderFactoryAddress(_lib.addressZero),
+        'Only governance'
+      )
+      await _lib.assertRevert(
+        delegateManager.setStakingAddress(_lib.addressZero),
+        'Only governance'
       )
     })
 
@@ -1439,7 +1525,7 @@ contract('DelegateManager', async (accounts) => {
         assert.isTrue((requestInfo.amount).gt(_lib.toBN(0)), 'Expected amount to be set')
         
         // Slash
-        await _lib.slash(_lib.audToWei(5), slasherAccount, governance, delegateManagerKey, guardianAddress, true)
+        await _lib.slash(_lib.audToWei(5), slasherAccount, governance, delegateManagerKey, guardianAddress)
 
         requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
         assert.isTrue((requestInfo.lockupExpiryBlock).eq(_lib.toBN(0)), 'Expected lockup expiry block reset')
@@ -1456,14 +1542,13 @@ contract('DelegateManager', async (accounts) => {
           "Only callable by Governance contract"
         )
 
-        const updateDSLDTxReceipt = await governance.guardianExecuteTransaction(
+        await governance.guardianExecuteTransaction(
           serviceProviderFactoryKey,
           _lib.toBN(0),
           'updateDecreaseStakeLockupDuration(uint256)',
           _lib.abiEncode(['uint256'], [_lib.fromBN(newDuration)]),
           { from: guardianAddress }
         )
-        assert.isTrue(_lib.parseTx(updateDSLDTxReceipt).event.args.success, 'Expected tx to succeed')
 
         let updatedDuration = await serviceProviderFactory.getDecreaseStakeLockupDuration()
         assert.isTrue(updatedDuration.eq(newDuration), 'Update not reflected')

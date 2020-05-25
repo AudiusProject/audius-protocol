@@ -1,20 +1,22 @@
 pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
-import "./registry/RegistryContract.sol";
 import "./Staking.sol";
-import "./interface/RegistryInterface.sol";
+import "./registry/Registry.sol";
+import "./InitializableV2.sol";
 
 
-contract Governance is RegistryContract {
+contract Governance is InitializableV2 {
     using SafeMath for uint;
-    RegistryInterface registry;
-    bytes32 stakingProxyOwnerKey;
 
-    uint256 votingPeriod;
-    uint256 votingQuorum;
+    Registry private registry;
+    address private registryAddress;
+    address private stakingAddress;
 
-    address guardianAddress;
+    uint256 private votingPeriod;
+    uint256 private votingQuorum;
+
+    address private guardianAddress;
 
     /***** Enums *****/
     enum Outcome {InProgress, No, Yes, Invalid, TxFailed, Evaluating}
@@ -72,30 +74,28 @@ contract Governance is RegistryContract {
         uint256 callValue,
         string indexed signature,
         bytes indexed callData,
-        bool success,
         bytes returnData
     );
     event ProposalVetoed(uint256 indexed proposalId);
 
     /**
      * @notice Initialize the Governance contract as well as all calling initialize on all parent contracts
+     * @dev _votingPeriod <= DelegateManager.undelegateLockupDuration
      * @param _registryAddress - address of the registry proxy contract
-     * @param _stakingProxyOwnerKey - key in Registry that points to Staking proxy
      * @param _votingPeriod - how long each voting period should last in terms of blocks
      * @param _votingQuorum - required minimum number of votes to consider judge a proposal
      * @param _guardianAddress - address for an account that can override certain governance actions
+
      */
     function initialize(
         address _registryAddress,
-        bytes32 _stakingProxyOwnerKey,
         uint256 _votingPeriod,
         uint256 _votingQuorum,
         address _guardianAddress
     ) public initializer {
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
-        registry = RegistryInterface(_registryAddress);
-
-        stakingProxyOwnerKey = _stakingProxyOwnerKey;
+        registryAddress = _registryAddress;
+        registry = Registry(_registryAddress);
 
         require(_votingPeriod > 0, "Requires non-zero _votingPeriod");
         votingPeriod = _votingPeriod;
@@ -103,12 +103,18 @@ contract Governance is RegistryContract {
         require(_votingQuorum > 0, "Requires non-zero _votingQuorum");
         votingQuorum = _votingQuorum;
 
-        guardianAddress = _guardianAddress;
+        require(_guardianAddress != address(0x00), "Requires non-zero _guardianAddress");
+        guardianAddress = _guardianAddress;  //Guardian address becomes the only party
 
-        RegistryContract.initialize();
+        InitializableV2.initialize();
     }
 
     // ========================================= Governance Actions =========================================
+
+
+    /**
+     * TODO - add registry override
+     */
 
     /**
      * @notice Submit a proposal for vote
@@ -131,9 +137,7 @@ contract Governance is RegistryContract {
         address proposer = msg.sender;
 
         // Require proposer is active Staker
-        Staking stakingContract = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        );
+        Staking stakingContract = Staking(stakingAddress);
         require(
             stakingContract.totalStakedFor(proposer) > 0,
             "Proposer must be active staker with non-zero stake."
@@ -200,9 +204,8 @@ contract Governance is RegistryContract {
         );
 
         // Require voter is active Staker + get voterStake.
-        Staking stakingContract = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        );
+        Staking stakingContract = Staking(stakingAddress);
+
         uint256 voterStake = stakingContract.totalStakedForAt(
             voter,
             proposals[_proposalId].startBlockNumber
@@ -304,9 +307,8 @@ contract Governance is RegistryContract {
         proposals[_proposalId].outcome = Outcome.Evaluating;
 
         // Require msg.sender is active Staker.
-        Staking stakingContract = Staking(
-            registry.getContract(stakingProxyOwnerKey)
-        );
+        Staking stakingContract = Staking(stakingAddress);
+
         require(
             stakingContract.totalStakedForAt(
                 msg.sender, proposals[_proposalId].startBlockNumber
@@ -407,6 +409,32 @@ contract Governance is RegistryContract {
         emit ProposalVetoed(_proposalId);
     }
 
+    // ========================================= Config Setters =========================================
+
+    // Set staking owner address
+    function setStakingAddress(address _address) external {
+        require(msg.sender == address(this), "Only callable by self");
+        stakingAddress = _address;
+    }
+
+    // Set votingPeriod
+    function setVotingPeriod(uint256 _votingPeriod) external {
+        require(msg.sender == address(this), "Only callable by self");
+        votingPeriod = _votingPeriod;
+    }
+
+    // Set votingQuorum
+    function setVotingQuorum(uint256 _votingQuorum) external {
+        require(msg.sender == address(this), "Only callable by self");
+        votingQuorum = _votingQuorum;
+    }
+
+    function setRegistryAddress(address _registryAddress) external {
+        require(msg.sender == address(this), "Only callable by self");
+        registryAddress = _registryAddress;
+        registry = Registry(_registryAddress);
+    }
+
     // ========================================= Guardian Actions =========================================
 
     /**
@@ -429,7 +457,7 @@ contract Governance is RegistryContract {
             "Governance::guardianExecuteTransaction: Only guardian."
         );
 
-        // Require _targetContractRegistryKey points to a valid registered contract
+        // _targetContractRegistryKey must point to a valid registered contract
         address targetContractAddress = registry.getContract(_targetContractRegistryKey);
         require(
             targetContractAddress != address(0x00),
@@ -449,14 +477,28 @@ contract Governance is RegistryContract {
             _callData
         );
 
+        require(success == true, "Governance::guardianExecuteTransaction: Transaction failed.");
+
         emit GuardianTransactionExecuted(
             targetContractAddress,
             _callValue,
             _signature,
             _callData,
-            success,
             returnData
         );
+    }
+
+    function transferGuardianship(address _newGuardianAddress) external {
+        _requireIsInitialized();
+
+        require(
+            msg.sender == guardianAddress,
+            "Governance::guardianExecuteTransaction: Only guardian."
+        );
+
+        // TODO - ensure _newGuardianAddress is not a contract (maybe not possible?)
+
+        guardianAddress = _newGuardianAddress;
     }
 
     // ========================================= Getter Functions =========================================
@@ -518,6 +560,32 @@ contract Governance is RegistryContract {
             "Must provide valid non-zero _proposalId"
         );
         return proposals[_proposalId].votes[_voter];
+    }
+
+    function getGuardianAddress() external view returns (address) {
+        _requireIsInitialized();
+
+        return guardianAddress;
+    }
+
+    function getStakingAddress() external view returns (address) {
+        return stakingAddress;
+    }
+
+    function getVotingPeriod() external view returns (uint) {
+        _requireIsInitialized();
+
+        return votingPeriod;
+    }
+
+    function getVotingQuorum() external view returns (uint) {
+        _requireIsInitialized();
+
+        return votingQuorum;
+    }
+
+    function getRegistryAddress() external view returns (address) {
+        return registryAddress;
     }
 
     // ========================================= Internal Functions =========================================
