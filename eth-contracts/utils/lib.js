@@ -156,7 +156,7 @@ export const deregisterServiceProvider = async (serviceProviderFactory, type, en
   return args
 }
 
-export const initiateFundingRound = async (governance, claimsManagerRegKey, guardianAddress, expectedSuccess) => {
+export const initiateFundingRound = async (governance, claimsManagerRegKey, guardianAddress) => {
   const callValue0 = toBN(0)
   const signature = 'initiateRound()'
   const callData = abiEncode([], [])
@@ -249,7 +249,7 @@ export const deployGovernance = async (
   return governance
 }
 
-export const addServiceType = async (serviceType, typeMin, typeMax, governance, guardianAddress, serviceTypeManagerRegKey, expectedSuccess) => {
+export const addServiceType = async (serviceType, typeMin, typeMax, governance, guardianAddress, serviceTypeManagerRegKey) => {
   const addServiceTypeSignature = 'addServiceType(bytes32,uint256,uint256)'
   const callValue0 = toBN(0)
 
@@ -268,7 +268,7 @@ export const addServiceType = async (serviceType, typeMin, typeMax, governance, 
   return parseTx(addServiceTypeTxReceipt)
 }
 
-export const slash = async (slashAmount, slashAccount, governance, delegateManagerRegKey, guardianAddress, expectedSuccess) => {
+export const slash = async (slashAmount, slashAccount, governance, delegateManagerRegKey, guardianAddress) => {
   const callValue0 = toBN(0)
   const signature = 'slash(uint256,address)'
   const callData = abiEncode(['uint256', 'address'], [slashAmount, slashAccount])
@@ -463,7 +463,7 @@ export const configureServiceProviderFactoryAddresses = async (
   assert.equal(delegateManagerAddress, await spFactory.getDelegateManagerAddress(), 'Unexpected delegate manager addr')
 }
 
-export const registerContract = async (governance, contractKey, contractAddress, guardianAddress, expectedSuccess = true) => {
+export const registerContract = async (governance, contractKey, contractAddress, guardianAddress) => {
   const txR = await governance.guardianExecuteTransaction(
     web3New.utils.utf8ToHex("Registry"),
     toBN(0),

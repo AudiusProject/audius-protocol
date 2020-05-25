@@ -183,13 +183,13 @@ contract('ServiceProvider test', async (accounts) => {
     await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
 
     /** addServiceTypes creatornode and discprov via Governance */
-    await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey, true)
+    await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey)
     const serviceTypeCNStakeInfo = await serviceTypeManager.getServiceTypeStakeInfo.call(testCreatorNodeType)
     const [cnTypeMinV, cnTypeMaxV] = [serviceTypeCNStakeInfo[0], serviceTypeCNStakeInfo[1]]
     assert.equal(cnTypeMin, cnTypeMinV, 'Expected same minStake')
     assert.equal(cnTypeMax, cnTypeMaxV, 'Expected same maxStake')
 
-    await _lib.addServiceType(testDiscProvType, dpTypeMin, dpTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey, true)
+    await _lib.addServiceType(testDiscProvType, dpTypeMin, dpTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey)
     const serviceTypeDPStakeInfo = await serviceTypeManager.getServiceTypeStakeInfo.call(testDiscProvType)
     const [dpTypeMinV, dpTypeMaxV] = [serviceTypeDPStakeInfo[0], serviceTypeDPStakeInfo[1]]
     assert.equal(dpTypeMin, dpTypeMinV, 'Expected same minStake')

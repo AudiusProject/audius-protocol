@@ -102,7 +102,7 @@ contract('DelegateManager', async (accounts) => {
     let serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
 
     // Register discprov serviceType
-    await _lib.addServiceType(testDiscProvType, _lib.audToWei(5), _lib.audToWei(10000000), governance, guardianAddress, serviceTypeManagerProxyKey, true)
+    await _lib.addServiceType(testDiscProvType, _lib.audToWei(5), _lib.audToWei(10000000), governance, guardianAddress, serviceTypeManagerProxyKey)
 
     // Deploy ServiceProviderFactory
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
@@ -643,7 +643,7 @@ contract('DelegateManager', async (accounts) => {
       const slashAmount = _lib.toBN(slashAmountVal)
 
       // Perform slash functions
-      await _lib.slash(slashAmountVal, slasherAccount, governance, delegateManagerKey, guardianAddress, true)
+      await _lib.slash(slashAmountVal, slasherAccount, governance, delegateManagerKey, guardianAddress)
 
       // Summarize after execution
       let spFactoryStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
@@ -666,7 +666,8 @@ contract('DelegateManager', async (accounts) => {
         serviceProviderFactory,
         testDiscProvType,
         testEndpoint,
-        stakerAccount)
+        stakerAccount
+      )
       // Query the resulting deregister operation
       let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
       // Advance to valid block
@@ -677,10 +678,16 @@ contract('DelegateManager', async (accounts) => {
       /** Perform slash functions */
 
       // Fail to slash more than currently staked
-      await _lib.slash(DEFAULT_AMOUNT_VAL, slasherAccount, governance, delegateManagerKey, guardianAddress, false)
+      await _lib.assertRevert(
+        _lib.slash(DEFAULT_AMOUNT_VAL, slasherAccount, governance, delegateManagerKey, guardianAddress),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
 
       // Fail to slash more than currently staked
-      await _lib.slash(DEFAULT_AMOUNT_VAL + 4, stakerAccount2, governance, delegateManagerKey, guardianAddress, false)
+      await _lib.assertRevert(
+        _lib.slash(DEFAULT_AMOUNT_VAL + 4, stakerAccount2, governance, delegateManagerKey, guardianAddress),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
 
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
@@ -709,7 +716,10 @@ contract('DelegateManager', async (accounts) => {
       await serviceProviderFactory.decreaseStake({ from: stakerAccount2 })
 
       // Fail to slash account with zero stake
-      await _lib.slash(DEFAULT_AMOUNT_VAL, stakerAccount2, governance, delegateManagerKey, guardianAddress, false)
+      _lib.assertRevert(
+        _lib.slash(DEFAULT_AMOUNT_VAL, stakerAccount2, governance, delegateManagerKey, guardianAddress),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
     })
 
     // TODO: Revisit below test case and remove unneeded validation if necessary
@@ -928,7 +938,7 @@ contract('DelegateManager', async (accounts) => {
         'Initial delegate amount not found')
 
       // Perform slash functions
-      await _lib.slash(slashAmountVal, slasherAccount, governance, delegateManagerKey, guardianAddress, true)
+      await _lib.slash(slashAmountVal, slasherAccount, governance, delegateManagerKey, guardianAddress)
 
       let postRewardInfo = await getAccountStakeInfo(stakerAccount, false)
 
@@ -1091,7 +1101,7 @@ contract('DelegateManager', async (accounts) => {
       let slashAmount = (preSlashInfo.spFactoryStake).sub(diffAmount)
 
       // Perform slash functions
-      await _lib.slash(_lib.audToWei(_lib.fromWei(slashAmount)), slasherAccount, governance, delegateManagerKey, guardianAddress, true)
+      await _lib.slash(_lib.audToWei(_lib.fromWei(slashAmount)), slasherAccount, governance, delegateManagerKey, guardianAddress)
 
       let spDetails = await getAccountStakeInfo(stakerAccount, false)
       assert.isFalse(
@@ -1490,7 +1500,7 @@ contract('DelegateManager', async (accounts) => {
         assert.isTrue((requestInfo.amount).gt(_lib.toBN(0)), 'Expected amount to be set')
         
         // Slash
-        await _lib.slash(_lib.audToWei(5), slasherAccount, governance, delegateManagerKey, guardianAddress, true)
+        await _lib.slash(_lib.audToWei(5), slasherAccount, governance, delegateManagerKey, guardianAddress)
 
         requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
         assert.isTrue((requestInfo.lockupExpiryBlock).eq(_lib.toBN(0)), 'Expected lockup expiry block reset')

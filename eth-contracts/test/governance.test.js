@@ -126,7 +126,7 @@ contract('Governance.sol', async (accounts) => {
     serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
 
     // Register discprov serviceType
-    await _lib.addServiceType(testDiscProvType, spMinStake, spMaxStake, governance, guardianAddress, serviceTypeManagerProxyKey, true)
+    await _lib.addServiceType(testDiscProvType, spMinStake, spMaxStake, governance, guardianAddress, serviceTypeManagerProxyKey)
 
     // Deploy + Register ServiceProviderFactory contract
     const serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })

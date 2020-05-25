@@ -174,7 +174,7 @@ contract('ClaimsManager', async (accounts) => {
 
     assert.isFalse((await claimsManager.claimPending(staker)), 'Expect no pending claim')
 
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, true)
+    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
 
     // Confirm a claim is pending
     assert.isTrue((await claimsManager.claimPending(staker)), 'Expect pending claim')
@@ -198,7 +198,10 @@ contract('ClaimsManager', async (accounts) => {
       'All funds expected to be claimed')
 
     // Confirm another claim cannot be immediately funded
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, false)
+    await _lib.assertRevert(
+      _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress),
+      "Governance::guardianExecuteTransaction: Transaction failed."
+    )
 
     await _lib.assertRevert(
       mockDelegateManager.testProcessClaim(staker, 0),
@@ -221,7 +224,7 @@ contract('ClaimsManager', async (accounts) => {
     let fundsPerClaim = await claimsManager.getFundsPerRound()
 
     // Initiate round
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, true)
+    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
     await mockDelegateManager.testProcessClaim(staker, 0)
     totalStaked = await staking.totalStaked()
 
@@ -230,7 +233,10 @@ contract('ClaimsManager', async (accounts) => {
       'Expect single round of funding + initial stake at this time')
 
     // Confirm another round cannot be immediately funded
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, false)
+    await _lib.assertRevert(
+      _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress),
+      "Governance::guardianExecuteTransaction: Transaction failed."
+    )
     
     let lastClaimBlock = await claimsManager.getLastFundBlock()
     let claimDiff = await claimsManager.getFundingRoundBlockDiff()
@@ -248,7 +254,7 @@ contract('ClaimsManager', async (accounts) => {
     let accountStakeBeforeSecondClaim = await staking.totalStakedFor(staker)
 
     // Initiate another round
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, true)
+    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
     await mockDelegateManager.testProcessClaim(staker, 0)
     totalStaked = await staking.totalStaked()
     let finalAcctStake = await staking.totalStakedFor(staker)
@@ -270,7 +276,7 @@ contract('ClaimsManager', async (accounts) => {
     await approveTransferAndStake(DEFAULT_AMOUNT, staker)
 
     // Initiate 1st claim
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, true)
+    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
 
     let lastClaimBlock = await claimsManager.getLastFundBlock()
     let claimDiff = await claimsManager.getFundingRoundBlockDiff()
@@ -281,7 +287,7 @@ contract('ClaimsManager', async (accounts) => {
     await time.advanceBlockTo(nextClaimBlockTwiceDiff)
 
     // Initiate claim
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, true)
+    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
     await mockDelegateManager.testProcessClaim(staker, 0)
     totalStaked = await staking.totalStaked()
 
@@ -290,7 +296,10 @@ contract('ClaimsManager', async (accounts) => {
       'Expect single round of funding + initial stake at this time')
 
     // Confirm another round cannot be immediately funded, despite 2x block diff
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, false)
+    await _lib.assertRevert(
+      _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress),
+      "Governance::guardianExecuteTransaction: Transaction failed."
+    )
   })
 
   it('Updates funding amount', async () => {
