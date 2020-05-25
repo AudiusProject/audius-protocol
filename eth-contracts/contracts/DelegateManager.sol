@@ -361,8 +361,8 @@ contract DelegateManager is InitializableV2 {
 
             // Multiply by deployer cut fraction to calculate reward for SP
             // Operation constructed to perform all multiplication prior to division
-            // uint spDeployerCut = (rewardsPriorToSPCut / deployerCut ) / (deployerCutBase);
-            //                    = ((delegateStakeToSP * totalRewards) / totalActiveFunds) / deployerCut ) / (deployerCutBase);
+            // uint spDeployerCut = (rewardsPriorToSPCut * deployerCut ) / (deployerCutBase);
+            //                    = ((delegateStakeToSP * totalRewards) / totalActiveFunds) * deployerCut ) / (deployerCutBase);
             //                    = ((delegateStakeToSP * totalRewards * deployerCut) / totalActiveFunds ) / (deployerCutBase);
             //                    = (delegateStakeToSP * totalRewards * deployerCut) / (deployerCutBase * totalActiveFunds);
             uint spDeployerCut = (
