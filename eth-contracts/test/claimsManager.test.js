@@ -26,7 +26,7 @@ contract('ClaimsManager', async (accounts) => {
   let mockDelegateManager, mockStakingCaller
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
-  const [, proxyAdminAddress, proxyDeployerAddress, staker, fakeGovernanceAddress] = accounts
+  const [, proxyAdminAddress, proxyDeployerAddress, staker, newUpdateAddress] = accounts
   const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
 
@@ -354,14 +354,33 @@ contract('ClaimsManager', async (accounts) => {
     assert.isTrue(accountStake.eq(accountStakeAfterClaim), 'Expect NO reward due to bound violation')
   })
 
-  it('will fail to set the governance address from not current governance contract', async () => {
+  it('Fail to update addresss calling directly to ClaimsManager contract', async () => {
+    // Governance address
     await _lib.assertRevert(
-      claimsManager.setGovernanceAddress(fakeGovernanceAddress),
+      claimsManager.setGovernanceAddress(newUpdateAddress),
+      'Only callable by Governance contract'
+    )
+
+    // staking
+    await _lib.assertRevert(
+      claimsManager.setStakingAddress(newUpdateAddress),
+      'Only callable by Governance contract'
+    )
+
+    // service provider factory
+    await _lib.assertRevert(
+      claimsManager.setServiceProviderFactoryAddress(newUpdateAddress),
+      'Only callable by Governance contract'
+    )
+
+    // delegate manager
+    await _lib.assertRevert(
+      claimsManager.setDelegateManagerAddress(newUpdateAddress),
       'Only callable by Governance contract'
     )
   })
 
-  it('will set the new governance address if called from current governance contract', async () => {
+  it('Set the new Governance address if called from current ClaimsManager contract', async () => {
     assert.equal(
       governance.address,
       await claimsManager.getGovernanceAddress(),
@@ -372,14 +391,80 @@ contract('ClaimsManager', async (accounts) => {
       claimsManagerProxyKey,
       callValue0,
       'setGovernanceAddress(address)',
-      _lib.abiEncode(['address'], [fakeGovernanceAddress]),
+      _lib.abiEncode(['address'], [newUpdateAddress]),
       { from: guardianAddress }
     )
 
     assert.equal(
-      fakeGovernanceAddress,
+      newUpdateAddress,
       await claimsManager.getGovernanceAddress(),
       "updated governance addresses don't match"
+    )
+  })
+
+  it('Set the new Staking address if called from current ClaimsManager contract', async () => {
+    assert.equal(
+      staking.address,
+      await claimsManager.getStakingAddress(),
+      "expected Staking address before changing"  
+    )
+
+    await governance.guardianExecuteTransaction(
+      claimsManagerProxyKey,
+      callValue0,
+      'setStakingAddress(address)',
+      _lib.abiEncode(['address'], [newUpdateAddress]),
+      { from: guardianAddress }
+    )
+
+    assert.equal(
+      newUpdateAddress,
+      await claimsManager.getStakingAddress(),
+      "updated Staking addresses don't match"
+    )
+  })
+
+  it('Set the new ServiceProvider address if called from current ClaimsManager contract', async () => {
+    assert.equal(
+      mockStakingCaller.address,
+      await claimsManager.getServiceProviderFactoryAddress(),
+      "expected ServiceProvider address before changing"  
+    )
+
+    await governance.guardianExecuteTransaction(
+      claimsManagerProxyKey,
+      callValue0,
+      'setServiceProviderFactoryAddress(address)',
+      _lib.abiEncode(['address'], [newUpdateAddress]),
+      { from: guardianAddress }
+    )
+
+    assert.equal(
+      newUpdateAddress,
+      await claimsManager.getServiceProviderFactoryAddress(),
+      "updated ServiceProvider addresses don't match"
+    )
+  })
+
+  it('Set the new DelegateManager address if called from current ClaimsManager contract', async () => {
+    assert.equal(
+      mockDelegateManager.address,
+      await claimsManager.getDelegateManagerAddress(),
+      "expected DelegateManager address before changing"  
+    )
+
+    await governance.guardianExecuteTransaction(
+      claimsManagerProxyKey,
+      callValue0,
+      'setDelegateManagerAddress(address)',
+      _lib.abiEncode(['address'], [newUpdateAddress]),
+      { from: guardianAddress }
+    )
+
+    assert.equal(
+      newUpdateAddress,
+      await claimsManager.getDelegateManagerAddress(),
+      "updated DelegateManager addresses don't match"
     )
   })
 })
