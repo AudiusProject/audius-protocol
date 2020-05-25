@@ -483,7 +483,7 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(initialSpStake.eq(totalStakedForSP), 'Staking.sol back to initial value')
     })
 
-    it.only('Single delegator + claim', async () => {
+    it('Single delegator + claim', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })

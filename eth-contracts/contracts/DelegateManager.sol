@@ -359,11 +359,12 @@ contract DelegateManager is InitializableV2 {
               delegateStakeToSP.mul(totalRewards)
             ).div(totalActiveFunds);
 
-            // uint rewardsPriorToSPCut = (totalRewards.div(totalActiveFunds)).mul(delegateStakeToSP);
-
             // Multiply by deployer cut fraction to calculate reward for SP
-            // uint spDeployerCut = (rewardsPriorToSPCut.mul(deployerCut)).div(deployerCutBase);
-            // TODO: Breakdown how we structured this
+            // Operation constructed to perform all multiplication prior to division
+            // uint spDeployerCut = (rewardsPriorToSPCut / deployerCut ) / (deployerCutBase);
+            //                    = ((delegateStakeToSP * totalRewards) / totalActiveFunds) / deployerCut ) / (deployerCutBase);
+            //                    = ((delegateStakeToSP * totalRewards * deployerCut) / totalActiveFunds ) / (deployerCutBase);
+            //                    = ((delegateStakeToSP * totalRewards * deployerCut)) / (deployerCutBase * totalActiveFunds);
             uint spDeployerCut = ((delegateStakeToSP.mul(totalRewards)).mul(deployerCut)).div(totalActiveFunds.mul(deployerCutBase));
             spDeployerCutRewards = spDeployerCutRewards.add(spDeployerCut);
             // Increase total delegate reward in DelegateManager
