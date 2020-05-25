@@ -103,8 +103,8 @@ module.exports = (deployer, network, accounts) => {
     const serviceProviderFactory0 = await deployer.deploy(ServiceProviderFactory, { from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'address'],
-      [registryAddress, process.env.governanceAddress]
+      ['address'],
+      [process.env.governanceAddress]
     )
     const serviceProviderFactoryProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
