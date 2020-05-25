@@ -525,8 +525,6 @@ contract('DelegateManager', async (accounts) => {
       // Manually calculate expected value prior to making claim
       // Identical math as contract
       let delegateRewardsPriorToSPCut = (delegatedStake.mul(totalRewards)).div(totalValueOutsideStaking)
-      // let delegateRewardsPriorToSPCut = (totalRewards.div(totalValueOutsideStaking)).div(delegatedStake)
-      // let spDeployerCut = (delegateRewardsPriorToSPCut.mul(deployerCut)).div(deployerCutBase)
       let spDeployerCut = (delegateRewardsPriorToSPCut.mul(deployerCut)).div(deployerCutBase)
       let delegateRewards = delegateRewardsPriorToSPCut.sub(spDeployerCut)
       let expectedDelegateStake = delegatedStake.add(delegateRewards)
@@ -538,10 +536,6 @@ contract('DelegateManager', async (accounts) => {
       let finalSpStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
       let finalDelegateStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
 
-      console.log(finalSpStake)
-      console.log(finalSpStake.toString())
-      console.log(expectedSpStake)
-      console.log(expectedSpStake.toString())
       assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
       assert.isTrue(finalDelegateStake.eq(expectedDelegateStake), 'Expected delegate stake matches found value')
     })
