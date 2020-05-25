@@ -418,6 +418,7 @@ contract Governance is InitializableV2 {
             "Governance::guardianExecuteTransaction: Only guardian."
         );
 
+        // _targetContractRegistryKey must point to a valid registered contract
         address targetContractAddress = registry.getContract(_targetContractRegistryKey);
         require(
             targetContractAddress != address(0x00),
