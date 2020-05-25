@@ -858,14 +858,33 @@ contract('ServiceProvider test', async (accounts) => {
       )
     })
 
-    it('will fail to set the governance address from not current governance contract', async () => {
+    it('Fail to set service addresses from non-governance contract', async () => {
       await _lib.assertRevert(
         serviceProviderFactory.setGovernanceAddress(fakeGovernanceAddress),
         'Only callable by Governance contract'
       )
+      await _lib.assertRevert(
+        serviceProviderFactory.setStakingAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.setDelegateManagerAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.setServiceTypeManagerAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.setClaimsManagerAddress(fakeGovernanceAddress),
+        'Only callable by Governance contract'
+      )
     })
 
-    it('will set the new governance address if called from current governance contract', async () => {
+    it('Will set the new governance address if called from current governance contract', async () => {
       assert.equal(
         governance.address,
         await serviceProviderFactory.getGovernanceAddress(),
