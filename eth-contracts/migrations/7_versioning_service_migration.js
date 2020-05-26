@@ -20,11 +20,17 @@ const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 
 // Known service types
 const serviceTypeCN = web3.utils.utf8ToHex('creator-node')
-const cnTypeMin = _lib.audToWei(10)
-const cnTypeMax = _lib.audToWei(10000000)
+// Creator node 
+// Minimum: 200,000
+// Maximum: 3,00,00
+const cnTypeMin = _lib.audToWei(200000)
+const cnTypeMax = _lib.audToWei(3000000)
+// Discovery provider
+// Minimum: 200,000
+// Maximum: 2,000,000
 const serviceTypeDP = web3.utils.utf8ToHex('discovery-provider')
-const dpTypeMin = _lib.audToWei(5)
-const dpTypeMax = _lib.audToWei(10000000)
+const dpTypeMin = _lib.audToWei(200000)
+const dpTypeMax = _lib.audToWei(2000000)
 
 
 module.exports = (deployer, network, accounts) => {
