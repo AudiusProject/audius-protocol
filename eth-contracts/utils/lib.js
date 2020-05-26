@@ -381,6 +381,14 @@ export const configureClaimsManagerContractAddresses = async (
     { from: guardianAddress }
   )
   assert.equal(delegateManagerAddress, await claimsManager.getDelegateManagerAddress(), 'Unexpected delegate managere')
+  // Update funding found block diff
+  await governance.guardianExecuteTransaction(
+    claimsManagerRegKey,
+    toBN(0),
+    'updateFundingRoundBlockDiff(uint256)',
+    abiEncode(['uint256'], [10]),
+    { from: guardianAddress }
+  )
 }
 
 // Test helper to set delegateManager contract addresses
