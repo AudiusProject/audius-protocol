@@ -665,8 +665,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /**
      * @notice Validate that the total service provider balance is between the min and max stakes
-               for all their registered services. Also Validates that direct stake for sp is also
-               above minimum
+               for all their registered services and validate  direct stake for sp is above minimum
      * @param _sp - address of service provider
      */
     function validateAccountStakeBalance(address _sp)
