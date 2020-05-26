@@ -537,7 +537,9 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /**
      * @notice Update service provider cut of claims
+     * @notice Update service provider cut as % of delegate claim, divided by the deployerCutBase.
      * @dev SPs will interact with this value as a percent, value translation done client side
+       @dev A value of 5 dictates a 5% cut, with ( 5 / 100 ) * delegateReward going to an SP from each delegator each round.
      * @param _serviceProvider - address of service provider
      * @param _cut - new deployer cut value
      */

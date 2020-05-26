@@ -20,7 +20,7 @@ contract ClaimsManager is InitializableV2 {
 
     // Claim related configurations
     /**
-      * @notice - Minimum number of blocks between funding rounds 
+      * @notice - Minimum number of blocks between funding rounds
       *       604800 seconds / week
       *       Avg block time - 13s
       *       604800 / 13 = 46523.0769231 blocks
@@ -29,13 +29,13 @@ contract ClaimsManager is InitializableV2 {
 
     /**
       * @notice - Configures the current funding amount per round
-      *  Weekly rounds, 7% PA inflation = 70,000,000 new tokens in first year 
+      *  Weekly rounds, 7% PA inflation = 70,000,000 new tokens in first year
       *                                 = 70,000,000/365*7 (year is slightly more than a week)
       *                                 = 1342465.75342 new AUDS per week
       *                                 = 1342465753420000000000000 new wei units per week
       * @dev - Past a certain block height, this schedule will be updated
       *      - Logic determining schedule will be sourced from an external contract
-      */ 
+      */
     uint private fundingAmount;
 
     // Denotes current round
