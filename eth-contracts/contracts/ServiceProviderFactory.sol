@@ -53,6 +53,7 @@ contract ServiceProviderFactory is InitializableV2 {
     uint private constant DEPLOYER_CUT_BASE = 100;
 
     /// @dev - Struct maintaining information about sp
+    /// @dev - blocknumber is block.number when endpoint registered
     struct ServiceEndpoint {
         address owner;
         string endpoint;
@@ -112,6 +113,10 @@ contract ServiceProviderFactory is InitializableV2 {
       uint spId
     );
 
+    /**
+     * @notice Function to initialize the contract
+     * @param _governanceAddress - Governance proxy address
+     */
     function initialize (address _governanceAddress) public initializer
     {
         governanceAddress = _governanceAddress;
@@ -125,8 +130,14 @@ contract ServiceProviderFactory is InitializableV2 {
         InitializableV2.initialize();
     }
 
-    /// @notice - Register a new endpoint to the account of msg.sender
-    ///           Transfers stake into staking pool
+    /**
+     * @notice Register a new endpoint to the account of msg.sender
+     * @dev Transfers stake from service provider into staking pool
+     * @param _serviceType - type of service to register, must be valid in ServiceTypeManager
+     * @param _endpoint - url of the service to register - url of the service to register
+     * @param _stakeAmount - amount to stake, must be within bounds in ServiceTypeManager
+     * @param _delegateOwnerWallet - wallet to delegate some permissions for some basic management properties
+     */
     function register(
         bytes32 _serviceType,
         string calldata _endpoint,
@@ -203,8 +214,13 @@ contract ServiceProviderFactory is InitializableV2 {
         return newServiceProviderID;
     }
 
-    /// @notice - Deregister an endpoint from the account of msg.sender
-    ///           Removes stake if this is the final endpoint remaining for account
+    /**
+     * @notice Deregister an endpoint from the account of msg.sender
+     * @dev Unstakes all tokens for service provider if this is the last endpoint
+     * @param _serviceType - type of service to deregister
+     * @param _endpoint - endpoint to deregister
+     * @return spId of the service that was deregistered
+     */
     function deregister(
         bytes32 _serviceType,
         string calldata _endpoint
@@ -289,6 +305,11 @@ contract ServiceProviderFactory is InitializableV2 {
         return deregisteredID;
     }
 
+    /**
+     * @notice Increase stake for service provider
+     * @param _increaseStakeAmount - amount to increase staked amount by
+     * @return New total stake for service provider
+     */
     function increaseStake(
         uint256 _increaseStakeAmount
     ) external returns (uint newTotalStake)
@@ -333,6 +354,13 @@ contract ServiceProviderFactory is InitializableV2 {
         return newStakeAmount;
     }
 
+    /**
+     * @notice Request to decrease stake. This sets a lockup for decreaseStakeLockupDuration after
+               which the actual decreaseStake can be called
+     * @dev Decreasing stake is only processed in a service provider is within valid bounds
+     * @param _decreaseStakeAmount - amount to decrease stake by in wei
+     * @return New total stake amount after the lockup
+     */
     function requestDecreaseStake(uint _decreaseStakeAmount)
     external returns (uint newStakeAmount)
     {
@@ -359,6 +387,12 @@ contract ServiceProviderFactory is InitializableV2 {
         return currentStakeAmount.sub(_decreaseStakeAmount);
     }
 
+    /**
+     * @notice Cancel a decrease stake request during the lockup
+     * @dev Either called by the service provider via DelegateManager or governance
+            during a slash action
+     * @param _account - address of service provider
+     */
     function cancelDecreaseStakeRequest(address _account) external
     {
         require(
@@ -374,6 +408,11 @@ contract ServiceProviderFactory is InitializableV2 {
         });
     }
 
+    /**
+     * @notice Actually decrease a stake. Must have called requestDecreaseStake and waited for the
+               lockup period to expire
+     * @return New total stake after decrease
+     */
     function decreaseStake() external returns (uint newTotalStake)
     {
         _requireIsInitialized();
@@ -419,6 +458,12 @@ contract ServiceProviderFactory is InitializableV2 {
         return newStakeAmount;
     }
 
+    /**
+     * @notice Update delegate owner wallet for a given endpoint
+     * @param _serviceType - type of service to register, must be valid in ServiceTypeManager
+     * @param _endpoint - url of the service to register - url of the service to register
+     * @param _updatedDelegateOwnerWallet - address of new delegate wallet
+     */
     function updateDelegateOwnerWallet(
         bytes32 _serviceType,
         string calldata _endpoint,
@@ -434,6 +479,12 @@ contract ServiceProviderFactory is InitializableV2 {
         serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
     }
 
+    /**
+     * @notice Update the endpoint for a given service
+     * @param _serviceType - type of service to register, must be valid in ServiceTypeManager
+     * @param _oldEndpoint - old endpoint currently registered
+     * @param _oldEndpoint - new endpoint to replace old endpoint
+     */
     function updateEndpoint(
         bytes32 _serviceType,
         string calldata _oldEndpoint,
@@ -463,7 +514,12 @@ contract ServiceProviderFactory is InitializableV2 {
         return spId;
     }
 
-    /// @notice Update service provider balance
+    /**
+     * @notice Update service provider balance
+     * @dev Called by DelegateManager by functions modifying entire stake like claim and slash
+     * @param _serviceProvider - address of service provider
+     * @param _amount - new amount of direct state for service provider
+     */
     function updateServiceProviderStake(
         address _serviceProvider,
         uint _amount
@@ -479,8 +535,14 @@ contract ServiceProviderFactory is InitializableV2 {
         _updateServiceProviderBoundStatus(_serviceProvider);
     }
 
-    /// @notice Update service provider cut
-    /// SPs will interact with this value as a percent, value translation done client side
+    /**
+     * @notice Update service provider cut of claims
+     * @notice Update service provider cut as % of delegate claim, divided by the deployerCutBase.
+     * @dev SPs will interact with this value as a percent, value translation done client side
+       @dev A value of 5 dictates a 5% cut, with ( 5 / 100 ) * delegateReward going to an SP from each delegator each round.
+     * @param _serviceProvider - address of service provider
+     * @param _cut - new deployer cut value
+     */
     function updateServiceProviderCut(
         address _serviceProvider,
         uint _cut
@@ -508,37 +570,49 @@ contract ServiceProviderFactory is InitializableV2 {
         decreaseStakeLockupDuration = _duration;
     }
 
-    /// @notice Denominator for deployer cut calculations
+    /// @notice Get denominator for deployer cut calculations
     function getServiceProviderDeployerCutBase()
     external pure returns (uint base)
     {
         return DEPLOYER_CUT_BASE;
     }
 
+    /// @notice Get total number of service providers for a given serviceType
     function getTotalServiceTypeProviders(bytes32 _serviceType)
     external view returns (uint numberOfProviders)
     {
         return serviceProviderTypeIDs[_serviceType];
     }
 
+    /// @notice Get service provider id for an endpoint
     function getServiceProviderIdFromEndpoint(string calldata _endpoint)
     external view returns (uint spID)
     {
         return serviceProviderEndpointToId[keccak256(bytes(_endpoint))];
     }
 
+    /// @notice Get minDeployerStake
     function getMinDeployerStake()
     external view returns (uint min)
     {
         return minDeployerStake;
     }
 
+    /**
+     * @notice Get service provider ids for a given service provider and service type
+     * @return List of service ids of that type for a service provider
+     */
     function getServiceProviderIdsFromAddress(address _ownerAddress, bytes32 _serviceType)
     external view returns (uint[] memory spIds)
     {
         return serviceProviderAddressToId[_ownerAddress][_serviceType];
     }
 
+    /**
+     * @notice Get information about a service endpoint given its service id
+     * @param _serviceType - type of service, must be a valid service from ServiceTypeManager
+     * @param _serviceId - id of service
+     */
     function getServiceEndpointInfo(bytes32 _serviceType, uint _serviceId)
     external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet)
     {
@@ -546,6 +620,10 @@ contract ServiceProviderFactory is InitializableV2 {
         return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet);
     }
 
+    /**
+     * @notice Get information about a service provider given their address
+     * @param _sp - address of service provider
+     */
     function getServiceProviderDetails(address _sp)
     external view returns (
         uint deployerStake,
@@ -565,7 +643,10 @@ contract ServiceProviderFactory is InitializableV2 {
         );
     }
 
-    /// @notice Pending decrease stake request
+    /**
+     * @notice Get information about pending decrease stake requests for service provider
+     * @param _sp - address of service provider
+     */
     function getPendingDecreaseStakeRequest(address _sp)
     external view returns (uint amount, uint lockupExpiryBlock)
     {
@@ -575,68 +656,101 @@ contract ServiceProviderFactory is InitializableV2 {
         );
     }
 
-    /// @notice Current unstake lockup duration
+    /// @notice Get current unstake lockup duration
     function getDecreaseStakeLockupDuration()
     external view returns (uint duration)
     {
         return decreaseStakeLockupDuration;
     }
 
-    /// @notice Validate that the total service provider balance is between the min and max stakes for all their registered services
-    //          Validates that direct stake for sp is also above minimum
+    /**
+     * @notice Validate that the total service provider balance is between the min and max stakes
+               for all their registered services and validate  direct stake for sp is above minimum
+     * @param _sp - address of service provider
+     */
     function validateAccountStakeBalance(address _sp)
     external view
     {
         _validateBalanceInternal(_sp, Staking(stakingAddress).totalStakedFor(_sp));
     }
 
+    /// @notice Get the Governance address
     function getGovernanceAddress() external view returns (address addr) {
         return governanceAddress;
     }
 
+    /// @notice Get the Staking address
     function getStakingAddress() external view returns (address addr) {
         return stakingAddress;
     }
 
+    /// @notice Get the DelegateManager address
     function getDelegateManagerAddress() external view returns (address addr) {
         return delegateManagerAddress;
     }
 
+    /// @notice Get the ServiceTypeManager address
     function getServiceTypeManagerAddress() external view returns (address addr) {
         return serviceTypeManagerAddress;
     }
 
+    /// @notice Get the ClaimsManager address
     function getClaimsManagerAddress() external view returns (address addr) {
         return claimsManagerAddress;
     }
 
+    /**
+     * @notice Set the Governance address
+     * @dev Only callable by Governance address
+     * @param _address - address for new Governance contract
+     */
     function setGovernanceAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         governanceAddress = _address;
     }
 
+    /**
+     * @notice Set the Staking address
+     * @dev Only callable by Governance address
+     * @param _address - address for new Staking contract
+     */
     function setStakingAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         stakingAddress = _address;
     }
 
+    /**
+     * @notice Set the DelegateManager address
+     * @dev Only callable by Governance address
+     * @param _address - address for new DelegateManager contract
+     */
     function setDelegateManagerAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         delegateManagerAddress = _address;
     }
 
+    /**
+     * @notice Set the ServiceTypeManager address
+     * @dev Only callable by Governance address
+     * @param _address - address for new ServiceTypeManager contract
+     */
     function setServiceTypeManagerAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         serviceTypeManagerAddress = _address;
     }
 
+    /**
+     * @notice Set the ClaimsManager address
+     * @dev Only callable by Governance address
+     * @param _address - address for new ClaimsManager contract
+     */
     function setClaimsManagerAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         claimsManagerAddress = _address;
     }
 
     /**
-     * @notice Update service provider bound status
+     * @notice Update status in spDetails if the bounds for a service provider is valid
      */
     function _updateServiceProviderBoundStatus(address _serviceProvider) internal {
         // Validate bounds for total stake
@@ -652,7 +766,9 @@ contract ServiceProviderFactory is InitializableV2 {
     }
 
     /**
-     * @notice Compare a given service provider bounds to input amount
+     * @notice Compare a given amount input against valid min and max bounds for service provider
+     * @param _sp - address of service provider
+     * @param _amount - amount in wei to compare
      */
     function _validateBalanceInternal(address _sp, uint _amount) internal view
     {
@@ -670,7 +786,9 @@ contract ServiceProviderFactory is InitializableV2 {
     }
 
     /**
-     * @notice Boolean indicating whether a decrease request has been initiated
+     * @notice Get whether a decrease request has been initiated for service provider
+     * @param _serviceProvider - address of service provider
+     * return Boolean of whether decrease request has been initiated
      */
     function _decreaseRequestIsPending(address _serviceProvider)
     internal view returns (bool pending)
@@ -683,6 +801,11 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /**
      * @notice Boolean indicating whether a claim is pending for this service provider
+     */
+     /**
+     * @notice Get whether a claim is pending for this service provider
+     * @param _sp - address of service provider
+     * return Boolean of whether claim is pending
      */
     function _claimPending(address _sp) internal view returns (bool pending) {
         return ClaimsManager(claimsManagerAddress).claimPending(_sp);

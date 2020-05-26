@@ -2,7 +2,7 @@ pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
-/** SafeMath imported via ServiceProviderFactory.sol */
+/// @notice SafeMath imported via ServiceProviderFactory.sol
 
 import "./Staking.sol";
 import "./ServiceProviderFactory.sol";
@@ -89,6 +89,11 @@ contract DelegateManager is InitializableV2 {
       uint _newTotal
     );
 
+    /**
+     * @notice Function to initialize the contract
+     * @param _tokenAddress - address of ERC20 token that will be claimed
+     * @param _governanceAddress - Governance proxy address
+     */
     function initialize (
         address _tokenAddress,
         address _governanceAddress
@@ -104,6 +109,12 @@ contract DelegateManager is InitializableV2 {
         InitializableV2.initialize();
     }
 
+    /**
+     * @notice Allow a delegator to delegate stake to a service provider
+     * @param _targetSP - address of service provider to delegate to
+     * @param _amount - amount in wei to delegate
+     * @return Updated total amount delegated to the service provider by delegator
+     */
     function delegateStake(
         address _targetSP,
         uint _amount
@@ -165,7 +176,12 @@ contract DelegateManager is InitializableV2 {
         return delegateInfo[delegator][_targetSP];
     }
 
-    // Submit request for undelegation
+    /**
+     * @notice Submit request for undelegation
+     * @param _target - address of service provider to undelegate stake from
+     * @param _amount - amount in wei to undelegate
+     * @return Updated total amount delegated to the service provider by delegator
+     */
     function requestUndelegateStake(
         address _target,
         uint _amount
@@ -202,7 +218,9 @@ contract DelegateManager is InitializableV2 {
         return delegatorStakeTotal[delegator].sub(_amount);
     }
 
-    // Cancel undelegation request
+    /**
+     * @notice Cancel undelegation request
+     */
     function cancelUndelegateStake() external {
         _requireIsInitialized();
         address delegator = msg.sender;
@@ -216,7 +234,10 @@ contract DelegateManager is InitializableV2 {
         });
     }
 
-    // Finalize undelegation request and withdraw stake
+    /**
+     * @notice Finalize undelegation request and withdraw stake
+     * @return New total amount currently staked after stake has been undelegated
+     */
     function undelegateStake() external returns (uint newTotal) {
         _requireIsInitialized();
         address delegator = msg.sender;
@@ -301,7 +322,9 @@ contract DelegateManager is InitializableV2 {
     }
 
     /**
-     * @notice Claim and distribute rewards to delegators as necessary
+     * @notice Claim and distribute rewards to delegators and service provider as necessary
+     * @dev Only callable by service provider. msg.sender is passed into processClaim
+     * @dev Also factors in service provider rewards from delegator and transfers deployer cut
      */
     function claimRewards() external {
         _requireIsInitialized();
@@ -403,7 +426,10 @@ contract DelegateManager is InitializableV2 {
     }
 
     /**
-     * @notice Reduce current stake amount, only callable by governance
+     * @notice Reduce current stake amount
+     * @dev Only callable by governance. Slashes service provider and delegators equally
+     * @param _amount - amount in wei to slash
+     * @param _slashAddress - address of service provider to slash
      */
     function slash(uint _amount, address _slashAddress)
     external
@@ -494,6 +520,7 @@ contract DelegateManager is InitializableV2 {
 
     /**
      * @notice Update duration for undelegate request lockup
+     * @param _duration - new lockup duration
      */
     function updateUndelegateLockupDuration(uint _duration) external {
         _requireIsInitialized();
@@ -508,6 +535,7 @@ contract DelegateManager is InitializableV2 {
 
     /**
      * @notice Update maximum delegators allowed
+     * @param _maxDelegators - new max delegators
      */
     function updateMaxDelegators(uint _maxDelegators) external {
         _requireIsInitialized();
@@ -522,6 +550,7 @@ contract DelegateManager is InitializableV2 {
 
     /**
      * @notice Update minimum delegation amount
+     * @param _minDelegationAmount - min new min delegation amount
      */
     function updateMinDelegationAmount(uint _minDelegationAmount) external {
         _requireIsInitialized();
@@ -534,21 +563,41 @@ contract DelegateManager is InitializableV2 {
         minDelegationAmount = _minDelegationAmount;
     }
 
+    /**
+     * @notice Set the Governance address
+     * @dev Only callable by Governance address
+     * @param _governanceAddress - address for new Governance contract
+     */
     function setGovernanceAddress(address _governanceAddress) external {
         require(msg.sender == governanceAddress, "Only governance");
         governanceAddress = _governanceAddress;
     }
 
+    /**
+     * @notice Set the Staking address
+     * @dev Only callable by Governance address
+     * @param _address - address for new Staking contract
+     */
     function setStakingAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only governance");
         stakingAddress = _address;
     }
 
+    /**
+     * @notice Set the ServiceProviderFactory address
+     * @dev Only callable by Governance address
+     * @param _spFactory - address for new ServiceProviderFactory contract
+     */
     function setServiceProviderFactoryAddress(address _spFactory) external {
         require(msg.sender == governanceAddress, "Only governance");
         serviceProviderFactoryAddress = _spFactory;
     }
 
+    /**
+     * @notice Set the ClaimsManager address
+     * @dev Only callable by Governance address
+     * @param _claimsManagerAddress - address for new ClaimsManager contract
+     */
     function setClaimsManagerAddress(address _claimsManagerAddress) external {
         require(msg.sender == governanceAddress, "Only governance");
         claimsManagerAddress = _claimsManagerAddress;
@@ -557,7 +606,8 @@ contract DelegateManager is InitializableV2 {
     // ========================================= View Functions =========================================
 
     /**
-     * @notice List of delegators for a given service provider
+     * @notice Get list of delegators for a given service provider
+     * @param _sp - service provider address
      */
     function getDelegatorsList(address _sp)
     external view returns (address[] memory dels)
@@ -565,36 +615,28 @@ contract DelegateManager is InitializableV2 {
         return spDelegateInfo[_sp].delegators;
     }
 
-    /**
-     * @notice Total delegated to a service provider
-     */
+    /// @notice Get total amount delegated to a service provider
     function getTotalDelegatedToServiceProvider(address _sp)
     external view returns (uint total)
     {
         return spDelegateInfo[_sp].totalDelegatedStake;
     }
 
-    /**
-     * @notice Total delegated stake locked up for a service provider
-     */
+    /// @notice Get total delegated stake locked up for a service provider
     function getTotalLockedDelegationForServiceProvider(address _sp)
     external view returns (uint total)
     {
         return spDelegateInfo[_sp].totalLockedUpStake;
     }
 
-    /**
-     * @notice Total currently staked for a delegator, across service providers
-     */
+    /// @notice Get total currently staked for a delegator, across service providers
     function getTotalDelegatorStake(address _delegator)
     external view returns (uint amount)
     {
         return delegatorStakeTotal[_delegator];
     }
 
-    /**
-     * @notice Total currently staked for a delegator, for a given service provider
-     */
+    /// @notice Get total currently staked for a delegator, for a given service provider
     function getDelegatorStakeForServiceProvider(address _delegator, address _serviceProvider)
     external view returns (uint amount)
     {
@@ -602,7 +644,8 @@ contract DelegateManager is InitializableV2 {
     }
 
     /**
-     * @notice Get status of pending undelegate request
+     * @notice Get status of pending undelegate request for a given address
+     * @param _delegator - address of the delegator
      */
     function getPendingUndelegateRequest(address _delegator)
     external view returns (address target, uint amount, uint lockupExpiryBlock)
@@ -611,45 +654,43 @@ contract DelegateManager is InitializableV2 {
         return (req.serviceProvider, req.amount, req.lockupExpiryBlock);
     }
 
-    /**
-     * @notice Current undelegate lockup duration
-     */
+    /// @notice Get current undelegate lockup duration
     function getUndelegateLockupDuration()
     external view returns (uint duration)
     {
         return undelegateLockupDuration;
     }
 
-    /**
-     * @notice Current maximum delegators
-     */
+    /// @notice Current maximum delegators
     function getMaxDelegators()
     external view returns (uint numDelegators)
     {
         return maxDelegators;
     }
 
-    /**
-     * @notice Get minimum delegation amount
-     */
+    /// @notice Get minimum delegation amount
     function getMinDelegationAmount()
     external view returns (uint minDelegation)
     {
         return minDelegationAmount;
     }
 
+    /// @notice Get the Governance address
     function getGovernanceAddress() external view returns (address addr) {
         return governanceAddress;
     }
 
+    /// @notice Get the ServiceProviderFactory address
     function getServiceProviderFactoryAddress() external view returns (address addr) {
         return serviceProviderFactoryAddress;
     }
 
+    /// @notice Get the ClaimsManager address
     function getClaimsManagerAddress() external view returns (address addr) {
         return claimsManagerAddress;
     }
 
+    /// @notice Get the Staking address
     function getStakingAddress() external view returns (address addr)
     {
         return stakingAddress;
@@ -657,6 +698,12 @@ contract DelegateManager is InitializableV2 {
 
     // ========================================= Internal functions =========================================
 
+    /**
+     * @notice Helper function for claimRewards to get balances from Staking contract
+               and do validation
+     * @param spFactory - reference to ServiceProviderFactory contract
+     * @return (totalBalanceInStaking, totalBalanceInSPFactory, totalBalanceOutsideStaking)
+     */
     function _validateClaimRewards(ServiceProviderFactory spFactory)
     internal returns (uint totalBalanceInStaking, uint totalBalanceInSPFactory, uint totalBalanceOutsideStaking)
         {
@@ -692,6 +739,11 @@ contract DelegateManager is InitializableV2 {
         return (_totalBalanceInStaking, _totalBalanceInSPFactory, _totalBalanceOutsideStaking);
     }
 
+    /**
+     * @notice Returns if delegator has delegated to a service provider
+     * @param _delegator - address of delegator
+     * @param _serviceProvider - address of service provider
+     */
     function _delegatorExistsForSP(
         address _delegator,
         address _serviceProvider
@@ -708,6 +760,7 @@ contract DelegateManager is InitializableV2 {
 
     /**
      * @notice Boolean indicating whether a claim is pending for this service provider
+     * @param _sp - address of service provider
      */
     function _claimPending(address _sp) internal view returns (bool pending) {
         ClaimsManager claimsManager = ClaimsManager(claimsManagerAddress);
@@ -716,6 +769,7 @@ contract DelegateManager is InitializableV2 {
 
     /**
      * @notice Boolean indicating whether a decrease request has been initiated
+     * @param _delegator - address of delegator
      */
     function _undelegateRequestIsPending(address _delegator) internal view returns (bool pending)
     {

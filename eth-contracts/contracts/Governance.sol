@@ -9,18 +9,50 @@ import "./InitializableV2.sol";
 contract Governance is InitializableV2 {
     using SafeMath for uint;
 
+    /**
+     * @notice Address and contract instance of Audius Registry. Used to ensure this contract
+     *      can only govern contracts that are registered in the Audius Registry.
+     */
     Registry private registry;
     address private registryAddress;
+
+    /// @notice Address of Audius staking contract, used to permission Governance method calls
     address private stakingAddress;
 
+    /// @notice Period in blocks for which a governance proposal is open for voting
     uint256 private votingPeriod;
+
+    /// @notice Required miniumum number of votes to consider a proposal valid
     uint256 private votingQuorum;
 
+    /**
+     * @notice Address of account that has special Governance permissions. Can veto proposals
+     *      and execute transactions directly on contracts.
+     */
     address private guardianAddress;
 
     /***** Enums *****/
+
+    /**
+     * @notice All Proposal Outcome states.
+     *      InProgress - Proposal is active and can be voted on
+     *      No - Proposal votingPeriod has closed and decision is No. Proposal will not be executed.
+     *      Yes - Proposal votingPeriod has closed and decision is Yes. Proposal will be executed.
+     *      Invalid - Proposal votingPeriod has closed and votingQuorum was not met. Proposal will not be executed.
+     *      TxFailed - Proposal voting decision was Yes, but transaction execution failed.
+     *      Evaluating - Proposal voting decision was Yes, and evaluateProposalOutcome function is currently running.
+     *          This status is transiently used inside that function to prevent re-entrancy.
+     */
     enum Outcome {InProgress, No, Yes, Invalid, TxFailed, Evaluating}
-    // Enum values map to uints, so first value in Enum always is 0.
+
+    /**
+     * @notice All Proposal Vote states for a voter.
+     *      None - The default state, for any account that has not previously voted on this Proposal.
+     *      No - The account voted No on this Proposal.
+     *      Yes - The account voted Yes on this Proposal.
+     *
+     * @dev Enum values map to uints, so first value in Enum always is 0.
+     */
     enum Vote {None, No, Yes}
 
     struct Proposal {
@@ -79,7 +111,13 @@ contract Governance is InitializableV2 {
     event ProposalVetoed(uint256 indexed proposalId);
 
     /**
-     * @notice _votingPeriod <= DelegateManager.undelegateLockupDuration
+     * @notice Initialize the Governance contract
+     * @dev _votingPeriod <= DelegateManager.undelegateLockupDuration
+     * @param _registryAddress - address of the registry proxy contract
+     * @param _votingPeriod - period in blocks for which a governance proposal is open for voting
+     * @param _votingQuorum - required minimum number of votes to consider a proposal valid
+     * @param _guardianAddress - address of account that has special Governance permissions
+
      */
     function initialize(
         address _registryAddress,
@@ -105,9 +143,13 @@ contract Governance is InitializableV2 {
 
     // ========================================= Governance Actions =========================================
 
-
     /**
-     * TODO - add registry override
+     * @notice Submit a proposal for vote. Only callable by stakers with non-zero stake.
+     * @param _targetContractRegistryKey - Registry key for the contract concerning this proposal
+     * @param _callValue - amount of wei to pass with function call if a token transfer is involved
+     * @param _signature - function signature of the function to be executed if proposal is successful
+     * @param _callData - encoded value(s) to call function with if proposal is successful
+     * @param _description - Text description of proposal to be emitted in event
      */
     function submitProposal(
         bytes32 _targetContractRegistryKey,
@@ -158,7 +200,7 @@ contract Governance is InitializableV2 {
             voteMagnitudeYes: 0,
             voteMagnitudeNo: 0,
             numVotes: 0
-            /** votes: mappings are auto-initialized to default state */
+            /* votes: mappings are auto-initialized to default state */
         });
 
         emit ProposalSubmitted(
@@ -173,6 +215,11 @@ contract Governance is InitializableV2 {
         return newProposalId;
     }
 
+    /**
+     * @notice Vote on an active Proposal. Only callable by stakers with non-zero stake.
+     * @param _proposalId - id of the proposal this vote is for
+     * @param _vote - can be either {Yes, No} from Vote enum. No other values allowed
+     */
     function submitProposalVote(uint256 _proposalId, Vote _vote) external {
         _requireIsInitialized();
 
@@ -218,7 +265,7 @@ contract Governance is InitializableV2 {
         // Will override staker's previous vote if present.
         proposals[_proposalId].votes[voter] = _vote;
 
-        /** Update voteMagnitudes accordingly */
+        /* Update voteMagnitudes accordingly */
 
         // New voter (Vote enum defaults to 0)
         if (previousVote == Vote.None) {
@@ -260,6 +307,12 @@ contract Governance is InitializableV2 {
         );
     }
 
+    /**
+     * @notice Once the voting period for a proposal has ended, evaluate the outcome and
+     *      execute the proposal if stake-weighted vote is >= 50% Yes and voting quorum met.
+     * @dev Requires that caller is an active staker at the time the proposal is created
+     * @param _proposalId - id of the proposal
+     */
     function evaluateProposalOutcome(uint256 _proposalId)
     external returns (Outcome proposalOutcome)
     {
@@ -356,6 +409,10 @@ contract Governance is InitializableV2 {
         return outcome;
     }
 
+    /**
+     * @notice Action limited to the guardian address that can veto a proposal
+     * @param _proposalId - id of the proposal
+     */
     function vetoProposal(uint256 _proposalId) external {
         _requireIsInitialized();
 
@@ -381,22 +438,42 @@ contract Governance is InitializableV2 {
 
     // ========================================= Config Setters =========================================
 
+    /**
+     * @notice Set the Staking address
+     * @dev Only callable by self via _executeTransaction
+     * @param _stakingAddress - address for new Staking contract
+     */
     function setStakingAddress(address _stakingAddress) external {
         require(msg.sender == address(this), "Only callable by self");
         require(_stakingAddress != address(0x00), "Requires non-zero _stakingAddress");
         stakingAddress = _stakingAddress;
     }
 
+    /**
+     * @notice Set the voting period for a Governance proposal
+     * @dev Only callable by self via _executeTransaction
+     * @param _votingPeriod - new voting period
+     */
     function setVotingPeriod(uint256 _votingPeriod) external {
         require(msg.sender == address(this), "Only callable by self");
         votingPeriod = _votingPeriod;
     }
 
+    /**
+     * @notice Set the voting quorum for a Governance proposal
+     * @dev Only callable by self via _executeTransaction
+     * @param _votingQuorum - new voting period
+     */
     function setVotingQuorum(uint256 _votingQuorum) external {
         require(msg.sender == address(this), "Only callable by self");
         votingQuorum = _votingQuorum;
     }
 
+    /**
+     * @notice Set the Registry address
+     * @dev Only callable by self via _executeTransaction
+     * @param _registryAddress - address for new Registry contract
+     */
     function setRegistryAddress(address _registryAddress) external {
         require(msg.sender == address(this), "Only callable by self");
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
@@ -406,6 +483,13 @@ contract Governance is InitializableV2 {
 
     // ========================================= Guardian Actions =========================================
 
+    /**
+     * @notice Allows the guardianAddress to execute protocol actions
+     * @param _targetContractRegistryKey - key in registry of target contraact
+     * @param _callValue - amount of wei if a token transfer is involved
+     * @param _signature - function signature of the function to be executed if proposal is successful
+     * @param _callData - encoded value(s) to call function with if proposal is successful
+     */
     function guardianExecuteTransaction(
         bytes32 _targetContractRegistryKey,
         uint256 _callValue,
@@ -451,6 +535,11 @@ contract Governance is InitializableV2 {
         );
     }
 
+    /**
+     * @notice Change the guardian address
+     * @dev Only callable by current guardian
+     * @param _newGuardianAddress - new guardian address
+     */
     function transferGuardianship(address _newGuardianAddress) external {
         _requireIsInitialized();
 
@@ -466,6 +555,10 @@ contract Governance is InitializableV2 {
 
     // ========================================= Getter Functions =========================================
 
+    /**
+     * @notice Get proposal information by proposal Id
+     * @param _proposalId - id of proposal
+     */
     function getProposalById(uint256 _proposalId)
     external view returns (
         uint256 proposalId,
@@ -505,6 +598,12 @@ contract Governance is InitializableV2 {
         );
     }
 
+    /**
+     * @notice Get how a voter voted for a given proposal
+     * @param _proposalId - id of the proposal
+     * @param _voter - address of the voter we want to check
+     * @return returns a value from the Vote enum if a valid vote, otherwise returns no value
+     */
     function getVoteByProposalAndVoter(uint256 _proposalId, address _voter)
     external view returns (Vote vote)
     {
@@ -515,33 +614,39 @@ contract Governance is InitializableV2 {
         return proposals[_proposalId].votes[_voter];
     }
 
+    /// @notice Get the contract Guardian address
     function getGuardianAddress() external view returns (address) {
         _requireIsInitialized();
 
         return guardianAddress;
     }
 
+    /// @notice Get the Staking address
     function getStakingAddress() external view returns (address) {
         return stakingAddress;
     }
 
+    /// @notice Get the contract voting period
     function getVotingPeriod() external view returns (uint) {
         _requireIsInitialized();
 
         return votingPeriod;
     }
 
+    /// @notice Get the contract voting quorum
     function getVotingQuorum() external view returns (uint) {
         _requireIsInitialized();
 
         return votingQuorum;
     }
 
+    /// @notice Get the registry address
     function getRegistryAddress() external view returns (address) {
         return registryAddress;
     }
 
     // ========================================= Internal Functions =========================================
+
     /**
      * @notice Execute a transaction attached to a governanace proposal
      * @dev We are aware of both potential re-entrancy issues and the risks associated with low-level solidity
@@ -549,6 +654,10 @@ contract Governance is InitializableV2 {
      *      proposals go through a voting process, and all will be reviewed carefully to ensure that they
      *      adhere to the expected behaviors of this call - but adding restrictions here would limit the ability
      *      of the governance system to do required work in a generic way.
+     * @param _targetContractAddress - address of registry proxy contract to execute transaction on
+     * @param _callValue - amount of wei if a token transfer is involved
+     * @param _signature - function signature of the function to be executed if proposal is successful
+     * @param _callData - encoded value(s) to call function with if proposal is successful
      */
     function _executeTransaction(
         address _targetContractAddress,

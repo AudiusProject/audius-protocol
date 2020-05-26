@@ -10,7 +10,6 @@ import "@aragon/court/contracts/lib/os/Uint256Helpers.sol";
 import "./InitializableV2.sol";
 
 
-/** NOTE - will call InitializableV2.constructor */
 contract Staking is InitializableV2 {
     using SafeMath for uint256;
     using Uint256Helpers for uint256;
@@ -22,14 +21,19 @@ contract Staking is InitializableV2 {
     string private constant ERROR_TOKEN_TRANSFER = "STAKING_TOKEN_TRANSFER";
     string private constant ERROR_NOT_ENOUGH_BALANCE = "STAKING_NOT_ENOUGH_BALANCE";
 
+    /// @dev stores the history of staking and claims for a given address
     struct Account {
         Checkpointing.History stakedHistory;
         Checkpointing.History claimHistory;
     }
 
+    /// @dev ERC-20 token that will be used to stake with
     ERC20 internal stakingToken;
 
+    /// @dev maps addresses to staking and claims history
     mapping (address => Account) internal accounts;
+
+    /// @dev total staked tokens at a given block
     Checkpointing.History internal totalStakedHistory;
 
     address governanceAddress;
@@ -41,6 +45,11 @@ contract Staking is InitializableV2 {
     event Unstaked(address indexed user, uint256 amount, uint256 total);
     event Slashed(address indexed user, uint256 amount, uint256 total);
 
+    /**
+     * @notice Function to initialize the contract
+     * @param _stakingToken - address of ERC20 token that will be staked
+     * @param _governanceAddress - address for Governance proxy contract     * @param _test - address for Governance proxy contract
+     */
     function initialize(
         address _stakingToken,
         address _governanceAddress
@@ -52,21 +61,41 @@ contract Staking is InitializableV2 {
         InitializableV2.initialize();
     }
 
+    /**
+     * @notice Set the Governance address
+     * @dev Only callable by Governance address
+     * @param _governanceAddress - address for new Governance contract
+     */
     function setGovernanceAddress(address _governanceAddress) external {
         require(msg.sender == governanceAddress, "Only governance");
         governanceAddress = _governanceAddress;
     }
 
+    /**
+     * @notice Set the ClaimsManaager address
+     * @dev Only callable by Governance address
+     * @param _claimsManager - address for new ClaimsManaager contract
+     */
     function setClaimsManagerAddress(address _claimsManager) external {
         require(msg.sender == governanceAddress, "Only governance");
         claimsManagerAddress = _claimsManager;
     }
 
+    /**
+     * @notice Set the ServiceProviderFactory address
+     * @dev Only callable by Governance address
+     * @param _spFactory - address for new ServiceProviderFactory contract
+     */
     function setServiceProviderFactoryAddress(address _spFactory) external {
         require(msg.sender == governanceAddress, "Only governance");
         serviceProviderFactoryAddress = _spFactory;
     }
 
+    /**
+     * @notice Set the DelegateManager address
+     * @dev Only callable by Governance address
+     * @param _delegateManager - address for new DelegateManager contract
+     */
     function setDelegateManagerAddress(address _delegateManager) external {
         require(msg.sender == governanceAddress, "Only governance");
         delegateManagerAddress = _delegateManager;
@@ -76,6 +105,8 @@ contract Staking is InitializableV2 {
 
     /**
      * @notice Funds `_amount` of tokens from ClaimsManager to target account
+     * @param _amount - amount of rewards to  add to stake
+     * @param _stakerAccount - address of staker
      */
     function stakeRewards(uint256 _amount, address _stakerAccount) external {
         _requireIsInitialized();
@@ -89,7 +120,9 @@ contract Staking is InitializableV2 {
     }
 
     /**
-     * @notice Update history
+     * @notice Update claim history by adding an event to the claim historry
+     * @param _amount - amount to add to claim history
+     * @param _stakerAccount - address of staker
      */
     function updateClaimHistory(uint256 _amount, address _stakerAccount) external {
         _requireIsInitialized();
@@ -104,9 +137,9 @@ contract Staking is InitializableV2 {
 
     /**
      * @notice Slashes `_amount` tokens from _slashAddress
-     * Callable from DelegateManager
-     * @param _amount Number of tokens slashed
-     * @param _slashAddress address being slashed
+     * @dev Callable from DelegateManager
+     * @param _amount - Number of tokens slashed
+     * @param _slashAddress - Address being slashed
      */
     function slash(
         uint256 _amount,
@@ -131,8 +164,8 @@ contract Staking is InitializableV2 {
 
     /**
      * @notice Stakes `_amount` tokens, transferring them from _accountAddress, and assigns them to `_accountAddress`
-     * @param _accountAddress The final staker of the tokens
-     * @param _amount Number of tokens staked
+     * @param _accountAddress - The final staker of the tokens
+     * @param _amount - Number of tokens staked
      */
     function stakeFor(
         address _accountAddress,
@@ -152,8 +185,8 @@ contract Staking is InitializableV2 {
 
     /**
      * @notice Unstakes `_amount` tokens, returning them to the desired account.
-     * @param _accountAddress Account unstaked for, and token recipient
-     * @param _amount Number of tokens staked
+     * @param _accountAddress - Account unstaked for, and token recipient
+     * @param _amount - Number of tokens staked
      */
     function unstakeFor(
         address _accountAddress,
@@ -174,9 +207,9 @@ contract Staking is InitializableV2 {
 
     /**
      * @notice Stakes `_amount` tokens, transferring them from caller, and assigns them to `_accountAddress`
-     * @param _accountAddress The final staker of the tokens
-     * @param _delegatorAddress Address from which to transfer tokens
-     * @param _amount Number of tokens staked
+     * @param _accountAddress - The final staker of the tokens
+     * @param _delegatorAddress - Address from which to transfer tokens
+     * @param _amount - Number of tokens staked
      */
     function delegateStakeFor(
         address _accountAddress,
@@ -196,9 +229,9 @@ contract Staking is InitializableV2 {
 
     /**
      * @notice Stakes `_amount` tokens, transferring them from caller, and assigns them to `_accountAddress`
-     * @param _accountAddress The staker of the tokens
-     * @param _delegatorAddress Address from which to transfer tokens
-     * @param _amount Number of tokens unstaked
+     * @param _accountAddress - The staker of the tokens
+     * @param _delegatorAddress - Address from which to transfer tokens
+     * @param _amount - Number of tokens unstaked
      */
     function undelegateStakeFor(
         address _accountAddress,
@@ -234,7 +267,7 @@ contract Staking is InitializableV2 {
 
     /**
      * @notice Get last time `_accountAddress` modified its staked balance
-     * @param _accountAddress Account requesting for
+     * @param _accountAddress - Account requesting for
      * @return Last block number when account's balance was modified
      */
     function lastStakedFor(address _accountAddress) external view returns (uint256) {
@@ -247,7 +280,7 @@ contract Staking is InitializableV2 {
 
     /**
      * @notice Get last time `_accountAddress` claimed a staking reward
-     * @param _accountAddress Account requesting for
+     * @param _accountAddress - Account requesting for
      * @return Last block number when claim requested
      */
     function lastClaimedFor(address _accountAddress) external view returns (uint256) {
@@ -260,8 +293,8 @@ contract Staking is InitializableV2 {
 
     /**
      * @notice Get the total amount of tokens staked by `_accountAddress` at block number `_blockNumber`
-     * @param _accountAddress Account requesting for
-     * @param _blockNumber Block number at which we are requesting
+     * @param _accountAddress - Account requesting for
+     * @param _blockNumber - Block number at which we are requesting
      * @return The amount of tokens staked by the account at the given block number
      */
     function totalStakedForAt(
@@ -273,25 +306,29 @@ contract Staking is InitializableV2 {
 
     /**
      * @notice Get the total amount of tokens staked by all users at block number `_blockNumber`
-     * @param _blockNumber Block number at which we are requesting
+     * @param _blockNumber - Block number at which we are requesting
      * @return The amount of tokens staked at the given block number
      */
     function totalStakedAt(uint256 _blockNumber) external view returns (uint256) {
         return totalStakedHistory.get(_blockNumber.toUint64());
     }
 
+    /// @notice Get the Governance address
     function getGovernanceAddress() external view returns (address addr) {
         return governanceAddress;
     }
 
+    /// @notice Get the ClaimsManager address
     function getClaimsManagerAddress() external view returns (address addr) {
         return claimsManagerAddress;
     }
 
+    /// @notice Get the ServiceProviderFactory address
     function getServiceProviderFactoryAddress() external view returns (address addr) {
         return serviceProviderFactoryAddress;
     }
 
+    /// @notice Get the DelegateManager address
     function getDelegateManagerAddress() external view returns (address addr) {
         return delegateManagerAddress;
     }
@@ -300,7 +337,7 @@ contract Staking is InitializableV2 {
 
     /**
      * @notice Get the amount of tokens staked by `_accountAddress`
-     * @param _accountAddress The owner of the tokens
+     * @param _accountAddress - The owner of the tokens
      * @return The amount of tokens staked by the given account
      */
     function totalStakedFor(address _accountAddress) public view returns (uint256) {
@@ -319,6 +356,12 @@ contract Staking is InitializableV2 {
 
     /* Internal functions */
 
+    /**
+     * @notice Adds stake from a transfer account to the stake account
+     * @param _stakeAccount - Account that funds will be staked for
+     * @param _transferAccount - Account that funds will be transferred from
+     * @param _amount - amount to stake
+     */
     function _stakeFor(
         address _stakeAccount,
         address _transferAccount,
@@ -343,6 +386,12 @@ contract Staking is InitializableV2 {
             totalStakedFor(_stakeAccount));
     }
 
+    /**
+     * @notice Unstakes tokens from a stake account to a transfer account
+     * @param _stakeAccount - Account that staked funds will be transferred from
+     * @param _transferAccount - Account that funds will be transferred to
+     * @param _amount - amount to unstake
+     */
     function _unstakeFor(
         address _stakeAccount,
         address _transferAccount,
@@ -367,6 +416,12 @@ contract Staking is InitializableV2 {
         );
     }
 
+    /**
+     * @notice Burn tokens for a given staker
+     * @dev Called when slash occurs
+     * @param _stakeAccount - Account for which funds will be burned
+     * @param _amount - amount to burn
+     */
     function _burnFor(address _stakeAccount, uint256 _amount) internal {
         // burning zero tokens is not allowed
         require(_amount > 0, ERROR_AMOUNT_ZERO);
@@ -383,6 +438,12 @@ contract Staking is InitializableV2 {
         /** No event emitted since token.burn() call already emits a Transfer event */
     }
 
+    /**
+     * @notice Increase or decrease the staked balance for an account
+     * @param _accountAddress - Account to modify
+     * @param _by - amount to modify
+     * @param _increase - true if increase in stake, false if decrease
+     */
     function _modifyStakeBalance(address _accountAddress, uint256 _by, bool _increase) internal {
         uint256 currentInternalStake = accounts[_accountAddress].stakedHistory.getLast();
 
@@ -400,6 +461,11 @@ contract Staking is InitializableV2 {
         accounts[_accountAddress].stakedHistory.add(block.number.toUint64(), newStake);
     }
 
+    /**
+     * @notice Increase or decrease the staked balance across all accounts
+     * @param _by - amount to modify
+     * @param _increase - true if increase in stake, false if decrease
+     */
     function _modifyTotalStaked(uint256 _by, bool _increase) internal {
         uint256 currentStake = totalStaked();
 
