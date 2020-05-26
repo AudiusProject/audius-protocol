@@ -381,19 +381,17 @@ contract Governance is InitializableV2 {
 
     // ========================================= Config Setters =========================================
 
-    // Set staking owner address
-    function setStakingAddress(address _address) external {
+    function setStakingAddress(address _stakingAddress) external {
         require(msg.sender == address(this), "Only callable by self");
-        stakingAddress = _address;
+        require(_stakingAddress != address(0x00), "Requires non-zero _stakingAddress");
+        stakingAddress = _stakingAddress;
     }
 
-    // Set votingPeriod
     function setVotingPeriod(uint256 _votingPeriod) external {
         require(msg.sender == address(this), "Only callable by self");
         votingPeriod = _votingPeriod;
     }
 
-    // Set votingQuorum
     function setVotingQuorum(uint256 _votingQuorum) external {
         require(msg.sender == address(this), "Only callable by self");
         votingQuorum = _votingQuorum;
@@ -401,6 +399,7 @@ contract Governance is InitializableV2 {
 
     function setRegistryAddress(address _registryAddress) external {
         require(msg.sender == address(this), "Only callable by self");
+        require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
         registryAddress = _registryAddress;
         registry = Registry(_registryAddress);
     }
