@@ -322,9 +322,9 @@ contract DelegateManager is InitializableV2 {
     }
 
     /**
-     * @notice Claim and distribute rewards to delegators anad service provider as necessary
+     * @notice Claim and distribute rewards to delegators and service provider as necessary
      * @dev Only callable by service provider. msg.sender is passed into processClaim
-     * @dev Also factors in service provider rewards and cut and transfers service provider cut
+     * @dev Also factors in service provider rewards from delegator and transfers deployer cut
      */
     function claimRewards() external {
         _requireIsInitialized();
