@@ -4,7 +4,6 @@ const assert = require('assert')
 
 const AudiusToken = artifacts.require('AudiusToken')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
-const Registry = artifacts.require('Registry')
 const Governance = artifacts.require('Governance')
 
 const tokenRegKey = web3.utils.utf8ToHex('Token')

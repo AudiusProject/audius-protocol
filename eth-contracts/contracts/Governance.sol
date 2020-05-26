@@ -414,11 +414,12 @@ contract Governance is InitializableV2 {
     /**
      * @notice Set the Staking address
      * @dev Only callable by Governance address
-     * @param _address - address for new Staking contract
+     * @param _stakingAddress - address for new Staking contract
      */
-    function setStakingAddress(address _address) external {
+    function setStakingAddress(address _stakingAddress) external {
         require(msg.sender == address(this), "Only callable by self");
-        stakingAddress = _address;
+        require(_stakingAddress != address(0x00), "Requires non-zero _stakingAddress");
+        stakingAddress = _stakingAddress;
     }
 
     /**
@@ -448,6 +449,7 @@ contract Governance is InitializableV2 {
      */
     function setRegistryAddress(address _registryAddress) external {
         require(msg.sender == address(this), "Only callable by self");
+        require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
         registryAddress = _registryAddress;
         registry = Registry(_registryAddress);
     }

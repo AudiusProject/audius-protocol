@@ -137,7 +137,7 @@ contract('Upgrade proxy test', async (accounts) => {
 
     await _lib.assertRevert(
       proxy.upgradeTo(stakingUpgraded.address),
-      "Caller must be proxy admin or proxy upgrader"
+      "Caller must be current proxy governance address"
     )
   })
 

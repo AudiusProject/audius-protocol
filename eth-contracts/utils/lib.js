@@ -202,14 +202,15 @@ export const deployToken = async (
 
 export const deployRegistry = async (artifacts, proxyAdminAddress, proxyDeployerAddress) => {
   const Registry = artifacts.require('Registry')
-  const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
+  const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 
   const registry0 = await Registry.new({ from: proxyDeployerAddress })
   const registryInitData = encodeCall('initialize', [], [])
-  const registryProxy = await AdminUpgradeabilityProxy.new(
+  const registryProxy = await AudiusAdminUpgradeabilityProxy.new(
     registry0.address,
     proxyAdminAddress,
     registryInitData,
+    addressZero,
     { from: proxyDeployerAddress }
   )
   const registry = await Registry.at(registryProxy.address)
@@ -380,6 +381,14 @@ export const configureClaimsManagerContractAddresses = async (
     { from: guardianAddress }
   )
   assert.equal(delegateManagerAddress, await claimsManager.getDelegateManagerAddress(), 'Unexpected delegate managere')
+  // Update funding found block diff
+  await governance.guardianExecuteTransaction(
+    claimsManagerRegKey,
+    toBN(0),
+    'updateFundingRoundBlockDiff(uint256)',
+    abiEncode(['uint256'], [10]),
+    { from: guardianAddress }
+  )
 }
 
 // Test helper to set delegateManager contract addresses

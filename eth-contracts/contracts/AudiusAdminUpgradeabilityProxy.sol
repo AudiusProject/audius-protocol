@@ -31,7 +31,7 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
     function upgradeTo(address _newImplementation) external {
         require(
             msg.sender == governanceAddress,
-            "Caller must be proxy admin or proxy upgrader"
+            "Caller must be current proxy governance address"
         );
         _upgradeTo(_newImplementation);
     }
