@@ -37,7 +37,7 @@ const Vote = Object.freeze({
   Yes: 2
 })
 
-contract.only('Governance.sol', async (accounts) => {
+contract('Governance.sol', async (accounts) => {
   let token, registry, staking, stakingProxy, serviceTypeManager, serviceProviderFactory
   let claimsManager, delegateManager, governance, registry0, registryProxy, token0, tokenProxy
 
