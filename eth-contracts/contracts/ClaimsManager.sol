@@ -22,10 +22,13 @@ contract ClaimsManager is InitializableV2 {
     uint private fundingRoundBlockDiff;
 
     /**
+      * @notice - Configures the current funding amount per round
       *  Weekly rounds, 7% PA inflation = 70,000,000 new tokens in first year 
-      *                                = 70,000,000/365*7 (year is slightly more than a week)
-      *                                = 1342465.75342 new AUDS per week
-      *                                = 1342465753420000000000000 new wei units per week
+      *                                 = 70,000,000/365*7 (year is slightly more than a week)
+      *                                 = 1342465.75342 new AUDS per week
+      *                                 = 1342465753420000000000000 new wei units per week
+      * @dev - Past a certain block height, this schedule will be updated
+      *      - Logic determining schedule will be sourced from an external contract
       */ 
     uint private fundingAmount;
 
