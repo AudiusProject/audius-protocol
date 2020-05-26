@@ -151,6 +151,7 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
         break
       }
       case NotificationType.RemixCreate: {
+        trackIdsToFetch.push(notification.entityId)
         for (const action of notification.actions) {
           if (action.actionEntityType === Entity.Track) {
             trackIdsToFetch.push(action.actionEntityId)
