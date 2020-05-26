@@ -22,8 +22,8 @@ contract ClaimsManager is InitializableV2 {
     /**
       * @notice - Minimum number of blocks between funding rounds 
       *       604800 seconds / week
-      *       Avg block time - 12s
-      *       604800 / 12 = 50400 blocks
+      *       Avg block time - 13s
+      *       604800 / 13 = 46523.0769231 blocks
       */
     uint private fundingRoundBlockDiff;
 
@@ -80,7 +80,7 @@ contract ClaimsManager is InitializableV2 {
 
         audiusToken = ERC20Mintable(tokenAddress);
 
-        fundingRoundBlockDiff = 50400;
+        fundingRoundBlockDiff = 46523;
         fundingAmount = 1342465753420000000000000; // 1342465.75342 AUDS
         roundNumber = 0;
 
