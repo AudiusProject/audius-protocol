@@ -23,9 +23,9 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
     }
 
     /**
-     * @notice Upgrade the address of the logic contract  for this proxy
+     * @notice Upgrade the address of the logic contract for this proxy
      * @dev Wrapper on AdminUpgradeabilityProxy._upgradeTo.
-     *      Adds a check to ensure msg.sender is admin or a registered controller contract.
+     *      Adds a check to ensure msg.sender is the Audius Governance contract.
      * @param _newImplementation - new address of logic contract that the proxy will point to
      */
     function upgradeTo(address _newImplementation) external {
@@ -44,8 +44,8 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
     }
 
     /**
-     * @notice Set the Audius Governanace address
-     * @dev Requires caller to be Governance contract or admin of the proxy
+     * @notice Set the Audius Governance address
+     * @dev Callable by admin if governance address not yet set, else by Governance
      * @param _governanceAddress  - address of Governance contract
      */
     function setAudiusGovernanceAddress(address _governanceAddress) external {
