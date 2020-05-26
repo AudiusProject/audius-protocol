@@ -19,6 +19,12 @@ contract ClaimsManager is InitializableV2 {
     address private delegateManagerAddress;
 
     // Claim related configurations
+    /**
+      * @notice - Minimum number of blocks between funding rounds 
+      *       604800 seconds / week
+      *       Avg block time - 12s
+      *       604800 / 12 = 50400 blocks
+      */
     uint private fundingRoundBlockDiff;
 
     /**
@@ -74,7 +80,7 @@ contract ClaimsManager is InitializableV2 {
 
         audiusToken = ERC20Mintable(tokenAddress);
 
-        fundingRoundBlockDiff = 10;
+        fundingRoundBlockDiff = 50400;
         fundingAmount = 1342465753420000000000000; // 1342465.75342 AUDS
         roundNumber = 0;
 
