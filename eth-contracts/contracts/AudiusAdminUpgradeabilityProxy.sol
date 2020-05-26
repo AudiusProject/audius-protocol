@@ -15,7 +15,7 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
      * @notice Sets governance address for future upgrades
      * @param _logic - address of underlying logic contract.
      *      Passed to AdminUpgradeabilityProxy constructor.
-     * @param _admin - address of proxy admin, but cedes upgrade control to _governanceAddress.
+     * @param _proxyAdmin - address of proxy admin, but cedes upgrade control to _governanceAddress.
      *      Passed to AdminUpgradeabilityProxy constructor.
      * @param _data - data of function to be called on logic contract.
      *      Passed to AdminUpgradeabilityProxy constructor.
