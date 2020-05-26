@@ -260,7 +260,7 @@ contract ClaimsManager is InitializableV2 {
         // For a claimer violating bounds, no new tokens are minted
         // Claim history is marked to zero and function is short-circuited
         // Total rewards can be zero if all stake is currently locked up
-        if (withinBounds == false || rewardsForClaimer == 0) {
+        if (!withinBounds || rewardsForClaimer == 0) {
             stakingContract.updateClaimHistory(0, _claimer);
             return;
         }

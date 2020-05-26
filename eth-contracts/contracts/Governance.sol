@@ -524,7 +524,7 @@ contract Governance is InitializableV2 {
             _callData
         );
 
-        require(success == true, "Governance::guardianExecuteTransaction: Transaction failed.");
+        require(success, "Governance::guardianExecuteTransaction: Transaction failed.");
 
         emit GuardianTransactionExecuted(
             targetContractAddress,
