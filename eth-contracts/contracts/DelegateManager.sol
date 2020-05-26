@@ -23,7 +23,6 @@ contract DelegateManager is InitializableV2 {
 
     /**
      * Number of blocks an undelegate operation has to wait
-     * TODO: Move this value to Staking.sol as SPFactory may need as well
      * @notice must be >= Governance.votingPeriod
      */
     uint private undelegateLockupDuration;
@@ -38,7 +37,6 @@ contract DelegateManager is InitializableV2 {
     ERC20Mintable internal audiusToken;
 
     // Struct representing total delegated to SP and list of delegators
-    // TODO: Bound list
     struct ServiceProviderDelegateInfo {
         uint totalDelegatedStake;
         uint totalLockedUpStake;

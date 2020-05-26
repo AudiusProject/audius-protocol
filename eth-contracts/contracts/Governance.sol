@@ -548,8 +548,6 @@ contract Governance is InitializableV2 {
             "Governance::guardianExecuteTransaction: Only guardian."
         );
 
-        // TODO - ensure _newGuardianAddress is not a contract (maybe not possible?)
-
         guardianAddress = _newGuardianAddress;
     }
 
