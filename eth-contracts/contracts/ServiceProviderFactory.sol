@@ -537,7 +537,7 @@ contract ServiceProviderFactory is InitializableV2 {
      * @notice Update service provider cut of claims
      * @dev SPs will interact with this value as a percent, value translation done client side
      * @param _serviceProvider - address of service provider
-     * @param _cut - new deployer cut value 
+     * @param _cut - new deployer cut value
      */
     function updateServiceProviderCut(
         address _serviceProvider,
@@ -709,7 +709,7 @@ contract ServiceProviderFactory is InitializableV2 {
     /**
      * @notice Set the Governance address
      * @dev Only callable by Governance address
-     * @param _governanceAddress - address for new Governance contract
+     * @param _address - address for new Governance contract
      */
     function setGovernanceAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");

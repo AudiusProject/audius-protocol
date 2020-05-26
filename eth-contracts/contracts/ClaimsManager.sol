@@ -62,7 +62,7 @@ contract ClaimsManager is InitializableV2 {
     /**
      * @notice Function to initialize the contract
      * @param _tokenAddress - address of ERC20 token that will be claimed
-     * @param governanceAddress - address for Governance proxy contract
+     * @param _governanceAddress - address for Governance proxy contract
      */
     function initialize(
         address _tokenAddress,

@@ -49,10 +49,7 @@ contract Staking is InitializableV2 {
     /**
      * @notice Function to initialize the contract
      * @param _stakingToken - address of ERC20 token that will be staked
-     * @param _registryAddress - address for registry proxy contract
-     * @param _claimsManagerProxyKey - registry key for ClaimsManager proxy
-     * @param _delegateManagerKey - registry key for DelegateManager
-     * @param _serviceProviderFactoryKey - registry key for ServiceProvider proxy
+     * @param _governanceAddress - address for Governance proxy contract     * @param _test - address for Governance proxy contract
      */
     function initialize(
         address _stakingToken,
@@ -65,21 +62,41 @@ contract Staking is InitializableV2 {
         InitializableV2.initialize();
     }
 
+    /**
+     * @notice Set the Governance address
+     * @dev Only callable by Governance address
+     * @param _governanceAddress - address for new Governance contract
+     */
     function setGovernanceAddress(address _governanceAddress) external {
         require(msg.sender == governanceAddress, "Only governance");
         governanceAddress = _governanceAddress;
     }
 
+    /**
+     * @notice Set the ClaimsManaager address
+     * @dev Only callable by Governance address
+     * @param _claimsManager - address for new ClaimsManaager contract
+     */
     function setClaimsManagerAddress(address _claimsManager) external {
         require(msg.sender == governanceAddress, "Only governance");
         claimsManagerAddress = _claimsManager;
     }
 
+    /**
+     * @notice Set the ServiceProviderFactory address
+     * @dev Only callable by Governance address
+     * @param _spFactory - address for new ServiceProviderFactory contract
+     */
     function setServiceProviderFactoryAddress(address _spFactory) external {
         require(msg.sender == governanceAddress, "Only governance");
         serviceProviderFactoryAddress = _spFactory;
     }
 
+    /**
+     * @notice Set the DelegateManager address
+     * @dev Only callable by Governance address
+     * @param _delegateManager - address for new DelegateManager contract
+     */
     function setDelegateManagerAddress(address _delegateManager) external {
         require(msg.sender == governanceAddress, "Only governance");
         delegateManagerAddress = _delegateManager;
@@ -297,18 +314,22 @@ contract Staking is InitializableV2 {
         return totalStakedHistory.get(_blockNumber.toUint64());
     }
 
+    /// @notice Get the Governance address
     function getGovernanceAddress() external view returns (address addr) {
         return governanceAddress;
     }
 
+    /// @notice Get the ClaimsManager address
     function getClaimsManagerAddress() external view returns (address addr) {
         return claimsManagerAddress;
     }
 
+    /// @notice Get the ServiceProviderFactory address
     function getServiceProviderFactoryAddress() external view returns (address addr) {
         return serviceProviderFactoryAddress;
     }
 
+    /// @notice Get the DelegateManager address
     function getDelegateManagerAddress() external view returns (address addr) {
         return delegateManagerAddress;
     }
