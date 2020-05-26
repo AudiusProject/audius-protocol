@@ -737,39 +737,6 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    // TODO: Revisit below test case and remove unneeded validation if necessary
-    // Test case still in progress
-    it.skip('TODO WIP - claim restriction on staking balance', async () => {
-      // Transfer 1000 tokens to delegator
-      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
-
-      let initialDelegateAmount = _lib.audToWeiBN(60)
-
-      // Fund new claim
-      await claimsManager.initiateRound({ from: stakerAccount })
-      let fundBlock = await claimsManager.getLastFundBlock()
-      let stakedAtFundBlock = await staking.totalStakedForAt(stakerAccount, fundBlock)
-      console.log(stakedAtFundBlock)
-      console.log('deregstering')
-
-      // Deregister endpoint, removing all stake
-      await _lib.deregisterServiceProvider(
-        serviceProviderFactory,
-        testDiscProvType,
-        testEndpoint,
-        stakerAccount,
-        { from: stakerAccount })
-
-      console.log('deregistered')
-      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
-      console.log(spDetails)
-      assert.isTrue(
-        stakedAtFundBlock.lte(spDetails.maxAccountStake),
-        'Must be less than account max')
-      // This calls fails maximum bounds check since the max is now zero with no registered endpoint
-      await delegateManager.claimRewards({ from: stakerAccount })
-    })
-
     it('40 delegators to one SP + claim', async () => {
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
 
