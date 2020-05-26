@@ -13,11 +13,11 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
 
     constructor(
       address _logic,
-      address _admin,
+      address _proxyAdmin,
       bytes memory _data,
       address _governanceAddress
     )
-    AdminUpgradeabilityProxy(_logic, _admin, _data) public payable
+    AdminUpgradeabilityProxy(_logic, _proxyAdmin, _data) public payable
     {
         governanceAddress = _governanceAddress;
     }
