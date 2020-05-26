@@ -212,11 +212,12 @@ contract ServiceProviderFactory is InitializableV2 {
         return newServiceProviderID;
     }
 
-    /// @notice - Deregister an endpoint from the account of msg.sender
-    ///           Removes stake if this is the final endpoint remaining for account
     /**
      * @notice Deregister an endpoint from the account of msg.sender
      * @dev Unstakes all tokens for service provider if this is the last endpoint
+     * @param _serviceType - type of service to deregister
+     * @param _endpoint - endpoint to deregister
+     * @return spId of the service that was deregistered
      */
     function deregister(
         bytes32 _serviceType,
@@ -386,7 +387,8 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /**
      * @notice Cancel a decrease stake request during the lockup
-     * @dev Either called by the service provider directly or governance during a slash action
+     * @dev Either called by the service provider via DelegateManager or governance
+            during a slash action
      * @param _account - address of service provider
      */
     function cancelDecreaseStakeRequest(address _account) external
@@ -531,8 +533,12 @@ contract ServiceProviderFactory is InitializableV2 {
         _updateServiceProviderBoundStatus(_serviceProvider);
     }
 
-    /// @notice Update service provider cut
-    /// SPs will interact with this value as a percent, value translation done client side
+    /**
+     * @notice Update service provider cut of claims
+     * @dev SPs will interact with this value as a percent, value translation done client side
+     * @param _serviceProvider - address of service provider
+     * @param _cut - new deployer cut value 
+     */
     function updateServiceProviderCut(
         address _serviceProvider,
         uint _cut
@@ -560,36 +566,28 @@ contract ServiceProviderFactory is InitializableV2 {
         decreaseStakeLockupDuration = _duration;
     }
 
-    /**
-     * @notice Get denominator for deployer cut calculations
-     */
+    /// @notice Get denominator for deployer cut calculations
     function getServiceProviderDeployerCutBase()
     external pure returns (uint base)
     {
         return DEPLOYER_CUT_BASE;
     }
 
-    /**
-     * @notice Get total number of service providers for a given serviceType
-     */
+    /// @notice Get total number of service providers for a given serviceType
     function getTotalServiceTypeProviders(bytes32 _serviceType)
     external view returns (uint numberOfProviders)
     {
         return serviceProviderTypeIDs[_serviceType];
     }
 
-    /**
-     * @notice Get service provider id for an endpoint
-     */
+    /// @notice Get service provider id for an endpoint
     function getServiceProviderIdFromEndpoint(string calldata _endpoint)
     external view returns (uint spID)
     {
         return serviceProviderEndpointToId[keccak256(bytes(_endpoint))];
     }
 
-    /**
-     * @notice Get minDeployerStake
-     */
+    /// @notice Get minDeployerStake
     function getMinDeployerStake()
     external view returns (uint min)
     {
@@ -608,6 +606,8 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /**
      * @notice Get information about a service endpoint given its service id
+     * @param _serviceType - type of service, must be a valid service from ServiceTypeManager
+     * @param _serviceId - id of service
      */
     function getServiceEndpointInfo(bytes32 _serviceType, uint _serviceId)
     external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet)
@@ -652,9 +652,7 @@ contract ServiceProviderFactory is InitializableV2 {
         );
     }
 
-    /**
-     * @notice Get current unstake lockup duration
-     */
+    /// @notice Get current unstake lockup duration
     function getDecreaseStakeLockupDuration()
     external view returns (uint duration)
     {
@@ -683,53 +681,83 @@ contract ServiceProviderFactory is InitializableV2 {
         this.validateAndGetAccountStakeBalance(_sp);
     }
 
+    /// @notice Get the Governance address
     function getGovernanceAddress() external view returns (address addr) {
         return governanceAddress;
     }
 
+    /// @notice Get the Staking address
     function getStakingAddress() external view returns (address addr) {
         return stakingAddress;
     }
 
+    /// @notice Get the DelegateManager address
     function getDelegateManagerAddress() external view returns (address addr) {
         return delegateManagerAddress;
     }
 
+    /// @notice Get the ServiceTypeManager address
     function getServiceTypeManagerAddress() external view returns (address addr) {
         return serviceTypeManagerAddress;
     }
 
+    /// @notice Get the ClaimsManager address
     function getClaimsManagerAddress() external view returns (address addr) {
         return claimsManagerAddress;
     }
 
+    /**
+     * @notice Set the Governance address
+     * @dev Only callable by Governance address
+     * @param _governanceAddress - address for new Governance contract
+     */
     function setGovernanceAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         governanceAddress = _address;
     }
 
+    /**
+     * @notice Set the Staking address
+     * @dev Only callable by Governance address
+     * @param _address - address for new Staking contract
+     */
     function setStakingAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         stakingAddress = _address;
     }
 
+    /**
+     * @notice Set the DelegateManager address
+     * @dev Only callable by Governance address
+     * @param _address - address for new DelegateManager contract
+     */
     function setDelegateManagerAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         delegateManagerAddress = _address;
     }
 
+    /**
+     * @notice Set the ServiceTypeManager address
+     * @dev Only callable by Governance address
+     * @param _address - address for new ServiceTypeManager contract
+     */
     function setServiceTypeManagerAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         serviceTypeManagerAddress = _address;
     }
 
+    /**
+     * @notice Set the ClaimsManager address
+     * @dev Only callable by Governance address
+     * @param _address - address for new ClaimsManager contract
+     */
     function setClaimsManagerAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         claimsManagerAddress = _address;
     }
 
     /**
-     * @notice Update service provider bound status
+     * @notice Update status in spDetails if the bounds for a service provider is valid
      */
     function _updateServiceProviderBoundStatus(address _serviceProvider) internal {
         // Validate bounds for total stake

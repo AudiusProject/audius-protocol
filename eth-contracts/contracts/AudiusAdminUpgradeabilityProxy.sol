@@ -36,10 +36,18 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
         _upgradeTo(_newImplementation);
     }
 
+    /**
+     * @notice Returns the Audius governance address
+     */
     function getAudiusGovernanceAddress() external view returns (address) {
         return governanceAddress;
     }
 
+    /**
+     * @notice Set the Audius Governanace address
+     * @dev Requires caller to be Governance contract or admin of the proxy
+     * @param _governanceAddress  - address of Governance contract
+     */
     function setAudiusGovernanceAddress(address _governanceAddress) external {
         require(
             msg.sender == governanceAddress ||

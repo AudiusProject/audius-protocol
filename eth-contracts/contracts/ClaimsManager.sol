@@ -62,11 +62,7 @@ contract ClaimsManager is InitializableV2 {
     /**
      * @notice Function to initialize the contract
      * @param _tokenAddress - address of ERC20 token that will be claimed
-     * @param _registryAddress - address for registry proxy contract
-     * @param _stakingProxyOwnerKey - registry key for Staking proxy
-     * @param _serviceProviderFactoryKey - registry key for ServiceProvider proxy
-     * @param _delegateManagerKey - registry key for DelegateManager proxy
-     * @param _governanceKey - registry key for Governance
+     * @param governanceAddress - address for Governance proxy contract
      */
     function initialize(
         address _tokenAddress,
@@ -91,70 +87,88 @@ contract ClaimsManager is InitializableV2 {
         InitializableV2.initialize();
     }
 
-    /**
-     * @notice Get the duration of a funding round in blocks
-     */
+    /// @notice Get the duration of a funding round in blocks
     function getFundingRoundBlockDiff() external view returns (uint blockDiff)
     {
         return fundingRoundBlockDiff;
     }
 
-    /**
-     * @notice Get the last block where a funding round was initiated
-     */
+    /// @notice Get the last block where a funding round was initiated
     function getLastFundBlock() external view returns (uint lastFundBlock)
     {
         return currentRound.fundBlock;
     }
 
-    /**
-     * @notice Get the amount funded per round in wei
-     */
+    /// @notice Get the amount funded per round in wei
     function getFundsPerRound() external view returns (uint amount)
     {
         return fundingAmount;
     }
 
-    /**
-     * @notice Get the total amount claimed in the current round
-     */
+    /// @notice Get the total amount claimed in the current round
     function getTotalClaimedInRound() external view returns (uint claimedAmount)
     {
         return currentRound.totalClaimedInRound;
     }
 
+    /// @notice Get the Governance address
     function getGovernanceAddress() external view returns (address addr) {
         return governanceAddress;
     }
 
+    /// @notice Get the ServiceProviderFactory address
     function getServiceProviderFactoryAddress() external view returns (address addr) {
         return serviceProviderFactoryAddress;
     }
 
+    /// @notice Get the DelegateManager address
     function getDelegateManagerAddress() external view returns (address addr) {
         return delegateManagerAddress;
     }
 
+    /**
+     * @notice Get the Staking address
+     */
     function getStakingAddress() external view returns (address addr)
     {
         return stakingAddress;
     }
 
+    /**
+     * @notice Set the Governance address
+     * @dev Only callable by Governance address
+     * @param _governanceAddress - address for new Governance contract
+     */
     function setGovernanceAddress(address _governanceAddress) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         governanceAddress = _governanceAddress;
     }
 
+    /**
+     * @notice Set the Staking address
+     * @dev Only callable by Governance address
+     * @param _address - address for new Staking contract
+     */
     function setStakingAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         stakingAddress = _address;
     }
 
+    /**
+     * @notice Set the ServiceProviderFactory address
+     * @dev Only callable by Governance address
+     * @param _spFactory - address for new ServiceProviderFactory contract
+     */
     function setServiceProviderFactoryAddress(address _spFactory) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         serviceProviderFactoryAddress = _spFactory;
     }
 
+    /**
+     * @notice Set the DelegateManager address
+     * @dev Only callable by Governance address
+     * @param _delegateManager - address for new DelegateManager contract
+     */
     function setDelegateManagerAddress(address _delegateManager) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         delegateManagerAddress = _delegateManager;

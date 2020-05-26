@@ -33,7 +33,9 @@ contract Registry is InitializableV2, Ownable {
     // ========================================= Setters =========================================
 
     /**
-     * @dev addContract registers contract name to address mapping
+     * @notice addContract registers contract name to address mapping under given registry key
+     * @param _name - registry key that will be used for lookups
+     * @param _address - address of contract
      */
     function addContract(bytes32 _name, address _address) external onlyOwner {
         _requireIsInitialized();
@@ -112,6 +114,11 @@ contract Registry is InitializableV2, Ownable {
         return addressStorageHistory[_name][_version.sub(1)];
     }
 
+    /**
+     * @notice Returns the number of versions for a contract key
+     * @param _name - registry key for lookup
+     * @return number of contract versions
+     */
     function getContractVersionCount(bytes32 _name) external view returns (uint) {
         return addressStorageHistory[_name].length;
     }

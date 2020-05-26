@@ -411,24 +411,41 @@ contract Governance is InitializableV2 {
 
     // ========================================= Config Setters =========================================
 
-    // Set staking owner address
+    /**
+     * @notice Set the Staking address
+     * @dev Only callable by Governance address
+     * @param _address - address for new Staking contract
+     */
     function setStakingAddress(address _address) external {
         require(msg.sender == address(this), "Only callable by self");
         stakingAddress = _address;
     }
 
-    // Set votingPeriod
+    /**
+     * @notice Set the voting period for a Governance proposal
+     * @dev Only callable by Governance address
+     * @param _votingPeriod - new voting period
+     */
     function setVotingPeriod(uint256 _votingPeriod) external {
         require(msg.sender == address(this), "Only callable by self");
         votingPeriod = _votingPeriod;
     }
 
-    // Set votingQuorum
+    /**
+     * @notice Set the voting quorum for a Governance proposal
+     * @dev Only callable by Governance address
+     * @param _votingQuorum - new voting period
+     */
     function setVotingQuorum(uint256 _votingQuorum) external {
         require(msg.sender == address(this), "Only callable by self");
         votingQuorum = _votingQuorum;
     }
 
+    /**
+     * @notice Set the Registry address
+     * @dev Only callable by Governance address
+     * @param _registryAddress - address for new Registry contract
+     */
     function setRegistryAddress(address _registryAddress) external {
         require(msg.sender == address(this), "Only callable by self");
         registryAddress = _registryAddress;
@@ -439,6 +456,7 @@ contract Governance is InitializableV2 {
 
     /**
      * @notice Allows the guardian to execute actions
+     * @param _targetContractRegistryKey - key in registry of target contraact
      * @param _callValue - amount of wei if a token transfer is involved
      * @param _signature - function signature of the function to be executed if proposal is successful
      * @param _callData - encoded call with value to be executed in proposal is successful
@@ -488,6 +506,11 @@ contract Governance is InitializableV2 {
         );
     }
 
+    /**
+     * @notice Change the guardian address
+     * @dev Only callable by current guardian
+     * @param _newGuardianAddress - new guardian address
+     */
     function transferGuardianship(address _newGuardianAddress) external {
         _requireIsInitialized();
 
@@ -562,28 +585,33 @@ contract Governance is InitializableV2 {
         return proposals[_proposalId].votes[_voter];
     }
 
+    /// @notice Get the contract Guardian address
     function getGuardianAddress() external view returns (address) {
         _requireIsInitialized();
 
         return guardianAddress;
     }
 
+    /// @notice Get the Staking address
     function getStakingAddress() external view returns (address) {
         return stakingAddress;
     }
 
+    /// @notice Get the contract voting period
     function getVotingPeriod() external view returns (uint) {
         _requireIsInitialized();
 
         return votingPeriod;
     }
 
+    /// @notice Get the contract voting quorum
     function getVotingQuorum() external view returns (uint) {
         _requireIsInitialized();
 
         return votingQuorum;
     }
 
+    /// @notice Get the registry address
     function getRegistryAddress() external view returns (address) {
         return registryAddress;
     }
