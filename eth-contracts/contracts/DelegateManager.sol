@@ -2,7 +2,7 @@ pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
-/** SafeMath imported via ServiceProviderFactory.sol */
+/// @notice SafeMath imported via ServiceProviderFactory.sol
 
 import "./Staking.sol";
 import "./ServiceProviderFactory.sol";

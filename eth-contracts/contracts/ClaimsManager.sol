@@ -3,7 +3,7 @@ import "./Staking.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "./ServiceProviderFactory.sol";
-/** SafeMath imported via ServiceProviderFactory.sol */
+/// @notice SafeMath imported via ServiceProviderFactory.sol
 
 
 /**

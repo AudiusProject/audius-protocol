@@ -25,7 +25,7 @@ contract Registry is InitializableV2, Ownable {
     event ContractUpgraded(bytes32 _name, address _oldAddress, address _newAddress);
 
     function initialize() public initializer {
-        // Ownable.initialize(address _sender) sets contract owner to _sender.
+        /// @notice Ownable.initialize(address _sender) sets contract owner to _sender.
         Ownable.initialize(msg.sender);
         InitializableV2.initialize();
     }
@@ -102,7 +102,7 @@ contract Registry is InitializableV2, Ownable {
         return addressStorage[_name];
     }
 
-    /** @notice overloaded getContract to return explicit version of contract */
+    /// @notice overloaded getContract to return explicit version of contract
     function getContract(bytes32 _name, uint _version) external view
     returns (address contractAddr)
     {

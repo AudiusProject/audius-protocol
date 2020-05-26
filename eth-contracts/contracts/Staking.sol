@@ -10,7 +10,6 @@ import "@aragon/court/contracts/lib/os/Uint256Helpers.sol";
 import "./InitializableV2.sol";
 
 
-/** NOTE - will call InitializableV2.constructor */
 contract Staking is InitializableV2 {
     using SafeMath for uint256;
     using Uint256Helpers for uint256;
