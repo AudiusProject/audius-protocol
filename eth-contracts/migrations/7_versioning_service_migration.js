@@ -22,7 +22,7 @@ const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const serviceTypeCN = web3.utils.utf8ToHex('creator-node')
 // Creator node 
 // Minimum: 200,000
-// Maximum: 3,00,000
+// Maximum: 3,000,000
 const cnTypeMin = _lib.audToWei(200000)
 const cnTypeMax = _lib.audToWei(3000000)
 // Discovery provider
