@@ -625,6 +625,15 @@ contract('DelegateManager', async (accounts) => {
 
       let initialDelegateAmount = _lib.audToWeiBN(60)
 
+      // Set funding amount to 20AUD
+      await governance.guardianExecuteTransaction(
+        claimsManagerProxyKey,
+        _lib.toBN(0),
+        'updateFundingAmount(uint256)',
+        _lib.abiEncode(['uint256'], [_lib.audToWei(20)]),
+        { from: guardianAddress }
+      )
+
       // Approve staking transfer
       await token.approve(
         stakingAddress,
