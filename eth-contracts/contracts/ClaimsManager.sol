@@ -12,10 +12,6 @@ import "./ServiceProviderFactory.sol";
  */
 contract ClaimsManager is InitializableV2 {
     using SafeMath for uint256;
-
-    // standard - imitates relationship between Ether and Wei
-    uint8 private constant DECIMALS = 18;
-
     address private tokenAddress;
     address private governanceAddress;
     address private stakingAddress;
@@ -25,11 +21,12 @@ contract ClaimsManager is InitializableV2 {
     // Claim related configurations
     uint private fundingRoundBlockDiff;
 
-    /*
-       Weekly rounds, 7% PA inflation = 70,000,000 new tokens in first year 
-                                      = 70,000,000/365*7 (year is slightly more than a week)
-                                      = 1342465.75342 new AUDS per week
-    */ 
+    /**
+      *  Weekly rounds, 7% PA inflation = 70,000,000 new tokens in first year 
+      *                                = 70,000,000/365*7 (year is slightly more than a week)
+      *                                = 1342465.75342 new AUDS per week
+      *                                = 1342465753420000000000000 new wei units per week
+      */ 
     uint private fundingAmount;
 
     // Denotes current round
@@ -75,7 +72,7 @@ contract ClaimsManager is InitializableV2 {
         audiusToken = ERC20Mintable(tokenAddress);
 
         fundingRoundBlockDiff = 10;
-        fundingAmount = 1342465 * 10**uint256(DECIMALS); // 1342465 AUDS
+        fundingAmount = 1342465753420000000000000; // 1342465.75342 AUDS
         roundNumber = 0;
 
         currentRound = Round({
