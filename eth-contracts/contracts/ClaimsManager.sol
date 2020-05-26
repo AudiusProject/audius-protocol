@@ -222,7 +222,7 @@ contract ClaimsManager is InitializableV2 {
      * @notice Mints and stakes tokens on behalf of ServiceProvider + delegators
      * @dev Callable through DelegateManager by Service Provider
      * @param _claimer  - service provider address
-     * @param _totalLockedForSP - amount of tokens locked up in DelegateManager
+     * @param _totalLockedForSP - amount of tokens locked up across DelegateManager + ServiceProvider
      */
     function processClaim(
         address _claimer,
