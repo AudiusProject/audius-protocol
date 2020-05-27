@@ -290,7 +290,7 @@ module.exports = function (app) {
     }
 
     const withRemixQuery = req.query.withRemix === 'true' ? {} : {
-      type: { [models.Sequelize.Op.notIn]:[NotificationType.RemixCreate, NotificationType.RemixCosign] }
+      type: { [models.Sequelize.Op.notIn]: [NotificationType.RemixCreate, NotificationType.RemixCosign] }
     }
 
     if (isNaN(limit) || limit > 100) {
