@@ -16,6 +16,9 @@ from sqlalchemy import (
     Enum,
     PrimaryKeyConstraint,
 )
+from datetime import datetime
+from src.model_validator import ModelValidator
+from jsonschema import ValidationError
 
 Base = declarative_base()
 logger = logging.getLogger(__name__)
@@ -156,6 +159,24 @@ class Track(Base):
 
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, track_id, blockhash)
+
+    ModelValidator.init_schema('track')
+
+    # unpacking args into @validates
+    @validates(*ModelValidator.schema_and_fields_dict['track']['fields'])
+    def validate_field(self, key, value):
+        to_validate = {
+            key: value
+        }
+
+        try:
+            ModelValidator.validate(to_validate, key)
+        except ValidationError as e:
+            default = None # TODO: set defaults in schema and use those values
+            logger.warning("Error: {0}\nSetting the default value {1} for field {2}".format(e, default, key))
+            value = default
+
+        return value
 
     def __repr__(self):
         return (
