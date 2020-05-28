@@ -2,10 +2,11 @@ const models = require('../models')
 const { logger } = require('../logging')
 
 const {
+  deviceType,
   notificationTypes,
   actionEntityTypes
 } = require('./constants')
-const { publish } = require('../awsSNS')
+const { publish } = require('./notificationQueue')
 const { shouldNotifyUser } = require('./utils')
 const { fetchNotificationMetadata } = require('./fetchNotificationMetadata')
 const {
@@ -271,100 +272,95 @@ async function updateTrackListenMilestones (listenCounts, blocknumber, timestamp
 
 async function _processMilestone (milestoneType, userId, entityId, entityType, milestoneValue, blocknumber, timestamp, audiusLibs, tx) {
   // Skip notification based on user configuration
-  const { notifyMobile, notifyWeb } = await shouldNotifyUser(userId, 'milestonesAndAchievements')
-  if (!notifyWeb && !notifyMobile) {
-    return
-  }
+  const { notifyMobile, notifyBrowserPush } = await shouldNotifyUser(userId, 'milestonesAndAchievements')
 
   let newMilestone = false
-  if (notifyWeb) {
-    let existingMilestoneQuery = await models.Notification.findAll({
+  let existingMilestoneQuery = await models.Notification.findAll({
+    where: {
+      userId: userId,
+      type: milestoneType,
+      entityId: entityId
+    },
+    include: [{
+      model: models.NotificationAction,
+      as: 'actions',
+      where: {
+        actionEntityType: entityType,
+        actionEntityId: milestoneValue
+      }
+    }],
+    transaction: tx
+  })
+
+  if (existingMilestoneQuery.length === 0) {
+    newMilestone = true
+    // MilestoneListen/Favorite/Repost
+    // userId=user achieving milestone
+    // entityId=Entity reaching milestone, one of track/collection
+    // actionEntityType=Entity achieving milestone, can be track/collection
+    // actionEntityId=Milestone achieved
+    let createMilestoneTx = await models.Notification.create({
+      userId: userId,
+      type: milestoneType,
+      entityId: entityId,
+      blocknumber,
+      timestamp
+    }, { transaction: tx })
+    let notificationId = createMilestoneTx.id
+    await models.NotificationAction.findOrCreate({
+      where: {
+        notificationId,
+        actionEntityType: entityType,
+        actionEntityId: milestoneValue,
+        blocknumber
+      },
+      transaction: tx
+    })
+    logger.info(`processMilestone - Process milestone ${userId}, type ${milestoneType}, entityId ${entityId}, type ${entityType}, milestoneValue ${milestoneValue}`)
+
+    // Destroy any unread milestone notifications of this type + entity
+    let milestonesToBeDeleted = await models.Notification.findAll({
       where: {
         userId: userId,
         type: milestoneType,
-        entityId: entityId
+        entityId: entityId,
+        isRead: false
       },
       include: [{
         model: models.NotificationAction,
         as: 'actions',
         where: {
           actionEntityType: entityType,
-          actionEntityId: milestoneValue
+          actionEntityId: {
+            [models.Sequelize.Op.not]: milestoneValue
+          }
         }
-      }],
-      transaction: tx
+      }]
     })
 
-    if (existingMilestoneQuery.length === 0) {
-      newMilestone = true
-      // MilestoneListen/Favorite/Repost
-      // userId=user achieving milestone
-      // entityId=Entity reaching milestone, one of track/collection
-      // actionEntityType=Entity achieving milestone, can be track/collection
-      // actionEntityId=Milestone achieved
-      let createMilestoneTx = await models.Notification.create({
-        userId: userId,
-        type: milestoneType,
-        entityId: entityId,
-        blocknumber,
-        timestamp
-      }, { transaction: tx })
-      let notificationId = createMilestoneTx.id
-      await models.NotificationAction.findOrCreate({
-        where: {
-          notificationId,
-          actionEntityType: entityType,
-          actionEntityId: milestoneValue,
-          blocknumber
-        },
-        transaction: tx
-      })
-      logger.info(`processMilestone - Process milestone ${userId}, type ${milestoneType}, entityId ${entityId}, type ${entityType}, milestoneValue ${milestoneValue}`)
-
-      // Destroy any unread milestone notifications of this type + entity
-      let milestonesToBeDeleted = await models.Notification.findAll({
-        where: {
-          userId: userId,
-          type: milestoneType,
-          entityId: entityId,
-          isRead: false
-        },
-        include: [{
-          model: models.NotificationAction,
-          as: 'actions',
+    if (milestonesToBeDeleted) {
+      for (var milestoneToDelete of milestonesToBeDeleted) {
+        logger.info(`Deleting milestone: ${milestoneToDelete.id}`)
+        let destroyTx = await models.NotificationAction.destroy({
           where: {
-            actionEntityType: entityType,
-            actionEntityId: {
-              [models.Sequelize.Op.not]: milestoneValue
-            }
-          }
-        }]
-      })
-
-      if (milestonesToBeDeleted) {
-        for (var milestoneToDelete of milestonesToBeDeleted) {
-          logger.info(`Deleting milestone: ${milestoneToDelete.id}`)
-          let destroyTx = await models.NotificationAction.destroy({
-            where: {
-              notificationId: milestoneToDelete.id
-            },
-            transaction: tx
-          })
-          logger.info(destroyTx)
-          destroyTx = await models.Notification.destroy({
-            where: {
-              id: milestoneToDelete.id
-            },
-            transaction: tx
-          })
-          logger.info(destroyTx)
-        }
+            notificationId: milestoneToDelete.id
+          },
+          transaction: tx
+        })
+        logger.info(destroyTx)
+        destroyTx = await models.Notification.destroy({
+          where: {
+            id: milestoneToDelete.id
+          },
+          transaction: tx
+        })
+        logger.info(destroyTx)
       }
     }
   }
 
   // Only send a milestone push notification on the first insert to the DB
-  if (notifyMobile && newMilestone) {
+  if ((notifyMobile || notifyBrowserPush) && newMilestone) {
     const notifStub = {
       userId: userId,
       type: milestoneType,
@@ -389,10 +385,13 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
       const msg = pushNotificationMessagesMap[notificationTypes.Milestone](msgGenNotif)
       logger.debug(`processMilestone - message: ${msg}`)
       const title = notificationResponseTitleMap[notificationTypes.Milestone]
-      await publish(msg, userId, tx, true, title)
+      let types = []
+      if (notifyMobile) types.push(deviceType.Mobile)
+      if (notifyBrowserPush) types.push(deviceType.Browser)
+      await publish(msg, userId, tx, true, title, types)
     } catch (e) {
       // Log on error instead of failing
-      logger.info(`Error adding push notification to buffer: ${e}. notifStub ${notifStub}`)
+      logger.info(`Error adding push notification to buffer: ${e}. notifStub ${JSON.stringify(notifStub)}`)
     }
   }
 }

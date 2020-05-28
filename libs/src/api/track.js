@@ -62,9 +62,9 @@ class Tracks extends Base {
    * @param {getTracksIdentifier[]} identifiers
    * @returns {(Array)} track
    */
-  async getTracksIncludingUnlisted (identifiers) {
+  async getTracksIncludingUnlisted (identifiers, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.discoveryProvider.getTracksIncludingUnlisted(identifiers)
+    return this.discoveryProvider.getTracksIncludingUnlisted(identifiers, withUsers)
   }
 
   /**
@@ -76,6 +76,41 @@ class Tracks extends Base {
   async getUnlistedTracks () {
     this.REQUIRES(Services.CREATOR_NODE)
     return this.creatorNode.getUnlistedTracks()
+  }
+
+  /**
+   * Gets all stems for a given trackId as an array of tracks.
+   * @param {number} trackId
+   * @returns {(Array)} track
+   */
+  async getStemsForTrack (trackId) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getStemsForTrack(trackId)
+  }
+
+  /**
+   * Gets all the remixes of a given trackId as an array of tracks.
+   * @param {number} trackId
+   * @param {number} limit
+   * @param {number} offset
+   * @returns {(Array)} track
+   */
+  async getRemixesOfTrack (trackId, limit = null, offset = null) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getRemixesOfTrack(trackId, limit, offset)
+  }
+
+  /**
+   * Gets the remix parents of a given trackId as an array of tracks.
+   * @param {number} trackId
+   * @param {number} limit
+   * @param {number} offset
+   * @returns {(Array)} track
+   * @returns {(Array)} track
+   */
+  async getRemixTrackParents (trackId, limit = null, offset = null) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getRemixTrackParents(trackId, limit, offset)
   }
 
   /**

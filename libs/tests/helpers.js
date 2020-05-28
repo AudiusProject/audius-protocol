@@ -1,4 +1,4 @@
-const Web3 = require('web3')
+const Web3 = require('../src/web3')
 
 const AudiusLibs = require('../src/index')
 const dataContractsConfig = require('../data-contracts/config.json')

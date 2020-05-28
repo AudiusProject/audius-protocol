@@ -1,6 +1,6 @@
-const _ = require('lodash')
+const { sampleSize } = require('lodash')
 const { Base } = require('./base')
-const Utils = require('../utils')
+const { timeRequests } = require('../utils/network')
 
 const CREATOR_NODE_SERVICE_NAME = 'creator-node'
 const DISCOVERY_PROVIDER_SERVICE_NAME = 'discovery-provider'
@@ -40,7 +40,7 @@ class ServiceProvider extends Base {
     }
 
     // Time requests and get version info
-    const timings = await Utils.timeRequests(
+    const timings = await timeRequests(
       creatorNodes.map(node => ({
         id: node.endpoint,
         url: `${node.endpoint}/version`
@@ -96,7 +96,7 @@ class ServiceProvider extends Base {
       .filter(Boolean)
 
     // Time requests and autoselect nodes
-    const timings = await Utils.timeRequests(
+    const timings = await timeRequests(
       creatorNodes.map(node => ({
         id: node,
         url: `${node}/version`
@@ -112,7 +112,7 @@ class ServiceProvider extends Base {
 
     // Secondaries: select randomly
     // TODO: Implement geolocation-based selection
-    const secondaries = _.sampleSize(timings.slice(1), numberOfNodes - 1)
+    const secondaries = sampleSize(timings.slice(1), numberOfNodes - 1)
       .map(timing => timing.request.id)
 
     return { primary, secondaries, services }

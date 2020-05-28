@@ -1,8 +1,7 @@
 const Utils = require('../../utils')
 const ContractClient = require('../contracts/ContractClient')
 const axios = require('axios')
-const _ = require('lodash')
-const BN = require('bn.js')
+const { range } = require('lodash')
 
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
@@ -25,7 +24,7 @@ class ServiceProviderFactoryClient extends ContractClient {
     if (!Utils.isFQDN(endpoint)) {
       throw new Error('Not a fully qualified domain name!')
     }
-    if (!Number.isInteger(amount) && !BN.isBN(amount)) {
+    if (!Number.isInteger(amount) && !Utils.isBN(amount)) {
       throw new Error('Invalid amount')
     }
 
@@ -188,7 +187,7 @@ class ServiceProviderFactoryClient extends ContractClient {
     let idsList = await this.getServiceProviderIdFromAddress(ownerAddress, serviceType)
 
     const spsInfo = await Promise.all(
-      _.range(idsList.length).map(i =>
+      range(idsList.length).map(i =>
         this.getServiceProviderInfo(serviceType, idsList[i])
       )
     )
@@ -199,7 +198,7 @@ class ServiceProviderFactoryClient extends ContractClient {
     let numberOfProviders = parseInt(await this.getTotalServiceTypeProviders(serviceType))
 
     const providerList = await Promise.all(
-      _.range(1, numberOfProviders + 1).map(i =>
+      range(1, numberOfProviders + 1).map(i =>
         this.getServiceProviderInfo(serviceType, i)
       )
     )

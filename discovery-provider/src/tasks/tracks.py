@@ -1,9 +1,10 @@
 import logging
 from datetime import datetime
 from sqlalchemy.orm.session import make_transient
+from sqlalchemy.sql import null
 from src import contract_addresses
 from src.utils import multihash, helpers
-from src.models import Track, User, BlacklistedIPLD
+from src.models import Track, User, BlacklistedIPLD, Stem, Remix
 from src.tasks.metadata import track_metadata_format
 
 logger = logging.getLogger(__name__)
@@ -116,6 +117,34 @@ def invalidate_old_track(session, track_id):
         num_invalidated_tracks > 0
     ), "Update operation requires a current track to be invalidated"
 
+def update_stems_table(session, track_record, track_metadata):
+    if (not "stem_of" in track_metadata) or (not isinstance(track_metadata["stem_of"], dict)):
+        return
+    parent_track_id = track_metadata["stem_of"].get("parent_track_id")
+    if not isinstance(parent_track_id, int):
+        return
+    stem = Stem(parent_track_id=parent_track_id, child_track_id=track_record.track_id)
+    session.add(stem)
+
+
+def update_remixes_table(session, track_record, track_metadata):
+    child_track_id = track_record.track_id
+
+    # Delete existing remix parents
+    session.query(Remix).filter_by(child_track_id=child_track_id).delete()
+
+    # Add all remixes
+    if "remix_of" in track_metadata and isinstance(track_metadata["remix_of"], dict):
+        tracks = track_metadata["remix_of"].get("tracks")
+        if tracks and isinstance(tracks, list):
+            for track in tracks:
+                parent_track_id = track.get("parent_track_id")
+                if parent_track_id and isinstance(parent_track_id, int):
+                    remix = Remix(
+                        parent_track_id=parent_track_id,
+                        child_track_id=child_track_id
+                    )
+                    session.add(remix)
 
 def parse_track_event(
         self, session, update_task, entry, event_type, track_record, block_timestamp
@@ -123,8 +152,6 @@ def parse_track_event(
     event_args = entry["args"]
     # Just use block_timestamp as integer
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
-
-    ipfs = update_task.ipfs_client._api
 
     if event_type == track_event_types_lookup["new_track"]:
         track_record.created_at = block_datetime
@@ -175,6 +202,9 @@ def parse_track_event(
                 track_record.cover_art_sizes = track_record.cover_art
                 track_record.cover_art = None
 
+        update_stems_table(session, track_record, track_metadata)
+        update_remixes_table(session, track_record, track_metadata)
+
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
         upd_track_metadata_hash_fn = event_args._multihashHashFn
@@ -221,8 +251,14 @@ def parse_track_event(
                 track_record.cover_art_sizes = track_record.cover_art
                 track_record.cover_art = None
 
+        update_remixes_table(session, track_record, track_metadata)
+
     if event_type == track_event_types_lookup["delete_track"]:
         track_record.is_delete = True
+        if not track_record.stem_of:
+            track_record.stem_of = null()
+        if not track_record.remix_of:
+            track_record.remix_of = null()
         logger.info(f"Removing track : {track_record.track_id}")
 
     track_record.updated_at = block_datetime
@@ -235,9 +271,14 @@ def is_blacklisted_ipld(session, ipld_blacklist_multihash):
     )
     return ipld_blacklist_entry.count() > 0
 
+def is_valid_json_field(metadata, field):
+    if field in metadata and isinstance(metadata[field], dict) and len(metadata[field]) > 0:
+        return True
+    return False
+
 def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.title = track_metadata["title"]
-    track_record.length = track_metadata["length"]
+    track_record.length = track_metadata["length"] or 0
     track_record.cover_art = track_metadata["cover_art"]
     if track_metadata["cover_art_sizes"]:
         track_record.cover_art = track_metadata["cover_art_sizes"]
@@ -255,6 +296,14 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_segments = track_metadata["track_segments"]
     track_record.is_unlisted = track_metadata["is_unlisted"]
     track_record.field_visibility = track_metadata["field_visibility"]
+    if is_valid_json_field(track_metadata, "stem_of"):
+        track_record.stem_of = track_metadata["stem_of"]
+    else:
+        track_record.stem_of = null()
+    if is_valid_json_field(track_metadata, "remix_of"):
+        track_record.remix_of = track_metadata["remix_of"]
+    else:
+        track_record.remix_of = null()
 
     if "download" in track_metadata:
         track_record.download = {

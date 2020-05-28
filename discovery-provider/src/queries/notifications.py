@@ -3,7 +3,7 @@ from flask import Blueprint, request
 from src import api_helpers
 from src.queries import response_name_constants as const
 from src.queries.query_helpers import get_repost_counts, get_save_counts, get_follower_count_dict
-from src.models import Block, Follow, Save, SaveType, Playlist, Track, Repost, RepostType
+from src.models import Block, Follow, Save, SaveType, Playlist, Track, Repost, RepostType, Remix
 from src.utils.db_session import get_db_read_replica
 from sqlalchemy import desc, func
 
@@ -13,6 +13,17 @@ bp = Blueprint("notifications", __name__)
 max_block_diff = 50000
 
 def get_owner_id(session, entity_type, entity_id):
+    """
+    Fetches the owner user id of the requested entity_type/entity_id
+    
+    Args:
+        session: (obj) The start block number for querying for notifications
+        entity_type: (string) Must be either 'track' | 'album' | 'playlist
+        entity_id: (int) The id of the 'entity_type'
+    
+    Returns:
+        owner_id: (int | None) The user id of the owner of the entity_type/entity_id
+    """
     if entity_type == 'track':
         owner_id_query = session.query(Track.owner_id).filter(
             Track.track_id == entity_id,
@@ -45,8 +56,122 @@ def get_owner_id(session, entity_type, entity_id):
     else:
         return None
 
+def get_cosign_remix_notifications(session, max_block_number, remix_tracks):
+    """
+    Get the notifications for remix tracks that are reposted/favorited by the parent remix author
+
+    Args:
+        session: (DB)
+        max_block_number: (int)
+        remix_tracks: (Array<{ }>)
+            'user_id'
+            'item_id'
+            const.notification_blocknumber
+            const.notification_timestamp
+            'item_owner_id'
+    
+    Returns:
+        Array of cosign notifications
+
+    """
+    if len(remix_tracks) == 0:
+        return []
+
+    remix_notifications = []
+    remix_track_ids = [r['item_id'] for r in remix_tracks]
+
+    # Query for all the parent tracks of the remix tracks 
+    tracks_subquery = (
+        session.query(Track)
+            .filter(
+                Track.is_unlisted == False,
+                Track.is_delete == False,
+                Track.is_current == True
+            )
+            .subquery()
+    )
+
+    parent_tracks = (
+        session.query(
+            Remix.child_track_id,
+            Remix.parent_track_id,
+            tracks_subquery.c.owner_id
+        )
+        .join(
+            tracks_subquery,
+            Remix.parent_track_id == tracks_subquery.c.track_id
+        )
+        .filter(
+            Remix.child_track_id.in_(remix_track_ids)
+        )
+        .all()
+    )
+    # Mapping of parent track users to child track to parent track
+    parent_track_users_to_remixes = {}
+    for track_parent in parent_tracks:
+        [remix_track_id, remix_parent_id, remix_parent_user_id] = track_parent 
+        if not remix_parent_user_id in parent_track_users_to_remixes:
+            parent_track_users_to_remixes[remix_parent_user_id] = {
+                remix_track_id: remix_parent_id
+            }
+        else: 
+            parent_track_users_to_remixes[remix_parent_user_id][remix_track_id] = remix_parent_id
+
+    for remix_track in remix_tracks:
+        user_id = remix_track['user_id']
+        track_id = remix_track['item_id']
+
+        if (user_id in parent_track_users_to_remixes and track_id in parent_track_users_to_remixes[user_id]):
+            remix_notifications.append({
+                const.notification_type: const.notification_type_remix_cosign,
+                const.notification_blocknumber: remix_track[const.notification_blocknumber],
+                const.notification_timestamp: remix_track[const.notification_timestamp],
+                const.notification_initiator: user_id,
+                const.notification_metadata: {
+                    const.notification_entity_id: track_id,
+                    const.notification_entity_type: 'track',
+                    const.notification_entity_owner_id: remix_track['item_owner_id']
+                }
+            })
+
+    return remix_notifications
+
+
 @bp.route("/notifications", methods=("GET",))
 def notifications():
+    """
+    Fetches the notifications events that occurred between the given block numbers
+
+    URL Params:
+        min_block_number: (int) The start block number for querying for notifications
+        max_block_number?: (int) The end block number for querying for notifications
+        track_id?: (Array<int>) Array of track id for fetching the track's owner id 
+            and adding the track id to owner user id mapping to the `owners` response field
+            NOTE: this is added for notification for listen counts 
+    
+    Response - Json object w/ the following fields
+        notifications: Array of notifications of shape:
+            type: 'Follow' | 'Favorite' | 'Repost' | 'Create' | 'RemixCreate' | 'RemixCosign'
+            blocknumber: (int) blocknumber of notification
+            timestamp: (string) timestamp of notification
+            initiator: (int) the user id that caused this notification
+            metadata?: (any) additional information about the notification
+                entity_id?: (int) the id of the target entity (ie. playlist id of a playlist that is reposted)
+                entity_type?: (string) the type of the target entity
+                entity_owner_id?: (int) the id of the target entity's owner (if applicable)
+
+        info: Dictionary of metadata w/ min_block_number & max_block_number fields
+
+        milestones: Dictionary mapping of follows/reposts/favorites (processed within the blocks params)
+            Root fields:
+                follower_counts: Contains a dictionary of user id => follower count (up to the max_block_number)
+                repost_counts: Contains a dictionary tracks/albums/playlists of id to repost count
+                favorite_counts: Contains a dictionary tracks/albums/playlists of id to favorite count
+
+        owners: Dictionary containing the mapping for track id / playlist id / album -> owner user id
+            The root keys are 'tracks', 'playlists', 'albums' and each contains the id to owner id mapping
+    """
+
     db = get_db_read_replica()
     min_block_number = request.args.get("min_block_number", type=int)
     max_block_number = request.args.get("max_block_number", type=int)
@@ -146,6 +271,7 @@ def notifications():
 
         # List of favorite notifications
         favorite_notifications = []
+        favorite_remix_tracks = []
 
         for entry in favorite_results:
             favorite_notif = {
@@ -171,6 +297,15 @@ def notifications():
                 metadata[const.notification_entity_owner_id] = owner_id
                 favorited_track_ids.append(save_item_id)
                 owner_info[const.tracks][save_item_id] = owner_id
+
+                favorite_remix_tracks.append({
+                    const.notification_blocknumber: entry.blocknumber,
+                    const.notification_timestamp: entry.created_at,
+                    'user_id': entry.user_id,
+                    'item_owner_id': owner_id,
+                    'item_id': save_item_id
+                })
+
 
             elif save_type == SaveType.album:
                 owner_id = get_owner_id(session, 'album', save_item_id)
@@ -201,6 +336,11 @@ def notifications():
                     get_save_counts(session, False, False, favorited_track_ids, [SaveType.track], max_block_number)
             track_favorite_dict = \
                     {track_id: fave_count for (track_id, fave_count) in track_favorite_counts}
+
+            favorite_remix_notifications = get_cosign_remix_notifications(
+                session, max_block_number, favorite_remix_tracks)
+            notifications_unsorted.extend(favorite_remix_notifications)
+
 
         if favorited_album_ids:
             album_favorite_counts = \
@@ -238,6 +378,10 @@ def notifications():
         # List of repost notifications
         repost_notifications = []
 
+        # List of repost notifications
+        repost_remix_notifications = []
+        repost_remix_tracks = []
+
         for entry in repost_results:
             repost_notif = {
                 const.notification_type: \
@@ -259,6 +403,13 @@ def notifications():
                 metadata[const.notification_entity_owner_id] = owner_id
                 reposted_track_ids.append(repost_item_id)
                 owner_info[const.tracks][repost_item_id] = owner_id
+                repost_remix_tracks.append({
+                    const.notification_blocknumber: entry.blocknumber,
+                    const.notification_timestamp: entry.created_at,
+                    'user_id': entry.user_id,
+                    'item_owner_id': owner_id,
+                    'item_id': repost_item_id
+                })
 
             elif repost_type == RepostType.album:
                 owner_id = get_owner_id(session, 'album', repost_item_id)
@@ -301,6 +452,10 @@ def notifications():
                     {track_id: repost_count \
                     for (track_id, repost_count) in track_repost_counts}
 
+            repost_remix_notifications = get_cosign_remix_notifications(
+                session, max_block_number, repost_remix_tracks)
+            notifications_unsorted.extend(repost_remix_notifications)
+
         if reposted_album_ids:
             album_repost_counts = \
                     get_repost_counts(
@@ -334,12 +489,17 @@ def notifications():
 
         # Query relevant created entity notification - tracks/albums/playlists
         created_notifications = []
+
+        # Query relevant created tracks for remix information
+        remix_created_notifications = []
+
         # Aggregate track notifs
         tracks_query = session.query(Track)
         # TODO: Is it valid to use Track.is_current here? Might not be the right info...
         tracks_query = tracks_query.filter(
                 Track.is_unlisted == False,
                 Track.is_delete == False,
+                Track.stem_of == None,
                 Track.blocknumber > min_block_number,
                 Track.blocknumber <= max_block_number)
         tracks_query = tracks_query.filter(Track.created_at == Track.updated_at)
@@ -359,6 +519,75 @@ def notifications():
                 }
             }
             created_notifications.append(track_notif)
+
+            if entry.remix_of:
+                # Add notification to remix track owner
+                parent_remix_tracks = [t['parent_track_id'] for t in entry.remix_of['tracks']]
+                remix_track_parents = (
+                    session.query(Track.owner_id, Track.track_id)
+                        .filter(
+                            Track.track_id.in_(parent_remix_tracks),
+                            Track.is_unlisted == False,
+                            Track.is_delete == False,
+                            Track.is_current == True
+                        )
+                        .all()
+                )
+                for remix_track_parent in remix_track_parents:
+                    [remix_track_parent_owner, remix_track_parent_id] = remix_track_parent
+                    remix_notif = {
+                        const.notification_type: const.notification_type_remix_create,
+                        const.notification_blocknumber: entry.blocknumber,
+                        const.notification_timestamp: entry.created_at,
+                        const.notification_initiator: entry.owner_id,
+                        # TODO: is entity owner id necessary for tracks?
+                        const.notification_metadata: {
+                            const.notification_entity_type: 'track',
+                            const.notification_entity_id: entry.track_id,
+                            const.notification_entity_owner_id: entry.owner_id,
+                            const.notification_remix_parent_track_user_id: remix_track_parent_owner,
+                            const.notification_remix_parent_track_id: remix_track_parent_id
+                        }
+                    }
+                    remix_created_notifications.append(remix_notif)
+
+        notifications_unsorted.extend(remix_created_notifications)
+
+        # Tracks that were unlisted and turned to public
+        # TODO: Consider switching blocknumber for updated at?
+        publish_tracks_query = session.query(Track)
+        publish_tracks_query = publish_tracks_query.filter(
+            Track.is_unlisted == False,
+            Track.stem_of == None,
+            Track.created_at != Track.updated_at,
+            Track.blocknumber > min_block_number,
+            Track.blocknumber <= max_block_number)
+        publish_track_results = publish_tracks_query.all()
+        for entry in publish_track_results:
+            prev_entry_query = (
+                session.query(Track)
+                .filter(
+                    Track.track_id == entry.track_id,
+                    Track.blocknumber < entry.blocknumber)
+                .order_by(desc(Track.blocknumber))
+            )
+            # Previous unlisted entry indicates transition to public, triggering a notification
+            prev_entry = prev_entry_query.first()
+            if prev_entry.is_unlisted == True:
+                track_notif = {
+                    const.notification_type: \
+                            const.notification_type_create,
+                    const.notification_blocknumber: entry.blocknumber,
+                    const.notification_timestamp: entry.created_at,
+                    const.notification_initiator: entry.owner_id,
+                    # TODO: is entity owner id necessary for tracks?
+                    const.notification_metadata: {
+                        const.notification_entity_type: 'track',
+                        const.notification_entity_id: entry.track_id,
+                        const.notification_entity_owner_id: entry.owner_id
+                    }
+                }
+                created_notifications.append(track_notif)
 
         # Aggregate playlist/album notifs
         collection_query = session.query(Playlist)

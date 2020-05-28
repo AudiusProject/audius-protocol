@@ -176,6 +176,18 @@ class EthContracts {
     )
   }
 
+  async getServiceProviderList (spType) {
+    return this.ServiceProviderFactoryClient.getServiceProviderList(spType)
+  }
+
+  async getNumberOfVersions (spType) {
+    return this.VersioningFactoryClient.getNumberOfVersions(spType)
+  }
+
+  async getVersion (spType, queryIndex) {
+    return this.VersioningFactoryClient.getVersion(spType, queryIndex)
+  }
+
   /**
    * Returns a valid service provider url with the fastest response
    * @param {string} spType service provider type: 'discovery-provider' | 'content-service' | 'creator-node'
@@ -197,7 +209,7 @@ class EthContracts {
       this.expectedServiceVersions = await this.getExpectedServiceVersions()
     }
 
-    console.info(`Looking latest for service provider in ${serviceProviders} with version ${this.expectedServiceVersions}`)
+    console.info(`Looking latest for service provider in ${JSON.stringify(serviceProviders)} with version ${JSON.stringify(this.expectedServiceVersions)}`)
 
     if (!this.expectedServiceVersions.hasOwnProperty(spType)) {
       throw new Error(`Invalid service name: ${spType}`)
@@ -259,7 +271,7 @@ class EthContracts {
           }
         } catch (e) {
           // Swallow errors for a single sp endpoint to ensure others can proceed
-          console.error(`Failed to retrieve information for ${sp}`)
+          console.error(`Failed to retrieve information for ${JSON.stringify(sp)}:\n\t${e}`)
         }
       }))
 
@@ -345,7 +357,14 @@ class EthContracts {
    * @param {Set<string>?} whitelist optional whitelist to autoselect from
    * @return {Promise<string>} The selected discovery provider url
    */
-  async autoselectDiscoveryProvider (whitelist = null) {
+  async autoselectDiscoveryProvider (whitelist = null, clearCachedDiscoveryProvider = false) {
+    // If under the context of selecting a new DP because of prior failure, do not use the old DP endpoint
+    // in local storage by clearing the entry and clearing the interval
+    if (clearCachedDiscoveryProvider) {
+      localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
+      clearInterval(this.discProvInterval)
+    }
+
     let endpoint
 
     const discProvTimestamp = localStorage.getItem(DISCOVERY_PROVIDER_TIMESTAMP)
@@ -382,15 +401,12 @@ class EthContracts {
     return endpoint
   }
 
-  async selectPriorVersionServiceProvider (spType, whitelist = null) {
+  async selectPriorVersionServiceProvider (spType) {
     if (!this.expectedServiceVersions) {
       this.expectedServiceVersions = await this.getExpectedServiceVersions()
     }
     let serviceProviders =
       await this.ServiceProviderFactoryClient.getServiceProviderList(spType)
-    if (whitelist) {
-      serviceProviders = serviceProviders.filter(d => whitelist.has(d.endpoint))
-    }
 
     let numberOfServiceVersions =
       await this.VersioningFactoryClient.getNumberOfVersions(spType)

@@ -27,7 +27,9 @@ const NotificationType = Object.freeze({
   MilestoneRepost: 'MilestoneRepost',
   MilestoneFavorite: 'MilestoneFavorite',
   MilestoneListen: 'MilestoneListen',
-  MilestoneFollow: 'MilestoneFollow'
+  MilestoneFollow: 'MilestoneFollow',
+  RemixCreate: 'RemixCreate',
+  RemixCosign: 'RemixCosign'
 })
 
 const ClientNotificationTypes = new Set([
@@ -155,6 +157,24 @@ const formatMilestone = (notification) => {
   }
 }
 
+const formatRemixCreate = (notification) => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    type: NotificationType.RemixCreate,
+    parentTrackId: notification.actions[0].actionEntityId,
+    childTrackId: notification.entityId
+  }
+}
+
+const formatRemixCosign = (notification) => {
+  return {
+    ...getCommonNotificationsFields(notification),
+    type: NotificationType.RemixCosign,
+    parentTrackUserId: notification.actions[0].actionEntityId,
+    childTrackId: notification.entityId
+  }
+}
+
 const getCommonNotificationsFields = (notification) => ({
   id: notification.id,
   isHidden: notification.isHidden,
@@ -177,7 +197,9 @@ const notificationResponseMap = {
   [NotificationType.MilestoneRepost]: formatMilestone,
   [NotificationType.MilestoneFavorite]: formatMilestone,
   [NotificationType.MilestoneListen]: formatMilestone,
-  [NotificationType.MilestoneFollow]: formatMilestone
+  [NotificationType.MilestoneFollow]: formatMilestone,
+  [NotificationType.RemixCreate]: formatRemixCreate,
+  [NotificationType.RemixCosign]: formatRemixCosign
 }
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).
@@ -252,6 +274,7 @@ module.exports = function (app) {
    * Fetches the notifications for the specified userId
    * urlQueryParam: {number} limit        Max number of notifications to return, Cannot exceed 100
    * urlQueryParam: {number?} timeOffset  A timestamp reference offset for fetch notification before this date
+   * urlQueryParam: {boolean?} withRemix  A boolean to fetch notifications with remixes
    *
    * TODO: Validate userId
    * NOTE: The `createdDate` param can/should be changed to the user sending their wallet &
@@ -266,6 +289,10 @@ module.exports = function (app) {
       return errorResponseBadRequest(`Invalid Date params`)
     }
 
+    const withRemixQuery = req.query.withRemix === 'true' ? {} : {
+      type: { [models.Sequelize.Op.notIn]: [NotificationType.RemixCreate, NotificationType.RemixCosign] }
+    }
+
     if (isNaN(limit) || limit > 100) {
       return errorResponseBadRequest(
         `Limit and offset number be integers with a max limit of 100`
@@ -276,6 +303,7 @@ module.exports = function (app) {
         where: {
           userId,
           isHidden: false,
+          ...withRemixQuery,
           timestamp: {
             [models.Sequelize.Op.lt]: timeOffset.toDate()
           }
@@ -292,7 +320,13 @@ module.exports = function (app) {
         limit
       })
       let unViewedCount = await models.Notification.findAll({
-        where: { userId, isViewed: false, isRead: false, isHidden: false },
+        where: {
+          userId,
+          isViewed: false,
+          isRead: false,
+          isHidden: false,
+          ...withRemixQuery
+        },
         include: [{ model: models.NotificationAction, as: 'actions', required: true, attributes: [] }],
         attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('Notification.id')), 'total']],
         group: ['Notification.id']
@@ -456,7 +490,8 @@ module.exports = function (app) {
     }
   }))
 
-  /*
+  /**
+   * @deprecated
    * Updates fields for a user's settings (or creates the settings w/ db defaults if not created)
    * postBody: {object} settings      Identitifies if the notification is to be marked as read
    *
@@ -480,7 +515,8 @@ module.exports = function (app) {
     }
   }))
 
-  /*
+  /**
+   * @deprecated
    * Fetches the settings for a given userId
   */
   app.get('/notifications/settings', authMiddleware, handleResponse(async (req, res, next) => {

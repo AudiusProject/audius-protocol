@@ -13,11 +13,6 @@ const sns = new AWS.SNS({
   region: 'us-west-1'
 })
 
-// TODO (DM) - move this into redis
-let PUSH_NOTIFICATIONS_BUFFER = []
-
-let PUSH_ANNOUNCEMENTS_BUFFER = []
-
 // the aws sdk doesn't like when you set the function equal to a variable and try to call it
 // eg. const func = sns.<functionname>; func() returns an error, so util.promisify doesn't work
 function _promisifySNS (functionName) {
@@ -28,7 +23,7 @@ function _promisifySNS (functionName) {
       }
       sns[functionName](...args, function (err, data) {
         if (err) {
-          logger.debug(`${err}`)
+          logger.debug(`Error sending to SNS: ${err}`)
           reject(err)
         } else resolve(data)
       })
@@ -129,45 +124,6 @@ const createPlatformEndpoint = _promisifySNS('createPlatformEndpoint')
 const publishPromisified = _promisifySNS('publish')
 const deleteEndpoint = _promisifySNS('deleteEndpoint')
 
-async function publish (message, userId, tx, playSound = true, title = null) {
-  await addNotificationToBuffer(message, userId, tx, PUSH_NOTIFICATIONS_BUFFER, playSound, title)
-}
-
-async function publishAnnouncement (message, userId, tx, playSound = true, title = null) {
-  await addNotificationToBuffer(message, userId, tx, PUSH_ANNOUNCEMENTS_BUFFER, playSound, title)
-}
-
-async function addNotificationToBuffer (message, userId, tx, buffer, playSound, title) {
-  const bufferObj = {
-    userId: userId,
-    notificationParams: { message, title, playSound }
-  }
-  let existingEntriesCheck = buffer.filter(
-    entry => (
-      (entry.userId === userId) && (entry.notificationParams.message === message)
-    )
-  )
-  // Ensure no dups are added
-  if (existingEntriesCheck.length > 0) return
-  buffer.push(bufferObj)
-}
-
-async function drainPublishedMessages () {
-  for (let bufferObj of PUSH_NOTIFICATIONS_BUFFER) {
-    await drainMessageObject(bufferObj)
-  }
-
-  PUSH_NOTIFICATIONS_BUFFER = []
-}
-
-async function drainPublishedAnnouncements () {
-  for (let bufferObj of PUSH_ANNOUNCEMENTS_BUFFER) {
-    await drainMessageObject(bufferObj)
-  }
-
-  PUSH_ANNOUNCEMENTS_BUFFER = []
-}
-
 // Actually send the messages from the buffer to SNS
 // If a device token is invalid attempt to remove it
 //
@@ -205,6 +161,7 @@ async function drainMessageObject (bufferObj) {
       }
 
       if (formattedMessage) {
+        logger.debug(`Publishing SNS message: ${JSON.stringify(formattedMessage)}`)
         await publishPromisified(formattedMessage)
       }
     } catch (e) {
@@ -237,10 +194,7 @@ async function drainMessageObject (bufferObj) {
 module.exports = {
   listEndpointsByPlatformApplication,
   createPlatformEndpoint,
-  publish,
-  publishAnnouncement,
+  drainMessageObject,
   deleteEndpoint,
-  publishPromisified,
-  drainPublishedMessages,
-  drainPublishedAnnouncements
+  publishPromisified
 }

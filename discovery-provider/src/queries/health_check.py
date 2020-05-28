@@ -24,7 +24,7 @@ redis = redis.Redis.from_url(url=redis_url)
 
 disc_prov_version = helpers.get_discovery_provider_version()
 
-HEALTHY_BLOCK_DIFF = 100
+default_healthy_block_diff = int(shared_config["discprov"]["healthy_block_diff"])
 
 #### INTERNAL FUNCTIONS ####
 
@@ -49,7 +49,8 @@ def _get_db_block_state(latest_blocknum, latest_blockhash):
             health_results["web"]["blocknumber"] - health_results["db"]["number"]
         )
         health_results["block_difference"] = block_difference
-        health_results["maximum_healthy_block_difference"] = HEALTHY_BLOCK_DIFF
+        health_results["maximum_healthy_block_difference"] = default_healthy_block_diff
+        health_results.update(disc_prov_version)
 
         return health_results
 
@@ -88,6 +89,16 @@ def version():
 #   has been added (ex. if it's been more than 30 minutes since last block), etc.
 @bp.route("/health_check", methods=["GET"])
 def health_check():
+    # type = A callable that is used to cast the value
+    verbose = request.args.get("verbose", type=str) == 'true'
+    enforce_block_diff = request.args.get("enforce_block_diff", type=str) == 'true'
+
+    # If the value given is not a valid int, will default to None
+    qs_healthy_block_diff = request.args.get("healthy_block_diff", type=int)
+    # If healthy block diff is given in url and positive, override config value
+    healthy_block_diff = qs_healthy_block_diff if qs_healthy_block_diff is not None \
+        and qs_healthy_block_diff >= 0 else default_healthy_block_diff
+
     latest_block_num = None
     latest_block_hash = None
 
@@ -106,14 +117,12 @@ def health_check():
 
     health_results = _get_db_block_state(latest_block_num, latest_block_hash)
 
-    verbose = request.args.get("verbose", type=str) == 'true'
     if verbose:
         # DB connections check
         health_results["db_connections"] = _get_db_conn_state()
 
     # Return error on unhealthy block diff if requested.
-    enforce_block_diff = request.args.get("enforce_block_diff", type=str) == 'true'
-    if enforce_block_diff and health_results["block_difference"] > HEALTHY_BLOCK_DIFF:
+    if enforce_block_diff and health_results["block_difference"] > healthy_block_diff:
         return jsonify(health_results), 500
 
     return jsonify(health_results), 200
@@ -121,12 +130,18 @@ def health_check():
 # Health check for block diff between DB and chain.
 @bp.route("/block_check", methods=["GET"])
 def block_check():
+    # If the value given is not a valid int, will default to None
+    qs_healthy_block_diff = request.args.get("healthy_block_diff", type=int)
+    # If healthy block diff is given in url and positive, override config value
+    healthy_block_diff = qs_healthy_block_diff if qs_healthy_block_diff is not None \
+        and qs_healthy_block_diff >= 0 else default_healthy_block_diff
+
     latest_block = web3.eth.getBlock("latest", True)
     latest_block_num = latest_block.number
     latest_block_hash = latest_block.hash.hex()
     health_results = _get_db_block_state(latest_block_num, latest_block_hash)
 
-    if health_results["block_difference"] > HEALTHY_BLOCK_DIFF:
+    if health_results["block_difference"] > healthy_block_diff:
         return jsonify(health_results), 500
 
     return jsonify(health_results), 200

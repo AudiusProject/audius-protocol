@@ -1,4 +1,4 @@
-const Web3 = require('web3')
+const Web3 = require('../src/web3')
 const fs = require('fs')
 const util = require('util')
 const assert = require('assert').strict

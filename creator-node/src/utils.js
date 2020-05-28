@@ -74,14 +74,18 @@ async function getIPFSPeerId (ipfs, config) {
   return ipfsIDObj
 }
 
-/** Cat single byte of file at given filepath. */
-const ipfsSingleByteCat = (path, req) => new Promise(async (resolve, reject) => {
+/** Cat single byte of file at given filepath. If ipfs.cat() call takes longer than the timeout time or
+ * something goes wrong, an error will be thrown.
+*/
+const ipfsSingleByteCat = (path, req, timeout = 1000) => new Promise(async (resolve, reject) => {
   const start = Date.now()
   let ipfs = req.app.get('ipfsLatestAPI')
 
   try {
+    // ipfs.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
+    // don't keep track of the results as this call is a proof-of-concept that the file exists in ipfs
     /* eslint-disable-next-line no-unused-vars */
-    for await (const chunk of ipfs.cat(path, { length: 1, timeout: 1000 })) {
+    for await (const chunk of ipfs.cat(path, { length: 1, timeout })) {
       continue
     }
     req.logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
@@ -91,13 +95,6 @@ const ipfsSingleByteCat = (path, req) => new Promise(async (resolve, reject) => 
     reject(e)
   }
 })
-
-const parseSourcePath = (sourcePath) => {
-  if (sourcePath.includes('blob') || sourcePath.includes('Artwork')) {
-    sourcePath = sourcePath.split('/')[1]
-  }
-  return sourcePath
-}
 
 async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, filename = null) {
   let ipfs = req.app.get('ipfsAPI')
@@ -149,7 +146,7 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
       let sourceFilePath = entry.storagePath
       try {
         let bufferedFile = fs.readFileSync(sourceFilePath)
-        let originalSource = parseSourcePath(entry.sourceFile)
+        let originalSource = entry.sourceFile
         ipfsAddArray.push({
           path: originalSource,
           content: bufferedFile
@@ -180,7 +177,7 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
 
   let rehydrateNecessary = false
   for (let entry of findOriginalFileQuery) {
-    let sourcePath = parseSourcePath(entry.sourceFile)
+    let sourcePath = entry.sourceFile
     let ipfsPath = `${dirHash}/${sourcePath}`
     req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, ipfsPath: ${ipfsPath}`)
     try {
@@ -245,3 +242,4 @@ module.exports.getIPFSPeerId = getIPFSPeerId
 module.exports.rehydrateIpfsFromFsIfNecessary = rehydrateIpfsFromFsIfNecessary
 module.exports.rehydrateIpfsDirFromFsIfNecessary = rehydrateIpfsDirFromFsIfNecessary
 module.exports.fetchCIDFromOtherCreatorNodes = fetchCIDFromOtherCreatorNodes
+module.exports.ipfsSingleByteCat = ipfsSingleByteCat

@@ -36,7 +36,8 @@ def generate_trending(db, time, genre, limit, offset):
                     Track.genre.in_(genre_list),
                     Track.is_current == True,
                     Track.is_delete == False,
-                    Track.is_unlisted == False
+                    Track.is_unlisted == False,
+                    Track.stem_of == None
                 )
                 .all()
             )
@@ -73,7 +74,8 @@ def generate_trending(db, time, genre, limit, offset):
                 Track.track_id.in_(track_ids),
                 Track.is_current == True,
                 Track.is_delete == False,
-                Track.is_unlisted == False
+                Track.is_unlisted == False,
+                Track.stem_of == None
             )
             .all()
         )
@@ -111,6 +113,7 @@ def generate_trending(db, time, genre, limit, offset):
             (
                 Track.is_current == True,
                 Track.is_unlisted == False,
+                Track.stem_of == None,
                 Track.track_id.in_(not_deleted_track_ids)
             )
             .all()
@@ -214,4 +217,3 @@ def generate_trending(db, time, genre, limit, offset):
     final_resp = {}
     final_resp['listen_counts'] = trending_tracks
     return final_resp
-    

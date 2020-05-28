@@ -14,7 +14,7 @@ class TrackFactoryClient extends ContractClient {
   /** uint _userId, bytes32 _multihashDigest, uint8 _multihashHashFn, uint8 _multihashSize */
   async addTrack (userId, multihashDigest, multihashHashFn, multihashSize) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getAddTrackRequestData(
       chainId,
@@ -50,7 +50,7 @@ class TrackFactoryClient extends ContractClient {
   /** uint _trackId, uint _trackOwnerId, bytes32 _multihashDigest, uint8 _multihashHashFn, uint8 _multihashSize */
   async updateTrack (trackId, trackOwnerId, multihashDigest, multihashHashFn, multihashSize) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getUpdateTrackRequestData(
       chainId,
@@ -92,7 +92,7 @@ class TrackFactoryClient extends ContractClient {
    */
   async deleteTrack (trackId) {
     const nonce = signatureSchemas.getNonce()
-    const chainId = await this.web3.eth.net.getId()
+    const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getDeleteTrackRequestData(
       chainId,

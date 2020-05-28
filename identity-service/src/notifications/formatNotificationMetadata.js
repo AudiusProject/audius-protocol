@@ -10,7 +10,7 @@ const formatFavorite = (notification, metadata, entity) => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
       if (!user) return null
-      return { name: user.name, image: user.thumbnail }
+      return { id: user.id, handle: user.handle, name: user.name, image: user.thumbnail }
     }),
     entity
   }
@@ -23,7 +23,7 @@ const formatRepost = (notification, metadata, entity) => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
       if (!user) return null
-      return { name: user.name, image: user.thumbnail }
+      return { id: user.user_id, handle: user.handle, name: user.name, image: user.thumbnail }
     }),
     entity
   }
@@ -64,7 +64,7 @@ function formatFollow (notification, metadata) {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
       if (!user) return null
-      return { name: user.name, image: user.thumbnail }
+      return { id: userId, handle: user.handle, name: user.name, image: user.thumbnail }
     })
   }
 }
@@ -74,6 +74,42 @@ function formatAnnouncement (notification) {
     type: NotificationType.Announcement,
     text: notification.shortDescription,
     hasReadMore: !!notification.longDescription
+  }
+}
+
+function formatRemixCreate (notification, metadata) {
+  const trackId = notification.entityId
+  const parentTrackAction = notification.actions.find(action =>
+    action.actionEntityType === actionEntityTypes.Track &&
+    action.actionEntityId !== trackId)
+  const parentTrackId = parentTrackAction.actionEntityId
+  const remixTrack = metadata.tracks[trackId]
+  const parentTrack = metadata.tracks[parentTrackId]
+  const userId = remixTrack.owner_id
+  const parentTrackUserId = parentTrack.owner_id
+
+  return {
+    type: NotificationType.RemixCreate,
+    remixUser: metadata.users[userId],
+    remixTrack,
+    parentTrackUser: metadata.users[parentTrackUserId],
+    parentTrack
+  }
+}
+
+function formatRemixCosign (notification, metadata) {
+  const trackId = notification.entityId
+  const parentTrackUserAction = notification.actions.find(action =>
+    action.actionEntityType === actionEntityTypes.User
+  )
+  const parentTrackUserId = parentTrackUserAction.actionEntityId
+  const remixTrack = metadata.tracks[trackId]
+  const parentTracks = remixTrack.remix_of.tracks.map(t => metadata.tracks[t.parent_track_id])
+  return {
+    type: NotificationType.RemixCosign,
+    parentTrackUser: metadata.users[parentTrackUserId],
+    parentTracks,
+    remixTrack
   }
 }
 
@@ -129,6 +165,12 @@ const notificationResponseMap = {
     })
     return formatUserSubscription(notification, metadata, { type: Entity.Playlist, count: 1, name: collection.playlist_name }, users)
   },
+  [NotificationType.RemixCreate]: (notification, metadata) => {
+    return formatRemixCreate(notification, metadata)
+  },
+  [NotificationType.RemixCosign]: (notification, metadata) => {
+    return formatRemixCosign(notification, metadata)
+  },
   [NotificationType.Announcement]: formatAnnouncement,
   [NotificationType.MilestoneRepost]: formatMilestone('Repost'),
   [NotificationType.MilestoneFavorite]: formatMilestone('Favorite'),
@@ -142,6 +184,10 @@ const NewFollowerTitle = 'New Follower'
 const NewMilestoneTitle = 'Congratulations! 🎉'
 const NewSubscriptionUpdateTitle = 'New Artist Update'
 
+// TODO verify these...
+const RemixCreateTitle = 'New Remix Of Your Track ♻️'
+const RemixCosignTitle = 'New Track Co-Sign! 🔥'
+
 const notificationResponseTitleMap = {
   [NotificationType.Follow]: NewFollowerTitle,
   [NotificationType.FavoriteTrack]: NewFavoriteTitle,
@@ -153,7 +199,9 @@ const notificationResponseTitleMap = {
   [NotificationType.CreateTrack]: NewSubscriptionUpdateTitle,
   [NotificationType.CreateAlbum]: NewSubscriptionUpdateTitle,
   [NotificationType.CreatePlaylist]: NewSubscriptionUpdateTitle,
-  [NotificationType.Milestone]: NewMilestoneTitle
+  [NotificationType.Milestone]: NewMilestoneTitle,
+  [NotificationType.RemixCreate]: RemixCreateTitle,
+  [NotificationType.RemixCosign]: RemixCosignTitle
 }
 
 function formatNotificationProps (notifications, metadata) {
@@ -196,6 +244,12 @@ const pushNotificationMessagesMap = {
       return `${user.name} released ${notification.entity.count} new ${type}s`
     }
     return `${user.name} released a new ${type} ${notification.entity.name}`
+  },
+  [notificationTypes.RemixCreate] (notification) {
+    return `New remix of your track ${notification.parentTrack.title}: ${notification.remixUser.name} uploaded ${notification.remixTrack.title}`
+  },
+  [notificationTypes.RemixCosign] (notification) {
+    return `${notification.parentTrackUser.name} Co-Signed your Remix of ${notification.remixTrack.title}`
   }
 }
 

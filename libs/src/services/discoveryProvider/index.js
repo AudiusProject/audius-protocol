@@ -1,21 +1,21 @@
 const axios = require('axios')
 
 const Utils = require('../../utils')
+const { raceRequests } = require('../../utils/network')
 const { serviceType } = require('../ethContracts/index')
 
-const { DISCOVERY_PROVIDER_TIMESTAMP, UNHEALTHY_BLOCK_DIFF } = require('./constants')
+const {
+  UNHEALTHY_BLOCK_DIFF,
+  REQUEST_TIMEOUT_MS
+} = require('./constants')
 
 // TODO - webpack workaround. find a way to do this without checkout for .default property
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
-let localStorage
-if (typeof window === 'undefined' || window === null) {
-  const LocalStorage = require('node-localstorage').LocalStorage
-  localStorage = new LocalStorage('./local-storage')
-} else {
-  localStorage = window.localStorage
-}
+const MAKE_REQUEST_RETRY_COUNT = 3
+const MAX_MAKE_REQUEST_RETRY_COUNT = 50
+const AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT = 3
 
 class DiscoveryProvider {
   constructor (autoselect, whitelist, userStateManager, ethContracts, web3Manager) {
@@ -29,31 +29,40 @@ class DiscoveryProvider {
   async init () {
     let endpoint
     let pick
+    let isValid = null
 
     if (this.autoselect) {
       endpoint = await this.autoSelectEndpoint()
     } else {
-      if (!this.whitelist || this.whitelist.size === 0) {
-        throw new Error('Must pass autoselect true or provide whitelist.')
-      }
-
-      // use this as a lookup between version endpoint and base url
-      const whitelistMap = {}
-      this.whitelist.forEach((url) => {
-        whitelistMap[urlJoin(url, '/version')] = url
-      })
-
-      let resp = await Utils.raceRequests(Object.keys(whitelistMap), (url) => {
-        pick = whitelistMap[url]
-      }, {})
-
-      const isValid = pick && resp.data.service && (resp.data.service === serviceType.DISCOVERY_PROVIDER)
-      if (isValid) {
-        console.info('Initial discovery provider was valid')
-        endpoint = pick
+      if (typeof this.whitelist === 'string') {
+        endpoint = this.whitelist
       } else {
-        console.info('Initial discovery provider was invalid, searching for a new one')
-        endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
+        if (!this.whitelist || this.whitelist.size === 0) {
+          throw new Error('Must pass autoselect true or provide whitelist.')
+        }
+
+        // use this as a lookup between version endpoint and base url
+        const whitelistMap = {}
+        this.whitelist.forEach((url) => {
+          whitelistMap[urlJoin(url, '/version')] = url
+        })
+
+        try {
+          const { response } = await raceRequests(Object.keys(whitelistMap), (url) => {
+            pick = whitelistMap[url]
+          }, {}, REQUEST_TIMEOUT_MS)
+
+          isValid = pick && response.data.service && (response.data.service === serviceType.DISCOVERY_PROVIDER)
+          if (isValid) {
+            console.info('Initial discovery provider was valid')
+            endpoint = pick
+          } else {
+            console.info('Initial discovery provider was invalid, searching for a new one')
+            endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
+          }
+        } catch (e) {
+          throw new Error('Could not select a discprov from the whitelist', e)
+        }
       }
     }
     this.setEndpoint(endpoint)
@@ -69,9 +78,16 @@ class DiscoveryProvider {
     this.discoveryProviderEndpoint = endpoint
   }
 
-  async autoSelectEndpoint (retries = 3) {
+  /**
+   * Wrapper method to auto select a valid discovery provider.
+   * @param {*} retries max retries before throwing an error
+   * @param {*} clearCachedDiscoveryProvider if set to true, implies that the previously
+   * selected discovery provider has been failing to serve requests. The prior recurring interval of
+   * checking local storage for DP and old DP local storage entry need to be cleared.
+   */
+  async autoSelectEndpoint (retries = 3, clearCachedDiscoveryProvider = false) {
     if (retries > 0) {
-      const endpoint = await this.ethContracts.autoselectDiscoveryProvider(this.whitelist)
+      const endpoint = await this.ethContracts.autoselectDiscoveryProvider(this.whitelist, clearCachedDiscoveryProvider)
       if (endpoint) {
         this.setEndpoint(endpoint)
         return endpoint
@@ -192,12 +208,68 @@ class DiscoveryProvider {
    * @param {getTracksIdentifier[]} identifiers
    * @returns {(Array)} track
    */
-  async getTracksIncludingUnlisted (identifiers) {
+  async getTracksIncludingUnlisted (identifiers, withUsers = false) {
     let req = {
       endpoint: 'tracks_including_unlisted',
       method: 'post',
       data: {
         tracks: identifiers
+      },
+      queryParams: {}
+    }
+    if (withUsers) {
+      req.queryParams.with_users = true
+    }
+    return this._makeRequest(req)
+  }
+
+  /**
+   * Gets all stems for a given trackId as an array of tracks.
+   * @param {number} trackId
+   * @returns {(Array)} track
+   */
+  async getStemsForTrack (trackId) {
+    const req = {
+      endpoint: `stems/${trackId}`,
+      queryParams: {
+        with_users: true
+      }
+    }
+    return this._makeRequest(req)
+  }
+
+  /**
+   * Gets all the remixes of a given trackId as an array of tracks.
+   * @param {number} trackId
+   * @param {number} limit
+   * @param {number} offset
+   * @returns {(Array)} track
+   */
+  async getRemixesOfTrack (trackId, limit = null, offset = null) {
+    const req = {
+      endpoint: `remixes/${trackId}/children`,
+      queryParams: {
+        with_users: true,
+        limit,
+        offset
+      }
+    }
+    return this._makeRequest(req)
+  }
+
+  /**
+   * Gets the remix parents of a given trackId as an array of tracks.
+   * @param {number} limit
+   * @param {number} offset
+   * @returns {(Array)} track
+   */
+  async getRemixTrackParents (trackId, limit = null, offset = null) {
+    const req = {
+      endpoint: `remixes/${trackId}/parents`,
+      queryParams: {
+        with_users: true,
+        limit,
+        offset
       }
     }
     return this._makeRequest(req)
@@ -260,6 +332,7 @@ class DiscoveryProvider {
    * get full playlist objects, including tracks, for passed in array of playlistId
    * @param {Array} playlistId list of playlist ids
    * @param {number} targetUserId the user whose playlists we're trying to get
+   * @param {boolean} withUsers whether to return users nested within the collection objects
    * @returns {Array} array of playlist objects
    * additional metadata fields on playlist objects:
    *  {Integer} repost_count - repost count for given playlist
@@ -269,7 +342,7 @@ class DiscoveryProvider {
    *  {Boolean} has_current_user_reposted - has current user reposted given playlist
    *  {Boolean} has_current_user_saved - has current user saved given playlist
    */
-  async getPlaylists (limit = 100, offset = 0, idsArray = null, targetUserId = null) {
+  async getPlaylists (limit = 100, offset = 0, idsArray = null, targetUserId = null, withUsers = false) {
     let req = { endpoint: 'playlists', queryParams: { limit: limit, offset: offset } }
     if (idsArray != null) {
       if (!Array.isArray(idsArray)) {
@@ -279,6 +352,9 @@ class DiscoveryProvider {
     }
     if (targetUserId) {
       req.queryParams.user_id = targetUserId
+    }
+    if (withUsers) {
+      req.queryParams.with_users = true
     }
     return this._makeRequest(req)
   }
@@ -297,10 +373,16 @@ class DiscoveryProvider {
    *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
-  async getSocialFeed (filter, limit = 100, offset = 0, withUsers = false) {
+  async getSocialFeed (filter, limit = 100, offset = 0, withUsers = false, tracksOnly = false) {
     let req = {
       endpoint: 'feed/',
-      queryParams: { filter: filter, limit: limit, offset: offset, with_users: withUsers }
+      queryParams: {
+        filter: filter,
+        limit: limit,
+        offset: offset,
+        with_users: withUsers,
+        tracks_only: tracksOnly
+      }
     }
 
     return this._makeRequest(req)
@@ -587,6 +669,56 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
+  async getTopPlaylists (type, limit, mood, filter, withUsers = false) {
+    const req = {
+      endpoint: `/top/${type}`,
+      queryParams: {
+        limit,
+        mood,
+        filter,
+        with_users: withUsers
+      }
+    }
+    return this._makeRequest(req)
+  }
+
+  async getTopFolloweeWindowed (type, window, limit, withUsers = false) {
+    const req = {
+      endpoint: `/top_followee_windowed/${type}/${window}`,
+      queryParams: {
+        limit,
+        with_users: withUsers
+      }
+    }
+    return this._makeRequest(req)
+  }
+
+  async getTopFolloweeSaves (type, limit, withUsers = false) {
+    const req = {
+      endpoint: `/top_followee_saves/${type}`,
+      queryParams: {
+        limit,
+        with_users: withUsers
+      }
+    }
+    return this._makeRequest(req)
+  }
+
+  async getLatest (type) {
+    const req = {
+      endpoint: `/latest/${type}`
+    }
+    return this._makeRequest(req)
+  }
+
+  async getTopCreatorsByGenres (genres, limit = 30, offset = 0, withUsers = false) {
+    let req = {
+      endpoint: 'users/genre/top',
+      queryParams: { genre: genres, limit, offset, with_users: withUsers }
+    }
+    return this._makeRequest(req)
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   // TODO(DM) - standardize this to axios like audius service and creator node
@@ -594,9 +726,21 @@ class DiscoveryProvider {
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
   // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, retries = 4) {
+  async _makeRequest (requestObj, retries = MAKE_REQUEST_RETRY_COUNT, attempedRetries = 0) {
+    if (attempedRetries > MAX_MAKE_REQUEST_RETRY_COUNT) {
+      console.error('Attempted max request retries.')
+      return
+    }
+
     if (!this.discoveryProviderEndpoint) {
       await this.autoSelectEndpoint()
+    }
+
+    if (retries === 0) {
+      // Reset the retries count in the case that the newly selected disc prov fails, we can
+      // allow it to try MAKE_REQUEST_RETRIES_COUNT number of times before trying another
+      retries = MAKE_REQUEST_RETRY_COUNT
+      await this.autoSelectEndpoint(AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT, true)
     }
 
     let requestUrl
@@ -615,7 +759,7 @@ class DiscoveryProvider {
       url: requestUrl,
       headers: headers,
       method: (requestObj.method || 'get'),
-      timeout: 10000
+      timeout: REQUEST_TIMEOUT_MS
     }
 
     if (requestObj.method === 'post' && requestObj.data) {
@@ -630,6 +774,7 @@ class DiscoveryProvider {
       const parsedResponse = Utils.parseDataFromResponse(response)
 
       if (
+        this.ethContracts &&
         !this.ethContracts.isInRegressedMode() &&
         'latest_indexed_block' in parsedResponse &&
         'latest_chain_block' in parsedResponse
@@ -644,12 +789,11 @@ class DiscoveryProvider {
           !indexedBlock ||
           (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
         ) {
-          // Clear any cached discprov
-          localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
           // Select a new one
           console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
-          const endpoint = await this.autoSelectEndpoint()
+          const endpoint = await this.autoSelectEndpoint(AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT, true)
           this.setEndpoint(endpoint)
+          retries = MAKE_REQUEST_RETRY_COUNT // reset retry count when setting a new endpoint
           throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
         }
       }
@@ -657,8 +801,9 @@ class DiscoveryProvider {
       return parsedResponse.data
     } catch (e) {
       console.error(e)
+
       if (retries > 0) {
-        return this._makeRequest(requestObj, retries - 1)
+        return this._makeRequest(requestObj, retries - 1, attempedRetries + 1)
       }
     }
   }

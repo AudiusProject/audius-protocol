@@ -18,8 +18,17 @@ const creatorNodeEndpoint1 = 'http://docker.for.mac.localhost:4000'
 const creatorNodeEndpoint2 = 'http://docker.for.mac.localhost:4010'
 const creatorNodeEndpoint3 = 'http://docker.for.mac.localhost:4020'
 const creatorNodeEndpoint4 = 'http://docker.for.mac.localhost:4030'
-const versionStr = '0.3.0'
 const amountOfAuds = 100000
+
+// try to dynamically get versions from .version.json
+let serviceVersions = {}
+try {
+  serviceTypeList.forEach((type) => {
+    serviceVersions[type] = (require(`../../${type}/.version.json`)['version'])
+  })
+} catch (e) {
+  throw new Error("Couldn't get the service versions")
+}
 
 const throwArgError = () => {
   throw new Error(`missing argument - format: node local.js [
@@ -180,6 +189,6 @@ const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
 
 const _initAllVersions = async (audiusLibs) => {
   for (let serviceType of serviceTypeList) {
-    await setServiceVersion(audiusLibs, serviceType, versionStr)
+    await setServiceVersion(audiusLibs, serviceType, serviceVersions[serviceType])
   }
 }

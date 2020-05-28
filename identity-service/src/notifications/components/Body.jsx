@@ -74,6 +74,31 @@ const snippetMap = {
       return `${user.name} released ${notification.entity.count} new ${notification.entity.type}`
     }
     return `${user.name} released a new ${notification.entity.type}  ${notification.entity.name}`
+  },
+  [NotificationType.RemixCreate] (notification) {
+    const { parentTrack } = notification
+    return `New remix of your track ${parentTrack.title}`
+  },
+  [NotificationType.RemixCosign] (notification) {
+    const { parentTrackUser, parentTracks } = notification
+    const parentTrack = parentTracks.find(t => t.ownerId === parentTrackUser.userId)
+    return `${parentTrackUser.name} Co-signed your Remix of ${parentTrack.title}`
+  }
+}
+
+const mapNotification = (notification) => {
+  switch (notification.type) {
+    case NotificationType.RemixCreate: {
+      notification.users = [notification.remixUser]
+      return notification
+    }
+    case NotificationType.RemixCosign: {
+      notification.track = notification.remixTrack
+      return notification
+    }
+    default: {
+      return notification
+    }
   }
 }
 
@@ -146,7 +171,7 @@ const Body = (props) => {
               }}
             >
               {props.notifications.map((notification, ind) => (
-                <Notification key={ind} {...notification} />
+                <Notification key={ind} {...mapNotification(notification)} />
               ))}
             </td>
           </tr>
@@ -160,7 +185,7 @@ const Body = (props) => {
                 <tr>
                   <td style={{ borderRadius: '17px', margin: '0px auto' }} bgcolor='#7E1BCC'>
                     <a
-                      href='https://audius.co'
+                      href='https://audius.co/feed?openNotifications=true'
                       target='_blank'
                       style={{
                         padding: '8px 24px',

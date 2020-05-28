@@ -59,11 +59,24 @@ def model_to_dictionary(db_model_obj, exclude_keys=None, relationships_to_includ
 
     return model_dict
 
+# Convert a tuple of model format into the proper model itself represented as a dictionary.
+# The number of entries in the tuple, must map the model.
+#
+# When a subquery selects the entirety of a model and an outer query selects the entirety
+# of that subquery, the results are returned as a tuple. They can be safely coerced into
+# a dictionary with column keys.
+def tuple_to_model_dictionary(t, model):
+    """Converts the given tuple into the proper SQLAlchemy model object in dictionary form."""
+    keys = model.__table__.columns.keys()
+    assert len(t) == len(keys)
+
+    return dict(zip(keys, t))
+
 
 # Configures root logger with custom format and loglevel
 # All child loggers will inherit settings from root logger as configured in this function
-def configure_logging(loglevel_str):
-    logger = logging.getLogger("")  # retrieve root logger
+def configure_logging(loglevel_str='WARN'):
+    logger = logging.getLogger()  # retrieve root logger
 
     handler = logging.StreamHandler()
     formatter = logging.Formatter(

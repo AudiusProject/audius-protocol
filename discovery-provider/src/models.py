@@ -133,6 +133,7 @@ class Track(Base):
     genre = Column(String)
     mood = Column(String)
     credits_splits = Column(String)
+    remix_of = Column(postgresql.JSONB, nullable=True)
     create_date = Column(String)
     release_date = Column(String)
     file_type = Column(String)
@@ -147,6 +148,7 @@ class Track(Base):
     created_at = Column(DateTime, nullable=False)
     is_unlisted = Column(Boolean, nullable=False)
     field_visibility = Column(postgresql.JSONB, nullable=True)
+    stem_of = Column(postgresql.JSONB, nullable=True)
 
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, track_id, blockhash)
@@ -169,6 +171,7 @@ class Track(Base):
             f"genre={self.genre},"
             f"mood={self.mood},"
             f"credits_splits={self.credits_splits},"
+            f"remix_of={self.remix_of},"
             f"create_date={self.create_date},"
             f"release_date={self.release_date},"
             f"file_type={self.file_type},"
@@ -180,7 +183,8 @@ class Track(Base):
             f"metadata_multihash={self.metadata_multihash},"
             f"download={self.download},"
             f"updated_at={self.updated_at},"
-            f"created_at={self.created_at}"
+            f"created_at={self.created_at},"
+            f"stem_of={self.stem_of}"
             ")>"
         )
 
@@ -309,3 +313,25 @@ created_at={self.created_at},\
 save_type={self.save_type},\
 is_current={self.is_current},\
 is_delete={self.is_delete}>"
+
+class Stem(Base):
+    __tablename__ = "stems"
+
+    parent_track_id = Column(Integer, nullable=False, index=False)
+    child_track_id = Column(Integer, nullable=False, index=False)
+    PrimaryKeyConstraint(parent_track_id, child_track_id)
+
+    def __repr__(self):
+        return f"<Remix(parent_track_id={self.parent_track_id},\
+            child_track_id={self.child_track_id})"
+
+class Remix(Base):
+    __tablename__ = "remixes"
+
+    parent_track_id = Column(Integer, nullable=False, index=False)
+    child_track_id = Column(Integer, nullable=False, index=False)
+    PrimaryKeyConstraint(parent_track_id, child_track_id)
+
+    def __repr__(self):
+        return f"<Remix(parent_track_id={self.parent_track_id},\
+            child_track_id={self.child_track_id}>"

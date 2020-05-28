@@ -1,5 +1,5 @@
 const bs58 = require('bs58')
-const Web3 = require('web3')
+const Web3 = require('./web3')
 const axios = require('axios')
 
 class Utils {
@@ -33,6 +33,10 @@ class Utils {
 
   static keccak256 (utf8Str) {
     return Web3.utils.keccak256(utf8Str)
+  }
+
+  static isBN (number) {
+    return Web3.utils.isBN(number)
   }
 
   static checkStrLen (str, maxLen, minLen = 1) {
@@ -110,106 +114,6 @@ class Utils {
     }
 
     return web3Instance
-  }
-
-  /**
-   * Given an array of promises, it returns the first resolved promise as soon as it finishes
-   * @param {Array<Promise>} promises
-   * @return {Promise<T>} A promise that resolves with the first promise that resolves
-   */
-  static async promiseFight (promises) {
-    return Promise.all(promises.map(p => {
-      return p.then(
-        val => Promise.reject(val),
-        err => Promise.resolve(err)
-      )
-    })).then(
-      errors => Promise.reject(errors),
-      val => Promise.resolve(val)
-    )
-  }
-
-  /**
-  * Fetches a url and times how long it took the request to complete.
-  * @param {Object} request {id, url}
-  * @returns { request, response, millis }
-  */
-  static async timeRequest (request) {
-    // This is non-perfect because of the js event loop, but enough
-    // of a proximation. Don't use for mission-critical timing.
-    const startTime = new Date().getTime()
-    const response = await axios.get(request.url)
-    const millis = new Date().getTime() - startTime
-    return { request, response, millis }
-  }
-
-  /**
-   * Fetches multiple urls and times each request and returns the results sorted by
-   * lowest-latency.
-   * @param {Array<Object>} requests [{id, url}, {id, url}]
-   * @returns { Array<{url, response, millis}> }
-   */
-  static async timeRequests (requests) {
-    let timings = await Promise.all(requests.map(async request =>
-      Utils.timeRequest(request)
-    ))
-
-    return timings.sort((a, b) => a.millis - b.millis)
-  }
-
-  // Races requests for file content
-  /**
-   * Races multiple requests
-   * @param {*} urls
-   * @param {*} callback invoked with the first successful url
-   * @param {object} axiosConfig extra axios config for each request
-   */
-  static async raceRequests (
-    urls,
-    callback,
-    axiosConfig,
-    timeout = 3000
-  ) {
-    const CancelToken = axios.CancelToken
-
-    const sources = []
-    const requests = urls.map(async (url, i) => {
-      const source = CancelToken.source()
-      sources.push(source)
-
-      // Slightly offset requests by their order, so:
-      // 1. We try public gateways first
-      // 2. We give requests the opportunity to get canceled if other's are very fast
-      await Utils.wait(100 * i)
-
-      return new Promise((resolve, reject) => {
-        axios({
-          method: 'get',
-          url,
-          cancelToken: source.token,
-          ...axiosConfig
-        })
-          .then(response => {
-            resolve({
-              blob: response,
-              url
-            })
-          })
-          .catch((thrown) => {
-            reject(thrown)
-            // no-op.
-            // If debugging `axios.isCancel(thrown)`
-            // can be used to check if the throw was from a cancel.
-          })
-      })
-    })
-    requests.push(Utils.wait(timeout))
-    const response = await Utils.promiseFight(requests)
-    sources.forEach(source => {
-      source.cancel('Fetch already succeeded')
-    })
-    callback(response.url)
-    return response.blob
   }
 }
 
