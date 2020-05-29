@@ -113,7 +113,6 @@ def index_blocks(self, db, blocks_list):
         with db.scoped_session() as session:
             current_block_query = session.query(Block).filter_by(is_current=True)
 
-            # TODO: Add a check here to see if the block we are inserting already exists in the DB
             # Without this check we may end up duplicating an insert operation
             block_model = Block(
                 blockhash=web3.toHex(block.hash),
@@ -130,21 +129,6 @@ def index_blocks(self, db, blocks_list):
             former_current_block = current_block_query.first()
             former_current_block.is_current = False
             session.add(block_model)
-
-            '''
-            # TEMPORARY TEST BY ADDING TWO Block entries
-            # Increase blocknumber to avoid violation
-            session.add(
-                Block(
-                    blockhash=str(block.number),
-                    parenthash=str(block.number + 1),
-                    number=block.number + 1,
-                    is_current=True
-                )
-            )
-            session.flush()
-            raise Exception('Test error')
-            '''
 
             user_factory_txs = []
             track_factory_txs = []
