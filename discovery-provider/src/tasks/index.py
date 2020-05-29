@@ -1,4 +1,6 @@
 import logging
+import string
+import random
 from src import contract_addresses
 from src.models import Block, User, Track, Repost, Follow, Playlist, Save
 from src.tasks.celery_app import celery
@@ -129,6 +131,21 @@ def index_blocks(self, db, blocks_list):
             former_current_block = current_block_query.first()
             former_current_block.is_current = False
             session.add(block_model)
+
+            '''
+            # TEMPORARY TEST BY ADDING TWO Block entries
+            # Increase blocknumber to avoid violation
+            session.add(
+                Block(
+                    blockhash=str(block.number),
+                    parenthash=str(block.number + 1),
+                    number=block.number + 1,
+                    is_current=True
+                )
+            )
+            session.flush()
+            raise Exception('Test error')
+            '''
 
             user_factory_txs = []
             track_factory_txs = []

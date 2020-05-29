@@ -21,7 +21,7 @@ def upgrade():
     connection.execute('''
       --- Remove new index if present
       DROP INDEX IF EXISTS blocks_is_current_idx;
-      CREATE UNIQUE INDEX blocks_is_current_idx on Blocks (is_current) WHERE (is_current);
+      CREATE UNIQUE INDEX blocks_is_current_idx on Blocks (is_current) WHERE is_current is True;
     ''')
     # ### end Alembic commands ###
 
