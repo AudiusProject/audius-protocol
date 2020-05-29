@@ -129,8 +129,6 @@ def index_blocks(self, db, blocks_list):
             former_current_block = current_block_query.first()
             former_current_block.is_current = False
             session.add(block_model)
-            # Potentially flush here
-            session.flush()
 
             user_factory_txs = []
             track_factory_txs = []
@@ -242,10 +240,10 @@ def index_blocks(self, db, blocks_list):
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
 def revert_blocks(self, db, revert_blocks_list):
     # TODO: Remove this exception once the unexpected revert scenario has been diagnosed
-    if len(revert_blocks_list) > 500:
+    if  revert_blocks_list:
         logger.error("Revert blocks list:")
         logger.error(revert_blocks_list)
-        raise Exception('Unexpected revert, >500 blocks')
+        raise Exception('Unexpected revert, >0 blocks')
 
     with db.scoped_session() as session:
 
@@ -529,9 +527,6 @@ def update_task(self):
                         intersect_block_hash = current_hash
                         continue
 
-                    logger.info(
-                        f"index.py | {self.request.id} | generating block list | {latest_block.number} current_hash = {current_hash}, parent_hash={parent_hash}, block_intersection_found = {block_intersection_found}"
-                    )
                     index_blocks_list.append(latest_block)
 
                     parent_block_query = session.query(Block).filter(
@@ -613,7 +608,7 @@ def update_task(self):
             index_blocks(self, db, index_blocks_list)
             logger.info(f"index.py | update_task | {self.request.id} | Processing complete within session")
         else:
-            logger.error("index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock")
+            logger.error(f"index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock")
     except Exception as e:
         logger.error("Fatal error in main loop", exc_info=True)
         raise e
