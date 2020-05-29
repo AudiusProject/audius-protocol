@@ -1,10 +1,13 @@
 import logging
-
 import enum
+
+from jsonschema import ValidationError
+from src.model_validator import ModelValidator
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import validates
+from sqlalchemy.sql import null
 from sqlalchemy import (
     Column,
     Integer,
@@ -16,9 +19,6 @@ from sqlalchemy import (
     Enum,
     PrimaryKeyConstraint,
 )
-from datetime import datetime
-from src.model_validator import ModelValidator
-from jsonschema import ValidationError
 
 Base = declarative_base()
 logger = logging.getLogger(__name__)
@@ -160,20 +160,33 @@ class Track(Base):
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, track_id, blockhash)
 
-    ModelValidator.init_schema('track')
+    ModelValidator.init_model_schemas('Track')
 
     # unpacking args into @validates
-    @validates(*ModelValidator.schema_and_fields_dict['track']['fields'])
-    def validate_field(self, key, value):
+    @validates(*ModelValidator.models_to_schema_and_fields_dict['Track']['fields'])
+    def validate_field(self, field, value):
+        # TODO: need to write custom validator for these datetime fields as jsonschema
+        # validates datetime in format 2018-11-13T20:20:39+00:00, not a format we use
+        # also not totally necessary as these fields are created server side
+        if field == 'created_at' or field == 'updated_at':
+            return value
+
         to_validate = {
-            key: value
+            field: value
         }
 
         try:
-            ModelValidator.validate(to_validate, key)
+            ModelValidator.validate(to_validate=to_validate, model='Track', field=field)
         except ValidationError as e:
-            default = None # TODO: set defaults in schema and use those values
-            logger.warning("Error: {0}\nSetting the default value {1} for field {2}".format(e, default, key))
+            field_type = ModelValidator.get_field_type('Track', field)
+            default = ModelValidator.get_field_default('Track', field)
+
+            if field_type == 'object':
+                default = null() # sql null
+            else:
+                value = default
+
+            logger.warning("Error: {0}\nSetting the default value {1} for field {2} of type {3}".format(e, default, field, field_type))
             value = default
 
         return value
