@@ -99,18 +99,19 @@ def index_blocks(self, db, blocks_list):
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     for i in block_order_range:
-        if i % 10 == 0 and i != 0:
-            block_index = num_blocks - i
-            logger.info(f"index.py | index_blocks | processing block {block_index}/{num_blocks} blocks")
-
         block = blocks_list[i]
+        block_index = num_blocks - i
         block_number = block.number
         block_timestamp = block.timestamp
+        logger.info(
+            f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
+        )
 
         # Handle each block in a distinct transaction
         with db.scoped_session() as session:
             current_block_query = session.query(Block).filter_by(is_current=True)
 
+            # Without this check we may end up duplicating an insert operation
             block_model = Block(
                 blockhash=web3.toHex(block.hash),
                 parenthash=web3.toHex(block.parentHash),
@@ -237,10 +238,10 @@ def index_blocks(self, db, blocks_list):
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
 def revert_blocks(self, db, revert_blocks_list):
     # TODO: Remove this exception once the unexpected revert scenario has been diagnosed
-    if len(revert_blocks_list) > 500:
-        logger.error("Revert blocks list:")
+    if  revert_blocks_list:
+        logger.error(f"index.py | {self.request.id } | Revert blocks list:")
         logger.error(revert_blocks_list)
-        raise Exception('Unexpected revert, >500 blocks')
+        raise Exception('Unexpected revert, >0 blocks')
 
     with db.scoped_session() as session:
 
@@ -483,7 +484,7 @@ def update_task(self):
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock("disc_prov_lock", timeout=25, blocking_timeout=25)
+    update_lock = redis.lock("disc_prov_lock", blocking_timeout=25)
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
@@ -491,7 +492,7 @@ def update_task(self):
             # Refresh all IPFS peer connections
             refresh_peer_connections(self)
 
-            logger.info(f"index.py | update_task | Acquired disc_prov_lock")
+            logger.info(f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock")
             initialize_blocks_table_if_necessary(db)
 
             latest_block = get_latest_block(db)
@@ -603,8 +604,9 @@ def update_task(self):
 
             # Perform indexing operations
             index_blocks(self, db, index_blocks_list)
+            logger.info(f"index.py | update_task | {self.request.id} | Processing complete within session")
         else:
-            logger.error("index.py | update_task | Failed to acquire disc_prov_lock")
+            logger.error(f"index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock")
     except Exception as e:
         logger.error("Fatal error in main loop", exc_info=True)
         raise e
