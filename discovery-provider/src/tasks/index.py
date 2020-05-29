@@ -104,6 +104,7 @@ def index_blocks(self, db, blocks_list):
             logger.info(f"index.py | index_blocks | processing block {block_index}/{num_blocks} blocks")
 
         block = blocks_list[i]
+        logger.info(f"index.py | {self.request.id} index_blocks | processing block {block.number}")
         block_number = block.number
         block_timestamp = block.timestamp
 
@@ -111,6 +112,8 @@ def index_blocks(self, db, blocks_list):
         with db.scoped_session() as session:
             current_block_query = session.query(Block).filter_by(is_current=True)
 
+            # TODO: Add a check here to see if the block we are inserting already exists in the DB
+            # Without this check we may end up duplicating an insert operation
             block_model = Block(
                 blockhash=web3.toHex(block.hash),
                 parenthash=web3.toHex(block.parentHash),
@@ -126,6 +129,8 @@ def index_blocks(self, db, blocks_list):
             former_current_block = current_block_query.first()
             former_current_block.is_current = False
             session.add(block_model)
+            # Potentially flush here
+            session.flush()
 
             user_factory_txs = []
             track_factory_txs = []
@@ -483,7 +488,7 @@ def update_task(self):
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock("disc_prov_lock", timeout=25, blocking_timeout=25)
+    update_lock = redis.lock("disc_prov_lock", blocking_timeout=25)
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
@@ -491,6 +496,7 @@ def update_task(self):
             # Refresh all IPFS peer connections
             refresh_peer_connections(self)
 
+            logger.info(f"requestId {self.request.id}")
             logger.info(f"index.py | update_task | Acquired disc_prov_lock")
             initialize_blocks_table_if_necessary(db)
 
@@ -524,6 +530,9 @@ def update_task(self):
                         intersect_block_hash = current_hash
                         continue
 
+                    logger.info(
+                        f"index.py | {self.request.id} | generating block list | {latest_block.number} current_hash = {current_hash}, parent_hash={parent_hash}, block_intersection_found = {block_intersection_found}"
+                    )
                     index_blocks_list.append(latest_block)
 
                     parent_block_query = session.query(Block).filter(
@@ -603,6 +612,7 @@ def update_task(self):
 
             # Perform indexing operations
             index_blocks(self, db, index_blocks_list)
+            logger.info(f"index.py | update_task | Processing complete within session")
         else:
             logger.error("index.py | update_task | Failed to acquire disc_prov_lock")
     except Exception as e:
