@@ -101,14 +101,13 @@ def index_blocks(self, db, blocks_list):
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     for i in block_order_range:
-        if i % 10 == 0 and i != 0:
-            block_index = num_blocks - i
-            logger.info(f"index.py | index_blocks | processing block {block_index}/{num_blocks} blocks")
-
         block = blocks_list[i]
-        logger.info(f"index.py | {self.request.id} index_blocks | processing block {block.number}")
+        block_index = num_blocks - i
         block_number = block.number
         block_timestamp = block.timestamp
+        logger.info(
+            f"index.py | index_blocks | {self.request.id} | processing block {block.number} - {block_index}/{num_blocks}"
+        )
 
         # Handle each block in a distinct transaction
         with db.scoped_session() as session:
@@ -258,7 +257,7 @@ def index_blocks(self, db, blocks_list):
 def revert_blocks(self, db, revert_blocks_list):
     # TODO: Remove this exception once the unexpected revert scenario has been diagnosed
     if  revert_blocks_list:
-        logger.error("Revert blocks list:")
+        logger.error(f"index.py | {self.request.id } | Revert blocks list:")
         logger.error(revert_blocks_list)
         raise Exception('Unexpected revert, >0 blocks')
 
