@@ -496,8 +496,7 @@ def update_task(self):
             # Refresh all IPFS peer connections
             refresh_peer_connections(self)
 
-            logger.info(f"requestId {self.request.id}")
-            logger.info(f"index.py | update_task | Acquired disc_prov_lock")
+            logger.info(f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock")
             initialize_blocks_table_if_necessary(db)
 
             latest_block = get_latest_block(db)
@@ -612,9 +611,9 @@ def update_task(self):
 
             # Perform indexing operations
             index_blocks(self, db, index_blocks_list)
-            logger.info(f"index.py | update_task | Processing complete within session")
+            logger.info(f"index.py | update_task | {self.request.id} | Processing complete within session")
         else:
-            logger.error("index.py | update_task | Failed to acquire disc_prov_lock")
+            logger.error("index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock")
     except Exception as e:
         logger.error("Fatal error in main loop", exc_info=True)
         raise e
