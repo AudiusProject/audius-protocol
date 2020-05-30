@@ -551,19 +551,17 @@ def notifications():
                     }
                     remix_created_notifications.append(remix_notif)
 
-        notifications_unsorted.extend(remix_created_notifications)
-
-        # Tracks that were unlisted and turned to public
+        # Handle track update notifications
         # TODO: Consider switching blocknumber for updated at?
-        publish_tracks_query = session.query(Track)
-        publish_tracks_query = publish_tracks_query.filter(
+        updated_tracks_query = session.query(Track)
+        updated_tracks_query = updated_tracks_query.filter(
             Track.is_unlisted == False,
             Track.stem_of == None,
             Track.created_at != Track.updated_at,
             Track.blocknumber > min_block_number,
             Track.blocknumber <= max_block_number)
-        publish_track_results = publish_tracks_query.all()
-        for entry in publish_track_results:
+        updated_tracks = updated_tracks_query.all()
+        for entry in updated_tracks:
             prev_entry_query = (
                 session.query(Track)
                 .filter(
@@ -573,6 +571,8 @@ def notifications():
             )
             # Previous unlisted entry indicates transition to public, triggering a notification
             prev_entry = prev_entry_query.first()
+
+            # Tracks that were unlisted and turned to public
             if prev_entry.is_unlisted == True:
                 track_notif = {
                     const.notification_type: \
@@ -588,6 +588,40 @@ def notifications():
                     }
                 }
                 created_notifications.append(track_notif)
+
+            # Tracks that were not remixes and turned into remixes
+            if not prev_entry.remix_of and entry.remix_of:
+                # Add notification to remix track owner
+                parent_remix_tracks = [t['parent_track_id'] for t in entry.remix_of['tracks']]
+                remix_track_parents = (
+                    session.query(Track.owner_id, Track.track_id)
+                        .filter(
+                            Track.track_id.in_(parent_remix_tracks),
+                            Track.is_unlisted == False,
+                            Track.is_delete == False,
+                            Track.is_current == True
+                        )
+                        .all()
+                )
+                for remix_track_parent in remix_track_parents:
+                    [remix_track_parent_owner, remix_track_parent_id] = remix_track_parent
+                    remix_notif = {
+                        const.notification_type: const.notification_type_remix_create,
+                        const.notification_blocknumber: entry.blocknumber,
+                        const.notification_timestamp: entry.created_at,
+                        const.notification_initiator: entry.owner_id,
+                        # TODO: is entity owner id necessary for tracks?
+                        const.notification_metadata: {
+                            const.notification_entity_type: 'track',
+                            const.notification_entity_id: entry.track_id,
+                            const.notification_entity_owner_id: entry.owner_id,
+                            const.notification_remix_parent_track_user_id: remix_track_parent_owner,
+                            const.notification_remix_parent_track_id: remix_track_parent_id
+                        }
+                    }
+                    remix_created_notifications.append(remix_notif)
+
+        notifications_unsorted.extend(remix_created_notifications)
 
         # Aggregate playlist/album notifs
         collection_query = session.query(Playlist)
