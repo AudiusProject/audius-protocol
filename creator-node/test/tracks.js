@@ -117,11 +117,11 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    assert.deepEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
-    assert.deepEqual(resp1.body.track_segments.length, 32)
-    assert.deepEqual(resp1.body.source_file.includes('.mp3'), true)
-    assert.deepEqual(resp1.body.transcodedTrackCID, 'testCIDLink')
-    assert.deepEqual(typeof resp1.body.transcodedTrackUUID, 'string')
+    assert.deepStrictEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(resp1.body.track_segments.length, 32)
+    assert.deepStrictEqual(resp1.body.source_file.includes('.mp3'), true)
+    assert.deepStrictEqual(resp1.body.transcodedTrackCID, 'testCIDLink')
+    assert.deepStrictEqual(typeof resp1.body.transcodedTrackUUID, 'string')
   })
 
   // depends on "upload file to IPFS"
@@ -140,9 +140,9 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    assert.deepEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
-    assert.deepEqual(resp1.body.track_segments.length, 32)
-    assert.deepEqual(resp1.body.source_file.includes('.mp3'), true)
+    assert.deepStrictEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(resp1.body.track_segments.length, 32)
+    assert.deepStrictEqual(resp1.body.source_file.includes('.mp3'), true)
 
     // creates Audius track
     const metadata = {
@@ -157,7 +157,7 @@ describe('test Tracks', function () {
       .send({ metadata, sourceFile: resp1.body.source_file })
       .expect(200)
 
-    assert.deepEqual(resp2.body.metadataMultihash, 'testCIDLink')
+    assert.deepStrictEqual(resp2.body.metadataMultihash, 'testCIDLink')
   })
 
   // depends on "upload file to IPFS"
@@ -176,9 +176,9 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    assert.deepEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
-    assert.deepEqual(resp1.body.track_segments.length, 32)
-    assert.deepEqual(resp1.body.source_file.includes('.mp3'), true)
+    assert.deepStrictEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(resp1.body.track_segments.length, 32)
+    assert.deepStrictEqual(resp1.body.source_file.includes('.mp3'), true)
 
     // creates Audius track
     const metadata = {
@@ -209,9 +209,9 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    assert.deepEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
-    assert.deepEqual(resp1.body.track_segments.length, 32)
-    assert.deepEqual(resp1.body.source_file.includes('.mp3'), true)
+    assert.deepStrictEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(resp1.body.track_segments.length, 32)
+    assert.deepStrictEqual(resp1.body.source_file.includes('.mp3'), true)
 
     // creates Audius track
     const metadata = {
@@ -243,9 +243,9 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    assert.deepEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
-    assert.deepEqual(resp1.body.track_segments.length, 32)
-    assert.deepEqual(resp1.body.source_file.includes('.mp3'), true)
+    assert.deepStrictEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(resp1.body.track_segments.length, 32)
+    assert.deepStrictEqual(resp1.body.source_file.includes('.mp3'), true)
 
     // creates Audius track
     const metadata = {
@@ -276,9 +276,9 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    assert.deepEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
-    assert.deepEqual(resp1.body.track_segments.length, 32)
-    assert.deepEqual(resp1.body.source_file.includes('.mp3'), true)
+    assert.deepStrictEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(resp1.body.track_segments.length, 32)
+    assert.deepStrictEqual(resp1.body.source_file.includes('.mp3'), true)
 
     const metadata = {
       test: 'field1',
@@ -319,8 +319,8 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    assert.deepEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
-    assert.deepEqual(resp1.body.track_segments.length, 32)
+    assert.deepStrictEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(resp1.body.track_segments.length, 32)
 
     // creates a downloadable Audius track with no track_id and no source_file
     const metadata = {
@@ -356,9 +356,9 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    assert.deepEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
-    assert.deepEqual(resp1.body.track_segments.length, 32)
-    assert.deepEqual(resp1.body.source_file.includes('.mp3'), true)
+    assert.deepStrictEqual(resp1.body.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(resp1.body.track_segments.length, 32)
+    assert.deepStrictEqual(resp1.body.source_file.includes('.mp3'), true)
 
     // needs debugging as to why this 'cid' key is needed for test to work
     const metadata = {
