@@ -15,7 +15,7 @@ const { getLibsMock } = require('./lib/libsMock')
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
 
-describe.only('test Tracks', function () {
+describe('test Tracks', function () {
   let app, server, session, ipfsMock, libsMock
 
   beforeEach(async () => {
