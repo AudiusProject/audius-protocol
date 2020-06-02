@@ -1,0 +1,112 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$ref": "#/definitions/User",
+    "definitions": {
+        "User": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "blockhash": {
+                    "type": "string"
+                },
+                "blocknumber": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "is_current": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "handle": {
+                    "type": "string",
+                    "default": null
+                },
+                "handle_lc": {
+                    "type": "string",
+                    "default": null
+                },
+                "wallet": {
+                    "type": "string",
+                    "default": null
+                },
+                "is_creator": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "is_verified": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "name": {
+                    "type": "string",
+                    "default": null
+                },
+                "profile_picture": {
+                    "type": "string",
+                    "default": null
+                },
+                "profile_picture_sizes": {
+                    "type": "string",
+                    "default": null
+                },
+                "cover_photo": {
+                    "type": "string",
+                    "default": null
+                },
+                "cover_photo_sizes": {
+                    "type": "string",
+                    "default": null
+                },
+                "bio": {
+                    "type": "string",
+                    "default": null
+                },
+                "location": {
+                    "type": "string",
+                    "default": null
+                },
+                "metadata_multihash": {
+                    "type": "string",
+                    "default": null
+                },
+                "creator_node_endpoint": {
+                    "type": "string",
+                    "default": null
+                },
+                "updated_at": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            },
+            "required": [
+                "bio",
+                "blockhash",
+                "blocknumber",
+                "cover_photo",
+                "cover_photo_sizes",
+                "created_at",
+                "creator_node_endpoint",
+                "handle",
+                "handle_lc",
+                "is_creator",
+                "is_current",
+                "is_verified",
+                "location",
+                "metadata_multihash",
+                "name",
+                "profile_picture",
+                "profile_picture_sizes",
+                "updated_at",
+                "user_id",
+                "wallet"
+            ],
+            "title": "User"
+        }
+    }
+}

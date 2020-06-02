@@ -23,6 +23,35 @@ from sqlalchemy import (
 Base = declarative_base()
 logger = logging.getLogger(__name__)
 
+def validate_field_helper(field, value, model):
+    logger.info('validating field {0} with value {1}'.format(field, value))
+
+    # TODO: need to write custom validator for these datetime fields as jsonschema
+    # validates datetime in format 2018-11-13T20:20:39+00:00, not a format we use
+    # also not totally necessary as these fields are created server side
+    if field == 'created_at' or field == 'updated_at':
+        return value
+
+    to_validate = {
+        field: value
+    }
+
+    try:
+        ModelValidator.validate(to_validate=to_validate, model=model, field=field)
+    except ValidationError as e:
+        field_type = ModelValidator.get_field_type(model, field)
+        default = ModelValidator.get_field_default(model, field)
+
+        if field_type == 'object':
+            default = null() # sql null
+        else:
+            value = default
+
+        logger.warning("Error: {0}\nSetting the default value {1} for field {2} of type {3}".format(e, default, field, field_type))
+        value = default
+
+    return value
+
 class BlockMixin():
 
     @declared_attr
@@ -100,6 +129,13 @@ class User(Base):
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, user_id, blockhash)
 
+    ModelValidator.init_model_schemas('User')
+
+    # unpacking args into @validates
+    @validates(*ModelValidator.models_to_schema_and_fields_dict['User']['fields'])
+    def validate_field(self, field, value):
+        return validate_field_helper(field, value, 'User')
+
     def __repr__(self):
         return f"<User(blockhash={self.blockhash},\
 blocknumber={self.blocknumber},\
@@ -165,31 +201,7 @@ class Track(Base):
     # unpacking args into @validates
     @validates(*ModelValidator.models_to_schema_and_fields_dict['Track']['fields'])
     def validate_field(self, field, value):
-        # TODO: need to write custom validator for these datetime fields as jsonschema
-        # validates datetime in format 2018-11-13T20:20:39+00:00, not a format we use
-        # also not totally necessary as these fields are created server side
-        if field == 'created_at' or field == 'updated_at':
-            return value
-
-        to_validate = {
-            field: value
-        }
-
-        try:
-            ModelValidator.validate(to_validate=to_validate, model='Track', field=field)
-        except ValidationError as e:
-            field_type = ModelValidator.get_field_type('Track', field)
-            default = ModelValidator.get_field_default('Track', field)
-
-            if field_type == 'object':
-                default = null() # sql null
-            else:
-                value = default
-
-            logger.warning("Error: {0}\nSetting the default value {1} for field {2} of type {3}".format(e, default, field, field_type))
-            value = default
-
-        return value
+        return validate_field_helper(field, value, 'Track')
 
     def __repr__(self):
         return (

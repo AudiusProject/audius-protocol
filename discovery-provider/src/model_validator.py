@@ -55,7 +55,7 @@ class ModelValidator:
     @classmethod
     def init_model_schemas(cls, model):
         # Load in the model schema in /schemas
-        model_filename = './src/schemas/schema_' + model.lower() + '.json'
+        model_filename = './src/schemas/' + model.lower() + '_schema.json'
         with open(model_filename) as f:
             schema = json.load(f)
 
@@ -69,19 +69,19 @@ class ModelValidator:
 
         # Create all the subschemas for each individual field
         for field in model_properties['fields']:
-            # Create a deep copy of the entire schema
-            field_schema = copy.deepcopy(schema)
+            # Create a deep copy of the entire schema to generate a schema that only validates one field of the entire model
+            schema_copy = copy.deepcopy(schema)
 
             # Replace the properties value with just the field to validate against
             # This way, we are able to use one entire model schema and at runtime,
             # generate a new schema for just a field
             # ex. replace all properties of Track (blockhash, block, title, ...) with just 'title'
-            field_to_validate_against = {field: field_schema['definitions'][model]['properties'][field]}
-            field_schema['definitions'][model]['properties'] = field_to_validate_against
-            field_schema['definitions'][model]['required'] = [field]
+            field_to_validate_against = {field: schema_copy['definitions'][model]['properties'][field]}
+            schema_copy['definitions'][model]['properties'] = field_to_validate_against
+            schema_copy['definitions'][model]['required'] = [field]
 
             # Add field schema to dict
-            cls.models_to_schema_and_fields_dict[model]['field_schema'][field] = field_schema
+            cls.models_to_schema_and_fields_dict[model]['field_schema'][field] = schema_copy
 
         return schema
 
@@ -101,36 +101,3 @@ class ModelValidator:
             field_schema = cls.models_to_schema_and_fields_dict[model]['field_schema'][field]
             return field_schema['definitions'][model]['properties'][field]['type']
         return None
-
-# Creating a track with improper title and download fields
-'''
-    track = Track(
-        blockhash=block30.blockhash,
-        blocknumber=30,
-        track_id=(latest_id[0] + 1),
-        is_current=True,
-        is_delete=False,
-        owner_id=2,
-        route_id='oh/idk',
-        updated_at=datetime.datetime.today(),
-        created_at=datetime.datetime.today(),
-        is_unlisted=False,
-        track_segments={"sopmethnig": "s"}, # improper
-        mood="jsonschema", 
-        title=1, # improper
-        download="abc" # improper
-    )
-'''
-
-# Validation response in models.py
-'''
-    [2020-05-29 21:15:43,939] {src.model_validator:36} (WARNING) - Error with Track instance {'track_segments': {'sopmethnig': 's'}}: {'sopmethnig': 's'} is not of type 'array'
-    [2020-05-29 21:15:43,947] {src.models:193} (WARNING) - Error: Instance {'track_segments': {'sopmethnig': 's'}} is not proper
-    Setting the default value None for field track_segments of type array
-    [2020-05-29 21:15:43,948] {src.model_validator:36} (WARNING) - Error with Track instance {'title': 1}: 1 is not of type 'string'
-    [2020-05-29 21:15:43,948] {src.models:193} (WARNING) - Error: Instance {'title': 1} is not proper
-    Setting the default value None for field title of type string
-    [2020-05-29 21:15:43,949] {src.model_validator:36} (WARNING) - Error with Track instance {'download': 'abc'}: 'abc' is not of type 'object'
-    [2020-05-29 21:15:43,949] {src.models:193} (WARNING) - Error: Instance {'download': 'abc'} is not proper
-    Setting the default value NULL for field download of type object
-'''
