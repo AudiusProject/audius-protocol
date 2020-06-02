@@ -2,7 +2,6 @@ import logging
 import enum
 
 from jsonschema import ValidationError
-from src.model_validator import ModelValidator
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
@@ -19,6 +18,7 @@ from sqlalchemy import (
     Enum,
     PrimaryKeyConstraint,
 )
+from src.model_validator import ModelValidator
 
 Base = declarative_base()
 logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ def validate_field_helper(field, value, model):
     # TODO: need to write custom validator for these datetime fields as jsonschema
     # validates datetime in format 2018-11-13T20:20:39+00:00, not a format we use
     # also not totally necessary as these fields are created server side
-    if field == 'created_at' or field == 'updated_at':
+    if field in ('created_at', 'updated_at'):
         return value
 
     to_validate = {
@@ -44,10 +44,9 @@ def validate_field_helper(field, value, model):
 
         if field_type == 'object':
             default = null() # sql null
-        else:
-            value = default
 
-        logger.warning("Error: {0}\nSetting the default value {1} for field {2} of type {3}".format(e, default, field, field_type))
+        logger.warning("Error: {0}\nSetting the default value {1} for field {2} of type {3}" \
+            .format(e, default, field, field_type))
         value = default
 
     return value

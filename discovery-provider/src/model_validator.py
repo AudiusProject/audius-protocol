@@ -69,7 +69,8 @@ class ModelValidator:
 
         # Create all the subschemas for each individual field
         for field in model_properties['fields']:
-            # Create a deep copy of the entire schema to generate a schema that only validates one field of the entire model
+            # Create a deep copy of the entire schema to generate a schema that only
+            # validates one field of the entire model
             schema_copy = copy.deepcopy(schema)
 
             # Replace the properties value with just the field to validate against
