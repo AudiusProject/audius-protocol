@@ -155,7 +155,8 @@ class ServiceProviderFactoryClient extends ContractClient {
       endpoint: info.endpoint,
       spID: serviceId,
       type: serviceType,
-      blocknumber: info.blocknumber
+      blocknumber: info.blocknumber,
+      delegateOwnerWallet: info.delegateOwnerWallet
     }
   }
 
