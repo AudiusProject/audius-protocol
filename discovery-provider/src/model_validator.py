@@ -47,7 +47,6 @@ class ModelValidator:
         except:
             e = sys.exc_info()[0] # one of many errors specified in helper methods
             raise e
-            
 
     @classmethod
     def get_schema(cls, field, model):
@@ -56,7 +55,8 @@ class ModelValidator:
             if model not in cls.models_to_schema_and_fields_dict:
                 schema = cls.init_model_schemas(model)
                 if not schema:
-                    raise RuntimeError(f"ModelValidation failed. Are you sure the schema for {model} is present and proper?")
+                    error_msg = f"ModelValidation failed. Are you sure the schema for {model} is present and proper?"
+                    raise RuntimeError(error_msg)
 
             # If field is empty, return the entire model schema
             if field == "":
@@ -162,9 +162,8 @@ class ModelValidator:
     @classmethod
     def get_properties_field_default(cls, model, field):
         try:
-            if model in cls.models_to_schema_and_fields_dict:
-                field_schema = cls.models_to_schema_and_fields_dict[model]['field_schema'][field]
-                return field_schema['definitions'][model]['properties'][field]['default']
+            field_schema = cls.models_to_schema_and_fields_dict[model]['field_schema'][field]
+            return field_schema['definitions'][model]['properties'][field]['default']
         except KeyError as ke:
             logger.warning(f"Could not find default for {field} for model {model}. Defaulting to 'None'")
             return None
@@ -172,9 +171,8 @@ class ModelValidator:
     @classmethod
     def get_properties_field_type(cls, model, field):
         try:
-            if model in cls.models_to_schema_and_fields_dict:
-                field_schema = cls.models_to_schema_and_fields_dict[model]['field_schema'][field]
-                return field_schema['definitions'][model]['properties'][field]['type']
+            field_schema = cls.models_to_schema_and_fields_dict[model]['field_schema'][field]
+            return field_schema['definitions'][model]['properties'][field]['type']
         except KeyError as ke:
             logger.warning(f"Could not find type for {field} for model {model}. Defaulting to 'None'")
             return None

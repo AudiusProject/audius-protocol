@@ -25,8 +25,6 @@ Base = declarative_base()
 logger = logging.getLogger(__name__)
 
 def validate_field_helper(field, value, model):
-    logger.info('validating field {0} with value {1}'.format(field, value))
-
     # TODO: need to write custom validator for these datetime fields as jsonschema
     # validates datetime in format 2018-11-13T20:20:39+00:00, not a format we use
     # also not totally necessary as these fields are created server side
@@ -49,7 +47,7 @@ def validate_field_helper(field, value, model):
         logger.warning(f"Error: {e}\nSetting the default value {default} for field {field} of type {field_type}")
         value = default
     except:
-        e = sys.exc_info()[0] 
+        e = sys.exc_info()[0]
         logger.error(f"Validation failed: {e}")
 
     return value
@@ -58,7 +56,7 @@ def get_fields_to_validate(model):
     try:
         fields = ModelValidator.models_to_schema_and_fields_dict[model]['fields']
     except:
-        e = sys.exc_info()[0] 
+        e = sys.exc_info()[0]
         logger.error(f"Validation failed: {e}. No validation will occur for {model}")
         fields = ['']
     
