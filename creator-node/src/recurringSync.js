@@ -15,6 +15,8 @@ class RecurringSync {
     )
   }
   async init () {
+    await this.recurringSyncQueue.empty()
+
     // run the task every 6 hours
     this.recurringSyncQueue.add({}, { repeat: { cron: '0 */6 * * *' } })
 
