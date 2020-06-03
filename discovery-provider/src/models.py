@@ -1,5 +1,6 @@
 import logging
 import enum
+import sys
 
 from jsonschema import ValidationError
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
@@ -39,17 +40,29 @@ def validate_field_helper(field, value, model):
     try:
         ModelValidator.validate(to_validate=to_validate, model=model, field=field)
     except ValidationError as e:
-        field_type = ModelValidator.get_field_type(model, field)
-        default = ModelValidator.get_field_default(model, field)
+        field_type = ModelValidator.get_properties_field_type(model, field)
+        default = ModelValidator.get_properties_field_default(model, field)
 
-        if field_type == 'object':
+        if not field_type or field_type == 'object':
             default = null() # sql null
 
-        logger.warning("Error: {0}\nSetting the default value {1} for field {2} of type {3}" \
-            .format(e, default, field, field_type))
+        logger.warning(f"Error: {e}\nSetting the default value {default} for field {field} of type {field_type}")
         value = default
+    except:
+        e = sys.exc_info()[0] 
+        logger.error(f"Validation failed: {e}")
 
     return value
+
+def get_fields_to_validate(model):
+    try:
+        fields = ModelValidator.models_to_schema_and_fields_dict[model]['fields']
+    except:
+        e = sys.exc_info()[0] 
+        logger.error(f"Validation failed: {e}. No validation will occur for {model}")
+        fields = ['']
+    
+    return fields
 
 class BlockMixin():
 
@@ -129,9 +142,10 @@ class User(Base):
     PrimaryKeyConstraint(is_current, user_id, blockhash)
 
     ModelValidator.init_model_schemas('User')
+    fields = get_fields_to_validate('User')
 
     # unpacking args into @validates
-    @validates(*ModelValidator.models_to_schema_and_fields_dict['User']['fields'])
+    @validates(*fields)
     def validate_field(self, field, value):
         return validate_field_helper(field, value, 'User')
 
@@ -196,9 +210,10 @@ class Track(Base):
     PrimaryKeyConstraint(is_current, track_id, blockhash)
 
     ModelValidator.init_model_schemas('Track')
+    fields = get_fields_to_validate('Track')
 
     # unpacking args into @validates
-    @validates(*ModelValidator.models_to_schema_and_fields_dict['Track']['fields'])
+    @validates(*fields)
     def validate_field(self, field, value):
         return validate_field_helper(field, value, 'Track')
 
