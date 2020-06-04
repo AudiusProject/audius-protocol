@@ -45,7 +45,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         spIdToCreatorNode[_spID] = msg.sender;
     }
 
-    // Function used to 
+    // Function used to permission updates to a given user's replica set 
     function updateReplicaSet(
         address _userWallet,
         uint _primary,
