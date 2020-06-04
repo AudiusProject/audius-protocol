@@ -238,10 +238,17 @@ def index_blocks(self, db, blocks_list):
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
 def revert_blocks(self, db, revert_blocks_list):
     # TODO: Remove this exception once the unexpected revert scenario has been diagnosed
-    if  revert_blocks_list:
-        logger.error(f"index.py | {self.request.id } | Revert blocks list:")
+    num_revert_blocks = len(revert_blocks_list)
+    if num_revert_blocks == 0:
+        return
+
+    if num_revert_blocks > 500:
+        logger.error(f"index.py | {self.request.id} | Revert blocks list > 500:")
         logger.error(revert_blocks_list)
         raise Exception('Unexpected revert, >0 blocks')
+
+    logger.error(f"index.py | {self.request.id} | Reverting {num_revert_blocks} blocks")
+    logger.error(revert_blocks_list)
 
     with db.scoped_session() as session:
 
@@ -261,11 +268,11 @@ def revert_blocks(self, db, revert_blocks_list):
                 parent_hash = default_config_start_hash
 
             # Update newly current block row and outdated row (indicated by current block's parent hash)
-            session.query(Block).filter(Block.blockhash == parent_hash).update(
-                {"is_current": True}
-            )
             session.query(Block).filter(Block.blockhash == revert_hash).update(
                 {"is_current": False}
+            )
+            session.query(Block).filter(Block.blockhash == parent_hash).update(
+                {"is_current": True}
             )
 
             # aggregate all transactions in current block
