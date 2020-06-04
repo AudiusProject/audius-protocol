@@ -239,13 +239,16 @@ def index_blocks(self, db, blocks_list):
 def revert_blocks(self, db, revert_blocks_list):
     # TODO: Remove this exception once the unexpected revert scenario has been diagnosed
     num_revert_blocks = len(revert_blocks_list)
-    if  num_revert_blocks > 500:
+    if num_revert_blocks == 0:
+        return
+
+    if num_revert_blocks > 500:
         logger.error(f"index.py | {self.request.id} | Revert blocks list > 500:")
         logger.error(revert_blocks_list)
         raise Exception('Unexpected revert, >0 blocks')
-    if num_revert_blocks > 0:
-        logger.error(f"index.py | {self.request.id} | Reverting {num_revert_blocks} blocks")
-        logger.error(revert_blocks_list)
+
+    logger.error(f"index.py | {self.request.id} | Reverting {num_revert_blocks} blocks")
+    logger.error(revert_blocks_list)
 
     with db.scoped_session() as session:
 
