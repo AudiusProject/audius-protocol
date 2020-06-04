@@ -26,10 +26,11 @@ class ModelValidator:
     FILE_NAME = ''
 
     @classmethod
-    def validate(cls, to_validate, model, field=""):
+    # Default field is set to None to validate the entire model
+    def validate(cls, to_validate, model, field=None):
         cls.FILE_NAME = model.lower() + '_schema.json'
         try:
-            schema = cls.get_schema(field, model)
+            schema = cls.get_schema_for_field(field, model)
             validator = Draft7Validator(schema)
 
             found_invalid_field = False
@@ -48,7 +49,8 @@ class ModelValidator:
             raise e
 
     @classmethod
-    def get_schema(cls, field, model):
+    # If field is None, return the entire model schema
+    def get_schema_for_field(cls, field, model):
         try:
             # If model is not present in dict, init its schema and its field subschemas
             if model not in cls.models_to_schema_and_fields_dict:
@@ -57,8 +59,7 @@ class ModelValidator:
                     error_msg = f"ModelValidation failed. Are you sure the schema for {model} is present and proper?"
                     raise RuntimeError(error_msg)
 
-            # If field is empty, return the entire model schema
-            if field == "":
+            if field == None:
                 return cls.models_to_schema_and_fields_dict[model]['model_schema']
 
             # Else, return the specified field schema

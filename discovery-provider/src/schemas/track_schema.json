@@ -6,30 +6,6 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "blockhash": {
-                    "type": "string"
-                },
-                "blocknumber": {
-                    "type": "integer"
-                },
-                "track_id": {
-                    "type": "integer"
-                },
-                "is_current": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "is_delete": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "owner_id": {
-                    "type": "integer"
-                },
-                "route_id": {
-                    "type": "string",
-                    "default": null
-                },
                 "title": {
                     "type": "string",
                     "default": null
@@ -60,11 +36,6 @@
                 },
                 "credits_splits": {
                     "type": "string",
-                    "default": null
-                },
-                "remix_of": {
-                    "type": "object",
-                    "$ref": "#/definitions/RemixOf",
                     "default": null
                 },
                 "create_date": {
@@ -103,23 +74,6 @@
                     },
                     "default": null
                 },
-                "metadata_multihash": {
-                    "type": "string",
-                    "default": null
-                },
-                "download": {
-                    "type": "object",
-                    "$ref": "#/definitions/Download",
-                    "default": null
-                },
-                "updated_at": {
-                    "type": "string",
-                    "format": "date-time"
-                },
-                "created_at": {
-                    "type": "string",
-                    "format": "date-time"
-                },
                 "is_unlisted": {
                     "type": "boolean",
                     "default": false
@@ -129,44 +83,44 @@
                     "$ref": "#/definitions/FieldVisibility",
                     "default": null
                 },
+                "download": {
+                    "type": "object",
+                    "$ref": "#/definitions/Download",
+                    "default": null
+                },
                 "stem_of": {
                     "type": "object",
                     "$ref": "#/definitions/StemOf",
                     "default": null
+                },
+                "remix_of": {
+                    "type": "object",
+                    "$ref": "#/definitions/RemixOf",
+                    "default": null
                 }
             },
             "required": [
-                "blockhash",
-                "blocknumber",
                 "cover_art",
                 "cover_art_sizes",
                 "create_date",
-                "created_at",
                 "credits_splits",
                 "description",
                 "download",
                 "field_visibility",
                 "file_type",
                 "genre",
-                "is_current",
-                "is_delete",
                 "is_unlisted",
                 "isrc",
                 "iswc",
                 "length",
                 "license",
-                "metadata_multihash",
                 "mood",
-                "owner_id",
                 "release_date",
                 "remix_of",
-                "route_id",
                 "stem_of",
                 "tags",
                 "title",
-                "track_id",
-                "track_segments",
-                "updated_at"
+                "track_segments"
             ],
             "title": "Track"
         },
