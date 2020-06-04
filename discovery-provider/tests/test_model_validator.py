@@ -68,7 +68,7 @@ def test_schema_invalid_json():
         assert False, f"test_model_validator [test_schema_invalid_json] failed"
     except BaseException:
         assert True
-  
+
 def test_schema_missing_model_key():
     ModelValidator.BASE_PATH = './tests/res/'
 
