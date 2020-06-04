@@ -1,6 +1,5 @@
 import logging
 import enum
-import sys
 
 from jsonschema import ValidationError
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
@@ -46,8 +45,7 @@ def validate_field_helper(field, value, model):
 
         logger.warning(f"Error: {e}\nSetting the default value {default} for field {field} of type {field_type}")
         value = default
-    except:
-        e = sys.exc_info()[0]
+    except BaseException as e:
         logger.error(f"Validation failed: {e}")
 
     return value
@@ -55,11 +53,10 @@ def validate_field_helper(field, value, model):
 def get_fields_to_validate(model):
     try:
         fields = ModelValidator.models_to_schema_and_fields_dict[model]['fields']
-    except:
-        e = sys.exc_info()[0]
+    except BaseException as e:
         logger.error(f"Validation failed: {e}. No validation will occur for {model}")
         fields = ['']
-    
+
     return fields
 
 class BlockMixin():

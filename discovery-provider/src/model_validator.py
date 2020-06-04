@@ -1,4 +1,3 @@
-import sys
 import os.path
 import json
 import copy
@@ -44,8 +43,8 @@ class ModelValidator:
 
         except ValidationError as ve:
             raise ve
-        except:
-            e = sys.exc_info()[0] # one of many errors specified in helper methods
+        except BaseException as e:
+            # one of many errors specified in helper methods
             raise e
 
     @classmethod
@@ -64,8 +63,7 @@ class ModelValidator:
 
             # Else, return the specified field schema
             return cls.models_to_schema_and_fields_dict[model]['field_schema'][field]
-        except:
-            e = sys.exc_info()[0]
+        except BaseException as e:
             raise e
 
     @classmethod
@@ -90,8 +88,7 @@ class ModelValidator:
                 cls.create_field_schema(schema, field, model)
 
             return schema
-        except:
-            e = sys.exc_info()[0]
+        except BaseException as e:
             logger.exception(e)
             return None
 
@@ -126,15 +123,14 @@ class ModelValidator:
 
             # Add field schema to dict
             cls.models_to_schema_and_fields_dict[model]['field_schema'][field] = schema_copy
-        except:
-            e = sys.exc_info()[0]
+        except BaseException as e:
             raise e
 
     @classmethod
     def _get_properties_field(cls, schema, model, field):
         try:
             return schema['definitions'][model]['properties'][field]
-        except:
+        except BaseException:
             logger.warning(f"Could not find field '{field}' for {model}. Schema will be empty for this field.")
             return {} # empty schema
 
@@ -164,7 +160,7 @@ class ModelValidator:
         try:
             field_schema = cls.models_to_schema_and_fields_dict[model]['field_schema'][field]
             return field_schema['definitions'][model]['properties'][field]['default']
-        except KeyError as ke:
+        except KeyError:
             logger.warning(f"Could not find default for {field} for model {model}. Defaulting to 'None'")
             return None
 
@@ -173,6 +169,6 @@ class ModelValidator:
         try:
             field_schema = cls.models_to_schema_and_fields_dict[model]['field_schema'][field]
             return field_schema['definitions'][model]['properties'][field]['type']
-        except KeyError as ke:
+        except KeyError:
             logger.warning(f"Could not find type for {field} for model {model}. Defaulting to 'None'")
             return None
