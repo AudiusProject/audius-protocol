@@ -9,8 +9,20 @@ import "./SigningLogic.sol";
 /** @title Contract for Audius user replica sets */
 contract UserReplicaSetManager is RegistryContract, SigningLogic {
 
-    RegistryInterface registry = RegistryInterface(0);
-    bytes32 userFactoryRegistryKey;
+    RegistryInterface private registry = RegistryInterface(0);
+    bytes32 private userFactoryRegistryKey;
+
+    // spID to ServiceProviderdelegate owner wallet
+    mapping (uint => address) spIdToCreatorNode;
+
+    // Struct used to represent replica sets
+    struct ReplicaSet {
+        uint primary;
+        uint[] secondaries;
+    }
+
+    // Current artist wallet to replica set
+    mapping (address => ReplicaSet) artistReplicaSets;
 
     constructor(
         address _registryAddress,
