@@ -1,5 +1,4 @@
 import logging
-import json
 
 from jsonschema import ValidationError
 from src.model_validator import ModelValidator
@@ -19,7 +18,7 @@ def test_one_field_schema_bad_value():
     try:
         ModelValidator.validate(to_validate=track, field="title", model="Track")
         assert False, f"test_model_validator [test_one_field_schema_bad_value] failed"
-    except:
+    except BaseException:
         assert True
 
 def test_one_field_schema_bad_key():
@@ -27,7 +26,7 @@ def test_one_field_schema_bad_key():
     try:
         ModelValidator.validate(to_validate=track, field="title", model="Track")
         assert False, f"test_model_validator [test_one_field_schema_bad_key] failed"
-    except:
+    except BaseException:
         assert True
 
 def test_one_field_schema_bad_key_and_value():
@@ -35,7 +34,7 @@ def test_one_field_schema_bad_key_and_value():
     try:
         ModelValidator.validate(to_validate=track, field="title", model="Track")
         assert False, f"test_model_validator [test_one_field_schema_bad_key_and_value] failed"
-    except:
+    except BaseException:
         assert True
 
 def test_one_field_schema_with_additional_properties():
@@ -43,7 +42,7 @@ def test_one_field_schema_with_additional_properties():
     try:
         ModelValidator.validate(to_validate=track, field="title", model="Track")
         assert False, f"test_model_validator [test_one_field_schema_with_additional_properties] failed"
-    except:
+    except BaseException:
         assert True
 
 def test_one_field_schema_empty_object():
@@ -51,7 +50,7 @@ def test_one_field_schema_empty_object():
     try:
         ModelValidator.validate(to_validate=track, field="title", model="Track")
         assert False, f"test_model_validator [test_one_field_schema_empty_object] failed"
-    except:
+    except BaseException:
         assert True
 
 ##### Testing field validation with variation of schemas ######
@@ -59,7 +58,7 @@ def test_schema_missing():
     try:
         ModelValidator.validate(to_validate={}, field="title", model="non-existant")
         assert False, f"test_model_validator [test_one_field_schema_empty_object] failed"
-    except:
+    except BaseException:
         assert True
 
 def test_schema_invalid_json():
@@ -67,14 +66,14 @@ def test_schema_invalid_json():
     try:
         ModelValidator.validate(to_validate={}, field="title", model='bad')
         assert False, f"test_model_validator [test_schema_invalid_json] failed"
-    except:
+    except BaseException:
         assert True
-        
+  
 def test_schema_missing_model_key():
     ModelValidator.BASE_PATH = './tests/res/'
 
     try:
         ModelValidator.validate(to_validate={}, field="title", model='user_bad')
         assert False, f"test_model_validator [test_schema_missing_model_key] failed"
-    except:
+    except BaseException:
         assert True
