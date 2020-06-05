@@ -20,7 +20,12 @@ const TRACK_REQUIRED_PROPS = [
   'title'
 ]
 
-class Tracks extends Base {
+class Track extends Base {
+  constructor (...args) {
+    super(...args)
+    this.getTracks = this.getTracks.bind(this)
+    this.getTracksIncludingUnlisted = this.getTracksIncludingUnlisted.bind(this)
+  }
   /* ------- GETTERS ------- */
 
   /**
@@ -537,4 +542,4 @@ class Tracks extends Base {
   }
 }
 
-module.exports = Tracks
+module.exports = Track
