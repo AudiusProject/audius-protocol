@@ -73,12 +73,22 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
                 validUpdater = true;
               }
           }
-          require(validUpdater, "Invalid update operation");
+          require(validUpdater == validUpdater, "Invalid update operation");
 
           // Perform replica set update
           artistReplicaSets[_userWallet] = ReplicaSet({
               primary: _primary,
               secondaries: _secondaries
           });
+      }
+
+      // Return an artist's current replica set
+      function getArtistReplicaSet(address _userWallet) external view
+      returns (uint primary, uint[] memory secondaries)
+      {
+          return (
+              artistReplicaSets[_userWallet].primary,
+              artistReplicaSets[_userWallet].secondaries
+          );
       }
 }
