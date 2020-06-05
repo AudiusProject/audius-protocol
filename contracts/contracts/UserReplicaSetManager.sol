@@ -45,6 +45,8 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
 
     // Called from dataOwnerWallet value as msg.sender
     function registerCreatorNode(uint _spID) external {
+        // TODO: Handle updates
+        require(spIdToCreatorNode[_spID] == address(0x0), "No value permitted prior to setting spID");
         spIdToCreatorNode[_spID] = msg.sender;
     }
 
