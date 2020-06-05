@@ -1,7 +1,12 @@
+import logging
 import enum
+
+from jsonschema import ValidationError
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import validates
+from sqlalchemy.sql import null
 from sqlalchemy import (
     Column,
     Integer,
@@ -13,8 +18,46 @@ from sqlalchemy import (
     Enum,
     PrimaryKeyConstraint,
 )
+from src.model_validator import ModelValidator
 
 Base = declarative_base()
+logger = logging.getLogger(__name__)
+
+def validate_field_helper(field, value, model):
+    # TODO: need to write custom validator for these datetime fields as jsonschema
+    # validates datetime in format 2018-11-13T20:20:39+00:00, not a format we use
+    # also not totally necessary as these fields are created server side
+    if field in ('created_at', 'updated_at'):
+        return value
+
+    to_validate = {
+        field: value
+    }
+
+    try:
+        ModelValidator.validate(to_validate=to_validate, model=model, field=field)
+    except ValidationError as e:
+        field_type = ModelValidator.get_properties_field_type(model, field)
+        default = ModelValidator.get_properties_field_default(model, field)
+
+        if not field_type or field_type == 'object':
+            default = null() # sql null
+
+        logger.warning(f"Error: {e}\nSetting the default value {default} for field {field} of type {field_type}")
+        value = default
+    except BaseException as e:
+        logger.error(f"Validation failed: {e}")
+
+    return value
+
+def get_fields_to_validate(model):
+    try:
+        fields = ModelValidator.models_to_schema_and_fields_dict[model]['fields']
+    except BaseException as e:
+        logger.error(f"Validation failed: {e}. No validation will occur for {model}")
+        fields = ['']
+
+    return fields
 
 class BlockMixin():
 
@@ -92,6 +135,14 @@ class User(Base):
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, user_id, blockhash)
 
+    ModelValidator.init_model_schemas('User')
+    fields = get_fields_to_validate('User')
+
+    # unpacking args into @validates
+    @validates(*fields)
+    def validate_field(self, field, value):
+        return validate_field_helper(field, value, 'User')
+
     def __repr__(self):
         return f"<User(blockhash={self.blockhash},\
 blocknumber={self.blocknumber},\
@@ -150,6 +201,14 @@ class Track(Base):
 
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, track_id, blockhash)
+
+    ModelValidator.init_model_schemas('Track')
+    fields = get_fields_to_validate('Track')
+
+    # unpacking args into @validates
+    @validates(*fields)
+    def validate_field(self, field, value):
+        return validate_field_helper(field, value, 'Track')
 
     def __repr__(self):
         return (

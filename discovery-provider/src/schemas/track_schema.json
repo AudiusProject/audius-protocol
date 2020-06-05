@@ -1,0 +1,245 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$ref": "#/definitions/Track",
+    "definitions": {
+        "Track": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "default": null
+                },
+                "length": {
+                    "type": "integer",
+                    "default": null
+                },
+                "cover_art": {
+                    "type": "string",
+                    "default": null
+                },
+                "cover_art_sizes": {
+                    "type": "string",
+                    "default": null
+                },
+                "tags": {
+                    "type": "string",
+                    "default": null
+                },
+                "genre": {
+                    "type": "string",
+                    "default": null
+                },
+                "mood": {
+                    "type": "string",
+                    "default": null
+                },
+                "credits_splits": {
+                    "type": "string",
+                    "default": null
+                },
+                "create_date": {
+                    "type": "string",
+                    "default": null
+                },
+                "release_date": {
+                    "type": "string",
+                    "default": null
+                },
+                "file_type": {
+                    "type": "string",
+                    "default": null
+                },
+                "description": {
+                    "type": "string",
+                    "default": null
+                },
+                "license": {
+                    "type": "string",
+                    "default": null
+                },
+                "isrc": {
+                    "type": "string",
+                    "default": null
+                },
+                "iswc": {
+                    "type": "string",
+                    "default": null
+                },
+                "track_segments": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/TrackSegment"
+                    },
+                    "default": null
+                },
+                "is_unlisted": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "field_visibility": {
+                    "type": "object",
+                    "$ref": "#/definitions/FieldVisibility",
+                    "default": null
+                },
+                "download": {
+                    "type": "object",
+                    "$ref": "#/definitions/Download",
+                    "default": null
+                },
+                "stem_of": {
+                    "type": "object",
+                    "$ref": "#/definitions/StemOf",
+                    "default": null
+                },
+                "remix_of": {
+                    "type": "object",
+                    "$ref": "#/definitions/RemixOf",
+                    "default": null
+                }
+            },
+            "required": [
+                "cover_art",
+                "cover_art_sizes",
+                "create_date",
+                "credits_splits",
+                "description",
+                "download",
+                "field_visibility",
+                "file_type",
+                "genre",
+                "is_unlisted",
+                "isrc",
+                "iswc",
+                "length",
+                "license",
+                "mood",
+                "release_date",
+                "remix_of",
+                "stem_of",
+                "tags",
+                "title",
+                "track_segments"
+            ],
+            "title": "Track"
+        },
+        "RemixOf": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "tracks": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/TrackElement"
+                    }
+                }
+            },
+            "required": [
+                "tracks"
+            ],
+            "title": "RemixOf"
+        },
+        "TrackElement": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "parent_track_id": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "parent_track_id"
+            ],
+            "title": "TrackElement"
+        },
+        "Download": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "cid": {
+                    "type": "string"
+                },
+                "is_downloadable": {
+                    "type": "boolean"
+                },
+                "requires_follow": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "cid",
+                "is_downloadable",
+                "requires_follow"
+            ],
+            "title": "Download"
+        },
+        "FieldVisibility": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "mood": {
+                    "type": "boolean"
+                },
+                "tags": {
+                    "type": "boolean"
+                },
+                "genre": {
+                    "type": "boolean"
+                },
+                "share": {
+                    "type": "boolean"
+                },
+                "play_count": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "genre",
+                "mood",
+                "play_count",
+                "share",
+                "tags"
+            ],
+            "title": "FieldVisibility"
+        },
+        "StemOf": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "parent_track_id": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "category",
+                "parent_track_id"
+            ],
+            "title": "StemOf"
+        },
+        "TrackSegment": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "duration": {
+                    "type": "integer"
+                },
+                "multihash": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "duration",
+                "multihash"
+            ],
+            "title": "TrackSegment"
+        }
+    }
+}
