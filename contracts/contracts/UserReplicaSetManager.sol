@@ -22,8 +22,8 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         uint[] secondaries;
     }
 
-    // Current artist wallet to replica set
-    mapping (address => ReplicaSet) artistReplicaSets;
+    // Current userId to replica set
+    mapping (uint => ReplicaSet) artistReplicaSets;
 
     // TODO: Capture deployer here
     constructor(
@@ -50,25 +50,32 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
 
     // Function used to permission updates to a given user's replica set 
     function updateReplicaSet(
-        address _userWallet,
+        uint _userId,
         uint _primary,
         uint[] calldata _secondaries,
         uint _oldPrimary,
         uint[] calldata _oldSecondaries) external
       {
           // Caller's notion of existing primary must match regisered value on chain
-          require(artistReplicaSets[_userWallet].primary == _oldPrimary,  "Invalid prior configuration"); 
+          require(artistReplicaSets[_userId].primary == _oldPrimary,  "Invalid prior configuration"); 
+
+          // Get user object from UserFactory
+          UserFactoryInterface userFactory = UserFactoryInterface(registry.getContract(userFactoryRegistryKey));
+          require(userFactory.userExists(_userId), "Valid user required");
+
+          (address userWallet, ) = userFactory.getUser(_userId);
 
           // A valid updater can be one of the dataOwnerWallet, existing creator node, or contract deployer
           bool validUpdater = false;
-          if (msg.sender == _userWallet || msg.sender == spIdToCreatorNode[_oldPrimary] || msg.sender == deployer) {
+          // TODO: Replace msg.sender below with recovered signature from _subjectSig object
+          if (msg.sender == userWallet || msg.sender == spIdToCreatorNode[_oldPrimary] || msg.sender == deployer) {
               validUpdater = true;
           }
           // Caller's notion of secondary values must match registered value on chain
           // A secondary node can also be considered a valid updater
           for (uint i = 0; i < _oldSecondaries.length; i++) {
               require(
-                  artistReplicaSets[_userWallet].secondaries[i] == _oldSecondaries[i],
+                  artistReplicaSets[_userId].secondaries[i] == _oldSecondaries[i],
                   "Invalid prior secondary configuration"
               );
 
@@ -86,19 +93,26 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
           }
 
           // Perform replica set update
-          artistReplicaSets[_userWallet] = ReplicaSet({
+          artistReplicaSets[_userId] = ReplicaSet({
               primary: _primary,
               secondaries: _secondaries
           });
       }
 
       // Return an artist's current replica set
-      function getArtistReplicaSet(address _userWallet) external view
+      function getArtistReplicaSet(uint _userId) external view
       returns (uint primary, uint[] memory secondaries)
       {
           return (
-              artistReplicaSets[_userWallet].primary,
-              artistReplicaSets[_userWallet].secondaries
+              artistReplicaSets[_userId].primary,
+              artistReplicaSets[_userId].secondaries
           );
+      }
+
+      // Get wallet corresponding to creator node
+      function getCreatorNodeWallet(uint _spID) external view
+      returns (address wallet) 
+      {
+          return spIdToCreatorNode[_spID];
       }
 }
