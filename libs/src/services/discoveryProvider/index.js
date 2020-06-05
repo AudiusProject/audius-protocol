@@ -9,6 +9,8 @@ const {
   REQUEST_TIMEOUT_MS
 } = require('./constants')
 
+const Requests = require('./requests')
+
 // TODO - webpack workaround. find a way to do this without checkout for .default property
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
@@ -169,29 +171,16 @@ class DiscoveryProvider {
    * await getTracks(100, 0, [3,2,6]) - Invalid track ids will not be accepted
    */
   async getTracks (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null, minBlockNumber = null, filterDeleted = null, withUsers = false) {
-    let req = { endpoint: 'tracks', queryParams: { limit: limit, offset: offset } }
-    if (idsArray) {
-      if (!Array.isArray(idsArray)) {
-        throw new Error('Expected array of track ids')
-      }
-      req.queryParams.id = idsArray
-    }
-    if (minBlockNumber) {
-      req.queryParams.min_block_number = minBlockNumber
-    }
-    if (targetUserId) {
-      req.queryParams.user_id = targetUserId
-    }
-    if (sort) {
-      req.queryParams.sort = sort
-    }
-    if (typeof filterDeleted === 'boolean') {
-      req.queryParams.filter_deleted = filterDeleted
-    }
-    if (withUsers) {
-      req.queryParams.with_users = true
-    }
-
+    const req = Requests.getTracks(
+      limit,
+      offset,
+      idsArray,
+      targetUserId,
+      sort,
+      minBlockNumber,
+      filterDeleted,
+      withUsers
+    )
     return this._makeRequest(req)
   }
 
@@ -209,17 +198,10 @@ class DiscoveryProvider {
    * @returns {(Array)} track
    */
   async getTracksIncludingUnlisted (identifiers, withUsers = false) {
-    let req = {
-      endpoint: 'tracks_including_unlisted',
-      method: 'post',
-      data: {
-        tracks: identifiers
-      },
-      queryParams: {}
-    }
-    if (withUsers) {
-      req.queryParams.with_users = true
-    }
+    const req = Requests.getTracksIncludingUnlisted(
+      identifiers,
+      withUsers
+    )
     return this._makeRequest(req)
   }
 
@@ -229,12 +211,7 @@ class DiscoveryProvider {
    * @returns {(Array)} track
    */
   async getStemsForTrack (trackId) {
-    const req = {
-      endpoint: `stems/${trackId}`,
-      queryParams: {
-        with_users: true
-      }
-    }
+    const req = Requests.getStemsForTrack(trackId)
     return this._makeRequest(req)
   }
 
@@ -246,14 +223,7 @@ class DiscoveryProvider {
    * @returns {(Array)} track
    */
   async getRemixesOfTrack (trackId, limit = null, offset = null) {
-    const req = {
-      endpoint: `remixes/${trackId}/children`,
-      queryParams: {
-        with_users: true,
-        limit,
-        offset
-      }
-    }
+    const req = Requests.getRemixesOfTrack(trackId, limit, offset)
     return this._makeRequest(req)
   }
 
@@ -264,14 +234,7 @@ class DiscoveryProvider {
    * @returns {(Array)} track
    */
   async getRemixTrackParents (trackId, limit = null, offset = null) {
-    const req = {
-      endpoint: `remixes/${trackId}/parents`,
-      queryParams: {
-        with_users: true,
-        limit,
-        offset
-      }
-    }
+    const req = Requests.getRemixTrackParents(trackId, limit, offset)
     return this._makeRequest(req)
   }
 
