@@ -229,7 +229,7 @@
             "additionalProperties": false,
             "properties": {
                 "duration": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "multihash": {
                     "type": "string"
