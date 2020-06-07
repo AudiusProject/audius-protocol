@@ -2,7 +2,7 @@ import os.path
 import json
 import copy
 import logging  # pylint: disable=C0302
-from jsonschema import Draft7Validator, ValidationError
+from jsonschema import Draft7Validator, ValidationError, SchemaError
 logger = logging.getLogger(__name__)
 
 # https://app.quicktype.io/ -- JSON schema generator
@@ -25,8 +25,8 @@ class ModelValidator:
     BASE_PATH = './src/schemas/'
     FILE_NAME = ''
 
-    @classmethod
     # Default field is set to None to validate the entire model
+    @classmethod
     def validate(cls, to_validate, model, field=None):
         cls.FILE_NAME = model.lower() + '_schema.json'
         try:
@@ -44,12 +44,14 @@ class ModelValidator:
 
         except ValidationError as ve:
             raise ve
+        except SchemaError as se:
+            raise se
         except BaseException as e:
             # one of many errors specified in helper methods
             raise e
 
-    @classmethod
     # If field is None, return the entire model schema
+    @classmethod
     def get_schema_for_field(cls, field, model):
         try:
             # If model is not present in dict, init its schema and its field subschemas
