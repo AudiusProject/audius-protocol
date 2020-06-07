@@ -126,6 +126,15 @@ class ModelValidator:
             cls.models_to_schema_and_fields_dict[model]['field_schema'][field] = schema_copy
         except BaseException as e:
             raise e
+    
+    @classmethod
+    def get_properties_for_field(cls, model, field):
+        try:
+            field_schema = cls.models_to_schema_and_fields_dict[model]['field_schema'][field]
+            return field_schema['definitions'][model]['properties'][field]
+        except KeyError:
+            logger.warning(f"Could not find type for {field} for model {model}. Defaulting to 'None'")
+            return None
 
     @classmethod
     def _get_properties_field(cls, schema, model, field):
@@ -155,21 +164,3 @@ class ModelValidator:
             return schema['definitions'][model]['required']
         except KeyError as ke:
             raise KeyError(f"Could not find keys for {model} schema: {ke}")
-
-    @classmethod
-    def get_properties_field_default(cls, model, field):
-        try:
-            field_schema = cls.models_to_schema_and_fields_dict[model]['field_schema'][field]
-            return field_schema['definitions'][model]['properties'][field]['default']
-        except KeyError:
-            logger.warning(f"Could not find default for {field} for model {model}. Defaulting to 'None'")
-            return None
-
-    @classmethod
-    def get_properties_field_type(cls, model, field):
-        try:
-            field_schema = cls.models_to_schema_and_fields_dict[model]['field_schema'][field]
-            return field_schema['definitions'][model]['properties'][field]['type']
-        except KeyError:
-            logger.warning(f"Could not find type for {field} for model {model}. Defaulting to 'None'")
-            return None

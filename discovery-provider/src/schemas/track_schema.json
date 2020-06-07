@@ -72,7 +72,8 @@
                     "items": {
                         "$ref": "#/definitions/TrackSegment"
                     },
-                    "default": null
+                    "default": [],
+                    "$comment": "default set to empty array to unblock stalling indexing. if set to null, discprov db will reject because of not-NULL constraint"
                 },
                 "is_unlisted": {
                     "type": "boolean",
@@ -81,12 +82,14 @@
                 "field_visibility": {
                     "type": "object",
                     "$ref": "#/definitions/FieldVisibility",
-                    "default": null
+                    "default": false,
+                    "JSONDefault": "definitions.FieldVisibility.properties"
                 },
                 "download": {
                     "type": "object",
                     "$ref": "#/definitions/Download",
-                    "default": null
+                    "default": null,
+                    "JSONDefault": "definitions.Download.properties"
                 },
                 "stem_of": {
                     "type": "object",
@@ -100,20 +103,12 @@
                 }
             },
             "required": [
-                "cover_art",
                 "cover_art_sizes",
-                "create_date",
-                "credits_splits",
-                "description",
                 "download",
                 "field_visibility",
-                "file_type",
                 "genre",
                 "is_unlisted",
-                "isrc",
-                "iswc",
                 "length",
-                "license",
                 "mood",
                 "release_date",
                 "remix_of",
@@ -162,13 +157,16 @@
             "additionalProperties": false,
             "properties": {
                 "cid": {
-                    "type": "string"
+                    "type": "string",
+                    "default": null
                 },
                 "is_downloadable": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default": false
                 },
                 "requires_follow": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default": false
                 }
             },
             "required": [
@@ -183,19 +181,28 @@
             "additionalProperties": false,
             "properties": {
                 "mood": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default": true
                 },
                 "tags": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default": true
                 },
                 "genre": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default": true
                 },
                 "share": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default": true
                 },
                 "play_count": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default": true
+                },
+                "remixes": {
+                    "type": "boolean",
+                    "default": true
                 }
             },
             "required": [
@@ -203,7 +210,8 @@
                 "mood",
                 "play_count",
                 "share",
-                "tags"
+                "tags",
+                "remixes"
             ],
             "title": "FieldVisibility"
         },
@@ -229,7 +237,7 @@
             "additionalProperties": false,
             "properties": {
                 "duration": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "multihash": {
                     "type": "string"

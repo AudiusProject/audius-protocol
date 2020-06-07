@@ -23,7 +23,7 @@ from src.model_validator import ModelValidator
 Base = declarative_base()
 logger = logging.getLogger(__name__)
 
-def validate_field_helper(field, value, model):
+def validate_field_helper(field, value, model, field_to_type_dict):
     # TODO: need to write custom validator for these datetime fields as jsonschema
     # validates datetime in format 2018-11-13T20:20:39+00:00, not a format we use
     # also not totally necessary as these fields are created server side
@@ -33,17 +33,49 @@ def validate_field_helper(field, value, model):
     to_validate = {
         field: value
     }
-
+    # logger.warning(f'full schema {ModelValidator.get_schema_for_field(field, model)}')
     try:
         ModelValidator.validate(to_validate=to_validate, model=model, field=field)
     except ValidationError as e:
-        field_type = ModelValidator.get_properties_field_type(model, field)
-        default = ModelValidator.get_properties_field_default(model, field)
+        schema = ModelValidator.get_schema_for_field(None, model)
+        field_props = ModelValidator.get_properties_for_field(model, field)
+        field_type = field_props['type']
+        default = field_props['default']
 
-        if not field_type or field_type == 'object':
-            default = null() # sql null
+        # logger.warning(f'field_props {field_props}')
+        # logger.warning(f'Got default value from schema {default} for field {field}')
 
-        logger.warning(f"Error: {e}\nSetting the default value {default} for field {field} of type {field_type}")
+        # if the schema field is JSON and db column type is JSONB
+        if (field_type == 'object' and type(field_to_type_dict[field]) == JSONB):
+            defaults_obj_path = None
+
+            try:
+                # this is JSON string path like 'definitions.FieldVisibility.properties'
+                defaults_obj_path = field_props['JSONDefault'] 
+            except KeyError:
+                pass # if this isn't specified in the schema...continue
+            
+            # if JSONDefault property set in schema, try to add all the properties not defined to the default
+            if defaults_obj_path:
+                default_obj = {}
+                paths = defaults_obj_path.split('.')
+                for path in paths:
+                    # traverse the json object to get to the properties obj to use as default 
+                    schema = schema[path]
+
+                for prop in schema:
+                    if isinstance(value, dict) and value:
+                        try:
+                            default_obj[prop] = value[prop]
+                        except KeyError:
+                            default_obj[prop] = schema[prop]['default']
+
+                default = default_obj
+            # if JSONDefault property in schema not set, we need to set SQL null
+            else:
+                default = null() # sql null
+
+        logger.warning(f"Error: {e} - Setting the default value {default} for field {field} of type {field_type}")
         value = default
     except BaseException as e:
         logger.error(f"Validation failed: {e}")
@@ -142,7 +174,12 @@ class User(Base):
     # unpacking args into @validates
     @validates(*fields)
     def validate_field(self, field, value):
-        return validate_field_helper(field, value, 'User')
+        # dictionary mapping field to type
+        # TODO - this is generated every time a validation runs, how do we cache this?
+        field_to_type_dict = {}
+        for c in self.__table__.columns:
+            field_to_type_dict[c.name] = c.type
+        return validate_field_helper(field, value, 'User', validate_field_helper)
 
     def __repr__(self):
         return f"<User(blockhash={self.blockhash},\
@@ -176,24 +213,24 @@ class Track(Base):
     is_delete = Column(Boolean, nullable=False)
     owner_id = Column(Integer, nullable=False)
     route_id = Column(String, nullable=False)
-    title = Column(Text)
-    length = Column(Integer)
-    cover_art = Column(String)
-    cover_art_sizes = Column(String)
-    tags = Column(String)
-    genre = Column(String)
-    mood = Column(String)
-    credits_splits = Column(String)
+    title = Column(Text, nullable=True)
+    length = Column(Integer, nullable=True)
+    cover_art = Column(String, nullable=True)
+    cover_art_sizes = Column(String, nullable=True)
+    tags = Column(String, nullable=True)
+    genre = Column(String, nullable=True)
+    mood = Column(String, nullable=True)
+    credits_splits = Column(String, nullable=True)
     remix_of = Column(postgresql.JSONB, nullable=True)
-    create_date = Column(String)
-    release_date = Column(String)
-    file_type = Column(String)
-    description = Column(String)
-    license = Column(String)
-    isrc = Column(String)
-    iswc = Column(String)
+    create_date = Column(String, nullable=True)
+    release_date = Column(String, nullable=True)
+    file_type = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    license = Column(String, nullable=True)
+    isrc = Column(String, nullable=True)
+    iswc = Column(String, nullable=True)
     track_segments = Column(postgresql.JSONB, nullable=False)
-    metadata_multihash = Column(String)
+    metadata_multihash = Column(String, nullable=True)
     download = Column(postgresql.JSONB, nullable=True)
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
@@ -210,7 +247,12 @@ class Track(Base):
     # unpacking args into @validates
     @validates(*fields)
     def validate_field(self, field, value):
-        return validate_field_helper(field, value, 'Track')
+        # dictionary mapping field to type
+        # TODO - this is generated every time a validation runs, how do we cache this?
+        field_to_type_dict = {}
+        for c in self.__table__.columns:
+            field_to_type_dict[c.name] = c.type
+        return validate_field_helper(field, value, 'Track', field_to_type_dict)
 
     def __repr__(self):
         return (

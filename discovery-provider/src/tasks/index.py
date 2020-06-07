@@ -28,6 +28,8 @@ def get_contract_info_if_exists(self, address):
     return None
 
 def initialize_blocks_table_if_necessary(db):
+    redis = update_task.redis
+
     target_blockhash = None
     target_blockhash = update_task.shared_config["discprov"]["start_block"]
     target_block = update_task.web3.eth.getBlock(target_blockhash, True)
@@ -55,6 +57,10 @@ def initialize_blocks_table_if_necessary(db):
             assert (
                 current_block_query_result.count() == 1
             ), "Expected SINGLE row marked as current"
+            
+            # set the last indexed block in redis
+            current_block_result = current_block_query_result.first()
+            redis.set(most_recent_indexed_block_redis_key, current_block_result.number)
 
     return target_blockhash
 
