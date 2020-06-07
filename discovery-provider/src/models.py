@@ -47,22 +47,22 @@ def validate_field_helper(field, value, model, field_to_type_dict):
             try:
                 # this is a special JSON string path like 'definitions.FieldVisibility.properties'
                 # that gives the location of the default properties and values in the schema json
-                defaults_obj_path = field_props['JSONDefault'] 
+                defaults_obj_path = field_props['JSONDefault']
                 if defaults_obj_path:
                     default_obj = {}
                     paths = defaults_obj_path.split('.')
                     for path in paths:
-                        # traverse the json object to get to the properties obj to use as default 
+                        # traverse the json object to get to the properties obj to use as default
                         schema = schema[path]
 
                     for prop in schema:
-                        if isinstance(value, dict) and value:
+                        if value and (type(value) is dict):
                             try:
                                 default_obj[prop] = value[prop]
                             except KeyError:
                                 default_obj[prop] = schema[prop]['default']
 
-                    default_value = default_obj                
+                    default_value = default_obj
                 else:
                     # if JSONDefault property in schema is empty, set to SQL null
                     default_value = null() # sql null
@@ -70,7 +70,8 @@ def validate_field_helper(field, value, model, field_to_type_dict):
                 # if JSONDefault property in schema doesn't exist, set to SQL null
                 default_value = null() # sql null
 
-        logger.warning(f"Validation: Setting the default value {default_value} for field {field} of type {field_type} because of error: {e}")
+        logger.warning(f"Validation: Setting the default value {default_value} for field {field} " \
+            f"of type {field_type} because of error: {e}")
         value = default_value
     except BaseException as e:
         logger.error(f"Validation failed: {e}")
@@ -137,7 +138,7 @@ is_blacklisted={self.is_blacklisted}, is_current={self.is_current})>"
 
 class User(Base):
     __tablename__ = "users"
-    
+
     # lazy init-ed by validates decorator the first time we need to do a model validation.
     # used to map column to type since field is a string in decorator and __table__.columns
     # returns a list

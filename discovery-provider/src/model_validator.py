@@ -128,7 +128,7 @@ class ModelValidator:
             cls.models_to_schema_and_fields_dict[model]['field_schema'][field] = schema_copy
         except BaseException as e:
             raise e
-    
+
     @classmethod
     def get_properties_for_field(cls, model, field):
         try:
