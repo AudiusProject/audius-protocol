@@ -34,13 +34,13 @@ class ModelValidator:
             validator = Draft7Validator(schema)
 
             found_invalid_field = False
+            errors = []
             for error in sorted(validator.iter_errors(to_validate), key=str):
                 found_invalid_field = True
-                logger.warning(f"Error with {model} instance {to_validate}: {error.message}")
+                errors.append(error.message)
 
-            # if any error occurs, raise exception
             if found_invalid_field:
-                raise ValidationError(f"Instance {to_validate} is not proper")
+                raise ValidationError(f"Instance {to_validate} is not proper. Errors: {errors}")
 
         except ValidationError as ve:
             raise ve

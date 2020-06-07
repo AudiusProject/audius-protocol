@@ -15,7 +15,7 @@
                     "default": null
                 },
                 "cover_art": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "cover_art_sizes": {
@@ -23,7 +23,7 @@
                     "default": null
                 },
                 "tags": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "genre": {
@@ -31,15 +31,15 @@
                     "default": null
                 },
                 "mood": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "credits_splits": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "create_date": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "release_date": {
@@ -47,11 +47,11 @@
                     "default": null
                 },
                 "file_type": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "description": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "license": {
@@ -59,11 +59,11 @@
                     "default": null
                 },
                 "isrc": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "iswc": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "track_segments": {
@@ -103,12 +103,19 @@
                 }
             },
             "required": [
+                "cover_art",
                 "cover_art_sizes",
+                "credits_splits",
+                "description",
                 "download",
                 "field_visibility",
+                "file_type",
                 "genre",
                 "is_unlisted",
+                "isrc",
+                "iswc",
                 "length",
+                "license",
                 "mood",
                 "release_date",
                 "remix_of",

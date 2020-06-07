@@ -75,7 +75,7 @@ def validate_field_helper(field, value, model, field_to_type_dict):
             else:
                 default = null() # sql null
 
-        logger.warning(f"Error: {e} - Setting the default value {default} for field {field} of type {field_type}")
+        logger.warning(f"Validation: Setting the default value {default} for field {field} of type {field_type} because of error: {e}")
         value = default
     except BaseException as e:
         logger.error(f"Validation failed: {e}")
@@ -142,6 +142,11 @@ is_blacklisted={self.is_blacklisted}, is_current={self.is_current})>"
 
 class User(Base):
     __tablename__ = "users"
+    
+    # lazy init-ed by validates decorator the first time we need to do a model validation.
+    # used to map column to type since field is a string in decorator and __table__.columns
+    # returns a list
+    field_to_type_dict = {}
 
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
     blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
@@ -174,12 +179,12 @@ class User(Base):
     # unpacking args into @validates
     @validates(*fields)
     def validate_field(self, field, value):
-        # dictionary mapping field to type
-        # TODO - this is generated every time a validation runs, how do we cache this?
-        field_to_type_dict = {}
-        for c in self.__table__.columns:
-            field_to_type_dict[c.name] = c.type
-        return validate_field_helper(field, value, 'User', validate_field_helper)
+        # if dict is empty, populate the fields
+        if not bool(self.field_to_type_dict):
+            self.field_to_type_dict = {}
+            for c in self.__table__.columns:
+                self.field_to_type_dict[c.name] = c.type
+        return validate_field_helper(field, value, 'User', self.field_to_type_dict)
 
     def __repr__(self):
         return f"<User(blockhash={self.blockhash},\
@@ -205,6 +210,11 @@ created_at={self.created_at})>"
 
 class Track(Base):
     __tablename__ = "tracks"
+
+    # lazy init-ed by validates decorator the first time we need to do a model validation.
+    # used to map column to type since field is a string in decorator and __table__.columns
+    # returns a list
+    field_to_type_dict = {}
 
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
     blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
@@ -247,12 +257,11 @@ class Track(Base):
     # unpacking args into @validates
     @validates(*fields)
     def validate_field(self, field, value):
-        # dictionary mapping field to type
-        # TODO - this is generated every time a validation runs, how do we cache this?
-        field_to_type_dict = {}
-        for c in self.__table__.columns:
-            field_to_type_dict[c.name] = c.type
-        return validate_field_helper(field, value, 'Track', field_to_type_dict)
+        # if dict is empty, populate the fields
+        if not bool(self.field_to_type_dict):
+            for c in self.__table__.columns:
+                self.field_to_type_dict[c.name] = c.type
+        return validate_field_helper(field, value, 'Track', self.field_to_type_dict)
 
     def __repr__(self):
         return (
