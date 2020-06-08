@@ -36,47 +36,55 @@ def validate_field_helper(field, value, model, field_to_type_dict):
     try:
         ModelValidator.validate(to_validate=to_validate, model=model, field=field)
     except ValidationError as e:
-        schema = ModelValidator.get_schema_for_field(None, model)
-        field_props = ModelValidator.get_properties_for_field(model, field)
-        field_type = field_props['type']
-        default_value = field_props['default']
-
-        # if the schema field is JSON and db column type is JSONB, attempt to find
-        # smarter default values to set
-        if (field_type == 'object' and type(field_to_type_dict[field]) == JSONB):
-            try:
-                # this is a special JSON string path like 'definitions.FieldVisibility.properties'
-                # that gives the location of the default properties and values in the schema json
-                defaults_obj_path = field_props['JSONDefault']
-                if defaults_obj_path:
-                    default_obj = {}
-                    paths = defaults_obj_path.split('.')
-                    for path in paths:
-                        # traverse the json object to get to the properties obj to use as default
-                        schema = schema[path]
-
-                    for prop in schema:
-                        if value and (type(value) is dict):
-                            try:
-                                default_obj[prop] = value[prop]
-                            except KeyError:
-                                default_obj[prop] = schema[prop]['default']
-
-                    default_value = default_obj
-                else:
-                    # if JSONDefault property in schema is empty, set to SQL null
-                    default_value = null() # sql null
-            except KeyError:
-                # if JSONDefault property in schema doesn't exist, set to SQL null
-                default_value = null() # sql null
-
-        logger.warning(f"Validation: Setting the default value {default_value} for field {field} " \
-            f"of type {field_type} because of error: {e}")
-        value = default_value
+        value = get_default_value(field, value, model, field_to_type_dict, e)
     except BaseException as e:
         logger.error(f"Validation failed: {e}")
 
     return value
+
+def get_default_value(field, value, model, field_to_type_dict, e):
+    schema = ModelValidator.get_schema_for_field(None, model)
+    field_props = ModelValidator.get_properties_for_field(model, field)
+    field_type = field_props['type']
+    default_value = field_props['default']
+
+    # if the schema field is JSON and db column type is JSONB, attempt to find
+    # smarter default values to set
+    if (field_type == 'object' and isinstance(field_to_type_dict[field], JSONB)):
+        defaults_obj_path = None
+        try:
+            # this is a special JSON string path like 'definitions.FieldVisibility.properties'
+            # that gives the location of the default properties and values in the schema json
+            defaults_obj_path = field_props['JSONDefault']
+        except KeyError:
+            # if JSONDefault property in schema doesn't exist, set to SQL null
+            default_value = null() # sql null
+
+        if defaults_obj_path:
+            default_obj = {}
+            paths = defaults_obj_path.split('.')
+            for path in paths:
+                # traverse the json object to get to the properties obj to use as default
+                schema = schema[path]
+
+            # at this point schema is the actual default schema. iterate through each prop in the
+            # schema to pluck from existing value if it exists, or set the default
+            for prop in schema:
+                if value and isinstance(value, dict):
+                    try:
+                        default_obj[prop] = value[prop]
+                    except KeyError:
+                        default_obj[prop] = schema[prop]['default']
+
+            default_value = default_obj
+        else:
+            # if JSONDefault property in schema is empty, set to SQL null
+            default_value = null() # sql null
+
+    logger.warning(f"Validation: Setting the default value {default_value} for field {field} " \
+        f"of type {field_type} because of error: {e}")
+
+    return default_value
 
 def get_fields_to_validate(model):
     try:

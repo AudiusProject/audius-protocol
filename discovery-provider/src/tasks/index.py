@@ -57,7 +57,7 @@ def initialize_blocks_table_if_necessary(db):
             assert (
                 current_block_query_result.count() == 1
             ), "Expected SINGLE row marked as current"
-            
+
             # set the last indexed block in redis
             current_block_result = current_block_query_result.first()
             redis.set(most_recent_indexed_block_redis_key, current_block_result.number)

@@ -82,7 +82,7 @@
                 "field_visibility": {
                     "type": "object",
                     "$ref": "#/definitions/FieldVisibility",
-                    "default": false,
+                    "default": null,
                     "JSONDefault": "definitions.FieldVisibility.properties"
                 },
                 "download": {
