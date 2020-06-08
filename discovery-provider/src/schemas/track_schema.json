@@ -43,7 +43,7 @@
                     "default": null
                 },
                 "release_date": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "file_type": {
@@ -55,7 +55,7 @@
                     "default": null
                 },
                 "license": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "isrc": {
@@ -82,14 +82,23 @@
                 "field_visibility": {
                     "type": "object",
                     "$ref": "#/definitions/FieldVisibility",
-                    "default": null,
-                    "JSONDefault": "definitions.FieldVisibility.properties"
+                    "default": {
+                        "mood": true,
+                        "tags": true,
+                        "genre": true,
+                        "share": true,
+                        "play_count": true,
+                        "remixes": true
+                    }
                 },
                 "download": {
                     "type": "object",
                     "$ref": "#/definitions/Download",
-                    "default": null,
-                    "JSONDefault": "definitions.Download.properties"
+                    "default": {
+                        "cid": null,
+                        "is_downloadable": false,
+                        "requires_follow": false
+                    }
                 },
                 "stem_of": {
                     "type": "object",
