@@ -5,6 +5,7 @@ const ipfsClient = require('ipfs-http-client')
 const ipfsClientLatest = require('ipfs-http-client-latest')
 const path = require('path')
 const AudiusLibs = require('@audius/libs')
+const RecurringSync = require('./recurringSync')
 
 const initializeApp = require('./app')
 const config = require('./config')
@@ -65,6 +66,11 @@ const initIPFS = async () => {
   return { ipfs, ipfsLatest }
 }
 
+const initRecurringSyncs = async () => {
+  const recurringSync = new RecurringSync()
+  await recurringSync.init()
+}
+
 const runDBMigrations = async () => {
   try {
     logger.info('Executing database migrations...')
@@ -111,6 +117,9 @@ const startApp = async () => {
     logger.info('Initialized audius libs')
 
     appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager, ipfsLatest)
+
+    // start recurring sync jobs
+    await initRecurringSyncs()
   }
 
   // when app terminates, close down any open DB connections gracefully
