@@ -114,6 +114,7 @@
             "required": [
                 "cover_art",
                 "cover_art_sizes",
+                "create_date",
                 "credits_splits",
                 "description",
                 "download",
@@ -173,16 +174,13 @@
             "additionalProperties": false,
             "properties": {
                 "cid": {
-                    "type": "string",
-                    "default": null
+                    "type": "string"
                 },
                 "is_downloadable": {
-                    "type": "boolean",
-                    "default": false
+                    "type": "boolean"
                 },
                 "requires_follow": {
-                    "type": "boolean",
-                    "default": false
+                    "type": "boolean"
                 }
             },
             "required": [
@@ -217,7 +215,7 @@
             },
             "required": [
             ],
-            "$comment": "Removing the required fields from FieldVisibility because it causes backwards compatibility issues. If we added a new property, we don't want old records to fail if all properties are not specified(and overwrite the values with the defaults), but we also don't want to set new properties especially on the discovery provider because then we'd be writing properties not present in the metadata written on chain.",
+            "$comment": "No required fields for FieldVisibility because it causes backwards compatibility issues. If we added a new property, we don't want old records to fail if all properties are not specified(and overwrite the values with the defaults), but we also don't want to set new properties especially on the discovery provider because then we'd be writing properties not present in the metadata written on chain.",
             "title": "FieldVisibility"
         },
         "StemOf": {
