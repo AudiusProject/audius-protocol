@@ -12,6 +12,7 @@ const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const BlacklistManager = require('./blacklistManager')
+const Web3Accounts = require('web3-eth-accounts')
 
 const initAudiusLibs = async () => {
   const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
@@ -89,6 +90,13 @@ const startApp = async () => {
   logger.info('Configuring service...')
 
   await config.asyncConfig()
+
+  // delegateOwnerWallet & delegatePrivateKey
+  const web3Accounts = new Web3Accounts()
+  const acctResp = web3Accounts.create()
+  config.set('delegateOwnerWallet', acctResp.address)
+  config.set('delegatePrivateKey', acctResp.privateKey)
+
   const storagePath = configFileStorage()
 
   const { ipfs, ipfsLatest } = await initIPFS()
@@ -107,7 +115,7 @@ const startApp = async () => {
     /** Run app */
     await BlacklistManager.blacklist(ipfs)
 
-    const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
+    const audiusLibs = null // (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
     logger.info('Initialized audius libs')
 
     appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager, ipfsLatest)

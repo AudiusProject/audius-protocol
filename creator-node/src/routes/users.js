@@ -100,6 +100,8 @@ module.exports = function (app) {
    */
   app.post('/users/login/challenge', handleResponse(async (req, res, next) => {
     const { signature, data: theirChallenge } = req.body
+    console.error('test')
+    req.logger.error(`signature: ${signature}, theirchallenge: ${theirChallenge}`)
 
     if (!signature || !theirChallenge) {
       return errorResponseBadRequest('Missing request body values.')

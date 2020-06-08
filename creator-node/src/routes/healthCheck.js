@@ -1,13 +1,92 @@
+const disk = require('diskusage')
+const axios = require('axios')
+const ethSigUtil = require('eth-sig-util')
+
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
+const { authMiddleware } = require('../middlewares')
 const { sequelize } = require('../models')
 const config = require('../config.js')
 const versionInfo = require('../../.version.json')
-const disk = require('diskusage')
 
 const MAX_DB_CONNECTIONS = 90
 const MAX_DISK_USAGE_PERCENT = 90 // 90%
 
 module.exports = function (app) {
+  /** Call this to tell CN to call another CN's /permission route to test cross-CN auth */
+  app.get('/test', handleResponse(async (req, res) => {
+    const redisClient = req.app.get('redisClient')
+
+    const cnodeURL = req.query.cnodeURL // string
+
+    // TODO validate redisClient + cnodeURL + lowercase cnodeURL
+
+    const delegateOwnerWallet = config.get('delegateOwnerWallet')
+    const delegatePrivateKey = config.get('delegatePrivateKey')
+    console.log(`delegateOwnerWallet: ${delegateOwnerWallet}; delegatePrivateKey: ${delegatePrivateKey}`)
+    // TODO validate delegateOwnerWallet - is this needed?
+
+    // check if authToken exists for cnodeURL
+    let authToken = await redisClient.get(`authToken::${cnodeURL}`)
+    
+    if (authToken) { console.log(`authToken found: ${authToken}`) }
+
+    // If no authToken, signup + login on dstCnode
+    if (!authToken) {
+      // Signup on dstCnode with delegateOwnerWallet
+      await axios({
+        method: 'post',
+        baseURL: cnodeURL,
+        url: '/users',
+        data: { 'walletAddress': delegateOwnerWallet },
+        responseType: 'json'
+      })
+
+      // Get login challenge
+      const challengeResp = await axios({
+        method: 'get',
+        baseURL: cnodeURL,
+        url: '/users/login/challenge',
+        params: { 'walletPublicKey': delegateOwnerWallet }
+      })
+      const challengeKey = challengeResp.data.challenge
+
+      const pkBuffer = Buffer.from(delegatePrivateKey.substring(2), 'hex')
+      const sig = ethSigUtil.personalSign(pkBuffer, { data: challengeKey })
+
+      // Submit login challenge response for verification
+      const challengeResp2 = await axios({
+        method: 'post',
+        baseURL: cnodeURL,
+        url: '/users/login/challenge',
+        data: {
+          'data': challengeKey,
+          'signature': sig
+        }
+      })
+      console.log('post login challenge success', challengeResp2.data)
+
+      authToken = challengeResp2.data.sessionToken
+      await redisClient.set(`authToken::${cnodeURL}`, authToken)
+    }
+
+    // Attempt to call permissioned route
+    const testResp = await axios({
+      method: 'get',
+      baseURL: cnodeURL,
+      url: '/test_permission',
+      params: { },
+      headers: { 'X-Session-ID': authToken },
+      responseType: 'json'
+    })
+    // If resp successful, indicates auth worked
+    return successResponse(testResp.data)
+  }))
+
+  /** CN ensures that caller is authed */
+  app.get('/test_permission', authMiddleware, handleResponse(async (req, res) => {
+    return successResponse('yes')
+  }))
+
   /** @dev TODO - Explore checking more than just DB (ex. IPFS) */
   app.get('/health_check', handleResponse(async (req, res) => {
     const libs = req.app.get('audiusLibs')
