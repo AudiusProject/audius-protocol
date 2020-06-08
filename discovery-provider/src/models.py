@@ -218,7 +218,7 @@ class Track(Base):
     # unpacking args into @validates
     @validates(*fields)
     def validate_field(self, field, value):
-        return validate_field_helper(field, value, 'Track', self.field_to_type_dict)
+        return validate_field_helper(field, value, 'Track')
 
     def __repr__(self):
         return (
