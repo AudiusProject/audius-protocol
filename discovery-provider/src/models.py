@@ -43,7 +43,6 @@ def validate_field_helper(field, value, model):
     return value
 
 def get_default_value(field, value, model, e):
-    schema = ModelValidator.get_schema_for_field(None, model)
     field_props = ModelValidator.get_properties_for_field(model, field)
     field_type = field_props['type']
     default_value = field_props['default']
