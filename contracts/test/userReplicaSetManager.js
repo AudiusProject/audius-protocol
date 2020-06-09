@@ -127,13 +127,18 @@ contract('UserReplicaSetManager', async (accounts) => {
     // Swap out secondary cn1 for cn4 from cn3
     oldPrimary = user1Primary
     oldSecondaries = user1Secondaries
-    // 5 is an invalid ID
     let invalidUser1Secondaries = _lib.toBNArray([3, 5])
+    // 5 is an invalid ID, confirm failure to update
     await expectRevert(
       updateReplicaSet(userId1, user1Primary, invalidUser1Secondaries, oldPrimary, oldSecondaries, cnode3Account),
       'Secondary must exist'
     )
     user1Secondaries = _lib.toBNArray([3, 4])
+    // Try to issue an update from the incoming secondary account, confirm failure
+    await expectRevert(
+      updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode4Account),
+      'Invalid update operation'
+    )
     await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode3Account)
   })
 })
