@@ -105,17 +105,17 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
           }
           require(validUpdater == true, "Invalid update operation");
 
-          // Confirm primary and every incoming secondary is valid
-          require(spIdToCreatorNode[_primary] != address(0x00), "Primary must exist"); 
-          for (uint i = 0; i < _secondaries.length; i++) {
-              require(spIdToCreatorNode[i] != address(0x00), "Secondary must exist");
-          }
-
           // Perform replica set update
           artistReplicaSets[_userId] = ReplicaSet({
               primary: _primary,
               secondaries: _secondaries
           });
+
+          // Confirm primary and every incoming secondary is valid
+          require(spIdToCreatorNode[_primary] != address(0x00), "Primary must exist"); 
+          for (uint i = 0; i < _secondaries.length; i++) {
+              require(spIdToCreatorNode[_secondaries[i]] != address(0x00), "Secondary must exist");
+          }
       }
 
       // Return an artist's current replica set

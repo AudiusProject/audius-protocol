@@ -10,20 +10,22 @@ const { expectRevert } = require('@openzeppelin/test-helpers');
 
 contract('UserReplicaSetManager', async (accounts) => {
   const verifierAddress = accounts[2]
-  const testUserId1 = 1
-  const testUserId2 = 2
+  const userId1 = 1
+  const userAcct1 = accounts[3]
+  const userId2 = 2
+  const userAcct2 = accounts[4]
   // First spID = 1, account = accounts[3]
   const cnode1SpID = 1
-  const cnode1Account = accounts[3]
+  const cnode1Account = accounts[5]
   // Second spID = 2, accounts = accounts[4]
   const cnode2SpID = 2
-  const cnode2Account = accounts[4]
+  const cnode2Account = accounts[6]
   // Third spID = 3, accounts = accounts[5]
   const cnode3SpID = 3
-  const cnode3Account = accounts[5]
+  const cnode3Account = accounts[7]
   // Fourth spID = 4, accounts = accounts[6]
   const cnode4SpID = 4
-  const cnode4Account = accounts[6]
+  const cnode4Account = accounts[8]
 
   // Contract objects
   let registry
@@ -48,15 +50,15 @@ contract('UserReplicaSetManager', async (accounts) => {
     // Add 2 users
     await _lib.addUserAndValidate(
       userFactory,
-      testUserId1,
-      accounts[0],
+      userId1,
+      userAcct1,
       _constants.testMultihash.digest1,
       _constants.userHandle1,
       true)
     await _lib.addUserAndValidate(
       userFactory,
-      testUserId2,
-      accounts[0],
+      userId2,
+      userAcct2,
       _constants.testMultihash.digest1,
       _constants.userHandle2,
       true)
@@ -87,5 +89,16 @@ contract('UserReplicaSetManager', async (accounts) => {
     await userReplicaSetManager.addCreatorNode(cnode4SpID, cnode4Account, cnode3SpID, cnode3Account, { from: cnode3Account })
     let walletFromChain = await userReplicaSetManager.getCreatorNodeWallet(cnode4SpID)
     assert.equal(walletFromChain, cnode4Account, 'Expect cn4 wallet assignment')
+  })
+
+  it('Configure artist replica set', async () => {
+    const user1Primary = _lib.toBN(1)
+    const user1Secondaries = _lib.toBNArray([2, 3])
+    await userReplicaSetManager.updateReplicaSet(userId1, user1Primary, user1Secondaries, 0, [],
+      { from: userAcct1 }
+    )
+    let replicaSetFromChain = await userReplicaSetManager.getArtistReplicaSet(userId1)
+    assert.isTrue(replicaSetFromChain.primary.eq(user1Primary), 'Primary mismatch')
+    assert.isTrue(replicaSetFromChain.secondaries.every((replicaId, i) => replicaId.eq(user1Secondaries[i])), 'Secondary mismatch')
   })
 })
