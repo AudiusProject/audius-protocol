@@ -1,6 +1,8 @@
 const axios = require('axios')
 const FormData = require('form-data')
 
+const SchemaValidator = require('../schemaValidator')
+
 // Currently only supports a single logged-in audius user
 class CreatorNode {
   /* Static Utils */
@@ -39,11 +41,12 @@ class CreatorNode {
 
   /* -------------- */
 
-  constructor (web3Manager, creatorNodeEndpoint, isServer, userStateManager, lazyConnect) {
+  constructor (web3Manager, creatorNodeEndpoint, isServer, userStateManager, lazyConnect, schemas) {
     this.web3Manager = web3Manager
     this.creatorNodeEndpoint = creatorNodeEndpoint
     this.isServer = isServer
     this.userStateManager = userStateManager
+    this.schemas = schemas
 
     this.lazyConnect = lazyConnect
     this.connected = false
@@ -111,6 +114,10 @@ class CreatorNode {
    * @param {object} metadata the creator metadata
    */
   async uploadCreatorContent (metadata) {
+    // this does the actual validation before sending to the creator node
+    // if validation fails, validate() will throw an error
+    this.schemas[SchemaValidator.userSchemaType].validate(metadata)
+
     return this._makeRequest({
       url: '/audius_users/metadata',
       method: 'post',
@@ -194,6 +201,10 @@ class CreatorNode {
    * @param {string?} sourceFile
    */
   async uploadTrackMetadata (metadata, sourceFile) {
+    // this does the actual validation before sending to the creator node
+    // if validation fails, validate() will throw an error
+    this.schemas[SchemaValidator.trackSchemaType].validate(metadata)
+
     return this._makeRequest({
       url: '/tracks/metadata',
       method: 'post',

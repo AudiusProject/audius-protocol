@@ -152,9 +152,9 @@ class AudiusLibs {
     this.File = null
 
     // Schemas
-    const schemas = new SchemaValidator()
-    this.TrackSchema = schemas.TrackSchema
-    this.UserSchema = schemas.UserSchema
+    const schemaValidator = new SchemaValidator()
+    schemaValidator.init()
+    this.schemas = schemaValidator.getSchemas()
   }
 
   /** Init services based on presence of a relevant config. */
@@ -231,7 +231,8 @@ class AudiusLibs {
         creatorNodeEndpoint,
         this.isServer,
         this.userStateManager,
-        this.creatorNodeConfig.lazyConnect)
+        this.creatorNodeConfig.lazyConnect,
+        this.schemas)
       await this.creatorNode.init()
     }
 

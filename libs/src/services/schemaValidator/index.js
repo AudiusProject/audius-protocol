@@ -7,7 +7,7 @@ const TRACK_SCHEMA_TYPE = 'TrackSchema'
 const USER_SCHEMA_TYPE = 'UserSchema'
 
 class SchemaValidator {
-  constructor () {
+  init () {
     this.ajv = new Ajv()
 
     /**
@@ -20,7 +20,7 @@ class SchemaValidator {
      *   },
      *   'UserSchema': ...
      * }
-     * 
+     *
      * validate works like this `this.UserSchema.validate(userObj)`
      */
     this.schemas = {
@@ -32,23 +32,21 @@ class SchemaValidator {
       }
     }
 
-    for (const schemaType in this.schemas){
-      try{
-        const validator = this.ajv.compile(this.schemas[schemaType].schema) 
+    for (const schemaType in this.schemas) {
+      try {
+        const validator = this.ajv.compile(this.schemas[schemaType].schema)
         if (validator.errors) throw new Error(`Validation error during schema compilation: ${schemaType} ${validator.errors}`)
         else {
           this.schemas[schemaType].validator = validator
           this.schemas[schemaType].validate = (obj) => {
             var valid = validator(obj)
-            if (!valid) throw new Error(`Validation failed with errors: ${JSON.stringify(validator.errors)}`);
+            if (!valid) throw new Error(`Validation failed with errors: ${JSON.stringify(validator.errors)}`)
           }
         }
-      } catch(e) {
+      } catch (e) {
         throw new Error(`Error compiling schema: ${schemaType} ${e.message}`)
       }
     }
-
-    return this.schemas
   }
 
   getSchemas () {
