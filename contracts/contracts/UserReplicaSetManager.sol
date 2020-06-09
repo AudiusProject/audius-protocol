@@ -16,15 +16,16 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     address deployer;
 
     // spID to ServiceProvider delegateOwnerWallet
-    mapping (uint => address) spIdToCreatorNode;
+    mapping (uint => address) spIdToCreatorNodeDelegateWallet;
 
     // Struct used to represent replica sets
+    // Each uint reprsets the spID registered on eth-contracts
     struct ReplicaSet {
         uint primary;
         uint[] secondaries;
     }
 
-    // Current userId to replica set
+    // Current uint userId to Replica Set
     mapping (uint => ReplicaSet) artistReplicaSets;
 
     constructor(
@@ -36,7 +37,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         require(
             _registryAddress != address(0x00) &&
             _userFactoryRegistryKey.length != 0,
-            "requires non-zero _registryAddress"
+            "Requires non-zero _registryAddress"
         );
 
         registry = RegistryInterface(_registryAddress);
@@ -56,12 +57,12 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
       require(msg.sender == _proposerWallet, "Invalid sender");
       // Requirements for non deployer address
       if (msg.sender != deployer) {
-          require(spIdToCreatorNode[_proposerSpId] == _proposerWallet, "Mismatch proposer wallet for existing spID");
-          require(spIdToCreatorNode[_proposerSpId] != address(0x00), "Unregistered sender spID");
+          require(spIdToCreatorNodeDelegateWallet[_proposerSpId] == _proposerWallet, "Mismatch proposer wallet for existing spID");
+          require(spIdToCreatorNodeDelegateWallet[_proposerSpId] != address(0x00), "Unregistered sender spID");
       }
 
       // TODO: Event
-      spIdToCreatorNode[_newCnodeId] = _newCnodeDelegateOwnerWallet;
+      spIdToCreatorNodeDelegateWallet[_newCnodeId] = _newCnodeDelegateOwnerWallet;
     }
 
     // Function used to permission updates to a given user's replica set 
@@ -84,7 +85,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
           // A valid updater can be one of the dataOwnerWallet, existing creator node, or contract deployer
           bool validUpdater = false;
           // TODO: Replace msg.sender below with recovered signature from _subjectSig object
-          if (msg.sender == userWallet || msg.sender == spIdToCreatorNode[_oldPrimary] || msg.sender == deployer) {
+          if (msg.sender == userWallet || msg.sender == spIdToCreatorNodeDelegateWallet[_oldPrimary] || msg.sender == deployer) {
               validUpdater = true;
           }
           // Caller's notion of secondary values must match registered value on chain
@@ -97,7 +98,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
               );
 
               // A valid updater has been found
-              if (msg.sender == spIdToCreatorNode[_oldSecondaries[i]]) {
+              if (msg.sender == spIdToCreatorNodeDelegateWallet[_oldSecondaries[i]]) {
                 validUpdater = true;
               }
           }
@@ -110,9 +111,9 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
           });
 
           // Confirm primary and every incoming secondary is valid
-          require(spIdToCreatorNode[_primary] != address(0x00), "Primary must exist"); 
+          require(spIdToCreatorNodeDelegateWallet[_primary] != address(0x00), "Primary must exist"); 
           for (uint i = 0; i < _secondaries.length; i++) {
-              require(spIdToCreatorNode[_secondaries[i]] != address(0x00), "Secondary must exist");
+              require(spIdToCreatorNodeDelegateWallet[_secondaries[i]] != address(0x00), "Secondary must exist");
           }
       }
 
@@ -130,6 +131,6 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
       function getCreatorNodeWallet(uint _spID) external view
       returns (address wallet) 
       {
-          return spIdToCreatorNode[_spID];
+          return spIdToCreatorNodeDelegateWallet[_spID];
       }
 }
