@@ -89,6 +89,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
           }
           // Caller's notion of secondary values must match registered value on chain
           // A secondary node can also be considered a valid updater
+          require(_oldSecondaries.length == artistReplicaSets[_userId].secondaries.length, "Invalid prior secondary configuration");
           for (uint i = 0; i < _oldSecondaries.length; i++) {
               require(
                   artistReplicaSets[_userId].secondaries[i] == _oldSecondaries[i],

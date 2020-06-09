@@ -100,10 +100,26 @@ contract('UserReplicaSetManager', async (accounts) => {
     const user1Primary = _lib.toBN(1)
     const user1Secondaries = _lib.toBNArray([2, 3])
     await updateReplicaSet(userId1, user1Primary, user1Secondaries, 0, [], userAcct1)
+  })
+
+  it('Configure + update artist replica set', async () => {
+    let user1Primary = _lib.toBN(1)
+    let user1Secondaries = _lib.toBNArray([2, 3])
+    let oldPrimary = user1Primary
+    let oldSecondaries = user1Secondaries
+    await updateReplicaSet(userId1, user1Primary, user1Secondaries, 0, [], userAcct1)
     // Fail with out of date prior configuration
     await expectRevert(
       updateReplicaSet(userId1, user1Primary, user1Secondaries, 0, [], userAcct1),
       'Invalid prior primary configuration'
     )
+    await expectRevert(
+      updateReplicaSet(userId1, user1Primary, user1Secondaries, user1Primary, [], userAcct1),
+      'Invalid prior secondary configuration'
+    )
+    // Now issue update
+    user1Primary = _lib.toBN(2)
+    user1Secondaries = _lib.toBNArray([3, 1])
+    await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, userAcct1)
   })
 })
