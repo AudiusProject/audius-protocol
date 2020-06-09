@@ -71,6 +71,7 @@ contract('UserReplicaSetManager', async (accounts) => {
     await registerCnode(cnode3SpID, cnode3Account)
   })
 
+  /** Helper Functions **/
   let registerCnode = async (spID, delegateOwnerWallet) => {
     // Setup cnode
     let walletFromChain = await userReplicaSetManager.getCreatorNodeWallet(spID)
@@ -84,6 +85,17 @@ contract('UserReplicaSetManager', async (accounts) => {
     )
   }
 
+  let updateReplicaSet = async (userId, newPrimary, newSecondaries, oldPrimary, oldSecondaries, senderAcct) => {
+    await userReplicaSetManager.updateReplicaSet(
+      userId, newPrimary, newSecondaries, oldPrimary, oldSecondaries,
+      { from: senderAcct }
+    )
+    let replicaSetFromChain = await userReplicaSetManager.getArtistReplicaSet(userId)
+    assert.isTrue(replicaSetFromChain.primary.eq(newPrimary), 'Primary mismatch')
+    assert.isTrue(replicaSetFromChain.secondaries.every((replicaId, i) => replicaId.eq(newSecondaries[i])), 'Secondary mismatch')
+  }
+
+  /** Test Cases **/
   it('Add creator nodes', async () => {
     // Add cn4 through cn3
     await userReplicaSetManager.addCreatorNode(cnode4SpID, cnode4Account, cnode3SpID, cnode3Account, { from: cnode3Account })
@@ -94,11 +106,11 @@ contract('UserReplicaSetManager', async (accounts) => {
   it('Configure artist replica set', async () => {
     const user1Primary = _lib.toBN(1)
     const user1Secondaries = _lib.toBNArray([2, 3])
-    await userReplicaSetManager.updateReplicaSet(userId1, user1Primary, user1Secondaries, 0, [],
-      { from: userAcct1 }
+    await updateReplicaSet(userId1, user1Primary, user1Secondaries, 0, [], userAcct1)
+    // Fail with out of date prior configuration
+    await expectRevert(
+      updateReplicaSet(userId1, user1Primary, user1Secondaries, 0, [], userAcct1),
+      'Invalid prior primary configuration'
     )
-    let replicaSetFromChain = await userReplicaSetManager.getArtistReplicaSet(userId1)
-    assert.isTrue(replicaSetFromChain.primary.eq(user1Primary), 'Primary mismatch')
-    assert.isTrue(replicaSetFromChain.secondaries.every((replicaId, i) => replicaId.eq(user1Secondaries[i])), 'Secondary mismatch')
   })
 })

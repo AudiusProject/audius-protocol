@@ -76,7 +76,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         uint[] calldata _oldSecondaries) external
       {
           // Caller's notion of existing primary must match regisered value on chain
-          require(artistReplicaSets[_userId].primary == _oldPrimary,  "Invalid prior configuration"); 
+          require(artistReplicaSets[_userId].primary == _oldPrimary,  "Invalid prior primary configuration"); 
 
           // Get user object from UserFactory
           UserFactoryInterface userFactory = UserFactoryInterface(registry.getContract(userFactoryRegistryKey));
