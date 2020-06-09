@@ -62,21 +62,21 @@ contract('UserReplicaSetManager', async (accounts) => {
     // Setup cnode 1
     let cnode1WalletFromChain = await userReplicaSetManager.getCreatorNodeWallet(cnode1SpID)
     assert.equal(cnode1WalletFromChain, _constants.addressZero, 'Expect no wallet initially')
-    await userReplicaSetManager.registerCreatorNode(cnode1SpID, { from: cnode1Account })
+    await userReplicaSetManager.registerCreatorNode(cnode1SpID, cnode1Account, { from: cnode1Account })
     cnode1WalletFromChain = await userReplicaSetManager.getCreatorNodeWallet(cnode1SpID)
     assert.equal(cnode1WalletFromChain, cnode1Account, 'Expect wallet assignment')
 
     // Setup cnode 2
     let cnode2WalletFromChain = await userReplicaSetManager.getCreatorNodeWallet(cnode2SpID)
     assert.equal(cnode2WalletFromChain, _constants.addressZero, 'Expect no wallet initially')
-    await userReplicaSetManager.registerCreatorNode(cnode2SpID, { from: cnode2Account })
+    await userReplicaSetManager.registerCreatorNode(cnode2SpID, cnode2Account, { from: cnode2Account })
     cnode2WalletFromChain = await userReplicaSetManager.getCreatorNodeWallet(cnode2SpID)
     assert.equal(cnode2WalletFromChain, cnode2Account, 'Expect wallet assignment')
 
     // Setup cnode 3
     let cnode3WalletFromChain = await userReplicaSetManager.getCreatorNodeWallet(cnode3SpID)
     assert.equal(cnode3WalletFromChain, _constants.addressZero, 'Expect no wallet initially')
-    await userReplicaSetManager.registerCreatorNode(cnode3SpID, { from: cnode3Account })
+    await userReplicaSetManager.registerCreatorNode(cnode3SpID, cnode3Account, { from: cnode3Account })
     cnode3WalletFromChain = await userReplicaSetManager.getCreatorNodeWallet(cnode3SpID)
     assert.equal(cnode3WalletFromChain, cnode3Account, 'Expect wallet assignment')
   })

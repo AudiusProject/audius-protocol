@@ -13,7 +13,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     bytes32 private userFactoryRegistryKey;
     address deployer;
 
-    // spID to ServiceProviderdelegate owner wallet
+    // spID to ServiceProvider delegateOwnerWallet
     mapping (uint => address) spIdToCreatorNode;
 
     // Struct used to represent replica sets
@@ -25,7 +25,6 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     // Current userId to replica set
     mapping (uint => ReplicaSet) artistReplicaSets;
 
-    // TODO: Capture deployer here
     constructor(
         address _registryAddress,
         bytes32 _userFactoryRegistryKey,
@@ -44,10 +43,28 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     }
 
     // Called from dataOwnerWallet value as msg.sender
-    function registerCreatorNode(uint _spID) external {
-        // TODO: Handle updates
+    // TODO: Add signature for relay - signer must be the target delegateOwnerWallet for this replicaId
+    function registerCreatorNode(uint _spID, address _delegateOwnerWallet) external {
         require(spIdToCreatorNode[_spID] == address(0x0), "No value permitted prior to setting spID");
-        spIdToCreatorNode[_spID] = msg.sender;
+        require(msg.sender == _delegateOwnerWallet || msg.sender == deployer, "Owner or deployer");
+        spIdToCreatorNode[_spID] = _delegateOwnerWallet;
+    }
+
+    // WIP - Update model allowing existing nodes to register others
+    // From chain of trust based authentication scheme
+    // TODO: Add signature for relay - signer must be proposerWallet 
+    function addCreatorNode(
+        uint _newCnodeId,
+        address _newCnodeDelegateOwnerWallet,
+        uint _proposerSpId,
+        address _proposerWallet
+    ) external {
+      require(msg.sender == _proposerWallet, "Invalid sender");
+      require(spIdToCreatorNode[_proposerSpId] == _proposerWallet, "Mismatch proposer wallet for existing spID");
+      require(spIdToCreatorNode[_proposerSpId] != address(0x00), "Unregistered sender spID");
+
+      // TODO: Event
+      spIdToCreatorNode[_newCnodeId] = _newCnodeDelegateOwnerWallet;
     }
 
     // Function used to permission updates to a given user's replica set 
