@@ -9,6 +9,7 @@ import * as _constants from './utils/constants'
 const { expectRevert } = require('@openzeppelin/test-helpers');
 
 contract('UserReplicaSetManager', async (accounts) => {
+  const deployer = accounts[0]
   const verifierAddress = accounts[2]
   const userId1 = 1
   const userAcct1 = accounts[3]
@@ -44,7 +45,7 @@ contract('UserReplicaSetManager', async (accounts) => {
     userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, verifierAddress)
     await registry.addContract(_constants.userFactoryKey, userFactory.address)
 
-    userReplicaSetManager = await UserReplicaSetManager.new(registry.address, _constants.userFactoryKey, networkId)
+    userReplicaSetManager = await UserReplicaSetManager.new(registry.address, _constants.userFactoryKey, networkId, { from: deployer })
     await registry.addContract(_constants.userReplicaSetManagerKey, userReplicaSetManager.address)
 
     // Add 2 users
@@ -63,26 +64,25 @@ contract('UserReplicaSetManager', async (accounts) => {
       _constants.userHandle2,
       true)
 
-    // Setup cnode 1
-    await registerCnode(cnode1SpID, cnode1Account)
-    // Setup cnode 2
-    await registerCnode(cnode2SpID, cnode2Account)
-    // Setup cnode 3
-    await registerCnode(cnode3SpID, cnode3Account)
+    // Setup cnode 1 from deployer address
+    await updateCreatorNode(cnode1SpID, cnode1Account, 0, deployer)
+    // Setup cnode 2 through cnode1Account
+    await updateCreatorNode(cnode2SpID, cnode2Account, cnode1SpID, cnode1Account)
+    // Setup cnode 3 through cn2Account
+    await updateCreatorNode(cnode3SpID, cnode3Account, cnode1SpID, cnode1Account)
   })
 
   /** Helper Functions **/
-  let registerCnode = async (spID, delegateOwnerWallet) => {
-    // Setup cnode
-    let walletFromChain = await userReplicaSetManager.getCreatorNodeWallet(spID)
-    assert.equal(walletFromChain, _constants.addressZero, 'Expect no wallet initially')
-    await userReplicaSetManager.registerCreatorNode(spID, delegateOwnerWallet, { from: delegateOwnerWallet })
-    walletFromChain = await userReplicaSetManager.getCreatorNodeWallet(spID)
-    assert.equal(walletFromChain, delegateOwnerWallet, 'Expect wallet assignment')
-    await expectRevert(
-      userReplicaSetManager.registerCreatorNode(spID, delegateOwnerWallet, { from: delegateOwnerWallet }),
-      'No value permitted'
+  let updateCreatorNode = async (newCnodeId, newCnodeDelegateOwnerWallet, proposerId, proposerWallet) => {
+    await userReplicaSetManager.updateCreatorNode(
+      newCnodeId,
+      newCnodeDelegateOwnerWallet,
+      proposerId,
+      proposerWallet,
+      { from: proposerWallet }
     )
+    let walletFromChain = await userReplicaSetManager.getCreatorNodeWallet(newCnodeId)
+    assert.equal(walletFromChain, newCnodeDelegateOwnerWallet, 'Expect wallet assignment')
   }
 
   let updateReplicaSet = async (userId, newPrimary, newSecondaries, oldPrimary, oldSecondaries, senderAcct) => {
@@ -96,13 +96,6 @@ contract('UserReplicaSetManager', async (accounts) => {
   }
 
   /** Test Cases **/
-  it('Add creator nodes', async () => {
-    // Add cn4 through cn3
-    await userReplicaSetManager.addCreatorNode(cnode4SpID, cnode4Account, cnode3SpID, cnode3Account, { from: cnode3Account })
-    let walletFromChain = await userReplicaSetManager.getCreatorNodeWallet(cnode4SpID)
-    assert.equal(walletFromChain, cnode4Account, 'Expect cn4 wallet assignment')
-  })
-
   it('Configure artist replica set', async () => {
     const user1Primary = _lib.toBN(1)
     const user1Secondaries = _lib.toBNArray([2, 3])

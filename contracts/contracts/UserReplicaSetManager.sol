@@ -11,6 +11,8 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
 
     RegistryInterface private registry = RegistryInterface(0);
     bytes32 private userFactoryRegistryKey;
+
+    // TODO: Permission to special address if necessary
     address deployer;
 
     // spID to ServiceProvider delegateOwnerWallet
@@ -42,26 +44,21 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         deployer = msg.sender;
     }
 
-    // Called from dataOwnerWallet value as msg.sender
-    // TODO: Add signature for relay - signer must be the target delegateOwnerWallet for this replicaId
-    function registerCreatorNode(uint _spID, address _delegateOwnerWallet) external {
-        require(spIdToCreatorNode[_spID] == address(0x0), "No value permitted prior to setting spID");
-        require(msg.sender == _delegateOwnerWallet || msg.sender == deployer, "Owner or deployer");
-        spIdToCreatorNode[_spID] = _delegateOwnerWallet;
-    }
-
     // WIP - Update model allowing existing nodes to register others
     // From chain of trust based authentication scheme
     // TODO: Add signature for relay - signer must be proposerWallet 
-    function addCreatorNode(
+    function updateCreatorNode(
         uint _newCnodeId,
         address _newCnodeDelegateOwnerWallet,
         uint _proposerSpId,
         address _proposerWallet
     ) external {
       require(msg.sender == _proposerWallet, "Invalid sender");
-      require(spIdToCreatorNode[_proposerSpId] == _proposerWallet, "Mismatch proposer wallet for existing spID");
-      require(spIdToCreatorNode[_proposerSpId] != address(0x00), "Unregistered sender spID");
+      // Requirements for non deployer address
+      if (msg.sender != deployer) {
+          require(spIdToCreatorNode[_proposerSpId] == _proposerWallet, "Mismatch proposer wallet for existing spID");
+          require(spIdToCreatorNode[_proposerSpId] != address(0x00), "Unregistered sender spID");
+      }
 
       // TODO: Event
       spIdToCreatorNode[_newCnodeId] = _newCnodeDelegateOwnerWallet;
