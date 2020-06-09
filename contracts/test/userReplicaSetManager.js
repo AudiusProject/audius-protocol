@@ -83,6 +83,9 @@ contract('UserReplicaSetManager', async (accounts) => {
   }
 
   it('Add creator nodes', async () => {
-
+    // Add cn4 through cn3
+    await userReplicaSetManager.addCreatorNode(cnode4SpID, cnode4Account, cnode3SpID, cnode3Account, { from: cnode3Account })
+    let walletFromChain = await userReplicaSetManager.getCreatorNodeWallet(cnode4SpID)
+    assert.equal(walletFromChain, cnode4Account, 'Expect cn4 wallet assignment')
   })
 })
