@@ -69,7 +69,9 @@ contract('UserReplicaSetManager', async (accounts) => {
     // Setup cnode 2 through cnode1Account
     await updateCreatorNode(cnode2SpID, cnode2Account, cnode1SpID, cnode1Account)
     // Setup cnode 3 through cn2Account
-    await updateCreatorNode(cnode3SpID, cnode3Account, cnode1SpID, cnode1Account)
+    await updateCreatorNode(cnode3SpID, cnode3Account, cnode2SpID, cnode2Account)
+    // Setup cnode 4 through cn3Account
+    await updateCreatorNode(cnode4SpID, cnode4Account, cnode3SpID, cnode3Account)
   })
 
   /** Helper Functions **/
@@ -117,9 +119,21 @@ contract('UserReplicaSetManager', async (accounts) => {
       updateReplicaSet(userId1, user1Primary, user1Secondaries, user1Primary, [], userAcct1),
       'Invalid prior secondary configuration'
     )
-    // Now issue update
+    // Now issue update from userAcct1
     user1Primary = _lib.toBN(2)
     user1Secondaries = _lib.toBNArray([3, 1])
     await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, userAcct1)
+
+    // Swap out secondary cn1 for cn4 from cn3
+    oldPrimary = user1Primary
+    oldSecondaries = user1Secondaries
+    // 5 is an invalid ID
+    let invalidUser1Secondaries = _lib.toBNArray([3, 5])
+    await expectRevert(
+      updateReplicaSet(userId1, user1Primary, invalidUser1Secondaries, oldPrimary, oldSecondaries, cnode3Account),
+      'Secondary must exist'
+    )
+    user1Secondaries = _lib.toBNArray([3, 4])
+    await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode3Account)
   })
 })
