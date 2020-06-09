@@ -65,22 +65,21 @@ contract('UserReplicaSetManager', async (accounts) => {
       true)
 
     // Setup cnode 1 from deployer address
-    await updateCreatorNode(cnode1SpID, cnode1Account, 0, deployer)
+    await addOrUpdateCreatorNode(cnode1SpID, cnode1Account, 0, deployer)
     // Setup cnode 2 through cnode1Account
-    await updateCreatorNode(cnode2SpID, cnode2Account, cnode1SpID, cnode1Account)
+    await addOrUpdateCreatorNode(cnode2SpID, cnode2Account, cnode1SpID, cnode1Account)
     // Setup cnode 3 through cn2Account
-    await updateCreatorNode(cnode3SpID, cnode3Account, cnode2SpID, cnode2Account)
+    await addOrUpdateCreatorNode(cnode3SpID, cnode3Account, cnode2SpID, cnode2Account)
     // Setup cnode 4 through cn3Account
-    await updateCreatorNode(cnode4SpID, cnode4Account, cnode3SpID, cnode3Account)
+    await addOrUpdateCreatorNode(cnode4SpID, cnode4Account, cnode3SpID, cnode3Account)
   })
 
   /** Helper Functions **/
-  let updateCreatorNode = async (newCnodeId, newCnodeDelegateOwnerWallet, proposerId, proposerWallet) => {
-    await userReplicaSetManager.updateCreatorNode(
+  let addOrUpdateCreatorNode = async (newCnodeId, newCnodeDelegateOwnerWallet, proposerId, proposerWallet) => {
+    await userReplicaSetManager.addOrUpdateCreatorNode(
       newCnodeId,
       newCnodeDelegateOwnerWallet,
       proposerId,
-      proposerWallet,
       { from: proposerWallet }
     )
     let walletFromChain = await userReplicaSetManager.getCreatorNodeWallet(newCnodeId)

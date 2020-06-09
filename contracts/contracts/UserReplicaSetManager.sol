@@ -48,22 +48,21 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     // WIP - Update model allowing existing nodes to register others
     // From chain of trust based authentication scheme
     // TODO: Add signature for relay - signer must be proposerWallet 
-    function updateCreatorNode(
+    function addOrUpdateCreatorNode(
         uint _newCnodeId,
         address _newCnodeDelegateOwnerWallet,
-        uint _proposerSpId,
-        address _proposerWallet
+        uint _proposerSpId
     ) external {
-      require(msg.sender == _proposerWallet, "Invalid sender");
       // Requirements for non deployer address
       if (msg.sender != deployer) {
-          require(spIdToCreatorNodeDelegateWallet[_proposerSpId] == _proposerWallet, "Mismatch proposer wallet for existing spID");
-          require(spIdToCreatorNodeDelegateWallet[_proposerSpId] != address(0x00), "Unregistered sender spID");
+          require(spIdToCreatorNodeDelegateWallet[_proposerSpId] == msg.sender, "Mismatch proposer wallet for existing spID");
       }
 
       // TODO: Event
       spIdToCreatorNodeDelegateWallet[_newCnodeId] = _newCnodeDelegateOwnerWallet;
     }
+
+    // TODO: Revisit delete logic - how to remove an spID <-> wallet combo entirely
 
     // Function used to permission updates to a given user's replica set 
     function updateReplicaSet(
@@ -73,21 +72,22 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         uint _oldPrimary,
         uint[] calldata _oldSecondaries) external
       {
-          // Caller's notion of existing primary must match regisered value on chain
-          require(artistReplicaSets[_userId].primary == _oldPrimary,  "Invalid prior primary configuration"); 
-
           // Get user object from UserFactory
           UserFactoryInterface userFactory = UserFactoryInterface(registry.getContract(userFactoryRegistryKey));
-          require(userFactory.userExists(_userId), "Valid user required");
-
-          (address userWallet, ) = userFactory.getUser(_userId);
 
           // A valid updater can be one of the dataOwnerWallet, existing creator node, or contract deployer
           bool validUpdater = false;
+          (address userWallet, ) = userFactory.getUser(_userId);
+          require(userWallet != address(0x00), "Valid user required");
+
           // TODO: Replace msg.sender below with recovered signature from _subjectSig object
           if (msg.sender == userWallet || msg.sender == spIdToCreatorNodeDelegateWallet[_oldPrimary] || msg.sender == deployer) {
               validUpdater = true;
           }
+
+          // Caller's notion of existing primary must match regisered value on chain
+          require(artistReplicaSets[_userId].primary == _oldPrimary,  "Invalid prior primary configuration"); 
+
           // Caller's notion of secondary values must match registered value on chain
           // A secondary node can also be considered a valid updater
           require(_oldSecondaries.length == artistReplicaSets[_userId].secondaries.length, "Invalid prior secondary configuration");
@@ -104,17 +104,17 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
           }
           require(validUpdater == true, "Invalid update operation");
 
-          // Perform replica set update
-          artistReplicaSets[_userId] = ReplicaSet({
-              primary: _primary,
-              secondaries: _secondaries
-          });
-
           // Confirm primary and every incoming secondary is valid
           require(spIdToCreatorNodeDelegateWallet[_primary] != address(0x00), "Primary must exist"); 
           for (uint i = 0; i < _secondaries.length; i++) {
               require(spIdToCreatorNodeDelegateWallet[_secondaries[i]] != address(0x00), "Secondary must exist");
           }
+
+          // Perform replica set update
+          artistReplicaSets[_userId] = ReplicaSet({
+              primary: _primary,
+              secondaries: _secondaries
+          });
       }
 
       // Return an artist's current replica set
