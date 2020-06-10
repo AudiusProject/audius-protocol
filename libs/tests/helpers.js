@@ -42,17 +42,19 @@ const audiusLibsConfig = {
   isServer: true
 }
 
-async function initializeLibConfig (ownerWallet) {
+async function initializeLibConfig (ethOwnerWallet, dataOwnerWallet) {
   return {
     web3Config: AudiusLibs.configExternalWeb3(
       dataContractsConfig.registryAddress,
-      dataWeb3
+      dataWeb3,
+      null,
+      dataOwnerWallet
     ),
     ethWeb3Config: AudiusLibs.configEthWeb3(
       ethContractsConfig.audiusTokenAddress,
       ethContractsConfig.registryAddress,
       ethWeb3,
-      ownerWallet
+      ethOwnerWallet
     ),
     isServer: true
   }
