@@ -37,7 +37,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         require(
             _registryAddress != address(0x00) &&
             _userFactoryRegistryKey.length != 0,
-            "Requires non-zero _registryAddress"
+            "Requires non-zero _registryAddress and registryKey"
         );
 
         registry = RegistryInterface(_registryAddress);

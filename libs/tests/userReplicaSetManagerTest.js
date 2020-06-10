@@ -35,6 +35,16 @@ const assertThrows = async (blockOrPromise, expectedErrorCode, expectedReason) =
   assert(false, `Expected "${expectedErrorCode}"${expectedReason ? ` (with reason: "${expectedReason}")` : ''} but it did not fail`)
 }
 
+const assertRevert = async (blockOrPromise, expectedReason) => {
+  const error = await assertThrows(blockOrPromise, 'revert', expectedReason)
+  // console.log(error)
+  if (!expectedReason) {
+    return
+  }
+  const expectedMsgFound = error.message.indexOf(expectedReason) >= 0
+  assert.equal(expectedMsgFound, true, 'Expected revert reason not found')
+}
+
 describe('UserReplicaSetManager Tests', () => {
   let testServiceType = 'discovery-provider'
   before(async function () {
@@ -88,14 +98,17 @@ describe('UserReplicaSetManager Tests', () => {
   })
 
   it('Add or update creator node', async function () {
-    let sp1Wallet = await audius1.contracts.UserReplicaSetManagerClient.getCreatorNodeWallet(sp1Id)
+    let sp1CnodeWalletFromChain = await audius1.contracts.UserReplicaSetManagerClient.getCreatorNodeWallet(sp1Id)
 
-    // From deployerAccount, configure sp1EthWallet
+    // From deployerAccount, configure sp1Id -> sp1DataWallet. Note that this is actually the delegateWallet
     await audius0.contracts.UserReplicaSetManagerClient.addOrUpdateCreatorNode(sp1Id, sp1DataWallet, 0)
-    sp1Wallet = await audius1.contracts.UserReplicaSetManagerClient.getCreatorNodeWallet(sp1Id)
-    assert.strict.equal(sp1Wallet, sp1DataWallet, 'Expect updated wallet')
+    sp1CnodeWalletFromChain = await audius1.contracts.UserReplicaSetManagerClient.getCreatorNodeWallet(sp1Id)
+    assert.strict.equal(sp1CnodeWalletFromChain, sp1DataWallet, 'Expect updated wallet')
 
     // From sp1 account, configure sp2EthWallet
+    console.log(await audius1.contracts.UserReplicaSetManagerClient.getCreatorNodeWallet(sp2Id))
+    await assertRevert(audius1.contracts.UserReplicaSetManagerClient.addOrUpdateCreatorNode(sp2Id, sp2DataWallet, 3), 'Mismatch proposer')
+    await audius1.contracts.UserReplicaSetManagerClient.addOrUpdateCreatorNode(sp2Id, sp2DataWallet, sp1Id)
     console.log(await audius1.contracts.UserReplicaSetManagerClient.getCreatorNodeWallet(sp2Id))
   })
 })
