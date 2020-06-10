@@ -125,7 +125,6 @@ class User(Base):
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
     blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
     user_id = Column(Integer, nullable=False)
-    is_ready = Column(Boolean, nullable=False)
     is_current = Column(Boolean, nullable=False)
     handle = Column(String)
     handle_lc = Column(String, index=True)
@@ -159,7 +158,6 @@ class User(Base):
         return f"<User(blockhash={self.blockhash},\
 blocknumber={self.blocknumber},\
 user_id={self.user_id},\
-is_ready={self.is_ready},\
 is_current={self.is_current},\
 handle={self.handle},\
 wallet={self.wallet},\

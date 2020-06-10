@@ -199,9 +199,6 @@ def parse_user_event(
             user_record.cover_photo_sizes = user_record.cover_photo
             user_record.cover_photo = None
 
-    # Find out if a user is ready to query in the db. If they are, set the is_ready field
-    user_record.is_ready = is_user_ready(user_record)
-
     return user_record
 
 def refresh_user_connection(user_record, update_task):
@@ -213,19 +210,6 @@ def refresh_user_connection(user_record, update_task):
             update_task,
             user_node_url
         )
-
-def is_user_ready(user_record):
-    # if a user is already a ready, never mark them as false again
-    if hasattr(user_record, 'is_ready') and (user_record.is_ready is True):
-        return True
-
-    is_ready = False
-    if user_record.handle \
-            and user_record.wallet \
-            and user_record.name:
-        is_ready = True
-    return is_ready
-
 
 def get_metadata_overrides_from_ipfs(session, update_task, user_record):
     user_metadata = user_metadata_format
