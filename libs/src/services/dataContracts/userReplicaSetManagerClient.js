@@ -2,11 +2,12 @@ const ContractClient = require('../contracts/ContractClient')
 const signatureSchemas = require('../../../data-contracts/signatureSchemas')
 
 class UserReplicaSetManagerClient extends ContractClient {
-  async addTrackRepost (userId, trackId) {
-    // generate new track repost request
+  async addOrUpdateCreatorNode (newCnodeId, newCnodeDelegateOwnerWallet, proposerSpId) {
+    const contractAddress = await this.getAddress()
+    /*
+    // TODO: Add signature with EIP integration
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
-    const contractAddress = await this.getAddress()
     const signatureData = signatureSchemas.generators.getAddTrackRepostRequestData(
       chainId,
       contractAddress,
@@ -15,13 +16,13 @@ class UserReplicaSetManagerClient extends ContractClient {
       nonce
     )
     const sig = await this.web3Manager.signTypedData(signatureData)
+    */
 
     // add new trackRepost to chain
-    const method = await this.getMethod('addTrackRepost',
-      userId,
-      trackId,
-      nonce,
-      sig
+    const method = await this.getMethod('addOrUpdateCreatorNode',
+      newCnodeId,
+      newCnodeDelegateOwnerWallet,
+      proposerSpId
     )
     return this.web3Manager.sendTransaction(
       method,
