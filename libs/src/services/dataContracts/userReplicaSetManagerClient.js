@@ -18,7 +18,6 @@ class UserReplicaSetManagerClient extends ContractClient {
     const sig = await this.web3Manager.signTypedData(signatureData)
     */
 
-    // add new trackRepost to chain
     const method = await this.getMethod('addOrUpdateCreatorNode',
       newCnodeId,
       newCnodeDelegateOwnerWallet,
@@ -29,6 +28,32 @@ class UserReplicaSetManagerClient extends ContractClient {
       this.contractRegistryKey,
       contractAddress
     )
+  }
+
+  async updateReplicaSet (userId, primary, secondaries, oldPrimary, oldSecondaries) {
+    const contractAddress = await this.getAddress()
+    const method = await this.getMethod('updateReplicaSet',
+      userId,
+      primary,
+      secondaries,
+      oldPrimary,
+      oldSecondaries
+    )
+    return this.web3Manager.sendTransaction(
+      method,
+      this.contractRegistryKey,
+      contractAddress
+    )
+  }
+
+  async getArtistReplicaSet (userId) {
+    const method = await this.getMethod('getArtistReplicaSet', userId)
+    return method.call()
+  }
+
+  async getCreatorNodeWallet (spId) {
+    const method = await this.getMethod('getCreatorNodeWallet', spId)
+    return method.call()
   }
 }
 
