@@ -6,7 +6,7 @@ it('resolves with the dapp', async () => {
   const options = {
     url: URL,
     headers: {
-      'User-Agent': ''
+      'User-Agent': 'human bean'
     }
   }
   const body = await req(options)
