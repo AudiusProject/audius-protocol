@@ -2,7 +2,7 @@ pragma solidity ^0.5.0;
 
 import "./interface/RegistryInterface.sol";
 import "./registry/RegistryContract.sol";
-import "./interface/UserFactoryInterface.sol";
+import "./UserFactory.sol";
 import "./SigningLogic.sol";
 
 
@@ -73,13 +73,14 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         uint[] calldata _oldSecondaries) external
       {
           // Get user object from UserFactory
-          UserFactoryInterface userFactory = UserFactoryInterface(registry.getContract(userFactoryRegistryKey));
+          UserFactory userFactory = UserFactory(registry.getContract(userFactoryRegistryKey));
 
           // A valid updater can be one of the dataOwnerWallet, existing creator node, or contract deployer
           bool validUpdater = false;
           (address userWallet, ) = userFactory.getUser(_userId);
           require(userWallet != address(0x00), "Valid user required");
 
+          // Valid updaters include userWallet (artist account), existing primary, existing secondary, or contract deployer
           // TODO: Replace msg.sender below with recovered signature from _subjectSig object
           if (msg.sender == userWallet || msg.sender == spIdToCreatorNodeDelegateWallet[_oldPrimary] || msg.sender == deployer) {
               validUpdater = true;
