@@ -14,15 +14,22 @@ let ethAccounts
 let dataAccounts
 let audius1
 let audius2
+let audius3
 
 // sp accounts
 let sp1EthWallet
 let sp1DataWallet
 let sp2EthWallet
 let sp2DataWallet
+let sp3EthWallet
+let sp3DataWallet
 let deployer
 const sp1Id = 1
 const sp2Id = 2
+const sp3Id = 3
+
+const existingUserId = 1
+const addressZero = '0x0000000000000000000000000000000000000000'
 
 const assertThrows = async (blockOrPromise, expectedErrorCode, expectedReason) => {
   try {
@@ -52,22 +59,24 @@ describe('UserReplicaSetManager Tests', () => {
     token = audius0.ethContracts.AudiusTokenClient
     ethAccounts = await audius0.ethWeb3Manager.getWeb3().eth.getAccounts()
     dataAccounts = await audius0.web3Manager.getWeb3().eth.getAccounts()
-    console.log(ethAccounts)
-    console.log(dataAccounts)
     deployer = dataAccounts[0]
-    console.log(`Deployer: ${deployer}`)
 
-    // Reset min stake
-    await audius0.ethContracts.StakingProxyClient.setMinStakeAmount(0)
+    const user1 = await audius0.contracts.UserFactoryClient.getUser(existingUserId)
+    assert(user1.wallet !== addressZero, `userId1 must exist - ${user1}`)
 
     ownerWallet = ethAccounts[0]
 
     sp1EthWallet = ethAccounts[1]
-    sp1DataWallet = dataAccounts[1]
-    console.log(`SP1 Data Wallet: ${sp1DataWallet}`)
-
     sp2EthWallet = ethAccounts[2]
+    sp3EthWallet = ethAccounts[3]
+    sp1DataWallet = dataAccounts[1]
     sp2DataWallet = dataAccounts[2]
+    sp3DataWallet = dataAccounts[3]
+
+    console.log(ethAccounts)
+    console.log(dataAccounts)
+    console.log(`Deployer: ${deployer}`)
+    console.log(`SP1 Data Wallet: ${sp1DataWallet}`)
 
     // Initialize more lib instances
     let libsConfig1 = await initializeLibConfig(sp1EthWallet, sp1DataWallet)
@@ -105,10 +114,10 @@ describe('UserReplicaSetManager Tests', () => {
     sp1CnodeWalletFromChain = await audius1.contracts.UserReplicaSetManagerClient.getCreatorNodeWallet(sp1Id)
     assert.strict.equal(sp1CnodeWalletFromChain, sp1DataWallet, 'Expect updated wallet')
 
-    // From sp1 account, configure sp2EthWallet
-    console.log(await audius1.contracts.UserReplicaSetManagerClient.getCreatorNodeWallet(sp2Id))
+    // Try to make an update with an invalid spID for audius1
     await assertRevert(audius1.contracts.UserReplicaSetManagerClient.addOrUpdateCreatorNode(sp2Id, sp2DataWallet, 3), 'Mismatch proposer')
+    // From sp1 account, configure sp2EthWallet
     await audius1.contracts.UserReplicaSetManagerClient.addOrUpdateCreatorNode(sp2Id, sp2DataWallet, sp1Id)
-    console.log(await audius1.contracts.UserReplicaSetManagerClient.getCreatorNodeWallet(sp2Id))
+    assert.strict.equal(await audius1.contracts.UserReplicaSetManagerClient.getCreatorNodeWallet(sp2Id), sp2DataWallet, 'Expect updated wallet')
   })
 })
