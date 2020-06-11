@@ -63,6 +63,7 @@ describe('UserReplicaSetManager Tests', () => {
 
     const user1 = await audius0.contracts.UserFactoryClient.getUser(existingUserId)
     assert(user1.wallet !== addressZero, `userId1 must exist - ${user1}`)
+    assert(user1.wallet === deployer, 'Expected address for existing user not found')
 
     ownerWallet = ethAccounts[0]
 
@@ -116,8 +117,43 @@ describe('UserReplicaSetManager Tests', () => {
 
     // Try to make an update with an invalid spID for audius1
     await assertRevert(audius1.contracts.UserReplicaSetManagerClient.addOrUpdateCreatorNode(sp2Id, sp2DataWallet, 3), 'Mismatch proposer')
-    // From sp1 account, configure sp2EthWallet
+    // From sp1 account, configure sp2Id -> sp2DataWallet
     await audius1.contracts.UserReplicaSetManagerClient.addOrUpdateCreatorNode(sp2Id, sp2DataWallet, sp1Id)
     assert.strict.equal(await audius1.contracts.UserReplicaSetManagerClient.getCreatorNodeWallet(sp2Id), sp2DataWallet, 'Expect updated wallet')
+
+    // From sp2 account, configure sp3Id -> sp3DataWallet
+    await audius2.contracts.UserReplicaSetManagerClient.addOrUpdateCreatorNode(sp3Id, sp3DataWallet, sp2Id)
+    assert.strict.equal(await audius1.contracts.UserReplicaSetManagerClient.getCreatorNodeWallet(sp3Id), sp3DataWallet, 'Expect updated wallet')
+  })
+
+  it('Configure user1 replica set', async function () {
+    let currentReplicaSet = await audius1.contracts.UserReplicaSetManagerClient.getArtistReplicaSet(existingUserId)
+    // console.log(currentReplicaSet)
+    let newPrimary = 1
+    let newSecondaries = [3, 2]
+    // Issue update from audius0, account which owns existingUserId
+    await audius0.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+      existingUserId,
+      newPrimary,
+      newSecondaries,
+      currentReplicaSet.primary,
+      currentReplicaSet.secondaries)
+    currentReplicaSet = await audius1.contracts.UserReplicaSetManagerClient.getArtistReplicaSet(existingUserId)
+    let primaryFromChain = parseInt(currentReplicaSet.primary)
+    let secondariesFromChain = currentReplicaSet.secondaries.map(x => parseInt(x))
+    /*
+    console.log(currentReplicaSet)
+    console.log(primaryFromChain)
+    console.log(typeof primaryFromChain)
+    console.log(newPrimary)
+    console.log(typeof newPrimary)
+    console.log(primaryFromChain === newPrimary)
+    console.log('---')
+    console.log(newSecondaries)
+    console.log(secondariesFromChain)
+    */
+    assert(primaryFromChain === (newPrimary), 'Expect primary update')
+    assert(secondariesFromChain.length === newSecondaries.length, 'Expect secondary lengths to be equal')
+    assert(secondariesFromChain.every((replicaId, i) => replicaId === newSecondaries[i]), 'Secondary mismatch')
   })
 })
