@@ -3,10 +3,11 @@ const axios = require('axios')
 const ethSigUtil = require('eth-sig-util')
 
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
-const { authMiddleware } = require('../middlewares')
+const { authMiddleware, crossCnodeAuth } = require('../middlewares')
 const { sequelize } = require('../models')
 const config = require('../config.js')
 const versionInfo = require('../../.version.json')
+const utils = require('../utils')
 
 const MAX_DB_CONNECTIONS = 90
 const MAX_DISK_USAGE_PERCENT = 90 // 90%
@@ -37,7 +38,7 @@ module.exports = function (app) {
         method: 'post',
         baseURL: cnodeURL,
         url: '/users',
-        data: { 'walletAddress': delegateOwnerWallet },
+        data: { 'walletAddress': delegateOwnerWallet, 'isCreatorNode': true },
         responseType: 'json'
       })
 
@@ -202,13 +203,13 @@ module.exports = function (app) {
     const usagePercent = Math.round((total - available) * 100 / total)
 
     const resp = {
-      available: _formatBytes(available),
-      total: _formatBytes(total),
+      available: utils.formatBytes(available),
+      total: utils.formatBytes(total),
       usagePercent: `${usagePercent}%`,
       maxUsagePercent: `${maxUsagePercent}%`
     }
 
-    if (maxUsageBytes) { resp.maxUsage = _formatBytes(maxUsageBytes) }
+    if (maxUsageBytes) { resp.maxUsage = utils.formatBytes(maxUsageBytes) }
 
     if (usagePercent >= maxUsagePercent ||
       (maxUsageBytes && (total - available) >= maxUsageBytes)
@@ -218,16 +219,4 @@ module.exports = function (app) {
       return successResponse(resp)
     }
   }))
-}
-
-function _formatBytes (bytes, decimals = 2) {
-  if (bytes === 0) return '0 Bytes'
-
-  const k = 1024
-  const dm = decimals < 0 ? 0 : decimals
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }

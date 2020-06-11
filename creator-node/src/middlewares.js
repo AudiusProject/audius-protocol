@@ -1,6 +1,10 @@
 const axios = require('axios')
 
-const { sendResponse, errorResponse, errorResponseUnauthorized, errorResponseServerError } = require('./apiHelpers')
+const { sendResponse,
+  errorResponse,
+  errorResponseUnauthorized,
+  errorResponseServerError,
+  errorResponseBadRequest } = require('./apiHelpers')
 const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
@@ -32,6 +36,45 @@ async function authMiddleware (req, res, next) {
     wallet: cnodeUser.walletPublicKey,
     cnodeUserUUID: cnodeUserUUID
   }
+
+  next()
+}
+
+/** Conditional logic if call is coming from another creator node */
+async function crossCnodeAuth (req, res, next) {
+  if (!req.session || !req.session.cnodeUser) {
+    return sendResponse(req, res, errorResponseBadRequest('req.session.cnodeUser not provided'))
+  }
+
+  if (cnodeUser.isCreatorNode) {
+    // CNode must specify which artist it is making call for
+    const artistWallet = req.get('artistWallet')
+    if (!artistWallet) {
+      return sendResponse(req, res, errorResponseBadRequest('ArtistWallet not provided'))
+    }
+
+    // Fetch own service endpoint from local config or eth contract
+    let serviceEndpoint
+    try {
+      serviceEndpoint = await _getOwnEndpoint(req)
+    } catch (e) {
+      return sendResponse(req, res, errorResponseServerError(e))
+    }
+
+    // Fetch artist replica set from chain
+    let artistReplicaSet
+    try {
+      artistReplicaSet = await _getCreatorNodeEndpoints(req, artistWallet)
+    } catch (e) {
+      return sendResponse(req, res, errorResponseServerError(e))
+    }
+
+    // Error if serviceEndpoint is not in artist replicaSet
+    if (!artistReplicaSet.includes(serviceEndpoint)) {
+      return sendResponse(req, res, errorResponseUnauthorized('You are not in artist\'s replica set'))
+    }
+  }
+
   next()
 }
 
@@ -121,6 +164,11 @@ async function triggerSecondarySyncs (req) {
 
 /** Retrieves current FQDN registered on-chain with node's owner wallet. */
 async function _getOwnEndpoint (req) {
+  // Check local envvar before attempting to request from chain
+  if (config.get('creatorNodeEndpoint')) {
+    return config.get('creatorNodeEndpoint')
+  }
+  
   if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
   const libs = req.app.get('audiusLibs')
 
@@ -213,4 +261,4 @@ function _isFQDN (url) {
   return FQDN.test(url)
 }
 
-module.exports = { authMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs, syncLockMiddleware }
+module.exports = { authMiddleware, crossCnodeAuth, ensurePrimaryMiddleware, triggerSecondarySyncs, syncLockMiddleware }

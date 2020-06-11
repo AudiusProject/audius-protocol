@@ -254,6 +254,18 @@ const config = convict({
     env: 'debounceTime',
     default: 30000 // 30000ms = 30s
   },
+  dataRegistryAddress: {
+    doc: 'data contracts registry address',
+    format: String,
+    env: 'dataRegistryAddress',
+    default: null
+  },
+  creatorNodeEndpoint: {
+    doc: 'http endpoint registered on chain for cnode',
+    format: String,
+    env: 'creatorNodeEndpoint',
+    default: null
+  },
 
   // Service selection
   discoveryProviderWhitelist: {

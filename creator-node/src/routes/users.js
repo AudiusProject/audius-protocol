@@ -16,23 +16,34 @@ const CHALLENGE_PREFIX = 'userLoginChallenge:'
 
 module.exports = function (app) {
   app.post('/users', handleResponse(async (req, res, next) => {
-    let walletAddress = req.body.walletAddress
-    if (!ethereumUtils.isValidAddress(walletAddress)) {
-      return errorResponseBadRequest('Ethereum address is invalid')
+    const walletAddress = req.body.walletAddress
+    const isCreatorNode = req.body.isCreatorNode
+
+    if (
+      !ethereumUtils.isValidAddress(walletAddress) ||
+      (['true', 'false'].includes(isCreatorNode))
+    ) {
+      return errorResponseBadRequest('Invalid request body params')
     }
 
-    walletAddress = walletAddress.toLowerCase()
+    const walletPublicKey = walletAddress.toLowerCase()
 
+    // do nothing if CNodeUser already exists
     const existingUser = await models.CNodeUser.findOne({
       where: {
-        walletPublicKey: walletAddress
+        walletPublicKey,
+        isCreatorNode
       }
     })
-    if (existingUser) {
-      return successResponse() // do nothing if user already exists
+    // if CNodeUser doesn't already exist, create it
+    if (!existingUser) {
+      await models.CNodeUser.create({
+        walletPublicKey,
+        isCreatorNode
+      })
     }
 
-    await models.CNodeUser.create({ walletPublicKey: walletAddress })
+    // Never return cnodeUserUUID
     return successResponse()
   }))
 
