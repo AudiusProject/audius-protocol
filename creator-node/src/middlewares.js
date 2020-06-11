@@ -46,9 +46,9 @@ async function crossCnodeAuth (req, res, next) {
     return sendResponse(req, res, errorResponseBadRequest('req.session.cnodeUser not provided'))
   }
 
-  if (cnodeUser.isCreatorNode) {
+  if (req.session.cnodeUser.isCreatorNode) {
     // CNode must specify which artist it is making call for
-    const artistWallet = req.get('artistWallet')
+    const artistWallet = req.query.artistWallet
     if (!artistWallet) {
       return sendResponse(req, res, errorResponseBadRequest('ArtistWallet not provided'))
     }

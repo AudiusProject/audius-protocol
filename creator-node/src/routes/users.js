@@ -17,12 +17,9 @@ const CHALLENGE_PREFIX = 'userLoginChallenge:'
 module.exports = function (app) {
   app.post('/users', handleResponse(async (req, res, next) => {
     const walletAddress = req.body.walletAddress
-    const isCreatorNode = req.body.isCreatorNode
+    const isCreatorNode = req.body.isCreatorNode === true
 
-    if (
-      !ethereumUtils.isValidAddress(walletAddress) ||
-      (['true', 'false'].includes(isCreatorNode))
-    ) {
+    if (!ethereumUtils.isValidAddress(walletAddress)) {
       return errorResponseBadRequest('Invalid request body params')
     }
 
@@ -30,11 +27,9 @@ module.exports = function (app) {
 
     // do nothing if CNodeUser already exists
     const existingUser = await models.CNodeUser.findOne({
-      where: {
-        walletPublicKey,
-        isCreatorNode
-      }
+      where: { walletPublicKey }
     })
+
     // if CNodeUser doesn't already exist, create it
     if (!existingUser) {
       await models.CNodeUser.create({
@@ -111,8 +106,7 @@ module.exports = function (app) {
    */
   app.post('/users/login/challenge', handleResponse(async (req, res, next) => {
     const { signature, data: theirChallenge } = req.body
-    console.error('test')
-    req.logger.error(`signature: ${signature}, theirchallenge: ${theirChallenge}`)
+    console.log(`signature: ${signature}, theirchallenge: ${theirChallenge}`)
 
     if (!signature || !theirChallenge) {
       return errorResponseBadRequest('Missing request body values.')
@@ -120,6 +114,7 @@ module.exports = function (app) {
 
     let address
     try {
+      console.log('attempting to utils.verifySignature')
       address = utils.verifySignature(theirChallenge, signature)
       address = address.toLowerCase()
     } catch (e) {
@@ -135,6 +130,7 @@ module.exports = function (app) {
       return errorResponseBadRequest('Invalid data or signature')
     }
 
+    console.log('attempting to redisClient.get')
     const redisClient = req.app.get('redisClient')
     const userLoginChallengeKey = `${CHALLENGE_PREFIX}${address}`
     const ourChallenge = await redisClient.get(userLoginChallengeKey)
@@ -147,9 +143,11 @@ module.exports = function (app) {
       return errorResponseBadRequest(`Invalid response.`)
     }
 
+    console.log('attempting to redisClient.del')
     await redisClient.del(userLoginChallengeKey)
 
     // All checks have passed! generate a new session token for the user
+    console.log('attempting to sessionMgr.createSession')
     const sessionToken = await sessionManager.createSession(user.cnodeUserUUID)
     return successResponse({ sessionToken })
   }))

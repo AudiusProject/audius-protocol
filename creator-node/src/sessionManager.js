@@ -19,7 +19,7 @@ class SessionManager {
     const tokenBuffer = await randomBytes(sessionTokenLength)
     const token = base64url.encode(tokenBuffer)
 
-    await redisClient.set(`SESSION.${token}`, cnodeUserUUID, sessionTokenTTLSeconds)
+    await redisClient.set(`SESSION.${token}`, cnodeUserUUID, 'EX', sessionTokenTTLSeconds)
 
     return token
   }

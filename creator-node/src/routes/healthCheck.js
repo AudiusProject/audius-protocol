@@ -18,6 +18,7 @@ module.exports = function (app) {
     const redisClient = req.app.get('redisClient')
 
     const cnodeURL = req.query.cnodeURL // string
+    const artistWallet = req.query.artistWallet // string
 
     // TODO validate redisClient + cnodeURL + lowercase cnodeURL
 
@@ -27,9 +28,16 @@ module.exports = function (app) {
     // TODO validate delegateOwnerWallet - is this needed?
 
     // check if authToken exists for cnodeURL
-    let authToken = await redisClient.get(`authToken::${cnodeURL}`)
+    const authTokenRKey = `authToken::${cnodeURL}`
+    let authToken = await redisClient.get(authTokenRKey)
     
-    if (authToken) { console.log(`authToken found: ${authToken}`) }
+    if (authToken) {
+      console.log(`authToken found: ${authToken}`)
+      
+      // delete authToken each time for testing purposes - will remove
+      await redisClient.del(authTokenRKey)
+      authToken = null
+    }
 
     // If no authToken, signup + login on dstCnode
     if (!authToken) {
@@ -51,6 +59,7 @@ module.exports = function (app) {
       })
       const challengeKey = challengeResp.data.challenge
 
+      // Sign challenge with private key
       const pkBuffer = Buffer.from(delegatePrivateKey.substring(2), 'hex')
       const sig = ethSigUtil.personalSign(pkBuffer, { data: challengeKey })
 
@@ -67,7 +76,7 @@ module.exports = function (app) {
       console.log('post login challenge success', challengeResp2.data)
 
       authToken = challengeResp2.data.sessionToken
-      await redisClient.set(`authToken::${cnodeURL}`, authToken)
+      await redisClient.set(authTokenRKey, authToken)
     }
 
     // Attempt to call permissioned route
@@ -75,7 +84,7 @@ module.exports = function (app) {
       method: 'get',
       baseURL: cnodeURL,
       url: '/test_permission',
-      params: { },
+      params: { 'artistWallet': artistWallet },
       headers: { 'X-Session-ID': authToken },
       responseType: 'json'
     })
@@ -84,7 +93,7 @@ module.exports = function (app) {
   }))
 
   /** CN ensures that caller is authed */
-  app.get('/test_permission', authMiddleware, handleResponse(async (req, res) => {
+  app.get('/test_permission', authMiddleware, crossCnodeAuth, handleResponse(async (req, res) => {
     return successResponse('yes')
   }))
 
