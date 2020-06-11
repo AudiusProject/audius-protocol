@@ -72,6 +72,22 @@ export const addUserAndValidate = async (userFactory, userId, userWallet, multih
   validateObj(user, { wallet: userWallet, handle: toStr(handle) })
 }
 
+export const addOrUpdateCreatorNode = async (userReplicaSetManager, newCnodeId, newCnodeDelegateOwnerWallet, proposerId, proposerWallet) => {
+  const nonce = signatureSchemas.getNonce()
+  const chainId = getNetworkIdForContractInstance(userReplicaSetManager)
+  let signatureData = signatureSchemas.generators.getAddOrUpdateCreatorNodeRequestData(
+    chainId,
+    userReplicaSetManager.address,
+    newCnodeId,
+    newCnodeDelegateOwnerWallet,
+    proposerId,
+    nonce)
+  // Sign with proposerWallet
+  let sig = await eth_signTypedData(proposerWallet, signatureData)
+  let tx = await userReplicaSetManager.addOrUpdateCreatorNode(newCnodeId, newCnodeDelegateOwnerWallet, proposerId, nonce, sig)
+  return tx
+}
+
 export const updateUserNameAndValidate = async function (userFactory, userId, userWallet) {
   const nonce = signatureSchemas.getNonce()
   const chainId = getNetworkIdForContractInstance(userFactory) // in testing use the network id as chain ID because chain ID is unavailable

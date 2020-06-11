@@ -76,12 +76,12 @@ contract('UserReplicaSetManager', async (accounts) => {
 
   /** Helper Functions **/
   let addOrUpdateCreatorNode = async (newCnodeId, newCnodeDelegateOwnerWallet, proposerId, proposerWallet) => {
-    await userReplicaSetManager.addOrUpdateCreatorNode(
+    await _lib.addOrUpdateCreatorNode(
+      userReplicaSetManager,
       newCnodeId,
       newCnodeDelegateOwnerWallet,
       proposerId,
-      { from: proposerWallet }
-    )
+      proposerWallet)
     let walletFromChain = await userReplicaSetManager.getCreatorNodeWallet(newCnodeId)
     assert.equal(walletFromChain, newCnodeDelegateOwnerWallet, 'Expect wallet assignment')
   }

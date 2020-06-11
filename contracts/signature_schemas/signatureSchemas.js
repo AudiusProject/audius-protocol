@@ -42,6 +42,10 @@ domains.getIPLDBlacklistFactoryDomain = function (chainId, contractAddress) {
   return getDomainData('IPLD Blacklist Factory', '1', chainId, contractAddress)
 }
 
+domains.getUserReplicaSetManagerDomain = function (chainId, contractAddress) {
+  return getDomainData('User Replica Set Manager', '1', chainId, contractAddress)
+}
+
 const schemas = {}
 
 /* contract signing domain */
@@ -210,6 +214,13 @@ schemas.addIPLDBlacklist = [
   { name: 'nonce', type: 'bytes32' }
 ]
 
+schemas.addOrUpdateCreatorNode = [
+  { name: 'newCnodeId', type: 'uint' },
+  { name: 'newCnodeDelegateOwnerWallet', type: 'address' },
+  { name: 'proposerSpId', type: 'uint' },
+  { name: 'nonce', type: 'bytes32' }
+]
+
 const generators = {}
 
 function getRequestData (domainDataFn, chainId, contractAddress, messageTypeName, messageSchema, message) {
@@ -224,6 +235,31 @@ function getRequestData (domainDataFn, chainId, contractAddress, messageTypeName
     primaryType: messageTypeName,
     message: message
   }
+}
+
+/* User Replica Set Manager Generators */
+generators.getAddOrUpdateCreatorNodeRequestData = function (
+  chainId,
+  contractAddress,
+  newCnodeId,
+  newCnodeDelegateOwnerWallet,
+  proposerSpId,
+  nonce
+) {
+  const message = {
+    newCnodeId,
+    newCnodeDelegateOwnerWallet,
+    proposerSpId,
+    nonce
+  }
+  return getRequestData(
+    domains.getUserReplicaSetManagerDomain,
+    chainId,
+    contractAddress,
+    'AddOrUpdateCreatorNode',
+    schemas.addOrUpdateCreatorNode,
+    message
+  )
 }
 
 /* User Factory Generators */

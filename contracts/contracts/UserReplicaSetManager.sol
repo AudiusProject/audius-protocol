@@ -28,6 +28,11 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     // Current uint userId to Replica Set
     mapping (uint => ReplicaSet) artistReplicaSets;
 
+    /* EIP-712 */
+    bytes32 constant ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
+        "AddOrUpdateCreatorNode(uint newCnodeId,address newCnodeDelegateOwnerWallet,uint proposerSpId,bytes32 nonce)"
+    );
+
     constructor(
         address _registryAddress,
         bytes32 _userFactoryRegistryKey,
@@ -51,15 +56,46 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     function addOrUpdateCreatorNode(
         uint _newCnodeId,
         address _newCnodeDelegateOwnerWallet,
-        uint _proposerSpId
+        uint _proposerSpId,
+        bytes32 _requestNonce,
+        bytes calldata _subjectSig
     ) external {
+      bytes32 signatureDigest = generateAddOrUpdateCreatorNodeRequestSchemaHash(
+        _newCnodeId,
+        _newCnodeDelegateOwnerWallet,
+        _proposerSpId,
+        _requestNonce
+      );
+      address signer = recoverSigner(signatureDigest, _subjectSig);
+      burnSignatureDigest(signatureDigest, signer);
+
       // Requirements for non deployer address
-      if (msg.sender != deployer) {
-          require(spIdToCreatorNodeDelegateWallet[_proposerSpId] == msg.sender, "Mismatch proposer wallet for existing spID");
+      if (signer != deployer) {
+          require(spIdToCreatorNodeDelegateWallet[_proposerSpId] == signer, "Mismatch proposer wallet for existing spID");
       }
 
       // TODO: Event
       spIdToCreatorNodeDelegateWallet[_newCnodeId] = _newCnodeDelegateOwnerWallet;
+    }
+
+    /* EIP712 - Signature generation */
+    function generateAddOrUpdateCreatorNodeRequestSchemaHash(
+        uint _cnodeId,
+        address _cnodeWallet,
+        uint _proposerId,
+        bytes32 _nonce
+    ) internal view returns (bytes32) {
+        return generateSchemaHash(
+            keccak256(
+                abi.encode(
+                    ADD_UPDATE_CNODE_REQUEST_TYPEHASH,
+                    _cnodeId,
+                    _cnodeWallet,
+                    _proposerId,
+                    _nonce
+                )
+            )
+        );
     }
 
     // TODO: Revisit delete logic - how to remove an spID <-> wallet combo entirely
