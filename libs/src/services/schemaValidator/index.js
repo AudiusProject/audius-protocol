@@ -35,18 +35,16 @@ class SchemaValidator {
     for (const schemaType in this.schemas) {
       try {
         const validator = this.ajv.compile(this.schemas[schemaType].schema)
-        if (validator.errors) console.error(`Validation error during schema compilation: ${schemaType} ${validator.errors}`)
+        if (validator.errors) throw new Error(`Validation error during schema compilation: ${schemaType} ${validator.errors}`)
         else {
           this.schemas[schemaType].validator = validator
           this.schemas[schemaType].validate = (obj) => {
             var valid = validator(obj)
-            if (!valid) {
-              console.error(`${schemaType} validation failed with errors: ${JSON.stringify(validator.errors)}`)
-            }
+            if (!valid) throw new Error(`${schemaType} validation failed with errors: ${JSON.stringify(validator.errors)}`)
           }
         }
       } catch (e) {
-        console.error(`Error compiling schema: ${schemaType} ${e.message}`)
+        throw new Error(`Error compiling schema: ${schemaType} ${e.message}`)
       }
     }
   }

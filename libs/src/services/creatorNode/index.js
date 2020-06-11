@@ -116,16 +116,20 @@ class CreatorNode {
   async uploadCreatorContent (metadata) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
-    this.schemas[SchemaValidator.userSchemaType].validate(metadata)
-    console.log('user metadata validation passed', metadata)
+    try {
+      this.schemas[SchemaValidator.userSchemaType].validate(metadata)
+      console.log('user metadata validation passed', metadata)
 
-    return this._makeRequest({
-      url: '/audius_users/metadata',
-      method: 'post',
-      data: {
-        metadata
-      }
-    })
+      return this._makeRequest({
+        url: '/audius_users/metadata',
+        method: 'post',
+        data: {
+          metadata
+        }
+      })
+    } catch (e) {
+      console.error('Error validating creator metadata', e)
+    }
   }
 
   /**
@@ -204,17 +208,21 @@ class CreatorNode {
   async uploadTrackMetadata (metadata, sourceFile) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
-    this.schemas[SchemaValidator.trackSchemaType].validate(metadata)
-    console.log('track metadata validation passed', metadata)
+    try {
+      this.schemas[SchemaValidator.trackSchemaType].validate(metadata)
+      console.log('track metadata validation passed', metadata)
 
-    return this._makeRequest({
-      url: '/tracks/metadata',
-      method: 'post',
-      data: {
-        metadata,
-        sourceFile
-      }
-    }, true)
+      return this._makeRequest({
+        url: '/tracks/metadata',
+        method: 'post',
+        data: {
+          metadata,
+          sourceFile
+        }
+      }, true)
+    } catch (e) {
+      console.error('Error validating track metadata', e)
+    }
   }
 
   /**
