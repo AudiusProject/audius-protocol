@@ -4,34 +4,34 @@
     "definitions": {
         "User": {
             "type": "object",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
                 "name": {
                     "type": "string",
                     "default": null
                 },
                 "profile_picture": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "profile_picture_sizes": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "cover_photo": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "cover_photo_sizes": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "bio": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "location": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 }
             },

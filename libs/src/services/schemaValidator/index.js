@@ -8,7 +8,7 @@ const USER_SCHEMA_TYPE = 'UserSchema'
 
 class SchemaValidator {
   init () {
-    this.ajv = new Ajv()
+    this.ajv = new Ajv({ useDefaults: true })
 
     /**
      * Fully formed schemas object looks like the below
@@ -40,7 +40,7 @@ class SchemaValidator {
           this.schemas[schemaType].validator = validator
           this.schemas[schemaType].validate = (obj) => {
             var valid = validator(obj)
-            if (!valid) throw new Error(`Validation failed with errors: ${JSON.stringify(validator.errors)}`)
+            if (!valid) throw new Error(`${schemaType} validation failed with errors: ${JSON.stringify(validator.errors)}`)
           }
         }
       } catch (e) {

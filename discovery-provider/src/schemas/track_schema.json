@@ -4,14 +4,15 @@
     "definitions": {
         "Track": {
             "type": "object",
-            "additionalProperties": false,
+            "additionalProperties": true,
+            "$comment": "Additional properties enabled because the data return by discovery providers may contain other properties like blockhash, is_current, which are not strictly part of the metadata.",
             "properties": {
                 "title": {
                     "type": "string",
                     "default": null
                 },
                 "length": {
-                    "type": "integer",
+                    "type": ["integer", "null"],
                     "default": null
                 },
                 "cover_art": {
@@ -92,7 +93,7 @@
                     }
                 },
                 "download": {
-                    "type": "object",
+                    "type": ["object", "null"],
                     "$ref": "#/definitions/Download",
                     "default": {
                         "cid": null,
@@ -101,12 +102,12 @@
                     }
                 },
                 "stem_of": {
-                    "type": "object",
+                    "type": ["object", "null"],
                     "$ref": "#/definitions/StemOf",
                     "default": null
                 },
                 "remix_of": {
-                    "type": "object",
+                    "type": ["object", "null"],
                     "$ref": "#/definitions/RemixOf",
                     "default": null
                 }
@@ -137,10 +138,6 @@
             "title": "Track"
         },
         "RemixOf": {
-            "type": [
-                "object",
-                "null"
-            ],
             "additionalProperties": false,
             "properties": {
                 "tracks": {
@@ -170,11 +167,10 @@
             "title": "TrackElement"
         },
         "Download": {
-            "type": "object",
             "additionalProperties": false,
             "properties": {
                 "cid": {
-                    "type": "string"
+                    "type": ["string", "null"]
                 },
                 "is_downloadable": {
                     "type": "boolean"
@@ -191,7 +187,6 @@
             "title": "Download"
         },
         "FieldVisibility": {
-            "type": "object",
             "additionalProperties": false,
             "properties": {
                 "mood": {
@@ -219,7 +214,6 @@
             "title": "FieldVisibility"
         },
         "StemOf": {
-            "type": "object",
             "additionalProperties": false,
             "properties": {
                 "category": {

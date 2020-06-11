@@ -12,7 +12,7 @@
                   "default": null
               },
               "length": {
-                  "type": "integer",
+                  "type": ["integer", "null"],
                   "default": null
               },
               "cover_art": {
@@ -93,7 +93,7 @@
                   }
               },
               "download": {
-                  "type": "object",
+                  "type": ["object", "null"],
                   "$ref": "#/definitions/Download",
                   "default": {
                       "cid": null,
