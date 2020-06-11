@@ -357,7 +357,7 @@ contract ServiceProviderFactory is InitializableV2 {
     /**
      * @notice Request to decrease stake. This sets a lockup for decreaseStakeLockupDuration after
                which the actual decreaseStake can be called
-     * @dev Decreasing stake is only processed in a service provider is within valid bounds
+     * @dev Decreasing stake is only processed if a service provider is within valid bounds
      * @param _decreaseStakeAmount - amount to decrease stake by in wei
      * @return New total stake amount after the lockup
      */
