@@ -20,15 +20,17 @@
                   "default": null
               },
               "cover_art_sizes": {
-                  "type": "string",
-                  "default": null
-              },
+                "$comment": "type can be null if attached as a stem",
+                "type": ["string",  "null"],
+                "default": null
+            },
               "tags": {
                   "type": ["string", "null"],
                   "default": null
               },
               "genre": {
-                  "type": "string",
+                  "$comment": "genre can be null if attached as a stem",
+                  "type": ["string", "null"],
                   "default": null
               },
               "mood": {

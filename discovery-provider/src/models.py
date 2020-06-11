@@ -44,20 +44,21 @@ def validate_field_helper(field, value, model):
 
 def get_default_value(field, value, model, e):
     field_props = ModelValidator.get_properties_for_field(model, field)
-    field_type = field_props['type'] #this can either be a string or list, need to check both
+    schema_type_field = field_props['type'] # type field from the schema. this return value can either be a string or list
     default_value = field_props['default']
 
-    # if the field is of type object and the default value isn't set in the schema, set to SQL null
-    # otherwise JSONB columns get set to string 'null'
-    
-    # if field is defined as a list, need to check if 'object' is in list, else check string
-    if isinstance(field_type, list) and 'object' in field_type and not default_value:
-        default_value = null() # sql null
-    elif field_type == 'object' and not default_value:
-        default_value = null() # sql null
+    # If the schema indicates this field is equal to object (if string) or contains object (if list) and the default value isn't
+    # set in the schema, set to SQL null. otherwise JSONB columns get set to string 'null'.
+    # Other fields can be set to their regular defaults or None.
+    if not default_value:
+        # if schema_type_field is defined as a list, need to check if 'object' is in list, else check string
+        if isinstance(schema_type_field, list) and 'object' in schema_type_field:
+            default_value = null() # sql null
+        elif schema_type_field == 'object':
+            default_value = null() # sql null
 
     logger.warning(f"Validation: Setting the default value {default_value} for field {field} " \
-        f"of type {field_type} because of error: {e}")
+        f"of type {schema_type_field} because of error: {e}")
 
     return default_value
 
