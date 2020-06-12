@@ -35,8 +35,8 @@ class UserReplicaSetManagerClient extends ContractClient {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
     let web3 = this.web3Manager.getWeb3()
-    let secondariesHash = web3.utils.soliditySha3(web3.eth.abi.encodeParameter('uint[]', secondaries.map(x => x.toNumber())))
-    let oldSecondariesHash = web3.utils.soliditySha3(web3.eth.abi.encodeParameter('uint[]', oldSecondaries.map(x => x.toNumber())))
+    let secondariesHash = web3.utils.soliditySha3(web3.eth.abi.encodeParameter('uint[]', secondaries))
+    let oldSecondariesHash = web3.utils.soliditySha3(web3.eth.abi.encodeParameter('uint[]', oldSecondaries))
     let signatureData = signatureSchemas.generators.getUpdateReplicaSetRequestData(
       chainId,
       contractAddress,
