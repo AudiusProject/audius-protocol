@@ -4,24 +4,24 @@ const signatureSchemas = require('../../../data-contracts/signatureSchemas')
 class UserReplicaSetManagerClient extends ContractClient {
   async addOrUpdateCreatorNode (newCnodeId, newCnodeDelegateOwnerWallet, proposerSpId) {
     const contractAddress = await this.getAddress()
-    /*
-    // TODO: Add signature with EIP integration
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
-    const signatureData = signatureSchemas.generators.getAddTrackRepostRequestData(
+
+    let signatureData = signatureSchemas.generators.getAddOrUpdateCreatorNodeRequestData(
       chainId,
       contractAddress,
-      userId,
-      trackId,
+      newCnodeId,
+      newCnodeDelegateOwnerWallet,
+      proposerSpId,
       nonce
     )
     const sig = await this.web3Manager.signTypedData(signatureData)
-    */
-
     const method = await this.getMethod('addOrUpdateCreatorNode',
       newCnodeId,
       newCnodeDelegateOwnerWallet,
-      proposerSpId
+      proposerSpId,
+      nonce,
+      sig
     )
     return this.web3Manager.sendTransaction(
       method,
@@ -32,12 +32,30 @@ class UserReplicaSetManagerClient extends ContractClient {
 
   async updateReplicaSet (userId, primary, secondaries, oldPrimary, oldSecondaries) {
     const contractAddress = await this.getAddress()
+    const nonce = signatureSchemas.getNonce()
+    const chainId = await this.getEthNetId()
+    let web3 = this.web3Manager.getWeb3()
+    let secondariesHash = web3.utils.soliditySha3(web3.eth.abi.encodeParameter('uint[]', secondaries.map(x => x.toNumber())))
+    let oldSecondariesHash = web3.utils.soliditySha3(web3.eth.abi.encodeParameter('uint[]', oldSecondaries.map(x => x.toNumber())))
+    let signatureData = signatureSchemas.generators.getUpdateReplicaSetRequestData(
+      chainId,
+      contractAddress,
+      userId,
+      primary,
+      secondariesHash,
+      oldPrimary,
+      oldSecondariesHash,
+      nonce
+    )
+    const sig = await this.web3Manager.signTypedData(signatureData)
     const method = await this.getMethod('updateReplicaSet',
       userId,
       primary,
       secondaries,
       oldPrimary,
-      oldSecondaries
+      oldSecondaries,
+      nonce,
+      sig
     )
     return this.web3Manager.sendTransaction(
       method,
