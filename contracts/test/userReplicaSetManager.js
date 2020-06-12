@@ -87,10 +87,14 @@ contract('UserReplicaSetManager', async (accounts) => {
   }
 
   let updateReplicaSet = async (userId, newPrimary, newSecondaries, oldPrimary, oldSecondaries, senderAcct) => {
-    await userReplicaSetManager.updateReplicaSet(
-      userId, newPrimary, newSecondaries, oldPrimary, oldSecondaries,
-      { from: senderAcct }
-    )
+    await _lib.updateReplicaSet(
+      userReplicaSetManager,
+      userId,
+      newPrimary,
+      newSecondaries,
+      oldPrimary,
+      oldSecondaries,
+      senderAcct)
     let replicaSetFromChain = await userReplicaSetManager.getArtistReplicaSet(userId)
     assert.isTrue(replicaSetFromChain.primary.eq(newPrimary), 'Primary mismatch')
     assert.isTrue(replicaSetFromChain.secondaries.every((replicaId, i) => replicaId.eq(newSecondaries[i])), 'Secondary mismatch')

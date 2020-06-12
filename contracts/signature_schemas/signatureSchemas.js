@@ -214,10 +214,20 @@ schemas.addIPLDBlacklist = [
   { name: 'nonce', type: 'bytes32' }
 ]
 
+// User replica set manager schemas
 schemas.addOrUpdateCreatorNode = [
   { name: 'newCnodeId', type: 'uint' },
   { name: 'newCnodeDelegateOwnerWallet', type: 'address' },
   { name: 'proposerSpId', type: 'uint' },
+  { name: 'nonce', type: 'bytes32' }
+]
+
+schemas.updateReplicaSet = [
+  { name: 'userId', type: 'uint' },
+  { name: 'primary', type: 'uint' },
+  { name: 'secondariesHash', type: 'bytes32' },
+  { name: 'oldPrimary', type: 'uint' },
+  { name: 'oldSecondariesHash', type: 'bytes32' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
@@ -258,6 +268,34 @@ generators.getAddOrUpdateCreatorNodeRequestData = function (
     contractAddress,
     'AddOrUpdateCreatorNode',
     schemas.addOrUpdateCreatorNode,
+    message
+  )
+}
+
+generators.getUpdateReplicaSetRequestData = function (
+  chainId,
+  contractAddress,
+  userId,
+  primary,
+  secondariesHash,
+  oldPrimary,
+  oldSecondariesHash,
+  nonce
+) {
+  const message = {
+    userId,
+    primary,
+    secondariesHash,
+    oldPrimary,
+    oldSecondariesHash,
+    nonce
+  }
+  return getRequestData(
+    domains.getUserReplicaSetManagerDomain,
+    chainId,
+    contractAddress,
+    'UpdateReplicaSet',
+    schemas.updateReplicaSet,
     message
   )
 }

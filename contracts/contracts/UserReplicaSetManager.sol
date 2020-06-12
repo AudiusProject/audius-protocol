@@ -33,6 +33,10 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         "AddOrUpdateCreatorNode(uint newCnodeId,address newCnodeDelegateOwnerWallet,uint proposerSpId,bytes32 nonce)"
     );
 
+    bytes32 constant UPDATE_REPLICA_SET_REQUEST_TYPEHASH = keccak256(
+        "UpdateReplicaSet(uint userId,uint primary,bytes32 secondariesHash,uint oldPrimary,bytes32 oldSecondariesHash,bytes32 nonce)"
+    );
+
     constructor(
         address _registryAddress,
         bytes32 _userFactoryRegistryKey,
@@ -78,26 +82,6 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
       spIdToCreatorNodeDelegateWallet[_newCnodeId] = _newCnodeDelegateOwnerWallet;
     }
 
-    /* EIP712 - Signature generation */
-    function generateAddOrUpdateCreatorNodeRequestSchemaHash(
-        uint _cnodeId,
-        address _cnodeWallet,
-        uint _proposerId,
-        bytes32 _nonce
-    ) internal view returns (bytes32) {
-        return generateSchemaHash(
-            keccak256(
-                abi.encode(
-                    ADD_UPDATE_CNODE_REQUEST_TYPEHASH,
-                    _cnodeId,
-                    _cnodeWallet,
-                    _proposerId,
-                    _nonce
-                )
-            )
-        );
-    }
-
     // TODO: Revisit delete logic - how to remove an spID <-> wallet combo entirely
 
     // Function used to permission updates to a given user's replica set 
@@ -106,39 +90,40 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         uint _primary,
         uint[] calldata _secondaries,
         uint _oldPrimary,
-        uint[] calldata _oldSecondaries) external
-      {
-          // Get user object from UserFactory
-          UserFactory userFactory = UserFactory(registry.getContract(userFactoryRegistryKey));
+        uint[] calldata _oldSecondaries,
+        bytes32 _requestNonce,
+        bytes calldata _subjectSig
+    ) external {
+
+          address signer = _generateUpdateReplicaSetRequestSchemaHash(
+              _userId,
+              _primary,
+              _secondaries,
+              _oldPrimary,
+              _oldSecondaries,
+              _requestNonce,
+              _subjectSig);
 
           // A valid updater can be one of the dataOwnerWallet, existing creator node, or contract deployer
           bool validUpdater = false;
-          (address userWallet, ) = userFactory.getUser(_userId);
+
+          // Get user object from UserFactory
+          (address userWallet, ) = UserFactory(registry.getContract(userFactoryRegistryKey)).getUser(_userId);
           require(userWallet != address(0x00), "Valid user required");
 
           // Valid updaters include userWallet (artist account), existing primary, existing secondary, or contract deployer
-          // TODO: Replace msg.sender below with recovered signature from _subjectSig object
-          if (msg.sender == userWallet || msg.sender == spIdToCreatorNodeDelegateWallet[_oldPrimary] || msg.sender == deployer) {
+          if (signer == userWallet ||
+              signer == spIdToCreatorNodeDelegateWallet[_oldPrimary] ||
+              signer == deployer
+             )
+          {
               validUpdater = true;
           }
 
           // Caller's notion of existing primary must match regisered value on chain
           require(artistReplicaSets[_userId].primary == _oldPrimary,  "Invalid prior primary configuration"); 
 
-          // Caller's notion of secondary values must match registered value on chain
-          // A secondary node can also be considered a valid updater
-          require(_oldSecondaries.length == artistReplicaSets[_userId].secondaries.length, "Invalid prior secondary configuration");
-          for (uint i = 0; i < _oldSecondaries.length; i++) {
-              require(
-                  artistReplicaSets[_userId].secondaries[i] == _oldSecondaries[i],
-                  "Invalid prior secondary configuration"
-              );
-
-              // A valid updater has been found
-              if (msg.sender == spIdToCreatorNodeDelegateWallet[_oldSecondaries[i]]) {
-                validUpdater = true;
-              }
-          }
+          validUpdater = _compareUserSecondariesAndCheckSender(_userId, _oldSecondaries, signer, validUpdater);
           require(validUpdater == true, "Invalid update operation");
 
           // Confirm primary and every incoming secondary is valid
@@ -169,5 +154,77 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
       returns (address wallet) 
       {
           return spIdToCreatorNodeDelegateWallet[_spID];
+      }
+
+      /* EIP712 - Signature generation */
+      function generateAddOrUpdateCreatorNodeRequestSchemaHash(
+          uint _cnodeId,
+          address _cnodeWallet,
+          uint _proposerId,
+          bytes32 _nonce
+      ) internal view returns (bytes32)
+      {
+          return generateSchemaHash(
+              keccak256(
+                  abi.encode(
+                      ADD_UPDATE_CNODE_REQUEST_TYPEHASH,
+                      _cnodeId,
+                      _cnodeWallet,
+                      _proposerId,
+                      _nonce
+                  )
+              )
+          );
+      }
+
+      function _generateUpdateReplicaSetRequestSchemaHash(
+          uint _userId,
+          uint _primary,
+          uint[] memory _secondaries,
+          uint _oldPrimary,
+          uint[] memory _oldSecondaries,
+          bytes32 _nonce,
+          bytes memory _subjectSig
+      ) internal returns (address)
+      {
+        bytes32 signatureDigest = generateSchemaHash(
+            keccak256(
+              abi.encode(
+                  UPDATE_REPLICA_SET_REQUEST_TYPEHASH,
+                  _userId,
+                  _primary,
+                  keccak256(abi.encode(_secondaries)),
+                  _oldPrimary,
+                  keccak256(abi.encode(_oldSecondaries)),
+                  _nonce
+              )
+            )
+        );
+        address signer = recoverSigner(signatureDigest, _subjectSig);
+        burnSignatureDigest(signatureDigest, signer);
+        return signer;
+      }
+
+      function _compareUserSecondariesAndCheckSender(
+        uint _userId,
+        uint[] memory _oldSecondaries,
+        address signer,
+        bool senderFound
+      ) internal view returns (bool)
+      {
+          // Caller's notion of secondary values must match registered value on chain
+          // A secondary node can also be considered a valid updater
+          require(_oldSecondaries.length == artistReplicaSets[_userId].secondaries.length, "Invalid prior secondary configuration");
+          bool secondarySenderFound = senderFound;
+          for (uint i = 0; i < _oldSecondaries.length; i++) {
+              require(
+                  artistReplicaSets[_userId].secondaries[i] == _oldSecondaries[i],
+                  "Invalid prior secondary configuration"
+              );
+              if (signer == spIdToCreatorNodeDelegateWallet[_oldSecondaries[i]]) {
+                secondarySenderFound = true;
+              }
+          }
+          return secondarySenderFound;
       }
 }
