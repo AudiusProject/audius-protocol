@@ -18,6 +18,16 @@ redis = redis.Redis.from_url(url=redis_url)
 
 logger = logging.getLogger(__name__)
 
+# subclass JSONEncoder
+class DateTimeEncoder(json.JSONEncoder):
+    #Override the default method
+    def default(self, obj):
+        if isinstance(obj, (datetime.date, datetime.datetime)):
+            # TODO - the Z is required in JS date format
+            return obj.isoformat() + " Z"
+        
+        return super().default(obj)
+
 def error_response(error, error_code=500):
     return jsonify({'success': False, 'error': error}), error_code
 
@@ -26,6 +36,7 @@ def success_response(response_entity=None, status=200):
     return jsonify(response_dictionary), status
 
 def success_response_with_signature(response_entity=None, status=200):
+    start = time.process_time()
     # get data to sign
     data = {
         'data': response_entity
@@ -36,7 +47,8 @@ def success_response_with_signature(response_entity=None, status=200):
 
     # combine timestamp and data to sign
     to_sign = {"timestamp": timestamp, **data}
-    to_sign_str = json.dumps(to_sign, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
+    to_sign_str = json.dumps(to_sign, sort_keys=True, ensure_ascii=False, separators=(',', ':'), cls=DateTimeEncoder)
+
     
     # generate hash for if data contains unicode chars
     to_sign_hash = Web3.keccak(text=to_sign_str).hex()
@@ -52,7 +64,7 @@ def success_response_with_signature(response_entity=None, status=200):
     response_dictionary['timestamp'] = timestamp
     jsonified_signature = signed_message.signature.hex()
     response_dictionary['signature'] = jsonified_signature
-
+    logger.info(f"time taken for generating signature {(time.process_time() - start)*1000}ms")
     return jsonify(response_dictionary), status
     
 def success_response_dict(response_entity=None):

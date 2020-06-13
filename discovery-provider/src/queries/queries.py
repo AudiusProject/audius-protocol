@@ -94,8 +94,8 @@ def get_users():
         # bundle peripheral info into user results
         users = populate_user_metadata(session, user_ids, users, current_user_id)
 
-    return api_helpers.success_response(users)
-
+    # return api_helpers.success_response(users)
+    return api_helpers.success_response_with_signature(users)
 
 # Returns all tracks (paginated) with each track's repost count
 # optionally filters by track ids
@@ -165,7 +165,8 @@ def get_tracks():
                 if user:
                     track['user'] = user
 
-    return api_helpers.success_response(tracks)
+    # return api_helpers.success_response(tracks)
+    return api_helpers.success_response_with_signature(tracks)
 
 
 # Get all tracks matching a route_id and track_id.

@@ -23,8 +23,10 @@ async function generateSignatureResponse (data) {
 }
 
 async function run () {
-  const { data } = await axios.get('http://localhost:5000/get_sig')
+  const { data } = await axios.get('http://localhost:5000/users')
+  console.time('recover wallet')
   const recoveredWallet = await recoverWallet(data)
+  console.timeEnd('recover wallet')
 
   try {
     assert.equal(recoveredWallet, OWNER_WALLET)
