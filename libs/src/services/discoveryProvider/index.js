@@ -131,7 +131,7 @@ class DiscoveryProvider {
       walletAddress,
       handle,
       isCreator,
-      minBlockNumber 
+      minBlockNumber
     )
     return this._makeRequest(req)
   }

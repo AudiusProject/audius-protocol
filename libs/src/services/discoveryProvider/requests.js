@@ -119,16 +119,15 @@ module.exports.getTrendingTracks = (genre = null, timeFrame = null, idsArray = n
     endpoint,
     method: 'get',
     queryParams: {
-      ...(idsArray !== null ? { id: idsArray }: {}),
-      ...(limit !== null ? {limit }: {}),
-      ...(offset !== null ? { offset }: {}),
-      ...(genre !== null ? { genre }: {}),
-      ...(withUsers ? { with_users: withUsers }: {})
+      ...(idsArray !== null ? { id: idsArray } : {}),
+      ...(limit !== null ? { limit } : {}),
+      ...(offset !== null ? { offset } : {}),
+      ...(genre !== null ? { genre } : {}),
+      ...(withUsers ? { with_users: withUsers } : {})
     }
   }
   return req
 }
-
 
 module.exports.getPlaylists = (limit = 100, offset = 0, idsArray = null, targetUserId = null, withUsers = false) => {
   if (idsArray != null) {
@@ -136,15 +135,15 @@ module.exports.getPlaylists = (limit = 100, offset = 0, idsArray = null, targetU
       throw new Error('Expected integer array of user ids')
     }
   }
-  return { 
+  return {
     endpoint: 'playlists',
     queryParams: {
       limit,
       offset,
-      ...(idsArray != null ? {playlist_id: idsArray} : {}),
-      ...(targetUserId ? {user_id: targetUserId} : {}),
-      ...(withUsers ? {with_users: true} : {})
-    } 
+      ...(idsArray != null ? { playlist_id: idsArray } : {}),
+      ...(targetUserId ? { user_id: targetUserId } : {}),
+      ...(withUsers ? { with_users: true } : {})
+    }
   }
 }
 
