@@ -56,7 +56,6 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
 
     // WIP - Update model allowing existing nodes to register others
     // From chain of trust based authentication scheme
-    // TODO: Add signature for relay - signer must be proposerWallet 
     function addOrUpdateCreatorNode(
         uint _newCnodeId,
         address _newCnodeDelegateOwnerWallet,
@@ -64,14 +63,13 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         bytes32 _requestNonce,
         bytes calldata _subjectSig
     ) external {
-      bytes32 signatureDigest = generateAddOrUpdateCreatorNodeRequestSchemaHash(
+      address signer = _recoverAddOrUpdateCreatorNodeRequestSignerAddress(
         _newCnodeId,
         _newCnodeDelegateOwnerWallet,
         _proposerSpId,
-        _requestNonce
+        _requestNonce,
+        _subjectSig
       );
-      address signer = recoverSigner(signatureDigest, _subjectSig);
-      burnSignatureDigest(signatureDigest, signer);
 
       // Requirements for non deployer address
       if (signer != deployer) {
@@ -95,7 +93,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         bytes calldata _subjectSig
     ) external {
 
-          address signer = _generateUpdateReplicaSetRequestSchemaHash(
+          address signer = _recoverUserReplicaSetRequestSignerAddress(
               _userId,
               _primary,
               _secondaries,
@@ -156,15 +154,16 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
           return spIdToCreatorNodeDelegateWallet[_spID];
       }
 
-      /* EIP712 - Signature generation */
-      function generateAddOrUpdateCreatorNodeRequestSchemaHash(
+      /* EIP712 - Signer recovery */
+      function _recoverAddOrUpdateCreatorNodeRequestSignerAddress(
           uint _cnodeId,
           address _cnodeWallet,
           uint _proposerId,
-          bytes32 _nonce
-      ) internal view returns (bytes32)
+          bytes32 _nonce,
+          bytes memory _subjectSig
+      ) internal returns (address)
       {
-          return generateSchemaHash(
+          bytes32 signatureDigest = generateSchemaHash(
               keccak256(
                   abi.encode(
                       ADD_UPDATE_CNODE_REQUEST_TYPEHASH,
@@ -175,9 +174,12 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
                   )
               )
           );
+        address signer = recoverSigner(signatureDigest, _subjectSig);
+        burnSignatureDigest(signatureDigest, signer);
+        return signer;
       }
 
-      function _generateUpdateReplicaSetRequestSchemaHash(
+      function _recoverUserReplicaSetRequestSignerAddress(
           uint _userId,
           uint _primary,
           uint[] memory _secondaries,
