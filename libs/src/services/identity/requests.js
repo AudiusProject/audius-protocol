@@ -1,5 +1,5 @@
 const getTrackListens = (timeFrame = null, idsArray = null, startTime = null, endTime = null, limit = null, offset = null) => {
-  let queryUrl = '/tracks/listens/'
+  let queryUrl = 'tracks/listens/'
 
   if (timeFrame != null) {
     switch (timeFrame) {
@@ -40,7 +40,8 @@ const getTrackListens = (timeFrame = null, idsArray = null, startTime = null, en
     url: queryUrl,
     endpoint: queryUrl,
     method: 'get',
-    params: queryParams
+    params: queryParams,
+    queryParams
   }
   return req
 }

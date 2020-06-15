@@ -150,7 +150,7 @@ module.exports.getPlaylists = (limit = 100, offset = 0, idsArray = null, targetU
 
 module.exports.getSocialFeed = (filter, limit = 100, offset = 0, withUsers = false, tracksOnly = false) => {
   return {
-    endpoint: 'feed/',
+    endpoint: 'feed',
     queryParams: {
       filter,
       limit,
