@@ -43,6 +43,6 @@ else
 	node_modules/.bin/truffle test --network=test_local $1
 fi
 
-# tear down
-docker rm -f audius_ganache_cli_test
-rm -rf ./build/
+# disabled tear down
+# docker rm -f audius_ganache_cli_test
+# rm -rf ./build/
