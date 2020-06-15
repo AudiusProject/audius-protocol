@@ -141,17 +141,6 @@ describe('UserReplicaSetManager Tests', () => {
     currentReplicaSet = await audius1.contracts.UserReplicaSetManagerClient.getArtistReplicaSet(existingUserId)
     let primaryFromChain = parseInt(currentReplicaSet.primary)
     let secondariesFromChain = currentReplicaSet.secondaries.map(x => parseInt(x))
-    /*
-    console.log(currentReplicaSet)
-    console.log(primaryFromChain)
-    console.log(typeof primaryFromChain)
-    console.log(newPrimary)
-    console.log(typeof newPrimary)
-    console.log(primaryFromChain === newPrimary)
-    console.log('---')
-    console.log(newSecondaries)
-    console.log(secondariesFromChain)
-    */
     assert(primaryFromChain === (newPrimary), 'Expect primary update')
     assert(secondariesFromChain.length === newSecondaries.length, 'Expect secondary lengths to be equal')
     assert(secondariesFromChain.every((replicaId, i) => replicaId === newSecondaries[i]), 'Secondary mismatch')
