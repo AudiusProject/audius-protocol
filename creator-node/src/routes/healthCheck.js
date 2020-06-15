@@ -17,6 +17,7 @@ module.exports = function (app) {
   app.get('/test', handleResponse(async (req, res) => {
     const redisClient = req.app.get('redisClient')
 
+    // url of cnode to auth against
     const cnodeURL = req.query.cnodeURL // string
     const artistWallet = req.query.artistWallet // string
 
@@ -27,7 +28,7 @@ module.exports = function (app) {
     console.log(`delegateOwnerWallet: ${delegateOwnerWallet}; delegatePrivateKey: ${delegatePrivateKey}`)
     // TODO validate delegateOwnerWallet - is this needed?
 
-    // check if authToken exists for cnodeURL
+    // check if authToken exists for dest cnodeURL
     const authTokenRKey = `authToken::${cnodeURL}`
     let authToken = await redisClient.get(authTokenRKey)
     
@@ -37,6 +38,14 @@ module.exports = function (app) {
       // delete authToken each time for testing purposes - will remove
       await redisClient.del(authTokenRKey)
       authToken = null
+    } else {
+      console.log('authToken NOT found')
+    }
+
+    const spID = config.get('spID')
+    if (!spID) { return errorResponseServerError('Cannot auth against other CNodes since self is not registered on-chain') }
+    else {
+      console.log(`spID found: ${spID}`)
     }
 
     // If no authToken, signup + login on dstCnode
@@ -46,7 +55,7 @@ module.exports = function (app) {
         method: 'post',
         baseURL: cnodeURL,
         url: '/users',
-        data: { 'walletAddress': delegateOwnerWallet, 'isCreatorNode': true },
+        data: { 'walletAddress': delegateOwnerWallet, 'spID': spID },
         responseType: 'json'
       })
 

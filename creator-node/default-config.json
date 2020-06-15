@@ -23,6 +23,7 @@
 
   "delegateOwnerWallet": "",
   "delegatePrivateKey": "",
+  "spID": 0,
 
   "ethProviderUrl": "http://docker.for.mac.localhost:8546",
   "ethNetworkId": "",
@@ -37,5 +38,8 @@
   "userBlacklist": "",
   "trackBlacklist": "",
   "dataRegistryAddress": "",
+  "dataOwnerWallet": "",
+  "dataProviderUrl": "http://docker.for.mac.localhost:8545",
+  "dataNetworkId": "",
   "creatorNodeEndpoint": ""
 }

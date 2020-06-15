@@ -194,6 +194,13 @@ const config = convict({
     default: null
   },
 
+  spID: {
+    doc: 'ID of creator node in ethContracts ServiceProviderFactory',
+    format: Number,
+    env: 'spID',
+    default: 0
+  },
+
   ethProviderUrl: {
     doc: 'eth provider url',
     format: String,
@@ -260,6 +267,25 @@ const config = convict({
     env: 'dataRegistryAddress',
     default: null
   },
+  dataOwnerWallet: {
+    doc: 'data contracts owner wallet',
+    format: String,
+    env: 'dataOwnerWallet',
+    default: null
+  },
+  dataProviderUrl: {
+    doc: 'data contracts web3 provider url',
+    format: String,
+    env: 'dataProviderUrl',
+    default: null
+  },
+  dataNetworkId: {
+    doc: 'data contracts network id',
+    format: String,
+    env: 'dataNetworkId',
+    default: null
+  },
+
   creatorNodeEndpoint: {
     doc: 'http endpoint registered on chain for cnode',
     format: String,
@@ -326,6 +352,14 @@ if (fs.existsSync('eth-contract-config.json')) {
     'ethRegistryAddress': ethContractConfig.registryAddress,
     'ethOwnerWallet': ethContractConfig.ownerWallet,
     'ethWallets': ethContractConfig.allWallets
+  })
+}
+
+if (fs.existsSync('contract-config.json')) {
+  const dataContractConfig = require('../contract-config.json')
+  config.load({
+    'dataRegistryAddress': dataContractConfig.registryAddress,
+    'dataOwnerWallet': dataContractConfig.ownerWallet
   })
 }
 

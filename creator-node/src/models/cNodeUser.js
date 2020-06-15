@@ -22,10 +22,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: -1
     },
-    isCreatorNode: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false
+    spID: {
+      type: DataTypes.INTEGER,
+      unique: true,
+      allowNull: true,
+      defaultValue: null
     }
   }, {})
 

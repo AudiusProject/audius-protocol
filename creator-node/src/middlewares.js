@@ -40,13 +40,16 @@ async function authMiddleware (req, res, next) {
   next()
 }
 
-/** Conditional logic if call is coming from another creator node */
+/**
+ * Conditional logic if call is coming from another creator node
+ * TODO - check calling CN and self against artist replica set
+ **/
 async function crossCnodeAuth (req, res, next) {
   if (!req.session || !req.session.cnodeUser) {
     return sendResponse(req, res, errorResponseBadRequest('req.session.cnodeUser not provided'))
   }
 
-  if (req.session.cnodeUser.isCreatorNode) {
+  if (req.session.cnodeUser.spID) {
     // CNode must specify which artist it is making call for
     const artistWallet = req.query.artistWallet
     if (!artistWallet) {
@@ -162,7 +165,10 @@ async function triggerSecondarySyncs (req) {
   }
 }
 
-/** Retrieves current FQDN registered on-chain with node's owner wallet. */
+/**
+ * Retrieves current FQDN registered on-chain with node's owner wallet
+ * TODO - modify to retrieve any endpoint given wallet
+ * */
 async function _getOwnEndpoint (req) {
   // Check local envvar before attempting to request from chain
   if (config.get('creatorNodeEndpoint')) {

@@ -17,7 +17,9 @@ const CHALLENGE_PREFIX = 'userLoginChallenge:'
 module.exports = function (app) {
   app.post('/users', handleResponse(async (req, res, next) => {
     const walletAddress = req.body.walletAddress
-    const isCreatorNode = req.body.isCreatorNode === true
+    const spID = req.body.spID || null
+
+    console.log(`spID: ${spID} , type: ${ typeof(spID)}`)
 
     if (!ethereumUtils.isValidAddress(walletAddress)) {
       return errorResponseBadRequest('Invalid request body params')
@@ -34,7 +36,7 @@ module.exports = function (app) {
     if (!existingUser) {
       await models.CNodeUser.create({
         walletPublicKey,
-        isCreatorNode
+        spID
       })
     }
 
