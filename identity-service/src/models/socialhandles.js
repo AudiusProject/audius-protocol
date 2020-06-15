@@ -17,6 +17,14 @@ module.exports = (sequelize, DataTypes) => {
     pinnedTrackId: {
       allowNull: true,
       type: DataTypes.INTEGER
+    },
+    website: {
+      allowNull: true,
+      type: DataTypes.STRING
+    },
+    donation: {
+      allowNull: true,
+      type: DataTypes.STRING
     }
   }, {})
 
