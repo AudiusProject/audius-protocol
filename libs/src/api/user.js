@@ -151,7 +151,6 @@ class Users extends Base {
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
   async getSocialFeed (filter, limit = 100, offset = 0, withUsers = false, tracksOnly = false) {
-    console.log({ this: this })
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     const owner = this.userStateManager.getCurrentUser()
     if (owner) {
