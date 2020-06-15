@@ -41,7 +41,7 @@ const getTrackListens = (timeFrame = null, idsArray = null, startTime = null, en
     endpoint: queryUrl,
     method: 'get',
     params: queryParams,
-    queryParams
+    queryParams: queryParams
   }
   return req
 }
