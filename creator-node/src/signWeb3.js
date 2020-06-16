@@ -5,12 +5,16 @@ const axios = require('axios')
 
 const OWNER_WALLET = '0x1D9c77BcfBfa66D37390BF2335f0140979a6122B'
 const PRIVATE_KEY = '0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19cad'
+const METADATA_FIELDS = ['success', 'latest_indexed_block', 'latest_chain_block']
+const API_SIGNING_FIELDS = ['timestamp', 'signature']
 
 async function generateSignatureResponse (data) {
   const timestamp = Date.now() // TODO: put in Z format
 
   // follows the strucutre {timestamp, /* data of any structure */}
-  const toSign = { timestamp, ...data }
+  let toSign = { timestamp, ...data }
+  toSign = sortKeys(toSign)
+
   const signedResponse = await web3.eth.accounts.sign(JSON.stringify(toSign), PRIVATE_KEY)
 
   const response = {
@@ -23,26 +27,50 @@ async function generateSignatureResponse (data) {
 }
 
 async function run () {
-  const { data } = await axios.get('http://localhost:5000/users')
-  console.time('recover wallet')
-  const recoveredWallet = await recoverWallet(data)
-  console.timeEnd('recover wallet')
+  const paths = ['users', 'version', 'tracks', 'health_check', 'block_check']
 
-  try {
-    assert.equal(recoveredWallet, OWNER_WALLET)
-  } catch (e) {
-    console.log(e)
+  // for each path, do an axios request
+  for (const path of paths) {
+    console.log(`request to ${path}`)
+    const endpoint = 'http://localhost:5000/' + path
+
+    // recover each response and check wallets are good
+    const { data } = await axios.get(endpoint)
+    console.time(`recover wallet ${path}`)
+    const recoveredWallet = await recoverWallet(data)
+    console.timeEnd(`recover wallet ${path}`)
+    console.log('')
+
+    try {
+      assert.equal(recoveredWallet, OWNER_WALLET)
+    } catch (e) {
+      console.log(`failed for path ${path}: ${e}`)
+      console.log('-------------------------------------------')
+    }
   }
 }
 
 async function recoverWallet (response) {
-  let data = { data: response.data, timestamp: response.timestamp }
+  const filteredResponse = await removeNondataFields(response)
+  let data = { ...filteredResponse, timestamp: response.timestamp }
   data = JSON.stringify(sortKeys(data))
 
-  const hashedData = web3.utils.keccak256(data)
-  const ownerWallet = web3.eth.accounts.recover(hashedData, response.signature)
+  const hashedData = await web3.utils.keccak256(data)
+  const ownerWallet = await web3.eth.accounts.recover(hashedData, response.signature)
 
   return ownerWallet
+}
+
+async function removeNondataFields (response) {
+  const copy = JSON.parse(JSON.stringify(response))
+  METADATA_FIELDS.forEach(field => {
+    delete copy[field]
+  })
+  API_SIGNING_FIELDS.forEach(field => {
+    delete copy[field]
+  })
+
+  return copy
 }
 
 function sortKeys (x) {
