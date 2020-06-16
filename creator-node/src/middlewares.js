@@ -34,7 +34,8 @@ async function authMiddleware (req, res, next) {
   req.session = {
     cnodeUser: cnodeUser,
     wallet: cnodeUser.walletPublicKey,
-    cnodeUserUUID: cnodeUserUUID
+    cnodeUserUUID: cnodeUserUUID,
+    spID: cnodeUser.spID
   }
 
   next()
@@ -50,6 +51,8 @@ async function crossCnodeAuth (req, res, next) {
   }
 
   if (req.session.cnodeUser.spID) {
+    console.log(`crossCNodeAuth - entered spID flow with spID ${req.session.cnodeUser.spID}`)
+
     // CNode must specify which artist it is making call for
     const artistWallet = req.query.artistWallet
     if (!artistWallet) {

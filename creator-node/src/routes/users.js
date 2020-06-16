@@ -6,7 +6,7 @@ const randomBytes = promisify(crypto.randomBytes)
 
 const models = require('../models')
 const { authMiddleware, syncLockMiddleware } = require('../middlewares')
-const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseForbidden } = require('../apiHelpers')
 const sessionManager = require('../sessionManager')
 const utils = require('../utils')
 
@@ -19,8 +19,6 @@ module.exports = function (app) {
     const walletAddress = req.body.walletAddress
     const spID = req.body.spID || null
 
-    console.log(`spID: ${spID} , type: ${ typeof(spID)}`)
-
     if (!ethereumUtils.isValidAddress(walletAddress)) {
       return errorResponseBadRequest('Invalid request body params')
     }
@@ -31,6 +29,27 @@ module.exports = function (app) {
     const existingUser = await models.CNodeUser.findOne({
       where: { walletPublicKey }
     })
+
+    const libs = req.app.get('audiusLibs')
+
+    // if spID is null, confirm wallet is valid user on chain
+    if (!spID) {
+      // TODO - skip for now
+      // can't get user by wallet from chain, so retrieve from discprov
+      // TODO - potentially use same blocknumber logic as middlewares to ensure data consistency
+      // const user = await libs.User.getUsers(1, 0, /* idsArray */ null, wallet)
+      // if (!user || user.length === 0 || !user[0].hasOwnProperty('blocknumber') || !user[0].hasOwnProperty('track_blocknumber')) {
+      //   throw new Error('Missing or malformatted user fetched from discprov.')
+      // }
+    } else {
+      const recoveredSP = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', spID)
+      console.log(`post /users recoveredSP: ${JSON.stringify(recoveredSP)}`)
+      if (!recoveredSP || recoveredSP.delegateOwnerWallet != walletPublicKey) {
+        return errorResponseForbidden('Must be valid service provider on chain')
+      }
+    }
+
+    // if spID is non-null, confirm wallet is valid sp on chain
 
     // if CNodeUser doesn't already exist, create it
     if (!existingUser) {
