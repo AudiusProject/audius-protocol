@@ -23,6 +23,11 @@ export const addOrUpdateCreatorNode = async (userReplicaSetManager, newCnodeId, 
   // Sign with proposerWallet
   let sig = await eth_signTypedData(proposerWallet, signatureData)
   let tx = await userReplicaSetManager.addOrUpdateCreatorNode(newCnodeId, newCnodeDelegateOwnerWallet, proposerId, nonce, sig)
+  parseTxWithAssertsAndResp(
+    tx,
+    'AddOrUpdateCreatorNode',
+    { _newCnodeId: newCnodeId, _newCnodeDelegateOwnerWallet: newCnodeDelegateOwnerWallet, _proposerSpId: proposerId }
+  )
   return tx
 }
 
