@@ -28,6 +28,18 @@ trackDedupeMaxMinutes = 10
 
 ######## ROUTES ########
 
+@bp.route("/get_sig", methods=("GET",))
+def add_delegate_stuff():
+    random = {
+        "z": {
+            "z": "pizza",
+            "w": "fresh",
+            "b": "hot"
+        },
+        "a": "i",
+        "k": "want"
+    }
+    return api_helpers.success_response_with_signature(['ok', {'vicky':'@FDFü∂.网络 11!!!!  ¢©∂∂ß "'}, random])
 
 # Returns all users (paginated) with each user's follow count
 # Optionally filters by is_creator, wallet, or user ids
