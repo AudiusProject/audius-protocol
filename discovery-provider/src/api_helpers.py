@@ -24,8 +24,7 @@ class DateTimeEncoder(json.JSONEncoder):
         if isinstance(obj, (datetime.date, datetime.datetime)):
             # TODO - the Z is required in JS date format
             return obj.isoformat() + " Z"
-        
-        return super().default(obj)
+        return json.JSONEncoder.default(self, obj)
 
 def error_response(error, error_code=500):
     return jsonify({'success': False, 'error': error}), error_code
