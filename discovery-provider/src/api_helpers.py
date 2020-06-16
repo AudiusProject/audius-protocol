@@ -44,8 +44,8 @@ def response_with_signature(response_entity=None, status=200):
 # Create a response dict with metadata, data, signature, and timestamp
 def success_response_with_signature(response_entity=None, status=200):
     # structure data to sign
-    data = { 'data': response_entity }
-    response_dictionary = response_dict_with_metadata(response_entity)    
+    data = {'data': response_entity}
+    response_dictionary = response_dict_with_metadata(response_entity)
     generate_and_set_sig_and_timestamp(response_dictionary, data)
     return jsonify(response_dictionary), status
 

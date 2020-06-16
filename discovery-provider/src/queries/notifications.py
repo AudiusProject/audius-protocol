@@ -710,7 +710,7 @@ def notifications():
     sorted_notifications = \
             sorted(notifications_unsorted, key=lambda i: i[const.notification_blocknumber], reverse=False)
 
-    return api_helpers.success_response(
+    return api_helpers.success_response_with_signature(
         {
             'notifications':sorted_notifications,
             'info':notification_metadata,
@@ -751,5 +751,5 @@ def milestones_followers():
         follower_count_dict = \
                 {user_id: follower_count for (user_id, follower_count) in follower_counts}
 
-    return api_helpers.success_response(follower_count_dict)
+    return api_helpers.success_response_with_signature(follower_count_dict)
 
