@@ -144,6 +144,14 @@
         {
           "name": "_proposerSpId",
           "type": "uint256"
+        },
+        {
+          "name": "_requestNonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
         }
       ],
       "name": "addOrUpdateCreatorNode",
@@ -174,6 +182,14 @@
         {
           "name": "_oldSecondaries",
           "type": "uint256[]"
+        },
+        {
+          "name": "_requestNonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
         }
       ],
       "name": "updateReplicaSet",
