@@ -20,7 +20,37 @@ const TRACK_REQUIRED_PROPS = [
   'title'
 ]
 
-class Tracks extends Base {
+class Track extends Base {
+  constructor (...args) {
+    super(...args)
+    this.getTracks = this.getTracks.bind(this)
+    this.getTracksIncludingUnlisted = this.getTracksIncludingUnlisted.bind(this)
+    this.getTracks = this.getTracks.bind(this)
+    this.getTracksIncludingUnlisted = this.getTracksIncludingUnlisted.bind(this)
+    this.getUnlistedTracks = this.getUnlistedTracks.bind(this)
+    this.getStemsForTrack = this.getStemsForTrack.bind(this)
+    this.getRemixesOfTrack = this.getRemixesOfTrack.bind(this)
+    this.getRemixTrackParents = this.getRemixTrackParents.bind(this)
+    this.getSavedTracks = this.getSavedTracks.bind(this)
+    this.getTrendingTracks = this.getTrendingTracks.bind(this)
+    this.getTrackListens = this.getTrackListens.bind(this)
+    this.getSaversForTrack = this.getSaversForTrack.bind(this)
+    this.getSaversForPlaylist = this.getSaversForPlaylist.bind(this)
+    this.getRepostersForTrack = this.getRepostersForTrack.bind(this)
+    this.getRepostersForPlaylist = this.getRepostersForPlaylist.bind(this)
+    this.getListenHistoryTracks = this.getListenHistoryTracks.bind(this)
+    this.checkIfDownloadAvailable = this.checkIfDownloadAvailable.bind(this)
+    this.uploadTrack = this.uploadTrack.bind(this)
+    this.uploadTrackContentToCreatorNode = this.uploadTrackContentToCreatorNode.bind(this)
+    this.addTracksToChainAndCnode = this.addTracksToChainAndCnode.bind(this)
+    this.updateTrack = this.updateTrack.bind(this)
+    this.logTrackListen = this.logTrackListen.bind(this)
+    this.addTrackRepost = this.addTrackRepost.bind(this)
+    this.deleteTrackRepost = this.deleteTrackRepost.bind(this)
+    this.addTrackSave = this.addTrackSave.bind(this)
+    this.deleteTrackSave = this.deleteTrackSave.bind(this)
+    this.deleteTrack = this.deleteTrack.bind(this)
+  }
   /* ------- GETTERS ------- */
 
   /**
@@ -537,4 +567,4 @@ class Tracks extends Base {
   }
 }
 
-module.exports = Tracks
+module.exports = Track
