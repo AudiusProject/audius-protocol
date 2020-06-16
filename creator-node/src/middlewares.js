@@ -67,6 +67,14 @@ async function crossCnodeAuth (req, res, next) {
       return sendResponse(req, res, errorResponseServerError(e))
     }
 
+    // Fetch caller's endpoint
+    let callerEndpoint
+    try {
+      callerEndpoint = await _getCNEndpoint(req)
+    } catch (e) {
+      return sendResponse(req, res, errorResponseServerError(e))
+    }
+
     // Fetch artist replica set from chain
     let artistReplicaSet
     try {
@@ -75,11 +83,15 @@ async function crossCnodeAuth (req, res, next) {
       return sendResponse(req, res, errorResponseServerError(e))
     }
 
-    // Error if serviceEndpoint is not in artist replicaSet
+    // Error if self or caller serviceEndpoint is not in artist replicaSet
     if (!artistReplicaSet.includes(serviceEndpoint)) {
-      return sendResponse(req, res, errorResponseUnauthorized('You are not in artist\'s replica set'))
+      return sendResponse(req, res, errorResponseUnauthorized('I am not authorized to interact with artist\'s replica set'))
+    }
+    if (!artistReplicaSet.includes(callerEndpoint)) {
+      return sendResponse(req, res, errorResponseUnauthorized('You are not authorized to interact with artist\'s replica set'))
     }
   }
+  /* else, continue */
 
   next()
 }
@@ -203,6 +215,20 @@ async function _getOwnEndpoint (req) {
     throw new Error('fail')
   }
   return spInfo[0]['endpoint']
+}
+
+/**
+ * TODO - comment
+ */
+async function _getCNEndpoint (req) {
+  const libs = req.app.get('audiusLibs')
+  const recoveredSP = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', req.session.cnodeUser.spID)
+  console.log(`_getCNEndpoint recoveredSP: ${JSON.stringify(recoveredSP)}`)
+  if (!recoveredSP) {
+    // TODO - invalidate authtoken to prevent future calls
+    throw new Error('No valid SP found for ID')
+  }
+  return recoveredSP.endpoint
 }
 
 /** Get all creator node endpoints for user by wallet from discprov. */
