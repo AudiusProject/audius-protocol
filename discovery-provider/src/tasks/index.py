@@ -215,6 +215,8 @@ def index_blocks(self, db, blocks_list):
                 > 0
             )
 
+            # TODO: HERE PROCESS USER REPLICA SET MANAGER CHANGES
+
             # Playlist state operations processed in bulk
             playlist_state_changed = playlist_state_update(
                 self, update_task, session, playlist_factory_txs, block_number, block_timestamp
