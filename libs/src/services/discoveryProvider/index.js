@@ -528,11 +528,16 @@ class DiscoveryProvider {
    * @param {object} response discovery provider response
    */
   async _recoverWallet (response) {
-    let filteredResponse = await this._removeNondataFields(response)
-    filteredResponse = JSON.stringify(this._sortKeys(filteredResponse))
+    let ownerWallet = null
+    try {
+      let filteredResponse = await this._removeNonRecoveryDataFields(response)
+      filteredResponse = JSON.stringify(this._sortKeys(filteredResponse))
 
-    const hashedData = await this.web3Manager.getWeb3().utils.keccak256(filteredResponse)
-    const ownerWallet = await this.web3Manager.getWeb3().eth.accounts.recover(hashedData, response.signature)
+      const hashedData = await this.web3Manager.getWeb3().utils.keccak256(filteredResponse)
+      ownerWallet = await this.web3Manager.getWeb3().eth.accounts.recover(hashedData, response.signature)
+    } catch (e) {
+      console.error(`Issue with recovering public wallet address: ${e}`)
+    }
 
     return ownerWallet
   }
@@ -542,7 +547,7 @@ class DiscoveryProvider {
    * recover public wallet address.
    * @param {object} response discovery provider response
    */
-  async _removeNondataFields (response) {
+  async _removeNonRecoveryDataFields (response) {
     const copy = JSON.parse(JSON.stringify(response))
     METADATA_FIELDS.forEach(field => {
       delete copy[field]
@@ -553,7 +558,7 @@ class DiscoveryProvider {
   }
 
   /**
-   * Sort the object alphabetically
+   * Sort the object keys alphabetically
    * @param {object} x
    */
   _sortKeys (x) {
