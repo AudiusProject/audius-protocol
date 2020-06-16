@@ -126,7 +126,7 @@ def create_celery(test_config=None):
 
     web3endpoint = helpers.get_web3_endpoint(shared_config)
     web3 = Web3(HTTPProvider(web3endpoint))
-    abi_values = helpers.loadAbiValues()
+    abi_values = helpers.load_abi_values()
 
     global registry
     global user_factory

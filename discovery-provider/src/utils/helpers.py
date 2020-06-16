@@ -96,7 +96,7 @@ def configure_logging(loglevel_str='WARN'):
     logger.setLevel(loglevel)
 
 
-def loadAbiValues():
+def load_abi_values():
     abiDir = os.path.join(os.getcwd(), "build", "contracts")
     jsonFiles = os.listdir(abiDir)
     loaded_abi_values = {}
