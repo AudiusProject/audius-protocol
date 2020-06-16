@@ -28,19 +28,6 @@ trackDedupeMaxMinutes = 10
 
 ######## ROUTES ########
 
-@bp.route("/get_sig", methods=("GET",))
-def add_delegate_stuff():
-    random = {
-        "z": {
-            "z": "pizza",
-            "w": "fresh",
-            "b": "hot"
-        },
-        "a": "i",
-        "k": "want"
-    }
-    return api_helpers.success_response_with_signature(['ok', {'vicky':'@FDFü∂.网络 11!!!!  ¢©∂∂ß "'}, random])
-
 # Returns all users (paginated) with each user's follow count
 # Optionally filters by is_creator, wallet, or user ids
 @bp.route("/users", methods=("GET",))
@@ -94,7 +81,6 @@ def get_users():
         # bundle peripheral info into user results
         users = populate_user_metadata(session, user_ids, users, current_user_id)
 
-    # return api_helpers.success_response(users)
     return api_helpers.success_response_with_signature(users)
 
 # Returns all tracks (paginated) with each track's repost count
@@ -165,7 +151,6 @@ def get_tracks():
                 if user:
                     track['user'] = user
 
-    # return api_helpers.success_response(tracks)
     return api_helpers.success_response_with_signature(tracks)
 
 
@@ -238,7 +223,7 @@ def get_tracks_including_unlisted():
         current_user_id = get_current_user_id(required=False)
         extended_tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
-    return api_helpers.success_response(extended_tracks)
+    return api_helpers.success_response_with_signature(extended_tracks)
 
 
 @bp.route("/stems/<int:track_id>", methods=("GET",))
@@ -264,7 +249,7 @@ def get_stems_of(track_id):
             .all())
         stems = helpers.query_result_to_list(stem_results)
 
-    return api_helpers.success_response(stems)
+    return api_helpers.success_response_with_signature(stems)
 
 # Return playlist content in json form
 # optional parameters playlist owner's user_id, playlist_id = []
@@ -346,7 +331,7 @@ def get_playlists():
         except sqlalchemy.orm.exc.NoResultFound:
             pass
 
-    return api_helpers.success_response(playlists)
+    return api_helpers.success_response_with_signature(playlists)
 
 
 # Discovery Provider Social Feed Overview
@@ -624,7 +609,7 @@ def get_feed():
                     if user:
                         result['user'] = user
 
-    return api_helpers.success_response(feed_results)
+    return api_helpers.success_response_with_signature(feed_results)
 
 
 # user repost feed steps
@@ -883,7 +868,7 @@ def get_repost_feed_for_user(user_id):
                     if user:
                         result['user'] = user
 
-    return api_helpers.success_response(feed_results)
+    return api_helpers.success_response_with_signature(feed_results)
 
 
 # intersection of user1's followers and user2's followees
@@ -931,7 +916,7 @@ def get_follow_intersection_users(followee_user_id, follower_user_id):
             reverse=True
         )
 
-    return api_helpers.success_response(users)
+    return api_helpers.success_response_with_signature(users)
 
 
 # get intersection of users that have reposted provided repost_track_id and users that are
@@ -977,7 +962,7 @@ def get_track_repost_intersection_users(repost_track_id, follower_user_id):
         users = paginate_query(query).all()
         users = helpers.query_result_to_list(users)
 
-    return api_helpers.success_response(users)
+    return api_helpers.success_response_with_signature(users)
 
 
 # Get intersection of users that have reposted provided repost_playlist_id and users that
@@ -1023,7 +1008,7 @@ def get_playlist_repost_intersection_users(repost_playlist_id, follower_user_id)
         users = paginate_query(query).all()
         users = helpers.query_result_to_list(users)
 
-    return api_helpers.success_response(users)
+    return api_helpers.success_response_with_signature(users)
 
 
 # Get paginated users that follow provided followee_user_id, sorted by their follower count descending.
@@ -1095,7 +1080,7 @@ def get_followers_for_user(followee_user_id):
             key=lambda user: (user[response_name_constants.follower_count], (user['user_id'])*(-1)),
             reverse=True
         )
-    return api_helpers.success_response(users)
+    return api_helpers.success_response_with_signature(users)
 
 
 # Get paginated users that are followed by provided follower_user_id, sorted by their follower count descending.
@@ -1162,7 +1147,7 @@ def get_followees_for_user(follower_user_id):
             reverse=True
         )
 
-    return api_helpers.success_response(users)
+    return api_helpers.success_response_with_signature(users)
 
 
 # Get paginated users that reposted provided repost_track_id, sorted by their follower count descending.
@@ -1226,7 +1211,7 @@ def get_reposters_for_track(repost_track_id):
             for i, user in enumerate(user_results):
                 user[response_name_constants.follower_count] = follower_counts[i]
 
-    return api_helpers.success_response(user_results)
+    return api_helpers.success_response_with_signature(user_results)
 
 
 # Get paginated users that reposted provided repost_playlist_id, sorted by their follower count descending.
@@ -1291,7 +1276,7 @@ def get_reposters_for_playlist(repost_playlist_id):
             for i, user in enumerate(user_results):
                 user[response_name_constants.follower_count] = follower_counts[i]
 
-    return api_helpers.success_response(user_results)
+    return api_helpers.success_response_with_signature(user_results)
 
 
 # Get paginated users that saved provided save_track_id, sorted by their follower count descending.
@@ -1355,7 +1340,7 @@ def get_savers_for_track(save_track_id):
             for i, user in enumerate(user_results):
                 user[response_name_constants.follower_count] = follower_counts[i]
 
-    return api_helpers.success_response(user_results)
+    return api_helpers.success_response_with_signature(user_results)
 
 
 # Get paginated users that saved provided save_playlist_id, sorted by their follower count descending.
@@ -1420,7 +1405,7 @@ def get_savers_for_playlist(save_playlist_id):
             for i, user in enumerate(user_results):
                 user[response_name_constants.follower_count] = follower_counts[i]
 
-    return api_helpers.success_response(user_results)
+    return api_helpers.success_response_with_signature(user_results)
 
 
 # Get paginated saves of provided save_type for current user.
@@ -1480,7 +1465,7 @@ def get_saves(save_type):
         query_results = paginate_query(query).all()
         save_results = helpers.query_result_to_list(query_results)
 
-    return api_helpers.success_response(save_results)
+    return api_helpers.success_response_with_signature(save_results)
 
 # Get the user saved collections & uploaded collections along with the collection user owners
 # NOTE: This is a one off endpoint for retrieving a user's collections/associated user and should
@@ -1509,7 +1494,7 @@ def get_users_account():
         # If user cannot be found, exit early and return empty response
         user = base_query.first()
         if not user:
-            return api_helpers.success_response(None)
+            return api_helpers.success_response_with_signature(None)
 
         user = helpers.model_to_dictionary(user)
         user_id = user['user_id']
@@ -1563,7 +1548,7 @@ def get_users_account():
             })
         user['playlists'] = stripped_playlists
 
-    return api_helpers.success_response(user)
+    return api_helpers.success_response_with_signature(user)
 
 # Gets the max id for tracks, playlists, or users.
 @bp.route("/latest/<type>", methods=("GET",))
@@ -1581,21 +1566,21 @@ def get_max_id(type):
                 .query(func.max(Track.track_id))
                 .scalar()
             )
-            return api_helpers.success_response(latest)
+            return api_helpers.success_response_with_signature(latest)
         elif type == 'playlist':
             latest = (
                 session
                 .query(func.max(Playlist.playlist_id))
                 .scalar()
             )
-            return api_helpers.success_response(latest)
+            return api_helpers.success_response_with_signature(latest)
         elif type == 'user':
             latest = (
                 session
                 .query(func.max(User.user_id))
                 .scalar()
             )
-            return api_helpers.success_response(latest)
+            return api_helpers.success_response_with_signature(latest)
     return api_helpers.error_response("Unable to compute latest", 400)
 
 @bp.route("/top/<type>", methods=("GET",))
@@ -1735,7 +1720,7 @@ def get_top_playlists(type):
                 if user:
                     playlist['user'] = user
 
-    return api_helpers.success_response(playlists)
+    return api_helpers.success_response_with_signature(playlists)
 
 @bp.route("/top_followee_windowed/<type>/<window>")
 def get_top_followee_windowed(type, window):
@@ -1827,7 +1812,7 @@ def get_top_followee_windowed(type, window):
                 if user:
                     track['user'] = user
 
-    return api_helpers.success_response(tracks)
+    return api_helpers.success_response_with_signature(tracks)
 
 @bp.route("/top_followee_saves/<type>")
 def get_top_followee_saves(type):
@@ -1922,7 +1907,7 @@ def get_top_followee_saves(type):
                 if user:
                     track['user'] = user
 
-    return api_helpers.success_response(tracks)
+    return api_helpers.success_response_with_signature(tracks)
 
 # Retrieves the top users for a requested genre under the follow parameters
 # - A given user can only be associated w/ one genre
@@ -2025,10 +2010,10 @@ def get_top_genre_users():
             # Sort the users so that it's in the same order as the previous query
             user_map = {user['user_id']:user for user in users}
             users = [user_map[user_id] for user_id in user_ids]
-            return api_helpers.success_response({ 'users': users })
+            return api_helpers.success_response_with_signature({ 'users': users })
 
 
-        return api_helpers.success_response({ 'user_ids': user_ids })
+        return api_helpers.success_response_with_signature({ 'user_ids': user_ids })
 
 
 
@@ -2134,7 +2119,7 @@ def get_remixes_of(track_id):
         if "with_users" in request.args and request.args.get("with_users") != 'false':
             add_users_to_tracks(session, tracks)
 
-    return api_helpers.success_response({ 'tracks': tracks, 'count': count }, 200)
+    return api_helpers.success_response_with_signature({ 'tracks': tracks, 'count': count }, 200)
 
 # Get the tracks that are 'parent' remixes of the requested track
 @bp.route("/remixes/<int:track_id>/parents", methods=("GET",))
@@ -2169,4 +2154,4 @@ def get_remix_track_parents(track_id):
         if "with_users" in request.args and request.args.get("with_users") != 'false':
             add_users_to_tracks(session, tracks)
 
-    return api_helpers.success_response(tracks)
+    return api_helpers.success_response_with_signature(tracks)

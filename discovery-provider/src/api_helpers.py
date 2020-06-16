@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 METADATA_FIELDS = ['success', 'latest_indexed_block', 'latest_chain_block']
 API_SIGNING_FIELDS = ['timestamp', 'signature']
 
-# subclass JSONEncoder
+# Subclass JSONEncoder
 class DateTimeEncoder(json.JSONEncoder):
-    #Override the default method
+    # Override the default method
     def default(self, obj):
         if isinstance(obj, (datetime.date, datetime.datetime)):
             # TODO - the Z is required in JS date format
@@ -38,27 +38,22 @@ def success_response(response_entity=None, status=200):
     response_dictionary = response_dict_with_metadata(response_entity)
     return jsonify(response_dictionary), status
 
+# Create a response dict with just data, signature, and timestamp
 def response_with_signature(response_entity=None, status=200):
-    # make copy of response entity
+    # Make copy of response entity
     response_dictionary = {**response_entity}
     generate_and_set_sig_and_timestamp(response_dictionary, response_entity)
-
     return jsonify(response_dictionary), status
 
+# Create a response dict with metadata, data, signature, and timestamp
 def success_response_with_signature(response_entity=None, status=200):
-    start = time.process_time()
-    # get data to sign
-    data = {
-        'data': response_entity
-    }
-
-    response_dictionary = response_dict_with_metadata(response_entity)
-    
-    # generate and add signature and timestamp using data
+    # structure data to sign
+    data = { 'data': response_entity }
+    response_dictionary = response_dict_with_metadata(response_entity)    
     generate_and_set_sig_and_timestamp(response_dictionary, data)
-    logger.info(f"time taken for generating signature {(time.process_time() - start)*1000}ms")
     return jsonify(response_dictionary), status
 
+# Create a response dict with metadata fields of success, latest_indexed_block, and latest_chain_block
 def response_dict_with_metadata(response_entity=None):
     response_dictionary = {
         'data': response_entity
@@ -74,11 +69,13 @@ def response_dict_with_metadata(response_entity=None):
 
     return response_dictionary
 
+# Generate signature and timestamp using data and adding those fields to response dict
 def generate_and_set_sig_and_timestamp(response_dict, data):
     signature, timestamp = generate_signature_and_timestamp(data)
     response_dict['signature'] = signature
     response_dict['timestamp'] = timestamp
 
+# Generate signature and timestamp using data
 def generate_signature_and_timestamp(data):
     # generate timestamp
     timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f Z')
