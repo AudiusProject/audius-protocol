@@ -14,3 +14,7 @@ export const assertNoContractExists = async (contractAddress) => {
   assert(contractCode === '0x0' || contractCode === '0x', // geth returns 0 as '0x', ganache returns it as '0'. This supports both.
     'Expected no contract at given address')
 }
+
+export const toBN = (val) => web3New.utils.toBN(val)
+
+export const toBNArray = (bnArray) => { return bnArray.map(x => toBN(x)) }

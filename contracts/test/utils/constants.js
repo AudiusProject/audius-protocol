@@ -12,6 +12,7 @@ export const socialFeatureFactoryKey = web3New.utils.utf8ToHex('SocialFeatureFac
 export const socialFeatureStorageKey = web3New.utils.utf8ToHex('SocialFeatureStorage')
 export const ipldBlacklistFactorykey = web3New.utils.utf8ToHex('IPLDBlacklistFactory')
 export const userLibraryFactoryKey = web3New.utils.utf8ToHex('UserLibraryFactory')
+export const userReplicaSetManagerKey = web3New.utils.utf8ToHex('UserReplicaSetManager')
 export const testStorageKey = web3New.utils.utf8ToHex('TestStorage')
 export const testContractKey = web3New.utils.utf8ToHex('TestContract')
 
@@ -44,3 +45,5 @@ export const userMetadata = {
   coverPhotoDigest: '0x1a5a5d47bfca6be2872d8076920683a3ae112b455a7a444be5ebb84471b16c4e',
   profilePhotoDigest: '0x1a5a5d47bfca6be2872d8076920683a3ae112b455a7a444be5ebb84471b16c4e'
 }
+
+export const addressZero = '0x0000000000000000000000000000000000000000'
