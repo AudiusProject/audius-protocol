@@ -133,6 +133,7 @@ def index_blocks(self, db, blocks_list):
             social_feature_factory_txs = []
             playlist_factory_txs = []
             user_library_factory_txs = []
+            user_replica_set_manager_txs = []
 
             # Sort transactions by hash
             sorted_txs = sorted(block.transactions, key=lambda entry: entry['hash'])
@@ -183,6 +184,14 @@ def index_blocks(self, db, blocks_list):
                         f"tx from block - {tx}, receipt - {tx_receipt}"
                     )
                     user_library_factory_txs.append(tx_receipt)
+
+                # Handle user replica set operations
+                if tx_target_contract_address == contract_addresses["user_replica_set_manager"]:
+                    logger.info(
+                        f"index.py | index_blocks | User Replica Set Manager contract addr: {tx_target_contract_address}"
+                        f"tx from block - {tx}, receipt - {tx_receipt}"
+                    )
+                    user_replica_set_manager_txs.append(tx_receipt)
 
             # bulk process operations once all tx's for block have been parsed
             user_state_changed = (

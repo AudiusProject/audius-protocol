@@ -39,12 +39,13 @@ social_feature_factory = None
 playlist_factory = None
 user_library_factory = None
 ipld_blacklist_factory = None
+user_replica_set_manager = None
 contract_addresses = None
 
 logger = logging.getLogger(__name__)
 
 
-def initContracts():
+def init_contracts():
     registry_address = web3.toChecksumAddress(shared_config["contracts"]["registry"])
     registry_instance = web3.eth.contract(
         address=registry_address, abi=abi_values["Registry"]["abi"]
@@ -91,6 +92,12 @@ def initContracts():
     ipld_blacklist_factory_inst = web3.eth.contract(
         address=user_library_factory_address, abi=abi_values["UserLibraryFactory"]["abi"]
     )
+    user_replica_set_manager_address = registry_instance.functions.getContract(
+        bytes("UserReplicaSetManager", "utf-8")
+    ).call()
+    user_replica_set_manager_inst = web3.eth.contract(
+        address=user_replica_set_manager_address, abi=abi_values["UserReplicaSetManager"]["abi"]
+    )
 
     contract_address_dict = {
         "registry": registry_address,
@@ -99,7 +106,8 @@ def initContracts():
         "social_feature_factory": social_feature_factory_address,
         "playlist_factory": playlist_factory_address,
         "user_library_factory": user_library_factory_address,
-        "ipld_blacklist_factory": ipld_blacklist_factory_address
+        "ipld_blacklist_factory": ipld_blacklist_factory_address,
+        "user_replica_set_manager": user_replica_set_manager_address
     }
 
     return (
@@ -110,6 +118,7 @@ def initContracts():
         playlist_factory_inst,
         user_library_factory_inst,
         ipld_blacklist_factory_inst,
+        user_replica_set_manager_inst,
         contract_address_dict,
     )
 
@@ -136,6 +145,7 @@ def create_celery(test_config=None):
     global user_library_factory
     global ipld_blacklist_factory
     global contract_addresses
+    global user_replica_set_manager
     # pylint: enable=W0603
 
     (
@@ -146,8 +156,9 @@ def create_celery(test_config=None):
         playlist_factory,
         user_library_factory,
         ipld_blacklist_factory,
+        user_replica_set_manager,
         contract_addresses
-    ) = initContracts()
+    ) = init_contracts()
 
     return create(test_config, mode="celery")
 

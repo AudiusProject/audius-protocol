@@ -28,6 +28,10 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     // Current uint userId to Replica Set
     mapping (uint => ReplicaSet) artistReplicaSets;
 
+    // Events
+    event UpdateReplicaSet(uint _userId, uint _primary, uint[] _secondaries);
+    event AddOrUpdateCreatorNode(uint _newCnodeId, address _newCnodeDelegateOwnerWallet, uint _proposerSpId);
+
     /* EIP-712 */
     bytes32 constant ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
         "AddOrUpdateCreatorNode(uint newCnodeId,address newCnodeDelegateOwnerWallet,uint proposerSpId,bytes32 nonce)"
@@ -77,8 +81,9 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
             require(spIdToCreatorNodeDelegateWallet[_proposerSpId] == signer, "Mismatch proposer wallet for existing spID");
         }
 
-      // TODO: Event
         spIdToCreatorNodeDelegateWallet[_newCnodeId] = _newCnodeDelegateOwnerWallet;
+
+        emit AddOrUpdateCreatorNode(_newCnodeId, _newCnodeDelegateOwnerWallet, _proposerSpId);
     }
 
     // TODO: Revisit delete logic - how to remove an spID <-> wallet combo entirely
@@ -150,6 +155,8 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
             primary: _primary,
             secondaries: _secondaries
         });
+
+        emit UpdateReplicaSet(_userId, _primary, _secondaries);
     }
 
     // Return an artist's current replica set
