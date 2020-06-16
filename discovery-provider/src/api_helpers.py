@@ -20,11 +20,11 @@ API_SIGNING_FIELDS = ['timestamp', 'signature']
 # Subclass JSONEncoder
 class DateTimeEncoder(json.JSONEncoder):
     # Override the default method
-    def default(self, obj):
-        if isinstance(obj, (datetime.date, datetime.datetime)):
+    def default(self, o): # pylint: disable=E0202
+        if isinstance(o, (datetime.date, datetime.datetime)):
             # TODO - the Z is required in JS date format
-            return obj.isoformat() + " Z"
-        return json.JSONEncoder.default(self, obj)
+            return o.isoformat() + " Z"
+        return json.JSONEncoder.default(self, o)
 
 def error_response(error, error_code=500):
     return jsonify({'success': False, 'error': error}), error_code
