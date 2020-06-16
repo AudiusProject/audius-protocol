@@ -1,19 +1,15 @@
 import logging
 import json
 import datetime
-
+import redis
 from web3 import Web3
 from web3.auto import w3
 from eth_account.messages import encode_defunct
-from hexbytes import HexBytes
-from copy import deepcopy
-
 from flask import jsonify
-import redis
+
 from src.utils.config import shared_config
 from src.utils.redis_constants import latest_block_redis_key, most_recent_indexed_block_redis_key
 
-import time
 redis_url = shared_config["redis"]["url"]
 redis = redis.Redis.from_url(url=redis_url)
 
@@ -104,4 +100,4 @@ def recover_wallet(data, signature):
     encoded_to_recover = encode_defunct(hexstr=to_recover_hash)
     recovered_wallet = w3.eth.account.recover_message(encoded_to_recover, signature=signature)
 
-    return recovered_wallet 
+    return recovered_wallet
