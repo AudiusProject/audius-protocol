@@ -44,6 +44,7 @@ export const updateReplicaSet = async (userReplicaSetManager, userId, primary, s
   // Sign with senderAcct
   let sig = await eth_signTypedData(senderAcct, signatureData)
   let tx = await userReplicaSetManager.updateReplicaSet(userId, primary, secondaries, oldPrimary, oldSecondaries, nonce, sig)
+  parseTxWithAssertsAndResp(tx, 'UpdateReplicaSet', { _userId: userId, _primary: primary, _secondaries: secondaries })
   return tx
 }
 

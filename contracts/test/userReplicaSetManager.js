@@ -107,7 +107,7 @@ contract('UserReplicaSetManager', async (accounts) => {
     await updateReplicaSet(userId1, user1Primary, user1Secondaries, 0, [], userAcct1)
   })
 
-  it('Configure + update artist replica set', async () => {
+  it.only('Configure + update artist replica set', async () => {
     let user1Primary = _lib.toBN(1)
     let user1Secondaries = _lib.toBNArray([2, 3])
     let oldPrimary = user1Primary

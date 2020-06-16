@@ -30,7 +30,11 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
 
     // Events
     event UpdateReplicaSet(uint _userId, uint _primary, uint[] _secondaries);
-    event AddOrUpdateCreatorNode(uint _newCnodeId, address _newCnodeDelegateOwnerWallet, uint _proposerSpId);
+    event AddOrUpdateCreatorNode(
+        uint _newCnodeId,
+        address _newCnodeDelegateOwnerWallet,
+        uint _proposerSpId
+    );
 
     /* EIP-712 */
     bytes32 constant ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
