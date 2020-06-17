@@ -1,5 +1,6 @@
 const axios = require('axios')
 const FormData = require('form-data')
+const fetch = require('node-fetch')
 
 const SchemaValidator = require('../schemaValidator')
 
@@ -189,6 +190,7 @@ class CreatorNode {
     }
 
     const sourceFile = trackContentResp.source_file
+    console.log({trackContentResp})
     if (!sourceFile) throw new Error('Invalid or missing sourceFile')
 
     if (coverArtResp) metadata.cover_art_sizes = coverArtResp.dirCID
@@ -469,20 +471,15 @@ class CreatorNode {
     let total
     const url = this.creatorNodeEndpoint + route
     try {
-      const resp = await axios.post(
-        url,
-        formData,
-        {
-          headers: headers,
-          // Add a 10% inherit processing time for the file upload.
-          onUploadProgress: (progressEvent) => {
-            if (!total) total = progressEvent.total
-            onProgress(progressEvent.loaded, total)
-          }
-        }
-      )
+      // TODO: figure out onProgress
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData
+      })
       onProgress(total, total)
-      return resp.data
+      const data = await resp.json()
+      return data
     } catch (e) {
       _handleErrorHelper(e, url)
     }

@@ -1,3 +1,5 @@
+// global.XMLHttpRequest = undefined
+
 const packageJSON = require('../package.json')
 
 const EthWeb3Manager = require('./services/ethWeb3Manager/index')
@@ -56,8 +58,9 @@ class AudiusLibs {
    * @param {Object} web3Provider equal to web.currentProvider
    * @param {?number} networkId network chain id
    * @param {?string} walletOverride wallet address to force use instead of the first wallet on the provided web3
+   * @param {?number} walletIndex if using a wallet returned from web3, pick the wallet at this index
    */
-  static async configExternalWeb3 (registryAddress, web3Provider, networkId, walletOverride = null) {
+  static async configExternalWeb3 (registryAddress, web3Provider, networkId, walletOverride = null, walletIndex = 0) {
     const web3Instance = await Utils.configureWeb3(web3Provider, networkId)
     if (!web3Instance) {
       throw new Error('External web3 incorrectly configured')
@@ -68,7 +71,7 @@ class AudiusLibs {
       useExternalWeb3: true,
       externalWeb3Config: {
         web3: web3Instance,
-        ownerWallet: walletOverride || wallets[0]
+        ownerWallet: walletOverride || wallets[walletIndex]
       }
     }
   }

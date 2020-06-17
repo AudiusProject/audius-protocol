@@ -1,5 +1,6 @@
 const bs58 = require('bs58')
 const Web3 = require('./web3')
+// global.XMLHttpRequest = undefined
 const axios = require('axios')
 
 class Utils {
