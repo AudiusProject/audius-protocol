@@ -31,7 +31,26 @@ def user_replica_set_state_update(self, update_task, session, user_replica_set_m
     for tx_receipt in user_replica_set_mgr_txs:
         for event_type in user_replica_set_manager_event_types_arr:
             user_events_tx = getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
-            logger.error('Found events for user replica seet mgr contract here')
+            for entry in user_events_tx:
+                args = entry["args"]
+                logger.error(">>>>>")
+                logger.error(event_type)
+                logger.error(entry)
+                logger.error(args)
+                # Check if _userId is present
+                # If user id is found in the event args, update the local lookup object
+                user_id = args._userId if "_userId" in args else None
+                logger.error(f"user_id - {user_id}")
+                if user_id and (user_id not in user_replica_set_events_lookup):
+                    ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp)
+                    user_replica_set_events_lookup[user_id] = {"user": ret_user, "events": []}
+
+                if event_type == user_replica_set_manager_event_types_lookup['update_replica_set']:
+                    primary = args._primary
+                    secondaries = args._secondaries
+                    logger.error(f"Primary: {primary}")
+                    logger.error(f"Secondary: {secondaries}")
+                logger.error("<<<<<")
             '''
 
             for entry in user_events_tx:
@@ -65,6 +84,7 @@ def user_replica_set_state_update(self, update_task, session, user_replica_set_m
             '''
             num_total_changes += len(user_events_tx)
 
+    logger.error(user_replica_set_events_lookup)
     # TODO: UPDATE AFTER PROCESSING
     return num_total_changes
     # for each record in user_replica_set_events_lookup, invalidate the old record and add the new record

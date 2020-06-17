@@ -7,7 +7,7 @@ from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.playlists import playlist_state_update
 from src.tasks.user_library import user_library_state_update
-from src.tasks.user_replica_set_state_update import user_replica_set_state_update
+from src.tasks.user_replica_set import user_replica_set_state_update
 from src.utils.helpers import get_ipfs_info_from_cnode_endpoint
 from src.utils.redis_constants import latest_block_redis_key, \
     latest_block_hash_redis_key, most_recent_indexed_block_redis_key
