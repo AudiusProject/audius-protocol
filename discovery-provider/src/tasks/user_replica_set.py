@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from src import contract_addresses
 from src.utils import helpers
-from src.models import User, BlacklistedIPLD
+from src.models import User
 from src.tasks.metadata import user_metadata_format
 from src.utils.user_event_constants import user_replica_set_manager_event_types_arr, user_replica_set_manager_event_types_lookup
 
@@ -65,6 +65,8 @@ def user_replica_set_state_update(self, update_task, session, user_replica_set_m
             '''
             num_total_changes += len(user_events_tx)
 
+    # TODO: UPDATE AFTER PROCESSING
+    return num_total_changes
     # for each record in user_replica_set_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
     for user_id, value_obj in user_replica_set_events_lookup.items():
