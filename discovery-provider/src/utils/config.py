@@ -104,5 +104,9 @@ for section in shared_config.sections():
 try:
     owner_wallet = shared_config['delegate']['owner_wallet']
     private_key = shared_config['delegate']['private_key']
+
+    if not owner_wallet or not private_key:
+        raise RuntimeError()
+
 except KeyError as ke:
     raise RuntimeError(f"Missing delegate owner wallet and/or delgate private key: {ke}")
