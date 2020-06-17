@@ -20,7 +20,7 @@ module.exports = function (app) {
     const spID = req.body.spID || null
 
     if (!ethereumUtils.isValidAddress(walletAddress)) {
-      return errorResponseBadRequest('Invalid request body params')
+      return errorResponseBadRequest('Ethereum address is invalid')
     }
 
     const walletPublicKey = walletAddress.toLowerCase()
@@ -41,15 +41,15 @@ module.exports = function (app) {
       // if (!user || user.length === 0 || !user[0].hasOwnProperty('blocknumber') || !user[0].hasOwnProperty('track_blocknumber')) {
       //   throw new Error('Missing or malformatted user fetched from discprov.')
       // }
-    } else {
+    }
+    // if spID is non-null, confirm wallet is valid sp on chain
+    else {
       const recoveredSP = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', spID)
-      console.log(`post /users recoveredSP: ${JSON.stringify(recoveredSP)}`)
+
       if (!recoveredSP || recoveredSP.delegateOwnerWallet != walletPublicKey) {
         return errorResponseForbidden('Must be valid service provider on chain')
       }
     }
-
-    // if spID is non-null, confirm wallet is valid sp on chain
 
     // if CNodeUser doesn't already exist, create it
     if (!existingUser) {
@@ -127,7 +127,6 @@ module.exports = function (app) {
    */
   app.post('/users/login/challenge', handleResponse(async (req, res, next) => {
     const { signature, data: theirChallenge } = req.body
-    console.log(`signature: ${signature}, theirchallenge: ${theirChallenge}`)
 
     if (!signature || !theirChallenge) {
       return errorResponseBadRequest('Missing request body values.')
@@ -135,7 +134,6 @@ module.exports = function (app) {
 
     let address
     try {
-      console.log('attempting to utils.verifySignature')
       address = utils.verifySignature(theirChallenge, signature)
       address = address.toLowerCase()
     } catch (e) {
@@ -151,7 +149,6 @@ module.exports = function (app) {
       return errorResponseBadRequest('Invalid data or signature')
     }
 
-    console.log('attempting to redisClient.get')
     const redisClient = req.app.get('redisClient')
     const userLoginChallengeKey = `${CHALLENGE_PREFIX}${address}`
     const ourChallenge = await redisClient.get(userLoginChallengeKey)
@@ -164,11 +161,9 @@ module.exports = function (app) {
       return errorResponseBadRequest(`Invalid response.`)
     }
 
-    console.log('attempting to redisClient.del')
     await redisClient.del(userLoginChallengeKey)
 
     // All checks have passed! generate a new session token for the user
-    console.log('attempting to sessionMgr.createSession')
     const sessionToken = await sessionManager.createSession(user.cnodeUserUUID)
     return successResponse({ sessionToken })
   }))

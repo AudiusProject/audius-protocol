@@ -115,9 +115,6 @@ const startApp = async () => {
   if (!delegateOwnerWallet || !delegatePrivateKey) {
     exitWithError('Cannot startup without delegateOwnerWallet and delegatePrivateKey')
   }
-  const dataProviderUrl = config.get('dataProviderUrl')
-  const dataNetworkId = config.get('dataNetworkId')
-  console.log(`delegateOwnerWallet: ${delegateOwnerWallet}, delegatePKey: ${delegatePrivateKey}, spID: ${spID}, dataprovurl: ${dataProviderUrl}, datanetworkid: ${dataNetworkId}`)
 
   const storagePath = configFileStorage()
 
@@ -138,18 +135,15 @@ const startApp = async () => {
     await BlacklistManager.blacklist(ipfs)
 
     const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
-    // const audiusLibs = null
     logger.info('Initialized audius libs')
 
-    /** TODO - if spID is 0, check if registered on chain and store locally */
+    /** if spID is 0, check if registered on chain and store locally */
     if (spID == 0 && audiusLibs) {
       const recoveredSpID = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
         config.get('creatorNodeEndpoint')
       )
-      console.log(`recoveredSPID: ${recoveredSpID}`)
       config.set('spID', recoveredSpID)
     }
-    console.log(`spID now: ${config.get('spID')}`)
 
     appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager, ipfsLatest)
 

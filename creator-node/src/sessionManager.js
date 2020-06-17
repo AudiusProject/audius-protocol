@@ -3,11 +3,11 @@ const base64url = require('base64-url')
 const { promisify } = require('util')
 const randomBytes = promisify(crypto.randomBytes)
 
+const models = require('./models')
 const redisClient = require('./redis')
 
 const sessionTokenHeaderKey = 'X-Session-ID'
 const sessionTokenLength = 40
-const sessionTokenTTLSeconds = 86400 // 24hrs
 
 /** Manage sessions with redis and DB. */
 class SessionManager {
@@ -19,17 +19,26 @@ class SessionManager {
     const tokenBuffer = await randomBytes(sessionTokenLength)
     const token = base64url.encode(tokenBuffer)
 
-    await redisClient.set(`SESSION.${token}`, cnodeUserUUID, 'EX', sessionTokenTTLSeconds)
+    const session = await models.SessionToken.create({ cnodeUserUUID, token })
+    await redisClient.set(`SESSION.${token}`, session.cnodeUserUUID)
 
     return token
   }
 
   /** Return cnodeUserUUID associated with token if exists, else null. */
   static async verifySession (sessionToken) {
-    return _getSessionFromRedis(sessionToken)
+    let session = await _getSessionFromRedis(sessionToken)
+    if (session) {
+      return session
+    }
+
+    session = await _getSessionFromDB(sessionToken, false)
+    return (session) ? session.cnodeUserUUID : null
   }
 
   static async deleteSession (sessionToken) {
+    const session = await _getSessionFromDB(sessionToken, true)
+    await session.destroy()
     await redisClient.del(`SESSION.${sessionToken}`)
   }
 }
@@ -38,5 +47,13 @@ async function _getSessionFromRedis (token) {
   return redisClient.get(`SESSION.${token}`)
 }
 
+async function _getSessionFromDB (sessionToken, throwOnError) {
+  const session = await models.SessionToken.findOne({ where: { token: sessionToken } })
+
+  if (throwOnError && !session) {
+    throw new Error('Invalid session')
+  }
+  return session
+}
 
 module.exports = SessionManager
