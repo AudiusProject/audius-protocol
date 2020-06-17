@@ -88,6 +88,26 @@ const getUserContext = async (handle: string): Promise<Context> => {
   }
 }
 
+const getRemixesContext = async (id: number): Promise<Context> => {
+  if (!id) return getDefaultContext()
+  try {
+    const track = await getTrack(id)
+    const user = await getUser(track.owner_id)
+    const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
+
+    const coverArt = track.cover_art_sizes
+      ? `${track.cover_art_sizes}/1000x1000.jpg`
+      : track.cover_art
+    return {
+      title: `Remixes of ${track.title} • ${user.name}`,
+      description: track.description || '',
+      image: getImageUrl(coverArt, gateway)
+    }
+  } catch (e) {
+    return getDefaultContext()
+  }
+}
+
 const getUploadContext = (): Context => {
   return {
     title: 'Audius Upload',
@@ -137,6 +157,10 @@ const getResponse = async (
     case MetaTagFormat.User:
       console.log('get user', req.path, handle, userAgent)
       context = await getUserContext(handle)
+      break
+    case MetaTagFormat.Remixes:
+      console.log('get remixes', req.path, id, userAgent)
+      context = await getRemixesContext(id)
       break
     case MetaTagFormat.Upload:
       console.log('get upload', req.path, userAgent)

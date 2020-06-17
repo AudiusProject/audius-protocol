@@ -55,6 +55,13 @@ router.get('/:handle', (
   }
 )
 
+router.get('/:handle/:title/remixes', (
+  req: express.Request,
+  res: express.Response) => {
+    getMetaTagsResponse(MetaTagFormat.Remixes, req, res)
+  }
+)
+
 router.get('/:handle/:title', (
   req: express.Request,
   res: express.Response) => {

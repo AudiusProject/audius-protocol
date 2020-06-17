@@ -44,11 +44,7 @@ docker build -t ga-node .
 docker run --rm ga-node -p 8000:8000 -d
 ```
 
-## running GA locally
+### Against a local dapp
 
 1. Run the dapp locally
-2. `cp` `.env.prod` or `.env.stage` to `.env` in the GA directory
-3. Set `APP_URL` env var in `.env` to `http://docker.for.mac.localhost:{DAPP_PORT}`
-4. Run GA with `docker-compose up --build`
-5. ???
-6. Profit
+2. Set `APP_URL` env var in `.env` to `http://docker.for.mac.localhost:{DAPP_PORT}`

@@ -3,6 +3,7 @@ export enum MetaTagFormat {
   Track,
   Collection,
   User,
+  Remixes,
   Upload,
   Error
 }
