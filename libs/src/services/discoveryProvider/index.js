@@ -3,7 +3,6 @@ const axios = require('axios')
 const Utils = require('../../utils')
 const { raceRequests } = require('../../utils/network')
 const { serviceType } = require('../ethContracts/index')
-const { recoverWallet, sortKeys } = require('../../utils/apiSigning')
 
 const {
   UNHEALTHY_BLOCK_DIFF,
