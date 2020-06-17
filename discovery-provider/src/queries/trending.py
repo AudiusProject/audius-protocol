@@ -42,9 +42,9 @@ def trending(time):
                     logger.error(f'Returning cache for {redis_key}')
                     # Increment cache hit count
                     REDIS.incr(trending_cache_hits_key, 1)
-                    return api_helpers.success_response_with_signature(json_cache)
+                    return api_helpers.success_response(json_cache)
     # Increment cache miss count
     REDIS.incr(trending_cache_miss_key, 1)
     # Recalculate trending values if necessary
     final_resp = generate_trending(get_db_read_replica(), time, genre, limit, offset)
-    return api_helpers.success_response_with_signature(final_resp)
+    return api_helpers.success_response(final_resp)

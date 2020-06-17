@@ -297,7 +297,7 @@ def search_tags():
 
             results['followed_users'] = followed_users_followee_sorted
 
-    return api_helpers.success_response_with_signature_with_signature(results)
+    return api_helpers.success_response(results)
 
 # SEARCH QUERIES
 # We chose to use the raw SQL instead of SQLAlchemy because we're pushing SQLAlchemy to it's
@@ -377,7 +377,7 @@ def search(isAutocomplete):
                     isAutocomplete
                 )
 
-    return api_helpers.success_response_with_signature(results)
+    return api_helpers.success_response(results)
 
 
 def track_search_query(session, searchStr, limit, offset, personalized, isAutocomplete):

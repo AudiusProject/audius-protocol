@@ -7,13 +7,15 @@ from web3.auto import w3
 from eth_account.messages import encode_defunct
 from flask import jsonify
 
+from src.utils import helpers
 from src.utils.config import shared_config
 from src.utils.redis_constants import latest_block_redis_key, most_recent_indexed_block_redis_key
 
 redis_url = shared_config["redis"]["url"]
 redis = redis.Redis.from_url(url=redis_url)
-
 logger = logging.getLogger(__name__)
+disc_prov_version = helpers.get_discovery_provider_version()
+
 METADATA_FIELDS = ['success', 'latest_indexed_block', 'latest_chain_block']
 API_SIGNING_FIELDS = ['timestamp', 'signature']
 
@@ -29,26 +31,23 @@ class DateTimeEncoder(json.JSONEncoder):
 def error_response(error, error_code=500):
     return jsonify({'success': False, 'error': error}), error_code
 
-def success_response(response_entity=None, status=200):
-    response_dictionary = response_dict_with_metadata(response_entity)
-    return jsonify(response_dictionary), status
-
 # Create a response dict with just data, signature, and timestamp
-def response_with_signature(response_entity=None, status=200):
-    # Make copy of response entity
-    response_dictionary = {**response_entity}
-    generate_and_set_sig_and_timestamp(response_dictionary, response_entity)
+# This response will contain a duplicate of response_entity
+def success_response_backwards_compat(response_entity=None, status=200):
+    data = {'data': response_entity}
+    response_dictionary = {**response_entity, 'data': response_entity}
+    generate_and_set_sig_and_timestamp(response_dictionary, data)
     return jsonify(response_dictionary), status
 
 # Create a response dict with metadata, data, signature, and timestamp
-def success_response_with_signature(response_entity=None, status=200):
-    # structure data to sign
+def success_response(response_entity=None, status=200):
     data = {'data': response_entity}
     response_dictionary = response_dict_with_metadata(response_entity)
     generate_and_set_sig_and_timestamp(response_dictionary, data)
     return jsonify(response_dictionary), status
 
-# Create a response dict with metadata fields of success, latest_indexed_block, and latest_chain_block
+# Create a response dict with metadata fields of success, latest_indexed_block, latest_chain_block,
+# version, and owner_wallet
 def response_dict_with_metadata(response_entity=None):
     response_dictionary = {
         'data': response_entity
@@ -61,6 +60,8 @@ def response_dict_with_metadata(response_entity=None):
 
     response_dictionary['latest_indexed_block'] = (int(latest_indexed_block) if latest_indexed_block else None)
     response_dictionary['latest_chain_block'] = (int(latest_chain_block) if latest_chain_block else None)
+    response_dictionary['version'] = disc_prov_version
+    response_dictionary['owner_wallet'] = shared_config['delegate']['owner_wallet']
 
     return response_dictionary
 

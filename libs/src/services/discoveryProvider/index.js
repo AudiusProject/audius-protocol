@@ -3,6 +3,7 @@ const axios = require('axios')
 const Utils = require('../../utils')
 const { raceRequests } = require('../../utils/network')
 const { serviceType } = require('../ethContracts/index')
+const { recoverWallet, sortKeys } = require('../../utils/apiSigning')
 
 const {
   UNHEALTHY_BLOCK_DIFF,
@@ -18,7 +19,6 @@ if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 const MAKE_REQUEST_RETRY_COUNT = 3
 const MAX_MAKE_REQUEST_RETRY_COUNT = 50
 const AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT = 3
-const METADATA_FIELDS = ['success', 'latest_indexed_block', 'latest_chain_block']
 
 class DiscoveryProvider {
   constructor (autoselect, whitelist, userStateManager, ethContracts, web3Manager) {
@@ -27,7 +27,6 @@ class DiscoveryProvider {
     this.userStateManager = userStateManager
     this.ethContracts = ethContracts
     this.web3Manager = web3Manager
-    this._sortKeys = this._sortKeys.bind(this)
   }
 
   async init () {
@@ -522,50 +521,6 @@ class DiscoveryProvider {
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
-
-  /**
-   * Recover the public wallet address given the response contains the signature and timestamp
-   * @param {object} response discovery provider response
-   */
-  async _recoverWallet (response) {
-    let ownerWallet = null
-    try {
-      let filteredResponse = await this._removeNonRecoveryDataFields(response)
-      filteredResponse = JSON.stringify(this._sortKeys(filteredResponse))
-
-      const hashedData = await this.web3Manager.getWeb3().utils.keccak256(filteredResponse)
-      ownerWallet = await this.web3Manager.getWeb3().eth.accounts.recover(hashedData, response.signature)
-    } catch (e) {
-      console.error(`Issue with recovering public wallet address: ${e}`)
-    }
-
-    return ownerWallet
-  }
-
-  /**
-   * Delete metadata fields and signature from response. Return value is used to
-   * recover public wallet address.
-   * @param {object} response discovery provider response
-   */
-  async _removeNonRecoveryDataFields (response) {
-    const copy = JSON.parse(JSON.stringify(response))
-    METADATA_FIELDS.forEach(field => {
-      delete copy[field]
-    })
-    delete copy['signature']
-
-    return copy
-  }
-
-  /**
-   * Sort the object keys alphabetically
-   * @param {object} x
-   */
-  _sortKeys (x) {
-    if (typeof x !== 'object' || !x) { return x }
-    if (Array.isArray(x)) { return x.map(this._sortKeys) }
-    return Object.keys(x).sort().reduce((o, k) => ({ ...o, [k]: this._sortKeys(x[k]) }), {})
-  }
 
   // TODO(DM) - standardize this to axios like audius service and creator node
   // requestObj consists of multiple properties

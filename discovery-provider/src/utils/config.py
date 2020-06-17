@@ -108,5 +108,7 @@ try:
     if not owner_wallet or not private_key:
         raise RuntimeError()
 
-except KeyError as ke:
-    raise RuntimeError(f"Missing delegate owner wallet and/or delgate private key: {ke}")
+except (KeyError, RuntimeError) as e:
+    raise RuntimeError(f"""
+    Missing delegate owner wallet ({owner_wallet}) and/or delgate private key ({private_key}): {e}
+    """)
