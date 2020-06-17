@@ -8,8 +8,7 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x715018a6"
+      "type": "function"
     },
     {
       "constant": true,
@@ -23,8 +22,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x8da5cb5b"
+      "type": "function"
     },
     {
       "constant": true,
@@ -38,8 +36,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x8f32d59b"
+      "type": "function"
     },
     {
       "constant": false,
@@ -53,8 +50,7 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xf2fde38b"
+      "type": "function"
     },
     {
       "anonymous": false,
@@ -71,8 +67,7 @@
         }
       ],
       "name": "ContractAdded",
-      "type": "event",
-      "signature": "0x643cefa5894755d9e02f78cb384977d4ee3a06c8394b062a290e19176e9c69de"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -89,8 +84,7 @@
         }
       ],
       "name": "ContractRemoved",
-      "type": "event",
-      "signature": "0x266f45300baf5abcdb8653dcec68c843b20fb984df2fae4cd1e3fecaf4619952"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -112,8 +106,7 @@
         }
       ],
       "name": "ContractUpgraded",
-      "type": "event",
-      "signature": "0x8b3c9342e23b53b74b0f760c251b1b6b5553d1c3d23239357405f70d5fe43d55"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -130,8 +123,7 @@
         }
       ],
       "name": "OwnershipTransferred",
-      "type": "event",
-      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+      "type": "event"
     },
     {
       "constant": false,
@@ -149,8 +141,7 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x5188f996"
+      "type": "function"
     },
     {
       "constant": true,
@@ -173,8 +164,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x96f27b29"
+      "type": "function"
     },
     {
       "constant": true,
@@ -193,8 +183,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0xe16c7d98"
+      "type": "function"
     },
     {
       "constant": true,
@@ -213,8 +202,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0xefa6bc43"
+      "type": "function"
     },
     {
       "constant": false,
@@ -228,8 +216,7 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xa43e04d8"
+      "type": "function"
     },
     {
       "constant": false,
@@ -247,8 +234,7 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x9c44d17a"
+      "type": "function"
     }
   ]
 }

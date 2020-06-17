@@ -6,6 +6,7 @@ const ipfsClientLatest = require('ipfs-http-client-latest')
 const path = require('path')
 const AudiusLibs = require('@audius/libs')
 const RecurringSync = require('./recurringSync')
+const Web3 = require('web3')
 
 const initializeApp = require('./app')
 const config = require('./config')
@@ -14,15 +15,23 @@ const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const BlacklistManager = require('./blacklistManager')
 
+const exitWithError = (msg) => {
+  logger.error(msg)
+  process.exit(1)
+}
+
 const initAudiusLibs = async () => {
   const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
     config.get('ethProviderUrl'),
     config.get('ethNetworkId'),
     /* requiresAccount */ false
   )
-  const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
-    ? new Set(config.get('discoveryProviderWhitelist').split(','))
-    : null
+
+  const discoveryProviderWhitelist = (
+    config.get('discoveryProviderWhitelist')
+      ? new Set(config.get('discoveryProviderWhitelist').split(','))
+      : null
+  )
 
   const audiusLibs = new AudiusLibs({
     ethWeb3Config: AudiusLibs.configEthWeb3(
@@ -30,6 +39,12 @@ const initAudiusLibs = async () => {
       config.get('ethRegistryAddress'),
       ethWeb3,
       config.get('ethOwnerWallet')
+    ),
+    web3Config: AudiusLibs.configExternalWeb3(
+      config.get('dataRegistryAddress'),
+      new Web3(new Web3.providers.HttpProvider(config.get('dataProviderUrl'))),
+      config.get('dataNetworkId'),
+      config.get('delegateOwnerWallet')
     ),
     discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true, discoveryProviderWhitelist)
   })
@@ -39,8 +54,7 @@ const initAudiusLibs = async () => {
 
 const configFileStorage = () => {
   if (!config.get('storagePath')) {
-    logger.error('Must set storagePath to use for content repository.')
-    process.exit(1)
+    exitWithError('Must set storagePath to use for content repository.')
   }
   return (path.resolve('./', config.get('storagePath')))
 }
@@ -48,8 +62,7 @@ const configFileStorage = () => {
 const initIPFS = async () => {
   const ipfsAddr = config.get('ipfsHost')
   if (!ipfsAddr) {
-    logger.error('Must set ipfsAddr')
-    process.exit(1)
+    exitWithError('Must set ipfsAddr')
   }
   const ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
   const ipfsLatest = ipfsClientLatest({ host: ipfsAddr, port: config.get('ipfsPort'), protocol: 'http' })
@@ -77,8 +90,7 @@ const runDBMigrations = async () => {
     await runMigrations()
     logger.info('Migrations completed successfully')
   } catch (err) {
-    logger.error('Error in migrations: ', err)
-    process.exit(1)
+    exitWithError('Error in migrations: ', err)
   }
 }
 
@@ -95,6 +107,16 @@ const startApp = async () => {
   logger.info('Configuring service...')
 
   await config.asyncConfig()
+
+  // fail if delegateOwnerWallet & delegatePrivateKey not present
+  const delegateOwnerWallet = config.get('delegateOwnerWallet')
+  const delegatePrivateKey = config.get('delegatePrivateKey')
+  const spID = config.get('spID')
+  console.log(`spID: ${spID} // typeof ${typeof (spID)}`)
+  if (!delegateOwnerWallet || !delegatePrivateKey) {
+    exitWithError('Cannot startup without delegateOwnerWallet and delegatePrivateKey')
+  }
+
   const storagePath = configFileStorage()
 
   const { ipfs, ipfsLatest } = await initIPFS()
@@ -115,6 +137,14 @@ const startApp = async () => {
 
     const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
     logger.info('Initialized audius libs')
+
+    /** if spID is 0, check if registered on chain and store locally */
+    if (spID === 0 && audiusLibs) {
+      const recoveredSpID = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
+        config.get('creatorNodeEndpoint')
+      )
+      config.set('spID', recoveredSpID)
+    }
 
     appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager, ipfsLatest)
 
