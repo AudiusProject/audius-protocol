@@ -267,12 +267,6 @@ const config = convict({
     env: 'dataRegistryAddress',
     default: null
   },
-  dataOwnerWallet: {
-    doc: 'data contracts owner wallet',
-    format: String,
-    env: 'dataOwnerWallet',
-    default: null
-  },
   dataProviderUrl: {
     doc: 'data contracts web3 provider url',
     format: String,
@@ -358,8 +352,7 @@ if (fs.existsSync('eth-contract-config.json')) {
 if (fs.existsSync('contract-config.json')) {
   const dataContractConfig = require('../contract-config.json')
   config.load({
-    'dataRegistryAddress': dataContractConfig.registryAddress,
-    'dataOwnerWallet': dataContractConfig.ownerWallet
+    'dataRegistryAddress': dataContractConfig.registryAddress
   })
 }
 
