@@ -1,5 +1,7 @@
 const axios = require('axios')
 
+const Requests = require('./requests')
+
 class IdentityService {
   constructor (identityServiceEndpoint) {
     this.identityServiceEndpoint = identityServiceEndpoint
@@ -199,48 +201,8 @@ class IdentityService {
    * @returns {{bucket:Array<{trackId:number, date:bucket, listens:number}>}}
    */
   async getTrackListens (timeFrame = null, idsArray = null, startTime = null, endTime = null, limit = null, offset = null) {
-    let queryUrl = '/tracks/listens/'
-
-    if (timeFrame != null) {
-      switch (timeFrame) {
-        case 'day':
-        case 'week':
-        case 'month':
-        case 'year':
-        case 'millennium':
-          break
-        default:
-          throw new Error('Invalid timeFrame value provided')
-      }
-      queryUrl += timeFrame
-    }
-
-    let queryParams = {}
-    if (idsArray !== null) {
-      queryParams['id'] = idsArray
-    }
-
-    if (limit !== null) {
-      queryParams['limit'] = limit
-    }
-
-    if (offset !== null) {
-      queryParams['offset'] = offset
-    }
-
-    if (startTime != null) {
-      queryParams['start'] = startTime
-    }
-
-    if (endTime != null) {
-      queryParams['end'] = endTime
-    }
-
-    return this._makeRequest({
-      url: queryUrl,
-      method: 'get',
-      params: queryParams
-    })
+    const req = Requests.getTrackListens(timeFrame, idsArray, startTime, endTime, limit, offset)
+    return this._makeRequest(req)
   }
 
   async createUserRecord (email, walletAddress) {

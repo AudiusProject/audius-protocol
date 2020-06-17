@@ -4,6 +4,27 @@ const Utils = require('../utils')
 const MAX_PLAYLIST_LENGTH = 200
 
 class Playlists extends Base {
+  constructor (...args) {
+    super(...args)
+    this.getPlaylists = this.getPlaylists.bind(this)
+    this.getSavedPlaylists = this.getSavedPlaylists.bind(this)
+    this.getSavedAlbums = this.getSavedAlbums.bind(this)
+    this.createPlaylist = this.createPlaylist.bind(this)
+    this.addPlaylistTrack = this.addPlaylistTrack.bind(this)
+    this.orderPlaylistTracks = this.orderPlaylistTracks.bind(this)
+    this.validateTracksInPlaylist = this.validateTracksInPlaylist.bind(this)
+    this.updatePlaylistCoverPhoto = this.updatePlaylistCoverPhoto.bind(this)
+    this.updatePlaylistName = this.updatePlaylistName.bind(this)
+    this.updatePlaylistDescription = this.updatePlaylistDescription.bind(this)
+    this.updatePlaylistPrivacy = this.updatePlaylistPrivacy.bind(this)
+    this.addPlaylistRepost = this.addPlaylistRepost.bind(this)
+    this.deletePlaylistRepost = this.deletePlaylistRepost.bind(this)
+    this.deletePlaylistTrack = this.deletePlaylistTrack.bind(this)
+    this.addPlaylistSave = this.addPlaylistSave.bind(this)
+    this.deletePlaylistSave = this.deletePlaylistSave.bind(this)
+    this.deletePlaylist = this.deletePlaylist.bind(this)
+  }
+
   /* ------- GETTERS ------- */
 
   /**
