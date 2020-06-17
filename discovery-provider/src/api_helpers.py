@@ -67,12 +67,6 @@ def response_dict_with_metadata(response_entity=None):
 
     return response_dictionary
 
-# Generate signature and timestamp using data and adding those fields to response dict
-def generate_and_set_sig_and_timestamp(response_dict, data):
-    signature, timestamp = generate_signature_and_timestamp(data)
-    response_dict['signature'] = signature
-    response_dict['timestamp'] = timestamp
-
 # Generate signature and timestamp using data
 def generate_signature_and_timestamp(data):
     # generate timestamp
