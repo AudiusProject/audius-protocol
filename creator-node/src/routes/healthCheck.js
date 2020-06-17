@@ -31,10 +31,10 @@ module.exports = function (app) {
     // check if authToken exists for dest cnodeURL
     const authTokenRKey = `authToken::${cnodeURL}`
     let authToken = await redisClient.get(authTokenRKey)
-    
+
     if (authToken) {
       console.log(`authToken found: ${authToken}`)
-      
+
       // delete authToken each time for testing purposes - will remove
       await redisClient.del(authTokenRKey)
       authToken = null
@@ -43,8 +43,7 @@ module.exports = function (app) {
     }
 
     const spID = config.get('spID')
-    if (!spID) { return errorResponseServerError('Cannot auth against other CNodes since self is not registered on-chain') }
-    else {
+    if (!spID) { return errorResponseServerError('Cannot auth against other CNodes since self is not registered on-chain') } else {
       console.log(`spID found: ${spID}`)
     }
 

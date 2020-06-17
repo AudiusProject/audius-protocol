@@ -41,12 +41,11 @@ module.exports = function (app) {
       // if (!user || user.length === 0 || !user[0].hasOwnProperty('blocknumber') || !user[0].hasOwnProperty('track_blocknumber')) {
       //   throw new Error('Missing or malformatted user fetched from discprov.')
       // }
-    }
-    // if spID is non-null, confirm wallet is valid sp on chain
-    else {
-      const recoveredSP = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', spID)
+    } else {
+      // if spID is non-null, confirm wallet is valid sp on chain
 
-      if (!recoveredSP || recoveredSP.delegateOwnerWallet != walletPublicKey) {
+      const recoveredSP = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', spID)
+      if (!recoveredSP || recoveredSP.delegateOwnerWallet !== walletPublicKey) {
         return errorResponseForbidden('Must be valid service provider on chain')
       }
     }

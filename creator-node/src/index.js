@@ -29,8 +29,8 @@ const initAudiusLibs = async () => {
 
   const discoveryProviderWhitelist = (
     config.get('discoveryProviderWhitelist')
-    ? new Set(config.get('discoveryProviderWhitelist').split(','))
-    : null
+      ? new Set(config.get('discoveryProviderWhitelist').split(','))
+      : null
   )
 
   const audiusLibs = new AudiusLibs({
@@ -112,6 +112,7 @@ const startApp = async () => {
   const delegateOwnerWallet = config.get('delegateOwnerWallet')
   const delegatePrivateKey = config.get('delegatePrivateKey')
   const spID = config.get('spID')
+  console.log(`spID: ${spID} // typeof ${typeof (spID)}`)
   if (!delegateOwnerWallet || !delegatePrivateKey) {
     exitWithError('Cannot startup without delegateOwnerWallet and delegatePrivateKey')
   }
@@ -138,7 +139,7 @@ const startApp = async () => {
     logger.info('Initialized audius libs')
 
     /** if spID is 0, check if registered on chain and store locally */
-    if (spID == 0 && audiusLibs) {
+    if (spID === 0 && audiusLibs) {
       const recoveredSpID = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
         config.get('creatorNodeEndpoint')
       )

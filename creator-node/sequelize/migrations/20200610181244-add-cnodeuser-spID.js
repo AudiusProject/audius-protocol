@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 module.exports = {
 
   /** TODO - test with pre-existing data */
@@ -15,7 +15,6 @@ module.exports = {
     console.log('completed spID add')
   },
   down: async (queryInterface, Sequelize) => {
-    // return queryInterface.dropTable('Tests');
     await queryInterface.removeColumn('CNodeUsers', 'spID')
   }
-};
+}

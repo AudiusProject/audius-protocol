@@ -187,7 +187,7 @@ async function _getOwnEndpoint (req) {
   // if (config.get('creatorNodeEndpoint')) {
   //   return config.get('creatorNodeEndpoint')
   // }
-  
+
   if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
   const libs = req.app.get('audiusLibs')
 
