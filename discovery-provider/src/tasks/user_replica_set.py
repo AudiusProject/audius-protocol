@@ -56,13 +56,12 @@ def user_replica_set_state_update(self, update_task, session, user_replica_set_m
                     user_record.secondaries = secondaries
 
                     user_replica_set_events_lookup[user_id]["user"] = user_record
-                elif event_type == user_replica_set_events_lookup['add_or_update_creator_node']:
+                elif event_type == user_replica_set_manager_event_types_lookup['add_or_update_creator_node']:
                     logger.warning(f'{event_type}')
                     logger.warning(args)
 
             num_total_changes += len(user_events_tx)
 
-    logger.error(user_replica_set_events_lookup)
     # for each record in user_replica_set_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
     for user_id, value_obj in user_replica_set_events_lookup.items():
