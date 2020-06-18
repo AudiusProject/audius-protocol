@@ -33,69 +33,44 @@ def user_replica_set_state_update(self, update_task, session, user_replica_set_m
             user_events_tx = getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
             for entry in user_events_tx:
                 args = entry["args"]
-                logger.error(">>>>>")
-                logger.error(event_type)
-                logger.error(entry)
-                logger.error(args)
                 # Check if _userId is present
                 # If user id is found in the event args, update the local lookup object
                 user_id = args._userId if "_userId" in args else None
-                logger.error(f"user_id - {user_id}")
+                # if the user id is not in the lookup object, it hasn't been initialized yet
+                # first, get the user object from the db(if exists or create a new one)
+                # then set the lookup object for user_id with the appropriate props
                 if user_id and (user_id not in user_replica_set_events_lookup):
                     ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp)
                     user_replica_set_events_lookup[user_id] = {"user": ret_user, "events": []}
 
-                if event_type == user_replica_set_manager_event_types_lookup['update_replica_set']:
-                    primary = args._primary
-                    secondaries = args._secondaries
-                    logger.error(f"Primary: {primary}")
-                    logger.error(f"Secondary: {secondaries}")
-                logger.error("<<<<<")
-            '''
-
-            for entry in user_events_tx:
-                user_id = entry["args"]._userId
-
-                # if the user id is not in the lookup object, it hasn't been initialized yet
-                # first, get the user object from the db(if exists or create a new one)
-                # then set the lookup object for user_id with the appropriate props
-                if user_id not in user_replica_set_events_lookup:
-                    ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp)
-                    user_replica_set_events_lookup[user_id] = {"user": ret_user, "events": []}
-
-                user_replica_set_events_lookup[user_id]["events"].append(event_type)
-
                 # Add or update the value of the user record for this block in user_replica_set_events_lookup,
                 # ensuring that multiple events for a single user result in only 1 row insert operation
                 # (even if multiple operations are present)
-                user_replica_set_events_lookup[user_id]["user"] = parse_user_event(
-                    self,
-                    user_contract,
-                    update_task,
-                    session,
-                    tx_receipt,
-                    block_number,
-                    entry,
-                    event_type,
-                    user_replica_set_events_lookup[user_id]["user"],
-                    block_timestamp
-                )
+                if event_type == user_replica_set_manager_event_types_lookup['update_replica_set']:
+                    primary = args._primary
+                    secondaries = args._secondaries
 
-            '''
+                    user_record = user_replica_set_events_lookup[user_id]["user"]
+                    user_record.updated_at = datetime.utcfromtimestamp(block_timestamp)
+                    user_record.primary = primary
+                    user_record.secondaries = secondaries
+
+                    user_replica_set_events_lookup[user_id]["user"] = user_record
+                elif event_type == user_replica_set_events_lookup['add_or_update_creator_node']:
+                    logger.warning(f'{event_type}')
+                    logger.warning(args)
+
             num_total_changes += len(user_events_tx)
 
     logger.error(user_replica_set_events_lookup)
-    # TODO: UPDATE AFTER PROCESSING
-    return num_total_changes
     # for each record in user_replica_set_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
     for user_id, value_obj in user_replica_set_events_lookup.items():
-        logger.info(f"users.py | Adding {value_obj['user']}")
+        logger.info(f"user_replica_set.py | Adding {value_obj['user']}")
         invalidate_old_user(session, user_id)
         session.add(value_obj["user"])
 
     return num_total_changes
-
 
 def lookup_user_record(update_task, session, entry, block_number, block_timestamp):
     event_blockhash = update_task.web3.toHex(entry.blockHash)

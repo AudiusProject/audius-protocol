@@ -86,6 +86,8 @@ class User(Base):
     location = Column(String)
     metadata_multihash = Column(String)
     creator_node_endpoint = Column(String)
+    primary = Column(Integer, nullable=True)
+    secondaries = Column(postgresql.ARRAY(Integer), nullable=True)
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
 
@@ -109,6 +111,7 @@ bio={self.bio},\
 location={self.location},\
 metadata_multihash={self.metadata_multihash},\
 creator_node_endpoint={self.creator_node_endpoint},\
+primary={self.primary},\
 updated_at={self.updated_at},\
 created_at={self.created_at})>"
 
