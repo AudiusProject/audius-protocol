@@ -35,5 +35,9 @@
   "debounceTime": 30000,
   "discoveryProviderWhitelist": "http://docker.for.mac.localhost:5000",
   "userBlacklist": "",
-  "trackBlacklist": ""
+  "trackBlacklist": "",
+  "dataRegistryAddress": "",
+  "dataProviderUrl": "http://docker.for.mac.localhost:8545",
+  "dataNetworkId": "",
+  "creatorNodeEndpoint": ""
 }

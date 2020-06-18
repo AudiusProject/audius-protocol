@@ -12,6 +12,12 @@ const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const BlacklistManager = require('./blacklistManager')
+const Web3 = require('web3')
+
+const exitWithError = (msg) => {
+  logger.error(msg)
+  process.exit(1)
+}
 
 const initAudiusLibs = async () => {
   const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
@@ -30,6 +36,12 @@ const initAudiusLibs = async () => {
       ethWeb3,
       config.get('ethOwnerWallet')
     ),
+    web3Config: AudiusLibs.configExternalWeb3(
+      config.get('dataRegistryAddress'),
+      new Web3(new Web3.providers.HttpProvider(config.get('dataProviderUrl'))),
+      config.get('dataNetworkId'),
+      config.get('delegateOwnerWallet')
+    ),
     discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true, discoveryProviderWhitelist)
   })
   await audiusLibs.init()
@@ -38,8 +50,7 @@ const initAudiusLibs = async () => {
 
 const configFileStorage = () => {
   if (!config.get('storagePath')) {
-    logger.error('Must set storagePath to use for content repository.')
-    process.exit(1)
+    exitWithError('Must set storagePath to use for content repository.')
   }
   return (path.resolve('./', config.get('storagePath')))
 }
@@ -47,8 +58,7 @@ const configFileStorage = () => {
 const initIPFS = async () => {
   const ipfsAddr = config.get('ipfsHost')
   if (!ipfsAddr) {
-    logger.error('Must set ipfsAddr')
-    process.exit(1)
+    exitWithError('Must set ipfsAddr')
   }
   const ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
   const ipfsLatest = ipfsClientLatest({ host: ipfsAddr, port: config.get('ipfsPort'), protocol: 'http' })
@@ -71,8 +81,7 @@ const runDBMigrations = async () => {
     await runMigrations()
     logger.info('Migrations completed successfully')
   } catch (err) {
-    logger.error('Error in migrations: ', err)
-    process.exit(1)
+    exitWithError('Error in migrations: ', err)
   }
 }
 
@@ -89,6 +98,14 @@ const startApp = async () => {
   logger.info('Configuring service...')
 
   await config.asyncConfig()
+
+  // fail if delegateOwnerWallet & delegatePrivateKey not present
+  const delegateOwnerWallet = config.get('delegateOwnerWallet')
+  const delegatePrivateKey = config.get('delegatePrivateKey')
+
+  if (!delegateOwnerWallet || !delegatePrivateKey) {
+    exitWithError('Cannot startup without delegateOwnerWallet and delegatePrivateKey')
+  }
   const storagePath = configFileStorage()
 
   const { ipfs, ipfsLatest } = await initIPFS()
