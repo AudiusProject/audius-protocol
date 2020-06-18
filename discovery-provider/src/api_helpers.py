@@ -24,7 +24,7 @@ class DateTimeEncoder(json.JSONEncoder):
     # Override the default method
     def default(self, o): # pylint: disable=E0202
         if isinstance(o, (datetime.date, datetime.datetime)):
-            # TODO - the Z is required in JS date format
+            # the Z is required in JS date format
             return o.isoformat() + " Z"
         return json.JSONEncoder.default(self, o)
 
