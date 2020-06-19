@@ -93,7 +93,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     }
     console.info(`Selected discprov ${endpoint}`, this.decisionTree)
     if (this.selectionCallback) {
-      this.selectionCallback(endpoint)
+      this.selectionCallback(endpoint, this.decisionTree)
     }
     return endpoint
   }
