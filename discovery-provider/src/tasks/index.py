@@ -216,13 +216,14 @@ def index_blocks(self, db, blocks_list):
                 > 0
             )
 
-            # TODO: Evaluate whether a refresh of any view is required here
             user_replica_set_state_changed = (
                 user_replica_set_state_update(
                     self, update_task, session, user_replica_set_manager_txs, block_number, block_timestamp
                 )
                 > 0
             )
+            if user_replica_set_state_changed:
+                logger.info(f"index.py | UserReplicaSetManager changes processed - {block}")
 
             # Playlist state operations processed in bulk
             playlist_state_changed = playlist_state_update(
