@@ -272,12 +272,6 @@ const config = convict({
     env: 'dataNetworkId',
     default: null
   },
-  creatorNodeEndpoint: {
-    doc: 'http endpoint registered on chain for cnode',
-    format: String,
-    env: 'creatorNodeEndpoint',
-    default: null
-  },
 
   // Service selection
   discoveryProviderWhitelist: {
