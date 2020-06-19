@@ -28,7 +28,6 @@ trackDedupeMaxMinutes = 10
 
 ######## ROUTES ########
 
-
 # Returns all users (paginated) with each user's follow count
 # Optionally filters by is_creator, wallet, or user ids
 @bp.route("/users", methods=("GET",))
@@ -83,7 +82,6 @@ def get_users():
         users = populate_user_metadata(session, user_ids, users, current_user_id)
 
     return api_helpers.success_response(users)
-
 
 # Returns all tracks (paginated) with each track's repost count
 # optionally filters by track ids

@@ -272,7 +272,7 @@ def is_blacklisted_ipld(session, ipld_blacklist_multihash):
     return ipld_blacklist_entry.count() > 0
 
 def is_valid_json_field(metadata, field):
-    if field in metadata and isinstance(metadata[field], dict) and len(metadata[field]) > 0:
+    if field in metadata and isinstance(metadata[field], dict) and metadata[field]:
         return True
     return False
 
