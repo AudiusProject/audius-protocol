@@ -79,12 +79,12 @@ class ServiceSelection {
 
     // If a short circuit is provided, take it. Don't check it, just use it.
     const shortcircuit = this.shortcircuit()
-    this.decisionTree.push({stage: 'Check Short Circuit', val: shortcircuit })
+    this.decisionTree.push({ stage: 'Check Short Circuit', val: shortcircuit })
     if (shortcircuit) return shortcircuit
 
     // Get all the services
     let services = await this.getServices()
-    this.decisionTree.push({stage: 'Get All Services', val: services })
+    this.decisionTree.push({ stage: 'Get All Services', val: services })
 
     // If a whitelist is provided, filter down to it
     if (this.whitelist) {

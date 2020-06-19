@@ -1,8 +1,6 @@
 const axios = require('axios')
 
 const Utils = require('../../utils')
-const { raceRequests } = require('../../utils/network')
-const { serviceType } = require('../ethContracts/index')
 
 const {
   UNHEALTHY_BLOCK_DIFF,
