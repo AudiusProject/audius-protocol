@@ -70,6 +70,8 @@ class Users extends Base {
    *  {Integer} track_blocknumber - blocknumber of latest track for user
    *  {Boolean} does_current_user_follow - does current user follow given user
    *  {Array} followee_follows - followees of current user that follow given user
+   *  {Integer} primary - primary replica service provider id for user
+   *  {Array} secondaries - list of secondary replica service provider ids for user
    * @example
    * await getUsers()
    * await getUsers(100, 0, [3,2,6]) - Invalid user ids will not be accepted
