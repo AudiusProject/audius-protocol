@@ -10,7 +10,7 @@ const mockEthContracts = (urls, currrentVersion) => ({
   getVersion: async (spType, queryIndex) => {
     return ['1.2.2', '1.2.3'][queryIndex]
   },
-  getServiceProviderList: async () => urls,
+  getServiceProviderList: async () => urls.map(u => ({ endpoint: u })),
   isValidSPVersion: (version1, version2) => {
     return (
       semver.major(version1) === semver.major(version2) &&

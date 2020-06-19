@@ -23,13 +23,12 @@ const ServiceProvider = require('./api/serviceProvider')
 class AudiusLibs {
   /**
    * Configures a discovery provider wrapper
-   * @param {boolean} autoselect whether or not to autoselect a discovery provider endpoint
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whitelist)
    * - if `autoselect=true`, autoselections are validated against the whitelist
    * - if `autoselect=false`, selection is performed at random from the whitelist
    */
-  static configDiscoveryProvider (autoselect = true, whitelist = null) {
-    return { autoselect, whitelist }
+  static configDiscoveryProvider (whitelist = null, reselectTimeout = null) {
+    return { whitelist, reselectTimeout }
   }
 
   /**
@@ -204,11 +203,11 @@ class AudiusLibs {
     /** Discovery Provider */
     if (this.discoveryProviderConfig) {
       this.discoveryProvider = new DiscoveryProvider(
-        this.discoveryProviderConfig.autoselect,
         this.discoveryProviderConfig.whitelist,
         this.userStateManager,
         this.ethContracts,
-        this.web3Manager
+        this.web3Manager,
+        this.discoveryProviderConfig.reselectTimeout
       )
       await this.discoveryProvider.init()
     }

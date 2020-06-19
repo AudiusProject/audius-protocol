@@ -27,12 +27,14 @@ class DiscoveryProviderSelection extends ServiceSelection {
        */
       getServices: async () => {
         this.currentVersion = await ethContracts.getCurrentVersion(DISCOVERY_SERVICE_NAME)
-        return this.ethContracts.getServiceProviderList(DISCOVERY_SERVICE_NAME)
+        const services = await this.ethContracts.getServiceProviderList(DISCOVERY_SERVICE_NAME)
+        return services.map(e => e.endpoint)
       },
       ...config
     })
     this.ethContracts = ethContracts
     this.currentVersion = null
+    this.reselectTimeout = config.reselectTimeout
 
     // Whether or not we are running in `regressed` mode, meaning we were
     // unable to select a discovery provider that was up-to-date. Clients may
@@ -49,8 +51,13 @@ class DiscoveryProviderSelection extends ServiceSelection {
       const discProvTimestamp = localStorage.getItem(DISCOVERY_PROVIDER_TIMESTAMP)
       if (discProvTimestamp) {
         const { endpoint: latestEndpoint, timestamp } = JSON.parse(discProvTimestamp)
+
         const inWhitelist = !this.whitelist || this.whitelist.has(latestEndpoint)
-        const isExpired = (Date.now() - timestamp) > DISCOVERY_PROVIDER_RESELECT_TIMEOUT
+
+        const timeout = this.reselectTimeout
+          ? this.reselectTimeout
+          : DISCOVERY_PROVIDER_RESELECT_TIMEOUT
+        const isExpired = (Date.now() - timestamp) > timeout
         if (!inWhitelist || isExpired) {
           this.clearCached()
         } else {
@@ -80,7 +87,10 @@ class DiscoveryProviderSelection extends ServiceSelection {
 
   async select () {
     const endpoint = await super.select()
-    this.setCached(endpoint)
+    if (endpoint) {
+      this.setCached(endpoint)
+    }
+    console.info(`Selected discprov ${endpoint}`, this.decisionTree)
     return endpoint
   }
 
@@ -103,11 +113,10 @@ class DiscoveryProviderSelection extends ServiceSelection {
     if (status !== 200) return false
     if (service !== DISCOVERY_SERVICE_NAME) return false
     if (!semver.valid(version)) return false
-    if (!this.ethContracts.isValidSPVersion(version, this.currentVersion)) return false
+    if (!this.ethContracts.isValidSPVersion(this.currentVersion, version)) return false
 
     if (
-      blockDiff > UNHEALTHY_BLOCK_DIFF ||
-      version !== this.currentVersion
+      blockDiff > UNHEALTHY_BLOCK_DIFF
     ) {
       this.addBackup(urlMap[response.config.url], response.data)
       return false
