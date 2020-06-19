@@ -140,6 +140,7 @@
             "title": "Track"
         },
         "RemixOf": {
+            "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
                 "tracks": {
@@ -169,6 +170,7 @@
             "title": "TrackElement"
         },
         "Download": {
+            "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
                 "cid": {
@@ -189,6 +191,7 @@
             "title": "Download"
         },
         "FieldVisibility": {
+            "type": "object",
             "additionalProperties": false,
             "properties": {
                 "mood": {
@@ -216,6 +219,7 @@
             "title": "FieldVisibility"
         },
         "StemOf": {
+            "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
                 "category": {

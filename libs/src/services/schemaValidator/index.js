@@ -1,4 +1,5 @@
-var Ajv = require('ajv')
+// var Ajv = require('ajv')
+var validate = require('jsonschema').validate
 
 const TrackSchema = require('./schemas/trackSchema.json')
 const UserSchema = require('./schemas/userSchema.json')
@@ -8,7 +9,8 @@ const USER_SCHEMA_TYPE = 'UserSchema'
 
 class SchemaValidator {
   init () {
-    this.ajv = new Ajv({ useDefaults: true })
+    let start = Date.now()
+    // this.ajv = new Ajv({ useDefaults: "empty" })
 
     /**
      * Fully formed schemas object looks like the below
@@ -33,25 +35,43 @@ class SchemaValidator {
     }
 
     for (const schemaType in this.schemas) {
-      try {
-        const validator = this.ajv.compile(this.schemas[schemaType].schema)
-        if (validator.errors) throw new Error(`Validation error during schema compilation: ${schemaType} ${validator.errors}`)
-        else {
-          this.schemas[schemaType].validator = validator
-          this.schemas[schemaType].validate = (obj) => {
-            var valid = validator(obj)
-            if (!valid) throw new Error(`${schemaType} validation failed with errors: ${JSON.stringify(validator.errors)}`)
-          }
-        }
-      } catch (e) {
-        throw new Error(`Error compiling schema: ${schemaType} ${e.message}`)
+      this.schemas[schemaType].validate = (obj) => {
+        console.log(this.schemas[schemaType].schema, 'inside validate')
+        // var valid = validator(obj)
+        
+        const result = validate(obj, this.schemas[schemaType].schema)
+        if (result.errors.length > 0) throw new Error(`${schemaType} validation failed with errors: ${JSON.stringify(result.errors)}`)
+        // if (result.errors.length > 0){
+        //   try {
+        //     this.fixValidationErrors(result.errors, obj, this.schemas[schemaType].schema)
+        //   } catch (e) {
+        //     throw new Error(`${schemaType} validation failed with errors: ${JSON.stringify(result.errors)}`)
+        //   }
+        // }
+        // else console.log("Validation successful", result)
       }
     }
+    console.log("validator elapsed", Date.now()-start)
   }
 
   getSchemas () {
     return this.schemas
   }
+
+  // fixValidationErrors (errors, obj, schema) {
+  //   // 
+  //   const definitionPath = schema.$ref.split('/').slice(-1)[0]
+  //   // for (const e in errors){
+  //   //   switch (e.name) {
+  //   //     case value:
+          
+  //   //       break;
+      
+  //   //     default:
+  //   //       break;
+  //   //   }
+  //   // }
+  // }
 }
 
 module.exports = SchemaValidator

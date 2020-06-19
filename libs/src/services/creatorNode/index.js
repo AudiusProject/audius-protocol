@@ -211,18 +211,18 @@ class CreatorNode {
     try {
       this.schemas[SchemaValidator.trackSchemaType].validate(metadata)
       console.log('track metadata validation passed', metadata)
-
-      return this._makeRequest({
-        url: '/tracks/metadata',
-        method: 'post',
-        data: {
-          metadata,
-          sourceFile
-        }
-      }, true)
     } catch (e) {
       console.error('Error validating track metadata', e)
     }
+
+    return this._makeRequest({
+      url: '/tracks/metadata',
+      method: 'post',
+      data: {
+        metadata,
+        sourceFile
+      }
+    }, true)
   }
 
   /**
