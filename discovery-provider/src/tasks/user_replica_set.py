@@ -55,6 +55,8 @@ def user_replica_set_state_update(self, update_task, session, user_replica_set_m
 
                     user_replica_set_events_lookup[user_id]["user"] = user_record
                 elif event_type == user_replica_set_manager_event_types_lookup['add_or_update_creator_node']:
+                    # TODO: Handle indexing creator node fields separately
+                    #       Address follow up of creator_node_endpoints field deprecation as well
                     logger.warning(f'{event_type}')
                     logger.warning(args)
 
