@@ -35,6 +35,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     this.ethContracts = ethContracts
     this.currentVersion = null
     this.reselectTimeout = config.reselectTimeout
+    this.selectionCallback = config.selectionCallback
 
     // Whether or not we are running in `regressed` mode, meaning we were
     // unable to select a discovery provider that was up-to-date. Clients may
@@ -91,6 +92,9 @@ class DiscoveryProviderSelection extends ServiceSelection {
       this.setCached(endpoint)
     }
     console.info(`Selected discprov ${endpoint}`, this.decisionTree)
+    if (this.selectionCallback) {
+      this.selectionCallback(endpoint)
+    }
     return endpoint
   }
 

@@ -24,11 +24,11 @@ class AudiusLibs {
   /**
    * Configures a discovery provider wrapper
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whitelist)
-   * - if `autoselect=true`, autoselections are validated against the whitelist
-   * - if `autoselect=false`, selection is performed at random from the whitelist
+   * @param {number?} reselectTimeout timeout to clear locally cached discovery providers
+   * @param {(selection: sring) => void?} selectionCallback invoked with the select discovery provider
    */
-  static configDiscoveryProvider (whitelist = null, reselectTimeout = null) {
-    return { whitelist, reselectTimeout }
+  static configDiscoveryProvider (whitelist = null, reselectTimeout = null, selectionCallback = null) {
+    return { whitelist, reselectTimeout, selectionCallback }
   }
 
   /**
@@ -207,7 +207,8 @@ class AudiusLibs {
         this.userStateManager,
         this.ethContracts,
         this.web3Manager,
-        this.discoveryProviderConfig.reselectTimeout
+        this.discoveryProviderConfig.reselectTimeout,
+        this.discoveryProviderConfig.selectionCallback
       )
       await this.discoveryProvider.init()
     }

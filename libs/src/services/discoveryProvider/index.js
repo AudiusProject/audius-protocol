@@ -18,7 +18,7 @@ const MAKE_REQUEST_RETRY_COUNT = 3
 const MAX_MAKE_REQUEST_RETRY_COUNT = 50
 
 class DiscoveryProvider {
-  constructor (whitelist, userStateManager, ethContracts, web3Manager, reselectTimeout) {
+  constructor (whitelist, userStateManager, ethContracts, web3Manager, reselectTimeout, selectionCallback) {
     this.whitelist = whitelist
     this.userStateManager = userStateManager
     this.ethContracts = ethContracts
@@ -26,7 +26,8 @@ class DiscoveryProvider {
 
     this.serviceSelector = new DiscoveryProviderSelection({
       whitelist: this.whitelist,
-      reselectTimeout
+      reselectTimeout,
+      selectionCallback
     }, this.ethContracts)
   }
 
