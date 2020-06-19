@@ -28,8 +28,12 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     // Current uint userId to Replica Set
     mapping (uint => ReplicaSet) artistReplicaSets;
 
-    // Events
-    event UpdateReplicaSet(uint _userId, uint _primary, uint[] _secondaries);
+    event UpdateReplicaSet(
+        uint _userId,
+        uint _primary,
+        uint[] _secondaries
+    );
+
     event AddOrUpdateCreatorNode(
         uint _newCnodeId,
         address _newCnodeDelegateOwnerWallet,
