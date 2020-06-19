@@ -96,12 +96,12 @@ def configure_logging(loglevel_str='WARN'):
     logger.setLevel(loglevel)
 
 
-def loadAbiValues():
-    abiDir = os.path.join(os.getcwd(), "build", "contracts")
-    jsonFiles = os.listdir(abiDir)
+def load_abi_values():
+    abi_dir = os.path.join(os.getcwd(), "build", "contracts")
+    json_files = os.listdir(abi_dir)
     loaded_abi_values = {}
-    for contractJsonFile in jsonFiles:
-        fullPath = os.path.join(abiDir, contractJsonFile)
+    for contract_json_file in json_files:
+        fullPath = os.path.join(abi_dir, contract_json_file)
         with open(fullPath) as f:
             data = json.load(f)
             loaded_abi_values[data["contractName"]] = data
