@@ -1,13 +1,110 @@
+const disk = require('diskusage')
+const axios = require('axios')
+const ethSigUtil = require('eth-sig-util')
+
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
+const { authMiddleware, crossCnodeAuth } = require('../middlewares')
 const { sequelize } = require('../models')
 const config = require('../config.js')
 const versionInfo = require('../../.version.json')
-const disk = require('diskusage')
+const utils = require('../utils')
 
 const MAX_DB_CONNECTIONS = 90
 const MAX_DISK_USAGE_PERCENT = 90 // 90%
 
 module.exports = function (app) {
+  /** Call this to tell CN to call another CN's /permission route to test cross-CN auth */
+  app.get('/test', handleResponse(async (req, res) => {
+    const redisClient = req.app.get('redisClient')
+
+    // url of cnode to auth against
+    const cnodeURL = req.query.cnodeURL // string
+    const artistWallet = req.query.artistWallet // string
+
+    // TODO validate redisClient + cnodeURL + lowercase cnodeURL
+
+    const delegateOwnerWallet = config.get('delegateOwnerWallet')
+    const delegatePrivateKey = config.get('delegatePrivateKey')
+    console.log(`delegateOwnerWallet: ${delegateOwnerWallet}; delegatePrivateKey: ${delegatePrivateKey}`)
+    // TODO validate delegateOwnerWallet - is this needed?
+
+    // check if authToken exists for dest cnodeURL
+    const authTokenRKey = `authToken::${cnodeURL}`
+    let authToken = await redisClient.get(authTokenRKey)
+
+    if (authToken) {
+      console.log(`authToken found: ${authToken}`)
+
+      // delete authToken each time for testing purposes - will remove
+      await redisClient.del(authTokenRKey)
+      authToken = null
+    } else {
+      console.log('authToken NOT found')
+    }
+
+    const spID = config.get('spID')
+    if (!spID) { return errorResponseServerError('Cannot auth against other CNodes since self is not registered on-chain') } else {
+      console.log(`spID found: ${spID}`)
+    }
+
+    // If no authToken, signup + login on dstCnode
+    if (!authToken) {
+      // Signup on dstCnode with delegateOwnerWallet
+      await axios({
+        method: 'post',
+        baseURL: cnodeURL,
+        url: '/users',
+        data: { 'walletAddress': delegateOwnerWallet, 'spID': spID },
+        responseType: 'json'
+      })
+
+      // Get login challenge
+      const challengeResp = await axios({
+        method: 'get',
+        baseURL: cnodeURL,
+        url: '/users/login/challenge',
+        params: { 'walletPublicKey': delegateOwnerWallet }
+      })
+      const challengeKey = challengeResp.data.challenge
+
+      // Sign challenge with private key
+      const pkBuffer = Buffer.from(delegatePrivateKey.substring(2), 'hex')
+      const sig = ethSigUtil.personalSign(pkBuffer, { data: challengeKey })
+
+      // Submit login challenge response for verification
+      const challengeResp2 = await axios({
+        method: 'post',
+        baseURL: cnodeURL,
+        url: '/users/login/challenge',
+        data: {
+          'data': challengeKey,
+          'signature': sig
+        }
+      })
+      console.log('post login challenge success', challengeResp2.data)
+
+      authToken = challengeResp2.data.sessionToken
+      await redisClient.set(authTokenRKey, authToken)
+    }
+
+    // Attempt to call permissioned route
+    const testResp = await axios({
+      method: 'get',
+      baseURL: cnodeURL,
+      url: '/test_permission',
+      params: { 'artistWallet': artistWallet },
+      headers: { 'X-Session-ID': authToken },
+      responseType: 'json'
+    })
+    // If resp successful, indicates auth worked
+    return successResponse(testResp.data)
+  }))
+
+  /** CN ensures that caller is authed */
+  app.get('/test_permission', authMiddleware, crossCnodeAuth, handleResponse(async (req, res) => {
+    return successResponse('yes')
+  }))
+
   /** @dev TODO - Explore checking more than just DB (ex. IPFS) */
   app.get('/health_check', handleResponse(async (req, res) => {
     const libs = req.app.get('audiusLibs')
@@ -123,13 +220,13 @@ module.exports = function (app) {
     const usagePercent = Math.round((total - available) * 100 / total)
 
     const resp = {
-      available: _formatBytes(available),
-      total: _formatBytes(total),
+      available: utils.formatBytes(available),
+      total: utils.formatBytes(total),
       usagePercent: `${usagePercent}%`,
       maxUsagePercent: `${maxUsagePercent}%`
     }
 
-    if (maxUsageBytes) { resp.maxUsage = _formatBytes(maxUsageBytes) }
+    if (maxUsageBytes) { resp.maxUsage = utils.formatBytes(maxUsageBytes) }
 
     if (usagePercent >= maxUsagePercent ||
       (maxUsageBytes && (total - available) >= maxUsageBytes)
@@ -139,16 +236,4 @@ module.exports = function (app) {
       return successResponse(resp)
     }
   }))
-}
-
-function _formatBytes (bytes, decimals = 2) {
-  if (bytes === 0) return '0 Bytes'
-
-  const k = 1024
-  const dm = decimals < 0 ? 0 : decimals
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }

@@ -1,6 +1,10 @@
 const axios = require('axios')
 
-const { sendResponse, errorResponse, errorResponseUnauthorized, errorResponseServerError } = require('./apiHelpers')
+const { sendResponse,
+  errorResponse,
+  errorResponseUnauthorized,
+  errorResponseServerError,
+  errorResponseBadRequest } = require('./apiHelpers')
 const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
@@ -30,8 +34,63 @@ async function authMiddleware (req, res, next) {
   req.session = {
     cnodeUser: cnodeUser,
     wallet: cnodeUser.walletPublicKey,
-    cnodeUserUUID: cnodeUserUUID
+    cnodeUserUUID: cnodeUserUUID,
+    spID: cnodeUser.spID
   }
+
+  next()
+}
+
+/**
+ * Conditional logic if call is coming from another creator node
+ * Ensures calling CN and self against artist replica set
+ **/
+async function crossCnodeAuth (req, res, next) {
+  if (!req.session || !req.session.cnodeUser) {
+    return sendResponse(req, res, errorResponseBadRequest('req.session.cnodeUser not provided'))
+  }
+
+  if (req.session.cnodeUser.spID) {
+    // CNode must specify which artist it is making call for
+    const artistWallet = req.query.artistWallet
+    if (!artistWallet) {
+      return sendResponse(req, res, errorResponseBadRequest('ArtistWallet not provided'))
+    }
+
+    // Fetch own service endpoint from local config or eth contract
+    let serviceEndpoint
+    try {
+      serviceEndpoint = await _getOwnEndpoint(req)
+    } catch (e) {
+      return sendResponse(req, res, errorResponseServerError(e))
+    }
+
+    // Fetch caller's endpoint
+    let callerEndpoint
+    try {
+      callerEndpoint = await _getCNEndpoint(req)
+    } catch (e) {
+      return sendResponse(req, res, errorResponseServerError(e))
+    }
+
+    // Fetch artist replica set from chain
+    let artistReplicaSet
+    try {
+      artistReplicaSet = await _getCreatorNodeEndpoints(req, artistWallet)
+    } catch (e) {
+      return sendResponse(req, res, errorResponseServerError(e))
+    }
+
+    // Error if self or caller serviceEndpoint is not in artist replicaSet
+    if (!artistReplicaSet.includes(serviceEndpoint)) {
+      return sendResponse(req, res, errorResponseUnauthorized('I am not authorized to interact with artist\'s replica set'))
+    }
+    if (!artistReplicaSet.includes(callerEndpoint)) {
+      return sendResponse(req, res, errorResponseUnauthorized('You are not authorized to interact with artist\'s replica set'))
+    }
+  }
+  /* else, continue */
+
   next()
 }
 
@@ -119,8 +178,16 @@ async function triggerSecondarySyncs (req) {
   }
 }
 
-/** Retrieves current FQDN registered on-chain with node's owner wallet. */
+/**
+ * Retrieves current FQDN registered on-chain with node's owner wallet
+ * TODO - modify to retrieve any endpoint given wallet
+ * */
 async function _getOwnEndpoint (req) {
+  // // Check local envvar before attempting to request from chain
+  // if (config.get('creatorNodeEndpoint')) {
+  //   return config.get('creatorNodeEndpoint')
+  // }
+
   if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
   const libs = req.app.get('audiusLibs')
 
@@ -146,6 +213,19 @@ async function _getOwnEndpoint (req) {
     throw new Error('fail')
   }
   return spInfo[0]['endpoint']
+}
+
+/**
+ * Given spID, retrieve registered endpoint from chain
+ */
+async function _getCNEndpoint (req) {
+  const libs = req.app.get('audiusLibs')
+  const recoveredSP = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', req.session.cnodeUser.spID)
+  if (!recoveredSP) {
+    /* TODO - invalidate authtoken to prevent future calls */
+    throw new Error('No valid SP found for ID')
+  }
+  return recoveredSP.endpoint
 }
 
 /** Get all creator node endpoints for user by wallet from discprov. */
@@ -213,4 +293,4 @@ function _isFQDN (url) {
   return FQDN.test(url)
 }
 
-module.exports = { authMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs, syncLockMiddleware }
+module.exports = { authMiddleware, crossCnodeAuth, ensurePrimaryMiddleware, triggerSecondarySyncs, syncLockMiddleware }

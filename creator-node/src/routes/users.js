@@ -6,7 +6,7 @@ const randomBytes = promisify(crypto.randomBytes)
 
 const models = require('../models')
 const { authMiddleware, syncLockMiddleware } = require('../middlewares')
-const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseForbidden } = require('../apiHelpers')
 const sessionManager = require('../sessionManager')
 const utils = require('../utils')
 
@@ -16,23 +16,49 @@ const CHALLENGE_PREFIX = 'userLoginChallenge:'
 
 module.exports = function (app) {
   app.post('/users', handleResponse(async (req, res, next) => {
-    let walletAddress = req.body.walletAddress
+    const walletAddress = req.body.walletAddress
+    const spID = req.body.spID || null
+
     if (!ethereumUtils.isValidAddress(walletAddress)) {
       return errorResponseBadRequest('Ethereum address is invalid')
     }
 
-    walletAddress = walletAddress.toLowerCase()
+    const walletPublicKey = walletAddress.toLowerCase()
 
+    // do nothing if CNodeUser already exists
     const existingUser = await models.CNodeUser.findOne({
-      where: {
-        walletPublicKey: walletAddress
-      }
+      where: { walletPublicKey }
     })
-    if (existingUser) {
-      return successResponse() // do nothing if user already exists
+
+    const libs = req.app.get('audiusLibs')
+
+    // if spID is null, confirm wallet is valid user on chain
+    if (!spID) {
+      // TODO - skip for now
+      // can't get user by wallet from chain, so retrieve from discprov
+      // TODO - potentially use same blocknumber logic as middlewares to ensure data consistency
+      // const user = await libs.User.getUsers(1, 0, /* idsArray */ null, wallet)
+      // if (!user || user.length === 0 || !user[0].hasOwnProperty('blocknumber') || !user[0].hasOwnProperty('track_blocknumber')) {
+      //   throw new Error('Missing or malformatted user fetched from discprov.')
+      // }
+    } else {
+      // if spID is non-null, confirm wallet is valid sp on chain
+
+      const recoveredSP = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', spID)
+      if (!recoveredSP || recoveredSP.delegateOwnerWallet !== walletPublicKey) {
+        return errorResponseForbidden('Must be valid service provider on chain')
+      }
     }
 
-    await models.CNodeUser.create({ walletPublicKey: walletAddress })
+    // if CNodeUser doesn't already exist, create it
+    if (!existingUser) {
+      await models.CNodeUser.create({
+        walletPublicKey,
+        spID
+      })
+    }
+
+    // Never return cnodeUserUUID
     return successResponse()
   }))
 
