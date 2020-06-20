@@ -37,10 +37,10 @@ if [[ "$1" == 'up' ]]; then
   docker pull ipfs/go-ipfs:v0.4.23
 
   if [[ -z "$5" ]]; then
-    docker run -d --name $CONTAINER_NAME -p 127.0.0.1:$API_PORT:5001 -p 127.0.0.1:$SWARM_PORT:4001 ipfs/go-ipfs:v0.4.23 daemon
+    docker run -d --name $CONTAINER_NAME -p 127.0.0.1:$API_PORT:5001 -p 127.0.0.1:$SWARM_PORT:4001 --network=audius_dev ipfs/go-ipfs:v0.4.23 daemon
   else
     GATEWAY_PORT=$5
-    docker run -d --name $CONTAINER_NAME -p 127.0.0.1:$API_PORT:5001 -p 127.0.0.1:$SWARM_PORT:4001 -p 127.0.0.1:$GATEWAY_PORT:8080 ipfs/go-ipfs:v0.4.23 daemon
+    docker run -d --name $CONTAINER_NAME -p 127.0.0.1:$API_PORT:5001 -p 127.0.0.1:$SWARM_PORT:4001 -p 127.0.0.1:$GATEWAY_PORT:8080 --network=audius_dev ipfs/go-ipfs:v0.4.23 daemon
   fi
 
 elif [[ "$1" == 'down' ]]; then

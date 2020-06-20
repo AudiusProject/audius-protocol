@@ -1,13 +1,45 @@
 version: '3'
 services:
-  creator-node:
-    network_mode: "host"
+  creator-node-1-db:
+    image: postgres:11.1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: audius_creator_node
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - '4432:5432'
+    networks:
+      - audius_dev
+  creator-node-1:
     build: ../.
+    command: sh -c '/usr/bin/wait && exec ./node_modules/.bin/nodemon src/index.js | ./node_modules/.bin/bunyan'
     env_file:
       - ./development.env
+    depends_on:
+      - creator-node-1-db
+      - creator-node-1-redis
+    ports:
+      - '4000:4000'
     volumes:
       - file_storage:/file_storage
+      - ..:/usr/src/app
+      # Prevent hiding node_modules on container with host volume
+      # From https://github.com/barrysteyn/node-scrypt/issues/148
+      - /usr/src/app/node_modules
+    networks:
+      - audius_dev
+  creator-node-1-redis:
+    image: redis:5.0.4
+    ports:
+      - '4379:6379'
+    networks:
+      - audius_dev
 
 volumes:
-  ipfs_data:
+  postgres_data:
   file_storage:
+
+networks:
+  audius_dev:
+    external: true

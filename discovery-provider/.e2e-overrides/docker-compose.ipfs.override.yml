@@ -1,5 +1,11 @@
 version: '3'
 services:
   ipfs-node:
-    network_mode: "host"
     image: ipfs/go-ipfs:release
+
+    networks:
+      - audius_dev
+
+networks:
+  audius_dev:
+    external: true

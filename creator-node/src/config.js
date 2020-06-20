@@ -370,9 +370,11 @@ const config = convict({
 // TODO(DM) - remove these defaults
 const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
+console.log({defaultConfigExists})
 
 if (fs.existsSync('eth-contract-config.json')) {
   let ethContractConfig = require('../eth-contract-config.json')
+  console.log({ethContractConfig})
   config.load({
     'ethTokenAddress': ethContractConfig.audiusTokenAddress,
     'ethRegistryAddress': ethContractConfig.registryAddress,
