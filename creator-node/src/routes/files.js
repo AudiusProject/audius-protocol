@@ -174,42 +174,57 @@ module.exports = function (app) {
     logger.info(`IPFS Standalone Request - ${CID}`)
     logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
-    // Conditionally rehydrate from filestorage to IPFS.
-    try {
-      await rehydrateIpfsFromFsIfNecessary(
-        req,
-        CID,
-        queryResults.storagePath
-      )
-    } catch (e) {
-      // If rehydrate throws error, return 500 without attempting to stream file.
-      return sendResponse(req, res, errorResponseServerError(e.message))
-    }
-
     // If client has provided filename, set filename in header to be auto-populated in download prompt.
     if (req.query.filename) {
       res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
     }
 
-    // Stream file to client.
-    try {
-      // Cat 1 byte of CID in ipfs to determine if file exists
-      // If the request takes under 500ms, stream the file from ipfs
-      // else if the request takes over 500ms, throw an error and stream the file from file system
-      await ipfsSingleByteCat(CID, req, 500)
+    if (req.query.fromFS) {
+      // Retrieves the file directly from the filesystem rather than checking IPFS first
 
-      // Stream file from ipfs if cat one byte takes under 500ms
-      // If catReadableStream() promise is rejected, throw an error and stream from file system
-      await new Promise((resolve, reject) => {
-        req.app.get('ipfsAPI').catReadableStream(CID)
-          .on('data', streamData => { res.write(streamData) })
-          .on('end', () => { res.end(); resolve() })
-          .on('error', e => { reject(e) })
-      })
-    } catch (e) {
-      // ipfsCatSingleByte took over 500ms, try streaming from file system and
-      // return the response from helper method
+      // Fire-and-forget rehydration
+      rehydrateIpfsFromFsIfNecessary(
+        req,
+        CID,
+        queryResults.storagePath
+      )
+  
       return streamFromFileSystem(req, res, queryResults.storagePath)
+    } else {
+      // Retrieves the file from IPFS and falls back to the filesystem if unavailable
+
+      // Conditionally rehydrate from filestorage to IPFS.
+      try {
+        await rehydrateIpfsFromFsIfNecessary(
+          req,
+          CID,
+          queryResults.storagePath
+        )
+      } catch (e) {
+        // If rehydrate throws error, return 500 without attempting to stream file.
+        return sendResponse(req, res, errorResponseServerError(e.message))
+      }
+  
+      // Stream file to client.
+      try {
+        // Cat 1 byte of CID in ipfs to determine if file exists
+        // If the request takes under 500ms, stream the file from ipfs
+        // else if the request takes over 500ms, throw an error and stream the file from file system
+        await ipfsSingleByteCat(CID, req, 500)
+  
+        // Stream file from ipfs if cat one byte takes under 500ms
+        // If catReadableStream() promise is rejected, throw an error and stream from file system
+        await new Promise((resolve, reject) => {
+          req.app.get('ipfsAPI').catReadableStream(CID)
+            .on('data', streamData => { res.write(streamData) })
+            .on('end', () => { res.end(); resolve() })
+            .on('error', e => { reject(e) })
+        })
+      } catch (e) {
+        // ipfsCatSingleByte took over 500ms, try streaming from file system and
+        // return the response from helper method
+        return streamFromFileSystem(req, res, queryResults.storagePath)
+      }
     }
   })
 
