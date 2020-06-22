@@ -16,9 +16,6 @@ redis = redis.Redis.from_url(url=redis_url)
 logger = logging.getLogger(__name__)
 disc_prov_version = helpers.get_discovery_provider_version()
 
-METADATA_FIELDS = ['success', 'latest_indexed_block', 'latest_chain_block']
-API_SIGNING_FIELDS = ['timestamp', 'signature']
-
 # Subclass JSONEncoder
 class DateTimeEncoder(json.JSONEncoder):
     # Override the default method
@@ -70,8 +67,8 @@ def response_dict_with_metadata(response_entity=None):
 
 # Generate signature and timestamp using data
 def generate_signature_and_timestamp(data):
-    # generate timestamp
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f Z')
+    # generate timestamp with format HH:MM:SS.sssZ
+    timestamp = datetime.datetime.now().isoformat(timespec='milliseconds') + 'Z'
 
     # combine timestamp and data to sign
     to_sign = {"timestamp": timestamp, **data}
