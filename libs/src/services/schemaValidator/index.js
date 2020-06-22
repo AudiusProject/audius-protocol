@@ -1,4 +1,3 @@
-// var Ajv = require('ajv')
 var validate = require('jsonschema').validate
 
 const TrackSchema = require('./schemas/trackSchema.json')
@@ -9,15 +8,12 @@ const USER_SCHEMA_TYPE = 'UserSchema'
 
 class SchemaValidator {
   init () {
-    let start = Date.now()
-    // this.ajv = new Ajv({ useDefaults: "empty" })
-
     /**
      * Fully formed schemas object looks like the below
      * {
      *   'TrackSchema': {
      *     schema: <schemaJSON>,
-     *     validator: <compiled validator object>
+     *     baseDefinition: 'String', //name of base definition property in schema
      *     validate: function // returns error if not validated correctly, otherwise null
      *   },
      *   'UserSchema': ...
@@ -27,51 +23,46 @@ class SchemaValidator {
      */
     this.schemas = {
       [TRACK_SCHEMA_TYPE]: {
-        schema: TrackSchema
+        schema: TrackSchema,
+        baseDefinition: 'Track'
       },
       [USER_SCHEMA_TYPE]: {
-        schema: UserSchema
+        schema: UserSchema,
+        baseDefinition: 'User'
       }
     }
 
     for (const schemaType in this.schemas) {
       this.schemas[schemaType].validate = (obj) => {
-        console.log(this.schemas[schemaType].schema, 'inside validate')
-        // var valid = validator(obj)
-        
+        this.addMissingFields(obj, schemaType)
+
         const result = validate(obj, this.schemas[schemaType].schema)
         if (result.errors.length > 0) throw new Error(`${schemaType} validation failed with errors: ${JSON.stringify(result.errors)}`)
-        // if (result.errors.length > 0){
-        //   try {
-        //     this.fixValidationErrors(result.errors, obj, this.schemas[schemaType].schema)
-        //   } catch (e) {
-        //     throw new Error(`${schemaType} validation failed with errors: ${JSON.stringify(result.errors)}`)
-        //   }
-        // }
-        // else console.log("Validation successful", result)
       }
     }
-    console.log("validator elapsed", Date.now()-start)
   }
 
   getSchemas () {
     return this.schemas
   }
 
-  // fixValidationErrors (errors, obj, schema) {
-  //   // 
-  //   const definitionPath = schema.$ref.split('/').slice(-1)[0]
-  //   // for (const e in errors){
-  //   //   switch (e.name) {
-  //   //     case value:
-          
-  //   //       break;
-      
-  //   //     default:
-  //   //       break;
-  //   //   }
-  //   // }
-  // }
+  addMissingFields (obj, schemaType) {
+    // schema is the entire imporoted schema, including all the definitions for JSON fields
+    const { schema, baseDefinition } = this.schemas[schemaType]
+    // schemaTypeObj is only the subset of the schema with only one definition for main schema type
+    const schemaTypeObj = schema.definitions[baseDefinition]
+    // iterate through every required property, ensuring it exists or setting a default value
+    schemaTypeObj.required.forEach((req) => {
+      if (!obj.hasOwnProperty(req)) {
+        if (schemaTypeObj.properties[req].hasOwnProperty('default')) {
+          obj[req] = schemaTypeObj.properties[req].default
+        }
+        else {
+          throw new Error(`Could not set default value for missing field ${req}`)
+        }
+      }
+    })
+  }
 }
 
 module.exports = SchemaValidator
