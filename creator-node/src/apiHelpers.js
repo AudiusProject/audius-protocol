@@ -2,7 +2,6 @@ const config = require('./config')
 const Web3 = require('web3')
 // TODO: use web3 provider url ?
 const web3 = new Web3(config.get('ethProviderUrl'))
-const assert = require('assert').strict
 
 const { requestNotExcludedFromLogging } = require('./logging')
 const versionInfo = require('../.version.json')
@@ -59,7 +58,7 @@ const isValidResponse = module.exports.isValidResponse = (resp) => {
   return true
 }
 
-module.exports.successResponse = async (obj = {}) => {
+module.exports.successResponse = (obj = {}) => {
   // generate timestamp
   const timestamp = new Date().toISOString()
 
