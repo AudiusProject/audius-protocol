@@ -44,7 +44,7 @@ def validate_field_helper(field, value, model):
 
 def get_default_value(field, value, model, e):
     field_props = ModelValidator.get_properties_for_field(model, field)
-    
+
     # type field from the schema. this can either be a string or list
     # required by JSONSchema, cannot be None
     schema_type_field = field_props['type']
