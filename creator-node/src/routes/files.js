@@ -66,7 +66,7 @@ module.exports = function (app) {
           { path: path.join(req.file.originalname, 'original.jpg'), content: imageBufferOriginal }
         ], { pin: false })
       }
-      req.logger.info('ipfs add resp\n\n\n\n', ipfsAddResp)
+      req.logger.info('ipfs add resp', ipfsAddResp)
 
       // Get dir CID (last entry in returned array)
       const dirCID = ipfsAddResp[ipfsAddResp.length - 1].hash
