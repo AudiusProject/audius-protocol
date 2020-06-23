@@ -33,6 +33,13 @@ const initAudiusLibs = async () => {
     ? new Set(config.get('discoveryProviderWhitelist').split(','))
     : null
 
+
+  console.log({
+      tokenAddr: config.get('ethTokenAddress'),
+      regAddr: config.get('ethRegistryAddress'),
+      ownerWallet: config.get('ethOwnerWallet')
+  })
+
   const audiusLibs = new AudiusLibs({
     ethWeb3Config: AudiusLibs.configEthWeb3(
       config.get('ethTokenAddress'),

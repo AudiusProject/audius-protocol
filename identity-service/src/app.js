@@ -22,6 +22,7 @@ class App {
   constructor (port) {
     this.port = port
     this.express = express()
+    console.log({p: config.get('redisPort'), h: config.get('redisHost')})
     this.redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
     this.configureMailgun()
     this.notificationProcessor = new NotificationProcessor()
