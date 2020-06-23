@@ -328,7 +328,11 @@ class CreatorNode {
     }, false)
   }
 
-  /** Logs in a creator node user. */
+  /**
+   * Logs user into cnode, if not already logged in.
+   * Requests a challenge from cnode, sends signed challenge response to cn.
+   * If successful, receive and set authToken locally.
+   */
   async _loginNodeUser () {
     if (this.authToken) {
       return
@@ -350,7 +354,7 @@ class CreatorNode {
       clientChallengeKey = challengeResp.challenge
       url = '/users/login/challenge'
     } catch (e) {
-      // If '/users/login/get_challenge' returns 404, login using non-challenge route
+      // If '/users/login/get_challenge' returns 404, login using legacy non-challenge route
       if (e.response && e.response.status === 404) {
         clientChallengeKey = Math.round((new Date()).getTime() / 1000)
         url = '/users/login'

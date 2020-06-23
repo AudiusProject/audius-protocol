@@ -254,6 +254,24 @@ const config = convict({
     env: 'debounceTime',
     default: 30000 // 30000ms = 30s
   },
+  dataRegistryAddress: {
+    doc: 'data contracts registry address',
+    format: String,
+    env: 'dataRegistryAddress',
+    default: null
+  },
+  dataProviderUrl: {
+    doc: 'data contracts web3 provider url',
+    format: String,
+    env: 'dataProviderUrl',
+    default: null
+  },
+  dataNetworkId: {
+    doc: 'data contracts network id',
+    format: String,
+    env: 'dataNetworkId',
+    default: null
+  },
 
   // Service selection
   discoveryProviderWhitelist: {
@@ -314,6 +332,13 @@ if (fs.existsSync('eth-contract-config.json')) {
     'ethRegistryAddress': ethContractConfig.registryAddress,
     'ethOwnerWallet': ethContractConfig.ownerWallet,
     'ethWallets': ethContractConfig.allWallets
+  })
+}
+
+if (fs.existsSync('contract-config.json')) {
+  const dataContractConfig = require('../contract-config.json')
+  config.load({
+    'dataRegistryAddress': dataContractConfig.registryAddress
   })
 }
 

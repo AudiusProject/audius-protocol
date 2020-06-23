@@ -4,8 +4,8 @@ const fs = require('fs')
 const models = require('./models')
 
 class Utils {
-  static verifySignature (data, signature) {
-    return recoverPersonalSignature({ data: data, sig: signature })
+  static verifySignature (data, sig) {
+    return recoverPersonalSignature({ data, sig })
   }
 
   static async timeout (ms) {
