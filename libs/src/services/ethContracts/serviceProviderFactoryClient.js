@@ -21,9 +21,10 @@ class ServiceProviderFactoryClient extends ContractClient {
   }
 
   async registerWithDelegate (serviceType, endpoint, amount, delegateOwnerWallet) {
-    if (!Utils.isFQDN(endpoint)) {
-      throw new Error('Not a fully qualified domain name!')
-    }
+    // TODO: here
+    // if (!Utils.isFQDN(endpoint)) {
+    //   throw new Error('Not a fully qualified domain name!')
+    // }
     if (!Number.isInteger(amount) && !Utils.isBN(amount)) {
       throw new Error('Invalid amount')
     }
@@ -45,6 +46,19 @@ class ServiceProviderFactoryClient extends ContractClient {
     if (serviceType !== endpointServiceType) {
       throw new Error('Attempting to register endpoint with mismatched service type')
     }
+    // RETURN HERE!!!!
+    // TODO: comment me back in!
+    // let requestUrl = urlJoin(endpoint, 'version')
+    // let axiosRequestObj = {
+    //   url: requestUrl,
+    //   method: 'get',
+    //   timeout: 1000
+    // }
+    // const resp = await axios(axiosRequestObj)
+    // const endpointServiceType = resp.data.service
+    // if (serviceType !== endpointServiceType) {
+    //   throw new Error('Attempting to register endpoint with mismatched service type')
+    // }
 
     // Approve token transfer operation
     const contractAddress = await this.stakingProxyClient.getAddress()
