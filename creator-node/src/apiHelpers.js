@@ -92,6 +92,7 @@ module.exports.successResponse = (obj = {}) => {
  * @param {*} data obj with structure {...data, timestamp}
  * @param {*} signature signature generated with signed data
  */
+// eslint-disable-next-line no-unused-vars
 const recoverWallet = (data, signature) => {
   let structuredData = JSON.stringify(_sortKeys(data))
   const hashedData = web3.utils.keccak256(structuredData)
