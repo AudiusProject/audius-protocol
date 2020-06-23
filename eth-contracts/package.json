@@ -10,6 +10,7 @@
     "truffle-test": "./scripts/truffle-test.sh",
     "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
     "ganache": "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json",
+    "ganache-local-network": "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:latest -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json",
     "ganache-i": "docker ps",
     "ganache-q": "docker rm -f audius_ganache_cli_eth_contracts > /dev/null",
     "truffle-compile": "./node_modules/.bin/truffle compile",

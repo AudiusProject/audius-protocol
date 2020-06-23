@@ -18,11 +18,11 @@ const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service'
 const spDiscProvType = serviceTypeList[0]
 const spCreatorNodeType = serviceTypeList[1]
 const discProvEndpoint1 = 'http://audius-disc-prov_web-server_1:5000'
-const discProvEndpoint2 = 'http://localhost:5005'
+const discProvEndpoint2 = 'http://audius-disc-prov_web-server_2:5000'
 const creatorNodeEndpoint1 = 'http://audius-creator-node_creator-node-1_1:4000'
-const creatorNodeEndpoint2 = 'http://localhost:4010'
-const creatorNodeEndpoint3 = 'http://localhost:4020'
-const creatorNodeEndpoint4 = 'http://localhost:4030'
+const creatorNodeEndpoint2 = 'http://audius-creator-node_creator-node-2_1:4000'
+const creatorNodeEndpoint3 = 'http://audius-creator-node_creator-node-3_1:4000'
+const creatorNodeEndpoint4 = 'http://audius-creator-node_creator-node-4_1:4000'
 const amountOfAuds = 100000
 
 // try to dynamically get versions from .version.json
