@@ -257,11 +257,9 @@ module.exports = function (app) {
     const ipfsPath = `${dirCID}/${filename}`
 
     const queryResults = await models.File.findOne({ where: {
-      // multihash: dirCID,
       dirMultihash: dirCID,
       // All other file types are valid and can be served through this route.
-      // type: { [models.Sequelize.Op.ne]: 'dir' } // Op.ne = notequal
-      // sourceFile: { [models.Sequelize.Op.like]: `%${filename}` }
+      type: { [models.Sequelize.Op.ne]: 'dir' } // Op.ne = notequal
       fileName: filename
     } })
     if (!queryResults) {
