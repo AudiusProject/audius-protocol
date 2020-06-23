@@ -259,7 +259,7 @@ module.exports = function (app) {
     const queryResults = await models.File.findOne({ where: {
       dirMultihash: dirCID,
       // All other file types are valid and can be served through this route.
-      type: { [models.Sequelize.Op.ne]: 'dir' } // Op.ne = notequal
+      type: { [models.Sequelize.Op.ne]: 'dir' }, // Op.ne = notequal
       fileName: filename
     } })
     if (!queryResults) {
