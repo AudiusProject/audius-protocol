@@ -92,10 +92,10 @@ module.exports.successResponse = (obj = {}) => {
  * @param {*} data obj with structure {...data, timestamp}
  * @param {*} signature signature generated with signed data
  */
-const recoverWallet = async (data, signature) => {
+const recoverWallet = (data, signature) => {
   let structuredData = JSON.stringify(_sortKeys(data))
   const hashedData = web3.utils.keccak256(structuredData)
-  const recoveredWallet = await web3.eth.accounts.recover(hashedData, signature)
+  const recoveredWallet = web3.eth.accounts.recover(hashedData, signature)
 
   return recoveredWallet
 }
