@@ -2,6 +2,7 @@ const { recoverPersonalSignature } = require('eth-sig-util')
 const fs = require('fs')
 
 const models = require('./models')
+const { logger } = require('./logging')
 
 class Utils {
   static verifySignature (data, sig) {
@@ -132,7 +133,7 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
     req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding dir ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`)
     let findOriginalFileQuery = await models.File.findAll({
       where: {
-        storagePath: { [models.Sequelize.Op.like]: `%${multihash}%` },
+        dirMultihash: multihash,
         type: 'image'
       }
     })

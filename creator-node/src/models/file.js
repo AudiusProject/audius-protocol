@@ -27,6 +27,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    // the queryable filename if this file entry is inside a dir
+    fileName: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    // the parent dir's CID if this file entry is inside a dir 
+    dirMultihash: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     storagePath: { // format: '/file_storage/__multihash__
       type: DataTypes.TEXT,
       allowNull: false
