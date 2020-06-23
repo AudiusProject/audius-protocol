@@ -56,10 +56,7 @@ class SchemaValidator {
       if (!obj.hasOwnProperty(req)) {
         if (schemaTypeObj.properties[req].hasOwnProperty('default')) {
           obj[req] = schemaTypeObj.properties[req].default
-        }
-        else {
-          throw new Error(`Could not set default value for missing field ${req}`)
-        }
+        } else throw new Error(`Could not set default value for missing field ${req}`)
       }
     })
   }
