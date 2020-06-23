@@ -210,7 +210,7 @@ contract Governance is InitializableV2 {
             _description
         );
 
-        lastProposalId = lastProposalId.add(1);
+        lastProposalId = newProposalId;
 
         return newProposalId;
     }
