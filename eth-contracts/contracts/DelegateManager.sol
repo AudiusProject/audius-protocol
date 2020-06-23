@@ -338,18 +338,20 @@ contract DelegateManager is InitializableV2 {
         (
             uint totalBalanceInStaking,
             uint totalBalanceInSPFactory,
-            uint totalBalanceOutsideStaking
+            uint totalBalanceOutsideStaking,
+            uint spLockedStake,
+            uint totalRewards
         ) = _validateClaimRewards(spFactory);
 
         // No-op if balance is already equivalent
         // This case can occur if no rewards due to bound violation or all stake is locked
-        if (totalBalanceInStaking == totalBalanceOutsideStaking) {
+        if (totalRewards == 0) {
             return;
         }
 
         // Total rewards
         // Equal to (balance in staking) - ((balance in sp factory) + (balance in delegate manager))
-        uint totalRewards = totalBalanceInStaking.sub(totalBalanceOutsideStaking);
+        // uint totalRewards = totalBalanceInStaking.sub(totalBalanceOutsideStaking);
 
         // Emit claim event
         emit Claim(msg.sender, totalRewards, totalBalanceInStaking);
@@ -361,9 +363,10 @@ contract DelegateManager is InitializableV2 {
 
         // Total valid funds used to calculate rewards distribution
         uint totalActiveFunds = (
-            totalBalanceOutsideStaking.sub(spDelegateInfo[msg.sender].totalLockedUpStake)
+            totalBalanceOutsideStaking.sub(
+                spDelegateInfo[msg.sender].totalLockedUpStake.add(spLockedStake)
+            )
         );
-
         // Traverse all delegates and calculate their rewards
         // As each delegate reward is calculated, increment SP cut reward accordingly
         for (uint i = 0; i < spDelegateInfo[msg.sender].delegators.length; i++) {
@@ -412,8 +415,10 @@ contract DelegateManager is InitializableV2 {
         );
 
         // Rewards directly allocated to service provider for their stake
+        // Total active funds for direct deployer reward share
+        /// totalActiveDeployerFunds = totalBalanceInSPFactory.sub(spLockedStake);
         uint spRewardShare = (
-          totalBalanceInSPFactory.mul(totalRewards)
+            (totalBalanceInSPFactory.sub(spLockedStake)).mul(totalRewards)
         ).div(totalActiveFunds);
 
         spFactory.updateServiceProviderStake(
@@ -700,20 +705,27 @@ contract DelegateManager is InitializableV2 {
      * @notice Helper function for claimRewards to get balances from Staking contract
                and do validation
      * @param spFactory - reference to ServiceProviderFactory contract
-     * @return (totalBalanceInStaking, totalBalanceInSPFactory, totalBalanceOutsideStaking)
+     * @return (totalBalanceInStaking, totalBalanceInSPFactory, totalBalanceOutsideStaking, spLockedStake, totalRewards)
      */
     function _validateClaimRewards(ServiceProviderFactory spFactory)
-    internal returns (uint totalBalanceInStaking, uint totalBalanceInSPFactory, uint totalBalanceOutsideStaking)
-        {
+    internal returns (
+        uint totalBalanceInStaking,
+        uint totalBalanceInSPFactory,
+        uint totalBalanceOutsideStaking,
+        uint spLockedStake,
+        uint totalRewards
+    )
+    {
 
         // Account for any pending locked up stake for the service provider
-        (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
+        (spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
+        uint totalLockedUpStake = spDelegateInfo[msg.sender].totalLockedUpStake.add(spLockedStake);
 
         // Process claim for msg.sender
         // Total locked parameter is equal to delegate locked up stake + service provider locked up stake
-        ClaimsManager(claimsManagerAddress).processClaim(
+        uint mintedRewards = ClaimsManager(claimsManagerAddress).processClaim(
             msg.sender,
-            (spDelegateInfo[msg.sender].totalLockedUpStake.add(spLockedStake))
+            totalLockedUpStake
         );
 
         // Amount stored in staking contract for owner
@@ -722,10 +734,6 @@ contract DelegateManager is InitializableV2 {
 
         // Amount in sp factory for claimer
         (uint _totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(msg.sender);
-
-        // Decrease total balance by any locked up stake
-        _totalBalanceInSPFactory = _totalBalanceInSPFactory.sub(spLockedStake);
-
         // Require active stake to claim any rewards
         require(_totalBalanceInSPFactory > 0, "Service Provider stake required");
 
@@ -734,7 +742,18 @@ contract DelegateManager is InitializableV2 {
             _totalBalanceInSPFactory.add(spDelegateInfo[msg.sender].totalDelegatedStake)
         );
 
-        return (_totalBalanceInStaking, _totalBalanceInSPFactory, _totalBalanceOutsideStaking);
+        require(
+            mintedRewards == _totalBalanceInStaking.sub(_totalBalanceOutsideStaking),
+            "Reward amount mismatch"
+        );
+
+        return (
+            _totalBalanceInStaking,
+            _totalBalanceInSPFactory,
+            _totalBalanceOutsideStaking,
+            spLockedStake,
+            mintedRewards
+        );
     }
 
     /**
