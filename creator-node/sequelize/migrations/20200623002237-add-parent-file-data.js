@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 /**
  * Adds two columns to the `files` table
@@ -46,7 +46,7 @@ module.exports = {
         }
         // Coerce all falsey types to `null`
         if (!dirMultihash) dirMultihash = null
-        
+
         await queryInterface.sequelize.query(`
           UPDATE "Files"
           SET "fileName" = '${fileName}',
@@ -55,9 +55,9 @@ module.exports = {
         , { transaction })
       }
 
-      await transaction.commit();
+      await transaction.commit()
     } catch (err) {
-      await transaction.rollback();
+      await transaction.rollback()
       throw err
     }
   },
@@ -65,21 +65,21 @@ module.exports = {
   down: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction()
     try {
-        await queryInterface.removeColumn(
-            'Files',
-            'fileName',
-            { transaction }
-        )
-        await queryInterface.removeColumn(
-          'Files',
-          'dirMultihash',
-          { transaction }
+      await queryInterface.removeColumn(
+        'Files',
+        'fileName',
+        { transaction }
+      )
+      await queryInterface.removeColumn(
+        'Files',
+        'dirMultihash',
+        { transaction }
       )
 
-        await transaction.commit()
+      await transaction.commit()
     } catch (err) {
-        await transaction.rollback()
-        throw err
+      await transaction.rollback()
+      throw err
     }
   }
-};
+}

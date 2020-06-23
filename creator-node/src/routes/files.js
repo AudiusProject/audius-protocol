@@ -196,7 +196,7 @@ module.exports = function (app) {
         CID,
         queryResults.storagePath
       )
-  
+
       return streamFromFileSystem(req, res, queryResults.storagePath)
     } else {
       logger.info(`Attempting to retrieve from IPFS`)
@@ -213,14 +213,14 @@ module.exports = function (app) {
         // If rehydrate throws error, return 500 without attempting to stream file.
         return sendResponse(req, res, errorResponseServerError(e.message))
       }
-  
+
       // Stream file to client.
       try {
         // Cat 1 byte of CID in ipfs to determine if file exists
         // If the request takes under 500ms, stream the file from ipfs
         // else if the request takes over 500ms, throw an error and stream the file from file system
         await ipfsSingleByteCat(CID, req, 500)
-  
+
         // Stream file from ipfs if cat one byte takes under 500ms
         // If catReadableStream() promise is rejected, throw an error and stream from file system
         await new Promise((resolve, reject) => {
@@ -271,8 +271,8 @@ module.exports = function (app) {
         errorResponseNotFound(`No valid file found for provided dirCID: ${dirCID} and filename: ${filename}`)
       )
     }
-    const parentStoragePath = queryResults.storagePath.split('/').slice(0,-1).join('/')
-    
+    const parentStoragePath = queryResults.storagePath.split('/').slice(0, -1).join('/')
+
     redisClient.incr('ipfsStandaloneReqs')
     const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
     logger.info(`IPFS Standalone Request - ${ipfsPath}`)
@@ -289,7 +289,7 @@ module.exports = function (app) {
         parentStoragePath,
         filename
       )
-  
+
       return streamFromFileSystem(req, res, queryResults.storagePath)
     } else {
       logger.info(`Attempting to retrieve from IPFS`)
@@ -307,7 +307,7 @@ module.exports = function (app) {
         // If rehydrate throws error, return 500 without attempting to stream file.
         return sendResponse(req, res, errorResponseServerError(e.message))
       }
-      
+
       try {
         // Cat 1 byte of CID in ipfs to determine if file exists
         // If the request takes under 500ms, stream the file from ipfs
@@ -325,7 +325,7 @@ module.exports = function (app) {
         // return the response from helper method
         return streamFromFileSystem(req, res, queryResults.storagePath)
       }
-    } 
+    }
   })
 
   // Helper method to stream file from file system on creator node

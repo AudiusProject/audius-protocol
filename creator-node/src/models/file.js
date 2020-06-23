@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    // the parent dir's CID if this file entry is inside a dir 
+    // the parent dir's CID if this file entry is inside a dir
     dirMultihash: {
       type: DataTypes.TEXT,
       allowNull: true

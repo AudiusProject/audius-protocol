@@ -2,7 +2,6 @@ const { recoverPersonalSignature } = require('eth-sig-util')
 const fs = require('fs')
 
 const models = require('./models')
-const { logger } = require('./logging')
 
 class Utils {
   static verifySignature (data, sig) {
