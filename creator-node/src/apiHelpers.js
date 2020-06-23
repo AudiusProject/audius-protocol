@@ -1,4 +1,11 @@
+const config = require('./config')
+const Web3 = require('web3')
+// TODO: use web3 provider url ?
+const web3 = new Web3(config.get('ethProviderUrl'))
+const assert = require('assert').strict
+
 const { requestNotExcludedFromLogging } = require('./logging')
+const versionInfo = require('../.version.json')
 
 module.exports.handleResponse = (func) => {
   return async function (req, res, next) {
@@ -52,11 +59,52 @@ const isValidResponse = module.exports.isValidResponse = (resp) => {
   return true
 }
 
-module.exports.successResponse = (obj = {}) => {
+module.exports.successResponse = async (obj = {}) => {
+  // generate timestamp
+  const timestamp = new Date().toISOString()
+
+  // format data to sign
+  let toSign = { timestamp, data: { ...obj } }
+  toSign = JSON.stringify(_sortKeys(toSign))
+
+  // hash data
+  const toSignHash = web3.utils.keccak256(toSign)
+
+  // generate signature with hashed data and private key
+  const signedResponse = web3.eth.accounts.sign(toSignHash, config.get('delegatePrivateKey'))
+
   return {
     statusCode: 200,
-    object: obj
+    object: {
+      data: {
+        ...obj
+      },
+      ...obj,
+      owner_wallet: config.get('delegateOwnerWallet'),
+      ...versionInfo,
+      timestamp,
+      signature: signedResponse.signature
+    }
   }
+}
+
+/**
+ * Recover the public wallet address
+ * @param {*} data obj with structure {...data, timestamp}
+ * @param {*} signature signature generated with signed data
+ */
+const recoverWallet = async (data, signature) => {
+  let structuredData = JSON.stringify(_sortKeys(data))
+  const hashedData = web3.utils.keccak256(structuredData)
+  const recoveredWallet = await web3.eth.accounts.recover(hashedData, signature)
+
+  return recoveredWallet
+}
+
+const _sortKeys = x => {
+  if (typeof x !== 'object' || !x) { return x }
+  if (Array.isArray(x)) { return x.map(_sortKeys) }
+  return Object.keys(x).sort().reduce((o, k) => ({ ...o, [k]: _sortKeys(x[k]) }), {})
 }
 
 const errorResponse = module.exports.errorResponse = (statusCode, message) => {
