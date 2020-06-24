@@ -211,14 +211,14 @@ module.exports = function (app) {
         // If rehydrate throws error, return 500 without attempting to stream file.
         return sendResponse(req, res, errorResponseServerError(e.message))
       }
-  
+
       // Stream file to client.
       try {
         // Cat 1 byte of CID in ipfs to determine if file exists
         // If the request takes under 500ms, stream the file from ipfs
         // else if the request takes over 500ms, throw an error and stream the file from file system
         await ipfsSingleByteCat(CID, req, 500)
-  
+
         // Stream file from ipfs if cat one byte takes under 500ms
         // If catReadableStream() promise is rejected, throw an error and stream from file system
         await new Promise((resolve, reject) => {
@@ -253,7 +253,7 @@ module.exports = function (app) {
     const dirCID = req.params.dirCID
     const filename = req.params.filename
     const ipfsPath = `${dirCID}/${filename}`
-    
+
     const queryResults = await models.File.findOne({
       where: {
         storagePath: { [models.Sequelize.Op.like]: `%${dirCID}%` },
@@ -265,7 +265,7 @@ module.exports = function (app) {
     if (!queryResults) {
       return sendResponse(req, res, errorResponseNotFound(`No dir entry found for provided dirCID: ${dirCID}`))
     }
-  
+
     redisClient.incr('ipfsStandaloneReqs')
     const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
     logger.info(`IPFS Standalone Request - ${ipfsPath}`)
@@ -284,7 +284,6 @@ module.exports = function (app) {
       )
 
       return streamFromFileSystem(req, res, queryResults.storagePath)
-
     } else {
       // Retrieves the file from IPFS and falls back to the filesystem if unavailable
       logger.info(`Attempting to retrieve ${ipfsPath} from IPFS`)
@@ -301,7 +300,7 @@ module.exports = function (app) {
         // If rehydrate throws error, return 500 without attempting to stream file.
         return sendResponse(req, res, errorResponseServerError(e.message))
       }
-  
+
       try {
         await new Promise((resolve, reject) => {
           req.app.get('ipfsAPI').catReadableStream(ipfsPath)
@@ -338,5 +337,4 @@ module.exports = function (app) {
       return sendResponse(req, res, errorResponseServerError(e.message))
     }
   }
-
 }
