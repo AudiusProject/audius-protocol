@@ -86,6 +86,12 @@ contract Governance is InitializableV2 {
         uint256 indexed proposalId,
         address indexed voter,
         Vote indexed vote,
+        uint256 voterStake
+    );
+    event ProposalVoteUpdated(
+        uint256 indexed proposalId,
+        address indexed voter,
+        Vote indexed vote,
         uint256 voterStake,
         Vote previousVote
     );
@@ -225,80 +231,79 @@ contract Governance is InitializableV2 {
 
         address voter = msg.sender;
 
+        uint256 voterStake = _validateVoterAndProposal(voter, _proposalId, _vote);
+
+        // Record previous vote.
+        Vote previousVote = proposals[_proposalId].votes[voter];
+
+        // New voter (Vote enum defaults to 0)
         require(
-            _proposalId <= lastProposalId && _proposalId > 0,
-            "Must provide valid non-zero _proposalId"
+            previousVote == Vote.None,
+            "Governance::submitProposalVote: Cannot update a vote with this function. To update call updateProposalVote"
         );
 
-        // Require voter is active Staker + get voterStake.
-        Staking stakingContract = Staking(stakingAddress);
-
-        uint256 voterStake = stakingContract.totalStakedForAt(
-            voter,
-            proposals[_proposalId].startBlockNumber
-        );
-        require(voterStake > 0, "Voter must be active staker with non-zero stake.");
-
-        // Require proposal is still active
-        require(
-            proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance::submitProposalVote: Cannot vote on inactive proposal."
-        );
-
-        // Require proposal votingPeriod is still active.
-        uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;
-        uint256 endBlockNumber = startBlockNumber.add(votingPeriod);
-        require(
-            block.number > startBlockNumber && block.number <= endBlockNumber,
-            "Governance::submitProposalVote: Proposal votingPeriod has ended"
-        );
-
-        // Require vote is either Yes or No
         require(
             _vote == Vote.Yes || _vote == Vote.No,
             "Governance::submitProposalVote: Can only submit a Yes or No vote"
         );
 
+        if (_vote == Vote.Yes) {
+            proposals[_proposalId].voteMagnitudeYes = (
+                proposals[_proposalId].voteMagnitudeYes.add(voterStake)
+            );
+        } else {
+            proposals[_proposalId].voteMagnitudeNo = (
+                proposals[_proposalId].voteMagnitudeNo.add(voterStake)
+            );
+        }
+        proposals[_proposalId].numVotes = proposals[_proposalId].numVotes.add(1);
+
+        emit ProposalVoteSubmitted(
+            _proposalId,
+            voter,
+            _vote,
+            voterStake
+        );
+    }
+
+    function updateProposalVote(uint256 _proposalId, Vote _vote) external {
+        _requireIsInitialized();
+
+        address voter = msg.sender;
+
+        uint256 voterStake = _validateVoterAndProposal(voter, _proposalId, _vote);
+
         // Record previous vote.
         Vote previousVote = proposals[_proposalId].votes[voter];
 
-        // Will override staker's previous vote if present.
-        proposals[_proposalId].votes[voter] = _vote;
+        require(
+            previousVote != Vote.None,
+            "Governance::submitProposalVote: No previous vote for this proposal, call submitProposalVote to submit vote"
+        );
 
-        /* Update voteMagnitudes accordingly */
+        require(
+            _vote == Vote.Yes || _vote == Vote.No,
+            "Governance::submitProposalVote: Can only submit a Yes or No vote"
+        );
 
-        // New voter (Vote enum defaults to 0)
-        if (previousVote == Vote.None) {
-            if (_vote == Vote.Yes) {
-                proposals[_proposalId].voteMagnitudeYes = (
-                    proposals[_proposalId].voteMagnitudeYes.add(voterStake)
-                );
-            } else {
-                proposals[_proposalId].voteMagnitudeNo = (
-                    proposals[_proposalId].voteMagnitudeNo.add(voterStake)
-                );
-            }
-            proposals[_proposalId].numVotes = proposals[_proposalId].numVotes.add(1);
-        } else { // Repeat voter
-            if (previousVote == Vote.Yes && _vote == Vote.No) {
-                proposals[_proposalId].voteMagnitudeYes = (
-                    proposals[_proposalId].voteMagnitudeYes.sub(voterStake)
-                );
-                proposals[_proposalId].voteMagnitudeNo = (
-                    proposals[_proposalId].voteMagnitudeNo.add(voterStake)
-                );
-            } else if (previousVote == Vote.No && _vote == Vote.Yes) {
-                proposals[_proposalId].voteMagnitudeYes = (
-                    proposals[_proposalId].voteMagnitudeYes.add(voterStake)
-                );
-                proposals[_proposalId].voteMagnitudeNo = (
-                    proposals[_proposalId].voteMagnitudeNo.sub(voterStake)
-                );
-            }
-            // If _vote == previousVote, no changes needed to vote magnitudes.
+        if (previousVote == Vote.Yes && _vote == Vote.No) {
+            proposals[_proposalId].voteMagnitudeYes = (
+                proposals[_proposalId].voteMagnitudeYes.sub(voterStake)
+            );
+            proposals[_proposalId].voteMagnitudeNo = (
+                proposals[_proposalId].voteMagnitudeNo.add(voterStake)
+            );
+        } else if (previousVote == Vote.No && _vote == Vote.Yes) {
+            proposals[_proposalId].voteMagnitudeYes = (
+                proposals[_proposalId].voteMagnitudeYes.add(voterStake)
+            );
+            proposals[_proposalId].voteMagnitudeNo = (
+                proposals[_proposalId].voteMagnitudeNo.sub(voterStake)
+            );
         }
+        // If _vote == previousVote, no changes needed to vote magnitudes.
 
-        emit ProposalVoteSubmitted(
+        emit ProposalVoteUpdated(
             _proposalId,
             voter,
             _vote,
@@ -674,5 +679,43 @@ contract Governance is InitializableV2 {
         );
 
         return (success, returnData);
+    }
+
+    function _validateVoterAndProposal(address voter, uint256 _proposalId, Vote _vote) internal  returns (uint256 stake) {
+        require(
+            _proposalId <= lastProposalId && _proposalId > 0,
+            "Must provide valid non-zero _proposalId"
+        );
+
+        // Require voter is active Staker + get voterStake.
+        Staking stakingContract = Staking(stakingAddress);
+
+        uint256 voterStake = stakingContract.totalStakedForAt(
+            voter,
+            proposals[_proposalId].startBlockNumber
+        );
+        require(voterStake > 0, "Voter must be active staker with non-zero stake.");
+
+        // Require proposal is still active
+        require(
+            proposals[_proposalId].outcome == Outcome.InProgress,
+            "Governance::submitProposalVote: Cannot vote on inactive proposal."
+        );
+
+        // Require proposal votingPeriod is still active.
+        uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;
+        uint256 endBlockNumber = startBlockNumber.add(votingPeriod);
+        require(
+            block.number > startBlockNumber && block.number <= endBlockNumber,
+            "Governance::submitProposalVote: Proposal votingPeriod has ended"
+        );
+
+        // Require vote is either Yes or No
+        require(
+            _vote == Vote.Yes || _vote == Vote.No,
+            "Governance::submitProposalVote: Can only submit a Yes or No vote"
+        );
+
+        return voterStake;
     }
 }
