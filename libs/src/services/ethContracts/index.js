@@ -241,11 +241,22 @@ class EthContracts {
 
       await Promise.all(serviceProviders.map(async (sp) => {
         try {
-          const {
-            data: { service: serviceName, version: serviceVersion }
-          } = await axios(
-            { url: urlJoin(sp.endpoint, 'version'), method: 'get' }
+          const { data } = await axios(
+            { url: urlJoin(sp.endpoint, 'health_check'), method: 'get' }
           )
+
+          let serviceName
+          let serviceVersion
+
+          // if disc prov, get data from data key
+          try {
+            serviceName = data.data.service
+            serviceVersion = data.data.version
+          } catch (e) {
+            serviceName = data.service
+            serviceVersion = data.version
+          }
+
           if (serviceName !== spType) {
             throw new Error(`Invalid service type: ${serviceName}. Expected ${spType}`)
           }
@@ -321,17 +332,19 @@ class EthContracts {
   }
 
   /**
-   * Validate that a provided url is a discovery provider by checking the `/version` endpoint for the service name
+   * Validate that a provided url is a discovery provider by checking the `/health_check` endpoint for the service name
    * @param {string} discProvUrl
    * @return {Promise<boolean>} If the discovery provider is valid
    */
   async validateDiscoveryProvider (discProvUrl) {
     try {
-      let { data: { service: serviceName } } = await axios({
-        url: urlJoin(discProvUrl, 'version'),
+      const { data } = await axios({
+        url: urlJoin(discProvUrl, 'health_check'),
         method: 'get',
         timeout: 3000
       })
+
+      const serviceName = data.data.service
       // NOTE/TODO: If the version of ther service is behind, it may become invalid
       return serviceName === serviceType.DISCOVERY_PROVIDER
     } catch (err) {
@@ -354,7 +367,7 @@ class EthContracts {
         }
       )
       const { status, data } = healthResp
-      const { block_difference: blockDiff } = data
+      const { block_difference: blockDiff } = data.data
       console.info(`${endpoint} responded with status ${status} and block difference ${blockDiff}`)
       return { healthy: status === 200, blockDiff }
     } catch (e) {
@@ -435,17 +448,26 @@ class EthContracts {
 
       for (const spInfo of serviceProviders) {
         let spEndpoint = spInfo.endpoint
-        let requestUrl = urlJoin(spEndpoint, 'version')
+        let requestUrl = urlJoin(spEndpoint, 'health_check')
         const axiosRequest = {
           url: requestUrl,
           method: 'get',
           timeout: 1000
         }
         try {
-          let response = await axios(axiosRequest)
-          let versionInfo = response['data']
-          let serviceName = versionInfo['service']
-          let serviceVersion = versionInfo['version']
+          const { data } = await axios(axiosRequest)
+          let serviceName
+          let serviceVersion
+
+          // if disc prov, get data from data key
+          try {
+            serviceName = data.data.service
+            serviceVersion = data.data.version
+          } catch (e) {
+            serviceName = data.service
+            serviceVersion = data.version
+          }
+
           if (!this.expectedServiceVersions.hasOwnProperty(serviceName)) {
             console.log(`Invalid service name: ${serviceName}`)
             continue

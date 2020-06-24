@@ -113,7 +113,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
    */
   isHealthy (response, urlMap) {
     const { status, data } = response
-    const { block_difference: blockDiff, service, version } = data
+    const { block_difference: blockDiff, service, version } = data.data
     if (status !== 200) return false
     if (service !== DISCOVERY_SERVICE_NAME) return false
     if (!semver.valid(version)) return false
@@ -125,13 +125,13 @@ class DiscoveryProviderSelection extends ServiceSelection {
 
     // If this service is behind by patches, add it as a backup and reject
     if (semver.patch(version) < semver.patch(this.currentVersion)) {
-      this.addBackup(urlMap[response.config.url], response.data)
+      this.addBackup(urlMap[response.config.url], data.data)
       return false
     }
 
     // If this service is an unhealthy block diff behind, add it as a backup and reject
     if (blockDiff > UNHEALTHY_BLOCK_DIFF) {
-      this.addBackup(urlMap[response.config.url], response.data)
+      this.addBackup(urlMap[response.config.url], data.data)
       return false
     }
 
