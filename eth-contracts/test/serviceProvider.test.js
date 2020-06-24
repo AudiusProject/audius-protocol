@@ -1115,47 +1115,11 @@ contract('ServiceProvider test', async (accounts) => {
       isValid = await serviceTypeManager.serviceTypeIsValid(testType)
       assert.isTrue(isValid, 'Expect valid type after registration')
 
-      let info = await serviceTypeManager.getServiceTypeStakeInfo(testType)
+      const info = await serviceTypeManager.getServiceTypeStakeInfo(testType)
       assert.isTrue(typeMin.eq(info.min), 'Min values not equal')
       assert.isTrue(typeMax.eq(info.max), 'Max values not equal')
 
-      const newMinVal = _lib.audToWei(300)
-      const newMaxVal = _lib.audToWei(40000)
-      const newMin = _lib.toBN(newMinVal)
-      const newMax = _lib.toBN(newMaxVal)
-
-      // Expect failure from invalid account
-      await _lib.assertRevert(
-        serviceTypeManager.updateServiceType(testType, newMin, newMax, { from: accounts[12] }),
-        'Only callable by Governance contract.'
-      )
-
-      // updateServiceType should fail with unregistered serviceType
       const unregisteredType = web3.utils.utf8ToHex('invalid-service')
-      await _lib.assertRevert(
-        governance.guardianExecuteTransaction(
-          serviceTypeManagerProxyKey,
-          callValue,
-          'updateServiceType(bytes32,uint256,uint256)',
-          _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [unregisteredType, newMinVal, newMaxVal]),
-          { from: guardianAddress }
-        ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
-      )
-
-      // updateServiceType successfully
-      await governance.guardianExecuteTransaction(
-        serviceTypeManagerProxyKey,
-        callValue,
-        'updateServiceType(bytes32,uint256,uint256)',
-        _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [testType, newMinVal, newMaxVal]),
-        { from: guardianAddress }
-      )
-
-      // Confirm serviceType was updated
-      info = await serviceTypeManager.getServiceTypeStakeInfo(testType)
-      assert.isTrue(newMin.eq(info.min), 'Min values not equal')
-      assert.isTrue(newMax.eq(info.max), 'Max values not equal')
 
       // removeServiceType fails when not called from Governance
       await _lib.assertRevert(

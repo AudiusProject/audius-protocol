@@ -115,30 +115,6 @@ contract ServiceTypeManager is InitializableV2 {
     }
 
     /**
-     * @notice Update a service type
-     * @param _serviceType - type of service
-     * @param _serviceTypeMin - minimum stake for service type
-     * @param _serviceTypeMax - maximum stake for service type
-     */
-    function updateServiceType(
-        bytes32 _serviceType,
-        uint _serviceTypeMin,
-        uint _serviceTypeMax
-    ) external
-    {
-        _requireIsInitialized();
-        require(
-            msg.sender == governanceAddress,
-            "Only callable by Governance contract"
-        );
-
-        require(this.serviceTypeIsValid(_serviceType), "Invalid service type");
-
-        serviceTypeStakeRequirements[_serviceType].minStake = _serviceTypeMin;
-        serviceTypeStakeRequirements[_serviceType].maxStake = _serviceTypeMax;
-    }
-
-    /**
      * @notice Get min and max stake for a given service type
      * @param _serviceType - type of service
      * @return min and max stake for type
@@ -191,7 +167,7 @@ contract ServiceTypeManager is InitializableV2 {
             "Already registered"
         );
 
-         // Update array of known types
+         // Update array of known versions for type
         serviceTypeVersions[_serviceType].push(_serviceVersion);
 
         // Update status for this specific service version
