@@ -117,11 +117,20 @@ class DiscoveryProviderSelection extends ServiceSelection {
     if (status !== 200) return false
     if (service !== DISCOVERY_SERVICE_NAME) return false
     if (!semver.valid(version)) return false
-    if (!this.ethContracts.isValidSPVersion(this.currentVersion, version)) return false
 
-    if (
-      blockDiff > UNHEALTHY_BLOCK_DIFF
-    ) {
+    // If this service is not the same major/minor as what's on chain, reject
+    if (!this.ethContracts.hasSameMajorAndMinorVersion(this.currentVersion, version)) {
+      return false
+    }
+
+    // If this service is behind by patches, add it as a backup and reject
+    if (semver.patch(version) < semver.patch(this.currentVersion)) {
+      this.addBackup(urlMap[response.config.url], response.data)
+      return false
+    }
+
+    // If this service is an unhealthy block diff behind, add it as a backup and reject
+    if (blockDiff > UNHEALTHY_BLOCK_DIFF) {
       this.addBackup(urlMap[response.config.url], response.data)
       return false
     }

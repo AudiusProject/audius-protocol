@@ -176,6 +176,18 @@ class EthContracts {
     )
   }
 
+  /**
+   * Determines whether the major and minor versions are equal
+   * @param {string} version string 1
+   * @param {string} version string 2
+   */
+  hasSameMajorAndMinorVersion (version1, version2) {
+    return (
+      semver.major(version1) === semver.major(version2) &&
+      semver.minor(version1) === semver.minor(version2)
+    )
+  }
+
   async getServiceProviderList (spType) {
     return this.ServiceProviderFactoryClient.getServiceProviderList(spType)
   }
