@@ -324,7 +324,7 @@ contract DelegateManager is InitializableV2 {
      * @dev Only callable by service provider. msg.sender is passed into processClaim
      * @dev Also factors in service provider rewards from delegator and transfers deployer cut
      */
-    function claimRewards() external {
+    function claimRewards(address _claimer) external {
         _requireIsInitialized();
         require(
             serviceProviderFactoryAddress != address(0x00),
@@ -339,7 +339,7 @@ contract DelegateManager is InitializableV2 {
             uint totalBalanceInStaking,
             uint totalBalanceInSPFactory,
             uint totalBalanceOutsideStaking
-        ) = _validateClaimRewards(spFactory);
+        ) = _validateClaimRewards(spFactory, _claimer);
 
         // No-op if balance is already equivalent
         // This case can occur if no rewards due to bound violation or all stake is locked
@@ -352,63 +352,30 @@ contract DelegateManager is InitializableV2 {
         uint totalRewards = totalBalanceInStaking.sub(totalBalanceOutsideStaking);
 
         // Emit claim event
-        emit Claim(msg.sender, totalRewards, totalBalanceInStaking);
+        emit Claim(_claimer, totalRewards, totalBalanceInStaking);
 
-        ( ,uint deployerCut, , , , ) = spFactory.getServiceProviderDetails(msg.sender);
+        ( ,uint deployerCut, , , , ) = spFactory.getServiceProviderDetails(_claimer);
         uint deployerCutBase = spFactory.getServiceProviderDeployerCutBase();
-        uint spDeployerCutRewards = 0;
-        uint totalDelegatedStakeIncrease = 0;
 
         // Total valid funds used to calculate rewards distribution
         uint totalActiveFunds = (
-            totalBalanceOutsideStaking.sub(spDelegateInfo[msg.sender].totalLockedUpStake)
+            totalBalanceOutsideStaking.sub(spDelegateInfo[_claimer].totalLockedUpStake)
         );
 
-        // Traverse all delegates and calculate their rewards
-        // As each delegate reward is calculated, increment SP cut reward accordingly
-        for (uint i = 0; i < spDelegateInfo[msg.sender].delegators.length; i++) {
-            address delegator = spDelegateInfo[msg.sender].delegators[i];
-            uint delegateStakeToSP = delegateInfo[delegator][msg.sender];
-
-            // Subtract any locked up stake
-            if (undelegateRequests[delegator].serviceProvider == msg.sender) {
-                delegateStakeToSP = delegateStakeToSP.sub(undelegateRequests[delegator].amount);
-            }
-
-            // Calculate rewards by ((delegateStakeToSP / totalActiveFunds) * totalRewards)
-            uint rewardsPriorToSPCut = (
-              delegateStakeToSP.mul(totalRewards)
-            ).div(totalActiveFunds);
-
-            // Multiply by deployer cut fraction to calculate reward for SP
-            // Operation constructed to perform all multiplication prior to division
-            // uint spDeployerCut = (rewardsPriorToSPCut * deployerCut ) / (deployerCutBase);
-            //                    = ((delegateStakeToSP * totalRewards) / totalActiveFunds) * deployerCut ) / (deployerCutBase);
-            //                    = ((delegateStakeToSP * totalRewards * deployerCut) / totalActiveFunds ) / (deployerCutBase);
-            //                    = (delegateStakeToSP * totalRewards * deployerCut) / (deployerCutBase * totalActiveFunds);
-            uint spDeployerCut = (
-                (delegateStakeToSP.mul(totalRewards)).mul(deployerCut)
-            ).div(
-                totalActiveFunds.mul(deployerCutBase)
-            );
-            spDeployerCutRewards = spDeployerCutRewards.add(spDeployerCut);
-            // Increase total delegate reward in DelegateManager
-            // Subtract SP reward from rewards to calculate delegate reward
-            // delegateReward = rewardsPriorToSPCut - spDeployerCut;
-            delegateInfo[delegator][msg.sender] = (
-                delegateInfo[delegator][msg.sender].add(rewardsPriorToSPCut.sub(spDeployerCut))
-            );
-            delegatorStakeTotal[delegator] = (
-                delegatorStakeTotal[delegator].add(rewardsPriorToSPCut.sub(spDeployerCut))
-            );
-            totalDelegatedStakeIncrease = (
-                totalDelegatedStakeIncrease.add(rewardsPriorToSPCut.sub(spDeployerCut))
-            );
-        }
+        (
+            uint totalDelegatedStakeIncrease,
+            uint spDeployerCutRewards
+        ) = _distributeDelegateRewards(
+            _claimer,
+            totalActiveFunds,
+            totalRewards,
+            deployerCut,
+            deployerCutBase
+        );
 
         // Update total delegated to this SP
-        spDelegateInfo[msg.sender].totalDelegatedStake = (
-            spDelegateInfo[msg.sender].totalDelegatedStake.add(totalDelegatedStakeIncrease)
+        spDelegateInfo[_claimer].totalDelegatedStake = (
+            spDelegateInfo[_claimer].totalDelegatedStake.add(totalDelegatedStakeIncrease)
         );
 
         // Rewards directly allocated to service provider for their stake
@@ -417,7 +384,7 @@ contract DelegateManager is InitializableV2 {
         ).div(totalActiveFunds);
 
         spFactory.updateServiceProviderStake(
-            msg.sender,
+            _claimer,
             /// newSpBalance = totalBalanceInSPFactory + spRewardShare + spDeployerCutRewards;
             totalBalanceInSPFactory.add(spRewardShare.add(spDeployerCutRewards))
         );
@@ -699,29 +666,33 @@ contract DelegateManager is InitializableV2 {
     /**
      * @notice Helper function for claimRewards to get balances from Staking contract
                and do validation
-     * @param spFactory - reference to ServiceProviderFactory contract
+     * @param _spFactory - reference to ServiceProviderFactory contract
+     * @param _claimer - address for which rewards are being claimed
      * @return (totalBalanceInStaking, totalBalanceInSPFactory, totalBalanceOutsideStaking)
      */
-    function _validateClaimRewards(ServiceProviderFactory spFactory)
+    function _validateClaimRewards(
+        ServiceProviderFactory _spFactory,
+        address _claimer
+    )
     internal returns (uint totalBalanceInStaking, uint totalBalanceInSPFactory, uint totalBalanceOutsideStaking)
-        {
+    {
 
         // Account for any pending locked up stake for the service provider
-        (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
+        (uint spLockedStake,) = _spFactory.getPendingDecreaseStakeRequest(msg.sender);
 
         // Process claim for msg.sender
         // Total locked parameter is equal to delegate locked up stake + service provider locked up stake
         ClaimsManager(claimsManagerAddress).processClaim(
-            msg.sender,
-            (spDelegateInfo[msg.sender].totalLockedUpStake.add(spLockedStake))
+            _claimer,
+            (spDelegateInfo[_claimer].totalLockedUpStake.add(spLockedStake))
         );
 
         // Amount stored in staking contract for owner
-        uint _totalBalanceInStaking = Staking(stakingAddress).totalStakedFor(msg.sender);
+        uint _totalBalanceInStaking = Staking(stakingAddress).totalStakedFor(_claimer);
         require(_totalBalanceInStaking > 0, "Stake required for claim");
 
         // Amount in sp factory for claimer
-        (uint _totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(msg.sender);
+        (uint _totalBalanceInSPFactory,,,,,) = _spFactory.getServiceProviderDetails(_claimer);
 
         // Decrease total balance by any locked up stake
         _totalBalanceInSPFactory = _totalBalanceInSPFactory.sub(spLockedStake);
@@ -731,10 +702,64 @@ contract DelegateManager is InitializableV2 {
 
         // Amount in delegate manager staked to service provider
         uint _totalBalanceOutsideStaking = (
-            _totalBalanceInSPFactory.add(spDelegateInfo[msg.sender].totalDelegatedStake)
+            _totalBalanceInSPFactory.add(spDelegateInfo[_claimer].totalDelegatedStake)
         );
 
         return (_totalBalanceInStaking, _totalBalanceInSPFactory, _totalBalanceOutsideStaking);
+    }
+
+    function _distributeDelegateRewards(
+        address _sp,
+        uint _totalActiveFunds,
+        uint _totalRewards,
+        uint _deployerCut,
+        uint _deployerCutBase
+    )
+    internal returns (uint totalDelegatedStakeIncrease, uint spDeployerCutRewards)
+    {
+        // Traverse all delegates and calculate their rewards
+        // As each delegate reward is calculated, increment SP cut reward accordingly
+        for (uint i = 0; i < spDelegateInfo[_sp].delegators.length; i++) {
+            address delegator = spDelegateInfo[_sp].delegators[i];
+            uint delegateStakeToSP = delegateInfo[delegator][_sp];
+
+            // Subtract any locked up stake
+            if (undelegateRequests[delegator].serviceProvider == _sp) {
+                delegateStakeToSP = delegateStakeToSP.sub(undelegateRequests[delegator].amount);
+            }
+
+            // Calculate rewards by ((delegateStakeToSP / totalActiveFunds) * totalRewards)
+            uint rewardsPriorToSPCut = (
+              delegateStakeToSP.mul(_totalRewards)
+            ).div(_totalActiveFunds);
+
+            // Multiply by deployer cut fraction to calculate reward for SP
+            // Operation constructed to perform all multiplication prior to division
+            // uint spDeployerCut = (rewardsPriorToSPCut * deployerCut ) / (deployerCutBase);
+            //                    = ((delegateStakeToSP * totalRewards) / totalActiveFunds) * deployerCut ) / (deployerCutBase);
+            //                    = ((delegateStakeToSP * totalRewards * deployerCut) / totalActiveFunds ) / (deployerCutBase);
+            //                    = (delegateStakeToSP * totalRewards * deployerCut) / (deployerCutBase * totalActiveFunds);
+            uint spDeployerCut = (
+                (delegateStakeToSP.mul(_totalRewards)).mul(_deployerCut)
+            ).div(
+                _totalActiveFunds.mul(_deployerCutBase)
+            );
+            spDeployerCutRewards = spDeployerCutRewards.add(spDeployerCut);
+            // Increase total delegate reward in DelegateManager
+            // Subtract SP reward from rewards to calculate delegate reward
+            // delegateReward = rewardsPriorToSPCut - spDeployerCut;
+            delegateInfo[delegator][_sp] = (
+                delegateInfo[delegator][_sp].add(rewardsPriorToSPCut.sub(spDeployerCut))
+            );
+            delegatorStakeTotal[delegator] = (
+                delegatorStakeTotal[delegator].add(rewardsPriorToSPCut.sub(spDeployerCut))
+            );
+            totalDelegatedStakeIncrease = (
+                totalDelegatedStakeIncrease.add(rewardsPriorToSPCut.sub(spDeployerCut))
+            );
+        }
+
+        return (totalDelegatedStakeIncrease, spDeployerCutRewards);
     }
 
     /**
