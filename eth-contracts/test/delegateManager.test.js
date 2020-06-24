@@ -1307,7 +1307,7 @@ contract('DelegateManager', async (accounts) => {
       // Update min delegation level configuration
       let minDelegateStakeVal = _lib.audToWei(100)
       let minDelegateStake = _lib.toBN(minDelegateStakeVal)
-      
+
       await governance.guardianExecuteTransaction(
         delegateManagerKey,
         _lib.toBN(0),
@@ -1361,6 +1361,36 @@ contract('DelegateManager', async (accounts) => {
       await delegateManager.undelegateStake({ from: delegatorAccount1 })
       assert.equal(_lib.fromBN(await delegateManager.getTotalDelegatorStake(delegatorAccount1)), 0, 'No stake expected')
       assert.equal((await delegateManager.getDelegatorsList(stakerAccount)).length, 0, 'No delegators expected')
+    })
+
+    it('Cancel undelegate stake resets state', async () => {
+      let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      let delegateAmount = spDetails.minAccountStake
+      // Approve staking transfer
+      await token.approve(stakingAddress, delegateAmount, { from: delegatorAccount1 })
+      await delegateManager.delegateStake(stakerAccount, delegateAmount, { from: delegatorAccount1 })
+      // Now, initiate a request to undelegate for this SP
+      await delegateManager.requestUndelegateStake(
+        stakerAccount,
+        delegateAmount,
+        { from: delegatorAccount1 }
+      )
+
+      let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      let lockedUpStakeForSp = await delegateManager.getTotalLockedDelegationForServiceProvider(stakerAccount)
+
+      assert.isTrue(
+        undelegateRequestInfo.amount.eq(delegateAmount),
+        'Expect request to match undelegate amount')
+      await delegateManager.cancelUndelegateStake({ from: delegatorAccount1 })
+
+      let undelegateRequestInfoAfterCancel = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      let lockedUpStakeForSpAfterCancel = await delegateManager.getTotalLockedDelegationForServiceProvider(stakerAccount)
+
+      assert.isTrue(undelegateRequestInfoAfterCancel.target === _lib.addressZero, 'Expect zero address')
+      assert.isTrue(undelegateRequestInfoAfterCancel.amount.eq(_lib.toBN(0)), 'Expect 0 pending in undelegate request')
+      assert.isTrue(undelegateRequestInfoAfterCancel.lockupExpiryBlock.eq(_lib.toBN(0)), 'Expect 0 pending in undelegate request')
+      assert.isTrue(lockedUpStakeForSpAfterCancel.eq(lockedUpStakeForSp.sub(undelegateRequestInfo.amount)), 'Expect decrease in locked up stake for SP')
     })
 
     it('Caller restriction verification', async () => {
