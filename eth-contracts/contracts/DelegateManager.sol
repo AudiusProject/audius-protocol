@@ -227,9 +227,9 @@ contract DelegateManager is InitializableV2 {
 
         // Reset locked up stake
         address unlockFundsSP = undelegateRequests[delegator].serviceProvider;
-        spDelegateInfo[unlockFundsSP].totalLockedUpStake = ( 
+        spDelegateInfo[unlockFundsSP].totalLockedUpStake = (
             spDelegateInfo[unlockFundsSP].totalLockedUpStake.sub(undelegateRequests[delegator].amount)
-         );
+        );
 
         // Remove pending request
         undelegateRequests[delegator] = UndelegateStakeRequest({
