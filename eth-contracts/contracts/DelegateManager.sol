@@ -351,7 +351,6 @@ contract DelegateManager is InitializableV2 {
 
         // Total rewards
         // Equal to (balance in staking) - ((balance in sp factory) + (balance in delegate manager))
-        // uint totalRewards = totalBalanceInStaking.sub(totalBalanceOutsideStaking);
 
         // Emit claim event
         emit Claim(msg.sender, totalRewards, totalBalanceInStaking);
