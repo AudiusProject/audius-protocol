@@ -63,6 +63,8 @@ class EthContracts {
       this.registryAddress
     )
     this.getRegistryAddressForContract = this.getRegistryAddressForContract.bind(this)
+    this.isAheadByPatchVersions = this.isAheadByPatchVersions.bind(this)
+    this.isBehindByPatchVersions = this.isBehindByPatchVersions.bind(this)
 
     this.VersioningFactoryClient = new VersioningFactoryClient(
       this.ethWeb3Manager,
@@ -173,6 +175,32 @@ class EthContracts {
       semver.major(version1) === semver.major(version2) &&
       semver.minor(version1) === semver.minor(version2) &&
       semver.patch(version2) >= semver.patch(version1)
+    )
+  }
+
+  /**
+   * Determines whether version2 is ahead of version1 by patch versions
+   * @param {string} version string 1
+   * @param {string} version string 2
+   */
+  isAheadByPatchVersions (version1, version2) {
+    return (
+      semver.major(version1) === semver.major(version2) &&
+      semver.minor(version1) === semver.minor(version2) &&
+      semver.patch(version1) <= semver.patch(version2)
+    )
+  }
+
+  /**
+   * Determines whether version2 is behind version1 by patch versions
+   * @param {string} version string 1
+   * @param {string} version string 2
+   */
+  isBehindByPatchVersions (version1, version2) {
+    return (
+      semver.major(version1) === semver.major(version2) &&
+      semver.minor(version1) === semver.minor(version2) &&
+      semver.patch(version1) >= semver.patch(version2)
     )
   }
 

@@ -117,7 +117,17 @@ class DiscoveryProviderSelection extends ServiceSelection {
     if (status !== 200) return false
     if (service !== DISCOVERY_SERVICE_NAME) return false
     if (!semver.valid(version)) return false
-    if (!this.ethContracts.isValidSPVersion(this.currentVersion, version)) return false
+
+    if (!this.ethContracts.isAheadByPatchVersions(this.currentVersion, version)) {
+      // The version we are checking is behind the latest chain version
+      if (this.ethContracts.isBehindByPatchVersions(this.currentVersion, version)) {
+        // Add it as a backup if it's only behind by a patch version, but
+        // has the same major and minor versions
+        this.addBackup(urlMap[response.config.url], response.data)
+      }
+
+      return false
+    }
 
     if (
       blockDiff > UNHEALTHY_BLOCK_DIFF
