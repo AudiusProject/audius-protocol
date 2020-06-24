@@ -716,7 +716,6 @@ contract DelegateManager is InitializableV2 {
         uint totalRewards
     )
     {
-
         // Account for any pending locked up stake for the service provider
         (spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
         uint totalLockedUpStake = spDelegateInfo[msg.sender].totalLockedUpStake.add(spLockedStake);
@@ -729,28 +728,28 @@ contract DelegateManager is InitializableV2 {
         );
 
         // Amount stored in staking contract for owner
-        uint _totalBalanceInStaking = Staking(stakingAddress).totalStakedFor(msg.sender);
-        require(_totalBalanceInStaking > 0, "Stake required for claim");
+        totalBalanceInStaking = Staking(stakingAddress).totalStakedFor(msg.sender);
+        require(totalBalanceInStaking > 0, "Stake required for claim");
 
         // Amount in sp factory for claimer
-        (uint _totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(msg.sender);
+        (totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(msg.sender);
         // Require active stake to claim any rewards
-        require(_totalBalanceInSPFactory > 0, "Service Provider stake required");
+        require(totalBalanceInSPFactory.sub(spLockedStake) > 0, "Service Provider stake required");
 
         // Amount in delegate manager staked to service provider
-        uint _totalBalanceOutsideStaking = (
-            _totalBalanceInSPFactory.add(spDelegateInfo[msg.sender].totalDelegatedStake)
+        totalBalanceOutsideStaking = (
+            totalBalanceInSPFactory.add(spDelegateInfo[msg.sender].totalDelegatedStake)
         );
 
         require(
-            mintedRewards == _totalBalanceInStaking.sub(_totalBalanceOutsideStaking),
+            mintedRewards == totalBalanceInStaking.sub(totalBalanceOutsideStaking),
             "Reward amount mismatch"
         );
 
         return (
-            _totalBalanceInStaking,
-            _totalBalanceInSPFactory,
-            _totalBalanceOutsideStaking,
+            totalBalanceInStaking,
+            totalBalanceInSPFactory,
+            totalBalanceOutsideStaking,
             spLockedStake,
             mintedRewards
         );
