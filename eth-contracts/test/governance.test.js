@@ -624,6 +624,9 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(parseInt(proposal.voteMagnitudeYes), 0, 'Expected same voteMagnitudeYes')
       assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
       assert.equal(parseInt(proposal.numVotes), 0, 'Expected same numVotes')
+      
+      const propDescription = await governance.getProposalDescriptionById.call(proposalId)
+      assert.equal(propDescription, proposalDescription, 'Expected same proposalDescription')
 
       // Confirm all vote states - all Vote.None
       for (const account of accounts) {

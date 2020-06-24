@@ -69,6 +69,7 @@ contract Governance is InitializableV2 {
         uint256 voteMagnitudeNo;
         uint256 numVotes;
         mapping(address => Vote) votes;
+        string description;
     }
 
     /***** Proposal storage *****/
@@ -199,7 +200,8 @@ contract Governance is InitializableV2 {
             outcome: Outcome.InProgress,
             voteMagnitudeYes: 0,
             voteMagnitudeNo: 0,
-            numVotes: 0
+            numVotes: 0,
+            description: _description
             /* votes: mappings are auto-initialized to default state */
         });
 
@@ -593,6 +595,30 @@ contract Governance is InitializableV2 {
             proposal.voteMagnitudeNo,
             proposal.numVotes
             /** @notice - votes mapping cannot be returned by external function */
+        );
+    }
+
+     /**
+     * @notice Get proposal description by proposal Id
+     * @dev This is a separate function because the getProposalById returns too many
+            variables already and by adding more, you get the error
+            `InternalCompilerError: Stack too deep, try using fewer variables`
+     * @param _proposalId - id of proposal
+     */
+    function getProposalDescriptionById(uint256 _proposalId)
+    external view returns (
+        string memory description
+    )
+    {
+        _requireIsInitialized();
+        require(
+            _proposalId <= lastProposalId && _proposalId > 0,
+            "Must provide valid non-zero _proposalId"
+        );
+
+        Proposal memory proposal = proposals[_proposalId];
+        return (
+            proposal.description
         );
     }
 
