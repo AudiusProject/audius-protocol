@@ -31,8 +31,6 @@ contract ServiceTypeManager is InitializableV2 {
     mapping(bytes32 => ServiceTypeStakeRequirements) serviceTypeStakeRequirements;
 
     event SetServiceVersion(bytes32 _serviceType, bytes32 _serviceVersion);
-    event Test(string msg, bool value);
-    event TestAddr(string msg, address addr);
 
     /**
      * @notice Function to initialize the contract
