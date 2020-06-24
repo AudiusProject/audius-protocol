@@ -1676,7 +1676,7 @@ contract('Governance.sol', async (accounts) => {
       await registryProxy.setAudiusGovernanceAddress(governance.address, { from: proxyAdminAddress })
 
       // Upgrade registry proxy to new logic address
-      governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         registryRegKey,
         callValue0,
         'upgradeTo(address)',
