@@ -188,16 +188,16 @@ contract('ServiceProvider test', async (accounts) => {
 
     /** addServiceTypes creatornode and discprov via Governance */
     await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey)
-    const serviceTypeCNStakeInfo = await serviceTypeManager.getServiceTypeStakeInfo.call(testCreatorNodeType)
-    const [cnTypeMinV, cnTypeMaxV] = [serviceTypeCNStakeInfo[0], serviceTypeCNStakeInfo[1]]
-    assert.equal(cnTypeMin, cnTypeMinV, 'Expected same minStake')
-    assert.equal(cnTypeMax, cnTypeMaxV, 'Expected same maxStake')
+    const serviceTypeCNInfo = await serviceTypeManager.getServiceTypeInfo.call(testCreatorNodeType)
+    assert.isTrue(serviceTypeCNInfo.isValid, 'Expected serviceTypeCN isValid')
+    assert.isTrue(serviceTypeCNInfo.minStake.eq(_lib.toBN(cnTypeMin)), 'Expected same minStake')
+    assert.isTrue(serviceTypeCNInfo.maxStake.eq(_lib.toBN(cnTypeMax)), 'Expected same maxStake')
 
     await _lib.addServiceType(testDiscProvType, dpTypeMin, dpTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey)
-    const serviceTypeDPStakeInfo = await serviceTypeManager.getServiceTypeStakeInfo.call(testDiscProvType)
-    const [dpTypeMinV, dpTypeMaxV] = [serviceTypeDPStakeInfo[0], serviceTypeDPStakeInfo[1]]
-    assert.equal(dpTypeMin, dpTypeMinV, 'Expected same minStake')
-    assert.equal(dpTypeMax, dpTypeMaxV, 'Expected same maxStake')
+    const serviceTypeDPInfo = await serviceTypeManager.getServiceTypeInfo.call(testDiscProvType)
+    assert.isTrue(serviceTypeDPInfo.isValid, 'Expected serviceTypeDP isValid')
+    assert.isTrue(serviceTypeDPInfo.minStake.eq(_lib.toBN(dpTypeMin)), 'Expected same minStake')
+    assert.isTrue(serviceTypeDPInfo.maxStake.eq(_lib.toBN(dpTypeMax)), 'Expected same maxStake')
 
     // Deploy + register ServiceProviderFactory
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
@@ -325,22 +325,10 @@ contract('ServiceProvider test', async (accounts) => {
         'Expected default stake amount'
       )
 
-      const spTypeInfo = await serviceTypeManager.getServiceTypeStakeInfo(testDiscProvType)
-      const typeMin = _lib.fromWei(spTypeInfo[0])
-      const typeMax = _lib.fromWei(spTypeInfo[1])
-
-      // Validate stake requirements
-      // Both current account bounds and single testDiscProvType bounds expected to be equal
-      assert.equal(
-        typeMin,
-        _lib.fromWei(spDetails.minAccountStake),
-        'Expect account min to equal sp type 1 min'
-      )
-      assert.equal(
-        typeMax,
-        _lib.fromWei(spDetails.maxAccountStake),
-        'Expect account max to equal sp type 1 max'
-      )
+      // Validate serviceType info
+      const serviceTypeDPInfo = await serviceTypeManager.getServiceTypeInfo(testDiscProvType)
+      assert.isTrue(serviceTypeDPInfo.minStake.eq(spDetails.minAccountStake), 'Expected serviceTypeDP minStake == sp 1 minAccountStake')
+      assert.isTrue(serviceTypeDPInfo.maxStake.eq(spDetails.maxAccountStake), 'Expected serviceTypeDP maxStake == sp 1 maxAccountStake')
     })
 
     it('Confirm correct stake for account', async () => {
@@ -412,14 +400,16 @@ contract('ServiceProvider test', async (accounts) => {
     })
 
     it('Min direct deployer stake violation', async () => {
-      let minDirectStake = await serviceProviderFactory.getMinDeployerStake()
+      const minDirectStake = await serviceProviderFactory.getMinDeployerStake()
+
       // Calculate an invalid direct stake amount
-      let invalidDirectStake = minDirectStake.sub(_lib.toBN(1))
+      const invalidDirectStake = minDirectStake.sub(_lib.toBN(1))
       await token.transfer(stakerAccount2, invalidDirectStake, { from: proxyDeployerAddress })
-      let dpTypeInfo = await serviceTypeManager.getServiceTypeStakeInfo(testDiscProvType)
-      let dpTypeMin = dpTypeInfo[0]
+
+      const dpTypeInfo = await serviceTypeManager.getServiceTypeInfo(testDiscProvType)
+      assert.isTrue(invalidDirectStake.gt(dpTypeInfo.minStake), 'Invalid direct stake above dp type min')
+
       // Validate that this value won't violate service type minimum
-      assert.isTrue(invalidDirectStake.gt(dpTypeMin), 'Invalid direct stake above dp type min')
       await _lib.assertRevert(
         _lib.registerServiceProvider(
           token,
@@ -429,7 +419,8 @@ contract('ServiceProvider test', async (accounts) => {
           testEndpoint1,
           invalidDirectStake,
           stakerAccount2),
-        'Direct stake restriction violated')
+        'Direct stake restriction violated'
+      )
     })
 
     it('Update service provider cut', async () => {
@@ -706,11 +697,11 @@ contract('ServiceProvider test', async (accounts) => {
       let testCnodeEndpoint1 = 'https://localhost:4000'
       let testCnodeEndpoint2 = 'https://localhost:4001'
 
-      let cnTypeInfo = await serviceTypeManager.getServiceTypeStakeInfo(testCreatorNodeType)
-      let cnTypeMin = cnTypeInfo[0]
-      let cnTypeMax = cnTypeInfo[1]
-      let dpTypeInfo = await serviceTypeManager.getServiceTypeStakeInfo(testDiscProvType)
-      let dpTypeMin = dpTypeInfo[0]
+      let cnTypeInfo = await serviceTypeManager.getServiceTypeInfo(testCreatorNodeType)
+      let cnTypeMin = cnTypeInfo.minStake
+      let cnTypeMax = cnTypeInfo.maxStake
+      let dpTypeInfo = await serviceTypeManager.getServiceTypeInfo(testDiscProvType)
+      let dpTypeMin = dpTypeInfo.minStake
 
       // Total Stake = 240 AUD <-- Expect failure
       await _lib.assertRevert(
@@ -975,7 +966,7 @@ contract('ServiceProvider test', async (accounts) => {
       const addServiceTypeSignature = 'addServiceType(bytes32,uint256,uint256)'
 
       let isValid = await serviceTypeManager.serviceTypeIsValid(testType)
-      assert.isTrue(!isValid, 'Invalid type expected')
+      assert.isFalse(isValid, 'Invalid type expected')
 
       // Expect failure as service type has not been registered
       await _lib.assertRevert(
@@ -1115,9 +1106,10 @@ contract('ServiceProvider test', async (accounts) => {
       isValid = await serviceTypeManager.serviceTypeIsValid(testType)
       assert.isTrue(isValid, 'Expect valid type after registration')
 
-      const info = await serviceTypeManager.getServiceTypeStakeInfo(testType)
-      assert.isTrue(typeMin.eq(info.min), 'Min values not equal')
-      assert.isTrue(typeMax.eq(info.max), 'Max values not equal')
+      const info = await serviceTypeManager.getServiceTypeInfo(testType)
+      assert.isTrue(info.isValid, 'Expected testType to be valid')
+      assert.isTrue(info.minStake.eq(_lib.toBN(typeMin)), 'Min values not equal')
+      assert.isTrue(info.maxStake.eq(_lib.toBN(typeMax)), 'Max values not equal')
 
       const unregisteredType = web3.utils.utf8ToHex('invalid-service')
 
@@ -1149,7 +1141,7 @@ contract('ServiceProvider test', async (accounts) => {
 
       // Confirm serviceType is no longer valid after removal
       isValid = await serviceTypeManager.serviceTypeIsValid(testType)
-      assert.isTrue(!isValid, 'Expect invalid type after deregistration')
+      assert.isFalse(isValid, 'Expect invalid type after deregistration')
 
       // setGovernanceAddress in ServiceTypeManager.sol
       await governance.guardianExecuteTransaction(
@@ -1164,6 +1156,75 @@ contract('ServiceProvider test', async (accounts) => {
         fakeGovernanceAddress,
         "Didn't update governance address correctly in ServiceTypeManager"
       )
+    })
+
+    it('Deregister SP after serviceType removal', async () => {
+      /** 
+       * Confirm initial state of serviceType and serviceProvider
+       * Remove serviceType
+       * Confirm new state of serviceType and serviceProvider
+       * Deregister SP of serviceType
+       * Confirm final state of serviceType and serviceProvider
+       */
+
+      const minStakeBN = _lib.toBN(dpTypeMin)
+      const maxStakeBN = _lib.toBN(dpTypeMax)
+
+      // Confirm initial serviceType info
+      const stakeInfo0 = await serviceTypeManager.getServiceTypeInfo.call(testDiscProvType)
+      assert.isTrue(stakeInfo0.isValid, 'Expected isValid == true')
+      assert.isTrue(stakeInfo0.minStake.eq(minStakeBN), 'Expected same minStake')
+      assert.isTrue(stakeInfo0.maxStake.eq(maxStakeBN), 'Expected same maxStake')
+
+      // Confirm initial SP details
+      const spDetails0 = await serviceProviderFactory.getServiceProviderDetails.call(stakerAccount)
+      assert.isTrue(spDetails0.deployerStake.eq(DEFAULT_AMOUNT), 'Expected deployerStake == default amount')
+      assert.isTrue(spDetails0.validBounds, 'Expected validBounds == true')
+      assert.isTrue(spDetails0.numberOfEndpoints.eq(_lib.toBN(1)), 'Expected one endpoint')
+      assert.isTrue(spDetails0.minAccountStake.eq(minStakeBN), 'Expected minAccountStake == dpTypeMin')
+      assert.isTrue(spDetails0.maxAccountStake.eq(maxStakeBN), 'Expected maxAccountStake == dpTypeMax')
+
+      // Remove serviceType
+      await governance.guardianExecuteTransaction(
+        serviceTypeManagerProxyKey,
+        callValue,
+        'removeServiceType(bytes32)',
+        _lib.abiEncode(['bytes32'], [testDiscProvType]),
+        { from: guardianAddress }
+      )
+
+      // Confirm serviceType info is changed after serviceType removal
+      const stakeInfo1 = await serviceTypeManager.getServiceTypeInfo.call(testDiscProvType)
+      assert.isFalse(stakeInfo1.isValid, 'Expected isValid == false')
+      assert.isTrue(stakeInfo1.minStake.eq(minStakeBN), 'Expected same minStake')
+      assert.isTrue(stakeInfo1.maxStake.eq(maxStakeBN), 'Expected same maxStake')
+
+      // Confirm SP details are unchanged after serviceType removal
+      const spDetails1 = await serviceProviderFactory.getServiceProviderDetails.call(stakerAccount)
+      assert.isTrue(spDetails1.deployerStake.eq(DEFAULT_AMOUNT), 'Expected deployerStake == default amount')
+      assert.isTrue(spDetails1.validBounds, 'Expected validBounds == true')
+      assert.isTrue(spDetails1.numberOfEndpoints.eq(_lib.toBN(1)), 'Expected one endpoint')
+      assert.isTrue(spDetails1.minAccountStake.eq(minStakeBN), 'Expected minAccountStake == dpTypeMin')
+      assert.isTrue(spDetails1.maxAccountStake.eq(maxStakeBN), 'Expected maxAccountStake == dpTypeMax')
+
+      // Deregister SP + unstake
+      await _lib.deregisterServiceProvider(
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint,
+        stakerAccount
+      )
+      const deregisterRequestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest.call(stakerAccount)
+      await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
+      await serviceProviderFactory.decreaseStake({ from: stakerAccount })
+
+      // Confirm SP details are changed after deregistration
+      const spDetails2 = await serviceProviderFactory.getServiceProviderDetails.call(stakerAccount)
+      assert.isTrue(spDetails2.deployerStake.isZero(), 'Expected deployerStake == 0')
+      assert.isTrue(spDetails2.validBounds, 'Expected validBounds == true')
+      assert.isTrue(spDetails2.numberOfEndpoints.isZero(), 'Expected numberOfEndpoints == 0')
+      assert.isTrue(spDetails2.minAccountStake.isZero(), 'Expected minAccountStake == 0')
+      assert.isTrue(spDetails2.maxAccountStake.isZero(), 'Expected maxAccountStake == 0')
     })
   })
 })

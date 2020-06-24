@@ -21,14 +21,15 @@ contract ServiceTypeManager is InitializableV2 {
     /// @dev List of valid service types
     bytes32[] private validServiceTypes;
 
-    /// @dev Struct representing service type stake requirements
-    struct ServiceTypeStakeRequirements {
+    /// @dev Struct representing service type info
+    struct ServiceTypeInfo {
+        bool isValid;
         uint minStake;
         uint maxStake;
     }
 
-    /// @dev mapping of service type to registered requirements
-    mapping(bytes32 => ServiceTypeStakeRequirements) serviceTypeStakeRequirements;
+    /// @dev mapping of service type info
+    mapping(bytes32 => ServiceTypeInfo) serviceTypeInfo;
 
     event SetServiceVersion(bytes32 _serviceType, bytes32 _serviceVersion);
     event Test(string msg, bool value);
@@ -80,7 +81,8 @@ contract ServiceTypeManager is InitializableV2 {
         require(!this.serviceTypeIsValid(_serviceType), "Already known service type");
 
         validServiceTypes.push(_serviceType);
-        serviceTypeStakeRequirements[_serviceType] = ServiceTypeStakeRequirements({
+        serviceTypeInfo[_serviceType] = ServiceTypeInfo({
+            isValid: true,
             minStake: _serviceTypeMin,
             maxStake: _serviceTypeMax
         });
@@ -109,22 +111,23 @@ contract ServiceTypeManager is InitializableV2 {
         uint lastIndex = validServiceTypes.length - 1;
         validServiceTypes[serviceIndex] = validServiceTypes[lastIndex];
         validServiceTypes.length--;
-        // Overwrite values
-        serviceTypeStakeRequirements[_serviceType].minStake = 0;
-        serviceTypeStakeRequirements[_serviceType].maxStake = 0;
+
+        // Mark as invalid
+        serviceTypeInfo[_serviceType].isValid = false;
     }
 
     /**
-     * @notice Get min and max stake for a given service type
+     * @notice Get isValid, min and max stake for a given service type
      * @param _serviceType - type of service
-     * @return min and max stake for type
+     * @return isValid, min and max stake for type
      */
-    function getServiceTypeStakeInfo(bytes32 _serviceType)
-    external view returns (uint min, uint max)
+    function getServiceTypeInfo(bytes32 _serviceType)
+    external view returns (bool isValid, uint minStake, uint maxStake)
     {
         return (
-            serviceTypeStakeRequirements[_serviceType].minStake,
-            serviceTypeStakeRequirements[_serviceType].maxStake
+            serviceTypeInfo[_serviceType].isValid,
+            serviceTypeInfo[_serviceType].minStake,
+            serviceTypeInfo[_serviceType].maxStake
         );
     }
 
@@ -143,7 +146,7 @@ contract ServiceTypeManager is InitializableV2 {
     function serviceTypeIsValid(bytes32 _serviceType)
     external view returns (bool isValid)
     {
-        return serviceTypeStakeRequirements[_serviceType].maxStake > 0;
+        return serviceTypeInfo[_serviceType].isValid;
     }
 
     // ========================================= Service Version Logic =========================================
