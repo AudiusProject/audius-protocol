@@ -150,14 +150,13 @@ contract DelegateManager is InitializableV2 {
 
         // Update amount staked from this delegator to targeted service provider
         delegateInfo[delegator][_targetSP] = delegateInfo[delegator][_targetSP].add(_amount);
+        require(
+            delegateInfo[delegator][_targetSP] >= minDelegationAmount,
+            "Minimum delegation amount"
+        );
 
         // Update total delegated stake
         delegatorStakeTotal[delegator] = delegatorStakeTotal[delegator].add(_amount);
-
-        require(
-            delegatorStakeTotal[delegator] >= minDelegationAmount,
-            "Minimum delegation amount"
-        );
 
         // Validate balance
         ServiceProviderFactory(
@@ -267,14 +266,14 @@ contract DelegateManager is InitializableV2 {
         delegateInfo[delegator][serviceProvider] = (
             delegateInfo[delegator][serviceProvider].sub(unstakeAmount)
         );
+        require(
+            (delegateInfo[delegator][serviceProvider] >= minDelegationAmount ||
+             delegateInfo[delegator][serviceProvider] == 0),
+            "Minimum delegation amount"
+        );
 
         // Update total delegated stake
         delegatorStakeTotal[delegator] = delegatorStakeTotal[delegator].sub(unstakeAmount);
-        require(
-            (delegatorStakeTotal[delegator] >= minDelegationAmount ||
-             delegatorStakeTotal[delegator] == 0),
-            "Minimum delegation amount"
-        );
 
         // Update total delegated for SP
         spDelegateInfo[serviceProvider].totalDelegatedStake = (

@@ -232,6 +232,15 @@ contract('DelegateManager', async (accounts) => {
   })
 
   /* Helper functions */
+  const updateMinDelegationAmount = async (amount) => {
+    await governance.guardianExecuteTransaction(
+      delegateManagerKey,
+      _lib.toBN(0),
+      'updateMinDelegationAmount(uint256)',
+      _lib.abiEncode(['uint256'], [amount]),
+      { from: guardianAddress }
+    )
+  }
 
   const increaseRegisteredProviderStake = async (increase, account) => {
     // Approve token transfer
@@ -1303,11 +1312,54 @@ contract('DelegateManager', async (accounts) => {
       }
     })
 
-    it('Min delegate stake', async () => {
+    it('Min delegator stake per SP', async () => {
+      let minDelegateStakeVal = _lib.audToWei(100)
+      await updateMinDelegationAmount(minDelegateStakeVal)
+
+      // Min del stake behavior, confirm min amount is enforced PER service provider
+      let minDelegateStake = await delegateManager.getMinDelegationAmount()
+
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        minDelegateStake,
+        { from: delegatorAccount1 })
+
+      // Delegate valid min to SP 1
+      await delegateManager.delegateStake(
+        stakerAccount,
+        minDelegateStake,
+        { from: delegatorAccount1 })
+
+      // Delegate invalid min for SP 2
+      let invalidMinStake = _lib.toBN(_lib.audToWei(1))
+      await token.approve(stakingAddress, invalidMinStake, { from: delegatorAccount1 })
+      await _lib.assertRevert(
+        delegateManager.delegateStake(
+          stakerAccount2,
+          invalidMinStake,
+          { from: delegatorAccount1 }),
+        'Minimum delegation amount'
+      )
+
+      // Delegate valid min for SP 2
+      await token.approve(
+        stakingAddress,
+        minDelegateStake,
+        { from: delegatorAccount1 })
+      await delegateManager.delegateStake(
+        stakerAccount2,
+        minDelegateStake,
+        { from: delegatorAccount1 })
+      assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)).eq(minDelegateStake), 'Expect min delegate stake')
+      assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount2)).eq(minDelegateStake), 'Expect min delegate stake')
+    })
+
+    it('Min delegate stake verification', async () => {
       // Update min delegation level configuration
       let minDelegateStakeVal = _lib.audToWei(100)
       let minDelegateStake = _lib.toBN(minDelegateStakeVal)
-      
+
       await governance.guardianExecuteTransaction(
         delegateManagerKey,
         _lib.toBN(0),
