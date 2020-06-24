@@ -11,18 +11,10 @@ const mockEthContracts = (urls, currrentVersion) => ({
     return ['1.2.2', '1.2.3'][queryIndex]
   },
   getServiceProviderList: async () => urls.map(u => ({ endpoint: u })),
-  isAheadByPatchVersions: (version1, version2) => {
+  hasSameMajorAndMinorVersion: (version1, version2) => {
     return (
       semver.major(version1) === semver.major(version2) &&
-      semver.minor(version1) === semver.minor(version2) &&
-      semver.patch(version1) <= semver.patch(version2)
-    )
-  },
-  isBehindByPatchVersions: (version1, version2) => {
-    return (
-      semver.major(version1) === semver.major(version2) &&
-      semver.minor(version1) === semver.minor(version2) &&
-      semver.patch(version1) >= semver.patch(version2)
+      semver.minor(version1) === semver.minor(version2)
     )
   }
 })
