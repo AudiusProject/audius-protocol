@@ -203,7 +203,7 @@ contract DelegateManager is InitializableV2 {
             _amount <= currentlyDelegatedToSP,
             "Cannot decrease greater than currently staked for this ServiceProvider");
 
-        // Submit updated requesst for sender, with target sp, undelegate amount, target expiry block
+        // Submit updated request for sender, with target sp, undelegate amount, target expiry block
         _updateUndelegateStakeRequest(
             delegator,
             _target,
