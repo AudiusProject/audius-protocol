@@ -688,7 +688,12 @@ contract Governance is InitializableV2 {
         return (success, returnData);
     }
 
-    function _validateVoterAndProposal(address voter, uint256 _proposalId, Vote _vote) internal  returns (uint256 stake) {
+    function _validateVoterAndProposal(
+        address voter,
+        uint256 _proposalId,
+        Vote _vote
+    ) internal  returns (uint256 stake)
+    {
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
             "Must provide valid non-zero _proposalId"
