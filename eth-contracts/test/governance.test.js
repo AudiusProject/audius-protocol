@@ -708,7 +708,6 @@ contract('Governance.sol', async (accounts) => {
         assert.equal(txParsed.event.args.voter, voter1Address, 'Expected same event.args.voter')
         assert.equal(parseInt(txParsed.event.args.vote), vote, 'Expected same event.args.vote')
         assert.isTrue(txParsed.event.args.voterStake.eq(defaultStakeAmount), 'Expected same event.args.voterStake')
-        // // assert.equal(parseInt(txParsed.event.args.previousVote), defaultVote, 'Expected same event.args.previousVote')
   
         // Call getProposalById() and confirm same values
         const proposal = await governance.getProposalById.call(proposalId)
