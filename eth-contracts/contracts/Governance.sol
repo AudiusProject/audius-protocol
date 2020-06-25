@@ -233,10 +233,10 @@ contract Governance is InitializableV2 {
 
         uint256 voterStake = _validateVoterAndProposal(voter, _proposalId, _vote);
 
-        // Record previous vote.
+        // Get previous vote.
         Vote previousVote = proposals[_proposalId].votes[voter];
 
-        // New voter (Vote enum defaults to 0)
+        // There should be no previous vote and the current vote should be either Yes or No
         require(
             previousVote == Vote.None,
             "Governance::submitProposalVote: Cannot update a vote with this function. To update call updateProposalVote"
@@ -276,17 +276,18 @@ contract Governance is InitializableV2 {
 
         uint256 voterStake = _validateVoterAndProposal(voter, _proposalId, _vote);
 
-        // Record previous vote.
+        // Get previous vote.
         Vote previousVote = proposals[_proposalId].votes[voter];
 
+        // There should be a previous vote and the current vote should be either Yes or No
         require(
             previousVote != Vote.None,
-            "Governance::submitProposalVote: No previous vote for this proposal, call submitProposalVote to submit vote"
+            "Governance::updateProposalVote: No existing vote for this proposal, call submitProposalVote to submit vote"
         );
 
         require(
             _vote == Vote.Yes || _vote == Vote.No,
-            "Governance::submitProposalVote: Can only submit a Yes or No vote"
+            "Governance::updateProposalVote: Can only submit a Yes or No vote"
         );
 
         // Will override staker's previous vote.
