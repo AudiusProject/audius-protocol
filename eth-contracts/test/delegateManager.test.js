@@ -270,9 +270,10 @@ contract('DelegateManager', async (accounts) => {
     let spDetails = await serviceProviderFactory.getServiceProviderDetails(account)
     spFactoryStake = spDetails.deployerStake
     totalInStakingContract = await staking.totalStakedFor(account)
+    let spDecreaseRequest = await serviceProviderFactory.getPendingDecreaseStakeRequest(account)
 
     let delegatedStake = await delegateManager.getTotalDelegatedToServiceProvider(account)
-    let lockedUpStake = await delegateManager.getTotalLockedDelegationForServiceProvider(account)
+    let lockedUpDelegatorStake = await delegateManager.getTotalLockedDelegationForServiceProvider(account)
     let delegatorInfo = {}
     let delegators = await delegateManager.getDelegatorsList(account)
     for (var i = 0; i < delegators.length; i++) {
@@ -286,7 +287,7 @@ contract('DelegateManager', async (accounts) => {
       }
     }
     let outsideStake = spFactoryStake.add(delegatedStake)
-    let totalActiveStake = outsideStake.sub(lockedUpStake)
+    let totalActiveStake = outsideStake.sub(lockedUpDelegatorStake)
     let stakeDiscrepancy = totalInStakingContract.sub(outsideStake)
     let accountSummary = {
       totalInStakingContract,
@@ -294,8 +295,9 @@ contract('DelegateManager', async (accounts) => {
       spFactoryStake,
       delegatorInfo,
       outsideStake,
-      lockedUpStake,
-      totalActiveStake
+      lockedUpDelegatorStake,
+      totalActiveStake,
+      spDecreaseRequest
     }
 
     if (print) {
@@ -914,7 +916,7 @@ contract('DelegateManager', async (accounts) => {
       )
 
       let preSlashInfo = await getAccountStakeInfo(stakerAccount, false)
-      let preSlashLockupStake = preSlashInfo.lockedUpStake
+      let preSlashLockupStake = preSlashInfo.lockedUpDelegatorStake
       assert.isTrue(
         preSlashLockupStake.eq(initialDelegateAmount),
         'Initial delegate amount not found')
@@ -924,7 +926,7 @@ contract('DelegateManager', async (accounts) => {
 
       let postRewardInfo = await getAccountStakeInfo(stakerAccount, false)
 
-      let postSlashLockupStake = postRewardInfo.lockedUpStake
+      let postSlashLockupStake = postRewardInfo.lockedUpDelegatorStake
       assert.equal(
         postSlashLockupStake,
         0,
@@ -1513,11 +1515,12 @@ contract('DelegateManager', async (accounts) => {
         let fundsPerRound = await claimsManager.getFundsPerRound()
         let expectedIncrease = fundsPerRound.div(_lib.toBN(4))
         // Request decrease in stake corresponding to 1/2 of DEFAULT_AMOUNT
-        await serviceProviderFactory.requestDecreaseStake(DEFAULT_AMOUNT.div(_lib.toBN(2)), { from: stakerAccount })
-        let info = await getAccountStakeInfo(stakerAccount)
+        let decreaseStakeAmount = DEFAULT_AMOUNT.div(_lib.toBN(2))
+        await serviceProviderFactory.requestDecreaseStake(decreaseStakeAmount, { from: stakerAccount })
+        let info = await getAccountStakeInfo(stakerAccount, true)
         await claimsManager.initiateRound({ from: stakerAccount })
         await delegateManager.claimRewards({ from: stakerAccount })
-        let info2 = await getAccountStakeInfo(stakerAccount)
+        let info2 = await getAccountStakeInfo(stakerAccount, true)
         let stakingDiff = (info2.totalInStakingContract).sub(info.totalInStakingContract)
         let spFactoryDiff = (info2.spFactoryStake).sub(info.spFactoryStake)
         assert.isTrue(stakingDiff.eq(expectedIncrease), 'Expected increase not found in Staking.sol')
@@ -1529,7 +1532,7 @@ contract('DelegateManager', async (accounts) => {
         let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
         assert.isTrue((requestInfo.lockupExpiryBlock).gt(_lib.toBN(0)), 'Expected lockup expiry block to be set')
         assert.isTrue((requestInfo.amount).gt(_lib.toBN(0)), 'Expected amount to be set')
-        
+
         // Slash
         await _lib.slash(_lib.audToWei(5), slasherAccount, governance, delegateManagerKey, guardianAddress)
 
@@ -1542,7 +1545,7 @@ contract('DelegateManager', async (accounts) => {
         let duration = await serviceProviderFactory.getDecreaseStakeLockupDuration()
         // Double decrease stake duration
         let newDuration = duration.add(duration)
-        
+
         await _lib.assertRevert(
           serviceProviderFactory.updateDecreaseStakeLockupDuration(newDuration),
           "Only callable by Governance contract"
