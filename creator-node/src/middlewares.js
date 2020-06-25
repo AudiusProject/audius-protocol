@@ -139,8 +139,8 @@ async function _getOwnEndpoint (req) {
   // )
 
   // Hotfix for code above
-  const spId = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(spOwnerWallet, 'creator-node')
-  const spInfo = [await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', spId)]
+  const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(spOwnerWallet, 'creator-node')
+  const spInfo = [await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', spId)]
 
   // confirm on-chain endpoint exists and is valid FQDN
   if (!spInfo ||
