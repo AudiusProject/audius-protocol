@@ -32,7 +32,7 @@ const callValue0 = _lib.toBN(0)
 
 contract('DelegateManager', async (accounts) => {
   let staking, stakingAddress, token, registry, governance, claimsManager0, claimsManagerProxy
-  let serviceProviderFactory, claimsManager, delegateManager
+  let serviceProviderFactory, claimsManager, delegateManager, serviceTypeManager
   
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress] = accounts
@@ -99,7 +99,7 @@ contract('DelegateManager', async (accounts) => {
       { from: proxyDeployerAddress }
     )
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: proxyDeployerAddress })
-    let serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
+    serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
 
     // Register discprov serviceType
     await _lib.addServiceType(testDiscProvType, _lib.audToWei(5), _lib.audToWei(10000000), governance, guardianAddress, serviceTypeManagerProxyKey)
@@ -1307,7 +1307,7 @@ contract('DelegateManager', async (accounts) => {
       // Update min delegation level configuration
       let minDelegateStakeVal = _lib.audToWei(100)
       let minDelegateStake = _lib.toBN(minDelegateStakeVal)
-      
+
       await governance.guardianExecuteTransaction(
         delegateManagerKey,
         _lib.toBN(0),
@@ -1395,6 +1395,57 @@ contract('DelegateManager', async (accounts) => {
         delegateManager.setStakingAddress(_lib.addressZero),
         'Only governance'
       )
+    })
+
+    it.only('Deregister max stake violation', async () => {
+      let serviceTypeInfo = await serviceTypeManager.getServiceTypeStakeInfo(testDiscProvType)
+      console.log(serviceTypeInfo)
+      // Register 2nd endpoint from SP1, with minimum additional stake
+      await _lib.registerServiceProvider(
+        token,
+        staking,
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint3,
+        serviceTypeInfo.min,
+        stakerAccount)
+
+      let ids = await serviceProviderFactory.getServiceProviderIdsFromAddress(stakerAccount, testDiscProvType)
+      assert.isTrue(ids.length === 2, 'Expect 2 registered endpoints')
+
+      // Lower to minimum total stake for this SP
+      let spInfo = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      let decreaseStakeAmount = (spInfo.deployerStake).sub(spInfo.minAccountStake)
+      await serviceProviderFactory.requestDecreaseStake(decreaseStakeAmount, { from: stakerAccount })
+      let deregisterRequestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+      await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
+      await serviceProviderFactory.decreaseStake({ from: stakerAccount })
+      spInfo = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      console.log(spInfo)
+      assert.isTrue(spInfo.deployerStake.eq(spInfo.minAccountStake), 'Expect min stake for deployer')
+
+      // Delegate up to max stake for SP1 with 2 endpoints
+      let delegationAmount = spInfo.maxAccountStake.sub(spInfo.deployerStake)
+      // Transfer tokens to delegator
+      await token.transfer(delegatorAccount1, delegationAmount, { from: proxyDeployerAddress })
+      await token.approve(
+        stakingAddress,
+        delegationAmount,
+        { from: delegatorAccount1 })
+      await delegateManager.delegateStake(
+        stakerAccount,
+        delegationAmount,
+        { from: delegatorAccount1 })
+      spInfo = await getAccountStakeInfo(stakerAccount)
+      assert.isTrue(spInfo.maxAccountStake.eq(spInfo.totalActiveStake), 'Expect max to be reached after delegation')
+
+      // Attempt to deregister an endpoint
+      // TODO: Make this work
+      await _lib.deregisterServiceProvider(
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint,
+        stakerAccount)
     })
 
     describe('Service provider decrease stake behavior', async () => {
