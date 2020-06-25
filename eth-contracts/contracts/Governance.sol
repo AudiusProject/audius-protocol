@@ -247,6 +247,9 @@ contract Governance is InitializableV2 {
             "Governance::submitProposalVote: Can only submit a Yes or No vote"
         );
 
+        // Set the vote for voter.
+        proposals[_proposalId].votes[voter] = _vote;
+
         if (_vote == Vote.Yes) {
             proposals[_proposalId].voteMagnitudeYes = (
                 proposals[_proposalId].voteMagnitudeYes.add(voterStake)
@@ -285,6 +288,9 @@ contract Governance is InitializableV2 {
             _vote == Vote.Yes || _vote == Vote.No,
             "Governance::submitProposalVote: Can only submit a Yes or No vote"
         );
+
+        // Will override staker's previous vote.
+        proposals[_proposalId].votes[voter] = _vote;
 
         if (previousVote == Vote.Yes && _vote == Vote.No) {
             proposals[_proposalId].voteMagnitudeYes = (
