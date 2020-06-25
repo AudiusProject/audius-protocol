@@ -338,7 +338,7 @@ contract DelegateManager is InitializableV2 {
         (
             uint totalBalanceInStaking,
             uint totalBalanceInSPFactory,
-            uint totalBalanceOutsideStaking,
+            uint totalActiveFunds,
             uint spLockedStake,
             uint totalRewards
         ) = _validateClaimRewards(spFactory);
@@ -360,12 +360,6 @@ contract DelegateManager is InitializableV2 {
         uint spDeployerCutRewards = 0;
         uint totalDelegatedStakeIncrease = 0;
 
-        // Total valid funds used to calculate rewards distribution
-        uint totalActiveFunds = (
-            totalBalanceOutsideStaking.sub(
-                spDelegateInfo[msg.sender].totalLockedUpStake.add(spLockedStake)
-            )
-        );
         // Traverse all delegates and calculate their rewards
         // As each delegate reward is calculated, increment SP cut reward accordingly
         for (uint i = 0; i < spDelegateInfo[msg.sender].delegators.length; i++) {
@@ -704,13 +698,13 @@ contract DelegateManager is InitializableV2 {
      * @notice Helper function for claimRewards to get balances from Staking contract
                and do validation
      * @param spFactory - reference to ServiceProviderFactory contract
-     * @return (totalBalanceInStaking, totalBalanceInSPFactory, totalBalanceOutsideStaking, spLockedStake, totalRewards)
+     * @return (totalBalanceInStaking, totalBalanceInSPFactory, totalActiveFunds, spLockedStake, totalRewards)
      */
     function _validateClaimRewards(ServiceProviderFactory spFactory)
     internal returns (
         uint totalBalanceInStaking,
         uint totalBalanceInSPFactory,
-        uint totalBalanceOutsideStaking,
+        uint totalActiveFunds,
         uint spLockedStake,
         uint totalRewards
     )
@@ -736,9 +730,11 @@ contract DelegateManager is InitializableV2 {
         require(totalBalanceInSPFactory.sub(spLockedStake) > 0, "Service Provider stake required");
 
         // Amount in delegate manager staked to service provider
-        totalBalanceOutsideStaking = (
+        uint totalBalanceOutsideStaking = (
             totalBalanceInSPFactory.add(spDelegateInfo[msg.sender].totalDelegatedStake)
         );
+
+        totalActiveFunds = totalBalanceOutsideStaking.sub(totalLockedUpStake);
 
         require(
             mintedRewards == totalBalanceInStaking.sub(totalBalanceOutsideStaking),
@@ -748,7 +744,7 @@ contract DelegateManager is InitializableV2 {
         return (
             totalBalanceInStaking,
             totalBalanceInSPFactory,
-            totalBalanceOutsideStaking,
+            totalActiveFunds,
             spLockedStake,
             mintedRewards
         );
