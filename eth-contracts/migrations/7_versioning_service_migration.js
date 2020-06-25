@@ -82,10 +82,9 @@ module.exports = (deployer, network, accounts) => {
       callDataCN,
       { from: guardianAddress }
     )
-    const serviceTypeCNStakeInfo = await serviceTypeManager.getServiceTypeStakeInfo.call(serviceTypeCN)
-    const [cnTypeMinV, cnTypeMaxV] = [serviceTypeCNStakeInfo[0], serviceTypeCNStakeInfo[1]]
-    assert.ok(_lib.toBN(cnTypeMin).eq(cnTypeMinV), 'Expected same minStake')
-    assert.ok(_lib.toBN(cnTypeMax).eq(cnTypeMaxV), 'Expected same max Stake')
+    const serviceTypeCNInfo = await serviceTypeManager.getServiceTypeInfo.call(serviceTypeCN)
+    assert.ok(_lib.toBN(cnTypeMin).eq(serviceTypeCNInfo.minStake), 'Expected same minStake')
+    assert.ok(_lib.toBN(cnTypeMax).eq(serviceTypeCNInfo.maxStake), 'Expected same max Stake')
 
     const callDataDP = _lib.abiEncode(
       ['bytes32', 'uint256', 'uint256'],
@@ -98,10 +97,9 @@ module.exports = (deployer, network, accounts) => {
       callDataDP,
       { from: guardianAddress }
     )
-    const serviceTypeDPStakeInfo = await serviceTypeManager.getServiceTypeStakeInfo.call(serviceTypeDP)
-    const [dpTypeMinV, dpTypeMaxV] = [serviceTypeDPStakeInfo[0], serviceTypeDPStakeInfo[1]]
-    assert.ok(_lib.toBN(dpTypeMin).eq(dpTypeMinV), 'Expected same minStake')
-    assert.ok(_lib.toBN(dpTypeMax).eq(dpTypeMaxV), 'Expected same maxStake')
+    const serviceTypeDPInfo = await serviceTypeManager.getServiceTypeInfo.call(serviceTypeDP)
+    assert.ok(_lib.toBN(dpTypeMin).eq(serviceTypeDPInfo.minStake), 'Expected same minStake')
+    assert.ok(_lib.toBN(dpTypeMax).eq(serviceTypeDPInfo.maxStake), 'Expected same maxStake')
 
     // Deploy ServiceProviderFactory logic and proxy contracts + register proxy
     const serviceProviderFactory0 = await deployer.deploy(ServiceProviderFactory, { from: proxyDeployerAddress })

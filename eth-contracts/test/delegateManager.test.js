@@ -17,6 +17,8 @@ const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const tokenRegKey = web3.utils.utf8ToHex('Token')
 
 const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
+const serviceTypeMinStake = _lib.audToWei(5)
+const serviceTypeMaxStake = _lib.audToWei(10000000)
 const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'
 const testEndpoint3 = 'https://localhost:5002'
@@ -32,7 +34,7 @@ const callValue0 = _lib.toBN(0)
 
 contract('DelegateManager', async (accounts) => {
   let staking, stakingAddress, token, registry, governance, claimsManager0, claimsManagerProxy
-  let serviceProviderFactory, claimsManager, delegateManager
+  let serviceProviderFactory, serviceTypeManager, claimsManager, delegateManager
   
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress] = accounts
@@ -43,6 +45,10 @@ contract('DelegateManager', async (accounts) => {
   const delegatorAccount1 = accounts[11]
   const slasherAccount = stakerAccount
 
+  /**
+   * Initialize Registry, Governance, Token, Staking, ServiceTypeManager, ServiceProviderFactory, ClaimsManager, DelegateManager
+   * Register discprov serviceType
+   */
   beforeEach(async () => {
     registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
 
@@ -99,10 +105,10 @@ contract('DelegateManager', async (accounts) => {
       { from: proxyDeployerAddress }
     )
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: proxyDeployerAddress })
-    let serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
+    serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
 
     // Register discprov serviceType
-    await _lib.addServiceType(testDiscProvType, _lib.audToWei(5), _lib.audToWei(10000000), governance, guardianAddress, serviceTypeManagerProxyKey)
+    await _lib.addServiceType(testDiscProvType, serviceTypeMinStake, serviceTypeMaxStake, governance, guardianAddress, serviceTypeManagerProxyKey)
 
     // Deploy ServiceProviderFactory
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
@@ -313,6 +319,11 @@ contract('DelegateManager', async (accounts) => {
   describe('Delegation tests', () => {
     let regTx
 
+    /**
+     * Transfer tokens to stakers & delegator
+     * Register service providers
+     * Update SP deployer cuts
+     */
     beforeEach(async () => {
       // Transfer 1000 tokens to stakers
       await token.transfer(stakerAccount, INITIAL_BAL, { from: proxyDeployerAddress })
@@ -469,7 +480,7 @@ contract('DelegateManager', async (accounts) => {
       await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
 
       // Undelegate stake
-      delegateManager.undelegateStake({ from: delegatorAccount1 })
+      await delegateManager.undelegateStake({ from: delegatorAccount1 })
 
       // Confirm all state change operations have occurred
       undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
@@ -1569,6 +1580,116 @@ contract('DelegateManager', async (accounts) => {
           'Unexpected blocknumber'
         )
       })
+    })
+
+    it('Delegate ops after serviceType removal', async () => {
+      /**
+       * Confirm initial state of serviceType and serviceProvider
+       * Delegate stake to Staker
+       * Remove serviceType
+       * Confirm new state of serviceType and serviceProvider
+       * Confirm delegation to SP still works
+       * Deregister SP of serviceType
+       * Undelegate stake from Staker
+       * Confirm new delegation state
+       */
+
+      const minStakeBN = _lib.toBN(serviceTypeMinStake)
+      const maxStakeBN = _lib.toBN(serviceTypeMaxStake)
+
+      // Confirm initial serviceType info
+      const stakeInfo0 = await serviceTypeManager.getServiceTypeInfo.call(testDiscProvType)
+      assert.isTrue(stakeInfo0.isValid, 'Expected isValid == true')
+      assert.isTrue(stakeInfo0.minStake.eq(minStakeBN), 'Expected same minStake')
+      assert.isTrue(stakeInfo0.maxStake.eq(maxStakeBN), 'Expected same maxStake')
+
+      // Confirm initial SP details
+      const spDetails0 = await serviceProviderFactory.getServiceProviderDetails.call(stakerAccount)
+      assert.isTrue(spDetails0.deployerStake.eq(DEFAULT_AMOUNT), 'Expected deployerStake == default amount')
+      assert.isTrue(spDetails0.validBounds, 'Expected validBounds == true')
+      assert.isTrue(spDetails0.numberOfEndpoints.eq(_lib.toBN(1)), 'Expected one endpoint')
+      assert.isTrue(spDetails0.minAccountStake.eq(minStakeBN), 'Expected minAccountStake == dpTypeMin')
+      assert.isTrue(spDetails0.maxAccountStake.eq(maxStakeBN), 'Expected maxAccountStake == dpTypeMax')
+
+      // Delegate stake to Staker
+      const delegationAmount = _lib.audToWeiBN(60)
+      await token.approve(
+        stakingAddress,
+        delegationAmount,
+        { from: delegatorAccount1 }
+      )
+      await delegateManager.delegateStake(
+        stakerAccount,
+        delegationAmount,
+        { from: delegatorAccount1 }
+      )
+
+      // Remove serviceType
+      await governance.guardianExecuteTransaction(
+        serviceTypeManagerProxyKey,
+        callValue0,
+        'removeServiceType(bytes32)',
+        _lib.abiEncode(['bytes32'], [testDiscProvType]),
+        { from: guardianAddress }
+      )
+
+      // Confirm serviceType info is changed after serviceType removal
+      const stakeInfo1 = await serviceTypeManager.getServiceTypeInfo.call(testDiscProvType)
+      assert.isFalse(stakeInfo1.isValid, 'Expected isValid == false')
+      assert.isTrue(stakeInfo1.minStake.eq(minStakeBN), 'Expected same minStake')
+      assert.isTrue(stakeInfo1.maxStake.eq(maxStakeBN), 'Expected same maxStake')
+
+      // Confirm SP details are unchanged after serviceType removal
+      const spDetails = await serviceProviderFactory.getServiceProviderDetails.call(stakerAccount)
+      assert.isTrue(spDetails.deployerStake.eq(DEFAULT_AMOUNT), 'Expected deployerStake == default amount')
+      assert.isTrue(spDetails.validBounds, 'Expected validBounds == true')
+      assert.isTrue(spDetails.numberOfEndpoints.eq(_lib.toBN(1)), 'Expected one endpoint')
+      assert.isTrue(spDetails.minAccountStake.eq(minStakeBN), 'Expected minAccountStake == dpTypeMin')
+      assert.isTrue(spDetails.maxAccountStake.eq(maxStakeBN), 'Expected maxAccountStake == dpTypeMax')
+
+      // Confirm delegation to SP still works after serviceType removal
+      await token.approve(
+        stakingAddress,
+        delegationAmount,
+        { from: delegatorAccount1 }
+      )
+      await delegateManager.delegateStake(
+        stakerAccount,
+        delegationAmount,
+        { from: delegatorAccount1 }
+      )
+      const totalDelegationAmount = delegationAmount.add(delegationAmount)
+
+      // Deregister SP + unstake
+      await _lib.deregisterServiceProvider(
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint,
+        stakerAccount
+      )
+      const deregisterRequestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest.call(stakerAccount)
+      await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
+      await serviceProviderFactory.decreaseStake({ from: stakerAccount })
+
+      // Undelegate total amount
+      await delegateManager.requestUndelegateStake(
+        stakerAccount,
+        totalDelegationAmount,
+        { from: delegatorAccount1 }
+      )
+      const undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
+      await delegateManager.undelegateStake({ from: delegatorAccount1 })
+
+      // Confirm delegation state
+      const totalStakedForSP = await staking.totalStakedFor(stakerAccount)
+      assert.isTrue(totalStakedForSP.isZero(), 'Expected totalStaked for SP == 0')
+      const delegators = await delegateManager.getDelegatorsList(stakerAccount)
+      assert.equal(delegators.length, 0, 'Expect delegators list length == 0')
+      const delegatedStake = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      assert.isTrue(delegatedStake.isZero(), 'Expected delegatedStake == 0')
+      const totalLockedDelegationForSP = await delegateManager.getTotalLockedDelegationForServiceProvider(stakerAccount)
+      assert.isTrue(totalLockedDelegationForSP.isZero(), 'Expected totalLockedDelegationForSP == 0')
     })
   })
 })
