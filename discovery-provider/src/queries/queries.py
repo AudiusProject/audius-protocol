@@ -2157,3 +2157,50 @@ def get_remix_track_parents(track_id):
             add_users_to_tracks(session, tracks)
 
     return api_helpers.success_response(tracks)
+
+# Get the tracks that were previously unlisted and became public after the date provide
+@bp.route("/previously_unlisted_tracks", methods=("GET",))
+def get_previously_unlisted_tracks():
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        if "date" not in request.args:
+            return api_helpers.error_response(
+                "Date required to query for retrieveing previously unlisted tracks", 400
+            )
+
+        date = request.args.get("date")
+
+        tracks_before_date = (
+            session.query(
+                Track.track_id,
+                Track.updated_at
+            ).distinct(
+                Track.track_id
+            ).filter(
+                Track.is_unlisted == False,
+                Track.updated_at > date
+            ).subquery()
+        )
+
+        tracks_after_date = (
+            session.query(
+                Track.track_id,
+                Track.updated_at
+            ).distinct(
+                Track.track_id
+            ).filter(
+                Track.is_unlisted == True,
+                Track.updated_at < date
+            ).subquery()
+        )
+
+        previously_unlisted_results = session.query(
+            tracks_before_date.c['track_id']
+        ).join(
+            tracks_after_date,
+            tracks_after_date.c['track_id'] == tracks_before_date.c['track_id'],
+        ).all()
+
+        track_ids = [result[0] for result in previously_unlisted_results]
+
+    return api_helpers.success_response({ 'track_ids': track_ids })
