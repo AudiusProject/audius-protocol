@@ -1415,16 +1415,16 @@ contract('Governance.sol', async (accounts) => {
 
     it('Transfer guardianship', async () => {
       const newGuardianAddress = accounts[19]
-      const newSpMinStake = spMinStake + 2
-      const newSpMaxStake = spMaxStake + 2
+      const serviceVersion1 = web3.utils.utf8ToHex("0.0.1")
+      const serviceVersion2 = web3.utils.utf8ToHex("0.0.2")
 
       // Confirm current guardianAddress is active
       assert.equal(await governance.getGuardianAddress(), guardianAddress, 'Expected same guardianAddress')
       await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue0,
-        'updateServiceType(bytes32,uint256,uint256)',
-        _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [testDiscProvType, newSpMinStake, newSpMaxStake]),
+        'setServiceVersion(bytes32,bytes32)',
+        _lib.abiEncode(['bytes32', 'bytes32'], [testDiscProvType, serviceVersion1]),
         { from: guardianAddress }
       )
 
@@ -1433,8 +1433,8 @@ contract('Governance.sol', async (accounts) => {
         governance.guardianExecuteTransaction(
           serviceTypeManagerProxyKey,
           callValue0,
-          'updateServiceType(bytes32,uint256,uint256)',
-          _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [testDiscProvType, newSpMinStake, newSpMaxStake]),
+          'setServiceVersion(bytes32,bytes32)',
+          _lib.abiEncode(['bytes32', 'bytes32'], [testDiscProvType, serviceVersion2]),
           { from: newGuardianAddress }
         ),
         "Governance::guardianExecuteTransaction: Only guardian."
@@ -1455,8 +1455,8 @@ contract('Governance.sol', async (accounts) => {
         governance.guardianExecuteTransaction(
           serviceTypeManagerProxyKey,
           callValue0,
-          'updateServiceType(bytes32,uint256,uint256)',
-          _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [testDiscProvType, newSpMinStake, newSpMaxStake]),
+          'setServiceVersion(bytes32,bytes32)',
+          _lib.abiEncode(['bytes32', 'bytes32'], [testDiscProvType, serviceVersion2]),
           { from: guardianAddress }
         ),
         "Governance::guardianExecuteTransaction: Only guardian."
@@ -1466,8 +1466,8 @@ contract('Governance.sol', async (accounts) => {
       await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue0,
-        'updateServiceType(bytes32,uint256,uint256)',
-        _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [testDiscProvType, newSpMinStake, newSpMaxStake]),
+        'setServiceVersion(bytes32,bytes32)',
+        _lib.abiEncode(['bytes32', 'bytes32'], [testDiscProvType, serviceVersion2]),
         { from: newGuardianAddress }
       )
     })
@@ -1676,7 +1676,7 @@ contract('Governance.sol', async (accounts) => {
       await registryProxy.setAudiusGovernanceAddress(governance.address, { from: proxyAdminAddress })
 
       // Upgrade registry proxy to new logic address
-      governance.guardianExecuteTransaction(
+      await governance.guardianExecuteTransaction(
         registryRegKey,
         callValue0,
         'upgradeTo(address)',
