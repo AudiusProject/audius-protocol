@@ -21,7 +21,7 @@ contract MockDelegateManager is InitializableV2 {
     function testProcessClaim(
         address _claimer,
         uint _totalLockedForSP
-    ) external {
+    ) external returns (uint) {
         ClaimsManager claimsManager = ClaimsManager(
             claimsManagerAddress
         );
