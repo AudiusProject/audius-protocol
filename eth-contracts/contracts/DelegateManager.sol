@@ -749,11 +749,11 @@ contract DelegateManager is InitializableV2 {
     }
 
     /**
-     * @notice Perform state updates when a delegate information has changes
+     * @notice Perform state updates when a delegate stake has changed
      * @param _delegator - address of delegator
      * @param _serviceProvider - address of service provider
      * @param _totalServiceProviderDelegatedStake - total delegated to this service provider
-     * @param _totalStakedForSpFromDelegator - total delegator to this service provider by delegator
+     * @param _totalStakedForSpFromDelegator - total delegated to this service provider by delegator
      * @param _totalDelegatorStake - total delegator stake across all service providers
      */
     function _updateDelegatorStake(
@@ -784,7 +784,7 @@ contract DelegateManager is InitializableV2 {
     }
 
     /**
-     * @notice Perform state updates when a delegate information has changes
+     * @notice Perform updates when undelegate request state has changed
      * @param _delegator - address of delegator
      * @param _serviceProvider - address of service provider
      * @param _amount - amount being undelegated
