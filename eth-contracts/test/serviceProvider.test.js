@@ -21,6 +21,7 @@ const testCreatorNodeType = web3.utils.utf8ToHex('creator-node')
 const testInvalidType = web3.utils.utf8ToHex('invalid-type')
 const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'
+const testEndpoint2 = 'https://localhost:5002'
 
 const MIN_STAKE_AMOUNT = 10
 const VOTING_PERIOD = 10
@@ -40,6 +41,7 @@ contract('ServiceProvider test', async (accounts) => {
   const guardianAddress = proxyDeployerAddress
   const stakerAccount = accounts[11]
   const stakerAccount2 = accounts[12]
+  const stakerAccount3 = accounts[13]
   const callValue = _lib.toBN(0)
   const cnTypeMin = _lib.audToWei(10)
   const cnTypeMax = _lib.audToWei(10000000)
@@ -348,6 +350,28 @@ contract('ServiceProvider test', async (accounts) => {
           stakerAccount
         ),
         'Valid service type required'
+      )
+    })
+
+    it('Fail to add serviceType with invalid bounds', async () => {
+      const testOtherType = web3.utils.utf8ToHex('other')
+      
+      // Register with zero maxbounds fails
+      await _lib.assertRevert(
+        _lib.addServiceType(testOtherType, _lib.audToWei(4), _lib.audToWei(0), governance, guardianAddress, serviceTypeManagerProxyKey)
+        /* Cannot check revert msg bc call is made via governance */
+      )
+
+      // Register with max stake <= min stake fails
+      await _lib.assertRevert(
+        _lib.addServiceType(testOtherType, _lib.audToWei(4), _lib.audToWei(2), governance, guardianAddress, serviceTypeManagerProxyKey)
+        /* Cannot check revert msg bc call is made via governance */
+      )
+
+      // Register with zero min and maxbounds fails
+      await _lib.assertRevert(
+        _lib.addServiceType(testOtherType, _lib.audToWei(0), _lib.audToWei(0), governance, guardianAddress, serviceTypeManagerProxyKey)
+        /* Cannot check revert msg bc call is made via governance */
       )
     })
 
@@ -1158,13 +1182,15 @@ contract('ServiceProvider test', async (accounts) => {
       )
     })
 
-    it('Deregister SP after serviceType removal', async () => {
+    it('Operations after serviceType removal', async () => {
       /** 
        * Confirm initial state of serviceType and serviceProvider
        * Remove serviceType
        * Confirm new state of serviceType and serviceProvider
        * Deregister SP of serviceType
-       * Confirm final state of serviceType and serviceProvider
+       * Confirm new state of serviceType and serviceProvider
+       * Attempt to register new SP after serviceType removal
+       * Confirm serviceType cannot be re-added
        */
 
       const minStakeBN = _lib.toBN(dpTypeMin)
@@ -1225,6 +1251,26 @@ contract('ServiceProvider test', async (accounts) => {
       assert.isTrue(spDetails2.numberOfEndpoints.isZero(), 'Expected numberOfEndpoints == 0')
       assert.isTrue(spDetails2.minAccountStake.isZero(), 'Expected minAccountStake == 0')
       assert.isTrue(spDetails2.maxAccountStake.isZero(), 'Expected maxAccountStake == 0')
+
+      // Confirm new SP cannot be registered after serviceType removal
+      await _lib.assertRevert(
+        _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint2,
+          DEFAULT_AMOUNT,
+          stakerAccount3
+        ),
+        "Valid service type required"
+      )
+
+      // Confirm serviceType cannot be re-added
+      await _lib.assertRevert(
+        _lib.addServiceType(testDiscProvType, dpTypeMin, dpTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey)
+        /* Cannot check revert msg bc call is made via governance */
+      )
     })
   })
 })

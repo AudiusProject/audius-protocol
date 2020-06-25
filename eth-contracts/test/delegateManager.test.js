@@ -1549,12 +1549,13 @@ contract('DelegateManager', async (accounts) => {
       })
     })
 
-    it('Undelegate after serviceType removal', async () => {
+    it('Delegate ops after serviceType removal', async () => {
       /**
        * Confirm initial state of serviceType and serviceProvider
        * Delegate stake to Staker
        * Remove serviceType
        * Confirm new state of serviceType and serviceProvider
+       * Confirm delegation to SP still works
        * Deregister SP of serviceType
        * Undelegate stake from Staker
        * Confirm new delegation state
@@ -1613,6 +1614,19 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(spDetails.minAccountStake.eq(minStakeBN), 'Expected minAccountStake == dpTypeMin')
       assert.isTrue(spDetails.maxAccountStake.eq(maxStakeBN), 'Expected maxAccountStake == dpTypeMax')
 
+      // Confirm delegation to SP still works after serviceType removal
+      await token.approve(
+        stakingAddress,
+        delegationAmount,
+        { from: delegatorAccount1 }
+      )
+      await delegateManager.delegateStake(
+        stakerAccount,
+        delegationAmount,
+        { from: delegatorAccount1 }
+      )
+      const totalDelegationAmount = delegationAmount.add(delegationAmount)
+
       // Deregister SP + unstake
       await _lib.deregisterServiceProvider(
         serviceProviderFactory,
@@ -1624,10 +1638,10 @@ contract('DelegateManager', async (accounts) => {
       await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
       await serviceProviderFactory.decreaseStake({ from: stakerAccount })
 
-      // Undelegate all
+      // Undelegate total amount
       await delegateManager.requestUndelegateStake(
         stakerAccount,
-        delegationAmount,
+        totalDelegationAmount,
         { from: delegatorAccount1 }
       )
       const undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)

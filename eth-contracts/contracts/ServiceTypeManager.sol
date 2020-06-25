@@ -62,7 +62,6 @@ contract ServiceTypeManager is InitializableV2 {
 
     // ========================================= Service Type Logic =========================================
 
-    /// @notice Add a new service type
     /**
      * @notice Add a new service type
      * @param _serviceType - type of service to add
@@ -79,6 +78,17 @@ contract ServiceTypeManager is InitializableV2 {
 
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         require(!this.serviceTypeIsValid(_serviceType), "Already known service type");
+        require(
+            _serviceTypeMax > _serviceTypeMin,
+            "Max stake must be non-zero and greater than min stake"
+        );
+
+        // Ensure serviceType cannot be re-added if it previously existed and was removed
+        // stored maxStake > 0 means it was previously added and removed
+        require(
+            serviceTypeInfo[_serviceType].maxStake == 0,
+            "Cannot re-add serviceType after it was removed."
+        );
 
         validServiceTypes.push(_serviceType);
         serviceTypeInfo[_serviceType] = ServiceTypeInfo({
@@ -114,6 +124,7 @@ contract ServiceTypeManager is InitializableV2 {
 
         // Mark as invalid
         serviceTypeInfo[_serviceType].isValid = false;
+        // Note - stake bounds are not reset so they can be checked to prevent serviceType from being re-added
     }
 
     /**
