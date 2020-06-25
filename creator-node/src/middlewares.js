@@ -133,7 +133,6 @@ async function _getOwnEndpoint (req) {
     throw new Error('Must provide either spOwnerWallet or ethWallets and spOwnerWalletIndex config vars.')
   }
 
-  // Hotfix for code above
   const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(spOwnerWallet, 'creator-node')
   const spInfo = [await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', spId)]
 
