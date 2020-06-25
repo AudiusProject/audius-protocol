@@ -185,14 +185,11 @@ class ServiceProviderFactoryClient extends ContractClient {
   }
 
   async getServiceProviderInfoFromAddress (ownerAddress, serviceType) {
-    let idsList = await this.getServiceProviderIdFromAddress(ownerAddress, serviceType)
+    let spId = await this.getServiceProviderIdFromAddress(ownerAddress, serviceType)
 
-    const spsInfo = await Promise.all(
-      range(idsList.length).map(i =>
-        this.getServiceProviderInfo(serviceType, idsList[i])
-      )
-    )
-    return spsInfo
+    // cast this as an array for backwards compatibility because everything expects an array
+    const spInfo = [await this.getServiceProviderInfo(serviceType, spId)]
+    return spInfo
   }
 
   async getServiceProviderList (serviceType) {
