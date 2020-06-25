@@ -130,6 +130,7 @@ describe('test Tracks', function () {
 
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
+    // libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(2)
     libsMock.User.getUsers.exactly(2)
 
     const resp1 = await request(app)
@@ -165,6 +166,7 @@ describe('test Tracks', function () {
 
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
+    // libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(2)
     libsMock.User.getUsers.exactly(2)
 
     const resp1 = await request(app)
@@ -197,6 +199,7 @@ describe('test Tracks', function () {
 
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
+    // libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(2)
     libsMock.User.getUsers.exactly(2)
 
     const resp1 = await request(app)
@@ -230,6 +233,7 @@ describe('test Tracks', function () {
 
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
+    // libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(2)
     libsMock.User.getUsers.exactly(2)
 
     const resp1 = await request(app)
@@ -262,6 +266,7 @@ describe('test Tracks', function () {
 
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
+    // libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(4)
     libsMock.User.getUsers.exactly(4)
 
     const resp1 = await request(app)
@@ -304,6 +309,7 @@ describe('test Tracks', function () {
 
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
+    // libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(2)
     libsMock.User.getUsers.exactly(2)
 
     const resp1 = await request(app)
@@ -340,7 +346,7 @@ describe('test Tracks', function () {
 
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
-    libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(4)
+    // libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(4)
     libsMock.User.getUsers.exactly(4)
 
     const resp1 = await request(app)

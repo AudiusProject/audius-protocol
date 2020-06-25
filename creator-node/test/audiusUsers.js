@@ -47,6 +47,7 @@ describe('test AudiusUsers', function () {
 
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
     ipfsMock.pin.add.once().withArgs('testCIDLink')
+    // libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress.exactly(2)
     libsMock.User.getUsers.exactly(2)
 
     const resp = await request(app)
