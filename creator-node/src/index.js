@@ -12,7 +12,6 @@ const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const BlacklistManager = require('./blacklistManager')
-const Web3 = require('web3')
 
 const exitWithError = (msg) => {
   logger.error(msg)
@@ -25,6 +24,11 @@ const initAudiusLibs = async () => {
     config.get('ethNetworkId'),
     /* requiresAccount */ false
   )
+  const dataWeb3 = await AudiusLibs.Utils.configureWeb3(
+    config.get('dataProviderUrl'),
+    null,
+    false
+  )
   const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
     ? new Set(config.get('discoveryProviderWhitelist').split(','))
     : null
@@ -36,12 +40,14 @@ const initAudiusLibs = async () => {
       ethWeb3,
       config.get('ethOwnerWallet')
     ),
-    web3Config: AudiusLibs.configExternalWeb3(
-      config.get('dataRegistryAddress'),
-      new Web3(new Web3.providers.HttpProvider(config.get('dataProviderUrl'))),
-      config.get('dataNetworkId'),
-      config.get('delegateOwnerWallet')
-    ),
+    web3Config: {
+      registryAddress: config.get('dataRegistryAddress'),
+      useExternalWeb3: true,
+      externalWeb3Config: {
+        web3: dataWeb3,
+        ownerWallet: config.get('delegateOwnerWallet')
+      }
+    },
     discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true, discoveryProviderWhitelist)
   })
   await audiusLibs.init()
