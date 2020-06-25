@@ -485,13 +485,17 @@ contract('Governance.sol', async (accounts) => {
     )
 
     // Successfully set registry address via governance
-    await governance.guardianExecuteTransaction(
+    let setRegistryAddressTx = await governance.guardianExecuteTransaction(
       governanceKey,
       callValue0,
       'setRegistryAddress(address)',
       _lib.abiEncode(['address'], [registry2.address]),
       { from: guardianAddress }
     )
+
+    // Confirm event log
+    setRegistryAddressTx = _lib.parseTx(setRegistryAddressTx)
+    assert.equal(setRegistryAddressTx.event.args.newRegistryAddress, registry2.address, 'Expected newRegistryAddress')
 
     // Confirm registry address has been set
     assert.equal(await governance.getRegistryAddress.call(), registry2.address)
@@ -1447,7 +1451,13 @@ contract('Governance.sol', async (accounts) => {
       )
       
       // Update guardianAddress
-      await governance.transferGuardianship(newGuardianAddress, { from: guardianAddress })
+      let transferGuardianshipTx = await governance.transferGuardianship(newGuardianAddress, { from: guardianAddress })
+
+      // Confirm event log
+      transferGuardianshipTx = _lib.parseTx(transferGuardianshipTx)
+      assert.equal(transferGuardianshipTx.event.args.newGuardianAddress, newGuardianAddress, 'Expected newGuardianAddress')
+
+      // Confirm new guardianAddress
       assert.equal(await governance.getGuardianAddress(), newGuardianAddress, 'Expected same guardianAddress')
 
       // Confirm old guardianAddress inactive
