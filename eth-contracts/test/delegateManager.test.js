@@ -35,7 +35,7 @@ const callValue0 = _lib.toBN(0)
 contract('DelegateManager', async (accounts) => {
   let staking, stakingAddress, token, registry, governance, claimsManager0, claimsManagerProxy
   let serviceProviderFactory, claimsManager, delegateManager, serviceTypeManager
-  
+
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress] = accounts
   const tokenOwnerAddress = proxyDeployerAddress
@@ -1441,7 +1441,7 @@ contract('DelegateManager', async (accounts) => {
     })
 
     it.only('Deregister max stake violation', async () => {
-      let serviceTypeInfo = await serviceTypeManager.getServiceTypeStakeInfo(testDiscProvType)
+      let serviceTypeInfo = await serviceTypeManager.getServiceTypeInfo(testDiscProvType)
       console.log(serviceTypeInfo)
       // Register 2nd endpoint from SP1, with minimum additional stake
       await _lib.registerServiceProvider(
@@ -1450,7 +1450,7 @@ contract('DelegateManager', async (accounts) => {
         serviceProviderFactory,
         testDiscProvType,
         testEndpoint3,
-        serviceTypeInfo.min,
+        serviceTypeInfo.minStake,
         stakerAccount)
 
       let ids = await serviceProviderFactory.getServiceProviderIdsFromAddress(stakerAccount, testDiscProvType)
