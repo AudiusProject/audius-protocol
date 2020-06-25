@@ -11,7 +11,7 @@ from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.utils.config import shared_config
 from src.utils.redis_constants import latest_block_redis_key, latest_block_hash_redis_key
-from src.api_helpers import success_response
+from src.api_helpers import success_response_backwards_compat
 
 
 logger = logging.getLogger(__name__)
@@ -79,6 +79,10 @@ def _get_db_conn_state():
 
 #### ROUTES ####
 
+@bp.route("/version", methods=["GET"])
+def version():
+    return success_response_backwards_compat(disc_prov_version)
+
 # Health check for server, db, and redis. Consumes latest block data from redis instead of chain.
 # Optional boolean "verbose" flag to output db connection info.
 # Optional boolean "enforce_block_diff" flag to error on unhealthy blockdiff.
@@ -120,9 +124,9 @@ def health_check():
 
     # Return error on unhealthy block diff if requested.
     if enforce_block_diff and health_results["block_difference"] > healthy_block_diff:
-        return success_response(health_results, 500)
+        return success_response_backwards_compat(health_results, 500)
 
-    return success_response(health_results)
+    return success_response_backwards_compat(health_results)
 
 # Health check for block diff between DB and chain.
 @bp.route("/block_check", methods=["GET"])
@@ -139,6 +143,6 @@ def block_check():
     health_results = _get_db_block_state(latest_block_num, latest_block_hash)
 
     if health_results["block_difference"] > healthy_block_diff:
-        return success_response(health_results, 500)
+        return success_response_backwards_compat(health_results, 500)
 
-    return success_response(health_results)
+    return success_response_backwards_compat(health_results)
