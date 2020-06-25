@@ -185,9 +185,13 @@ class ServiceProviderFactoryClient extends ContractClient {
   }
 
   async getServiceProviderInfoFromAddress (ownerAddress, serviceType) {
-    let spId = await this.getServiceProviderIdFromAddress(ownerAddress, serviceType)
+    let idsList = await this.getServiceProviderIdFromAddress(ownerAddress, serviceType)
 
-    const spsInfo = await this.getServiceProviderInfo(serviceType, spId)
+    const spsInfo = await Promise.all(
+      range(idsList.length).map(i =>
+        this.getServiceProviderInfo(serviceType, idsList[i])
+      )
+    )
     return spsInfo
   }
 
