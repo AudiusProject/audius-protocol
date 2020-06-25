@@ -12,7 +12,6 @@ const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const BlacklistManager = require('./blacklistManager')
-const Web3 = require('web3')
 
 const exitWithError = (msg) => {
   logger.error(msg)
