@@ -5,7 +5,7 @@ function getLibsMock () {
     ethContracts: {
       ServiceProviderFactoryClient: {
         getServiceProviderInfoFromAddress: sinon.mock(),
-        getServiceProviderIdFromAddress: sinon.mock(),
+        getServiceProviderIdFromAddress: sinon.mock().atLeast(1),
         getServiceProviderInfo: sinon.mock().atLeast(1)
       }
     },
