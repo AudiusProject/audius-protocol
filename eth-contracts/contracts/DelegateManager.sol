@@ -708,6 +708,15 @@ contract DelegateManager is InitializableV2 {
         return (_totalBalanceInStaking, _totalBalanceInSPFactory, _totalBalanceOutsideStaking);
     }
 
+    /**
+     * @notice Helper function to distribute rewards to any delegators
+     * @param _sp - service provider account tracked in staking 
+     * @param _totalActiveFunds - total funds minus any locked stake
+     * @param _totalRewards - total rewaards generated in this round
+     * @param _deployerCut - service provider cut of delegate rewards, defined as deployerCut / deployerCutBase
+     * @param _deployerCutBase - denominator value for calculating service provider cut as a %
+     * @return (totalBalanceInStaking, totalBalanceInSPFactory, totalBalanceOutsideStaking)
+     */
     function _distributeDelegateRewards(
         address _sp,
         uint _totalActiveFunds,
