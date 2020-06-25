@@ -133,10 +133,14 @@ async function _getOwnEndpoint (req) {
     throw new Error('Must provide either spOwnerWallet or ethWallets and spOwnerWalletIndex config vars.')
   }
 
-  const spInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress(
-    spOwnerWallet,
-    'creator-node'
-  )
+  // const spInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress(
+  //   spOwnerWallet,
+  //   'creator-node'
+  // )
+
+  // Hotfix for code above
+  const spId = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(spOwnerWallet, 'creator-node')
+  const spInfo = [await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', spId)]
 
   // confirm on-chain endpoint exists and is valid FQDN
   if (!spInfo ||
