@@ -224,6 +224,13 @@ contract DelegateManager is InitializableV2 {
         address delegator = msg.sender;
         // Confirm pending delegation request
         require(_undelegateRequestIsPending(delegator), "Pending lockup expected");
+
+        // Reset locked up stake
+        address unlockFundsSP = undelegateRequests[delegator].serviceProvider;
+        spDelegateInfo[unlockFundsSP].totalLockedUpStake = (
+            spDelegateInfo[unlockFundsSP].totalLockedUpStake.sub(undelegateRequests[delegator].amount)
+        );
+
         // Remove pending request
         undelegateRequests[delegator] = UndelegateStakeRequest({
             lockupExpiryBlock: 0,
