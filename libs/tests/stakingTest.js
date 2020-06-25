@@ -48,12 +48,21 @@ const testDeregisterSPEndpoint = async (libs, account, type) => {
   let prevSpInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo(
     type,
     previousRegisteredId)
+
+  let path = '/version'      
+  let response = {
+    service: type,
+    version : '0.0.1'
+  }
+
+  if (type === 'discovery-provider') {
+    path = '/health_check'
+    response = {data: {...response}}
+  }
+
   nock(prevSpInfo.endpoint)
-    .get('/version')
-    .reply(200, {
-      service: type,
-      version: '0.0.1'
-    })
+    .get(path)
+    .reply(200, response)
   let tx = await libs.ethContracts.ServiceProviderFactoryClient.deregister(
     type,
     prevSpInfo.endpoint)
@@ -149,12 +158,21 @@ describe('Staking tests', () => {
       // Clear any accounts registered w/the audius1 account
       initialSPBalance = await token.balanceOf(sp1)
       testEndpt = getRandomLocalhost()
+
+      let path = '/version'      
+      let response = {
+        service: testServiceType,
+        version : '0.0.1'
+      }
+
+      if (testServiceType === 'discovery-provider') {
+        path = '/health_check'
+        response = {data: {...response}}
+      }
+
       nock(testEndpt)
-        .get('/version')
-        .reply(200, {
-          service: testServiceType,
-          version: '0.0.1'
-        })
+        .get(path)
+        .reply(200, response)
 
       // Cache stake amount prior to register
       initialStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
