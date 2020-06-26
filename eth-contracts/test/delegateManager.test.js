@@ -844,6 +844,35 @@ contract('DelegateManager', async (accounts) => {
       }
     })
 
+    it.only('Fail when undelegating zero stake', async () => {
+      // TODO: Validate all
+      // Transfer 1000 tokens to delegator
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
+
+      let initialDelegateAmount = _lib.audToWeiBN(60)
+
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      await delegateManager.delegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      // Submit request to undelegate
+      _lib.assertRevert(
+        delegateManager.requestUndelegateStake(
+          stakerAccount,
+          10,
+          { from: delegatorAccount1 }
+        ),
+        "Requested undelegate stake amount must be greater than zero"
+      )
+    })
+
     // Confirm a pending undelegate operation negates any claimed value
     it('Single delegator + undelegate + claim', async () => {
       // TODO: Validate all
