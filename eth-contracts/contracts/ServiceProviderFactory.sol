@@ -366,6 +366,10 @@ contract ServiceProviderFactory is InitializableV2 {
     {
         _requireIsInitialized();
         require(
+            _decreaseStakeAmount > 0,
+            "Requested stake decrease amount must be greater than zero"
+        );
+        require(
             !_claimPending(msg.sender),
             "No claim expected to be pending prior to stake transfer"
         );
