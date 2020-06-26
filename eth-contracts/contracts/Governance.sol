@@ -456,6 +456,7 @@ contract Governance is InitializableV2 {
      */
     function setVotingPeriod(uint256 _votingPeriod) external {
         require(msg.sender == address(this), "Only callable by self");
+        require(_votingPeriod > 0, "Requires non-zero _votingPeriod");
         votingPeriod = _votingPeriod;
     }
 
@@ -466,6 +467,7 @@ contract Governance is InitializableV2 {
      */
     function setVotingQuorum(uint256 _votingQuorum) external {
         require(msg.sender == address(this), "Only callable by self");
+        require(_votingQuorum > 0, "Requires non-zero _votingQuorum");
         votingQuorum = _votingQuorum;
     }
 
