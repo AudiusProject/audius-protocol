@@ -839,11 +839,8 @@ contract('Governance.sol', async (accounts) => {
         )
       })
 
-      it('Fail to call evaluate proposal from non-staker', async () => {
-        await _lib.assertRevert(
-          governance.evaluateProposalOutcome(proposalId, { from: accounts[15] }),
-          "Governance::evaluateProposalOutcome: Caller must be active staker with non-zero stake."
-        )
+      it('Call to evaluate proposal from non-staker will succeed', async () => {
+        governance.evaluateProposalOutcome(proposalId, { from: accounts[15] })
       })
 
       it('Fail to evaluate proposal before votingPeriod has ended', async () => {

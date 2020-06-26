@@ -333,16 +333,6 @@ contract Governance is InitializableV2 {
         /// proposal to 'Evaluating' so it should fail the status is 'InProgress' check
         proposals[_proposalId].outcome = Outcome.Evaluating;
 
-        // Require msg.sender is active Staker.
-        Staking stakingContract = Staking(stakingAddress);
-
-        require(
-            stakingContract.totalStakedForAt(
-                msg.sender, proposals[_proposalId].startBlockNumber
-            ) > 0,
-            "Governance::evaluateProposalOutcome: Caller must be active staker with non-zero stake."
-        );
-
         // Require proposal votingPeriod has ended.
         uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;
         uint256 endBlockNumber = startBlockNumber.add(votingPeriod);
