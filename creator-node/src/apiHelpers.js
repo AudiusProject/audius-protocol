@@ -1,7 +1,6 @@
 const config = require('./config')
 const Web3 = require('web3')
-// TODO: use web3 provider url ?
-const web3 = new Web3(config.get('ethProviderUrl'))
+const web3 = new Web3()
 
 const { requestNotExcludedFromLogging } = require('./logging')
 const versionInfo = require('../.version.json')
@@ -78,6 +77,7 @@ module.exports.successResponse = (obj = {}) => {
       data: {
         ...obj
       },
+      // TODO: remove duplication of obj -- kept for backwards compatibility
       ...obj,
       owner_wallet: config.get('delegateOwnerWallet'),
       ...versionInfo,
