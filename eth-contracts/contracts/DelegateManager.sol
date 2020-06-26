@@ -535,8 +535,6 @@ contract DelegateManager is InitializableV2 {
 
         // Remove from list of delegators
         _removeFromDelegatorsList(_serviceProvider, _delegator);
-
-        return;
     }
 
     /**
