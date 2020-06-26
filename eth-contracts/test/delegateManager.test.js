@@ -863,10 +863,10 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 })
 
       // Submit request to undelegate
-      _lib.assertRevert(
+      await _lib.assertRevert(
         delegateManager.requestUndelegateStake(
           stakerAccount,
-          10,
+          0,
           { from: delegatorAccount1 }
         ),
         "Requested undelegate stake amount must be greater than zero"

@@ -941,6 +941,11 @@ contract('ServiceProvider test', async (accounts) => {
       )
 
       await _lib.assertRevert(
+        serviceProviderFactory.requestDecreaseStake(0, { from: stakerAccount }),
+        'Requested stake decrease amount must be greater than zero'
+      )
+
+      await _lib.assertRevert(
         serviceProviderFactory.requestDecreaseStake(
           DEFAULT_AMOUNT.div(_lib.toBN(2)),
           { from: stakerAccount }
