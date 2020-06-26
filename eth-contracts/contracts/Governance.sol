@@ -270,32 +270,24 @@ contract Governance is InitializableV2 {
         // New voter (Vote enum defaults to 0)
         if (previousVote == Vote.None) {
             if (_vote == Vote.Yes) {
-                proposals[_proposalId].voteMagnitudeYes = (
-                    proposals[_proposalId].voteMagnitudeYes.add(voterStake)
-                );
+                _increaseVoteMagnitudeYes(_proposalId, voterStake);
             } else {
-                proposals[_proposalId].voteMagnitudeNo = (
-                    proposals[_proposalId].voteMagnitudeNo.add(voterStake)
-                );
+                _increaseVoteMagnitudeNo(_proposalId, voterStake);
             }
+            // New voter -> increase numVotes
             proposals[_proposalId].numVotes = proposals[_proposalId].numVotes.add(1);
         } else { // Repeat voter
             if (previousVote == Vote.Yes && _vote == Vote.No) {
-                proposals[_proposalId].voteMagnitudeYes = (
-                    proposals[_proposalId].voteMagnitudeYes.sub(voterStake)
-                );
-                proposals[_proposalId].voteMagnitudeNo = (
-                    proposals[_proposalId].voteMagnitudeNo.add(voterStake)
-                );
+                _decreaseVoteMagnitudeYes(_proposalId, voterStake);
+                _increaseVoteMagnitudeNo(_proposalId, voterStake);
             } else if (previousVote == Vote.No && _vote == Vote.Yes) {
-                proposals[_proposalId].voteMagnitudeYes = (
-                    proposals[_proposalId].voteMagnitudeYes.add(voterStake)
-                );
-                proposals[_proposalId].voteMagnitudeNo = (
-                    proposals[_proposalId].voteMagnitudeNo.sub(voterStake)
-                );
+                _decreaseVoteMagnitudeNo(_proposalId, voterStake);
+                _increaseVoteMagnitudeYes(_proposalId, voterStake);
             }
+
             // If _vote == previousVote, no changes needed to vote magnitudes.
+
+            // Repeat voter -> numVotes unchanged
         }
 
         emit ProposalVoteSubmitted(
@@ -674,5 +666,29 @@ contract Governance is InitializableV2 {
         );
 
         return (success, returnData);
+    }
+
+    function _increaseVoteMagnitudeYes(uint256 _proposalId, uint256 _voterStake) internal {
+        proposals[_proposalId].voteMagnitudeYes = (
+            proposals[_proposalId].voteMagnitudeYes.add(_voterStake)
+        );
+    }
+
+    function _increaseVoteMagnitudeNo(uint256 _proposalId, uint256 _voterStake) internal {
+        proposals[_proposalId].voteMagnitudeNo = (
+            proposals[_proposalId].voteMagnitudeNo.add(_voterStake)
+        );
+    }
+
+    function _decreaseVoteMagnitudeYes(uint256 _proposalId, uint256 _voterStake) internal {
+        proposals[_proposalId].voteMagnitudeYes = (
+            proposals[_proposalId].voteMagnitudeYes.sub(_voterStake)
+        );
+    }
+
+    function _decreaseVoteMagnitudeNo(uint256 _proposalId, uint256 _voterStake) internal {
+        proposals[_proposalId].voteMagnitudeNo = (
+            proposals[_proposalId].voteMagnitudeNo.sub(_voterStake)
+        );
     }
 }

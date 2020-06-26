@@ -53,9 +53,6 @@ contract DelegateManager is InitializableV2 {
     // Service provider address -> ServiceProviderDelegateInfo
     mapping (address => ServiceProviderDelegateInfo) spDelegateInfo;
 
-    // Total staked for a given delegator
-    mapping (address => uint) delegatorStakeTotal;
-
     // Delegator stake by address delegated to
     // delegator -> (service provider -> delegatedStake)
     mapping (address => mapping(address => uint)) delegateInfo;
@@ -143,19 +140,19 @@ contract DelegateManager is InitializableV2 {
             );
         }
 
-        // Update total delegated for SP
-        spDelegateInfo[_targetSP].totalDelegatedStake = (
-            spDelegateInfo[_targetSP].totalDelegatedStake.add(_amount)
+        // Update following values in storage through helper
+        // totalServiceProviderDelegatedStake = current sp total + new amount,
+        // totalStakedForSpFromDelegator = current delegator total for sp + new amount,
+        // totalDelegatorStake = current delegator total + new amount
+        _updateDelegatorStake(
+            delegator,
+            _targetSP,
+            spDelegateInfo[_targetSP].totalDelegatedStake.add(_amount),
+            delegateInfo[delegator][_targetSP].add(_amount)
         );
 
-        // Update amount staked from this delegator to targeted service provider
-        delegateInfo[delegator][_targetSP] = delegateInfo[delegator][_targetSP].add(_amount);
-
-        // Update total delegated stake
-        delegatorStakeTotal[delegator] = delegatorStakeTotal[delegator].add(_amount);
-
         require(
-            delegatorStakeTotal[delegator] >= minDelegationAmount,
+            delegateInfo[delegator][_targetSP] >= minDelegationAmount,
             "Minimum delegation amount"
         );
 
@@ -202,18 +199,20 @@ contract DelegateManager is InitializableV2 {
             _amount <= currentlyDelegatedToSP,
             "Cannot decrease greater than currently staked for this ServiceProvider");
 
-        undelegateRequests[delegator] = UndelegateStakeRequest({
-            lockupExpiryBlock: block.number.add(undelegateLockupDuration),
-            amount: _amount,
-            serviceProvider: _target
-        });
-
-        // Update total locked for this service provider
-        spDelegateInfo[_target].totalLockedUpStake = (
+        // Submit updated request for sender, with target sp, undelegate amount, target expiry block
+        _updateUndelegateStakeRequest(
+            delegator,
+            _target,
+            _amount,
+            block.number.add(undelegateLockupDuration)
+        );
+        // Update total locked for this service provider, increasing by unstake amount
+        _updateServiceProviderLockupAmount(
+            _target,
             spDelegateInfo[_target].totalLockedUpStake.add(_amount)
         );
 
-        return delegatorStakeTotal[delegator].sub(_amount);
+        return delegateInfo[delegator][_target].sub(_amount);
     }
 
     /**
@@ -224,12 +223,15 @@ contract DelegateManager is InitializableV2 {
         address delegator = msg.sender;
         // Confirm pending delegation request
         require(_undelegateRequestIsPending(delegator), "Pending lockup expected");
+        uint unstakeAmount = undelegateRequests[delegator].amount;
+        address unlockFundsSP = undelegateRequests[delegator].serviceProvider;
+        // Update total locked for this service provider, decreasing by unstake amount
+        _updateServiceProviderLockupAmount(
+            unlockFundsSP,
+            spDelegateInfo[unlockFundsSP].totalLockedUpStake.sub(unstakeAmount)
+        );
         // Remove pending request
-        undelegateRequests[delegator] = UndelegateStakeRequest({
-            lockupExpiryBlock: 0,
-            amount: 0,
-            serviceProvider: address(0)
-        });
+        _resetUndelegateStakeRequest(delegator);
     }
 
     /**
@@ -263,22 +265,21 @@ contract DelegateManager is InitializableV2 {
             unstakeAmount
         );
 
-        // Update amount staked from this delegator to targeted service provider
-        delegateInfo[delegator][serviceProvider] = (
+        // Update total delegated for SP
+        // totalServiceProviderDelegatedStake - total amount delegated to service provider
+        // totalStakedForSpFromDelegator - amount staked from this delegator to targeted service provider
+        // totalDelegatorStake - total delegator stake
+        _updateDelegatorStake(
+            delegator,
+            serviceProvider,
+            spDelegateInfo[serviceProvider].totalDelegatedStake.sub(unstakeAmount),
             delegateInfo[delegator][serviceProvider].sub(unstakeAmount)
         );
 
-        // Update total delegated stake
-        delegatorStakeTotal[delegator] = delegatorStakeTotal[delegator].sub(unstakeAmount);
         require(
-            (delegatorStakeTotal[delegator] >= minDelegationAmount ||
-             delegatorStakeTotal[delegator] == 0),
+            (delegateInfo[delegator][serviceProvider] >= minDelegationAmount ||
+             delegateInfo[delegator][serviceProvider] == 0),
             "Minimum delegation amount"
-        );
-
-        // Update total delegated for SP
-        spDelegateInfo[serviceProvider].totalDelegatedStake = (
-            spDelegateInfo[serviceProvider].totalDelegatedStake.sub(unstakeAmount)
         );
 
         // Remove from delegators list if no delegated stake remaining
@@ -293,17 +294,13 @@ contract DelegateManager is InitializableV2 {
             }
         }
 
-        // Update total locked for this service provider
-        spDelegateInfo[serviceProvider].totalLockedUpStake = (
+        // Update total locked for this service provider, decreasing by unstake amount
+        _updateServiceProviderLockupAmount(
+            serviceProvider,
             spDelegateInfo[serviceProvider].totalLockedUpStake.sub(unstakeAmount)
         );
-
-        // Reset lockup information
-        undelegateRequests[delegator] = UndelegateStakeRequest({
-            lockupExpiryBlock: 0,
-            amount: 0,
-            serviceProvider: address(0)
-        });
+        // Reset undelegate request
+        _resetUndelegateStakeRequest(delegator);
 
         // Validate balance
         ServiceProviderFactory(
@@ -338,29 +335,25 @@ contract DelegateManager is InitializableV2 {
         (
             uint totalBalanceInStaking,
             uint totalBalanceInSPFactory,
-            uint totalBalanceOutsideStaking
+            uint totalActiveFunds,
+            uint spLockedStake,
+            uint totalRewards
         ) = _validateClaimRewards(spFactory, _claimer);
 
         // No-op if balance is already equivalent
         // This case can occur if no rewards due to bound violation or all stake is locked
-        if (totalBalanceInStaking == totalBalanceOutsideStaking) {
+        if (totalRewards == 0) {
             return;
         }
 
         // Total rewards
         // Equal to (balance in staking) - ((balance in sp factory) + (balance in delegate manager))
-        uint totalRewards = totalBalanceInStaking.sub(totalBalanceOutsideStaking);
 
         // Emit claim event
         emit Claim(_claimer, totalRewards, totalBalanceInStaking);
 
         ( ,uint deployerCut, , , , ) = spFactory.getServiceProviderDetails(_claimer);
         uint deployerCutBase = spFactory.getServiceProviderDeployerCutBase();
-
-        // Total valid funds used to calculate rewards distribution
-        uint totalActiveFunds = (
-            totalBalanceOutsideStaking.sub(spDelegateInfo[_claimer].totalLockedUpStake)
-        );
 
         (
             uint totalDelegatedStakeIncrease,
@@ -379,8 +372,10 @@ contract DelegateManager is InitializableV2 {
         );
 
         // Rewards directly allocated to service provider for their stake
+        // Total active funds for direct deployer reward share
+        /// totalActiveDeployerFunds = totalBalanceInSPFactory.sub(spLockedStake);
         uint spRewardShare = (
-          totalBalanceInSPFactory.mul(totalRewards)
+            (totalBalanceInSPFactory.sub(spLockedStake)).mul(totalRewards)
         ).div(totalActiveFunds);
 
         spFactory.updateServiceProviderStake(
@@ -446,9 +441,6 @@ contract DelegateManager is InitializableV2 {
             delegateInfo[delegator][_slashAddress] = (
                 delegateInfo[delegator][_slashAddress].sub(preSlashDelegateStake.sub(newDelegateStake))
             );
-            delegatorStakeTotal[delegator] = (
-                delegatorStakeTotal[delegator].sub(preSlashDelegateStake.sub(newDelegateStake))
-            );
             // Update total decrease amount
             totalDelegatedStakeDecrease = (
                 totalDelegatedStakeDecrease.add(preSlashDelegateStake.sub(newDelegateStake))
@@ -458,16 +450,12 @@ contract DelegateManager is InitializableV2 {
             if (undelegateRequests[delegator].amount != 0) {
                 address unstakeSP = undelegateRequests[delegator].serviceProvider;
                 uint unstakeAmount = undelegateRequests[delegator].amount;
-                // Reset total locked up stake
-                spDelegateInfo[unstakeSP].totalLockedUpStake = (
+                // Remove pending request
+                _updateServiceProviderLockupAmount(
+                    unstakeSP,
                     spDelegateInfo[unstakeSP].totalLockedUpStake.sub(unstakeAmount)
                 );
-                // Remove pending request
-                undelegateRequests[delegator] = UndelegateStakeRequest({
-                    lockupExpiryBlock: 0,
-                    amount: 0,
-                    serviceProvider: address(0)
-                });
+                _resetUndelegateStakeRequest(delegator);
             }
         }
 
@@ -594,13 +582,6 @@ contract DelegateManager is InitializableV2 {
         return spDelegateInfo[_sp].totalLockedUpStake;
     }
 
-    /// @notice Get total currently staked for a delegator, across service providers
-    function getTotalDelegatorStake(address _delegator)
-    external view returns (uint amount)
-    {
-        return delegatorStakeTotal[_delegator];
-    }
-
     /// @notice Get total currently staked for a delegator, for a given service provider
     function getDelegatorStakeForServiceProvider(address _delegator, address _serviceProvider)
     external view returns (uint amount)
@@ -666,46 +647,123 @@ contract DelegateManager is InitializableV2 {
     /**
      * @notice Helper function for claimRewards to get balances from Staking contract
                and do validation
-     * @param _spFactory - reference to ServiceProviderFactory contract
+     * @param spFactory - reference to ServiceProviderFactory contract
      * @param _claimer - address for which rewards are being claimed
-     * @return (totalBalanceInStaking, totalBalanceInSPFactory, totalBalanceOutsideStaking)
+     * @return (totalBalanceInStaking, totalBalanceInSPFactory, totalActiveFunds, spLockedStake, totalRewards)
      */
-    function _validateClaimRewards(
-        ServiceProviderFactory _spFactory,
-        address _claimer
+    function _validateClaimRewards(ServiceProviderFactory spFactory, address _claimer)
+    internal returns (
+        uint totalBalanceInStaking,
+        uint totalBalanceInSPFactory,
+        uint totalActiveFunds,
+        uint spLockedStake,
+        uint totalRewards
     )
-    internal returns (uint totalBalanceInStaking, uint totalBalanceInSPFactory, uint totalBalanceOutsideStaking)
     {
-
         // Account for any pending locked up stake for the service provider
-        (uint spLockedStake,) = _spFactory.getPendingDecreaseStakeRequest(msg.sender);
+        (spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(_claimer);
+        uint totalLockedUpStake = spDelegateInfo[_claimer].totalLockedUpStake.add(spLockedStake);
 
         // Process claim for msg.sender
         // Total locked parameter is equal to delegate locked up stake + service provider locked up stake
-        ClaimsManager(claimsManagerAddress).processClaim(
+        uint mintedRewards = ClaimsManager(claimsManagerAddress).processClaim(
             _claimer,
-            (spDelegateInfo[_claimer].totalLockedUpStake.add(spLockedStake))
+            totalLockedUpStake
         );
 
         // Amount stored in staking contract for owner
-        uint _totalBalanceInStaking = Staking(stakingAddress).totalStakedFor(_claimer);
-        require(_totalBalanceInStaking > 0, "Stake required for claim");
+        totalBalanceInStaking = Staking(stakingAddress).totalStakedFor(_claimer);
+        require(totalBalanceInStaking > 0, "Stake required for claim");
 
         // Amount in sp factory for claimer
-        (uint _totalBalanceInSPFactory,,,,,) = _spFactory.getServiceProviderDetails(_claimer);
-
-        // Decrease total balance by any locked up stake
-        _totalBalanceInSPFactory = _totalBalanceInSPFactory.sub(spLockedStake);
-
+        (totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(_claimer);
         // Require active stake to claim any rewards
-        require(_totalBalanceInSPFactory > 0, "Service Provider stake required");
+        require(totalBalanceInSPFactory.sub(spLockedStake) > 0, "Service Provider stake required");
 
         // Amount in delegate manager staked to service provider
-        uint _totalBalanceOutsideStaking = (
-            _totalBalanceInSPFactory.add(spDelegateInfo[_claimer].totalDelegatedStake)
+        uint totalBalanceOutsideStaking = (
+            totalBalanceInSPFactory.add(spDelegateInfo[_claimer].totalDelegatedStake)
         );
 
-        return (_totalBalanceInStaking, _totalBalanceInSPFactory, _totalBalanceOutsideStaking);
+        totalActiveFunds = totalBalanceOutsideStaking.sub(totalLockedUpStake);
+
+        require(
+            mintedRewards == totalBalanceInStaking.sub(totalBalanceOutsideStaking),
+            "Reward amount mismatch"
+        );
+
+        return (
+            totalBalanceInStaking,
+            totalBalanceInSPFactory,
+            totalActiveFunds,
+            spLockedStake,
+            mintedRewards
+        );
+    }
+
+    /**
+     * @notice Perform state updates when a delegate stake has changed
+     * @param _delegator - address of delegator
+     * @param _serviceProvider - address of service provider
+     * @param _totalServiceProviderDelegatedStake - total delegated to this service provider
+     * @param _totalStakedForSpFromDelegator - total delegated to this service provider by delegator
+     */
+    function _updateDelegatorStake(
+        address _delegator,
+        address _serviceProvider,
+        uint _totalServiceProviderDelegatedStake,
+        uint _totalStakedForSpFromDelegator
+    ) internal
+    {
+        // Update total delegated for SP
+        spDelegateInfo[_serviceProvider].totalDelegatedStake = _totalServiceProviderDelegatedStake;
+
+        // Update amount staked from this delegator to targeted service provider
+        delegateInfo[_delegator][_serviceProvider] = _totalStakedForSpFromDelegator;
+    }
+
+    /**
+     * @notice Reset pending undelegate stake request
+     * @param _delegator - address of delegator
+     */
+    function _resetUndelegateStakeRequest(address _delegator) internal
+    {
+        _updateUndelegateStakeRequest(_delegator, address(0), 0, 0);
+    }
+
+    /**
+     * @notice Perform updates when undelegate request state has changed
+     * @param _delegator - address of delegator
+     * @param _serviceProvider - address of service provider
+     * @param _amount - amount being undelegated
+     * @param _lockupExpiryBlock - block at which stake can be undelegated
+     */
+    function _updateUndelegateStakeRequest(
+        address _delegator,
+        address _serviceProvider,
+        uint _amount,
+        uint _lockupExpiryBlock
+    ) internal
+    {
+        // Update lockup information
+        undelegateRequests[_delegator] = UndelegateStakeRequest({
+            lockupExpiryBlock: _lockupExpiryBlock,
+            amount: _amount,
+            serviceProvider: _serviceProvider
+        });
+    }
+
+    /**
+     * @notice Update amount currently locked up for this service provider
+     * @param _serviceProvider - address of service provider
+     * @param _updatedLockupAmount - updated lock up amount
+     */
+    function _updateServiceProviderLockupAmount(
+        address _serviceProvider,
+        uint _updatedLockupAmount
+    ) internal
+    {
+        spDelegateInfo[_serviceProvider].totalLockedUpStake = _updatedLockupAmount;
     }
 
     /**
@@ -759,9 +817,6 @@ contract DelegateManager is InitializableV2 {
             // delegateReward = rewardsPriorToSPCut - spDeployerCut;
             delegateInfo[delegator][_sp] = (
                 delegateInfo[delegator][_sp].add(rewardsPriorToSPCut.sub(spDeployerCut))
-            );
-            delegatorStakeTotal[delegator] = (
-                delegatorStakeTotal[delegator].add(rewardsPriorToSPCut.sub(spDeployerCut))
             );
             totalDelegatedStakeIncrease = (
                 totalDelegatedStakeIncrease.add(rewardsPriorToSPCut.sub(spDeployerCut))
