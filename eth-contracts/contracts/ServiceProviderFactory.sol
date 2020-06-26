@@ -124,8 +124,9 @@ contract ServiceProviderFactory is InitializableV2 {
         // Configure direct minimum stake for deployer
         minDeployerStake = 5 * 10**uint256(DECIMALS);
 
-        // 10 blocks for lockup duration
-        decreaseStakeLockupDuration = 10;
+        // stake lockup duration = 1 wk in blocks
+        // 1/13 block/s * 604800 s/wk ~= 46523 block/wk
+        decreaseStakeLockupDuration = 46523;
 
         InitializableV2.initialize();
     }
