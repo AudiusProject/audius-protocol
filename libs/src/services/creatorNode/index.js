@@ -190,7 +190,6 @@ class CreatorNode {
     }
 
     const sourceFile = trackContentResp.source_file
-    console.log({trackContentResp})
     if (!sourceFile) throw new Error('Invalid or missing sourceFile')
 
     if (coverArtResp) metadata.cover_art_sizes = coverArtResp.dirCID

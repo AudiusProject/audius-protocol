@@ -1,6 +1,6 @@
 version: '3'
 services:
-  creator-node-1-db:
+  creator-node-db:
     image: postgres:11.1
     environment:
       POSTGRES_USER: postgres
@@ -8,19 +8,20 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     ports:
-      - '4432:5432'
+      - '${CREATOR_NODE_DB_HOST_PORT}:5432'
     networks:
       - audius_dev
-  creator-node-1:
+  creator-node:
     build: ../.
     command: sh -c '/usr/bin/wait && exec ./node_modules/.bin/nodemon src/index.js | ./node_modules/.bin/bunyan'
-    env_file:
-      - ./development.env
     depends_on:
-      - creator-node-1-db
-      - creator-node-1-redis
+      - creator-node-db
+      - creator-node-redis
+    env_file:
+      - ./env/base.env
+      - ${CREATOR_NODE_ENV_OVERRIDE_PATH}
     ports:
-      - '4000:4000'
+      - '${CREATOR_NODE_HOST_PORT}:4000'
     volumes:
       - file_storage:/file_storage
       - ..:/usr/src/app
@@ -29,10 +30,10 @@ services:
       - /usr/src/app/node_modules
     networks:
       - audius_dev
-  creator-node-1-redis:
+  creator-node-redis:
     image: redis:5.0.4
     ports:
-      - '4379:6379'
+      - '${CREATOR_NODE_REDIS_HOST_PORT}:6379'
     networks:
       - audius_dev
 
