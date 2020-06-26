@@ -22,8 +22,10 @@ contract Governance is InitializableV2 {
     /// @notice Period in blocks for which a governance proposal is open for voting
     uint256 private votingPeriod;
 
-    /// @notice Required miniumum number of votes to consider a proposal valid
-    uint256 private votingQuorum;
+    /// @notice Required minimum percentage of total stake to have voted to consider a proposal valid
+    ///         Percentaged stored as a uint between 0 & 100
+    ///         Calculated as: 100 * sum of voter stakes / total staked in Staking (at proposal submission block)
+    uint256 private votingQuorumPercent;
 
     /**
      * @notice Address of account that has special Governance permissions. Can veto proposals
@@ -38,7 +40,7 @@ contract Governance is InitializableV2 {
      *      InProgress - Proposal is active and can be voted on
      *      No - Proposal votingPeriod has closed and decision is No. Proposal will not be executed.
      *      Yes - Proposal votingPeriod has closed and decision is Yes. Proposal will be executed.
-     *      Invalid - Proposal votingPeriod has closed and votingQuorum was not met. Proposal will not be executed.
+     *      Invalid - Proposal votingPeriod has closed and votingQuorumPercent was not met. Proposal will not be executed.
      *      TxFailed - Proposal voting decision was Yes, but transaction execution failed.
      *      Evaluating - Proposal voting decision was Yes, and evaluateProposalOutcome function is currently running.
      *          This status is transiently used inside that function to prevent re-entrancy.
@@ -115,14 +117,13 @@ contract Governance is InitializableV2 {
      * @dev _votingPeriod <= DelegateManager.undelegateLockupDuration
      * @param _registryAddress - address of the registry proxy contract
      * @param _votingPeriod - period in blocks for which a governance proposal is open for voting
-     * @param _votingQuorum - required minimum number of votes to consider a proposal valid
+     * @param _votingQuorumPercent - required minimum percentage of total stake to have voted to consider a proposal valid
      * @param _guardianAddress - address of account that has special Governance permissions
-
      */
     function initialize(
         address _registryAddress,
         uint256 _votingPeriod,
-        uint256 _votingQuorum,
+        uint256 _votingQuorumPercent,
         address _guardianAddress
     ) public initializer {
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
@@ -132,8 +133,11 @@ contract Governance is InitializableV2 {
         require(_votingPeriod > 0, "Requires non-zero _votingPeriod");
         votingPeriod = _votingPeriod;
 
-        require(_votingQuorum > 0, "Requires non-zero _votingQuorum");
-        votingQuorum = _votingQuorum;
+        require(
+            _votingQuorumPercent > 0 && _votingQuorumPercent <= 100,
+            "Requires _votingQuorumPercent between 1 & 100"
+        );
+        votingQuorumPercent = _votingQuorumPercent;
 
         require(_guardianAddress != address(0x00), "Requires non-zero _guardianAddress");
         guardianAddress = _guardianAddress;  //Guardian address becomes the only party
@@ -301,7 +305,8 @@ contract Governance is InitializableV2 {
 
     /**
      * @notice Once the voting period for a proposal has ended, evaluate the outcome and
-     *      execute the proposal if stake-weighted vote is >= 50% Yes and voting quorum met.
+     *      execute the proposal if voting quorum met & vote passes.
+     *      To pass, stake-weighted vote must be >= 50% Yes.
      * @dev Requires that caller is an active staker at the time the proposal is created
      * @param _proposalId - id of the proposal
      */
@@ -354,11 +359,11 @@ contract Governance is InitializableV2 {
 
         // Calculate outcome
         Outcome outcome;
-        // votingQuorum not met -> proposal is invalid.
-        if (proposals[_proposalId].numVotes < votingQuorum) {
+        // voting quorum not met -> proposal is invalid.
+        if (_quorumMet(proposals[_proposalId], stakingContract) == false) {
             outcome = Outcome.Invalid;
         }
-        // votingQuorum met & vote is Yes -> execute proposed transaction & close proposal.
+        // votingQuorumPercent met & vote is Yes -> execute proposed transaction & close proposal.
         else if (
             proposals[_proposalId].voteMagnitudeYes >= proposals[_proposalId].voteMagnitudeNo
         ) {
@@ -382,7 +387,7 @@ contract Governance is InitializableV2 {
                 outcome = Outcome.TxFailed;
             }
         }
-        // votingQuorum met & vote is No -> close proposal without transaction execution.
+        // votingQuorumPercent met & vote is No -> close proposal without transaction execution.
         else {
             outcome = Outcome.No;
         }
@@ -452,13 +457,13 @@ contract Governance is InitializableV2 {
     }
 
     /**
-     * @notice Set the voting quorum for a Governance proposal
+     * @notice Set the voting quorum percentage for a Governance proposal
      * @dev Only callable by self via _executeTransaction
-     * @param _votingQuorum - new voting period
+     * @param _votingQuorumPercent - new voting period
      */
-    function setVotingQuorum(uint256 _votingQuorum) external {
+    function setVotingQuorumPercent(uint256 _votingQuorumPercent) external {
         require(msg.sender == address(this), "Only callable by self");
-        votingQuorum = _votingQuorum;
+        votingQuorumPercent = _votingQuorumPercent;
     }
 
     /**
@@ -623,11 +628,11 @@ contract Governance is InitializableV2 {
         return votingPeriod;
     }
 
-    /// @notice Get the contract voting quorum
-    function getVotingQuorum() external view returns (uint) {
+    /// @notice Get the contract voting quorum percent
+    function getVotingQuorumPercent() external view returns (uint) {
         _requireIsInitialized();
 
-        return votingQuorum;
+        return votingQuorumPercent;
     }
 
     /// @notice Get the registry address
@@ -689,6 +694,19 @@ contract Governance is InitializableV2 {
     function _decreaseVoteMagnitudeNo(uint256 _proposalId, uint256 _voterStake) internal {
         proposals[_proposalId].voteMagnitudeNo = (
             proposals[_proposalId].voteMagnitudeNo.sub(_voterStake)
+        );
+    }
+
+    /**
+     * @notice Returns true if voting quorum percentage met for proposal, else false.
+     * @dev Quorum is met if total voteMagnitude * 100 / total active stake in Staking 
+     */
+    function _quorumMet(Proposal memory proposal, Staking stakingContract) internal view returns (bool) {
+        return (
+            (proposal.voteMagnitudeYes + proposal.voteMagnitudeNo)
+            .mul(100)
+            .div(stakingContract.totalStakedAt(proposal.startBlockNumber))
+            >= votingQuorumPercent
         );
     }
 }
