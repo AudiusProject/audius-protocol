@@ -456,6 +456,7 @@ contract Governance is InitializableV2 {
      */
     function setVotingPeriod(uint256 _votingPeriod) external {
         require(msg.sender == address(this), "Only callable by self");
+        require(_votingPeriod > 0, "Voting period must be greater than zero");
         votingPeriod = _votingPeriod;
     }
 
@@ -641,6 +642,11 @@ contract Governance is InitializableV2 {
     /// @notice Get the registry address
     function getRegistryAddress() external view returns (address) {
         return registryAddress;
+    }
+
+    /// @notice Used to check if is governance contract before setting governance address in other contracts
+    function isGovernanceAddress() external view returns (bool) {
+        return  true;
     }
 
     // ========================================= Internal Functions =========================================

@@ -1140,6 +1140,42 @@ contract('ServiceProvider test', async (accounts) => {
         "Governance::guardianExecuteTransaction: Transaction failed."
       )
 
+      // updateServiceType should fail with zero min
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          'updateServiceType(bytes32,uint256,uint256)',
+          _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [testType, 0, newMaxVal]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
+
+      // updateServiceType should fail with zero max
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          'updateServiceType(bytes32,uint256,uint256)',
+          _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [testType, newMinVal, 0]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
+
+      // updateServiceType should fail with min > max
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          'updateServiceType(bytes32,uint256,uint256)',
+          _lib.abiEncode(['bytes32', 'uint256', 'uint256'], [testType, newMaxVal, newMinVal]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
+
       // updateServiceType successfully
       await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
@@ -1184,17 +1220,27 @@ contract('ServiceProvider test', async (accounts) => {
       isValid = await serviceTypeManager.serviceTypeIsValid(testType)
       assert.isTrue(!isValid, 'Expect invalid type after deregistration')
 
+      const registry2 = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
+      const governance2 = await _lib.deployGovernance(
+        artifacts,
+        proxyAdminAddress,
+        proxyDeployerAddress,
+        registry2,
+        10, /*votingPeriod*/
+        1, /*votingQuorum*/
+        guardianAddress
+      )
       // setGovernanceAddress in ServiceTypeManager.sol
       await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue,
         'setGovernanceAddress(address)',
-        _lib.abiEncode(['address'], [fakeGovernanceAddress]),
+        _lib.abiEncode(['address'], [governance2.address]),
         { from: guardianAddress }
       )
       assert.equal(
         await serviceTypeManager.getGovernanceAddress(),
-        fakeGovernanceAddress,
+        governance2.address,
         "Didn't update governance address correctly in ServiceTypeManager"
       )
     })

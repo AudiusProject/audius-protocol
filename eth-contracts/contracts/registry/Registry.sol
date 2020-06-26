@@ -85,6 +85,10 @@ contract Registry is InitializableV2, Ownable {
             oldAddress != address(0x00),
             "Registry::upgradeContract: Cannot upgrade - no contract registered with given _name."
         );
+        require(
+            _newAddress != address(0x00),
+            "Registry::upgradeContract: Cannot upgrade - cannot register zero address."
+        );
 
         setAddress(_name, _newAddress);
 

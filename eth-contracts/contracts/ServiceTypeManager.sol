@@ -1,6 +1,7 @@
 pragma solidity ^0.5.0;
 
 import "./InitializableV2.sol";
+import "./Governance.sol";
 
 
 contract ServiceTypeManager is InitializableV2 {
@@ -56,6 +57,10 @@ contract ServiceTypeManager is InitializableV2 {
      */
     function setGovernanceAddress(address _governanceAddress) external {
         require(msg.sender == governanceAddress, "Only governance");
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
         governanceAddress = _governanceAddress;
     }
 
@@ -78,6 +83,12 @@ contract ServiceTypeManager is InitializableV2 {
 
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         require(!this.serviceTypeIsValid(_serviceType), "Already known service type");
+        require(_serviceTypeMin > 0, "Minimum stake must be greater than zero");
+        require(_serviceTypeMax > 0, "Maximum stake must be greater than zero");
+        require(
+            _serviceTypeMax > _serviceTypeMin,
+            "Maximum stake must be greater than minimum stake"
+        );
 
         validServiceTypes.push(_serviceType);
         serviceTypeStakeRequirements[_serviceType] = ServiceTypeStakeRequirements({
@@ -133,6 +144,12 @@ contract ServiceTypeManager is InitializableV2 {
         );
 
         require(this.serviceTypeIsValid(_serviceType), "Invalid service type");
+        require(_serviceTypeMin > 0, "Minimum stake must be greater than zero");
+        require(_serviceTypeMax > 0, "Maximum stake must be greater than zero");
+        require(
+            _serviceTypeMax > _serviceTypeMin,
+            "Maximum stake must be greater than minimum stake"
+        );
 
         serviceTypeStakeRequirements[_serviceType].minStake = _serviceTypeMin;
         serviceTypeStakeRequirements[_serviceType].maxStake = _serviceTypeMax;
@@ -185,7 +202,7 @@ contract ServiceTypeManager is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
-
+        require(this.serviceTypeIsValid(_serviceType), "Invalid service type");
         require(
             serviceTypeVersionInfo[_serviceType][_serviceVersion] == false,
             "Already registered"
