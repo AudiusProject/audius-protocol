@@ -421,6 +421,7 @@ contract('DelegateManager', async (accounts) => {
 
       // Claim from a separate account to confirm claimRewards can be called by any address
       let claimerAddress = accounts[5]
+      assert.isTrue(claimerAddress !== stakerAccount, 'Expected different claimer account')
       await delegateManager.claimRewards(stakerAccount, { from: claimerAddress })
 
       totalStakedForAccount = await staking.totalStakedFor(stakerAccount)

@@ -662,7 +662,9 @@ contract DelegateManager is InitializableV2 {
     {
         // Account for any pending locked up stake for the service provider
         (spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(_serviceProvider);
-        uint totalLockedUpStake = spDelegateInfo[_serviceProvider].totalLockedUpStake.add(spLockedStake);
+        uint totalLockedUpStake = (
+            spDelegateInfo[_serviceProvider].totalLockedUpStake.add(spLockedStake)
+        );
 
         // Process claim for msg.sender
         // Total locked parameter is equal to delegate locked up stake + service provider locked up stake
@@ -768,7 +770,7 @@ contract DelegateManager is InitializableV2 {
 
     /**
      * @notice Helper function to distribute rewards to any delegators
-     * @param _sp - service provider account tracked in staking 
+     * @param _sp - service provider account tracked in staking
      * @param _totalActiveFunds - total funds minus any locked stake
      * @param _totalRewards - total rewaards generated in this round
      * @param _deployerCut - service provider cut of delegate rewards, defined as deployerCut / deployerCutBase
