@@ -318,7 +318,7 @@ contract DelegateManager is InitializableV2 {
 
     /**
      * @notice Claim and distribute rewards to delegators and service provider as necessary
-     * @param _serviceProvider - Provider for which rewards are being distrubted
+     * @param _serviceProvider - Provider for which rewards are being distributed
      * @dev Factors in service provider rewards from delegator and transfers deployer cut
      */
     function claimRewards(address _serviceProvider) external {
