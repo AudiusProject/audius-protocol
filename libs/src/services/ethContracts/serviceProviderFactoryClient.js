@@ -28,14 +28,20 @@ class ServiceProviderFactoryClient extends ContractClient {
       throw new Error('Invalid amount')
     }
 
-    let requestUrl = urlJoin(endpoint, 'version')
+    let requestUrl = urlJoin(endpoint, 'health_check')
     let axiosRequestObj = {
       url: requestUrl,
       method: 'get',
       timeout: 1000
     }
     const resp = await axios(axiosRequestObj)
-    const endpointServiceType = resp.data.service
+    let endpointServiceType
+    try {
+      endpointServiceType = resp.data.data.service
+    } catch (e) {
+      endpointServiceType = resp.data.service
+    }
+
     if (serviceType !== endpointServiceType) {
       throw new Error('Attempting to register endpoint with mismatched service type')
     }
@@ -161,7 +167,7 @@ class ServiceProviderFactoryClient extends ContractClient {
   }
 
   async getServiceProviderInfoFromEndpoint (endpoint) {
-    let requestUrl = urlJoin(endpoint, 'version')
+    let requestUrl = urlJoin(endpoint, 'health_check')
     let axiosRequestObj = {
       url: requestUrl,
       method: 'get',
@@ -169,7 +175,13 @@ class ServiceProviderFactoryClient extends ContractClient {
     }
 
     const resp = await axios(axiosRequestObj)
-    const serviceType = resp.data.service
+    let serviceType
+    try {
+      serviceType = resp.data.data.service
+    } catch (e) {
+      serviceType = resp.data.service
+    }
+
     let serviceProviderId = await this.getServiceProviderIdFromEndpoint(endpoint)
     let info = await this.getServiceProviderInfo(serviceType, serviceProviderId)
     return info
