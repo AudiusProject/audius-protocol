@@ -393,7 +393,6 @@ contract('DelegateManager', async (accounts) => {
     it('Initial state + claim', async () => {
       // Validate basic claim w/SP path
       let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
-
       let totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
 
       await claimsManager.initiateRound({ from: stakerAccount })
@@ -402,6 +401,27 @@ contract('DelegateManager', async (accounts) => {
       spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
 
       await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
+
+      totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
+      spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
+      assert.isTrue(
+        spStake.eq(totalStakedForAccount),
+        'Stake value in SPFactory and Staking.sol must be equal')
+    })
+
+    it('Initial state + claim from different address', async () => {
+      // Validate basic claim w/SP path
+      let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
+      let totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
+
+      await claimsManager.initiateRound({ from: stakerAccount })
+
+      totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
+      spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
+
+      // Claim from a separate account to confirm claimRewards can be called by any address
+      let claimerAddress = accounts[5]
+      await delegateManager.claimRewards(stakerAccount, { from: claimerAddress })
 
       totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
       spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
