@@ -833,14 +833,14 @@ contract DelegateManager is InitializableV2 {
 
     function _removeFromDelegatorsList(address _serviceProvider, address _delegator) internal
     {
-      for (uint i = 0; i < spDelegateInfo[_serviceProvider].delegators.length; i++) {
-          if (spDelegateInfo[_serviceProvider].delegators[i] == _delegator) {
-              // Overwrite and shrink delegators list
-              spDelegateInfo[_serviceProvider].delegators[i] = spDelegateInfo[_serviceProvider].delegators[spDelegateInfo[_serviceProvider].delegators.length - 1];
-              spDelegateInfo[_serviceProvider].delegators.length--;
-              break;
-          }
-      }
+        for (uint i = 0; i < spDelegateInfo[_serviceProvider].delegators.length; i++) {
+            if (spDelegateInfo[_serviceProvider].delegators[i] == _delegator) {
+                // Overwrite and shrink delegators list
+                spDelegateInfo[_serviceProvider].delegators[i] = spDelegateInfo[_serviceProvider].delegators[spDelegateInfo[_serviceProvider].delegators.length - 1];
+                spDelegateInfo[_serviceProvider].delegators.length--;
+                break;
+            }
+        }
     }
 
     /**
