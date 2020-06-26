@@ -401,7 +401,7 @@ export const configureDelegateManagerAddresses = async (
   spFactoryAddress,
   claimsManagerAddress
 ) => {
-  await assertRevert(delegateManager.claimRewards(), 'serviceProviderFactoryAddress not set')
+  await assertRevert(delegateManager.claimRewards(guardianAddress), 'serviceProviderFactoryAddress not set')
   await governance.guardianExecuteTransaction(
     key,
     toBN(0),
@@ -410,7 +410,7 @@ export const configureDelegateManagerAddresses = async (
     { from: guardianAddress }
   )
   assert.equal(spFactoryAddress, await delegateManager.getServiceProviderFactoryAddress(), 'Unexpected sp address')
-  await assertRevert(delegateManager.claimRewards(), 'claimsManagerAddress not set')
+  await assertRevert(delegateManager.claimRewards(guardianAddress), 'claimsManagerAddress not set')
   await governance.guardianExecuteTransaction(
     key,
     toBN(0),
@@ -419,7 +419,7 @@ export const configureDelegateManagerAddresses = async (
     { from: guardianAddress }
   )
   assert.equal(claimsManagerAddress, await delegateManager.getClaimsManagerAddress(), 'Unexpected claim manager addr')
-  await assertRevert(delegateManager.claimRewards(), 'stakingAddress not set')
+  await assertRevert(delegateManager.claimRewards(guardianAddress), 'stakingAddress not set')
   await governance.guardianExecuteTransaction(
     key,
     toBN(0),
