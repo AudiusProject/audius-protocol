@@ -1591,6 +1591,16 @@ contract('DelegateManager', async (accounts) => {
         'Expect pending request cancellation'
       )
 
+      // Cache current spID
+      let spID = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint)
+      let info = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spID)
+      assert.isTrue(
+        info.owner === stakerAccount &&
+        info.delegateOwnerWallet === stakerAccount &&
+        info.endpoint === testEndpoint,
+        'Expect sp state removal'
+      )
+
       // Again try to deregister
       await _lib.deregisterServiceProvider(
         serviceProviderFactory,
@@ -1598,7 +1608,18 @@ contract('DelegateManager', async (accounts) => {
         testEndpoint,
         stakerAccount)
 
-      // TODO: Verify sp removal
+      // Confirm endpoint has no ID associated
+      let spID2 = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint)
+      assert.isTrue(spID2.eq(_lib.toBN(0)), 'Expect reset of endpoint')
+      // Confirm removal of all sp state
+      info = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spID)
+      assert.isTrue(
+        info.owner === (_lib.addressZero) &&
+        info.delegateOwnerWallet === (_lib.addressZero) &&
+        info.endpoint === '' &&
+        info.blockNumber.eq(_lib.toBN(0)),
+        'Expect sp state removal'
+      )
     })
 
     describe('Service provider decrease stake behavior', async () => {
