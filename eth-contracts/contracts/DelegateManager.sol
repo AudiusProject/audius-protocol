@@ -53,9 +53,6 @@ contract DelegateManager is InitializableV2 {
     // Service provider address -> ServiceProviderDelegateInfo
     mapping (address => ServiceProviderDelegateInfo) spDelegateInfo;
 
-    // Total staked for a given delegator
-    mapping (address => uint) delegatorStakeTotal;
-
     // Delegator stake by address delegated to
     // delegator -> (service provider -> delegatedStake)
     mapping (address => mapping(address => uint)) delegateInfo;
@@ -151,14 +148,13 @@ contract DelegateManager is InitializableV2 {
             delegator,
             _targetSP,
             spDelegateInfo[_targetSP].totalDelegatedStake.add(_amount),
-            delegateInfo[delegator][_targetSP].add(_amount),
-            delegatorStakeTotal[delegator].add(_amount)
-        );
-        require(
-            delegatorStakeTotal[delegator] >= minDelegationAmount,
-            "Minimum delegation amount"
+            delegateInfo[delegator][_targetSP].add(_amount)
         );
 
+        require(
+            delegateInfo[delegator][_targetSP] >= minDelegationAmount,
+            "Minimum delegation amount"
+        );
 
         // Validate balance
         ServiceProviderFactory(
@@ -216,7 +212,7 @@ contract DelegateManager is InitializableV2 {
             spDelegateInfo[_target].totalLockedUpStake.add(_amount)
         );
 
-        return delegatorStakeTotal[delegator].sub(_amount);
+        return delegateInfo[delegator][_target].sub(_amount);
     }
 
     /**
@@ -277,13 +273,12 @@ contract DelegateManager is InitializableV2 {
             delegator,
             serviceProvider,
             spDelegateInfo[serviceProvider].totalDelegatedStake.sub(unstakeAmount),
-            delegateInfo[delegator][serviceProvider].sub(unstakeAmount),
-            delegatorStakeTotal[delegator].sub(unstakeAmount)
+            delegateInfo[delegator][serviceProvider].sub(unstakeAmount)
         );
 
         require(
-            (delegatorStakeTotal[delegator] >= minDelegationAmount ||
-             delegatorStakeTotal[delegator] == 0),
+            (delegateInfo[delegator][serviceProvider] >= minDelegationAmount ||
+             delegateInfo[delegator][serviceProvider] == 0),
             "Minimum delegation amount"
         );
 
@@ -396,9 +391,6 @@ contract DelegateManager is InitializableV2 {
             delegateInfo[delegator][msg.sender] = (
                 delegateInfo[delegator][msg.sender].add(rewardsPriorToSPCut.sub(spDeployerCut))
             );
-            delegatorStakeTotal[delegator] = (
-                delegatorStakeTotal[delegator].add(rewardsPriorToSPCut.sub(spDeployerCut))
-            );
             totalDelegatedStakeIncrease = (
                 totalDelegatedStakeIncrease.add(rewardsPriorToSPCut.sub(spDeployerCut))
             );
@@ -478,9 +470,6 @@ contract DelegateManager is InitializableV2 {
             // uint slashAmountForDelegator = preSlashDelegateStake.sub(newDelegateStake);
             delegateInfo[delegator][_slashAddress] = (
                 delegateInfo[delegator][_slashAddress].sub(preSlashDelegateStake.sub(newDelegateStake))
-            );
-            delegatorStakeTotal[delegator] = (
-                delegatorStakeTotal[delegator].sub(preSlashDelegateStake.sub(newDelegateStake))
             );
             // Update total decrease amount
             totalDelegatedStakeDecrease = (
@@ -623,13 +612,6 @@ contract DelegateManager is InitializableV2 {
         return spDelegateInfo[_sp].totalLockedUpStake;
     }
 
-    /// @notice Get total currently staked for a delegator, across service providers
-    function getTotalDelegatorStake(address _delegator)
-    external view returns (uint amount)
-    {
-        return delegatorStakeTotal[_delegator];
-    }
-
     /// @notice Get total currently staked for a delegator, for a given service provider
     function getDelegatorStakeForServiceProvider(address _delegator, address _serviceProvider)
     external view returns (uint amount)
@@ -754,14 +736,12 @@ contract DelegateManager is InitializableV2 {
      * @param _serviceProvider - address of service provider
      * @param _totalServiceProviderDelegatedStake - total delegated to this service provider
      * @param _totalStakedForSpFromDelegator - total delegated to this service provider by delegator
-     * @param _totalDelegatorStake - total delegator stake across all service providers
      */
     function _updateDelegatorStake(
         address _delegator,
         address _serviceProvider,
         uint _totalServiceProviderDelegatedStake,
-        uint _totalStakedForSpFromDelegator,
-        uint _totalDelegatorStake
+        uint _totalStakedForSpFromDelegator
     ) internal
     {
         // Update total delegated for SP
@@ -769,9 +749,6 @@ contract DelegateManager is InitializableV2 {
 
         // Update amount staked from this delegator to targeted service provider
         delegateInfo[_delegator][_serviceProvider] = _totalStakedForSpFromDelegator;
-
-        // Update total delegated stake
-        delegatorStakeTotal[_delegator] = _totalDelegatorStake;
     }
 
     /**
