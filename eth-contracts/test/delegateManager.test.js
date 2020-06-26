@@ -393,7 +393,6 @@ contract('DelegateManager', async (accounts) => {
     it('Initial state + claim', async () => {
       // Validate basic claim w/SP path
       let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
-
       let totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
 
       await claimsManager.initiateRound({ from: stakerAccount })
@@ -401,7 +400,29 @@ contract('DelegateManager', async (accounts) => {
       totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
       spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
 
-      await delegateManager.claimRewards({ from: stakerAccount })
+      await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
+
+      totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
+      spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
+      assert.isTrue(
+        spStake.eq(totalStakedForAccount),
+        'Stake value in SPFactory and Staking.sol must be equal')
+    })
+
+    it('Initial state + claim from different address', async () => {
+      // Validate basic claim w/SP path
+      let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
+      let totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
+
+      await claimsManager.initiateRound({ from: stakerAccount })
+
+      totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
+      spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
+
+      // Claim from a separate account to confirm claimRewards can be called by any address
+      let claimerAddress = accounts[5]
+      assert.isTrue(claimerAddress !== stakerAccount, 'Expected different claimer account')
+      await delegateManager.claimRewards(stakerAccount, { from: claimerAddress })
 
       totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
       spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
@@ -571,7 +592,7 @@ contract('DelegateManager', async (accounts) => {
       let spRewardShare = (spStake.mul(totalRewards)).div(totalValueOutsideStaking)
       let expectedSpStake = spStake.add(spRewardShare.add(spDeployerCut))
 
-      await delegateManager.claimRewards({ from: stakerAccount })
+      await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
 
       let finalSpStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
       let finalDelegateStake = await getTotalDelegatorStake(delegatorAccount1)
@@ -639,8 +660,8 @@ contract('DelegateManager', async (accounts) => {
       // Fund new claim
       await claimsManager.initiateRound({ from: stakerAccount })
       // Get rewards
-      await delegateManager.claimRewards({ from: stakerAccount })
-      await delegateManager.claimRewards({ from: stakerAccount2 })
+      await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
+      await delegateManager.claimRewards(stakerAccount2, { from: stakerAccount2 })
       let fundBlock = await claimsManager.getLastFundBlock()
       let blockDiff = await claimsManager.getFundingRoundBlockDiff()
       let roundEndBlock = fundBlock.add(blockDiff)
@@ -689,8 +710,8 @@ contract('DelegateManager', async (accounts) => {
       await claimsManager.initiateRound({ from: stakerAccount })
 
       // Get rewards
-      await delegateManager.claimRewards({ from: stakerAccount })
-      await delegateManager.claimRewards({ from: stakerAccount2 })
+      await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
+      await delegateManager.claimRewards(stakerAccount2, { from: stakerAccount2 })
 
       // Slash 30% of total
       const totalInStakingContract = await staking.totalStakedFor(slasherAccount)
@@ -867,7 +888,7 @@ contract('DelegateManager', async (accounts) => {
       let expectedSpStake = spStake.add(spRewardShare.add(spDelegationRewards))
 
       // Perform claim
-      let claimTx = await delegateManager.claimRewards({ from: stakerAccount })
+      let claimTx = await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
       // console.dir(claimTx, { depth: 5 })
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
 
@@ -914,7 +935,7 @@ contract('DelegateManager', async (accounts) => {
 
       // Initiate round
       await claimsManager.initiateRound({ from: stakerAccount })
-      await delegateManager.claimRewards({ from: stakerAccount })
+      await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
       let postRewardInfo = await getAccountStakeInfo(stakerAccount, false)
 
       let preRewardDelegation = preRewardInfo.delegatorInfo[delegatorAccount1].amountDelegated
@@ -1113,7 +1134,7 @@ contract('DelegateManager', async (accounts) => {
         'Undelegate request not permitted for SP'
       )
 
-      await delegateManager.claimRewards({ from: stakerAccount })
+      await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
     })
 
     it('Slash below sp bounds', async () => {
@@ -1144,7 +1165,7 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(pendingClaim, 'ClaimsManager expected to consider claim pending')
 
       // Claim reward even though we are below bounds
-      await delegateManager.claimRewards({ from: stakerAccount })
+      await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
 
       let spDetailsAfterClaim = await getAccountStakeInfo(stakerAccount, false)
       assert.isTrue(
@@ -1637,7 +1658,7 @@ contract('DelegateManager', async (accounts) => {
         assert.isTrue(spStake.gt(_lib.toBN(0)), 'Expect non-zero stake')
         // Transaction will fail since maximum stake for the account is now zero after the deregister
         await _lib.assertRevert(
-          delegateManager.claimRewards({ from: stakerAccount }),
+          delegateManager.claimRewards(stakerAccount, { from: stakerAccount }),
           'Service Provider stake required'
         )
 
@@ -1665,7 +1686,7 @@ contract('DelegateManager', async (accounts) => {
         // Initiate round
         await claimsManager.initiateRound({ from: stakerAccount })
         // Claim reward immediately
-        await delegateManager.claimRewards({ from: stakerAccount })
+        await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
         // Request decrease all of stake
         await _lib.deregisterServiceProvider(
           serviceProviderFactory,
@@ -1712,7 +1733,7 @@ contract('DelegateManager', async (accounts) => {
         await serviceProviderFactory.requestDecreaseStake(decreaseStakeAmount, { from: stakerAccount })
         let info = await getAccountStakeInfo(stakerAccount)
         await claimsManager.initiateRound({ from: stakerAccount })
-        await delegateManager.claimRewards({ from: stakerAccount })
+        await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
         let info2 = await getAccountStakeInfo(stakerAccount)
         let stakingDiff = (info2.totalInStakingContract).sub(info.totalInStakingContract)
         let spFactoryDiff = (info2.spFactoryStake).sub(info.spFactoryStake)
