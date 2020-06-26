@@ -1554,11 +1554,28 @@ contract('DelegateManager', async (accounts) => {
 
       // Attempt to deregister an endpoint
       // TODO: Make this work
+      await _lib.assertRevert(
+        _lib.deregisterServiceProvider(
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint,
+          stakerAccount),
+        'Maximum stake amount exceeded'
+      )
+
+      // Forcibly remove the delegator from service provider account
+      await delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+
+      // TODO: Verify delegator removal
+
+      // Again try to deregister
       await _lib.deregisterServiceProvider(
         serviceProviderFactory,
         testDiscProvType,
         testEndpoint,
         stakerAccount)
+
+      // TODO: Verify sp removal
     })
 
     describe('Service provider decrease stake behavior', async () => {
