@@ -699,14 +699,15 @@ contract Governance is InitializableV2 {
 
     /**
      * @notice Returns true if voting quorum percentage met for proposal, else false.
-     * @dev Quorum is met if total voteMagnitude * 100 / total active stake in Staking 
+     * @dev Quorum is met if total voteMagnitude * 100 / total active stake in Staking
      */
-    function _quorumMet(Proposal memory proposal, Staking stakingContract) internal view returns (bool) {
+    function _quorumMet(Proposal memory proposal, Staking stakingContract)
+    internal view returns (bool)
+    {
         return (
             (proposal.voteMagnitudeYes + proposal.voteMagnitudeNo)
             .mul(100)
             .div(stakingContract.totalStakedAt(proposal.startBlockNumber))
-            >= votingQuorumPercent
-        );
+        ) >= votingQuorumPercent;
     }
 }
