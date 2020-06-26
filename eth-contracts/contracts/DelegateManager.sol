@@ -283,14 +283,7 @@ contract DelegateManager is InitializableV2 {
 
         // Remove from delegators list if no delegated stake remaining
         if (delegateInfo[delegator][serviceProvider] == 0) {
-            for (uint i = 0; i < spDelegateInfo[serviceProvider].delegators.length; i++) {
-                if (spDelegateInfo[serviceProvider].delegators[i] == delegator) {
-                    // Overwrite and shrink delegators list
-                    spDelegateInfo[serviceProvider].delegators[i] = spDelegateInfo[serviceProvider].delegators[spDelegateInfo[serviceProvider].delegators.length - 1];
-                    spDelegateInfo[serviceProvider].delegators.length--;
-                    break;
-                }
-            }
+            _removeFromDelegatorsList(serviceProvider, delegator);
         }
 
         // Update total locked for this service provider, decreasing by unstake amount
@@ -539,6 +532,9 @@ contract DelegateManager is InitializableV2 {
             );
             _resetUndelegateStakeRequest(_delegator);
         }
+
+        // Remove from list of delegators
+        _removeFromDelegatorsList(_serviceProvider, _delegator);
 
         return;
     }
@@ -835,6 +831,18 @@ contract DelegateManager is InitializableV2 {
     ) internal
     {
         spDelegateInfo[_serviceProvider].totalLockedUpStake = _updatedLockupAmount;
+    }
+
+    function _removeFromDelegatorsList(address _serviceProvider, address _delegator) internal
+    {
+      for (uint i = 0; i < spDelegateInfo[_serviceProvider].delegators.length; i++) {
+          if (spDelegateInfo[_serviceProvider].delegators[i] == _delegator) {
+              // Overwrite and shrink delegators list
+              spDelegateInfo[_serviceProvider].delegators[i] = spDelegateInfo[_serviceProvider].delegators[spDelegateInfo[_serviceProvider].delegators.length - 1];
+              spDelegateInfo[_serviceProvider].delegators.length--;
+              break;
+          }
+      }
     }
 
     /**

@@ -1512,7 +1512,6 @@ contract('DelegateManager', async (accounts) => {
 
     it.only('Deregister max stake violation', async () => {
       let serviceTypeInfo = await serviceTypeManager.getServiceTypeInfo(testDiscProvType)
-      console.log(serviceTypeInfo)
       // Register 2nd endpoint from SP1, with minimum additional stake
       await _lib.registerServiceProvider(
         token,
@@ -1534,7 +1533,6 @@ contract('DelegateManager', async (accounts) => {
       await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
       await serviceProviderFactory.decreaseStake({ from: stakerAccount })
       spInfo = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
-      console.log(spInfo)
       assert.isTrue(spInfo.deployerStake.eq(spInfo.minAccountStake), 'Expect min stake for deployer')
 
       // Delegate up to max stake for SP1 with 2 endpoints
@@ -1553,7 +1551,7 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(spInfo.maxAccountStake.eq(spInfo.totalActiveStake), 'Expect max to be reached after delegation')
 
       // Attempt to deregister an endpoint
-      // TODO: Make this work
+      // Failure expected as max bound will be violated upon deregister
       await _lib.assertRevert(
         _lib.deregisterServiceProvider(
           serviceProviderFactory,
@@ -1563,10 +1561,35 @@ contract('DelegateManager', async (accounts) => {
         'Maximum stake amount exceeded'
       )
 
+      let delegatorTokenBalance = await token.balanceOf(delegatorAccount1)
+      // Request undelegate stake from the delegator account
+      await delegateManager.requestUndelegateStake(stakerAccount, delegationAmount, { from: delegatorAccount1 })
+      let pendingUndelegateRequest = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      assert.isTrue(
+        (pendingUndelegateRequest.target === stakerAccount) &&
+        (pendingUndelegateRequest.amount.eq(delegationAmount)) &&
+        !(pendingUndelegateRequest.lockupExpiryBlock.eq(_lib.toBN(0))),
+        'Expect pending request'
+      )
+
       // Forcibly remove the delegator from service provider account
       await delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+      let stakeAfterRemoval = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
+      let delegatorsList = await delegateManager.getDelegatorsList(stakerAccount)
+      pendingUndelegateRequest = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      assert.isTrue(stakeAfterRemoval.eq(_lib.toBN(0)), 'Expect 0 delegated stake')
+      assert.isTrue(delegatorsList.length === 0, 'No delegators expected')
 
-      // TODO: Verify delegator removal
+      let delegatorTokenBalance2 = await token.balanceOf(delegatorAccount1)
+      let diff = delegatorTokenBalance2.sub(delegatorTokenBalance)
+      assert.isTrue(diff.eq(delegationAmount), 'Expect full delegation amount to be refunded')
+
+      assert.isTrue(
+        (pendingUndelegateRequest.target === _lib.addressZero) &&
+        (pendingUndelegateRequest.amount.eq(_lib.toBN(0))) &&
+        (pendingUndelegateRequest.lockupExpiryBlock.eq(_lib.toBN(0))),
+        'Expect pending request cancellation'
+      )
 
       // Again try to deregister
       await _lib.deregisterServiceProvider(
