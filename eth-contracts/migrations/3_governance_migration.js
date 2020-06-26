@@ -13,6 +13,8 @@ const governanceRegKey = web3.utils.utf8ToHex('Governance')
 const VotingPeriod = 11520
 // Required number of votes on proposal
 const VotingQuorum = 1
+// Max number of concurrent InProgress proposals
+const MaxInProgressProposals = 20
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
@@ -28,8 +30,8 @@ module.exports = (deployer, network, accounts) => {
     const governance0 = await deployer.deploy(Governance, { from: proxyDeployerAddress })
     const initializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'address'],
-      [registryAddress, VotingPeriod, VotingQuorum, guardianAddress]
+      ['address', 'uint256', 'uint256', 'uint8', 'address'],
+      [registryAddress, VotingPeriod, VotingQuorum, MaxInProgressProposals, guardianAddress]
     )
     const governanceProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,

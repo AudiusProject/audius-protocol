@@ -43,6 +43,7 @@ contract('Governance.sol', async (accounts) => {
 
   const votingPeriod = 10
   const votingQuorum = 1
+  const maxInProgressProposals = 20
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress, newUpdateAddress] = accounts
@@ -86,7 +87,8 @@ contract('Governance.sol', async (accounts) => {
       registry,
       votingPeriod,
       votingQuorum,
-      guardianAddress
+      guardianAddress,
+      maxInProgressProposals
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
 
