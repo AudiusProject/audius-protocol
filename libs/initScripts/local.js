@@ -19,10 +19,10 @@ const spDiscProvType = serviceTypeList[0]
 const spCreatorNodeType = serviceTypeList[1]
 const discProvEndpoint1 = 'http://audius-disc-prov_web-server_1:5000'
 const discProvEndpoint2 = 'http://audius-disc-prov_web-server_2:5000'
-const creatorNodeEndpoint1 = 'http://audius-creator-node_creator-node-1_1:4000'
-const creatorNodeEndpoint2 = 'http://audius-creator-node_creator-node-2_1:4000'
-const creatorNodeEndpoint3 = 'http://audius-creator-node_creator-node-3_1:4000'
-const creatorNodeEndpoint4 = 'http://audius-creator-node_creator-node-4_1:4000'
+const creatorNodeEndpoint1 = 'http://cn1_creator-node_1:4000'
+const creatorNodeEndpoint2 = 'http://cn2_creator-node_1:4001'
+const creatorNodeEndpoint3 = 'http://cn3_creator-node_1:4002'
+const creatorNodeEndpoint4 = 'http://cn4_creator-node_1:4003'
 const amountOfAuds = 100000
 
 // try to dynamically get versions from .version.json
@@ -190,15 +190,15 @@ const _registerCnode2 = async (audiusLibs, ethAccounts) => {
   await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint2, amountOfAuds)
 }
 
-// Account 4
+// Account 3
 const _registerCnode3 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[4])
+  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[3])
   await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint3, amountOfAuds)
 }
 
-// Account 5
+// Account 4
 const _registerCnode4 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[5])
+  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[4])
   await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint4, amountOfAuds)
 }
 

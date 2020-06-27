@@ -322,7 +322,6 @@ class Users extends Base {
    * @param {string} newCreatorNodeEndpoint comma delineated
    */
   async upgradeToCreator (existingEndpoint, newCreatorNodeEndpoint) {
-    console.log("Attempting to upgarde!")
     if (!newCreatorNodeEndpoint) throw new Error(`No creator node endpoint provided`)
 
     this.REQUIRES(Services.CREATOR_NODE)
@@ -344,12 +343,9 @@ class Users extends Base {
     newMetadata.is_creator = true
     newMetadata.creator_node_endpoint = newCreatorNodeEndpoint
 
-    console.log(1)
     const newPrimary = CreatorNode.getPrimary(newCreatorNodeEndpoint)
-    console.log({newPrimary})
     // Sync the new primary from from the node that has the user's data
     if (existingEndpoint) {
-      console.log(2)
       // Don't validate what we're sycing from because the user isn't
       // a creator yet.
       await this.creatorNode.syncSecondary(
@@ -360,9 +356,7 @@ class Users extends Base {
       )
     }
 
-    console.log(3)
     await this.creatorNode.setEndpoint(newPrimary)
-    console.log(4)
 
     // Upload new metadata
     const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
@@ -415,6 +409,7 @@ class Users extends Base {
 
   /** Waits for a discovery provider to confirm that a creator node endpoint is updated. */
   async _waitForCreatorNodeUpdate (userId, creatorNodeEndpoint) {
+    console.log("WAITING FOR UPDATE!")
     let isUpdated = false
     while (!isUpdated) {
       const user = (await this.discoveryProvider.getUsers(1, 0, [userId]))[0]

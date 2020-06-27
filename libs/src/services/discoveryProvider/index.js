@@ -538,6 +538,8 @@ class DiscoveryProvider {
           !indexedBlock ||
           (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
         ) {
+          console.log("TOO FAR BEHIND!")
+          console.log({chainBlock, indexedBlock })
           // Select a new one
           console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
           // Mark the current selection as a backup
