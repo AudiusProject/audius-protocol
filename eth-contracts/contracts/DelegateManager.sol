@@ -258,7 +258,7 @@ contract DelegateManager is InitializableV2 {
         address serviceProvider = undelegateRequests[delegator].serviceProvider;
         uint unstakeAmount = undelegateRequests[delegator].amount;
 
-        // Stake on behalf of target service provider
+        // Unstake on behalf of target service provider
         Staking(stakingAddress).undelegateStakeFor(
             serviceProvider,
             delegator,
@@ -268,7 +268,6 @@ contract DelegateManager is InitializableV2 {
         // Update total delegated for SP
         // totalServiceProviderDelegatedStake - total amount delegated to service provider
         // totalStakedForSpFromDelegator - amount staked from this delegator to targeted service provider
-        // totalDelegatorStake - total delegator stake
         _updateDelegatorStake(
             delegator,
             serviceProvider,
@@ -284,14 +283,7 @@ contract DelegateManager is InitializableV2 {
 
         // Remove from delegators list if no delegated stake remaining
         if (delegateInfo[delegator][serviceProvider] == 0) {
-            for (uint i = 0; i < spDelegateInfo[serviceProvider].delegators.length; i++) {
-                if (spDelegateInfo[serviceProvider].delegators[i] == delegator) {
-                    // Overwrite and shrink delegators list
-                    spDelegateInfo[serviceProvider].delegators[i] = spDelegateInfo[serviceProvider].delegators[spDelegateInfo[serviceProvider].delegators.length - 1];
-                    spDelegateInfo[serviceProvider].delegators.length--;
-                    break;
-                }
-            }
+            _removeFromDelegatorsList(serviceProvider, delegator);
         }
 
         // Update total locked for this service provider, decreasing by unstake amount
@@ -469,6 +461,50 @@ contract DelegateManager is InitializableV2 {
           totalBalanceInStakingAfterSlash.mul(totalBalanceInSPFactory)
         ).div(totalBalanceInStakingPreSlash);
         spFactory.updateServiceProviderStake(_slashAddress, newSpBalance);
+    }
+
+    /**
+     * @notice Allow a service provider to forcibly remove a delegator
+     * @param _serviceProvider - address of service provider
+     * @param _delegator - address of delegator
+     * @return Updated total amount delegated to the service provider by delegator
+     */
+    function removeDelegator(address _serviceProvider, address _delegator) external {
+        require(
+            msg.sender == _serviceProvider || msg.sender == governanceAddress,
+            "Only callable by target SP or governance"
+        );
+        uint unstakeAmount = delegateInfo[_delegator][_serviceProvider];
+        // Unstake on behalf of target service provider
+        Staking(stakingAddress).undelegateStakeFor(
+            _serviceProvider,
+            _delegator,
+            unstakeAmount
+        );
+        // Update total delegated for SP
+        // totalServiceProviderDelegatedStake - total amount delegated to service provider
+        // totalStakedForSpFromDelegator - amount staked from this delegator to targeted service provider
+        _updateDelegatorStake(
+            _delegator,
+            _serviceProvider,
+            spDelegateInfo[_serviceProvider].totalDelegatedStake.sub(unstakeAmount),
+            delegateInfo[_delegator][_serviceProvider].sub(unstakeAmount)
+        );
+
+        if (
+            _undelegateRequestIsPending(_delegator) &&
+            undelegateRequests[_delegator].serviceProvider == _serviceProvider
+        ) {
+            // Remove pending request information
+            _updateServiceProviderLockupAmount(
+                _serviceProvider,
+                spDelegateInfo[_serviceProvider].totalLockedUpStake.sub(undelegateRequests[_delegator].amount)
+            );
+            _resetUndelegateStakeRequest(_delegator);
+        }
+
+        // Remove from list of delegators
+        _removeFromDelegatorsList(_serviceProvider, _delegator);
     }
 
     /**
@@ -766,6 +802,18 @@ contract DelegateManager is InitializableV2 {
     ) internal
     {
         spDelegateInfo[_serviceProvider].totalLockedUpStake = _updatedLockupAmount;
+    }
+
+    function _removeFromDelegatorsList(address _serviceProvider, address _delegator) internal
+    {
+        for (uint i = 0; i < spDelegateInfo[_serviceProvider].delegators.length; i++) {
+            if (spDelegateInfo[_serviceProvider].delegators[i] == _delegator) {
+                // Overwrite and shrink delegators list
+                spDelegateInfo[_serviceProvider].delegators[i] = spDelegateInfo[_serviceProvider].delegators[spDelegateInfo[_serviceProvider].delegators.length - 1];
+                spDelegateInfo[_serviceProvider].delegators.length--;
+                break;
+            }
+        }
     }
 
     /**
