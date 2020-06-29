@@ -1,5 +1,5 @@
 import * as _lib from '../utils/lib.js'
-const { time } = require('@openzeppelin/test-helpers')
+const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
 const MockDelegateManager = artifacts.require('MockDelegateManager')
 const MockStakingCaller = artifacts.require('MockStakingCaller')
@@ -225,7 +225,13 @@ contract('ClaimsManager', async (accounts) => {
 
     // Initiate round
     await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
-    await mockDelegateManager.testProcessClaim(staker, 0)
+    let claimTx = await mockDelegateManager.testProcessClaim(staker, 0)
+    await expectEvent.inTransaction(
+      claimTx.tx,
+      ClaimsManager,
+      'ClaimProcessed',
+      { _claimer: staker, _rewards: fundsPerClaim, _oldTotal: DEFAULT_AMOUNT, _newTotal: DEFAULT_AMOUNT.add(fundsPerClaim) }
+    )
     totalStaked = await staking.totalStaked()
 
     assert.isTrue(
@@ -237,7 +243,7 @@ contract('ClaimsManager', async (accounts) => {
       _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress),
       "Governance::guardianExecuteTransaction: Transaction failed."
     )
-    
+
     let lastClaimBlock = await claimsManager.getLastFundBlock()
     let claimDiff = await claimsManager.getFundingRoundBlockDiff()
     let nextClaimBlock = lastClaimBlock.add(claimDiff)
@@ -252,13 +258,19 @@ contract('ClaimsManager', async (accounts) => {
       'Expect single round of funding + initial stake at this time')
 
     let accountStakeBeforeSecondClaim = await staking.totalStakedFor(staker)
+    let expectedFinalValue = accountStakeBeforeSecondClaim.add(fundsPerClaim)
 
     // Initiate another round
     await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
-    await mockDelegateManager.testProcessClaim(staker, 0)
+    claimTx = await mockDelegateManager.testProcessClaim(staker, 0)
+    await expectEvent.inTransaction(
+      claimTx.tx, ClaimsManager,
+      'ClaimProcessed',
+      { _claimer: staker, _rewards: fundsPerClaim, _oldTotal: accountStakeBeforeSecondClaim, _newTotal: expectedFinalValue }
+    )
+
     totalStaked = await staking.totalStaked()
     let finalAcctStake = await staking.totalStakedFor(staker)
-    let expectedFinalValue = accountStakeBeforeSecondClaim.add(fundsPerClaim)
 
     assert.isTrue(finalAcctStake.eq(expectedFinalValue), 'Expect additional increase in stake after 2nd claim')
   })
@@ -314,13 +326,14 @@ contract('ClaimsManager', async (accounts) => {
       'Only callable by Governance contract'
     )
 
-    await governance.guardianExecuteTransaction(
+    let govTx = await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
       _lib.toBN(0),
       'updateFundingAmount(uint256)',
       _lib.abiEncode(['uint256'], [newAmountVal]),
       { from: guardianAddress }
     )
+    await expectEvent.inTransaction(govTx.tx, ClaimsManager, 'FundingAmountUpdated', { _amount: newAmountVal })
 
     let updatedFundingAmount = await claimsManager.getFundsPerRound()
     assert.isTrue(newAmount.eq(updatedFundingAmount), 'Expect updated funding amount')
@@ -335,12 +348,18 @@ contract('ClaimsManager', async (accounts) => {
       'Only callable by Governance contract'
     )
 
-    await governance.guardianExecuteTransaction(
+    let govTx = await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
       _lib.toBN(0),
       'updateFundingRoundBlockDiff(uint256)',
       _lib.abiEncode(['uint256'], [_lib.fromBN(proposedBlockDiff)]),
       { from: guardianAddress }
+    )
+    await expectEvent.inTransaction(
+      govTx.tx,
+      ClaimsManager,
+      'FundingRoundBlockDiffUpdated',
+      { _blockDifference: proposedBlockDiff }
     )
 
     const newBlockDiff = await claimsManager.getFundingRoundBlockDiff.call()
@@ -355,7 +374,9 @@ contract('ClaimsManager', async (accounts) => {
     await approveTransferAndStake(invalidAmount, staker)
     await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, true)
     let accountStake = await staking.totalStakedFor(staker)
-    mockDelegateManager.testProcessClaim(staker, 0)
+    let claimTx = await mockDelegateManager.testProcessClaim(staker, 0)
+    // Confirm event emitted even if no reward
+    await expectEvent.inTransaction(claimTx.tx, ClaimsManager, 'ClaimProcessed', { _claimer: staker, _rewards: '0' })
     let accountStakeAfterClaim = await staking.totalStakedFor(staker)
     assert.isTrue(accountStake.eq(accountStakeAfterClaim), 'Expect NO reward due to bound violation')
   })
