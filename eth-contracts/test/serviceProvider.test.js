@@ -433,15 +433,11 @@ contract('ServiceProvider test', async (accounts) => {
       )
     })
 
-    it('Min direct deployer stake violation', async () => {
-      const minDirectStake = await serviceProviderFactory.getMinDeployerStake()
-
-      // Calculate an invalid direct stake amount
-      const invalidDirectStake = minDirectStake.sub(_lib.toBN(1))
-      await token.transfer(stakerAccount2, invalidDirectStake, { from: proxyDeployerAddress })
-
+    it('Min deployer stake violation', async () => {
       const dpTypeInfo = await serviceTypeManager.getServiceTypeInfo(testDiscProvType)
-      assert.isTrue(invalidDirectStake.gt(dpTypeInfo.minStake), 'Invalid direct stake above dp type min')
+      // Calculate an invalid direct stake amount
+      let invalidStakeAmount = dpTypeInfo.minStake.sub(_lib.toBN(1))
+      await token.transfer(stakerAccount2, invalidStakeAmount, { from: proxyDeployerAddress })
 
       // Validate that this value won't violate service type minimum
       await _lib.assertRevert(
@@ -451,9 +447,9 @@ contract('ServiceProvider test', async (accounts) => {
           serviceProviderFactory,
           testDiscProvType,
           testEndpoint1,
-          invalidDirectStake,
+          invalidStakeAmount,
           stakerAccount2),
-        'Direct stake restriction violated'
+        'Minimum stake requirement not met'
       )
     })
 
