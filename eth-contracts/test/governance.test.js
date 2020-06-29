@@ -1289,8 +1289,8 @@ contract('Governance.sol', async (accounts) => {
     await governance.guardianExecuteTransaction(
       governanceKey,
       callValue0,
-      'setMaxInProgressProposals(uint8)',
-      _lib.abiEncode(['uint8'], [newMaxInProgressProposals]),
+      'setMaxInProgressProposals(uint16)',
+      _lib.abiEncode(['uint16'], [newMaxInProgressProposals]),
       { from: guardianAddress }
     )
 
@@ -1675,8 +1675,8 @@ contract('Governance.sol', async (accounts) => {
       await governance.guardianExecuteTransaction(
         governanceKey,
         callValue0,
-        'setMaxInProgressProposals(uint8)',
-        _lib.abiEncode(['uint8'], [newMaxInProgressProposals]),
+        'setMaxInProgressProposals(uint16)',
+        _lib.abiEncode(['uint16'], [newMaxInProgressProposals]),
         { from: guardianAddress }
       )
 

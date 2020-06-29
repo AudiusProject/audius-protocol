@@ -32,7 +32,7 @@ module.exports = (deployer, network, accounts) => {
     const governance0 = await deployer.deploy(Governance, { from: proxyDeployerAddress })
     const initializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'uint8', 'address'],
+      ['address', 'uint256', 'uint256', 'uint16', 'address'],
       [registryAddress, VotingPeriod, VotingQuorum, MaxInProgressProposals, guardianAddress]
     )
     const governanceProxy = await deployer.deploy(

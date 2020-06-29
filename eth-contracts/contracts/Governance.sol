@@ -26,7 +26,8 @@ contract Governance is InitializableV2 {
     uint256 private votingQuorum;
 
     /// @notice Max number of InProgress proposals possible at once
-    uint8 private maxInProgressProposals;
+    /// @dev uint16 gives max possible value of 65,535
+    uint16 private maxInProgressProposals;
 
     /**
      * @notice Address of account that has special Governance permissions. Can veto proposals
@@ -135,7 +136,7 @@ contract Governance is InitializableV2 {
         uint256 _votingPeriod,
         uint256 _votingQuorum,
         // TODO - order vars for optimal memory data packing
-        uint8 _maxInProgressProposals,
+        uint16 _maxInProgressProposals,
         address _guardianAddress
     ) public initializer {
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
@@ -512,7 +513,7 @@ contract Governance is InitializableV2 {
      * @dev Only callable by self via _executeTransaction
      * @param _newMaxInProgressProposals - new value for maxInProgressProposals
      */
-    function setMaxInProgressProposals(uint8 _newMaxInProgressProposals) external {
+    function setMaxInProgressProposals(uint16 _newMaxInProgressProposals) external {
         require(msg.sender == address(this), "Only callable by self");
         require(_newMaxInProgressProposals > 0, "Requires non-zero _newMaxInProgressProposals");
         maxInProgressProposals = _newMaxInProgressProposals;
@@ -681,7 +682,7 @@ contract Governance is InitializableV2 {
     }
 
     /// @notice Get the max number of concurrent InProgress proposals
-    function getMaxInProgressProposals() external view returns (uint8) {
+    function getMaxInProgressProposals() external view returns (uint16) {
         return maxInProgressProposals;
     }
 

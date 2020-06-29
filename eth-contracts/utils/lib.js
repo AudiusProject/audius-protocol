@@ -234,7 +234,7 @@ export const deployGovernance = async (
   const governance0 = await Governance.new({ from: proxyDeployerAddress })
   const governanceInitializeData = encodeCall(
     'initialize',
-    ['address', 'uint256', 'uint256', 'uint8', 'address'],
+    ['address', 'uint256', 'uint256', 'uint16', 'address'],
     [registry.address, votingPeriod, votingQuorum, maxInProgressProposals, guardianAddress]
   )
   // Initialize proxy with zero address
