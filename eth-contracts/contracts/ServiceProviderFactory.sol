@@ -117,15 +117,17 @@ contract ServiceProviderFactory is InitializableV2 {
      * @notice Function to initialize the contract
      * @param _governanceAddress - Governance proxy address
      */
-    function initialize (address _governanceAddress) public initializer
+    function initialize (
+        address _governanceAddress,
+        uint _decreaseStakeLockupDuration
+    ) public initializer
     {
         governanceAddress = _governanceAddress;
 
         // Configure direct minimum stake for deployer
         minDeployerStake = 5 * 10**uint256(DECIMALS);
 
-        // 10 blocks for lockup duration
-        decreaseStakeLockupDuration = 10;
+        decreaseStakeLockupDuration = _decreaseStakeLockupDuration;
 
         InitializableV2.initialize();
     }
@@ -189,9 +191,9 @@ contract ServiceProviderFactory is InitializableV2 {
         );
 
         // Update min and max totals for this service provider
-        (uint typeMin, uint typeMax) = ServiceTypeManager(
+        (, uint typeMin, uint typeMax) = ServiceTypeManager(
             serviceTypeManagerAddress
-        ).getServiceTypeStakeInfo(_serviceType);
+        ).getServiceTypeInfo(_serviceType);
         spDetails[msg.sender].minAccountStake = spDetails[msg.sender].minAccountStake.add(typeMin);
         spDetails[msg.sender].maxAccountStake = spDetails[msg.sender].maxAccountStake.add(typeMax);
 
@@ -281,9 +283,9 @@ contract ServiceProviderFactory is InitializableV2 {
         spDetails[msg.sender].numberOfEndpoints -= 1;
 
         // Update min and max totals for this service provider
-        (uint typeMin, uint typeMax) = ServiceTypeManager(
+        (, uint typeMin, uint typeMax) = ServiceTypeManager(
             serviceTypeManagerAddress
-        ).getServiceTypeStakeInfo(_serviceType);
+        ).getServiceTypeInfo(_serviceType);
         spDetails[msg.sender].minAccountStake = spDetails[msg.sender].minAccountStake.sub(typeMin);
         spDetails[msg.sender].maxAccountStake = spDetails[msg.sender].maxAccountStake.sub(typeMax);
 
