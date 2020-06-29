@@ -18,7 +18,7 @@ const PROCESS_NAMES = Object.freeze({
 })
 
 class TranscodingQueue {
-  constructor() {
+  constructor () {
     this.queue = new Bull(
       'transcoding-queue',
       {
@@ -62,9 +62,9 @@ class TranscodingQueue {
 
   /**
    * Logs a status message and includes current queue info
-   * @param {string} message 
+   * @param {string} message
    */
-  async logStatus(message) {
+  async logStatus (message) {
     const count = await this.queue.count()
     logger.info(`Transcoding Queue: ${message}`)
     logger.info(`Transcoding Queue: count: ${count}`)
@@ -75,7 +75,7 @@ class TranscodingQueue {
    * @param {string} fileDir
    * @param {string} fileName
    */
-  async segment(fileDir, fileName) {
+  async segment (fileDir, fileName) {
     const job = await this.queue.add(
       PROCESS_NAMES.segment,
       { fileDir, fileName }
@@ -89,7 +89,7 @@ class TranscodingQueue {
    * @param {string} fileDir
    * @param {string} fileName
    */
-  async transcode320(fileDir, fileName) {
+  async transcode320 (fileDir, fileName) {
     const job = await this.queue.add(
       PROCESS_NAMES.transcode320,
       { fileDir, fileName }

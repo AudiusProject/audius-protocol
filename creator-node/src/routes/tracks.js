@@ -484,7 +484,7 @@ async function createDownloadableCopy (req, fileName) {
     req.logger.info(`Transcoding file ${fileName}...`)
 
     const fileDir = path.resolve(req.app.get('storagePath'), fileName.split('.')[0])
-    const transcoding = await TranscodingQueue.transcode320(req.fileDir, req.fileName)
+    const transcoding = await TranscodingQueue.transcode320(fileDir, fileName)
     const { filePath: dlCopyFilePath } = transcoding
 
     req.logger.info(`Transcoded file ${fileName} in ${Date.now() - start}ms.`)
