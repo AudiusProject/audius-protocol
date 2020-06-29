@@ -3,7 +3,7 @@ pragma solidity >=0.4.21 <0.6.0;
 
 contract Migrations {
     address public owner;
-    uint public lastCompletedMigration;
+    uint256 public lastCompletedMigration;
 
     constructor() public {
         owner = msg.sender;
@@ -15,7 +15,7 @@ contract Migrations {
         }
     }
 
-    function setCompleted(uint _completed) public restricted {
+    function setCompleted(uint256 _completed) public restricted {
         lastCompletedMigration = _completed;
     }
 

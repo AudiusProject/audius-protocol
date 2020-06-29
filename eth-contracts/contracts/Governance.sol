@@ -7,7 +7,7 @@ import "./InitializableV2.sol";
 
 
 contract Governance is InitializableV2 {
-    using SafeMath for uint;
+    using SafeMath for uint256;
 
     /**
      * @notice Address and contract instance of Audius Registry. Used to ensure this contract
@@ -61,7 +61,7 @@ contract Governance is InitializableV2 {
         uint256 startBlockNumber;
         bytes32 targetContractRegistryKey;
         address targetContractAddress;
-        uint callValue;
+        uint256 callValue;
         string signature;
         bytes callData;
         Outcome outcome;
@@ -564,7 +564,7 @@ contract Governance is InitializableV2 {
         uint256 startBlockNumber,
         bytes32 targetContractRegistryKey,
         address targetContractAddress,
-        uint callValue,
+        uint256 callValue,
         string memory signature,
         bytes memory callData,
         Outcome outcome,
@@ -625,14 +625,14 @@ contract Governance is InitializableV2 {
     }
 
     /// @notice Get the contract voting period
-    function getVotingPeriod() external view returns (uint) {
+    function getVotingPeriod() external view returns (uint256) {
         _requireIsInitialized();
 
         return votingPeriod;
     }
 
     /// @notice Get the contract voting quorum
-    function getVotingQuorum() external view returns (uint) {
+    function getVotingQuorum() external view returns (uint256) {
         _requireIsInitialized();
 
         return votingQuorum;

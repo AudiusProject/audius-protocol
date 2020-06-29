@@ -25,40 +25,40 @@ contract DelegateManager is InitializableV2 {
      * Number of blocks an undelegate operation has to wait
      * @notice must be >= Governance.votingPeriod
      */
-    uint private undelegateLockupDuration;
+    uint256 private undelegateLockupDuration;
 
     // Maximum number of delegators a single account can handle
-    uint private maxDelegators;
+    uint256 private maxDelegators;
 
     // Minimum amount of delegation allowed
-    uint minDelegationAmount;
+    uint256 minDelegationAmount;
 
     // Staking contract ref
     ERC20Mintable internal audiusToken;
 
     // Struct representing total delegated to SP and list of delegators
     struct ServiceProviderDelegateInfo {
-        uint totalDelegatedStake;
-        uint totalLockedUpStake;
+        uint256 totalDelegatedStake;
+        uint256 totalLockedUpStake;
         address[] delegators;
     }
 
     // Data structures for lockup during withdrawal
     struct UndelegateStakeRequest {
         address serviceProvider;
-        uint amount;
-        uint lockupExpiryBlock;
+        uint256 amount;
+        uint256 lockupExpiryBlock;
     }
 
     // Service provider address -> ServiceProviderDelegateInfo
     mapping (address => ServiceProviderDelegateInfo) spDelegateInfo;
 
     // Total staked for a given delegator
-    mapping (address => uint) delegatorStakeTotal;
+    mapping (address => uint256) delegatorStakeTotal;
 
     // Delegator stake by address delegated to
     // delegator -> (service provider -> delegatedStake)
-    mapping (address => mapping(address => uint)) delegateInfo;
+    mapping (address => mapping(address => uint256)) delegateInfo;
 
     // Requester to pending undelegate request
     mapping (address => UndelegateStakeRequest) undelegateRequests;
@@ -66,25 +66,25 @@ contract DelegateManager is InitializableV2 {
     event IncreaseDelegatedStake(
       address _delegator,
       address _serviceProvider,
-      uint _increaseAmount
+      uint256 _increaseAmount
     );
 
     event DecreaseDelegatedStake(
       address _delegator,
       address _serviceProvider,
-      uint _decreaseAmount
+      uint256 _decreaseAmount
     );
 
     event Claim(
       address _claimer,
-      uint _rewards,
-      uint newTotal
+      uint256 _rewards,
+      uint256 newTotal
     );
 
     event Slash(
       address _target,
-      uint _amount,
-      uint _newTotal
+      uint256 _amount,
+      uint256 _newTotal
     );
 
     /**
@@ -115,8 +115,8 @@ contract DelegateManager is InitializableV2 {
      */
     function delegateStake(
         address _targetSP,
-        uint _amount
-    ) external returns (uint delegatedAmount)
+        uint256 _amount
+    ) external returns (uint256 delegatedAmount)
     {
         _requireIsInitialized();
         require(
@@ -182,8 +182,8 @@ contract DelegateManager is InitializableV2 {
      */
     function requestUndelegateStake(
         address _target,
-        uint _amount
-    ) external returns (uint newDelegateAmount)
+        uint256 _amount
+    ) external returns (uint256 newDelegateAmount)
     {
         _requireIsInitialized();
         require(
@@ -197,7 +197,7 @@ contract DelegateManager is InitializableV2 {
         require(!_undelegateRequestIsPending(delegator), "No pending lockup expected");
 
         // Ensure valid bounds
-        uint currentlyDelegatedToSP = delegateInfo[delegator][_target];
+        uint256 currentlyDelegatedToSP = delegateInfo[delegator][_target];
         require(
             _amount <= currentlyDelegatedToSP,
             "Cannot decrease greater than currently staked for this ServiceProvider");
@@ -236,7 +236,7 @@ contract DelegateManager is InitializableV2 {
      * @notice Finalize undelegation request and withdraw stake
      * @return New total amount currently staked after stake has been undelegated
      */
-    function undelegateStake() external returns (uint newTotal) {
+    function undelegateStake() external returns (uint256 newTotal) {
         _requireIsInitialized();
         address delegator = msg.sender;
 
@@ -254,7 +254,7 @@ contract DelegateManager is InitializableV2 {
         );
 
         address serviceProvider = undelegateRequests[delegator].serviceProvider;
-        uint unstakeAmount = undelegateRequests[delegator].amount;
+        uint256 unstakeAmount = undelegateRequests[delegator].amount;
 
         // Stake on behalf of target service provider
         Staking(stakingAddress).undelegateStakeFor(
@@ -283,7 +283,7 @@ contract DelegateManager is InitializableV2 {
 
         // Remove from delegators list if no delegated stake remaining
         if (delegateInfo[delegator][serviceProvider] == 0) {
-            for (uint i = 0; i < spDelegateInfo[serviceProvider].delegators.length; i++) {
+            for (uint256 i = 0; i < spDelegateInfo[serviceProvider].delegators.length; i++) {
                 if (spDelegateInfo[serviceProvider].delegators[i] == delegator) {
                     // Overwrite and shrink delegators list
                     spDelegateInfo[serviceProvider].delegators[i] = spDelegateInfo[serviceProvider].delegators[spDelegateInfo[serviceProvider].delegators.length - 1];
@@ -336,9 +336,9 @@ contract DelegateManager is InitializableV2 {
         ServiceProviderFactory spFactory = ServiceProviderFactory(serviceProviderFactoryAddress);
 
         (
-            uint totalBalanceInStaking,
-            uint totalBalanceInSPFactory,
-            uint totalBalanceOutsideStaking
+            uint256 totalBalanceInStaking,
+            uint256 totalBalanceInSPFactory,
+            uint256 totalBalanceOutsideStaking
         ) = _validateClaimRewards(spFactory);
 
         // No-op if balance is already equivalent
@@ -349,26 +349,26 @@ contract DelegateManager is InitializableV2 {
 
         // Total rewards
         // Equal to (balance in staking) - ((balance in sp factory) + (balance in delegate manager))
-        uint totalRewards = totalBalanceInStaking.sub(totalBalanceOutsideStaking);
+        uint256 totalRewards = totalBalanceInStaking.sub(totalBalanceOutsideStaking);
 
         // Emit claim event
         emit Claim(msg.sender, totalRewards, totalBalanceInStaking);
 
-        ( ,uint deployerCut, , , , ) = spFactory.getServiceProviderDetails(msg.sender);
-        uint deployerCutBase = spFactory.getServiceProviderDeployerCutBase();
-        uint spDeployerCutRewards = 0;
-        uint totalDelegatedStakeIncrease = 0;
+        ( ,uint256 deployerCut, , , , ) = spFactory.getServiceProviderDetails(msg.sender);
+        uint256 deployerCutBase = spFactory.getServiceProviderDeployerCutBase();
+        uint256 spDeployerCutRewards = 0;
+        uint256 totalDelegatedStakeIncrease = 0;
 
         // Total valid funds used to calculate rewards distribution
-        uint totalActiveFunds = (
+        uint256 totalActiveFunds = (
             totalBalanceOutsideStaking.sub(spDelegateInfo[msg.sender].totalLockedUpStake)
         );
 
         // Traverse all delegates and calculate their rewards
         // As each delegate reward is calculated, increment SP cut reward accordingly
-        for (uint i = 0; i < spDelegateInfo[msg.sender].delegators.length; i++) {
+        for (uint256 i = 0; i < spDelegateInfo[msg.sender].delegators.length; i++) {
             address delegator = spDelegateInfo[msg.sender].delegators[i];
-            uint delegateStakeToSP = delegateInfo[delegator][msg.sender];
+            uint256 delegateStakeToSP = delegateInfo[delegator][msg.sender];
 
             // Subtract any locked up stake
             if (undelegateRequests[delegator].serviceProvider == msg.sender) {
@@ -376,17 +376,17 @@ contract DelegateManager is InitializableV2 {
             }
 
             // Calculate rewards by ((delegateStakeToSP / totalActiveFunds) * totalRewards)
-            uint rewardsPriorToSPCut = (
+            uint256 rewardsPriorToSPCut = (
               delegateStakeToSP.mul(totalRewards)
             ).div(totalActiveFunds);
 
             // Multiply by deployer cut fraction to calculate reward for SP
             // Operation constructed to perform all multiplication prior to division
-            // uint spDeployerCut = (rewardsPriorToSPCut * deployerCut ) / (deployerCutBase);
+            // uint256 spDeployerCut = (rewardsPriorToSPCut * deployerCut ) / (deployerCutBase);
             //                    = ((delegateStakeToSP * totalRewards) / totalActiveFunds) * deployerCut ) / (deployerCutBase);
             //                    = ((delegateStakeToSP * totalRewards * deployerCut) / totalActiveFunds ) / (deployerCutBase);
             //                    = (delegateStakeToSP * totalRewards * deployerCut) / (deployerCutBase * totalActiveFunds);
-            uint spDeployerCut = (
+            uint256 spDeployerCut = (
                 (delegateStakeToSP.mul(totalRewards)).mul(deployerCut)
             ).div(
                 totalActiveFunds.mul(deployerCutBase)
@@ -412,7 +412,7 @@ contract DelegateManager is InitializableV2 {
         );
 
         // Rewards directly allocated to service provider for their stake
-        uint spRewardShare = (
+        uint256 spRewardShare = (
           totalBalanceInSPFactory.mul(totalRewards)
         ).div(totalActiveFunds);
 
@@ -429,7 +429,7 @@ contract DelegateManager is InitializableV2 {
      * @param _amount - amount in wei to slash
      * @param _slashAddress - address of service provider to slash
      */
-    function slash(uint _amount, address _slashAddress)
+    function slash(uint256 _amount, address _slashAddress)
     external
     {
         _requireIsInitialized();
@@ -443,39 +443,39 @@ contract DelegateManager is InitializableV2 {
         ServiceProviderFactory spFactory = ServiceProviderFactory(serviceProviderFactoryAddress);
 
         // Amount stored in staking contract for owner
-        uint totalBalanceInStakingPreSlash = stakingContract.totalStakedFor(_slashAddress);
+        uint256 totalBalanceInStakingPreSlash = stakingContract.totalStakedFor(_slashAddress);
         require(
             (totalBalanceInStakingPreSlash >= _amount),
             "Cannot slash more than total currently staked");
 
         // Cancel any withdrawal request for this service provider
-        (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(_slashAddress);
+        (uint256 spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(_slashAddress);
         if (spLockedStake > 0) {
             spFactory.cancelDecreaseStakeRequest(_slashAddress);
         }
 
         // Amount in sp factory for slash target
-        (uint totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(_slashAddress);
+        (uint256 totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(_slashAddress);
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
 
         // Decrease value in Staking contract
         // A value of zero slash will fail in staking, reverting this transaction
         stakingContract.slash(_amount, _slashAddress);
-        uint totalBalanceInStakingAfterSlash = stakingContract.totalStakedFor(_slashAddress);
+        uint256 totalBalanceInStakingAfterSlash = stakingContract.totalStakedFor(_slashAddress);
 
         // Emit slash event
         emit Slash(_slashAddress, _amount, totalBalanceInStakingAfterSlash);
 
-        uint totalDelegatedStakeDecrease = 0;
+        uint256 totalDelegatedStakeDecrease = 0;
         // For each delegator and deployer, recalculate new value
         // newStakeAmount = newStakeAmount * (oldStakeAmount / totalBalancePreSlash)
-        for (uint i = 0; i < spDelegateInfo[_slashAddress].delegators.length; i++) {
+        for (uint256 i = 0; i < spDelegateInfo[_slashAddress].delegators.length; i++) {
             address delegator = spDelegateInfo[_slashAddress].delegators[i];
-            uint preSlashDelegateStake = delegateInfo[delegator][_slashAddress];
-            uint newDelegateStake = (
+            uint256 preSlashDelegateStake = delegateInfo[delegator][_slashAddress];
+            uint256 newDelegateStake = (
              totalBalanceInStakingAfterSlash.mul(preSlashDelegateStake)
             ).div(totalBalanceInStakingPreSlash);
-            // uint slashAmountForDelegator = preSlashDelegateStake.sub(newDelegateStake);
+            // uint256 slashAmountForDelegator = preSlashDelegateStake.sub(newDelegateStake);
             delegateInfo[delegator][_slashAddress] = (
                 delegateInfo[delegator][_slashAddress].sub(preSlashDelegateStake.sub(newDelegateStake))
             );
@@ -490,7 +490,7 @@ contract DelegateManager is InitializableV2 {
             // Slash overrides any pending withdrawal requests
             if (undelegateRequests[delegator].amount != 0) {
                 address unstakeSP = undelegateRequests[delegator].serviceProvider;
-                uint unstakeAmount = undelegateRequests[delegator].amount;
+                uint256 unstakeAmount = undelegateRequests[delegator].amount;
                 // Reset total locked up stake
                 spDelegateInfo[unstakeSP].totalLockedUpStake = (
                     spDelegateInfo[unstakeSP].totalLockedUpStake.sub(unstakeAmount)
@@ -510,7 +510,7 @@ contract DelegateManager is InitializableV2 {
         );
 
         // Recalculate SP direct stake
-        uint newSpBalance = (
+        uint256 newSpBalance = (
           totalBalanceInStakingAfterSlash.mul(totalBalanceInSPFactory)
         ).div(totalBalanceInStakingPreSlash);
         spFactory.updateServiceProviderStake(_slashAddress, newSpBalance);
@@ -520,7 +520,7 @@ contract DelegateManager is InitializableV2 {
      * @notice Update duration for undelegate request lockup
      * @param _duration - new lockup duration
      */
-    function updateUndelegateLockupDuration(uint _duration) external {
+    function updateUndelegateLockupDuration(uint256 _duration) external {
         _requireIsInitialized();
 
         require(
@@ -535,7 +535,7 @@ contract DelegateManager is InitializableV2 {
      * @notice Update maximum delegators allowed
      * @param _maxDelegators - new max delegators
      */
-    function updateMaxDelegators(uint _maxDelegators) external {
+    function updateMaxDelegators(uint256 _maxDelegators) external {
         _requireIsInitialized();
 
         require(
@@ -550,7 +550,7 @@ contract DelegateManager is InitializableV2 {
      * @notice Update minimum delegation amount
      * @param _minDelegationAmount - min new min delegation amount
      */
-    function updateMinDelegationAmount(uint _minDelegationAmount) external {
+    function updateMinDelegationAmount(uint256 _minDelegationAmount) external {
         _requireIsInitialized();
 
         require(
@@ -615,28 +615,28 @@ contract DelegateManager is InitializableV2 {
 
     /// @notice Get total amount delegated to a service provider
     function getTotalDelegatedToServiceProvider(address _sp)
-    external view returns (uint total)
+    external view returns (uint256 total)
     {
         return spDelegateInfo[_sp].totalDelegatedStake;
     }
 
     /// @notice Get total delegated stake locked up for a service provider
     function getTotalLockedDelegationForServiceProvider(address _sp)
-    external view returns (uint total)
+    external view returns (uint256 total)
     {
         return spDelegateInfo[_sp].totalLockedUpStake;
     }
 
     /// @notice Get total currently staked for a delegator, across service providers
     function getTotalDelegatorStake(address _delegator)
-    external view returns (uint amount)
+    external view returns (uint256 amount)
     {
         return delegatorStakeTotal[_delegator];
     }
 
     /// @notice Get total currently staked for a delegator, for a given service provider
     function getDelegatorStakeForServiceProvider(address _delegator, address _serviceProvider)
-    external view returns (uint amount)
+    external view returns (uint256 amount)
     {
         return delegateInfo[_delegator][_serviceProvider];
     }
@@ -646,7 +646,7 @@ contract DelegateManager is InitializableV2 {
      * @param _delegator - address of the delegator
      */
     function getPendingUndelegateRequest(address _delegator)
-    external view returns (address target, uint amount, uint lockupExpiryBlock)
+    external view returns (address target, uint256 amount, uint256 lockupExpiryBlock)
     {
         UndelegateStakeRequest memory req = undelegateRequests[_delegator];
         return (req.serviceProvider, req.amount, req.lockupExpiryBlock);
@@ -654,21 +654,21 @@ contract DelegateManager is InitializableV2 {
 
     /// @notice Get current undelegate lockup duration
     function getUndelegateLockupDuration()
-    external view returns (uint duration)
+    external view returns (uint256 duration)
     {
         return undelegateLockupDuration;
     }
 
     /// @notice Current maximum delegators
     function getMaxDelegators()
-    external view returns (uint numDelegators)
+    external view returns (uint256 numDelegators)
     {
         return maxDelegators;
     }
 
     /// @notice Get minimum delegation amount
     function getMinDelegationAmount()
-    external view returns (uint minDelegation)
+    external view returns (uint256 minDelegation)
     {
         return minDelegationAmount;
     }
@@ -703,11 +703,11 @@ contract DelegateManager is InitializableV2 {
      * @return (totalBalanceInStaking, totalBalanceInSPFactory, totalBalanceOutsideStaking)
      */
     function _validateClaimRewards(ServiceProviderFactory spFactory)
-    internal returns (uint totalBalanceInStaking, uint totalBalanceInSPFactory, uint totalBalanceOutsideStaking)
+    internal returns (uint256 totalBalanceInStaking, uint256 totalBalanceInSPFactory, uint256 totalBalanceOutsideStaking)
         {
 
         // Account for any pending locked up stake for the service provider
-        (uint spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
+        (uint256 spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(msg.sender);
 
         // Process claim for msg.sender
         // Total locked parameter is equal to delegate locked up stake + service provider locked up stake
@@ -717,11 +717,11 @@ contract DelegateManager is InitializableV2 {
         );
 
         // Amount stored in staking contract for owner
-        uint _totalBalanceInStaking = Staking(stakingAddress).totalStakedFor(msg.sender);
+        uint256 _totalBalanceInStaking = Staking(stakingAddress).totalStakedFor(msg.sender);
         require(_totalBalanceInStaking > 0, "Stake required for claim");
 
         // Amount in sp factory for claimer
-        (uint _totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(msg.sender);
+        (uint256 _totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(msg.sender);
 
         // Decrease total balance by any locked up stake
         _totalBalanceInSPFactory = _totalBalanceInSPFactory.sub(spLockedStake);
@@ -730,7 +730,7 @@ contract DelegateManager is InitializableV2 {
         require(_totalBalanceInSPFactory > 0, "Service Provider stake required");
 
         // Amount in delegate manager staked to service provider
-        uint _totalBalanceOutsideStaking = (
+        uint256 _totalBalanceOutsideStaking = (
             _totalBalanceInSPFactory.add(spDelegateInfo[msg.sender].totalDelegatedStake)
         );
 
@@ -747,7 +747,7 @@ contract DelegateManager is InitializableV2 {
         address _serviceProvider
     ) internal view returns (bool exists)
     {
-        for (uint i = 0; i < spDelegateInfo[_serviceProvider].delegators.length; i++) {
+        for (uint256 i = 0; i < spDelegateInfo[_serviceProvider].delegators.length; i++) {
             if (spDelegateInfo[_serviceProvider].delegators[i] == _delegator) {
                 return true;
             }

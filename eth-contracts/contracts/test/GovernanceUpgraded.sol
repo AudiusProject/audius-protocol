@@ -4,7 +4,7 @@ import "../Governance.sol";
 
 
 contract GovernanceUpgraded is Governance {
-    function newFunction() public pure returns (uint) {
+    function newFunction() public pure returns (uint256) {
         return 5;
     }
 }

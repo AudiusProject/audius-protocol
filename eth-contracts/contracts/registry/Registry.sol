@@ -11,7 +11,7 @@ import "../InitializableV2.sol";
 *   external access and enable version management.
 */
 contract Registry is InitializableV2, Ownable {
-    using SafeMath for uint;
+    using SafeMath for uint256;
 
     /**
      * @dev addressStorage mapping allows efficient lookup of current contract version
@@ -103,7 +103,7 @@ contract Registry is InitializableV2, Ownable {
     }
 
     /// @notice overloaded getContract to return explicit version of contract
-    function getContract(bytes32 _name, uint _version) external view
+    function getContract(bytes32 _name, uint256 _version) external view
     returns (address contractAddr)
     {
         // array length for key implies version number
@@ -119,7 +119,7 @@ contract Registry is InitializableV2, Ownable {
      * @param _name - registry key for lookup
      * @return number of contract versions
      */
-    function getContractVersionCount(bytes32 _name) external view returns (uint) {
+    function getContractVersionCount(bytes32 _name) external view returns (uint256) {
         return addressStorageHistory[_name].length;
     }
 
