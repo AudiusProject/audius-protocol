@@ -109,6 +109,8 @@ contract Governance is InitializableV2 {
         bytes returnData
     );
     event ProposalVetoed(uint256 indexed proposalId);
+    event RegistryAddressUpdated(address indexed newRegistryAddress);
+    event GuardianshipTransferred(address indexed newGuardianAddress);
 
     /**
      * @notice Initialize the Governance contract
@@ -469,8 +471,11 @@ contract Governance is InitializableV2 {
     function setRegistryAddress(address _registryAddress) external {
         require(msg.sender == address(this), "Only callable by self");
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
+
         registryAddress = _registryAddress;
         registry = Registry(_registryAddress);
+
+        emit RegistryAddressUpdated(_registryAddress);
     }
 
     // ========================================= Guardian Actions =========================================
@@ -541,6 +546,8 @@ contract Governance is InitializableV2 {
         );
 
         guardianAddress = _newGuardianAddress;
+
+        emit GuardianshipTransferred(_newGuardianAddress);
     }
 
     // ========================================= Getter Functions =========================================
