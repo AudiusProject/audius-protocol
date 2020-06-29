@@ -1204,7 +1204,7 @@ contract('DelegateManager', async (accounts) => {
         'Valid bound expected')
     })
 
-    it('Delegator increase/decrease + SP direct stake bound validation', async () => {
+    it.only('Delegator increase/decrease + SP direct stake bound validation', async () => {
       let spDetails = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       let delegateAmount = spDetails.minAccountStake
       let info = await getAccountStakeInfo(stakerAccount, false)
@@ -1243,31 +1243,33 @@ contract('DelegateManager', async (accounts) => {
       // Due to the total delegated stake equal to min bounds, total account stake balance will NOT violate bounds
       await _lib.assertRevert(
         decreaseRegisteredProviderStake(spFactoryStake.sub(diff), stakerAccount),
-        'Direct stake restriction violated for this service provider'
+        'Minimum stake requirement not met'
       )
 
       // Decrease to min
       let spInfo = await getAccountStakeInfo(stakerAccount, false)
-      let minDirectStake = await serviceProviderFactory.getMinDeployerStake()
-      let diffToMin = (spInfo.spFactoryStake).sub(minDirectStake)
+      let diffToMin = (spInfo.spFactoryStake).sub(spInfo.minAccountStake)
       await decreaseRegisteredProviderStake(diffToMin, stakerAccount)
       let infoAfterDecrease = await getAccountStakeInfo(stakerAccount, false)
       assert.isTrue(
-        (infoAfterDecrease.spFactoryStake).eq(minDirectStake),
+        (infoAfterDecrease.spFactoryStake).eq(spInfo.minAccountStake),
         'Expect min direct stake while within total account bounds')
 
       // At this point we have a total stake of 2x the minimum for this SP
       // 1x Min directly from SP
       // 1x Min from our single delegator
-      // So - a service provider should be able to register with NO additional stake and still be within bounds
-      await _lib.registerServiceProvider(
-        token,
-        staking,
-        serviceProviderFactory,
-        testDiscProvType,
-        testEndpoint3,
-        _lib.audToWeiBN(0),
-        stakerAccount)
+      // So - a service provider should NOT be able to register with no additional stake, since the updated minimum bound for an SP with 2 endpoints is violated
+      await _lib.assertRevert(
+        _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint3,
+          _lib.audToWeiBN(0),
+          stakerAccount),
+        'Minimum stake requirement not met'
+      )
 
       let infoAfterSecondEndpoint = await getAccountStakeInfo(stakerAccount, false)
       assert.isTrue(
