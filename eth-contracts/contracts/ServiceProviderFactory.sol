@@ -117,15 +117,17 @@ contract ServiceProviderFactory is InitializableV2 {
      * @notice Function to initialize the contract
      * @param _governanceAddress - Governance proxy address
      */
-    function initialize (address _governanceAddress) public initializer
+    function initialize (
+        address _governanceAddress,
+        uint _decreaseStakeLockupDuration
+    ) public initializer
     {
         governanceAddress = _governanceAddress;
 
         // Configure direct minimum stake for deployer
         minDeployerStake = 5 * 10**uint256(DECIMALS);
 
-        // 10 blocks for lockup duration
-        decreaseStakeLockupDuration = 10;
+        decreaseStakeLockupDuration = _decreaseStakeLockupDuration;
 
         InitializableV2.initialize();
     }

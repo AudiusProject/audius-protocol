@@ -28,6 +28,7 @@ const DEFAULT_AMOUNT_VAL = _lib.audToWei(120)
 const DEFAULT_AMOUNT = _lib.toBN(DEFAULT_AMOUNT_VAL)
 const VOTING_PERIOD = 10
 const VOTING_QUORUM = 1
+const DECREASE_STAKE_LOCKUP_DURATION = 10
 
 const callValue0 = _lib.toBN(0)
 
@@ -114,8 +115,8 @@ contract('DelegateManager', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address'],
-      [governance.address]
+      ['address', 'uint'],
+      [governance.address, DECREASE_STAKE_LOCKUP_DURATION]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
@@ -1755,8 +1756,10 @@ contract('DelegateManager', async (accounts) => {
         assert.isTrue((requestInfo.amount).eq(_lib.toBN(0)), 'Expected amount reset')
       })
 
-      it('Update lockup duration', async () => {
+      it('Update decreaseStakeLockupDuration', async () => {
         let duration = await serviceProviderFactory.getDecreaseStakeLockupDuration()
+        assert.equal(_lib.fromBN(duration), DECREASE_STAKE_LOCKUP_DURATION, 'Expected same decreaseStakeLockupDuration')
+
         // Double decrease stake duration
         let newDuration = duration.add(duration)
 
@@ -1775,6 +1778,7 @@ contract('DelegateManager', async (accounts) => {
 
         let updatedDuration = await serviceProviderFactory.getDecreaseStakeLockupDuration()
         assert.isTrue(updatedDuration.eq(newDuration), 'Update not reflected')
+
         let tx = await serviceProviderFactory.requestDecreaseStake(DEFAULT_AMOUNT.div(_lib.toBN(2)), { from: stakerAccount })
         let blocknumber = _lib.toBN(tx.receipt.blockNumber)
         let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)

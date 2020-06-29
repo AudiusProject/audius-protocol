@@ -26,6 +26,7 @@ const testEndpoint2 = 'https://localhost:5002'
 const MIN_STAKE_AMOUNT = 10
 const VOTING_PERIOD = 10
 const VOTING_QUORUM = 1
+const DECREASE_STAKE_LOCKUP_DURATION = 10
 
 const INITIAL_BAL = _lib.audToWeiBN(1000)
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
@@ -205,8 +206,8 @@ contract('ServiceProvider test', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address'],
-      [governance.address]
+      ['address', 'uint'],
+      [governance.address, DECREASE_STAKE_LOCKUP_DURATION]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
@@ -331,6 +332,15 @@ contract('ServiceProvider test', async (accounts) => {
       const serviceTypeDPInfo = await serviceTypeManager.getServiceTypeInfo(testDiscProvType)
       assert.isTrue(serviceTypeDPInfo.minStake.eq(spDetails.minAccountStake), 'Expected serviceTypeDP minStake == sp 1 minAccountStake')
       assert.isTrue(serviceTypeDPInfo.maxStake.eq(spDetails.maxAccountStake), 'Expected serviceTypeDP maxStake == sp 1 maxAccountStake')
+    })
+
+    it('Confirm initial decreaseStakeLockupDuration', async () => {
+      const decreaseStakeLockupDuration = await serviceProviderFactory.getDecreaseStakeLockupDuration.call()
+      assert.equal(
+        _lib.fromBN(decreaseStakeLockupDuration),
+        DECREASE_STAKE_LOCKUP_DURATION,
+        'Expected same decreaseStakeLockupDuration'
+      )
     })
 
     it('Confirm correct stake for account', async () => {
