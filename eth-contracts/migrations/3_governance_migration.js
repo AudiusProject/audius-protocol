@@ -13,8 +13,10 @@ const governanceRegKey = web3.utils.utf8ToHex('Governance')
 const VotingPeriod = 11520
 // Required number of votes on proposal
 const VotingQuorum = 1
+
 // Max number of concurrent InProgress proposals
-const MaxInProgressProposals = 20
+// - Setting to 100 by default as that is a sufficiently large value that is not at gas limit risk
+const MaxInProgressProposals = 100
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
