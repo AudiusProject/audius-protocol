@@ -766,7 +766,6 @@ contract ServiceProviderFactory is InitializableV2 {
         );
 
         require(
-            spDetails[_sp].deployerStake == 0 ||
             spDetails[_sp].deployerStake >= spDetails[_sp].minAccountStake,
             "Minimum stake requirement not met"
         );
