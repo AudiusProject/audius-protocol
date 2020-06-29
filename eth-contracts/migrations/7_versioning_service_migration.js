@@ -31,7 +31,9 @@ const cnTypeMax = _lib.audToWei(3000000)
 const serviceTypeDP = web3.utils.utf8ToHex('discovery-provider')
 const dpTypeMin = _lib.audToWei(200000)
 const dpTypeMax = _lib.audToWei(2000000)
-
+// stake lockup duration = 1 wk in blocks
+// - 1/13 block/s * 604800 s/wk ~= 46523 block/wk
+const decreaseStakeLockupDuration = 46523
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
@@ -105,8 +107,8 @@ module.exports = (deployer, network, accounts) => {
     const serviceProviderFactory0 = await deployer.deploy(ServiceProviderFactory, { from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address'],
-      [process.env.governanceAddress]
+      ['address', 'uint'],
+      [process.env.governanceAddress, decreaseStakeLockupDuration]
     )
     const serviceProviderFactoryProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,

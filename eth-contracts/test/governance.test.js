@@ -43,6 +43,7 @@ contract('Governance.sol', async (accounts) => {
 
   const votingPeriod = 10
   const votingQuorum = 1
+  const decreaseStakeLockupDuration = 10
   const maxInProgressProposals = 20
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
@@ -153,8 +154,8 @@ contract('Governance.sol', async (accounts) => {
     const serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address'],
-      [governance.address]
+      ['address', 'uint'],
+      [governance.address, decreaseStakeLockupDuration]
     )
     const serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
