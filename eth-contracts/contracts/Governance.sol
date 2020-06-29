@@ -181,7 +181,7 @@ contract Governance is InitializableV2 {
 
         // Require all InProgress proposals that can be evaluated have been evaluated before new proposal submission
         require(
-            _proposalsAreUpToDate(),
+            this.inProgressProposalsAreUpToDate(),
             "Governance::submitProposal: Cannot submit new proposal until all evaluatable InProgress proposals are evaluated."
         );
 
@@ -690,6 +690,25 @@ contract Governance is InitializableV2 {
         return inProgressProposals;
     }
 
+    /**
+     * @notice Returns false if any proposals in inProgressProposals array are evaluatable
+     *          Evaluatable = proposals with closed votingPeriod
+     * @dev Is public since its called internally in `submitProposal()` as well as externally in UI
+     */
+    function inProgressProposalsAreUpToDate() external view returns (bool) {
+        // compare current block number against endBlockNumber of each proposal
+        for (uint i = 0; i < inProgressProposals.length; i++) {
+            if (
+                block.number >
+                (proposals[inProgressProposals[i]].startBlockNumber).add(votingPeriod)
+            ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     // ========================================= Internal Functions =========================================
 
     /**
@@ -770,23 +789,5 @@ contract Governance is InitializableV2 {
         // Swap proposalId to end of array + pop (deletes last elem + decrements array length)
         inProgressProposals[index] = inProgressProposals[inProgressProposals.length - 1];
         inProgressProposals.pop();
-    }
-
-    /**
-     * @notice Returns false if any proposals in inProgressProposals array are evaluatable
-     *          Evaluatable = proposals with closed votingPeriod
-     */
-    function _proposalsAreUpToDate() internal view returns (bool) {
-        // compare current block number against endBlockNumber of each proposal
-        for (uint i = 0; i < inProgressProposals.length; i++) {
-            if (
-                block.number >
-                (proposals[inProgressProposals[i]].startBlockNumber).add(votingPeriod)
-            ) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

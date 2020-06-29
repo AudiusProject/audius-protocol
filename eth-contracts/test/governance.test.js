@@ -1266,6 +1266,9 @@ contract('Governance.sol', async (accounts) => {
      * potentially test + confirm real breaking point
      */
     const newMaxInProgressProposals = 100
+
+    // Confirm all InProgress proposals are uptodate since none exist
+    assert.isTrue(await governance.inProgressProposalsAreUpToDate.call(), 'Expected all proposals to be uptodate')
     
     const signature = 'slash(uint256,address)'
     const slashAmount = _lib.toBN(1)
@@ -1291,7 +1294,7 @@ contract('Governance.sol', async (accounts) => {
       { from: guardianAddress }
     )
 
-    // repeatedly call submit proposal until it breaks
+    // Confirm repeated submitProposal calls succeed without hitting gas limit
     for (let i = 1; i <= newMaxInProgressProposals; i++) {
       const submitProposalTxR = await governance.submitProposal(
         delegateManagerKey,
@@ -1305,6 +1308,9 @@ contract('Governance.sol', async (accounts) => {
       console.log(`Successfully submitted proposalId ${submitProposalTx.event.args.proposalId} with gas usage of ${submitProposalTxR.receipt.gasUsed}`)
     }
 
+    // Confirm all InProgress proposals are uptodate bc votingPeriod is still active
+    assert.isTrue(await governance.inProgressProposalsAreUpToDate.call(), 'Expected all proposals to be uptodate')
+
     // Set voting period down so proposals can be evaluated
     await governance.guardianExecuteTransaction(
       governanceKey,
@@ -1314,11 +1320,17 @@ contract('Governance.sol', async (accounts) => {
       { from: guardianAddress }
     )
 
+    // Confirm all InProgress proposals are not uptodate since votingPeriod has expired
+    assert.isFalse(await governance.inProgressProposalsAreUpToDate.call(), 'Expected all proposals to not be uptodate')
+
     for (let i = 1; i <= newMaxInProgressProposals; i++) {
       const evaluateTxR = await governance.evaluateProposalOutcome(i, { from: proposerAddress })
       const evaluateTx = _lib.parseTx(evaluateTxR)
       console.log(`Successfully evaluated proposalId ${evaluateTx.event.args.proposalId} with gas usage of ${evaluateTxR.receipt.gasUsed}`)
     }
+
+    // Confirm all InProgress proposals are uptodate bc all have been evaluated
+    assert.isTrue(await governance.inProgressProposalsAreUpToDate.call(), 'Expected all proposals to be uptodate')
 
     // Increase votingPeriod so evaluatable checks succeed and new proposals can be submitted
     await governance.guardianExecuteTransaction(
@@ -1342,6 +1354,9 @@ contract('Governance.sol', async (accounts) => {
       const submitProposalTx = _lib.parseTx(submitProposalTxR)
       console.log(`Successfully submitted proposalId ${submitProposalTx.event.args.proposalId} with gas usage of ${submitProposalTxR.receipt.gasUsed}`)
     }
+
+    // Confirm all InProgress proposals are uptodate as votingPeriod is active
+    assert.isTrue(await governance.inProgressProposalsAreUpToDate.call(), 'Expected all proposals to be uptodate')
   })
 
   describe('Guardian execute transactions', async () => {
