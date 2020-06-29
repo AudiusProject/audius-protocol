@@ -165,10 +165,7 @@ contract Governance is InitializableV2 {
 
         // Require proposer is active Staker
         Staking stakingContract = Staking(stakingAddress);
-        require(
-            stakingContract.totalStakedFor(proposer) > 0,
-            "Proposer must be active staker with non-zero stake."
-        );
+        stakingContract.isCurrentStaker(proposer);
 
         // Require _targetContractRegistryKey points to a valid registered contract
         address targetContractAddress = registry.getContract(_targetContractRegistryKey);
@@ -233,11 +230,11 @@ contract Governance is InitializableV2 {
         // Require voter is active Staker + get voterStake.
         Staking stakingContract = Staking(stakingAddress);
 
-        uint256 voterStake = stakingContract.totalStakedForAt(
+        // Check that msg.sender had a valid stake at proposal start
+        uint256 voterStake = stakingContract.wasStakerAt(
             voter,
             proposals[_proposalId].startBlockNumber
         );
-        require(voterStake > 0, "Voter must be active staker with non-zero stake.");
 
         // Require proposal is still active
         require(
@@ -336,12 +333,8 @@ contract Governance is InitializableV2 {
         // Require msg.sender is active Staker.
         Staking stakingContract = Staking(stakingAddress);
 
-        require(
-            stakingContract.totalStakedForAt(
-                msg.sender, proposals[_proposalId].startBlockNumber
-            ) > 0,
-            "Governance::evaluateProposalOutcome: Caller must be active staker with non-zero stake."
-        );
+        // Check that msg.sender had a valid stake at proposal start
+        stakingContract.wasStakerAt(msg.sender, proposals[_proposalId].startBlockNumber);
 
         // Require proposal votingPeriod has ended.
         uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;

@@ -300,7 +300,7 @@ contract Staking is InitializableV2 {
     function totalStakedForAt(
         address _accountAddress,
         uint256 _blockNumber
-    ) external view returns (uint256) {
+    ) public view returns (uint256) {
         return accounts[_accountAddress].stakedHistory.get(_blockNumber.toUint64());
     }
 
@@ -352,6 +352,40 @@ contract Staking is InitializableV2 {
     function totalStaked() public view returns (uint256) {
         // we assume it's not possible to stake in the future
         return totalStakedHistory.getLast();
+    }
+
+    /* External helper functions */
+
+    /**
+     * @notice Helper function wrapped around totalStakedForAt. Checks whether _accountAddress
+            was valid staker at _blockNumber
+     * @param _accountAddress - Account requesting for
+     * @param _blockNumber - Block number at which we are requesting
+     * @return The amount of tokens staked by the account at the given block number
+     */
+    function wasStakerAt(
+        address _accountAddress,
+        uint256 _blockNumber
+    ) external view returns (uint256) {
+        uint256 voterStake = totalStakedForAt(_accountAddress, _blockNumber);
+        require(
+            voterStake > 0,
+            "Caller was not an active staker with non-zero stake at _blockNumber"
+        );
+
+        return voterStake;
+    }
+
+    /**
+     * @notice Helper function wrapped around totalStakedFor. Checks whether _accountAddress
+            is currently a valid staker with a non-zero stake
+     * @param _accountAddress - Account requesting for
+     */
+    function isCurrentStaker(address _accountAddress) external view {
+        require(
+            totalStakedFor(_accountAddress) > 0,
+            "Caller is not an active staker with non-zero stake."
+        );
     }
 
     /* Internal functions */
