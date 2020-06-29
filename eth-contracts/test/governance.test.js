@@ -29,7 +29,7 @@ const Outcome = Object.freeze({
   Yes: 2,
   Invalid: 3,
   TxFailed: 4,
-  // Evaluating: 5, // interal contract state
+  // Evaluating: 5, // internal contract state
   Veto: 6
 })
 
