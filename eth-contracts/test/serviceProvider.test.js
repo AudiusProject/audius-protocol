@@ -25,7 +25,7 @@ const testEndpoint2 = 'https://localhost:5002'
 
 const MIN_STAKE_AMOUNT = 10
 const VOTING_PERIOD = 10
-const VOTING_QUORUM = 1
+const VOTING_QUORUM_PERCENT = 10
 
 const INITIAL_BAL = _lib.audToWeiBN(1000)
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
@@ -116,7 +116,7 @@ contract('ServiceProvider test', async (accounts) => {
       proxyDeployerAddress,
       registry,
       VOTING_PERIOD,
-      VOTING_QUORUM,
+      VOTING_QUORUM_PERCENT,
       guardianAddress
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })

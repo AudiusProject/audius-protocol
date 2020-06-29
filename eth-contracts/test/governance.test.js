@@ -42,7 +42,7 @@ contract('Governance.sol', async (accounts) => {
   let claimsManager, delegateManager, governance, registry0, registryProxy, token0, tokenProxy
 
   const votingPeriod = 10
-  const votingQuorum = 1
+  const votingQuorumPercent = 10
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress, newUpdateAddress] = accounts
@@ -85,7 +85,7 @@ contract('Governance.sol', async (accounts) => {
       proxyDeployerAddress,
       registry,
       votingPeriod,
-      votingQuorum,
+      votingQuorumPercent,
       guardianAddress
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
@@ -315,7 +315,7 @@ contract('Governance.sol', async (accounts) => {
     let governanceCallData = _lib.encodeCall(
       'initialize',
       ['address', 'uint256', 'uint256', 'address'],
-      [0x0, votingPeriod, votingQuorum, proxyDeployerAddress]
+      [0x0, votingPeriod, votingQuorumPercent, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -332,7 +332,7 @@ contract('Governance.sol', async (accounts) => {
     governanceCallData = _lib.encodeCall(
       'initialize',
       ['address', 'uint256', 'uint256', 'address'],
-      [registry.address, 0, votingQuorum, proxyDeployerAddress]
+      [registry.address, 0, votingQuorumPercent, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -345,7 +345,7 @@ contract('Governance.sol', async (accounts) => {
       "revert"
     )
 
-    // Requires non-zero _votingQuorum
+    // Requires non-zero _votingQuorumPercent
     governanceCallData = _lib.encodeCall(
       'initialize',
       ['address', 'uint256', 'uint256', 'address'],
@@ -366,7 +366,7 @@ contract('Governance.sol', async (accounts) => {
     governanceCallData = _lib.encodeCall(
       'initialize',
       ['address', 'uint256', 'uint256', 'address'],
-      [registry.address, votingPeriod, votingQuorum, _lib.addressZero]
+      [registry.address, votingPeriod, votingQuorumPercent, _lib.addressZero]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -391,7 +391,7 @@ contract('Governance.sol', async (accounts) => {
       proxyDeployerAddress,
       registry2,
       votingPeriod,
-      votingQuorum,
+      votingQuorumPercent,
       guardianAddress
     )
     await registry2.addContract(governanceKey, governance2.address, { from: proxyDeployerAddress })
@@ -906,6 +906,13 @@ contract('Governance.sol', async (accounts) => {
             assert.equal(voterVote, defaultVote)
           }
         }
+
+        // Confirm quorum was correctly calculated
+        const totalActiveStake = await staking.totalStakedAt.call(proposal.startBlockNumber)
+        const totalVotedStake = parseInt(proposal.voteMagnitudeYes) + parseInt(proposal.voteMagnitudeNo)
+        // div before mul bc js does large number math incorrectly
+        const participationPercent = totalVotedStake / totalActiveStake * 100
+        assert.isAtLeast(participationPercent, votingQuorumPercent, 'Quorum met')
   
         // Confirm Slash action succeeded by checking new Stake + Token values
         const finalStakeAcct2 = await staking.totalStakedFor(targetAddress)
@@ -965,10 +972,17 @@ contract('Governance.sol', async (accounts) => {
         assert.isTrue(proposal.voteMagnitudeYes.isZero(), 'Expected same voteMagnitudeYes')
         assert.isTrue(proposal.voteMagnitudeNo.eq(defaultStakeAmount.mul(TWO)), 'Expected same voteMagnitudeNo')
         assert.isTrue(proposal.numVotes.eq(TWO), 'Expected same numVotes')
+
+        // Confirm quorum was correctly calculated
+        const totalActiveStake = await staking.totalStakedAt.call(proposal.startBlockNumber)
+        const totalVotedStake = parseInt(proposal.voteMagnitudeYes) + parseInt(proposal.voteMagnitudeNo)
+        // div before mul bc js does large number math incorrectly
+        const participationPercent = totalVotedStake / totalActiveStake * 100
+        assert.isAtLeast(participationPercent, votingQuorumPercent, 'Quorum met')
       })
 
       it('Confirm voting quorum restriction is enforced', async () => {
-        // Call submitProposal + submitProposalVote
+        // Call submitProposal
         submitProposalTxReceipt = await governance.submitProposal(
           targetContractRegistryKey,
           callValue,
@@ -1004,6 +1018,62 @@ contract('Governance.sol', async (accounts) => {
         assert.isTrue(proposal.voteMagnitudeYes.isZero(), 'Expected same voteMagnitudeYes')
         assert.isTrue(proposal.voteMagnitudeNo.isZero(), 'Expected same voteMagnitudeNo')
         assert.isTrue(proposal.numVotes.isZero(), 'Expected same numVotes')
+
+        // Confirm quorum was correctly calculated
+        const totalActiveStake = await staking.totalStakedAt.call(proposal.startBlockNumber)
+        const totalVotedStake = parseInt(proposal.voteMagnitudeYes) + parseInt(proposal.voteMagnitudeNo)
+        // div before mul bc js does large number math incorrectly
+        const participationPercent = totalVotedStake / totalActiveStake * 100
+        assert.isBelow(participationPercent, votingQuorumPercent, 'Quorum not met')
+
+        // Submit new proposal + vote
+        const submitProposalTxReceipt2 = await governance.submitProposal(
+          targetContractRegistryKey,
+          callValue,
+          signature,
+          callData,
+          proposalDescription,
+          { from: proposerAddress }
+        )
+        const proposalId2 = _lib.parseTx(submitProposalTxReceipt2).event.args.proposalId
+        await governance.submitProposalVote(proposalId2, Vote.Yes, { from: voter1Address })
+
+        // Confirm proposal would meet quorum
+        let proposal2 = await governance.getProposalById.call(proposalId2)
+        const totalVotedStake2 = parseInt(proposal2.voteMagnitudeNo) + parseInt(proposal2.voteMagnitudeYes)
+        // div before mul bc js does large number math incorrectly
+        let participationPercent2 = totalVotedStake2 / totalActiveStake * 100
+        let latestVotingQuorumPercent = parseInt(await governance.getVotingQuorumPercent.call())
+        assert.isAtLeast(participationPercent2, latestVotingQuorumPercent, 'Quorum would be met')
+
+        // Increase quorum to failure amount
+        const newVotingQuorumPercent = 60
+        await governance.guardianExecuteTransaction(
+          governanceKey,
+          callValue0,
+          'setVotingQuorumPercent(uint256)',
+          _lib.abiEncode(['uint256'], [newVotingQuorumPercent]),
+          { from: guardianAddress }
+        )
+
+        // Advance blocks to the next valid claim
+        const proposal2StartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt2).event.args.startBlockNumber)
+        await time.advanceBlockTo(proposal2StartBlockNumber + votingPeriod)
+
+        // Evaluate proposal and confirm it fails
+        await governance.evaluateProposalOutcome(
+          _lib.parseTx(submitProposalTxReceipt2).event.args.proposalId,
+          { from: proposerAddress }
+        )
+        let proposal2New = await governance.getProposalById.call(proposalId2)
+        assert.equal(proposal2New.outcome, outcome, 'Expected Invalid outcome')
+
+        // Confirm quorum was correctly calculated
+        const totalVotedStake2New = parseInt(proposal2New.voteMagnitudeYes) + parseInt(proposal2New.voteMagnitudeNo)
+        // div before mul bc js does large number math incorrectly
+        const participationPercent2New = totalVotedStake2New / totalActiveStake * 100
+        latestVotingQuorumPercent = parseInt(await governance.getVotingQuorumPercent.call())
+        assert.isBelow(participationPercent2New, latestVotingQuorumPercent, 'Quorum not met')
       })
   
       it('Confirm Repeated evaluateProposal call fails', async () => {
@@ -1509,39 +1579,39 @@ contract('Governance.sol', async (accounts) => {
       )
     })
 
-    it('Update voting quorum', async () => {
-      const newVotingQuorum = 2
+    it('Update voting quorum percent', async () => {
+      const newVotingQuorumPercent = 20
       assert.equal(
-        await governance.getVotingQuorum(),
-        votingQuorum,
-        "Incorrect expected voting quorum before update"
+        await governance.getVotingQuorumPercent(),
+        votingQuorumPercent,
+        "Incorrect expected votingQuorumPercent before update"
       )
 
       await _lib.assertRevert(
-        governance.setVotingQuorum(newVotingQuorum),
+        governance.setVotingQuorumPercent(newVotingQuorumPercent),
         "Only callable by self"
       )
       
       await governance.guardianExecuteTransaction(
         governanceKey,
         callValue0,
-        'setVotingQuorum(uint256)',
-        _lib.abiEncode(['uint256'], [newVotingQuorum]),
+        'setVotingQuorumPercent(uint256)',
+        _lib.abiEncode(['uint256'], [newVotingQuorumPercent]),
         { from: guardianAddress }
       )
 
       assert.equal(
-        await governance.getVotingQuorum(),
-        newVotingQuorum,
-        "Incorrect expected voting quorum after update"
+        await governance.getVotingQuorumPercent(),
+        newVotingQuorumPercent,
+        "Incorrect expected votingQuorumPercent after update"
       )
 
       // set original value
       await governance.guardianExecuteTransaction(
         governanceKey,
         callValue0,
-        'setVotingQuorum(uint256)',
-        _lib.abiEncode(['uint256'], [votingQuorum]),
+        'setVotingQuorumPercent(uint256)',
+        _lib.abiEncode(['uint256'], [votingQuorumPercent]),
         { from: guardianAddress }
       )
     })

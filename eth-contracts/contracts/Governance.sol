@@ -700,14 +700,20 @@ contract Governance is InitializableV2 {
     /**
      * @notice Returns true if voting quorum percentage met for proposal, else false.
      * @dev Quorum is met if total voteMagnitude * 100 / total active stake in Staking
+     * @dev Eventual multiplication overflow:
+     *      (proposal.voteMagnitudeYes + proposal.voteMagnitudeNo), with 100% staking participation,
+     *          can sum to at most the entire token supply of 10^27
+     *      With 7% annual token supply inflation, multiplication can overflow ~1635 years at the earliest:
+     *      log(2^256/(10^27*100))/log(1.07) ~= 1635
      */
     function _quorumMet(Proposal memory proposal, Staking stakingContract)
-    internal view returns (bool)
+    internal returns (bool)
     {
-        return (
+        uint256 participation = (
             (proposal.voteMagnitudeYes + proposal.voteMagnitudeNo)
             .mul(100)
             .div(stakingContract.totalStakedAt(proposal.startBlockNumber))
-        ) >= votingQuorumPercent;
+        );
+        return participation >= votingQuorumPercent;
     }
 }

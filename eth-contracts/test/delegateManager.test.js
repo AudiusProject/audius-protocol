@@ -27,7 +27,7 @@ const INITIAL_BAL = _lib.audToWeiBN(1000)
 const DEFAULT_AMOUNT_VAL = _lib.audToWei(120)
 const DEFAULT_AMOUNT = _lib.toBN(DEFAULT_AMOUNT_VAL)
 const VOTING_PERIOD = 10
-const VOTING_QUORUM = 1
+const VOTING_QUORUM_PERCENT = 10
 
 const callValue0 = _lib.toBN(0)
 
@@ -59,7 +59,7 @@ contract('DelegateManager', async (accounts) => {
       proxyDeployerAddress,
       registry,
       VOTING_PERIOD,
-      VOTING_QUORUM,
+      VOTING_QUORUM_PERCENT,
       guardianAddress
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
