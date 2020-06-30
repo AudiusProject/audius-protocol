@@ -96,6 +96,10 @@ contract MockStakingCaller is InitializableV2 {
         return (0, 0, withinBounds, 1, min, max);
     }
 
+    function isInitialized() external view returns (bool) {
+        return _isInitialized();
+    }
+
     function configurePermissions() external {
         _requireIsInitialized();
 
