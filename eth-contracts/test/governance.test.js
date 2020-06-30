@@ -28,7 +28,9 @@ const Outcome = Object.freeze({
   No: 1,
   Yes: 2,
   Invalid: 3,
-  TxFailed: 4
+  TxFailed: 4,
+  // Evaluating: 5, // internal contract state
+  Veto: 6
 })
 
 const Vote = Object.freeze({
@@ -1252,7 +1254,8 @@ contract('Governance.sol', async (accounts) => {
 
           // Call getProposalById() and confirm expected outcome
           const proposal = await governance.getProposalById.call(proposalId)
-          assert.equal(proposal.outcome, Outcome.No, 'outcome')
+          assert.notEqual(proposal.outcome, Outcome.No, 'wrong outcome')
+          assert.equal(proposal.outcome, Outcome.Veto, 'outcome')
           assert.equal(parseInt(proposal.voteMagnitudeYes), defaultStakeAmount, 'voteMagnitudeYes')
           assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'voteMagnitudeNo')
           assert.equal(parseInt(proposal.numVotes), 1, 'numVotes')

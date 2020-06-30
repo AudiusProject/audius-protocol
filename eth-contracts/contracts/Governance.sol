@@ -48,8 +48,9 @@ contract Governance is InitializableV2 {
      *      TxFailed - Proposal voting decision was Yes, but transaction execution failed.
      *      Evaluating - Proposal voting decision was Yes, and evaluateProposalOutcome function is currently running.
      *          This status is transiently used inside that function to prevent re-entrancy.
+     *      Veto - Proposal was vetoed by Guardian
      */
-    enum Outcome {InProgress, No, Yes, Invalid, TxFailed, Evaluating}
+    enum Outcome {InProgress, No, Yes, Invalid, TxFailed, Evaluating, Veto}
 
     /**
      * @notice All Proposal Vote states for a voter.
@@ -456,7 +457,7 @@ contract Governance is InitializableV2 {
             "Governance::vetoProposal: Cannot veto inactive proposal."
         );
 
-        proposals[_proposalId].outcome = Outcome.No;
+        proposals[_proposalId].outcome = Outcome.Veto;
 
         emit ProposalVetoed(_proposalId);
     }
