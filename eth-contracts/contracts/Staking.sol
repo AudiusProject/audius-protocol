@@ -323,7 +323,7 @@ contract Staking is InitializableV2 {
     function totalStakedForAt(
         address _accountAddress,
         uint256 _blockNumber
-    ) public view returns (uint256) {
+    ) external view returns (uint256) {
         return accounts[_accountAddress].stakedHistory.get(_blockNumber.toUint64());
     }
 
