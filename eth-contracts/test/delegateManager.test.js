@@ -27,7 +27,7 @@ const INITIAL_BAL = _lib.audToWeiBN(1000)
 const DEFAULT_AMOUNT_VAL = _lib.audToWei(120)
 const DEFAULT_AMOUNT = _lib.toBN(DEFAULT_AMOUNT_VAL)
 const VOTING_PERIOD = 10
-const VOTING_QUORUM = 1
+const VOTING_QUORUM_PERCENT = 10
 const DECREASE_STAKE_LOCKUP_DURATION = 10
 
 const callValue0 = _lib.toBN(0)
@@ -60,7 +60,7 @@ contract('DelegateManager', async (accounts) => {
       proxyDeployerAddress,
       registry,
       VOTING_PERIOD,
-      VOTING_QUORUM,
+      VOTING_QUORUM_PERCENT,
       guardianAddress
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
@@ -934,6 +934,35 @@ contract('DelegateManager', async (accounts) => {
           finalDelegatorStake.eq(expectedDelegatorStake),
           'Unexpected delegator stake after claim is made')
       }
+    })
+
+    it('Fail when undelegating zero stake', async () => {
+      // TODO: Validate all
+      // Transfer 1000 tokens to delegator
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
+
+      let initialDelegateAmount = _lib.audToWeiBN(60)
+
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      await delegateManager.delegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      // Submit request to undelegate
+      await _lib.assertRevert(
+        delegateManager.requestUndelegateStake(
+          stakerAccount,
+          0,
+          { from: delegatorAccount1 }
+        ),
+        "Requested undelegate stake amount must be greater than zero"
+      )
     })
 
     // Confirm a pending undelegate operation negates any claimed value

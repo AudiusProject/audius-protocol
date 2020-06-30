@@ -192,6 +192,10 @@ contract DelegateManager is InitializableV2 {
     {
         _requireIsInitialized();
         require(
+            _amount > 0,
+            "Requested undelegate stake amount must be greater than zero"
+        );
+        require(
             !_claimPending(_target),
             "Undelegate request not permitted for SP pending claim"
         );
