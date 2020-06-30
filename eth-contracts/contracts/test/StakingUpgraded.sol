@@ -4,7 +4,9 @@ import "../Staking.sol";
 
 
 contract StakingUpgraded is Staking {
-    function newFunction() public pure returns (uint) {
+    function newFunction() public view returns (uint) {
+        _requireIsInitialized();
+
         return 5;
     }
 }
