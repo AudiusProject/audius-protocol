@@ -22,6 +22,8 @@ contract MockDelegateManager is InitializableV2 {
         address _claimer,
         uint _totalLockedForSP
     ) external returns (uint) {
+        _requireIsInitialized();
+
         ClaimsManager claimsManager = ClaimsManager(
             claimsManagerAddress
         );

@@ -138,6 +138,8 @@ contract ServiceTypeManager is InitializableV2 {
     function getServiceTypeInfo(bytes32 _serviceType)
     external view returns (bool isValid, uint minStake, uint maxStake)
     {
+        _requireIsInitialized();
+
         return (
             serviceTypeInfo[_serviceType].isValid,
             serviceTypeInfo[_serviceType].minStake,
@@ -151,6 +153,8 @@ contract ServiceTypeManager is InitializableV2 {
     function getValidServiceTypes()
     external view returns (bytes32[] memory types)
     {
+        _requireIsInitialized();
+
         return validServiceTypes;
     }
 
@@ -160,6 +164,8 @@ contract ServiceTypeManager is InitializableV2 {
     function serviceTypeIsValid(bytes32 _serviceType)
     external view returns (bool isValid)
     {
+        _requireIsInitialized();
+
         return serviceTypeInfo[_serviceType].isValid;
     }
 
@@ -201,6 +207,8 @@ contract ServiceTypeManager is InitializableV2 {
     function getVersion(bytes32 _serviceType, uint _versionIndex)
     external view returns (bytes32 version)
     {
+        _requireIsInitialized();
+
         require(
             serviceTypeVersions[_serviceType].length > _versionIndex,
             "No registered version of serviceType"
@@ -216,6 +224,8 @@ contract ServiceTypeManager is InitializableV2 {
     function getCurrentVersion(bytes32 _serviceType)
     external view returns (bytes32 currentVersion)
     {
+        _requireIsInitialized();
+    
         require(
             serviceTypeVersions[_serviceType].length >= 1,
             "No registered version of serviceType"
@@ -231,6 +241,8 @@ contract ServiceTypeManager is InitializableV2 {
     function getNumberOfVersions(bytes32 _serviceType)
     external view returns (uint)
     {
+        _requireIsInitialized();
+
         return serviceTypeVersions[_serviceType].length;
     }
 
@@ -242,6 +254,8 @@ contract ServiceTypeManager is InitializableV2 {
     function serviceVersionIsValid(bytes32 _serviceType, bytes32 _serviceVersion)
     external view returns (bool isValidServiceVersion)
     {
+        _requireIsInitialized();
+
         return serviceTypeVersionInfo[_serviceType][_serviceVersion];
     }
 }
