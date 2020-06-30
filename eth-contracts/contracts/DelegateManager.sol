@@ -84,6 +84,14 @@ contract DelegateManager is InitializableV2 {
       uint _newTotal
     );
 
+    event MaxDelegatorsUpdated(uint indexed _maxDelegators);
+    event MinDelegationUpdated(uint indexed _minDelegationAmount);
+    event UndelegateLockupDurationUpdated(uint indexed _undelegateLockupDuration);
+    event GovernanceAddressUpdated(address indexed _newGovernanceAddress);
+    event StakingAddressUpdated(address indexed _newStakingAddress);
+    event ServiceProviderFactoryAddressUpdated(address indexed _newServiceProviderFactoryAddress);
+    event ClaimsManagerAddressUpdated(address indexed _newClaimsManagerAddress);
+
     /**
      * @notice Function to initialize the contract
      * @param _tokenAddress - address of ERC20 token that will be claimed
@@ -183,6 +191,10 @@ contract DelegateManager is InitializableV2 {
     ) external returns (uint newDelegateAmount)
     {
         _requireIsInitialized();
+        require(
+            _amount > 0,
+            "Requested undelegate stake amount must be greater than zero"
+        );
         require(
             !_claimPending(_target),
             "Undelegate request not permitted for SP pending claim"
@@ -525,6 +537,7 @@ contract DelegateManager is InitializableV2 {
         );
 
         undelegateLockupDuration = _duration;
+        emit UndelegateLockupDurationUpdated(_duration);
     }
 
     /**
@@ -540,6 +553,7 @@ contract DelegateManager is InitializableV2 {
         );
 
         maxDelegators = _maxDelegators;
+        emit MaxDelegatorsUpdated(_maxDelegators);
     }
 
     /**
@@ -555,6 +569,7 @@ contract DelegateManager is InitializableV2 {
         );
 
         minDelegationAmount = _minDelegationAmount;
+        emit MinDelegationUpdated(_minDelegationAmount);
     }
 
     /**
@@ -567,18 +582,20 @@ contract DelegateManager is InitializableV2 {
 
         require(msg.sender == governanceAddress, "Only governance");
         governanceAddress = _governanceAddress;
+        emit GovernanceAddressUpdated(_governanceAddress);
     }
 
     /**
      * @notice Set the Staking address
      * @dev Only callable by Governance address
-     * @param _address - address for new Staking contract
+     * @param _stakingAddress - address for new Staking contract
      */
-    function setStakingAddress(address _address) external {
+    function setStakingAddress(address _stakingAddress) external {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only governance");
-        stakingAddress = _address;
+        stakingAddress = _stakingAddress;
+        emit StakingAddressUpdated(_stakingAddress);
     }
 
     /**
@@ -591,6 +608,7 @@ contract DelegateManager is InitializableV2 {
 
         require(msg.sender == governanceAddress, "Only governance");
         serviceProviderFactoryAddress = _spFactory;
+        emit ServiceProviderFactoryAddressUpdated(_spFactory);
     }
 
     /**
@@ -603,6 +621,7 @@ contract DelegateManager is InitializableV2 {
 
         require(msg.sender == governanceAddress, "Only governance");
         claimsManagerAddress = _claimsManagerAddress;
+        emit ClaimsManagerAddressUpdated(_claimsManagerAddress);
     }
 
     // ========================================= View Functions =========================================
