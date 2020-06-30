@@ -455,7 +455,9 @@ contract DelegateManager is InitializableV2 {
         }
 
         // Amount in sp factory for slash target
-        (uint256 totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(_slashAddress);
+        (uint256 totalBalanceInSPFactory,,,,,) = (
+            spFactory.getServiceProviderDetails(_slashAddress)
+        );
         require(totalBalanceInSPFactory > 0, "Service Provider stake required");
 
         // Decrease value in Staking contract
