@@ -32,7 +32,7 @@ contract ServiceTypeManager is InitializableV2 {
     mapping(bytes32 => ServiceTypeInfo) serviceTypeInfo;
 
     event SetServiceVersion(bytes32 _serviceType, bytes32 _serviceVersion);
-    event ServiceTypeAdded(bytes32 _serviceType, uint _serviceTypeMin, uint _serviceTypeMax); 
+    event ServiceTypeAdded(bytes32 _serviceType, uint _serviceTypeMin, uint _serviceTypeMax);
     event ServiceTypeRemoved(bytes32 _serviceType);
 
     /**

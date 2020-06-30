@@ -486,7 +486,12 @@ contract ServiceProviderFactory is InitializableV2 {
             "Invalid update operation, wrong owner");
 
         serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
-        emit DelegateOwnerWalletUpdated(msg.sender, _serviceType, spID, _updatedDelegateOwnerWallet);
+        emit DelegateOwnerWalletUpdated(
+            msg.sender,
+            _serviceType,
+            spID,
+            _updatedDelegateOwnerWallet
+        );
     }
 
     /**
