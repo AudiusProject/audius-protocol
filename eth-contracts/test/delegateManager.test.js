@@ -906,7 +906,7 @@ contract('DelegateManager', async (accounts) => {
       }
     })
 
-    it.only('Fail when undelegating zero stake', async () => {
+    it('Fail when undelegating zero stake', async () => {
       // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
