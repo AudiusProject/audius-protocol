@@ -84,6 +84,10 @@ contract DelegateManager is InitializableV2 {
       uint _newTotal
     );
 
+    event MaxDelegatorsUpdated(uint indexed _maxDelegators);
+    event MinDelegationUpdated(uint indexed _minDelegationAmount);
+    event UndelegateLockupDurationUpdated(uint indexed _undelegateLockupDuration);
+
     /**
      * @notice Function to initialize the contract
      * @param _tokenAddress - address of ERC20 token that will be claimed
@@ -520,6 +524,7 @@ contract DelegateManager is InitializableV2 {
         );
 
         undelegateLockupDuration = _duration;
+        emit UndelegateLockupDurationUpdated(_duration);
     }
 
     /**
@@ -535,6 +540,7 @@ contract DelegateManager is InitializableV2 {
         );
 
         maxDelegators = _maxDelegators;
+        emit MaxDelegatorsUpdated(_maxDelegators);
     }
 
     /**
@@ -550,6 +556,7 @@ contract DelegateManager is InitializableV2 {
         );
 
         minDelegationAmount = _minDelegationAmount;
+        emit MinDelegationUpdated(_minDelegationAmount);
     }
 
     /**

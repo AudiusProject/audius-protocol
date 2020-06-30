@@ -1,5 +1,5 @@
 import * as _lib from '../utils/lib.js'
-const { time } = require('@openzeppelin/test-helpers')
+const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
@@ -240,12 +240,16 @@ contract('DelegateManager', async (accounts) => {
 
   /* Helper functions */
   const updateMinDelegationAmount = async (amount) => {
-    await governance.guardianExecuteTransaction(
+    let updateTx = await governance.guardianExecuteTransaction(
       delegateManagerKey,
       _lib.toBN(0),
       'updateMinDelegationAmount(uint256)',
       _lib.abiEncode(['uint256'], [amount]),
       { from: guardianAddress }
+    )
+    await expectEvent.inTransaction(
+      updateTx.tx, DelegateManager, 'MinDelegationUpdated',
+      { _minDelegationAmount: `${amount}` }
     )
   }
 
@@ -1314,12 +1318,16 @@ contract('DelegateManager', async (accounts) => {
         "Only callable by Governance contract"
       )
 
-      await governance.guardianExecuteTransaction(
+      let updateTx = await governance.guardianExecuteTransaction(
         delegateManagerKey,
         _lib.toBN(0),
         'updateUndelegateLockupDuration(uint256)',
         _lib.abiEncode(['uint256'], [newDurationVal]),
         { from: guardianAddress }
+      )
+      await expectEvent.inTransaction(
+        updateTx.tx, DelegateManager, 'UndelegateLockupDurationUpdated',
+        { _undelegateLockupDuration: `${newDurationVal}` }
       )
 
       currentDuration = await delegateManager.getUndelegateLockupDuration()
@@ -1329,12 +1337,16 @@ contract('DelegateManager', async (accounts) => {
     it('Maximum delegators', async () => {
       // Update max delegators to 4
       const maxDelegators = 4
-      await governance.guardianExecuteTransaction(
+      let updateTx = await governance.guardianExecuteTransaction(
         delegateManagerKey,
         _lib.toBN(0),
         'updateMaxDelegators(uint256)',
         _lib.abiEncode(['uint256'], [maxDelegators]),
         { from: guardianAddress }
+      )
+      await expectEvent.inTransaction(
+        updateTx.tx, DelegateManager, 'MaxDelegatorsUpdated',
+        { _maxDelegators: `${maxDelegators}` }
       )
 
       assert.equal(
@@ -1415,14 +1427,7 @@ contract('DelegateManager', async (accounts) => {
       // Update min delegation level configuration
       let minDelegateStakeVal = _lib.audToWei(100)
       let minDelegateStake = _lib.toBN(minDelegateStakeVal)
-
-      await governance.guardianExecuteTransaction(
-        delegateManagerKey,
-        _lib.toBN(0),
-        'updateMinDelegationAmount(uint256)',
-        _lib.abiEncode(['uint256'], [minDelegateStakeVal]),
-        { from: guardianAddress }
-      )
+      await updateMinDelegationAmount(minDelegateStakeVal)
 
       assert.isTrue(
         minDelegateStake.eq(await delegateManager.getMinDelegationAmount()),
@@ -1771,12 +1776,16 @@ contract('DelegateManager', async (accounts) => {
           "Only callable by Governance contract"
         )
 
-        await governance.guardianExecuteTransaction(
+        let updateDecreaseStakeDurationTx = await governance.guardianExecuteTransaction(
           serviceProviderFactoryKey,
           _lib.toBN(0),
           'updateDecreaseStakeLockupDuration(uint256)',
           _lib.abiEncode(['uint256'], [_lib.fromBN(newDuration)]),
           { from: guardianAddress }
+        )
+        await expectEvent.inTransaction(
+          updateDecreaseStakeDurationTx.tx, ServiceProviderFactory, 'DecreaseStakeLockupDurationUpdated',
+          { _lockupDuration: newDuration }
         )
 
         let updatedDuration = await serviceProviderFactory.getDecreaseStakeLockupDuration()

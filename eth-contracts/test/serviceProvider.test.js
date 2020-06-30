@@ -474,10 +474,20 @@ contract('ServiceProvider test', async (accounts) => {
           updatedCutValue,
           { from: accounts[4] }),
         'Service Provider cut update operation restricted to deployer')
-      await serviceProviderFactory.updateServiceProviderCut(
+      let updateTx = await serviceProviderFactory.updateServiceProviderCut(
         stakerAccount,
         updatedCutValue,
         { from: stakerAccount })
+
+      await expectEvent.inTransaction(
+        updateTx.tx,
+        ServiceProviderFactory,
+        'ServiceProviderCutUpdated',
+        { _owner: stakerAccount,
+          _updatedCut: `${updatedCutValue}`
+        }
+      )
+
       let info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCutValue)), 'Expect updated cut')
       let newCut = 110
@@ -630,11 +640,20 @@ contract('ServiceProvider test', async (accounts) => {
       )
       // Perform and validate update
       let newDelegateOwnerWallet = accounts[4]
-      let tx = await serviceProviderFactory.updateDelegateOwnerWallet(
+      let updateWalletTx = await serviceProviderFactory.updateDelegateOwnerWallet(
         testDiscProvType,
         testEndpoint,
         newDelegateOwnerWallet,
         { from: stakerAccount })
+
+      await expectEvent.inTransaction(
+        updateWalletTx.tx, ServiceProviderFactory, 'DelegateOwnerWalletUpdated',
+        { _serviceType: web3.utils.padRight(testDiscProvType, 64),
+          _owner: stakerAccount,
+          _updatedWallet: newDelegateOwnerWallet,
+          _spID: spID
+        }
+      )
 
       info = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spID)
       let newDelegateFromChain = info.delegateOwnerWallet
@@ -888,9 +907,20 @@ contract('ServiceProvider test', async (accounts) => {
       assert.equal(testEndpoint, endpoint)
 
       // update the endpoint from testEndpoint to testEndpoint1
-      await serviceProviderFactory.updateEndpoint(testDiscProvType, testEndpoint, testEndpoint1, { from: stakerAccount })
+      let updateEndpointTx = await serviceProviderFactory.updateEndpoint(testDiscProvType, testEndpoint, testEndpoint1, { from: stakerAccount })
       const { endpoint: endpointAfter } = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spId)
       assert.equal(testEndpoint1, endpointAfter)
+      await expectEvent.inTransaction(
+        updateEndpointTx.tx,
+        ServiceProviderFactory,
+        'EndpointUpdated',
+        { _serviceType: web3.utils.padRight(testDiscProvType, 64),
+          _owner: stakerAccount,
+          _oldEndpoint: web3.utils.keccak256(testEndpoint),
+          _newEndpoint: web3.utils.keccak256(testEndpoint1),
+          _spID: spId
+        }
+      )
 
       // it should replace the service provider in place so spId should be consistent
       const spIdNew = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint1)

@@ -101,13 +101,27 @@ contract ServiceProviderFactory is InitializableV2 {
       uint256 _stakeAmount
     );
 
-    event UpdateEndpoint(
+    event EndpointUpdated(
       bytes32 _serviceType,
       address _owner,
-      string _oldEndpoint,
-      string _newEndpoint,
-      uint spId
+      string indexed _oldEndpoint,
+      string indexed _newEndpoint,
+      uint _spID
     );
+
+    event DelegateOwnerWalletUpdated(
+      address _owner,
+      bytes32 indexed _serviceType,
+      uint indexed _spID,
+      address indexed _updatedWallet
+    );
+
+    event ServiceProviderCutUpdated(
+      address indexed _owner,
+      uint indexed _updatedCut
+    );
+
+    event DecreaseStakeLockupDurationUpdated(uint indexed _lockupDuration);
 
     /**
      * @notice Function to initialize the contract
@@ -472,6 +486,7 @@ contract ServiceProviderFactory is InitializableV2 {
             "Invalid update operation, wrong owner");
 
         serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
+        emit DelegateOwnerWalletUpdated(msg.sender, _serviceType, spID, _updatedDelegateOwnerWallet);
     }
 
     /**
@@ -506,6 +521,8 @@ contract ServiceProviderFactory is InitializableV2 {
         sp.endpoint = _newEndpoint;
         serviceProviderInfo[_serviceType][spId] = sp;
         serviceProviderEndpointToId[keccak256(bytes(_newEndpoint))] = spId;
+
+        emit EndpointUpdated(_serviceType, msg.sender, _oldEndpoint, _newEndpoint, spId);
         return spId;
     }
 
@@ -551,6 +568,7 @@ contract ServiceProviderFactory is InitializableV2 {
             _cut <= DEPLOYER_CUT_BASE,
             "Service Provider cut cannot exceed base value");
         spDetails[_serviceProvider].deployerCut = _cut;
+        emit ServiceProviderCutUpdated(_serviceProvider, _cut);
     }
 
     /// @notice Update service provider lockup duration
@@ -563,6 +581,7 @@ contract ServiceProviderFactory is InitializableV2 {
         );
 
         decreaseStakeLockupDuration = _duration;
+        emit DecreaseStakeLockupDurationUpdated(_duration);
     }
 
     /// @notice Get denominator for deployer cut calculations
