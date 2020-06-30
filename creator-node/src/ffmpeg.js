@@ -3,12 +3,13 @@ const fs = require('fs')
 const path = require('path')
 const ffmpeg = require('ffmpeg-static').path
 const spawn = require('child_process').spawn
-const { logger } = require('./logging')
+const { logger: genericLogger } = require('./logging')
 
 /** Segments file into equal size chunks without re-encoding
  *  Try to segment as mp3 and error on failure
  */
-function segmentFile (fileDir, fileName) {
+function segmentFile (fileDir, fileName, { logContext }) {
+  const logger = genericLogger.child(logContext)
   return new Promise((resolve, reject) => {
     logger.info(`Segmenting file ${fileName}...`)
     const absolutePath = path.resolve(fileDir, fileName)
@@ -50,7 +51,8 @@ function segmentFile (fileDir, fileName) {
 }
 
 /** Transcode file into 320kbps mp3 and store in same directory. */
-function transcodeFileTo320 (fileDir, fileName) {
+function transcodeFileTo320 (fileDir, fileName, { logContext }) {
+  const logger = genericLogger.child(logContext)
   return new Promise((resolve, reject) => {
     logger.info(`Transcoding file ${fileName}...`)
     const sourcePath = path.resolve(fileDir, fileName)

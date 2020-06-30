@@ -26,8 +26,8 @@ module.exports = function (app) {
     let segmentFilePaths
     try {
       const transcode = await Promise.all([
-        TranscodingQueue.segment(req.fileDir, req.fileName),
-        TranscodingQueue.transcode320(req.fileDir, req.fileName)
+        TranscodingQueue.segment(req.fileDir, req.fileName, { logContext: req.logContext }),
+        TranscodingQueue.transcode320(req.fileDir, req.fileName, { logContext: req.logContext })
       ])
       segmentFilePaths = transcode[0].filePaths
       transcodedFilePath = transcode[1].filePath
