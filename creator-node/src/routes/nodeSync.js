@@ -81,7 +81,7 @@ module.exports = function (app) {
                 file.multihash,
                 file.storagePath)
             } else if (file.type === 'image') {
-              if (file.sourcePath === null) {
+              if (file.sourceFile === null) {
                 // Ensure pre-directory images are still exported appropriately
                 await rehydrateIpfsFromFsIfNecessary(
                   req,
