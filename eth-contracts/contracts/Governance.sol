@@ -483,6 +483,7 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == address(this), "Only callable by self");
+        require(_votingPeriod > 0, "Requires non-zero _votingPeriod");
         votingPeriod = _votingPeriod;
     }
 
@@ -495,6 +496,10 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == address(this), "Only callable by self");
+        require(
+            _votingQuorumPercent > 0 && _votingQuorumPercent <= 100,
+            "Requires _votingQuorumPercent between 1 & 100"
+        );
         votingQuorumPercent = _votingQuorumPercent;
     }
 
