@@ -39,6 +39,7 @@ contract MockStakingCaller is InitializableV2 {
         address _staker
     ) external {
         _requireIsInitialized();
+
         // pull tokens into contract
         stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
         // Approve transfer
@@ -53,6 +54,7 @@ contract MockStakingCaller is InitializableV2 {
         uint256 _amount
     ) external {
         _requireIsInitialized();
+
         staking.stakeFor(_accountAddress, _amount);
     }
 
@@ -62,6 +64,7 @@ contract MockStakingCaller is InitializableV2 {
         uint256 _amount
     ) external {
         _requireIsInitialized();
+
         staking.unstakeFor(_accountAddress, _amount);
     }
 
@@ -70,6 +73,7 @@ contract MockStakingCaller is InitializableV2 {
         address _slashAddress
     ) external {
         _requireIsInitialized();
+
         staking.slash(_amount, _slashAddress);
     }
 
@@ -87,15 +91,14 @@ contract MockStakingCaller is InitializableV2 {
         uint minAccountStake,
         uint maxAccountStake)
     {
-        return (0, 0, withinBounds, 1, min, max);
-    }
+        _requireIsInitialized();
 
-    function isInitialized() external view returns (bool) {
-        return _isInitialized();
+        return (0, 0, withinBounds, 1, min, max);
     }
 
     function configurePermissions() external {
         _requireIsInitialized();
+
         staking.setClaimsManagerAddress(address(this));
         staking.setServiceProviderFactoryAddress(address(this));
         staking.setDelegateManagerAddress(address(this));
@@ -104,10 +107,14 @@ contract MockStakingCaller is InitializableV2 {
 
     /// Governance mock functions
     function upgradeTo(address _newImplementation) external {
+        _requireIsInitialized();
+
         return AudiusAdminUpgradeabilityProxy(stakingAddress).upgradeTo(_newImplementation);
     }
 
     function setAudiusGovernanceAddress(address _governanceAddress) external {
+        _requireIsInitialized();
+
         return AudiusAdminUpgradeabilityProxy(
             stakingAddress
         ).setAudiusGovernanceAddress(_governanceAddress);

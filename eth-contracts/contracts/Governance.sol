@@ -478,6 +478,8 @@ contract Governance is InitializableV2 {
      * @param _stakingAddress - address for new Staking contract
      */
     function setStakingAddress(address _stakingAddress) external {
+        _requireIsInitialized();
+
         require(msg.sender == address(this), "Only callable by self");
         require(_stakingAddress != address(0x00), "Requires non-zero _stakingAddress");
         stakingAddress = _stakingAddress;
@@ -489,6 +491,8 @@ contract Governance is InitializableV2 {
      * @param _votingPeriod - new voting period
      */
     function setVotingPeriod(uint256 _votingPeriod) external {
+        _requireIsInitialized();
+
         require(msg.sender == address(this), "Only callable by self");
         votingPeriod = _votingPeriod;
     }
@@ -499,6 +503,8 @@ contract Governance is InitializableV2 {
      * @param _votingQuorumPercent - new voting period
      */
     function setVotingQuorumPercent(uint256 _votingQuorumPercent) external {
+        _requireIsInitialized();
+
         require(msg.sender == address(this), "Only callable by self");
         votingQuorumPercent = _votingQuorumPercent;
     }
@@ -509,6 +515,8 @@ contract Governance is InitializableV2 {
      * @param _registryAddress - address for new Registry contract
      */
     function setRegistryAddress(address _registryAddress) external {
+        _requireIsInitialized();
+
         require(msg.sender == address(this), "Only callable by self");
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
 
@@ -524,6 +532,8 @@ contract Governance is InitializableV2 {
      * @param _newMaxInProgressProposals - new value for maxInProgressProposals
      */
     function setMaxInProgressProposals(uint16 _newMaxInProgressProposals) external {
+        _requireIsInitialized();
+
         require(msg.sender == address(this), "Only callable by self");
         require(_newMaxInProgressProposals > 0, "Requires non-zero _newMaxInProgressProposals");
         maxInProgressProposals = _newMaxInProgressProposals;
@@ -623,6 +633,8 @@ contract Governance is InitializableV2 {
         uint256 numVotes
     )
     {
+        _requireIsInitialized();
+
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
             "Must provide valid non-zero _proposalId"
@@ -655,6 +667,8 @@ contract Governance is InitializableV2 {
     function getVoteByProposalAndVoter(uint256 _proposalId, address _voter)
     external view returns (Vote vote)
     {
+        _requireIsInitialized();
+
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
             "Must provide valid non-zero _proposalId"
@@ -690,16 +704,22 @@ contract Governance is InitializableV2 {
 
     /// @notice Get the registry address
     function getRegistryAddress() external view returns (address) {
+        _requireIsInitialized();
+
         return registryAddress;
     }
 
     /// @notice Get the max number of concurrent InProgress proposals
     function getMaxInProgressProposals() external view returns (uint16) {
+        _requireIsInitialized();
+
         return maxInProgressProposals;
     }
 
     /// @notice Get the array of all InProgress proposal Ids
     function getInProgressProposals() external view returns (uint256[] memory) {
+        _requireIsInitialized();
+
         return inProgressProposals;
     }
 
@@ -709,6 +729,8 @@ contract Governance is InitializableV2 {
      * @dev Is public since its called internally in `submitProposal()` as well as externally in UI
      */
     function inProgressProposalsAreUpToDate() external view returns (bool) {
+        _requireIsInitialized();
+
         // compare current block number against endBlockNumber of each proposal
         for (uint i = 0; i < inProgressProposals.length; i++) {
             if (
