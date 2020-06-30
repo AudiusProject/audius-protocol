@@ -75,20 +75,17 @@ module.exports = function (app) {
         // Ensure all relevant files are available through IPFS at export time
         await Promise.all(exportFilesSlice.map(async (file) => {
           try {
-            if (file.type === 'track' || file.type === 'metadata' || file.type === 'copy320') {
+            if (
+              (file.type === 'track' || file.type === 'metadata' || file.type === 'copy320') ||
+              // to address legacy single-res image rehydration where images are stored directly under its file CID
+              (file.type === 'image' && file.sourceFile === null)
+            ) {
               await rehydrateIpfsFromFsIfNecessary(
                 req,
                 file.multihash,
                 file.storagePath)
-            } else if (file.type === 'image') {
-              if (file.sourceFile === null) {
-                // Ensure pre-directory images are still exported appropriately
-                await rehydrateIpfsFromFsIfNecessary(
-                  req,
-                  file.multihash,
-                  file.storagePath)
-              }
             } else if (file.type === 'dir') {
+              // to address multi-res image rehydration where images are stored under a directory CID
               await rehydrateIpfsDirFromFsIfNecessary(req, file.multihash)
             }
           } catch (e) {
