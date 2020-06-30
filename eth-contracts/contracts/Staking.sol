@@ -292,6 +292,19 @@ contract Staking is InitializableV2 {
     }
 
     /**
+     * @notice Get the total amount of tokens staked by `_accountAddress` at block number `_blockNumber`
+     * @param _accountAddress - Account requesting for
+     * @param _blockNumber - Block number at which we are requesting
+     * @return The amount of tokens staked by the account at the given block number
+     */
+    function totalStakedForAt(
+        address _accountAddress,
+        uint256 _blockNumber
+    ) public view returns (uint256) {
+        return accounts[_accountAddress].stakedHistory.get(_blockNumber.toUint64());
+    }
+
+    /**
      * @notice Get the total amount of tokens staked by all users at block number `_blockNumber`
      * @param _blockNumber - Block number at which we are requesting
      * @return The amount of tokens staked at the given block number
@@ -333,7 +346,7 @@ contract Staking is InitializableV2 {
         address _accountAddress,
         uint256 _blockNumber
     ) external view returns (uint256) {
-        uint256 voterStake = totalStakedForAt(_accountAddress, _blockNumber);
+        uint256 voterStake = this.totalStakedForAt(_accountAddress, _blockNumber);
         require(
             voterStake > 0,
             "Caller was not an active staker with non-zero stake at _blockNumber."
@@ -373,19 +386,6 @@ contract Staking is InitializableV2 {
     function totalStaked() public view returns (uint256) {
         // we assume it's not possible to stake in the future
         return totalStakedHistory.getLast();
-    }
-
-    /**
-     * @notice Get the total amount of tokens staked by `_accountAddress` at block number `_blockNumber`
-     * @param _accountAddress - Account requesting for
-     * @param _blockNumber - Block number at which we are requesting
-     * @return The amount of tokens staked by the account at the given block number
-     */
-    function totalStakedForAt(
-        address _accountAddress,
-        uint256 _blockNumber
-    ) public view returns (uint256) {
-        return accounts[_accountAddress].stakedHistory.get(_blockNumber.toUint64());
     }
 
     /* Internal functions */
