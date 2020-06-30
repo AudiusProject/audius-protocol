@@ -14,6 +14,10 @@ const VotingPeriod = 11520
 // Required percent of total stake to have been voted with on proposal
 const VotingQuorumPercent = 10
 
+// Max number of concurrent InProgress proposals
+// - Setting to 100 by default as that is a sufficiently large value that is not at gas limit risk
+const MaxInProgressProposals = 100
+
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
     const config = contractConfig[network]
@@ -28,8 +32,8 @@ module.exports = (deployer, network, accounts) => {
     const governance0 = await deployer.deploy(Governance, { from: proxyDeployerAddress })
     const initializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'address'],
-      [registryAddress, VotingPeriod, VotingQuorumPercent, guardianAddress]
+      ['address', 'uint256', 'uint256', 'uint16', 'address'],
+      [registryAddress, VotingPeriod, VotingQuorumPercent, MaxInProgressProposals, guardianAddress]
     )
     const governanceProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,

@@ -27,6 +27,10 @@ contract Governance is InitializableV2 {
     ///         Calculated as: 100 * sum of voter stakes / total staked in Staking (at proposal submission block)
     uint256 private votingQuorumPercent;
 
+    /// @notice Max number of InProgress proposals possible at once
+    /// @dev uint16 gives max possible value of 65,535
+    uint16 private maxInProgressProposals;
+
     /**
      * @notice Address of account that has special Governance permissions. Can veto proposals
      *      and execute transactions directly on contracts.
@@ -74,8 +78,16 @@ contract Governance is InitializableV2 {
     }
 
     /***** Proposal storage *****/
+
+    /// @notice ID of most recently created proposal. Ids are monotonically increasing and 1-indexed.
     uint256 lastProposalId = 0;
+
+    /// @notice mapping of proposalId to Proposal struct with all proposal state
     mapping(uint256 => Proposal) proposals;
+
+    /// @notice array of proposals with InProgress state
+    uint256[] inProgressProposals;
+
 
     /***** Events *****/
     event ProposalSubmitted(
@@ -120,12 +132,14 @@ contract Governance is InitializableV2 {
      * @param _registryAddress - address of the registry proxy contract
      * @param _votingPeriod - period in blocks for which a governance proposal is open for voting
      * @param _votingQuorumPercent - required minimum percentage of total stake to have voted to consider a proposal valid
+     * @param _maxInProgressProposals - max number of InProgress proposals possible at once
      * @param _guardianAddress - address of account that has special Governance permissions
      */
     function initialize(
         address _registryAddress,
         uint256 _votingPeriod,
         uint256 _votingQuorumPercent,
+        uint16 _maxInProgressProposals,
         address _guardianAddress
     ) public initializer {
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
@@ -134,6 +148,9 @@ contract Governance is InitializableV2 {
 
         require(_votingPeriod > 0, "Requires non-zero _votingPeriod");
         votingPeriod = _votingPeriod;
+
+        require(_maxInProgressProposals > 0, "Requires non-zero _maxInProgressProposals");
+        maxInProgressProposals = _maxInProgressProposals;
 
         require(
             _votingQuorumPercent > 0 && _votingQuorumPercent <= 100,
@@ -168,6 +185,18 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         address proposer = msg.sender;
+
+        // Require all InProgress proposals that can be evaluated have been evaluated before new proposal submission
+        require(
+            this.inProgressProposalsAreUpToDate(),
+            "Governance::submitProposal: Cannot submit new proposal until all evaluatable InProgress proposals are evaluated."
+        );
+
+        // Require new proposal submission would not push number of InProgress proposals over max number
+        require(
+            inProgressProposals.length <= maxInProgressProposals,
+            "Governance::submitProposal: Number of InProgress proposals already at max. Please evaluate if possible, or wait for current proposals' votingPeriods to expire."
+        );
 
         // Require proposer is active Staker
         Staking stakingContract = Staking(stakingAddress);
@@ -208,6 +237,9 @@ contract Governance is InitializableV2 {
             numVotes: 0
             /* votes: mappings are auto-initialized to default state */
         });
+
+        // Append new proposalId to inProgressProposals array
+        inProgressProposals.push(newProposalId);
 
         emit ProposalSubmitted(
             newProposalId,
@@ -328,8 +360,8 @@ contract Governance is InitializableV2 {
             "Governance::evaluateProposalOutcome: Cannot evaluate inactive proposal."
         );
 
-        /// Re-entrancy should not be possible here since this switches the status of the
-        /// proposal to 'Evaluating' so it should fail the status is 'InProgress' check
+        // Re-entrancy should not be possible here since this switches the status of the
+        // proposal to 'Evaluating' so it should fail the status is 'InProgress' check
         proposals[_proposalId].outcome = Outcome.Evaluating;
 
         // Require msg.sender is active Staker.
@@ -394,8 +426,11 @@ contract Governance is InitializableV2 {
             outcome = Outcome.No;
         }
 
-        /// This records the final outcome in the proposals mapping
+        // This records the final outcome in the proposals mapping
         proposals[_proposalId].outcome = outcome;
+
+        // Remove from inProgressProposals array
+        _removeFromInProgressProposals(_proposalId);
 
         emit ProposalOutcomeEvaluated(
             _proposalId,
@@ -481,6 +516,17 @@ contract Governance is InitializableV2 {
         registry = Registry(_registryAddress);
 
         emit RegistryAddressUpdated(_registryAddress);
+    }
+
+    /**
+     * @notice Set the max number of concurrent InProgress proposals
+     * @dev Only callable by self via _executeTransaction
+     * @param _newMaxInProgressProposals - new value for maxInProgressProposals
+     */
+    function setMaxInProgressProposals(uint16 _newMaxInProgressProposals) external {
+        require(msg.sender == address(this), "Only callable by self");
+        require(_newMaxInProgressProposals > 0, "Requires non-zero _newMaxInProgressProposals");
+        maxInProgressProposals = _newMaxInProgressProposals;
     }
 
     // ========================================= Guardian Actions =========================================
@@ -647,6 +693,35 @@ contract Governance is InitializableV2 {
         return registryAddress;
     }
 
+    /// @notice Get the max number of concurrent InProgress proposals
+    function getMaxInProgressProposals() external view returns (uint16) {
+        return maxInProgressProposals;
+    }
+
+    /// @notice Get the array of all InProgress proposal Ids
+    function getInProgressProposals() external view returns (uint256[] memory) {
+        return inProgressProposals;
+    }
+
+    /**
+     * @notice Returns false if any proposals in inProgressProposals array are evaluatable
+     *          Evaluatable = proposals with closed votingPeriod
+     * @dev Is public since its called internally in `submitProposal()` as well as externally in UI
+     */
+    function inProgressProposalsAreUpToDate() external view returns (bool) {
+        // compare current block number against endBlockNumber of each proposal
+        for (uint i = 0; i < inProgressProposals.length; i++) {
+            if (
+                block.number >
+                (proposals[inProgressProposals[i]].startBlockNumber).add(votingPeriod)
+            ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     // ========================================= Internal Functions =========================================
 
     /**
@@ -705,6 +780,31 @@ contract Governance is InitializableV2 {
     }
 
     /**
+     * @dev Can make O(1) by storing index pointer in proposals mapping.
+     *      Requires inProgressProposals to be 1-indexed, since all proposals that are not present
+     *          will have pointer set to 0.
+     */
+    function _removeFromInProgressProposals(uint256 _proposalId) internal {
+        uint256 index = 0;
+        bool found = false;
+        for (uint i = 0; i < inProgressProposals.length; i++) {
+            if (inProgressProposals[i] == _proposalId) {
+                index = i;
+                found = true;
+                break;
+            }
+        }
+        require(
+            found == true,
+            "Governance::_removeFromInProgressProposals: Could not find InProgress proposal."
+        );
+
+        // Swap proposalId to end of array + pop (deletes last elem + decrements array length)
+        inProgressProposals[index] = inProgressProposals[inProgressProposals.length - 1];
+        inProgressProposals.pop();
+    }
+
+    /**
      * @notice Returns true if voting quorum percentage met for proposal, else false.
      * @dev Quorum is met if total voteMagnitude * 100 / total active stake in Staking
      * @dev Eventual multiplication overflow:
@@ -714,7 +814,7 @@ contract Governance is InitializableV2 {
      *      log(2^256/(10^27*100))/log(1.07) ~= 1635
      */
     function _quorumMet(Proposal memory proposal, Staking stakingContract)
-    internal returns (bool)
+    internal view returns (bool)
     {
         uint256 participation = (
             (proposal.voteMagnitudeYes + proposal.voteMagnitudeNo)
