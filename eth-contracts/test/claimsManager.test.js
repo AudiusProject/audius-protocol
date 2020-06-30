@@ -151,7 +151,6 @@ contract('ClaimsManager', async (accounts) => {
       mockDelegateManager.address
     )
 
-    // console.log(txs.stakingAddressTx)
     await expectEvent.inTransaction(txs.stakingAddressTx.tx, ClaimsManager, 'StakingAddressUpdated', { _newStakingAddress: stakingProxy.address })
     await expectEvent.inTransaction(txs.govAddressTx.tx, ClaimsManager, 'GovernanceAddressUpdated', { _newGovernanceAddress: governance.address })
     await expectEvent.inTransaction(txs.spAddressTx.tx, ClaimsManager, 'ServiceProviderFactoryAddressUpdated', { _newServiceProviderFactoryAddress: mockStakingCaller.address })

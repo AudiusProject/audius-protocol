@@ -1,5 +1,5 @@
 import * as _lib from '../utils/lib.js'
-const { time } = require('@openzeppelin/test-helpers')
+const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
 const Staking = artifacts.require('Staking')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
@@ -190,7 +190,20 @@ contract('ServiceProvider test', async (accounts) => {
     await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
 
     /** addServiceTypes creatornode and discprov via Governance */
-    await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey)
+    let addServiceTx = await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey)
+    /*
+     * Padding is required to handle event formatting of bytes32 type:
+     * from event:      0x63726561746f722d6e6f64650000000000000000000000000000000000000000
+     * without padding: 0x63726561746f722d6e6f6465
+     */
+    await expectEvent.inTransaction(
+      addServiceTx.tx, ServiceTypeManager, 'ServiceTypeAdded',
+      { _serviceType: web3.utils.padRight(testCreatorNodeType, 64),
+        _serviceTypeMin: cnTypeMin,
+        _serviceTypeMax: cnTypeMax
+      }
+    )
+
     const serviceTypeCNInfo = await serviceTypeManager.getServiceTypeInfo.call(testCreatorNodeType)
     assert.isTrue(serviceTypeCNInfo.isValid, 'Expected serviceTypeCN isValid')
     assert.isTrue(serviceTypeCNInfo.minStake.eq(_lib.toBN(cnTypeMin)), 'Expected same minStake')
@@ -1161,12 +1174,16 @@ contract('ServiceProvider test', async (accounts) => {
       )
 
       // removeServiceType successfully
-      await governance.guardianExecuteTransaction(
+      let removeTypeTx = await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue,
         'removeServiceType(bytes32)',
         _lib.abiEncode(['bytes32'], [testType]),
         { from: guardianAddress }
+      )
+      await expectEvent.inTransaction(
+        removeTypeTx.tx, ServiceTypeManager, 'ServiceTypeRemoved',
+        { _serviceType: web3.utils.padRight(testType, 64) }
       )
 
       // Confirm serviceType is no longer valid after removal

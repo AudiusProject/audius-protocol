@@ -258,15 +258,13 @@ export const addServiceType = async (serviceType, typeMin, typeMax, governance, 
     ['bytes32', 'uint256', 'uint256'],
     [serviceType, typeMin, typeMax]
   )
-  const addServiceTypeTxReceipt = await governance.guardianExecuteTransaction(
+  return governance.guardianExecuteTransaction(
     serviceTypeManagerRegKey,
     callValue0,
     addServiceTypeSignature,
     callData,
     { from: guardianAddress }
   )
-
-  return parseTx(addServiceTypeTxReceipt)
 }
 
 export const slash = async (slashAmount, slashAccount, governance, delegateManagerRegKey, guardianAddress) => {
