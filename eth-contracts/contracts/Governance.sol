@@ -201,7 +201,7 @@ contract Governance is InitializableV2 {
 
         // Require proposer is active Staker
         Staking stakingContract = Staking(stakingAddress);
-        stakingContract.isCurrentStaker(proposer);
+        require(stakingContract.isCurrentStaker(proposer), "Proposer must be active staker with non-zero stake.");
 
         // Require _targetContractRegistryKey points to a valid registered contract
         address targetContractAddress = registry.getContract(_targetContractRegistryKey);
