@@ -200,8 +200,10 @@ contract Governance is InitializableV2 {
         );
 
         // Require proposer is active Staker
-        Staking stakingContract = Staking(stakingAddress);
-        require(stakingContract.isCurrentStaker(proposer), "Proposer must be active staker with non-zero stake.");
+        require(
+            Staking(stakingAddress).isStaker(proposer),
+            "Proposer must be active staker with non-zero stake."
+        );
 
         // Require _targetContractRegistryKey points to a valid registered contract
         address targetContractAddress = registry.getContract(_targetContractRegistryKey);
@@ -267,13 +269,13 @@ contract Governance is InitializableV2 {
         );
 
         // Require voter is active Staker + get voterStake.
-        Staking stakingContract = Staking(stakingAddress);
 
         // Check that msg.sender had a valid stake at proposal start
-        uint256 voterStake = stakingContract.wasStakerAt(
+        uint256 voterStake = Staking(stakingAddress).totalStakedForAt(
             voter,
             proposals[_proposalId].startBlockNumber
         );
+        require(voterStake > 0, "Voter must be active staker with non-zero stake.");
 
         // Require proposal is still active
         require(
