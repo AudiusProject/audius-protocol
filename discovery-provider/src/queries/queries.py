@@ -2167,7 +2167,7 @@ def get_previously_unlisted_tracks():
     with db.scoped_session() as session:
         if "date" not in request.args:
             return api_helpers.error_response(
-                "'date' required to query for retrieveing previously unlisted tracks", 400
+                "'date' required to query for retrieving previously unlisted tracks", 400
             )
 
         date = request.args.get("date")
@@ -2214,7 +2214,7 @@ def get_previously_private_playlist():
     with db.scoped_session() as session:
         if "date" not in request.args:
             return api_helpers.error_response(
-                "'date' required to query for retrieveing previously private playlists", 400
+                "'date' required to query for retrieving previously private playlists", 400
             )
 
         date = request.args.get("date")
