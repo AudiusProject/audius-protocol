@@ -1,5 +1,5 @@
 import * as _lib from '../utils/lib.js'
-const { time } = require('@openzeppelin/test-helpers')
+const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
 const Staking = artifacts.require('Staking')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
@@ -190,7 +190,20 @@ contract('ServiceProvider test', async (accounts) => {
     await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
 
     /** addServiceTypes creatornode and discprov via Governance */
-    await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey)
+    let addServiceTx = await _lib.addServiceType(testCreatorNodeType, cnTypeMin, cnTypeMax, governance, guardianAddress, serviceTypeManagerProxyKey)
+    /*
+     * Padding is required to handle event formatting of bytes32 type:
+     * from event:      0x63726561746f722d6e6f64650000000000000000000000000000000000000000
+     * without padding: 0x63726561746f722d6e6f6465
+     */
+    await expectEvent.inTransaction(
+      addServiceTx.tx, ServiceTypeManager, 'ServiceTypeAdded',
+      { _serviceType: web3.utils.padRight(testCreatorNodeType, 64),
+        _serviceTypeMin: cnTypeMin,
+        _serviceTypeMax: cnTypeMax
+      }
+    )
+
     const serviceTypeCNInfo = await serviceTypeManager.getServiceTypeInfo.call(testCreatorNodeType)
     assert.isTrue(serviceTypeCNInfo.isValid, 'Expected serviceTypeCN isValid')
     assert.isTrue(serviceTypeCNInfo.minStake.eq(_lib.toBN(cnTypeMin)), 'Expected same minStake')
@@ -270,7 +283,7 @@ contract('ServiceProvider test', async (accounts) => {
       ),
       'delegateManagerAddress not set')
 
-    await _lib.configureServiceProviderFactoryAddresses(
+    let initTxs = await _lib.configureServiceProviderFactoryAddresses(
       governance,
       guardianAddress,
       serviceProviderFactoryKey,
@@ -279,6 +292,31 @@ contract('ServiceProvider test', async (accounts) => {
       serviceTypeManagerProxy.address,
       claimsManagerProxy.address,
       mockDelegateManager.address
+    )
+
+    await expectEvent.inTransaction(
+      initTxs.stakingTx.tx,
+      ServiceProviderFactory,
+      'StakingAddressUpdated',
+      { _newStakingAddress: staking.address }
+    )
+    await expectEvent.inTransaction(
+      initTxs.serviceTypeTx.tx,
+      ServiceProviderFactory,
+      'ServiceTypeManagerAddressUpdated',
+      { _newServiceTypeManagerAddress: serviceTypeManagerProxy.address }
+    )
+    await expectEvent.inTransaction(
+      initTxs.delegateManagerTx.tx,
+      ServiceProviderFactory,
+      'DelegateManagerAddressUpdated',
+      { _newDelegateManagerAddress: mockDelegateManager.address }
+    )
+    await expectEvent.inTransaction(
+      initTxs.claimsManagerTx.tx,
+      ServiceProviderFactory,
+      'ClaimsManagerAddressUpdated',
+      { _newClaimsManagerAddress: claimsManagerProxy.address }
     )
   })
 
@@ -461,10 +499,20 @@ contract('ServiceProvider test', async (accounts) => {
           updatedCutValue,
           { from: accounts[4] }),
         'Service Provider cut update operation restricted to deployer')
-      await serviceProviderFactory.updateServiceProviderCut(
+      let updateTx = await serviceProviderFactory.updateServiceProviderCut(
         stakerAccount,
         updatedCutValue,
         { from: stakerAccount })
+
+      await expectEvent.inTransaction(
+        updateTx.tx,
+        ServiceProviderFactory,
+        'ServiceProviderCutUpdated',
+        { _owner: stakerAccount,
+          _updatedCut: `${updatedCutValue}`
+        }
+      )
+
       let info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCutValue)), 'Expect updated cut')
       let newCut = 110
@@ -617,11 +665,20 @@ contract('ServiceProvider test', async (accounts) => {
       )
       // Perform and validate update
       let newDelegateOwnerWallet = accounts[4]
-      let tx = await serviceProviderFactory.updateDelegateOwnerWallet(
+      let updateWalletTx = await serviceProviderFactory.updateDelegateOwnerWallet(
         testDiscProvType,
         testEndpoint,
         newDelegateOwnerWallet,
         { from: stakerAccount })
+
+      await expectEvent.inTransaction(
+        updateWalletTx.tx, ServiceProviderFactory, 'DelegateOwnerWalletUpdated',
+        { _serviceType: web3.utils.padRight(testDiscProvType, 64),
+          _owner: stakerAccount,
+          _updatedWallet: newDelegateOwnerWallet,
+          _spID: spID
+        }
+      )
 
       info = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spID)
       let newDelegateFromChain = info.delegateOwnerWallet
@@ -875,9 +932,20 @@ contract('ServiceProvider test', async (accounts) => {
       assert.equal(testEndpoint, endpoint)
 
       // update the endpoint from testEndpoint to testEndpoint1
-      await serviceProviderFactory.updateEndpoint(testDiscProvType, testEndpoint, testEndpoint1, { from: stakerAccount })
+      let updateEndpointTx = await serviceProviderFactory.updateEndpoint(testDiscProvType, testEndpoint, testEndpoint1, { from: stakerAccount })
       const { endpoint: endpointAfter } = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spId)
       assert.equal(testEndpoint1, endpointAfter)
+      await expectEvent.inTransaction(
+        updateEndpointTx.tx,
+        ServiceProviderFactory,
+        'EndpointUpdated',
+        { _serviceType: web3.utils.padRight(testDiscProvType, 64),
+          _owner: stakerAccount,
+          _oldEndpoint: web3.utils.keccak256(testEndpoint),
+          _newEndpoint: web3.utils.keccak256(testEndpoint1),
+          _spID: spId
+        }
+      )
 
       // it should replace the service provider in place so spId should be consistent
       const spIdNew = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint1)
@@ -931,17 +999,21 @@ contract('ServiceProvider test', async (accounts) => {
       assert.equal(
         governance.address,
         await serviceProviderFactory.getGovernanceAddress(),
-        "expected governance address before changing"  
+        "expected governance address before changing"
       )
-
-      await governance.guardianExecuteTransaction(
+      let govTx = await governance.guardianExecuteTransaction(
         serviceProviderFactoryKey,
         callValue,
         'setGovernanceAddress(address)',
         _lib.abiEncode(['address'], [fakeGovernanceAddress]),
         { from: guardianAddress }
       )
-
+      await expectEvent.inTransaction(
+        govTx.tx,
+        ServiceProviderFactory,
+        'GovernanceAddressUpdated',
+        { _newGovernanceAddress: fakeGovernanceAddress }
+      )
       assert.equal(
         fakeGovernanceAddress,
         await serviceProviderFactory.getGovernanceAddress(),
@@ -1166,12 +1238,16 @@ contract('ServiceProvider test', async (accounts) => {
       )
 
       // removeServiceType successfully
-      await governance.guardianExecuteTransaction(
+      let removeTypeTx = await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
         callValue,
         'removeServiceType(bytes32)',
         _lib.abiEncode(['bytes32'], [testType]),
         { from: guardianAddress }
+      )
+      await expectEvent.inTransaction(
+        removeTypeTx.tx, ServiceTypeManager, 'ServiceTypeRemoved',
+        { _serviceType: web3.utils.padRight(testType, 64) }
       )
 
       // Confirm serviceType is no longer valid after removal
