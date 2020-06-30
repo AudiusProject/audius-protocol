@@ -135,7 +135,6 @@ contract Governance is InitializableV2 {
         address _registryAddress,
         uint256 _votingPeriod,
         uint256 _votingQuorum,
-        // TODO - order vars for optimal memory data packing
         uint16 _maxInProgressProposals,
         address _guardianAddress
     ) public initializer {
