@@ -21,7 +21,7 @@ contract ServiceProviderFactory is InitializableV2 {
     ///        2) % Cut of delegator tokens taken during reward
     ///        3) Bool indicating whether this SP has met min/max requirements
     ///        4) Number of endpoints registered by SP
-    ///        5) Minimum total stake for this account
+    ///        5) Minimum deployer stake for this service provider
     ///        6) Maximum total stake for this account
     struct ServiceProviderDetails {
         uint deployerStake;
@@ -40,10 +40,6 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /// @dev - Mapping of service provider address to details
     mapping(address => ServiceProviderDetails) spDetails;
-
-    /// @dev - Minimum staked by service provider account deployer
-    /// @dev - Static regardless of total number of endpoints for a given account
-    uint minDeployerStake;
 
     /// @dev - standard - imitates relationship between Ether and Wei
     uint8 private constant DECIMALS = 18;
@@ -117,15 +113,14 @@ contract ServiceProviderFactory is InitializableV2 {
      * @notice Function to initialize the contract
      * @param _governanceAddress - Governance proxy address
      */
-    function initialize (address _governanceAddress) public initializer
+    function initialize (
+        address _governanceAddress,
+        uint _decreaseStakeLockupDuration
+    ) public initializer
     {
         governanceAddress = _governanceAddress;
 
-        // Configure direct minimum stake for deployer
-        minDeployerStake = 5 * 10**uint256(DECIMALS);
-
-        // 10 blocks for lockup duration
-        decreaseStakeLockupDuration = 10;
+        decreaseStakeLockupDuration = _decreaseStakeLockupDuration;
 
         InitializableV2.initialize();
     }
@@ -189,9 +184,9 @@ contract ServiceProviderFactory is InitializableV2 {
         );
 
         // Update min and max totals for this service provider
-        (uint typeMin, uint typeMax) = ServiceTypeManager(
+        (, uint typeMin, uint typeMax) = ServiceTypeManager(
             serviceTypeManagerAddress
-        ).getServiceTypeStakeInfo(_serviceType);
+        ).getServiceTypeInfo(_serviceType);
         spDetails[msg.sender].minAccountStake = spDetails[msg.sender].minAccountStake.add(typeMin);
         spDetails[msg.sender].maxAccountStake = spDetails[msg.sender].maxAccountStake.add(typeMax);
 
@@ -281,9 +276,9 @@ contract ServiceProviderFactory is InitializableV2 {
         spDetails[msg.sender].numberOfEndpoints -= 1;
 
         // Update min and max totals for this service provider
-        (uint typeMin, uint typeMax) = ServiceTypeManager(
+        (, uint typeMin, uint typeMax) = ServiceTypeManager(
             serviceTypeManagerAddress
-        ).getServiceTypeStakeInfo(_serviceType);
+        ).getServiceTypeInfo(_serviceType);
         spDetails[msg.sender].minAccountStake = spDetails[msg.sender].minAccountStake.sub(typeMin);
         spDetails[msg.sender].maxAccountStake = spDetails[msg.sender].maxAccountStake.sub(typeMax);
 
@@ -595,13 +590,6 @@ contract ServiceProviderFactory is InitializableV2 {
         return serviceProviderEndpointToId[keccak256(bytes(_endpoint))];
     }
 
-    /// @notice Get minDeployerStake
-    function getMinDeployerStake()
-    external view returns (uint min)
-    {
-        return minDeployerStake;
-    }
-
     /**
      * @notice Get service provider ids for a given service provider and service type
      * @return List of service ids of that type for a service provider
@@ -777,16 +765,14 @@ contract ServiceProviderFactory is InitializableV2 {
     function _validateBalanceInternal(address _sp, uint _amount) internal view
     {
         require(
-            _amount >= spDetails[_sp].minAccountStake,
-            "Minimum stake requirement not met");
-
-        require(
             _amount <= spDetails[_sp].maxAccountStake,
-            "Maximum stake amount exceeded");
+            "Maximum stake amount exceeded"
+        );
 
         require(
-            spDetails[_sp].deployerStake == 0 || spDetails[_sp].deployerStake >= minDeployerStake,
-            "Direct stake restriction violated for this service provider");
+            spDetails[_sp].deployerStake >= spDetails[_sp].minAccountStake,
+            "Minimum stake requirement not met"
+        );
     }
 
     /**

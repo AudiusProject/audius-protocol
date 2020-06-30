@@ -17,7 +17,7 @@ contract('AudiusToken', async (accounts) => {
   const guardianAddress = proxyDeployerAddress
 
   const votingPeriod = 10
-  const votingQuorum = 1
+  const votingQuorumPercent = 10
   
   const callValue0 = _lib.toBN(0)
 
@@ -29,7 +29,7 @@ contract('AudiusToken', async (accounts) => {
       proxyDeployerAddress,
       registry,
       votingPeriod,
-      votingQuorum,
+      votingQuorumPercent,
       guardianAddress
     )
 
