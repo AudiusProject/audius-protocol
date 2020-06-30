@@ -814,7 +814,7 @@ contract Governance is InitializableV2 {
      *      log(2^256/(10^27*100))/log(1.07) ~= 1635
      */
     function _quorumMet(Proposal memory proposal, Staking stakingContract)
-    internal returns (bool)
+    internal view returns (bool)
     {
         uint256 participation = (
             (proposal.voteMagnitudeYes + proposal.voteMagnitudeNo)
