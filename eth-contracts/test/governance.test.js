@@ -1064,7 +1064,7 @@ contract('Governance.sol', async (accounts) => {
         assert.isAtLeast(participationPercent2, latestVotingQuorumPercent, 'Quorum would be met')
 
         // Increase quorum to failure amount
-        const newVotingQuorumPercent = 60
+        const newVotingQuorumPercent = 75
         await governance.guardianExecuteTransaction(
           governanceKey,
           callValue0,
@@ -1379,7 +1379,7 @@ contract('Governance.sol', async (accounts) => {
         { from: proposerAddress }
       )
       const submitProposalTx = _lib.parseTx(submitProposalTxR)
-      console.log(`Successfully submitted proposalId ${submitProposalTx.event.args.proposalId} with gas usage of ${submitProposalTxR.receipt.gasUsed}`)
+      // console.log(`Successfully submitted proposalId ${submitProposalTx.event.args.proposalId} with gas usage of ${submitProposalTxR.receipt.gasUsed}`)
     }
 
     // Confirm all InProgress proposals are uptodate bc votingPeriod is still active
@@ -1400,7 +1400,7 @@ contract('Governance.sol', async (accounts) => {
     for (let i = 1; i <= newMaxInProgressProposals; i++) {
       const evaluateTxR = await governance.evaluateProposalOutcome(i, { from: proposerAddress })
       const evaluateTx = _lib.parseTx(evaluateTxR)
-      console.log(`Successfully evaluated proposalId ${evaluateTx.event.args.proposalId} with gas usage of ${evaluateTxR.receipt.gasUsed}`)
+      // console.log(`Successfully evaluated proposalId ${evaluateTx.event.args.proposalId} with gas usage of ${evaluateTxR.receipt.gasUsed}`)
     }
 
     // Confirm all InProgress proposals are uptodate bc all have been evaluated
@@ -1426,7 +1426,7 @@ contract('Governance.sol', async (accounts) => {
         { from: proposerAddress }
       )
       const submitProposalTx = _lib.parseTx(submitProposalTxR)
-      console.log(`Successfully submitted proposalId ${submitProposalTx.event.args.proposalId} with gas usage of ${submitProposalTxR.receipt.gasUsed}`)
+      // console.log(`Successfully submitted proposalId ${submitProposalTx.event.args.proposalId} with gas usage of ${submitProposalTxR.receipt.gasUsed}`)
     }
 
     // Confirm all InProgress proposals are uptodate as votingPeriod is active
