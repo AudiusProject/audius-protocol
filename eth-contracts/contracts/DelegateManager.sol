@@ -232,6 +232,7 @@ contract DelegateManager is InitializableV2 {
      */
     function cancelUndelegateStake() external {
         _requireIsInitialized();
+
         address delegator = msg.sender;
         // Confirm pending delegation request
         require(_undelegateRequestIsPending(delegator), "Pending lockup expected");
@@ -252,6 +253,7 @@ contract DelegateManager is InitializableV2 {
      */
     function undelegateStake() external returns (uint newTotal) {
         _requireIsInitialized();
+
         address delegator = msg.sender;
 
         // Confirm pending delegation request
@@ -327,6 +329,7 @@ contract DelegateManager is InitializableV2 {
      */
     function claimRewards(address _serviceProvider) external {
         _requireIsInitialized();
+
         require(
             serviceProviderFactoryAddress != address(0x00),
             "serviceProviderFactoryAddress not set"
@@ -482,6 +485,8 @@ contract DelegateManager is InitializableV2 {
      * @return Updated total amount delegated to the service provider by delegator
      */
     function removeDelegator(address _serviceProvider, address _delegator) external {
+        _requireIsInitialized();
+
         require(
             msg.sender == _serviceProvider || msg.sender == governanceAddress,
             "Only callable by target SP or governance"
@@ -573,6 +578,8 @@ contract DelegateManager is InitializableV2 {
      * @param _governanceAddress - address for new Governance contract
      */
     function setGovernanceAddress(address _governanceAddress) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only governance");
         governanceAddress = _governanceAddress;
         emit GovernanceAddressUpdated(_governanceAddress);
@@ -584,6 +591,8 @@ contract DelegateManager is InitializableV2 {
      * @param _stakingAddress - address for new Staking contract
      */
     function setStakingAddress(address _stakingAddress) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only governance");
         stakingAddress = _stakingAddress;
         emit StakingAddressUpdated(_stakingAddress);
@@ -595,6 +604,8 @@ contract DelegateManager is InitializableV2 {
      * @param _spFactory - address for new ServiceProviderFactory contract
      */
     function setServiceProviderFactoryAddress(address _spFactory) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only governance");
         serviceProviderFactoryAddress = _spFactory;
         emit ServiceProviderFactoryAddressUpdated(_spFactory);
@@ -606,6 +617,8 @@ contract DelegateManager is InitializableV2 {
      * @param _claimsManagerAddress - address for new ClaimsManager contract
      */
     function setClaimsManagerAddress(address _claimsManagerAddress) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only governance");
         claimsManagerAddress = _claimsManagerAddress;
         emit ClaimsManagerAddressUpdated(_claimsManagerAddress);
@@ -620,6 +633,8 @@ contract DelegateManager is InitializableV2 {
     function getDelegatorsList(address _sp)
     external view returns (address[] memory dels)
     {
+        _requireIsInitialized();
+
         return spDelegateInfo[_sp].delegators;
     }
 
@@ -627,6 +642,8 @@ contract DelegateManager is InitializableV2 {
     function getTotalDelegatedToServiceProvider(address _sp)
     external view returns (uint total)
     {
+        _requireIsInitialized();
+
         return spDelegateInfo[_sp].totalDelegatedStake;
     }
 
@@ -634,6 +651,8 @@ contract DelegateManager is InitializableV2 {
     function getTotalLockedDelegationForServiceProvider(address _sp)
     external view returns (uint total)
     {
+        _requireIsInitialized();
+
         return spDelegateInfo[_sp].totalLockedUpStake;
     }
 
@@ -641,6 +660,8 @@ contract DelegateManager is InitializableV2 {
     function getDelegatorStakeForServiceProvider(address _delegator, address _serviceProvider)
     external view returns (uint amount)
     {
+        _requireIsInitialized();
+
         return delegateInfo[_delegator][_serviceProvider];
     }
 
@@ -651,6 +672,8 @@ contract DelegateManager is InitializableV2 {
     function getPendingUndelegateRequest(address _delegator)
     external view returns (address target, uint amount, uint lockupExpiryBlock)
     {
+        _requireIsInitialized();
+
         UndelegateStakeRequest memory req = undelegateRequests[_delegator];
         return (req.serviceProvider, req.amount, req.lockupExpiryBlock);
     }
@@ -659,6 +682,8 @@ contract DelegateManager is InitializableV2 {
     function getUndelegateLockupDuration()
     external view returns (uint duration)
     {
+        _requireIsInitialized();
+
         return undelegateLockupDuration;
     }
 
@@ -666,6 +691,8 @@ contract DelegateManager is InitializableV2 {
     function getMaxDelegators()
     external view returns (uint numDelegators)
     {
+        _requireIsInitialized();
+
         return maxDelegators;
     }
 
@@ -673,27 +700,37 @@ contract DelegateManager is InitializableV2 {
     function getMinDelegationAmount()
     external view returns (uint minDelegation)
     {
+        _requireIsInitialized();
+
         return minDelegationAmount;
     }
 
     /// @notice Get the Governance address
     function getGovernanceAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return governanceAddress;
     }
 
     /// @notice Get the ServiceProviderFactory address
     function getServiceProviderFactoryAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return serviceProviderFactoryAddress;
     }
 
     /// @notice Get the ClaimsManager address
     function getClaimsManagerAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return claimsManagerAddress;
     }
 
     /// @notice Get the Staking address
     function getStakingAddress() external view returns (address addr)
     {
+        _requireIsInitialized();
+
         return stakingAddress;
     }
 

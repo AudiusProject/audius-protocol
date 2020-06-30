@@ -160,6 +160,7 @@ contract ServiceProviderFactory is InitializableV2 {
     ) external returns (uint spID)
     {
         _requireIsInitialized();
+
         require(serviceTypeManagerAddress != address(0x00), "serviceTypeManagerAddress not set");
         require(stakingAddress != address(0x00), "stakingAddress not set");
 
@@ -379,6 +380,7 @@ contract ServiceProviderFactory is InitializableV2 {
     external returns (uint newStakeAmount)
     {
         _requireIsInitialized();
+
         require(
             _decreaseStakeAmount > 0,
             "Requested stake decrease amount must be greater than zero"
@@ -413,6 +415,8 @@ contract ServiceProviderFactory is InitializableV2 {
      */
     function cancelDecreaseStakeRequest(address _account) external
     {
+        _requireIsInitialized();
+
         require(
             msg.sender == _account || msg.sender == delegateManagerAddress,
             "Only callable from owner or DelegateManager"
@@ -488,6 +492,8 @@ contract ServiceProviderFactory is InitializableV2 {
         address _updatedDelegateOwnerWallet
     ) external
     {
+        _requireIsInitialized();
+
         uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
 
         require(
@@ -515,6 +521,8 @@ contract ServiceProviderFactory is InitializableV2 {
         string calldata _newEndpoint
     ) external returns (uint spID)
     {
+        _requireIsInitialized();
+
         uint spId = this.getServiceProviderIdFromEndpoint(_oldEndpoint);
 
         require (spId != 0, "Could not find service provider with that endpoint");
@@ -551,6 +559,8 @@ contract ServiceProviderFactory is InitializableV2 {
         uint _amount
      ) external
     {
+        _requireIsInitialized();
+
         require(delegateManagerAddress != address(0x00), "delegateManagerAddress not set");
         require(
             msg.sender == delegateManagerAddress,
@@ -574,6 +584,8 @@ contract ServiceProviderFactory is InitializableV2 {
         uint _cut
     ) external
     {
+        _requireIsInitialized();
+
         require(
             msg.sender == _serviceProvider,
             "Service Provider cut update operation restricted to deployer");
@@ -600,8 +612,10 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /// @notice Get denominator for deployer cut calculations
     function getServiceProviderDeployerCutBase()
-    external pure returns (uint base)
+    external view returns (uint base)
     {
+        _requireIsInitialized();
+
         return DEPLOYER_CUT_BASE;
     }
 
@@ -609,6 +623,8 @@ contract ServiceProviderFactory is InitializableV2 {
     function getTotalServiceTypeProviders(bytes32 _serviceType)
     external view returns (uint numberOfProviders)
     {
+        _requireIsInitialized();
+
         return serviceProviderTypeIDs[_serviceType];
     }
 
@@ -616,6 +632,8 @@ contract ServiceProviderFactory is InitializableV2 {
     function getServiceProviderIdFromEndpoint(string calldata _endpoint)
     external view returns (uint spID)
     {
+        _requireIsInitialized();
+
         return serviceProviderEndpointToId[keccak256(bytes(_endpoint))];
     }
 
@@ -626,6 +644,8 @@ contract ServiceProviderFactory is InitializableV2 {
     function getServiceProviderIdsFromAddress(address _ownerAddress, bytes32 _serviceType)
     external view returns (uint[] memory spIds)
     {
+        _requireIsInitialized();
+
         return serviceProviderAddressToId[_ownerAddress][_serviceType];
     }
 
@@ -637,6 +657,8 @@ contract ServiceProviderFactory is InitializableV2 {
     function getServiceEndpointInfo(bytes32 _serviceType, uint _serviceId)
     external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet)
     {
+        _requireIsInitialized();
+
         ServiceEndpoint memory sp = serviceProviderInfo[_serviceType][_serviceId];
         return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet);
     }
@@ -654,6 +676,8 @@ contract ServiceProviderFactory is InitializableV2 {
         uint minAccountStake,
         uint maxAccountStake)
     {
+        _requireIsInitialized();
+
         return (
             spDetails[_sp].deployerStake,
             spDetails[_sp].deployerCut,
@@ -671,6 +695,8 @@ contract ServiceProviderFactory is InitializableV2 {
     function getPendingDecreaseStakeRequest(address _sp)
     external view returns (uint amount, uint lockupExpiryBlock)
     {
+        _requireIsInitialized();
+
         return (
             decreaseStakeRequests[_sp].decreaseAmount,
             decreaseStakeRequests[_sp].lockupExpiryBlock
@@ -681,6 +707,8 @@ contract ServiceProviderFactory is InitializableV2 {
     function getDecreaseStakeLockupDuration()
     external view returns (uint duration)
     {
+        _requireIsInitialized();
+
         return decreaseStakeLockupDuration;
     }
 
@@ -692,31 +720,43 @@ contract ServiceProviderFactory is InitializableV2 {
     function validateAccountStakeBalance(address _sp)
     external view
     {
+        _requireIsInitialized();
+
         _validateBalanceInternal(_sp, Staking(stakingAddress).totalStakedFor(_sp));
     }
 
     /// @notice Get the Governance address
     function getGovernanceAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return governanceAddress;
     }
 
     /// @notice Get the Staking address
     function getStakingAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return stakingAddress;
     }
 
     /// @notice Get the DelegateManager address
     function getDelegateManagerAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return delegateManagerAddress;
     }
 
     /// @notice Get the ServiceTypeManager address
     function getServiceTypeManagerAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return serviceTypeManagerAddress;
     }
 
     /// @notice Get the ClaimsManager address
     function getClaimsManagerAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return claimsManagerAddress;
     }
 
@@ -726,6 +766,8 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _address - address for new Governance contract
      */
     function setGovernanceAddress(address _address) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         governanceAddress = _address;
         emit GovernanceAddressUpdated(_address);
@@ -737,6 +779,8 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _address - address for new Staking contract
      */
     function setStakingAddress(address _address) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         stakingAddress = _address;
         emit StakingAddressUpdated(_address);
@@ -748,6 +792,8 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _address - address for new DelegateManager contract
      */
     function setDelegateManagerAddress(address _address) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         delegateManagerAddress = _address;
         emit DelegateManagerAddressUpdated(_address);
@@ -759,6 +805,8 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _address - address for new ServiceTypeManager contract
      */
     function setServiceTypeManagerAddress(address _address) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         serviceTypeManagerAddress = _address;
         emit ServiceTypeManagerAddressUpdated(_address);
@@ -770,10 +818,14 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _address - address for new ClaimsManager contract
      */
     function setClaimsManagerAddress(address _address) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         claimsManagerAddress = _address;
         emit ClaimsManagerAddressUpdated(_address);
     }
+
+    // ========================================= Internal Functions =========================================
 
     /**
      * @notice Update status in spDetails if the bounds for a service provider is valid
