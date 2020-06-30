@@ -32,8 +32,8 @@ contract ServiceTypeManager is InitializableV2 {
     mapping(bytes32 => ServiceTypeInfo) serviceTypeInfo;
 
     event SetServiceVersion(bytes32 _serviceType, bytes32 _serviceVersion);
-    event Test(string msg, bool value);
-    event TestAddr(string msg, address addr);
+    event ServiceTypeAdded(bytes32 _serviceType, uint _serviceTypeMin, uint _serviceTypeMax);
+    event ServiceTypeRemoved(bytes32 _serviceType);
 
     /**
      * @notice Function to initialize the contract
@@ -96,6 +96,8 @@ contract ServiceTypeManager is InitializableV2 {
             minStake: _serviceTypeMin,
             maxStake: _serviceTypeMax
         });
+
+        emit ServiceTypeAdded(_serviceType, _serviceTypeMin, _serviceTypeMax);
     }
 
     /**
@@ -125,6 +127,7 @@ contract ServiceTypeManager is InitializableV2 {
         // Mark as invalid
         serviceTypeInfo[_serviceType].isValid = false;
         // Note - stake bounds are not reset so they can be checked to prevent serviceType from being re-added
+        emit ServiceTypeRemoved(_serviceType);
     }
 
     /**
