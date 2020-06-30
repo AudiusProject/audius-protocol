@@ -786,6 +786,32 @@ contract('Governance.sol', async (accounts) => {
         const voter2Vote = await governance.getVoteByProposalAndVoter.call(proposalId, voter2Address)
         assert.equal(voter2Vote, Vote.Yes)
       })
+
+      it('Reject a proposal with a tie', async () => {
+        await governance.submitProposalVote(proposalId, Vote.Yes, { from: stakerAccount1 })
+        await governance.submitProposalVote(proposalId, Vote.No, { from: stakerAccount2 })
+        
+        // Confirm proposal state
+        const proposal = await governance.getProposalById.call(proposalId)
+        assert.equal(proposal.outcome, Outcome.InProgress, 'Expected same outcome')
+        assert.isTrue(proposal.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same voteMagnitudeYes')
+        assert.isTrue(proposal.voteMagnitudeNo.eq(defaultStakeAmount), 'Expected same voteMagnitudeNo')
+        assert.equal(parseInt(proposal.numVotes), 2, 'Expected same numVotes')
+
+        const proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.startBlockNumber)
+        await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
+
+        let evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
+        const [txParsedEvent0] = _lib.parseTx(evaluateTxReceipt, true)
+        
+        // Confirm outcome state
+        assert.equal(txParsedEvent0.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
+        assert.equal(parseInt(txParsedEvent0.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
+        assert.equal(txParsedEvent0.event.args.outcome, Outcome.No, 'Expected same event.args.outcome')
+        assert.isTrue(txParsedEvent0.event.args.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
+        assert.isTrue(txParsedEvent0.event.args.voteMagnitudeNo.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeNo')
+        assert.equal(parseInt(txParsedEvent0.event.args.numVotes), 2, 'Expected same event.args.numVotes')
+      })
     })
 
     describe('Proposal evaluation', async () => {

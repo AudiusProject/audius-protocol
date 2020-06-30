@@ -389,7 +389,7 @@ contract Governance is InitializableV2 {
         }
         // votingQuorumPercent met & vote is Yes -> execute proposed transaction & close proposal.
         else if (
-            proposals[_proposalId].voteMagnitudeYes >= proposals[_proposalId].voteMagnitudeNo
+            proposals[_proposalId].voteMagnitudeYes > proposals[_proposalId].voteMagnitudeNo
         ) {
             (bool success, bytes memory returnData) = _executeTransaction(
                 targetContractAddress,
