@@ -215,7 +215,9 @@ contract('DelegateManager', async (accounts) => {
     )
 
     // ---- Set up delegateManager  contract permissions
-    await _lib.configureDelegateManagerAddresses(
+    //   return { spFactoryTx, claimsManagerTx, stakingTx, governanceTx }
+
+    let initTxs = await _lib.configureDelegateManagerAddresses(
       governance,
       guardianAddress,
       delegateManagerKey,
@@ -223,6 +225,30 @@ contract('DelegateManager', async (accounts) => {
       staking.address,
       serviceProviderFactory.address,
       claimsManager.address
+    )
+    await expectEvent.inTransaction(
+      initTxs.spFactoryTx.tx,
+      DelegateManager,
+      'ServiceProviderFactoryAddressUpdated',
+      { _newServiceProviderFactoryAddress: serviceProviderFactory.address }
+    )
+    await expectEvent.inTransaction(
+      initTxs.stakingTx.tx,
+      DelegateManager,
+      'StakingAddressUpdated',
+      { _newStakingAddress: staking.address }
+    )
+    await expectEvent.inTransaction(
+      initTxs.governanceTx.tx,
+      DelegateManager,
+      'GovernanceAddressUpdated',
+      { _newGovernanceAddress: governance.address }
+    )
+    await expectEvent.inTransaction(
+      initTxs.claimsManagerTx.tx,
+      DelegateManager,
+      'ClaimsManagerAddressUpdated',
+      { _newClaimsManagerAddress: claimsManager.address }
     )
 
     // ---- Set up spFactory  contract permissions

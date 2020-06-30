@@ -87,6 +87,10 @@ contract DelegateManager is InitializableV2 {
     event MaxDelegatorsUpdated(uint indexed _maxDelegators);
     event MinDelegationUpdated(uint indexed _minDelegationAmount);
     event UndelegateLockupDurationUpdated(uint indexed _undelegateLockupDuration);
+    event GovernanceAddressUpdated(address indexed _newGovernanceAddress);
+    event StakingAddressUpdated(address indexed _newStakingAddress);
+    event ServiceProviderFactoryAddressUpdated(address indexed _newServiceProviderFactoryAddress);
+    event ClaimsManagerAddressUpdated(address indexed _newClaimsManagerAddress);
 
     /**
      * @notice Function to initialize the contract
@@ -567,16 +571,18 @@ contract DelegateManager is InitializableV2 {
     function setGovernanceAddress(address _governanceAddress) external {
         require(msg.sender == governanceAddress, "Only governance");
         governanceAddress = _governanceAddress;
+        emit GovernanceAddressUpdated(_governanceAddress);
     }
 
     /**
      * @notice Set the Staking address
      * @dev Only callable by Governance address
-     * @param _address - address for new Staking contract
+     * @param _stakingAddress - address for new Staking contract
      */
-    function setStakingAddress(address _address) external {
+    function setStakingAddress(address _stakingAddress) external {
         require(msg.sender == governanceAddress, "Only governance");
-        stakingAddress = _address;
+        stakingAddress = _stakingAddress;
+        emit StakingAddressUpdated(_stakingAddress);
     }
 
     /**
@@ -587,6 +593,7 @@ contract DelegateManager is InitializableV2 {
     function setServiceProviderFactoryAddress(address _spFactory) external {
         require(msg.sender == governanceAddress, "Only governance");
         serviceProviderFactoryAddress = _spFactory;
+        emit ServiceProviderFactoryAddressUpdated(_spFactory);
     }
 
     /**
@@ -597,6 +604,7 @@ contract DelegateManager is InitializableV2 {
     function setClaimsManagerAddress(address _claimsManagerAddress) external {
         require(msg.sender == governanceAddress, "Only governance");
         claimsManagerAddress = _claimsManagerAddress;
+        emit ClaimsManagerAddressUpdated(_claimsManagerAddress);
     }
 
     // ========================================= View Functions =========================================

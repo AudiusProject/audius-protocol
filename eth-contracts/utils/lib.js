@@ -414,7 +414,7 @@ export const configureDelegateManagerAddresses = async (
   claimsManagerAddress
 ) => {
   await assertRevert(delegateManager.claimRewards(guardianAddress), 'serviceProviderFactoryAddress not set')
-  await governance.guardianExecuteTransaction(
+  let spFactoryTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
     'setServiceProviderFactoryAddress(address)',
@@ -423,7 +423,7 @@ export const configureDelegateManagerAddresses = async (
   )
   assert.equal(spFactoryAddress, await delegateManager.getServiceProviderFactoryAddress(), 'Unexpected sp address')
   await assertRevert(delegateManager.claimRewards(guardianAddress), 'claimsManagerAddress not set')
-  await governance.guardianExecuteTransaction(
+  let claimsManagerTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
     'setClaimsManagerAddress(address)',
@@ -432,20 +432,21 @@ export const configureDelegateManagerAddresses = async (
   )
   assert.equal(claimsManagerAddress, await delegateManager.getClaimsManagerAddress(), 'Unexpected claim manager addr')
   await assertRevert(delegateManager.claimRewards(guardianAddress), 'stakingAddress not set')
-  await governance.guardianExecuteTransaction(
+  let stakingTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
     'setStakingAddress(address)',
     abiEncode(['address'], [stakingAddress]),
     { from: guardianAddress })
   assert.equal(stakingAddress, await delegateManager.getStakingAddress(), 'Unexpected staking address')
-  await governance.guardianExecuteTransaction(
+  let governanceTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
     'setGovernanceAddress(address)',
     abiEncode(['address'], [governance.address]),
     { from: guardianAddress })
   assert.equal(governance.address, await delegateManager.getGovernanceAddress(), 'Unexpected governance address')
+  return { spFactoryTx, claimsManagerTx, stakingTx, governanceTx }
 }
 
 // Test helper to set serviceProviderFactory contract addresses
