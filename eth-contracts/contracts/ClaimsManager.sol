@@ -58,17 +58,24 @@ contract ClaimsManager is InitializableV2 {
     Round currentRound;
 
     event RoundInitiated(
-      uint _blockNumber,
-      uint _roundNumber,
-      uint _fundAmount
+      uint indexed _blockNumber,
+      uint indexed _roundNumber,
+      uint indexed _fundAmount
     );
 
     event ClaimProcessed(
-      address _claimer,
-      uint _rewards,
+      address indexed _claimer,
+      uint indexed _rewards,
       uint _oldTotal,
-      uint _newTotal
+      uint indexed _newTotal
     );
+
+    event FundingAmountUpdated(uint indexed _amount);
+    event FundingRoundBlockDiffUpdated(uint indexed _blockDifference);
+    event GovernanceAddressUpdated(address indexed _newGovernanceAddress);
+    event StakingAddressUpdated(address indexed _newStakingAddress);
+    event ServiceProviderFactoryAddressUpdated(address indexed _newServiceProviderFactoryAddress);
+    event DelegateManagerAddressUpdated(address indexed _newDelegateManagerAddress);
 
     /**
      * @notice Function to initialize the contract
@@ -153,16 +160,18 @@ contract ClaimsManager is InitializableV2 {
     function setGovernanceAddress(address _governanceAddress) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         governanceAddress = _governanceAddress;
+        emit GovernanceAddressUpdated(_governanceAddress);
     }
 
     /**
      * @notice Set the Staking address
      * @dev Only callable by Governance address
-     * @param _address - address for new Staking contract
+     * @param _stakingAddress - address for new Staking contract
      */
-    function setStakingAddress(address _address) external {
+    function setStakingAddress(address _stakingAddress) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
-        stakingAddress = _address;
+        stakingAddress = _stakingAddress;
+        emit StakingAddressUpdated(_stakingAddress);
     }
 
     /**
@@ -173,6 +182,7 @@ contract ClaimsManager is InitializableV2 {
     function setServiceProviderFactoryAddress(address _spFactory) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         serviceProviderFactoryAddress = _spFactory;
+        emit ServiceProviderFactoryAddressUpdated(_spFactory);
     }
 
     /**
@@ -183,6 +193,7 @@ contract ClaimsManager is InitializableV2 {
     function setDelegateManagerAddress(address _delegateManager) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         delegateManagerAddress = _delegateManager;
+        emit DelegateManagerAddressUpdated(_delegateManager);
     }
 
     /**
@@ -262,6 +273,12 @@ contract ClaimsManager is InitializableV2 {
         // Total rewards can be zero if all stake is currently locked up
         if (!withinBounds || rewardsForClaimer == 0) {
             stakingContract.updateClaimHistory(0, _claimer);
+            emit ClaimProcessed(
+                _claimer,
+                0,
+                totalStakedAtFundBlockForClaimer,
+                claimerTotalStake
+            );
             return 0;
         }
 
@@ -302,6 +319,7 @@ contract ClaimsManager is InitializableV2 {
             "Only callable by Governance contract"
         );
         fundingAmount = _newAmount;
+        emit FundingAmountUpdated(_newAmount);
         return _newAmount;
     }
 
@@ -328,6 +346,7 @@ contract ClaimsManager is InitializableV2 {
             msg.sender == governanceAddress,
             "Only callable by Governance contract"
         );
+        emit FundingRoundBlockDiffUpdated(_newFundingRoundBlockDiff);
         fundingRoundBlockDiff = _newFundingRoundBlockDiff;
     }
 }
