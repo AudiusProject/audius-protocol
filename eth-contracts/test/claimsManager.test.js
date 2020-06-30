@@ -141,7 +141,7 @@ contract('ClaimsManager', async (accounts) => {
     )
 
     // --- Set up claims manager contract permissions
-    await _lib.configureClaimsManagerContractAddresses(
+    let txs = await _lib.configureClaimsManagerContractAddresses(
       governance,
       guardianAddress,
       claimsManagerProxyKey,
@@ -150,6 +150,12 @@ contract('ClaimsManager', async (accounts) => {
       mockStakingCaller.address,
       mockDelegateManager.address
     )
+
+    // console.log(txs.stakingAddressTx)
+    await expectEvent.inTransaction(txs.stakingAddressTx.tx, ClaimsManager, 'StakingAddressUpdated', { _newStakingAddress: stakingProxy.address })
+    await expectEvent.inTransaction(txs.govAddressTx.tx, ClaimsManager, 'GovernanceAddressUpdated', { _newGovernanceAddress: governance.address })
+    await expectEvent.inTransaction(txs.spAddressTx.tx, ClaimsManager, 'ServiceProviderFactoryAddressUpdated', { _newServiceProviderFactoryAddress: mockStakingCaller.address })
+    await expectEvent.inTransaction(txs.delManAddressTx.tx, ClaimsManager, 'DelegateManagerAddressUpdated', { _newDelegateManagerAddress: mockDelegateManager.address })
   })
 
   it('Initiate a claim', async () => {
