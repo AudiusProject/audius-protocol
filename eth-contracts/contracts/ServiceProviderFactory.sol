@@ -21,7 +21,7 @@ contract ServiceProviderFactory is InitializableV2 {
     ///        2) % Cut of delegator tokens taken during reward
     ///        3) Bool indicating whether this SP has met min/max requirements
     ///        4) Number of endpoints registered by SP
-    ///        5) Minimum total stake for this account
+    ///        5) Minimum deployer stake for this service provider
     ///        6) Maximum total stake for this account
     struct ServiceProviderDetails {
         uint deployerStake;
@@ -40,10 +40,6 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /// @dev - Mapping of service provider address to details
     mapping(address => ServiceProviderDetails) spDetails;
-
-    /// @dev - Minimum staked by service provider account deployer
-    /// @dev - Static regardless of total number of endpoints for a given account
-    uint minDeployerStake;
 
     /// @dev - standard - imitates relationship between Ether and Wei
     uint8 private constant DECIMALS = 18;
@@ -105,27 +101,45 @@ contract ServiceProviderFactory is InitializableV2 {
       uint256 _stakeAmount
     );
 
-    event UpdateEndpoint(
+    event EndpointUpdated(
       bytes32 _serviceType,
       address _owner,
-      string _oldEndpoint,
-      string _newEndpoint,
-      uint spId
+      string indexed _oldEndpoint,
+      string indexed _newEndpoint,
+      uint _spID
     );
+
+    event DelegateOwnerWalletUpdated(
+      address _owner,
+      bytes32 indexed _serviceType,
+      uint indexed _spID,
+      address indexed _updatedWallet
+    );
+
+    event ServiceProviderCutUpdated(
+      address indexed _owner,
+      uint indexed _updatedCut
+    );
+
+    event DecreaseStakeLockupDurationUpdated(uint indexed _lockupDuration);
+    event GovernanceAddressUpdated(address indexed _newGovernanceAddress);
+    event StakingAddressUpdated(address indexed _newStakingAddress);
+    event ClaimsManagerAddressUpdated(address indexed _newClaimsManagerAddress);
+    event DelegateManagerAddressUpdated(address indexed _newDelegateManagerAddress);
+    event ServiceTypeManagerAddressUpdated(address indexed _newServiceTypeManagerAddress);
 
     /**
      * @notice Function to initialize the contract
      * @param _governanceAddress - Governance proxy address
      */
-    function initialize (address _governanceAddress) public initializer
+    function initialize (
+        address _governanceAddress,
+        uint _decreaseStakeLockupDuration
+    ) public initializer
     {
         governanceAddress = _governanceAddress;
 
-        // Configure direct minimum stake for deployer
-        minDeployerStake = 5 * 10**uint256(DECIMALS);
-
-        // 10 blocks for lockup duration
-        decreaseStakeLockupDuration = 10;
+        decreaseStakeLockupDuration = _decreaseStakeLockupDuration;
 
         InitializableV2.initialize();
     }
@@ -146,6 +160,7 @@ contract ServiceProviderFactory is InitializableV2 {
     ) external returns (uint spID)
     {
         _requireIsInitialized();
+
         require(serviceTypeManagerAddress != address(0x00), "serviceTypeManagerAddress not set");
         require(stakingAddress != address(0x00), "stakingAddress not set");
 
@@ -189,9 +204,9 @@ contract ServiceProviderFactory is InitializableV2 {
         );
 
         // Update min and max totals for this service provider
-        (uint typeMin, uint typeMax) = ServiceTypeManager(
+        (, uint typeMin, uint typeMax) = ServiceTypeManager(
             serviceTypeManagerAddress
-        ).getServiceTypeStakeInfo(_serviceType);
+        ).getServiceTypeInfo(_serviceType);
         spDetails[msg.sender].minAccountStake = spDetails[msg.sender].minAccountStake.add(typeMin);
         spDetails[msg.sender].maxAccountStake = spDetails[msg.sender].maxAccountStake.add(typeMax);
 
@@ -281,9 +296,9 @@ contract ServiceProviderFactory is InitializableV2 {
         spDetails[msg.sender].numberOfEndpoints -= 1;
 
         // Update min and max totals for this service provider
-        (uint typeMin, uint typeMax) = ServiceTypeManager(
+        (, uint typeMin, uint typeMax) = ServiceTypeManager(
             serviceTypeManagerAddress
-        ).getServiceTypeStakeInfo(_serviceType);
+        ).getServiceTypeInfo(_serviceType);
         spDetails[msg.sender].minAccountStake = spDetails[msg.sender].minAccountStake.sub(typeMin);
         spDetails[msg.sender].maxAccountStake = spDetails[msg.sender].maxAccountStake.sub(typeMax);
 
@@ -365,6 +380,11 @@ contract ServiceProviderFactory is InitializableV2 {
     external returns (uint newStakeAmount)
     {
         _requireIsInitialized();
+
+        require(
+            _decreaseStakeAmount > 0,
+            "Requested stake decrease amount must be greater than zero"
+        );
         require(
             !_claimPending(msg.sender),
             "No claim expected to be pending prior to stake transfer"
@@ -395,6 +415,8 @@ contract ServiceProviderFactory is InitializableV2 {
      */
     function cancelDecreaseStakeRequest(address _account) external
     {
+        _requireIsInitialized();
+
         require(
             msg.sender == _account || msg.sender == delegateManagerAddress,
             "Only callable from owner or DelegateManager"
@@ -469,6 +491,8 @@ contract ServiceProviderFactory is InitializableV2 {
         address _updatedDelegateOwnerWallet
     ) external
     {
+        _requireIsInitialized();
+
         uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
 
         require(
@@ -476,6 +500,12 @@ contract ServiceProviderFactory is InitializableV2 {
             "Invalid update operation, wrong owner");
 
         serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
+        emit DelegateOwnerWalletUpdated(
+            msg.sender,
+            _serviceType,
+            spID,
+            _updatedDelegateOwnerWallet
+        );
     }
 
     /**
@@ -490,6 +520,8 @@ contract ServiceProviderFactory is InitializableV2 {
         string calldata _newEndpoint
     ) external returns (uint spID)
     {
+        _requireIsInitialized();
+
         uint spId = this.getServiceProviderIdFromEndpoint(_oldEndpoint);
 
         require (spId != 0, "Could not find service provider with that endpoint");
@@ -510,6 +542,8 @@ contract ServiceProviderFactory is InitializableV2 {
         sp.endpoint = _newEndpoint;
         serviceProviderInfo[_serviceType][spId] = sp;
         serviceProviderEndpointToId[keccak256(bytes(_newEndpoint))] = spId;
+
+        emit EndpointUpdated(_serviceType, msg.sender, _oldEndpoint, _newEndpoint, spId);
         return spId;
     }
 
@@ -524,6 +558,8 @@ contract ServiceProviderFactory is InitializableV2 {
         uint _amount
      ) external
     {
+        _requireIsInitialized();
+
         require(delegateManagerAddress != address(0x00), "delegateManagerAddress not set");
         require(
             msg.sender == delegateManagerAddress,
@@ -547,6 +583,8 @@ contract ServiceProviderFactory is InitializableV2 {
         uint _cut
     ) external
     {
+        _requireIsInitialized();
+
         require(
             msg.sender == _serviceProvider,
             "Service Provider cut update operation restricted to deployer");
@@ -555,6 +593,7 @@ contract ServiceProviderFactory is InitializableV2 {
             _cut <= DEPLOYER_CUT_BASE,
             "Service Provider cut cannot exceed base value");
         spDetails[_serviceProvider].deployerCut = _cut;
+        emit ServiceProviderCutUpdated(_serviceProvider, _cut);
     }
 
     /// @notice Update service provider lockup duration
@@ -567,12 +606,15 @@ contract ServiceProviderFactory is InitializableV2 {
         );
 
         decreaseStakeLockupDuration = _duration;
+        emit DecreaseStakeLockupDurationUpdated(_duration);
     }
 
     /// @notice Get denominator for deployer cut calculations
     function getServiceProviderDeployerCutBase()
-    external pure returns (uint base)
+    external view returns (uint base)
     {
+        _requireIsInitialized();
+
         return DEPLOYER_CUT_BASE;
     }
 
@@ -580,6 +622,8 @@ contract ServiceProviderFactory is InitializableV2 {
     function getTotalServiceTypeProviders(bytes32 _serviceType)
     external view returns (uint numberOfProviders)
     {
+        _requireIsInitialized();
+
         return serviceProviderTypeIDs[_serviceType];
     }
 
@@ -587,14 +631,9 @@ contract ServiceProviderFactory is InitializableV2 {
     function getServiceProviderIdFromEndpoint(string calldata _endpoint)
     external view returns (uint spID)
     {
-        return serviceProviderEndpointToId[keccak256(bytes(_endpoint))];
-    }
+        _requireIsInitialized();
 
-    /// @notice Get minDeployerStake
-    function getMinDeployerStake()
-    external view returns (uint min)
-    {
-        return minDeployerStake;
+        return serviceProviderEndpointToId[keccak256(bytes(_endpoint))];
     }
 
     /**
@@ -604,6 +643,8 @@ contract ServiceProviderFactory is InitializableV2 {
     function getServiceProviderIdsFromAddress(address _ownerAddress, bytes32 _serviceType)
     external view returns (uint[] memory spIds)
     {
+        _requireIsInitialized();
+
         return serviceProviderAddressToId[_ownerAddress][_serviceType];
     }
 
@@ -615,6 +656,8 @@ contract ServiceProviderFactory is InitializableV2 {
     function getServiceEndpointInfo(bytes32 _serviceType, uint _serviceId)
     external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet)
     {
+        _requireIsInitialized();
+
         ServiceEndpoint memory sp = serviceProviderInfo[_serviceType][_serviceId];
         return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet);
     }
@@ -632,6 +675,8 @@ contract ServiceProviderFactory is InitializableV2 {
         uint minAccountStake,
         uint maxAccountStake)
     {
+        _requireIsInitialized();
+
         return (
             spDetails[_sp].deployerStake,
             spDetails[_sp].deployerCut,
@@ -649,6 +694,8 @@ contract ServiceProviderFactory is InitializableV2 {
     function getPendingDecreaseStakeRequest(address _sp)
     external view returns (uint amount, uint lockupExpiryBlock)
     {
+        _requireIsInitialized();
+
         return (
             decreaseStakeRequests[_sp].decreaseAmount,
             decreaseStakeRequests[_sp].lockupExpiryBlock
@@ -659,6 +706,8 @@ contract ServiceProviderFactory is InitializableV2 {
     function getDecreaseStakeLockupDuration()
     external view returns (uint duration)
     {
+        _requireIsInitialized();
+
         return decreaseStakeLockupDuration;
     }
 
@@ -670,31 +719,43 @@ contract ServiceProviderFactory is InitializableV2 {
     function validateAccountStakeBalance(address _sp)
     external view
     {
+        _requireIsInitialized();
+
         _validateBalanceInternal(_sp, Staking(stakingAddress).totalStakedFor(_sp));
     }
 
     /// @notice Get the Governance address
     function getGovernanceAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return governanceAddress;
     }
 
     /// @notice Get the Staking address
     function getStakingAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return stakingAddress;
     }
 
     /// @notice Get the DelegateManager address
     function getDelegateManagerAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return delegateManagerAddress;
     }
 
     /// @notice Get the ServiceTypeManager address
     function getServiceTypeManagerAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return serviceTypeManagerAddress;
     }
 
     /// @notice Get the ClaimsManager address
     function getClaimsManagerAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return claimsManagerAddress;
     }
 
@@ -704,8 +765,11 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _address - address for new Governance contract
      */
     function setGovernanceAddress(address _address) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         governanceAddress = _address;
+        emit GovernanceAddressUpdated(_address);
     }
 
     /**
@@ -714,8 +778,11 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _address - address for new Staking contract
      */
     function setStakingAddress(address _address) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         stakingAddress = _address;
+        emit StakingAddressUpdated(_address);
     }
 
     /**
@@ -724,8 +791,11 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _address - address for new DelegateManager contract
      */
     function setDelegateManagerAddress(address _address) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         delegateManagerAddress = _address;
+        emit DelegateManagerAddressUpdated(_address);
     }
 
     /**
@@ -734,8 +804,11 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _address - address for new ServiceTypeManager contract
      */
     function setServiceTypeManagerAddress(address _address) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         serviceTypeManagerAddress = _address;
+        emit ServiceTypeManagerAddressUpdated(_address);
     }
 
     /**
@@ -744,9 +817,14 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _address - address for new ClaimsManager contract
      */
     function setClaimsManagerAddress(address _address) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         claimsManagerAddress = _address;
+        emit ClaimsManagerAddressUpdated(_address);
     }
+
+    // ========================================= Internal Functions =========================================
 
     /**
      * @notice Update status in spDetails if the bounds for a service provider is valid
@@ -772,16 +850,14 @@ contract ServiceProviderFactory is InitializableV2 {
     function _validateBalanceInternal(address _sp, uint _amount) internal view
     {
         require(
-            _amount >= spDetails[_sp].minAccountStake,
-            "Minimum stake requirement not met");
-
-        require(
             _amount <= spDetails[_sp].maxAccountStake,
-            "Maximum stake amount exceeded");
+            "Maximum stake amount exceeded"
+        );
 
         require(
-            spDetails[_sp].deployerStake == 0 || spDetails[_sp].deployerStake >= minDeployerStake,
-            "Direct stake restriction violated for this service provider");
+            spDetails[_sp].deployerStake >= spDetails[_sp].minAccountStake,
+            "Minimum stake requirement not met"
+        );
     }
 
     /**
