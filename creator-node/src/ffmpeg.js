@@ -3,13 +3,15 @@ const fs = require('fs')
 const path = require('path')
 const ffmpeg = require('ffmpeg-static').path
 const spawn = require('child_process').spawn
+const { logger: genericLogger } = require('./logging')
 
 /** Segments file into equal size chunks without re-encoding
  *  Try to segment as mp3 and error on failure
  */
-function segmentFile (req, fileDir, fileName) {
+function segmentFile (fileDir, fileName, { logContext }) {
+  const logger = genericLogger.child(logContext)
   return new Promise((resolve, reject) => {
-    req.logger.info(`Segmenting file ${fileName}...`)
+    logger.info(`Segmenting file ${fileName}...`)
     const absolutePath = path.resolve(fileDir, fileName)
 
     // https://ffmpeg.org/ffmpeg-formats.html#hls-2
@@ -40,8 +42,8 @@ function segmentFile (req, fileDir, fileName) {
         const segmentFilePaths = fs.readdirSync(fileDir + '/segments')
         resolve(segmentFilePaths)
       } else {
-        req.logger.error('Error when processing file with ffmpeg')
-        req.logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
+        logger.error('Error when processing file with ffmpeg')
+        logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
         reject(new Error('FFMPEG Error'))
       }
     })
@@ -49,15 +51,16 @@ function segmentFile (req, fileDir, fileName) {
 }
 
 /** Transcode file into 320kbps mp3 and store in same directory. */
-function transcodeFileTo320 (req, fileDir, fileName) {
+function transcodeFileTo320 (fileDir, fileName, { logContext }) {
+  const logger = genericLogger.child(logContext)
   return new Promise((resolve, reject) => {
-    req.logger.info(`Transcoding file ${fileName}...`)
+    logger.info(`Transcoding file ${fileName}...`)
     const sourcePath = path.resolve(fileDir, fileName)
     const targetPath = path.resolve(fileDir, fileName.split('.')[0] + '-dl.mp3')
 
     // Exit if dl-copy file already exists at target path.
     if (fs.existsSync(targetPath)) {
-      req.logger.info(`Downloadable copy already exists at ${targetPath}.`)
+      logger.info(`Downloadable copy already exists at ${targetPath}.`)
       resolve(targetPath)
     }
 
@@ -87,8 +90,8 @@ function transcodeFileTo320 (req, fileDir, fileName) {
           reject(new Error('FFMPEG Error'))
         }
       } else {
-        req.logger.error('Error when processing file with ffmpeg')
-        req.logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
+        logger.error('Error when processing file with ffmpeg')
+        logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
         reject(new Error('FFMPEG Error'))
       }
     })

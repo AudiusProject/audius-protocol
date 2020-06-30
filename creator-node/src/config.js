@@ -180,6 +180,14 @@ const config = convict({
     default: 'mpegts'
   },
 
+  // Transcoding settings
+  transcodingMaxConcurrency: {
+    doc: 'Maximum ffmpeg processes to spawn concurrently. If unset (-1), set to # of CPU cores available',
+    format: Number,
+    env: 'transcodingMaxConcurrency',
+    default: -1
+  },
+
   // wallet information
   delegateOwnerWallet: {
     doc: 'wallet address',
