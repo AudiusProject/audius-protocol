@@ -106,7 +106,7 @@ module.exports = function (app) {
           multihash: fileResp.hash,
           sourceFile: fileResp.path,
           dirMultihash: dirCID,
-          fileName: fileResp.path.split('/').slice(-1)[0] || fileResp.path,
+          fileName: fileResp.path.split('/').slice(-1)[0],
           storagePath: destPath,
           type: 'image'
         },
@@ -169,8 +169,6 @@ module.exports = function (app) {
     // Don't serve if not found in DB.
     const queryResults = await models.File.findOne({ where: {
       multihash: CID,
-      // All other file types are valid and can be served through this route.
-      type: { [models.Sequelize.Op.ne]: 'dir' } // Op.ne = notequal
     } })
     if (!queryResults) {
       return sendResponse(req, res, errorResponseNotFound(`No valid file found for provided CID: ${CID}`))
@@ -256,10 +254,10 @@ module.exports = function (app) {
     const filename = req.params.filename
     const ipfsPath = `${dirCID}/${filename}`
 
+    // Don't serve if not found in DB.
+    // Query for the file based on the dirCID and filename
     const queryResults = await models.File.findOne({ where: {
       dirMultihash: dirCID,
-      // All other file types are valid and can be served through this route.
-      type: { [models.Sequelize.Op.ne]: 'dir' }, // Op.ne = notequal
       fileName: filename
     } })
     if (!queryResults) {
@@ -269,6 +267,8 @@ module.exports = function (app) {
         errorResponseNotFound(`No valid file found for provided dirCID: ${dirCID} and filename: ${filename}`)
       )
     }
+    // Lop off the last bit of the storage path (the child CID)
+    // to get the parent storage path for IPFS rehydration
     const parentStoragePath = queryResults.storagePath.split('/').slice(0, -1).join('/')
 
     redisClient.incr('ipfsStandaloneReqs')

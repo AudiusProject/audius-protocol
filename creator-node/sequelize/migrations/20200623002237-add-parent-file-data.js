@@ -32,6 +32,8 @@ module.exports = {
       for (let file of files) {
         // Set the filename to the last uri "part" of the source file if present
         // otherwise, use just the sourceFile
+        // After this migration, the fileName field should always represent the "stored" file name
+        // for *every* file and it can probably replace file.sourceFile entirely.
         const fileName = file.sourceFile
           ? file.sourceFile.split('/').slice(-1)[0] || file.sourceFile
           : file.sourceFile
@@ -39,12 +41,15 @@ module.exports = {
         // Set the dir multihash to the parent CID if there is one
         let dirMultihash
         if (file.type === 'image' && file.storagePath) {
-          const storagePathParts = file.storagePath.split('/')
-          if (storagePathParts.length === 7) {
-            dirMultihash = file.storagePath.split('/').slice(-2)[0]
+          const match = file.storagePath.match(/(?<parent>Qm.*)\/(?<child>Qm.*)/)
+          if (match) {
+            const { groups: { parent } } = match
+            if (parent) {
+              dirMultihash = parent
+            }
           }
         }
-        // Coerce all falsey types to `null`
+        // Coerce all falsey types to `null` (meaning our regex couldn't find a parent multihash)
         if (!dirMultihash) dirMultihash = null
 
         await queryInterface.sequelize.query(`
@@ -54,6 +59,9 @@ module.exports = {
           WHERE "fileUUID" = '${file.fileUUID}'`
         , { transaction })
       }
+
+      await queryInterface.addIndex('Files', ['multihash'], { transaction })
+      await queryInterface.addIndex('Files', ['dirMultihash'], { transaction })
 
       await transaction.commit()
     } catch (err) {
