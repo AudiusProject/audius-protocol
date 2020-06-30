@@ -25,7 +25,7 @@ const testEndpoint2 = 'https://localhost:5002'
 
 const MIN_STAKE_AMOUNT = 10
 const VOTING_PERIOD = 10
-const VOTING_QUORUM = 1
+const VOTING_QUORUM_PERCENT = 10
 const DECREASE_STAKE_LOCKUP_DURATION = 10
 
 const INITIAL_BAL = _lib.audToWeiBN(1000)
@@ -117,7 +117,7 @@ contract('ServiceProvider test', async (accounts) => {
       proxyDeployerAddress,
       registry,
       VOTING_PERIOD,
-      VOTING_QUORUM,
+      VOTING_QUORUM_PERCENT,
       guardianAddress
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
@@ -433,15 +433,11 @@ contract('ServiceProvider test', async (accounts) => {
       )
     })
 
-    it('Min direct deployer stake violation', async () => {
-      const minDirectStake = await serviceProviderFactory.getMinDeployerStake()
-
-      // Calculate an invalid direct stake amount
-      const invalidDirectStake = minDirectStake.sub(_lib.toBN(1))
-      await token.transfer(stakerAccount2, invalidDirectStake, { from: proxyDeployerAddress })
-
+    it('Min deployer stake violation', async () => {
       const dpTypeInfo = await serviceTypeManager.getServiceTypeInfo(testDiscProvType)
-      assert.isTrue(invalidDirectStake.gt(dpTypeInfo.minStake), 'Invalid direct stake above dp type min')
+      // Calculate an invalid direct stake amount
+      let invalidStakeAmount = dpTypeInfo.minStake.sub(_lib.toBN(1))
+      await token.transfer(stakerAccount2, invalidStakeAmount, { from: proxyDeployerAddress })
 
       // Validate that this value won't violate service type minimum
       await _lib.assertRevert(
@@ -451,9 +447,9 @@ contract('ServiceProvider test', async (accounts) => {
           serviceProviderFactory,
           testDiscProvType,
           testEndpoint1,
-          invalidDirectStake,
+          invalidStakeAmount,
           stakerAccount2),
-        'Direct stake restriction violated'
+        'Minimum stake requirement not met'
       )
     })
 

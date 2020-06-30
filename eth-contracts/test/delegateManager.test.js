@@ -27,7 +27,7 @@ const INITIAL_BAL = _lib.audToWeiBN(1000)
 const DEFAULT_AMOUNT_VAL = _lib.audToWei(120)
 const DEFAULT_AMOUNT = _lib.toBN(DEFAULT_AMOUNT_VAL)
 const VOTING_PERIOD = 10
-const VOTING_QUORUM = 1
+const VOTING_QUORUM_PERCENT = 10
 const DECREASE_STAKE_LOCKUP_DURATION = 10
 
 const callValue0 = _lib.toBN(0)
@@ -60,7 +60,7 @@ contract('DelegateManager', async (accounts) => {
       proxyDeployerAddress,
       registry,
       VOTING_PERIOD,
-      VOTING_QUORUM,
+      VOTING_QUORUM_PERCENT,
       guardianAddress
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
@@ -1236,44 +1236,46 @@ contract('DelegateManager', async (accounts) => {
         delegateAmount,
         { from: delegatorAccount1 })
 
-      // Remove deployer direct stake
-      // Decrease by all but 1 AUD direct stake
+      // Remove deployer stake
+      // Decrease by all but 1 AUD deployer stake
       let spFactoryStake = infoAfterFailure.spFactoryStake
       let diff = _lib.audToWeiBN(1)
-      // Confirm failure as direct stake threshold is violated
+      // Confirm failure as min stake threshold is violated
       // Due to the total delegated stake equal to min bounds, total account stake balance will NOT violate bounds
       await _lib.assertRevert(
         decreaseRegisteredProviderStake(spFactoryStake.sub(diff), stakerAccount),
-        'Direct stake restriction violated for this service provider'
+        'Minimum stake requirement not met'
       )
 
       // Decrease to min
       let spInfo = await getAccountStakeInfo(stakerAccount, false)
-      let minDirectStake = await serviceProviderFactory.getMinDeployerStake()
-      let diffToMin = (spInfo.spFactoryStake).sub(minDirectStake)
+      let diffToMin = (spInfo.spFactoryStake).sub(spInfo.minAccountStake)
       await decreaseRegisteredProviderStake(diffToMin, stakerAccount)
       let infoAfterDecrease = await getAccountStakeInfo(stakerAccount, false)
       assert.isTrue(
-        (infoAfterDecrease.spFactoryStake).eq(minDirectStake),
+        (infoAfterDecrease.spFactoryStake).eq(spInfo.minAccountStake),
         'Expect min direct stake while within total account bounds')
 
       // At this point we have a total stake of 2x the minimum for this SP
       // 1x Min directly from SP
       // 1x Min from our single delegator
-      // So - a service provider should be able to register with NO additional stake and still be within bounds
-      await _lib.registerServiceProvider(
-        token,
-        staking,
-        serviceProviderFactory,
-        testDiscProvType,
-        testEndpoint3,
-        _lib.audToWeiBN(0),
-        stakerAccount)
+      // So - a service provider should NOT be able to register with no additional stake, since the updated minimum bound for an SP with 2 endpoints is violated
+      await _lib.assertRevert(
+        _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint3,
+          _lib.audToWeiBN(0),
+          stakerAccount),
+        'Minimum stake requirement not met'
+      )
 
       let infoAfterSecondEndpoint = await getAccountStakeInfo(stakerAccount, false)
       assert.isTrue(
         (infoAfterSecondEndpoint.totalInStakingContract).eq(infoAfterDecrease.totalInStakingContract),
-        'Expect static total stake after new SP endpoint'
+        'Expect static total stake after registration failure'
       )
 
       // Now, initiate a request to undelegate for this SP
@@ -1295,10 +1297,11 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(
         (web3.utils.toBN(currentBlockNum)).gte(undelegateRequestInfo.lockupExpiryBlock),
         'Confirm expired lockup period')
-      // Try to execute undelegate stake, but fail due to min bound violation
-      await _lib.assertRevert(
-        delegateManager.undelegateStake({ from: delegatorAccount1 }),
-        'Minimum stake requirement not met')
+
+      let delegatorBalance = await token.balanceOf(delegatorAccount1)
+      await delegateManager.undelegateStake({ from: delegatorAccount1 })
+      let delegatorBalanceAfterUndelegation = await token.balanceOf(delegatorAccount1)
+      assert.isTrue((delegatorBalanceAfterUndelegation.sub(delegatorBalance)).eq(delegateAmount), 'Expect funds to be returned')
     })
 
     it('Undelegate lockup duration changes', async () => {

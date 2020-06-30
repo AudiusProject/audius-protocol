@@ -11,8 +11,8 @@ const governanceRegKey = web3.utils.utf8ToHex('Governance')
 
 // 48hr * 60 min/hr * 60 sec/min / ~15 sec/block = 11520 blocks
 const VotingPeriod = 11520
-// Required number of votes on proposal
-const VotingQuorum = 1
+// Required percent of total stake to have been voted with on proposal
+const VotingQuorumPercent = 10
 
 // Max number of concurrent InProgress proposals
 // - Setting to 100 by default as that is a sufficiently large value that is not at gas limit risk
@@ -33,7 +33,7 @@ module.exports = (deployer, network, accounts) => {
     const initializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'uint256', 'uint256', 'uint16', 'address'],
-      [registryAddress, VotingPeriod, VotingQuorum, MaxInProgressProposals, guardianAddress]
+      [registryAddress, VotingPeriod, VotingQuorumPercent, MaxInProgressProposals, guardianAddress]
     )
     const governanceProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
