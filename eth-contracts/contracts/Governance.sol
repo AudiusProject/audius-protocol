@@ -492,7 +492,10 @@ contract Governance is InitializableV2 {
      */
     function setVotingQuorumPercent(uint256 _votingQuorumPercent) external {
         require(msg.sender == address(this), "Only callable by self");
-        require(_votingQuorumPercent > 0, "Requires non-zero votingQuorumPercent");
+        require(
+            _votingQuorumPercent > 0 && _votingQuorumPercent <= 100,
+            "Requires _votingQuorumPercent between 1 & 100"
+        );
         votingQuorumPercent = _votingQuorumPercent;
     }
 

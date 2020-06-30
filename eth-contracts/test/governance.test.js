@@ -1749,13 +1749,24 @@ contract('Governance.sol', async (accounts) => {
         "Only callable by self"
       )
       
-      // should revert if attempting to set voting quorum to zero 
+      // should revert if attempting to set voting quorum % to zero
       await _lib.assertRevert(
         governance.guardianExecuteTransaction(
           governanceKey,
           callValue0,
-          'setVotingQuorum(uint256)',
+          'setVotingQuorumPercent(uint256)',
           _lib.abiEncode(['uint256'], [0]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
+      // should revert if attempting to set voting quorum % > 100
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          governanceKey,
+          callValue0,
+          'setVotingQuorumPercent(uint256)',
+          _lib.abiEncode(['uint256'], [120]),
           { from: guardianAddress }
         ),
         "Governance::guardianExecuteTransaction: Transaction failed."
