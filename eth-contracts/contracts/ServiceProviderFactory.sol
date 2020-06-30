@@ -122,6 +122,11 @@ contract ServiceProviderFactory is InitializableV2 {
     );
 
     event DecreaseStakeLockupDurationUpdated(uint indexed _lockupDuration);
+    event GovernanceAddressUpdated(address indexed _newGovernanceAddress);
+    event StakingAddressUpdated(address indexed _newStakingAddress);
+    event ClaimsManagerAddressUpdated(address indexed _newClaimsManagerAddress);
+    event DelegateManagerAddressUpdated(address indexed _newDelegateManagerAddress);
+    event ServiceTypeManagerAddressUpdated(address indexed _newServiceTypeManagerAddress);
 
     /**
      * @notice Function to initialize the contract
@@ -719,6 +724,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function setGovernanceAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         governanceAddress = _address;
+        emit GovernanceAddressUpdated(_address);
     }
 
     /**
@@ -729,6 +735,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function setStakingAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         stakingAddress = _address;
+        emit StakingAddressUpdated(_address);
     }
 
     /**
@@ -739,6 +746,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function setDelegateManagerAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         delegateManagerAddress = _address;
+        emit DelegateManagerAddressUpdated(_address);
     }
 
     /**
@@ -749,6 +757,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function setServiceTypeManagerAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         serviceTypeManagerAddress = _address;
+        emit ServiceTypeManagerAddressUpdated(_address);
     }
 
     /**
@@ -759,6 +768,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function setClaimsManagerAddress(address _address) external {
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         claimsManagerAddress = _address;
+        emit ClaimsManagerAddressUpdated(_address);
     }
 
     /**

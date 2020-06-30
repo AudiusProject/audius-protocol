@@ -283,7 +283,7 @@ contract('ServiceProvider test', async (accounts) => {
       ),
       'delegateManagerAddress not set')
 
-    await _lib.configureServiceProviderFactoryAddresses(
+    let initTxs = await _lib.configureServiceProviderFactoryAddresses(
       governance,
       guardianAddress,
       serviceProviderFactoryKey,
@@ -292,6 +292,31 @@ contract('ServiceProvider test', async (accounts) => {
       serviceTypeManagerProxy.address,
       claimsManagerProxy.address,
       mockDelegateManager.address
+    )
+
+    await expectEvent.inTransaction(
+      initTxs.stakingTx.tx,
+      ServiceProviderFactory,
+      'StakingAddressUpdated',
+      { _newStakingAddress: staking.address }
+    )
+    await expectEvent.inTransaction(
+      initTxs.serviceTypeTx.tx,
+      ServiceProviderFactory,
+      'ServiceTypeManagerAddressUpdated',
+      { _newServiceTypeManagerAddress: serviceTypeManagerProxy.address }
+    )
+    await expectEvent.inTransaction(
+      initTxs.delegateManagerTx.tx,
+      ServiceProviderFactory,
+      'DelegateManagerAddressUpdated',
+      { _newDelegateManagerAddress: mockDelegateManager.address }
+    )
+    await expectEvent.inTransaction(
+      initTxs.claimsManagerTx.tx,
+      ServiceProviderFactory,
+      'ClaimsManagerAddressUpdated',
+      { _newClaimsManagerAddress: claimsManagerProxy.address }
     )
   })
 
@@ -974,17 +999,21 @@ contract('ServiceProvider test', async (accounts) => {
       assert.equal(
         governance.address,
         await serviceProviderFactory.getGovernanceAddress(),
-        "expected governance address before changing"  
+        "expected governance address before changing"
       )
-
-      await governance.guardianExecuteTransaction(
+      let govTx = await governance.guardianExecuteTransaction(
         serviceProviderFactoryKey,
         callValue,
         'setGovernanceAddress(address)',
         _lib.abiEncode(['address'], [fakeGovernanceAddress]),
         { from: guardianAddress }
       )
-
+      await expectEvent.inTransaction(
+        govTx.tx,
+        ServiceProviderFactory,
+        'GovernanceAddressUpdated',
+        { _newGovernanceAddress: fakeGovernanceAddress }
+      )
       assert.equal(
         fakeGovernanceAddress,
         await serviceProviderFactory.getGovernanceAddress(),

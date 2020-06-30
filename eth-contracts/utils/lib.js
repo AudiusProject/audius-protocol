@@ -461,7 +461,7 @@ export const configureServiceProviderFactoryAddresses = async (
   delegateManagerAddress
 ) => {
 
-  await governance.guardianExecuteTransaction(
+  let serviceTypeTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
     'setServiceTypeManagerAddress(address)',
@@ -469,7 +469,7 @@ export const configureServiceProviderFactoryAddresses = async (
     { from: guardianAddress })
   assert.equal(serviceTypeManagerAddress, await spFactory.getServiceTypeManagerAddress(), 'Unexpected service type manager address')
 
-  await governance.guardianExecuteTransaction(
+  let stakingTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
     'setStakingAddress(address)',
@@ -477,7 +477,7 @@ export const configureServiceProviderFactoryAddresses = async (
     { from: guardianAddress })
   assert.equal(stakingAddress, await spFactory.getStakingAddress(), 'Unexpected staking address')
 
-  await governance.guardianExecuteTransaction(
+  let claimsManagerTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
     'setClaimsManagerAddress(address)',
@@ -486,7 +486,7 @@ export const configureServiceProviderFactoryAddresses = async (
   )
   assert.equal(claimsManagerAddress, await spFactory.getClaimsManagerAddress(), 'Unexpected claim manager addr')
 
-  await governance.guardianExecuteTransaction(
+  let delegateManagerTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
     'setDelegateManagerAddress(address)',
@@ -494,6 +494,7 @@ export const configureServiceProviderFactoryAddresses = async (
     { from: guardianAddress }
   )
   assert.equal(delegateManagerAddress, await spFactory.getDelegateManagerAddress(), 'Unexpected delegate manager addr')
+  return { serviceTypeTx, stakingTx, claimsManagerTx, delegateManagerTx }
 }
 
 export const registerContract = async (governance, contractKey, contractAddress, guardianAddress) => {
