@@ -227,7 +227,7 @@ contract ClaimsManager is InitializableV2 {
     function processClaim(
         address _claimer,
         uint _totalLockedForSP
-    ) external
+    ) external returns (uint mintedRewards)
     {
         _requireIsInitialized();
         require(
@@ -262,7 +262,7 @@ contract ClaimsManager is InitializableV2 {
         // Total rewards can be zero if all stake is currently locked up
         if (!withinBounds || rewardsForClaimer == 0) {
             stakingContract.updateClaimHistory(0, _claimer);
-            return;
+            return 0;
         }
 
         // ERC20Mintable always returns true
@@ -286,6 +286,8 @@ contract ClaimsManager is InitializableV2 {
             totalStakedAtFundBlockForClaimer,
             newTotal
         );
+
+        return rewardsForClaimer;
     }
 
     /**
