@@ -81,12 +81,12 @@ module.exports.successResponse = (obj = {}) => {
   // generate signature with hashed data and private key
   const signedResponse = web3.eth.accounts.sign(toSignHash, config.get('delegatePrivateKey'))
 
-  toSign = { ...toSign, signature: signedResponse.signature }
+  const responseWithSignature = { ...toSign, signature: signedResponse.signature }
 
   return {
     statusCode: 200,
     object: {
-      ...toSign
+      ...responseWithSignature
     }
   }
 }
