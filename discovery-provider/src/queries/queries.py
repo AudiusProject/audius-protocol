@@ -2205,7 +2205,7 @@ def get_previously_unlisted_tracks():
 
         track_ids = [result[0] for result in previously_unlisted_results]
 
-    return api_helpers.success_response({ 'track_ids': track_ids })
+    return api_helpers.success_response({ 'ids': track_ids })
 
 # Get the playlists that were previously private and became public after the date provided
 @bp.route("/previously_private/playlist", methods=("GET",))
@@ -2252,4 +2252,4 @@ def get_previously_private_playlist():
 
         playlist_ids = [result[0] for result in previously_private_results]
 
-    return api_helpers.success_response({ 'playlist_ids': playlist_ids })
+    return api_helpers.success_response({ 'ids': playlist_ids })
