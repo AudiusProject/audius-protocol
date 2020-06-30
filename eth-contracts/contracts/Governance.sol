@@ -381,6 +381,7 @@ contract Governance is InitializableV2 {
             "Governance::evaluateProposalOutcome: Registered contract address for targetContractRegistryKey has changed"
         );
 
+        Staking stakingContract = Staking(stakingAddress);
         // Calculate outcome
         Outcome outcome;
         // voting quorum not met -> proposal is invalid.
