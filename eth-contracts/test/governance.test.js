@@ -799,6 +799,19 @@ contract('Governance.sol', async (accounts) => {
         assert.isTrue(proposal.voteMagnitudeYes.eq(defaultStakeAmount.mul(_lib.toBN(2))), 'Expected same voteMagnitudeYes')
         assert.isTrue(proposal.voteMagnitudeNo.isZero(), 'Expected same voteMagnitudeNo')
         assert.equal(parseInt(proposal.numVotes), 2, 'Expected same numVotes')
+
+        // Get the list of in progress proposals
+        var inProgressProposals = (await governance.getInProgressProposals.call())
+        assert.equal(
+          inProgressProposals.length,
+          1,
+          'Incorrect number of returned getInProgressProposals values'
+        )
+        assert.equal(
+          _lib.fromBN(inProgressProposals[0]),
+          proposalId,
+          'Incorrect getInProgressProposals value'
+        )
   
         // Confirm vote states
         const voter1Vote = await governance.getVoteByProposalAndVoter.call(proposalId, voter1Address)
