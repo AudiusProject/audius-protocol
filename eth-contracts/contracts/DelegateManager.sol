@@ -31,10 +31,10 @@ contract DelegateManager is InitializableV2 {
     uint256 private maxDelegators;
 
     // Minimum amount of delegation allowed
-    uint256 minDelegationAmount;
+    uint256 private minDelegationAmount;
 
     // Staking contract ref
-    ERC20Mintable internal audiusToken;
+    ERC20Mintable private audiusToken;
 
     // Struct representing total delegated to SP and list of delegators
     struct ServiceProviderDelegateInfo {
@@ -51,14 +51,14 @@ contract DelegateManager is InitializableV2 {
     }
 
     // Service provider address -> ServiceProviderDelegateInfo
-    mapping (address => ServiceProviderDelegateInfo) spDelegateInfo;
+    mapping (address => ServiceProviderDelegateInfo) private spDelegateInfo;
 
     // Delegator stake by address delegated to
     // delegator -> (service provider -> delegatedStake)
-    mapping (address => mapping(address => uint256)) delegateInfo;
+    mapping (address => mapping(address => uint256)) private delegateInfo;
 
     // Requester to pending undelegate request
-    mapping (address => UndelegateStakeRequest) undelegateRequests;
+    mapping (address => UndelegateStakeRequest) private undelegateRequests;
 
     event IncreaseDelegatedStake(
       address _delegator,

@@ -10,6 +10,10 @@ import "./Staking.sol";
 contract ServiceProviderFactory is InitializableV2 {
     using SafeMath for uint256;
 
+    /// @dev - denominator for deployer cut calculations
+    /// @dev - user values are intended to be x/DEPLOYER_CUT_BASE
+    uint256 private constant DEPLOYER_CUT_BASE = 100;
+
     address private stakingAddress;
     address private delegateManagerAddress;
     address private governanceAddress;
@@ -40,14 +44,7 @@ contract ServiceProviderFactory is InitializableV2 {
     }
 
     /// @dev - Mapping of service provider address to details
-    mapping(address => ServiceProviderDetails) spDetails;
-
-    /// @dev - standard - imitates relationship between Ether and Wei
-    uint8 private constant DECIMALS = 18;
-
-    /// @dev - denominator for deployer cut calculations
-    /// @dev - user values are intended to be x/DEPLOYER_CUT_BASE
-    uint256 private constant DEPLOYER_CUT_BASE = 100;
+    mapping(address => ServiceProviderDetails) private spDetails;
 
     /// @dev - Struct maintaining information about sp
     /// @dev - blocknumber is block.number when endpoint registered
@@ -61,25 +58,25 @@ contract ServiceProviderFactory is InitializableV2 {
     /// @dev - Uniquely assigned serviceProvider ID, incremented for each service type
     /// @notice - Keeps track of the total number of services registered regardless of
     ///           whether some have been deregistered since
-    mapping(bytes32 => uint256) serviceProviderTypeIDs;
+    mapping(bytes32 => uint256) private serviceProviderTypeIDs;
 
     /// @dev - mapping of (serviceType -> (serviceInstanceId <-> serviceProviderInfo))
     /// @notice - stores the actual service provider data like endpoint and owner wallet
     ///           with the ability lookup by service type and service id */
-    mapping(bytes32 => mapping(uint256 => ServiceEndpoint)) serviceProviderInfo;
+    mapping(bytes32 => mapping(uint256 => ServiceEndpoint)) private serviceProviderInfo;
 
     /// @dev - mapping of keccak256(endpoint) to uint256 ID
     /// @notice - used to check if a endpoint has already been registered and also lookup
     /// the id of an endpoint
-    mapping(bytes32 => uint256) serviceProviderEndpointToId;
+    mapping(bytes32 => uint256) private serviceProviderEndpointToId;
 
     /// @dev - mapping of address -> sp id array */
     /// @notice - stores all the services registered by a provider. for each address,
     /// provides the ability to lookup by service type and see all registered services
-    mapping(address => mapping(bytes32 => uint256[])) serviceProviderAddressToId;
+    mapping(address => mapping(bytes32 => uint256[])) private serviceProviderAddressToId;
 
     /// @dev - Mapping of service provider -> decrease stake request
-    mapping(address => DecreaseStakeRequest) decreaseStakeRequests;
+    mapping(address => DecreaseStakeRequest) private decreaseStakeRequests;
 
     event RegisteredServiceProvider(
       uint256 _spID,
