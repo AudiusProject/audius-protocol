@@ -12,8 +12,8 @@ import "../AudiusAdminUpgradeabilityProxy.sol";
 contract MockStakingCaller is InitializableV2 {
     using SafeERC20 for ERC20;
 
-    uint max;
-    uint min;
+    uint256 max;
+    uint256 min;
 
     Staking staking = Staking(0);
     ERC20 internal stakingToken;
@@ -38,7 +38,7 @@ contract MockStakingCaller is InitializableV2 {
 
     // Test only function
     function stakeRewards(
-        uint _amount,
+        uint256 _amount,
         address _staker
     ) external {
         _requireIsInitialized();
@@ -87,12 +87,12 @@ contract MockStakingCaller is InitializableV2 {
     /// @notice Calculate the stake for an account based on total number of registered services
     function getServiceProviderDetails(address)
     external view returns (
-        uint deployerStake,
-        uint deployerCut,
+        uint256 deployerStake,
+        uint256 deployerCut,
         bool validBounds,
-        uint numberOfEndpoints,
-        uint minAccountStake,
-        uint maxAccountStake)
+        uint256 numberOfEndpoints,
+        uint256 minAccountStake,
+        uint256 maxAccountStake)
     {
         _requireIsInitialized();
 

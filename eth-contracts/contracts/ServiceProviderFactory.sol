@@ -8,18 +8,18 @@ import "./Staking.sol";
 
 
 contract ServiceProviderFactory is InitializableV2 {
-    using SafeMath for uint;
+    using SafeMath for uint256;
 
     /// @dev - denominator for deployer cut calculations
     /// @dev - user values are intended to be x/DEPLOYER_CUT_BASE
-    uint private constant DEPLOYER_CUT_BASE = 100;
+    uint256 private constant DEPLOYER_CUT_BASE = 100;
 
     address private stakingAddress;
     address private delegateManagerAddress;
     address private governanceAddress;
     address private serviceTypeManagerAddress;
     address private claimsManagerAddress;
-    uint private decreaseStakeLockupDuration;
+    uint256 private decreaseStakeLockupDuration;
 
     /// @dev - Stores following entities
     ///        1) Directly staked amount by SP, not including delegators
@@ -29,18 +29,18 @@ contract ServiceProviderFactory is InitializableV2 {
     ///        5) Minimum deployer stake for this service provider
     ///        6) Maximum total stake for this account
     struct ServiceProviderDetails {
-        uint deployerStake;
-        uint deployerCut;
+        uint256 deployerStake;
+        uint256 deployerCut;
         bool validBounds;
-        uint numberOfEndpoints;
-        uint minAccountStake;
-        uint maxAccountStake;
+        uint256 numberOfEndpoints;
+        uint256 minAccountStake;
+        uint256 maxAccountStake;
     }
 
     /// @dev - Data structure for time delay during withdrawal
     struct DecreaseStakeRequest {
-        uint decreaseAmount;
-        uint lockupExpiryBlock;
+        uint256 decreaseAmount;
+        uint256 lockupExpiryBlock;
     }
 
     /// @dev - Mapping of service provider address to details
@@ -51,35 +51,35 @@ contract ServiceProviderFactory is InitializableV2 {
     struct ServiceEndpoint {
         address owner;
         string endpoint;
-        uint blocknumber;
+        uint256 blocknumber;
         address delegateOwnerWallet;
     }
 
     /// @dev - Uniquely assigned serviceProvider ID, incremented for each service type
     /// @notice - Keeps track of the total number of services registered regardless of
     ///           whether some have been deregistered since
-    mapping(bytes32 => uint) private serviceProviderTypeIDs;
+    mapping(bytes32 => uint256) private serviceProviderTypeIDs;
 
     /// @dev - mapping of (serviceType -> (serviceInstanceId <-> serviceProviderInfo))
     /// @notice - stores the actual service provider data like endpoint and owner wallet
     ///           with the ability lookup by service type and service id */
-    mapping(bytes32 => mapping(uint => ServiceEndpoint)) private serviceProviderInfo;
+    mapping(bytes32 => mapping(uint256 => ServiceEndpoint)) private serviceProviderInfo;
 
-    /// @dev - mapping of keccak256(endpoint) to uint ID
+    /// @dev - mapping of keccak256(endpoint) to uint256 ID
     /// @notice - used to check if a endpoint has already been registered and also lookup
     /// the id of an endpoint
-    mapping(bytes32 => uint) private serviceProviderEndpointToId;
+    mapping(bytes32 => uint256) private serviceProviderEndpointToId;
 
     /// @dev - mapping of address -> sp id array */
     /// @notice - stores all the services registered by a provider. for each address,
     /// provides the ability to lookup by service type and see all registered services
-    mapping(address => mapping(bytes32 => uint[])) private serviceProviderAddressToId;
+    mapping(address => mapping(bytes32 => uint256[])) private serviceProviderAddressToId;
 
     /// @dev - Mapping of service provider -> decrease stake request
     mapping(address => DecreaseStakeRequest) private decreaseStakeRequests;
 
     event RegisteredServiceProvider(
-      uint _spID,
+      uint256 _spID,
       bytes32 _serviceType,
       address _owner,
       string _endpoint,
@@ -87,7 +87,7 @@ contract ServiceProviderFactory is InitializableV2 {
     );
 
     event DeregisteredServiceProvider(
-      uint _spID,
+      uint256 _spID,
       bytes32 _serviceType,
       address _owner,
       string _endpoint,
@@ -104,22 +104,22 @@ contract ServiceProviderFactory is InitializableV2 {
       address _owner,
       string indexed _oldEndpoint,
       string indexed _newEndpoint,
-      uint _spID
+      uint256 _spID
     );
 
     event DelegateOwnerWalletUpdated(
       address _owner,
       bytes32 indexed _serviceType,
-      uint indexed _spID,
+      uint256 indexed _spID,
       address indexed _updatedWallet
     );
 
     event ServiceProviderCutUpdated(
       address indexed _owner,
-      uint indexed _updatedCut
+      uint256 indexed _updatedCut
     );
 
-    event DecreaseStakeLockupDurationUpdated(uint indexed _lockupDuration);
+    event DecreaseStakeLockupDurationUpdated(uint256 indexed _lockupDuration);
     event GovernanceAddressUpdated(address indexed _newGovernanceAddress);
     event StakingAddressUpdated(address indexed _newStakingAddress);
     event ClaimsManagerAddressUpdated(address indexed _newClaimsManagerAddress);
@@ -136,7 +136,7 @@ contract ServiceProviderFactory is InitializableV2 {
      */
     function initialize (
         address _governanceAddress,
-        uint _decreaseStakeLockupDuration
+        uint256 _decreaseStakeLockupDuration
     ) public initializer
     {
         decreaseStakeLockupDuration = _decreaseStakeLockupDuration;
@@ -157,7 +157,7 @@ contract ServiceProviderFactory is InitializableV2 {
         string calldata _endpoint,
         uint256 _stakeAmount,
         address _delegateOwnerWallet
-    ) external returns (uint spID)
+    ) external returns (uint256 spID)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -178,7 +178,7 @@ contract ServiceProviderFactory is InitializableV2 {
             serviceProviderEndpointToId[keccak256(bytes(_endpoint))] == 0,
             "Endpoint already registered");
 
-        uint newServiceProviderID = serviceProviderTypeIDs[_serviceType].add(1);
+        uint256 newServiceProviderID = serviceProviderTypeIDs[_serviceType].add(1);
         serviceProviderTypeIDs[_serviceType] = newServiceProviderID;
 
         // Index spInfo
@@ -204,7 +204,7 @@ contract ServiceProviderFactory is InitializableV2 {
         );
 
         // Update min and max totals for this service provider
-        (, uint typeMin, uint typeMax) = ServiceTypeManager(
+        (, uint256 typeMin, uint256 typeMax) = ServiceTypeManager(
             serviceTypeManagerAddress
         ).getServiceTypeInfo(_serviceType);
         spDetails[msg.sender].minAccountStake = spDetails[msg.sender].minAccountStake.add(typeMin);
@@ -212,7 +212,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
         // Confirm both aggregate account balance and directly staked amount are valid
         this.validateAccountStakeBalance(msg.sender);
-        uint currentlyStakedForOwner = Staking(stakingAddress).totalStakedFor(msg.sender);
+        uint256 currentlyStakedForOwner = Staking(stakingAddress).totalStakedFor(msg.sender);
 
 
         // Indicate this service provider is within bounds
@@ -239,14 +239,14 @@ contract ServiceProviderFactory is InitializableV2 {
     function deregister(
         bytes32 _serviceType,
         string calldata _endpoint
-    ) external returns (uint deregisteredSpID)
+    ) external returns (uint256 deregisteredSpID)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
         _requireServiceTypeManagerAddressIsSet();
 
         // Unstake on deregistration if and only if this is the last service endpoint
-        uint unstakeAmount = 0;
+        uint256 unstakeAmount = 0;
         bool unstaked = false;
         // owned by the service provider
         if (spDetails[msg.sender].numberOfEndpoints == 1) {
@@ -266,7 +266,7 @@ contract ServiceProviderFactory is InitializableV2 {
             "Endpoint not registered");
 
         // Cache invalided service provider ID
-        uint deregisteredID = serviceProviderEndpointToId[keccak256(bytes(_endpoint))];
+        uint256 deregisteredID = serviceProviderEndpointToId[keccak256(bytes(_endpoint))];
 
         // Update endpoint mapping
         serviceProviderEndpointToId[keccak256(bytes(_endpoint))] = 0;
@@ -282,8 +282,8 @@ contract ServiceProviderFactory is InitializableV2 {
         // Update info mapping
         delete serviceProviderInfo[_serviceType][deregisteredID];
         // Reset id, update array
-        uint spTypeLength = serviceProviderAddressToId[msg.sender][_serviceType].length;
-        for (uint i = 0; i < spTypeLength; i ++) {
+        uint256 spTypeLength = serviceProviderAddressToId[msg.sender][_serviceType].length;
+        for (uint256 i = 0; i < spTypeLength; i ++) {
             if (serviceProviderAddressToId[msg.sender][_serviceType][i] == deregisteredID) {
                 // Overwrite element to be deleted with last element in array
                 serviceProviderAddressToId[msg.sender][_serviceType][i] = serviceProviderAddressToId[msg.sender][_serviceType][spTypeLength - 1];
@@ -298,7 +298,7 @@ contract ServiceProviderFactory is InitializableV2 {
         spDetails[msg.sender].numberOfEndpoints -= 1;
 
         // Update min and max totals for this service provider
-        (, uint typeMin, uint typeMax) = ServiceTypeManager(
+        (, uint256 typeMin, uint256 typeMax) = ServiceTypeManager(
             serviceTypeManagerAddress
         ).getServiceTypeInfo(_serviceType);
         spDetails[msg.sender].minAccountStake = spDetails[msg.sender].minAccountStake.sub(typeMin);
@@ -329,7 +329,7 @@ contract ServiceProviderFactory is InitializableV2 {
      */
     function increaseStake(
         uint256 _increaseStakeAmount
-    ) external returns (uint newTotalStake)
+    ) external returns (uint256 newTotalStake)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -352,7 +352,7 @@ contract ServiceProviderFactory is InitializableV2 {
         // Stake increased token amount for msg.sender
         stakingContract.stakeFor(msg.sender, _increaseStakeAmount);
 
-        uint newStakeAmount = stakingContract.totalStakedFor(msg.sender);
+        uint256 newStakeAmount = stakingContract.totalStakedFor(msg.sender);
 
         // Update deployer total
         spDetails[msg.sender].deployerStake = (
@@ -380,8 +380,8 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _decreaseStakeAmount - amount to decrease stake by in wei
      * @return New total stake amount after the lockup
      */
-    function requestDecreaseStake(uint _decreaseStakeAmount)
-    external returns (uint newStakeAmount)
+    function requestDecreaseStake(uint256 _decreaseStakeAmount)
+    external returns (uint256 newStakeAmount)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -400,7 +400,7 @@ contract ServiceProviderFactory is InitializableV2 {
             stakingAddress
         );
 
-        uint currentStakeAmount = stakingContract.totalStakedFor(msg.sender);
+        uint256 currentStakeAmount = stakingContract.totalStakedFor(msg.sender);
 
         // Prohibit decreasing stake to invalid bounds
         _validateBalanceInternal(msg.sender, (currentStakeAmount.sub(_decreaseStakeAmount)));
@@ -441,7 +441,7 @@ contract ServiceProviderFactory is InitializableV2 {
      * @notice Called by user to decrease a stake after waiting the appropriate lockup period.
      * @return New total stake after decrease
      */
-    function decreaseStake() external returns (uint newTotalStake)
+    function decreaseStake() external returns (uint256 newTotalStake)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -460,7 +460,7 @@ contract ServiceProviderFactory is InitializableV2 {
         stakingContract.unstakeFor(msg.sender, decreaseStakeRequests[msg.sender].decreaseAmount);
 
         // Query current stake
-        uint newStakeAmount = stakingContract.totalStakedFor(msg.sender);
+        uint256 newStakeAmount = stakingContract.totalStakedFor(msg.sender);
 
         // Update deployer total
         spDetails[msg.sender].deployerStake = (
@@ -501,7 +501,7 @@ contract ServiceProviderFactory is InitializableV2 {
     {
         _requireIsInitialized();
 
-        uint spID = this.getServiceProviderIdFromEndpoint(_endpoint);
+        uint256 spID = this.getServiceProviderIdFromEndpoint(_endpoint);
 
         require(
             serviceProviderInfo[_serviceType][spID].owner == msg.sender,
@@ -526,11 +526,11 @@ contract ServiceProviderFactory is InitializableV2 {
         bytes32 _serviceType,
         string calldata _oldEndpoint,
         string calldata _newEndpoint
-    ) external returns (uint spID)
+    ) external returns (uint256 spID)
     {
         _requireIsInitialized();
 
-        uint spId = this.getServiceProviderIdFromEndpoint(_oldEndpoint);
+        uint256 spId = this.getServiceProviderIdFromEndpoint(_oldEndpoint);
 
         require (spId != 0, "Could not find service provider with that endpoint");
 
@@ -563,7 +563,7 @@ contract ServiceProviderFactory is InitializableV2 {
      */
     function updateServiceProviderStake(
         address _serviceProvider,
-        uint _amount
+        uint256 _amount
      ) external
     {
         _requireIsInitialized();
@@ -589,7 +589,7 @@ contract ServiceProviderFactory is InitializableV2 {
      */
     function updateServiceProviderCut(
         address _serviceProvider,
-        uint _cut
+        uint256 _cut
     ) external
     {
         _requireIsInitialized();
@@ -606,7 +606,7 @@ contract ServiceProviderFactory is InitializableV2 {
     }
 
     /// @notice Update service provider lockup duration
-    function updateDecreaseStakeLockupDuration(uint _duration) external {
+    function updateDecreaseStakeLockupDuration(uint256 _duration) external {
         _requireIsInitialized();
 
         require(
@@ -620,7 +620,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /// @notice Get denominator for deployer cut calculations
     function getServiceProviderDeployerCutBase()
-    external view returns (uint base)
+    external view returns (uint256 base)
     {
         _requireIsInitialized();
 
@@ -629,7 +629,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /// @notice Get total number of service providers for a given serviceType
     function getTotalServiceTypeProviders(bytes32 _serviceType)
-    external view returns (uint numberOfProviders)
+    external view returns (uint256 numberOfProviders)
     {
         _requireIsInitialized();
 
@@ -638,7 +638,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /// @notice Get service provider id for an endpoint
     function getServiceProviderIdFromEndpoint(string calldata _endpoint)
-    external view returns (uint spID)
+    external view returns (uint256 spID)
     {
         _requireIsInitialized();
 
@@ -650,7 +650,7 @@ contract ServiceProviderFactory is InitializableV2 {
      * @return List of service ids of that type for a service provider
      */
     function getServiceProviderIdsFromAddress(address _ownerAddress, bytes32 _serviceType)
-    external view returns (uint[] memory spIds)
+    external view returns (uint256[] memory spIds)
     {
         _requireIsInitialized();
 
@@ -662,8 +662,8 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _serviceType - type of service, must be a valid service from ServiceTypeManager
      * @param _serviceId - id of service
      */
-    function getServiceEndpointInfo(bytes32 _serviceType, uint _serviceId)
-    external view returns (address owner, string memory endpoint, uint blockNumber, address delegateOwnerWallet)
+    function getServiceEndpointInfo(bytes32 _serviceType, uint256 _serviceId)
+    external view returns (address owner, string memory endpoint, uint256 blockNumber, address delegateOwnerWallet)
     {
         _requireIsInitialized();
 
@@ -677,12 +677,12 @@ contract ServiceProviderFactory is InitializableV2 {
      */
     function getServiceProviderDetails(address _sp)
     external view returns (
-        uint deployerStake,
-        uint deployerCut,
+        uint256 deployerStake,
+        uint256 deployerCut,
         bool validBounds,
-        uint numberOfEndpoints,
-        uint minAccountStake,
-        uint maxAccountStake)
+        uint256 numberOfEndpoints,
+        uint256 minAccountStake,
+        uint256 maxAccountStake)
     {
         _requireIsInitialized();
 
@@ -701,7 +701,7 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _sp - address of service provider
      */
     function getPendingDecreaseStakeRequest(address _sp)
-    external view returns (uint amount, uint lockupExpiryBlock)
+    external view returns (uint256 amount, uint256 lockupExpiryBlock)
     {
         _requireIsInitialized();
 
@@ -713,7 +713,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /// @notice Get current unstake lockup duration
     function getDecreaseStakeLockupDuration()
-    external view returns (uint duration)
+    external view returns (uint256 duration)
     {
         _requireIsInitialized();
 
@@ -841,7 +841,7 @@ contract ServiceProviderFactory is InitializableV2 {
      */
     function _updateServiceProviderBoundStatus(address _serviceProvider) internal {
         // Validate bounds for total stake
-        uint totalSPStake = Staking(stakingAddress).totalStakedFor(_serviceProvider);
+        uint256 totalSPStake = Staking(stakingAddress).totalStakedFor(_serviceProvider);
         if (totalSPStake < spDetails[_serviceProvider].minAccountStake ||
             totalSPStake > spDetails[_serviceProvider].maxAccountStake) {
             // Indicate this service provider is out of bounds
@@ -869,7 +869,7 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _sp - address of service provider
      * @param _amount - amount in wei to compare
      */
-    function _validateBalanceInternal(address _sp, uint _amount) internal view
+    function _validateBalanceInternal(address _sp, uint256 _amount) internal view
     {
         require(
             _amount <= spDetails[_sp].maxAccountStake,
