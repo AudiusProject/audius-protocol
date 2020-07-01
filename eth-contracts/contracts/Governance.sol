@@ -682,6 +682,8 @@ contract Governance is InitializableV2 {
 
     /// @notice Get the Staking address
     function getStakingAddress() external view returns (address) {
+        _requireIsInitialized();
+
         return stakingAddress;
     }
 
