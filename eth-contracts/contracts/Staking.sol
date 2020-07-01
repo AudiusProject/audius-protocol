@@ -184,7 +184,7 @@ contract Staking is InitializableV2 {
     ) external
     {
         _requireIsInitialized();
-    
+
         require(
             msg.sender == serviceProviderFactoryAddress,
             "Only callable from ServiceProviderFactory"
@@ -206,7 +206,7 @@ contract Staking is InitializableV2 {
     ) external
     {
         _requireIsInitialized();
-    
+
         require(
             msg.sender == serviceProviderFactoryAddress,
             "Only callable from ServiceProviderFactory"
@@ -231,7 +231,7 @@ contract Staking is InitializableV2 {
         uint256 _amount
     ) external {
         _requireIsInitialized();
-    
+
         require(
             msg.sender == delegateManagerAddress,
             "delegateStakeFor - Only callable from DelegateManager"
@@ -368,6 +368,18 @@ contract Staking is InitializableV2 {
         _requireIsInitialized();
 
         return delegateManagerAddress;
+    }
+
+    /**
+     * @notice Helper function wrapped around totalStakedFor. Checks whether _accountAddress
+            is currently a valid staker with a non-zero stake
+     * @param _accountAddress - Account requesting for
+     * @return Boolean indicating whether account is a staker
+     */
+    function isStaker(address _accountAddress) external view returns (bool) {
+        _requireIsInitialized();
+
+        return totalStakedFor(_accountAddress) > 0;
     }
 
     /* Public functions */
