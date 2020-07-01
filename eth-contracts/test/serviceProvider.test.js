@@ -1190,6 +1190,18 @@ contract('ServiceProvider test', async (accounts) => {
 
       let testVersion2 = web3.utils.utf8ToHex('0.0.2')
 
+      // fail to set version for invalid type
+      _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          'setServiceVersion(bytes32,bytes32)',
+          _lib.abiEncode(['bytes32', 'bytes32'], [web3.utils.utf8ToHex('undefined-type'), testVersion]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
+      
       // Update version again
       await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
