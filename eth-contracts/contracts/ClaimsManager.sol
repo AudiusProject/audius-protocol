@@ -4,6 +4,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mint
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "./ServiceProviderFactory.sol";
 /// @notice SafeMath imported via ServiceProviderFactory.sol
+/// @notice Governance imported via Staking.sol
 
 
 /**
@@ -177,6 +178,10 @@ contract ClaimsManager is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
         governanceAddress = _governanceAddress;
         emit GovernanceAddressUpdated(_governanceAddress);
     }

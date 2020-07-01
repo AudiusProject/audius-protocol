@@ -4,6 +4,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "./ServiceTypeManager.sol";
 import "./ClaimsManager.sol";
 import "./Staking.sol";
+/// @notice Governance imported via Staking.sol
 
 
 contract ServiceProviderFactory is InitializableV2 {
@@ -763,14 +764,18 @@ contract ServiceProviderFactory is InitializableV2 {
     /**
      * @notice Set the Governance address
      * @dev Only callable by Governance address
-     * @param _address - address for new Governance contract
+     * @param _governanceAddress - address for new Governance contract
      */
-    function setGovernanceAddress(address _address) external {
+    function setGovernanceAddress(address _governanceAddress) external {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
-        governanceAddress = _address;
-        emit GovernanceAddressUpdated(_address);
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
+        governanceAddress = _governanceAddress;
+        emit GovernanceAddressUpdated(_governanceAddress);
     }
 
     /**

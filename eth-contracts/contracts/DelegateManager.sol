@@ -3,6 +3,7 @@ pragma solidity ^0.5.0;
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 /// @notice SafeMath imported via ServiceProviderFactory.sol
+/// @notice Governance imported via Staking.sol
 
 import "./Staking.sol";
 import "./ServiceProviderFactory.sol";
@@ -581,6 +582,10 @@ contract DelegateManager is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only governance");
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
         governanceAddress = _governanceAddress;
         emit GovernanceAddressUpdated(_governanceAddress);
     }
