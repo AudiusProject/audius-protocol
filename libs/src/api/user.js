@@ -409,7 +409,6 @@ class Users extends Base {
 
   /** Waits for a discovery provider to confirm that a creator node endpoint is updated. */
   async _waitForCreatorNodeUpdate (userId, creatorNodeEndpoint) {
-    console.log("WAITING FOR UPDATE!")
     let isUpdated = false
     while (!isUpdated) {
       const user = (await this.discoveryProvider.getUsers(1, 0, [userId]))[0]

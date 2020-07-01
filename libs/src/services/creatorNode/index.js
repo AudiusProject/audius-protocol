@@ -470,12 +470,25 @@ class CreatorNode {
     let total
     const url = this.creatorNodeEndpoint + route
     try {
+
       // TODO: figure out onProgress
-      const resp = await fetch(url, {
-        method: 'POST',
-        headers,
-        body: formData
-      })
+      const resp = await axios.post(
+        url,
+        formData,
+        {
+          headers: headers,
+          // Add a 10% inherit processing time for the file upload.
+          onUploadProgress: (progressEvent) => {
+            if (!total) total = progressEvent.total
+            onProgress(progressEvent.loaded, total)
+          }
+        }
+      )
+      // const resp = await fetch(url, {
+      //   method: 'POST',
+      //   headers,
+      //   body: formData
+      // })
       onProgress(total, total)
       const data = await resp.json()
       return data

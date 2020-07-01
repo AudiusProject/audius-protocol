@@ -1,5 +1,3 @@
-// global.XMLHttpRequest = undefined
-
 const packageJSON = require('../package.json')
 
 const EthWeb3Manager = require('./services/ethWeb3Manager/index')
@@ -121,7 +119,8 @@ class AudiusLibs {
     identityServiceConfig,
     discoveryProviderConfig,
     creatorNodeConfig,
-    isServer
+    isServer,
+    isDebug = false,
   }) {
     // set version
     this.version = packageJSON.version
@@ -132,6 +131,7 @@ class AudiusLibs {
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
     this.isServer = isServer
+    this.isDebug = isDebug
 
     this.AudiusABIDecoder = AudiusABIDecoder
 
@@ -161,6 +161,7 @@ class AudiusLibs {
 
   /** Init services based on presence of a relevant config. */
   async init () {
+    console.log("INITTTTT!")
     this.userStateManager = new UserStateManager()
     // Config external web3 is an async function, so await it here in case it needs to be
     this.web3Config = await this.web3Config
@@ -217,7 +218,8 @@ class AudiusLibs {
         this.ethContracts,
         this.web3Manager,
         this.discoveryProviderConfig.reselectTimeout,
-        this.discoveryProviderConfig.selectionCallback
+        this.discoveryProviderConfig.selectionCallback,
+        this.isDebug
       )
       await this.discoveryProvider.init()
     }

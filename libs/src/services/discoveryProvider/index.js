@@ -18,11 +18,12 @@ const MAKE_REQUEST_RETRY_COUNT = 3
 const MAX_MAKE_REQUEST_RETRY_COUNT = 50
 
 class DiscoveryProvider {
-  constructor (whitelist, userStateManager, ethContracts, web3Manager, reselectTimeout, selectionCallback) {
+  constructor (whitelist, userStateManager, ethContracts, web3Manager, reselectTimeout, selectionCallback, isDebug=false) {
     this.whitelist = whitelist
     this.userStateManager = userStateManager
     this.ethContracts = ethContracts
     this.web3Manager = web3Manager
+    this.isDebug = isDebug
 
     this.serviceSelector = new DiscoveryProviderSelection({
       whitelist: this.whitelist,
@@ -536,10 +537,8 @@ class DiscoveryProvider {
         if (
           !chainBlock ||
           !indexedBlock ||
-          (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
+          (!this.isDebug && (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF)
         ) {
-          console.log("TOO FAR BEHIND!")
-          console.log({chainBlock, indexedBlock })
           // Select a new one
           console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
           // Mark the current selection as a backup
