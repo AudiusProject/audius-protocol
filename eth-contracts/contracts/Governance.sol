@@ -49,7 +49,15 @@ contract Governance is InitializableV2 {
      *          This status is transiently used inside that function to prevent re-entrancy.
      *      Vetoed - Proposal was vetoed by Guardian.
      */
-    enum Outcome {InProgress, Rejected, ApprovedExecuted, QuorumNotMet, ApprovedExecutionFailed, Evaluating, Vetoed}
+    enum Outcome {
+        InProgress,
+        Rejected,
+        ApprovedExecuted,
+        QuorumNotMet,
+        ApprovedExecutionFailed,
+        Evaluating,
+        Vetoed
+    }
 
     /**
      * @notice All Proposal Vote states for a voter.
