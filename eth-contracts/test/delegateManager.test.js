@@ -1965,5 +1965,18 @@ contract('DelegateManager', async (accounts) => {
       const totalLockedDelegationForSP = await delegateManager.getTotalLockedDelegationForServiceProvider(stakerAccount)
       assert.isTrue(totalLockedDelegationForSP.isZero(), 'Expected totalLockedDelegationForSP == 0')
     })
+
+    it('fail to set Governance address if not a valid governance contract', async () => {
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          delegateManagerKey,
+          _lib.toBN(0),
+          'setGovernanceAddress(address)',
+          _lib.abiEncode(['address'], [accounts[20]]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )            
+    })
   })
 })
