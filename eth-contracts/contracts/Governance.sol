@@ -129,6 +129,7 @@ contract Governance is InitializableV2 {
     /**
      * @notice Initialize the Governance contract
      * @dev _votingPeriod <= DelegateManager.undelegateLockupDuration
+     * @dev stakingAddress must be initialized separately after Staking contract is deployed
      * @param _registryAddress - address of the registry proxy contract
      * @param _votingPeriod - period in blocks for which a governance proposal is open for voting
      * @param _votingQuorumPercent - required minimum percentage of total stake to have voted to consider a proposal valid
@@ -182,6 +183,7 @@ contract Governance is InitializableV2 {
     ) external returns (uint256 proposalId)
     {
         _requireIsInitialized();
+        _requireStakingAddressIsSet();
 
         address proposer = msg.sender;
 
@@ -258,6 +260,7 @@ contract Governance is InitializableV2 {
      */
     function submitProposalVote(uint256 _proposalId, Vote _vote) external {
         _requireIsInitialized();
+        _requireStakingAddressIsSet();
 
         address voter = msg.sender;
 
@@ -346,6 +349,7 @@ contract Governance is InitializableV2 {
     external returns (Outcome proposalOutcome)
     {
         _requireIsInitialized();
+        _requireStakingAddressIsSet();
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
@@ -678,6 +682,8 @@ contract Governance is InitializableV2 {
 
     /// @notice Get the Staking address
     function getStakingAddress() external view returns (address) {
+        _requireIsInitialized();
+
         return stakingAddress;
     }
 
@@ -842,5 +848,11 @@ contract Governance is InitializableV2 {
             .div(stakingContract.totalStakedAt(proposal.startBlockNumber))
         );
         return participation >= votingQuorumPercent;
+    }
+
+    // ========================================= Private Functions =========================================
+
+    function _requireStakingAddressIsSet() private view {
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
     }
 }
