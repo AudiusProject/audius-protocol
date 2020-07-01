@@ -1280,6 +1280,19 @@ contract('ServiceProvider test', async (accounts) => {
         1, /*votingQuorum*/
         guardianAddress
       )
+      
+      // fail to set a non-Governance address in ServiceTypeManager.sol
+      _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          'setGovernanceAddress(address)',
+          _lib.abiEncode(['address'], [accounts[20]]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
+      
       // setGovernanceAddress in ServiceTypeManager.sol
       await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
