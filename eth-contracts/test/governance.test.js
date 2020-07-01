@@ -1846,6 +1846,18 @@ contract('Governance.sol', async (accounts) => {
         "Only callable by self"
       )
 
+      // should fail to call setMaxInProgressProposals with invalid value of 0 
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          governanceKey,
+          callValue0,
+          'setMaxInProgressProposals(uint16)',
+          _lib.abiEncode(['uint16'], [0]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
+
       await governance.guardianExecuteTransaction(
         governanceKey,
         callValue0,
