@@ -472,13 +472,13 @@ class CreatorNode {
 
       // Hack alert!
       //
-      // Axios auto-detects us in browser always based on 
+      // Axios auto-detects browser vs node based on 
       // the existance of XMLHttpRequest at the global namespace, which 
       // is imported by a web3 module, causing Axios to incorrectly
-      // presume we're on web when we're in node.
-      // For uploads to work in a node environment,
+      // presume we're in a browser env when we're in a node env.
+      // For uploads to work in a node env,
       // axios needs to correctly detect we're in node and use the `http` module
-      // rather than XMLHttpRequest.
+      // rather than XMLHttpRequest. We force that here.
       // https://github.com/axios/axios/issues/1180
       const isBrowser = typeof window !== 'undefined'
       const resp = await axios.post(
@@ -495,8 +495,7 @@ class CreatorNode {
         }
       )
       onProgress(total, total)
-      const data = await resp.json()
-      return data
+      return resp.data
     } catch (e) {
       _handleErrorHelper(e, url)
     }

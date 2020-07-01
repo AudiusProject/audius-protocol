@@ -538,7 +538,7 @@ class DiscoveryProvider {
         if (
           !chainBlock ||
           !indexedBlock ||
-          (chainBlock - indexedBlock) > (isDebug ? DEBUG_UNHEALTHY_BLOCK_DIFF : UNHEALTHY_BLOCK_DIFF)
+          (chainBlock - indexedBlock) > (this.isDebug ? DEBUG_UNHEALTHY_BLOCK_DIFF : UNHEALTHY_BLOCK_DIFF)
         ) {
           // Select a new one
           console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)

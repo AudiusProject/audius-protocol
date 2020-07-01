@@ -213,17 +213,17 @@ const _updateCnodeDelegateWallet = async (account, readPath, writePath = readPat
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
   const audiusLibs1 = audiusLibs
   await deregisterLocalService(audiusLibs1, spDiscProvType, discProvEndpoint1)
-  // const audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[3])
-  // await deregisterLocalService(audiusLibs2, spDiscProvType, discProvEndpoint2)
+  const audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[3])
+  await deregisterLocalService(audiusLibs2, spDiscProvType, discProvEndpoint2)
 
-  // const audiusLibs3 = await initAudiusLibs(true, null, ethAccounts[1])
-  // await deregisterLocalService(audiusLibs3, spCreatorNodeType, creatorNodeEndpoint1)
-  // const audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[2])
-  // await deregisterLocalService(audiusLibs4, spCreatorNodeType, creatorNodeEndpoint2)
-  // const audiusLibs5 = await initAudiusLibs(true, null, ethAccounts[4])
-  // await deregisterLocalService(audiusLibs5, spCreatorNodeType, creatorNodeEndpoint3)
-  // const audiusLibs6 = await initAudiusLibs(true, null, ethAccounts[5])
-  // await deregisterLocalService(audiusLibs6, spCreatorNodeType, creatorNodeEndpoint4)
+  const audiusLibs3 = await initAudiusLibs(true, null, ethAccounts[1])
+  await deregisterLocalService(audiusLibs3, spCreatorNodeType, creatorNodeEndpoint1)
+  const audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[2])
+  await deregisterLocalService(audiusLibs4, spCreatorNodeType, creatorNodeEndpoint2)
+  const audiusLibs5 = await initAudiusLibs(true, null, ethAccounts[4])
+  await deregisterLocalService(audiusLibs5, spCreatorNodeType, creatorNodeEndpoint3)
+  const audiusLibs6 = await initAudiusLibs(true, null, ethAccounts[5])
+  await deregisterLocalService(audiusLibs6, spCreatorNodeType, creatorNodeEndpoint4)
 }
 
 const _initAllVersions = async (audiusLibs) => {
