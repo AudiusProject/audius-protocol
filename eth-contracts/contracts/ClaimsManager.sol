@@ -231,9 +231,8 @@ contract ClaimsManager is InitializableV2 {
         _requireIsInitialized();
         require(stakingAddress != address(0x00), "stakingAddress is not set");
 
-        bool senderStaked = Staking(stakingAddress).totalStakedFor(msg.sender) > 0;
         require(
-            senderStaked || (msg.sender == governanceAddress),
+            Staking(stakingAddress).isStaker(msg.sender) || (msg.sender == governanceAddress),
             "Only callable by staked account or Governance contract"
         );
 

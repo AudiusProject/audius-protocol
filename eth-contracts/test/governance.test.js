@@ -585,7 +585,7 @@ contract('Governance.sol', async (accounts) => {
           proposalDescription,
           { from: proposerAddress }
         ),
-        "Proposer must be active staker with non-zero stake."
+        "Proposer must be active staker with non-zero stake"
       )
     })
 
