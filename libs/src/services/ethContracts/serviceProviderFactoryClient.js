@@ -13,53 +13,44 @@ class ServiceProviderFactoryClient extends ContractClient {
     contractRegistryKey,
     getRegistryAddress,
     audiusTokenClient,
-    stakingProxyClient
+    stakingProxyClient,
+    isDebug = false,
   ) {
     super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress)
     this.audiusTokenClient = audiusTokenClient
     this.stakingProxyClient = stakingProxyClient
+    this.isDebug = isDebug
   }
 
   async registerWithDelegate (serviceType, endpoint, amount, delegateOwnerWallet) {
-    // TODO: here
-    // if (!Utils.isFQDN(endpoint)) {
-    //   throw new Error('Not a fully qualified domain name!')
-    // }
+    if (!this.isDebug && !Utils.isFQDN(endpoint)) {
+      throw new Error('Not a fully qualified domain name!')
+    }
+
     if (!Number.isInteger(amount) && !Utils.isBN(amount)) {
       throw new Error('Invalid amount')
     }
 
-    // TODO: return here!
-    // let requestUrl = urlJoin(endpoint, 'health_check')
-    // let axiosRequestObj = {
-    //   url: requestUrl,
-    //   method: 'get',
-    //   timeout: 1000
-    // }
-    // const resp = await axios(axiosRequestObj)
-    // let endpointServiceType
-    // try {
-    //   endpointServiceType = resp.data.data.service
-    // } catch (e) {
-    //   endpointServiceType = resp.data.service
-    // }
-
-    // if (serviceType !== endpointServiceType) {
-    //   throw new Error('Attempting to register endpoint with mismatched service type')
-    // }
-    // RETURN HERE!!!!
-    // TODO: comment me back in!
-    // let requestUrl = urlJoin(endpoint, 'version')
-    // let axiosRequestObj = {
-    //   url: requestUrl,
-    //   method: 'get',
-    //   timeout: 1000
-    // }
-    // const resp = await axios(axiosRequestObj)
-    // const endpointServiceType = resp.data.service
-    // if (serviceType !== endpointServiceType) {
-    //   throw new Error('Attempting to register endpoint with mismatched service type')
-    // }
+    /// When in debug mode, skip health check
+    if (!this.isDebug) {
+      let requestUrl = urlJoin(endpoint, 'health_check')
+      let axiosRequestObj = {
+        url: requestUrl,
+        method: 'get',
+        timeout: 1000
+      }
+      const resp = await axios(axiosRequestObj)
+      let endpointServiceType
+      try {
+        endpointServiceType = resp.data.data.service
+      } catch (e) {
+        endpointServiceType = resp.data.service
+      }
+  
+      if (serviceType !== endpointServiceType) {
+        throw new Error('Attempting to register endpoint with mismatched service type')
+      }
+    }
 
     // Approve token transfer operation
     const contractAddress = await this.stakingProxyClient.getAddress()

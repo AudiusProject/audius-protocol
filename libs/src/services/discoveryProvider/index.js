@@ -4,6 +4,7 @@ const Utils = require('../../utils')
 
 const {
   UNHEALTHY_BLOCK_DIFF,
+  DEBUG_UNHEALTHY_BLOCK_DIFF,
   REQUEST_TIMEOUT_MS
 } = require('./constants')
 
@@ -537,7 +538,7 @@ class DiscoveryProvider {
         if (
           !chainBlock ||
           !indexedBlock ||
-          (!this.isDebug && (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF)
+          (chainBlock - indexedBlock) > (isDebug ? DEBUG_UNHEALTHY_BLOCK_DIFF : UNHEALTHY_BLOCK_DIFF)
         ) {
           // Select a new one
           console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)

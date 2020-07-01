@@ -45,11 +45,12 @@ const serviceTypeList = Object.values(serviceType)
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 class EthContracts {
-  constructor (ethWeb3Manager, tokenContractAddress, registryAddress, isServer) {
+  constructor (ethWeb3Manager, tokenContractAddress, registryAddress, isServer, isDebug = false) {
     this.ethWeb3Manager = ethWeb3Manager
     this.tokenContractAddress = tokenContractAddress
     this.registryAddress = registryAddress
     this.isServer = isServer
+    this.isDebug = isDebug
     this.expectedServiceVersions = null
 
     this.AudiusTokenClient = new AudiusTokenClient(
@@ -85,7 +86,8 @@ class EthContracts {
       ServiceProviderFactoryRegistryKey,
       this.getRegistryAddressForContract,
       this.AudiusTokenClient,
-      this.StakingProxyClient
+      this.StakingProxyClient,
+      this.isDebug,
     )
 
     this.contractClients = [

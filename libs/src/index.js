@@ -161,7 +161,6 @@ class AudiusLibs {
 
   /** Init services based on presence of a relevant config. */
   async init () {
-    console.log("INITTTTT!")
     this.userStateManager = new UserStateManager()
     // Config external web3 is an async function, so await it here in case it needs to be
     this.web3Config = await this.web3Config
