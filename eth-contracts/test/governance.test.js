@@ -563,7 +563,7 @@ contract('Governance.sol', async (accounts) => {
           proposalDescription,
           { from: proposerAddress }
         ),
-        "Governance::submitProposal: _signature cannot be empty."
+        "_signature cannot be empty."
       )
     })
 
@@ -692,14 +692,14 @@ contract('Governance.sol', async (accounts) => {
 
         await _lib.assertRevert(
           governance.submitProposalVote(proposalId, Vote.Yes, { from: stakerAccount1 }),
-          "Governance::submitProposalVote: Proposal votingPeriod has ended"
+          "Proposal votingPeriod has ended"
         )
       })
 
       it('Fail to submit invalid vote', async () => {
         await _lib.assertRevert(
           governance.submitProposalVote(proposalId, Vote.None, { from: stakerAccount1 }),
-          "Governance::submitProposalVote: Can only submit a Yes or No vote"
+          "Can only submit a Yes or No vote"
         )
       })
 
@@ -716,7 +716,6 @@ contract('Governance.sol', async (accounts) => {
         assert.equal(txParsed.event.args.voter, voter1Address, 'Expected same event.args.voter')
         assert.equal(parseInt(txParsed.event.args.vote), vote, 'Expected same event.args.vote')
         assert.isTrue(txParsed.event.args.voterStake.eq(defaultStakeAmount), 'Expected same event.args.voterStake')
-        assert.equal(parseInt(txParsed.event.args.previousVote), defaultVote, 'Expected same event.args.previousVote')
   
         // Call getProposalById() and confirm same values
         const proposal = await governance.getProposalById.call(proposalId)
@@ -745,38 +744,51 @@ contract('Governance.sol', async (accounts) => {
       })
 
       it('Successfully vote multiple times with diff accounts', async () => {
-        const vote1 = Vote.Yes
-        const voteTx1 = await governance.submitProposalVote(proposalId, vote1, { from: voter1Address })
-        const voteTxParsed1 = _lib.parseTx(voteTx1)
-        assert.equal(parseInt(voteTxParsed1.event.args.vote), vote1, 'Expected same event.args.vote')
-        assert.equal(parseInt(voteTxParsed1.event.args.previousVote), defaultVote, 'Expected same event.args.previousVote')
-  
-        const vote2 = Vote.Yes
-        const voteTx2 = await governance.submitProposalVote(proposalId, vote2, { from: voter2Address })
-        const voteTxParsed2 = _lib.parseTx(voteTx2)
-        assert.equal(parseInt(voteTxParsed2.event.args.vote), vote2, 'Expected same event.args.vote')
-        assert.equal(parseInt(voteTxParsed2.event.args.previousVote), defaultVote, 'Expected same event.args.previousVote')
-  
-        const vote3 = Vote.No
-        const voteTx3 = await governance.submitProposalVote(proposalId, vote3, { from: voter1Address })
-        const voteTxParsed3 = _lib.parseTx(voteTx3)
-        assert.equal(parseInt(voteTxParsed3.event.args.vote), vote3, 'Expected same event.args.vote')
-        assert.equal(parseInt(voteTxParsed3.event.args.previousVote), vote1, 'Expected same event.args.previousVote')
-  
-        const vote4 = Vote.Yes
-        const voteTx4 = await governance.submitProposalVote(proposalId, vote4, { from: voter1Address })
-        const voteTxParsed4 = _lib.parseTx(voteTx4)
-        assert.equal(parseInt(voteTxParsed4.event.args.vote), vote4, 'Expected same event.args.vote')
-        assert.equal(parseInt(voteTxParsed4.event.args.previousVote), vote3, 'Expected same event.args.previousVote')
+        const voteYes = Vote.Yes
+        const voteNo = Vote.No
 
-        const vote5 = Vote.Yes
-        const voteTx5 = await governance.submitProposalVote(proposalId, vote5, { from: voter1Address })
+        // voter1 voteYes
+        const voteTx1 = await governance.submitProposalVote(proposalId, voteYes, { from: voter1Address })
+        const voteTxParsed1 = _lib.parseTx(voteTx1)
+        assert.equal(parseInt(voteTxParsed1.event.args.vote), voteYes, 'Expected same event.args.vote')
+  
+        // voter2 voteYes
+        const voteTx2 = await governance.submitProposalVote(proposalId, voteYes, { from: voter2Address })
+        const voteTxParsed2 = _lib.parseTx(voteTx2)
+        assert.equal(parseInt(voteTxParsed2.event.args.vote), voteYes, 'Expected same event.args.vote')
+
+        await _lib.assertRevert(
+          governance.submitProposalVote(proposalId, voteNo, { from: voter1Address }),
+          "To update previous vote, call updateProposalVote()"
+        )
+
+        // Confirm proposal state
+        let proposal = await governance.getProposalById.call(proposalId)
+        assert.equal(proposal.outcome, Outcome.InProgress, 'Expected same outcome')
+        assert.isTrue(proposal.voteMagnitudeYes.eq(defaultStakeAmount.mul(_lib.toBN(2))), 'Expected same voteMagnitudeYes')
+        assert.isTrue(proposal.voteMagnitudeNo.isZero(), 'Expected same voteMagnitudeNo')
+        assert.equal(parseInt(proposal.numVotes), 2, 'Expected same numVotes')
+  
+        // voter1 update to voteNo
+        const voteTx3 = await governance.updateProposalVote(proposalId, voteNo, { from: voter1Address })
+        const voteTxParsed3 = _lib.parseTx(voteTx3)
+        assert.equal(parseInt(voteTxParsed3.event.args.vote), voteNo, 'Expected same event.args.vote')
+        assert.equal(parseInt(voteTxParsed3.event.args.previousVote), voteYes, 'Expected same event.args.previousVote')
+  
+        // voter1 update to voteYes
+        const voteTx4 = await governance.updateProposalVote(proposalId, voteYes, { from: voter1Address })
+        const voteTxParsed4 = _lib.parseTx(voteTx4)
+        assert.equal(parseInt(voteTxParsed4.event.args.vote), voteYes, 'Expected same event.args.vote')
+        assert.equal(parseInt(voteTxParsed4.event.args.previousVote), voteNo, 'Expected same event.args.previousVote')
+
+        // voter1 update to same
+        const voteTx5 = await governance.updateProposalVote(proposalId, voteYes, { from: voter1Address })
         const voteTxParsed5 = _lib.parseTx(voteTx5)
-        assert.equal(parseInt(voteTxParsed5.event.args.vote), vote5, 'Expected same event.args.vote')
-        assert.equal(parseInt(voteTxParsed5.event.args.previousVote), vote4, 'Expected same event.args.previousVote')
+        assert.equal(parseInt(voteTxParsed5.event.args.vote), voteYes, 'Expected same event.args.vote')
+        assert.equal(parseInt(voteTxParsed5.event.args.previousVote), voteYes, 'Expected same event.args.previousVote')
   
         // Confirm proposal state
-        const proposal = await governance.getProposalById.call(proposalId)
+        proposal = await governance.getProposalById.call(proposalId)
         assert.equal(proposal.outcome, Outcome.InProgress, 'Expected same outcome')
         assert.isTrue(proposal.voteMagnitudeYes.eq(defaultStakeAmount.mul(_lib.toBN(2))), 'Expected same voteMagnitudeYes')
         assert.isTrue(proposal.voteMagnitudeNo.isZero(), 'Expected same voteMagnitudeNo')
@@ -784,9 +796,9 @@ contract('Governance.sol', async (accounts) => {
   
         // Confirm vote states
         const voter1Vote = await governance.getVoteByProposalAndVoter.call(proposalId, voter1Address)
-        assert.equal(voter1Vote, Vote.Yes)
+        assert.equal(voter1Vote, voteYes)
         const voter2Vote = await governance.getVoteByProposalAndVoter.call(proposalId, voter2Address)
-        assert.equal(voter2Vote, Vote.Yes)
+        assert.equal(voter2Vote, voteYes)
       })
 
       it('Reject a proposal with a tie', async () => {
@@ -869,7 +881,7 @@ contract('Governance.sol', async (accounts) => {
       it('Fail to evaluate proposal with invalid proposalId', async () => {
         await _lib.assertRevert(
           governance.evaluateProposalOutcome(5, { from: proposerAddress }),
-          "Governance::evaluateProposalOutcome: Must provide valid non-zero _proposalId."
+          "Must provide valid non-zero _proposalId."
         )
       })
 
@@ -895,7 +907,7 @@ contract('Governance.sol', async (accounts) => {
             _lib.parseTx(submitProposalTxReceipt).event.args.proposalId,
             { from: proposerAddress }
           ),
-          "Governance::evaluateProposalOutcome: Proposal votingPeriod must end before evaluation."
+          "Proposal votingPeriod must end before evaluation."
         )
       })
 
@@ -1124,7 +1136,7 @@ contract('Governance.sol', async (accounts) => {
         
         await _lib.assertRevert(
           governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
-          "Governance::evaluateProposalOutcome: Cannot evaluate inactive proposal."
+          "Cannot evaluate inactive proposal."
         )
       })
 
@@ -1215,7 +1227,7 @@ contract('Governance.sol', async (accounts) => {
           // Fail to veto from non-guardian address
           await _lib.assertRevert(
             governance.vetoProposal(proposalId, { from: stakerAccount1 }),
-            'Governance::vetoProposal: Only guardian can veto proposals'
+            'Only guardian can veto proposals'
           )
         })
 
@@ -1223,7 +1235,7 @@ contract('Governance.sol', async (accounts) => {
           const invalidProposalId = 5
           await _lib.assertRevert(
             governance.vetoProposal(invalidProposalId, { from: guardianAddress }),
-            "Governance::vetoProposal: Must provide valid non-zero _proposalId."
+            "Must provide valid non-zero _proposalId."
           )
         })
 
@@ -1240,7 +1252,7 @@ contract('Governance.sol', async (accounts) => {
           // Fail to veto due to inactive proposal
           await _lib.assertRevert(
             governance.vetoProposal(proposalId, { from: guardianAddress }),
-            'Governance::vetoProposal: Cannot veto inactive proposal.'
+            'Cannot veto inactive proposal.'
           )
         })
 
@@ -1263,12 +1275,12 @@ contract('Governance.sol', async (accounts) => {
           // Confirm that further actions are blocked
           await _lib.assertRevert(
             governance.submitProposalVote(proposalId, voter1Vote, { from: voter1Address }),
-            "Governance::submitProposalVote: Cannot vote on inactive proposal."
+            "Cannot vote on inactive proposal."
           )
           
           await _lib.assertRevert(
             governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
-            "Governance::evaluateProposalOutcome: Cannot evaluate inactive proposal."
+            "Cannot evaluate inactive proposal."
           )
         })
       })
@@ -1483,7 +1495,7 @@ contract('Governance.sol', async (accounts) => {
           callData,
           { from: stakerAccount1 }
         ),
-        "Governance::guardianExecuteTransaction: Only guardian."
+        "Only guardian."
       )
     })
 
@@ -1547,7 +1559,7 @@ contract('Governance.sol', async (accounts) => {
           callData,
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: _targetContractRegistryKey must point to valid registered contract"
+        "_targetContractRegistryKey must point to valid registered contract"
       )
     })
 
@@ -1560,7 +1572,7 @@ contract('Governance.sol', async (accounts) => {
           callData,
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: _signature cannot be empty."
+        "_signature cannot be empty."
       )
     })
 
@@ -1651,13 +1663,13 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['bytes32', 'bytes32'], [testDiscProvType, serviceVersion2]),
           { from: newGuardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Only guardian."
+        "Only guardian."
       )
       
       // Confirm only current guardianAddress can transfer guardianship
       await _lib.assertRevert(
         governance.transferGuardianship(newGuardianAddress, { from: accounts[18] }),
-        "Governance::guardianExecuteTransaction: Only guardian."
+        "Only guardian."
       )
       
       // Update guardianAddress
@@ -1679,7 +1691,7 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['bytes32', 'bytes32'], [testDiscProvType, serviceVersion2]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Only guardian."
+        "Only guardian."
       )
 
       // Confirm new guardianAddress is now active
@@ -1714,7 +1726,7 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['uint256'], [0]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Transaction failed."
       )
       
       await governance.guardianExecuteTransaction(
@@ -1763,7 +1775,7 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['uint256'], [0]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Transaction failed."
       )
       // should revert if attempting to set voting quorum % > 100
       await _lib.assertRevert(
@@ -1774,7 +1786,7 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['uint256'], [120]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Transaction failed."
       )
 
       await governance.guardianExecuteTransaction(
@@ -1915,7 +1927,7 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['bytes32', 'address'], [contractRegKey, contract.address]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Transaction failed."
       )
 
       // Transfer registry ownership to Governance
@@ -1953,7 +1965,7 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['address'], [registryUpgraded0.address]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Transaction failed."
       )
 
       // Update registry's governance address
