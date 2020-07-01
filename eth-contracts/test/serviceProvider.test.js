@@ -7,6 +7,7 @@ const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const ClaimsManager = artifacts.require('ClaimsManager')
 const MockDelegateManager = artifacts.require('MockDelegateManager')
+const GovernanceUpgraded = artifacts.require('GovernanceUpgraded')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -996,6 +997,9 @@ contract('ServiceProvider test', async (accounts) => {
     })
 
     it('Will set the new governance address if called from current governance contract', async () => {
+      const governanceUpgraded0 = await GovernanceUpgraded.new({ from: proxyDeployerAddress })
+      const newGovernanceAddress = governanceUpgraded0.address
+
       assert.equal(
         governance.address,
         await serviceProviderFactory.getGovernanceAddress(),
@@ -1005,17 +1009,17 @@ contract('ServiceProvider test', async (accounts) => {
         serviceProviderFactoryKey,
         callValue,
         'setGovernanceAddress(address)',
-        _lib.abiEncode(['address'], [fakeGovernanceAddress]),
+        _lib.abiEncode(['address'], [newGovernanceAddress]),
         { from: guardianAddress }
       )
       await expectEvent.inTransaction(
         govTx.tx,
         ServiceProviderFactory,
         'GovernanceAddressUpdated',
-        { _newGovernanceAddress: fakeGovernanceAddress }
+        { _newGovernanceAddress: newGovernanceAddress }
       )
       assert.equal(
-        fakeGovernanceAddress,
+        newGovernanceAddress,
         await serviceProviderFactory.getGovernanceAddress(),
         "updated governance addresses don't match"
       )

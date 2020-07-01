@@ -416,19 +416,19 @@ contract('ClaimsManager', async (accounts) => {
     assert.equal(
       governance.address,
       await claimsManager.getGovernanceAddress(),
-      "expected governance address before changing"  
+      "expected governance address before changing"
     )
 
     await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
       callValue0,
       'setGovernanceAddress(address)',
-      _lib.abiEncode(['address'], [newUpdateAddress]),
+      _lib.abiEncode(['address'], [mockStakingCaller.address]),
       { from: guardianAddress }
     )
 
     assert.equal(
-      newUpdateAddress,
+      mockStakingCaller.address,
       await claimsManager.getGovernanceAddress(),
       "updated governance addresses don't match"
     )
