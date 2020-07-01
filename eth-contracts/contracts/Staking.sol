@@ -20,8 +20,12 @@ contract Staking is InitializableV2 {
     string private constant ERROR_TOKEN_NOT_CONTRACT = "Staking: Staking token is not a contract";
     string private constant ERROR_AMOUNT_ZERO = "Staking: Zero amount not allowed";
     string private constant ERROR_ONLY_GOVERNANCE = "Staking: Only governance";
-    string private constant ERROR_ONLY_DELEGATE_MANAGER = "Staking: Only callable from DelegateManager";
-    string private constant ERROR_ONLY_SERVICE_PROVIDER_FACTORY = "Staking: Only callable from ServiceProviderFactory";
+    string private constant ERROR_ONLY_DELEGATE_MANAGER = (
+      "Staking: Only callable from DelegateManager"
+    );
+    string private constant ERROR_ONLY_SERVICE_PROVIDER_FACTORY = (
+      "Staking: Only callable from ServiceProviderFactory"
+    );
 
     address private governanceAddress;
     address private claimsManagerAddress;
@@ -565,7 +569,10 @@ contract Staking is InitializableV2 {
     }
 
     function _requireDelegateManagerAddressIsSet() private view {
-        require(delegateManagerAddress != address(0x00), "Staking: delegateManagerAddress is not set");
+        require(
+            delegateManagerAddress != address(0x00),
+            "Staking: delegateManagerAddress is not set"
+        );
     }
 
     function _requireServiceProviderFactoryAddressIsSet() private view {
