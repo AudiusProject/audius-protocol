@@ -126,12 +126,9 @@ contract DelegateManager is InitializableV2 {
     ) external returns (uint delegatedAmount)
     {
         _requireIsInitialized();
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
-        require(
-            serviceProviderFactoryAddress != address(0x00),
-            "serviceProviderFactoryAddress is not set"
-        );
-        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
+        _requireStakingAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
+        _requireClaimsManagerAddressIsSet();
 
         require(
             !_claimPending(_targetSP),
@@ -200,7 +197,7 @@ contract DelegateManager is InitializableV2 {
     ) external returns (uint newDelegateAmount)
     {
         _requireIsInitialized();
-        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
+        _requireClaimsManagerAddressIsSet();
 
         require(
             _amount > 0,
@@ -264,12 +261,9 @@ contract DelegateManager is InitializableV2 {
      */
     function undelegateStake() external returns (uint newTotal) {
         _requireIsInitialized();
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
-        require(
-            serviceProviderFactoryAddress != address(0x00),
-            "serviceProviderFactoryAddress is not set"
-        );
-        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
+        _requireStakingAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
+        _requireClaimsManagerAddressIsSet();
 
         address delegator = msg.sender;
 
@@ -346,12 +340,9 @@ contract DelegateManager is InitializableV2 {
      */
     function claimRewards(address _serviceProvider) external {
         _requireIsInitialized();
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
-        require(
-            serviceProviderFactoryAddress != address(0x00),
-            "serviceProviderFactoryAddress is not set"
-        );
-        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
+        _requireStakingAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
+        _requireClaimsManagerAddressIsSet();
 
         ServiceProviderFactory spFactory = ServiceProviderFactory(serviceProviderFactoryAddress);
 
@@ -418,11 +409,8 @@ contract DelegateManager is InitializableV2 {
     external
     {
         _requireIsInitialized();
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
-        require(
-            serviceProviderFactoryAddress != address(0x00),
-            "serviceProviderFactoryAddress is not set"
-        );
+        _requireStakingAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
 
         require(
             msg.sender == governanceAddress,
@@ -507,7 +495,7 @@ contract DelegateManager is InitializableV2 {
      */
     function removeDelegator(address _serviceProvider, address _delegator) external {
         _requireIsInitialized();
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        _requireStakingAddressIsSet();
 
         require(
             msg.sender == _serviceProvider || msg.sender == governanceAddress,
@@ -1007,5 +995,21 @@ contract DelegateManager is InitializableV2 {
             (undelegateRequests[_delegator].serviceProvider != address(0))
         );
     }
-}
 
+    // ========================================= Private Functions =========================================
+
+    function _requireStakingAddressIsSet() private view {
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
+    }
+
+    function _requireServiceProviderFactoryAddressIsSet() private view {
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "serviceProviderFactoryAddress is not set"
+        );
+    }
+
+    function _requireClaimsManagerAddressIsSet() private view {
+        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
+    }
+}

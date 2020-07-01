@@ -228,7 +228,7 @@ contract ClaimsManager is InitializableV2 {
      */
     function initiateRound() external {
         _requireIsInitialized();
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        _requireStakingAddressIsSet();
 
         require(
             Staking(stakingAddress).isStaker(msg.sender) || (msg.sender == governanceAddress),
@@ -267,12 +267,9 @@ contract ClaimsManager is InitializableV2 {
     ) external returns (uint mintedRewards)
     {
         _requireIsInitialized();
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
-        require(delegateManagerAddress != address(0x00), "delegateManagerAddress is not set");
-        require(
-            serviceProviderFactoryAddress != address(0x00),
-            "serviceProviderFactoryAddress is not set"
-        );
+        _requireStakingAddressIsSet();
+        _requireDelegateManagerAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
 
         require(
             msg.sender == delegateManagerAddress,
@@ -366,11 +363,8 @@ contract ClaimsManager is InitializableV2 {
      */
     function claimPending(address _sp) external view returns (bool pending) {
         _requireIsInitialized();
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
-        require(
-            serviceProviderFactoryAddress != address(0x00),
-            "serviceProviderFactoryAddress is not set"
-        );
+        _requireStakingAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
 
         uint lastClaimedForSP = Staking(stakingAddress).lastClaimedFor(_sp);
         (,,,uint numEndpoints,,) = (
@@ -394,15 +388,32 @@ contract ClaimsManager is InitializableV2 {
         fundingRoundBlockDiff = _newFundingRoundBlockDiff;
     }
 
+    // ========================================= Private Functions =========================================
+
     /**
      * @notice Set the governance address after confirming contract identity
      * @param _governanceAddress - Incoming governance address
      */
-    function _updateGovernanceAddress(address _governanceAddress) internal {
+    function _updateGovernanceAddress(address _governanceAddress) private {
         require(
             Governance(_governanceAddress).isGovernanceAddress() == true,
             "_governanceAddress is not a valid governance contract"
         );
         governanceAddress = _governanceAddress;
+    }
+
+    function _requireStakingAddressIsSet() private view {
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
+    }
+
+    function _requireDelegateManagerAddressIsSet() private view {
+        require(delegateManagerAddress != address(0x00), "delegateManagerAddress is not set");
+    }
+
+    function _requireServiceProviderFactoryAddressIsSet() private view {
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "serviceProviderFactoryAddress is not set"
+        );
     }
 }

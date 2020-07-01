@@ -183,7 +183,7 @@ contract Governance is InitializableV2 {
     ) external returns (uint256 proposalId)
     {
         _requireIsInitialized();
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        _requireStakingAddressIsSet();
 
         address proposer = msg.sender;
 
@@ -260,7 +260,7 @@ contract Governance is InitializableV2 {
      */
     function submitProposalVote(uint256 _proposalId, Vote _vote) external {
         _requireIsInitialized();
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        _requireStakingAddressIsSet();
 
         address voter = msg.sender;
 
@@ -349,7 +349,7 @@ contract Governance is InitializableV2 {
     external returns (Outcome proposalOutcome)
     {
         _requireIsInitialized();
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        _requireStakingAddressIsSet();
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
@@ -846,5 +846,11 @@ contract Governance is InitializableV2 {
             .div(stakingContract.totalStakedAt(proposal.startBlockNumber))
         );
         return participation >= votingQuorumPercent;
+    }
+
+    // ========================================= Private Functions =========================================
+
+    function _requireStakingAddressIsSet() private view {
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
     }
 }

@@ -122,7 +122,7 @@ contract Staking is InitializableV2 {
      */
     function stakeRewards(uint256 _amount, address _stakerAccount) external {
         _requireIsInitialized();
-        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
+        _requireClaimsManagerAddressIsSet();
 
         require(
             msg.sender == claimsManagerAddress,
@@ -140,7 +140,7 @@ contract Staking is InitializableV2 {
      */
     function updateClaimHistory(uint256 _amount, address _stakerAccount) external {
         _requireIsInitialized();
-        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
+        _requireClaimsManagerAddressIsSet();
 
         require(
             msg.sender == claimsManagerAddress || msg.sender == address(this),
@@ -163,7 +163,7 @@ contract Staking is InitializableV2 {
     ) external
     {
         _requireIsInitialized();
-        require(delegateManagerAddress != address(0x00), "delegateManagerAddress is not set");
+        _requireDelegateManagerAddressIsSet();
 
         require(
             msg.sender == delegateManagerAddress,
@@ -191,10 +191,8 @@ contract Staking is InitializableV2 {
     ) external
     {
         _requireIsInitialized();
-        require(
-            serviceProviderFactoryAddress != address(0x00),
-            "serviceProviderFactoryAddress is not set"
-        );
+        _requireServiceProviderFactoryAddressIsSet();
+
         require(
             msg.sender == serviceProviderFactoryAddress,
             "Only callable from ServiceProviderFactory"
@@ -217,10 +215,8 @@ contract Staking is InitializableV2 {
     ) external
     {
         _requireIsInitialized();
-        require(
-            serviceProviderFactoryAddress != address(0x00),
-            "serviceProviderFactoryAddress is not set"
-        );
+        _requireServiceProviderFactoryAddressIsSet();
+
         require(
             msg.sender == serviceProviderFactoryAddress,
             "Only callable from ServiceProviderFactory"
@@ -245,7 +241,8 @@ contract Staking is InitializableV2 {
         uint256 _amount
     ) external {
         _requireIsInitialized();
-        require(delegateManagerAddress != address(0x00), "delegateManagerAddress is not set");
+        _requireDelegateManagerAddressIsSet();
+
         require(
             msg.sender == delegateManagerAddress,
             "delegateStakeFor - Only callable from DelegateManager"
@@ -269,7 +266,7 @@ contract Staking is InitializableV2 {
         uint256 _amount
     ) external {
         _requireIsInitialized();
-        require(delegateManagerAddress != address(0x00), "delegateManagerAddress is not set");
+        _requireDelegateManagerAddressIsSet();
 
         require(
             msg.sender == delegateManagerAddress,
@@ -559,4 +556,22 @@ contract Staking is InitializableV2 {
         );
         governanceAddress = _governanceAddress;
     }
+
+    // ========================================= Private Functions =========================================
+
+    function _requireClaimsManagerAddressIsSet() private view {
+        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
+    }
+
+    function _requireDelegateManagerAddressIsSet() private view {
+        require(delegateManagerAddress != address(0x00), "delegateManagerAddress is not set");
+    }
+
+    function _requireServiceProviderFactoryAddressIsSet() private view {
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "serviceProviderFactoryAddress is not set"
+        );
+    }
+
 }
