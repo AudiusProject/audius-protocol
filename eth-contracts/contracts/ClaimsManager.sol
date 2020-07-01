@@ -49,8 +49,8 @@ contract ClaimsManager is InitializableV2 {
     // 2) Total funded for this round
     // 3) Total claimed in round
     struct Round {
-        uint fundBlock;
-        uint fundingAmount;
+        uint fundedBlock;
+        uint fundedAmount;
         uint totalClaimedInRound;
     }
 
@@ -99,8 +99,8 @@ contract ClaimsManager is InitializableV2 {
         roundNumber = 0;
 
         currentRound = Round({
-            fundBlock: 0,
-            fundingAmount: 0,
+            fundedBlock: 0,
+            fundedAmount: 0,
             totalClaimedInRound: 0
         });
 
@@ -120,7 +120,7 @@ contract ClaimsManager is InitializableV2 {
     {
         _requireIsInitialized();
 
-        return currentRound.fundBlock;
+        return currentRound.fundedBlock;
     }
 
     /// @notice Get the amount funded per round in wei
@@ -199,27 +199,27 @@ contract ClaimsManager is InitializableV2 {
     /**
      * @notice Set the ServiceProviderFactory address
      * @dev Only callable by Governance address
-     * @param _spFactory - address for new ServiceProviderFactory contract
+     * @param _serviceProviderAddress - address for new ServiceProviderFactory contract
      */
-    function setServiceProviderFactoryAddress(address _spFactory) external {
+    function setServiceProviderFactoryAddress(address _serviceProviderAddress) external {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
-        serviceProviderFactoryAddress = _spFactory;
-        emit ServiceProviderFactoryAddressUpdated(_spFactory);
+        serviceProviderFactoryAddress = _serviceProviderAddress;
+        emit ServiceProviderFactoryAddressUpdated(_serviceProviderAddress);
     }
 
     /**
      * @notice Set the DelegateManager address
      * @dev Only callable by Governance address
-     * @param _delegateManager - address for new DelegateManager contract
+     * @param _delegateManagerAddress - address for new DelegateManager contract
      */
-    function setDelegateManagerAddress(address _delegateManager) external {
+    function setDelegateManagerAddress(address _delegateManagerAddress) external {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
-        delegateManagerAddress = _delegateManager;
-        emit DelegateManagerAddressUpdated(_delegateManager);
+        delegateManagerAddress = _delegateManagerAddress;
+        emit DelegateManagerAddressUpdated(_delegateManagerAddress);
     }
 
     /**
@@ -236,22 +236,22 @@ contract ClaimsManager is InitializableV2 {
         );
 
         require(
-            block.number.sub(currentRound.fundBlock) > fundingRoundBlockDiff,
+            block.number.sub(currentRound.fundedBlock) > fundingRoundBlockDiff,
             "Required block difference not met"
         );
 
         currentRound = Round({
-            fundBlock: block.number,
-            fundingAmount: fundingAmount,
+            fundedBlock: block.number,
+            fundedAmount: fundingAmount,
             totalClaimedInRound: 0
         });
 
         roundNumber = roundNumber.add(1);
 
         emit RoundInitiated(
-            currentRound.fundBlock,
+            currentRound.fundedBlock,
             roundNumber,
-            currentRound.fundingAmount
+            currentRound.fundedAmount
         );
     }
 
@@ -279,10 +279,13 @@ contract ClaimsManager is InitializableV2 {
         Staking stakingContract = Staking(stakingAddress);
         // Prevent duplicate claim
         uint lastUserClaimBlock = stakingContract.lastClaimedFor(_claimer);
-        require(lastUserClaimBlock <= currentRound.fundBlock, "Claim already processed for user");
+        require(
+            lastUserClaimBlock <= currentRound.fundedBlock,
+            "Claim already processed for user"
+        );
         uint totalStakedAtFundBlockForClaimer = stakingContract.totalStakedForAt(
             _claimer,
-            currentRound.fundBlock);
+            currentRound.fundedBlock);
 
         (,,bool withinBounds,,,) = (
             ServiceProviderFactory(serviceProviderFactoryAddress).getServiceProviderDetails(_claimer)
@@ -291,7 +294,7 @@ contract ClaimsManager is InitializableV2 {
         // Once they claim the zero reward amount, stake can be modified once again
         // Subtract total locked amount for SP from stake at fund block
         uint claimerTotalStake = totalStakedAtFundBlockForClaimer.sub(_totalLockedForSP);
-        uint totalStakedAtFundBlock = stakingContract.totalStakedAt(currentRound.fundBlock);
+        uint totalStakedAtFundBlock = stakingContract.totalStakedAt(currentRound.fundedBlock);
 
         // Calculate claimer rewards
         uint rewardsForClaimer = (
@@ -370,7 +373,7 @@ contract ClaimsManager is InitializableV2 {
         (,,,uint numEndpoints,,) = (
             ServiceProviderFactory(serviceProviderFactoryAddress).getServiceProviderDetails(_sp)
         );
-        return (lastClaimedForSP < currentRound.fundBlock && numEndpoints > 0);
+        return (lastClaimedForSP < currentRound.fundedBlock && numEndpoints > 0);
     }
 
     /**
