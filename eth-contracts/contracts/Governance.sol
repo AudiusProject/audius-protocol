@@ -705,6 +705,11 @@ contract Governance is InitializableV2 {
         return registryAddress;
     }
 
+    /// @notice Used to check if is governance contract before setting governance address in other contracts
+    function isGovernanceAddress() external pure returns (bool) {
+        return true;
+    }
+
     /// @notice Get the max number of concurrent InProgress proposals
     function getMaxInProgressProposals() external view returns (uint16) {
         _requireIsInitialized();

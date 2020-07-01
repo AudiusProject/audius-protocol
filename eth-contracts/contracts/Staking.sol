@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/utils/Address.sol";
 import "@aragon/court/contracts/lib/Checkpointing.sol";
 import "@aragon/court/contracts/lib/os/Uint256Helpers.sol";
 import "./InitializableV2.sol";
+import "./Governance.sol";
 
 
 contract Staking is InitializableV2 {
@@ -57,7 +58,7 @@ contract Staking is InitializableV2 {
     {
         require(Address.isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         stakingToken = ERC20(_stakingToken);
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
         InitializableV2.initialize();
     }
 
@@ -70,7 +71,7 @@ contract Staking is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only governance");
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
     }
 
     /**
@@ -531,5 +532,17 @@ contract Staking is InitializableV2 {
 
         // add new value to total history
         totalStakedHistory.add(block.number.toUint64(), newStake);
+    }
+
+    /**
+     * @notice Set the governance address after confirming contract identity
+     * @param _governanceAddress - Incoming governance address
+     */
+    function _updateGovernanceAddress(address _governanceAddress) internal {
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
+        governanceAddress = _governanceAddress;
     }
 }
