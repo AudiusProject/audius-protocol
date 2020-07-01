@@ -534,21 +534,23 @@ contract ServiceProviderFactory is InitializableV2 {
 
         require (spId != 0, "Could not find service provider with that endpoint");
 
-        ServiceEndpoint memory sp = serviceProviderInfo[_serviceType][spId];
-
-        require(sp.owner == msg.sender,"Invalid update endpoint operation, wrong owner");
+        ServiceEndpoint memory serviceEndpoint = serviceProviderInfo[_serviceType][spId];
 
         require(
-            keccak256(bytes(sp.endpoint)) == keccak256(bytes(_oldEndpoint)),
+            serviceEndpoint.owner == msg.sender,
+            "Invalid update endpoint operation, wrong owner"
+        );
+        require(
+            keccak256(bytes(serviceEndpoint.endpoint)) == keccak256(bytes(_oldEndpoint)),
             "Old endpoint doesn't match what's registered for the service provider"
         );
 
         // invalidate old endpoint
-        serviceProviderEndpointToId[keccak256(bytes(sp.endpoint))] = 0;
+        serviceProviderEndpointToId[keccak256(bytes(serviceEndpoint.endpoint))] = 0;
 
         // update to new endpoint
-        sp.endpoint = _newEndpoint;
-        serviceProviderInfo[_serviceType][spId] = sp;
+        serviceEndpoint.endpoint = _newEndpoint;
+        serviceProviderInfo[_serviceType][spId] = serviceEndpoint;
         serviceProviderEndpointToId[keccak256(bytes(_newEndpoint))] = spId;
 
         emit EndpointUpdated(_serviceType, msg.sender, _oldEndpoint, _newEndpoint, spId);
@@ -667,15 +669,20 @@ contract ServiceProviderFactory is InitializableV2 {
     {
         _requireIsInitialized();
 
-        ServiceEndpoint memory sp = serviceProviderInfo[_serviceType][_serviceId];
-        return (sp.owner, sp.endpoint, sp.blocknumber, sp.delegateOwnerWallet);
+        ServiceEndpoint memory serviceEndpoint = serviceProviderInfo[_serviceType][_serviceId];
+        return (
+            serviceEndpoint.owner,
+            serviceEndpoint.endpoint,
+            serviceEndpoint.blocknumber,
+            serviceEndpoint.delegateOwnerWallet
+        );
     }
 
     /**
      * @notice Get information about a service provider given their address
-     * @param _sp - address of service provider
+     * @param _serviceProvider - address of service provider
      */
-    function getServiceProviderDetails(address _sp)
+    function getServiceProviderDetails(address _serviceProvider)
     external view returns (
         uint256 deployerStake,
         uint256 deployerCut,
@@ -687,27 +694,27 @@ contract ServiceProviderFactory is InitializableV2 {
         _requireIsInitialized();
 
         return (
-            spDetails[_sp].deployerStake,
-            spDetails[_sp].deployerCut,
-            spDetails[_sp].validBounds,
-            spDetails[_sp].numberOfEndpoints,
-            spDetails[_sp].minAccountStake,
-            spDetails[_sp].maxAccountStake
+            spDetails[_serviceProvider].deployerStake,
+            spDetails[_serviceProvider].deployerCut,
+            spDetails[_serviceProvider].validBounds,
+            spDetails[_serviceProvider].numberOfEndpoints,
+            spDetails[_serviceProvider].minAccountStake,
+            spDetails[_serviceProvider].maxAccountStake
         );
     }
 
     /**
      * @notice Get information about pending decrease stake requests for service provider
-     * @param _sp - address of service provider
+     * @param _serviceProvider - address of service provider
      */
-    function getPendingDecreaseStakeRequest(address _sp)
+    function getPendingDecreaseStakeRequest(address _serviceProvider)
     external view returns (uint256 amount, uint256 lockupExpiryBlock)
     {
         _requireIsInitialized();
 
         return (
-            decreaseStakeRequests[_sp].decreaseAmount,
-            decreaseStakeRequests[_sp].lockupExpiryBlock
+            decreaseStakeRequests[_serviceProvider].decreaseAmount,
+            decreaseStakeRequests[_serviceProvider].lockupExpiryBlock
         );
     }
 
@@ -723,15 +730,18 @@ contract ServiceProviderFactory is InitializableV2 {
     /**
      * @notice Validate that the total service provider balance is between the min and max stakes
                for all their registered services and validate  direct stake for sp is above minimum
-     * @param _sp - address of service provider
+     * @param _serviceProvider - address of service provider
      */
-    function validateAccountStakeBalance(address _sp)
+    function validateAccountStakeBalance(address _serviceProvider)
     external view
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
 
-        _validateBalanceInternal(_sp, Staking(stakingAddress).totalStakedFor(_sp));
+        _validateBalanceInternal(
+            _serviceProvider,
+            Staking(stakingAddress).totalStakedFor(_serviceProvider)
+        );
     }
 
     /// @notice Get the Governance address
@@ -866,18 +876,18 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /**
      * @notice Compare a given amount input against valid min and max bounds for service provider
-     * @param _sp - address of service provider
+     * @param _serviceProvider - address of service provider
      * @param _amount - amount in wei to compare
      */
-    function _validateBalanceInternal(address _sp, uint256 _amount) internal view
+    function _validateBalanceInternal(address _serviceProvider, uint256 _amount) internal view
     {
         require(
-            _amount <= spDetails[_sp].maxAccountStake,
+            _amount <= spDetails[_serviceProvider].maxAccountStake,
             "Maximum stake amount exceeded"
         );
 
         require(
-            spDetails[_sp].deployerStake >= spDetails[_sp].minAccountStake,
+            spDetails[_serviceProvider].deployerStake >= spDetails[_serviceProvider].minAccountStake,
             "Minimum stake requirement not met"
         );
     }
@@ -901,11 +911,11 @@ contract ServiceProviderFactory is InitializableV2 {
      */
      /**
      * @notice Get whether a claim is pending for this service provider
-     * @param _sp - address of service provider
+     * @param _serviceProvider - address of service provider
      * return Boolean of whether claim is pending
      */
-    function _claimPending(address _sp) internal view returns (bool pending) {
-        return ClaimsManager(claimsManagerAddress).claimPending(_sp);
+    function _claimPending(address _serviceProvider) internal view returns (bool pending) {
+        return ClaimsManager(claimsManagerAddress).claimPending(_serviceProvider);
     }
 
     // ========================================= Private Functions =========================================
