@@ -4,6 +4,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mint
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "./ServiceProviderFactory.sol";
 /// @notice SafeMath imported via ServiceProviderFactory.sol
+/// @notice Governance imported via Staking.sol
 
 
 /**
@@ -12,7 +13,6 @@ import "./ServiceProviderFactory.sol";
  */
 contract ClaimsManager is InitializableV2 {
     using SafeMath for uint256;
-    address private tokenAddress;
     address private governanceAddress;
     address private stakingAddress;
     address private serviceProviderFactoryAddress;
@@ -90,10 +90,9 @@ contract ClaimsManager is InitializableV2 {
         address _governanceAddress
     ) public initializer
     {
-        tokenAddress = _tokenAddress;
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
 
-        audiusToken = ERC20Mintable(tokenAddress);
+        audiusToken = ERC20Mintable(_tokenAddress);
 
         fundingRoundBlockDiff = 46523;
         fundingAmount = 1342465753420000000000000; // 1342465.75342 AUDS
@@ -180,7 +179,7 @@ contract ClaimsManager is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
         emit GovernanceAddressUpdated(_governanceAddress);
     }
 
@@ -393,5 +392,17 @@ contract ClaimsManager is InitializableV2 {
         );
         emit FundingRoundBlockDiffUpdated(_newFundingRoundBlockDiff);
         fundingRoundBlockDiff = _newFundingRoundBlockDiff;
+    }
+
+    /**
+     * @notice Set the governance address after confirming contract identity
+     * @param _governanceAddress - Incoming governance address
+     */
+    function _updateGovernanceAddress(address _governanceAddress) internal {
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
+        governanceAddress = _governanceAddress;
     }
 }

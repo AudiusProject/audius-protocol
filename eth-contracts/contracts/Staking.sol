@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/utils/Address.sol";
 import "@aragon/court/contracts/lib/Checkpointing.sol";
 import "@aragon/court/contracts/lib/os/Uint256Helpers.sol";
 import "./InitializableV2.sol";
+import "./Governance.sol";
 
 
 contract Staking is InitializableV2 {
@@ -50,17 +51,17 @@ contract Staking is InitializableV2 {
      * @dev claimsManagerAddress must be initialized separately after ClaimsManager contract is deployed
      * @dev delegateManagerAddress must be initialized separately after DelegateManager contract is deployed
      * @dev serviceProviderFactoryAddress must be initialized separately after ServiceProviderFactory contract is deployed
-     * @param _stakingToken - address of ERC20 token that will be staked
+     * @param _tokenAddress - address of ERC20 token that will be staked
      * @param _governanceAddress - address for Governance proxy contract
      */
     function initialize(
-        address _stakingToken,
+        address _tokenAddress,
         address _governanceAddress
     ) public initializer
     {
-        require(Address.isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
-        stakingToken = ERC20(_stakingToken);
-        governanceAddress = _governanceAddress;
+        require(Address.isContract(_tokenAddress), ERROR_TOKEN_NOT_CONTRACT);
+        stakingToken = ERC20(_tokenAddress);
+        _updateGovernanceAddress(_governanceAddress);
         InitializableV2.initialize();
     }
 
@@ -73,7 +74,7 @@ contract Staking is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only governance");
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
     }
 
     /**
@@ -545,5 +546,17 @@ contract Staking is InitializableV2 {
 
         // add new value to total history
         totalStakedHistory.add(block.number.toUint64(), newStake);
+    }
+
+    /**
+     * @notice Set the governance address after confirming contract identity
+     * @param _governanceAddress - Incoming governance address
+     */
+    function _updateGovernanceAddress(address _governanceAddress) internal {
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
+        governanceAddress = _governanceAddress;
     }
 }
