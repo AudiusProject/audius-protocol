@@ -79,6 +79,9 @@ contract ClaimsManager is InitializableV2 {
 
     /**
      * @notice Function to initialize the contract
+     * @dev stakingAddress must be initialized separately after Staking contract is deployed
+     * @dev serviceProviderFactoryAddress must be initialized separately after ServiceProviderFactory contract is deployed
+     * @dev delegateManagerAddress must be initialized separately after DelegateManager contract is deployed
      * @param _tokenAddress - address of ERC20 token that will be claimed
      * @param _governanceAddress - address for Governance proxy contract
      */
@@ -226,6 +229,7 @@ contract ClaimsManager is InitializableV2 {
      */
     function initiateRound() external {
         _requireIsInitialized();
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
 
         bool senderStaked = Staking(stakingAddress).totalStakedFor(msg.sender) > 0;
         require(
@@ -265,6 +269,10 @@ contract ClaimsManager is InitializableV2 {
     ) external returns (uint mintedRewards)
     {
         _requireIsInitialized();
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        require(delegateManagerAddress != address(0x00), "delegateManagerAddress is not set");
+        require(serviceProviderFactoryAddress != address(0x00), "serviceProviderFactoryAddress is not set");
+
         require(
             msg.sender == delegateManagerAddress,
             "ProcessClaim only accessible to DelegateManager"
@@ -357,6 +365,8 @@ contract ClaimsManager is InitializableV2 {
      */
     function claimPending(address _sp) external view returns (bool pending) {
         _requireIsInitialized();
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        require(serviceProviderFactoryAddress != address(0x00), "serviceProviderFactoryAddress is not set");
 
         uint lastClaimedForSP = Staking(stakingAddress).lastClaimedFor(_sp);
         (,,,uint numEndpoints,,) = (

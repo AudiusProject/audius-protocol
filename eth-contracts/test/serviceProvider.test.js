@@ -273,7 +273,7 @@ contract('ServiceProvider test', async (accounts) => {
         DEFAULT_AMOUNT,
         stakerAccount
       ),
-      'serviceTypeManagerAddress not set'
+      'stakingAddress is not set'
     )
 
     await _lib.assertRevert(
@@ -281,7 +281,7 @@ contract('ServiceProvider test', async (accounts) => {
         stakerAccount,
         _lib.toBN(200)
       ),
-      'delegateManagerAddress not set')
+      'stakingAddress is not set')
 
     let initTxs = await _lib.configureServiceProviderFactoryAddresses(
       governance,

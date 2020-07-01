@@ -130,6 +130,7 @@ contract Governance is InitializableV2 {
     /**
      * @notice Initialize the Governance contract
      * @dev _votingPeriod <= DelegateManager.undelegateLockupDuration
+     * @dev stakingAddress must be initialized separately after Staking contract is deployed
      * @param _registryAddress - address of the registry proxy contract
      * @param _votingPeriod - period in blocks for which a governance proposal is open for voting
      * @param _votingQuorumPercent - required minimum percentage of total stake to have voted to consider a proposal valid
@@ -184,6 +185,7 @@ contract Governance is InitializableV2 {
     ) external returns (uint256 proposalId)
     {
         _requireIsInitialized();
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
 
         address proposer = msg.sender;
 
@@ -261,6 +263,7 @@ contract Governance is InitializableV2 {
      */
     function submitProposalVote(uint256 _proposalId, Vote _vote) external {
         _requireIsInitialized();
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
 
         address voter = msg.sender;
 
@@ -349,6 +352,7 @@ contract Governance is InitializableV2 {
     external returns (Outcome proposalOutcome)
     {
         _requireIsInitialized();
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
@@ -470,6 +474,7 @@ contract Governance is InitializableV2 {
      * @param _stakingAddress - address for new Staking contract
      */
     function setStakingAddress(address _stakingAddress) external {
+        // Cannot call _requireIsInitializedFull() here since stakingAddress is not yet set
         _requireIsInitialized();
 
         require(msg.sender == address(this), "Only callable by self");
@@ -630,6 +635,7 @@ contract Governance is InitializableV2 {
         uint256 numVotes
     )
     {
+        // View functions do not require full initialization
         _requireIsInitialized();
 
         require(
@@ -664,6 +670,7 @@ contract Governance is InitializableV2 {
     function getVoteByProposalAndVoter(uint256 _proposalId, address _voter)
     external view returns (Vote vote)
     {
+        // View functions do not require full initialization
         _requireIsInitialized();
 
         require(
@@ -675,6 +682,7 @@ contract Governance is InitializableV2 {
 
     /// @notice Get the contract Guardian address
     function getGuardianAddress() external view returns (address) {
+        // View functions do not require full initialization
         _requireIsInitialized();
 
         return guardianAddress;
@@ -682,11 +690,15 @@ contract Governance is InitializableV2 {
 
     /// @notice Get the Staking address
     function getStakingAddress() external view returns (address) {
+        // View functions do not require full initialization
+        _requireIsInitialized();
+
         return stakingAddress;
     }
 
     /// @notice Get the contract voting period
     function getVotingPeriod() external view returns (uint) {
+        // View functions do not require full initialization
         _requireIsInitialized();
 
         return votingPeriod;
@@ -694,6 +706,7 @@ contract Governance is InitializableV2 {
 
     /// @notice Get the contract voting quorum percent
     function getVotingQuorumPercent() external view returns (uint) {
+        // View functions do not require full initialization
         _requireIsInitialized();
 
         return votingQuorumPercent;
@@ -701,6 +714,7 @@ contract Governance is InitializableV2 {
 
     /// @notice Get the registry address
     function getRegistryAddress() external view returns (address) {
+        // View functions do not require full initialization
         _requireIsInitialized();
 
         return registryAddress;
@@ -708,6 +722,7 @@ contract Governance is InitializableV2 {
 
     /// @notice Get the max number of concurrent InProgress proposals
     function getMaxInProgressProposals() external view returns (uint16) {
+        // View functions do not require full initialization
         _requireIsInitialized();
 
         return maxInProgressProposals;
@@ -715,6 +730,7 @@ contract Governance is InitializableV2 {
 
     /// @notice Get the array of all InProgress proposal Ids
     function getInProgressProposals() external view returns (uint256[] memory) {
+        // View functions do not require full initialization
         _requireIsInitialized();
 
         return inProgressProposals;
@@ -726,6 +742,7 @@ contract Governance is InitializableV2 {
      * @dev Is public since its called internally in `submitProposal()` as well as externally in UI
      */
     function inProgressProposalsAreUpToDate() external view returns (bool) {
+        // View functions do not require full initialization
         _requireIsInitialized();
 
         // compare current block number against endBlockNumber of each proposal

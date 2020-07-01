@@ -42,11 +42,14 @@ contract ServiceTypeManager is InitializableV2 {
     function initialize(address _governanceAddress) public initializer
     {
         governanceAddress = _governanceAddress;
+
         InitializableV2.initialize();
     }
 
     /// @notice Get the Governance address
     function getGovernanceAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return governanceAddress;
     }
 
@@ -56,6 +59,8 @@ contract ServiceTypeManager is InitializableV2 {
      * @param _governanceAddress - address for new Governance contract
      */
     function setGovernanceAddress(address _governanceAddress) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only governance");
         governanceAddress = _governanceAddress;
     }

@@ -130,6 +130,10 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /**
      * @notice Function to initialize the contract
+     * @dev stakingAddress must be initialized separately after Staking contract is deployed
+     * @dev delegateManagerAddress must be initialized separately after DelegateManager contract is deployed
+     * @dev serviceTypeManagerAddress must be initialized separately after ServiceTypeManager contract is deployed
+     * @dev claimsManagerAddress must be initialized separately after ClaimsManager contract is deployed
      * @param _governanceAddress - Governance proxy address
      */
     function initialize (
@@ -160,9 +164,9 @@ contract ServiceProviderFactory is InitializableV2 {
     ) external returns (uint spID)
     {
         _requireIsInitialized();
-
-        require(serviceTypeManagerAddress != address(0x00), "serviceTypeManagerAddress not set");
-        require(stakingAddress != address(0x00), "stakingAddress not set");
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        require(serviceTypeManagerAddress != address(0x00), "serviceTypeManagerAddress is not set");
+        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
 
         require(
             ServiceTypeManager(serviceTypeManagerAddress).serviceTypeIsValid(_serviceType),
@@ -242,6 +246,8 @@ contract ServiceProviderFactory is InitializableV2 {
     ) external returns (uint deregisteredSpID)
     {
         _requireIsInitialized();
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        require(serviceTypeManagerAddress != address(0x00), "serviceTypeManagerAddress is not set");
 
         // Unstake on deregistration if and only if this is the last service endpoint
         uint unstakeAmount = 0;
@@ -330,6 +336,8 @@ contract ServiceProviderFactory is InitializableV2 {
     ) external returns (uint newTotalStake)
     {
         _requireIsInitialized();
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
 
         // Confirm owner has an endpoint
         require(
@@ -380,6 +388,8 @@ contract ServiceProviderFactory is InitializableV2 {
     external returns (uint newStakeAmount)
     {
         _requireIsInitialized();
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
 
         require(
             _decreaseStakeAmount > 0,
@@ -416,6 +426,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function cancelDecreaseStakeRequest(address _account) external
     {
         _requireIsInitialized();
+        require(delegateManagerAddress != address(0x00), "delegateManagerAddress is not set");
 
         require(
             msg.sender == _account || msg.sender == delegateManagerAddress,
@@ -438,6 +449,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function decreaseStake() external returns (uint newTotalStake)
     {
         _requireIsInitialized();
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
 
         require(_decreaseRequestIsPending(msg.sender), "Decrease stake request must be pending");
         require(
@@ -560,8 +572,9 @@ contract ServiceProviderFactory is InitializableV2 {
      ) external
     {
         _requireIsInitialized();
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        require(delegateManagerAddress != address(0x00), "delegateManagerAddress is not set");
 
-        require(delegateManagerAddress != address(0x00), "delegateManagerAddress not set");
         require(
             msg.sender == delegateManagerAddress,
             "updateServiceProviderStake - only callable by DelegateManager"
@@ -721,6 +734,7 @@ contract ServiceProviderFactory is InitializableV2 {
     external view
     {
         _requireIsInitialized();
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
 
         _validateBalanceInternal(_sp, Staking(stakingAddress).totalStakedFor(_sp));
     }
