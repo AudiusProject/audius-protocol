@@ -13,7 +13,6 @@ import "./ServiceProviderFactory.sol";
  */
 contract ClaimsManager is InitializableV2 {
     using SafeMath for uint256;
-    address private tokenAddress;
     address private governanceAddress;
     address private stakingAddress;
     address private serviceProviderFactoryAddress;
@@ -88,10 +87,9 @@ contract ClaimsManager is InitializableV2 {
         address _governanceAddress
     ) public initializer
     {
-        tokenAddress = _tokenAddress;
         _updateGovernanceAddress(_governanceAddress);
 
-        audiusToken = ERC20Mintable(tokenAddress);
+        audiusToken = ERC20Mintable(_tokenAddress);
 
         fundingRoundBlockDiff = 46523;
         fundingAmount = 1342465753420000000000000; // 1342465.75342 AUDS
