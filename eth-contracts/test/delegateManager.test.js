@@ -462,6 +462,20 @@ contract('DelegateManager', async (accounts) => {
         'Stake value in SPFactory and Staking.sol must be equal')
     })
 
+    it('Fail to claim for an address that has zero stake', async () => {
+      await claimsManager.initiateRound({ from: stakerAccount })
+
+      // Claim from a separate account to confirm claimRewards can be called by any address
+      let claimerAddress = accounts[5]
+      let fakeSPAddress = accounts[20]
+      assert.isTrue(claimerAddress !== stakerAccount, 'Expected different claimer account')
+      assert.isTrue(claimerAddress !== stakerAccount, 'Expected fake service provider address')
+      await _lib.assertRevert(
+        delegateManager.claimRewards(fakeSPAddress, { from: claimerAddress }),
+        "Stake required for claim"
+      )
+    })
+
     it('Single delegator basic operations', async () => {
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
