@@ -22,6 +22,11 @@ contract Staking is InitializableV2 {
     string private constant ERROR_TOKEN_TRANSFER = "STAKING_TOKEN_TRANSFER";
     string private constant ERROR_NOT_ENOUGH_BALANCE = "STAKING_NOT_ENOUGH_BALANCE";
 
+    address private governanceAddress;
+    address private claimsManagerAddress;
+    address private delegateManagerAddress;
+    address private serviceProviderFactoryAddress;
+
     /// @dev stores the history of staking and claims for a given address
     struct Account {
         Checkpointing.History stakedHistory;
@@ -36,11 +41,6 @@ contract Staking is InitializableV2 {
 
     /// @dev total staked tokens at a given block
     Checkpointing.History internal totalStakedHistory;
-
-    address governanceAddress;
-    address claimsManagerAddress;
-    address delegateManagerAddress;
-    address serviceProviderFactoryAddress;
 
     event Staked(address indexed user, uint256 amount, uint256 total);
     event Unstaked(address indexed user, uint256 amount, uint256 total);

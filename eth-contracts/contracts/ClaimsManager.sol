@@ -56,7 +56,7 @@ contract ClaimsManager is InitializableV2 {
     }
 
     // Current round information
-    Round currentRound;
+    Round private currentRound;
 
     event RoundInitiated(
       uint indexed _blockNumber,
