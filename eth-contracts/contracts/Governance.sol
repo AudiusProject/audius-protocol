@@ -40,23 +40,22 @@ contract Governance is InitializableV2 {
 
     /**
      * @notice All Proposal Outcome states.
-     *      InProgress - Proposal is active and can be voted on
-     *      No - Proposal votingPeriod has closed and decision is No. Proposal will not be executed.
-     *      Yes - Proposal votingPeriod has closed and decision is Yes. Proposal will be executed.
-     *      Invalid - Proposal votingPeriod has closed and votingQuorumPercent was not met. Proposal will not be executed.
-     *      TxFailed - Proposal voting decision was Yes, but transaction execution failed.
-     *      Evaluating - Proposal voting decision was Yes, and evaluateProposalOutcome function is currently running.
+     *      InProgress - Proposal is active and can be voted on.
+     *      Rejected - Proposal votingPeriod has closed and vote failed to pass. Proposal will not be executed.
+     *      ApprovedExecuted - Proposal votingPeriod has closed and vote passed. Proposal was successfully executed.
+     *      QuorumNotMet - Proposal votingPeriod has closed and votingQuorumPercent was not met. Proposal will not be executed.
+     *      ApprovedExecutionFailed - Proposal vote passed, but transaction execution failed.
+     *      Evaluating - Proposal vote passed, and evaluateProposalOutcome function is currently running.
      *          This status is transiently used inside that function to prevent re-entrancy.
-     *      Veto - Proposal was vetoed by Guardian
+     *      Vetoed - Proposal was vetoed by Guardian.
      */
-    enum Outcome {InProgress, No, Yes, Invalid, TxFailed, Evaluating, Veto}
+    enum Outcome {InProgress, Rejected, ApprovedExecuted, QuorumNotMet, ApprovedExecutionFailed, Evaluating, Vetoed}
 
     /**
      * @notice All Proposal Vote states for a voter.
      *      None - The default state, for any account that has not previously voted on this Proposal.
      *      No - The account voted No on this Proposal.
      *      Yes - The account voted Yes on this Proposal.
-     *
      * @dev Enum values map to uints, so first value in Enum always is 0.
      */
     enum Vote {None, No, Yes}
@@ -64,11 +63,11 @@ contract Governance is InitializableV2 {
     struct Proposal {
         uint256 proposalId;
         address proposer;
-        uint256 startBlockNumber;
+        uint256 submissionBlockNumber;
         bytes32 targetContractRegistryKey;
         address targetContractAddress;
         uint256 callValue;
-        string signature;
+        string functionSignature;
         bytes callData;
         Outcome outcome;
         uint256 voteMagnitudeYes;
@@ -93,7 +92,7 @@ contract Governance is InitializableV2 {
     event ProposalSubmitted(
         uint256 indexed proposalId,
         address indexed proposer,
-        uint256 startBlockNumber,
+        uint256 submissionBlockNumber,
         string description
     );
     event ProposalVoteSubmitted(
@@ -124,7 +123,7 @@ contract Governance is InitializableV2 {
     event GuardianTransactionExecuted(
         address indexed targetContractAddress,
         uint256 callValue,
-        string indexed signature,
+        string indexed functionSignature,
         bytes indexed callData,
         bytes returnData
     );
@@ -176,14 +175,14 @@ contract Governance is InitializableV2 {
      * @notice Submit a proposal for vote. Only callable by stakers with non-zero stake.
      * @param _targetContractRegistryKey - Registry key for the contract concerning this proposal
      * @param _callValue - amount of wei to pass with function call if a token transfer is involved
-     * @param _signature - function signature of the function to be executed if proposal is successful
+     * @param _functionSignature - function signature of the function to be executed if proposal is successful
      * @param _callData - encoded value(s) to call function with if proposal is successful
      * @param _description - Text description of proposal to be emitted in event
      */
     function submitProposal(
         bytes32 _targetContractRegistryKey,
         uint256 _callValue,
-        string calldata _signature,
+        string calldata _functionSignature,
         bytes calldata _callData,
         string calldata _description
     ) external returns (uint256 proposalId)
@@ -220,8 +219,8 @@ contract Governance is InitializableV2 {
 
         // Signature cannot be empty
         require(
-            bytes(_signature).length != 0,
-            "Governance::submitProposal: _signature cannot be empty."
+            bytes(_functionSignature).length != 0,
+            "Governance::submitProposal: _functionSignature cannot be empty."
         );
 
         // set proposalId
@@ -231,11 +230,11 @@ contract Governance is InitializableV2 {
         proposals[newProposalId] = Proposal({
             proposalId: newProposalId,
             proposer: proposer,
-            startBlockNumber: block.number,
+            submissionBlockNumber: block.number,
             targetContractRegistryKey: _targetContractRegistryKey,
             targetContractAddress: targetContractAddress,
             callValue: _callValue,
-            signature: _signature,
+            functionSignature: _functionSignature,
             callData: _callData,
             outcome: Outcome.InProgress,
             voteMagnitudeYes: 0,
@@ -264,7 +263,7 @@ contract Governance is InitializableV2 {
      * @param _proposalId - id of the proposal this vote is for
      * @param _vote - can be either {Yes, No} from Vote enum. No other values allowed
      */
-    function submitProposalVote(uint256 _proposalId, Vote _vote) external {
+    function submitVote(uint256 _proposalId, Vote _vote) external {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
 
@@ -276,7 +275,7 @@ contract Governance is InitializableV2 {
         // Ensure previous vote is None
         require(
             proposals[_proposalId].votes[voter] == Vote.None,
-            "Governance::submitProposalVote: To update previous vote, call updateProposalVote()"
+            "Governance::submitVote: To update previous vote, call updateVote()"
         );
 
         // Record vote
@@ -305,7 +304,7 @@ contract Governance is InitializableV2 {
      * @param _proposalId - id of the proposal this vote is for
      * @param _vote - can be either {Yes, No} from Vote enum. No other values allowed
      */
-    function updateProposalVote(uint256 _proposalId, Vote _vote) external {
+    function updateVote(uint256 _proposalId, Vote _vote) external {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
 
@@ -320,7 +319,7 @@ contract Governance is InitializableV2 {
         // Ensure previous vote is not None
         require(
             previousVote != Vote.None,
-            "Governance::updateProposalVote: To submit new vote, call submitProposalVote()"
+            "Governance::updateVote: To submit new vote, call submitVote()"
         );
 
         // Override previous vote
@@ -350,7 +349,7 @@ contract Governance is InitializableV2 {
     /**
      * @notice Once the voting period for a proposal has ended, evaluate the outcome and
      *      execute the proposal if voting quorum met & vote passes.
-     *      To pass, stake-weighted vote must be >= 50% Yes.
+     *      To pass, stake-weighted vote must be > 50% Yes.
      * @dev Requires that caller is an active staker at the time the proposal is created
      * @param _proposalId - id of the proposal
      */
@@ -376,8 +375,8 @@ contract Governance is InitializableV2 {
         proposals[_proposalId].outcome = Outcome.Evaluating;
 
         // Require proposal votingPeriod has ended.
-        uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;
-        uint256 endBlockNumber = startBlockNumber.add(votingPeriod);
+        uint256 submissionBlockNumber = proposals[_proposalId].submissionBlockNumber;
+        uint256 endBlockNumber = submissionBlockNumber.add(votingPeriod);
         require(
             block.number > endBlockNumber,
             "Governance::evaluateProposalOutcome: Proposal votingPeriod must end before evaluation."
@@ -395,18 +394,18 @@ contract Governance is InitializableV2 {
         Staking stakingContract = Staking(stakingAddress);
         // Calculate outcome
         Outcome outcome;
-        // voting quorum not met -> proposal is invalid.
+        // voting quorum not met -> close proposal without execution.
         if (_quorumMet(proposals[_proposalId], stakingContract) == false) {
-            outcome = Outcome.Invalid;
+            outcome = Outcome.QuorumNotMet;
         }
-        // votingQuorumPercent met & vote is Yes -> execute proposed transaction & close proposal.
+        // votingQuorumPercent met & vote passed -> execute proposed transaction & close proposal.
         else if (
             proposals[_proposalId].voteMagnitudeYes > proposals[_proposalId].voteMagnitudeNo
         ) {
             (bool success, bytes memory returnData) = _executeTransaction(
                 targetContractAddress,
                 proposals[_proposalId].callValue,
-                proposals[_proposalId].signature,
+                proposals[_proposalId].functionSignature,
                 proposals[_proposalId].callData
             );
 
@@ -418,14 +417,14 @@ contract Governance is InitializableV2 {
 
             // Proposal outcome depends on success of transaction execution.
             if (success) {
-                outcome = Outcome.Yes;
+                outcome = Outcome.ApprovedExecuted;
             } else {
-                outcome = Outcome.TxFailed;
+                outcome = Outcome.ApprovedExecutionFailed;
             }
         }
-        // votingQuorumPercent met & vote is No -> close proposal without transaction execution.
+        // votingQuorumPercent met & vote did not pass -> close proposal without transaction execution.
         else {
-            outcome = Outcome.No;
+            outcome = Outcome.Rejected;
         }
 
         // This records the final outcome in the proposals mapping
@@ -467,7 +466,7 @@ contract Governance is InitializableV2 {
             "Governance::vetoProposal: Cannot veto inactive proposal."
         );
 
-        proposals[_proposalId].outcome = Outcome.Veto;
+        proposals[_proposalId].outcome = Outcome.Vetoed;
 
         emit ProposalVetoed(_proposalId);
     }
@@ -551,13 +550,13 @@ contract Governance is InitializableV2 {
      * @notice Allows the guardianAddress to execute protocol actions
      * @param _targetContractRegistryKey - key in registry of target contraact
      * @param _callValue - amount of wei if a token transfer is involved
-     * @param _signature - function signature of the function to be executed if proposal is successful
+     * @param _functionSignature - function signature of the function to be executed if proposal is successful
      * @param _callData - encoded value(s) to call function with if proposal is successful
      */
     function guardianExecuteTransaction(
         bytes32 _targetContractRegistryKey,
         uint256 _callValue,
-        string calldata _signature,
+        string calldata _functionSignature,
         bytes calldata _callData
     ) external
     {
@@ -577,14 +576,14 @@ contract Governance is InitializableV2 {
 
         // Signature cannot be empty
         require(
-            bytes(_signature).length != 0,
-            "Governance::guardianExecuteTransaction: _signature cannot be empty."
+            bytes(_functionSignature).length != 0,
+            "Governance::guardianExecuteTransaction: _functionSignature cannot be empty."
         );
 
         (bool success, bytes memory returnData) = _executeTransaction(
             targetContractAddress,
             _callValue,
-            _signature,
+            _functionSignature,
             _callData
         );
 
@@ -593,7 +592,7 @@ contract Governance is InitializableV2 {
         emit GuardianTransactionExecuted(
             targetContractAddress,
             _callValue,
-            _signature,
+            _functionSignature,
             _callData,
             returnData
         );
@@ -627,11 +626,11 @@ contract Governance is InitializableV2 {
     external view returns (
         uint256 proposalId,
         address proposer,
-        uint256 startBlockNumber,
+        uint256 submissionBlockNumber,
         bytes32 targetContractRegistryKey,
         address targetContractAddress,
         uint256 callValue,
-        string memory signature,
+        string memory functionSignature,
         bytes memory callData,
         Outcome outcome,
         uint256 voteMagnitudeYes,
@@ -650,11 +649,11 @@ contract Governance is InitializableV2 {
         return (
             proposal.proposalId,
             proposal.proposer,
-            proposal.startBlockNumber,
+            proposal.submissionBlockNumber,
             proposal.targetContractRegistryKey,
             proposal.targetContractAddress,
             proposal.callValue,
-            proposal.signature,
+            proposal.functionSignature,
             proposal.callData,
             proposal.outcome,
             proposal.voteMagnitudeYes,
@@ -748,7 +747,7 @@ contract Governance is InitializableV2 {
         for (uint256 i = 0; i < inProgressProposals.length; i++) {
             if (
                 block.number >
-                (proposals[inProgressProposals[i]].startBlockNumber).add(votingPeriod)
+                (proposals[inProgressProposals[i]].submissionBlockNumber).add(votingPeriod)
             ) {
                 return false;
             }
@@ -768,18 +767,18 @@ contract Governance is InitializableV2 {
      *      of the governance system to do required work in a generic way.
      * @param _targetContractAddress - address of registry proxy contract to execute transaction on
      * @param _callValue - amount of wei if a token transfer is involved
-     * @param _signature - function signature of the function to be executed if proposal is successful
+     * @param _functionSignature - function signature of the function to be executed if proposal is successful
      * @param _callData - encoded value(s) to call function with if proposal is successful
      */
     function _executeTransaction(
         address _targetContractAddress,
         uint256 _callValue,
-        string memory _signature,
+        string memory _functionSignature,
         bytes memory _callData
     ) internal returns (bool /** success */, bytes memory /** returnData */)
     {
         bytes memory encodedCallData = abi.encodePacked(
-            bytes4(keccak256(bytes(_signature))),
+            bytes4(keccak256(bytes(_functionSignature))),
             _callData
         );
         (bool success, bytes memory returnData) = (
@@ -854,7 +853,7 @@ contract Governance is InitializableV2 {
         uint256 participation = (
             (proposal.voteMagnitudeYes + proposal.voteMagnitudeNo)
             .mul(100)
-            .div(stakingContract.totalStakedAt(proposal.startBlockNumber))
+            .div(stakingContract.totalStakedAt(proposal.submissionBlockNumber))
         );
         return participation >= votingQuorumPercent;
     }
@@ -866,7 +865,7 @@ contract Governance is InitializableV2 {
     }
 
     /**
-     * Helper function to perform validation for submitProposalVote() and updateProposalVote() functions
+     * Helper function to perform validation for submitVote() and updateVote() functions
      * Validates new _vote, _proposalId, proposal state, and voter state
      * Returns stake of voter at proposal submission time
      */
@@ -880,7 +879,7 @@ contract Governance is InitializableV2 {
         // Require voter was active Staker at proposal submission time
         uint256 voterStake = Staking(stakingAddress).totalStakedForAt(
             _voter,
-            proposals[_proposalId].startBlockNumber
+            proposals[_proposalId].submissionBlockNumber
         );
         require(
             voterStake > 0,
@@ -894,10 +893,10 @@ contract Governance is InitializableV2 {
         );
 
         // Require proposal votingPeriod is still active.
-        uint256 startBlockNumber = proposals[_proposalId].startBlockNumber;
-        uint256 endBlockNumber = startBlockNumber.add(votingPeriod);
+        uint256 submissionBlockNumber = proposals[_proposalId].submissionBlockNumber;
+        uint256 endBlockNumber = submissionBlockNumber.add(votingPeriod);
         require(
-            block.number > startBlockNumber && block.number <= endBlockNumber,
+            block.number > submissionBlockNumber && block.number <= endBlockNumber,
             "Governance::_validateVoteAndGetVoterStake: Proposal votingPeriod has ended"
         );
 
