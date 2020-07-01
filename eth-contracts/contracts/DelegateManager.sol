@@ -128,7 +128,10 @@ contract DelegateManager is InitializableV2 {
     {
         _requireIsInitialized();
         require(stakingAddress != address(0x00), "stakingAddress is not set");
-        require(serviceProviderFactoryAddress != address(0x00), "serviceProviderFactoryAddress is not set");
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "serviceProviderFactoryAddress is not set"
+        );
         require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
 
         require(
@@ -263,7 +266,10 @@ contract DelegateManager is InitializableV2 {
     function undelegateStake() external returns (uint newTotal) {
         _requireIsInitialized();
         require(stakingAddress != address(0x00), "stakingAddress is not set");
-        require(serviceProviderFactoryAddress != address(0x00), "serviceProviderFactoryAddress is not set");
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "serviceProviderFactoryAddress is not set"
+        );
         require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
 
         address delegator = msg.sender;
@@ -342,7 +348,10 @@ contract DelegateManager is InitializableV2 {
     function claimRewards(address _serviceProvider) external {
         _requireIsInitialized();
         require(stakingAddress != address(0x00), "stakingAddress is not set");
-        require(serviceProviderFactoryAddress != address(0x00), "serviceProviderFactoryAddress is not set");
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "serviceProviderFactoryAddress is not set"
+        );
         require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
 
         ServiceProviderFactory spFactory = ServiceProviderFactory(serviceProviderFactoryAddress);
@@ -411,7 +420,10 @@ contract DelegateManager is InitializableV2 {
     {
         _requireIsInitialized();
         require(stakingAddress != address(0x00), "stakingAddress is not set");
-        require(serviceProviderFactoryAddress != address(0x00), "serviceProviderFactoryAddress is not set");
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "serviceProviderFactoryAddress is not set"
+        );
 
         require(
             msg.sender == governanceAddress,

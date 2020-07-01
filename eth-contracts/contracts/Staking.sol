@@ -190,8 +190,11 @@ contract Staking is InitializableV2 {
     ) external
     {
         _requireIsInitialized();
-        require(serviceProviderFactoryAddress != address(0x00), "serviceProviderFactoryAddress is not set");
-    
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "serviceProviderFactoryAddress is not set"
+        );
+
         require(
             msg.sender == serviceProviderFactoryAddress,
             "Only callable from ServiceProviderFactory"
@@ -214,8 +217,11 @@ contract Staking is InitializableV2 {
     ) external
     {
         _requireIsInitialized();
-        require(serviceProviderFactoryAddress != address(0x00), "serviceProviderFactoryAddress is not set");
-    
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "serviceProviderFactoryAddress is not set"
+        );
+
         require(
             msg.sender == serviceProviderFactoryAddress,
             "Only callable from ServiceProviderFactory"
@@ -241,7 +247,7 @@ contract Staking is InitializableV2 {
     ) external {
         _requireIsInitialized();
         require(delegateManagerAddress != address(0x00), "delegateManagerAddress is not set");
-    
+
         require(
             msg.sender == delegateManagerAddress,
             "delegateStakeFor - Only callable from DelegateManager"

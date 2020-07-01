@@ -271,7 +271,10 @@ contract ClaimsManager is InitializableV2 {
         _requireIsInitialized();
         require(stakingAddress != address(0x00), "stakingAddress is not set");
         require(delegateManagerAddress != address(0x00), "delegateManagerAddress is not set");
-        require(serviceProviderFactoryAddress != address(0x00), "serviceProviderFactoryAddress is not set");
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "serviceProviderFactoryAddress is not set"
+        );
 
         require(
             msg.sender == delegateManagerAddress,
@@ -366,7 +369,10 @@ contract ClaimsManager is InitializableV2 {
     function claimPending(address _sp) external view returns (bool pending) {
         _requireIsInitialized();
         require(stakingAddress != address(0x00), "stakingAddress is not set");
-        require(serviceProviderFactoryAddress != address(0x00), "serviceProviderFactoryAddress is not set");
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "serviceProviderFactoryAddress is not set"
+        );
 
         uint lastClaimedForSP = Staking(stakingAddress).lastClaimedFor(_sp);
         (,,,uint numEndpoints,,) = (

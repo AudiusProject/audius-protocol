@@ -165,7 +165,10 @@ contract ServiceProviderFactory is InitializableV2 {
     {
         _requireIsInitialized();
         require(stakingAddress != address(0x00), "stakingAddress is not set");
-        require(serviceTypeManagerAddress != address(0x00), "serviceTypeManagerAddress is not set");
+        require(
+            serviceTypeManagerAddress != address(0x00),
+            "serviceTypeManagerAddress is not set"
+        );
         require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
 
         require(
@@ -247,7 +250,10 @@ contract ServiceProviderFactory is InitializableV2 {
     {
         _requireIsInitialized();
         require(stakingAddress != address(0x00), "stakingAddress is not set");
-        require(serviceTypeManagerAddress != address(0x00), "serviceTypeManagerAddress is not set");
+        require(
+            serviceTypeManagerAddress != address(0x00),
+            "serviceTypeManagerAddress is not set"
+        );
 
         // Unstake on deregistration if and only if this is the last service endpoint
         uint unstakeAmount = 0;

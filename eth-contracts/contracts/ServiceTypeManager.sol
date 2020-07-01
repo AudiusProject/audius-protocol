@@ -230,7 +230,7 @@ contract ServiceTypeManager is InitializableV2 {
     external view returns (bytes32 currentVersion)
     {
         _requireIsInitialized();
-    
+
         require(
             serviceTypeVersions[_serviceType].length >= 1,
             "No registered version of serviceType"

@@ -100,7 +100,7 @@ contract Registry is InitializableV2, Ownable {
      */
     function getContract(bytes32 _name) external view returns (address contractAddr) {
         _requireIsInitialized();
-        
+
         return addressStorage[_name];
     }
 
@@ -125,7 +125,7 @@ contract Registry is InitializableV2, Ownable {
      */
     function getContractVersionCount(bytes32 _name) external view returns (uint) {
         _requireIsInitialized();
-        
+
         return addressStorageHistory[_name].length;
     }
 
