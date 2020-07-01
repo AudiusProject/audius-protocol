@@ -131,6 +131,10 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /**
      * @notice Function to initialize the contract
+     * @dev stakingAddress must be initialized separately after Staking contract is deployed
+     * @dev delegateManagerAddress must be initialized separately after DelegateManager contract is deployed
+     * @dev serviceTypeManagerAddress must be initialized separately after ServiceTypeManager contract is deployed
+     * @dev claimsManagerAddress must be initialized separately after ClaimsManager contract is deployed
      * @param _governanceAddress - Governance proxy address
      */
     function initialize (
@@ -159,9 +163,9 @@ contract ServiceProviderFactory is InitializableV2 {
     ) external returns (uint spID)
     {
         _requireIsInitialized();
-
-        require(serviceTypeManagerAddress != address(0x00), "serviceTypeManagerAddress not set");
-        require(stakingAddress != address(0x00), "stakingAddress not set");
+        _requireStakingAddressIsSet();
+        _requireServiceTypeManagerAddressIsSet();
+        _requireClaimsManagerAddressIsSet();
 
         require(
             ServiceTypeManager(serviceTypeManagerAddress).serviceTypeIsValid(_serviceType),
@@ -241,6 +245,8 @@ contract ServiceProviderFactory is InitializableV2 {
     ) external returns (uint deregisteredSpID)
     {
         _requireIsInitialized();
+        _requireStakingAddressIsSet();
+        _requireServiceTypeManagerAddressIsSet();
 
         // Unstake on deregistration if and only if this is the last service endpoint
         uint unstakeAmount = 0;
@@ -329,6 +335,8 @@ contract ServiceProviderFactory is InitializableV2 {
     ) external returns (uint newTotalStake)
     {
         _requireIsInitialized();
+        _requireStakingAddressIsSet();
+        _requireClaimsManagerAddressIsSet();
 
         // Confirm owner has an endpoint
         require(
@@ -379,6 +387,8 @@ contract ServiceProviderFactory is InitializableV2 {
     external returns (uint newStakeAmount)
     {
         _requireIsInitialized();
+        _requireStakingAddressIsSet();
+        _requireClaimsManagerAddressIsSet();
 
         require(
             _decreaseStakeAmount > 0,
@@ -415,6 +425,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function cancelDecreaseStakeRequest(address _account) external
     {
         _requireIsInitialized();
+        _requireDelegateManagerAddressIsSet();
 
         require(
             msg.sender == _account || msg.sender == delegateManagerAddress,
@@ -436,6 +447,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function decreaseStake() external returns (uint newTotalStake)
     {
         _requireIsInitialized();
+        _requireStakingAddressIsSet();
 
         require(_decreaseRequestIsPending(msg.sender), "Decrease stake request must be pending");
         require(
@@ -558,8 +570,9 @@ contract ServiceProviderFactory is InitializableV2 {
      ) external
     {
         _requireIsInitialized();
+        _requireStakingAddressIsSet();
+        _requireDelegateManagerAddressIsSet();
 
-        require(delegateManagerAddress != address(0x00), "delegateManagerAddress not set");
         require(
             msg.sender == delegateManagerAddress,
             "updateServiceProviderStake - only callable by DelegateManager"
@@ -719,6 +732,7 @@ contract ServiceProviderFactory is InitializableV2 {
     external view
     {
         _requireIsInitialized();
+        _requireStakingAddressIsSet();
 
         _validateBalanceInternal(_sp, Staking(stakingAddress).totalStakedFor(_sp));
     }
@@ -895,5 +909,29 @@ contract ServiceProviderFactory is InitializableV2 {
      */
     function _claimPending(address _sp) internal view returns (bool pending) {
         return ClaimsManager(claimsManagerAddress).claimPending(_sp);
+    }
+
+    // ========================================= Private Functions =========================================
+
+    function _requireStakingAddressIsSet() private view {
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
+    }
+
+    function _requireDelegateManagerAddressIsSet() private view {
+        require(
+            delegateManagerAddress != address(0x00),
+            "delegateManagerAddress is not set"
+        );
+    }
+
+    function _requireServiceTypeManagerAddressIsSet() private view {
+        require(
+            serviceTypeManagerAddress != address(0x00),
+            "serviceTypeManagerAddress is not set"
+        );
+    }
+
+    function _requireClaimsManagerAddressIsSet() private view {
+        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
     }
 }

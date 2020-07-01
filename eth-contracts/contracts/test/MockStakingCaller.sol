@@ -10,12 +10,15 @@ import "../AudiusAdminUpgradeabilityProxy.sol";
 // Forwards basic staking functions
 // Forwards ServiceProviderFactory functions as well
 contract MockStakingCaller is InitializableV2 {
+    using SafeERC20 for ERC20;
+
     uint max;
     uint min;
-    using SafeERC20 for ERC20;
+
     Staking staking = Staking(0);
     ERC20 internal stakingToken;
     address payable stakingAddress;
+
     bool withinBounds;
 
     function initialize(

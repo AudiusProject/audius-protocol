@@ -414,7 +414,16 @@ export const configureDelegateManagerAddresses = async (
   spFactoryAddress,
   claimsManagerAddress
 ) => {
-  await assertRevert(delegateManager.claimRewards(guardianAddress), 'serviceProviderFactoryAddress not set')
+  await assertRevert(delegateManager.claimRewards(guardianAddress), 'stakingAddress is not set')
+  let stakingTx = await governance.guardianExecuteTransaction(
+    key,
+    toBN(0),
+    'setStakingAddress(address)',
+    abiEncode(['address'], [stakingAddress]),
+    { from: guardianAddress })
+  assert.equal(stakingAddress, await delegateManager.getStakingAddress(), 'Unexpected staking address')
+
+  await assertRevert(delegateManager.claimRewards(guardianAddress), 'serviceProviderFactoryAddress is not set')
   let spFactoryTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
@@ -423,7 +432,8 @@ export const configureDelegateManagerAddresses = async (
     { from: guardianAddress }
   )
   assert.equal(spFactoryAddress, await delegateManager.getServiceProviderFactoryAddress(), 'Unexpected sp address')
-  await assertRevert(delegateManager.claimRewards(guardianAddress), 'claimsManagerAddress not set')
+
+  await assertRevert(delegateManager.claimRewards(guardianAddress), 'claimsManagerAddress is not set')
   let claimsManagerTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
@@ -432,14 +442,7 @@ export const configureDelegateManagerAddresses = async (
     { from: guardianAddress }
   )
   assert.equal(claimsManagerAddress, await delegateManager.getClaimsManagerAddress(), 'Unexpected claim manager addr')
-  await assertRevert(delegateManager.claimRewards(guardianAddress), 'stakingAddress not set')
-  let stakingTx = await governance.guardianExecuteTransaction(
-    key,
-    toBN(0),
-    'setStakingAddress(address)',
-    abiEncode(['address'], [stakingAddress]),
-    { from: guardianAddress })
-  assert.equal(stakingAddress, await delegateManager.getStakingAddress(), 'Unexpected staking address')
+  
   let governanceTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
@@ -447,6 +450,7 @@ export const configureDelegateManagerAddresses = async (
     abiEncode(['address'], [governance.address]),
     { from: guardianAddress })
   assert.equal(governance.address, await delegateManager.getGovernanceAddress(), 'Unexpected governance address')
+
   return { spFactoryTx, claimsManagerTx, stakingTx, governanceTx }
 }
 
