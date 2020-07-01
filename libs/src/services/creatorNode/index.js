@@ -1,6 +1,5 @@
 const axios = require('axios')
 const FormData = require('form-data')
-const fetch = require('node-fetch')
 
 const SchemaValidator = require('../schemaValidator')
 
@@ -471,12 +470,23 @@ class CreatorNode {
     const url = this.creatorNodeEndpoint + route
     try {
 
-      // TODO: figure out onProgress
+      // Hack alert!
+      //
+      // Axios auto-detects us in browser always based on 
+      // the existance of XMLHttpRequest at the global namespace, which 
+      // is imported by a web3 module, causing Axios to incorrectly
+      // presume we're on web when we're in node.
+      // For uploads to work in a node environment,
+      // axios needs to correctly detect we're in node and use the `http` module
+      // rather than XMLHttpRequest.
+      // https://github.com/axios/axios/issues/1180
+      const isBrowser = typeof window !== 'undefined'
       const resp = await axios.post(
         url,
         formData,
         {
           headers: headers,
+          adapter: isBrowser ? require('axios/lib/adapters/xhr') : require('axios/lib/adapters/http'),
           // Add a 10% inherit processing time for the file upload.
           onUploadProgress: (progressEvent) => {
             if (!total) total = progressEvent.total
@@ -484,11 +494,6 @@ class CreatorNode {
           }
         }
       )
-      // const resp = await fetch(url, {
-      //   method: 'POST',
-      //   headers,
-      //   body: formData
-      // })
       onProgress(total, total)
       const data = await resp.json()
       return data
