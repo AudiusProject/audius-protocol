@@ -21,7 +21,7 @@ services:
     build: ../.
     command: sh -c '/usr/bin/wait && exec ./node_modules/.bin/nodemon --ignore "./emailCache" src/index.js'
     env_file:
-      - ./.development.env
+      - ./base.env
     depends_on:
       - identity-db
       - identity-redis
