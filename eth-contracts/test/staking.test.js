@@ -11,6 +11,7 @@ const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const tokenRegKey = web3.utils.utf8ToHex('TokenKey')
+const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 const VOTING_PERIOD = 10
@@ -98,6 +99,8 @@ contract('Staking test', async (accounts) => {
       mockGovAddress,
       { from: proxyDeployerAddress }
     )
+
+    await registry.addContract(stakingProxyKey, staking0.address, { from: proxyDeployerAddress })
 
     await mockStakingCaller.initialize(proxy.address, token.address)
     await registry.addContract(claimsManagerProxyKey, mockStakingCaller.address, { from: proxyDeployerAddress })
@@ -477,6 +480,19 @@ contract('Staking test', async (accounts) => {
           { from: proxyDeployerAddress }
         )
       )
+    })
+
+    it('fail to set Governance address if not a valid governance contract', async () => {
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          stakingProxyKey,
+          _lib.toBN(0),
+          'setGovernanceAddress(address)',
+          _lib.abiEncode(['address'], [accounts[9]]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )            
     })
   })
 })
