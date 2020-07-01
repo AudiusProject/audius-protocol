@@ -585,7 +585,7 @@ contract('Governance.sol', async (accounts) => {
           proposalDescription,
           { from: proposerAddress }
         ),
-        "Caller is not an active staker with non-zero stake."
+        "Proposer must be active staker with non-zero stake"
       )
     })
 
@@ -681,7 +681,7 @@ contract('Governance.sol', async (accounts) => {
       it('Fail to vote with invalid voter', async () => {
         await _lib.assertRevert(
           governance.submitProposalVote(proposalId, Vote.Yes, { from: accounts[15] }),
-          "Caller was not an active staker with non-zero stake at _blockNumber"
+          "Voter must be active staker with non-zero stake."
         )
       })
 

@@ -324,6 +324,8 @@ contract Staking is InitializableV2 {
         address _accountAddress,
         uint256 _blockNumber
     ) external view returns (uint256) {
+        _requireIsInitialized();
+
         return accounts[_accountAddress].stakedHistory.get(_blockNumber.toUint64());
     }
 
@@ -373,6 +375,8 @@ contract Staking is InitializableV2 {
      * @return Boolean indicating whether account is a staker
      */
     function isStaker(address _accountAddress) external view returns (bool) {
+        _requireIsInitialized();
+
         return totalStakedFor(_accountAddress) > 0;
     }
 
