@@ -5,6 +5,7 @@ const config = require('./config')
 const fs = require('fs')
 const path = require('path')
 const { promisify } = require('util')
+const ipfsClient = require('ipfs-http-client')
 const writeFile = promisify(fs.writeFile)
 const mkdir = promisify(fs.mkdir)
 
@@ -103,7 +104,6 @@ function _exifRotate (img, exif) {
 }
 
 module.exports = async (job) => {
-  console.log('job args', job.data)
   const {
     file,
     fileName,
@@ -112,8 +112,6 @@ module.exports = async (job) => {
     square,
     logContext
   } = job.data
-  const ipfsClient = require('ipfs-http-client')
-
   const ipfs = ipfsClient(
     config.get('ipfsHost'),
     config.get('ipfsPort')

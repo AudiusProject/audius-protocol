@@ -50,20 +50,31 @@ class ImageProcessingQueue {
     logger.info(`Image Processing Queue: count: ${count}`)
   }
 
-  // async resizeImage (buffer, maxWidth, square, filename, { logContext }) {
-  //   // const x = buffer.toString()
-  //   const job = await this.queue.add(
-  //     PROCESS_NAMES.resizeImage,
-  //     { buffer, maxWidth, square, filename, logContext }
-  //   )
-  //   const result = await job.finished()
-  //   return result
-  //   // console.log('got result', result)
-  //   // return Buffer.from(result, 'binary')
-  //   // const res = fs.readFileSync(result)
-  //   // return res
-  // }
-
+  /**
+   * Resizes a given image into the options provided and
+   * writes the results to file storage
+   * @param {string} path to the image file
+   * @param {string} fileName name of the original file
+   * @param {string} storagePath app storage path to save files to
+   * @param {object<string, number>} sizes
+   * @param {string} sizes.key the name of the sized file e.g. 150x150.jpg
+   * @param {number} sizes.value the maxWidth resize the image to, e.g. 1000
+   * @param {boolean} square whether or not to "square" the image when resizing
+   * @param {object} logContext the req.logContext
+   *
+   * @return {object} { dir, files }
+   *   dir: {
+   *     dirCID: string
+   *     dirDestPath: string
+   *   }
+   *   files: [
+   *     {
+   *       multihash: string
+   *       sourceFile: string
+   *       storagePath: string
+   *     }
+   *   ]
+   */
   async resizeImage ({
     file,
     fileName,

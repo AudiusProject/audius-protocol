@@ -35,7 +35,7 @@ module.exports = function (app) {
     let ipfsAddResp
     let resizeResp
 
-    const t = await models.sequelize.transaction()
+    // Resize the images and add them to IPFS and filestorage
     try {
       if (req.body.square === 'true') {
         resizeResp = await ImageProcessingQueue.resizeImage({
@@ -63,8 +63,15 @@ module.exports = function (app) {
           logContext: req.logContext
         })
       }
-      req.logger.info('ipfs add resp', ipfsAddResp)
 
+      req.logger.info('ipfs add resp', ipfsAddResp)
+    } catch (e) {
+      return errorResponseServerError(e)
+    }
+
+    const t = await models.sequelize.transaction()
+    // Add the created files to the DB
+    try {
       // Save dir file reference to DB
       const dir = (await models.File.findOrCreate({ where: {
         cnodeUserUUID: req.session.cnodeUserUUID,
