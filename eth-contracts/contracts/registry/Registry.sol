@@ -20,6 +20,10 @@ contract Registry is InitializableV2, Ownable {
     mapping(bytes32 => address) private addressStorage;
     mapping(bytes32 => address[]) private addressStorageHistory;
 
+    string private constant ERROR_NO_CONTRACT = (
+        "Registry: Cannot remove - no contract registered with given _name."
+    );
+
     event ContractAdded(bytes32 _name, address _address);
     event ContractRemoved(bytes32 _name, address _address);
     event ContractUpgraded(bytes32 _name, address _oldAddress, address _newAddress);
@@ -62,10 +66,7 @@ contract Registry is InitializableV2, Ownable {
         _requireIsInitialized();
 
         address contractAddress = addressStorage[_name];
-        require(
-            contractAddress != address(0x00),
-            "Registry: Cannot remove - no contract registered with given _name."
-        );
+        require(contractAddress != address(0x00), ERROR_NO_CONTRACT);
 
         setAddress(_name, address(0x00));
 
@@ -81,10 +82,7 @@ contract Registry is InitializableV2, Ownable {
         _requireIsInitialized();
 
         address oldAddress = addressStorage[_name];
-        require(
-            oldAddress != address(0x00),
-            "Registry: Cannot upgrade - no contract registered with given _name."
-        );
+        require(oldAddress != address(0x00), ERROR_NO_CONTRACT);
         require(
             _newAddress != address(0x00),
             "Registry: Cannot upgrade - cannot register zero address."
