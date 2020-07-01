@@ -52,11 +52,14 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     indexes: [
       {
+        fields: ['cnodeUserUUID']
+      },
+      {
         fields: ['multihash']
       },
       {
         fields: ['dirMultihash']
-      }
+      },
     ]
   })
 

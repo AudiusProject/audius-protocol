@@ -166,7 +166,7 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
   req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, dirHash: ${dirHash}`)
   let findOriginalFileQuery = await models.File.findAll({
     where: {
-      storagePath: { [models.Sequelize.Op.like]: `%${dirHash}%` },
+      dirMultihash: multihash,
       type: 'image'
     }
   })
