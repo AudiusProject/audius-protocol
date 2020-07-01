@@ -25,7 +25,7 @@ contract ClaimsManager is InitializableV2 {
       *       Avg block time - 13s
       *       604800 / 13 = 46523.0769231 blocks
       */
-    uint private fundingRoundBlockDiff;
+    uint256 private fundingRoundBlockDiff;
 
     /**
       * @notice - Configures the current funding amount per round
@@ -36,10 +36,10 @@ contract ClaimsManager is InitializableV2 {
       * @dev - Past a certain block height, this schedule will be updated
       *      - Logic determining schedule will be sourced from an external contract
       */
-    uint private fundingAmount;
+    uint256 private fundingAmount;
 
     // Denotes current round
-    uint private roundNumber;
+    uint256 private roundNumber;
 
     // Staking contract ref
     ERC20Mintable private audiusToken;
@@ -55,23 +55,23 @@ contract ClaimsManager is InitializableV2 {
     }
 
     // Current round information
-    Round currentRound;
+    Round private currentRound;
 
     event RoundInitiated(
-      uint indexed _blockNumber,
-      uint indexed _roundNumber,
-      uint indexed _fundAmount
+      uint256 indexed _blockNumber,
+      uint256 indexed _roundNumber,
+      uint256 indexed _fundAmount
     );
 
     event ClaimProcessed(
       address indexed _claimer,
-      uint indexed _rewards,
-      uint _oldTotal,
-      uint indexed _newTotal
+      uint256 indexed _rewards,
+      uint256 _oldTotal,
+      uint256 indexed _newTotal
     );
 
-    event FundingAmountUpdated(uint indexed _amount);
-    event FundingRoundBlockDiffUpdated(uint indexed _blockDifference);
+    event FundingAmountUpdated(uint256 indexed _amount);
+    event FundingRoundBlockDiffUpdated(uint256 indexed _blockDifference);
     event GovernanceAddressUpdated(address indexed _newGovernanceAddress);
     event StakingAddressUpdated(address indexed _newStakingAddress);
     event ServiceProviderFactoryAddressUpdated(address indexed _newServiceProviderFactoryAddress);
@@ -108,7 +108,7 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /// @notice Get the duration of a funding round in blocks
-    function getFundingRoundBlockDiff() external view returns (uint blockDiff)
+    function getFundingRoundBlockDiff() external view returns (uint256 blockDiff)
     {
         _requireIsInitialized();
 
@@ -116,7 +116,7 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /// @notice Get the last block where a funding round was initiated
-    function getLastFundBlock() external view returns (uint lastFundBlock)
+    function getLastFundBlock() external view returns (uint256 lastFundBlock)
     {
         _requireIsInitialized();
 
@@ -124,7 +124,7 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /// @notice Get the amount funded per round in wei
-    function getFundsPerRound() external view returns (uint amount)
+    function getFundsPerRound() external view returns (uint256 amount)
     {
         _requireIsInitialized();
 
@@ -132,7 +132,7 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /// @notice Get the total amount claimed in the current round
-    function getTotalClaimedInRound() external view returns (uint claimedAmount)
+    function getTotalClaimedInRound() external view returns (uint256 claimedAmount)
     {
         _requireIsInitialized();
 
@@ -263,8 +263,8 @@ contract ClaimsManager is InitializableV2 {
      */
     function processClaim(
         address _claimer,
-        uint _totalLockedForSP
-    ) external returns (uint mintedRewards)
+        uint256 _totalLockedForSP
+    ) external returns (uint256 mintedRewards)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -278,12 +278,12 @@ contract ClaimsManager is InitializableV2 {
 
         Staking stakingContract = Staking(stakingAddress);
         // Prevent duplicate claim
-        uint lastUserClaimBlock = stakingContract.lastClaimedFor(_claimer);
+        uint256 lastUserClaimBlock = stakingContract.lastClaimedFor(_claimer);
         require(
             lastUserClaimBlock <= currentRound.fundedBlock,
             "Claim already processed for user"
         );
-        uint totalStakedAtFundBlockForClaimer = stakingContract.totalStakedForAt(
+        uint256 totalStakedAtFundBlockForClaimer = stakingContract.totalStakedForAt(
             _claimer,
             currentRound.fundedBlock);
 
@@ -293,11 +293,11 @@ contract ClaimsManager is InitializableV2 {
 
         // Once they claim the zero reward amount, stake can be modified once again
         // Subtract total locked amount for SP from stake at fund block
-        uint claimerTotalStake = totalStakedAtFundBlockForClaimer.sub(_totalLockedForSP);
-        uint totalStakedAtFundBlock = stakingContract.totalStakedAt(currentRound.fundedBlock);
+        uint256 claimerTotalStake = totalStakedAtFundBlockForClaimer.sub(_totalLockedForSP);
+        uint256 totalStakedAtFundBlock = stakingContract.totalStakedAt(currentRound.fundedBlock);
 
         // Calculate claimer rewards
-        uint rewardsForClaimer = (
+        uint256 rewardsForClaimer = (
           claimerTotalStake.mul(fundingAmount)
         ).div(totalStakedAtFundBlock);
 
@@ -328,7 +328,7 @@ contract ClaimsManager is InitializableV2 {
         currentRound.totalClaimedInRound = currentRound.totalClaimedInRound.add(rewardsForClaimer);
 
         // Update round claim value
-        uint newTotal = stakingContract.totalStakedFor(_claimer);
+        uint256 newTotal = stakingContract.totalStakedFor(_claimer);
 
         emit ClaimProcessed(
             _claimer,
@@ -344,8 +344,8 @@ contract ClaimsManager is InitializableV2 {
      * @notice Modify funding amount per round
      * @param _newAmount - new amount to fund per round in wei
      */
-    function updateFundingAmount(uint _newAmount)
-    external returns (uint newAmount)
+    function updateFundingAmount(uint256 _newAmount)
+    external returns (uint256 newAmount)
     {
         _requireIsInitialized();
 
@@ -369,8 +369,8 @@ contract ClaimsManager is InitializableV2 {
         _requireStakingAddressIsSet();
         _requireServiceProviderFactoryAddressIsSet();
 
-        uint lastClaimedForSP = Staking(stakingAddress).lastClaimedFor(_sp);
-        (,,,uint numEndpoints,,) = (
+        uint256 lastClaimedForSP = Staking(stakingAddress).lastClaimedFor(_sp);
+        (,,,uint256 numEndpoints,,) = (
             ServiceProviderFactory(serviceProviderFactoryAddress).getServiceProviderDetails(_sp)
         );
         return (lastClaimedForSP < currentRound.fundedBlock && numEndpoints > 0);
@@ -380,7 +380,7 @@ contract ClaimsManager is InitializableV2 {
      * @notice Modify minimum block difference between funding rounds
      * @param _newFundingRoundBlockDiff - new min block difference to set
      */
-    function updateFundingRoundBlockDiff(uint _newFundingRoundBlockDiff) external {
+    function updateFundingRoundBlockDiff(uint256 _newFundingRoundBlockDiff) external {
         _requireIsInitialized();
 
         require(

@@ -11,13 +11,13 @@ contract ServiceTypeManager is InitializableV2 {
      * @dev - mapping of serviceType - serviceTypeVersion
      * Example - "discovery-provider" - ["0.0.1", "0.0.2", ..., "currentVersion"]
      */
-    mapping(bytes32 => bytes32[]) public serviceTypeVersions;
+    mapping(bytes32 => bytes32[]) private serviceTypeVersions;
 
     /**
      * @dev - mapping of serviceType - < serviceTypeVersion, isValid >
      * Example - "discovery-provider" - <"0.0.1", true>
      */
-    mapping(bytes32 => mapping(bytes32 => bool)) public serviceTypeVersionInfo;
+    mapping(bytes32 => mapping(bytes32 => bool)) private serviceTypeVersionInfo;
 
     /// @dev List of valid service types
     bytes32[] private validServiceTypes;
@@ -25,15 +25,15 @@ contract ServiceTypeManager is InitializableV2 {
     /// @dev Struct representing service type info
     struct ServiceTypeInfo {
         bool isValid;
-        uint minStake;
-        uint maxStake;
+        uint256 minStake;
+        uint256 maxStake;
     }
 
     /// @dev mapping of service type info
-    mapping(bytes32 => ServiceTypeInfo) serviceTypeInfo;
+    mapping(bytes32 => ServiceTypeInfo) private serviceTypeInfo;
 
     event SetServiceVersion(bytes32 _serviceType, bytes32 _serviceVersion);
-    event ServiceTypeAdded(bytes32 _serviceType, uint _serviceTypeMin, uint _serviceTypeMax);
+    event ServiceTypeAdded(bytes32 _serviceType, uint256 _serviceTypeMin, uint256 _serviceTypeMax);
     event ServiceTypeRemoved(bytes32 _serviceType);
 
     /**
@@ -75,8 +75,8 @@ contract ServiceTypeManager is InitializableV2 {
      */
     function addServiceType(
         bytes32 _serviceType,
-        uint _serviceTypeMin,
-        uint _serviceTypeMax
+        uint256 _serviceTypeMin,
+        uint256 _serviceTypeMax
     ) external
     {
         _requireIsInitialized();
@@ -114,9 +114,9 @@ contract ServiceTypeManager is InitializableV2 {
 
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
 
-        uint serviceIndex = 0;
+        uint256 serviceIndex = 0;
         bool foundService = false;
-        for (uint i = 0; i < validServiceTypes.length; i ++) {
+        for (uint256 i = 0; i < validServiceTypes.length; i ++) {
             if (validServiceTypes[i] == _serviceType) {
                 serviceIndex = i;
                 foundService = true;
@@ -125,7 +125,7 @@ contract ServiceTypeManager is InitializableV2 {
         }
         require(foundService == true, "Invalid service type, not found");
         // Overwrite service index
-        uint lastIndex = validServiceTypes.length - 1;
+        uint256 lastIndex = validServiceTypes.length - 1;
         validServiceTypes[serviceIndex] = validServiceTypes[lastIndex];
         validServiceTypes.length--;
 
@@ -141,7 +141,7 @@ contract ServiceTypeManager is InitializableV2 {
      * @return isValid, min and max stake for type
      */
     function getServiceTypeInfo(bytes32 _serviceType)
-    external view returns (bool isValid, uint minStake, uint maxStake)
+    external view returns (bool isValid, uint256 minStake, uint256 maxStake)
     {
         _requireIsInitialized();
 
@@ -209,7 +209,7 @@ contract ServiceTypeManager is InitializableV2 {
      * @param _serviceType - type of service
      * @param _versionIndex - index in list of service versions
      */
-    function getVersion(bytes32 _serviceType, uint _versionIndex)
+    function getVersion(bytes32 _serviceType, uint256 _versionIndex)
     external view returns (bytes32 version)
     {
         _requireIsInitialized();
@@ -235,7 +235,7 @@ contract ServiceTypeManager is InitializableV2 {
             serviceTypeVersions[_serviceType].length >= 1,
             "No registered version of serviceType"
         );
-        uint latestVersionIndex = serviceTypeVersions[_serviceType].length - 1;
+        uint256 latestVersionIndex = serviceTypeVersions[_serviceType].length - 1;
         return (serviceTypeVersions[_serviceType][latestVersionIndex]);
     }
 
@@ -244,7 +244,7 @@ contract ServiceTypeManager is InitializableV2 {
      * @param _serviceType - type of service
      */
     function getNumberOfVersions(bytes32 _serviceType)
-    external view returns (uint)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
