@@ -375,6 +375,18 @@ contract Staking is InitializableV2 {
         return delegateManagerAddress;
     }
 
+    /**
+     * @notice Helper function wrapped around totalStakedFor. Checks whether _accountAddress
+            is currently a valid staker with a non-zero stake
+     * @param _accountAddress - Account requesting for
+     * @return Boolean indicating whether account is a staker
+     */
+    function isStaker(address _accountAddress) external view returns (bool) {
+        _requireIsInitialized();
+
+        return totalStakedFor(_accountAddress) > 0;
+    }
+
     /* Public functions */
 
     /**
