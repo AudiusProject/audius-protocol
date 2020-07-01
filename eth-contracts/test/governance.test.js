@@ -47,6 +47,7 @@ contract('Governance.sol', async (accounts) => {
   const votingQuorumPercent = 10
   const decreaseStakeLockupDuration = 10
   const maxInProgressProposals = 20
+  const maxDescriptionLength = 250
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress, newUpdateAddress] = accounts
@@ -91,7 +92,8 @@ contract('Governance.sol', async (accounts) => {
       votingPeriod,
       votingQuorumPercent,
       guardianAddress,
-      maxInProgressProposals
+      maxInProgressProposals,
+      maxDescriptionLength
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
 
@@ -524,123 +526,186 @@ contract('Governance.sol', async (accounts) => {
       )
     })
 
-    it('Should fail to Submit Proposal for unregistered target contract', async () => {
-      const proposerAddress = accounts[10]
-      const slashAmount = _lib.toBN(1)
-      const targetAddress = accounts[11]
-      const targetContractRegistryKey = web3.utils.utf8ToHex('invalidKey')
-      const callValue = _lib.toBN(0)
-      const signature = 'slash(uint256,address)'
-      const callData = _lib.abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
+    describe('Submit proposal', async () => {
+      it('Should fail to Submit Proposal for unregistered target contract', async () => {
+        const proposerAddress = accounts[10]
+        const slashAmount = _lib.toBN(1)
+        const targetAddress = accounts[11]
+        const targetContractRegistryKey = web3.utils.utf8ToHex('invalidKey')
+        const callValue = _lib.toBN(0)
+        const signature = 'slash(uint256,address)'
+        const callData = _lib.abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
+  
+        await _lib.assertRevert(
+          governance.submitProposal(
+            targetContractRegistryKey,
+            callValue,
+            signature,
+            callData,
+            proposalDescription,
+            { from: proposerAddress }
+          ),
+          "_targetContractRegistryKey must point to valid registered contract"
+        )
+      })
+  
+      it('Fail to submitProposal with no signature', async () => {
+        const proposerAddress = accounts[10]
+        const slashAmount = _lib.toBN(1)
+        const targetAddress = accounts[11]
+        const targetContractRegistryKey = delegateManagerKey
+        const callValue = _lib.toBN(0)
+        const callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
+        
+        await _lib.assertRevert(
+          governance.submitProposal(
+            targetContractRegistryKey,
+            callValue,
+            '',
+            callData,
+            proposalDescription,
+            { from: proposerAddress }
+          ),
+          "_signature cannot be empty."
+        )
+      })
+  
+      it('Should fail to submitProposal from non-staker caller', async () => {
+        const proposerAddress = accounts[15]
+        const slashAmount = _lib.toBN(1)
+        const targetAddress = accounts[11]
+        const targetContractRegistryKey = web3.utils.utf8ToHex("invalidKey")
+        const callValue = _lib.toBN(0)
+        const signature = 'slash(uint256,address)'
+        const callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
+  
+        await _lib.assertRevert(
+          governance.submitProposal(
+            targetContractRegistryKey,
+            callValue,
+            signature,
+            callData,
+            proposalDescription,
+            { from: proposerAddress }
+          ),
+          "Proposer must be active staker with non-zero stake"
+        )
+      })
+  
+      it('Proposal description', async () => {
+        const proposalId = 1
+        const proposerAddress = accounts[10]
+        const slashAmount = _lib.toBN(1)
+        const targetAddress = accounts[11]
+        const lastBlock = (await _lib.getLatestBlock(web3)).number
+        const targetContractRegistryKey = delegateManagerKey
+        const targetContractAddress = delegateManager.address
+        const signature = 'slash(uint256,address)'
+        const callData = _lib.abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
 
-      await _lib.assertRevert(
-        governance.submitProposal(
+        const descriptionTooShort = ""
+        const descriptionTooLong = "-".repeat(maxDescriptionLength + 10)
+        const descriptionCorrect = proposalDescription
+
+        // Fail to submit with empty description
+        await _lib.assertRevert(
+          governance.submitProposal(
+            targetContractRegistryKey,
+            callValue0,
+            signature,
+            callData,
+            descriptionTooShort,
+            { from: proposerAddress }
+          )
+        )
+
+        // Fail to submit with too long description
+        await _lib.assertRevert(
+          governance.submitProposal(
+            targetContractRegistryKey,
+            callValue0,
+            signature,
+            callData,
+            descriptionTooLong,
+            { from: proposerAddress }
+          )
+        )
+
+        // Successfully submit with description of correct length
+        const txReceipt = await governance.submitProposal(
           targetContractRegistryKey,
-          callValue,
+          callValue0,
+          signature,
+          callData,
+          descriptionCorrect,
+          { from: proposerAddress }
+        )
+        const tx = _lib.parseTx(txReceipt)
+
+        // Confirm description value in event log
+        assert.equal(tx.event.args.description, descriptionCorrect, "Expected same event.args.description")
+
+        // Confirm description value in onchain storage
+        const proposal = await governance.getProposalById.call(tx.event.args.proposalId)
+        assert.equal(
+          await governance.getProposalDescriptionById.call(proposal.proposalId),
+          descriptionCorrect
+        )
+      })
+
+      it('Submit Proposal for Slash', async () => {
+        const proposalId = 1
+        const proposerAddress = accounts[10]
+        const slashAmount = _lib.toBN(1)
+        const targetAddress = accounts[11]
+        const lastBlock = (await _lib.getLatestBlock(web3)).number
+        const targetContractRegistryKey = delegateManagerKey
+        const targetContractAddress = delegateManager.address
+        const signature = 'slash(uint256,address)'
+        const callData = _lib.abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
+  
+        // Call submitProposal
+        const txReceipt = await governance.submitProposal(
+          targetContractRegistryKey,
+          callValue0,
           signature,
           callData,
           proposalDescription,
           { from: proposerAddress }
-        ),
-        "_targetContractRegistryKey must point to valid registered contract"
-      )
-    })
-
-    it('Fail to submitProposal with no signature', async () => {
-      const proposerAddress = accounts[10]
-      const slashAmount = _lib.toBN(1)
-      const targetAddress = accounts[11]
-      const targetContractRegistryKey = delegateManagerKey
-      const callValue = _lib.toBN(0)
-      const callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
-      
-      await _lib.assertRevert(
-        governance.submitProposal(
-          targetContractRegistryKey,
-          callValue,
-          '',
-          callData,
-          proposalDescription,
-          { from: proposerAddress }
-        ),
-        "_signature cannot be empty."
-      )
-    })
-
-    it('Should fail to submitProposal from non-staker caller', async () => {
-      const proposerAddress = accounts[15]
-      const slashAmount = _lib.toBN(1)
-      const targetAddress = accounts[11]
-      const targetContractRegistryKey = web3.utils.utf8ToHex("invalidKey")
-      const callValue = _lib.toBN(0)
-      const signature = 'slash(uint256,address)'
-      const callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
-
-      await _lib.assertRevert(
-        governance.submitProposal(
-          targetContractRegistryKey,
-          callValue,
-          signature,
-          callData,
-          proposalDescription,
-          { from: proposerAddress }
-        ),
-        "Proposer must be active staker with non-zero stake"
-      )
-    })
-
-    it('Submit Proposal for Slash', async () => {
-      const proposalId = 1
-      const proposerAddress = accounts[10]
-      const slashAmount = _lib.toBN(1)
-      const targetAddress = accounts[11]
-      const lastBlock = (await _lib.getLatestBlock(web3)).number
-      const targetContractRegistryKey = delegateManagerKey
-      const targetContractAddress = delegateManager.address
-      const signature = 'slash(uint256,address)'
-      const callData = _lib.abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
-
-      // Call submitProposal
-      const txReceipt = await governance.submitProposal(
-        targetContractRegistryKey,
-        callValue0,
-        signature,
-        callData,
-        proposalDescription,
-        { from: proposerAddress }
-      )
-
-      // Confirm event log
-      const txParsed = _lib.parseTx(txReceipt)
-      assert.equal(txParsed.event.name, 'ProposalSubmitted', 'Expected same event name')
-      assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-      assert.equal(txParsed.event.args.proposer, proposerAddress, 'Expected same event.args.proposer')
-      assert.isTrue(parseInt(txParsed.event.args.startBlockNumber) > lastBlock, 'Expected event.args.startBlockNumber > lastBlock')
-      assert.equal(txParsed.event.args.description, proposalDescription, "Expected same event.args.description")
-
-      // Call getProposalById() and confirm same values
-      const proposal = await governance.getProposalById.call(proposalId)
-      assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
-      assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
-      assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
-      assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
-      assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
-      assert.equal(proposal.callValue.toNumber(), callValue0, 'Expected same proposal.callValue')
-      assert.equal(proposal.signature, signature, 'Expected same proposal.signature')
-      assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
-      assert.equal(proposal.outcome, Outcome.InProgress, 'Expected same outcome')
-      assert.equal(parseInt(proposal.voteMagnitudeYes), 0, 'Expected same voteMagnitudeYes')
-      assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
-      assert.equal(parseInt(proposal.numVotes), 0, 'Expected same numVotes')
-      
-      const propDescription = await governance.getProposalDescriptionById.call(proposalId)
-      assert.equal(propDescription, proposalDescription, 'Expected same proposalDescription')
-
-      // Confirm all vote states - all Vote.None
-      for (const account of accounts) {
-        const vote = await governance.getVoteByProposalAndVoter.call(proposalId, account)
-        assert.equal(vote, Vote.None)
-      }
+        )
+  
+        // Confirm event log
+        const txParsed = _lib.parseTx(txReceipt)
+        assert.equal(txParsed.event.name, 'ProposalSubmitted', 'Expected same event name')
+        assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
+        assert.equal(txParsed.event.args.proposer, proposerAddress, 'Expected same event.args.proposer')
+        assert.isTrue(parseInt(txParsed.event.args.startBlockNumber) > lastBlock, 'Expected event.args.startBlockNumber > lastBlock')
+        assert.equal(txParsed.event.args.description, proposalDescription, "Expected same event.args.description")
+  
+        // Call getProposalById() and confirm same values
+        const proposal = await governance.getProposalById.call(proposalId)
+        assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
+        assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
+        assert.isTrue(parseInt(proposal.startBlockNumber) > lastBlock, 'Expected startBlockNumber > lastBlock')
+        assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
+        assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
+        assert.equal(proposal.callValue.toNumber(), callValue0, 'Expected same proposal.callValue')
+        assert.equal(proposal.signature, signature, 'Expected same proposal.signature')
+        assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
+        assert.equal(proposal.outcome, Outcome.InProgress, 'Expected same outcome')
+        assert.equal(parseInt(proposal.voteMagnitudeYes), 0, 'Expected same voteMagnitudeYes')
+        assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
+        assert.equal(parseInt(proposal.numVotes), 0, 'Expected same numVotes')
+        
+        const propDescription = await governance.getProposalDescriptionById.call(proposalId)
+        assert.equal(propDescription, proposalDescription, 'Expected same proposalDescription')
+  
+        // Confirm all vote states - all Vote.None
+        for (const account of accounts) {
+          const vote = await governance.getVoteByProposalAndVoter.call(proposalId, account)
+          assert.equal(vote, Vote.None)
+        }
+      })
     })
 
     describe('Proposal voting', async () => {
@@ -1474,7 +1539,7 @@ contract('Governance.sol', async (accounts) => {
     assert.isTrue(await governance.inProgressProposalsAreUpToDate.call(), 'Expected all proposals to be uptodate')
   })
 
-  describe('Guardian execute transactions', async () => {
+  describe.only('Guardian execute transactions', async () => {
     let slashAmount, targetAddress, targetContractRegistryKey, targetContractAddress
     let callValue, signature, callData, returnData
 
@@ -1842,6 +1907,35 @@ contract('Governance.sol', async (accounts) => {
         await governance.getMaxInProgressProposals.call(),
         newMaxInProgressProposals,
         'Incorrect maxInProgressProposals value after update'
+      )
+    })
+
+    it('Get/Set maxDescriptionLength', async () => {
+      const newMaxDescriptionLength = maxDescriptionLength * 2
+
+      assert.equal(
+        await governance.getMaxDescriptionLength.call(),
+        maxDescriptionLength,
+        'Incorrect maxDescriptionLength value before update'
+      )
+
+      await _lib.assertRevert(
+        governance.setMaxDescriptionLength(newMaxDescriptionLength),
+        "Only callable by self"
+      )
+
+      await governance.guardianExecuteTransaction(
+        governanceKey,
+        callValue0,
+        'setMaxDescriptionLength(uint16)',
+        _lib.abiEncode(['uint16'], [newMaxDescriptionLength]),
+        { from: guardianAddress }
+      )
+
+      assert.equal(
+        await governance.getMaxDescriptionLength.call(),
+        newMaxDescriptionLength,
+        "Incorrect maxDescriptionLength value after update"
       )
     })
   })
