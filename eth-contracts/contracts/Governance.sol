@@ -874,7 +874,7 @@ contract Governance is InitializableV2 {
     private view returns (uint256) {
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
-            "Must provide valid non-zero _proposalId"
+            "Governance::_validateVoteAndGetVoterStake: Must provide valid non-zero _proposalId"
         );
 
         // Require voter was active Staker at proposal submission time
@@ -882,12 +882,15 @@ contract Governance is InitializableV2 {
             _voter,
             proposals[_proposalId].startBlockNumber
         );
-        require(voterStake > 0, "Voter must be active staker with non-zero stake.");
+        require(
+            voterStake > 0,
+            "Governance::_validateVoteAndGetVoterStake: Voter must be active staker with non-zero stake."
+        );
 
         // Require proposal is still active
         require(
             proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance::submitProposalVote: Cannot vote on inactive proposal."
+            "Governance::_validateVoteAndGetVoterStake: Cannot vote on inactive proposal."
         );
 
         // Require proposal votingPeriod is still active.
@@ -895,13 +898,13 @@ contract Governance is InitializableV2 {
         uint256 endBlockNumber = startBlockNumber.add(votingPeriod);
         require(
             block.number > startBlockNumber && block.number <= endBlockNumber,
-            "Governance::submitProposalVote: Proposal votingPeriod has ended"
+            "Governance::_validateVoteAndGetVoterStake: Proposal votingPeriod has ended"
         );
 
         // Require vote is either Yes or No
         require(
             _vote == Vote.Yes || _vote == Vote.No,
-            "Governance::submitProposalVote: Can only submit a Yes or No vote"
+            "Governance::_validateVoteAndGetVoterStake: Can only submit a Yes or No vote"
         );
 
         return voterStake;

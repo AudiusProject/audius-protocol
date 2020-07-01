@@ -563,7 +563,7 @@ contract('Governance.sol', async (accounts) => {
           proposalDescription,
           { from: proposerAddress }
         ),
-        "Governance::submitProposal: _signature cannot be empty."
+        "_signature cannot be empty."
       )
     })
 
@@ -692,14 +692,14 @@ contract('Governance.sol', async (accounts) => {
 
         await _lib.assertRevert(
           governance.submitProposalVote(proposalId, Vote.Yes, { from: stakerAccount1 }),
-          "Governance::submitProposalVote: Proposal votingPeriod has ended"
+          "Proposal votingPeriod has ended"
         )
       })
 
       it('Fail to submit invalid vote', async () => {
         await _lib.assertRevert(
           governance.submitProposalVote(proposalId, Vote.None, { from: stakerAccount1 }),
-          "Governance::submitProposalVote: Can only submit a Yes or No vote"
+          "Can only submit a Yes or No vote"
         )
       })
 
@@ -759,7 +759,7 @@ contract('Governance.sol', async (accounts) => {
 
         await _lib.assertRevert(
           governance.submitProposalVote(proposalId, voteNo, { from: voter1Address }),
-          "Governance::submitProposalVote: To update previous vote, call updateProposalVote()"
+          "To update previous vote, call updateProposalVote()"
         )
 
         // Confirm proposal state
@@ -881,7 +881,7 @@ contract('Governance.sol', async (accounts) => {
       it('Fail to evaluate proposal with invalid proposalId', async () => {
         await _lib.assertRevert(
           governance.evaluateProposalOutcome(5, { from: proposerAddress }),
-          "Governance::evaluateProposalOutcome: Must provide valid non-zero _proposalId."
+          "Must provide valid non-zero _proposalId."
         )
       })
 
@@ -907,7 +907,7 @@ contract('Governance.sol', async (accounts) => {
             _lib.parseTx(submitProposalTxReceipt).event.args.proposalId,
             { from: proposerAddress }
           ),
-          "Governance::evaluateProposalOutcome: Proposal votingPeriod must end before evaluation."
+          "Proposal votingPeriod must end before evaluation."
         )
       })
 
@@ -1136,7 +1136,7 @@ contract('Governance.sol', async (accounts) => {
         
         await _lib.assertRevert(
           governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
-          "Governance::evaluateProposalOutcome: Cannot evaluate inactive proposal."
+          "Cannot evaluate inactive proposal."
         )
       })
 
@@ -1227,7 +1227,7 @@ contract('Governance.sol', async (accounts) => {
           // Fail to veto from non-guardian address
           await _lib.assertRevert(
             governance.vetoProposal(proposalId, { from: stakerAccount1 }),
-            'Governance::vetoProposal: Only guardian can veto proposals'
+            'Only guardian can veto proposals'
           )
         })
 
@@ -1235,7 +1235,7 @@ contract('Governance.sol', async (accounts) => {
           const invalidProposalId = 5
           await _lib.assertRevert(
             governance.vetoProposal(invalidProposalId, { from: guardianAddress }),
-            "Governance::vetoProposal: Must provide valid non-zero _proposalId."
+            "Must provide valid non-zero _proposalId."
           )
         })
 
@@ -1252,7 +1252,7 @@ contract('Governance.sol', async (accounts) => {
           // Fail to veto due to inactive proposal
           await _lib.assertRevert(
             governance.vetoProposal(proposalId, { from: guardianAddress }),
-            'Governance::vetoProposal: Cannot veto inactive proposal.'
+            'Cannot veto inactive proposal.'
           )
         })
 
@@ -1275,12 +1275,12 @@ contract('Governance.sol', async (accounts) => {
           // Confirm that further actions are blocked
           await _lib.assertRevert(
             governance.submitProposalVote(proposalId, voter1Vote, { from: voter1Address }),
-            "Governance::submitProposalVote: Cannot vote on inactive proposal."
+            "Cannot vote on inactive proposal."
           )
           
           await _lib.assertRevert(
             governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
-            "Governance::evaluateProposalOutcome: Cannot evaluate inactive proposal."
+            "Cannot evaluate inactive proposal."
           )
         })
       })
@@ -1495,7 +1495,7 @@ contract('Governance.sol', async (accounts) => {
           callData,
           { from: stakerAccount1 }
         ),
-        "Governance::guardianExecuteTransaction: Only guardian."
+        "Only guardian."
       )
     })
 
@@ -1559,7 +1559,7 @@ contract('Governance.sol', async (accounts) => {
           callData,
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: _targetContractRegistryKey must point to valid registered contract"
+        "_targetContractRegistryKey must point to valid registered contract"
       )
     })
 
@@ -1572,7 +1572,7 @@ contract('Governance.sol', async (accounts) => {
           callData,
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: _signature cannot be empty."
+        "_signature cannot be empty."
       )
     })
 
@@ -1663,13 +1663,13 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['bytes32', 'bytes32'], [testDiscProvType, serviceVersion2]),
           { from: newGuardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Only guardian."
+        "Only guardian."
       )
       
       // Confirm only current guardianAddress can transfer guardianship
       await _lib.assertRevert(
         governance.transferGuardianship(newGuardianAddress, { from: accounts[18] }),
-        "Governance::guardianExecuteTransaction: Only guardian."
+        "Only guardian."
       )
       
       // Update guardianAddress
@@ -1691,7 +1691,7 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['bytes32', 'bytes32'], [testDiscProvType, serviceVersion2]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Only guardian."
+        "Only guardian."
       )
 
       // Confirm new guardianAddress is now active
@@ -1726,7 +1726,7 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['uint256'], [0]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Transaction failed."
       )
       
       await governance.guardianExecuteTransaction(
@@ -1775,7 +1775,7 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['uint256'], [0]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Transaction failed."
       )
       // should revert if attempting to set voting quorum % > 100
       await _lib.assertRevert(
@@ -1786,7 +1786,7 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['uint256'], [120]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Transaction failed."
       )
 
       await governance.guardianExecuteTransaction(
@@ -1927,7 +1927,7 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['bytes32', 'address'], [contractRegKey, contract.address]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Transaction failed."
       )
 
       // Transfer registry ownership to Governance
@@ -1965,7 +1965,7 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['address'], [registryUpgraded0.address]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Transaction failed."
       )
 
       // Update registry's governance address
