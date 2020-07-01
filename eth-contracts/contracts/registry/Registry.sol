@@ -11,7 +11,7 @@ import "../InitializableV2.sol";
 *   external access and enable version management.
 */
 contract Registry is InitializableV2, Ownable {
-    using SafeMath for uint;
+    using SafeMath for uint256;
 
     /**
      * @dev addressStorage mapping allows efficient lookup of current contract version
@@ -85,6 +85,10 @@ contract Registry is InitializableV2, Ownable {
             oldAddress != address(0x00),
             "Registry::upgradeContract: Cannot upgrade - no contract registered with given _name."
         );
+        require(
+            _newAddress != address(0x00),
+            "Registry::upgradeContract: Cannot upgrade - cannot register zero address."
+        );
 
         setAddress(_name, _newAddress);
 
@@ -99,13 +103,17 @@ contract Registry is InitializableV2, Ownable {
      * @return contractAddr - address of contract registered under given registry key
      */
     function getContract(bytes32 _name) external view returns (address contractAddr) {
+        _requireIsInitialized();
+
         return addressStorage[_name];
     }
 
     /// @notice overloaded getContract to return explicit version of contract
-    function getContract(bytes32 _name, uint _version) external view
+    function getContract(bytes32 _name, uint256 _version) external view
     returns (address contractAddr)
     {
+        _requireIsInitialized();
+
         // array length for key implies version number
         require(
             _version <= addressStorageHistory[_name].length,
@@ -119,7 +127,9 @@ contract Registry is InitializableV2, Ownable {
      * @param _name - registry key for lookup
      * @return number of contract versions
      */
-    function getContractVersionCount(bytes32 _name) external view returns (uint) {
+    function getContractVersionCount(bytes32 _name) external view returns (uint256) {
+        _requireIsInitialized();
+
         return addressStorageHistory[_name].length;
     }
 

@@ -9,7 +9,7 @@ import "@openzeppelin/upgrades/contracts/upgradeability/AdminUpgradeabilityProxy
  * https://github.com/OpenZeppelin/openzeppelin-sdk/blob/release/2.8/packages/lib/contracts/upgradeability/AdminUpgradeabilityProxy.sol
  */
 contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
-    address governanceAddress;
+    address private governanceAddress;
 
     /**
      * @notice Sets governance address for future upgrades

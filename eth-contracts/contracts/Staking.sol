@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/utils/Address.sol";
 import "@aragon/court/contracts/lib/Checkpointing.sol";
 import "@aragon/court/contracts/lib/os/Uint256Helpers.sol";
 import "./InitializableV2.sol";
+import "./Governance.sol";
 
 
 contract Staking is InitializableV2 {
@@ -20,6 +21,11 @@ contract Staking is InitializableV2 {
     string private constant ERROR_AMOUNT_ZERO = "STAKING_AMOUNT_ZERO";
     string private constant ERROR_TOKEN_TRANSFER = "STAKING_TOKEN_TRANSFER";
     string private constant ERROR_NOT_ENOUGH_BALANCE = "STAKING_NOT_ENOUGH_BALANCE";
+
+    address private governanceAddress;
+    address private claimsManagerAddress;
+    address private delegateManagerAddress;
+    address private serviceProviderFactoryAddress;
 
     /// @dev stores the history of staking and claims for a given address
     struct Account {
@@ -36,28 +42,26 @@ contract Staking is InitializableV2 {
     /// @dev total staked tokens at a given block
     Checkpointing.History internal totalStakedHistory;
 
-    address governanceAddress;
-    address claimsManagerAddress;
-    address delegateManagerAddress;
-    address serviceProviderFactoryAddress;
-
     event Staked(address indexed user, uint256 amount, uint256 total);
     event Unstaked(address indexed user, uint256 amount, uint256 total);
     event Slashed(address indexed user, uint256 amount, uint256 total);
 
     /**
      * @notice Function to initialize the contract
-     * @param _stakingToken - address of ERC20 token that will be staked
-     * @param _governanceAddress - address for Governance proxy contract     * @param _test - address for Governance proxy contract
+     * @dev claimsManagerAddress must be initialized separately after ClaimsManager contract is deployed
+     * @dev delegateManagerAddress must be initialized separately after DelegateManager contract is deployed
+     * @dev serviceProviderFactoryAddress must be initialized separately after ServiceProviderFactory contract is deployed
+     * @param _tokenAddress - address of ERC20 token that will be staked
+     * @param _governanceAddress - address for Governance proxy contract
      */
     function initialize(
-        address _stakingToken,
+        address _tokenAddress,
         address _governanceAddress
     ) public initializer
     {
-        require(Address.isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
-        stakingToken = ERC20(_stakingToken);
-        governanceAddress = _governanceAddress;
+        require(Address.isContract(_tokenAddress), ERROR_TOKEN_NOT_CONTRACT);
+        stakingToken = ERC20(_tokenAddress);
+        _updateGovernanceAddress(_governanceAddress);
         InitializableV2.initialize();
     }
 
@@ -67,8 +71,10 @@ contract Staking is InitializableV2 {
      * @param _governanceAddress - address for new Governance contract
      */
     function setGovernanceAddress(address _governanceAddress) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only governance");
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
     }
 
     /**
@@ -77,6 +83,8 @@ contract Staking is InitializableV2 {
      * @param _claimsManager - address for new ClaimsManaager contract
      */
     function setClaimsManagerAddress(address _claimsManager) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only governance");
         claimsManagerAddress = _claimsManager;
     }
@@ -87,6 +95,8 @@ contract Staking is InitializableV2 {
      * @param _spFactory - address for new ServiceProviderFactory contract
      */
     function setServiceProviderFactoryAddress(address _spFactory) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only governance");
         serviceProviderFactoryAddress = _spFactory;
     }
@@ -97,6 +107,8 @@ contract Staking is InitializableV2 {
      * @param _delegateManager - address for new DelegateManager contract
      */
     function setDelegateManagerAddress(address _delegateManager) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only governance");
         delegateManagerAddress = _delegateManager;
     }
@@ -110,6 +122,8 @@ contract Staking is InitializableV2 {
      */
     function stakeRewards(uint256 _amount, address _stakerAccount) external {
         _requireIsInitialized();
+        _requireClaimsManagerAddressIsSet();
+
         require(
             msg.sender == claimsManagerAddress,
             "Only callable from ClaimsManager"
@@ -120,12 +134,14 @@ contract Staking is InitializableV2 {
     }
 
     /**
-     * @notice Update claim history by adding an event to the claim historry
+     * @notice Update claim history by adding an event to the claim history
      * @param _amount - amount to add to claim history
      * @param _stakerAccount - address of staker
      */
     function updateClaimHistory(uint256 _amount, address _stakerAccount) external {
         _requireIsInitialized();
+        _requireClaimsManagerAddressIsSet();
+
         require(
             msg.sender == claimsManagerAddress || msg.sender == address(this),
             "Only callable from ClaimsManager or Staking.sol"
@@ -147,6 +163,8 @@ contract Staking is InitializableV2 {
     ) external
     {
         _requireIsInitialized();
+        _requireDelegateManagerAddressIsSet();
+
         require(
             msg.sender == delegateManagerAddress,
             "Only callable from DelegateManager"
@@ -173,6 +191,8 @@ contract Staking is InitializableV2 {
     ) external
     {
         _requireIsInitialized();
+        _requireServiceProviderFactoryAddressIsSet();
+
         require(
             msg.sender == serviceProviderFactoryAddress,
             "Only callable from ServiceProviderFactory"
@@ -180,7 +200,8 @@ contract Staking is InitializableV2 {
         _stakeFor(
             _accountAddress,
             _accountAddress,
-            _amount);
+            _amount
+        );
     }
 
     /**
@@ -194,6 +215,8 @@ contract Staking is InitializableV2 {
     ) external
     {
         _requireIsInitialized();
+        _requireServiceProviderFactoryAddressIsSet();
+
         require(
             msg.sender == serviceProviderFactoryAddress,
             "Only callable from ServiceProviderFactory"
@@ -206,7 +229,8 @@ contract Staking is InitializableV2 {
     }
 
     /**
-     * @notice Stakes `_amount` tokens, transferring them from caller, and assigns them to `_accountAddress`
+     * @notice Stakes `_amount` tokens, transferring them from `_delegatorAddress` to `_accountAddress`,
+               only callable by DelegateManager
      * @param _accountAddress - The final staker of the tokens
      * @param _delegatorAddress - Address from which to transfer tokens
      * @param _amount - Number of tokens staked
@@ -217,6 +241,8 @@ contract Staking is InitializableV2 {
         uint256 _amount
     ) external {
         _requireIsInitialized();
+        _requireDelegateManagerAddressIsSet();
+
         require(
             msg.sender == delegateManagerAddress,
             "delegateStakeFor - Only callable from DelegateManager"
@@ -228,7 +254,8 @@ contract Staking is InitializableV2 {
     }
 
     /**
-     * @notice Stakes `_amount` tokens, transferring them from caller, and assigns them to `_accountAddress`
+     * @notice Unstakes '_amount` tokens, transferring them from `_accountAddress` to `_delegatorAddress`,
+               only callable by DelegateManager
      * @param _accountAddress - The staker of the tokens
      * @param _delegatorAddress - Address from which to transfer tokens
      * @param _amount - Number of tokens unstaked
@@ -239,6 +266,8 @@ contract Staking is InitializableV2 {
         uint256 _amount
     ) external {
         _requireIsInitialized();
+        _requireDelegateManagerAddressIsSet();
+
         require(
             msg.sender == delegateManagerAddress,
             "undelegateStakeFor - Only callable from DelegateManager"
@@ -254,6 +283,8 @@ contract Staking is InitializableV2 {
      * @return The token used by the contract for staking and locking
      */
     function token() external view returns (address) {
+        _requireIsInitialized();
+
         return address(stakingToken);
     }
 
@@ -261,7 +292,9 @@ contract Staking is InitializableV2 {
      * @notice Check whether it supports history of stakes
      * @return Always true
      */
-    function supportsHistory() external pure returns (bool) {
+    function supportsHistory() external view returns (bool) {
+        _requireIsInitialized();
+
         return true;
     }
 
@@ -271,6 +304,8 @@ contract Staking is InitializableV2 {
      * @return Last block number when account's balance was modified
      */
     function lastStakedFor(address _accountAddress) external view returns (uint256) {
+        _requireIsInitialized();
+
         uint256 length = accounts[_accountAddress].stakedHistory.history.length;
         if (length > 0) {
             return uint256(accounts[_accountAddress].stakedHistory.history[length - 1].time);
@@ -284,6 +319,8 @@ contract Staking is InitializableV2 {
      * @return Last block number when claim requested
      */
     function lastClaimedFor(address _accountAddress) external view returns (uint256) {
+        _requireIsInitialized();
+
         uint256 length = accounts[_accountAddress].claimHistory.history.length;
         if (length > 0) {
             return uint256(accounts[_accountAddress].claimHistory.history[length - 1].time);
@@ -301,6 +338,8 @@ contract Staking is InitializableV2 {
         address _accountAddress,
         uint256 _blockNumber
     ) external view returns (uint256) {
+        _requireIsInitialized();
+
         return accounts[_accountAddress].stakedHistory.get(_blockNumber.toUint64());
     }
 
@@ -310,27 +349,49 @@ contract Staking is InitializableV2 {
      * @return The amount of tokens staked at the given block number
      */
     function totalStakedAt(uint256 _blockNumber) external view returns (uint256) {
+        _requireIsInitialized();
+
         return totalStakedHistory.get(_blockNumber.toUint64());
     }
 
     /// @notice Get the Governance address
     function getGovernanceAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return governanceAddress;
     }
 
     /// @notice Get the ClaimsManager address
     function getClaimsManagerAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return claimsManagerAddress;
     }
 
     /// @notice Get the ServiceProviderFactory address
     function getServiceProviderFactoryAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return serviceProviderFactoryAddress;
     }
 
     /// @notice Get the DelegateManager address
     function getDelegateManagerAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return delegateManagerAddress;
+    }
+
+    /**
+     * @notice Helper function wrapped around totalStakedFor. Checks whether _accountAddress
+            is currently a valid staker with a non-zero stake
+     * @param _accountAddress - Account requesting for
+     * @return Boolean indicating whether account is a staker
+     */
+    function isStaker(address _accountAddress) external view returns (bool) {
+        _requireIsInitialized();
+
+        return totalStakedFor(_accountAddress) > 0;
     }
 
     /* Public functions */
@@ -341,6 +402,8 @@ contract Staking is InitializableV2 {
      * @return The amount of tokens staked by the given account
      */
     function totalStakedFor(address _accountAddress) public view returns (uint256) {
+        _requireIsInitialized();
+
         // we assume it's not possible to stake in the future
         return accounts[_accountAddress].stakedHistory.getLast();
     }
@@ -350,11 +413,13 @@ contract Staking is InitializableV2 {
      * @return The total amount of tokens staked by all users
      */
     function totalStaked() public view returns (uint256) {
+        _requireIsInitialized();
+
         // we assume it's not possible to stake in the future
         return totalStakedHistory.getLast();
     }
 
-    /* Internal functions */
+    // ========================================= Internal Functions =========================================
 
     /**
      * @notice Adds stake from a transfer account to the stake account
@@ -479,4 +544,34 @@ contract Staking is InitializableV2 {
         // add new value to total history
         totalStakedHistory.add(block.number.toUint64(), newStake);
     }
+
+    /**
+     * @notice Set the governance address after confirming contract identity
+     * @param _governanceAddress - Incoming governance address
+     */
+    function _updateGovernanceAddress(address _governanceAddress) internal {
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
+        governanceAddress = _governanceAddress;
+    }
+
+    // ========================================= Private Functions =========================================
+
+    function _requireClaimsManagerAddressIsSet() private view {
+        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
+    }
+
+    function _requireDelegateManagerAddressIsSet() private view {
+        require(delegateManagerAddress != address(0x00), "delegateManagerAddress is not set");
+    }
+
+    function _requireServiceProviderFactoryAddressIsSet() private view {
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "serviceProviderFactoryAddress is not set"
+        );
+    }
+
 }

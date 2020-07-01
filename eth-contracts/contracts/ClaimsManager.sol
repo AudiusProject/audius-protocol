@@ -4,6 +4,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mint
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "./ServiceProviderFactory.sol";
 /// @notice SafeMath imported via ServiceProviderFactory.sol
+/// @notice Governance imported via Staking.sol
 
 
 /**
@@ -12,7 +13,6 @@ import "./ServiceProviderFactory.sol";
  */
 contract ClaimsManager is InitializableV2 {
     using SafeMath for uint256;
-    address private tokenAddress;
     address private governanceAddress;
     address private stakingAddress;
     address private serviceProviderFactoryAddress;
@@ -25,7 +25,7 @@ contract ClaimsManager is InitializableV2 {
       *       Avg block time - 13s
       *       604800 / 13 = 46523.0769231 blocks
       */
-    uint private fundingRoundBlockDiff;
+    uint256 private fundingRoundBlockDiff;
 
     /**
       * @notice - Configures the current funding amount per round
@@ -36,10 +36,10 @@ contract ClaimsManager is InitializableV2 {
       * @dev - Past a certain block height, this schedule will be updated
       *      - Logic determining schedule will be sourced from an external contract
       */
-    uint private fundingAmount;
+    uint256 private fundingAmount;
 
     // Denotes current round
-    uint private roundNumber;
+    uint256 private roundNumber;
 
     // Staking contract ref
     ERC20Mintable private audiusToken;
@@ -49,29 +49,39 @@ contract ClaimsManager is InitializableV2 {
     // 2) Total funded for this round
     // 3) Total claimed in round
     struct Round {
-        uint fundBlock;
-        uint fundingAmount;
-        uint totalClaimedInRound;
+        uint256 fundBlock;
+        uint256 fundingAmount;
+        uint256 totalClaimedInRound;
     }
 
     // Current round information
-    Round currentRound;
+    Round private currentRound;
 
     event RoundInitiated(
-      uint _blockNumber,
-      uint _roundNumber,
-      uint _fundAmount
+      uint256 indexed _blockNumber,
+      uint256 indexed _roundNumber,
+      uint256 indexed _fundAmount
     );
 
     event ClaimProcessed(
-      address _claimer,
-      uint _rewards,
-      uint _oldTotal,
-      uint _newTotal
+      address indexed _claimer,
+      uint256 indexed _rewards,
+      uint256 _oldTotal,
+      uint256 indexed _newTotal
     );
+
+    event FundingAmountUpdated(uint256 indexed _amount);
+    event FundingRoundBlockDiffUpdated(uint256 indexed _blockDifference);
+    event GovernanceAddressUpdated(address indexed _newGovernanceAddress);
+    event StakingAddressUpdated(address indexed _newStakingAddress);
+    event ServiceProviderFactoryAddressUpdated(address indexed _newServiceProviderFactoryAddress);
+    event DelegateManagerAddressUpdated(address indexed _newDelegateManagerAddress);
 
     /**
      * @notice Function to initialize the contract
+     * @dev stakingAddress must be initialized separately after Staking contract is deployed
+     * @dev serviceProviderFactoryAddress must be initialized separately after ServiceProviderFactory contract is deployed
+     * @dev delegateManagerAddress must be initialized separately after DelegateManager contract is deployed
      * @param _tokenAddress - address of ERC20 token that will be claimed
      * @param _governanceAddress - address for Governance proxy contract
      */
@@ -80,10 +90,9 @@ contract ClaimsManager is InitializableV2 {
         address _governanceAddress
     ) public initializer
     {
-        tokenAddress = _tokenAddress;
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
 
-        audiusToken = ERC20Mintable(tokenAddress);
+        audiusToken = ERC20Mintable(_tokenAddress);
 
         fundingRoundBlockDiff = 46523;
         fundingAmount = 1342465753420000000000000; // 1342465.75342 AUDS
@@ -99,41 +108,55 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /// @notice Get the duration of a funding round in blocks
-    function getFundingRoundBlockDiff() external view returns (uint blockDiff)
+    function getFundingRoundBlockDiff() external view returns (uint256 blockDiff)
     {
+        _requireIsInitialized();
+
         return fundingRoundBlockDiff;
     }
 
     /// @notice Get the last block where a funding round was initiated
-    function getLastFundBlock() external view returns (uint lastFundBlock)
+    function getLastFundBlock() external view returns (uint256 lastFundBlock)
     {
+        _requireIsInitialized();
+
         return currentRound.fundBlock;
     }
 
     /// @notice Get the amount funded per round in wei
-    function getFundsPerRound() external view returns (uint amount)
+    function getFundsPerRound() external view returns (uint256 amount)
     {
+        _requireIsInitialized();
+
         return fundingAmount;
     }
 
     /// @notice Get the total amount claimed in the current round
-    function getTotalClaimedInRound() external view returns (uint claimedAmount)
+    function getTotalClaimedInRound() external view returns (uint256 claimedAmount)
     {
+        _requireIsInitialized();
+
         return currentRound.totalClaimedInRound;
     }
 
     /// @notice Get the Governance address
     function getGovernanceAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return governanceAddress;
     }
 
     /// @notice Get the ServiceProviderFactory address
     function getServiceProviderFactoryAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return serviceProviderFactoryAddress;
     }
 
     /// @notice Get the DelegateManager address
     function getDelegateManagerAddress() external view returns (address addr) {
+        _requireIsInitialized();
+
         return delegateManagerAddress;
     }
 
@@ -142,6 +165,8 @@ contract ClaimsManager is InitializableV2 {
      */
     function getStakingAddress() external view returns (address addr)
     {
+        _requireIsInitialized();
+
         return stakingAddress;
     }
 
@@ -151,18 +176,24 @@ contract ClaimsManager is InitializableV2 {
      * @param _governanceAddress - address for new Governance contract
      */
     function setGovernanceAddress(address _governanceAddress) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
+        emit GovernanceAddressUpdated(_governanceAddress);
     }
 
     /**
      * @notice Set the Staking address
      * @dev Only callable by Governance address
-     * @param _address - address for new Staking contract
+     * @param _stakingAddress - address for new Staking contract
      */
-    function setStakingAddress(address _address) external {
+    function setStakingAddress(address _stakingAddress) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
-        stakingAddress = _address;
+        stakingAddress = _stakingAddress;
+        emit StakingAddressUpdated(_stakingAddress);
     }
 
     /**
@@ -171,8 +202,11 @@ contract ClaimsManager is InitializableV2 {
      * @param _spFactory - address for new ServiceProviderFactory contract
      */
     function setServiceProviderFactoryAddress(address _spFactory) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         serviceProviderFactoryAddress = _spFactory;
+        emit ServiceProviderFactoryAddressUpdated(_spFactory);
     }
 
     /**
@@ -181,8 +215,11 @@ contract ClaimsManager is InitializableV2 {
      * @param _delegateManager - address for new DelegateManager contract
      */
     function setDelegateManagerAddress(address _delegateManager) external {
+        _requireIsInitialized();
+
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
         delegateManagerAddress = _delegateManager;
+        emit DelegateManagerAddressUpdated(_delegateManager);
     }
 
     /**
@@ -191,10 +228,10 @@ contract ClaimsManager is InitializableV2 {
      */
     function initiateRound() external {
         _requireIsInitialized();
+        _requireStakingAddressIsSet();
 
-        bool senderStaked = Staking(stakingAddress).totalStakedFor(msg.sender) > 0;
         require(
-            senderStaked || (msg.sender == governanceAddress),
+            Staking(stakingAddress).isStaker(msg.sender) || (msg.sender == governanceAddress),
             "Only callable by staked account or Governance contract"
         );
 
@@ -226,10 +263,14 @@ contract ClaimsManager is InitializableV2 {
      */
     function processClaim(
         address _claimer,
-        uint _totalLockedForSP
-    ) external
+        uint256 _totalLockedForSP
+    ) external returns (uint256 mintedRewards)
     {
         _requireIsInitialized();
+        _requireStakingAddressIsSet();
+        _requireDelegateManagerAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
+
         require(
             msg.sender == delegateManagerAddress,
             "ProcessClaim only accessible to DelegateManager"
@@ -237,9 +278,9 @@ contract ClaimsManager is InitializableV2 {
 
         Staking stakingContract = Staking(stakingAddress);
         // Prevent duplicate claim
-        uint lastUserClaimBlock = stakingContract.lastClaimedFor(_claimer);
+        uint256 lastUserClaimBlock = stakingContract.lastClaimedFor(_claimer);
         require(lastUserClaimBlock <= currentRound.fundBlock, "Claim already processed for user");
-        uint totalStakedAtFundBlockForClaimer = stakingContract.totalStakedForAt(
+        uint256 totalStakedAtFundBlockForClaimer = stakingContract.totalStakedForAt(
             _claimer,
             currentRound.fundBlock);
 
@@ -249,11 +290,11 @@ contract ClaimsManager is InitializableV2 {
 
         // Once they claim the zero reward amount, stake can be modified once again
         // Subtract total locked amount for SP from stake at fund block
-        uint claimerTotalStake = totalStakedAtFundBlockForClaimer.sub(_totalLockedForSP);
-        uint totalStakedAtFundBlock = stakingContract.totalStakedAt(currentRound.fundBlock);
+        uint256 claimerTotalStake = totalStakedAtFundBlockForClaimer.sub(_totalLockedForSP);
+        uint256 totalStakedAtFundBlock = stakingContract.totalStakedAt(currentRound.fundBlock);
 
         // Calculate claimer rewards
-        uint rewardsForClaimer = (
+        uint256 rewardsForClaimer = (
           claimerTotalStake.mul(fundingAmount)
         ).div(totalStakedAtFundBlock);
 
@@ -262,7 +303,13 @@ contract ClaimsManager is InitializableV2 {
         // Total rewards can be zero if all stake is currently locked up
         if (!withinBounds || rewardsForClaimer == 0) {
             stakingContract.updateClaimHistory(0, _claimer);
-            return;
+            emit ClaimProcessed(
+                _claimer,
+                0,
+                totalStakedAtFundBlockForClaimer,
+                claimerTotalStake
+            );
+            return 0;
         }
 
         // ERC20Mintable always returns true
@@ -278,7 +325,7 @@ contract ClaimsManager is InitializableV2 {
         currentRound.totalClaimedInRound = currentRound.totalClaimedInRound.add(rewardsForClaimer);
 
         // Update round claim value
-        uint newTotal = stakingContract.totalStakedFor(_claimer);
+        uint256 newTotal = stakingContract.totalStakedFor(_claimer);
 
         emit ClaimProcessed(
             _claimer,
@@ -286,20 +333,25 @@ contract ClaimsManager is InitializableV2 {
             totalStakedAtFundBlockForClaimer,
             newTotal
         );
+
+        return rewardsForClaimer;
     }
 
     /**
      * @notice Modify funding amount per round
      * @param _newAmount - new amount to fund per round in wei
      */
-    function updateFundingAmount(uint _newAmount)
-    external returns (uint newAmount)
+    function updateFundingAmount(uint256 _newAmount)
+    external returns (uint256 newAmount)
     {
+        _requireIsInitialized();
+
         require(
             msg.sender == governanceAddress,
             "Only callable by Governance contract"
         );
         fundingAmount = _newAmount;
+        emit FundingAmountUpdated(_newAmount);
         return _newAmount;
     }
 
@@ -310,8 +362,12 @@ contract ClaimsManager is InitializableV2 {
      * @return boolean - true if eligible for claim, false if not
      */
     function claimPending(address _sp) external view returns (bool pending) {
-        uint lastClaimedForSP = Staking(stakingAddress).lastClaimedFor(_sp);
-        (,,,uint numEndpoints,,) = (
+        _requireIsInitialized();
+        _requireStakingAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
+
+        uint256 lastClaimedForSP = Staking(stakingAddress).lastClaimedFor(_sp);
+        (,,,uint256 numEndpoints,,) = (
             ServiceProviderFactory(serviceProviderFactoryAddress).getServiceProviderDetails(_sp)
         );
         return (lastClaimedForSP < currentRound.fundBlock && numEndpoints > 0);
@@ -321,11 +377,43 @@ contract ClaimsManager is InitializableV2 {
      * @notice Modify minimum block difference between funding rounds
      * @param _newFundingRoundBlockDiff - new min block difference to set
      */
-    function updateFundingRoundBlockDiff(uint _newFundingRoundBlockDiff) external {
+    function updateFundingRoundBlockDiff(uint256 _newFundingRoundBlockDiff) external {
+        _requireIsInitialized();
+
         require(
             msg.sender == governanceAddress,
             "Only callable by Governance contract"
         );
+        emit FundingRoundBlockDiffUpdated(_newFundingRoundBlockDiff);
         fundingRoundBlockDiff = _newFundingRoundBlockDiff;
+    }
+
+    // ========================================= Private Functions =========================================
+
+    /**
+     * @notice Set the governance address after confirming contract identity
+     * @param _governanceAddress - Incoming governance address
+     */
+    function _updateGovernanceAddress(address _governanceAddress) private {
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
+        governanceAddress = _governanceAddress;
+    }
+
+    function _requireStakingAddressIsSet() private view {
+        require(stakingAddress != address(0x00), "stakingAddress is not set");
+    }
+
+    function _requireDelegateManagerAddressIsSet() private view {
+        require(delegateManagerAddress != address(0x00), "delegateManagerAddress is not set");
+    }
+
+    function _requireServiceProviderFactoryAddressIsSet() private view {
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "serviceProviderFactoryAddress is not set"
+        );
     }
 }

@@ -10,12 +10,15 @@ import "../AudiusAdminUpgradeabilityProxy.sol";
 // Forwards basic staking functions
 // Forwards ServiceProviderFactory functions as well
 contract MockStakingCaller is InitializableV2 {
-    uint max;
-    uint min;
     using SafeERC20 for ERC20;
+
+    uint256 max;
+    uint256 min;
+
     Staking staking = Staking(0);
     ERC20 internal stakingToken;
     address payable stakingAddress;
+
     bool withinBounds;
 
     function initialize(
@@ -35,10 +38,11 @@ contract MockStakingCaller is InitializableV2 {
 
     // Test only function
     function stakeRewards(
-        uint _amount,
+        uint256 _amount,
         address _staker
     ) external {
         _requireIsInitialized();
+
         // pull tokens into contract
         stakingToken.safeTransferFrom(msg.sender, address(this), _amount);
         // Approve transfer
@@ -53,6 +57,7 @@ contract MockStakingCaller is InitializableV2 {
         uint256 _amount
     ) external {
         _requireIsInitialized();
+
         staking.stakeFor(_accountAddress, _amount);
     }
 
@@ -62,6 +67,7 @@ contract MockStakingCaller is InitializableV2 {
         uint256 _amount
     ) external {
         _requireIsInitialized();
+
         staking.unstakeFor(_accountAddress, _amount);
     }
 
@@ -70,6 +76,7 @@ contract MockStakingCaller is InitializableV2 {
         address _slashAddress
     ) external {
         _requireIsInitialized();
+
         staking.slash(_amount, _slashAddress);
     }
 
@@ -80,13 +87,15 @@ contract MockStakingCaller is InitializableV2 {
     /// @notice Calculate the stake for an account based on total number of registered services
     function getServiceProviderDetails(address)
     external view returns (
-        uint deployerStake,
-        uint deployerCut,
+        uint256 deployerStake,
+        uint256 deployerCut,
         bool validBounds,
-        uint numberOfEndpoints,
-        uint minAccountStake,
-        uint maxAccountStake)
+        uint256 numberOfEndpoints,
+        uint256 minAccountStake,
+        uint256 maxAccountStake)
     {
+        _requireIsInitialized();
+
         return (0, 0, withinBounds, 1, min, max);
     }
 
@@ -96,6 +105,7 @@ contract MockStakingCaller is InitializableV2 {
 
     function configurePermissions() external {
         _requireIsInitialized();
+
         staking.setClaimsManagerAddress(address(this));
         staking.setServiceProviderFactoryAddress(address(this));
         staking.setDelegateManagerAddress(address(this));
@@ -104,13 +114,22 @@ contract MockStakingCaller is InitializableV2 {
 
     /// Governance mock functions
     function upgradeTo(address _newImplementation) external {
+        _requireIsInitialized();
+
         return AudiusAdminUpgradeabilityProxy(stakingAddress).upgradeTo(_newImplementation);
     }
 
     function setAudiusGovernanceAddress(address _governanceAddress) external {
+        _requireIsInitialized();
+
         return AudiusAdminUpgradeabilityProxy(
             stakingAddress
         ).setAudiusGovernanceAddress(_governanceAddress);
+    }
+
+    /// @notice Used to check if is governance contract before setting governance address in other contracts
+    function isGovernanceAddress() external pure returns (bool) {
+        return true;
     }
 }
 
