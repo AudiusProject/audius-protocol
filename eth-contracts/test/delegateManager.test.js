@@ -467,7 +467,7 @@ contract('DelegateManager', async (accounts) => {
 
       // Claim from a separate account to confirm claimRewards can be called by any address
       let claimerAddress = accounts[5]
-      let fakeSPAddress = accounts[20]
+      let fakeSPAddress = accounts[9]
       assert.isTrue(claimerAddress !== stakerAccount, 'Expected different claimer account')
       assert.isTrue(claimerAddress !== stakerAccount, 'Expected fake service provider address')
       await _lib.assertRevert(
