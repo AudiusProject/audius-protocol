@@ -442,8 +442,7 @@ contract ServiceProviderFactory is InitializableV2 {
     }
 
     /**
-     * @notice Actually decrease a stake. Must have called requestDecreaseStake and waited for the
-               lockup period to expire
+     * @notice Called by user to decrease a stake after waiting the appropriate lockup period.
      * @return New total stake after decrease
      */
     function decreaseStake() external returns (uint newTotalStake)
@@ -525,7 +524,7 @@ contract ServiceProviderFactory is InitializableV2 {
      * @notice Update the endpoint for a given service
      * @param _serviceType - type of service to register, must be valid in ServiceTypeManager
      * @param _oldEndpoint - old endpoint currently registered
-     * @param _oldEndpoint - new endpoint to replace old endpoint
+     * @param _newEndpoint - new endpoint to replace old endpoint
      */
     function updateEndpoint(
         bytes32 _serviceType,

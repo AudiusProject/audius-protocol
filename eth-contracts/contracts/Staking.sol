@@ -133,7 +133,7 @@ contract Staking is InitializableV2 {
     }
 
     /**
-     * @notice Update claim history by adding an event to the claim historry
+     * @notice Update claim history by adding an event to the claim history
      * @param _amount - amount to add to claim history
      * @param _stakerAccount - address of staker
      */
@@ -228,7 +228,8 @@ contract Staking is InitializableV2 {
     }
 
     /**
-     * @notice Stakes `_amount` tokens, transferring them from caller, and assigns them to `_accountAddress`
+     * @notice Stakes `_amount` tokens, transferring them from `_delegatorAddress` to `_accountAddress`,
+               only callable by DelegateManager
      * @param _accountAddress - The final staker of the tokens
      * @param _delegatorAddress - Address from which to transfer tokens
      * @param _amount - Number of tokens staked
@@ -252,7 +253,8 @@ contract Staking is InitializableV2 {
     }
 
     /**
-     * @notice Stakes `_amount` tokens, transferring them from caller, and assigns them to `_accountAddress`
+     * @notice Unstakes '_amount` tokens, transferring them from `_accountAddress` to `_delegatorAddress`,
+               only callable by DelegateManager
      * @param _accountAddress - The staker of the tokens
      * @param _delegatorAddress - Address from which to transfer tokens
      * @param _amount - Number of tokens unstaked
