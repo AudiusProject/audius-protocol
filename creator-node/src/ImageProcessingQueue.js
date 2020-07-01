@@ -2,7 +2,6 @@ const Bull = require('bull')
 const os = require('os')
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
-const fs = require('fs')
 
 const imageProcessingMaxConcurrency = config.get('imageProcessingMaxConcurrency')
 
@@ -31,7 +30,7 @@ class ImageProcessingQueue {
     this.queue.process(
       PROCESS_NAMES.resizeImage,
       MAX_CONCURRENCY,
-      __dirname + '/resizeImage.js'
+      `${__dirname}/resizeImage.js`
     )
 
     this.logStatus = this.logStatus.bind(this)

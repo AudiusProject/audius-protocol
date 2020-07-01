@@ -1,10 +1,6 @@
 const Redis = require('ioredis')
-const path = require('path')
 const fs = require('fs')
 var contentDisposition = require('content-disposition')
-const { promisify } = require('util')
-const writeFile = promisify(fs.writeFile)
-const mkdir = promisify(fs.mkdir)
 
 const { uploadTempDiskStorage } = require('../fileManager')
 const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound, errorResponseForbidden } = require('../apiHelpers')
@@ -28,11 +24,8 @@ module.exports = function (app) {
     }
     let routestart = Date.now()
 
-    const ipfs = req.app.get('ipfsAPI')
     const imageBufferOriginal = req.file.path
     const originalFileName = req.file.originalname
-    let imageBuffers
-    let ipfsAddResp
     let resizeResp
 
     // Resize the images and add them to IPFS and filestorage
@@ -64,7 +57,7 @@ module.exports = function (app) {
         })
       }
 
-      req.logger.info('ipfs add resp', ipfsAddResp)
+      req.logger.info('ipfs add resp', resizeResp)
     } catch (e) {
       return errorResponseServerError(e)
     }
