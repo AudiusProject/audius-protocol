@@ -16,7 +16,6 @@ import "./ClaimsManager.sol";
 contract DelegateManager is InitializableV2 {
     using SafeMath for uint256;
 
-    address private tokenAddress;
     address private governanceAddress;
     address private stakingAddress;
     address private serviceProviderFactoryAddress;
@@ -103,9 +102,8 @@ contract DelegateManager is InitializableV2 {
         address _governanceAddress
     ) public initializer
     {
-        tokenAddress = _tokenAddress;
         _updateGovernanceAddress(_governanceAddress);
-        audiusToken = ERC20Mintable(tokenAddress);
+        audiusToken = ERC20Mintable(_tokenAddress);
         undelegateLockupDuration = 10;
         maxDelegators = 175;
         // Default minimum delegation amount set to 100AUD

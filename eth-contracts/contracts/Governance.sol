@@ -14,7 +14,6 @@ contract Governance is InitializableV2 {
      *      can only govern contracts that are registered in the Audius Registry.
      */
     Registry private registry;
-    address private registryAddress;
 
     /// @notice Address of Audius staking contract, used to permission Governance method calls
     address private stakingAddress;
@@ -144,7 +143,6 @@ contract Governance is InitializableV2 {
         address _guardianAddress
     ) public initializer {
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
-        registryAddress = _registryAddress;
         registry = Registry(_registryAddress);
 
         require(_votingPeriod > 0, "Requires non-zero _votingPeriod");
@@ -516,7 +514,6 @@ contract Governance is InitializableV2 {
         require(msg.sender == address(this), "Only callable by self");
         require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
 
-        registryAddress = _registryAddress;
         registry = Registry(_registryAddress);
 
         emit RegistryAddressUpdated(_registryAddress);
@@ -702,7 +699,7 @@ contract Governance is InitializableV2 {
     function getRegistryAddress() external view returns (address) {
         _requireIsInitialized();
 
-        return registryAddress;
+        return address(registry);
     }
 
     /// @notice Used to check if is governance contract before setting governance address in other contracts

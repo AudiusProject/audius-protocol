@@ -48,16 +48,16 @@ contract Staking is InitializableV2 {
 
     /**
      * @notice Function to initialize the contract
-     * @param _stakingToken - address of ERC20 token that will be staked
+     * @param _tokenAddress - address of ERC20 token that will be staked
      * @param _governanceAddress - address for Governance proxy contract
      */
     function initialize(
-        address _stakingToken,
+        address _tokenAddress,
         address _governanceAddress
     ) public initializer
     {
-        require(Address.isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
-        stakingToken = ERC20(_stakingToken);
+        require(Address.isContract(_tokenAddress), ERROR_TOKEN_NOT_CONTRACT);
+        stakingToken = ERC20(_tokenAddress);
         _updateGovernanceAddress(_governanceAddress);
         InitializableV2.initialize();
     }
