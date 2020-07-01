@@ -168,7 +168,7 @@ module.exports = function (app) {
 
     // Don't serve if not found in DB.
     const queryResults = await models.File.findOne({ where: {
-      multihash: CID,
+      multihash: CID
     } })
     if (!queryResults) {
       return sendResponse(req, res, errorResponseNotFound(`No valid file found for provided CID: ${CID}`))
