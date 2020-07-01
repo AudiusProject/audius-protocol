@@ -188,6 +188,14 @@ const config = convict({
     default: -1
   },
 
+  // Image processing settings
+  imageProcessingMaxConcurrency: {
+    doc: 'Maximum image resizing processes to spawn concurrently. If unset (-1), set to # of CPU cores available',
+    format: Number,
+    env: 'imageProcessingMaxConcurrency',
+    default: -1
+  },
+
   // wallet information
   delegateOwnerWallet: {
     doc: 'wallet address',
