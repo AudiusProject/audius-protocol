@@ -16,6 +16,7 @@ contract InitializableV2 is Initializable {
     string private constant ERROR_ALREADY_INITIALIZED = "InitializableV2: Already initialized";
 
     function initialize() public initializer {
+        require(isInitialized == false, ERROR_ALREADY_INITIALIZED);
         isInitialized = true;
     }
 

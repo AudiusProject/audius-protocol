@@ -42,11 +42,11 @@ contract Registry is InitializableV2, Ownable {
 
         require(
             addressStorage[_name] == address(0x00),
-            "Registry::addContract: Contract already registered with given name."
+            "Registry: Contract already registered with given name."
         );
         require(
             _address != address(0x00),
-            "Registry::addContract: Cannot register zero address."
+            "Registry: Cannot register zero address."
         );
 
         setAddress(_name, _address);
@@ -64,7 +64,7 @@ contract Registry is InitializableV2, Ownable {
         address contractAddress = addressStorage[_name];
         require(
             contractAddress != address(0x00),
-            "Registry::removeContract: Cannot remove - no contract registered with given _name."
+            "Registry: Cannot remove - no contract registered with given _name."
         );
 
         setAddress(_name, address(0x00));
@@ -83,11 +83,11 @@ contract Registry is InitializableV2, Ownable {
         address oldAddress = addressStorage[_name];
         require(
             oldAddress != address(0x00),
-            "Registry::upgradeContract: Cannot upgrade - no contract registered with given _name."
+            "Registry: Cannot upgrade - no contract registered with given _name."
         );
         require(
             _newAddress != address(0x00),
-            "Registry::upgradeContract: Cannot upgrade - cannot register zero address."
+            "Registry: Cannot upgrade - cannot register zero address."
         );
 
         setAddress(_name, _newAddress);
@@ -117,7 +117,7 @@ contract Registry is InitializableV2, Ownable {
         // array length for key implies version number
         require(
             _version <= addressStorageHistory[_name].length,
-            "Registry::getContract: Index out of range _version."
+            "Registry: Index out of range _version."
         );
         return addressStorageHistory[_name][_version.sub(1)];
     }
