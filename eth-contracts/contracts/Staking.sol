@@ -17,10 +17,11 @@ contract Staking is InitializableV2 {
     using Checkpointing for Checkpointing.History;
     using SafeERC20 for ERC20;
 
-    string private constant ERROR_TOKEN_NOT_CONTRACT = "STAKING_TOKEN_NOT_CONTRACT";
-    string private constant ERROR_AMOUNT_ZERO = "STAKING_AMOUNT_ZERO";
-    string private constant ERROR_TOKEN_TRANSFER = "STAKING_TOKEN_TRANSFER";
-    string private constant ERROR_NOT_ENOUGH_BALANCE = "STAKING_NOT_ENOUGH_BALANCE";
+    string private constant ERROR_TOKEN_NOT_CONTRACT = "Staking: Staking token is not a contract";
+    string private constant ERROR_AMOUNT_ZERO = "Staking: Zero amount not allowed";
+    string private constant ERROR_ONLY_GOVERNANCE = "Staking: Only governance";
+    string private constant ERROR_ONLY_DELEGATE_MANAGER = "Staking: Only callable from DelegateManager";
+    string private constant ERROR_ONLY_SERVICE_PROVIDER_FACTORY = "Staking: Only callable from ServiceProviderFactory";
 
     address private governanceAddress;
     address private claimsManagerAddress;
@@ -73,7 +74,7 @@ contract Staking is InitializableV2 {
     function setGovernanceAddress(address _governanceAddress) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         _updateGovernanceAddress(_governanceAddress);
     }
 
@@ -85,7 +86,7 @@ contract Staking is InitializableV2 {
     function setClaimsManagerAddress(address _claimsManager) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         claimsManagerAddress = _claimsManager;
     }
 
@@ -97,7 +98,7 @@ contract Staking is InitializableV2 {
     function setServiceProviderFactoryAddress(address _spFactory) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         serviceProviderFactoryAddress = _spFactory;
     }
 
@@ -109,7 +110,7 @@ contract Staking is InitializableV2 {
     function setDelegateManagerAddress(address _delegateManager) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         delegateManagerAddress = _delegateManager;
     }
 
@@ -126,7 +127,7 @@ contract Staking is InitializableV2 {
 
         require(
             msg.sender == claimsManagerAddress,
-            "Only callable from ClaimsManager"
+            "Staking: Only callable from ClaimsManager"
         );
         _stakeFor(_stakerAccount, msg.sender, _amount);
 
@@ -144,7 +145,7 @@ contract Staking is InitializableV2 {
 
         require(
             msg.sender == claimsManagerAddress || msg.sender == address(this),
-            "Only callable from ClaimsManager or Staking.sol"
+            "Staking: Only callable from ClaimsManager or Staking.sol"
         );
 
         // Update claim history even if no value claimed
@@ -167,7 +168,7 @@ contract Staking is InitializableV2 {
 
         require(
             msg.sender == delegateManagerAddress,
-            "Only callable from DelegateManager"
+            ERROR_ONLY_DELEGATE_MANAGER
         );
 
         // Burn slashed tokens from account
@@ -195,7 +196,7 @@ contract Staking is InitializableV2 {
 
         require(
             msg.sender == serviceProviderFactoryAddress,
-            "Only callable from ServiceProviderFactory"
+            ERROR_ONLY_SERVICE_PROVIDER_FACTORY
         );
         _stakeFor(
             _accountAddress,
@@ -219,7 +220,7 @@ contract Staking is InitializableV2 {
 
         require(
             msg.sender == serviceProviderFactoryAddress,
-            "Only callable from ServiceProviderFactory"
+            ERROR_ONLY_SERVICE_PROVIDER_FACTORY
         );
         _unstakeFor(
             _accountAddress,
@@ -245,7 +246,7 @@ contract Staking is InitializableV2 {
 
         require(
             msg.sender == delegateManagerAddress,
-            "delegateStakeFor - Only callable from DelegateManager"
+            ERROR_ONLY_DELEGATE_MANAGER
         );
         _stakeFor(
             _accountAddress,
@@ -270,7 +271,7 @@ contract Staking is InitializableV2 {
 
         require(
             msg.sender == delegateManagerAddress,
-            "undelegateStakeFor - Only callable from DelegateManager"
+            ERROR_ONLY_DELEGATE_MANAGER
         );
         _unstakeFor(
             _accountAddress,
@@ -518,7 +519,7 @@ contract Staking is InitializableV2 {
         } else {
             require(
                 currentInternalStake >= _by,
-                "Cannot decrease greater than current balance");
+                "Staking: Cannot decrease greater than current balance");
             newStake = currentInternalStake.sub(_by);
         }
 
@@ -552,7 +553,7 @@ contract Staking is InitializableV2 {
     function _updateGovernanceAddress(address _governanceAddress) internal {
         require(
             Governance(_governanceAddress).isGovernanceAddress() == true,
-            "_governanceAddress is not a valid governance contract"
+            "Staking: _governanceAddress is not a valid governance contract"
         );
         governanceAddress = _governanceAddress;
     }
@@ -560,17 +561,17 @@ contract Staking is InitializableV2 {
     // ========================================= Private Functions =========================================
 
     function _requireClaimsManagerAddressIsSet() private view {
-        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
+        require(claimsManagerAddress != address(0x00), "Staking: claimsManagerAddress is not set");
     }
 
     function _requireDelegateManagerAddressIsSet() private view {
-        require(delegateManagerAddress != address(0x00), "delegateManagerAddress is not set");
+        require(delegateManagerAddress != address(0x00), "Staking: delegateManagerAddress is not set");
     }
 
     function _requireServiceProviderFactoryAddressIsSet() private view {
         require(
             serviceProviderFactoryAddress != address(0x00),
-            "serviceProviderFactoryAddress is not set"
+            "Staking: serviceProviderFactoryAddress is not set"
         );
     }
 
