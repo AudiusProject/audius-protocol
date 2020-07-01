@@ -315,12 +315,13 @@ contract('Governance.sol', async (accounts) => {
 
   it('Initialize require statements', async () => {
     const governance0 = await Governance.new({ from: proxyDeployerAddress })
+    const newMaxInProgressProposals = 100
     
     // Requires non-zero _registryAddress
     let governanceCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'address'],
-      [0x0, votingPeriod, votingQuorumPercent, proxyDeployerAddress]
+      ['address', 'uint256', 'uint256', 'uint16', 'address'],
+      [0x0, votingPeriod, votingQuorumPercent, newMaxInProgressProposals, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -336,8 +337,8 @@ contract('Governance.sol', async (accounts) => {
     // Requires non-zero _votingPeriod
     governanceCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'address'],
-      [registry.address, 0, votingQuorumPercent, proxyDeployerAddress]
+      ['address', 'uint256', 'uint256', 'uint16', 'address'],
+      [registry.address, 0, votingQuorumPercent, newMaxInProgressProposals, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -353,8 +354,8 @@ contract('Governance.sol', async (accounts) => {
     // Requires non-zero _votingQuorumPercent
     governanceCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'address'],
-      [registry.address, votingPeriod, 0, proxyDeployerAddress]
+      ['address', 'uint256', 'uint256', 'uint16', 'address'],
+      [registry.address, votingPeriod, 0, newMaxInProgressProposals, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -370,8 +371,25 @@ contract('Governance.sol', async (accounts) => {
     // Requires non-zero _guardianAddress
     governanceCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'address'],
-      [registry.address, votingPeriod, votingQuorumPercent, _lib.addressZero]
+      ['address', 'uint256', 'uint256', 'uint16', 'address'],
+      [registry.address, votingPeriod, votingQuorumPercent, newMaxInProgressProposals, _lib.addressZero]
+    )
+    await _lib.assertRevert(
+      AudiusAdminUpgradeabilityProxy.new(
+        governance0.address,
+        proxyAdminAddress,
+        governanceCallData,
+        governance.address,
+        { from: proxyDeployerAddress }
+      ),
+      "revert"
+    )
+
+    // Requires non-zero _maxInProgressProposals
+    governanceCallData = _lib.encodeCall(
+      'initialize',
+      ['address', 'uint256', 'uint256', 'uint16', 'address'],
+      [registry.address, votingPeriod, votingQuorumPercent, 0, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
