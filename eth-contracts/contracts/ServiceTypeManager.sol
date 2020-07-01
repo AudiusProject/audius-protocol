@@ -42,7 +42,7 @@ contract ServiceTypeManager is InitializableV2 {
      */
     function initialize(address _governanceAddress) public initializer
     {
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
         InitializableV2.initialize();
     }
 
@@ -58,11 +58,7 @@ contract ServiceTypeManager is InitializableV2 {
      */
     function setGovernanceAddress(address _governanceAddress) external {
         require(msg.sender == governanceAddress, "Only governance");
-        require(
-            Governance(_governanceAddress).isGovernanceAddress() == true,
-            "_governanceAddress is not a valid governance contract"
-        );
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
     }
 
     // ========================================= Service Type Logic =========================================
@@ -262,5 +258,17 @@ contract ServiceTypeManager is InitializableV2 {
         _requireIsInitialized();
 
         return serviceTypeVersionInfo[_serviceType][_serviceVersion];
+    }
+
+    /**
+     * @notice Set the governance address after confirming contract identity
+     * @param _governanceAddress - Incoming governance address
+     */
+    function _updateGovernanceAddress(address _governanceAddress) internal {
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
+        governanceAddress = _governanceAddress;
     }
 }

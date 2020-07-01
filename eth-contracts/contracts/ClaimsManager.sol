@@ -89,7 +89,7 @@ contract ClaimsManager is InitializableV2 {
     ) public initializer
     {
         tokenAddress = _tokenAddress;
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
 
         audiusToken = ERC20Mintable(tokenAddress);
 
@@ -178,11 +178,7 @@ contract ClaimsManager is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
-        require(
-            Governance(_governanceAddress).isGovernanceAddress() == true,
-            "_governanceAddress is not a valid governance contract"
-        );
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
         emit GovernanceAddressUpdated(_governanceAddress);
     }
 
@@ -382,5 +378,17 @@ contract ClaimsManager is InitializableV2 {
         );
         emit FundingRoundBlockDiffUpdated(_newFundingRoundBlockDiff);
         fundingRoundBlockDiff = _newFundingRoundBlockDiff;
+    }
+
+    /**
+     * @notice Set the governance address after confirming contract identity
+     * @param _governanceAddress - Incoming governance address
+     */
+    function _updateGovernanceAddress(address _governanceAddress) internal {
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
+        governanceAddress = _governanceAddress;
     }
 }

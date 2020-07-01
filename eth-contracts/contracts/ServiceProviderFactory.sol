@@ -138,10 +138,8 @@ contract ServiceProviderFactory is InitializableV2 {
         uint _decreaseStakeLockupDuration
     ) public initializer
     {
-        governanceAddress = _governanceAddress;
-
         decreaseStakeLockupDuration = _decreaseStakeLockupDuration;
-
+        _updateGovernanceAddress(_governanceAddress);
         InitializableV2.initialize();
     }
 
@@ -769,11 +767,7 @@ contract ServiceProviderFactory is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
-        require(
-            Governance(_governanceAddress).isGovernanceAddress() == true,
-            "_governanceAddress is not a valid governance contract"
-        );
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
         emit GovernanceAddressUpdated(_governanceAddress);
     }
 
@@ -845,6 +839,18 @@ contract ServiceProviderFactory is InitializableV2 {
             // Indicate this service provider is within bounds
             spDetails[_serviceProvider].validBounds = true;
         }
+    }
+
+    /**
+     * @notice Set the governance address after confirming contract identity
+     * @param _governanceAddress - Incoming governance address
+     */
+    function _updateGovernanceAddress(address _governanceAddress) internal {
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
+        governanceAddress = _governanceAddress;
     }
 
     /**

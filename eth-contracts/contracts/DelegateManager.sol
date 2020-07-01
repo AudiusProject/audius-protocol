@@ -104,7 +104,7 @@ contract DelegateManager is InitializableV2 {
     ) public initializer
     {
         tokenAddress = _tokenAddress;
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
         audiusToken = ERC20Mintable(tokenAddress);
         undelegateLockupDuration = 10;
         maxDelegators = 175;
@@ -582,10 +582,7 @@ contract DelegateManager is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only governance");
-        require(
-            Governance(_governanceAddress).isGovernanceAddress() == true,
-            "_governanceAddress is not a valid governance contract"
-        );
+        _updateGovernanceAddress(_governanceAddress);
         governanceAddress = _governanceAddress;
         emit GovernanceAddressUpdated(_governanceAddress);
     }
@@ -935,6 +932,18 @@ contract DelegateManager is InitializableV2 {
         }
 
         return (totalDelegatedStakeIncrease, spDeployerCutRewards);
+    }
+
+    /**
+     * @notice Set the governance address after confirming contract identity
+     * @param _governanceAddress - Incoming governance address
+     */
+    function _updateGovernanceAddress(address _governanceAddress) internal {
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
+        governanceAddress = _governanceAddress;
     }
 
     /**
