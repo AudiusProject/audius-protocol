@@ -11,13 +11,13 @@ contract ServiceTypeManager is InitializableV2 {
      * @dev - mapping of serviceType - serviceTypeVersion
      * Example - "discovery-provider" - ["0.0.1", "0.0.2", ..., "currentVersion"]
      */
-    mapping(bytes32 => bytes32[]) public serviceTypeVersions;
+    mapping(bytes32 => bytes32[]) private serviceTypeVersions;
 
     /**
      * @dev - mapping of serviceType - < serviceTypeVersion, isValid >
      * Example - "discovery-provider" - <"0.0.1", true>
      */
-    mapping(bytes32 => mapping(bytes32 => bool)) public serviceTypeVersionInfo;
+    mapping(bytes32 => mapping(bytes32 => bool)) private serviceTypeVersionInfo;
 
     /// @dev List of valid service types
     bytes32[] private validServiceTypes;
@@ -30,7 +30,7 @@ contract ServiceTypeManager is InitializableV2 {
     }
 
     /// @dev mapping of service type info
-    mapping(bytes32 => ServiceTypeInfo) serviceTypeInfo;
+    mapping(bytes32 => ServiceTypeInfo) private serviceTypeInfo;
 
     event SetServiceVersion(bytes32 _serviceType, bytes32 _serviceVersion);
     event ServiceTypeAdded(bytes32 _serviceType, uint _serviceTypeMin, uint _serviceTypeMax);
