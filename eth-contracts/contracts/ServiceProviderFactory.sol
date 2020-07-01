@@ -4,6 +4,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "./ServiceTypeManager.sol";
 import "./ClaimsManager.sol";
 import "./Staking.sol";
+/// @notice Governance imported via Staking.sol
 
 
 contract ServiceProviderFactory is InitializableV2 {
@@ -137,10 +138,8 @@ contract ServiceProviderFactory is InitializableV2 {
         uint _decreaseStakeLockupDuration
     ) public initializer
     {
-        governanceAddress = _governanceAddress;
-
         decreaseStakeLockupDuration = _decreaseStakeLockupDuration;
-
+        _updateGovernanceAddress(_governanceAddress);
         InitializableV2.initialize();
     }
 
@@ -431,8 +430,7 @@ contract ServiceProviderFactory is InitializableV2 {
     }
 
     /**
-     * @notice Actually decrease a stake. Must have called requestDecreaseStake and waited for the
-               lockup period to expire
+     * @notice Called by user to decrease a stake after waiting the appropriate lockup period.
      * @return New total stake after decrease
      */
     function decreaseStake() external returns (uint newTotalStake)
@@ -513,7 +511,7 @@ contract ServiceProviderFactory is InitializableV2 {
      * @notice Update the endpoint for a given service
      * @param _serviceType - type of service to register, must be valid in ServiceTypeManager
      * @param _oldEndpoint - old endpoint currently registered
-     * @param _oldEndpoint - new endpoint to replace old endpoint
+     * @param _newEndpoint - new endpoint to replace old endpoint
      */
     function updateEndpoint(
         bytes32 _serviceType,
@@ -763,14 +761,14 @@ contract ServiceProviderFactory is InitializableV2 {
     /**
      * @notice Set the Governance address
      * @dev Only callable by Governance address
-     * @param _address - address for new Governance contract
+     * @param _governanceAddress - address for new Governance contract
      */
-    function setGovernanceAddress(address _address) external {
+    function setGovernanceAddress(address _governanceAddress) external {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
-        governanceAddress = _address;
-        emit GovernanceAddressUpdated(_address);
+        _updateGovernanceAddress(_governanceAddress);
+        emit GovernanceAddressUpdated(_governanceAddress);
     }
 
     /**
@@ -841,6 +839,18 @@ contract ServiceProviderFactory is InitializableV2 {
             // Indicate this service provider is within bounds
             spDetails[_serviceProvider].validBounds = true;
         }
+    }
+
+    /**
+     * @notice Set the governance address after confirming contract identity
+     * @param _governanceAddress - Incoming governance address
+     */
+    function _updateGovernanceAddress(address _governanceAddress) internal {
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
+        governanceAddress = _governanceAddress;
     }
 
     /**

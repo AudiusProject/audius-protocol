@@ -585,7 +585,7 @@ contract('Governance.sol', async (accounts) => {
           proposalDescription,
           { from: proposerAddress }
         ),
-        "Proposer must be active staker with non-zero stake."
+        "Proposer must be active staker with non-zero stake"
       )
     })
 
@@ -1613,6 +1613,8 @@ contract('Governance.sol', async (accounts) => {
 
       // Confirm governance.newFunction() is callable after upgrade
       const governanceCopy2 = await GovernanceUpgraded.at(governance.address)
+      const isGovernanceAddress = await governanceCopy2.isGovernanceAddress.call({ from:  proxyDeployerAddress })
+      assert.isTrue(isGovernanceAddress, "Contract should identity self as governance")
       const newFnResp = await governanceCopy2.newFunction.call({ from: proxyDeployerAddress })
       assert.equal(newFnResp, 5)
 

@@ -123,5 +123,10 @@ contract MockStakingCaller is InitializableV2 {
             stakingAddress
         ).setAudiusGovernanceAddress(_governanceAddress);
     }
+
+    /// @notice Used to check if is governance contract before setting governance address in other contracts
+    function isGovernanceAddress() external pure returns (bool) {
+        return true;
+    }
 }
 

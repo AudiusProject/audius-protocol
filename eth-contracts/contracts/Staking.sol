@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/utils/Address.sol";
 import "@aragon/court/contracts/lib/Checkpointing.sol";
 import "@aragon/court/contracts/lib/os/Uint256Helpers.sol";
 import "./InitializableV2.sol";
+import "./Governance.sol";
 
 
 contract Staking is InitializableV2 {
@@ -48,7 +49,7 @@ contract Staking is InitializableV2 {
     /**
      * @notice Function to initialize the contract
      * @param _stakingToken - address of ERC20 token that will be staked
-     * @param _governanceAddress - address for Governance proxy contract     * @param _test - address for Governance proxy contract
+     * @param _governanceAddress - address for Governance proxy contract
      */
     function initialize(
         address _stakingToken,
@@ -57,7 +58,7 @@ contract Staking is InitializableV2 {
     {
         require(Address.isContract(_stakingToken), ERROR_TOKEN_NOT_CONTRACT);
         stakingToken = ERC20(_stakingToken);
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
         InitializableV2.initialize();
     }
 
@@ -70,7 +71,7 @@ contract Staking is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only governance");
-        governanceAddress = _governanceAddress;
+        _updateGovernanceAddress(_governanceAddress);
     }
 
     /**
@@ -129,7 +130,7 @@ contract Staking is InitializableV2 {
     }
 
     /**
-     * @notice Update claim history by adding an event to the claim historry
+     * @notice Update claim history by adding an event to the claim history
      * @param _amount - amount to add to claim history
      * @param _stakerAccount - address of staker
      */
@@ -184,7 +185,7 @@ contract Staking is InitializableV2 {
     ) external
     {
         _requireIsInitialized();
-    
+
         require(
             msg.sender == serviceProviderFactoryAddress,
             "Only callable from ServiceProviderFactory"
@@ -206,7 +207,7 @@ contract Staking is InitializableV2 {
     ) external
     {
         _requireIsInitialized();
-    
+
         require(
             msg.sender == serviceProviderFactoryAddress,
             "Only callable from ServiceProviderFactory"
@@ -219,7 +220,8 @@ contract Staking is InitializableV2 {
     }
 
     /**
-     * @notice Stakes `_amount` tokens, transferring them from caller, and assigns them to `_accountAddress`
+     * @notice Stakes `_amount` tokens, transferring them from `_delegatorAddress` to `_accountAddress`,
+               only callable by DelegateManager
      * @param _accountAddress - The final staker of the tokens
      * @param _delegatorAddress - Address from which to transfer tokens
      * @param _amount - Number of tokens staked
@@ -230,7 +232,7 @@ contract Staking is InitializableV2 {
         uint256 _amount
     ) external {
         _requireIsInitialized();
-    
+
         require(
             msg.sender == delegateManagerAddress,
             "delegateStakeFor - Only callable from DelegateManager"
@@ -242,7 +244,8 @@ contract Staking is InitializableV2 {
     }
 
     /**
-     * @notice Stakes `_amount` tokens, transferring them from caller, and assigns them to `_accountAddress`
+     * @notice Unstakes '_amount` tokens, transferring them from `_accountAddress` to `_delegatorAddress`,
+               only callable by DelegateManager
      * @param _accountAddress - The staker of the tokens
      * @param _delegatorAddress - Address from which to transfer tokens
      * @param _amount - Number of tokens unstaked
@@ -366,6 +369,18 @@ contract Staking is InitializableV2 {
         _requireIsInitialized();
 
         return delegateManagerAddress;
+    }
+
+    /**
+     * @notice Helper function wrapped around totalStakedFor. Checks whether _accountAddress
+            is currently a valid staker with a non-zero stake
+     * @param _accountAddress - Account requesting for
+     * @return Boolean indicating whether account is a staker
+     */
+    function isStaker(address _accountAddress) external view returns (bool) {
+        _requireIsInitialized();
+
+        return totalStakedFor(_accountAddress) > 0;
     }
 
     /* Public functions */
@@ -517,5 +532,17 @@ contract Staking is InitializableV2 {
 
         // add new value to total history
         totalStakedHistory.add(block.number.toUint64(), newStake);
+    }
+
+    /**
+     * @notice Set the governance address after confirming contract identity
+     * @param _governanceAddress - Incoming governance address
+     */
+    function _updateGovernanceAddress(address _governanceAddress) internal {
+        require(
+            Governance(_governanceAddress).isGovernanceAddress() == true,
+            "_governanceAddress is not a valid governance contract"
+        );
+        governanceAddress = _governanceAddress;
     }
 }
