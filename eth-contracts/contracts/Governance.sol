@@ -200,9 +200,8 @@ contract Governance is InitializableV2 {
         );
 
         // Require proposer is active Staker
-        Staking stakingContract = Staking(stakingAddress);
         require(
-            stakingContract.totalStakedFor(proposer) > 0,
+            Staking(stakingAddress).isStaker(proposer),
             "Proposer must be active staker with non-zero stake."
         );
 
@@ -270,9 +269,9 @@ contract Governance is InitializableV2 {
         );
 
         // Require voter is active Staker + get voterStake.
-        Staking stakingContract = Staking(stakingAddress);
 
-        uint256 voterStake = stakingContract.totalStakedForAt(
+        // Check that msg.sender had a valid stake at proposal start
+        uint256 voterStake = Staking(stakingAddress).totalStakedForAt(
             voter,
             proposals[_proposalId].startBlockNumber
         );

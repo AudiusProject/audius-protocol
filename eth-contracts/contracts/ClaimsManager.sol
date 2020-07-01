@@ -232,9 +232,8 @@ contract ClaimsManager is InitializableV2 {
     function initiateRound() external {
         _requireIsInitialized();
 
-        bool senderStaked = Staking(stakingAddress).totalStakedFor(msg.sender) > 0;
         require(
-            senderStaked || (msg.sender == governanceAddress),
+            Staking(stakingAddress).isStaker(msg.sender) || (msg.sender == governanceAddress),
             "Only callable by staked account or Governance contract"
         );
 
