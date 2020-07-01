@@ -199,14 +199,14 @@ contract ClaimsManager is InitializableV2 {
     /**
      * @notice Set the ServiceProviderFactory address
      * @dev Only callable by Governance address
-     * @param _serviceProviderAddress - address for new ServiceProviderFactory contract
+     * @param _serviceProviderFactoryAddress - address for new ServiceProviderFactory contract
      */
-    function setServiceProviderFactoryAddress(address _serviceProviderAddress) external {
+    function setServiceProviderFactoryAddress(address _serviceProviderFactoryAddress) external {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, "Only callable by Governance contract");
-        serviceProviderFactoryAddress = _serviceProviderAddress;
-        emit ServiceProviderFactoryAddressUpdated(_serviceProviderAddress);
+        serviceProviderFactoryAddress = _serviceProviderFactoryAddress;
+        emit ServiceProviderFactoryAddressUpdated(_serviceProviderFactoryAddress);
     }
 
     /**
