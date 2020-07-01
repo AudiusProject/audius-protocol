@@ -1287,7 +1287,7 @@ contract('ServiceProvider test', async (accounts) => {
           serviceTypeManagerProxyKey,
           callValue,
           'setGovernanceAddress(address)',
-          _lib.abiEncode(['address'], [accounts[20]]),
+          _lib.abiEncode(['address'], [accounts[14]]),
           { from: guardianAddress }
         ),
         "Governance::guardianExecuteTransaction: Transaction failed."

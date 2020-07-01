@@ -1986,7 +1986,7 @@ contract('DelegateManager', async (accounts) => {
           delegateManagerKey,
           _lib.toBN(0),
           'setGovernanceAddress(address)',
-          _lib.abiEncode(['address'], [accounts[20]]),
+          _lib.abiEncode(['address'], [accounts[13]]),
           { from: guardianAddress }
         ),
         "Governance::guardianExecuteTransaction: Transaction failed."
