@@ -28,7 +28,9 @@ const Outcome = Object.freeze({
   No: 1,
   Yes: 2,
   Invalid: 3,
-  TxFailed: 4
+  TxFailed: 4,
+  // Evaluating: 5, // internal contract state
+  Veto: 6
 })
 
 const Vote = Object.freeze({
@@ -1252,7 +1254,8 @@ contract('Governance.sol', async (accounts) => {
 
           // Call getProposalById() and confirm expected outcome
           const proposal = await governance.getProposalById.call(proposalId)
-          assert.equal(proposal.outcome, Outcome.No, 'outcome')
+          assert.notEqual(proposal.outcome, Outcome.No, 'wrong outcome')
+          assert.equal(proposal.outcome, Outcome.Veto, 'outcome')
           assert.equal(parseInt(proposal.voteMagnitudeYes), defaultStakeAmount, 'voteMagnitudeYes')
           assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'voteMagnitudeNo')
           assert.equal(parseInt(proposal.numVotes), 1, 'numVotes')
@@ -1701,6 +1704,18 @@ contract('Governance.sol', async (accounts) => {
         governance.setVotingPeriod(newVotingPeriod),
         "Only callable by self"
       )
+
+      // should revert if attempting to set voting period to zero
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          governanceKey,
+          callValue0,
+          'setVotingPeriod(uint256)',
+          _lib.abiEncode(['uint256'], [0]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
       
       await governance.guardianExecuteTransaction(
         governanceKey,
@@ -1739,6 +1754,29 @@ contract('Governance.sol', async (accounts) => {
         "Only callable by self"
       )
       
+      // should revert if attempting to set voting quorum % to zero
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          governanceKey,
+          callValue0,
+          'setVotingQuorumPercent(uint256)',
+          _lib.abiEncode(['uint256'], [0]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
+      // should revert if attempting to set voting quorum % > 100
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          governanceKey,
+          callValue0,
+          'setVotingQuorumPercent(uint256)',
+          _lib.abiEncode(['uint256'], [120]),
+          { from: guardianAddress }
+        ),
+        "Governance::guardianExecuteTransaction: Transaction failed."
+      )
+
       await governance.guardianExecuteTransaction(
         governanceKey,
         callValue0,

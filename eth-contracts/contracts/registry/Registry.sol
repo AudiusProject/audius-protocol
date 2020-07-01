@@ -103,6 +103,8 @@ contract Registry is InitializableV2, Ownable {
      * @return contractAddr - address of contract registered under given registry key
      */
     function getContract(bytes32 _name) external view returns (address contractAddr) {
+        _requireIsInitialized();
+        
         return addressStorage[_name];
     }
 
@@ -110,6 +112,8 @@ contract Registry is InitializableV2, Ownable {
     function getContract(bytes32 _name, uint _version) external view
     returns (address contractAddr)
     {
+        _requireIsInitialized();
+
         // array length for key implies version number
         require(
             _version <= addressStorageHistory[_name].length,
@@ -124,6 +128,8 @@ contract Registry is InitializableV2, Ownable {
      * @return number of contract versions
      */
     function getContractVersionCount(bytes32 _name) external view returns (uint) {
+        _requireIsInitialized();
+        
         return addressStorageHistory[_name].length;
     }
 
