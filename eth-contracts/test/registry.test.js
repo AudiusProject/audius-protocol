@@ -89,28 +89,28 @@ contract('Registry', async (accounts) => {
 
     await _lib.assertRevert(
       registry.addContract(contractName, testContract2.address, { from: proxyDeployerAddress }),
-      "Registry::addContract: Contract already registered with given name."
+      "Registry: Contract already registered with given name."
     )
   })
 
   it('Fail to add register 0 address', async () => {
     await _lib.assertRevert(
       registry.addContract(contractName, _lib.addressZero, { from: proxyDeployerAddress }),
-      "Registry::addContract: Cannot register zero address."
+      "Registry: Cannot register zero address."
     )
   })
 
   it('Fail to fetch contract with invalid version', async () => {
     await _lib.assertRevert(
       registry.getContract.call(contractName, 2),
-      "Registry::getContract: Index out of range _version."
+      "Registry: Index out of range _version."
     )
   })
 
   it('Fail to remove unregistered contract', async () => {
     await _lib.assertRevert(
       registry.removeContract(contractName, { from: proxyDeployerAddress }),
-      "Registry::removeContract: Cannot remove - no contract registered with given _name."
+      "Registry: Cannot remove - no contract registered with given _name."
     )
   })
 
@@ -119,7 +119,7 @@ contract('Registry', async (accounts) => {
 
     await _lib.assertRevert(
       registry.upgradeContract(contractName, testContract.address, { from: proxyDeployerAddress }),
-      "Registry::upgradeContract: Cannot upgrade - no contract registered with given _name."
+      "Registry: Cannot upgrade - no contract registered with given _name."
     )
   })
 
