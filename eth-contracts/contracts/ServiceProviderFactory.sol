@@ -14,6 +14,10 @@ contract ServiceProviderFactory is InitializableV2 {
     /// @dev - user values are intended to be x/DEPLOYER_CUT_BASE
     uint256 private constant DEPLOYER_CUT_BASE = 100;
 
+    string private constant ERROR_ONLY_GOVERNANCE = (
+        "ServiceProviderFactory: Only callable by Governance contract"
+    );
+
     address private stakingAddress;
     address private delegateManagerAddress;
     address private governanceAddress;
@@ -166,17 +170,20 @@ contract ServiceProviderFactory is InitializableV2 {
 
         require(
             ServiceTypeManager(serviceTypeManagerAddress).serviceTypeIsValid(_serviceType),
-            "Valid service type required");
+            "ServiceProviderFactory: Valid service type required");
 
         // Stake token amount from msg.sender
         if (_stakeAmount > 0) {
-            require(!_claimPending(msg.sender), "No claim expected to be pending prior to stake transfer");
+            require(
+                !_claimPending(msg.sender),
+                "ServiceProviderFactory: No pending claim expected"
+            );
             Staking(stakingAddress).stakeFor(msg.sender, _stakeAmount);
         }
 
         require (
             serviceProviderEndpointToId[keccak256(bytes(_endpoint))] == 0,
-            "Endpoint already registered");
+            "ServiceProviderFactory: Endpoint already registered");
 
         uint256 newServiceProviderID = serviceProviderTypeIDs[_serviceType].add(1);
         serviceProviderTypeIDs[_serviceType] = newServiceProviderID;
@@ -263,7 +270,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
         require (
             serviceProviderEndpointToId[keccak256(bytes(_endpoint))] != 0,
-            "Endpoint not registered");
+            "ServiceProviderFactory: Endpoint not registered");
 
         // Cache invalided service provider ID
         uint256 deregisteredID = serviceProviderEndpointToId[keccak256(bytes(_endpoint))];
@@ -273,11 +280,11 @@ contract ServiceProviderFactory is InitializableV2 {
 
         require(
             keccak256(bytes(serviceProviderInfo[_serviceType][deregisteredID].endpoint)) == keccak256(bytes(_endpoint)),
-            "Invalid endpoint for service type");
+            "ServiceProviderFactory: Invalid endpoint for service type");
 
         require (
             serviceProviderInfo[_serviceType][deregisteredID].owner == msg.sender,
-            "Only callable by endpoint owner");
+            "ServiceProviderFactory: Only callable by endpoint owner");
 
         // Update info mapping
         delete serviceProviderInfo[_serviceType][deregisteredID];
@@ -338,11 +345,11 @@ contract ServiceProviderFactory is InitializableV2 {
         // Confirm owner has an endpoint
         require(
             spDetails[msg.sender].numberOfEndpoints > 0,
-            "Registered endpoint required to increase stake"
+            "ServiceProviderFactory: Registered endpoint required to increase stake"
         );
         require(
             !_claimPending(msg.sender),
-            "No claim expected to be pending prior to stake transfer"
+            "ServiceProviderFactory: No claim expected to be pending prior to stake transfer"
         );
 
         Staking stakingContract = Staking(
@@ -389,11 +396,11 @@ contract ServiceProviderFactory is InitializableV2 {
 
         require(
             _decreaseStakeAmount > 0,
-            "Requested stake decrease amount must be greater than zero"
+            "ServiceProviderFactory: Requested stake decrease amount must be greater than zero"
         );
         require(
             !_claimPending(msg.sender),
-            "No claim expected to be pending prior to stake transfer"
+            "ServiceProviderFactory: No claim expected to be pending prior to stake transfer"
         );
 
         Staking stakingContract = Staking(
@@ -426,9 +433,12 @@ contract ServiceProviderFactory is InitializableV2 {
 
         require(
             msg.sender == _account || msg.sender == delegateManagerAddress,
-            "Only callable from owner or DelegateManager"
+            "ServiceProviderFactory: Only owner or DelegateManager"
         );
-        require(_decreaseRequestIsPending(_account), "Decrease stake request must be pending");
+        require(
+            _decreaseRequestIsPending(_account),
+            "ServiceProviderFactory: Decrease stake request must be pending"
+        );
 
         // Clear decrease stake request
         decreaseStakeRequests[_account] = DecreaseStakeRequest({
@@ -446,10 +456,13 @@ contract ServiceProviderFactory is InitializableV2 {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
 
-        require(_decreaseRequestIsPending(msg.sender), "Decrease stake request must be pending");
+        require(
+            _decreaseRequestIsPending(msg.sender),
+            "ServiceProviderFactory: Decrease stake request must be pending"
+        );
         require(
             decreaseStakeRequests[msg.sender].lockupExpiryBlock <= block.number,
-            "Lockup must be expired"
+            "ServiceProviderFactory: Lockup must be expired"
         );
 
         Staking stakingContract = Staking(
@@ -505,7 +518,8 @@ contract ServiceProviderFactory is InitializableV2 {
 
         require(
             serviceProviderInfo[_serviceType][spID].owner == msg.sender,
-            "Invalid update operation, wrong owner");
+            "ServiceProviderFactory: Invalid update operation, wrong owner"
+        );
 
         serviceProviderInfo[_serviceType][spID].delegateOwnerWallet = _updatedDelegateOwnerWallet;
         emit DelegateOwnerWalletUpdated(
@@ -531,16 +545,19 @@ contract ServiceProviderFactory is InitializableV2 {
         _requireIsInitialized();
 
         uint256 spId = this.getServiceProviderIdFromEndpoint(_oldEndpoint);
-
-        require (spId != 0, "Could not find service provider with that endpoint");
+        require (
+            spId != 0,
+            "ServiceProviderFactory: Could not find service provider with that endpoint"
+        );
 
         ServiceEndpoint memory sp = serviceProviderInfo[_serviceType][spId];
-
-        require(sp.owner == msg.sender,"Invalid update endpoint operation, wrong owner");
-
+        require(
+            sp.owner == msg.sender,
+            "ServiceProviderFactory: Invalid update endpoint operation, wrong owner"
+        );
         require(
             keccak256(bytes(sp.endpoint)) == keccak256(bytes(_oldEndpoint)),
-            "Old endpoint doesn't match what's registered for the service provider"
+            "ServiceProviderFactory: Old endpoint doesn't match what's registered for the service provider"
         );
 
         // invalidate old endpoint
@@ -572,7 +589,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
         require(
             msg.sender == delegateManagerAddress,
-            "updateServiceProviderStake - only callable by DelegateManager"
+            "ServiceProviderFactory: only callable by DelegateManager"
         );
         // Update SP tracked total
         spDetails[_serviceProvider].deployerStake = _amount;
@@ -596,11 +613,11 @@ contract ServiceProviderFactory is InitializableV2 {
 
         require(
             msg.sender == _serviceProvider,
-            "Service Provider cut update operation restricted to deployer");
+            "ServiceProviderFactory: Service Provider cut update operation restricted to deployer");
 
         require(
             _cut <= DEPLOYER_CUT_BASE,
-            "Service Provider cut cannot exceed base value");
+            "ServiceProviderFactory: Service Provider cut cannot exceed base value");
         spDetails[_serviceProvider].deployerCut = _cut;
         emit ServiceProviderCutUpdated(_serviceProvider, _cut);
     }
@@ -611,7 +628,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
         require(
             msg.sender == governanceAddress,
-            "Only callable by Governance contract"
+            ERROR_ONLY_GOVERNANCE
         );
 
         decreaseStakeLockupDuration = _duration;
@@ -777,7 +794,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function setGovernanceAddress(address _governanceAddress) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only callable by Governance contract");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         _updateGovernanceAddress(_governanceAddress);
         emit GovernanceAddressUpdated(_governanceAddress);
     }
@@ -790,7 +807,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function setStakingAddress(address _address) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only callable by Governance contract");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         stakingAddress = _address;
         emit StakingAddressUpdated(_address);
     }
@@ -803,7 +820,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function setDelegateManagerAddress(address _address) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only callable by Governance contract");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         delegateManagerAddress = _address;
         emit DelegateManagerAddressUpdated(_address);
     }
@@ -816,7 +833,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function setServiceTypeManagerAddress(address _address) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only callable by Governance contract");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         serviceTypeManagerAddress = _address;
         emit ServiceTypeManagerAddressUpdated(_address);
     }
@@ -829,7 +846,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function setClaimsManagerAddress(address _address) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only callable by Governance contract");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         claimsManagerAddress = _address;
         emit ClaimsManagerAddressUpdated(_address);
     }
@@ -859,7 +876,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function _updateGovernanceAddress(address _governanceAddress) internal {
         require(
             Governance(_governanceAddress).isGovernanceAddress() == true,
-            "_governanceAddress is not a valid governance contract"
+            "ServiceProviderFactory: _governanceAddress is not a valid governance contract"
         );
         governanceAddress = _governanceAddress;
     }
@@ -873,12 +890,12 @@ contract ServiceProviderFactory is InitializableV2 {
     {
         require(
             _amount <= spDetails[_sp].maxAccountStake,
-            "Maximum stake amount exceeded"
+            "ServiceProviderFactory: Maximum stake amount exceeded"
         );
 
         require(
             spDetails[_sp].deployerStake >= spDetails[_sp].minAccountStake,
-            "Minimum stake requirement not met"
+            "ServiceProviderFactory: Minimum stake requirement not met"
         );
     }
 
@@ -917,18 +934,21 @@ contract ServiceProviderFactory is InitializableV2 {
     function _requireDelegateManagerAddressIsSet() private view {
         require(
             delegateManagerAddress != address(0x00),
-            "delegateManagerAddress is not set"
+            "ServiceProviderFactory: delegateManagerAddress is not set"
         );
     }
 
     function _requireServiceTypeManagerAddressIsSet() private view {
         require(
             serviceTypeManagerAddress != address(0x00),
-            "serviceTypeManagerAddress is not set"
+            "ServiceProviderFactory: serviceTypeManagerAddress is not set"
         );
     }
 
     function _requireClaimsManagerAddressIsSet() private view {
-        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
+        require(
+            claimsManagerAddress != address(0x00),
+            "ServiceProviderFactory: claimsManagerAddress is not set"
+        );
     }
 }
