@@ -60,7 +60,6 @@ module.exports = {
         , { transaction })
       }
 
-      await queryInterface.addIndex('Files', ['multihash'], { transaction })
       await queryInterface.addIndex('Files', ['dirMultihash'], { transaction })
 
       await transaction.commit()
@@ -84,6 +83,7 @@ module.exports = {
         { transaction }
       )
 
+      await queryInterface.removeIndex('Files', ['dirMultihash'], { transaction })
       await transaction.commit()
     } catch (err) {
       await transaction.rollback()
