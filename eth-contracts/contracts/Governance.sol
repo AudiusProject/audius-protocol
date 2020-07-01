@@ -7,7 +7,7 @@ import "./InitializableV2.sol";
 
 
 contract Governance is InitializableV2 {
-    using SafeMath for uint;
+    using SafeMath for uint256;
 
     /**
      * @notice Address and contract instance of Audius Registry. Used to ensure this contract
@@ -22,7 +22,7 @@ contract Governance is InitializableV2 {
     uint256 private votingPeriod;
 
     /// @notice Required minimum percentage of total stake to have voted to consider a proposal valid
-    ///         Percentaged stored as a uint between 0 & 100
+    ///         Percentaged stored as a uint256 between 0 & 100
     ///         Calculated as: 100 * sum of voter stakes / total staked in Staking (at proposal submission block)
     uint256 private votingQuorumPercent;
 
@@ -67,7 +67,7 @@ contract Governance is InitializableV2 {
         uint256 startBlockNumber;
         bytes32 targetContractRegistryKey;
         address targetContractAddress;
-        uint callValue;
+        uint256 callValue;
         string signature;
         bytes callData;
         Outcome outcome;
@@ -617,7 +617,7 @@ contract Governance is InitializableV2 {
         uint256 startBlockNumber,
         bytes32 targetContractRegistryKey,
         address targetContractAddress,
-        uint callValue,
+        uint256 callValue,
         string memory signature,
         bytes memory callData,
         Outcome outcome,
@@ -682,14 +682,14 @@ contract Governance is InitializableV2 {
     }
 
     /// @notice Get the contract voting period
-    function getVotingPeriod() external view returns (uint) {
+    function getVotingPeriod() external view returns (uint256) {
         _requireIsInitialized();
 
         return votingPeriod;
     }
 
     /// @notice Get the contract voting quorum percent
-    function getVotingQuorumPercent() external view returns (uint) {
+    function getVotingQuorumPercent() external view returns (uint256) {
         _requireIsInitialized();
 
         return votingQuorumPercent;
@@ -730,7 +730,7 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         // compare current block number against endBlockNumber of each proposal
-        for (uint i = 0; i < inProgressProposals.length; i++) {
+        for (uint256 i = 0; i < inProgressProposals.length; i++) {
             if (
                 block.number >
                 (proposals[inProgressProposals[i]].startBlockNumber).add(votingPeriod)
@@ -807,7 +807,7 @@ contract Governance is InitializableV2 {
     function _removeFromInProgressProposals(uint256 _proposalId) internal {
         uint256 index = 0;
         bool found = false;
-        for (uint i = 0; i < inProgressProposals.length; i++) {
+        for (uint256 i = 0; i < inProgressProposals.length; i++) {
             if (inProgressProposals[i] == _proposalId) {
                 index = i;
                 found = true;
