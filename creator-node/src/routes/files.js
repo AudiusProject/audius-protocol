@@ -106,7 +106,9 @@ module.exports = function (app) {
           multihash: fileResp.hash,
           sourceFile: fileResp.path,
           storagePath: destPath,
-          type: 'image'
+          type: 'image',
+          dirMultihash: dirCID,
+          fileName: fileResp.path.split('/').slice(-1)[0]
         },
         transaction: t }))[0].dataValues
 
