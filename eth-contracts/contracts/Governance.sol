@@ -435,6 +435,7 @@ contract Governance is InitializableV2 {
         address targetContractAddress = registry.getContract(
             proposals[_proposalId].targetContractRegistryKey
         );
+        // TODO: Remove below 2 requires in favor of outcome change
         require(
             targetContractAddress == proposals[_proposalId].targetContractAddress,
             "Governance: Registered contract address for targetContractRegistryKey has changed"

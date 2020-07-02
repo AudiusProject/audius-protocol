@@ -14,6 +14,8 @@ const TestContract = artifacts.require('TestContract')
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
 
+const MockAccount = artifacts.require('MockAccount')
+
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
@@ -1430,6 +1432,53 @@ contract('Governance.sol', async (accounts) => {
       await stakingProxy.implementation.call({ from: proxyAdminAddress }),
       stakingUpgraded0.address,
       'Expected updated proxy implementation address'
+    )
+  })
+
+  it.only('Contract content change prevents proposal evaluation', async () => {
+    let owner = accounts[9]
+    const mockAccountContract = await MockAccount.new(owner, { from: proxyDeployerAddress })
+    const accountKey = web3.utils.utf8ToHex('Account')
+    await registry.addContract(accountKey, mockAccountContract.address, { from: proxyDeployerAddress })
+
+    // Define vars
+    const targetContractRegistryKey = accountKey
+    const callValue = _lib.audToWei(0)
+    const functionSignature = 'setOwner(address)'
+    const callData = _lib.abiEncode(['address'], [accounts[11]])
+
+    const proposerAddress = stakerAccount1
+    const voterAddress = stakerAccount1
+    // const outcome = Outcome.ApprovedExecuted
+    // const lastBlock = (await _lib.getLatestBlock(web3)).number
+
+    // Submit proposal
+    const submitTxReceipt = await governance.submitProposal(
+      targetContractRegistryKey,
+      callValue,
+      functionSignature,
+      callData,
+      proposalDescription,
+      { from: proposerAddress }
+    )
+    const proposalId = _lib.parseTx(submitTxReceipt).event.args.proposalId
+
+    // Submit proposal vote for Yes
+    await governance.submitVote(proposalId, Vote.Yes, { from: voterAddress })
+
+    // Advance blocks to after proposal evaluation period
+    const proposalStartBlock = parseInt(_lib.parseTx(submitTxReceipt).event.args.submissionBlockNumber)
+    await time.advanceBlockTo(proposalStartBlock + votingPeriod)
+
+    // TODO: Self destruct before evaluating
+    await mockAccountContract.destroy(owner, { from: owner })
+
+    // Call evaluateProposalOutcome()
+    // const evaluateTxReceipt = 
+    // TODO: Remove this assert and ensure failed proposal
+    await _lib.assertRevert(
+      governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
+      'Contract contents changed'
     )
   })
 
