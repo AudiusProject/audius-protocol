@@ -55,6 +55,9 @@ contract Governance is InitializableV2 {
      */
     address private guardianAddress;
 
+    /// @notice Number of blocks that must pass after votingPeriod has expired before proposal can be evaluated/executed
+    uint16 private executionDelay;
+
     /***** Enums *****/
 
     /**
@@ -168,6 +171,7 @@ contract Governance is InitializableV2 {
      * @param _votingQuorumPercent - required minimum percentage of total stake to have voted to consider a proposal valid
      * @param _maxInProgressProposals - max number of InProgress proposals possible at once
      * @param _guardianAddress - address of account that has special Governance permissions
+     * @param _executionDelay - number of blocks that must pass after votingPeriod has expired before proposal can be evaluated/executed
      */
     function initialize(
         address _registryAddress,
@@ -175,6 +179,7 @@ contract Governance is InitializableV2 {
         uint256 _votingQuorumPercent,
         uint16 _maxInProgressProposals,
         uint16 _maxDescriptionLength,
+        uint16 _executionDelay,
         address _guardianAddress
     ) public initializer {
         require(_registryAddress != address(0x00), ERROR_INVALID_REGISTRY);
@@ -191,6 +196,9 @@ contract Governance is InitializableV2 {
 
         require(_maxDescriptionLength > 0, "Requires non-zero _maxDescriptionLength");
         maxDescriptionLength = _maxDescriptionLength;
+
+        // executionDelay does not have to be non-zero
+        executionDelay = _executionDelay;
 
         require(
             _votingQuorumPercent > 0 && _votingQuorumPercent <= 100,
@@ -393,7 +401,7 @@ contract Governance is InitializableV2 {
     }
 
     /**
-     * @notice Once the voting period for a proposal has ended, evaluate the outcome and
+     * @notice Once the voting period + executionDelay for a proposal has ended, evaluate the outcome and
      *      execute the proposal if voting quorum met & vote passes.
      *      To pass, stake-weighted vote must be > 50% Yes.
      * @dev Requires that caller is an active staker at the time the proposal is created
@@ -421,12 +429,12 @@ contract Governance is InitializableV2 {
         // proposal to 'Evaluating' so it should fail the status is 'InProgress' check
         proposals[_proposalId].outcome = Outcome.Evaluating;
 
-        // Require proposal votingPeriod has ended.
+        // Require proposal votingPeriod + executionDelay have ended.
         uint256 submissionBlockNumber = proposals[_proposalId].submissionBlockNumber;
-        uint256 endBlockNumber = submissionBlockNumber.add(votingPeriod);
+        uint256 endBlockNumber = submissionBlockNumber.add(votingPeriod).add(executionDelay);
         require(
             block.number > endBlockNumber,
-            "Governance: Proposal votingPeriod must end before evaluation."
+            "Governance: Proposal votingPeriod & executionDelay must end before evaluation."
         );
 
         // Require registered contract address for provided registryKey has not changed.
@@ -509,7 +517,7 @@ contract Governance is InitializableV2 {
         );
 
         require(
-            proposals[_proposalId].outcome == Outcome.InProgress,
+            proposals[_proposalId].outcome == Outcome.InProgress,   
             "Governance: Cannot veto inactive proposal."
         );
 
@@ -602,6 +610,19 @@ contract Governance is InitializableV2 {
         require(msg.sender == address(this), "Only callable by self");
         require(_newMaxDescriptionLength > 0, "Requires non-zero _newMaxDescriptionLength");
         maxDescriptionLength = _newMaxDescriptionLength;
+    }
+
+    /**
+     * @notice Set the execution delay for a proposal
+     * @dev Only callable by self via _executeTransaction
+     * @param _newExecutionDelay - new value for executionDelay
+     */
+    function setExecutionDelay(uint16 _newExecutionDelay) external {
+        _requireIsInitialized();
+
+        require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
+        // executionDelay does not have to be non-zero
+        executionDelay = _newExecutionDelay;
     }
 
     // ========================================= Guardian Actions =========================================
@@ -808,6 +829,13 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         return maxInProgressProposals;
+    }
+
+    /// @notice Get the proposal execution delay
+    function getExecutionDelay() external view returns (uint16) {
+        _requireIsInitialized();
+
+        return executionDelay;
     }
 
     /// @notice Get the max length in bytes of a proposal description string
