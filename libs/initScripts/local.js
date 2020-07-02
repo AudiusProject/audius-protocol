@@ -97,6 +97,12 @@ const run = async () => {
         await _registerDiscProv2(audiusLibs, ethAccounts)
         break
 
+      case 'register-cnode':
+        const serviceCount = args[3]
+        if (serviceCount === undefined) throw new Error("register-cnode requires a service # as the second arg")
+        await _registerCnode(ethAccounts, parseInt(serviceCount))
+        break
+
       case 'register-cnode-1':
         await _registerCnode1(audiusLibs, ethAccounts)
         break
@@ -175,6 +181,14 @@ const _registerDiscProv1 = async (audiusLibs, ethAccounts) => {
 const _registerDiscProv2 = async (audiusLibs, ethAccounts) => {
   let audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[3])
   await registerLocalService(audiusLibs4, spDiscProvType, discProvEndpoint2, amountOfAuds)
+}
+
+const makeCreatorNodeEndpoint = (serviceNumber) => `http://cn${serviceNumber}_creator-node_1:${4000 + serviceNumber - 1}`
+
+const _registerCnode = async(ethAccounts, serviceNumber) => {
+  const audiusLibs = await initAudiusLibs(true, null, ethAccounts[serviceNumber])
+  const endpoint = makeCreatorNodeEndpoint(serviceNumber)
+  await registerLocalService(audiusLibs, spCreatorNodeType, endpoint, amountOfAuds)
 }
 
 // Account 1
