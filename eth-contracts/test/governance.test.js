@@ -30,7 +30,8 @@ const Outcome = Object.freeze({
   QuorumNotMet: 3,
   ApprovedExecutionFailed: 4,
   // Evaluating - transient internal state
-  Vetoed: 6
+  Vetoed: 6,
+  TargetContractAddressChanged: 7
 })
 
 const Vote = Object.freeze({
@@ -1199,7 +1200,7 @@ contract('Governance.sol', async (accounts) => {
         
         await _lib.assertRevert(
           governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
-          "Cannot evaluate inactive proposal."
+          "Can only evaluate InProgress proposal."
         )
       })
 
@@ -1207,13 +1208,46 @@ contract('Governance.sol', async (accounts) => {
         const testContract = await TestContract.new()
         await testContract.initialize()
 
+        const outcomeTargetContractAddressChanged = Outcome.TargetContractAddressChanged
+
         // Upgrade contract registered at targetContractRegistryKey
         await registry.upgradeContract(targetContractRegistryKey, testContract.address, { from: proxyDeployerAddress })
 
-        await _lib.assertRevert(
-          // Call evaluateProposalOutcome()
-          governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
-          "Registered contract address for targetContractRegistryKey has changed"
+        // ensure evaluateProposalOutcome marks proposal as invalid
+        const txR = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
+        const tx = await _lib.parseTx(txR)
+        
+        // Ensure event log confirms correct outcome
+        assert.equal(tx.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
+        assert.equal(parseInt(tx.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
+        assert.equal(tx.event.args.outcome, outcomeTargetContractAddressChanged, 'Expected same event.args.outcome')
+        assert.isTrue(tx.event.args.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
+        assert.isTrue(tx.event.args.voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
+        assert.equal(parseInt(tx.event.args.numVotes), 1, 'Expected same event.args.numVotes')
+  
+        // Ensure chain storage confirms correct outcome
+        const proposal = await governance.getProposalById.call(proposalId)
+        assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
+        assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
+        assert.isTrue(parseInt(proposal.submissionBlockNumber) > lastBlock, 'Expected submissionBlockNumber > lastBlock')
+        assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
+        assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
+        assert.equal(_lib.fromBN(proposal.callValue), callValue, 'Expected same proposal.callValue')
+        assert.equal(proposal.functionSignature, functionSignature, 'Expected same proposal.functionSignature')
+        assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
+        assert.equal(proposal.outcome, outcomeTargetContractAddressChanged, 'Expected same outcome')
+        assert.equal(parseInt(proposal.voteMagnitudeYes), defaultStakeAmount, 'Expected same voteMagnitudeYes')
+        assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
+        assert.equal(parseInt(proposal.numVotes), 1, 'Expected same numVotes')
+
+        // Ensure future governance actions are not blocked
+        await governance.submitProposal(
+          targetContractRegistryKey,
+          callValue0,
+          functionSignature,
+          callData,
+          proposalDescription,
+          { from: proposerAddress }
         )
       })
 
@@ -1319,7 +1353,7 @@ contract('Governance.sol', async (accounts) => {
           )
         })
 
-        it('Successfully veto proposal + ensure further actions are blocked', async () => {
+        it('Successfully veto proposal + ensure further actions on proposal are blocked', async () => {
           const vetoTxReceipt = await governance.vetoProposal(proposalId, { from: guardianAddress })
 
           // Confirm event log
@@ -1343,7 +1377,7 @@ contract('Governance.sol', async (accounts) => {
           
           await _lib.assertRevert(
             governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
-            "Cannot evaluate inactive proposal."
+            "Can only evaluate InProgress proposal."
           )
         })
 
