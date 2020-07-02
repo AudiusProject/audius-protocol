@@ -29,12 +29,12 @@ const liveNetwork = getEnv('ETH_LIVE_NETWORK')
 const liveNetworkId = getEnv('ETH_LIVE_NETWORK_ID')
 
 const solc = {
-  // 0.5.16 is latest 0.5.x version
+  // 0.5.17 is latest 0.5.x version
   // cannot use 0.6.x due to openzeppelin dependency, which are only 0.5.x compatible
-  version: '0.5.16',
+  version: '0.5.17',
   parser: 'solcjs', // Leverages solc-js purely for speedy parsing
   settings: {
-    evmVersion: 'istanbul', // istanbul is latest stable, and default setting
+    evmVersion: 'istanbul' // istanbul is latest stable, and default setting
   }
 }
 
