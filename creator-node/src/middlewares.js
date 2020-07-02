@@ -77,8 +77,6 @@ async function ensurePrimaryMiddleware (req, res, next) {
 
   // Error if this node is not primary for user.
   if (!primary || (primary && serviceEndpoint !== primary)) {
-    console.log("NOT PRIMARY")
-    console.log({primary, serviceEndpoint})
     return sendResponse(
       req,
       res,
@@ -209,9 +207,9 @@ async function getCreatorNodeEndpoints (req, wallet) {
 
 // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
 function _isFQDN (url) {
-  return true
-  // let FQDN = new RegExp(/(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm)
-  // return FQDN.test(url)
+  if (config.get('creatorNodeIsDebug')) return true
+  const FQDN = new RegExp(/(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm)
+  return FQDN.test(url)
 }
 
 module.exports = { authMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs, syncLockMiddleware, getOwnEndpoint, getCreatorNodeEndpoints }
