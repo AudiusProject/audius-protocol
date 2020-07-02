@@ -1191,7 +1191,7 @@ contract('ServiceProvider test', async (accounts) => {
       let testVersion2 = web3.utils.utf8ToHex('0.0.2')
 
       // fail to set version for invalid type
-      _lib.assertRevert(
+      await _lib.assertRevert(
         governance.guardianExecuteTransaction(
           serviceTypeManagerProxyKey,
           callValue,
@@ -1282,7 +1282,7 @@ contract('ServiceProvider test', async (accounts) => {
       )
       
       // fail to set a non-Governance address in ServiceTypeManager.sol
-      _lib.assertRevert(
+      await _lib.assertRevert(
         governance.guardianExecuteTransaction(
           serviceTypeManagerProxyKey,
           callValue,

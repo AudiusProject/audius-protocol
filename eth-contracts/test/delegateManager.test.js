@@ -837,7 +837,7 @@ contract('DelegateManager', async (accounts) => {
       await serviceProviderFactory.decreaseStake({ from: stakerAccount2 })
 
       // Fail to slash account with zero stake
-      _lib.assertRevert(
+      await _lib.assertRevert(
         _lib.slash(DEFAULT_AMOUNT_VAL, stakerAccount2, governance, delegateManagerKey, guardianAddress),
         "Governance: Transaction failed."
       )
