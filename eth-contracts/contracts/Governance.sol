@@ -732,9 +732,7 @@ contract Governance is InitializableV2 {
      * @param _proposalId - id of proposal
      */
     function getProposalDescriptionById(uint256 _proposalId)
-    external view returns (
-        string memory description
-    )
+    external view returns (string memory)
     {
         _requireIsInitialized();
 
