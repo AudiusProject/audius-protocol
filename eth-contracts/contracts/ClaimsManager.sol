@@ -113,7 +113,7 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /// @notice Get the duration of a funding round in blocks
-    function getFundingRoundBlockDiff() external view returns (uint256 blockDiff)
+    function getFundingRoundBlockDiff() external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -121,7 +121,7 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /// @notice Get the last block where a funding round was initiated
-    function getLastFundBlock() external view returns (uint256 lastFundBlock)
+    function getLastFundBlock() external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -129,7 +129,7 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /// @notice Get the amount funded per round in wei
-    function getFundsPerRound() external view returns (uint256 amount)
+    function getFundsPerRound() external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -137,7 +137,7 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /// @notice Get the total amount claimed in the current round
-    function getTotalClaimedInRound() external view returns (uint256 claimedAmount)
+    function getTotalClaimedInRound() external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -145,21 +145,21 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /// @notice Get the Governance address
-    function getGovernanceAddress() external view returns (address addr) {
+    function getGovernanceAddress() external view returns (address) {
         _requireIsInitialized();
 
         return governanceAddress;
     }
 
     /// @notice Get the ServiceProviderFactory address
-    function getServiceProviderFactoryAddress() external view returns (address addr) {
+    function getServiceProviderFactoryAddress() external view returns (address) {
         _requireIsInitialized();
 
         return serviceProviderFactoryAddress;
     }
 
     /// @notice Get the DelegateManager address
-    function getDelegateManagerAddress() external view returns (address addr) {
+    function getDelegateManagerAddress() external view returns (address) {
         _requireIsInitialized();
 
         return delegateManagerAddress;
@@ -168,7 +168,7 @@ contract ClaimsManager is InitializableV2 {
     /**
      * @notice Get the Staking address
      */
-    function getStakingAddress() external view returns (address addr)
+    function getStakingAddress() external view returns (address)
     {
         _requireIsInitialized();
 
@@ -265,11 +265,12 @@ contract ClaimsManager is InitializableV2 {
      * @dev Callable through DelegateManager by Service Provider
      * @param _claimer  - service provider address
      * @param _totalLockedForSP - amount of tokens locked up across DelegateManager + ServiceProvider
+     * @return minted rewards for this claimer
      */
     function processClaim(
         address _claimer,
         uint256 _totalLockedForSP
-    ) external returns (uint256 mintedRewards)
+    ) external returns (uint256)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -349,23 +350,21 @@ contract ClaimsManager is InitializableV2 {
      * @notice Modify funding amount per round
      * @param _newAmount - new amount to fund per round in wei
      */
-    function updateFundingAmount(uint256 _newAmount)
-    external returns (uint256 newAmount)
+    function updateFundingAmount(uint256 _newAmount) external
     {
         _requireIsInitialized();
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         fundingAmount = _newAmount;
         emit FundingAmountUpdated(_newAmount);
-        return _newAmount;
     }
 
     /**
      * @notice Returns boolean indicating whether a claim is considered pending
      * @dev Note that an address with no endpoints can never have a pending claim
      * @param _sp - address of the service provider to check
-     * @return boolean - true if eligible for claim, false if not
+     * @return true if eligible for claim, false if not
      */
-    function claimPending(address _sp) external view returns (bool pending) {
+    function claimPending(address _sp) external view returns (bool) {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
         _requireServiceProviderFactoryAddressIsSet();

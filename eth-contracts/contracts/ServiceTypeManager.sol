@@ -51,7 +51,7 @@ contract ServiceTypeManager is InitializableV2 {
     }
 
     /// @notice Get the Governance address
-    function getGovernanceAddress() external view returns (address addr) {
+    function getGovernanceAddress() external view returns (address) {
         _requireIsInitialized();
 
         return governanceAddress;
@@ -163,7 +163,7 @@ contract ServiceTypeManager is InitializableV2 {
      * @notice Get list of valid service types
      */
     function getValidServiceTypes()
-    external view returns (bytes32[] memory types)
+    external view returns (bytes32[] memory)
     {
         _requireIsInitialized();
 
@@ -174,7 +174,7 @@ contract ServiceTypeManager is InitializableV2 {
      * @notice Return indicating whether this is a valid service type
      */
     function serviceTypeIsValid(bytes32 _serviceType)
-    external view returns (bool isValid)
+    external view returns (bool)
     {
         _requireIsInitialized();
 
@@ -215,9 +215,10 @@ contract ServiceTypeManager is InitializableV2 {
      * @notice Get a version for a service type given it's index
      * @param _serviceType - type of service
      * @param _versionIndex - index in list of service versions
+     * @return bytes32 value for serviceVersion
      */
     function getVersion(bytes32 _serviceType, uint256 _versionIndex)
-    external view returns (bytes32 version)
+    external view returns (bytes32)
     {
         _requireIsInitialized();
 
@@ -234,7 +235,7 @@ contract ServiceTypeManager is InitializableV2 {
      * @return Returns current version of service
      */
     function getCurrentVersion(bytes32 _serviceType)
-    external view returns (bytes32 currentVersion)
+    external view returns (bytes32)
     {
         _requireIsInitialized();
 
@@ -264,7 +265,7 @@ contract ServiceTypeManager is InitializableV2 {
      * @param _serviceVersion - version of service to check
      */
     function serviceVersionIsValid(bytes32 _serviceType, bytes32 _serviceVersion)
-    external view returns (bool isValidServiceVersion)
+    external view returns (bool)
     {
         _requireIsInitialized();
 
