@@ -102,6 +102,7 @@ contract Governance is InitializableV2 {
         uint256 numVotes;
         mapping(address => Vote) votes;
         string description;
+        bytes32 contractHash;
     }
 
     /***** Proposal storage *****/
@@ -285,7 +286,8 @@ contract Governance is InitializableV2 {
             voteMagnitudeYes: 0,
             voteMagnitudeNo: 0,
             numVotes: 0,
-            description: _description
+            description: _description,
+            contractHash: _getCodeHash(targetContractAddress)
             /* votes: mappings are auto-initialized to default state */
         });
 
@@ -436,6 +438,10 @@ contract Governance is InitializableV2 {
         require(
             targetContractAddress == proposals[_proposalId].targetContractAddress,
             "Governance: Registered contract address for targetContractRegistryKey has changed"
+        );
+        require(
+            _getCodeHash(targetContractAddress) == proposals[_proposalId].contractHash,
+            "Governance: Contract contents changed"
         );
 
         Staking stakingContract = Staking(stakingAddress);
@@ -724,6 +730,8 @@ contract Governance is InitializableV2 {
         );
     }
 
+    // TODO: Expose contract hash
+
      /**
      * @notice Get proposal description by proposalId
      * @dev This is a separate function because the getProposalById returns too many
@@ -999,5 +1007,18 @@ contract Governance is InitializableV2 {
         );
 
         return voterStake;
+    }
+
+    // solium-disable security/no-inline-assembly
+    /**
+     * @notice Helper function to generate the code hash for a contract address
+     * @return contract code hash
+     */
+    function _getCodeHash(address _contract) private view returns (bytes32) {
+        bytes32 contractHash;
+        assembly {
+          contractHash := extcodehash(_contract)
+        }
+        return contractHash;
     }
 }
