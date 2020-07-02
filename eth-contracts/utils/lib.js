@@ -354,6 +354,12 @@ export const configureClaimsManagerContractAddresses = async (
   spFactoryAddress,
   delegateManagerAddress
 ) => {
+  const testWallet = '0x918D6781D8127A47DfAC6a50429bFc380014c403'
+
+  await assertRevert(
+    claimsManager.claimPending(testWallet),
+    "stakingAddress is not set"
+  )
   let stakingAddressTx = await governance.guardianExecuteTransaction(
     claimsManagerRegKey,
     toBN(0),
@@ -363,6 +369,10 @@ export const configureClaimsManagerContractAddresses = async (
   )
   assert.equal(stakingAddress, await claimsManager.getStakingAddress(), 'Unexpected staking address')
 
+  await assertRevert(
+    claimsManager.claimPending(testWallet),
+    "serviceProviderFactoryAddress is not set"
+  )
   let spAddressTx = await governance.guardianExecuteTransaction(
     claimsManagerRegKey,
     toBN(0),
@@ -372,6 +382,10 @@ export const configureClaimsManagerContractAddresses = async (
   )
   assert.equal(spFactoryAddress, await claimsManager.getServiceProviderFactoryAddress(), 'Unexpected sp address')
 
+  await assertRevert(
+    claimsManager.processClaim(testWallet, 0),
+    "delegateManagerAddress is not set"
+  )
   let delManAddressTx = await governance.guardianExecuteTransaction(
     claimsManagerRegKey,
     toBN(0),
