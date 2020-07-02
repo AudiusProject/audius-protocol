@@ -241,7 +241,7 @@ contract Governance is InitializableV2 {
 
         // Require new proposal submission would not push number of InProgress proposals over max number
         require(
-            inProgressProposals.length <= maxInProgressProposals,
+            inProgressProposals.length < maxInProgressProposals,
             "Governance: Number of InProgress proposals already at max. Please evaluate if possible, or wait for current proposals' votingPeriods to expire."
         );
 
