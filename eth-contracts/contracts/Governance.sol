@@ -208,6 +208,7 @@ contract Governance is InitializableV2 {
      * @param _functionSignature - function signature of the function to be executed if proposal is successful
      * @param _callData - encoded value(s) to call function with if proposal is successful
      * @param _description - Text description of proposal to be emitted in event
+     * @return - ID of new proposal
      */
     function submitProposal(
         bytes32 _targetContractRegistryKey,
@@ -215,7 +216,7 @@ contract Governance is InitializableV2 {
         string calldata _functionSignature,
         bytes calldata _callData,
         string calldata _description
-    ) external returns (uint256 proposalId)
+    ) external returns (uint256)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -382,9 +383,10 @@ contract Governance is InitializableV2 {
      *      To pass, stake-weighted vote must be > 50% Yes.
      * @dev Requires that caller is an active staker at the time the proposal is created
      * @param _proposalId - id of the proposal
+     * @return Outcome of proposal evaluation
      */
     function evaluateProposalOutcome(uint256 _proposalId)
-    external returns (Outcome proposalOutcome)
+    external returns (Outcome)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -701,7 +703,7 @@ contract Governance is InitializableV2 {
      * @return returns a value from the Vote enum if a valid vote, otherwise returns no value
      */
     function getVoteByProposalAndVoter(uint256 _proposalId, address _voter)
-    external view returns (Vote vote)
+    external view returns (Vote)
     {
         _requireIsInitialized();
 
@@ -807,13 +809,13 @@ contract Governance is InitializableV2 {
         uint256 _callValue,
         string memory _functionSignature,
         bytes memory _callData
-    ) internal returns (bool /** success */, bytes memory /** returnData */)
+    ) internal returns (bool success, bytes memory returnData)
     {
         bytes memory encodedCallData = abi.encodePacked(
             bytes4(keccak256(bytes(_functionSignature))),
             _callData
         );
-        (bool success, bytes memory returnData) = (
+        (success, returnData) = (
             // solium-disable-next-line security/no-call-value
             _targetContractAddress.call.value(_callValue)(encodedCallData)
         );
@@ -900,9 +902,9 @@ contract Governance is InitializableV2 {
     }
 
     /**
-     * Helper function to perform validation for submitVote() and updateVote() functions
-     * Validates new _vote, _proposalId, proposal state, and voter state
-     * Returns stake of voter at proposal submission time
+     * @notice Helper function to perform validation for submitVote() and updateVote() functions
+     * @dev Validates new _vote, _proposalId, proposal state, and voter state
+     * @return stake of voter at proposal submission time
      */
     function _validateVoteAndGetVoterStake(address _voter, uint256 _proposalId, Vote _vote)
     private view returns (uint256) {
