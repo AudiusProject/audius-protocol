@@ -4,7 +4,7 @@ const { Buffer } = require('ipfs-http-client')
 
 const { getSegmentsDuration } = require('../segmentDuration')
 const models = require('../models')
-const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
+const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, handleTrackContentUpload } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseForbidden } = require('../apiHelpers')
 const { getFileUUIDForImageCID, rehydrateIpfsFromFsIfNecessary } = require('../utils')
 const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
@@ -16,7 +16,8 @@ module.exports = function (app) {
    * @dev - currently stores each segment twice, once under random file UUID & once under IPFS multihash
    *      - this should be addressed eventually
    */
-  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
+  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
+    if (req.fileSizeError) return errorResponseBadRequest(req.fileSizeError)
     if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
     const routeTimeStart = Date.now()
     let codeBlockTimeStart = Date.now()

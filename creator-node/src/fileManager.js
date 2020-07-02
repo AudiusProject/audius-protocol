@@ -245,6 +245,17 @@ const trackFileUpload = multer({
   }
 })
 
+const handleTrackContentUpload = (req, res, next) => {
+  trackFileUpload.single('file')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        req.fileSizeError = err
+      }
+    }
+    next()
+  })
+}
+
 function getFileExtension (fileName) {
   return (fileName.lastIndexOf('.') >= 0) ? fileName.substr(fileName.lastIndexOf('.')).toLowerCase() : ''
 }
@@ -256,5 +267,6 @@ module.exports = {
   removeTrackFolder,
   upload,
   uploadTempDiskStorage,
-  trackFileUpload
+  trackFileUpload,
+  handleTrackContentUpload
 }

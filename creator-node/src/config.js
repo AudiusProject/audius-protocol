@@ -94,7 +94,7 @@ const config = convict({
     format: 'nat',
     env: 'timeout',
     default: 60 * 60 * 1000 // 1 hour
-  }
+  },
   keepAliveTimeout: {
     doc: `
       Server keep alive timeout
