@@ -1523,19 +1523,6 @@ contract('Governance.sol', async (accounts) => {
             { from: proposerAddress }
           )
         })
-
-        it('Ensure veto does not prevent future governance actions', async () => {
-          await governance.vetoProposal(proposalId, { from: guardianAddress })
-
-          submitProposalTxReceipt = await governance.submitProposal(
-            targetContractRegistryKey,
-            callValue,
-            functionSignature,
-            callData,
-            proposalDescription,
-            { from: proposerAddress }
-          )
-        })
       })
     })
   })

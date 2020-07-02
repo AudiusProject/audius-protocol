@@ -438,7 +438,7 @@ contract Governance is InitializableV2 {
             block.number > endBlockNumber,
             "Governance: Proposal votingPeriod & executionDelay must end before evaluation."
         );
-        
+
         address targetContractAddress = registry.getContract(
             proposals[_proposalId].targetContractRegistryKey
         );
@@ -517,7 +517,7 @@ contract Governance is InitializableV2 {
         );
 
         require(
-            proposals[_proposalId].outcome == Outcome.InProgress,   
+            proposals[_proposalId].outcome == Outcome.InProgress,
             "Governance: Cannot veto inactive proposal."
         );
 
