@@ -132,7 +132,7 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
     req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding dir ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`)
     let findOriginalFileQuery = await models.File.findAll({
       where: {
-        dirMultihash: multihash,
+        storagePath: { [models.Sequelize.Op.like]: `%${multihash}%` },
         type: 'image'
       }
     })
@@ -166,7 +166,7 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
   req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, dirHash: ${dirHash}`)
   let findOriginalFileQuery = await models.File.findAll({
     where: {
-      dirMultihash: multihash,
+      storagePath: { [models.Sequelize.Op.like]: `%${dirHash}%` },
       type: 'image'
     }
   })
