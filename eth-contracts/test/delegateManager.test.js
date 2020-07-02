@@ -950,8 +950,60 @@ contract('DelegateManager', async (accounts) => {
       }
     })
 
+    it.only('Undelegate partial amount', async () => {
+      // Transfer 1000 tokens to delegator
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
+
+      let initialDelegateAmount = _lib.audToWeiBN(60)
+      console.log(initialDelegateAmount)
+
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      await delegateManager.delegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      let delStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
+      console.log(delStakeForSP)
+
+      let undelegateAmount = initialDelegateAmount.div(_lib.toBN(2))
+      console.log(undelegateAmount)
+      // Submit request to undelegate
+      await delegateManager.requestUndelegateStake(
+        stakerAccount,
+        undelegateAmount,
+        { from: delegatorAccount1 }
+      )
+
+      // Confirm lockup amount is registered
+      let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      assert.isTrue(
+        undelegateRequestInfo.amount.eq(undelegateAmount),
+        'Expect request to match undelegate amount')
+
+      // Advance to valid block
+      await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
+
+      let delegatorTokenBalance = await token.balanceOf(delegatorAccount1)
+      console.log(delegatorTokenBalance)
+      await delegateManager.undelegateStake({ from: delegatorAccount1 })
+      let delegatorBalanceAfterUndelegation = await token.balanceOf(delegatorAccount1)
+      console.log(delegatorBalanceAfterUndelegation)
+      assert.isTrue((delegatorBalanceAfterUndelegation.sub(undelegateAmount)).eq(delegatorTokenBalance), 'Expect funds to be returned')
+
+      let expectedStake = initialDelegateAmount.sub(undelegateAmount)
+      console.log(expectedStake)
+      delStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
+      console.log(delStakeForSP)
+      assert.isTrue(delStakeForSP.eq(expectedStake), 'Stake not updated')
+    })
+
     it('Fail when undelegating zero stake', async () => {
-      // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
 
