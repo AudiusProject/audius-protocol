@@ -17,9 +17,13 @@ services:
     depends_on:
       - creator-node-db
       - creator-node-redis
+    environment:
+      - redisHost=${COMPOSE_PROJECT_NAME}_creator-node-redis_1
+      - dbUrl=postgres://postgres:postgres@${COMPOSE_PROJECT_NAME}_creator-node-db_1:5432/audius_creator_node
+      - WAIT_HOSTS=${COMPOSE_PROJECT_NAME}_creator-node-db_1:5432, ${COMPOSE_PROJECT_NAME}_creator-node-redis_1:6379
+      - spOwnerWalletIndex=${SP_OWNER_WALLET_INDEX}
     env_file:
       - ./env/base.env
-      - ${CREATOR_NODE_ENV_OVERRIDE_PATH}
     ports:
       - '${CREATOR_NODE_HOST_PORT}:4000'
     volumes:
