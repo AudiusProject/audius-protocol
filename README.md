@@ -63,6 +63,12 @@ instructions!
 We welcome contributions to Audius from anyone who opens a PR. Feel free to reach out to
 our team [on Discord](https://discord.com/invite/yNUg2e2) or via other channels for feedback and/or support!
 
+## Security
+
+Please report security issues to `security@audius.co` with a description of the
+vulenerability and any steps to reproduce. We have bounties available for issues reported
+via responsible disclosure!
+
 ## License
 
 Apache 2.0: [LICENSE file](https://github.com/AudiusProject/audius-protocol/blob/master/LICENSE)
