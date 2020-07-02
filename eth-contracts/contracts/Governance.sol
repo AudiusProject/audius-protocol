@@ -9,10 +9,18 @@ import "./InitializableV2.sol";
 contract Governance is InitializableV2 {
     using SafeMath for uint256;
 
-    string private constant ERROR_INVALID_PROPOSAL = "Governance: Must provide valid non-zero _proposalId";
-    string private constant ERROR_ONLY_GOVERNANCE = "Governance: Only callable by self";
-    string private constant ERROR_INVALID_VOTING_PERIOD = "Governance: Requires non-zero _votingPeriod";
-    string private constant ERROR_INVALID_REGISTRY = "Governance: Requires non-zero _registryAddress";
+    string private constant ERROR_INVALID_PROPOSAL = (
+        "Governance: Must provide valid non-zero _proposalId"
+    );
+    string private constant ERROR_ONLY_GOVERNANCE = (
+        "Governance: Only callable by self"
+    );
+    string private constant ERROR_INVALID_VOTING_PERIOD = (
+        "Governance: Requires non-zero _votingPeriod"
+    );
+    string private constant ERROR_INVALID_REGISTRY = (
+        "Governance: Requires non-zero _registryAddress"
+    );
     string private constant ERROR_INVALID_VOTING_QUORUM = (
         "Governance: Requires _votingQuorumPercent between 1 & 100"
     );
