@@ -761,6 +761,12 @@ contract('Governance.sol', async (accounts) => {
       // Confirm description value in event log
       assert.equal(tx.event.args.description, descriptionCorrect, "Expected same event.args.description")
 
+      // Fail to getProposalDescriptionById for invalid proposalId
+      await _lib.assertRevert(
+        governance.getProposalDescriptionById.call(0),
+        "Must provide valid non-zero _proposalId"
+      )
+
       // Confirm description value in onchain storage
       const proposal = await governance.getProposalById.call(tx.event.args.proposalId)
       assert.equal(
@@ -2069,6 +2075,18 @@ contract('Governance.sol', async (accounts) => {
       await _lib.assertRevert(
         governance.setMaxDescriptionLength(newMaxDescriptionLength),
         "Only callable by self"
+      )
+
+      // should fail to call setMaxDescriptionLength with invalid value of 0 
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          governanceKey,
+          callValue0,
+          'setMaxDescriptionLength(uint16)',
+          _lib.abiEncode(['uint16'], [0]),
+          { from: guardianAddress }
+        ),
+        "Governance: Transaction failed."
       )
 
       await governance.guardianExecuteTransaction(
