@@ -1989,8 +1989,8 @@ contract('DelegateManager', async (accounts) => {
           _lib.abiEncode(['address'], [accounts[13]]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
-      )            
+        "Governance: Transaction failed."
+      )
     })
   })
 })

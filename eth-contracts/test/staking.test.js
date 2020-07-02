@@ -491,7 +491,7 @@ contract('Staking test', async (accounts) => {
           _lib.abiEncode(['address'], [accounts[9]]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Governance: Transaction failed."
       )            
     })
   })

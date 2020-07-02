@@ -1867,7 +1867,7 @@ contract('Governance.sol', async (accounts) => {
           _lib.abiEncode(['uint16'], [0]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Governance: Transaction failed."
       )
 
       await governance.guardianExecuteTransaction(

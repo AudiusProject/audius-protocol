@@ -312,12 +312,23 @@ export const configureStakingContractAddresses = async (
   claimsManagerAddress,
   delegateManagerAddress
 ) => {
+  const testWallet = '0x918D6781D8127A47DfAC6a50429bFc380014c403'
+
+  await assertRevert(
+    staking.stakeFor(testWallet, 0),
+    "serviceProviderFactoryAddress is not set"
+  )
   await governance.guardianExecuteTransaction(
     stakingProxyKey,
     toBN(0),
     'setServiceProviderFactoryAddress(address)',
     abiEncode(['address'], [spAddress]),
     { from: guardianAddress }
+  )
+
+  await assertRevert(
+    staking.stakeRewards(0, testWallet),
+    "claimsManagerAddress is not set"
   )
   await governance.guardianExecuteTransaction(
     stakingProxyKey,
@@ -326,13 +337,29 @@ export const configureStakingContractAddresses = async (
     abiEncode(['address'], [claimsManagerAddress]),
     { from: guardianAddress }
   )
+
+  await assertRevert(
+    staking.slash(0, testWallet),
+    "delegateManagerAddress is not set"
+  )
   await governance.guardianExecuteTransaction(
     stakingProxyKey,
     toBN(0),
     'setDelegateManagerAddress(address)',
     abiEncode(['address'], [delegateManagerAddress]),
     { from: guardianAddress })
-  await governance.guardianExecuteTransaction(
+  
+    await assertRevert(
+      governance.guardianExecuteTransaction(
+        stakingProxyKey,
+        toBN(0),
+        'setGovernanceAddress(address)',
+        abiEncode(['address'], [testWallet]),
+        { from: guardianAddress }
+      ),
+      "Governance: Transaction failed."
+    )
+    await governance.guardianExecuteTransaction(
     stakingProxyKey,
     toBN(0),
     'setGovernanceAddress(address)',

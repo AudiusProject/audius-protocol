@@ -1199,7 +1199,7 @@ contract('ServiceProvider test', async (accounts) => {
           _lib.abiEncode(['bytes32', 'bytes32'], [web3.utils.utf8ToHex('undefined-type'), testVersion]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Governance: Transaction failed."
       )
       
       // Update version again
@@ -1290,7 +1290,7 @@ contract('ServiceProvider test', async (accounts) => {
           _lib.abiEncode(['address'], [accounts[14]]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Governance: Transaction failed."
       )
       
       // setGovernanceAddress in ServiceTypeManager.sol
