@@ -37,6 +37,9 @@ contract Governance is InitializableV2 {
     /// @notice Period in blocks for which a governance proposal is open for voting
     uint256 private votingPeriod;
 
+    /// @notice Number of blocks that must pass after votingPeriod has expired before proposal can be evaluated/executed
+    uint256 private executionDelay;
+
     /// @notice Required minimum percentage of total stake to have voted to consider a proposal valid
     ///         Percentaged stored as a uint256 between 0 & 100
     ///         Calculated as: 100 * sum of voter stakes / total staked in Staking (at proposal submission block)
@@ -54,9 +57,6 @@ contract Governance is InitializableV2 {
      *      and execute transactions directly on contracts.
      */
     address private guardianAddress;
-
-    /// @notice Number of blocks that must pass after votingPeriod has expired before proposal can be evaluated/executed
-    uint16 private executionDelay;
 
     /***** Enums *****/
 
@@ -168,18 +168,18 @@ contract Governance is InitializableV2 {
      * @dev stakingAddress must be initialized separately after Staking contract is deployed
      * @param _registryAddress - address of the registry proxy contract
      * @param _votingPeriod - period in blocks for which a governance proposal is open for voting
+     * @param _executionDelay - number of blocks that must pass after votingPeriod has expired before proposal can be evaluated/executed
      * @param _votingQuorumPercent - required minimum percentage of total stake to have voted to consider a proposal valid
      * @param _maxInProgressProposals - max number of InProgress proposals possible at once
      * @param _guardianAddress - address of account that has special Governance permissions
-     * @param _executionDelay - number of blocks that must pass after votingPeriod has expired before proposal can be evaluated/executed
      */
     function initialize(
         address _registryAddress,
         uint256 _votingPeriod,
+        uint256 _executionDelay,
         uint256 _votingQuorumPercent,
         uint16 _maxInProgressProposals,
         uint16 _maxDescriptionLength,
-        uint16 _executionDelay,
         address _guardianAddress
     ) public initializer {
         require(_registryAddress != address(0x00), ERROR_INVALID_REGISTRY);
@@ -187,6 +187,9 @@ contract Governance is InitializableV2 {
 
         require(_votingPeriod > 0, ERROR_INVALID_VOTING_PERIOD);
         votingPeriod = _votingPeriod;
+
+        // executionDelay does not have to be non-zero
+        executionDelay = _executionDelay;
 
         require(
             _maxInProgressProposals > 0,
@@ -196,9 +199,6 @@ contract Governance is InitializableV2 {
 
         require(_maxDescriptionLength > 0, "Requires non-zero _maxDescriptionLength");
         maxDescriptionLength = _maxDescriptionLength;
-
-        // executionDelay does not have to be non-zero
-        executionDelay = _executionDelay;
 
         require(
             _votingQuorumPercent > 0 && _votingQuorumPercent <= 100,
@@ -617,7 +617,7 @@ contract Governance is InitializableV2 {
      * @dev Only callable by self via _executeTransaction
      * @param _newExecutionDelay - new value for executionDelay
      */
-    function setExecutionDelay(uint16 _newExecutionDelay) external {
+    function setExecutionDelay(uint256 _newExecutionDelay) external {
         _requireIsInitialized();
 
         require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
@@ -832,7 +832,7 @@ contract Governance is InitializableV2 {
     }
 
     /// @notice Get the proposal execution delay
-    function getExecutionDelay() external view returns (uint16) {
+    function getExecutionDelay() external view returns (uint256) {
         _requireIsInitialized();
 
         return executionDelay;
@@ -864,7 +864,7 @@ contract Governance is InitializableV2 {
         for (uint256 i = 0; i < inProgressProposals.length; i++) {
             if (
                 block.number >
-                (proposals[inProgressProposals[i]].submissionBlockNumber).add(votingPeriod)
+                (proposals[inProgressProposals[i]].submissionBlockNumber).add(votingPeriod).add(executionDelay)
             ) {
                 return false;
             }

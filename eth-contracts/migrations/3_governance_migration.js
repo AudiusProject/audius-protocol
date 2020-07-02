@@ -20,8 +20,8 @@ const MaxInProgressProposals = 100
 
 const MaxDescriptionLengthBytes = 250
 
-// 5hr * 60min/hr * 60sec/min / ~15 sec/block = 1200 blocks
-const ExecutionDelayBlocks = 1200
+// 24hr * 60min/hr * 60sec/min / ~15 sec/block = 5760 blocks
+const ExecutionDelayBlocks = 5760
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
@@ -37,8 +37,8 @@ module.exports = (deployer, network, accounts) => {
     const governance0 = await deployer.deploy(Governance, { from: proxyDeployerAddress })
     const initializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'uint16', 'uint16', 'uint16', 'address'],
-      [registryAddress, VotingPeriod, VotingQuorumPercent, MaxInProgressProposals, MaxDescriptionLengthBytes, ExecutionDelayBlocks, guardianAddress]
+      ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'uint16', 'address'],
+      [registryAddress, VotingPeriod, ExecutionDelayBlocks, VotingQuorumPercent, MaxInProgressProposals, MaxDescriptionLengthBytes, guardianAddress]
     )
     const governanceProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
