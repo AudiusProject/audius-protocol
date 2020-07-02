@@ -47,6 +47,7 @@ contract('Governance.sol', async (accounts) => {
   const votingQuorumPercent = 10
   const decreaseStakeLockupDuration = 10
   const maxInProgressProposals = 20
+  const maxDescriptionLength = 250
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress, newUpdateAddress] = accounts
@@ -91,7 +92,8 @@ contract('Governance.sol', async (accounts) => {
       votingPeriod,
       votingQuorumPercent,
       guardianAddress,
-      maxInProgressProposals
+      maxInProgressProposals,
+      maxDescriptionLength
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
 
@@ -589,6 +591,64 @@ contract('Governance.sol', async (accounts) => {
       )
     })
 
+    it('Proposal description', async () => {
+      const proposerAddress = accounts[10]
+      const slashAmount = _lib.toBN(1)
+      const targetAddress = accounts[11]
+      const targetContractRegistryKey = delegateManagerKey
+      const signature = 'slash(uint256,address)'
+      const callData = _lib.abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
+
+      const descriptionTooShort = ""
+      const descriptionTooLong = "-".repeat(maxDescriptionLength + 10)
+      const descriptionCorrect = proposalDescription
+
+      // Fail to submit with empty description
+      await _lib.assertRevert(
+        governance.submitProposal(
+          targetContractRegistryKey,
+          callValue0,
+          signature,
+          callData,
+          descriptionTooShort,
+          { from: proposerAddress }
+        )
+      )
+
+      // Fail to submit with too long description
+      await _lib.assertRevert(
+        governance.submitProposal(
+          targetContractRegistryKey,
+          callValue0,
+          signature,
+          callData,
+          descriptionTooLong,
+          { from: proposerAddress }
+        )
+      )
+
+      // Successfully submit with description of correct length
+      const txReceipt = await governance.submitProposal(
+        targetContractRegistryKey,
+        callValue0,
+        signature,
+        callData,
+        descriptionCorrect,
+        { from: proposerAddress }
+      )
+      const tx = _lib.parseTx(txReceipt)
+
+      // Confirm description value in event log
+      assert.equal(tx.event.args.description, descriptionCorrect, "Expected same event.args.description")
+
+      // Confirm description value in onchain storage
+      const proposal = await governance.getProposalById.call(tx.event.args.proposalId)
+      assert.equal(
+        await governance.getProposalDescriptionById.call(proposal.proposalId),
+        descriptionCorrect
+      )
+    })
+
     it('Submit Proposal for Slash', async () => {
       const proposalId = 1
       const proposerAddress = accounts[10]
@@ -632,6 +692,9 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(parseInt(proposal.voteMagnitudeYes), 0, 'Expected same voteMagnitudeYes')
       assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
       assert.equal(parseInt(proposal.numVotes), 0, 'Expected same numVotes')
+      
+      const propDescription = await governance.getProposalDescriptionById.call(proposalId)
+      assert.equal(propDescription, proposalDescription, 'Expected same proposalDescription')
 
       // Confirm all vote states - all Vote.None
       for (const account of accounts) {
@@ -1839,6 +1902,35 @@ contract('Governance.sol', async (accounts) => {
         await governance.getMaxInProgressProposals.call(),
         newMaxInProgressProposals,
         'Incorrect maxInProgressProposals value after update'
+      )
+    })
+
+    it('Get/Set maxDescriptionLength', async () => {
+      const newMaxDescriptionLength = maxDescriptionLength * 2
+
+      assert.equal(
+        await governance.getMaxDescriptionLength.call(),
+        maxDescriptionLength,
+        'Incorrect maxDescriptionLength value before update'
+      )
+
+      await _lib.assertRevert(
+        governance.setMaxDescriptionLength(newMaxDescriptionLength),
+        "Only callable by self"
+      )
+
+      await governance.guardianExecuteTransaction(
+        governanceKey,
+        callValue0,
+        'setMaxDescriptionLength(uint16)',
+        _lib.abiEncode(['uint16'], [newMaxDescriptionLength]),
+        { from: guardianAddress }
+      )
+
+      assert.equal(
+        await governance.getMaxDescriptionLength.call(),
+        newMaxDescriptionLength,
+        "Incorrect maxDescriptionLength value after update"
       )
     })
   })
