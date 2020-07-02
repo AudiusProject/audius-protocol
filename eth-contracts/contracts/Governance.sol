@@ -434,7 +434,7 @@ contract Governance is InitializableV2 {
             block.number > endBlockNumber,
             "Governance: Proposal votingPeriod must end before evaluation."
         );
-        
+
         address targetContractAddress = registry.getContract(
             proposals[_proposalId].targetContractRegistryKey
         );
@@ -734,7 +734,25 @@ contract Governance is InitializableV2 {
         );
     }
 
-    // TODO: Expose contract hash
+     /**
+     * @notice Get proposal target contract hash by proposalId
+     * @dev This is a separate function because the getProposalById returns too many
+            variables already and by adding more, you get the error
+            `InternalCompilerError: Stack too deep, try using fewer variables`
+     * @param _proposalId - id of proposal
+     */
+    function getProposalTargetContractHash(uint256 _proposalId)
+    external view returns (bytes32)
+    {
+        _requireIsInitialized();
+
+        require(
+            _proposalId <= lastProposalId && _proposalId > 0,
+            "Must provide valid non-zero _proposalId"
+        );
+
+        return (proposals[_proposalId].contractHash);
+    }
 
      /**
      * @notice Get proposal description by proposalId
