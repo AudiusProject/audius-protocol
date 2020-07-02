@@ -151,13 +151,14 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _endpoint - url of the service to register - url of the service to register
      * @param _stakeAmount - amount to stake, must be within bounds in ServiceTypeManager
      * @param _delegateOwnerWallet - wallet to delegate some permissions for some basic management properties
+     * @return New service provider ID for this endpoint
      */
     function register(
         bytes32 _serviceType,
         string calldata _endpoint,
         uint256 _stakeAmount,
         address _delegateOwnerWallet
-    ) external returns (uint256 spID)
+    ) external returns (uint256)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -239,7 +240,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function deregister(
         bytes32 _serviceType,
         string calldata _endpoint
-    ) external returns (uint256 deregisteredSpID)
+    ) external returns (uint256)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -329,7 +330,7 @@ contract ServiceProviderFactory is InitializableV2 {
      */
     function increaseStake(
         uint256 _increaseStakeAmount
-    ) external returns (uint256 newTotalStake)
+    ) external returns (uint256)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -381,7 +382,7 @@ contract ServiceProviderFactory is InitializableV2 {
      * @return New total stake amount after the lockup
      */
     function requestDecreaseStake(uint256 _decreaseStakeAmount)
-    external returns (uint256 newStakeAmount)
+    external returns (uint256)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -441,7 +442,7 @@ contract ServiceProviderFactory is InitializableV2 {
      * @notice Called by user to decrease a stake after waiting the appropriate lockup period.
      * @return New total stake after decrease
      */
-    function decreaseStake() external returns (uint256 newTotalStake)
+    function decreaseStake() external returns (uint256)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -521,12 +522,13 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _serviceType - type of service to register, must be valid in ServiceTypeManager
      * @param _oldEndpoint - old endpoint currently registered
      * @param _newEndpoint - new endpoint to replace old endpoint
+     * @return ID of updated service provider
      */
     function updateEndpoint(
         bytes32 _serviceType,
         string calldata _oldEndpoint,
         string calldata _newEndpoint
-    ) external returns (uint256 spID)
+    ) external returns (uint256)
     {
         _requireIsInitialized();
 
@@ -622,7 +624,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /// @notice Get denominator for deployer cut calculations
     function getServiceProviderDeployerCutBase()
-    external view returns (uint256 base)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -631,7 +633,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /// @notice Get total number of service providers for a given serviceType
     function getTotalServiceTypeProviders(bytes32 _serviceType)
-    external view returns (uint256 numberOfProviders)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -640,7 +642,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /// @notice Get service provider id for an endpoint
     function getServiceProviderIdFromEndpoint(string calldata _endpoint)
-    external view returns (uint256 spID)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -652,7 +654,7 @@ contract ServiceProviderFactory is InitializableV2 {
      * @return List of service ids of that type for a service provider
      */
     function getServiceProviderIdsFromAddress(address _ownerAddress, bytes32 _serviceType)
-    external view returns (uint256[] memory spIds)
+    external view returns (uint256[] memory)
     {
         _requireIsInitialized();
 
@@ -720,7 +722,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /// @notice Get current unstake lockup duration
     function getDecreaseStakeLockupDuration()
-    external view returns (uint256 duration)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -745,35 +747,35 @@ contract ServiceProviderFactory is InitializableV2 {
     }
 
     /// @notice Get the Governance address
-    function getGovernanceAddress() external view returns (address addr) {
+    function getGovernanceAddress() external view returns (address) {
         _requireIsInitialized();
 
         return governanceAddress;
     }
 
     /// @notice Get the Staking address
-    function getStakingAddress() external view returns (address addr) {
+    function getStakingAddress() external view returns (address) {
         _requireIsInitialized();
 
         return stakingAddress;
     }
 
     /// @notice Get the DelegateManager address
-    function getDelegateManagerAddress() external view returns (address addr) {
+    function getDelegateManagerAddress() external view returns (address) {
         _requireIsInitialized();
 
         return delegateManagerAddress;
     }
 
     /// @notice Get the ServiceTypeManager address
-    function getServiceTypeManagerAddress() external view returns (address addr) {
+    function getServiceTypeManagerAddress() external view returns (address) {
         _requireIsInitialized();
 
         return serviceTypeManagerAddress;
     }
 
     /// @notice Get the ClaimsManager address
-    function getClaimsManagerAddress() external view returns (address addr) {
+    function getClaimsManagerAddress() external view returns (address) {
         _requireIsInitialized();
 
         return claimsManagerAddress;
@@ -898,7 +900,7 @@ contract ServiceProviderFactory is InitializableV2 {
      * return Boolean of whether decrease request has been initiated
      */
     function _decreaseRequestIsPending(address _serviceProvider)
-    internal view returns (bool pending)
+    internal view returns (bool)
     {
         return (
             (decreaseStakeRequests[_serviceProvider].lockupExpiryBlock > 0) &&
@@ -914,7 +916,7 @@ contract ServiceProviderFactory is InitializableV2 {
      * @param _serviceProvider - address of service provider
      * return Boolean of whether claim is pending
      */
-    function _claimPending(address _serviceProvider) internal view returns (bool pending) {
+    function _claimPending(address _serviceProvider) internal view returns (bool) {
         return ClaimsManager(claimsManagerAddress).claimPending(_serviceProvider);
     }
 

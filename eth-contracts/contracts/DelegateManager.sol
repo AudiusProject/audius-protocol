@@ -123,7 +123,7 @@ contract DelegateManager is InitializableV2 {
     function delegateStake(
         address _targetSP,
         uint256 _amount
-    ) external returns (uint256 delegatedAmount)
+    ) external returns (uint256)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -194,7 +194,7 @@ contract DelegateManager is InitializableV2 {
     function requestUndelegateStake(
         address _target,
         uint256 _amount
-    ) external returns (uint256 newDelegateAmount)
+    ) external returns (uint256)
     {
         _requireIsInitialized();
         _requireClaimsManagerAddressIsSet();
@@ -259,7 +259,7 @@ contract DelegateManager is InitializableV2 {
      * @notice Finalize undelegation request and withdraw stake
      * @return New total amount currently staked after stake has been undelegated
      */
-    function undelegateStake() external returns (uint256 newTotal) {
+    function undelegateStake() external returns (uint256) {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
         _requireServiceProviderFactoryAddressIsSet();
@@ -644,7 +644,7 @@ contract DelegateManager is InitializableV2 {
      * @param _sp - service provider address
      */
     function getDelegatorsList(address _sp)
-    external view returns (address[] memory dels)
+    external view returns (address[] memory)
     {
         _requireIsInitialized();
 
@@ -653,7 +653,7 @@ contract DelegateManager is InitializableV2 {
 
     /// @notice Get total amount delegated to a service provider
     function getTotalDelegatedToServiceProvider(address _sp)
-    external view returns (uint256 total)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -662,7 +662,7 @@ contract DelegateManager is InitializableV2 {
 
     /// @notice Get total delegated stake locked up for a service provider
     function getTotalLockedDelegationForServiceProvider(address _sp)
-    external view returns (uint256 total)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -671,7 +671,7 @@ contract DelegateManager is InitializableV2 {
 
     /// @notice Get total currently staked for a delegator, for a given service provider
     function getDelegatorStakeForServiceProvider(address _delegator, address _serviceProvider)
-    external view returns (uint256 amount)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -693,7 +693,7 @@ contract DelegateManager is InitializableV2 {
 
     /// @notice Get current undelegate lockup duration
     function getUndelegateLockupDuration()
-    external view returns (uint256 duration)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -702,7 +702,7 @@ contract DelegateManager is InitializableV2 {
 
     /// @notice Current maximum delegators
     function getMaxDelegators()
-    external view returns (uint256 numDelegators)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -711,7 +711,7 @@ contract DelegateManager is InitializableV2 {
 
     /// @notice Get minimum delegation amount
     function getMinDelegationAmount()
-    external view returns (uint256 minDelegation)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -719,28 +719,28 @@ contract DelegateManager is InitializableV2 {
     }
 
     /// @notice Get the Governance address
-    function getGovernanceAddress() external view returns (address addr) {
+    function getGovernanceAddress() external view returns (address) {
         _requireIsInitialized();
 
         return governanceAddress;
     }
 
     /// @notice Get the ServiceProviderFactory address
-    function getServiceProviderFactoryAddress() external view returns (address addr) {
+    function getServiceProviderFactoryAddress() external view returns (address) {
         _requireIsInitialized();
 
         return serviceProviderFactoryAddress;
     }
 
     /// @notice Get the ClaimsManager address
-    function getClaimsManagerAddress() external view returns (address addr) {
+    function getClaimsManagerAddress() external view returns (address) {
         _requireIsInitialized();
 
         return claimsManagerAddress;
     }
 
     /// @notice Get the Staking address
-    function getStakingAddress() external view returns (address addr)
+    function getStakingAddress() external view returns (address)
     {
         _requireIsInitialized();
 
@@ -961,11 +961,12 @@ contract DelegateManager is InitializableV2 {
      * @notice Returns if delegator has delegated to a service provider
      * @param _delegator - address of delegator
      * @param _serviceProvider - address of service provider
+     * @return boolean indicating whether delegator exists for service provider
      */
     function _delegatorExistsForSP(
         address _delegator,
         address _serviceProvider
-    ) internal view returns (bool exists)
+    ) internal view returns (bool)
     {
         for (uint256 i = 0; i < spDelegateInfo[_serviceProvider].delegators.length; i++) {
             if (spDelegateInfo[_serviceProvider].delegators[i] == _delegator) {
@@ -977,19 +978,21 @@ contract DelegateManager is InitializableV2 {
     }
 
     /**
-     * @notice Boolean indicating whether a claim is pending for this service provider
+     * @notice Determine if a claim is pending for this service provider
      * @param _sp - address of service provider
+     * @return boolean indicating whether a claim is pending
      */
-    function _claimPending(address _sp) internal view returns (bool pending) {
+    function _claimPending(address _sp) internal view returns (bool) {
         ClaimsManager claimsManager = ClaimsManager(claimsManagerAddress);
         return claimsManager.claimPending(_sp);
     }
 
     /**
-     * @notice Boolean indicating whether a decrease request has been initiated
+     * @notice Determine if a decrease request has been initiated
      * @param _delegator - address of delegator
+     * @return boolean indicating whether a decrease request is pending 
      */
-    function _undelegateRequestIsPending(address _delegator) internal view returns (bool pending)
+    function _undelegateRequestIsPending(address _delegator) internal view returns (bool)
     {
         return (
             (undelegateRequests[_delegator].lockupExpiryBlock != 0) &&
