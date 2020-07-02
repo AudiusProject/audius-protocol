@@ -990,7 +990,7 @@ contract DelegateManager is InitializableV2 {
     /**
      * @notice Determine if a decrease request has been initiated
      * @param _delegator - address of delegator
-     * @return boolean indicating whether a decrease request is pending 
+     * @return boolean indicating whether a decrease request is pending
      */
     function _undelegateRequestIsPending(address _delegator) internal view returns (bool)
     {

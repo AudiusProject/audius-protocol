@@ -355,28 +355,28 @@ contract Staking is InitializableV2 {
     }
 
     /// @notice Get the Governance address
-    function getGovernanceAddress() external view returns (address addr) {
+    function getGovernanceAddress() external view returns (address) {
         _requireIsInitialized();
 
         return governanceAddress;
     }
 
     /// @notice Get the ClaimsManager address
-    function getClaimsManagerAddress() external view returns (address addr) {
+    function getClaimsManagerAddress() external view returns (address) {
         _requireIsInitialized();
 
         return claimsManagerAddress;
     }
 
     /// @notice Get the ServiceProviderFactory address
-    function getServiceProviderFactoryAddress() external view returns (address addr) {
+    function getServiceProviderFactoryAddress() external view returns (address) {
         _requireIsInitialized();
 
         return serviceProviderFactoryAddress;
     }
 
     /// @notice Get the DelegateManager address
-    function getDelegateManagerAddress() external view returns (address addr) {
+    function getDelegateManagerAddress() external view returns (address) {
         _requireIsInitialized();
 
         return delegateManagerAddress;
