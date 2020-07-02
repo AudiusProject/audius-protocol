@@ -1346,6 +1346,19 @@ contract('Governance.sol', async (accounts) => {
             "Cannot evaluate inactive proposal."
           )
         })
+
+        it('Ensure veto does not prevent future governance actions', async () => {
+          await governance.vetoProposal(proposalId, { from: guardianAddress })
+
+          submitProposalTxReceipt = await governance.submitProposal(
+            targetContractRegistryKey,
+            callValue0,
+            functionSignature,
+            callData,
+            proposalDescription,
+            { from: proposerAddress }
+          )
+        })
       })
     })
   })

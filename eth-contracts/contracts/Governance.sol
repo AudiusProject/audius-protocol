@@ -515,6 +515,9 @@ contract Governance is InitializableV2 {
 
         proposals[_proposalId].outcome = Outcome.Vetoed;
 
+        // Remove from inProgressProposals array
+        _removeFromInProgressProposals(_proposalId);
+
         emit ProposalVetoed(_proposalId);
     }
 
