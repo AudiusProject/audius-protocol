@@ -20,7 +20,8 @@ const MaxInProgressProposals = 100
 
 const MaxDescriptionLengthBytes = 250
 
-const ExecutionDelayBlocks = 10
+// 5hr * 60min/hr * 60sec/min / ~15 sec/block = 1200 blocks
+const ExecutionDelayBlocks = 1200
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
