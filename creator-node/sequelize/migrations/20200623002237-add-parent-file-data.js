@@ -28,47 +28,14 @@ module.exports = {
         { transaction }
       )
       await queryInterface.addIndex('Files', ['dirMultihash'], { transaction })
-
-      let files
-      let limit = 10000
-      let offset = 0
-      files = (await queryInterface.sequelize.query(`SELECT * FROM "Files" ORDER BY "multihash" ASC LIMIT ${limit} OFFSET ${offset};`, { transaction }))[0]
-
-      while (files.length) {
-        for (let file of files) {
-          // Set the filename to the last uri "part" of the source file if present
-          // otherwise, use just the sourceFile
-          // After this migration, the fileName field should always represent the "stored" file name
-          // for *every* file and it can probably replace file.sourceFile entirely.
-          const fileName = file.sourceFile
-            ? file.sourceFile.split('/').slice(-1)[0] || file.sourceFile
-            : file.sourceFile
-  
-          // Set the dir multihash to the parent CID if there is one
-          let dirMultihash
-          if (file.type === 'image' && file.storagePath) {
-            const match = file.storagePath.match(/(?<parent>Qm.*)\/(?<child>Qm.*)/)
-            if (match) {
-              const { groups: { parent } } = match
-              if (parent) {
-                dirMultihash = parent
-              }
-            }
-          }
-          // Coerce all falsey types to `null` (meaning our regex couldn't find a parent multihash)
-          if (!dirMultihash) dirMultihash = null
-  
-          await queryInterface.sequelize.query(`
-            UPDATE "Files"
-            SET "fileName" = '${fileName}',
-                "dirMultihash" = '${dirMultihash}'
-            WHERE "fileUUID" = '${file.fileUUID}'`
-          , { transaction })
-        }
-
-        offset += files.length
-        files = (await queryInterface.sequelize.query(`SELECT * FROM "Files" ORDER BY "multihash" ASC LIMIT ${limit} OFFSET ${offset};`, { transaction }))[0]
-      }
+      await queryInterface.sequelize.query(`
+        UPDATE "Files" SET
+        "fileName" = regexp_replace("sourceFile", '(.*)\/','','g'),
+        "dirMultihash" = CASE
+          WHEN "type" = 'image' THEN regexp_replace("storagePath", '^\/.*/(Qm.*)\/(Qm.*)$','\\1','g')
+          ELSE null
+        END
+      `, { transaction })
 
       await transaction.commit()
     } catch (err) {
