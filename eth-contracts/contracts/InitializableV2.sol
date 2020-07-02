@@ -12,8 +12,8 @@ import "@openzeppelin/upgrades/contracts/Initializable.sol";
 contract InitializableV2 is Initializable {
     bool private isInitialized;
 
-    string private constant ERROR_NOT_INITIALIZED = "INIT_NOT_INITIALIZED";
-    string private constant ERROR_ALREADY_INITIALIZED = "ERROR_ALREADY_INITIALIZED";
+    string private constant ERROR_NOT_INITIALIZED = "InitializableV2: Not initialized";
+    string private constant ERROR_ALREADY_INITIALIZED = "InitializableV2: Already initialized";
 
     function initialize() public initializer {
         isInitialized = true;
