@@ -235,7 +235,7 @@ contract Governance is InitializableV2 {
         // Require description length in bytes is within bounds
         require(
             bytes(_description).length > 0 && bytes(_description).length <= maxDescriptionLength,
-            "Governance::submitProposal: _description length must be between 1 and maxDescriptionLength"
+            "Governance: _description length must be between 1 and maxDescriptionLength"
         );
 
         // set proposalId

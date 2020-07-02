@@ -1539,7 +1539,7 @@ contract('Governance.sol', async (accounts) => {
     assert.isTrue(await governance.inProgressProposalsAreUpToDate.call(), 'Expected all proposals to be uptodate')
   })
 
-  describe.only('Guardian execute transactions', async () => {
+  describe('Guardian execute transactions', async () => {
     let slashAmount, targetAddress, targetContractRegistryKey, targetContractAddress
     let callValue, signature, callData, returnData
 
