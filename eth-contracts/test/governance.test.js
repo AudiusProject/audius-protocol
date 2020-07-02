@@ -48,6 +48,7 @@ contract('Governance.sol', async (accounts) => {
   const decreaseStakeLockupDuration = 10
   const maxInProgressProposals = 20
   const maxDescriptionLength = 250
+  const executionDelay = votingPeriod
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress, newUpdateAddress] = accounts
@@ -90,6 +91,7 @@ contract('Governance.sol', async (accounts) => {
       proxyDeployerAddress,
       registry,
       votingPeriod,
+      executionDelay,
       votingQuorumPercent,
       guardianAddress,
       maxInProgressProposals,
@@ -398,6 +400,7 @@ contract('Governance.sol', async (accounts) => {
       proxyDeployerAddress,
       registry2,
       votingPeriod,
+      executionDelay,
       votingQuorumPercent,
       guardianAddress
     )
@@ -876,7 +879,7 @@ contract('Governance.sol', async (accounts) => {
         assert.equal(parseInt(proposal.numVotes), 2, 'Expected same numVotes')
 
         const proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
-        await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
+        await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
 
         let evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
         const [txParsedEvent0] = _lib.parseTx(evaluateTxReceipt, true)
@@ -897,7 +900,7 @@ contract('Governance.sol', async (accounts) => {
       let functionSignature, callData, outcome, returnData, initialTotalStake, initialStakeAcct2, initialTokenSupply
       let submitProposalTxReceipt, proposalStartBlockNumber, evaluateTxReceipt
 
-      /** Define vars, submit proposal, submit votes, advance blocks */
+      /** Define vars, submit proposal, submit votes, advance blocks to end of votingPeriod + executionDelay */
       beforeEach(async () => {
         // Define vars
         proposalId = 1
@@ -936,9 +939,9 @@ contract('Governance.sol', async (accounts) => {
         )
         await governance.submitVote(proposalId, voter1Vote, { from: voter1Address })
   
-        // Advance blocks to the next valid claim
+        // Advance blocks to end of proposal votingPeriod + executionDelay
         proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
-        await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
+        await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
       })
 
       it('Fail to evaluate proposal with invalid proposalId', async () => {
@@ -952,7 +955,7 @@ contract('Governance.sol', async (accounts) => {
         governance.evaluateProposalOutcome(proposalId, { from: accounts[15] })
       })
 
-      it('Fail to evaluate proposal before votingPeriod has ended', async () => {
+      it('Fail to evaluate proposal before votingPeriod and executionDelay have ended', async () => {
         // Evaluate all previous evaluatable proposals so new proposals can be submitted
         await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
         
@@ -964,13 +967,34 @@ contract('Governance.sol', async (accounts) => {
           proposalDescription,
           { from: proposerAddress }
         )
+        proposalId = _lib.parseTx(submitProposalTxReceipt).event.args.proposalId
         
         await _lib.assertRevert(
           governance.evaluateProposalOutcome(
-            _lib.parseTx(submitProposalTxReceipt).event.args.proposalId,
+            proposalId,
             { from: proposerAddress }
           ),
-          "Proposal votingPeriod must end before evaluation."
+          "Proposal votingPeriod & executionDelay must end before evaluation."
+        )
+
+        // Advance blocks to end of proposal votingPeriod
+        proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
+        await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
+
+        await _lib.assertRevert(
+          governance.evaluateProposalOutcome(
+            proposalId,
+            { from: proposerAddress }
+          ),
+          "Proposal votingPeriod & executionDelay must end before evaluation."
+        )
+
+        // Advance blocks to end of proposal executionDelay
+        await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
+
+        await governance.evaluateProposalOutcome(
+          proposalId,
+          { from: proposerAddress }
         )
       })
 
@@ -1059,9 +1083,9 @@ contract('Governance.sol', async (accounts) => {
         await governance.submitVote(proposalId, Vote.No, { from: voter1Address })
         await governance.submitVote(proposalId, Vote.No, { from: voter2Address })
 
-        // Advance blocks to the next valid claim
+        // Advance blocks to the evaluatable block
         proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
-        await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
+        await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
 
         outcome = Outcome.Rejected
         const TWO = _lib.toBN(2)
@@ -1111,9 +1135,9 @@ contract('Governance.sol', async (accounts) => {
         proposalId = _lib.parseTx(submitProposalTxReceipt).event.args.proposalId
         outcome = Outcome.QuorumNotMet
 
-        // Advance blocks to the next valid claim
+        // Advance blocks to evaluatable block
         proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
-        await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
+        await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
 
         evaluateTxReceipt = await governance.evaluateProposalOutcome(
           _lib.parseTx(submitProposalTxReceipt).event.args.proposalId,
@@ -1173,9 +1197,9 @@ contract('Governance.sol', async (accounts) => {
           { from: guardianAddress }
         )
 
-        // Advance blocks to the next valid claim
+        // Advance blocks to the evaluatable block
         const proposal2StartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt2).event.args.submissionBlockNumber)
-        await time.advanceBlockTo(proposal2StartBlockNumber + votingPeriod)
+        await time.advanceBlockTo(proposal2StartBlockNumber + votingPeriod + executionDelay)
 
         // Evaluate proposal and confirm it fails
         await governance.evaluateProposalOutcome(
@@ -1319,6 +1343,62 @@ contract('Governance.sol', async (accounts) => {
           )
         })
 
+        it('Confirm veto ability before votingPeriod, after votingPeriod, after executionDelay', async () => {
+          // Veto previously created proposal (votingPeriod + executionDelay have expired)
+          await governance.vetoProposal(
+            proposalId,
+            { from: guardianAddress }
+          )
+          
+          // Submit proposal + veto immediately, while votingPeriod is still active
+          submitProposalTxReceipt = await governance.submitProposal(
+            targetContractRegistryKey,
+            callValue,
+            functionSignature,
+            callData,
+            proposalDescription,
+            { from: proposerAddress }
+          )
+          await governance.vetoProposal(
+            _lib.parseTx(submitProposalTxReceipt).event.args.proposalId,
+            { from: guardianAddress }
+          )
+
+          // Submit proposal + veto after votingPeriod has expired
+          submitProposalTxReceipt = await governance.submitProposal(
+            targetContractRegistryKey,
+            callValue,
+            functionSignature,
+            callData,
+            proposalDescription,
+            { from: proposerAddress }
+          )
+          proposalId = _lib.parseTx(submitProposalTxReceipt).event.args.proposalId
+          proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
+          await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
+          await governance.vetoProposal(
+            proposalId,
+            { from: guardianAddress }
+          )
+
+          // Submit proposal + veto after executionDelay has expired
+          submitProposalTxReceipt = await governance.submitProposal(
+            targetContractRegistryKey,
+            callValue,
+            functionSignature,
+            callData,
+            proposalDescription,
+            { from: proposerAddress }
+          )
+          proposalId = _lib.parseTx(submitProposalTxReceipt).event.args.proposalId
+          proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
+          await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
+          await governance.vetoProposal(
+            proposalId,
+            { from: guardianAddress }
+          )
+        })
+
         it('Successfully veto proposal + ensure further actions are blocked', async () => {
           const vetoTxReceipt = await governance.vetoProposal(proposalId, { from: guardianAddress })
 
@@ -1385,9 +1465,9 @@ contract('Governance.sol', async (accounts) => {
     // Submit proposal vote for Yes
     await governance.submitVote(proposalId, Vote.Yes, { from: voterAddress })
 
-    // Advance blocks to after proposal evaluation period
+    // Advance blocks to after proposal evaluation period + execution delay
     const proposalStartBlock = parseInt(_lib.parseTx(submitTxReceipt).event.args.submissionBlockNumber)
-    await time.advanceBlockTo(proposalStartBlock + votingPeriod)
+    await time.advanceBlockTo(proposalStartBlock + votingPeriod + executionDelay)
 
     // Call evaluateProposalOutcome()
     const evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
@@ -1931,6 +2011,35 @@ contract('Governance.sol', async (accounts) => {
         await governance.getMaxDescriptionLength.call(),
         newMaxDescriptionLength,
         "Incorrect maxDescriptionLength value after update"
+      )
+    })
+
+    it('Get/Set executionDelay', async () => {
+      const newExecutionDelay = executionDelay * 2
+
+      assert.equal(
+        await governance.getExecutionDelay.call(),
+        executionDelay,
+        "Incorrect executionDelay value before update"
+      )
+
+      await _lib.assertRevert(
+        governance.setExecutionDelay(newExecutionDelay),
+        "Only callable by self"
+      )
+
+      await governance.guardianExecuteTransaction(
+        governanceKey,
+        callValue0,
+        'setExecutionDelay(uint256)',
+        _lib.abiEncode(['uint256'], [newExecutionDelay]),
+        { from: guardianAddress }
+      )
+
+      assert.equal(
+        await governance.getExecutionDelay.call(),
+        newExecutionDelay,
+        "Incorrect executionDelay value after update"
       )
     })
   })

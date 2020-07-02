@@ -14,6 +14,7 @@ const tokenRegKey = web3.utils.utf8ToHex('TokenKey')
 
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 const VOTING_PERIOD = 10
+const EXECUTION_DELAY = VOTING_PERIOD
 const VOTING_QUORUM_PERCENT = 10
 
 
@@ -61,6 +62,7 @@ contract('Staking test', async (accounts) => {
       proxyDeployerAddress,
       registry,
       VOTING_PERIOD,
+      EXECUTION_DELAY,
       VOTING_QUORUM_PERCENT,
       guardianAddress
     )
