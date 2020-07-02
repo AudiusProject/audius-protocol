@@ -627,6 +627,90 @@ contract('Governance.sol', async (accounts) => {
       )
     })
 
+    it('Fail to submitProposal when an outstanding proposal exists', async () => {
+      const proposerAddress = accounts[10]
+      const slashAmount = _lib.toBN(1)
+      const targetAddress = accounts[11]
+      const targetContractRegistryKey = delegateManagerKey
+      const signature = 'slash(uint256,address)'
+      const callData = _lib.abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
+
+      // Successfully submit a proposal
+      const txReceipt = await governance.submitProposal(
+        targetContractRegistryKey,
+        callValue0,
+        signature,
+        callData,
+        proposalDescription,
+        { from: proposerAddress }
+      )
+
+      // advance to make eligible to evaluate
+      const proposalStartBlockNumber = parseInt(_lib.parseTx(txReceipt).event.args.submissionBlockNumber)
+      await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
+      
+      await _lib.assertRevert(
+        governance.submitProposal(
+          targetContractRegistryKey,
+          callValue0,
+          signature,
+          callData,
+          proposalDescription,
+          { from: proposerAddress }
+        ),
+        "Cannot submit new proposal until all evaluatable InProgress proposals are evaluated."
+      )
+    })
+
+    it('Fail to submitProposal when number of InProgress proposals > maxInProgressProposals', async () => {
+      const proposerAddress = accounts[10]
+      const slashAmount = _lib.toBN(1)
+      const targetAddress = accounts[11]
+      const targetContractRegistryKey = delegateManagerKey
+      const signature = 'slash(uint256,address)'
+      const callData = _lib.abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
+
+      // Successfully submit a proposal
+      await governance.submitProposal(
+        targetContractRegistryKey,
+        callValue0,
+        signature,
+        callData,
+        proposalDescription,
+        { from: proposerAddress }
+      )
+
+      // Update maxInProgressProposals to high val
+      await governance.guardianExecuteTransaction(
+        governanceKey,
+        callValue0,
+        'setMaxInProgressProposals(uint16)',
+        _lib.abiEncode(['uint16'], [1]),
+        { from: guardianAddress }
+      )
+
+      await governance.submitProposal(
+        targetContractRegistryKey,
+        callValue0,
+        signature,
+        callData,
+        proposalDescription,
+        { from: proposerAddress }
+      )
+
+      await _lib.assertRevert(
+        governance.submitProposal(
+          targetContractRegistryKey,
+          callValue0,
+          signature,
+          callData,
+          proposalDescription,
+          { from: proposerAddress }
+        ),
+        "Number of InProgress proposals already at max. Please evaluate if possible, or wait for current proposals' votingPeriods to expire."
+      )
+    })
+
     it('Proposal description', async () => {
       const proposerAddress = accounts[10]
       const slashAmount = _lib.toBN(1)
