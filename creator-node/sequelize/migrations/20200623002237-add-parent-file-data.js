@@ -28,14 +28,19 @@ module.exports = {
         { transaction }
       )
       await queryInterface.addIndex('Files', ['dirMultihash'], { transaction })
-      await queryInterface.sequelize.query(`
-        UPDATE "Files" SET
-        "fileName" = regexp_replace("sourceFile", '(.*)\/','','g'),
-        "dirMultihash" = CASE
-          WHEN "type" = 'image' THEN regexp_replace("storagePath", '^\/.*/(Qm.*)\/(Qm.*)$','\\1','g')
-          ELSE null
-        END
-      `, { transaction })
+
+      // For reference, this is what the values of the columns should be
+      // inherited from sourceFile & storagePath
+      // This bulk update is run separaely.
+
+      // await queryInterface.sequelize.query(`
+      //   UPDATE "Files" SET
+      //   "fileName" = regexp_replace("sourceFile", '(.*)\/','','g'),
+      //   "dirMultihash" = CASE
+      //     WHEN "type" = 'image' THEN regexp_replace("storagePath", '^\/.*/(Qm.*)\/(Qm.*)$','\\1','g')
+      //     ELSE null
+      //   END
+      // `, { transaction })
 
       await transaction.commit()
     } catch (err) {
