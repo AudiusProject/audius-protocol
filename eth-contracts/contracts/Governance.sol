@@ -46,6 +46,9 @@ contract Governance is InitializableV2 {
     /// @dev uint16 gives max possible value of 65,535
     uint16 private maxInProgressProposals;
 
+    /// @notice Max number of bytes allowed in a proposal description string
+    uint16 private maxDescriptionLength;
+
     /**
      * @notice Address of account that has special Governance permissions. Can veto proposals
      *      and execute transactions directly on contracts.
@@ -98,6 +101,7 @@ contract Governance is InitializableV2 {
         uint256 voteMagnitudeNo;
         uint256 numVotes;
         mapping(address => Vote) votes;
+        string description;
     }
 
     /***** Proposal storage *****/
@@ -170,6 +174,7 @@ contract Governance is InitializableV2 {
         uint256 _votingPeriod,
         uint256 _votingQuorumPercent,
         uint16 _maxInProgressProposals,
+        uint16 _maxDescriptionLength,
         address _guardianAddress
     ) public initializer {
         require(_registryAddress != address(0x00), ERROR_INVALID_REGISTRY);
@@ -183,6 +188,9 @@ contract Governance is InitializableV2 {
             "Governance: Requires non-zero _maxInProgressProposals"
         );
         maxInProgressProposals = _maxInProgressProposals;
+
+        require(_maxDescriptionLength > 0, "Requires non-zero _maxDescriptionLength");
+        maxDescriptionLength = _maxDescriptionLength;
 
         require(
             _votingQuorumPercent > 0 && _votingQuorumPercent <= 100,
@@ -254,6 +262,12 @@ contract Governance is InitializableV2 {
             "Governance: _functionSignature cannot be empty."
         );
 
+        // Require description length in bytes is within bounds
+        require(
+            bytes(_description).length > 0 && bytes(_description).length <= maxDescriptionLength,
+            "Governance: _description length must be between 1 and maxDescriptionLength"
+        );
+
         // set proposalId
         uint256 newProposalId = lastProposalId.add(1);
 
@@ -270,7 +284,8 @@ contract Governance is InitializableV2 {
             outcome: Outcome.InProgress,
             voteMagnitudeYes: 0,
             voteMagnitudeNo: 0,
-            numVotes: 0
+            numVotes: 0,
+            description: _description
             /* votes: mappings are auto-initialized to default state */
         });
 
@@ -576,6 +591,19 @@ contract Governance is InitializableV2 {
         maxInProgressProposals = _newMaxInProgressProposals;
     }
 
+    /**
+     * @notice Set the max length in bytes allowed for a proposal description string
+     * @dev Only callable by self via _executeTransaction
+     * @param _newMaxDescriptionLength - new value for maxDescriptionLength
+     */
+    function setMaxDescriptionLength(uint16 _newMaxDescriptionLength) external {
+        _requireIsInitialized();
+
+        require(msg.sender == address(this), "Only callable by self");
+        require(_newMaxDescriptionLength > 0, "Requires non-zero _newMaxDescriptionLength");
+        maxDescriptionLength = _newMaxDescriptionLength;
+    }
+
     // ========================================= Guardian Actions =========================================
 
     /**
@@ -696,6 +724,26 @@ contract Governance is InitializableV2 {
         );
     }
 
+     /**
+     * @notice Get proposal description by proposalId
+     * @dev This is a separate function because the getProposalById returns too many
+            variables already and by adding more, you get the error
+            `InternalCompilerError: Stack too deep, try using fewer variables`
+     * @param _proposalId - id of proposal
+     */
+    function getProposalDescriptionById(uint256 _proposalId)
+    external view returns (string memory)
+    {
+        _requireIsInitialized();
+
+        require(
+            _proposalId <= lastProposalId && _proposalId > 0,
+            "Must provide valid non-zero _proposalId"
+        );
+
+        return (proposals[_proposalId].description);
+    }
+
     /**
      * @notice Get how a voter voted for a given proposal
      * @param _proposalId - id of the proposal
@@ -760,6 +808,13 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         return maxInProgressProposals;
+    }
+
+    /// @notice Get the max length in bytes of a proposal description string
+    function getMaxDescriptionLength() external view returns (uint16) {
+        _requireIsInitialized();
+
+        return maxDescriptionLength;
     }
 
     /// @notice Get the array of all InProgress proposal Ids
