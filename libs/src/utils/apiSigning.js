@@ -5,7 +5,7 @@ const assert = require('assert')
  * @param {object} response entire service provider response (not axios)
  */
 function recoverWallet (web3, response) {
-  let ownerWallet = null
+  let recoveredDelegateWallet = null
 
   const dataForRecovery = JSON.parse(JSON.stringify(response))
   delete dataForRecovery['signature']
@@ -13,14 +13,14 @@ function recoverWallet (web3, response) {
 
   try {
     const hashedData = web3.utils.keccak256(dataForRecoveryStr)
-    ownerWallet = web3.eth.accounts.recover(hashedData, response.signature)
+    recoveredDelegateWallet = web3.eth.accounts.recover(hashedData, response.signature)
 
-    assert.strictEqual(response.owner_wallet, ownerWallet)
+    assert.strictEqual(response.delegateWallet, recoveredDelegateWallet)
   } catch (e) {
     console.error(`Issue with recovering public wallet address: ${e}`)
   }
 
-  return ownerWallet
+  return recoveredDelegateWallet
 }
 
 /**
