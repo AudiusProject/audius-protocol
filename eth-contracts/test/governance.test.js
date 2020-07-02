@@ -721,6 +721,13 @@ contract('Governance.sol', async (accounts) => {
         )
       })
 
+      it('Fail to update vote if no previous vote submitted', async () => {
+        await _lib.assertRevert(
+          governance.updateVote(proposalId, Vote.Yes, { from: stakerAccount1 }),
+          "To submit new vote, call submitVote()"
+        )
+      })
+
       it('Successfully vote on Proposal for Slash', async () => {
         const vote = Vote.No
         

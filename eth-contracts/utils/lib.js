@@ -290,6 +290,12 @@ export const configureGovernanceStakingAddress = async (
   guardianAddress,
   stakingAddress
 ) => {
+
+  await assertRevert(
+    governance.evaluateProposalOutcome(0),
+    "stakingAddress is not set"
+  )
+
   const txReceipt = await governance.guardianExecuteTransaction(
     governanceKey,
     toBN(0),
