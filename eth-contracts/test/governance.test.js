@@ -1426,6 +1426,19 @@ contract('Governance.sol', async (accounts) => {
             "Cannot evaluate inactive proposal."
           )
         })
+
+        it('Ensure veto does not prevent future governance actions', async () => {
+          await governance.vetoProposal(proposalId, { from: guardianAddress })
+
+          submitProposalTxReceipt = await governance.submitProposal(
+            targetContractRegistryKey,
+            callValue,
+            functionSignature,
+            callData,
+            proposalDescription,
+            { from: proposerAddress }
+          )
+        })
       })
     })
   })
@@ -1513,7 +1526,7 @@ contract('Governance.sol', async (accounts) => {
     )
   })
 
-  it('Test max value of maxInProgressProposals via submit & evaluate', async () => {
+  it('Test max value of maxInProgressProposals', async () => {
     /**
      * TODO - finish fleshing out this test
      * currently confirms ~170 inprogress proposals takes about 1mm gas for submit and ~300k gas for evaluate
