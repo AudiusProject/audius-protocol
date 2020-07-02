@@ -9,6 +9,22 @@ import "./InitializableV2.sol";
 contract Governance is InitializableV2 {
     using SafeMath for uint256;
 
+    string private constant ERROR_INVALID_PROPOSAL = (
+        "Governance: Must provide valid non-zero _proposalId"
+    );
+    string private constant ERROR_ONLY_GOVERNANCE = (
+        "Governance: Only callable by self"
+    );
+    string private constant ERROR_INVALID_VOTING_PERIOD = (
+        "Governance: Requires non-zero _votingPeriod"
+    );
+    string private constant ERROR_INVALID_REGISTRY = (
+        "Governance: Requires non-zero _registryAddress"
+    );
+    string private constant ERROR_INVALID_VOTING_QUORUM = (
+        "Governance: Requires _votingQuorumPercent between 1 & 100"
+    );
+
     /**
      * @notice Address and contract instance of Audius Registry. Used to ensure this contract
      *      can only govern contracts that are registered in the Audius Registry.
@@ -156,22 +172,28 @@ contract Governance is InitializableV2 {
         uint16 _maxInProgressProposals,
         address _guardianAddress
     ) public initializer {
-        require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
+        require(_registryAddress != address(0x00), ERROR_INVALID_REGISTRY);
         registry = Registry(_registryAddress);
 
-        require(_votingPeriod > 0, "Requires non-zero _votingPeriod");
+        require(_votingPeriod > 0, ERROR_INVALID_VOTING_PERIOD);
         votingPeriod = _votingPeriod;
 
-        require(_maxInProgressProposals > 0, "Requires non-zero _maxInProgressProposals");
+        require(
+            _maxInProgressProposals > 0,
+            "Governance: Requires non-zero _maxInProgressProposals"
+        );
         maxInProgressProposals = _maxInProgressProposals;
 
         require(
             _votingQuorumPercent > 0 && _votingQuorumPercent <= 100,
-            "Requires _votingQuorumPercent between 1 & 100"
+            ERROR_INVALID_VOTING_QUORUM
         );
         votingQuorumPercent = _votingQuorumPercent;
 
-        require(_guardianAddress != address(0x00), "Requires non-zero _guardianAddress");
+        require(
+            _guardianAddress != address(0x00),
+            "Governance: Requires non-zero _guardianAddress"
+        );
         guardianAddress = _guardianAddress;  //Guardian address becomes the only party
 
         InitializableV2.initialize();
@@ -186,6 +208,7 @@ contract Governance is InitializableV2 {
      * @param _functionSignature - function signature of the function to be executed if proposal is successful
      * @param _callData - encoded value(s) to call function with if proposal is successful
      * @param _description - Text description of proposal to be emitted in event
+     * @return - ID of new proposal
      */
     function submitProposal(
         bytes32 _targetContractRegistryKey,
@@ -193,7 +216,7 @@ contract Governance is InitializableV2 {
         string calldata _functionSignature,
         bytes calldata _callData,
         string calldata _description
-    ) external returns (uint256 proposalId)
+    ) external returns (uint256)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -203,32 +226,32 @@ contract Governance is InitializableV2 {
         // Require all InProgress proposals that can be evaluated have been evaluated before new proposal submission
         require(
             this.inProgressProposalsAreUpToDate(),
-            "Governance::submitProposal: Cannot submit new proposal until all evaluatable InProgress proposals are evaluated."
+            "Governance: Cannot submit new proposal until all evaluatable InProgress proposals are evaluated."
         );
 
         // Require new proposal submission would not push number of InProgress proposals over max number
         require(
             inProgressProposals.length <= maxInProgressProposals,
-            "Governance::submitProposal: Number of InProgress proposals already at max. Please evaluate if possible, or wait for current proposals' votingPeriods to expire."
+            "Governance: Number of InProgress proposals already at max. Please evaluate if possible, or wait for current proposals' votingPeriods to expire."
         );
 
         // Require proposer is active Staker
         require(
             Staking(stakingAddress).isStaker(proposer),
-            "Proposer must be active staker with non-zero stake."
+            "Governance: Proposer must be active staker with non-zero stake."
         );
 
         // Require _targetContractRegistryKey points to a valid registered contract
         address targetContractAddress = registry.getContract(_targetContractRegistryKey);
         require(
             targetContractAddress != address(0x00),
-            "_targetContractRegistryKey must point to valid registered contract"
+            "Governance: _targetContractRegistryKey must point to valid registered contract"
         );
 
         // Signature cannot be empty
         require(
             bytes(_functionSignature).length != 0,
-            "Governance::submitProposal: _functionSignature cannot be empty."
+            "Governance: _functionSignature cannot be empty."
         );
 
         // set proposalId
@@ -283,7 +306,7 @@ contract Governance is InitializableV2 {
         // Ensure previous vote is None
         require(
             proposals[_proposalId].votes[voter] == Vote.None,
-            "Governance::submitVote: To update previous vote, call updateVote()"
+            "Governance: To update previous vote, call updateVote()"
         );
 
         // Record vote
@@ -360,22 +383,23 @@ contract Governance is InitializableV2 {
      *      To pass, stake-weighted vote must be > 50% Yes.
      * @dev Requires that caller is an active staker at the time the proposal is created
      * @param _proposalId - id of the proposal
+     * @return Outcome of proposal evaluation
      */
     function evaluateProposalOutcome(uint256 _proposalId)
-    external returns (Outcome proposalOutcome)
+    external returns (Outcome)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
-            "Governance::evaluateProposalOutcome: Must provide valid non-zero _proposalId."
+            ERROR_INVALID_PROPOSAL
         );
 
         // Require proposal has not already been evaluated.
         require(
             proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance::evaluateProposalOutcome: Cannot evaluate inactive proposal."
+            "Governance: Cannot evaluate inactive proposal."
         );
 
         // Re-entrancy should not be possible here since this switches the status of the
@@ -387,7 +411,7 @@ contract Governance is InitializableV2 {
         uint256 endBlockNumber = submissionBlockNumber.add(votingPeriod);
         require(
             block.number > endBlockNumber,
-            "Governance::evaluateProposalOutcome: Proposal votingPeriod must end before evaluation."
+            "Governance: Proposal votingPeriod must end before evaluation."
         );
 
         // Require registered contract address for provided registryKey has not changed.
@@ -396,7 +420,7 @@ contract Governance is InitializableV2 {
         );
         require(
             targetContractAddress == proposals[_proposalId].targetContractAddress,
-            "Governance::evaluateProposalOutcome: Registered contract address for targetContractRegistryKey has changed"
+            "Governance: Registered contract address for targetContractRegistryKey has changed"
         );
 
         Staking stakingContract = Staking(stakingAddress);
@@ -461,17 +485,17 @@ contract Governance is InitializableV2 {
 
         require(
             msg.sender == guardianAddress,
-            "Governance::vetoProposal: Only guardian can veto proposals."
+            "Governance: Only guardian can veto proposals."
         );
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
-            "Governance::vetoProposal: Must provide valid non-zero _proposalId."
+            "Governance: Must provide valid non-zero _proposalId."
         );
 
         require(
             proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance::vetoProposal: Cannot veto inactive proposal."
+            "Governance: Cannot veto inactive proposal."
         );
 
         proposals[_proposalId].outcome = Outcome.Vetoed;
@@ -489,7 +513,7 @@ contract Governance is InitializableV2 {
     function setStakingAddress(address _stakingAddress) external {
         _requireIsInitialized();
 
-        require(msg.sender == address(this), "Only callable by self");
+        require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
         require(_stakingAddress != address(0x00), "Requires non-zero _stakingAddress");
         stakingAddress = _stakingAddress;
     }
@@ -502,8 +526,8 @@ contract Governance is InitializableV2 {
     function setVotingPeriod(uint256 _votingPeriod) external {
         _requireIsInitialized();
 
-        require(msg.sender == address(this), "Only callable by self");
-        require(_votingPeriod > 0, "Requires non-zero _votingPeriod");
+        require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
+        require(_votingPeriod > 0, ERROR_INVALID_VOTING_PERIOD);
         votingPeriod = _votingPeriod;
     }
 
@@ -515,10 +539,10 @@ contract Governance is InitializableV2 {
     function setVotingQuorumPercent(uint256 _votingQuorumPercent) external {
         _requireIsInitialized();
 
-        require(msg.sender == address(this), "Only callable by self");
+        require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
         require(
             _votingQuorumPercent > 0 && _votingQuorumPercent <= 100,
-            "Requires _votingQuorumPercent between 1 & 100"
+            ERROR_INVALID_VOTING_QUORUM
         );
         votingQuorumPercent = _votingQuorumPercent;
     }
@@ -531,8 +555,8 @@ contract Governance is InitializableV2 {
     function setRegistryAddress(address _registryAddress) external {
         _requireIsInitialized();
 
-        require(msg.sender == address(this), "Only callable by self");
-        require(_registryAddress != address(0x00), "Requires non-zero _registryAddress");
+        require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
+        require(_registryAddress != address(0x00), ERROR_INVALID_REGISTRY);
 
         registry = Registry(_registryAddress);
 
@@ -547,7 +571,7 @@ contract Governance is InitializableV2 {
     function setMaxInProgressProposals(uint16 _newMaxInProgressProposals) external {
         _requireIsInitialized();
 
-        require(msg.sender == address(this), "Only callable by self");
+        require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
         require(_newMaxInProgressProposals > 0, "Requires non-zero _newMaxInProgressProposals");
         maxInProgressProposals = _newMaxInProgressProposals;
     }
@@ -572,20 +596,20 @@ contract Governance is InitializableV2 {
 
         require(
             msg.sender == guardianAddress,
-            "Governance::guardianExecuteTransaction: Only guardian."
+            "Governance: Only guardian."
         );
 
         // _targetContractRegistryKey must point to a valid registered contract
         address targetContractAddress = registry.getContract(_targetContractRegistryKey);
         require(
             targetContractAddress != address(0x00),
-            "Governance::guardianExecuteTransaction: _targetContractRegistryKey must point to valid registered contract"
+            "Governance: _targetContractRegistryKey must point to valid registered contract"
         );
 
         // Signature cannot be empty
         require(
             bytes(_functionSignature).length != 0,
-            "Governance::guardianExecuteTransaction: _functionSignature cannot be empty."
+            "Governance: _functionSignature cannot be empty."
         );
 
         (bool success, bytes memory returnData) = _executeTransaction(
@@ -595,7 +619,7 @@ contract Governance is InitializableV2 {
             _callData
         );
 
-        require(success, "Governance::guardianExecuteTransaction: Transaction failed.");
+        require(success, "Governance: Transaction failed.");
 
         emit GuardianTransactionExecuted(
             targetContractAddress,
@@ -616,7 +640,7 @@ contract Governance is InitializableV2 {
 
         require(
             msg.sender == guardianAddress,
-            "Governance::guardianExecuteTransaction: Only guardian."
+            "Governance: Only guardian."
         );
 
         guardianAddress = _newGuardianAddress;
@@ -648,9 +672,10 @@ contract Governance is InitializableV2 {
     {
         _requireIsInitialized();
 
+        // TODO: Move error to string
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
-            "Must provide valid non-zero _proposalId"
+            "Governance: Must provide valid non-zero _proposalId"
         );
 
         Proposal memory proposal = proposals[_proposalId];
@@ -678,13 +703,14 @@ contract Governance is InitializableV2 {
      * @return returns a value from the Vote enum if a valid vote, otherwise returns no value
      */
     function getVoteByProposalAndVoter(uint256 _proposalId, address _voter)
-    external view returns (Vote vote)
+    external view returns (Vote)
     {
         _requireIsInitialized();
 
+        // TODO: Move error to string
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
-            "Must provide valid non-zero _proposalId"
+            "Governance: Must provide valid non-zero _proposalId"
         );
         return proposals[_proposalId].votes[_voter];
     }
@@ -783,13 +809,13 @@ contract Governance is InitializableV2 {
         uint256 _callValue,
         string memory _functionSignature,
         bytes memory _callData
-    ) internal returns (bool /** success */, bytes memory /** returnData */)
+    ) internal returns (bool success, bytes memory returnData)
     {
         bytes memory encodedCallData = abi.encodePacked(
             bytes4(keccak256(bytes(_functionSignature))),
             _callData
         );
-        (bool success, bytes memory returnData) = (
+        (success, returnData) = (
             // solium-disable-next-line security/no-call-value
             _targetContractAddress.call.value(_callValue)(encodedCallData)
         );
@@ -838,7 +864,7 @@ contract Governance is InitializableV2 {
         }
         require(
             found == true,
-            "Governance::_removeFromInProgressProposals: Could not find InProgress proposal."
+            "Governance: Could not find InProgress proposal."
         );
 
         // Swap proposalId to end of array + pop (deletes last elem + decrements array length)
@@ -869,13 +895,16 @@ contract Governance is InitializableV2 {
     // ========================================= Private Functions =========================================
 
     function _requireStakingAddressIsSet() private view {
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        require(
+            stakingAddress != address(0x00),
+            "Governance: stakingAddress is not set"
+        );
     }
 
     /**
-     * Helper function to perform validation for submitVote() and updateVote() functions
-     * Validates new _vote, _proposalId, proposal state, and voter state
-     * Returns stake of voter at proposal submission time
+     * @notice Helper function to perform validation for submitVote() and updateVote() functions
+     * @dev Validates new _vote, _proposalId, proposal state, and voter state
+     * @return stake of voter at proposal submission time
      */
     function _validateVoteAndGetVoterStake(address _voter, uint256 _proposalId, Vote _vote)
     private view returns (uint256) {

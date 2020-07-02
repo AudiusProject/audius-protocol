@@ -129,7 +129,7 @@ contract('Staking test', async (accounts) => {
         staker,
         0
       ),
-      'STAKING_AMOUNT_ZERO'
+      'Zero amount not allowed'
     )
   })
 
@@ -258,7 +258,7 @@ contract('Staking test', async (accounts) => {
     // Fail to slash zero
     await _lib.assertRevert(
       slashAccount(0, account, proxyDeployerAddress),
-      'STAKING_AMOUNT_ZERO'
+      'Zero amount not allowed'
     )
 
     // Slash account's stake

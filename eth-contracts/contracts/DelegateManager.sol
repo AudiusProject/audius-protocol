@@ -16,6 +16,13 @@ import "./ClaimsManager.sol";
 contract DelegateManager is InitializableV2 {
     using SafeMath for uint256;
 
+    string private constant ERROR_ONLY_GOVERNANCE = (
+        "DelegateManager: Only callable by Governance contract"
+    );
+    string private constant ERROR_MINIMUM_DELEGATION = (
+        "DelegateManager: Minimum delegation amount required"
+    );
+
     address private governanceAddress;
     address private stakingAddress;
     address private serviceProviderFactoryAddress;
@@ -123,7 +130,7 @@ contract DelegateManager is InitializableV2 {
     function delegateStake(
         address _targetSP,
         uint256 _amount
-    ) external returns (uint256 delegatedAmount)
+    ) external returns (uint256)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
@@ -132,7 +139,7 @@ contract DelegateManager is InitializableV2 {
 
         require(
             !_claimPending(_targetSP),
-            "Delegation not permitted for SP pending claim"
+            "DelegateManager: Delegation not permitted for SP pending claim"
         );
         address delegator = msg.sender;
         Staking stakingContract = Staking(stakingAddress);
@@ -150,7 +157,7 @@ contract DelegateManager is InitializableV2 {
             spDelegateInfo[_targetSP].delegators.push(delegator);
             require(
                 spDelegateInfo[_targetSP].delegators.length <= maxDelegators,
-                "Maximum delegators exceeded"
+                "DelegateManager: Maximum delegators exceeded"
             );
         }
 
@@ -167,7 +174,7 @@ contract DelegateManager is InitializableV2 {
 
         require(
             delegateInfo[delegator][_targetSP] >= minDelegationAmount,
-            "Minimum delegation amount"
+            ERROR_MINIMUM_DELEGATION
         );
 
         // Validate balance
@@ -194,30 +201,37 @@ contract DelegateManager is InitializableV2 {
     function requestUndelegateStake(
         address _target,
         uint256 _amount
-    ) external returns (uint256 newDelegateAmount)
+    ) external returns (uint256)
     {
         _requireIsInitialized();
         _requireClaimsManagerAddressIsSet();
 
         require(
             _amount > 0,
-            "Requested undelegate stake amount must be greater than zero"
+            "DelegateManager: Requested undelegate stake amount must be greater than zero"
         );
         require(
             !_claimPending(_target),
-            "Undelegate request not permitted for SP pending claim"
+            "DelegateManager: Undelegate request not permitted for SP pending claim"
         );
         address delegator = msg.sender;
-        require(_delegatorExistsForSP(delegator, _target), "Delegator must be staked for SP");
+        require(
+            _delegatorExistsForSP(delegator, _target),
+            "DelegateManager: Delegator must be staked for SP"
+        );
 
         // Confirm no pending delegation request
-        require(!_undelegateRequestIsPending(delegator), "No pending lockup expected");
+        require(
+            !_undelegateRequestIsPending(delegator),
+            "DelegateManager: No pending lockup expected"
+        );
 
         // Ensure valid bounds
         uint256 currentlyDelegatedToSP = delegateInfo[delegator][_target];
         require(
             _amount <= currentlyDelegatedToSP,
-            "Cannot decrease greater than currently staked for this ServiceProvider");
+            "DelegateManager: Cannot decrease greater than currently staked for this ServiceProvider"
+        );
 
         // Submit updated request for sender, with target sp, undelegate amount, target expiry block
         _updateUndelegateStakeRequest(
@@ -243,7 +257,10 @@ contract DelegateManager is InitializableV2 {
 
         address delegator = msg.sender;
         // Confirm pending delegation request
-        require(_undelegateRequestIsPending(delegator), "Pending lockup expected");
+        require(
+            _undelegateRequestIsPending(delegator),
+            "DelegateManager: Pending lockup expected"
+        );
         uint256 unstakeAmount = undelegateRequests[delegator].amount;
         address unlockFundsSP = undelegateRequests[delegator].serviceProvider;
         // Update total locked for this service provider, decreasing by unstake amount
@@ -259,7 +276,7 @@ contract DelegateManager is InitializableV2 {
      * @notice Finalize undelegation request and withdraw stake
      * @return New total amount currently staked after stake has been undelegated
      */
-    function undelegateStake() external returns (uint256 newTotal) {
+    function undelegateStake() external returns (uint256) {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
         _requireServiceProviderFactoryAddressIsSet();
@@ -268,16 +285,21 @@ contract DelegateManager is InitializableV2 {
         address delegator = msg.sender;
 
         // Confirm pending delegation request
-        require(_undelegateRequestIsPending(delegator), "Pending lockup expected");
+        require(
+            _undelegateRequestIsPending(delegator),
+            "DelegateManager: Pending lockup expected"
+        );
 
         // Confirm lockup expiry has expired
         require(
-            undelegateRequests[delegator].lockupExpiryBlock <= block.number, "Lockup must be expired");
+            undelegateRequests[delegator].lockupExpiryBlock <= block.number,
+            "DelegateManager: Lockup must be expired"
+        );
 
         // Confirm no pending claim for this service provider
         require(
             !_claimPending(undelegateRequests[delegator].serviceProvider),
-            "Undelegate not permitted for SP pending claim"
+            "DelegateManager: Undelegate not permitted for SP pending claim"
         );
 
         address serviceProvider = undelegateRequests[delegator].serviceProvider;
@@ -303,7 +325,7 @@ contract DelegateManager is InitializableV2 {
         require(
             (delegateInfo[delegator][serviceProvider] >= minDelegationAmount ||
              delegateInfo[delegator][serviceProvider] == 0),
-            "Minimum delegation amount"
+            ERROR_MINIMUM_DELEGATION
         );
 
         // Remove from delegators list if no delegated stake remaining
@@ -412,10 +434,7 @@ contract DelegateManager is InitializableV2 {
         _requireStakingAddressIsSet();
         _requireServiceProviderFactoryAddressIsSet();
 
-        require(
-            msg.sender == governanceAddress,
-            "Only callable by Governance contract"
-        );
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
 
         Staking stakingContract = Staking(stakingAddress);
         ServiceProviderFactory spFactory = ServiceProviderFactory(serviceProviderFactoryAddress);
@@ -424,7 +443,8 @@ contract DelegateManager is InitializableV2 {
         uint256 totalBalanceInStakingPreSlash = stakingContract.totalStakedFor(_slashAddress);
         require(
             (totalBalanceInStakingPreSlash >= _amount),
-            "Cannot slash more than total currently staked");
+            "DelegateManager: Cannot slash more than total currently staked"
+        );
 
         // Cancel any withdrawal request for this service provider
         (uint256 spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(_slashAddress);
@@ -436,7 +456,10 @@ contract DelegateManager is InitializableV2 {
         (uint256 totalBalanceInSPFactory,,,,,) = (
             spFactory.getServiceProviderDetails(_slashAddress)
         );
-        require(totalBalanceInSPFactory > 0, "Service Provider stake required");
+        require(
+            totalBalanceInSPFactory > 0,
+            "DelegateManager: Service Provider stake required"
+        );
 
         // Decrease value in Staking contract
         // A value of zero slash will fail in staking, reverting this transaction
@@ -501,7 +524,7 @@ contract DelegateManager is InitializableV2 {
 
         require(
             msg.sender == _serviceProvider || msg.sender == governanceAddress,
-            "Only callable by target SP or governance"
+            "DelegateManager: Only callable by target SP or governance"
         );
         uint256 unstakeAmount = delegateInfo[_delegator][_serviceProvider];
         // Unstake on behalf of target service provider
@@ -543,10 +566,7 @@ contract DelegateManager is InitializableV2 {
     function updateUndelegateLockupDuration(uint256 _duration) external {
         _requireIsInitialized();
 
-        require(
-            msg.sender == governanceAddress,
-            "Only callable by Governance contract"
-        );
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
 
         undelegateLockupDuration = _duration;
         emit UndelegateLockupDurationUpdated(_duration);
@@ -559,10 +579,7 @@ contract DelegateManager is InitializableV2 {
     function updateMaxDelegators(uint256 _maxDelegators) external {
         _requireIsInitialized();
 
-        require(
-            msg.sender == governanceAddress,
-            "Only callable by Governance contract"
-        );
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
 
         maxDelegators = _maxDelegators;
         emit MaxDelegatorsUpdated(_maxDelegators);
@@ -575,10 +592,7 @@ contract DelegateManager is InitializableV2 {
     function updateMinDelegationAmount(uint256 _minDelegationAmount) external {
         _requireIsInitialized();
 
-        require(
-            msg.sender == governanceAddress,
-            "Only callable by Governance contract"
-        );
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
 
         minDelegationAmount = _minDelegationAmount;
         emit MinDelegationUpdated(_minDelegationAmount);
@@ -592,7 +606,7 @@ contract DelegateManager is InitializableV2 {
     function setGovernanceAddress(address _governanceAddress) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         _updateGovernanceAddress(_governanceAddress);
         governanceAddress = _governanceAddress;
         emit GovernanceAddressUpdated(_governanceAddress);
@@ -606,7 +620,7 @@ contract DelegateManager is InitializableV2 {
     function setStakingAddress(address _stakingAddress) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         stakingAddress = _stakingAddress;
         emit StakingAddressUpdated(_stakingAddress);
     }
@@ -619,7 +633,7 @@ contract DelegateManager is InitializableV2 {
     function setServiceProviderFactoryAddress(address _spFactory) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         serviceProviderFactoryAddress = _spFactory;
         emit ServiceProviderFactoryAddressUpdated(_spFactory);
     }
@@ -632,7 +646,7 @@ contract DelegateManager is InitializableV2 {
     function setClaimsManagerAddress(address _claimsManagerAddress) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only governance");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         claimsManagerAddress = _claimsManagerAddress;
         emit ClaimsManagerAddressUpdated(_claimsManagerAddress);
     }
@@ -644,7 +658,7 @@ contract DelegateManager is InitializableV2 {
      * @param _sp - service provider address
      */
     function getDelegatorsList(address _sp)
-    external view returns (address[] memory dels)
+    external view returns (address[] memory)
     {
         _requireIsInitialized();
 
@@ -653,7 +667,7 @@ contract DelegateManager is InitializableV2 {
 
     /// @notice Get total amount delegated to a service provider
     function getTotalDelegatedToServiceProvider(address _sp)
-    external view returns (uint256 total)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -662,7 +676,7 @@ contract DelegateManager is InitializableV2 {
 
     /// @notice Get total delegated stake locked up for a service provider
     function getTotalLockedDelegationForServiceProvider(address _sp)
-    external view returns (uint256 total)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -671,7 +685,7 @@ contract DelegateManager is InitializableV2 {
 
     /// @notice Get total currently staked for a delegator, for a given service provider
     function getDelegatorStakeForServiceProvider(address _delegator, address _serviceProvider)
-    external view returns (uint256 amount)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -693,7 +707,7 @@ contract DelegateManager is InitializableV2 {
 
     /// @notice Get current undelegate lockup duration
     function getUndelegateLockupDuration()
-    external view returns (uint256 duration)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -702,7 +716,7 @@ contract DelegateManager is InitializableV2 {
 
     /// @notice Current maximum delegators
     function getMaxDelegators()
-    external view returns (uint256 numDelegators)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -711,7 +725,7 @@ contract DelegateManager is InitializableV2 {
 
     /// @notice Get minimum delegation amount
     function getMinDelegationAmount()
-    external view returns (uint256 minDelegation)
+    external view returns (uint256)
     {
         _requireIsInitialized();
 
@@ -719,28 +733,28 @@ contract DelegateManager is InitializableV2 {
     }
 
     /// @notice Get the Governance address
-    function getGovernanceAddress() external view returns (address addr) {
+    function getGovernanceAddress() external view returns (address) {
         _requireIsInitialized();
 
         return governanceAddress;
     }
 
     /// @notice Get the ServiceProviderFactory address
-    function getServiceProviderFactoryAddress() external view returns (address addr) {
+    function getServiceProviderFactoryAddress() external view returns (address) {
         _requireIsInitialized();
 
         return serviceProviderFactoryAddress;
     }
 
     /// @notice Get the ClaimsManager address
-    function getClaimsManagerAddress() external view returns (address addr) {
+    function getClaimsManagerAddress() external view returns (address) {
         _requireIsInitialized();
 
         return claimsManagerAddress;
     }
 
     /// @notice Get the Staking address
-    function getStakingAddress() external view returns (address addr)
+    function getStakingAddress() external view returns (address)
     {
         _requireIsInitialized();
 
@@ -780,12 +794,15 @@ contract DelegateManager is InitializableV2 {
 
         // Amount stored in staking contract for owner
         totalBalanceInStaking = Staking(stakingAddress).totalStakedFor(_serviceProvider);
-        require(totalBalanceInStaking > 0, "Stake required for claim");
+        require(totalBalanceInStaking > 0, "DelegateManager: Stake required for claim");
 
         // Amount in sp factory for claimer
         (totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(_serviceProvider);
         // Require active stake to claim any rewards
-        require(totalBalanceInSPFactory.sub(spLockedStake) > 0, "Service Provider stake required");
+        require(
+            totalBalanceInSPFactory.sub(spLockedStake) > 0,
+            "DelegateManager: Service Provider stake required"
+        );
 
         // Amount in delegate manager staked to service provider
         uint256 totalBalanceOutsideStaking = (
@@ -796,7 +813,7 @@ contract DelegateManager is InitializableV2 {
 
         require(
             mintedRewards == totalBalanceInStaking.sub(totalBalanceOutsideStaking),
-            "Reward amount mismatch"
+            "DelegateManager: Reward amount mismatch"
         );
 
         return (
@@ -952,7 +969,7 @@ contract DelegateManager is InitializableV2 {
     function _updateGovernanceAddress(address _governanceAddress) internal {
         require(
             Governance(_governanceAddress).isGovernanceAddress() == true,
-            "_governanceAddress is not a valid governance contract"
+            "DelegateManager: _governanceAddress is not a valid governance contract"
         );
         governanceAddress = _governanceAddress;
     }
@@ -961,11 +978,12 @@ contract DelegateManager is InitializableV2 {
      * @notice Returns if delegator has delegated to a service provider
      * @param _delegator - address of delegator
      * @param _serviceProvider - address of service provider
+     * @return boolean indicating whether delegator exists for service provider
      */
     function _delegatorExistsForSP(
         address _delegator,
         address _serviceProvider
-    ) internal view returns (bool exists)
+    ) internal view returns (bool)
     {
         for (uint256 i = 0; i < spDelegateInfo[_serviceProvider].delegators.length; i++) {
             if (spDelegateInfo[_serviceProvider].delegators[i] == _delegator) {
@@ -977,19 +995,21 @@ contract DelegateManager is InitializableV2 {
     }
 
     /**
-     * @notice Boolean indicating whether a claim is pending for this service provider
+     * @notice Determine if a claim is pending for this service provider
      * @param _sp - address of service provider
+     * @return boolean indicating whether a claim is pending
      */
-    function _claimPending(address _sp) internal view returns (bool pending) {
+    function _claimPending(address _sp) internal view returns (bool) {
         ClaimsManager claimsManager = ClaimsManager(claimsManagerAddress);
         return claimsManager.claimPending(_sp);
     }
 
     /**
-     * @notice Boolean indicating whether a decrease request has been initiated
+     * @notice Determine if a decrease request has been initiated
      * @param _delegator - address of delegator
+     * @return boolean indicating whether a decrease request is pending
      */
-    function _undelegateRequestIsPending(address _delegator) internal view returns (bool pending)
+    function _undelegateRequestIsPending(address _delegator) internal view returns (bool)
     {
         return (
             (undelegateRequests[_delegator].lockupExpiryBlock != 0) &&
@@ -1001,17 +1021,23 @@ contract DelegateManager is InitializableV2 {
     // ========================================= Private Functions =========================================
 
     function _requireStakingAddressIsSet() private view {
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        require(
+            stakingAddress != address(0x00),
+            "DelegateManager: stakingAddress is not set"
+        );
     }
 
     function _requireServiceProviderFactoryAddressIsSet() private view {
         require(
             serviceProviderFactoryAddress != address(0x00),
-            "serviceProviderFactoryAddress is not set"
+            "DelegateManager: serviceProviderFactoryAddress is not set"
         );
     }
 
     function _requireClaimsManagerAddressIsSet() private view {
-        require(claimsManagerAddress != address(0x00), "claimsManagerAddress is not set");
+        require(
+            claimsManagerAddress != address(0x00),
+            "DelegateManager: claimsManagerAddress is not set"
+        );
     }
 }

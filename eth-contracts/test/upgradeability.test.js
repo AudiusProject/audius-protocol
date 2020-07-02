@@ -109,7 +109,7 @@ contract('Upgrade proxy test', async (accounts) => {
     const mock = await MockStakingCaller.new({ from: proxyAdminAddress })
     await _lib.assertRevert(
       mock.stakeRewards(10, accounts[5], { from: proxyDeployerAddress }),
-      "INIT_NOT_INITIALIZED"
+      "Not initialized"
     )
 
     const isInitialized = await mock.isInitialized.call()

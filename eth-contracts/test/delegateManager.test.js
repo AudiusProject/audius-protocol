@@ -801,13 +801,13 @@ contract('DelegateManager', async (accounts) => {
       // Fail to slash more than currently staked
       await _lib.assertRevert(
         _lib.slash(DEFAULT_AMOUNT_VAL, slasherAccount, governance, delegateManagerKey, guardianAddress),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Governance: Transaction failed."
       )
 
       // Fail to slash more than currently staked
       await _lib.assertRevert(
         _lib.slash(DEFAULT_AMOUNT_VAL + 4, stakerAccount2, governance, delegateManagerKey, guardianAddress),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Governance: Transaction failed."
       )
 
       // Transfer 1000 tokens to delegator
@@ -839,7 +839,7 @@ contract('DelegateManager', async (accounts) => {
       // Fail to slash account with zero stake
       _lib.assertRevert(
         _lib.slash(DEFAULT_AMOUNT_VAL, stakerAccount2, governance, delegateManagerKey, guardianAddress),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Governance: Transaction failed."
       )
     })
 
@@ -1593,19 +1593,19 @@ contract('DelegateManager', async (accounts) => {
     it('Fail to set service addresses from non-governance contract', async () => {
       await _lib.assertRevert(
         delegateManager.setGovernanceAddress(_lib.addressZero),
-        'Only governance'
+        'Only callable by Governance contract'
       )
       await _lib.assertRevert(
         delegateManager.setClaimsManagerAddress(_lib.addressZero),
-        'Only governance'
+        'Only callable by Governance contract'
       )
       await _lib.assertRevert(
         delegateManager.setServiceProviderFactoryAddress(_lib.addressZero),
-        'Only governance'
+        'Only callable by Governance contract'
       )
       await _lib.assertRevert(
         delegateManager.setStakingAddress(_lib.addressZero),
-        'Only governance'
+        'Only callable by Governance contract'
       )
     })
 
