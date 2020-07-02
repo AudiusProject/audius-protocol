@@ -13,8 +13,8 @@ const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const BlacklistManager = require('./blacklistManager')
 
-const exitWithError = (msg) => {
-  logger.error(msg)
+const exitWithError = (...msg) => {
+  logger.error(...msg)
   process.exit(1)
 }
 
