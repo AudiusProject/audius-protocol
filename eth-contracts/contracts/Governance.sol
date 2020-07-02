@@ -70,6 +70,7 @@ contract Governance is InitializableV2 {
      *      Evaluating - Proposal vote passed, and evaluateProposalOutcome function is currently running.
      *          This status is transiently used inside that function to prevent re-entrancy.
      *      Vetoed - Proposal was vetoed by Guardian.
+     *      TargetContractAddressChanged - Proposal considered invalid since target contract address changed
      */
     enum Outcome {
         InProgress,
@@ -78,7 +79,8 @@ contract Governance is InitializableV2 {
         QuorumNotMet,
         ApprovedExecutionFailed,
         Evaluating,
-        Vetoed
+        Vetoed,
+        TargetContractAddressChanged
     }
 
     /**
@@ -247,7 +249,7 @@ contract Governance is InitializableV2 {
 
         // Require new proposal submission would not push number of InProgress proposals over max number
         require(
-            inProgressProposals.length <= maxInProgressProposals,
+            inProgressProposals.length < maxInProgressProposals,
             "Governance: Number of InProgress proposals already at max. Please evaluate if possible, or wait for current proposals' votingPeriods to expire."
         );
 
@@ -422,7 +424,7 @@ contract Governance is InitializableV2 {
         // Require proposal has not already been evaluated.
         require(
             proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance: Cannot evaluate inactive proposal."
+            "Governance: Can only evaluate InProgress proposal."
         );
 
         // Re-entrancy should not be possible here since this switches the status of the
@@ -436,21 +438,19 @@ contract Governance is InitializableV2 {
             block.number > endBlockNumber,
             "Governance: Proposal votingPeriod & executionDelay must end before evaluation."
         );
-
-        // Require registered contract address for provided registryKey has not changed.
+        
         address targetContractAddress = registry.getContract(
             proposals[_proposalId].targetContractRegistryKey
         );
-        require(
-            targetContractAddress == proposals[_proposalId].targetContractAddress,
-            "Governance: Registered contract address for targetContractRegistryKey has changed"
-        );
 
-        Staking stakingContract = Staking(stakingAddress);
-        // Calculate outcome
         Outcome outcome;
+
+        // target contract address changed -> close proposal without execution.
+        if (targetContractAddress != proposals[_proposalId].targetContractAddress) {
+            outcome = Outcome.TargetContractAddressChanged;
+        }
         // voting quorum not met -> close proposal without execution.
-        if (_quorumMet(proposals[_proposalId], stakingContract) == false) {
+        else if (_quorumMet(proposals[_proposalId], Staking(stakingAddress)) == false) {
             outcome = Outcome.QuorumNotMet;
         }
         // votingQuorumPercent met & vote passed -> execute proposed transaction & close proposal.
