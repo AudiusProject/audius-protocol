@@ -513,15 +513,12 @@ export const configureServiceProviderFactoryAddresses = async (
   claimsManagerAddress,
   delegateManagerAddress
 ) => {
+  const testWallet = '0x918D6781D8127A47DfAC6a50429bFc380014c403'
 
-  let serviceTypeTx = await governance.guardianExecuteTransaction(
-    key,
-    toBN(0),
-    'setServiceTypeManagerAddress(address)',
-    abiEncode(['address'], [serviceTypeManagerAddress]),
-    { from: guardianAddress })
-  assert.equal(serviceTypeManagerAddress, await spFactory.getServiceTypeManagerAddress(), 'Unexpected service type manager address')
-
+  await assertRevert(
+    spFactory.deregister(web3.utils.utf8ToHex('testType'), 'http://test-endpoint/invalid.com'),
+    "stakingAddress is not set"
+  )
   let stakingTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
@@ -530,6 +527,23 @@ export const configureServiceProviderFactoryAddresses = async (
     { from: guardianAddress })
   assert.equal(stakingAddress, await spFactory.getStakingAddress(), 'Unexpected staking address')
 
+
+  await assertRevert(
+    spFactory.deregister(web3.utils.utf8ToHex('testType'), 'http://test-endpoint/invalid.com'),
+    "serviceTypeManagerAddress is not set"
+  )
+  let serviceTypeTx = await governance.guardianExecuteTransaction(
+    key,
+    toBN(0),
+    'setServiceTypeManagerAddress(address)',
+    abiEncode(['address'], [serviceTypeManagerAddress]),
+    { from: guardianAddress })
+  assert.equal(serviceTypeManagerAddress, await spFactory.getServiceTypeManagerAddress(), 'Unexpected service type manager address')
+
+  await assertRevert(
+    spFactory.increaseStake(100),
+    "claimsManagerAddress is not set"
+  )
   let claimsManagerTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
@@ -539,6 +553,10 @@ export const configureServiceProviderFactoryAddresses = async (
   )
   assert.equal(claimsManagerAddress, await spFactory.getClaimsManagerAddress(), 'Unexpected claim manager addr')
 
+  await assertRevert(
+    spFactory.cancelDecreaseStakeRequest(testWallet),
+    "delegateManagerAddress is not set"
+  )
   let delegateManagerTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
