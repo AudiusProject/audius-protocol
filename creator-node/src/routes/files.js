@@ -79,9 +79,9 @@ module.exports = function (app) {
       await Promise.all(resizeResp.files.map(async (fileResp) => {
         const file = (await models.File.findOrCreate({ where: {
           cnodeUserUUID: req.session.cnodeUserUUID,
-          multihash: fileResp.hash,
-          sourceFile: fileResp.path,
-          storagePath: destPath,
+          multihash: fileResp.multihash,
+          sourceFile: fileResp.sourceFile,
+          storagePath: fileResp.storagePath,
           type: 'image',
           dirMultihash: dirCID,
           fileName: fileResp.path.split('/').slice(-1)[0]
