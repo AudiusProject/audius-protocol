@@ -996,6 +996,19 @@ contract('ServiceProvider test', async (accounts) => {
       )
     })
 
+    it('Will fail to set the new governance address if new contract is not a governance contract', async () => {
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceProviderFactoryKey,
+          callValue,
+          'setGovernanceAddress(address)',
+          _lib.abiEncode(['address'], [accounts[14]]),
+          { from: guardianAddress }
+        ),
+        "Governance: Transaction failed."
+      )
+    })
+
     it('Will set the new governance address if called from current governance contract', async () => {
       const governanceUpgraded0 = await GovernanceUpgraded.new({ from: proxyDeployerAddress })
       const newGovernanceAddress = governanceUpgraded0.address
