@@ -1671,6 +1671,12 @@ contract('DelegateManager', async (accounts) => {
         'Expect pending request'
       )
 
+      // fail to removeDelegator from not a SP or governance
+      await _lib.assertRevert(
+        delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: delegatorAccount1 }),
+        "Only callable by target SP or governance"
+      )
+      
       // Forcibly remove the delegator from service provider account
       await delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
       let stakeAfterRemoval = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
