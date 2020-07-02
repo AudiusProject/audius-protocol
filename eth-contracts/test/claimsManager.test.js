@@ -205,7 +205,7 @@ contract('ClaimsManager', async (accounts) => {
     // Confirm another claim cannot be immediately funded
     await _lib.assertRevert(
       _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress),
-      "Governance::guardianExecuteTransaction: Transaction failed."
+      "Governance: Transaction failed."
     )
 
     await _lib.assertRevert(
@@ -246,7 +246,7 @@ contract('ClaimsManager', async (accounts) => {
     // Confirm another round cannot be immediately funded
     await _lib.assertRevert(
       _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress),
-      "Governance::guardianExecuteTransaction: Transaction failed."
+      "Governance: Transaction failed."
     )
 
     let lastClaimBlock = await claimsManager.getLastFundBlock()
@@ -315,7 +315,7 @@ contract('ClaimsManager', async (accounts) => {
     // Confirm another round cannot be immediately funded, despite 2x block diff
     await _lib.assertRevert(
       _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress),
-      "Governance::guardianExecuteTransaction: Transaction failed."
+      "Governance: Transaction failed."
     )
   })
 

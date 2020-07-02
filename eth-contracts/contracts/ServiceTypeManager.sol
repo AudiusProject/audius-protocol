@@ -7,6 +7,10 @@ import "./Governance.sol";
 contract ServiceTypeManager is InitializableV2 {
     address governanceAddress;
 
+    string private constant ERROR_ONLY_GOVERNANCE = (
+        "ServiceTypeManager: Only callable by Governance contract"
+    );
+
     /**
      * @dev - mapping of serviceType - serviceTypeVersion
      * Example - "discovery-provider" - ["0.0.1", "0.0.2", ..., "currentVersion"]
@@ -81,18 +85,21 @@ contract ServiceTypeManager is InitializableV2 {
     {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only callable by Governance contract");
-        require(!this.serviceTypeIsValid(_serviceType), "Already known service type");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
+        require(
+            !this.serviceTypeIsValid(_serviceType),
+            "ServiceTypeManager: Already known service type"
+        );
         require(
             _serviceTypeMax > _serviceTypeMin,
-            "Max stake must be non-zero and greater than min stake"
+            "ServiceTypeManager: Max stake must be non-zero and greater than min stake"
         );
 
         // Ensure serviceType cannot be re-added if it previously existed and was removed
         // stored maxStake > 0 means it was previously added and removed
         require(
             serviceTypeInfo[_serviceType].maxStake == 0,
-            "Cannot re-add serviceType after it was removed."
+            "ServiceTypeManager: Cannot re-add serviceType after it was removed."
         );
 
         validServiceTypes.push(_serviceType);
@@ -112,7 +119,7 @@ contract ServiceTypeManager is InitializableV2 {
     function removeServiceType(bytes32 _serviceType) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only callable by Governance contract");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
 
         uint256 serviceIndex = 0;
         bool foundService = false;
@@ -123,7 +130,7 @@ contract ServiceTypeManager is InitializableV2 {
                 break;
             }
         }
-        require(foundService == true, "Invalid service type, not found");
+        require(foundService == true, "ServiceTypeManager: Invalid service type, not found");
         // Overwrite service index
         uint256 lastIndex = validServiceTypes.length - 1;
         validServiceTypes[serviceIndex] = validServiceTypes[lastIndex];
@@ -188,11 +195,11 @@ contract ServiceTypeManager is InitializableV2 {
     {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, "Only callable by Governance contract");
-        require(this.serviceTypeIsValid(_serviceType), "Invalid service type");
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
+        require(this.serviceTypeIsValid(_serviceType), "ServiceTypeManager: Invalid service type");
         require(
             serviceTypeVersionInfo[_serviceType][_serviceVersion] == false,
-            "Already registered"
+            "ServiceTypeManager: Already registered"
         );
 
          // Update array of known versions for type
@@ -216,7 +223,7 @@ contract ServiceTypeManager is InitializableV2 {
 
         require(
             serviceTypeVersions[_serviceType].length > _versionIndex,
-            "No registered version of serviceType"
+            "ServiceTypeManager: No registered version of serviceType"
         );
         return (serviceTypeVersions[_serviceType][_versionIndex]);
     }
@@ -233,7 +240,7 @@ contract ServiceTypeManager is InitializableV2 {
 
         require(
             serviceTypeVersions[_serviceType].length >= 1,
-            "No registered version of serviceType"
+            "ServiceTypeManager: No registered version of serviceType"
         );
         uint256 latestVersionIndex = serviceTypeVersions[_serviceType].length - 1;
         return (serviceTypeVersions[_serviceType][latestVersionIndex]);
@@ -271,7 +278,7 @@ contract ServiceTypeManager is InitializableV2 {
     function _updateGovernanceAddress(address _governanceAddress) internal {
         require(
             Governance(_governanceAddress).isGovernanceAddress() == true,
-            "_governanceAddress is not a valid governance contract"
+            "ServiceTypeManager: _governanceAddress is not a valid governance contract"
         );
         governanceAddress = _governanceAddress;
     }

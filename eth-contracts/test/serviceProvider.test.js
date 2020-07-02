@@ -1037,7 +1037,7 @@ contract('ServiceProvider test', async (accounts) => {
           DEFAULT_AMOUNT,
           stakerAccount
         ),
-        'No claim expected to be pending prior to stake transfer'
+        'No pending claim expected'
       )
 
       await _lib.assertRevert(
@@ -1060,7 +1060,7 @@ contract('ServiceProvider test', async (accounts) => {
 
       await _lib.assertRevert(
         serviceProviderFactory.cancelDecreaseStakeRequest(stakerAccount),
-        'Only callable from owner or DelegateManager'
+        'Only owner or DelegateManager'
       )
       await _lib.assertRevert(
         serviceProviderFactory.cancelDecreaseStakeRequest(stakerAccount, { from: stakerAccount }),
@@ -1104,7 +1104,7 @@ contract('ServiceProvider test', async (accounts) => {
           callDataDP,
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Governance: Transaction failed."
       )
 
       // Add new serviceType
@@ -1167,7 +1167,7 @@ contract('ServiceProvider test', async (accounts) => {
           _lib.abiEncode(['bytes32', 'bytes32'], [testType, testVersion]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Governance: Transaction failed."
       )
 
       let chainVersion = await serviceTypeManager.getCurrentVersion(testType)
@@ -1238,7 +1238,7 @@ contract('ServiceProvider test', async (accounts) => {
           _lib.abiEncode(['bytes32'], [unregisteredType]),
           { from: guardianAddress }
         ),
-        "Governance::guardianExecuteTransaction: Transaction failed."
+        "Governance: Transaction failed."
       )
 
       // removeServiceType successfully
