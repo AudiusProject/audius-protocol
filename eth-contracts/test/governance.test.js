@@ -1831,8 +1831,6 @@ contract('Governance.sol', async (accounts) => {
         proposalDescription,
         { from: proposerAddress }
       )
-      // const submitProposalTx = _lib.parseTx(submitProposalTxR)
-      // console.log(`Successfully submitted proposalId ${submitProposalTx.event.args.proposalId} with gas usage of ${submitProposalTxR.receipt.gasUsed}`)
     }
 
     // confirm additional submit past max fails
@@ -1865,8 +1863,6 @@ contract('Governance.sol', async (accounts) => {
 
     for (let i = 1; i <= newMaxInProgressProposals; i++) {
       const evaluateTxR = await governance.evaluateProposalOutcome(i, { from: proposerAddress })
-      // const evaluateTx = _lib.parseTx(evaluateTxR)
-      // console.log(`Successfully evaluated proposalId ${evaluateTx.event.args.proposalId} with gas usage of ${evaluateTxR.receipt.gasUsed}`)
     }
 
     // Confirm all InProgress proposals are uptodate bc all have been evaluated
@@ -1891,8 +1887,6 @@ contract('Governance.sol', async (accounts) => {
         proposalDescription,
         { from: proposerAddress }
       )
-      // const submitProposalTx = _lib.parseTx(submitProposalTxR)
-      // console.log(`Successfully submitted proposalId ${submitProposalTx.event.args.proposalId} with gas usage of ${submitProposalTxR.receipt.gasUsed}`)
     }
 
     // Confirm all InProgress proposals are uptodate as votingPeriod is active
