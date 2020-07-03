@@ -27,6 +27,7 @@ const INITIAL_BAL = _lib.audToWeiBN(1000)
 const DEFAULT_AMOUNT_VAL = _lib.audToWei(120)
 const DEFAULT_AMOUNT = _lib.toBN(DEFAULT_AMOUNT_VAL)
 const VOTING_PERIOD = 10
+const EXECUTION_DELAY = VOTING_PERIOD
 const VOTING_QUORUM_PERCENT = 10
 const DECREASE_STAKE_LOCKUP_DURATION = 10
 
@@ -60,6 +61,7 @@ contract('DelegateManager', async (accounts) => {
       proxyDeployerAddress,
       registry,
       VOTING_PERIOD,
+      EXECUTION_DELAY,
       VOTING_QUORUM_PERCENT,
       guardianAddress
     )
