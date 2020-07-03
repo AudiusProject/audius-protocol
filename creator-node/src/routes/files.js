@@ -84,7 +84,7 @@ module.exports = function (app) {
           storagePath: fileResp.storagePath,
           type: 'image',
           dirMultihash: resizeResp.dir.dirCID,
-          fileName: fileResp.path.split('/').slice(-1)[0]
+          fileName: fileResp.sourceFile.split('/').slice(-1)[0]
         },
         transaction: t }))[0].dataValues
 
