@@ -109,12 +109,13 @@ contract DelegateManager is InitializableV2 {
      */
     function initialize (
         address _tokenAddress,
-        address _governanceAddress
+        address _governanceAddress,
+        uint _undelegateLockupDuration
     ) public initializer
     {
         _updateGovernanceAddress(_governanceAddress);
         audiusToken = ERC20Mintable(_tokenAddress);
-        undelegateLockupDuration = 10;
+        undelegateLockupDuration = _undelegateLockupDuration;
         maxDelegators = 175;
         // Default minimum delegation amount set to 100AUD
         minDelegationAmount = 100 * 10**uint256(18);

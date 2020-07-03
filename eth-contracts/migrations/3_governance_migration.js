@@ -9,8 +9,8 @@ const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabil
 
 const governanceRegKey = web3.utils.utf8ToHex('Governance')
 
-// 48hr * 60 min/hr * 60 sec/min / ~15 sec/block = 11520 blocks
-const VotingPeriod = 11520
+// 48hr * 60 min/hr * 60 sec/min / ~13 sec/block = 13292 blocks
+const VotingPeriod = 13292
 // Required percent of total stake to have been voted with on proposal
 const VotingQuorumPercent = 10
 
