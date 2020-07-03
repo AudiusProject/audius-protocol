@@ -105,17 +105,17 @@ contract ServiceProviderFactory is InitializableV2 {
 
     event EndpointUpdated(
       bytes32 indexed _serviceType,
-      address _owner,
-      string indexed _oldEndpoint,
-      string indexed _newEndpoint,
-      uint256 _spID
+      address indexed _owner,
+      string _oldEndpoint,
+      string _newEndpoint,
+      uint256 indexed _spID
     );
 
     event DelegateOwnerWalletUpdated(
-      address _owner,
+      address indexed _owner,
       bytes32 indexed _serviceType,
       uint256 indexed _spID,
-      address indexed _updatedWallet
+      address _updatedWallet
     );
 
     event ServiceProviderCutUpdated(
