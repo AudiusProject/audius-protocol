@@ -1650,7 +1650,7 @@ contract('Governance.sol', async (accounts) => {
 
     // Advance blocks to after proposal evaluation period
     const proposalStartBlock = parseInt(_lib.parseTx(submitTxReceipt).event.args.submissionBlockNumber)
-    await time.advanceBlockTo(proposalStartBlock + votingPeriod)
+    await time.advanceBlockTo(proposalStartBlock + votingPeriod + executionDelay)
 
     // Self destruct before evaluating
     await mockAccountContract.destroy(owner, { from: owner })
