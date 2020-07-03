@@ -110,7 +110,7 @@ contract DelegateManager is InitializableV2 {
     function initialize (
         address _tokenAddress,
         address _governanceAddress,
-        uint _undelegateLockupDuration
+        uint256 _undelegateLockupDuration
     ) public initializer
     {
         _updateGovernanceAddress(_governanceAddress);
