@@ -944,8 +944,8 @@ contract('ServiceProvider test', async (accounts) => {
         'EndpointUpdated',
         { _serviceType: web3.utils.padRight(testDiscProvType, 64),
           _owner: stakerAccount,
-          _oldEndpoint: web3.utils.keccak256(testEndpoint),
-          _newEndpoint: web3.utils.keccak256(testEndpoint1),
+          _oldEndpoint: testEndpoint,
+          _newEndpoint: testEndpoint1,
           _spID: spId
         }
       )
