@@ -3,7 +3,6 @@ import * as _lib from '../utils/lib.js'
 const Registry = artifacts.require('Registry')
 const Staking = artifacts.require('Staking')
 const StakingUpgraded = artifacts.require('StakingUpgraded')
-const AudiusToken = artifacts.require('AudiusToken')
 const MockStakingCaller = artifacts.require('MockStakingCaller')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 
@@ -11,11 +10,11 @@ const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const governanceKey = web3.utils.utf8ToHex('Governance')
-const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
 const tokenRegKey = web3.utils.utf8ToHex('TokenKey')
 
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 const VOTING_PERIOD = 10
+const EXECUTION_DELAY = VOTING_PERIOD
 const VOTING_QUORUM_PERCENT = 10
 
 const { expectEvent } = require('@openzeppelin/test-helpers')
@@ -57,6 +56,7 @@ contract('Upgrade proxy test', async (accounts) => {
       proxyDeployerAddress,
       registry,
       VOTING_PERIOD,
+      EXECUTION_DELAY,
       VOTING_QUORUM_PERCENT,
       guardianAddress
     )

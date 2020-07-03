@@ -26,6 +26,7 @@ const testEndpoint2 = 'https://localhost:5002'
 
 const MIN_STAKE_AMOUNT = 10
 const VOTING_PERIOD = 10
+const EXECUTION_DELAY = VOTING_PERIOD
 const VOTING_QUORUM_PERCENT = 10
 const DECREASE_STAKE_LOCKUP_DURATION = 10
 
@@ -118,6 +119,7 @@ contract('ServiceProvider test', async (accounts) => {
       proxyDeployerAddress,
       registry,
       VOTING_PERIOD,
+      EXECUTION_DELAY,
       VOTING_QUORUM_PERCENT,
       guardianAddress
     )
@@ -1264,8 +1266,9 @@ contract('ServiceProvider test', async (accounts) => {
         proxyAdminAddress,
         proxyDeployerAddress,
         registry2,
-        10, /*votingPeriod*/
-        1, /*votingQuorum*/
+        VOTING_PERIOD,
+        EXECUTION_DELAY,
+        VOTING_QUORUM_PERCENT,
         guardianAddress
       )
       // setGovernanceAddress in ServiceTypeManager.sol
