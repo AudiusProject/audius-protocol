@@ -998,6 +998,19 @@ contract('ServiceProvider test', async (accounts) => {
       )
     })
 
+    it('Will fail to set the new governance address if new contract is not a governance contract', async () => {
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceProviderFactoryKey,
+          callValue,
+          'setGovernanceAddress(address)',
+          _lib.abiEncode(['address'], [accounts[14]]),
+          { from: guardianAddress }
+        ),
+        "Governance: Transaction failed."
+      )
+    })
+
     it('Will set the new governance address if called from current governance contract', async () => {
       const governanceUpgraded0 = await GovernanceUpgraded.new({ from: proxyDeployerAddress })
       const newGovernanceAddress = governanceUpgraded0.address
@@ -1192,6 +1205,18 @@ contract('ServiceProvider test', async (accounts) => {
 
       let testVersion2 = web3.utils.utf8ToHex('0.0.2')
 
+      // fail to set version for invalid type
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          'setServiceVersion(bytes32,bytes32)',
+          _lib.abiEncode(['bytes32', 'bytes32'], [web3.utils.utf8ToHex('undefined-type'), testVersion]),
+          { from: guardianAddress }
+        ),
+        "Governance: Transaction failed."
+      )
+      
       // Update version again
       await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,
@@ -1271,6 +1296,19 @@ contract('ServiceProvider test', async (accounts) => {
         VOTING_QUORUM_PERCENT,
         guardianAddress
       )
+      
+      // fail to set a non-Governance address in ServiceTypeManager.sol
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceTypeManagerProxyKey,
+          callValue,
+          'setGovernanceAddress(address)',
+          _lib.abiEncode(['address'], [accounts[14]]),
+          { from: guardianAddress }
+        ),
+        "Governance: Transaction failed."
+      )
+      
       // setGovernanceAddress in ServiceTypeManager.sol
       await governance.guardianExecuteTransaction(
         serviceTypeManagerProxyKey,

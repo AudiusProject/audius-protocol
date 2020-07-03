@@ -421,6 +421,18 @@ contract('ClaimsManager', async (accounts) => {
       "expected governance address before changing"
     )
 
+    // fail to set a non governance address
+    await _lib.assertRevert(
+      governance.guardianExecuteTransaction(
+        claimsManagerProxyKey,
+        callValue0,
+        'setGovernanceAddress(address)',
+        _lib.abiEncode(['address'], [accounts[9]]),
+        { from: guardianAddress }
+      ),
+      "Governance: Transaction failed."
+    )
+
     await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
       callValue0,
