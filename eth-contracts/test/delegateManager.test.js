@@ -164,8 +164,8 @@ contract('DelegateManager', async (accounts) => {
 
     const delegateManagerInitializeData = _lib.encodeCall(
       'initialize',
-      ['address', 'address'],
-      [token.address, governance.address]
+      ['address', 'address', 'uint256'],
+      [token.address, governance.address, 10]
     )
     let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
     let delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(

@@ -71,6 +71,7 @@ contract Governance is InitializableV2 {
      *          This status is transiently used inside that function to prevent re-entrancy.
      *      Vetoed - Proposal was vetoed by Guardian.
      *      TargetContractAddressChanged - Proposal considered invalid since target contract address changed
+     *      TargetContractCodeHashChanged - Proposal considered invalid since code has at target contract address has changed
      */
     enum Outcome {
         InProgress,
@@ -80,7 +81,8 @@ contract Governance is InitializableV2 {
         ApprovedExecutionFailed,
         Evaluating,
         Vetoed,
-        TargetContractAddressChanged
+        TargetContractAddressChanged,
+        TargetContractCodeHashChanged
     }
 
     /**
@@ -107,6 +109,7 @@ contract Governance is InitializableV2 {
         uint256 numVotes;
         mapping(address => Vote) votes;
         string description;
+        bytes32 contractHash;
     }
 
     /***** Proposal storage *****/
@@ -295,7 +298,8 @@ contract Governance is InitializableV2 {
             voteMagnitudeYes: 0,
             voteMagnitudeNo: 0,
             numVotes: 0,
-            description: _description
+            description: _description,
+            contractHash: _getCodeHash(targetContractAddress)
             /* votes: mappings are auto-initialized to default state */
         });
 
@@ -448,6 +452,9 @@ contract Governance is InitializableV2 {
         // target contract address changed -> close proposal without execution.
         if (targetContractAddress != proposals[_proposalId].targetContractAddress) {
             outcome = Outcome.TargetContractAddressChanged;
+        }
+        else if (_getCodeHash(targetContractAddress) != proposals[_proposalId].contractHash) {
+            outcome = Outcome.TargetContractCodeHashChanged;
         }
         // voting quorum not met -> close proposal without execution.
         else if (_quorumMet(proposals[_proposalId], Staking(stakingAddress)) == false) {
@@ -749,6 +756,26 @@ contract Governance is InitializableV2 {
     }
 
      /**
+     * @notice Get proposal target contract hash by proposalId
+     * @dev This is a separate function because the getProposalById returns too many
+            variables already and by adding more, you get the error
+            `InternalCompilerError: Stack too deep, try using fewer variables`
+     * @param _proposalId - id of proposal
+     */
+    function getProposalTargetContractHash(uint256 _proposalId)
+    external view returns (bytes32)
+    {
+        _requireIsInitialized();
+
+        require(
+            _proposalId <= lastProposalId && _proposalId > 0,
+            "Must provide valid non-zero _proposalId"
+        );
+
+        return (proposals[_proposalId].contractHash);
+    }
+
+     /**
      * @notice Get proposal description by proposalId
      * @dev This is a separate function because the getProposalById returns too many
             variables already and by adding more, you get the error
@@ -1024,5 +1051,18 @@ contract Governance is InitializableV2 {
         );
 
         return voterStake;
+    }
+
+    // solium-disable security/no-inline-assembly
+    /**
+     * @notice Helper function to generate the code hash for a contract address
+     * @return contract code hash
+     */
+    function _getCodeHash(address _contract) private view returns (bytes32) {
+        bytes32 contractHash;
+        assembly {
+          contractHash := extcodehash(_contract)
+        }
+        return contractHash;
     }
 }
