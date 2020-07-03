@@ -8,6 +8,8 @@ module.exports = {
     'test/MockDelegateManager.sol',
     'test/MockGovernance.sol',
     'test/MockStakingCaller.sol',
-    'test/StakingUpgraded.sol'
+    'test/StakingUpgraded.sol',
+    'test/GovernanceUpgraded.sol',
+    'test/MockAccount.sol'
   ]
 }
