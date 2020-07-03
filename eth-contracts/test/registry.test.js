@@ -123,6 +123,20 @@ contract('Registry', async (accounts) => {
     )
   })
 
+  it('Fail to upgrade contract with zero address', async () => {
+    let testContract = await TestContract.new()
+    await testContract.initialize()
+
+    // register testContract
+    await registry.addContract(contractName, testContract.address, { from: proxyDeployerAddress })
+
+    // upgrading this to a zero address should fail
+    await _lib.assertRevert(
+      registry.upgradeContract(contractName, _lib.addressZero, { from: proxyDeployerAddress }),
+      "Cannot upgrade - cannot register zero address."
+    )
+  })
+
   it('Should remove registered contract', async () => {
     let testContract = await TestContract.new()
     await testContract.initialize()

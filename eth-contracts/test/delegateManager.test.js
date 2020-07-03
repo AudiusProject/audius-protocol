@@ -464,6 +464,20 @@ contract('DelegateManager', async (accounts) => {
         'Stake value in SPFactory and Staking.sol must be equal')
     })
 
+    it('Fail to claim for an address that has zero stake', async () => {
+      await claimsManager.initiateRound({ from: stakerAccount })
+
+      // Claim from a separate account to confirm claimRewards can be called by any address
+      let claimerAddress = accounts[5]
+      let fakeSPAddress = accounts[9]
+      assert.isTrue(claimerAddress !== stakerAccount, 'Expected different claimer account')
+      assert.isTrue(claimerAddress !== stakerAccount, 'Expected fake service provider address')
+      await _lib.assertRevert(
+        delegateManager.claimRewards(fakeSPAddress, { from: claimerAddress }),
+        "Stake required for claim"
+      )
+    })
+
     it('Single delegator basic operations', async () => {
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
@@ -825,7 +839,7 @@ contract('DelegateManager', async (accounts) => {
       await serviceProviderFactory.decreaseStake({ from: stakerAccount2 })
 
       // Fail to slash account with zero stake
-      _lib.assertRevert(
+      await _lib.assertRevert(
         _lib.slash(DEFAULT_AMOUNT_VAL, stakerAccount2, governance, delegateManagerKey, guardianAddress),
         "Governance: Transaction failed."
       )
@@ -938,8 +952,52 @@ contract('DelegateManager', async (accounts) => {
       }
     })
 
+    it('Undelegate partial amount', async () => {
+      // Transfer 1000 tokens to delegator
+      await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
+
+      let initialDelegateAmount = _lib.audToWeiBN(60)
+
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      await delegateManager.delegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      let delStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
+      let undelegateAmount = initialDelegateAmount.div(_lib.toBN(2))
+      // Submit request to undelegate
+      await delegateManager.requestUndelegateStake(
+        stakerAccount,
+        undelegateAmount,
+        { from: delegatorAccount1 }
+      )
+
+      // Confirm lockup amount is registered
+      let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      assert.isTrue(
+        undelegateRequestInfo.amount.eq(undelegateAmount),
+        'Expect request to match undelegate amount')
+
+      // Advance to valid block
+      await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
+
+      let delegatorTokenBalance = await token.balanceOf(delegatorAccount1)
+      await delegateManager.undelegateStake({ from: delegatorAccount1 })
+      let delegatorBalanceAfterUndelegation = await token.balanceOf(delegatorAccount1)
+      assert.isTrue((delegatorBalanceAfterUndelegation.sub(undelegateAmount)).eq(delegatorTokenBalance), 'Expect funds to be returned')
+
+      let expectedStake = initialDelegateAmount.sub(undelegateAmount)
+      delStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
+      assert.isTrue(delStakeForSP.eq(expectedStake), 'Stake not updated')
+    })
+
     it('Fail when undelegating zero stake', async () => {
-      // TODO: Validate all
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
 
@@ -1597,7 +1655,7 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('Deregister max stake violation', async () => {
+    it('Deregister max stake violation while delegator has an undelegate request pending', async () => {
       let serviceTypeInfo = await serviceTypeManager.getServiceTypeInfo(testDiscProvType)
       // Register 2nd endpoint from SP1, with minimum additional stake
       await _lib.registerServiceProvider(
@@ -1659,6 +1717,12 @@ contract('DelegateManager', async (accounts) => {
         'Expect pending request'
       )
 
+      // fail to removeDelegator from not a SP or governance
+      await _lib.assertRevert(
+        delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: delegatorAccount1 }),
+        "Only callable by target SP or governance"
+      )
+      
       // Forcibly remove the delegator from service provider account
       await delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
       let stakeAfterRemoval = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
@@ -1707,6 +1771,39 @@ contract('DelegateManager', async (accounts) => {
         info.blockNumber.eq(_lib.toBN(0)),
         'Expect sp state removal'
       )
+    })
+
+    it('Deregister delegator', async () => {
+      const delegationAmount = _lib.toBN(100)
+      // Transfer tokens to delegator
+      await token.transfer(delegatorAccount1, delegationAmount, { from: proxyDeployerAddress })
+      await token.approve(
+        stakingAddress,
+        delegationAmount,
+        { from: delegatorAccount1 })
+      await delegateManager.delegateStake(
+        stakerAccount,
+        delegationAmount,
+        { from: delegatorAccount1 })
+
+      let delegatorTokenBalance = await token.balanceOf(delegatorAccount1)
+
+      // fail to removeDelegator from not a SP or governance
+      await _lib.assertRevert(
+        delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: delegatorAccount1 }),
+        "Only callable by target SP or governance"
+      )
+      
+      // Forcibly remove the delegator from service provider account
+      await delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+      let stakeAfterRemoval = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
+      let delegatorsList = await delegateManager.getDelegatorsList(stakerAccount)
+      assert.isTrue(stakeAfterRemoval.eq(_lib.toBN(0)), 'Expect 0 delegated stake')
+      assert.isTrue(delegatorsList.length === 0, 'No delegators expected')
+
+      let delegatorTokenBalance2 = await token.balanceOf(delegatorAccount1)
+      let diff = delegatorTokenBalance2.sub(delegatorTokenBalance)
+      assert.isTrue(diff.eq(delegationAmount), 'Expect full delegation amount to be refunded')
     })
 
     describe('Service provider decrease stake behavior', async () => {
@@ -1966,6 +2063,19 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(delegatedStake.isZero(), 'Expected delegatedStake == 0')
       const totalLockedDelegationForSP = await delegateManager.getTotalLockedDelegationForServiceProvider(stakerAccount)
       assert.isTrue(totalLockedDelegationForSP.isZero(), 'Expected totalLockedDelegationForSP == 0')
+    })
+
+    it('fail to set Governance address if not a valid governance contract', async () => {
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          delegateManagerKey,
+          _lib.toBN(0),
+          'setGovernanceAddress(address)',
+          _lib.abiEncode(['address'], [accounts[13]]),
+          { from: guardianAddress }
+        ),
+        "Governance: Transaction failed."
+      )
     })
   })
 })

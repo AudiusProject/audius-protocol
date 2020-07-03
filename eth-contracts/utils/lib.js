@@ -292,6 +292,12 @@ export const configureGovernanceStakingAddress = async (
   guardianAddress,
   stakingAddress
 ) => {
+
+  await assertRevert(
+    governance.evaluateProposalOutcome(0),
+    "stakingAddress is not set"
+  )
+
   const txReceipt = await governance.guardianExecuteTransaction(
     governanceKey,
     toBN(0),
@@ -314,12 +320,23 @@ export const configureStakingContractAddresses = async (
   claimsManagerAddress,
   delegateManagerAddress
 ) => {
+  const testWallet = '0x918D6781D8127A47DfAC6a50429bFc380014c403'
+
+  await assertRevert(
+    staking.stakeFor(testWallet, 0),
+    "serviceProviderFactoryAddress is not set"
+  )
   await governance.guardianExecuteTransaction(
     stakingProxyKey,
     toBN(0),
     'setServiceProviderFactoryAddress(address)',
     abiEncode(['address'], [spAddress]),
     { from: guardianAddress }
+  )
+
+  await assertRevert(
+    staking.stakeRewards(0, testWallet),
+    "claimsManagerAddress is not set"
   )
   await governance.guardianExecuteTransaction(
     stakingProxyKey,
@@ -328,13 +345,29 @@ export const configureStakingContractAddresses = async (
     abiEncode(['address'], [claimsManagerAddress]),
     { from: guardianAddress }
   )
+
+  await assertRevert(
+    staking.slash(0, testWallet),
+    "delegateManagerAddress is not set"
+  )
   await governance.guardianExecuteTransaction(
     stakingProxyKey,
     toBN(0),
     'setDelegateManagerAddress(address)',
     abiEncode(['address'], [delegateManagerAddress]),
     { from: guardianAddress })
-  await governance.guardianExecuteTransaction(
+  
+    await assertRevert(
+      governance.guardianExecuteTransaction(
+        stakingProxyKey,
+        toBN(0),
+        'setGovernanceAddress(address)',
+        abiEncode(['address'], [testWallet]),
+        { from: guardianAddress }
+      ),
+      "Governance: Transaction failed."
+    )
+    await governance.guardianExecuteTransaction(
     stakingProxyKey,
     toBN(0),
     'setGovernanceAddress(address)',
@@ -356,6 +389,12 @@ export const configureClaimsManagerContractAddresses = async (
   spFactoryAddress,
   delegateManagerAddress
 ) => {
+  const testWallet = '0x918D6781D8127A47DfAC6a50429bFc380014c403'
+
+  await assertRevert(
+    claimsManager.claimPending(testWallet),
+    "stakingAddress is not set"
+  )
   let stakingAddressTx = await governance.guardianExecuteTransaction(
     claimsManagerRegKey,
     toBN(0),
@@ -365,6 +404,10 @@ export const configureClaimsManagerContractAddresses = async (
   )
   assert.equal(stakingAddress, await claimsManager.getStakingAddress(), 'Unexpected staking address')
 
+  await assertRevert(
+    claimsManager.claimPending(testWallet),
+    "serviceProviderFactoryAddress is not set"
+  )
   let spAddressTx = await governance.guardianExecuteTransaction(
     claimsManagerRegKey,
     toBN(0),
@@ -374,6 +417,10 @@ export const configureClaimsManagerContractAddresses = async (
   )
   assert.equal(spFactoryAddress, await claimsManager.getServiceProviderFactoryAddress(), 'Unexpected sp address')
 
+  await assertRevert(
+    claimsManager.processClaim(testWallet, 0),
+    "delegateManagerAddress is not set"
+  )
   let delManAddressTx = await governance.guardianExecuteTransaction(
     claimsManagerRegKey,
     toBN(0),
@@ -467,15 +514,12 @@ export const configureServiceProviderFactoryAddresses = async (
   claimsManagerAddress,
   delegateManagerAddress
 ) => {
+  const testWallet = '0x918D6781D8127A47DfAC6a50429bFc380014c403'
 
-  let serviceTypeTx = await governance.guardianExecuteTransaction(
-    key,
-    toBN(0),
-    'setServiceTypeManagerAddress(address)',
-    abiEncode(['address'], [serviceTypeManagerAddress]),
-    { from: guardianAddress })
-  assert.equal(serviceTypeManagerAddress, await spFactory.getServiceTypeManagerAddress(), 'Unexpected service type manager address')
-
+  await assertRevert(
+    spFactory.deregister(web3.utils.utf8ToHex('testType'), 'http://test-endpoint/invalid.com'),
+    "stakingAddress is not set"
+  )
   let stakingTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
@@ -484,6 +528,23 @@ export const configureServiceProviderFactoryAddresses = async (
     { from: guardianAddress })
   assert.equal(stakingAddress, await spFactory.getStakingAddress(), 'Unexpected staking address')
 
+
+  await assertRevert(
+    spFactory.deregister(web3.utils.utf8ToHex('testType'), 'http://test-endpoint/invalid.com'),
+    "serviceTypeManagerAddress is not set"
+  )
+  let serviceTypeTx = await governance.guardianExecuteTransaction(
+    key,
+    toBN(0),
+    'setServiceTypeManagerAddress(address)',
+    abiEncode(['address'], [serviceTypeManagerAddress]),
+    { from: guardianAddress })
+  assert.equal(serviceTypeManagerAddress, await spFactory.getServiceTypeManagerAddress(), 'Unexpected service type manager address')
+
+  await assertRevert(
+    spFactory.increaseStake(100),
+    "claimsManagerAddress is not set"
+  )
   let claimsManagerTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
@@ -493,6 +554,10 @@ export const configureServiceProviderFactoryAddresses = async (
   )
   assert.equal(claimsManagerAddress, await spFactory.getClaimsManagerAddress(), 'Unexpected claim manager addr')
 
+  await assertRevert(
+    spFactory.cancelDecreaseStakeRequest(testWallet),
+    "delegateManagerAddress is not set"
+  )
   let delegateManagerTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
