@@ -83,39 +83,39 @@ contract ServiceProviderFactory is InitializableV2 {
     mapping(address => DecreaseStakeRequest) private decreaseStakeRequests;
 
     event RegisteredServiceProvider(
-      uint256 _spID,
-      bytes32 _serviceType,
-      address _owner,
+      uint256 indexed _spID,
+      bytes32 indexed _serviceType,
+      address indexed _owner,
       string _endpoint,
       uint256 _stakeAmount
     );
 
     event DeregisteredServiceProvider(
-      uint256 _spID,
-      bytes32 _serviceType,
-      address _owner,
+      uint256 indexed _spID,
+      bytes32 indexed _serviceType,
+      address indexed _owner,
       string _endpoint,
       uint256 _unstakeAmount
     );
 
     event UpdatedStakeAmount(
-      address _owner,
-      uint256 _stakeAmount
+      address indexed _owner,
+      uint256 indexed _stakeAmount
     );
 
     event EndpointUpdated(
-      bytes32 _serviceType,
-      address _owner,
-      string indexed _oldEndpoint,
-      string indexed _newEndpoint,
-      uint256 _spID
+      bytes32 indexed _serviceType,
+      address indexed _owner,
+      string _oldEndpoint,
+      string _newEndpoint,
+      uint256 indexed _spID
     );
 
     event DelegateOwnerWalletUpdated(
-      address _owner,
+      address indexed _owner,
       bytes32 indexed _serviceType,
       uint256 indexed _spID,
-      address indexed _updatedWallet
+      address _updatedWallet
     );
 
     event ServiceProviderCutUpdated(
