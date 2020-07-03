@@ -952,7 +952,7 @@ contract('DelegateManager', async (accounts) => {
       }
     })
 
-    it.only('Undelegate partial amount', async () => {
+    it('Undelegate partial amount', async () => {
       // Transfer 1000 tokens to delegator
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
 
