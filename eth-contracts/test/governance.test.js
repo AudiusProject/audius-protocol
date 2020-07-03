@@ -651,7 +651,7 @@ contract('Governance.sol', async (accounts) => {
 
       // advance to make eligible to evaluate
       const proposalStartBlockNumber = parseInt(_lib.parseTx(txReceipt).event.args.submissionBlockNumber)
-      await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
+      await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
 
       await _lib.assertRevert(
         governance.submitProposal(
