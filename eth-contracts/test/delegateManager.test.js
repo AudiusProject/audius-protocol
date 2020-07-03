@@ -957,7 +957,6 @@ contract('DelegateManager', async (accounts) => {
       await token.transfer(delegatorAccount1, INITIAL_BAL, { from: proxyDeployerAddress })
 
       let initialDelegateAmount = _lib.audToWeiBN(60)
-      console.log(initialDelegateAmount)
 
       // Approve staking transfer
       await token.approve(
@@ -971,10 +970,7 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 })
 
       let delStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
-      console.log(delStakeForSP)
-
       let undelegateAmount = initialDelegateAmount.div(_lib.toBN(2))
-      console.log(undelegateAmount)
       // Submit request to undelegate
       await delegateManager.requestUndelegateStake(
         stakerAccount,
@@ -992,16 +988,12 @@ contract('DelegateManager', async (accounts) => {
       await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
 
       let delegatorTokenBalance = await token.balanceOf(delegatorAccount1)
-      console.log(delegatorTokenBalance)
       await delegateManager.undelegateStake({ from: delegatorAccount1 })
       let delegatorBalanceAfterUndelegation = await token.balanceOf(delegatorAccount1)
-      console.log(delegatorBalanceAfterUndelegation)
       assert.isTrue((delegatorBalanceAfterUndelegation.sub(undelegateAmount)).eq(delegatorTokenBalance), 'Expect funds to be returned')
 
       let expectedStake = initialDelegateAmount.sub(undelegateAmount)
-      console.log(expectedStake)
       delStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
-      console.log(delStakeForSP)
       assert.isTrue(delStakeForSP.eq(expectedStake), 'Stake not updated')
     })
 
