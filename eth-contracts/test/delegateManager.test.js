@@ -1661,7 +1661,7 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('Deregister max stake violation', async () => {
+    it('Deregister max stake violation while delegator has an undelegate request pending', async () => {
       let serviceTypeInfo = await serviceTypeManager.getServiceTypeInfo(testDiscProvType)
       // Register 2nd endpoint from SP1, with minimum additional stake
       await _lib.registerServiceProvider(
@@ -1734,6 +1734,115 @@ contract('DelegateManager', async (accounts) => {
       let stakeAfterRemoval = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
       let delegatorsList = await delegateManager.getDelegatorsList(stakerAccount)
       pendingUndelegateRequest = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      assert.isTrue(stakeAfterRemoval.eq(_lib.toBN(0)), 'Expect 0 delegated stake')
+      assert.isTrue(delegatorsList.length === 0, 'No delegators expected')
+
+      let delegatorTokenBalance2 = await token.balanceOf(delegatorAccount1)
+      let diff = delegatorTokenBalance2.sub(delegatorTokenBalance)
+      assert.isTrue(diff.eq(delegationAmount), 'Expect full delegation amount to be refunded')
+
+      assert.isTrue(
+        (pendingUndelegateRequest.target === _lib.addressZero) &&
+        (pendingUndelegateRequest.amount.eq(_lib.toBN(0))) &&
+        (pendingUndelegateRequest.lockupExpiryBlock.eq(_lib.toBN(0))),
+        'Expect pending request cancellation'
+      )
+
+      // Cache current spID
+      let spID = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint)
+      let info = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spID)
+      assert.isTrue(
+        info.owner === stakerAccount &&
+        info.delegateOwnerWallet === stakerAccount &&
+        info.endpoint === testEndpoint,
+        'Expect sp state removal'
+      )
+
+      // Again try to deregister
+      await _lib.deregisterServiceProvider(
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint,
+        stakerAccount)
+
+      // Confirm endpoint has no ID associated
+      let spID2 = await serviceProviderFactory.getServiceProviderIdFromEndpoint(testEndpoint)
+      assert.isTrue(spID2.eq(_lib.toBN(0)), 'Expect reset of endpoint')
+      // Confirm removal of all sp state
+      info = await serviceProviderFactory.getServiceEndpointInfo(testDiscProvType, spID)
+      assert.isTrue(
+        info.owner === (_lib.addressZero) &&
+        info.delegateOwnerWallet === (_lib.addressZero) &&
+        info.endpoint === '' &&
+        info.blockNumber.eq(_lib.toBN(0)),
+        'Expect sp state removal'
+      )
+    })
+
+    it('Deregister max stake violation when delegator does not have an undelegate request pending', async () => {
+      let serviceTypeInfo = await serviceTypeManager.getServiceTypeInfo(testDiscProvType)
+      // Register 2nd endpoint from SP1, with minimum additional stake
+      await _lib.registerServiceProvider(
+        token,
+        staking,
+        serviceProviderFactory,
+        testDiscProvType,
+        testEndpoint3,
+        serviceTypeInfo.minStake,
+        stakerAccount)
+
+      let ids = await serviceProviderFactory.getServiceProviderIdsFromAddress(stakerAccount, testDiscProvType)
+      assert.isTrue(ids.length === 2, 'Expect 2 registered endpoints')
+
+      // Lower to minimum total stake for this SP
+      let spInfo = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      let decreaseStakeAmount = (spInfo.deployerStake).sub(spInfo.minAccountStake)
+      await serviceProviderFactory.requestDecreaseStake(decreaseStakeAmount, { from: stakerAccount })
+      let deregisterRequestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
+      await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
+      await serviceProviderFactory.decreaseStake({ from: stakerAccount })
+      spInfo = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      assert.isTrue(spInfo.deployerStake.eq(spInfo.minAccountStake), 'Expect min stake for deployer')
+
+      // Delegate up to max stake for SP1 with 2 endpoints
+      let delegationAmount = spInfo.maxAccountStake.sub(spInfo.deployerStake)
+      // Transfer tokens to delegator
+      await token.transfer(delegatorAccount1, delegationAmount, { from: proxyDeployerAddress })
+      await token.approve(
+        stakingAddress,
+        delegationAmount,
+        { from: delegatorAccount1 })
+      await delegateManager.delegateStake(
+        stakerAccount,
+        delegationAmount,
+        { from: delegatorAccount1 })
+      spInfo = await getAccountStakeInfo(stakerAccount)
+      assert.isTrue(spInfo.maxAccountStake.eq(spInfo.totalActiveStake), 'Expect max to be reached after delegation')
+
+      // Attempt to deregister an endpoint
+      // Failure expected as max bound will be violated upon deregister
+      await _lib.assertRevert(
+        _lib.deregisterServiceProvider(
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint,
+          stakerAccount),
+        'Maximum stake amount exceeded'
+      )
+
+      let delegatorTokenBalance = await token.balanceOf(delegatorAccount1)
+
+      // fail to removeDelegator from not a SP or governance
+      await _lib.assertRevert(
+        delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: delegatorAccount1 }),
+        "Only callable by target SP or governance"
+      )
+      
+      // Forcibly remove the delegator from service provider account
+      await delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+      let stakeAfterRemoval = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
+      let delegatorsList = await delegateManager.getDelegatorsList(stakerAccount)
+      const pendingUndelegateRequest = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
       assert.isTrue(stakeAfterRemoval.eq(_lib.toBN(0)), 'Expect 0 delegated stake')
       assert.isTrue(delegatorsList.length === 0, 'No delegators expected')
 
