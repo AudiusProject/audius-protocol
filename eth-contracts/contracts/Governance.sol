@@ -940,18 +940,12 @@ contract Governance is InitializableV2 {
      */
     function _removeFromInProgressProposals(uint256 _proposalId) internal {
         uint256 index = 0;
-        bool found = false;
         for (uint256 i = 0; i < inProgressProposals.length; i++) {
             if (inProgressProposals[i] == _proposalId) {
                 index = i;
-                found = true;
                 break;
             }
         }
-        require(
-            found == true,
-            "Governance: Could not find InProgress proposal."
-        );
 
         // Swap proposalId to end of array + pop (deletes last elem + decrements array length)
         inProgressProposals[index] = inProgressProposals[inProgressProposals.length - 1];
