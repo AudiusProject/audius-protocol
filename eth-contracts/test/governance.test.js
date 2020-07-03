@@ -30,7 +30,8 @@ const Outcome = Object.freeze({
   QuorumNotMet: 3,
   ApprovedExecutionFailed: 4,
   // Evaluating - transient internal state
-  Vetoed: 6
+  Vetoed: 6,
+  TargetContractAddressChanged: 7
 })
 
 const Vote = Object.freeze({
@@ -562,7 +563,7 @@ contract('Governance.sol', async (accounts) => {
       )
     })
 
-    it('Should fail to Submit Proposal for unregistered target contract', async () => {
+    it('Should fail to submit Proposal for unregistered target contract', async () => {
       const proposerAddress = accounts[10]
       const slashAmount = _lib.toBN(1)
       const targetAddress = accounts[11]
@@ -584,7 +585,7 @@ contract('Governance.sol', async (accounts) => {
       )
     })
 
-    it('Fail to submitProposal with no functionSignature', async () => {
+    it('Should fail to submit Proposal with no functionSignature', async () => {
       const proposerAddress = accounts[10]
       const slashAmount = _lib.toBN(1)
       const targetAddress = accounts[11]
@@ -605,7 +606,7 @@ contract('Governance.sol', async (accounts) => {
       )
     })
 
-    it('Should fail to submitProposal from non-staker caller', async () => {
+    it('Should fail to submit Proposal from non-staker caller', async () => {
       const proposerAddress = accounts[15]
       const slashAmount = _lib.toBN(1)
       const targetAddress = accounts[11]
@@ -648,7 +649,7 @@ contract('Governance.sol', async (accounts) => {
       // advance to make eligible to evaluate
       const proposalStartBlockNumber = parseInt(_lib.parseTx(txReceipt).event.args.submissionBlockNumber)
       await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
-      
+
       await _lib.assertRevert(
         governance.submitProposal(
           targetContractRegistryKey,
@@ -662,7 +663,7 @@ contract('Governance.sol', async (accounts) => {
       )
     })
 
-    it('Fail to submitProposal when number of InProgress proposals > maxInProgressProposals', async () => {
+    it('Should fail to submit Proposal when maxInProgressProposals is reached', async () => {
       const proposerAddress = accounts[10]
       const slashAmount = _lib.toBN(1)
       const targetAddress = accounts[11]
@@ -680,15 +681,16 @@ contract('Governance.sol', async (accounts) => {
         { from: proposerAddress }
       )
 
-      // Update maxInProgressProposals to high val
+      // Update maxInProgressProposals to max of 2
       await governance.guardianExecuteTransaction(
         governanceKey,
         callValue0,
         'setMaxInProgressProposals(uint16)',
-        _lib.abiEncode(['uint16'], [1]),
+        _lib.abiEncode(['uint16'], [2]),
         { from: guardianAddress }
       )
 
+      // Successfully submit a second proposal
       await governance.submitProposal(
         targetContractRegistryKey,
         callValue0,
@@ -697,7 +699,7 @@ contract('Governance.sol', async (accounts) => {
         proposalDescription,
         { from: proposerAddress }
       )
-
+      // should fail to add a third in progress if two are outstanding
       await _lib.assertRevert(
         governance.submitProposal(
           targetContractRegistryKey,
@@ -760,6 +762,12 @@ contract('Governance.sol', async (accounts) => {
 
       // Confirm description value in event log
       assert.equal(tx.event.args.description, descriptionCorrect, "Expected same event.args.description")
+
+      // Fail to getProposalDescriptionById for invalid proposalId
+      await _lib.assertRevert(
+        governance.getProposalDescriptionById.call(0),
+        "Must provide valid non-zero _proposalId"
+      )
 
       // Confirm description value in onchain storage
       const proposal = await governance.getProposalById.call(tx.event.args.proposalId)
@@ -1339,7 +1347,7 @@ contract('Governance.sol', async (accounts) => {
         
         await _lib.assertRevert(
           governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
-          "Cannot evaluate inactive proposal."
+          "Can only evaluate InProgress proposal."
         )
       })
 
@@ -1347,13 +1355,46 @@ contract('Governance.sol', async (accounts) => {
         const testContract = await TestContract.new()
         await testContract.initialize()
 
+        const outcomeTargetContractAddressChanged = Outcome.TargetContractAddressChanged
+
         // Upgrade contract registered at targetContractRegistryKey
         await registry.upgradeContract(targetContractRegistryKey, testContract.address, { from: proxyDeployerAddress })
 
-        await _lib.assertRevert(
-          // Call evaluateProposalOutcome()
-          governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
-          "Registered contract address for targetContractRegistryKey has changed"
+        // ensure evaluateProposalOutcome marks proposal as invalid
+        const txR = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
+        const tx = await _lib.parseTx(txR)
+        
+        // Ensure event log confirms correct outcome
+        assert.equal(tx.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
+        assert.equal(parseInt(tx.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
+        assert.equal(tx.event.args.outcome, outcomeTargetContractAddressChanged, 'Expected same event.args.outcome')
+        assert.isTrue(tx.event.args.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
+        assert.isTrue(tx.event.args.voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
+        assert.equal(parseInt(tx.event.args.numVotes), 1, 'Expected same event.args.numVotes')
+  
+        // Ensure chain storage confirms correct outcome
+        const proposal = await governance.getProposalById.call(proposalId)
+        assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
+        assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
+        assert.isTrue(parseInt(proposal.submissionBlockNumber) > lastBlock, 'Expected submissionBlockNumber > lastBlock')
+        assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
+        assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
+        assert.equal(_lib.fromBN(proposal.callValue), callValue, 'Expected same proposal.callValue')
+        assert.equal(proposal.functionSignature, functionSignature, 'Expected same proposal.functionSignature')
+        assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
+        assert.equal(proposal.outcome, outcomeTargetContractAddressChanged, 'Expected same outcome')
+        assert.equal(parseInt(proposal.voteMagnitudeYes), defaultStakeAmount, 'Expected same voteMagnitudeYes')
+        assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
+        assert.equal(parseInt(proposal.numVotes), 1, 'Expected same numVotes')
+
+        // Ensure future governance actions are not blocked
+        await governance.submitProposal(
+          targetContractRegistryKey,
+          callValue0,
+          functionSignature,
+          callData,
+          proposalDescription,
+          { from: proposerAddress }
         )
       })
 
@@ -1459,7 +1500,7 @@ contract('Governance.sol', async (accounts) => {
           )
         })
 
-        it('Successfully veto proposal + ensure further actions are blocked', async () => {
+        it('Successfully veto proposal + ensure further actions on proposal are blocked', async () => {
           const vetoTxReceipt = await governance.vetoProposal(proposalId, { from: guardianAddress })
 
           // Confirm event log
@@ -1483,7 +1524,20 @@ contract('Governance.sol', async (accounts) => {
           
           await _lib.assertRevert(
             governance.evaluateProposalOutcome(proposalId, { from: proposerAddress }),
-            "Cannot evaluate inactive proposal."
+            "Can only evaluate InProgress proposal."
+          )
+        })
+
+        it('Ensure veto does not prevent future governance actions', async () => {
+          await governance.vetoProposal(proposalId, { from: guardianAddress })
+
+          submitProposalTxReceipt = await governance.submitProposal(
+            targetContractRegistryKey,
+            callValue0,
+            functionSignature,
+            callData,
+            proposalDescription,
+            { from: proposerAddress }
           )
         })
       })
@@ -1575,7 +1629,6 @@ contract('Governance.sol', async (accounts) => {
 
   it('Test max value of maxInProgressProposals via submit & evaluate', async () => {
     /**
-     * TODO - finish fleshing out this test
      * currently confirms ~170 inprogress proposals takes about 1mm gas for submit and ~300k gas for evaluate
      * - could prob handle 1000 easy
      * potentially test + confirm real breaking point
@@ -1619,9 +1672,22 @@ contract('Governance.sol', async (accounts) => {
         proposalDescription,
         { from: proposerAddress }
       )
-      const submitProposalTx = _lib.parseTx(submitProposalTxR)
+      // const submitProposalTx = _lib.parseTx(submitProposalTxR)
       // console.log(`Successfully submitted proposalId ${submitProposalTx.event.args.proposalId} with gas usage of ${submitProposalTxR.receipt.gasUsed}`)
     }
+
+    // confirm additional submit past max fails
+    await _lib.assertRevert(
+      governance.submitProposal(
+        delegateManagerKey,
+        callValue0,
+        functionSignature,
+        callData,
+        proposalDescription,
+        { from: proposerAddress }
+      ),
+      "Number of InProgress proposals already at max. Please evaluate if possible, or wait for current proposals' votingPeriods to expire."
+    )
 
     // Confirm all InProgress proposals are uptodate bc votingPeriod is still active
     assert.isTrue(await governance.inProgressProposalsAreUpToDate.call(), 'Expected all proposals to be uptodate')
@@ -1640,7 +1706,7 @@ contract('Governance.sol', async (accounts) => {
 
     for (let i = 1; i <= newMaxInProgressProposals; i++) {
       const evaluateTxR = await governance.evaluateProposalOutcome(i, { from: proposerAddress })
-      const evaluateTx = _lib.parseTx(evaluateTxR)
+      // const evaluateTx = _lib.parseTx(evaluateTxR)
       // console.log(`Successfully evaluated proposalId ${evaluateTx.event.args.proposalId} with gas usage of ${evaluateTxR.receipt.gasUsed}`)
     }
 
@@ -1666,7 +1732,7 @@ contract('Governance.sol', async (accounts) => {
         proposalDescription,
         { from: proposerAddress }
       )
-      const submitProposalTx = _lib.parseTx(submitProposalTxR)
+      // const submitProposalTx = _lib.parseTx(submitProposalTxR)
       // console.log(`Successfully submitted proposalId ${submitProposalTx.event.args.proposalId} with gas usage of ${submitProposalTxR.receipt.gasUsed}`)
     }
 
@@ -2069,6 +2135,18 @@ contract('Governance.sol', async (accounts) => {
       await _lib.assertRevert(
         governance.setMaxDescriptionLength(newMaxDescriptionLength),
         "Only callable by self"
+      )
+
+      // should fail to call setMaxDescriptionLength with invalid value of 0 
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          governanceKey,
+          callValue0,
+          'setMaxDescriptionLength(uint16)',
+          _lib.abiEncode(['uint16'], [0]),
+          { from: guardianAddress }
+        ),
+        "Governance: Transaction failed."
       )
 
       await governance.guardianExecuteTransaction(
