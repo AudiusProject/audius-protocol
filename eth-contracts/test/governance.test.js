@@ -1562,6 +1562,9 @@ contract('Governance.sol', async (accounts) => {
     )
     const proposalId = _lib.parseTx(submitTxReceipt).event.args.proposalId
 
+    // Retrieve contract hash for proposal
+    let proposalContractHash = await governance.getProposalTargetContractHash(proposalId)
+
     // Submit proposal vote for Yes
     await governance.submitVote(proposalId, Vote.Yes, { from: voterAddress })
 
@@ -1597,6 +1600,13 @@ contract('Governance.sol', async (accounts) => {
     assert.equal(parseInt(proposal.voteMagnitudeYes), defaultStakeAmount, 'Expected same voteMagnitudeYes')
     assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
     assert.equal(parseInt(proposal.numVotes), 1, 'Expected same numVotes')
+
+    let proposalContractHashAfterEvaluation = await governance.getProposalTargetContractHash(proposalId)
+    assert.equal(proposalContractHash, proposalContractHashAfterEvaluation, 'Expect same proposal hash despite target contract diff')
+
+    // Additional coverage for getProposalTargetContractHash
+    await _lib.assertRevert(governance.getProposalTargetContractHash(0), 'Must provide valid non-zero _proposalId')
+    await _lib.assertRevert(governance.getProposalTargetContractHash(10000), 'Must provide valid non-zero _proposalId')
   })
 
   it('Test max value of maxInProgressProposals via submit & evaluate', async () => {
