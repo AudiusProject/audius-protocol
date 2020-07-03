@@ -14,6 +14,8 @@ const TestContract = artifacts.require('TestContract')
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
 
+const MockAccount = artifacts.require('MockAccount')
+
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const serviceTypeManagerProxyKey = web3.utils.utf8ToHex('ServiceTypeManagerProxy')
@@ -31,7 +33,8 @@ const Outcome = Object.freeze({
   ApprovedExecutionFailed: 4,
   // Evaluating - transient internal state
   Vetoed: 6,
-  TargetContractAddressChanged: 7
+  TargetContractAddressChanged: 7,
+  TargetContractCodeHashChanged: 8
 })
 
 const Vote = Object.freeze({
@@ -1705,6 +1708,82 @@ contract('Governance.sol', async (accounts) => {
       stakingUpgraded0.address,
       'Expected updated proxy implementation address'
     )
+  })
+
+  it('Contract content change prevents proposal evaluation', async () => {
+    let owner = accounts[9]
+    const mockAccountContract = await MockAccount.new(owner, { from: proxyDeployerAddress })
+    const accountKey = web3.utils.utf8ToHex('Account')
+    await registry.addContract(accountKey, mockAccountContract.address, { from: proxyDeployerAddress })
+
+    // Define vars
+    const targetContractRegistryKey = accountKey
+    const callValue = _lib.audToWei(0)
+    const functionSignature = 'setOwner(address)'
+    const callData = _lib.abiEncode(['address'], [accounts[11]])
+    const targetContractAddress = mockAccountContract.address
+
+    const proposerAddress = stakerAccount1
+    const voterAddress = stakerAccount1
+    const outcome = Outcome.TargetContractCodeHashChanged
+    const lastBlock = (await _lib.getLatestBlock(web3)).number
+
+    // Submit proposal
+    const submitTxReceipt = await governance.submitProposal(
+      targetContractRegistryKey,
+      callValue,
+      functionSignature,
+      callData,
+      proposalDescription,
+      { from: proposerAddress }
+    )
+    const proposalId = _lib.parseTx(submitTxReceipt).event.args.proposalId
+
+    // Retrieve contract hash for proposal
+    let proposalContractHash = await governance.getProposalTargetContractHash(proposalId)
+
+    // Submit proposal vote for Yes
+    await governance.submitVote(proposalId, Vote.Yes, { from: voterAddress })
+
+    // Advance blocks to after proposal evaluation period
+    const proposalStartBlock = parseInt(_lib.parseTx(submitTxReceipt).event.args.submissionBlockNumber)
+    await time.advanceBlockTo(proposalStartBlock + votingPeriod + executionDelay)
+
+    // Self destruct before evaluating
+    await mockAccountContract.destroy(owner, { from: owner })
+
+    // Call evaluateProposalOutcome()
+    const evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
+    const [txParsedEvent0] = _lib.parseTx(evaluateTxReceipt, true)
+    assert.equal(txParsedEvent0.event.name, 'ProposalOutcomeEvaluated', 'Expected event.name')
+    assert.equal(parseInt(txParsedEvent0.event.args.proposalId), proposalId, 'Expected event.args.proposalId')
+    assert.equal(txParsedEvent0.event.args.returnData, null, 'Expected event.args.returnData')
+    assert.equal(txParsedEvent0.event.args.outcome, outcome, 'Expected same event.args.outcome')
+    assert.isTrue(txParsedEvent0.event.args.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
+    assert.isTrue(txParsedEvent0.event.args.voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
+    assert.equal(parseInt(txParsedEvent0.event.args.numVotes), 1, 'Expected same event.args.numVotes')
+
+    // Call getProposalById() and confirm same values
+    const proposal = await governance.getProposalById.call(proposalId)
+    assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
+    assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
+    assert.isTrue(parseInt(proposal.submissionBlockNumber) > lastBlock, 'Expected submissionBlockNumber > lastBlock')
+    assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
+    assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
+    assert.equal(_lib.fromBN(proposal.callValue), callValue, 'Expected same proposal.callValue')
+    assert.equal(proposal.functionSignature, functionSignature, 'Expected same proposal.functionSignature')
+    assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
+    assert.equal(proposal.outcome, outcome, 'Expected same outcome')
+    assert.equal(parseInt(proposal.voteMagnitudeYes), defaultStakeAmount, 'Expected same voteMagnitudeYes')
+    assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
+    assert.equal(parseInt(proposal.numVotes), 1, 'Expected same numVotes')
+
+    let proposalContractHashAfterEvaluation = await governance.getProposalTargetContractHash(proposalId)
+    assert.equal(proposalContractHash, proposalContractHashAfterEvaluation, 'Expect same proposal hash despite target contract diff')
+
+    // Additional coverage for getProposalTargetContractHash
+    await _lib.assertRevert(governance.getProposalTargetContractHash(0), 'Must provide valid non-zero _proposalId')
+    await _lib.assertRevert(governance.getProposalTargetContractHash(10000), 'Must provide valid non-zero _proposalId')
   })
 
   it('Test max value of maxInProgressProposals', async () => {
