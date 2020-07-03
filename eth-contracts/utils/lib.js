@@ -224,6 +224,7 @@ export const deployGovernance = async (
   proxyDeployerAddress,
   registry,
   votingPeriod,
+  executionDelay,
   votingQuorum,
   guardianAddress,
   maxInProgressProposals = 20,
@@ -235,8 +236,8 @@ export const deployGovernance = async (
   const governance0 = await Governance.new({ from: proxyDeployerAddress })
   const governanceInitializeData = encodeCall(
     'initialize',
-    ['address', 'uint256', 'uint256', 'uint16', 'uint16', 'address'],
-    [registry.address, votingPeriod, votingQuorum, maxInProgressProposals, maxDescriptionLength, guardianAddress]
+    ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'uint16', 'address'],
+    [registry.address, votingPeriod, executionDelay, votingQuorum, maxInProgressProposals, maxDescriptionLength, guardianAddress]
   )
   // Initialize proxy with zero address
   const governanceProxy = await AudiusAdminUpgradeabilityProxy.new(
