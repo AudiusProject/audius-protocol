@@ -6,7 +6,6 @@ const ipfsClientLatest = require('ipfs-http-client-latest')
 const path = require('path')
 const AudiusLibs = require('@audius/libs')
 const RecurringSync = require('./recurringSync')
-const Web3 = require('web3')
 
 const initializeApp = require('./app')
 const config = require('./config')
