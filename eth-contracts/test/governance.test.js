@@ -839,7 +839,6 @@ contract('Governance.sol', async (accounts) => {
 
     it('Submit proposal successfully via guardian address', async () => {
       const proposalId = 1
-      const proposerAddress = accounts[10]
       const slashAmount = _lib.toBN(1)
       const targetAddress = accounts[11]
       const lastBlock = (await _lib.getLatestBlock(web3)).number
@@ -862,14 +861,14 @@ contract('Governance.sol', async (accounts) => {
       const txParsed = _lib.parseTx(txReceipt)
       assert.equal(txParsed.event.name, 'ProposalSubmitted', 'Expected same event name')
       assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-      assert.equal(txParsed.event.args.proposer, proposerAddress, 'Expected same event.args.proposer')
+      assert.equal(txParsed.event.args.proposer, guardianAddress, 'Expected same event.args.proposer')
       assert.isTrue(parseInt(txParsed.event.args.submissionBlockNumber) > lastBlock, 'Expected event.args.submissionBlockNumber > lastBlock')
       assert.equal(txParsed.event.args.description, proposalDescription, "Expected same event.args.description")
 
       // Call getProposalById() and confirm same values
       const proposal = await governance.getProposalById.call(proposalId)
       assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
-      assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
+      assert.equal(proposal.proposer, guardianAddress, 'Expected same proposer')
       assert.isTrue(parseInt(proposal.submissionBlockNumber) > lastBlock, 'Expected submissionBlockNumber > lastBlock')
       assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
       assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
