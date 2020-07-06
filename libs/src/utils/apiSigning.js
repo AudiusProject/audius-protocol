@@ -15,7 +15,7 @@ function recoverWallet (web3, response) {
     const hashedData = web3.utils.keccak256(dataForRecoveryStr)
     recoveredDelegateWallet = web3.eth.accounts.recover(hashedData, response.signature)
 
-    assert.strictEqual(response.delegateWallet, recoveredDelegateWallet)
+    assert.strictEqual(response.signer, recoveredDelegateWallet)
   } catch (e) {
     console.error(`Issue with recovering public wallet address: ${e}`)
   }

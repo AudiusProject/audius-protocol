@@ -52,7 +52,7 @@ def response_dict_with_metadata(response_dictionary):
     response_dictionary['latest_indexed_block'] = (int(latest_indexed_block) if latest_indexed_block else None)
     response_dictionary['latest_chain_block'] = (int(latest_chain_block) if latest_chain_block else None)
     response_dictionary['version'] = disc_prov_version
-    response_dictionary['delegateWallet'] = shared_config['delegate']['owner_wallet']
+    response_dictionary['signer'] = shared_config['delegate']['owner_wallet']
 
     # generate timestamp with format HH:MM:SS.sssZ
     timestamp = datetime.datetime.now().isoformat(timespec='milliseconds') + 'Z'

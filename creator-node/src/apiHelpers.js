@@ -68,7 +68,7 @@ module.exports.successResponse = (obj = {}) => {
     },
     // TODO: remove duplication of obj -- kept for backwards compatibility
     ...obj,
-    delegateWallet: config.get('delegateOwnerWallet'),
+    signer: config.get('delegateOwnerWallet'),
     ...versionInfo,
     timestamp
   }
