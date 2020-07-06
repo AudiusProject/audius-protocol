@@ -612,7 +612,7 @@ contract('Governance.sol', async (accounts) => {
       )
     })
 
-    it('Should fail to submit Proposal from non-staker caller', async () => {
+    it('Should fail to submit Proposal from address that is not staker / guardian', async () => {
       const proposerAddress = accounts[15]
       const slashAmount = _lib.toBN(1)
       const targetAddress = accounts[11]
@@ -630,7 +630,7 @@ contract('Governance.sol', async (accounts) => {
           proposalDescription,
           { from: proposerAddress }
         ),
-        "Proposer must be active staker with non-zero stake"
+        "Proposer must be active staker with non-zero stake or guardianAddress."
       )
     })
 
@@ -802,6 +802,60 @@ contract('Governance.sol', async (accounts) => {
         callData,
         proposalDescription,
         { from: proposerAddress }
+      )
+
+      // Confirm event log
+      const txParsed = _lib.parseTx(txReceipt)
+      assert.equal(txParsed.event.name, 'ProposalSubmitted', 'Expected same event name')
+      assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
+      assert.equal(txParsed.event.args.proposer, proposerAddress, 'Expected same event.args.proposer')
+      assert.isTrue(parseInt(txParsed.event.args.submissionBlockNumber) > lastBlock, 'Expected event.args.submissionBlockNumber > lastBlock')
+      assert.equal(txParsed.event.args.description, proposalDescription, "Expected same event.args.description")
+
+      // Call getProposalById() and confirm same values
+      const proposal = await governance.getProposalById.call(proposalId)
+      assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
+      assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
+      assert.isTrue(parseInt(proposal.submissionBlockNumber) > lastBlock, 'Expected submissionBlockNumber > lastBlock')
+      assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
+      assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
+      assert.equal(proposal.callValue.toNumber(), callValue0, 'Expected same proposal.callValue')
+      assert.equal(proposal.functionSignature, functionSignature, 'Expected same proposal.functionSignature')
+      assert.equal(proposal.callData, callData, 'Expected same proposal.callData')
+      assert.equal(proposal.outcome, Outcome.InProgress, 'Expected same outcome')
+      assert.equal(parseInt(proposal.voteMagnitudeYes), 0, 'Expected same voteMagnitudeYes')
+      assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
+      assert.equal(parseInt(proposal.numVotes), 0, 'Expected same numVotes')
+      
+      const propDescription = await governance.getProposalDescriptionById.call(proposalId)
+      assert.equal(propDescription, proposalDescription, 'Expected same proposalDescription')
+
+      // Confirm all vote states - all Vote.None
+      for (const account of accounts) {
+        const vote = await governance.getVoteByProposalAndVoter.call(proposalId, account)
+        assert.equal(vote, Vote.None)
+      }
+    })
+
+    it('Submit proposal successfully via guardian address', async () => {
+      const proposalId = 1
+      const proposerAddress = accounts[10]
+      const slashAmount = _lib.toBN(1)
+      const targetAddress = accounts[11]
+      const lastBlock = (await _lib.getLatestBlock(web3)).number
+      const targetContractRegistryKey = delegateManagerKey
+      const targetContractAddress = delegateManager.address
+      const functionSignature = 'slash(uint256,address)'
+      const callData = _lib.abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
+
+      // Call submitProposal
+      const txReceipt = await governance.submitProposal(
+        targetContractRegistryKey,
+        callValue0,
+        functionSignature,
+        callData,
+        proposalDescription,
+        { from: guardianAddress }
       )
 
       // Confirm event log

@@ -256,10 +256,10 @@ contract Governance is InitializableV2 {
             "Governance: Number of InProgress proposals already at max. Please evaluate if possible, or wait for current proposals' votingPeriods to expire."
         );
 
-        // Require proposer is active Staker
+        // Require proposer is active Staker or guardian address
         require(
-            Staking(stakingAddress).isStaker(proposer),
-            "Governance: Proposer must be active staker with non-zero stake."
+            Staking(stakingAddress).isStaker(proposer) || proposer == guardianAddress,
+            "Governance: Proposer must be active staker with non-zero stake or guardianAddress."
         );
 
         // Require _targetContractRegistryKey points to a valid registered contract
