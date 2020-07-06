@@ -200,10 +200,8 @@ async function _getOwnEndpoint (req) {
     throw new Error('Must provide either spOwnerWallet or ethWallets and spOwnerWalletIndex config vars.')
   }
 
-  const spInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress(
-    spOwnerWallet,
-    'creator-node'
-  )
+  const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(spOwnerWallet, 'creator-node')
+  const spInfo = [await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', spId)]
 
   // confirm on-chain endpoint exists and is valid FQDN
   if (!spInfo ||

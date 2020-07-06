@@ -77,17 +77,41 @@ const config = convict({
     env: 'port',
     default: null
   },
+  setTimeout: {
+    doc: `
+      Sets the timeout value (in ms) for sockets
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_settimeout_msecs_callback
+    `,
+    format: 'nat',
+    env: 'timeout',
+    default: 60 * 60 * 1000 // 1 hour
+  },
+  timeout: {
+    doc: `
+      Sets the timeout value (in ms) for socket inactivity
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_timeout
+    `,
+    format: 'nat',
+    env: 'timeout',
+    default: 60 * 60 * 1000 // 1 hour
+  },
   keepAliveTimeout: {
-    doc: 'Server keep alive timeout',
+    doc: `
+      Server keep alive timeout
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_keepalivetimeout
+    `,
     format: 'nat',
     env: 'keepAliveTimeout',
     default: 5000 // node.js default value
   },
   headersTimeout: {
-    doc: 'Server headers timeout',
+    doc: `
+      Server headers timeout
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_headerstimeout
+    `,
     format: 'nat',
     env: 'headersTimeout',
-    default: 60000 // node.js default value
+    default: 60 * 1000 // 60s - node.js default value
   },
   logLevel: {
     doc: 'Log level',
@@ -178,6 +202,22 @@ const config = convict({
     format: String,
     env: 'hlsSegmentType',
     default: 'mpegts'
+  },
+
+  // Transcoding settings
+  transcodingMaxConcurrency: {
+    doc: 'Maximum ffmpeg processes to spawn concurrently. If unset (-1), set to # of CPU cores available',
+    format: Number,
+    env: 'transcodingMaxConcurrency',
+    default: -1
+  },
+
+  // Image processing settings
+  imageProcessingMaxConcurrency: {
+    doc: 'Maximum image resizing processes to spawn concurrently. If unset (-1), set to # of CPU cores available',
+    format: Number,
+    env: 'imageProcessingMaxConcurrency',
+    default: -1
   },
 
   // wallet information
@@ -279,14 +319,12 @@ const config = convict({
     env: 'dataNetworkId',
     default: null
   },
-
   creatorNodeEndpoint: {
     doc: 'http endpoint registered on chain for cnode',
     format: String,
     env: 'creatorNodeEndpoint',
     default: null
   },
-
   // Service selection
   discoveryProviderWhitelist: {
     doc: 'Whitelisted discovery providers to select from (comma-separated)',
@@ -294,7 +332,6 @@ const config = convict({
     env: 'discoveryProviderWhitelist',
     default: ''
   },
-
   /** Manual content blacklists */
   userBlacklist: {
     doc: 'Comma-separated list of user blockchain IDs that creator node should avoid serving / storing',

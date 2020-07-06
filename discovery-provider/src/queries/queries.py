@@ -28,7 +28,6 @@ trackDedupeMaxMinutes = 10
 
 ######## ROUTES ########
 
-
 # Returns all users (paginated) with each user's follow count
 # Optionally filters by is_creator, wallet, or user ids
 @bp.route("/users", methods=("GET",))
@@ -83,7 +82,6 @@ def get_users():
         users = populate_user_metadata(session, user_ids, users, current_user_id)
 
     return api_helpers.success_response(users)
-
 
 # Returns all tracks (paginated) with each track's repost count
 # optionally filters by track ids
@@ -1566,6 +1564,7 @@ def get_max_id(type):
             latest = (
                 session
                 .query(func.max(Track.track_id))
+                .filter(Track.is_unlisted == False)
                 .scalar()
             )
             return api_helpers.success_response(latest)
@@ -1573,6 +1572,7 @@ def get_max_id(type):
             latest = (
                 session
                 .query(func.max(Playlist.playlist_id))
+                .filter(Playlist.is_private == False)
                 .scalar()
             )
             return api_helpers.success_response(latest)
@@ -2157,3 +2157,97 @@ def get_remix_track_parents(track_id):
             add_users_to_tracks(session, tracks)
 
     return api_helpers.success_response(tracks)
+
+# Get the tracks that were previously unlisted and became public after the date provided
+@bp.route("/previously_unlisted/track", methods=("GET",))
+def get_previously_unlisted_tracks():
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        if "date" not in request.args:
+            return api_helpers.error_response(
+                "'date' required to query for retrieving previously unlisted tracks", 400
+            )
+
+        date = request.args.get("date")
+
+        tracks_after_date = (
+            session.query(
+                Track.track_id,
+                Track.updated_at
+            ).distinct(
+                Track.track_id
+            ).filter(
+                Track.is_unlisted == False,
+                Track.updated_at >= date
+            ).subquery()
+        )
+
+        tracks_before_date = (
+            session.query(
+                Track.track_id,
+                Track.updated_at
+            ).distinct(
+                Track.track_id
+            ).filter(
+                Track.is_unlisted == True,
+                Track.updated_at < date
+            ).subquery()
+        )
+
+        previously_unlisted_results = session.query(
+            tracks_before_date.c['track_id']
+        ).join(
+            tracks_after_date,
+            tracks_after_date.c['track_id'] == tracks_before_date.c['track_id'],
+        ).all()
+
+        track_ids = [result[0] for result in previously_unlisted_results]
+
+    return api_helpers.success_response({ 'ids': track_ids })
+
+# Get the playlists that were previously private and became public after the date provided
+@bp.route("/previously_private/playlist", methods=("GET",))
+def get_previously_private_playlist():
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        if "date" not in request.args:
+            return api_helpers.error_response(
+                "'date' required to query for retrieving previously private playlists", 400
+            )
+
+        date = request.args.get("date")
+
+        playlist_after_date = (
+            session.query(
+                Playlist.playlist_id,
+                Playlist.updated_at
+            ).distinct(
+                Playlist.playlist_id
+            ).filter(
+                Playlist.is_private == False,
+                Playlist.updated_at >= date
+            ).subquery()
+        )
+
+        playlist_before_date = (
+            session.query(
+                Playlist.playlist_id,
+                Playlist.updated_at
+            ).distinct(
+                Playlist.playlist_id
+            ).filter(
+                Playlist.is_private == True,
+                Playlist.updated_at < date
+            ).subquery()
+        )
+
+        previously_private_results = session.query(
+            playlist_before_date.c['playlist_id']
+        ).join(
+            playlist_after_date,
+            playlist_after_date.c['playlist_id'] == playlist_before_date.c['playlist_id'],
+        ).all()
+
+        playlist_ids = [result[0] for result in previously_private_results]
+
+    return api_helpers.success_response({ 'ids': playlist_ids })
