@@ -32,11 +32,11 @@ class TranscodingQueue {
     // *any* process fn below
     // See https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueprocess
     this.queue.process(PROCESS_NAMES.segment, MAX_CONCURRENCY, async (job, done) => {
+      const { fileDir, fileName, logContext } = job.data
+
       try {
-        const { fileDir, fileName, logContext } = job.data
-  
         this.logStatus(logContext, `segmenting ${fileDir} ${fileName}`)
-  
+
         const filePaths = await ffmpeg.segmentFile(
           fileDir,
           fileName,
@@ -51,11 +51,11 @@ class TranscodingQueue {
     })
 
     this.queue.process(PROCESS_NAMES.transcode320, /* inherited */ 0, async (job, done) => {
+      const { fileDir, fileName, logContext } = job.data
+
       try {
-        const { fileDir, fileName, logContext } = job.data
-  
         this.logStatus(logContext, `transcoding to 320kbps ${fileDir} ${fileName}`)
-  
+
         const filePath = await ffmpeg.transcodeFileTo320(
           fileDir,
           fileName,
