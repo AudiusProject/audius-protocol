@@ -2,13 +2,13 @@ const path = require('path')
 const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
 
-const ffmpeg = require('../ffmpeg')
 const { getSegmentsDuration } = require('../segmentDuration')
 const models = require('../models')
-const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
+const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, handleTrackContentUpload } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseForbidden } = require('../apiHelpers')
 const { getFileUUIDForImageCID, rehydrateIpfsFromFsIfNecessary } = require('../utils')
 const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
+const TranscodingQueue = require('../TranscodingQueue')
 
 module.exports = function (app) {
   /**
@@ -16,7 +16,8 @@ module.exports = function (app) {
    * @dev - currently stores each segment twice, once under random file UUID & once under IPFS multihash
    *      - this should be addressed eventually
    */
-  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
+  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
+    if (req.fileSizeError) return errorResponseBadRequest(req.fileSizeError)
     if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
     const routeTimeStart = Date.now()
     let codeBlockTimeStart = Date.now()
@@ -26,11 +27,12 @@ module.exports = function (app) {
     let segmentFilePaths
     try {
       const transcode = await Promise.all([
-        ffmpeg.transcodeFileTo320(req, req.fileDir, req.fileName),
-        ffmpeg.segmentFile(req, req.fileDir, req.fileName)
+        TranscodingQueue.segment(req.fileDir, req.fileName, { logContext: req.logContext }),
+        TranscodingQueue.transcode320(req.fileDir, req.fileName, { logContext: req.logContext })
       ])
-      transcodedFilePath = transcode[0]
-      segmentFilePaths = transcode[1]
+      segmentFilePaths = transcode[0].filePaths
+      transcodedFilePath = transcode[1].filePath
+
       req.logger.info(`Time taken in /track_content to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
     } catch (err) {
       removeTrackFolder(req, req.fileDir)
@@ -483,7 +485,8 @@ async function createDownloadableCopy (req, fileName) {
     req.logger.info(`Transcoding file ${fileName}...`)
 
     const fileDir = path.resolve(req.app.get('storagePath'), fileName.split('.')[0])
-    const dlCopyFilePath = await ffmpeg.transcodeFileTo320(req, fileDir, fileName)
+    const transcoding = await TranscodingQueue.transcode320(fileDir, fileName)
+    const { filePath: dlCopyFilePath } = transcoding
 
     req.logger.info(`Transcoded file ${fileName} in ${Date.now() - start}ms.`)
 

@@ -280,7 +280,9 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           multihash: file.multihash,
           sourceFile: file.sourceFile,
           storagePath: file.storagePath,
-          type: file.type
+          type: file.type,
+          fileName: file.fileName,
+          dirMultihash: file.dirMultihash
         })), { transaction: t })
         req.logger.info(redisKey, 'created all non-track files')
 
@@ -312,7 +314,9 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           multihash: trackFile.multihash,
           sourceFile: trackFile.sourceFile,
           storagePath: trackFile.storagePath,
-          type: trackFile.type
+          type: trackFile.type,
+          fileName: trackFile.fileName,
+          dirMultihash: trackFile.dirMultihash
         })), { transaction: t })
         req.logger.info('saved all track files to db')
 

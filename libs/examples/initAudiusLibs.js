@@ -29,7 +29,7 @@ async function initAudiusLibs (useExternalWeb3, ownerWalletOverride = null, ethO
         ethWeb3ProviderEndpoint,
         ethWallet
       ),
-      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(false, new Set(['http://docker.for.mac.localhost:5000'])),
+      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(new Set(['http://docker.for.mac.localhost:5000'])),
       isServer
     }
   } else {
@@ -41,7 +41,7 @@ async function initAudiusLibs (useExternalWeb3, ownerWalletOverride = null, ethO
         ethWeb3ProviderEndpoint,
         ethContractsConfig.ownerWallet),
       creatorNodeConfig: AudiusLibs.configCreatorNode(creatorNodeEndpoint),
-      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true),
+      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
       identityServiceConfig: AudiusLibs.configIdentityService(identityServiceEndpoint),
       isServer
     }

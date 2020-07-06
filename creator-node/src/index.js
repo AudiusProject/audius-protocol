@@ -6,7 +6,6 @@ const ipfsClientLatest = require('ipfs-http-client-latest')
 const path = require('path')
 const AudiusLibs = require('@audius/libs')
 const RecurringSync = require('./recurringSync')
-const Web3 = require('web3')
 
 const initializeApp = require('./app')
 const config = require('./config')
@@ -15,8 +14,8 @@ const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const BlacklistManager = require('./blacklistManager')
 
-const exitWithError = (msg) => {
-  logger.error(msg)
+const exitWithError = (...msg) => {
+  logger.error(...msg)
   process.exit(1)
 }
 
@@ -26,12 +25,14 @@ const initAudiusLibs = async () => {
     config.get('ethNetworkId'),
     /* requiresAccount */ false
   )
-
-  const discoveryProviderWhitelist = (
-    config.get('discoveryProviderWhitelist')
-      ? new Set(config.get('discoveryProviderWhitelist').split(','))
-      : null
+  const dataWeb3 = await AudiusLibs.Utils.configureWeb3(
+    config.get('dataProviderUrl'),
+    null,
+    false
   )
+  const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
+    ? new Set(config.get('discoveryProviderWhitelist').split(','))
+    : null
 
   const audiusLibs = new AudiusLibs({
     ethWeb3Config: AudiusLibs.configEthWeb3(
@@ -40,13 +41,15 @@ const initAudiusLibs = async () => {
       ethWeb3,
       config.get('ethOwnerWallet')
     ),
-    web3Config: AudiusLibs.configExternalWeb3(
-      config.get('dataRegistryAddress'),
-      new Web3(new Web3.providers.HttpProvider(config.get('dataProviderUrl'))),
-      config.get('dataNetworkId'),
-      config.get('delegateOwnerWallet')
-    ),
-    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true, discoveryProviderWhitelist)
+    web3Config: {
+      registryAddress: config.get('dataRegistryAddress'),
+      useExternalWeb3: true,
+      externalWeb3Config: {
+        web3: dataWeb3,
+        ownerWallet: config.get('delegateOwnerWallet')
+      }
+    },
+    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist)
   })
   await audiusLibs.init()
   return audiusLibs
