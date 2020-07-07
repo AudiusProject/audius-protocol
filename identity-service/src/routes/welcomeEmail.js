@@ -19,7 +19,7 @@ module.exports = function (app) {
   /**
    * Send the welcome email information to the requested account
    */
-  app.post('/welcome_email', authMiddleware, handleResponse(async (req, res, next) => {
+  app.post('/email/welcome', authMiddleware, handleResponse(async (req, res, next) => {
     let mg = req.app.get('mailgun')
     if (!mg) {
       req.logger.error('Missing api key')
