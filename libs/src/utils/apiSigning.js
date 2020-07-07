@@ -2,23 +2,25 @@ const assert = require('assert')
 
 /**
  * Recover the public wallet address given the response contains the signature and timestamp
- * @param {object} response discovery provider response
+ * @param {object} response entire service provider response (not axios)
  */
 function recoverWallet (web3, response) {
-  let ownerWallet = null
+  let recoveredDelegateWallet = null
+
+  const dataForRecovery = JSON.parse(JSON.stringify(response))
+  delete dataForRecovery['signature']
+  const dataForRecoveryStr = JSON.stringify(_sortKeys(dataForRecovery))
+
   try {
-    const dataForRecovery = { data: response.data, timestamp: response.timestamp }
-    const dataForRecoveryStr = JSON.stringify(_sortKeys(dataForRecovery))
-
     const hashedData = web3.utils.keccak256(dataForRecoveryStr)
-    ownerWallet = web3.eth.accounts.recover(hashedData, response.signature)
+    recoveredDelegateWallet = web3.eth.accounts.recover(hashedData, response.signature)
 
-    assert.strictEqual(response.owner_wallet, ownerWallet)
+    assert.strictEqual(response.signer, recoveredDelegateWallet)
   } catch (e) {
     console.error(`Issue with recovering public wallet address: ${e}`)
   }
 
-  return ownerWallet
+  return recoveredDelegateWallet
 }
 
 /**
