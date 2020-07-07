@@ -31,28 +31,19 @@ def error_response(error, error_code=500):
 # Create a response dict with just data, signature, and timestamp
 # This response will contain a duplicate of response_entity
 def success_response_backwards_compat(response_entity=None, status=200):
-    response_dictionary = response_dict_with_metadata(response_entity)
-    response_dictionary = {**response_dictionary, **response_entity}
-    signature, timestamp = generate_signature_and_timestamp({'data': response_dictionary['data']})
-    response_dictionary['signature'] = signature
-    response_dictionary['timestamp'] = timestamp
+    starting_response_dictionary = {'data': response_entity, **response_entity}
+    response_dictionary = response_dict_with_metadata(starting_response_dictionary)
     return jsonify(response_dictionary), status
 
 # Create a response dict with metadata, data, signature, and timestamp
 def success_response(response_entity=None, status=200):
-    response_dictionary = response_dict_with_metadata(response_entity)
-    signature, timestamp = generate_signature_and_timestamp({'data': response_entity})
-    response_dictionary['signature'] = signature
-    response_dictionary['timestamp'] = timestamp
+    starting_response_dictionary = {'data': response_entity}
+    response_dictionary = response_dict_with_metadata(starting_response_dictionary)
     return jsonify(response_dictionary), status
 
 # Create a response dict with metadata fields of success, latest_indexed_block, latest_chain_block,
 # version, and owner_wallet
-def response_dict_with_metadata(response_entity=None):
-    response_dictionary = {
-        'data': response_entity
-    }
-
+def response_dict_with_metadata(response_dictionary):
     response_dictionary['success'] = True
 
     latest_indexed_block = redis.get(most_recent_indexed_block_redis_key)
@@ -61,18 +52,21 @@ def response_dict_with_metadata(response_entity=None):
     response_dictionary['latest_indexed_block'] = (int(latest_indexed_block) if latest_indexed_block else None)
     response_dictionary['latest_chain_block'] = (int(latest_chain_block) if latest_chain_block else None)
     response_dictionary['version'] = disc_prov_version
-    response_dictionary['owner_wallet'] = shared_config['delegate']['owner_wallet']
+    response_dictionary['signer'] = shared_config['delegate']['owner_wallet']
+
+    # generate timestamp with format HH:MM:SS.sssZ
+    timestamp = datetime.datetime.now().isoformat(timespec='milliseconds') + 'Z'
+    response_dictionary['timestamp'] = timestamp
+
+    signature = generate_signature(response_dictionary)
+    response_dictionary['signature'] = signature
 
     return response_dictionary
 
 # Generate signature and timestamp using data
-def generate_signature_and_timestamp(data):
-    # generate timestamp with format HH:MM:SS.sssZ
-    timestamp = datetime.datetime.now().isoformat(timespec='milliseconds') + 'Z'
-
-    # combine timestamp and data to sign
-    to_sign = {"timestamp": timestamp, **data}
-    to_sign_str = json.dumps(to_sign, sort_keys=True, ensure_ascii=False, separators=(',', ':'), cls=DateTimeEncoder)
+def generate_signature(data):
+    # convert sorted dictionary to string with no white spaces
+    to_sign_str = json.dumps(data, sort_keys=True, ensure_ascii=False, separators=(',', ':'), cls=DateTimeEncoder)
 
     # generate hash for if data contains unicode chars
     to_sign_hash = Web3.keccak(text=to_sign_str).hex()
@@ -82,7 +76,7 @@ def generate_signature_and_timestamp(data):
 
     # sign to get signature
     signed_message = w3.eth.account.sign_message(encoded_to_sign, private_key=shared_config['delegate']['private_key'])
-    return signed_message.signature.hex(), timestamp
+    return signed_message.signature.hex()
 
 # Accepts raw data with timestamp key and relevant fields, converts data to hash, and recovers the wallet
 def recover_wallet(data, signature):

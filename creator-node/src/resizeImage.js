@@ -141,6 +141,7 @@ module.exports = async (job) => {
     path: path.join(fileName, 'original.jpg'),
     content: original
   })
+  resizes.push(original)
 
   const ipfsAddResp = await ipfs.add(
     toAdd,
