@@ -28,8 +28,8 @@ module.exports = function (app) {
   * @param {boolean} hasSignedInNativeMobile   If the user has signed in w/ native mobile
   */
   app.post('/userEvents', authMiddleware, handleResponse(async (req, res) => {
-    const user = await models.User.findOne({ 
-      where: { id: req.user.id }, 
+    const user = await models.User.findOne({
+      where: { id: req.user.id },
       attributes: ['walletAddress']
     })
     const walletAddress = user.walletAddress
@@ -41,9 +41,9 @@ module.exports = function (app) {
           hasSignedInNativeMobile
         })
       } else {
-        // Note: The field `hasSignedInNativeMobile` defaults to false on create, but if already 
+        // Note: The field `hasSignedInNativeMobile` defaults to false on create, but if already
         // true, do not convert to false.
-        await models.UserEvents.findOrCreate({ where: { walletAddress }} )
+        await models.UserEvents.findOrCreate({ where: { walletAddress } })
       }
       return successResponse({})
     } catch (e) {
@@ -52,5 +52,4 @@ module.exports = function (app) {
       return errorResponseBadRequest('Unable to create user event')
     }
   }))
-
 }

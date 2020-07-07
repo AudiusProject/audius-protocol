@@ -5,16 +5,15 @@ const fs = require('fs')
 const path = require('path')
 const authMiddleware = require('../authMiddleware')
 
-
 const getEmailTemplate = (path) => handlebars.compile(
   fs.readFileSync(path).toString()
 )
 
 const welcomeTemplatePath = path.resolve(__dirname, '../notifications/emails/welcome.html')
-const welcomeTemplate = getEmailTemplate(welcomeTemplatePath) 
+const welcomeTemplate = getEmailTemplate(welcomeTemplatePath)
 
 const welcomeDownloadTemplatePath = path.resolve(__dirname, '../notifications/emails/welcomeDownload.html')
-const welcomeDownloadTemplate = getEmailTemplate(welcomeDownloadTemplatePath) 
+const welcomeDownloadTemplate = getEmailTemplate(welcomeDownloadTemplatePath)
 
 module.exports = function (app) {
   /**

@@ -10,8 +10,7 @@ const getEmailTemplate = (path) => handlebars.compile(
 )
 
 const downloadAppTemplatePath = path.resolve(__dirname, './emails/downloadMobileApp.html')
-const downloadAppTemplate = getEmailTemplate(downloadAppTemplatePath) 
-
+const downloadAppTemplate = getEmailTemplate(downloadAppTemplatePath)
 
 async function processDownloadAppEmail (expressApp, audiusLibs) {
   try {
@@ -22,19 +21,19 @@ async function processDownloadAppEmail (expressApp, audiusLibs) {
       logger.error('Mailgun not configured')
       return
     }
-    // Get all users who have not signed in mobile and not been sent native mobile email within 2 days 
+    // Get all users who have not signed in mobile and not been sent native mobile email within 2 days
     let now = moment()
     let twoDayAgo = now.clone().subtract(2, 'days').format()
 
     let emailUsersWalletAddress = await models.UserEvents.findAll({
       attributes: ['walletAddress'],
-      where: { 
-        hasSignedInNativeMobile: false, 
+      where: {
+        hasSignedInNativeMobile: false,
         hasSentDownloadAppEmail: false,
         createdAt: {
           [models.Sequelize.Op.lte]: twoDayAgo
         }
-      },
+      }
     }).map(x => x.walletAddress)
 
     const emailUsers = await models.User.findAll({
