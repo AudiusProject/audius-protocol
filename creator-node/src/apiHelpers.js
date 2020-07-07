@@ -62,27 +62,31 @@ module.exports.successResponse = (obj = {}) => {
   const timestamp = new Date().toISOString()
 
   // format data to sign
-  let toSign = { timestamp, data: { ...obj } }
-  toSign = JSON.stringify(_sortKeys(toSign))
+  let toSign = {
+    data: {
+      ...obj
+    },
+    // TODO: remove duplication of obj -- kept for backwards compatibility
+    ...obj,
+    signer: config.get('delegateOwnerWallet'),
+    ...versionInfo,
+    timestamp
+  }
+
+  const toSignStr = JSON.stringify(_sortKeys(toSign))
 
   // hash data
-  const toSignHash = web3.utils.keccak256(toSign)
+  const toSignHash = web3.utils.keccak256(toSignStr)
 
   // generate signature with hashed data and private key
   const signedResponse = web3.eth.accounts.sign(toSignHash, config.get('delegatePrivateKey'))
 
+  const responseWithSignature = { ...toSign, signature: signedResponse.signature }
+
   return {
     statusCode: 200,
     object: {
-      data: {
-        ...obj
-      },
-      // TODO: remove duplication of obj -- kept for backwards compatibility
-      ...obj,
-      owner_wallet: config.get('delegateOwnerWallet'),
-      ...versionInfo,
-      timestamp,
-      signature: signedResponse.signature
+      ...responseWithSignature
     }
   }
 }
