@@ -341,5 +341,5 @@ module.exports.getTopCreatorsByGenres = (genres, limit = 30, offset = 0, withUse
 }
 
 module.exports.getUsersForCreatorNode = (nodeId) => {
-  return { endpoint : `/creator_node/users/${nodeId}` }
+  return { endpoint: `/creator_node/users/${nodeId}` }
 }
