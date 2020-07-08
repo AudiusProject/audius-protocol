@@ -290,7 +290,13 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           const nonTrackFilesSlice = nonTrackFiles.slice(i, i + NonTrackFileSaveConcurrencyLimit)
           req.logger.info(`NonTrackFiles saveFileForMultihash - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit}...`)
           await Promise.all(nonTrackFilesSlice.map(
-            nonTrackFile => saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath)
+            nonTrackFile => {
+              // Skip over directories since there's no actual content to sync
+              // The files inside the directory are synced separately
+              if (nonTrackFile.type !== 'dir') {
+                saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath)
+              }
+            }
           ))
         }
         req.logger.info('Saved all non track files to disk and ipfs.')

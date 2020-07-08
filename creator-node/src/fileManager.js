@@ -3,6 +3,7 @@ const assert = require('assert')
 const fs = require('fs')
 const { promisify } = require('util')
 const writeFile = promisify(fs.writeFile)
+const mkdir = promisify(fs.mkdir)
 const multer = require('multer')
 const getUuid = require('uuid/v4')
 
@@ -132,20 +133,32 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
     } catch (e) {
       throw new Error(`Failed to retrieve file for multihash ${multihash} from IPFS`)
     }
-    if (output.length !== 1) throw new Error('Audius track segment multihash must map to 1 file')
+    if (output.length !== 1) throw new Error(`provided multihash ${multihash} must map to 1 file`)
     fileBuffer = output[0].content
     req.logger.info(`retrieved file for multihash ${multihash} from path ${output[0].path}`)
   }
 
   // Write file to disk.
-  const storagePath = path.join(req.app.get('storagePath'), multihash)
-  assert.strictEqual(storagePath, expectedStoragePath)
-  req.logger.info(`writing file to ${storagePath}...`)
-  await writeFile(storagePath, fileBuffer)
-  req.logger.info(`wrote file to ${storagePath}`)
+  req.logger.info(`writing file to ${expectedStoragePath}...`)
 
-  req.logger.info(`\nAdded file: ${multihash} at ${storagePath}`)
-  return storagePath
+  const storagePath = req.app.get('storagePath')
+  const filePath = expectedStoragePath.replace(storagePath, '')
+  // Check if the file we are trying to copy is in a directory
+  // and if so, create the directory first
+  // E.g if the path is /file_storage/QmABC/Qm123, we check if
+  // /QmABC/Qm123 contains more than 2 parts and if so, it's a directory
+  if (filePath.split('/').length > 2) {
+    const dir = path.dirname(expectedStoragePath)
+    if (dir) {
+      await mkdir(dir, { recursive: true })
+    }
+  }
+  // Write the file
+  await writeFile(expectedStoragePath, fileBuffer)
+  req.logger.info(`wrote file to ${expectedStoragePath}`)
+
+  req.logger.info(`\nAdded file: ${multihash} at ${expectedStoragePath}`)
+  return expectedStoragePath
 }
 
 /** (1) Remove all files in requested fileDir
