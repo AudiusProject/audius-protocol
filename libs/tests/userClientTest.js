@@ -42,6 +42,7 @@ it('should call addUser and verify new creator', async function () {
 
   assert.strictEqual(metadata.handle, Utils.hexToUtf8(creator.handle))
 
+  /*
   const updateMultihashResp = await audiusInstance.contracts.UserFactoryClient.updateMultihash(
     userId, creatorMetadataMultihashDecoded.digest
   )
@@ -50,6 +51,7 @@ it('should call addUser and verify new creator', async function () {
     creatorMetadataMultihashDecoded.digest,
     `Transaction failed - ${creatorMetadataMultihashDecoded.digest}`
   )
+  */
 
   const updateNameResp = await audiusInstance.contracts.UserFactoryClient.updateName(
     userId, metadata.name
@@ -78,6 +80,7 @@ it('should call addUser and verify new creator', async function () {
     `Transaction failed - ${metadata.bio}`
   )
 
+  /*
   const updateProfilePhotoResp = await audiusInstance.contracts.UserFactoryClient.updateProfilePhoto(
     userId, profilePictureMultihashDecoded.digest
   )
@@ -95,6 +98,7 @@ it('should call addUser and verify new creator', async function () {
     coverPhotoMultihashDecoded.digest,
     `Transaction failed - ${coverPhotoMultihashDecoded.digest}`
   )
+  */
 
   const updateIsCreatorResp = await audiusInstance.contracts.UserFactoryClient.updateIsCreator(
     userId, metadata.is_creator
