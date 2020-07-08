@@ -28,7 +28,7 @@ const sp1Id = 1
 const sp2Id = 2
 const sp3Id = 3
 
-const existingUserId = 2
+const existingUserId = 1
 const addressZero = '0x0000000000000000000000000000000000000000'
 
 const assertThrows = async (blockOrPromise, expectedErrorCode, expectedReason) => {

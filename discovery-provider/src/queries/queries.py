@@ -2258,12 +2258,14 @@ def get_creator_node_users(sp_node_id):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         user_query = (
-            session.query(User)
-                .filter(
-                    or_(
-                        and_(User.is_current == True, User.primary == sp_node_id),
-                        and_(User.is_current == True, User.secondaries.any(sp_node_id))
-                    )
+            session.query(
+                User
+            ).filter(
+                User.is_current == True,
+                or_(
+                    User.primary == sp_node_id,
+                    User.secondaries.any(sp_node_id)
+                )
             ).all()
         )
         users = helpers.query_result_to_list(user_query)
