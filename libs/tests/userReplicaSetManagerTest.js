@@ -28,7 +28,7 @@ const sp1Id = 1
 const sp2Id = 2
 const sp3Id = 3
 
-const existingUserId = 1
+const existingUserId = 2
 const addressZero = '0x0000000000000000000000000000000000000000'
 
 const assertThrows = async (blockOrPromise, expectedErrorCode, expectedReason) => {
@@ -129,8 +129,8 @@ describe('UserReplicaSetManager Tests', () => {
   it('Configure user1 replica set', async function () {
     let currentReplicaSet = await audius1.contracts.UserReplicaSetManagerClient.getArtistReplicaSet(existingUserId)
     // console.log(currentReplicaSet)
-    let newPrimary = 1
-    let newSecondaries = [3, 2]
+    let newPrimary = sp1Id
+    let newSecondaries = [sp3Id, sp2Id]
     // Issue update from audius0, account which owns existingUserId
     await audius0.contracts.UserReplicaSetManagerClient.updateReplicaSet(
       existingUserId,
@@ -144,5 +144,10 @@ describe('UserReplicaSetManager Tests', () => {
     assert(primaryFromChain === (newPrimary), 'Expect primary update')
     assert(secondariesFromChain.length === newSecondaries.length, 'Expect secondary lengths to be equal')
     assert(secondariesFromChain.every((replicaId, i) => replicaId === newSecondaries[i]), 'Secondary mismatch')
+  })
+
+  it('Users for creator node', async function () {
+    let resp = await audius1.discoveryProvider.getUsersForCreatorNode(sp1Id)
+    assert(resp.length > 0, 'Expect users to exist for creator node 1')
   })
 })

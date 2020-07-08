@@ -2251,3 +2251,20 @@ def get_previously_private_playlist():
         playlist_ids = [result[0] for result in previously_private_results]
 
     return api_helpers.success_response({ 'ids': playlist_ids })
+
+# Get the users for a given creator node ID
+@bp.route("/creator_node/users/<int:sp_node_id>", methods=("GET",))
+def get_creator_node_users(sp_node_id):
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        user_query = (
+            session.query(User)
+                .filter(
+                    or_(
+                        and_(User.is_current == True, User.primary == sp_node_id),
+                        and_(User.is_current == True, User.secondaries.any(sp_node_id))
+                    )
+            ).all()
+        )
+        users = helpers.query_result_to_list(user_query)
+    return api_helpers.success_response(users)
