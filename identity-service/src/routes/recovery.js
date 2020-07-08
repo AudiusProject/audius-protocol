@@ -7,7 +7,7 @@ const path = require('path')
 
 const recoveryTemplate = handlebars.compile(
   fs
-    .readFileSync(path.resolve(__dirname, '../recovery.html'))
+    .readFileSync(path.resolve(__dirname, '../notifications/emails/recovery.html'))
     .toString()
 )
 
