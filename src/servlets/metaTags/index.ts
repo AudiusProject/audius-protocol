@@ -35,7 +35,7 @@ const getTrackContext = async (id: number, canEmbed: boolean): Promise<Context> 
       ? `${track.cover_art_sizes}/1000x1000.jpg`
       : track.cover_art
 
-    const tags = track ? track.tags.split(',') : []
+    const tags = track.tags ? track.tags.split(',') : []
     tags.push('audius', 'sound', 'kit', 'sample', 'pack', 'stems', 'mix')
 
     const date = track.release_date ? new Date(track.release_date) : track.created_at
@@ -132,7 +132,7 @@ const getRemixesContext = async (id: number): Promise<Context> => {
       ? `${track.cover_art_sizes}/1000x1000.jpg`
       : track.cover_art
 
-    const tags = track ? track.tags.split(',') : []
+    const tags = track.tags ? track.tags.split(',') : []
     tags.push('audius', 'sound', 'kit', 'sample', 'pack', 'stems', 'mix')
 
     const date = track.release_date ? new Date(track.release_date) : track.created_at
