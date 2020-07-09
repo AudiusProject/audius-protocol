@@ -17,12 +17,12 @@ const { getEthContractAccounts } = require('./helpers/utils')
 const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service']
 const spDiscProvType = serviceTypeList[0]
 const spCreatorNodeType = serviceTypeList[1]
-const discProvEndpoint1 = 'http://audius-disc-prov_web-server_1:5000'
-const discProvEndpoint2 = 'http://audius-disc-prov_web-server_2:5000'
-const creatorNodeEndpoint1 = 'http://cn1_creator-node_1:4000'
-const creatorNodeEndpoint2 = 'http://cn2_creator-node_1:4001'
-const creatorNodeEndpoint3 = 'http://cn3_creator-node_1:4002'
-const creatorNodeEndpoint4 = 'http://cn4_creator-node_1:4003'
+const discProvEndpoint1 = 'http://docker.for.mac.localhost:5000'
+const discProvEndpoint2 = 'http://docker.for.mac.localhost:5005'
+const creatorNodeEndpoint1 = 'http://docker.for.mac.localhost:4000'
+const creatorNodeEndpoint2 = 'http://docker.for.mac.localhost:4010'
+const creatorNodeEndpoint3 = 'http://docker.for.mac.localhost:4020'
+const creatorNodeEndpoint4 = 'http://docker.for.mac.localhost:4030'
 const amountOfAuds = 100000
 
 // try to dynamically get versions from .version.json
@@ -174,13 +174,14 @@ const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
 
 // Account 0
 const _registerDiscProv1 = async (audiusLibs, ethAccounts) => {
-  await registerLocalService(audiusLibs, spDiscProvType, discProvEndpoint1, amountOfAuds)
+  let audiusLibs10 = await initAudiusLibs(true, null, ethAccounts[10])
+  await registerLocalService(audiusLibs10, spDiscProvType, discProvEndpoint1, amountOfAuds)
 }
 
 // Account 3
 const _registerDiscProv2 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[3])
-  await registerLocalService(audiusLibs4, spDiscProvType, discProvEndpoint2, amountOfAuds)
+  let audiusLibs11 = await initAudiusLibs(true, null, ethAccounts[11])
+  await registerLocalService(audiusLibs11, spDiscProvType, discProvEndpoint2, amountOfAuds)
 }
 
 const makeCreatorNodeEndpoint = (serviceNumber) => `http://cn${serviceNumber}_creator-node_1:${4000 + serviceNumber - 1}`
