@@ -26,30 +26,26 @@ class ServiceProviderFactoryClient extends ContractClient {
     if (!this.isDebug && !Utils.isFQDN(endpoint)) {
       throw new Error('Not a fully qualified domain name!')
     }
-
     if (!Number.isInteger(amount) && !Utils.isBN(amount)) {
       throw new Error('Invalid amount')
     }
 
-    /// When in debug mode, skip health check
-    if (!this.isDebug) {
-      let requestUrl = urlJoin(endpoint, 'health_check')
-      let axiosRequestObj = {
-        url: requestUrl,
-        method: 'get',
-        timeout: 1000
-      }
-      const resp = await axios(axiosRequestObj)
-      let endpointServiceType
-      try {
-        endpointServiceType = resp.data.data.service
-      } catch (e) {
-        endpointServiceType = resp.data.service
-      }
-  
-      if (serviceType !== endpointServiceType) {
-        throw new Error('Attempting to register endpoint with mismatched service type')
-      }
+    let requestUrl = urlJoin(endpoint, 'health_check')
+    let axiosRequestObj = {
+      url: requestUrl,
+      method: 'get',
+      timeout: 1000
+    }
+    const resp = await axios(axiosRequestObj)
+    let endpointServiceType
+    try {
+      endpointServiceType = resp.data.data.service
+    } catch (e) {
+      endpointServiceType = resp.data.service
+    }
+
+    if (serviceType !== endpointServiceType) {
+      throw new Error('Attempting to register endpoint with mismatched service type')
     }
 
     // Approve token transfer operation

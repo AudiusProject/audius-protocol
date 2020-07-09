@@ -239,6 +239,7 @@ const ethSignTypedData = (web3, wallet, signatureData) => {
       signatureData = JSON.stringify(signatureData)
     } else {
       method = 'eth_signTypedData'
+      // fix per https://github.com/ethereum/web3.js/issues/1119
     }
 
     web3.currentProvider.send({

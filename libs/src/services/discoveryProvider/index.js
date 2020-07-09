@@ -4,7 +4,6 @@ const Utils = require('../../utils')
 
 const {
   UNHEALTHY_BLOCK_DIFF,
-  DEBUG_UNHEALTHY_BLOCK_DIFF,
   REQUEST_TIMEOUT_MS
 } = require('./constants')
 
@@ -19,12 +18,11 @@ const MAKE_REQUEST_RETRY_COUNT = 3
 const MAX_MAKE_REQUEST_RETRY_COUNT = 50
 
 class DiscoveryProvider {
-  constructor (whitelist, userStateManager, ethContracts, web3Manager, reselectTimeout, selectionCallback, isDebug=false) {
+  constructor (whitelist, userStateManager, ethContracts, web3Manager, reselectTimeout, selectionCallback) {
     this.whitelist = whitelist
     this.userStateManager = userStateManager
     this.ethContracts = ethContracts
     this.web3Manager = web3Manager
-    this.isDebug = isDebug
 
     this.serviceSelector = new DiscoveryProviderSelection({
       whitelist: this.whitelist,
@@ -538,7 +536,7 @@ class DiscoveryProvider {
         if (
           !chainBlock ||
           !indexedBlock ||
-          (chainBlock - indexedBlock) > (this.isDebug ? DEBUG_UNHEALTHY_BLOCK_DIFF : UNHEALTHY_BLOCK_DIFF)
+          (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
         ) {
           // Select a new one
           console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)

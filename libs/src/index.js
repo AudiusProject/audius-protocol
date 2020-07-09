@@ -218,8 +218,7 @@ class AudiusLibs {
         this.ethContracts,
         this.web3Manager,
         this.discoveryProviderConfig.reselectTimeout,
-        this.discoveryProviderConfig.selectionCallback,
-        this.isDebug
+        this.discoveryProviderConfig.selectionCallback
       )
       await this.discoveryProvider.init()
     }
