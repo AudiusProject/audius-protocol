@@ -173,8 +173,8 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
 
   let rehydrateNecessary = false
   for (let entry of findOriginalFileQuery) {
-    let sourcePath = entry.sourceFile
-    let ipfsPath = `${dirHash}/${sourcePath}`
+    let filename = entry.fileName
+    let ipfsPath = `${dirHash}/${filename}`
     req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, ipfsPath: ${ipfsPath}`)
     try {
       ipfsSingleByteCat(ipfsPath, req)
