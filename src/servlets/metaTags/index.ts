@@ -61,6 +61,7 @@ const getTrackContext = async (id: number, canEmbed: boolean): Promise<Context> 
       embedUrl: getEmbedUrl(Playable.TRACK, track.track_id, track.owner_id)
     }
   } catch (e) {
+    console.error(e)
     return getDefaultContext()
   }
 }
@@ -88,6 +89,7 @@ const getCollectionContext = async (id: number, canEmbed: boolean): Promise<Cont
       )
     }
   } catch (e) {
+    console.error(e)
     return getDefaultContext()
   }
 }
@@ -114,6 +116,7 @@ const getUserContext = async (handle: string): Promise<Context> => {
       image: getImageUrl(profilePicture, gateway),
     }
   } catch (e) {
+    console.error(e)
     return getDefaultContext()
   }
 }
@@ -153,6 +156,7 @@ const getRemixesContext = async (id: number): Promise<Context> => {
       image: getImageUrl(coverArt, gateway)
     }
   } catch (e) {
+    console.error(e)
     return getDefaultContext()
   }
 }
