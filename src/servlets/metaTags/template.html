@@ -50,16 +50,16 @@
     {{/if}}
 
   </head>
-  <body style='display: flex; flex-direction: column; align-items: center; font-size: 40px;'>
+  <body style='display: flex; flex-direction: column; align-items: center; text-align: center; font-size: 40px;'>
     <img height='400' width='400' src='{{image}}' alt='artwork' />
 
     <h1>{{title}}</h1>
 
     {{#if tags}}
       <h2>Tags: </h2>
-      <div id='tags' style='display: flex; justify-content: space-evenly; width: 100%; flex-wrap: wrap;'>
+      <div id='tags' style='display: flex; justify-content: center; width: 100%; flex-wrap: wrap;'>
         {{#each tags}}
-          <h2>{{this}}</h2>
+          <h2 style='padding: 10px;'>{{this}}</h2>
         {{/each}}
       </div>
     {{/if}}
