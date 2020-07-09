@@ -54,7 +54,7 @@ const assertRevert = async (blockOrPromise, expectedReason) => {
 
 const getUsersForCreatorNode = async (cnodeId, userId, expectedPrimary, expectedSecondaries) => {
   let resp = await audius1.discoveryProvider.getUsersForCreatorNode(cnodeId)
-  assert(resp.length > 0, 'Expect users to exist for creator node 1')
+  assert(resp.length > 0, 'Expect users to exist for creator node')
   let filteredResp = resp.filter(x=>x.user_id == userId)
   assert(filteredResp.length === 1, 'Expect single entry for user')
   let entry = filteredResp[0]
