@@ -48,8 +48,47 @@
       <meta name="twitter:card" content="summary_large_image"/ >
       {{/if}}
     {{/if}}
+
   </head>
-  <body>
-    <div>{{title}}</div>
+  <body style='display: flex; flex-direction: column; align-items: center; font-size: 40px;'>
+    <img height='400' width='400' src='{{image}}' alt='artwork' />
+
+    <h1>{{title}}</h1>
+
+    {{#if tags}}
+      <h2>Tags: </h2>
+      <div id='tags' style='display: flex; justify-content: space-evenly; width: 100%; flex-wrap: wrap;'>
+        {{#each tags}}
+          <h2>{{this}}</h2>
+        {{/each}}
+      </div>
+    {{/if}}
+
+    {{#if labels}}
+      {{#each labels as |item|}}
+        <h2>{{item.name}}: {{item.value}}</h2>
+      {{/each}}
+    {{/if}}
+
+    <h3>{{description}}</h3>
+
+    {{#if additionalSEOHint}}
+      <h3>{{additionalSEOHint}}</h3>
+    {{/if}}
+
+    <footer>
+      <h2>
+        <a href='https://audius.co/trending'>Trending</a>
+      </h2>
+      <h2>
+        <a href='https://audius.co/explore'>Explore</a>
+      </h2>
+      <h2>
+        <a href='https://audius.co/signup'>Sign Up</a>
+      </h2>
+      <h2>
+        <a href='https://audius.co/upload'>Upload</a>
+      </h2>
+    </footer>
   </body>
 </html>

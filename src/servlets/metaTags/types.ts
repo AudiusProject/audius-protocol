@@ -15,6 +15,8 @@ export enum Playable {
 }
 
 export interface Context {
+  format: MetaTagFormat,
+
   title: string,
   description: string,
   image: string,
@@ -27,4 +29,9 @@ export interface Context {
   embed?: boolean,
   // Bedtime player url
   embedUrl?: string,
+
+  tags?: string[],
+  labels?: Array<{ name: string, value: string }>,
+
+  additionalSEOHint?: string
 }

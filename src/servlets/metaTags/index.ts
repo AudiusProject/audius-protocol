@@ -4,6 +4,7 @@ import handlebars from 'handlebars'
 import path from 'path'
 
 import { DEFAULT_IMAGE_URL } from '../utils/constants'
+import { formatDate, formatSeconds } from '../utils/format'
 import { formatGateway, getCollection, getImageUrl, getTrack, getUser, getUserByHandle } from '../utils/helpers'
 import { Context, MetaTagFormat, Playable } from './types'
 
@@ -31,9 +32,28 @@ const getTrackContext = async (id: number, canEmbed: boolean): Promise<Context> 
     const coverArt = track.cover_art_sizes
       ? `${track.cover_art_sizes}/1000x1000.jpg`
       : track.cover_art
+
+    const tags = track ? track.tags.split(',') : []
+    tags.push('audius', 'sound', 'kit', 'sample', 'pack', 'stems', 'mix')
+
+    const date = track.release_date ? new Date(track.release_date) : track.created_at
+    const duration = track.track_segments.reduce(
+      (acc: number, v: any) => acc = acc + v.duration,
+      0
+    )
+    const labels = [
+      { name: 'Released', value: formatDate(date) },
+      { name: 'Duration', value: formatSeconds(duration) },
+      { name: 'Genre', value: track.genre },
+      { name: 'Mood', value: track.mood },
+    ]
+
     return {
+      format: MetaTagFormat.Track,
       title: `${track.title} • ${user.name}`,
       description: track.description || '',
+      tags,
+      labels,
       image: getImageUrl(coverArt, gateway),
       embed: canEmbed,
       embedUrl: getEmbedUrl(Playable.TRACK, track.track_id, track.owner_id)
@@ -54,6 +74,7 @@ const getCollectionContext = async (id: number, canEmbed: boolean): Promise<Cont
       ? `${collection.playlist_image_sizes_multihash}/1000x1000.jpg`
       : collection.playlist_image_multihash
     return {
+      format: MetaTagFormat.Collection,
       title: `${collection.playlist_name} • ${user.name}`,
       description: collection.description || '',
       image: getImageUrl(coverArt, gateway),
@@ -78,9 +99,16 @@ const getUserContext = async (handle: string): Promise<Context> => {
     const profilePicture = user.profile_picture_sizes
       ? `${user.profile_picture_sizes}/1000x1000.jpg`
       : user.profile_picture
+
+    const infoText = user.track_count > 0
+      ? `Listen to ${user.name} on Audius`
+      : `Follow ${user.name} on Audius`
+
     return {
+      format: MetaTagFormat.User,
       title: `${user.name} (@${user.handle})`,
       description: user.bio,
+      additionalSEOHint: infoText,
       image: getImageUrl(profilePicture, gateway),
     }
   } catch (e) {
@@ -98,9 +126,28 @@ const getRemixesContext = async (id: number): Promise<Context> => {
     const coverArt = track.cover_art_sizes
       ? `${track.cover_art_sizes}/1000x1000.jpg`
       : track.cover_art
+
+    const tags = track ? track.tags.split(',') : []
+    tags.push('audius', 'sound', 'kit', 'sample', 'pack', 'stems', 'mix')
+
+    const date = track.release_date ? new Date(track.release_date) : track.created_at
+    const duration = track.track_segments.reduce(
+      (acc: number, v: any) => acc = acc + v.duration,
+      0
+    )
+    const labels = [
+      { name: 'Released', value: formatDate(date) },
+      { name: 'Duration', value: formatSeconds(duration) },
+      { name: 'Genre', value: track.genre },
+      { name: 'Mood', value: track.mood },
+    ]
+
     return {
+      format: MetaTagFormat.Remixes,
       title: `Remixes of ${track.title} • ${user.name}`,
       description: track.description || '',
+      tags,
+      labels,
       image: getImageUrl(coverArt, gateway)
     }
   } catch (e) {
@@ -110,6 +157,7 @@ const getRemixesContext = async (id: number): Promise<Context> => {
 
 const getUploadContext = (): Context => {
   return {
+    format: MetaTagFormat.Upload,
     title: 'Audius Upload',
     description: `Upload your tracks to Audius`,
     image: DEFAULT_IMAGE_URL,
@@ -119,6 +167,7 @@ const getUploadContext = (): Context => {
 
 const getDefaultContext = (): Context => {
   return {
+    format: MetaTagFormat.Default,
     title: 'Audius',
     description: 'Audius is a music streaming and \
 sharing platform that puts power back into the hands \
