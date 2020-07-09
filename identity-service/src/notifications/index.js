@@ -12,6 +12,7 @@ const {
   getHighestBlockNumber
 } = require('./utils')
 const { processEmailNotifications } = require('./sendNotificationEmails')
+const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
 const { pushAnnouncementNotifications } = require('./pushAnnouncementNotifications')
 const { notificationJobType, announcementJobType } = require('./constants')
 const { drainPublishedMessages } = require('./notificationQueue')
@@ -51,7 +52,6 @@ class NotificationProcessor {
     // Clear any pending notif jobs
     await this.notifQueue.empty()
     await this.emailQueue.empty()
-
     this.redis = redis
     this.mg = expressApp.get('mailgun')
 
@@ -107,6 +107,7 @@ class NotificationProcessor {
     this.emailQueue.process(async (job, done) => {
       logger.info('processEmailNotifications')
       await processEmailNotifications(expressApp, audiusLibs)
+      await processDownloadAppEmail(expressApp, audiusLibs)
       done()
     })
 

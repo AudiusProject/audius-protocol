@@ -7,8 +7,18 @@ module.exports = (sequelize, DataTypes) => {
       references: { model: 'Users', key: 'walletAddress' }
     },
     needsRecoveryEmail: {
-      allowNull: true,
-      type: DataTypes.BOOLEAN
+      type: DataTypes.BOOLEAN,
+      allowNull: true
+    },
+    hasSentDownloadAppEmail: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    hasSignedInNativeMobile: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   }, {})
 
