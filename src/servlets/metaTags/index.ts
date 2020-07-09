@@ -8,6 +8,8 @@ import { formatDate, formatSeconds } from '../utils/format'
 import { formatGateway, getCollection, getImageUrl, getTrack, getUser, getUserByHandle } from '../utils/helpers'
 import { Context, MetaTagFormat, Playable } from './types'
 
+const CAN_EMBED_USER_AGENT_REGEX = /(twitter|discord)/
+
 const E = process.env
 
 const getEmbedUrl = (type: Playable, id: number, ownerId: number) => {
@@ -186,10 +188,8 @@ const getResponse = async (
     title,
     handle,
   } = req.params
-  const userAgent = req.get('User-Agent')
-  const canEmbed = userAgent
-    ? userAgent.toLowerCase().includes('twitter')
-    : false
+  const userAgent = req.get('User-Agent') || ''
+  const canEmbed = CAN_EMBED_USER_AGENT_REGEX.test(userAgent.toLowerCase())
 
   let context: Context
 
