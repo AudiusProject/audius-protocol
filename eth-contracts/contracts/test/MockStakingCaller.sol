@@ -113,10 +113,21 @@ contract MockStakingCaller is InitializableV2 {
     }
 
     /// Governance mock functions
-    function upgradeTo(address _newImplementation) external {
+    function upgradeStakingTo(address _newImplementation) external {
         _requireIsInitialized();
 
         return AudiusAdminUpgradeabilityProxy(stakingAddress).upgradeTo(_newImplementation);
+    }
+
+    function upgradeStakingToAndCall(
+        address _newImplementation,
+        bytes calldata _data
+    ) external payable {
+        _requireIsInitialized();
+        return AudiusAdminUpgradeabilityProxy(stakingAddress).upgradeToAndCall(
+            _newImplementation,
+            _data
+        );
     }
 
     function setAudiusGovernanceAddress(address _governanceAddress) external {

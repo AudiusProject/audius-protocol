@@ -50,6 +50,8 @@ contract('Upgrade proxy test', async (accounts) => {
     registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
 
     // Deploy + register Governance
+    // Note that mockStakingCaller is treated as governance in the rest of this test
+    // governance.addres is used only for token init
     governance = await _lib.deployGovernance(
       artifacts,
       proxyAdminAddress,
@@ -153,7 +155,7 @@ contract('Upgrade proxy test', async (accounts) => {
     staking = await StakingUpgraded.at(proxy.address)
     await _lib.assertRevert(staking.newFunction.call({ from: proxyDeployerAddress }), 'revert')
 
-    const upgradeTxReceipt = await mockStakingCaller.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
+    const upgradeTxReceipt = await mockStakingCaller.upgradeStakingTo(stakingUpgraded.address, { from: proxyAdminAddress })
     await expectEvent.inTransaction(upgradeTxReceipt.tx, AudiusAdminUpgradeabilityProxy, 'Upgraded', { implementation: stakingUpgraded.address })
 
     // Confirm proxy implementation's address has updated to new logic contract
@@ -165,8 +167,9 @@ contract('Upgrade proxy test', async (accounts) => {
     assert.equal(newFunctionResp, 5)
   })
 
-  it.only('upgradeToAndCall - stakingUpgraded', async () => {
+  it('Upgrade proxy via upgradeToAndCall + call newFunction()', async () => {
     staking = await StakingUpgraded.at(proxy.address)
+    await _lib.assertRevert(staking.newFunction(), 'revert')
 
     await _lib.assertRevert(
       proxy.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress }),
@@ -175,9 +178,18 @@ contract('Upgrade proxy test', async (accounts) => {
     const initializeCallData = _lib.encodeCall('newFunction', [], [])
 
     // This should NOT be possible from the proxyAdminAddress
-    await proxy.upgradeToAndCall(stakingUpgraded.address, initializeCallData, { from: proxyAdminAddress })
-    let r = await staking.newFunction()
-    assert.isTrue(r.eq(_lib.toBN(5)), 'Test function returned, should never have reached here')
+    await _lib.assertRevert(
+      proxy.upgradeToAndCall(stakingUpgraded.address, initializeCallData, { from: proxyAdminAddress }),
+      'Caller must be current proxy governance address'
+    )
+    await _lib.assertRevert(staking.newFunction(), 'revert')
+
+    // Call upgradeTo through mockStakingCaller which functions as governance in this test
+    // assert.isTrue(r.eq(_lib.toBN(5)), 'Test function returned, should never have reached here')
+    await mockStakingCaller.upgradeStakingToAndCall(stakingUpgraded.address, initializeCallData)
+
+    // Staking upgraded should now work
+    assert.isTrue((await staking.newFunction()).eq(_lib.toBN(5)), 'Expect upgraded value')
   })
 
   it('Initialize with no governance address and set value from admin', async () => {
@@ -245,7 +257,7 @@ contract('Upgrade proxy test', async (accounts) => {
       const otherAccount = accounts[4]
 
       await approveAndStake(DEFAULT_AMOUNT, staker, staking)
-      await mockStakingCaller.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
+      await mockStakingCaller.upgradeStakingTo(stakingUpgraded.address, { from: proxyAdminAddress })
 
       staking = await StakingUpgraded.at(proxy.address)
 

@@ -43,7 +43,26 @@ contract AudiusAdminUpgradeabilityProxy is AdminUpgradeabilityProxy {
             msg.sender == governanceAddress,
             "Caller must be current proxy governance address"
         );
-        _upgradeTo(_newImplementation);
+        super._upgradeTo(_newImplementation); //_upgradeTo(_newImplementation);
+    }
+
+    /**
+     * @notice Upgrade the address of the logic contract for this proxy and invoke a function
+     * @dev Wrapper on AdminUpgradeabilityProxy.upgradeToAndCall.
+     *      Adds a check to ensure msg.sender is the Audius Governance contract.
+     * @param _newImplementation - new address of logic contract that the proxy will point to
+     * @param _data - data for the initial function
+     */
+    // solium-disable security/no-low-level-calls
+    function upgradeToAndCall(address _newImplementation, bytes calldata _data) external payable {
+        require(
+            msg.sender == governanceAddress,
+            "Caller must be current proxy governance address"
+        );
+        // this.upgradeToAndCall(_newImplementation, _callData);
+        super._upgradeTo(_newImplementation);
+        (bool success,) = _newImplementation.delegatecall(_data);
+        require(success == true, "Failed to invoke provided function");
     }
 
     /// @notice Returns the Audius governance address
