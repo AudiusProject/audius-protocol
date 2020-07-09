@@ -52,8 +52,22 @@ const assertRevert = async (blockOrPromise, expectedReason) => {
   assert.equal(expectedMsgFound, true, 'Expected revert reason not found')
 }
 
+const getUsersForCreatorNode = async (cnodeId, userId, expectedPrimary, expectedSecondaries) => {
+  let resp = await audius1.discoveryProvider.getUsersForCreatorNode(cnodeId)
+  assert(resp.length > 0, 'Expect users to exist for creator node 1')
+  let filteredResp = resp.filter(x=>x.user_id == userId)
+  assert(filteredResp.length === 1, 'Expect single entry for user')
+  let entry = filteredResp[0]
+  let primaryEqual = entry.primary === expectedPrimary
+  assert(primaryEqual, 'Expect primary update')
+  let secondariesEqual = JSON.stringify(entry.secondaries)==JSON.stringify(expectedSecondaries)
+  assert(secondariesEqual, 'Expect secondaries update')
+}
+
 describe('UserReplicaSetManager Tests', () => {
   let testServiceType = 'discovery-provider'
+  let newPrimary
+  let newSecondaries
   before(async function () {
     await audius0.init()
     token = audius0.ethContracts.AudiusTokenClient
@@ -99,6 +113,7 @@ describe('UserReplicaSetManager Tests', () => {
 
   beforeEach(async () => {
     try {
+      // TODO: See if we can remove everything here
       // Deregister any previously registered endpoints
       // await testDeregisterSPEndpoint(audius1, sp1, testServiceType)
       // await testDeregisterSPEndpoint(audius2, sp2EthWallet, testServiceType)
@@ -129,8 +144,8 @@ describe('UserReplicaSetManager Tests', () => {
   it('Configure user1 replica set', async function () {
     let currentReplicaSet = await audius1.contracts.UserReplicaSetManagerClient.getArtistReplicaSet(existingUserId)
     // console.log(currentReplicaSet)
-    let newPrimary = sp1Id
-    let newSecondaries = [sp3Id, sp2Id]
+    newPrimary = sp1Id
+    newSecondaries = [sp3Id, sp2Id]
     // Issue update from audius0, account which owns existingUserId
     await audius0.contracts.UserReplicaSetManagerClient.updateReplicaSet(
       existingUserId,
@@ -144,10 +159,10 @@ describe('UserReplicaSetManager Tests', () => {
     assert(primaryFromChain === (newPrimary), 'Expect primary update')
     assert(secondariesFromChain.length === newSecondaries.length, 'Expect secondary lengths to be equal')
     assert(secondariesFromChain.every((replicaId, i) => replicaId === newSecondaries[i]), 'Secondary mismatch')
-  })
 
-  it('Users for creator node', async function () {
-    let resp = await audius1.discoveryProvider.getUsersForCreatorNode(sp1Id)
-    assert(resp.length > 0, 'Expect users to exist for creator node 1')
+    // Confirm user exists for all 3 nodes
+    await getUsersForCreatorNode(sp1Id, existingUserId, newPrimary, newSecondaries)
+    await getUsersForCreatorNode(sp2Id, existingUserId, newPrimary, newSecondaries)
+    await getUsersForCreatorNode(sp3Id, existingUserId, newPrimary, newSecondaries)
   })
 })

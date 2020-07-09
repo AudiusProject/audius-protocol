@@ -2265,5 +2265,7 @@ def get_creator_node_users(sp_node_id):
                 User.secondaries.any(sp_node_id)
             )
         )
+        base_query = base_query.order_by(asc(User.user_id))
         users = paginate_query(base_query).all()
+        users = helpers.query_result_to_list(users)
     return api_helpers.success_response(users)
