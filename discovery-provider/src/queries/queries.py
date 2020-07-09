@@ -2253,20 +2253,17 @@ def get_previously_private_playlist():
     return api_helpers.success_response({ 'ids': playlist_ids })
 
 # Get the users for a given creator node ID
-@bp.route("/creator_node/users/<int:sp_node_id>", methods=("GET",))
+@bp.route("/users/creator_node/<int:sp_node_id>", methods=("GET",))
 def get_creator_node_users(sp_node_id):
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        user_query = (
-            session.query(
-                User
-            ).filter(
-                User.is_current == True,
-                or_(
-                    User.primary == sp_node_id,
-                    User.secondaries.any(sp_node_id)
-                )
-            ).all()
+        base_query = session.query(User)
+        base_query = base_query.filter(
+            User.is_current == True,
+            or_(
+                User.primary == sp_node_id,
+                User.secondaries.any(sp_node_id)
+            )
         )
-        users = helpers.query_result_to_list(user_query)
+        users = paginate_query(base_query).all()
     return api_helpers.success_response(users)
