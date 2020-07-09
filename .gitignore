@@ -7,7 +7,6 @@ build
 # deps
 local-storage
 node_modules
-package-lock.json
 
 # misc
 .DS_Store
