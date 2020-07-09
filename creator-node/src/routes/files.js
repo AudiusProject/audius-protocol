@@ -9,8 +9,9 @@ const models = require('../models')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
-const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary, ipfsSingleByteCat } = require('../utils')
+const { getIPFSPeerId, ipfsSingleByteCat } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
+const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 
 /**
  * Helper method to stream file from file system on creator node
@@ -90,15 +91,10 @@ const getCID = async (req, res) => {
   if (req.query.filename) {
     res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
   }
-
-  // Fire-and-forget rehydration
-  rehydrateIpfsFromFsIfNecessary(
-    req,
-    CID,
-    queryResults.storagePath
-  )
-
+  
   try {
+    // Add a rehydration task to the queue to be processed in the background
+    RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, queryResults.storagePath, { logContext: req.logContext })
     // Attempt to stream file to client.
     req.logger.info(`Retrieving ${queryResults.storagePath} directly from filesystem`)
     return await streamFromFileSystem(req, res, queryResults.storagePath)
@@ -175,15 +171,9 @@ const getDirCID = async (req, res) => {
   req.logger.info(`IPFS Standalone Request - ${ipfsPath}`)
   req.logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
-  // Fire-and-forget rehydration
-  rehydrateIpfsFromFsIfNecessary(
-    req,
-    dirCID,
-    parentStoragePath,
-    filename
-  )
-
   try {
+    // Add rehydrate task to queue to be processed in background
+    RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(dirCID, parentStoragePath, { logContext: req.logContext }, filename)
     // Attempt to stream file to client.
     req.logger.info(`Retrieving ${queryResults.storagePath} directly from filesystem`)
     return await streamFromFileSystem(req, res, queryResults.storagePath)

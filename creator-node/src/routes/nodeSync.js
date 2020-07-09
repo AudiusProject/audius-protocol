@@ -4,8 +4,9 @@ const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError } = require('../apiHelpers')
 const config = require('../config')
-const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary, rehydrateIpfsDirFromFsIfNecessary } = require('../utils')
 const middlewares = require('../middlewares')
+const { getIPFSPeerId } = require('../utils')
+const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
@@ -77,21 +78,14 @@ module.exports = function (app) {
         // Ensure all relevant files are available through IPFS at export time
         await Promise.all(exportFilesSlice.map(async (file) => {
           try {
-            if (file.type === 'track' || file.type === 'metadata' || file.type === 'copy320') {
-              await rehydrateIpfsFromFsIfNecessary(
-                req,
-                file.multihash,
-                file.storagePath)
-            } else if (file.type === 'image') {
-              if (file.sourcePath === null) {
-                // Ensure pre-directory images are still exported appropriately
-                await rehydrateIpfsFromFsIfNecessary(
-                  req,
-                  file.multihash,
-                  file.storagePath)
-              }
+            if (
+              (file.type === 'track' || file.type === 'metadata' || file.type === 'copy320') ||
+              // to address legacy single-res image rehydration where images are stored directly under its file CID
+              (file.type === 'image' && file.sourceFile === null)
+            ) {
+              await RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(file.multihash, file.storagePath, { logContext: req.logContext })
             } else if (file.type === 'dir') {
-              await rehydrateIpfsDirFromFsIfNecessary(req, file.multihash)
+              await RehydrateIpfsQueue.addRehydrateIpfsDirFromFsIfNecessaryTask(file.multihash, { logContext: req.logContext })
             }
           } catch (e) {
             req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}, ${e}`)

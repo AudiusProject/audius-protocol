@@ -1,6 +1,8 @@
 const { recoverPersonalSignature } = require('eth-sig-util')
 const fs = require('fs')
 const { BufferListStream } = require('bl')
+const config = require('./config')
+const { logger: genericLogger } = require('./logging')
 
 const models = require('./models')
 
@@ -78,25 +80,33 @@ async function getIPFSPeerId (ipfs, config) {
  * Cat single byte of file at given filepath. If ipfs.cat() call takes longer than the timeout time or
  * something goes wrong, an error will be thrown.
 */
-const ipfsSingleByteCat = (path, req, timeout = 1000) => new Promise(async (resolve, reject) => {
-  const start = Date.now()
-  let ipfs = req.app.get('ipfsLatestAPI')
+const ipfsSingleByteCat = (path, logContext, timeout = 1000) => {
+  const ipfsClient = require('ipfs-http-client-latest')
+  const ipfs = ipfsClient({
+    host: config.get('ipfsHost'),
+    port: config.get('ipfsPort'),
+    protocol: 'http'
+  })
+  const logger = genericLogger.child(logContext)
 
-  try {
-    // ipfs.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
-    // don't keep track of the results as this call is a proof-of-concept that the file exists in ipfs
-    /* eslint-disable-next-line no-unused-vars */
-    for await (const chunk of ipfs.cat(path, { length: 1, timeout })) {
-      continue
+  return new Promise(async (resolve, reject) => {
+    const start = Date.now()
+
+    try {
+      // ipfs.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
+      // don't keep track of the results as this call is a proof-of-concept that the file exists in ipfs
+      /* eslint-disable-next-line no-unused-vars */
+      for await (const chunk of ipfs.cat(path, { length: 1, timeout })) {
+        continue
+      }
+      logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
+      resolve()
+    } catch (e) {
+      logger.error(`ipfsSingleByteCat - Error: ${e}`)
+      reject(e)
     }
-    req.logger.debug(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
-    resolve()
-  } catch (e) {
-    req.logger.error(`ipfsSingleByteCat - Error: ${e}`)
-    reject(e)
-  }
-})
-
+  })
+}
 /**
  * Call ipfs.cat on a path with optional timeout and length parameters
  * @param {*} path IPFS cid for file
@@ -171,31 +181,31 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
 
   let rehydrateNecessary = false
   try {
-    await ipfsSingleByteCat(ipfsPath, req)
+    await ipfsSingleByteCat(ipfsPath, logContext)
   } catch (e) {
     // Do not attempt to rehydrate as file, if cat() indicates CID is of a dir.
     if (e.message.includes('this dag node is a directory')) {
       throw new Error(e.message)
     }
     rehydrateNecessary = true
-    req.logger.info(`rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
+    logger.info(`rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
   }
   if (!rehydrateNecessary) return
   // Timed out, must re-add from FS
   if (!filename) {
-    req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding file - ${multihash}, stg path: ${storagePath}`)
+    logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding file - ${multihash}, stg path: ${storagePath}`)
     try {
       if (fs.existsSync(storagePath)) {
         let addResp = await ipfs.addFromFs(storagePath, { pin: false })
-        req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
+        logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
       } else {
-        req.logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`)
+        logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`)
       }
     } catch (e) {
-      req.logger.error(`rehydrateIpfsFromFsIfNecessary - failed to addFromFs ${e}, Re-adding file - ${multihash}, stg path: ${storagePath}`)
+      logger.error(`rehydrateIpfsFromFsIfNecessary - failed to addFromFs ${e}, Re-adding file - ${multihash}, stg path: ${storagePath}`)
     }
   } else {
-    req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding dir ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`)
+    logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding dir ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`)
     let findOriginalFileQuery = await models.File.findAll({
       where: {
         dirMultihash: multihash,
@@ -215,21 +225,27 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
           content: bufferedFile
         })
       } catch (e) {
-        req.logger.info(`rehydrateIpfsFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`)
+        logger.info(`rehydrateIpfsFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`)
       }
     }
 
     try {
       let addResp = await ipfs.add(ipfsAddArray, { pin: false })
-      req.logger.info(`rehydrateIpfsFromFsIfNecessary - addResp ${JSON.stringify(addResp)}`)
+      logger.info(`rehydrateIpfsFromFsIfNecessary - addResp ${JSON.stringify(addResp)}`)
     } catch (e) {
-      req.logger.error(`rehydrateIpfsFromFsIfNecessary - addResp ${e}, ${ipfsAddArray}`)
+      logger.error(`rehydrateIpfsFromFsIfNecessary - addResp ${e}, ${ipfsAddArray}`)
     }
   }
 }
 
-async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
-  req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, dirHash: ${dirHash}`)
+async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
+  const ipfsClient = require('ipfs-http-client')
+  const ipfs = ipfsClient(
+    config.get('ipfsHost'),
+    config.get('ipfsPort')
+  )
+  const logger = genericLogger.child(logContext)
+
   let findOriginalFileQuery = await models.File.findAll({
     where: {
       dirMultihash: dirHash,
@@ -239,19 +255,19 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
 
   let rehydrateNecessary = false
   for (let entry of findOriginalFileQuery) {
-    let filename = entry.fileName
+    const filename = entry.fileName
     let ipfsPath = `${dirHash}/${filename}`
-    req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, ipfsPath: ${ipfsPath}`)
+    logger.info(`rehydrateIpfsDirFromFsIfNecessary, ipfsPath: ${ipfsPath}`)
     try {
-      await ipfsSingleByteCat(ipfsPath, req)
+      await ipfsSingleByteCat(ipfsPath, logContext)
     } catch (e) {
       rehydrateNecessary = true
-      req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
+      logger.info(`rehydrateIpfsDirFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
       break
     }
   }
 
-  req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, dir=${dirHash} - required = ${rehydrateNecessary}`)
+  logger.info(`rehydrateIpfsDirFromFsIfNecessary, dir=${dirHash} - required = ${rehydrateNecessary}`)
   if (!rehydrateNecessary) return
 
   // Add entire directory to recreate original operation
@@ -267,15 +283,14 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
         content: bufferedFile
       })
     } catch (e) {
-      req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`)
+      logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`)
     }
   }
-  let ipfs = req.app.get('ipfsAPI')
   try {
     let addResp = await ipfs.add(ipfsAddArray, { pin: false })
-    req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - ${JSON.stringify(addResp)}`)
+    logger.info(`rehydrateIpfsDirFromFsIfNecessary - ${JSON.stringify(addResp)}`)
   } catch (e) {
-    req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR ADDING DIR TO IPFS ${e}, ${ipfsAddArray}`)
+    logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR ADDING DIR TO IPFS ${e}, ${ipfsAddArray}`)
   }
 }
 
