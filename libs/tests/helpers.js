@@ -56,6 +56,7 @@ async function initializeLibConfig (ethOwnerWallet, dataOwnerWallet) {
       ethWeb3,
       ethOwnerWallet
     ),
+    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(new Set(['http://docker.for.mac.localhost:5000'])),
     isServer: true
   }
 }

@@ -466,6 +466,13 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
+  /**
+   * Return users for a specific creator node
+   */
+  async getUsersForCreatorNode (nodeId, limit = null, offset = null) {
+    return this._makeRequest(Requests.getUsersForCreatorNode(nodeId, limit, offset))
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   // TODO(DM) - standardize this to axios like audius service and creator node

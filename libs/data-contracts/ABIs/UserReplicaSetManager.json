@@ -117,6 +117,50 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_primary",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_secondaries",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "UpdateReplicaSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_newCnodeId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_newCnodeDelegateOwnerWallet",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_proposerSpId",
+          "type": "uint256"
+        }
+      ],
+      "name": "AddOrUpdateCreatorNode",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": true,
           "name": "previousOwner",
           "type": "address"
