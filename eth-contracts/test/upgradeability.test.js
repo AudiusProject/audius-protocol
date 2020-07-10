@@ -152,7 +152,7 @@ contract('Upgrade proxy test', async (accounts) => {
     staking = await StakingUpgraded.at(proxy.address)
     await _lib.assertRevert(staking.newFunction.call({ from: proxyDeployerAddress }), 'revert')
 
-    const upgradeTxReceipt = await mockStakingCaller.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
+    const upgradeTxReceipt = await mockStakingCaller.upgradeStakingTo(stakingUpgraded.address, { from: proxyAdminAddress })
     await expectEvent.inTransaction(upgradeTxReceipt.tx, AudiusAdminUpgradeabilityProxy, 'Upgraded', { implementation: stakingUpgraded.address })
 
     // Confirm proxy implementation's address has updated to new logic contract
@@ -228,7 +228,7 @@ contract('Upgrade proxy test', async (accounts) => {
       const otherAccount = accounts[4]
 
       await approveAndStake(DEFAULT_AMOUNT, staker, staking)
-      await mockStakingCaller.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
+      await mockStakingCaller.upgradeStakingTo(stakingUpgraded.address, { from: proxyAdminAddress })
 
       staking = await StakingUpgraded.at(proxy.address)
 
