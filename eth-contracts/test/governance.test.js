@@ -2067,6 +2067,26 @@ contract('Governance.sol', async (accounts) => {
       )
     })
 
+    it('Update proxy admin address', async () => {
+      let stakingProxy = await AudiusAdminUpgradeabilityProxy.at(staking.address)
+      let currentAdmin = await stakingProxy.getAudiusProxyAdminAddress()
+      assert.equal(currentAdmin, governance.address, 'Expect governance to be admin')
+      let newAdmin = accounts[9]
+
+      // Execute tx to change admin
+      // NOTE - In reality, this function should rarely if ever be invoked from governance
+      //        After migrations, all contract admins are ALREADY governance
+      await governance.guardianExecuteTransaction(
+        stakingProxyKey,
+        callValue0,
+        'setAudiusProxyAdminAddress(address)',
+        _lib.abiEncode(['address'], [newAdmin]),
+        { from: guardianAddress }
+      )
+      currentAdmin = await stakingProxy.getAudiusProxyAdminAddress()
+      assert.equal(currentAdmin, newAdmin, 'Expect updated admin')
+    })
+
     it('Upgrade governance contract', async () => {
       // Confirm governance.newFunction() not callable before upgrade
       const governanceCopy = await GovernanceUpgraded.at(governance.address)
