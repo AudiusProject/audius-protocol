@@ -177,7 +177,7 @@ contract('Upgrade proxy test', async (accounts) => {
 
     await _lib.assertRevert(
       noGovProxy.setAudiusProxyAdminAddress(mockStakingCaller.address, { from: accounts[7] }),
-      'Caller must be proxy admin or proxy upgrade')
+      'Caller must be current proxy admin')
     await noGovProxy.setAudiusProxyAdminAddress(mockStakingCaller.address, { from: proxyAdminAddress })
     govAddress = await noGovProxy.getAudiusProxyAdminAddress()
     assert.equal(govAddress, mockStakingCaller.address, 'Expect updated governance addr')
@@ -195,12 +195,41 @@ contract('Upgrade proxy test', async (accounts) => {
 
     await _lib.assertRevert(
       proxy.setAudiusProxyAdminAddress(mockGovAddr2, { from: proxyAdminAddress }),
-      'Caller must be proxy admin or proxy upgrader')
+      'Caller must be current proxy admin')
 
-    await mockStakingCaller.setAudiusProxyAdminAddress(mockGovAddr2, { from: proxyAdminAddress })
+    // Update staking proxy admin from mockStakingCaller to mockGovAddr2
+    // setStakingAudiusProxyAdminAddress calls setAudiusProxyAdmin on staking contract
+    // As mockStakingCaller is the current admin, this operation is actually permitted
+    await mockStakingCaller.setStakingAudiusProxyAdminAddress(mockGovAddr2, { from: proxyAdminAddress })
 
     proxyGovAddr = await proxy.getAudiusProxyAdminAddress.call({ from: proxyAdminAddress })
     assert.equal(proxyGovAddr, mockGovAddr2)
+
+    // TODO: Test that old admin cannot call proxy functions
+  
+    // Attempt to set the admin address from the OLD admin, expect failure
+    await _lib.assertRevert(
+      mockStakingCaller.setStakingAudiusProxyAdminAddress(mockGovAddr2, { from: proxyAdminAddress }),
+      'Caller must be current proxy admin'
+    )
+
+    // Attempt to upgrade the staking contract from the old admin
+    await _lib.assertRevert(
+      mockStakingCaller.upgradeStakingTo(stakingUpgraded.address, { from: proxyAdminAddress }),
+      'Caller must be current proxy admin'
+    )
+
+    // Attempt to set the admin address from a different non-admin address
+    await _lib.assertRevert(
+      proxy.setAudiusProxyAdminAddress(mockGovAddr2, { from: proxyAdminAddress }),
+      'Caller must be current proxy admin'
+    )
+
+    // Attempt to upgrade the staking contract from a different non-admin address
+    await _lib.assertRevert(
+      proxy.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress }),
+      'Caller must be current proxy admin'
+    )
   })
 
   describe('Test with Staking contract', async () => {

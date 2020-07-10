@@ -119,7 +119,7 @@ contract MockStakingCaller is InitializableV2 {
         return AudiusAdminUpgradeabilityProxy(stakingAddress).upgradeTo(_newImplementation);
     }
 
-    function setAudiusProxyAdminAddress(address _governanceAddress) external {
+    function setStakingAudiusProxyAdminAddress(address _governanceAddress) external {
         _requireIsInitialized();
 
         return AudiusAdminUpgradeabilityProxy(

@@ -9,8 +9,10 @@ import "@openzeppelin/upgrades/contracts/upgradeability/UpgradeabilityProxy.sol"
  * https://github.com/OpenZeppelin/openzeppelin-sdk/blob/release/2.8/packages/lib/contracts/upgradeability/UpgradeabilityProxy.sol
  */
 contract AudiusAdminUpgradeabilityProxy is UpgradeabilityProxy {
-    address private governanceAddress;
     address private proxyAdmin;
+    string private constant ERROR_ONLY_ADMIN = (
+        "AudiusAdminUpgradeabilityProxy: Caller must be current proxy admin"
+    );
 
     /**
      * @notice Sets admin address for future upgrades
@@ -39,21 +41,20 @@ contract AudiusAdminUpgradeabilityProxy is UpgradeabilityProxy {
      * @param _newImplementation - new address of logic contract that the proxy will point to
      */
     function upgradeTo(address _newImplementation) external {
-        require(
-            msg.sender == proxyAdmin,
-            "Caller must be current proxy admin"
-        );
+        require(msg.sender == proxyAdmin, ERROR_ONLY_ADMIN);
         _upgradeTo(_newImplementation);
     }
 
-    /// @notice Returns the Audius governance address
+    /**
+     * @return Current proxy admin address
+     */
     function getAudiusProxyAdminAddress() external view returns (address) {
         return proxyAdmin;
     }
 
     /**
-    * @return The address of the implementation.
-    */
+     * @return The address of the implementation.
+     */
     function implementation() external view returns (address) {
         return _implementation();
     }
@@ -64,10 +65,7 @@ contract AudiusAdminUpgradeabilityProxy is UpgradeabilityProxy {
      * @param _adminAddress - new admin address
      */
     function setAudiusProxyAdminAddress(address _adminAddress) external {
-        require(
-            msg.sender == proxyAdmin,
-            "Caller must be proxy admin or proxy upgrader"
-        );
+        require(msg.sender == proxyAdmin, ERROR_ONLY_ADMIN);
         proxyAdmin = _adminAddress;
     }
 }
