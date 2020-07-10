@@ -469,8 +469,8 @@ class DiscoveryProvider {
   /**
    * Return users for a specific creator node
    */
-  async getUsersForCreatorNode (nodeId) {
-    return this._makeRequest(Requests.getUsersForCreatorNode(nodeId))
+  async getUsersForCreatorNode (nodeId, limit = null, offset = null) {
+    return this._makeRequest(Requests.getUsersForCreatorNode(nodeId, limit, offset))
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
