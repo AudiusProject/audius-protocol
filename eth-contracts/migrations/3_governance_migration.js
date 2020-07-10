@@ -32,6 +32,7 @@ module.exports = (deployer, network, accounts) => {
 
     const registryAddress = process.env.registryAddress
     const registry = await Registry.at(registryAddress)
+    const registryProxy = await AudiusAdminUpgradeabilityProxy.at(registryAddress)
 
     // Deploy + register Governance
     const governance0 = await deployer.deploy(Governance, { from: proxyDeployerAddress })
@@ -55,6 +56,11 @@ module.exports = (deployer, network, accounts) => {
     await governanceProxy.setAudiusProxyAdminAddress(governanceProxy.address, { from: proxyAdminAddress })
     govAddrFromProxy = await governanceProxy.getAudiusProxyAdminAddress.call()
     assert.equal(govAddrFromProxy, governanceProxy.address)
+
+    // Set governance address on Registry proxy contract to enable upgrades
+    await registryProxy.setAudiusProxyAdminAddress(governanceProxy.address, { from: proxyAdminAddress })
+    let govAddrFromRegProxy = await registryProxy.getAudiusProxyAdminAddress()
+    assert.equal(govAddrFromRegProxy, governanceProxy.address)
 
     // Transfer registry ownership to Governance
     await registry.transferOwnership(governance.address, { from: proxyDeployerAddress })

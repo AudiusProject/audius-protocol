@@ -6,7 +6,7 @@ import "@openzeppelin/upgrades/contracts/upgradeability/UpgradeabilityProxy.sol"
 /**
  * Wrapper around OpenZeppelin's UpgradeabilityProxy contract.
  * Permissions proxy upgrade logic to Audius Governance contract.
- * https://github.com/OpenZeppelin/openzeppelin-sdk/blob/release/2.8/packages/lib/contracts/upgradeability/AdminUpgradeabilityProxy.sol
+ * https://github.com/OpenZeppelin/openzeppelin-sdk/blob/release/2.8/packages/lib/contracts/upgradeability/UpgradeabilityProxy.sol
  */
 contract AudiusAdminUpgradeabilityProxy is UpgradeabilityProxy {
     address private governanceAddress;
