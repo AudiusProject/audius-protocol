@@ -83,7 +83,6 @@ contract('Governance.sol', async (accounts) => {
       registry0.address,
       proxyAdminAddress,
       registryInitData,
-      _lib.addressZero,
       { from: proxyDeployerAddress }
     )
     registry = await Registry.at(registryProxy.address)
@@ -112,9 +111,8 @@ contract('Governance.sol', async (accounts) => {
     )
     tokenProxy = await AudiusAdminUpgradeabilityProxy.new(
       token0.address,
-      proxyAdminAddress,
-      tokenInitData,
       governance.address,
+      tokenInitData,
       { from: proxyDeployerAddress }
     )
     token = await AudiusToken.at(tokenProxy.address)
@@ -132,9 +130,8 @@ contract('Governance.sol', async (accounts) => {
     )
     stakingProxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
-      proxyAdminAddress,
-      stakingInitializeData,
       governance.address,
+      stakingInitializeData,
       { from: proxyDeployerAddress }
     )
     staking = await Staking.at(stakingProxy.address)
@@ -149,9 +146,8 @@ contract('Governance.sol', async (accounts) => {
     )
     const serviceTypeManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceTypeManager0.address,
-      proxyAdminAddress,
-      serviceTypeInitializeData,
       governance.address,
+      serviceTypeInitializeData,
       { from: proxyAdminAddress }
     )
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: proxyDeployerAddress })
@@ -169,9 +165,8 @@ contract('Governance.sol', async (accounts) => {
     )
     const serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
-      proxyAdminAddress,
-      serviceProviderFactoryCalldata,
       governance.address,
+      serviceProviderFactoryCalldata,
       { from: proxyAdminAddress }
     )
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
@@ -186,9 +181,8 @@ contract('Governance.sol', async (accounts) => {
     )
     const claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       claimsManager0.address,
-      proxyAdminAddress,
-      claimsInitializeCallData,
       governance.address,
+      claimsInitializeCallData,
       { from: proxyDeployerAddress }
     )
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
@@ -216,9 +210,8 @@ contract('Governance.sol', async (accounts) => {
     let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
     let delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       delegateManager0.address,
-      proxyAdminAddress,
-      delegateManagerInitializeData,
       governance.address,
+      delegateManagerInitializeData,
       { from: proxyDeployerAddress }
     )
     delegateManager = await DelegateManager.at(delegateManagerProxy.address)
@@ -337,7 +330,6 @@ contract('Governance.sol', async (accounts) => {
         governance0.address,
         proxyAdminAddress,
         governanceCallData,
-        _lib.addressZero,
         { from: proxyDeployerAddress }
       ),
       'revert'
@@ -352,9 +344,8 @@ contract('Governance.sol', async (accounts) => {
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
         governance0.address,
-        proxyAdminAddress,
-        governanceCallData,
         governance.address,
+        governanceCallData,
         { from: proxyDeployerAddress }
       ),
       "revert"
@@ -369,9 +360,8 @@ contract('Governance.sol', async (accounts) => {
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
         governance0.address,
-        proxyAdminAddress,
-        governanceCallData,
         governance.address,
+        governanceCallData,
         { from: proxyDeployerAddress }
       ),
       "revert"
@@ -386,9 +376,8 @@ contract('Governance.sol', async (accounts) => {
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
         governance0.address,
-        proxyAdminAddress,
-        governanceCallData,
         governance.address,
+        governanceCallData,
         { from: proxyDeployerAddress }
       ),
       "revert"
@@ -403,9 +392,8 @@ contract('Governance.sol', async (accounts) => {
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
         governance0.address,
-        proxyAdminAddress,
-        governanceCallData,
         governance.address,
+        governanceCallData,
         { from: proxyDeployerAddress }
       ),
       "revert"
@@ -420,9 +408,8 @@ contract('Governance.sol', async (accounts) => {
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
         governance0.address,
-        proxyAdminAddress,
-        governanceCallData,
         governance.address,
+        governanceCallData,
         { from: proxyDeployerAddress }
       ),
       "revert"
@@ -468,9 +455,8 @@ contract('Governance.sol', async (accounts) => {
     )
     const stakingProxy2 = await AudiusAdminUpgradeabilityProxy.new(
       staking2_0.address,
-      proxyAdminAddress,
-      stakingInitializeData2,
       governance2.address,
+      stakingInitializeData2,
       { from: proxyDeployerAddress }
     )
     const staking2 = await Staking.at(stakingProxy2.address)
@@ -2468,9 +2454,8 @@ contract('Governance.sol', async (accounts) => {
       const initData = _lib.encodeCall('initialize', [], [])
       const contractProxy = await AudiusAdminUpgradeabilityProxy.new(
         contract0.address,
-        proxyAdminAddress,
-        initData,
         governance.address,
+        initData,
         { from: proxyDeployerAddress }
       )
       const contract = await TestContract.at(contractProxy.address)
@@ -2526,7 +2511,7 @@ contract('Governance.sol', async (accounts) => {
       )
 
       // Update registry's governance address
-      await registryProxy.setAudiusGovernanceAddress(governance.address, { from: proxyAdminAddress })
+      await registryProxy.setAudiusProxyAdminAddress(governance.address, { from: proxyAdminAddress })
 
       // Upgrade registry proxy to new logic address
       await governance.guardianExecuteTransaction(
