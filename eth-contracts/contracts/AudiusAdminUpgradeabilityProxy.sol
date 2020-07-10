@@ -4,9 +4,11 @@ import "@openzeppelin/upgrades/contracts/upgradeability/UpgradeabilityProxy.sol"
 
 
 /**
- * Wrapper around OpenZeppelin's UpgradeabilityProxy contract.
+ * @notice Wrapper around OpenZeppelin's UpgradeabilityProxy contract.
  * Permissions proxy upgrade logic to Audius Governance contract.
  * https://github.com/OpenZeppelin/openzeppelin-sdk/blob/release/2.8/packages/lib/contracts/upgradeability/UpgradeabilityProxy.sol
+ * @dev Any logic contract that has a signature clash with this proxy contract will be unable to call those functions
+ *      Please ensure logic contract functions do not share a signature with any functions defined in this file
  */
 contract AudiusAdminUpgradeabilityProxy is UpgradeabilityProxy {
     address private proxyAdmin;
