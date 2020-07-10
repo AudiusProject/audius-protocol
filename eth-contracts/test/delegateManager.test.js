@@ -86,9 +86,8 @@ contract('DelegateManager', async (accounts) => {
     )
     const stakingProxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
-      proxyAdminAddress,
-      stakingInitializeData,
       governance.address,
+      stakingInitializeData,
       { from: proxyDeployerAddress }
     )
     staking = await Staking.at(stakingProxy.address)
@@ -102,9 +101,8 @@ contract('DelegateManager', async (accounts) => {
     let serviceTypeManager0 = await ServiceTypeManager.new({ from: proxyDeployerAddress })
     let serviceTypeManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceTypeManager0.address,
-      proxyAdminAddress,
-      serviceTypeInitializeData,
       governance.address,
+      serviceTypeInitializeData,
       { from: proxyDeployerAddress }
     )
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManagerProxy.address, { from: proxyDeployerAddress })
@@ -122,9 +120,8 @@ contract('DelegateManager', async (accounts) => {
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
-      proxyAdminAddress,
-      serviceProviderFactoryCalldata,
       governance.address,
+      serviceProviderFactoryCalldata,
       { from: proxyDeployerAddress }
     )
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
@@ -139,9 +136,8 @@ contract('DelegateManager', async (accounts) => {
     )
     claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       claimsManager0.address,
-      proxyAdminAddress,
-      claimsInitializeCallData,
       governance.address,
+      claimsInitializeCallData,
       { from: proxyDeployerAddress }
     )
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
@@ -170,9 +166,8 @@ contract('DelegateManager', async (accounts) => {
     let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
     let delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       delegateManager0.address,
-      proxyAdminAddress,
-      delegateManagerInitializeData,
       governance.address,
+      delegateManagerInitializeData,
       { from: proxyDeployerAddress }
     )
 
