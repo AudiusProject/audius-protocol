@@ -440,23 +440,23 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
     )
     tracks = helpers.query_result_to_list(tracks)
 
-    if isAutocomplete == True:
-        # fetch users for tracks
-        track_owner_ids = list(map(lambda track: track["owner_id"], tracks))
-        users = (
-            session.query(User)
-            .filter(
-                User.is_current == True,
-                User.user_id.in_(track_owner_ids)
-            )
-            .all()
+    # if isAutocomplete == True:
+    # fetch users for tracks
+    track_owner_ids = list(map(lambda track: track["owner_id"], tracks))
+    users = (
+        session.query(User)
+        .filter(
+            User.is_current == True,
+            User.user_id.in_(track_owner_ids)
         )
-        users = helpers.query_result_to_list(users)
-        users_dict = {user["user_id"]: user for user in users}
+        .all()
+    )
+    users = helpers.query_result_to_list(users)
+    users_dict = {user["user_id"]: user for user in users}
 
-        # attach user objects to track objects
-        for track in tracks:
-            track["user"] = users_dict[track["owner_id"]]
+    # attach user objects to track objects
+    for track in tracks:
+        track["user"] = users_dict[track["owner_id"]]
     else:
         # bundle peripheral info into track results
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)

@@ -5,6 +5,7 @@ from sqlalchemy import func, asc, desc, text, case, or_, and_, Integer, Float, D
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.sql import exists
 
 from flask import Blueprint, request
 
@@ -109,11 +110,11 @@ def get_tracks():
                 raise e
 
         # Allow filtering of tracks by a certain creator
-        if "user_id" in request.args:
-            user_id = request.args.get("user_id", type=int)
-            base_query = base_query.filter(
-                Track.owner_id == user_id
-            )
+        # if "user_id" in request.args:
+        #     user_id = request.args.get("user_id", type=int)
+        #     base_query = base_query.filter(
+        #         Track.owner_id == user_id
+        #     )
 
         # Allow filtering of deletes
         # Note: There is no standard for boolean url parameters, and any value (including 'false')
@@ -131,8 +132,132 @@ def get_tracks():
                 Track.blocknumber >= min_block_number
             )
 
-        whitelist_params = ['created_at', 'create_date', 'release_date', 'blocknumber', 'track_id']
-        base_query = parse_sort_param(base_query, Track, whitelist_params)
+        # Allow filtering of tracks by a certain creator
+        if "owner_id" in request.args:
+            owner_ids = request.args.getlist("owner_id")
+            try:
+                track_id_list = [int(y) for y in track_id_str_list]
+                # Update query with track_id list
+                base_query = base_query.filter(Track.owner_id.in_(owner_ids))
+            except ValueError as e:
+                raise exceptions.ArgumentError("Invalid value found in user id list", e)
+
+        if "remix" in request.args:
+            remix = request.args.get("remix", type=str)
+            if remix == 'true':
+                # Track is a remix of another track
+                base_query = base_query.filter(Track.remix_of != None)
+            elif remix == 'false':
+                # Track is original
+                base_query = base_query.filter(Track.remix_of == None)
+
+        if "downloadable" in request.args:
+            base_query = base_query.filter(Track.download['is_downloadable'].astext == "true")
+
+        print(base_query)
+        if "hasStems" in request.args:
+            base_query = base_query.filter(exists().where(Track.track_id == Stem.parent_track_id))
+
+        if "genre" in request.args:
+            genre = request.args.get("genre", type=str)
+            base_query = base_query.filter(Track.genre == genre)
+
+        if "mood" in request.args:
+            mood = request.args.get("mood", type=str)
+            base_query = base_query.filter(Track.mood == mood)
+
+        if "license" in request.args:
+            license = request.args.get("license", type=str)
+            base_query = base_query.filter(Track.license == license)
+
+        if "sortBy" in request.args:
+            sortby = request.args.get("sortBy", type=str)
+            print(sortby)
+
+            if sortby == 'save':
+                save_count = (
+                    session.query(
+                        Save.save_item_id,
+                        func.count(Save.save_item_id).label(response_name_constants.save_count)
+                    ).filter(
+                        Save.is_current == True,
+                        Save.is_delete == False,
+                        Save.save_type == SaveType.track,
+                    )
+                    .group_by(
+                        Save.save_item_id
+                    )
+                )
+
+                save_count_subquery = save_count.subquery()
+                # print(save_count_subquery)
+                base_query = (
+                    base_query.outerjoin(
+                        save_count_subquery,
+                        save_count_subquery.c.save_item_id == Track.track_id
+                    ).order_by(
+                        desc(
+                            # If there is no "co-sign" for the track (no repost or save from the parent owner),
+                            # defer to secondary sort
+                            case(
+                                [
+                                    (and_(save_count_subquery.c[response_name_constants.save_count] == None), 0),
+                                ],
+                                else_ = (
+                                    func.coalesce(save_count_subquery.c[response_name_constants.save_count], 0)
+                                )
+                            )
+                        )
+                    )
+                )
+
+            if sortby == 'repost':
+                repost_count = (
+                    session.query(
+                        Repost.repost_item_id,
+                        func.count(Repost.repost_item_id).label(response_name_constants.repost_count)
+                    ).filter(
+                        Repost.is_current == True,
+                        Repost.is_delete == False,
+                        Repost.repost_type == RepostType.track,
+                    )
+                    .group_by(
+                        Repost.repost_item_id
+                    )
+                )
+
+                repost_count_subquery = repost_count.subquery()
+                # print(save_count_subquery)
+                base_query = (
+                    base_query.outerjoin(
+                        repost_count_subquery,
+                        repost_count_subquery.c.repost_item_id == Track.track_id
+                    ).order_by(
+                        desc(
+                            # If there is no "co-sign" for the track (no repost or save from the parent owner),
+                            # defer to secondary sort
+                            case(
+                                [
+                                    (and_(repost_count_subquery.c[response_name_constants.repost_count] == None), 0),
+                                ],
+                                else_ = (
+                                    func.coalesce(repost_count_subquery.c[response_name_constants.repost_count], 0)
+                                )
+                            )
+                        )
+                    )
+                )
+            elif sortby == 'date':
+                base_query = (
+                    base_query.order_by(desc(Track.created_at))
+                )
+            elif sortby == 'track_id':
+                base_query = (
+                    base_query.order_by(desc(Track.created_at))
+                )
+
+        # whitelist_params = ['created_at', 'create_date', 'release_date', 'blocknumber', 'track_id']
+        # base_query = parse_sort_param(base_query, Track, whitelist_params)
         query_results = paginate_query(base_query).all()
         tracks = helpers.query_result_to_list(query_results)
 
@@ -2251,3 +2376,80 @@ def get_previously_private_playlist():
         playlist_ids = [result[0] for result in previously_private_results]
 
     return api_helpers.success_response({ 'ids': playlist_ids })
+
+# Returns all tracks (paginated) with each track's repost count
+# optionally filters by track ids
+@bp.route("/query/tracks", methods=("GET",))
+def get_query_tracks():
+    tracks = []
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        # Create initial query
+        base_query = session.query(Track)
+        base_query = base_query.filter(
+            Track.is_current == True, 
+            Track.is_unlisted == False, 
+            Track.stem_of == None,
+            Track.is_delete == False
+        )
+
+
+        # Allow filtering of tracks by a certain creator
+        if "user_id" in request.args:
+            owner_ids = request.args.getlist("user_id")
+            try:
+                track_id_list = [int(y) for y in track_id_str_list]
+                # Update query with track_id list
+                base_query = base_query.filter(Track.owner_id.in_(owner_ids))
+            except ValueError as e:
+                raise exceptions.ArgumentError("Invalid value found in user id list", e)
+
+        if "remix" in request.args:
+            remix = request.args.get("remix", type=str)
+            if remix == 'true':
+                # Track is a remix of another track
+                base_query = base_query.filter(Track.remix_of != None)
+            elif remix == 'false':
+                # Track is original
+                base_query = base_query.filter(Track.remix_of == None)
+
+        if "hasStems" in request.args:
+            base_query = base_query.filter(Track.stem_of != None)
+
+        if "genre" in request.args:
+            genre = request.args.get("genre", type=str)
+            base_query = base_query.filter(Track.genre == genre)
+
+        if "mood" in request.args:
+            mood = request.args.get("mood", type=str)
+            base_query = base_query.filter(Track.mood == mood)
+
+        if "license" in request.args:
+            license = request.args.get("license", type=str)
+            base_query = base_query.filter(Track.license == license)
+
+        if "downloadable" in request.args:
+            base_query = base_query.filter(Track.download == cast(True, JSON))
+
+
+        whitelist_params = ['created_at', 'create_date', 'release_date', 'blocknumber', 'track_id']
+        base_query = parse_sort_param(base_query, Track, whitelist_params)
+        query_results = paginate_query(base_query).all()
+        tracks = helpers.query_result_to_list(query_results)
+
+        track_ids = list(map(lambda track: track["track_id"], tracks))
+
+        current_user_id = get_current_user_id(required=False)
+
+        # bundle peripheral info into track results
+        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+
+        if "with_users" in request.args and request.args.get("with_users") != 'false':
+            user_id_list = get_users_ids(tracks)
+            users = get_users_by_id(session, user_id_list)
+            for track in tracks:
+                user = users[track['owner_id']]
+                if user:
+                    track['user'] = user
+
+    return api_helpers.success_response(tracks)
