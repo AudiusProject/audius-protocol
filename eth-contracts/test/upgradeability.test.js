@@ -104,6 +104,26 @@ contract('Upgrade proxy test', async (accounts) => {
     await mockStakingCaller.configurePermissions()
   })
 
+  it('Clashing function signature', async () => {
+    let logicMockStaking = await MockStakingCaller.new()
+    let adminFromLogic = await logicMockStaking.getAudiusProxyAdminAddress()
+    assert.equal(adminFromLogic, logicMockStaking.address, 'Expect clashing proxy function to return contract addrss')
+    let initData = _lib.encodeCall(
+      'initialize',
+      ['address', 'address'],
+      [token.address, governance.address]
+    )
+    let mockProxy = await AudiusAdminUpgradeabilityProxy.new(
+      logicMockStaking.address,
+      governance.address,
+      initData,
+      { from: proxyDeployerAddress }
+    )
+    let proxyMockStaking = await MockStakingCaller.at(mockProxy.address)
+    let adminFromProxyLogic = await proxyMockStaking.getAudiusProxyAdminAddress()
+    assert.equal(adminFromProxyLogic, governance.address, 'Expect proxy function to be executed instead of fallback')
+  })
+
   it('Fails to call Staking contract function before proxy initialization', async () => {
     const mock = await MockStakingCaller.new({ from: proxyAdminAddress })
     await _lib.assertRevert(
