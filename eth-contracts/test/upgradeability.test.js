@@ -225,8 +225,6 @@ contract('Upgrade proxy test', async (accounts) => {
     proxyGovAddr = await proxy.getAudiusProxyAdminAddress.call({ from: proxyAdminAddress })
     assert.equal(proxyGovAddr, mockGovAddr2)
 
-    // TODO: Test that old admin cannot call proxy functions
-  
     // Attempt to set the admin address from the OLD admin, expect failure
     await _lib.assertRevert(
       mockStakingCaller.setStakingAudiusProxyAdminAddress(mockGovAddr2, { from: proxyAdminAddress }),
