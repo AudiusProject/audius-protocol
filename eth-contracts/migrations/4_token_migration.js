@@ -31,9 +31,8 @@ module.exports = (deployer, network, accounts) => {
     const tokenProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
       token0.address,
-      proxyAdminAddress,
-      initializeCallData,
       governanceAddress,
+      initializeCallData,
       { from: proxyDeployerAddress }
     )
     const token = await AudiusToken.at(tokenProxy.address)

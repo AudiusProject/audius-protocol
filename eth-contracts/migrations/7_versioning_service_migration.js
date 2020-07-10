@@ -60,9 +60,8 @@ module.exports = (deployer, network, accounts) => {
     const serviceTypeManagerProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
       serviceTypeManager0.address,
-      proxyAdminAddress,
-      serviceTypeCalldata,
       process.env.governanceAddress,
+      serviceTypeCalldata,
       { from: proxyDeployerAddress }
     )
     const serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerProxy.address)
@@ -113,9 +112,8 @@ module.exports = (deployer, network, accounts) => {
     const serviceProviderFactoryProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
       serviceProviderFactory0.address,
-      proxyAdminAddress,
-      serviceProviderFactoryCalldata,
       process.env.governanceAddress,
+      serviceProviderFactoryCalldata,
       { from: proxyDeployerAddress }
     )
     await _lib.registerContract(governance, serviceProviderFactoryKey, serviceProviderFactoryProxy.address, guardianAddress)

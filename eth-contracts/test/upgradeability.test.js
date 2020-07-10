@@ -88,9 +88,8 @@ contract('Upgrade proxy test', async (accounts) => {
 
     proxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
-      proxyAdminAddress,
-      stakingInitializeData,
       mockGovAddr,
+      stakingInitializeData,
       { from: proxyDeployerAddress }
     )
 
@@ -137,7 +136,7 @@ contract('Upgrade proxy test', async (accounts) => {
 
     await _lib.assertRevert(
       proxy.upgradeTo(stakingUpgraded.address),
-      "Caller must be current proxy governance address"
+      "Caller must be current proxy admin"
     )
   })
 
@@ -170,18 +169,17 @@ contract('Upgrade proxy test', async (accounts) => {
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
-      _lib.addressZero,
       { from: proxyDeployerAddress }
     )
 
-    let govAddress = await noGovProxy.getAudiusGovernanceAddress()
-    assert.equal(govAddress, _lib.addressZero, 'Expect zero governance addr')
+    let govAddress = await noGovProxy.getAudiusProxyAdminAddress()
+    assert.equal(govAddress,proxyAdminAddress, 'Expect zero governance addr')
 
     await _lib.assertRevert(
-      noGovProxy.setAudiusGovernanceAddress(mockStakingCaller.address, { from: accounts[7] }),
+      noGovProxy.setAudiusProxyAdminAddress(mockStakingCaller.address, { from: accounts[7] }),
       'Caller must be proxy admin or proxy upgrade')
-    await noGovProxy.setAudiusGovernanceAddress(mockStakingCaller.address, { from: proxyAdminAddress })
-    govAddress = await noGovProxy.getAudiusGovernanceAddress()
+    await noGovProxy.setAudiusProxyAdminAddress(mockStakingCaller.address, { from: proxyAdminAddress })
+    govAddress = await noGovProxy.getAudiusProxyAdminAddress()
     assert.equal(govAddress, mockStakingCaller.address, 'Expect updated governance addr')
   })
 
@@ -189,19 +187,19 @@ contract('Upgrade proxy test', async (accounts) => {
     const registry2 = await Registry.new()
     await registry2.initialize()
 
-    let proxyGovAddr = await proxy.getAudiusGovernanceAddress.call({ from: proxyAdminAddress })
+    let proxyGovAddr = await proxy.getAudiusProxyAdminAddress.call({ from: proxyAdminAddress })
     assert.equal(proxyGovAddr, mockGovAddr)
 
     let mockStakingCaller2 = await MockStakingCaller.new()
     let mockGovAddr2 = mockStakingCaller2.address
 
     await _lib.assertRevert(
-      proxy.setAudiusGovernanceAddress(mockGovAddr2, { from: proxyAdminAddress }),
+      proxy.setAudiusProxyAdminAddress(mockGovAddr2, { from: proxyAdminAddress }),
       'Caller must be proxy admin or proxy upgrader')
 
-    await mockStakingCaller.setAudiusGovernanceAddress(mockGovAddr2, { from: proxyAdminAddress })
+    await mockStakingCaller.setAudiusProxyAdminAddress(mockGovAddr2, { from: proxyAdminAddress })
 
-    proxyGovAddr = await proxy.getAudiusGovernanceAddress.call({ from: proxyAdminAddress })
+    proxyGovAddr = await proxy.getAudiusProxyAdminAddress.call({ from: proxyAdminAddress })
     assert.equal(proxyGovAddr, mockGovAddr2)
   })
 

@@ -34,9 +34,8 @@ module.exports = (deployer, network, accounts) => {
     const stakingProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
       staking0.address,
-      proxyAdminAddress,
-      initializeCallData,
       process.env.governanceAddress,
+      initializeCallData,
       { from: proxyDeployerAddress }
     )
     _lib.registerContract(governance, stakingProxyKey, stakingProxy.address, guardianAddress)
