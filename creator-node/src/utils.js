@@ -177,7 +177,7 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
     let ipfsPath = `${dirHash}/${filename}`
     req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, ipfsPath: ${ipfsPath}`)
     try {
-      ipfsSingleByteCat(ipfsPath, req)
+      await ipfsSingleByteCat(ipfsPath, req)
     } catch (e) {
       rehydrateNecessary = true
       req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
