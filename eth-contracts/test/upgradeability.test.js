@@ -88,9 +88,8 @@ contract('Upgrade proxy test', async (accounts) => {
 
     proxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
-      proxyAdminAddress,
-      stakingInitializeData,
       mockGovAddr,
+      stakingInitializeData,
       { from: proxyDeployerAddress }
     )
 
@@ -103,6 +102,26 @@ contract('Upgrade proxy test', async (accounts) => {
 
     // Setup permissioning to mock caller
     await mockStakingCaller.configurePermissions()
+  })
+
+  it('Clashing function signature', async () => {
+    let logicMockStaking = await MockStakingCaller.new()
+    let adminFromLogic = await logicMockStaking.getAudiusProxyAdminAddress()
+    assert.equal(adminFromLogic, logicMockStaking.address, 'Expect clashing proxy function to return contract addrss')
+    let initData = _lib.encodeCall(
+      'initialize',
+      ['address', 'address'],
+      [token.address, governance.address]
+    )
+    let mockProxy = await AudiusAdminUpgradeabilityProxy.new(
+      logicMockStaking.address,
+      governance.address,
+      initData,
+      { from: proxyDeployerAddress }
+    )
+    let proxyMockStaking = await MockStakingCaller.at(mockProxy.address)
+    let adminFromProxyLogic = await proxyMockStaking.getAudiusProxyAdminAddress()
+    assert.equal(adminFromProxyLogic, governance.address, 'Expect proxy function to be executed instead of fallback')
   })
 
   it('Fails to call Staking contract function before proxy initialization', async () => {
@@ -137,7 +156,7 @@ contract('Upgrade proxy test', async (accounts) => {
 
     await _lib.assertRevert(
       proxy.upgradeTo(stakingUpgraded.address),
-      "Caller must be current proxy governance address"
+      "Caller must be current proxy admin"
     )
   })
 
@@ -153,7 +172,7 @@ contract('Upgrade proxy test', async (accounts) => {
     staking = await StakingUpgraded.at(proxy.address)
     await _lib.assertRevert(staking.newFunction.call({ from: proxyDeployerAddress }), 'revert')
 
-    const upgradeTxReceipt = await mockStakingCaller.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
+    const upgradeTxReceipt = await mockStakingCaller.upgradeStakingTo(stakingUpgraded.address, { from: proxyAdminAddress })
     await expectEvent.inTransaction(upgradeTxReceipt.tx, AudiusAdminUpgradeabilityProxy, 'Upgraded', { implementation: stakingUpgraded.address })
 
     // Confirm proxy implementation's address has updated to new logic contract
@@ -170,18 +189,17 @@ contract('Upgrade proxy test', async (accounts) => {
       staking0.address,
       proxyAdminAddress,
       stakingInitializeData,
-      _lib.addressZero,
       { from: proxyDeployerAddress }
     )
 
-    let govAddress = await noGovProxy.getAudiusGovernanceAddress()
-    assert.equal(govAddress, _lib.addressZero, 'Expect zero governance addr')
+    let govAddress = await noGovProxy.getAudiusProxyAdminAddress()
+    assert.equal(govAddress,proxyAdminAddress, 'Expect zero governance addr')
 
     await _lib.assertRevert(
-      noGovProxy.setAudiusGovernanceAddress(mockStakingCaller.address, { from: accounts[7] }),
-      'Caller must be proxy admin or proxy upgrade')
-    await noGovProxy.setAudiusGovernanceAddress(mockStakingCaller.address, { from: proxyAdminAddress })
-    govAddress = await noGovProxy.getAudiusGovernanceAddress()
+      noGovProxy.setAudiusProxyAdminAddress(mockStakingCaller.address, { from: accounts[7] }),
+      'Caller must be current proxy admin')
+    await noGovProxy.setAudiusProxyAdminAddress(mockStakingCaller.address, { from: proxyAdminAddress })
+    govAddress = await noGovProxy.getAudiusProxyAdminAddress()
     assert.equal(govAddress, mockStakingCaller.address, 'Expect updated governance addr')
   })
 
@@ -189,20 +207,47 @@ contract('Upgrade proxy test', async (accounts) => {
     const registry2 = await Registry.new()
     await registry2.initialize()
 
-    let proxyGovAddr = await proxy.getAudiusGovernanceAddress.call({ from: proxyAdminAddress })
+    let proxyGovAddr = await proxy.getAudiusProxyAdminAddress.call({ from: proxyAdminAddress })
     assert.equal(proxyGovAddr, mockGovAddr)
 
     let mockStakingCaller2 = await MockStakingCaller.new()
     let mockGovAddr2 = mockStakingCaller2.address
 
     await _lib.assertRevert(
-      proxy.setAudiusGovernanceAddress(mockGovAddr2, { from: proxyAdminAddress }),
-      'Caller must be proxy admin or proxy upgrader')
+      proxy.setAudiusProxyAdminAddress(mockGovAddr2, { from: proxyAdminAddress }),
+      'Caller must be current proxy admin')
 
-    await mockStakingCaller.setAudiusGovernanceAddress(mockGovAddr2, { from: proxyAdminAddress })
+    // Update staking proxy admin from mockStakingCaller to mockGovAddr2
+    // setStakingAudiusProxyAdminAddress calls setAudiusProxyAdmin on staking contract
+    // As mockStakingCaller is the current admin, this operation is actually permitted
+    await mockStakingCaller.setStakingAudiusProxyAdminAddress(mockGovAddr2, { from: proxyAdminAddress })
 
-    proxyGovAddr = await proxy.getAudiusGovernanceAddress.call({ from: proxyAdminAddress })
+    proxyGovAddr = await proxy.getAudiusProxyAdminAddress.call({ from: proxyAdminAddress })
     assert.equal(proxyGovAddr, mockGovAddr2)
+
+    // Attempt to set the admin address from the OLD admin, expect failure
+    await _lib.assertRevert(
+      mockStakingCaller.setStakingAudiusProxyAdminAddress(mockGovAddr2, { from: proxyAdminAddress }),
+      'Caller must be current proxy admin'
+    )
+
+    // Attempt to upgrade the staking contract from the old admin
+    await _lib.assertRevert(
+      mockStakingCaller.upgradeStakingTo(stakingUpgraded.address, { from: proxyAdminAddress }),
+      'Caller must be current proxy admin'
+    )
+
+    // Attempt to set the admin address from a different non-admin address
+    await _lib.assertRevert(
+      proxy.setAudiusProxyAdminAddress(mockGovAddr2, { from: proxyAdminAddress }),
+      'Caller must be current proxy admin'
+    )
+
+    // Attempt to upgrade the staking contract from a different non-admin address
+    await _lib.assertRevert(
+      proxy.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress }),
+      'Caller must be current proxy admin'
+    )
   })
 
   describe('Test with Staking contract', async () => {
@@ -230,7 +275,7 @@ contract('Upgrade proxy test', async (accounts) => {
       const otherAccount = accounts[4]
 
       await approveAndStake(DEFAULT_AMOUNT, staker, staking)
-      await mockStakingCaller.upgradeTo(stakingUpgraded.address, { from: proxyAdminAddress })
+      await mockStakingCaller.upgradeStakingTo(stakingUpgraded.address, { from: proxyAdminAddress })
 
       staking = await StakingUpgraded.at(proxy.address)
 

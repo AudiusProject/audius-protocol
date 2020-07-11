@@ -113,23 +113,29 @@ contract MockStakingCaller is InitializableV2 {
     }
 
     /// Governance mock functions
-    function upgradeTo(address _newImplementation) external {
+    function upgradeStakingTo(address _newImplementation) external {
         _requireIsInitialized();
 
         return AudiusAdminUpgradeabilityProxy(stakingAddress).upgradeTo(_newImplementation);
     }
 
-    function setAudiusGovernanceAddress(address _governanceAddress) external {
+    function setStakingAudiusProxyAdminAddress(address _governanceAddress) external {
         _requireIsInitialized();
 
         return AudiusAdminUpgradeabilityProxy(
             stakingAddress
-        ).setAudiusGovernanceAddress(_governanceAddress);
+        ).setAudiusProxyAdminAddress(_governanceAddress);
     }
 
     /// @notice Used to check if is governance contract before setting governance address in other contracts
     function isGovernanceAddress() external pure returns (bool) {
         return true;
+    }
+
+    /// @notice Used to intentionally generate a function signature clash with AudiusAdminUpgradeabilityProxy
+    ///         Returns current address instead of proxy admin address
+    function getAudiusProxyAdminAddress() external view returns (address) {
+        return address(this);
     }
 }
 

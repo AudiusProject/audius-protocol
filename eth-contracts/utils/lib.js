@@ -190,9 +190,8 @@ export const deployToken = async (
   )
   const tokenProxy = await AudiusAdminUpgradeabilityProxy.new(
     token0.address,
-    proxyAdminAddress,
-    tokenInitData,
     governanceAddress,
+    tokenInitData,
     { from: proxyDeployerAddress }
   )
   const token = await AudiusToken.at(tokenProxy.address)
@@ -210,7 +209,6 @@ export const deployRegistry = async (artifacts, proxyAdminAddress, proxyDeployer
     registry0.address,
     proxyAdminAddress,
     registryInitData,
-    addressZero,
     { from: proxyDeployerAddress }
   )
   const registry = await Registry.at(registryProxy.address)
@@ -244,10 +242,9 @@ export const deployGovernance = async (
     governance0.address,
     proxyAdminAddress,
     governanceInitializeData,
-    addressZero,
     { from: proxyDeployerAddress }
   )
-  await governanceProxy.setAudiusGovernanceAddress(governanceProxy.address, { from: proxyAdminAddress })
+  await governanceProxy.setAudiusProxyAdminAddress(governanceProxy.address, { from: proxyAdminAddress })
 
   const governance = await Governance.at(governanceProxy.address)
   return governance

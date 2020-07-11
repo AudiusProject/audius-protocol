@@ -18,14 +18,13 @@ contract('Registry', async (accounts) => {
       registry0.address,
       proxyAdminAddress,
       initializeCallData,
-      _lib.addressZero,
       { from: proxyDeployerAddress }
     )
 
     registry = await Registry.at(registryProxy.address)
 
     assert.equal(await registry.owner.call(), proxyDeployerAddress)
-    assert.equal(await registryProxy.getAudiusGovernanceAddress.call(), _lib.addressZero)
+    assert.equal(await registryProxy.getAudiusProxyAdminAddress.call(), proxyAdminAddress)
   })
 
   it('Confirm unregistered contract request returns 0 address', async () => {
@@ -238,7 +237,6 @@ contract('Registry', async (accounts) => {
       registry2_0.address,
       proxyAdminAddress,
       initializeCallData,
-      _lib.addressZero,
       { from: proxyDeployerAddress }
     )
     const registry2 = await Registry.at(registry2Proxy.address)

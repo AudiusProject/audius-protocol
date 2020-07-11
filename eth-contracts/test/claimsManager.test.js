@@ -78,9 +78,8 @@ contract('ClaimsManager', async (accounts) => {
     )
     stakingProxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
-      proxyAdminAddress,
-      stakingInitializeData,
       governance.address,
+      stakingInitializeData,
       { from: proxyDeployerAddress }
     )
     await registry.addContract(stakingProxyKey, stakingProxy.address, { from: proxyDeployerAddress })
@@ -100,9 +99,8 @@ contract('ClaimsManager', async (accounts) => {
     )
     claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       claimsManager0.address,
-      proxyAdminAddress,
-      claimsInitializeCallData,
       governance.address,
+      claimsInitializeCallData,
       { from: proxyDeployerAddress }
     )
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)

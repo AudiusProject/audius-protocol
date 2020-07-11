@@ -1,7 +1,5 @@
 import * as _lib from '../utils/lib.js'
 
-const Registry = artifacts.require('Registry')
-const AudiusToken = artifacts.require('AudiusToken')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const MockStakingCaller = artifacts.require('MockStakingCaller')
@@ -9,7 +7,6 @@ const MockStakingCaller = artifacts.require('MockStakingCaller')
 const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
-const governanceKey = web3.utils.utf8ToHex('Governance')
 const tokenRegKey = web3.utils.utf8ToHex('TokenKey')
 
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
@@ -95,9 +92,8 @@ contract('Staking test', async (accounts) => {
 
     proxy = await AudiusAdminUpgradeabilityProxy.new(
       staking0.address,
-      proxyAdminAddress,
-      stakingInitializeData,
       mockGovAddress,
+      stakingInitializeData,
       { from: proxyDeployerAddress }
     )
 
@@ -418,9 +414,8 @@ contract('Staking test', async (accounts) => {
       await _lib.assertRevert(
         AudiusAdminUpgradeabilityProxy.new(
           staking1.address,
-          proxyAdminAddress,
-          invalidStakingInitializeData,
           mockStakingCaller.address,
+          invalidStakingInitializeData,
           { from: proxyDeployerAddress }
         ),
       )
@@ -473,9 +468,8 @@ contract('Staking test', async (accounts) => {
       await _lib.assertRevert(
         AudiusAdminUpgradeabilityProxy.new(
           testStaking.address,
-          proxyAdminAddress,
-          invalidStakingInitializeData,
           mockStakingCaller.address,
+          invalidStakingInitializeData,
           { from: proxyDeployerAddress }
         )
       )

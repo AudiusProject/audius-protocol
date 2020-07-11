@@ -22,13 +22,12 @@ module.exports = (deployer, network, accounts) => {
       registry0.address,
       proxyAdminAddress,
       initializeCallData,
-      _lib.addressZero,
       { from: proxyDeployerAddress }
     )
     const registry = await Registry.at(registryProxy.address)
 
     assert.equal(await registry.owner.call(), proxyDeployerAddress)
-    assert.equal(await registryProxy.getAudiusGovernanceAddress.call(), _lib.addressZero)
+    assert.equal(await registryProxy.getAudiusProxyAdminAddress.call(), proxyAdminAddress)
 
     // Register Registry in self to enable governance by key
     await registry.addContract(registryRegKey, registry.address, { from: proxyDeployerAddress })

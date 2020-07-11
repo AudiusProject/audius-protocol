@@ -48,9 +48,8 @@ module.exports = (deployer, network, accounts) => {
     const delegateManagerProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
       delegateManager0.address,
-      proxyAdminAddress,
-      initializeCallData,
       governanceAddress,
+      initializeCallData,
       { from: proxyDeployerAddress }
     )
 

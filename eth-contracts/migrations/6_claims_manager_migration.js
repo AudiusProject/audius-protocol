@@ -41,9 +41,8 @@ module.exports = (deployer, network, accounts) => {
     const claimsManagerProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
       claimsManager0.address,
-      proxyAdminAddress,
-      initializeCallData,
       governanceAddress,
+      initializeCallData,
       { from: proxyDeployerAddress }
     )
 
