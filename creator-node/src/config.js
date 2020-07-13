@@ -288,6 +288,12 @@ const config = convict({
     env: 'isUserMetadataNode',
     default: false
   },
+  userMetadataNodeUrl: {
+    doc: 'address for user metadata node',
+    format: String,
+    env: 'userMetadataNodeUrl',
+    default: null
+  },
   debounceTime: {
     doc: 'sync debounce time',
     format: 'nat',

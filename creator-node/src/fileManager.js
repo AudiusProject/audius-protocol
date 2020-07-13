@@ -1,13 +1,16 @@
 const path = require('path')
-const assert = require('assert')
 const fs = require('fs')
 const { promisify } = require('util')
 const writeFile = promisify(fs.writeFile)
+const mkdir = promisify(fs.mkdir)
 const multer = require('multer')
 const getUuid = require('uuid/v4')
+const axios = require('axios')
 
 const config = require('./config')
 const models = require('./models')
+const Utils = require('./utils')
+const network = require('./network')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -109,16 +112,39 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
     return expectedStoragePath
   }
 
+  const storagePath = req.app.get('storagePath')
+  const filePath = expectedStoragePath.replace(storagePath, '')
+  req.logger.info('storage and file path', {
+    storagePath,
+    filePath
+  })
+  // Check if the file we are trying to copy is in a directory
+  // and if so, create the directory first
+  // E.g if the path is /file_storage/QmABC/Qm123, we check if
+  // /QmABC/Qm123 contains more than 2 parts and if so, it's a directory
+  if (filePath.split('/').length > 2) {
+    const dir = path.dirname(expectedStoragePath)
+    if (dir) {
+      await mkdir(dir, { recursive: true })
+    }
+  }
+
   // If file not already stored, fetch from IPFS and store at storagePath.
-  const ipfs = req.app.get('ipfsAPI')
+  // TODO unique this array
+  const userReplicaSet = ['http://docker.for.mac.localhost:4000', 'http://docker.for.mac.localhost:4010', config.get('userMetadataNodeUrl')]
+  // TODO - go to replica set with onlyFS=true
   let fileBuffer = null
-  req.logger.info(`Storing file at ${expectedStoragePath} for track multihash ${multihash}`)
+  // req.logger.info(`Storing file at ${expectedStoragePath} for track multihash ${multihash}`)
 
   // If multihash already available on local INode, cat file from local ipfs node
   req.logger.info(`checking if ${multihash} already available on local ipfs node`)
   try {
-    fileBuffer = await ipfs.cat(multihash)
+    fileBuffer = await Utils.ipfsCat(multihash, req, 1)
     req.logger.info(`Retrieved file for ${multihash} from local ipfs node`)
+    // Write file to disk.
+    req.logger.info(`writing file to ${expectedStoragePath}...`)
+    await writeFile(expectedStoragePath, fileBuffer)
+    req.logger.info(`wrote file to ${expectedStoragePath}`)
   } catch (e) {
     req.logger.info(`Multihash ${multihash} is not available on local ipfs node`)
   }
@@ -128,24 +154,63 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
     req.logger.info(`Attempting to get ${multihash} from IPFS`)
     let output
     try {
-      output = await ipfs.get(multihash)
+      output = await Utils.ipfsGet(multihash, req, 10)
+      if (output.length !== 1) throw new Error(`provided multihash ${multihash} must map to 1 file`)
+      fileBuffer = output[0].content
+      req.logger.info(`retrieved file for multihash ${multihash} from path ${output[0].path}`)
+      // Write file to disk.
+      req.logger.info(`writing file to ${expectedStoragePath}...`)
+      await writeFile(expectedStoragePath, fileBuffer)
+      req.logger.info(`wrote file to ${expectedStoragePath}`)
+
     } catch (e) {
-      throw new Error(`Failed to retrieve file for multihash ${multihash} from IPFS`)
+      req.logger.info(`Failed to retrieve file for multihash ${multihash} from IPFS`)
+      // throw new Error(`Failed to retrieve file for multihash ${multihash} from IPFS`)
     }
-    if (output.length !== 1) throw new Error('Audius track segment multihash must map to 1 file')
-    fileBuffer = output[0].content
-    req.logger.info(`retrieved file for multihash ${multihash} from path ${output[0].path}`)
   }
 
-  // Write file to disk.
-  const storagePath = path.join(req.app.get('storagePath'), multihash)
-  assert.strictEqual(storagePath, expectedStoragePath)
-  req.logger.info(`writing file to ${storagePath}...`)
-  await writeFile(storagePath, fileBuffer)
-  req.logger.info(`wrote file to ${storagePath}`)
+  // if file is still null, try to fetch from other cnode gateways with onlyFS=true
+  if (fileBuffer === null) {
+    try {
+      let response
+      // ..replace(/\/$/, "") removes trailing slashes
+      // TODO - remove current node endpoint
+      req.logger.info(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
+      const urls = userReplicaSet.map(endpoint => `${endpoint.replace(/\/$/, "")}/ipfs/${multihash}`)
+      
+      // TODO make this more parallel
+      for (let index = 0; index < urls.length; index++) {
+        const url = urls[index]
+        try{
+          const resp = await axios({
+            method: 'get',
+            url,
+            responseType: 'stream',
+            params: { onlyFS: true }
+          })
+          if (resp.data){
+            response = resp
+            break
+          }
+        } catch(e) {
+          continue
+        }
+      }
+      req.logger.info(`writing file to ${expectedStoragePath}...`)
+      if (!response || !response || !response.data) {
+        throw new Error(`Couldn't find files on other creator nodes via promiseRace`)
+      }
 
-  req.logger.info(`\nAdded file: ${multihash} at ${storagePath}`)
-  return storagePath
+      await response.data.pipe(fs.createWriteStream(expectedStoragePath))
+      req.logger.info(`wrote file to ${expectedStoragePath}`)
+    } catch (e) {
+      console.error("error in race requests", e)
+      throw new Error(`Failed to retrieve file for multihash ${multihash} from other creator node gateways: ${e.message}`)
+    }
+  }
+
+  req.logger.info(`\nAdded file: ${multihash} at ${expectedStoragePath}`)
+  return expectedStoragePath
 }
 
 /** (1) Remove all files in requested fileDir

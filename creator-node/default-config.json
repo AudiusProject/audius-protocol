@@ -38,5 +38,6 @@
   "trackBlacklist": "",
   "dataRegistryAddress": "",
   "dataProviderUrl": "http://docker.for.mac.localhost:8545",
-  "dataNetworkId": ""
+  "dataNetworkId": "",
+  "userMetadataNodeUrl": "http://docker.for.mac.localhost:4000"
 }
