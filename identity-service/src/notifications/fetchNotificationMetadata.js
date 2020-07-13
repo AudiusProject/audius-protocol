@@ -96,7 +96,7 @@ async function sendUserNotifcationEmail (audius, userId, announcements = [], fro
   }
 }
 
-async function fetchNotificationMetadata (audius, userId, notifications) {
+async function fetchNotificationMetadata (audius, userId, notifications, fetchThumbnails = true) {
   let userIdsToFetch = [userId]
   let trackIdsToFetch = []
   let collectionIdsToFetch = []
@@ -243,7 +243,9 @@ async function fetchNotificationMetadata (audius, userId, notifications) {
   }, {})
 
   users = await Promise.all(users.map(async (user) => {
-    user.thumbnail = await getUserImage(user)
+    if (fetchThumbnails) {
+      user.thumbnail = await getUserImage(user)
+    }
     if (twitterHandleMap[user.handle]) {
       user.twitterHandle = twitterHandleMap[user.handle]
     }
