@@ -265,7 +265,7 @@ module.exports = function (app) {
           .on('end', () => { res.end(); resolve() })
           .on('error', e => { reject(e) })
       })
-    } catch(e) {
+    } catch (e) {
       return sendResponse(req, res, errorResponseServerError(e.message))
     }
   })
