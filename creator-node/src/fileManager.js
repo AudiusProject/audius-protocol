@@ -10,7 +10,6 @@ const axios = require('axios')
 const config = require('./config')
 const models = require('./models')
 const Utils = require('./utils')
-const network = require('./network')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -105,7 +104,7 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
  *  - Write file to disk.
  *  - Add file to local inode if not already.
  */
-async function saveFileForMultihash (req, multihash, expectedStoragePath) {
+async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry) {
   // If file already stored on disk, return immediately.
   if (fs.existsSync(expectedStoragePath)) {
     req.logger.info(`File already stored at ${expectedStoragePath} for ${multihash}`)
@@ -130,9 +129,6 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
   }
 
   // If file not already stored, fetch from IPFS and store at storagePath.
-  // TODO unique this array
-  const userReplicaSet = ['http://docker.for.mac.localhost:4000', 'http://docker.for.mac.localhost:4010', config.get('userMetadataNodeUrl')]
-  // TODO - go to replica set with onlyFS=true
   let fileBuffer = null
   // req.logger.info(`Storing file at ${expectedStoragePath} for track multihash ${multihash}`)
 
@@ -162,7 +158,6 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
       req.logger.info(`writing file to ${expectedStoragePath}...`)
       await writeFile(expectedStoragePath, fileBuffer)
       req.logger.info(`wrote file to ${expectedStoragePath}`)
-
     } catch (e) {
       req.logger.info(`Failed to retrieve file for multihash ${multihash} from IPFS`)
       // throw new Error(`Failed to retrieve file for multihash ${multihash} from IPFS`)
@@ -174,25 +169,24 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
     try {
       let response
       // ..replace(/\/$/, "") removes trailing slashes
-      // TODO - remove current node endpoint
       req.logger.info(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
-      const urls = userReplicaSet.map(endpoint => `${endpoint.replace(/\/$/, "")}/ipfs/${multihash}`)
-      
+      const urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
+
       // TODO make this more parallel
       for (let index = 0; index < urls.length; index++) {
         const url = urls[index]
-        try{
+        try {
           const resp = await axios({
             method: 'get',
             url,
             responseType: 'stream',
             params: { onlyFS: true }
           })
-          if (resp.data){
+          if (resp.data) {
             response = resp
             break
           }
-        } catch(e) {
+        } catch (e) {
           continue
         }
       }
@@ -204,7 +198,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
       await response.data.pipe(fs.createWriteStream(expectedStoragePath))
       req.logger.info(`wrote file to ${expectedStoragePath}`)
     } catch (e) {
-      console.error("error in race requests", e)
+      console.error('error in race requests', e)
       throw new Error(`Failed to retrieve file for multihash ${multihash} from other creator node gateways: ${e.message}`)
     }
   }

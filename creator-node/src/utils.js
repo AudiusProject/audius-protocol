@@ -96,7 +96,7 @@ const ipfsSingleByteCat = (path, req, timeout = 1000) => new Promise(async (reso
   }
 })
 
-const ipfsCat = (path, req, timeout=1000, length=null) => new Promise(async (resolve, reject) => {
+const ipfsCat = (path, req, timeout = 1000, length = null) => new Promise(async (resolve, reject) => {
   const start = Date.now()
   let ipfs = req.app.get('ipfsLatestAPI')
 
@@ -118,7 +118,7 @@ const ipfsCat = (path, req, timeout=1000, length=null) => new Promise(async (res
   }
 })
 
-const ipfsGet = (path, req, timeout=1000) => new Promise(async (resolve, reject) => {
+const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, reject) => {
   const start = Date.now()
   let ipfs = req.app.get('ipfsLatestAPI')
 

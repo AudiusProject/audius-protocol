@@ -5,6 +5,7 @@ const { saveFileForMultihash } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError } = require('../apiHelpers')
 const config = require('../config')
 const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary, rehydrateIpfsDirFromFsIfNecessary } = require('../utils')
+const middlewares = require('../middlewares')
 
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
@@ -199,6 +200,17 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         throw new Error(`Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`)
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
+      const myCnodeEndpoint = await middlewares.getOwnEndpoint(req)
+      const userReplicaSet = await middlewares.getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
+
+      // gateways to try  is user metadata + replica set (excluding self). Spread + set uniq's the array
+      const gatewaysToTry = [...new Set([
+        config.get('userMetadataNodeUrl'),
+        ...userReplicaSet.filter(url => url !== myCnodeEndpoint)
+      ])]
+      req.logger.info('userREplicaSet', userReplicaSet)
+      req.logger.info('myCnodeEndpoint', myCnodeEndpoint)
+      req.logger.info('gatewaysToTry', gatewaysToTry)
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
         throw new Error(`Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`)
       }
@@ -301,7 +313,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
           req.logger.info(`TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit}...`)
           await Promise.all(trackFilesSlice.map(
-            trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath)
+            trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath, gatewaysToTry)
           ))
         }
         req.logger.info('Saved all track files to disk and ipfs.')
