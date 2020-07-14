@@ -282,7 +282,7 @@ describe('ServiceSelection withShortCircuit', () => {
 })
 
 describe('ServiceSelection findAll', () => {
-  it ('can find all the healthy services', async () => {
+  it('can find all the healthy services', async () => {
     const a = 'https://a.audius.co'
     nock(a)
       .get('/health_check')
@@ -305,7 +305,7 @@ describe('ServiceSelection findAll', () => {
     assert.deepStrictEqual(all, [a, b])
   })
 
-  it ('will drop slow services', async () => {
+  it('will drop slow services', async () => {
     const a = 'https://a.audius.co'
     nock(a)
       .get('/health_check')
