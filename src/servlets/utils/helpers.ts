@@ -46,3 +46,15 @@ export const getImageUrl = (cid: string, gateway: string | null): string => {
   if (!cid) return DEFAULT_IMAGE_URL
   return `${gateway}${cid}`
 }
+
+/**
+ * Fisher-Yates algorithm shuffles an array
+ * @param a any array
+ */
+export const shuffle = (a: any[]) => {
+  for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1)) as number
+      [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}

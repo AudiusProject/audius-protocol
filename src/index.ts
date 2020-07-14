@@ -1,11 +1,12 @@
 import express from 'express'
 import path from 'path'
-import getMetaTagsResponse from './servlets/metaTags'
 
 import { BedtimeFormat } from './servlets/bedtime/types'
 import { MetaTagFormat } from './servlets/metaTags/types'
 
+import { router as apiRouter } from './servlets/api'
 import { getBedtimeResponse } from './servlets/bedtime'
+import getMetaTagsResponse from './servlets/metaTags'
 
 import libs from './libs'
 
@@ -91,6 +92,7 @@ router.get('*', (
 })
 
 app.use(express.static(path.resolve(__dirname + '/public')))
+app.use('/api', apiRouter)
 app.use('/', router)
 
 const start = async () => {
