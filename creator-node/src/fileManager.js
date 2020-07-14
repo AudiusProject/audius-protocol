@@ -2,7 +2,6 @@ const path = require('path')
 const fs = require('fs')
 const { promisify } = require('util')
 const writeFile = promisify(fs.writeFile)
-const mkdir = promisify(fs.mkdir)
 const multer = require('multer')
 const getUuid = require('uuid/v4')
 const axios = require('axios')
@@ -111,26 +110,6 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     return expectedStoragePath
   }
 
-  const storagePath = req.app.get('storagePath')
-  const filePath = expectedStoragePath.replace(storagePath, '')
-
-  // Check if the file we are trying to copy is in a directory
-  // and if so, create the directory first
-  // E.g if the path is /file_storage/QmABC/Qm123, we check if
-  // /QmABC/Qm123 contains more than 2 parts and if so, it's a directory
-  // calling this on an existing directory throws an error but does not
-  // override the directory with a new one
-  if (filePath.split('/').length > 2) {
-    const dir = path.dirname(expectedStoragePath)
-    if (dir) {
-      try {
-        await mkdir(dir, { recursive: true })
-      } catch (e) {
-        // folder path already exists
-      }
-    }
-  }
-
   // If file not already stored, fetch from IPFS and store at storagePath.
   let fileBuffer = null
 
@@ -169,7 +148,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       let response
       // ..replace(/\/$/, "") removes trailing slashes
       req.logger.debug(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
-      
+
       // TODO - change this to proper directory gateway
       const urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
 
