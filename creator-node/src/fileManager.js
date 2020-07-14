@@ -97,11 +97,11 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
 
 /** Save file to disk given IPFS multihash, and ensure availability.
  *  Steps:
- *  - If file already stored on disk, return immediately.
- *  - If file not already stored, fetch from IPFS and store.
+ *  - If file already stored on disk, return immediately and store to disk.
+ *  - If file not already stored, fetch from IPFS and store to disk.
  *    - If multihash available on local inode, retrieve file.
  *    - If multihash not available locally, fetch file from IPFS.
- *  - Write file to disk.
+ *  - If file is not available via IPFS try other cnode gateways for user's replica set.
  *  - Add file to local inode if not already.
  */
 async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry) {
@@ -173,8 +173,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
             method: 'get',
             url,
             responseType: 'stream',
-            timeout: 5000, /* ms */
-            params: { onlyFS: true }
+            timeout: 2000, /* ms */
           })
           if (resp.data) {
             response = resp
@@ -185,11 +184,17 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
         }
       }
 
-      if (!response || !response || !response.data) {
-        throw new Error(`Couldn't find files on other creator nodes via promiseRace`)
+      if (!response || !response.data) {
+        throw new Error(`Couldn't find files on other creator nodes`)
       }
 
-      await response.data.pipe(fs.createWriteStream(expectedStoragePath))
+      const destinationStream = fs.createWriteStream(expectedStoragePath)
+      await new Promise((resolve, reject) => {
+        response.data.pipe(destinationStream)
+        response.data.on('end', () => { resolve() })
+        response.data.on('error', err => { destinationStream.end(); reject(err) })
+      })
+  
       req.logger.info(`wrote file to ${expectedStoragePath}`)
     } catch (e) {
       throw new Error(`Failed to retrieve file for multihash ${multihash} from other creator node gateways: ${e.message}`)
