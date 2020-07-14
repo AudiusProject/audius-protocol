@@ -124,7 +124,7 @@ const ipfsCat = (path, req, timeout = 1000, length = null) => new Promise(async 
  * @param {String} path IPFS cid for file
  * @param {Object} req request object
  * @param {Number} timeout timeout in ms
- * @returns {BufferListStream} 
+ * @returns {BufferListStream}
  */
 const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, reject) => {
   const start = Date.now()
@@ -136,9 +136,9 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
     if (timeout) options.timeout = timeout
     // ipfs.get() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
     /* eslint-disable-next-line no-unused-vars */
-    for await (const file of ipfs.get(path, options)) {    
-      if (!file.content) continue;
-    
+    for await (const file of ipfs.get(path, options)) {
+      if (!file.content) continue
+
       const content = new BufferListStream()
       for await (const chunk of file.content) {
         content.append(chunk)

@@ -136,7 +136,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       fileBuffer = output
       req.logger.debug(`retrieved file for multihash ${multihash} from local ipfs node`)
 
-      // Write file to disk.      
+      // Write file to disk.
       const destinationStream = fs.createWriteStream(expectedStoragePath)
       await new Promise((resolve, reject) => {
         fileBuffer.pipe(destinationStream)
