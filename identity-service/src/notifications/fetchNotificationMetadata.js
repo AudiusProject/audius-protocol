@@ -29,7 +29,7 @@ const USER_FETCH_LIMIT = 10
  */
 
 const getLastWeek = () => moment().subtract(7, 'days')
-async function sendUserNotifcationEmail (audius, userId, announcements = [], fromTime = getLastWeek(), limit = 5) {
+async function getEmailNotifications (audius, userId, announcements = [], fromTime = getLastWeek(), limit = 5) {
   try {
     const user = await models.User.findOne({
       where: { blockchainUserId: userId },
@@ -88,7 +88,8 @@ async function sendUserNotifcationEmail (audius, userId, announcements = [], fro
     })
 
     const finalUserNotifications = userNotifications.slice(0, limit)
-    const metadata = await fetchNotificationMetadata(audius, userId, finalUserNotifications)
+    // Explicitly fetch image thumbnails
+    const metadata = await fetchNotificationMetadata(audius, userId, finalUserNotifications, true)
     const notificationsEmailProps = formatNotificationProps(finalUserNotifications, metadata)
     return [notificationsEmailProps, notificationCount + unreadAnnouncementCount]
   } catch (err) {
@@ -96,7 +97,7 @@ async function sendUserNotifcationEmail (audius, userId, announcements = [], fro
   }
 }
 
-async function fetchNotificationMetadata (audius, userId, notifications, fetchThumbnails = true) {
+async function fetchNotificationMetadata (audius, userId, notifications, fetchThumbnails = false) {
   let userIdsToFetch = [userId]
   let trackIdsToFetch = []
   let collectionIdsToFetch = []
@@ -328,5 +329,5 @@ async function getTrackImage (track, usersMap) {
   }
 }
 
-module.exports = sendUserNotifcationEmail
+module.exports = getEmailNotifications
 module.exports.fetchNotificationMetadata = fetchNotificationMetadata

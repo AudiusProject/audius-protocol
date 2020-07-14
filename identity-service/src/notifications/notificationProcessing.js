@@ -158,11 +158,10 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
       }
 
       // fetch metadata
-      // explicitly disable fetch of user thumbnail
-      const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps], false)
+      const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
 
       // map properties necessary to render push notification message
-      // note that thumbnail will be undefined after disabling fetch above
+      // note that user.thumbnail will be undefined with default fetchThumbnail = false above
       const mapNotification = notificationResponseMap[notificationTypes.Follow]
       let msgGenNotif = {
         ...notifWithAddProps,
@@ -274,11 +273,10 @@ async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, 
       }
 
       // fetch metadata
-      // explicitly disable fetch of user thumbnail
-      const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps], false)
+      const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
 
       // map properties necessary to render push notification message
-      // note that thumbnail will be undefined after disabling fetch above
+      // note that user.thumbnail will be undefined with default fetchThumbnail = false above
       const mapNotification = notificationResponseMap[repostType]
       let msgGenNotif = {
         ...notifWithAddProps,
@@ -389,11 +387,10 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
       }
 
       // fetch metadata
-      // explicitly disable fetch of user thumbnail
-      const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps], false)
+      const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
 
       // map properties necessary to render push notification message
-      // note that thumbnail will be undefined after disabling fetch above
+      // note that user.thumbnail will be undefined with default fetchThumbnail = false above
       const mapNotification = notificationResponseMap[favoriteType]
       let msgGenNotif = {
         ...notifWithAddProps,
@@ -535,11 +532,10 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
       }
 
       // fetch metadata
-      // explicitly disable fetch of user thumbnail
-      const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps], false)
+      const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
 
       // map properties necessary to render push notification message
-      // note that thumbnail will be undefined after disabling fetch above
+      // note that user.thumbnail will be undefined with default fetchThumbnail = false above
       const mapNotification = notificationResponseMap[createType]
       let msgGenNotif = {
         ...notifWithAddProps,
@@ -664,11 +660,10 @@ async function _processRemixCreateNotifications (audiusLibs, notif, blocknumber,
     }
 
     // fetch metadata
-    // explicitly disable fetch of user thumbnail
-    const metadata = await fetchNotificationMetadata(audiusLibs, childTrackUserId, [notifWithAddProps], false)
+    const metadata = await fetchNotificationMetadata(audiusLibs, childTrackUserId, [notifWithAddProps])
 
     // map properties necessary to render push notification message
-    // note that thumbnail will be undefined after disabling fetch above
+    // note that user.thumbnail will be undefined with default fetchThumbnail = false above
     const mapNotification = notificationResponseMap[notificationTypes.RemixCreate]
     let msgGenNotif = {
       ...notifWithAddProps,
@@ -762,11 +757,10 @@ async function _processCosignNotifications (audiusLibs, notif, blocknumber, time
     }
 
     // fetch metadata
-    // explicitly disable fetch of user thumbnail
-    const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps], false)
+    const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
 
     // map properties necessary to render push notification message
-    // note that thumbnail will be undefined after disabling fetch above
+    // note that user.thumbnail will be undefined with default fetchThumbnail = false above
     const mapNotification = notificationResponseMap[notificationTypes.RemixCosign]
     let msgGenNotif = {
       ...notifWithAddProps,
