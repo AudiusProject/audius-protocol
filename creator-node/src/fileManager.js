@@ -139,7 +139,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
   // If multihash already available on local INode, cat file from local ipfs node
   req.logger.info(`checking if ${multihash} already available on local ipfs node`)
   try {
-    fileBuffer = await Utils.ipfsCat(multihash, req, 1)
+    fileBuffer = await Utils.ipfsCat(multihash, req, 1000)
     req.logger.info(`Retrieved file for ${multihash} from local ipfs node`)
     // Write file to disk.
     req.logger.info(`writing file to ${expectedStoragePath}...`)
@@ -154,7 +154,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
     req.logger.info(`Attempting to get ${multihash} from IPFS`)
     let output
     try {
-      output = await Utils.ipfsGet(multihash, req, 10)
+      output = await Utils.ipfsGet(multihash, req, 2000)
       if (output.length !== 1) throw new Error(`provided multihash ${multihash} must map to 1 file`)
       fileBuffer = output[0].content
       req.logger.info(`retrieved file for multihash ${multihash} from path ${output[0].path}`)
