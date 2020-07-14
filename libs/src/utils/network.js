@@ -109,8 +109,39 @@ async function raceRequests (
   return { respone: null, errored }
 }
 
+async function allRequests ({
+  urlMap,
+  timeout,
+  validationCheck
+}) {
+  const urls = Object.keys(urlMap)
+  const requests = urls.map(async (url, i) => {
+    return new Promise((resolve) => {
+      axios({
+        method: 'get',
+        timeout,
+        url
+      })
+        .then(response => {
+          const isValid = validationCheck(response)
+          if (isValid) {
+            resolve(urlMap[url])
+          } else {
+            resolve(null)
+          }
+        })
+        .catch((thrown) => {
+          resolve(null)
+        })
+    })
+  })
+  const responses = (await Promise.all(requests)).filter(Boolean)
+  return responses
+}
+
 module.exports = {
   timeRequest,
   timeRequests,
-  raceRequests
+  raceRequests,
+  allRequests
 }
