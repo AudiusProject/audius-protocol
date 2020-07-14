@@ -169,6 +169,8 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       let response
       // ..replace(/\/$/, "") removes trailing slashes
       req.logger.debug(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
+      
+      // TODO - change this to proper directory gateway
       const urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
 
       // TODO make this more parallel
