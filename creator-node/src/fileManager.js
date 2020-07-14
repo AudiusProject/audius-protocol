@@ -130,15 +130,22 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     req.logger.debug(`Attempting to get ${multihash} from IPFS`)
     let output
     try {
-      output = await Utils.ipfsGet(multihash, req, 1000)
-      if (output.length !== 1) throw new Error(`provided multihash ${multihash} must map to 1 file`)
-      fileBuffer = output[0].content
-      req.logger.debug(`retrieved file for multihash ${multihash} from path ${output[0].path}`)
-      // Write file to disk.
-      await writeFile(expectedStoragePath, fileBuffer)
+      // ipfsGet returns a BufferList object, not a buffer
+      // but still compatible into writeFile directly
+      output = await Utils.ipfsGet(multihash, req, 5000)
+      fileBuffer = output
+      req.logger.debug(`retrieved file for multihash ${multihash} from local ipfs node`)
+
+      // Write file to disk.      
+      const destinationStream = fs.createWriteStream(expectedStoragePath)
+      await new Promise((resolve, reject) => {
+        fileBuffer.pipe(destinationStream)
+        fileBuffer.on('end', () => { resolve() })
+        fileBuffer.on('error', err => { destinationStream.end(); reject(err) })
+      })
       req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs get`)
     } catch (e) {
-      req.logger.info(`Failed to retrieve file for multihash ${multihash} from IPFS`)
+      req.logger.info(`Failed to retrieve file for multihash ${multihash} from IPFS ${e.message}`)
     }
   }
 
