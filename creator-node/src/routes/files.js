@@ -169,7 +169,7 @@ module.exports = function (app) {
     try {
       // Attempt to stream file to client.
       req.logger.info(`Retrieving ${queryResults.storagePath} directly from filesystem`)
-      return streamFromFileSystem(req, res, queryResults.storagePath)
+      return await streamFromFileSystem(req, res, queryResults.storagePath)
     } catch (e) {
       req.logger.info(`Failed to retrieve ${queryResults.storagePath} from FS`)
     }
@@ -247,7 +247,7 @@ module.exports = function (app) {
     try {
       // Attempt to stream file to client.
       req.logger.info(`Retrieving ${queryResults.storagePath} directly from filesystem`)
-      return streamFromFileSystem(req, res, queryResults.storagePath)
+      return await streamFromFileSystem(req, res, queryResults.storagePath)
     } catch (e) {
       req.logger.info(`Failed to retrieve ${queryResults.storagePath} from FS`)
     }
