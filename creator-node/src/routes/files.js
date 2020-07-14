@@ -6,7 +6,6 @@ const { uploadTempDiskStorage } = require('../fileManager')
 const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound, errorResponseForbidden } = require('../apiHelpers')
 
 const models = require('../models')
-const { logger } = require('../logging')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
@@ -152,62 +151,47 @@ module.exports = function (app) {
 
     redisClient.incr('ipfsStandaloneReqs')
     const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
-    logger.info(`IPFS Standalone Request - ${CID}`)
-    logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
+    req.logger.info(`IPFS Standalone Request - ${CID}`)
+    req.logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
     // If client has provided filename, set filename in header to be auto-populated in download prompt.
     if (req.query.filename) {
       res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
     }
 
-    if (req.query.fromFS && req.query.fromFS === 'true') {
-      logger.info(`Retrieving directly from filesystem`)
-      // Retrieves the file directly from the filesystem rather than checking IPFS first
+    // Fire-and-forget rehydration
+    rehydrateIpfsFromFsIfNecessary(
+      req,
+      CID,
+      queryResults.storagePath
+    )
 
-      // Fire-and-forget rehydration
-      rehydrateIpfsFromFsIfNecessary(
-        req,
-        CID,
-        queryResults.storagePath
-      )
+    try {
+      // Attempt to stream file to client.
+      req.logger.info(`Retrieving ${queryResults.storagePath} directly from filesystem`)
+      return await streamFromFileSystem(req, res, queryResults.storagePath)
+    } catch (e) {
+      req.logger.info(`Failed to retrieve ${queryResults.storagePath} from FS`)
+    }
 
-      return streamFromFileSystem(req, res, queryResults.storagePath)
-    } else {
-      logger.info(`Attempting to retrieve from IPFS`)
-      // Retrieves the file from IPFS and falls back to the filesystem if unavailable
+    try {
+      // For files not found on disk, attempt to stream from IPFS
+      // Cat 1 byte of CID in ipfs to determine if file exists
+      // If the request takes under 500ms, stream the file from ipfs
+      // else if the request takes over 500ms, throw an error
+      await ipfsSingleByteCat(CID, req, 500)
 
-      // Conditionally rehydrate from filestorage to IPFS.
-      try {
-        await rehydrateIpfsFromFsIfNecessary(
-          req,
-          CID,
-          queryResults.storagePath
-        )
-      } catch (e) {
-        // If rehydrate throws error, return 500 without attempting to stream file.
-        return sendResponse(req, res, errorResponseServerError(e.message))
-      }
-
-      // Stream file to client.
-      try {
-        // Cat 1 byte of CID in ipfs to determine if file exists
-        // If the request takes under 500ms, stream the file from ipfs
-        // else if the request takes over 500ms, throw an error and stream the file from file system
-        await ipfsSingleByteCat(CID, req, 500)
-
-        // Stream file from ipfs if cat one byte takes under 500ms
-        // If catReadableStream() promise is rejected, throw an error and stream from file system
-        await new Promise((resolve, reject) => {
-          req.app.get('ipfsAPI').catReadableStream(CID)
-            .on('data', streamData => { res.write(streamData) })
-            .on('end', () => { res.end(); resolve() })
-            .on('error', e => { reject(e) })
-        })
-      } catch (e) {
-        // ipfsCatSingleByte took over 500ms, try streaming from file system and
-        // return the response from helper method
-        return streamFromFileSystem(req, res, queryResults.storagePath)
-      }
+      // Stream file from ipfs if cat one byte takes under 500ms
+      // If catReadableStream() promise is rejected, throw an error and stream from file system
+      await new Promise((resolve, reject) => {
+        req.app.get('ipfsAPI').catReadableStream(CID)
+          .on('data', streamData => { res.write(streamData) })
+          .on('end', () => { res.end(); resolve() })
+          .on('error', e => { reject(e) })
+      })
+    } catch (e) {
+      // If the file cannot be retrieved through IPFS, return 500 without attempting to stream file.
+      return sendResponse(req, res, errorResponseServerError(e.message))
     }
   })
 
@@ -249,56 +233,40 @@ module.exports = function (app) {
 
     redisClient.incr('ipfsStandaloneReqs')
     const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
-    logger.info(`IPFS Standalone Request - ${ipfsPath}`)
-    logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
+    req.logger.info(`IPFS Standalone Request - ${ipfsPath}`)
+    req.logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
-    if (req.query.fromFS && req.query.fromFS === 'true') {
-      logger.info(`Retrieving directly from filesystem`)
-      // Retrieves the file directly from the filesystem rather than checking IPFS first
+    // Fire-and-forget rehydration
+    rehydrateIpfsFromFsIfNecessary(
+      req,
+      dirCID,
+      parentStoragePath,
+      filename
+    )
 
-      // Fire-and-forget rehydration
-      rehydrateIpfsFromFsIfNecessary(
-        req,
-        dirCID,
-        parentStoragePath,
-        filename
-      )
+    try {
+      // Attempt to stream file to client.
+      req.logger.info(`Retrieving ${queryResults.storagePath} directly from filesystem`)
+      return await streamFromFileSystem(req, res, queryResults.storagePath)
+    } catch (e) {
+      req.logger.info(`Failed to retrieve ${queryResults.storagePath} from FS`)
+    }
 
-      return streamFromFileSystem(req, res, queryResults.storagePath)
-    } else {
-      logger.info(`Attempting to retrieve from IPFS`)
-      // Retrieves the file from IPFS and falls back to the filesystem if unavailable
+    try {
+      // For files not found on disk, attempt to stream from IPFS
+      // Cat 1 byte of CID in ipfs to determine if file exists
+      // If the request takes under 500ms, stream the file from ipfs
+      // else if the request takes over 500ms, throw an error
+      await ipfsSingleByteCat(ipfsPath, req, 500)
 
-      // Conditionally re-add from filestorage to IPFS
-      try {
-        await rehydrateIpfsFromFsIfNecessary(
-          req,
-          dirCID,
-          parentStoragePath,
-          filename
-        )
-      } catch (e) {
-        // If rehydrate throws error, return 500 without attempting to stream file.
-        return sendResponse(req, res, errorResponseServerError(e.message))
-      }
-
-      try {
-        // Cat 1 byte of CID in ipfs to determine if file exists
-        // If the request takes under 500ms, stream the file from ipfs
-        // else if the request takes over 500ms, throw an error and stream the file from file system
-        await ipfsSingleByteCat(ipfsPath, req, 500)
-
-        await new Promise((resolve, reject) => {
-          req.app.get('ipfsAPI').catReadableStream(ipfsPath)
-            .on('data', streamData => { res.write(streamData) })
-            .on('end', () => { res.end(); resolve() })
-            .on('error', e => { reject(e) })
-        })
-      } catch (e) {
-        // ipfsCatSingleByte took over 500ms, try streaming from file system and
-        // return the response from helper method
-        return streamFromFileSystem(req, res, queryResults.storagePath)
-      }
+      await new Promise((resolve, reject) => {
+        req.app.get('ipfsAPI').catReadableStream(ipfsPath)
+          .on('data', streamData => { res.write(streamData) })
+          .on('end', () => { res.end(); resolve() })
+          .on('error', e => { reject(e) })
+      })
+    } catch (e) {
+      return sendResponse(req, res, errorResponseServerError(e.message))
     }
   })
 
