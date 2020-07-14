@@ -37,7 +37,7 @@ def get_users(args):
 
         # Conditionally process an array of users
         if "id" in args:
-            user_id_str_list = args["id"]
+            user_id_str_list = args.get("id")
             user_id_list = []
             try:
                 user_id_list = [int(y) for y in user_id_str_list]
