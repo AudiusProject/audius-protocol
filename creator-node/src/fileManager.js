@@ -173,7 +173,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
             method: 'get',
             url,
             responseType: 'stream',
-            timeout: 5000, /*ms*/
+            timeout: 5000, /* ms */
             params: { onlyFS: true }
           })
           if (resp.data) {
