@@ -9,6 +9,7 @@ const Hedgehog = require('./services/hedgehog/index')
 const CreatorNode = require('./services/creatorNode/index')
 const DiscoveryProvider = require('./services/discoveryProvider/index')
 const AudiusABIDecoder = require('./services/ABIDecoder/index')
+const SchemaValidator = require('./services/schemaValidator')
 const UserStateManager = require('./userStateManager')
 const Utils = require('./utils')
 const SanityChecks = require('./sanityChecks')
@@ -148,6 +149,11 @@ class AudiusLibs {
     this.Track = null
     this.Playlist = null
     this.File = null
+
+    // Schemas
+    const schemaValidator = new SchemaValidator()
+    schemaValidator.init()
+    this.schemas = schemaValidator.getSchemas()
   }
 
   /** Init services based on presence of a relevant config. */
@@ -225,7 +231,8 @@ class AudiusLibs {
         creatorNodeEndpoint,
         this.isServer,
         this.userStateManager,
-        this.creatorNodeConfig.lazyConnect)
+        this.creatorNodeConfig.lazyConnect,
+        this.schemas)
       await this.creatorNode.init()
     }
 
