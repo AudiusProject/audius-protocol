@@ -1,25 +1,21 @@
 const Redis = require('ioredis')
-const path = require('path')
 const fs = require('fs')
 var contentDisposition = require('content-disposition')
-const { promisify } = require('util')
-const writeFile = promisify(fs.writeFile)
-const mkdir = promisify(fs.mkdir)
 
-const { upload } = require('../fileManager')
+const { uploadTempDiskStorage } = require('../fileManager')
 const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound, errorResponseForbidden } = require('../apiHelpers')
 
 const models = require('../models')
 const { logger } = require('../logging')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
-const resizeImage = require('../resizeImage')
 const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
 const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary, ipfsSingleByteCat } = require('../utils')
+const ImageProcessingQueue = require('../ImageProcessingQueue')
 
 module.exports = function (app) {
   /** Store image in multiple-resolutions on disk + DB and make available via IPFS */
-  app.post('/image_upload', authMiddleware, syncLockMiddleware, upload.single('file'), handleResponse(async (req, res) => {
+  app.post('/image_upload', authMiddleware, syncLockMiddleware, uploadTempDiskStorage.single('file'), handleResponse(async (req, res) => {
     if (!req.body.square || !(req.body.square === 'true' || req.body.square === 'false')) {
       return errorResponseBadRequest('Must provide square boolean param in request body')
     }
@@ -28,85 +24,67 @@ module.exports = function (app) {
     }
     let routestart = Date.now()
 
-    const ipfs = req.app.get('ipfsAPI')
-    const imageBufferOriginal = req.file.buffer
-    let imageBuffers
-    let ipfsAddResp
+    const imageBufferOriginal = req.file.path
+    const originalFileName = req.file.originalname
+    let resizeResp
 
-    const t = await models.sequelize.transaction()
+    // Resize the images and add them to IPFS and filestorage
     try {
       if (req.body.square === 'true') {
-        // Resize image to desired resolutions
-        const [imageBuffer1000x1000, imageBuffer480x480, imageBuffer150x150] = await Promise.all([
-          resizeImage(req, imageBufferOriginal, 1000, true),
-          resizeImage(req, imageBufferOriginal, 480, true),
-          resizeImage(req, imageBufferOriginal, 150, true)
-        ])
-        imageBuffers = [imageBuffer1000x1000, imageBuffer480x480, imageBuffer150x150, imageBufferOriginal]
-
-        // Add directory with all images to IPFS
-        ipfsAddResp = await ipfs.add([
-          { path: path.join(req.file.originalname, '1000x1000.jpg'), content: imageBuffer1000x1000 },
-          { path: path.join(req.file.originalname, '480x480.jpg'), content: imageBuffer480x480 },
-          { path: path.join(req.file.originalname, '150x150.jpg'), content: imageBuffer150x150 },
-          { path: path.join(req.file.originalname, 'original.jpg'), content: imageBufferOriginal }
-        ], { pin: false })
+        resizeResp = await ImageProcessingQueue.resizeImage({
+          file: imageBufferOriginal,
+          fileName: originalFileName,
+          storagePath: req.app.get('storagePath'),
+          sizes: {
+            '150x150.jpg': 150,
+            '480x480.jpg': 480,
+            '1000x1000.jpg': 1000
+          },
+          square: true,
+          logContext: req.logContext
+        })
       } else /** req.body.square == 'false' */ {
-        // Resize image to desired resolutions
-        const [imageBuffer2000x, imageBuffer640x] = await Promise.all([
-          resizeImage(req, imageBufferOriginal, 2000, false),
-          resizeImage(req, imageBufferOriginal, 640, false)
-        ])
-        imageBuffers = [imageBuffer2000x, imageBuffer640x, imageBufferOriginal]
-
-        // Add directory with all images to IPFS
-        ipfsAddResp = await ipfs.add([
-          { path: path.join(req.file.originalname, '2000x.jpg'), content: imageBuffer2000x },
-          { path: path.join(req.file.originalname, '640x.jpg'), content: imageBuffer640x },
-          { path: path.join(req.file.originalname, 'original.jpg'), content: imageBufferOriginal }
-        ], { pin: false })
-      }
-      req.logger.info('ipfs add resp', ipfsAddResp)
-
-      // Get dir CID (last entry in returned array)
-      const dirCID = ipfsAddResp[ipfsAddResp.length - 1].hash
-      req.logger.info('dirCID', dirCID)
-
-      // Create dir in fs, and store files under this dir
-      const dirDestPath = path.join(req.app.get('storagePath'), dirCID)
-      try {
-        await mkdir(dirDestPath)
-      } catch (e) {
-        // if error = 'already exists', ignore else throw
-        if (e.message.indexOf('already exists') < 0) throw e
+        resizeResp = await ImageProcessingQueue.resizeImage({
+          file: imageBufferOriginal,
+          fileName: originalFileName,
+          storagePath: req.app.get('storagePath'),
+          sizes: {
+            '640x.jpg': 640,
+            '2000x.jpg': 2000
+          },
+          square: false,
+          logContext: req.logContext
+        })
       }
 
+      req.logger.info('ipfs add resp', resizeResp)
+    } catch (e) {
+      return errorResponseServerError(e)
+    }
+
+    const t = await models.sequelize.transaction()
+    // Add the created files to the DB
+    try {
       // Save dir file reference to DB
       const dir = (await models.File.findOrCreate({ where: {
         cnodeUserUUID: req.session.cnodeUserUUID,
-        multihash: dirCID,
+        multihash: resizeResp.dir.dirCID,
         sourceFile: null,
-        storagePath: dirDestPath,
+        storagePath: resizeResp.dir.dirDestPath,
         type: 'dir'
       },
       transaction: t }))[0].dataValues
 
-      // Save each file to disk + DB
-      const ipfsFileResps = ipfsAddResp.slice(0, ipfsAddResp.length - 1)
-      await Promise.all(ipfsFileResps.map(async (fileResp, i) => {
-        req.logger.info('file CID', fileResp.hash)
-
-        // Save file to disk
-        const destPath = path.join(req.app.get('storagePath'), dirCID, fileResp.hash)
-        await writeFile(destPath, imageBuffers[i])
-
-        // Save file reference to DB
+      // Save each file to the DB
+      await Promise.all(resizeResp.files.map(async (fileResp) => {
         const file = (await models.File.findOrCreate({ where: {
           cnodeUserUUID: req.session.cnodeUserUUID,
-          multihash: fileResp.hash,
-          sourceFile: fileResp.path,
-          storagePath: destPath,
-          type: 'image'
+          multihash: fileResp.multihash,
+          sourceFile: fileResp.sourceFile,
+          storagePath: fileResp.storagePath,
+          type: 'image',
+          dirMultihash: resizeResp.dir.dirCID,
+          fileName: fileResp.sourceFile.split('/').slice(-1)[0]
         },
         transaction: t }))[0].dataValues
 
@@ -118,7 +96,7 @@ module.exports = function (app) {
 
       await t.commit()
       triggerSecondarySyncs(req)
-      return successResponse({ dirCID })
+      return successResponse({ dirCID: resizeResp.dir.dirCID })
     } catch (e) {
       await t.rollback()
       return errorResponseServerError(e)
@@ -144,6 +122,11 @@ module.exports = function (app) {
   /**
    * Serve IPFS data hosted by creator node and create download route using query string pattern
    * `...?filename=<file_name.mp3>`.
+   * @param req
+   * @param req.query
+   * @param {string} req.query.filename filename to set as the content-disposition header
+   * @param {boolean} req.query.fromFS whether or not to retrieve directly from the filesystem and
+   * rehydrate IPFS asynchronously
    * @dev This route does not handle responses by design, so we can pipe the response to client.
    */
   app.get('/ipfs/:CID', async (req, res) => {
@@ -161,9 +144,7 @@ module.exports = function (app) {
 
     // Don't serve if not found in DB.
     const queryResults = await models.File.findOne({ where: {
-      multihash: CID,
-      // All other file types are valid and can be served through this route.
-      type: { [models.Sequelize.Op.ne]: 'dir' } // Op.ne = notequal
+      multihash: CID
     } })
     if (!queryResults) {
       return sendResponse(req, res, errorResponseNotFound(`No valid file found for provided CID: ${CID}`))
@@ -174,42 +155,150 @@ module.exports = function (app) {
     logger.info(`IPFS Standalone Request - ${CID}`)
     logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
-    // Conditionally rehydrate from filestorage to IPFS.
-    try {
-      await rehydrateIpfsFromFsIfNecessary(
-        req,
-        CID,
-        queryResults.storagePath
-      )
-    } catch (e) {
-      // If rehydrate throws error, return 500 without attempting to stream file.
-      return sendResponse(req, res, errorResponseServerError(e.message))
-    }
-
     // If client has provided filename, set filename in header to be auto-populated in download prompt.
     if (req.query.filename) {
       res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
     }
 
-    // Stream file to client.
-    try {
-      // Cat 1 byte of CID in ipfs to determine if file exists
-      // If the request takes under 500ms, stream the file from ipfs
-      // else if the request takes over 500ms, throw an error and stream the file from file system
-      await ipfsSingleByteCat(CID, req, 500)
+    if (req.query.fromFS && req.query.fromFS === 'true') {
+      logger.info(`Retrieving directly from filesystem`)
+      // Retrieves the file directly from the filesystem rather than checking IPFS first
 
-      // Stream file from ipfs if cat one byte takes under 500ms
-      // If catReadableStream() promise is rejected, throw an error and stream from file system
-      await new Promise((resolve, reject) => {
-        req.app.get('ipfsAPI').catReadableStream(CID)
-          .on('data', streamData => { res.write(streamData) })
-          .on('end', () => { res.end(); resolve() })
-          .on('error', e => { reject(e) })
-      })
-    } catch (e) {
-      // ipfsCatSingleByte took over 500ms, try streaming from file system and
-      // return the response from helper method
+      // Fire-and-forget rehydration
+      rehydrateIpfsFromFsIfNecessary(
+        req,
+        CID,
+        queryResults.storagePath
+      )
+
       return streamFromFileSystem(req, res, queryResults.storagePath)
+    } else {
+      logger.info(`Attempting to retrieve from IPFS`)
+      // Retrieves the file from IPFS and falls back to the filesystem if unavailable
+
+      // Conditionally rehydrate from filestorage to IPFS.
+      try {
+        await rehydrateIpfsFromFsIfNecessary(
+          req,
+          CID,
+          queryResults.storagePath
+        )
+      } catch (e) {
+        // If rehydrate throws error, return 500 without attempting to stream file.
+        return sendResponse(req, res, errorResponseServerError(e.message))
+      }
+
+      // Stream file to client.
+      try {
+        // Cat 1 byte of CID in ipfs to determine if file exists
+        // If the request takes under 500ms, stream the file from ipfs
+        // else if the request takes over 500ms, throw an error and stream the file from file system
+        await ipfsSingleByteCat(CID, req, 500)
+
+        // Stream file from ipfs if cat one byte takes under 500ms
+        // If catReadableStream() promise is rejected, throw an error and stream from file system
+        await new Promise((resolve, reject) => {
+          req.app.get('ipfsAPI').catReadableStream(CID)
+            .on('data', streamData => { res.write(streamData) })
+            .on('end', () => { res.end(); resolve() })
+            .on('error', e => { reject(e) })
+        })
+      } catch (e) {
+        // ipfsCatSingleByte took over 500ms, try streaming from file system and
+        // return the response from helper method
+        return streamFromFileSystem(req, res, queryResults.storagePath)
+      }
+    }
+  })
+
+  /**
+   * Serve images hosted by creator node on IPFS.
+   * @param req
+   * @param req.query
+   * @param {string} req.query.filename the actual filename to retrieve w/in the IPFS directory (e.g. 480x480.jpg)
+   * @param {boolean} req.query.fromFS whether or not to retrieve directly from the filesystem and
+   * rehydrate IPFS asynchronously
+   * @dev This route does not handle responses by design, so we can pipe the gateway response.
+   */
+  app.get('/ipfs/:dirCID/:filename', async (req, res) => {
+    if (!(req.params && req.params.dirCID && req.params.filename)) {
+      return sendResponse(req, res, errorResponseBadRequest(`Invalid request, no multihash provided`))
+    }
+
+    // Do not act as a public gateway. Only serve IPFS files that are tracked by this creator node.
+    const dirCID = req.params.dirCID
+    const filename = req.params.filename
+    const ipfsPath = `${dirCID}/${filename}`
+
+    // Don't serve if not found in DB.
+    // Query for the file based on the dirCID and filename
+    const queryResults = await models.File.findOne({ where: {
+      dirMultihash: dirCID,
+      fileName: filename
+    } })
+    if (!queryResults) {
+      return sendResponse(
+        req,
+        res,
+        errorResponseNotFound(`No valid file found for provided dirCID: ${dirCID} and filename: ${filename}`)
+      )
+    }
+    // Lop off the last bit of the storage path (the child CID)
+    // to get the parent storage path for IPFS rehydration
+    const parentStoragePath = queryResults.storagePath.split('/').slice(0, -1).join('/')
+
+    redisClient.incr('ipfsStandaloneReqs')
+    const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
+    logger.info(`IPFS Standalone Request - ${ipfsPath}`)
+    logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
+
+    if (req.query.fromFS && req.query.fromFS === 'true') {
+      logger.info(`Retrieving directly from filesystem`)
+      // Retrieves the file directly from the filesystem rather than checking IPFS first
+
+      // Fire-and-forget rehydration
+      rehydrateIpfsFromFsIfNecessary(
+        req,
+        dirCID,
+        parentStoragePath,
+        filename
+      )
+
+      return streamFromFileSystem(req, res, queryResults.storagePath)
+    } else {
+      logger.info(`Attempting to retrieve from IPFS`)
+      // Retrieves the file from IPFS and falls back to the filesystem if unavailable
+
+      // Conditionally re-add from filestorage to IPFS
+      try {
+        await rehydrateIpfsFromFsIfNecessary(
+          req,
+          dirCID,
+          parentStoragePath,
+          filename
+        )
+      } catch (e) {
+        // If rehydrate throws error, return 500 without attempting to stream file.
+        return sendResponse(req, res, errorResponseServerError(e.message))
+      }
+
+      try {
+        // Cat 1 byte of CID in ipfs to determine if file exists
+        // If the request takes under 500ms, stream the file from ipfs
+        // else if the request takes over 500ms, throw an error and stream the file from file system
+        await ipfsSingleByteCat(ipfsPath, req, 500)
+
+        await new Promise((resolve, reject) => {
+          req.app.get('ipfsAPI').catReadableStream(ipfsPath)
+            .on('data', streamData => { res.write(streamData) })
+            .on('end', () => { res.end(); resolve() })
+            .on('error', e => { reject(e) })
+        })
+      } catch (e) {
+        // ipfsCatSingleByte took over 500ms, try streaming from file system and
+        // return the response from helper method
+        return streamFromFileSystem(req, res, queryResults.storagePath)
+      }
     }
   })
 
@@ -234,59 +323,4 @@ module.exports = function (app) {
       return sendResponse(req, res, errorResponseServerError(e.message))
     }
   }
-
-  /**
-   * Serve images hosted by creator node on IPFS.
-   * @dev This route does not handle responses by design, so we can pipe the gateway response.
-   */
-  app.get('/ipfs/:dirCID/:filename', async (req, res) => {
-    if (!(req.params && req.params.dirCID && req.params.filename)) {
-      return sendResponse(req, res, errorResponseBadRequest(`Invalid request, no multihash provided`))
-    }
-
-    // Do not act as a public gateway. Only serve IPFS files that are tracked by this creator node.
-    const dirCID = req.params.dirCID
-    const filename = req.params.filename
-
-    const queryResults = await models.File.findOne({ where: {
-      multihash: dirCID,
-      type: 'dir'
-    } })
-    if (!queryResults) {
-      return sendResponse(req, res, errorResponseNotFound(`No dir entry found for provided dirCID: ${dirCID}`))
-    }
-
-    // Conditionally re-add from filestorage to IPFS
-    try {
-      await rehydrateIpfsFromFsIfNecessary(
-        req,
-        dirCID,
-        queryResults.storagePath,
-        filename
-      )
-    } catch (e) {
-      // If rehydrate throws error, return 500 without attempting to stream file.
-      return sendResponse(req, res, errorResponseServerError(e.message))
-    }
-
-    // TODO - check if file with filename is also stored in CNODE
-
-    const ipfsPath = `${dirCID}/${filename}`
-
-    redisClient.incr('ipfsStandaloneReqs')
-    const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
-    logger.info(`IPFS Standalone Request - ${ipfsPath}`)
-    logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
-
-    try {
-      await new Promise((resolve, reject) => {
-        req.app.get('ipfsAPI').catReadableStream(ipfsPath)
-          .on('data', streamData => { res.write(streamData) })
-          .on('end', () => { res.end(); resolve() })
-          .on('error', e => { reject(e) })
-      })
-    } catch (e) {
-      return sendResponse(req, res, errorResponseServerError(e.message))
-    }
-  })
 }

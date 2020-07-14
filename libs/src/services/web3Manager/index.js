@@ -101,9 +101,8 @@ class Web3Manager {
    * @param {string} data
    */
   async sign (data) {
-    const account = this.getWalletAddress()
-
     if (this.useExternalWeb3) {
+      const account = this.getWalletAddress()
       if (this.isServer) {
         return this.web3.eth.sign(this.web3.utils.fromUtf8(data), account)
       } else {

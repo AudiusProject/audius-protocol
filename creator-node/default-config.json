@@ -15,7 +15,7 @@
   "rateLimitingMetadataReqLimit": 3000,
   "rateLimitingImageReqLimit": 6000,
   "rateLimitingTrackReqLimit": 6000,
-  "maxAudioFileSizeBytes":250000000,
+  "maxAudioFileSizeBytes":1000000000,
   "maxMemoryFileSizeBytes":50000000,
   "serviceLatitude": "",
   "serviceLongitude": "",
@@ -35,5 +35,8 @@
   "debounceTime": 30000,
   "discoveryProviderWhitelist": "http://docker.for.mac.localhost:5000",
   "userBlacklist": "",
-  "trackBlacklist": ""
+  "trackBlacklist": "",
+  "dataRegistryAddress": "",
+  "dataProviderUrl": "http://docker.for.mac.localhost:8545",
+  "dataNetworkId": ""
 }

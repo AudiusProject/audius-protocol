@@ -4,8 +4,8 @@ const fs = require('fs')
 const models = require('./models')
 
 class Utils {
-  static verifySignature (data, signature) {
-    return recoverPersonalSignature({ data: data, sig: signature })
+  static verifySignature (data, sig) {
+    return recoverPersonalSignature({ data, sig })
   }
 
   static async timeout (ms) {
@@ -132,7 +132,7 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
     req.logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding dir ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`)
     let findOriginalFileQuery = await models.File.findAll({
       where: {
-        storagePath: { [models.Sequelize.Op.like]: `%${multihash}%` },
+        dirMultihash: multihash,
         type: 'image'
       }
     })
@@ -166,18 +166,18 @@ async function rehydrateIpfsDirFromFsIfNecessary (req, dirHash) {
   req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, dirHash: ${dirHash}`)
   let findOriginalFileQuery = await models.File.findAll({
     where: {
-      storagePath: { [models.Sequelize.Op.like]: `%${dirHash}%` },
+      dirMultihash: dirHash,
       type: 'image'
     }
   })
 
   let rehydrateNecessary = false
   for (let entry of findOriginalFileQuery) {
-    let sourcePath = entry.sourceFile
-    let ipfsPath = `${dirHash}/${sourcePath}`
+    let filename = entry.fileName
+    let ipfsPath = `${dirHash}/${filename}`
     req.logger.info(`rehydrateIpfsDirFromFsIfNecessary, ipfsPath: ${ipfsPath}`)
     try {
-      ipfsSingleByteCat(ipfsPath, req)
+      await ipfsSingleByteCat(ipfsPath, req)
     } catch (e) {
       rehydrateNecessary = true
       req.logger.info(`rehydrateIpfsDirFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)

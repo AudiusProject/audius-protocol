@@ -200,6 +200,13 @@ const upload = multer({
   storage: memoryStorage
 })
 
+// Simple temp storage for metadata/generic files
+const tempDiskStorage = multer.diskStorage({})
+const uploadTempDiskStorage = multer({
+  limits: { fileSize: MAX_MEMORY_FILE_SIZE },
+  storage: tempDiskStorage
+})
+
 // Custom on-disk storage for track files to prep for segmentation
 const trackDiskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -238,8 +245,28 @@ const trackFileUpload = multer({
   }
 })
 
+const handleTrackContentUpload = (req, res, next) => {
+  trackFileUpload.single('file')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        req.fileSizeError = err
+      }
+    }
+    next()
+  })
+}
+
 function getFileExtension (fileName) {
   return (fileName.lastIndexOf('.') >= 0) ? fileName.substr(fileName.lastIndexOf('.')).toLowerCase() : ''
 }
 
-module.exports = { saveFileFromBuffer, saveFileToIPFSFromFS, saveFileForMultihash, removeTrackFolder, upload, trackFileUpload }
+module.exports = {
+  saveFileFromBuffer,
+  saveFileToIPFSFromFS,
+  saveFileForMultihash,
+  removeTrackFolder,
+  upload,
+  uploadTempDiskStorage,
+  trackFileUpload,
+  handleTrackContentUpload
+}

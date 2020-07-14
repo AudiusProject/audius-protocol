@@ -100,3 +100,15 @@ for section in shared_config.sections():
     for static_item in shared_config.items(section):
         static_key = static_item[0]
         env_config_update(shared_config, section, static_key)
+
+try:
+    owner_wallet = shared_config['delegate']['owner_wallet']
+    private_key = shared_config['delegate']['private_key']
+
+    if not owner_wallet or not private_key:
+        raise RuntimeError()
+
+except (KeyError, RuntimeError) as e:
+    raise RuntimeError(f"""
+    Missing delegate owner wallet ({owner_wallet}) and/or delgate private key ({private_key}): {e}
+    """)

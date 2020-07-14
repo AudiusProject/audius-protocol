@@ -13,11 +13,21 @@ const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const BlacklistManager = require('./blacklistManager')
 
+const exitWithError = (...msg) => {
+  logger.error(...msg)
+  process.exit(1)
+}
+
 const initAudiusLibs = async () => {
   const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
     config.get('ethProviderUrl'),
     config.get('ethNetworkId'),
     /* requiresAccount */ false
+  )
+  const dataWeb3 = await AudiusLibs.Utils.configureWeb3(
+    config.get('dataProviderUrl'),
+    null,
+    false
   )
   const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
     ? new Set(config.get('discoveryProviderWhitelist').split(','))
@@ -30,7 +40,15 @@ const initAudiusLibs = async () => {
       ethWeb3,
       config.get('ethOwnerWallet')
     ),
-    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true, discoveryProviderWhitelist)
+    web3Config: {
+      registryAddress: config.get('dataRegistryAddress'),
+      useExternalWeb3: true,
+      externalWeb3Config: {
+        web3: dataWeb3,
+        ownerWallet: config.get('delegateOwnerWallet')
+      }
+    },
+    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist)
   })
   await audiusLibs.init()
   return audiusLibs
@@ -38,8 +56,7 @@ const initAudiusLibs = async () => {
 
 const configFileStorage = () => {
   if (!config.get('storagePath')) {
-    logger.error('Must set storagePath to use for content repository.')
-    process.exit(1)
+    exitWithError('Must set storagePath to use for content repository.')
   }
   return (path.resolve('./', config.get('storagePath')))
 }
@@ -47,8 +64,7 @@ const configFileStorage = () => {
 const initIPFS = async () => {
   const ipfsAddr = config.get('ipfsHost')
   if (!ipfsAddr) {
-    logger.error('Must set ipfsAddr')
-    process.exit(1)
+    exitWithError('Must set ipfsAddr')
   }
   const ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
   const ipfsLatest = ipfsClientLatest({ host: ipfsAddr, port: config.get('ipfsPort'), protocol: 'http' })
@@ -71,8 +87,7 @@ const runDBMigrations = async () => {
     await runMigrations()
     logger.info('Migrations completed successfully')
   } catch (err) {
-    logger.error('Error in migrations: ', err)
-    process.exit(1)
+    exitWithError('Error in migrations: ', err)
   }
 }
 
@@ -89,6 +104,14 @@ const startApp = async () => {
   logger.info('Configuring service...')
 
   await config.asyncConfig()
+
+  // fail if delegateOwnerWallet & delegatePrivateKey not present
+  const delegateOwnerWallet = config.get('delegateOwnerWallet')
+  const delegatePrivateKey = config.get('delegatePrivateKey')
+
+  if (!delegateOwnerWallet || !delegatePrivateKey) {
+    exitWithError('Cannot startup without delegateOwnerWallet and delegatePrivateKey')
+  }
   const storagePath = configFileStorage()
 
   const { ipfs, ipfsLatest } = await initIPFS()
