@@ -113,10 +113,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
 
   const storagePath = req.app.get('storagePath')
   const filePath = expectedStoragePath.replace(storagePath, '')
-  req.logger.info('storage and file path', {
-    storagePath,
-    filePath
-  })
+
   // Check if the file we are trying to copy is in a directory
   // and if so, create the directory first
   // E.g if the path is /file_storage/QmABC/Qm123, we check if
@@ -130,37 +127,33 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
 
   // If file not already stored, fetch from IPFS and store at storagePath.
   let fileBuffer = null
-  // req.logger.info(`Storing file at ${expectedStoragePath} for track multihash ${multihash}`)
 
   // If multihash already available on local INode, cat file from local ipfs node
-  req.logger.info(`checking if ${multihash} already available on local ipfs node`)
+  req.logger.debug(`checking if ${multihash} already available on local ipfs node`)
   try {
-    fileBuffer = await Utils.ipfsCat(multihash, req, 1000)
-    req.logger.info(`Retrieved file for ${multihash} from local ipfs node`)
+    fileBuffer = await Utils.ipfsCat(multihash, req, 500)
+    req.logger.debug(`Retrieved file for ${multihash} from local ipfs node`)
     // Write file to disk.
-    req.logger.info(`writing file to ${expectedStoragePath}...`)
     await writeFile(expectedStoragePath, fileBuffer)
-    req.logger.info(`wrote file to ${expectedStoragePath}`)
+    req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs cat`)
   } catch (e) {
     req.logger.info(`Multihash ${multihash} is not available on local ipfs node`)
   }
 
   // If file not already available on local INode, fetch from IPFS.
   if (fileBuffer === null) {
-    req.logger.info(`Attempting to get ${multihash} from IPFS`)
+    req.logger.debug(`Attempting to get ${multihash} from IPFS`)
     let output
     try {
-      output = await Utils.ipfsGet(multihash, req, 2000)
+      output = await Utils.ipfsGet(multihash, req, 1000)
       if (output.length !== 1) throw new Error(`provided multihash ${multihash} must map to 1 file`)
       fileBuffer = output[0].content
-      req.logger.info(`retrieved file for multihash ${multihash} from path ${output[0].path}`)
+      req.logger.debug(`retrieved file for multihash ${multihash} from path ${output[0].path}`)
       // Write file to disk.
-      req.logger.info(`writing file to ${expectedStoragePath}...`)
       await writeFile(expectedStoragePath, fileBuffer)
-      req.logger.info(`wrote file to ${expectedStoragePath}`)
+      req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs get`)
     } catch (e) {
       req.logger.info(`Failed to retrieve file for multihash ${multihash} from IPFS`)
-      // throw new Error(`Failed to retrieve file for multihash ${multihash} from IPFS`)
     }
   }
 
@@ -169,7 +162,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     try {
       let response
       // ..replace(/\/$/, "") removes trailing slashes
-      req.logger.info(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
+      req.logger.debug(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
       const urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
 
       // TODO make this more parallel
@@ -180,7 +173,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
             method: 'get',
             url,
             responseType: 'stream',
-            timeout: 3000, /*ms*/
+            timeout: 5000, /*ms*/
             params: { onlyFS: true }
           })
           if (resp.data) {
@@ -191,7 +184,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
           continue
         }
       }
-      req.logger.info(`writing file to ${expectedStoragePath}...`)
+
       if (!response || !response || !response.data) {
         throw new Error(`Couldn't find files on other creator nodes via promiseRace`)
       }
@@ -199,12 +192,9 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       await response.data.pipe(fs.createWriteStream(expectedStoragePath))
       req.logger.info(`wrote file to ${expectedStoragePath}`)
     } catch (e) {
-      console.error('error in race requests', e)
       throw new Error(`Failed to retrieve file for multihash ${multihash} from other creator node gateways: ${e.message}`)
     }
   }
-
-  req.logger.info(`\nAdded file: ${multihash} at ${expectedStoragePath}`)
   return expectedStoragePath
 }
 

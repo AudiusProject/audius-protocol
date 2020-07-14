@@ -208,9 +208,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         config.get('userMetadataNodeUrl'),
         ...userReplicaSet.filter(url => url !== myCnodeEndpoint)
       ])]
-      req.logger.info('userREplicaSet', userReplicaSet)
-      req.logger.info('myCnodeEndpoint', myCnodeEndpoint)
-      req.logger.info('gatewaysToTry', gatewaysToTry)
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
         throw new Error(`Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`)
       }
