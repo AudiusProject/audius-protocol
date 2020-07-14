@@ -144,8 +144,9 @@ class ServiceSelection {
   }
 
   /**
-   * Finds all selectable services
-   * Note: this method is potentially slow. If you need just a single service, prefer calling .select()
+   * Finds all selectable services (respecting whitelist, health checks & timeouts).
+   * Note: this method is potentially slow.
+   * If you need just a single service, prefer calling `.select()`
    */
   async findAll () {
     // Get all the services
