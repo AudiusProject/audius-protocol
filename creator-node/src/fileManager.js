@@ -118,10 +118,16 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
   // and if so, create the directory first
   // E.g if the path is /file_storage/QmABC/Qm123, we check if
   // /QmABC/Qm123 contains more than 2 parts and if so, it's a directory
+  // calling this on an existing directory throws an error but does not
+  // override the directory with a new one
   if (filePath.split('/').length > 2) {
     const dir = path.dirname(expectedStoragePath)
     if (dir) {
-      await mkdir(dir, { recursive: true })
+      try {
+        await mkdir(dir, { recursive: true })
+      } catch (e) {
+        // folder path already exists
+      }
     }
   }
 
@@ -173,7 +179,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
             method: 'get',
             url,
             responseType: 'stream',
-            timeout: 2000, /* ms */
+            timeout: 2000 /* ms */
           })
           if (resp.data) {
             response = resp
@@ -194,7 +200,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
         response.data.on('end', () => { resolve() })
         response.data.on('error', err => { destinationStream.end(); reject(err) })
       })
-  
+
       req.logger.info(`wrote file to ${expectedStoragePath}`)
     } catch (e) {
       throw new Error(`Failed to retrieve file for multihash ${multihash} from other creator node gateways: ${e.message}`)
