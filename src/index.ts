@@ -1,6 +1,7 @@
 import express from 'express'
 import path from 'path'
 
+import { startup } from './onStartup'
 import { BedtimeFormat } from './servlets/bedtime/types'
 import { MetaTagFormat } from './servlets/metaTags/types'
 
@@ -99,6 +100,7 @@ const start = async () => {
   await libs.init()
   app.listen(PORT, () => {
     console.log(`Listening on ${PORT}`)
+    startup()
   })
 }
 

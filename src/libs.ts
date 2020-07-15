@@ -17,7 +17,6 @@ const libs = new AudiusLibs({
     E.ETH_OWNER_WALLET
   ),
   discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
-    true,
     DISCOVERY_PROVIDER_WHITELIST
   )
 })

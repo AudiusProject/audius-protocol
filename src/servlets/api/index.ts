@@ -1,15 +1,28 @@
 import express from 'express'
 import libs from '../../libs'
+import { onStartup } from '../../onStartup'
 
 import { shuffle } from '../utils/helpers'
-import { DiscoveryService } from './types'
 
-const E = process.env
-const DISCOVERY_PROVIDER_WHITELIST = E.DISCOVERY_PROVIDER_WHITELIST
-  ? new Set(E.DISCOVERY_PROVIDER_WHITELIST.split(','))
-  : null
+const LOG_PREFIX = 'servelet: api | '
+const DISCOVERY_PROVIDER_REFRESH_INTERVAL = 10 * 60 * 1000 // ten minutes
 
 export const router = express.Router()
+
+let usableDiscoveryProviders: string[] = []
+
+const updateDiscoveryProviders = async () => {
+  const services = await libs.discoveryProvider.serviceSelector.findAll()
+  console.info(LOG_PREFIX, `Updating internal API hosts ${services}`)
+  usableDiscoveryProviders = services
+}
+
+onStartup(() => {
+  updateDiscoveryProviders()
+  setInterval(() => {
+    updateDiscoveryProviders()
+  }, DISCOVERY_PROVIDER_REFRESH_INTERVAL)
+})
 
 /**
  * Gets a randomized list of discovery service endpoints
@@ -17,15 +30,7 @@ export const router = express.Router()
 router.get('/', async (
   req: express.Request,
   res: express.Response) => {
-    const discoveryServices = await libs.ServiceProvider.listDiscoveryProviders()
-
-    const validEndpoints = discoveryServices.map((d: DiscoveryService) => {
-      if (DISCOVERY_PROVIDER_WHITELIST && !DISCOVERY_PROVIDER_WHITELIST.has(d.endpoint)) {
-        return null
-      }
-      return d.endpoint
-    }).filter(Boolean)
-
-    const randomizedEndpoints = shuffle(validEndpoints)
+    console.info(LOG_PREFIX, `Serving API hosts: ${usableDiscoveryProviders}`)
+    const randomizedEndpoints = shuffle(usableDiscoveryProviders)
     return res.json({ data: randomizedEndpoints })
 })
