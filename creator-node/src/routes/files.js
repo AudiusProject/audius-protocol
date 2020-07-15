@@ -17,7 +17,7 @@ const streamFromFileSystem = async (req, res, path) => {
   try {
     // If file cannot be found on disk, throw error
     if (!fs.existsSync(path)) {
-      return sendResponse(req, res, errorResponseServerError('File could not be found on disk.'))
+      throw new Error('File could not be found on disk.')
     }
 
     // Stream file from file system
@@ -41,7 +41,7 @@ const streamFromFileSystem = async (req, res, path) => {
     })
   } catch (e) {
     // Unable to stream from file system. Throw a server error message
-    return sendResponse(req, res, errorResponseServerError(e.message))
+    throw e
   }
 }
 
