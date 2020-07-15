@@ -58,6 +58,7 @@ const run = async () => {
     let audiusLibs = await initAudiusLibs(true)
     let ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
     const ethAccounts = await ethWeb3.eth.getAccounts()
+    let envPath
 
     switch (args[2]) {
       case 'init':
@@ -120,19 +121,27 @@ const run = async () => {
         break
 
       case 'update-cnode-1-delegatewallet':
-        await _updateCnode1DelegateOwnerWallet(ethAccounts)
+        // Account 1 - Cnode 1 Delegate Wallet Update
+        envPath = '../creator-node/docker-compose/development.env'
+        await _updateCnodeDelegateWallet(ethAccounts[1], envPath, envPath)
         break
 
       case 'update-cnode-2-delegatewallet':
-        await _updateCnode2DelegateOwnerWallet(ethAccounts)
+        // Account 2 - Cnode 2 Delegate Wallet Update
+        envPath = '../creator-node/docker-compose/dev/development2.env'
+        await _updateCnodeDelegateWallet(ethAccounts[2], envPath, envPath)
         break
 
       case 'update-cnode-3-delegatewallet':
-        await _updateCnode3DelegateOwnerWallet(ethAccounts)
+        // Account 4 - Cnode 3 Delegate Wallet Update
+        envPath = '../creator-node/docker-compose/dev/development3.env'
+        await _updateCnodeDelegateWallet(ethAccounts[4], envPath, envPath)
         break
 
       case 'update-cnode-4-delegatewallet':
-        await _updateCnode4DelegateOwnerWallet(ethAccounts)
+        // Account 5 - Cnode 4 Delegate Wallet Update
+        envPath = '../creator-node/docker-compose/dev/development4.env'
+        await _updateCnodeDelegateWallet(ethAccounts[5], envPath, envPath)
         break
 
       case 'init-all':
@@ -192,45 +201,12 @@ const _registerCnode4 = async (audiusLibs, ethAccounts) => {
   await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint4, amountOfAuds)
 }
 
-// Account 1 - Cnode 1 Delegate Wallet Update
-const _updateCnode1DelegateOwnerWallet = async (ethAccounts) => {
-  let acct = ethAccounts[1].toLowerCase()
-  let readPath = '../creator-node/docker-compose/development.env'
-  let writePath = readPath
+const _updateCnodeDelegateWallet = async (account, readPath, writePath = readPath) => {
+  let acct = account.toLowerCase()
   let ganacheEthAccounts = await getEthContractAccounts()
   // PKey is now recovered
   let delegateWalletPkey = ganacheEthAccounts['private_keys'][`${acct}`]
   await _updateDelegateOwnerWalletInDockerEnv(readPath, writePath, acct, delegateWalletPkey)
-}
-
-// Account 2 - Cnode 2 Delegate Wallet Update
-const _updateCnode2DelegateOwnerWallet = async (ethAccounts) => {
-  let acct = ethAccounts[2].toLowerCase()
-  let readPath = '../creator-node/docker-compose/dev/development2.env'
-  let ganacheEthAccounts = await getEthContractAccounts()
-  // PKey is now recovered
-  let delegateWalletPkey = ganacheEthAccounts['private_keys'][`${acct}`]
-  await _updateDelegateOwnerWalletInDockerEnv(readPath, readPath, acct, delegateWalletPkey)
-}
-
-// Account 4 - Cnode 3 Delegate Wallet Update
-const _updateCnode3DelegateOwnerWallet = async (ethAccounts) => {
-  let acct = ethAccounts[4].toLowerCase()
-  let readPath = '../creator-node/docker-compose/dev/development3.env'
-  let ganacheEthAccounts = await getEthContractAccounts()
-  // PKey is now recovered
-  let delegateWalletPkey = ganacheEthAccounts['private_keys'][`${acct}`]
-  await _updateDelegateOwnerWalletInDockerEnv(readPath, readPath, acct, delegateWalletPkey)
-}
-
-// Account 5 - Cnode 4 Delegate Wallet Update
-const _updateCnode4DelegateOwnerWallet = async (ethAccounts) => {
-  let acct = ethAccounts[5].toLowerCase()
-  let readPath = '../creator-node/docker-compose/dev/development4.env'
-  let ganacheEthAccounts = await getEthContractAccounts()
-  // PKey is now recovered
-  let delegateWalletPkey = ganacheEthAccounts['private_keys'][`${acct}`]
-  await _updateDelegateOwnerWalletInDockerEnv(readPath, readPath, acct, delegateWalletPkey)
 }
 
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
