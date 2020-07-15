@@ -1,5 +1,5 @@
 const { sampleSize } = require('lodash')
-const { raceRequests } = require('../utils/network')
+const { raceRequests, allRequests } = require('../utils/network')
 
 /**
  * A class that assists with autoselecting services.
@@ -141,6 +141,39 @@ class ServiceSelection {
     this.decisionTree.push({ stage: 'Made A Selection', val: best })
     // If we made it this far, we found the best service! (of the rounds we tried)
     return best
+  }
+
+  /**
+   * Finds all selectable services (respecting whitelist, health checks & timeouts).
+   * Note: this method is potentially slow.
+   * If you need just a single service, prefer calling `.select()`
+   */
+  async findAll () {
+    // Get all the services
+    let services = await this.getServices()
+
+    // If a whitelist is provided, filter down to it
+    if (this.whitelist) {
+      services = this.filterToWhitelist(services)
+    }
+
+    // Key the services by their health check endpoint
+    const map = services.reduce((acc, s) => {
+      acc[ServiceSelection.getHealthCheckEndpoint(s)] = s
+      return acc
+    }, {})
+
+    try {
+      const results = await allRequests({
+        urlMap: map,
+        timeout: this.requestTimeout,
+        validationCheck: (resp) => this.isHealthy(resp, map)
+      })
+      return results
+    } catch (e) {
+      console.error(e)
+      return []
+    }
   }
 
   /** Triggers a clean up of unhealthy and backup services so they can be retried later */

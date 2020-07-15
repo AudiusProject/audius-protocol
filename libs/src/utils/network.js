@@ -109,8 +109,50 @@ async function raceRequests (
   return { respone: null, errored }
 }
 
+/**
+ * Gets the response for many requests with a timeout to each
+ * @param {object} urlMap
+ * @param {string} urlMap.key the actual URL to hit (e.g. https://resource/endpoint)
+ * @param {string} urlMap.value the identifying value (e.g. https://resource)
+ *
+ * @param {number} timeout timeout for any request to be considered bad
+ * @param {function} validationCheck a check invoked for each response.
+ *  If invalid, the response is filtered out.
+ *  (response: any) => boolean
+ */
+async function allRequests ({
+  urlMap,
+  timeout,
+  validationCheck
+}) {
+  const urls = Object.keys(urlMap)
+  const requests = urls.map(async (url, i) => {
+    return new Promise((resolve) => {
+      axios({
+        method: 'get',
+        timeout,
+        url
+      })
+        .then(response => {
+          const isValid = validationCheck(response)
+          if (isValid) {
+            resolve(urlMap[url])
+          } else {
+            resolve(null)
+          }
+        })
+        .catch((thrown) => {
+          resolve(null)
+        })
+    })
+  })
+  const responses = (await Promise.all(requests)).filter(Boolean)
+  return responses
+}
+
 module.exports = {
   timeRequest,
   timeRequests,
-  raceRequests
+  raceRequests,
+  allRequests
 }
