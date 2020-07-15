@@ -4,8 +4,8 @@ const { rehydrateIpfsFromFsIfNecessary, rehydrateIpfsDirFromFsIfNecessary } = re
 const { logger: genericLogger } = require('./logging')
 
 const PROCESS_NAMES = Object.freeze({
-  rehydrateDir: 'rehydrate_dir',
-  rehydrateFs: 'rehydrate_fs'
+  rehydrate_dir: 'rehydrate_dir',
+  rehydrate_file: 'rehydrate_file'
 })
 
 class RehydrateIpfsQueue {
@@ -20,7 +20,7 @@ class RehydrateIpfsQueue {
       }
     )
 
-    this.queue.process(PROCESS_NAMES.rehydrateFs, async (job, done) => {
+    this.queue.process(PROCESS_NAMES.rehydrate_file, async (job, done) => {
       const { multihash, storagePath, filename, logContext } = job.data
 
       this.logStatus(logContext, `RehydrateIpfsQueue - Processing a rehydrateIpfsFromFsIfNecessary task for ${multihash}`)
@@ -36,7 +36,7 @@ class RehydrateIpfsQueue {
       }
     })
 
-    this.queue.process(PROCESS_NAMES.rehydrateDir, async (job, done) => {
+    this.queue.process(PROCESS_NAMES.rehydrate_dir, async (job, done) => {
       const { multihash, logContext } = job.data
       this.logStatus(logContext, `RehydrateIpfsQueue - Processing a rehydrateIpfsDirFromFsIfNecessary task for ${multihash}`)
       try {
@@ -61,15 +61,15 @@ class RehydrateIpfsQueue {
   }
 
   /**
-   * Adds rehydrate from fs task
-   * @param {*} multihash
-   * @param {*} storagePath
-   * @param {*} logContext
+   * Adds rehydrate file task
+   * @param {string} multihash
+   * @param {string} storagePath
+   * @param {object} logContext
    */
   async addRehydrateIpfsFromFsIfNecessaryTask (multihash, storagePath, { logContext }, filename = null) {
     this.logStatus(logContext, 'RehydrateIpfsQueue - Adding a rehydrateIpfsFromFsIfNecessary task to the queue!')
     const job = await this.queue.add(
-      PROCESS_NAMES.rehydrateFs,
+      PROCESS_NAMES.rehydrate_file,
       { multihash, storagePath, filename, logContext }
     )
     this.logStatus(logContext, 'RehydrateIpfsQueue - Successfully added a rehydrateIpfsFromFsIfNecessary task!')
@@ -78,15 +78,14 @@ class RehydrateIpfsQueue {
   }
 
   /**
-   * Adds rehydrate from fs task
-   * @param {*} multihash
-   * @param {*} storagePath
-   * @param {*} logContext
+   * Adds rehydrate directory task
+   * @param {string} multihash
+   * @param {object} logContext
    */
   async addRehydrateIpfsDirFromFsIfNecessaryTask (multihash, { logContext }) {
     this.logStatus(logContext, 'RehydrateIpfsQueue - Adding a rehydrateIpfsDirFromFsIfNecessary task to the queue!')
     const job = await this.queue.add(
-      PROCESS_NAMES.rehydrateDir,
+      PROCESS_NAMES.rehydrate_dir,
       { multihash, logContext }
     )
     this.logStatus(logContext, 'RehydrateIpfsQueue - Successfully added a rehydrateIpfsDirFromFsIfNecessary task!')
