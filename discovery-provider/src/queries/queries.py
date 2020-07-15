@@ -20,6 +20,8 @@ from src.queries.query_helpers import get_current_user_id, parse_sort_param, pop
     create_followee_playlists_subquery, add_users_to_tracks, create_save_count_subquery, \
     create_repost_count_subquery
 
+from src.queries.get_users import get_users
+
 logger = logging.getLogger(__name__)
 bp = Blueprint("queries", __name__)
 
@@ -31,56 +33,8 @@ trackDedupeMaxMinutes = 10
 # Returns all users (paginated) with each user's follow count
 # Optionally filters by is_creator, wallet, or user ids
 @bp.route("/users", methods=("GET",))
-def get_users():
-    users = []
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        # Create initial query
-        base_query = session.query(User)
-        # Don't return the user if they have no wallet or handle (user creation did not finish properly on chain)
-        base_query = base_query.filter(User.is_current == True, User.wallet != None, User.handle != None)
-
-        # Process filters
-        if "is_creator" in request.args:
-            is_creator_flag = request.args.get("is_creator") == "true"
-            base_query = base_query.filter(User.is_creator == is_creator_flag)
-        if "wallet" in request.args:
-            wallet = request.args.get("wallet")
-            wallet = wallet.lower()
-            if len(wallet) == 42:
-                base_query = base_query.filter_by(wallet=wallet)
-                base_query = base_query.order_by(asc(User.created_at))
-            else:
-                logger.warning("Invalid wallet length")
-        if "handle" in request.args:
-            handle = request.args.get("handle").lower()
-            base_query = base_query.filter_by(handle_lc=handle)
-
-        # Conditionally process an array of users
-        if "id" in request.args:
-            user_id_str_list = request.args.getlist("id")
-            user_id_list = []
-            try:
-                user_id_list = [int(y) for y in user_id_str_list]
-                base_query = base_query.filter(User.user_id.in_(user_id_list))
-            except ValueError as e:
-                raise exceptions.ArgumentError("Invalid value found in user id list", e)
-        if "min_block_number" in request.args:
-            min_block_number = request.args.get("min_block_number", type=int)
-            base_query = base_query.filter(
-                User.blocknumber >= min_block_number
-            )
-        users = paginate_query(base_query).all()
-        users = helpers.query_result_to_list(users)
-
-        user_ids = list(map(lambda user: user["user_id"], users))
-
-
-        current_user_id = get_current_user_id(required=False)
-
-        # bundle peripheral info into user results
-        users = populate_user_metadata(session, user_ids, users, current_user_id)
-
+def get_users_route():
+    users = get_users(request.args.to_dict())
     return api_helpers.success_response(users)
 
 # Returns all tracks (paginated) with each track's repost count
