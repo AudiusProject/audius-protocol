@@ -20,7 +20,7 @@ class RehydrateIpfsQueue {
       }
     )
 
-    this.queue.process(PROCESS_NAMES.rehydrate_file, async (job, done) => {
+    this.queue.process(PROCESS_NAMES.rehydrate_file, config.get('rehydrateConcurrencyCount'), async (job, done) => {
       const { multihash, storagePath, filename, logContext } = job.data
 
       this.logStatus(logContext, `RehydrateIpfsQueue - Processing a rehydrateIpfsFromFsIfNecessary task for ${multihash}`)
@@ -28,7 +28,6 @@ class RehydrateIpfsQueue {
       // can instead of logging errors in rehydrate code, throw errors and handle here
       try {
         await rehydrateIpfsFromFsIfNecessary(multihash, storagePath, logContext, filename)
-        this.logStatus(logContext, `RehydrateIpfsQueue - Successfully rehydrated for ${multihash}`)
         done()
       } catch (e) {
         this.logStatus(logContext, `RehydrateIpfsQueue - Problem with processing a rehydrateIpfsFromFsIfNecessary task for ${multihash}: ${e}`)
@@ -36,12 +35,11 @@ class RehydrateIpfsQueue {
       }
     })
 
-    this.queue.process(PROCESS_NAMES.rehydrate_dir, async (job, done) => {
+    this.queue.process(PROCESS_NAMES.rehydrate_dir, config.get('rehydrateConcurrencyCount'), async (job, done) => {
       const { multihash, logContext } = job.data
       this.logStatus(logContext, `RehydrateIpfsQueue - Processing a rehydrateIpfsDirFromFsIfNecessary task for ${multihash}`)
       try {
         await rehydrateIpfsDirFromFsIfNecessary(multihash, logContext)
-        this.logStatus(logContext, `RehydrateIpfsQueue - Successfully rehydrated for ${multihash}`)
         done()
       } catch (e) {
         this.logStatus(logContext, `RehydrateIpfsQueue - Problem with processing a rehydrateIpfsDirFromFsIfNecessary task for ${multihash}: ${e}`)

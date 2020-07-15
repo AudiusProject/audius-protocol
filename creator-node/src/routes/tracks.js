@@ -450,7 +450,7 @@ module.exports = function (app) {
     // Asynchronously rehydrate and return CID. If file is not in ipfs, serve from FS
     try {
       // Rehydrate master copy if necessary
-      await RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(copyFile.multihash, copyFile.storagePath, { logContext: req.logContext })
+      RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(copyFile.multihash, copyFile.storagePath, { logContext: req.logContext })
 
       return successResponse({ isDownloadable: true, cid: copyFile.multihash })
     } catch (e) {

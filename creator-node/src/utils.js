@@ -3,8 +3,16 @@ const fs = require('fs')
 const { BufferListStream } = require('bl')
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
-
 const models = require('./models')
+
+let ipfsWithCat, ipfs
+(
+  async function () {
+    const ipfsInstances = await require('./ipfsClient')
+    ipfs = ipfsInstances.ipfs
+    ipfsWithCat = ipfsInstances.ipfsWithCat
+  }
+)()
 
 class Utils {
   static verifySignature (data, sig) {
@@ -81,12 +89,6 @@ async function getIPFSPeerId (ipfs, config) {
  * something goes wrong, an error will be thrown.
 */
 const ipfsSingleByteCat = (path, logContext, timeout = 1000) => {
-  const ipfsClient = require('ipfs-http-client-latest')
-  const ipfs = ipfsClient({
-    host: config.get('ipfsHost'),
-    port: config.get('ipfsPort'),
-    protocol: 'http'
-  })
   const logger = genericLogger.child(logContext)
 
   return new Promise(async (resolve, reject) => {
@@ -96,7 +98,7 @@ const ipfsSingleByteCat = (path, logContext, timeout = 1000) => {
       // ipfs.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
       // don't keep track of the results as this call is a proof-of-concept that the file exists in ipfs
       /* eslint-disable-next-line no-unused-vars */
-      for await (const chunk of ipfs.cat(path, { length: 1, timeout })) {
+      for await (const chunk of ipfsWithCat.cat(path, { length: 1, timeout })) {
         continue
       }
       logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
@@ -107,6 +109,7 @@ const ipfsSingleByteCat = (path, logContext, timeout = 1000) => {
     }
   })
 }
+
 /**
  * Call ipfs.cat on a path with optional timeout and length parameters
  * @param {*} path IPFS cid for file
@@ -171,8 +174,9 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
   }
 })
 
-async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, filename = null) {
-  let ipfs = req.app.get('ipfsAPI')
+async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContext, filename = null) {
+  const logger = genericLogger.child(logContext)
+
   let ipfsPath = multihash
   if (filename != null) {
     // Indicates we are retrieving a directory multihash
@@ -230,7 +234,7 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
     }
 
     try {
-      let addResp = await ipfs.add(ipfsAddArray, { pin: false })
+      let addResp = await ipfsWithCat.add(ipfsAddArray, { pin: false })
       logger.info(`rehydrateIpfsFromFsIfNecessary - addResp ${JSON.stringify(addResp)}`)
     } catch (e) {
       logger.error(`rehydrateIpfsFromFsIfNecessary - addResp ${e}, ${ipfsAddArray}`)
@@ -239,11 +243,6 @@ async function rehydrateIpfsFromFsIfNecessary (req, multihash, storagePath, file
 }
 
 async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
-  const ipfsClient = require('ipfs-http-client')
-  const ipfs = ipfsClient(
-    config.get('ipfsHost'),
-    config.get('ipfsPort')
-  )
   const logger = genericLogger.child(logContext)
 
   let findOriginalFileQuery = await models.File.findAll({

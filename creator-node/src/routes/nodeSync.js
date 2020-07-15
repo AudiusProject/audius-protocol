@@ -83,9 +83,9 @@ module.exports = function (app) {
               // to address legacy single-res image rehydration where images are stored directly under its file CID
               (file.type === 'image' && file.sourceFile === null)
             ) {
-              await RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(file.multihash, file.storagePath, { logContext: req.logContext })
+              RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(file.multihash, file.storagePath, { logContext: req.logContext })
             } else if (file.type === 'dir') {
-              await RehydrateIpfsQueue.addRehydrateIpfsDirFromFsIfNecessaryTask(file.multihash, { logContext: req.logContext })
+              RehydrateIpfsQueue.addRehydrateIpfsDirFromFsIfNecessaryTask(file.multihash, { logContext: req.logContext })
             }
           } catch (e) {
             req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}, ${e}`)
