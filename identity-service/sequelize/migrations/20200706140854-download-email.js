@@ -35,7 +35,6 @@ module.exports = {
       }))
 
       await models.UserEvents.bulkCreate(toInsert, { transaction, ignoreDuplicates: true })
-      console.log('finished')
       await models.UserEvents.update({
         needsRecoveryEmail: false,
         hasSignedInNativeMobile: true,
