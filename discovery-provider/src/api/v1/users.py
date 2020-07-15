@@ -3,7 +3,7 @@ from flask import Flask, Blueprint
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
 from src import api_helpers
-from src.api.v1.helpers import encode_int_id, decode_string_id, extend_track
+from src.api.v1.helpers import decode_with_abort, extend_track
 
 logger = logging.getLogger(__name__)
 
@@ -124,19 +124,12 @@ tracks_response = ns.model("tracks_responsek", {
     "version": fields.Nested(version_metadata, required=True),
 })
 
-
-def decode_with_abort(identifier):
-    decoded = decode_string_id(identifier)
-    if decoded is None:
-        ns.abort(404, "Invalid ID: '{}'.".format(identifier))
-    return decoded
-
 @ns.route("/<string:user_id>/tracks")
 class TrackList(Resource):
     @ns.marshal_with(tracks_response)
     def get(self, user_id):
         """Fetch a list of tracks for a user."""
-        user_id = decode_with_abort(user_id)
+        user_id = decode_with_abort(user_id, ns)
         args = {"user_id": user_id}
         tracks = get_tracks(args)
         tracks = list(map(lambda t: extend_track(t), tracks))
