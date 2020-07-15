@@ -1985,7 +1985,7 @@ def get_remixes_of(track_id):
             Track.is_current == True,
             Track.track_id == track_id
         ).first()
-        
+
         if (parent_track == None):
             return api_helpers.error_response("Invalid track_id provided", 400)
 
@@ -1998,7 +1998,7 @@ def get_remixes_of(track_id):
         repost_count_subquery = create_repost_count_subquery(session, RepostType.track)
 
         # Get the 'children' remix tracks
-        # Use the track owner id to fetch reposted/saved tracks returned first 
+        # Use the track owner id to fetch reposted/saved tracks returned first
         base_query = (
             session.query(
                 Track
