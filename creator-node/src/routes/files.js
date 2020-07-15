@@ -29,6 +29,7 @@ const streamFromFileSystem = async (req, res, path) => {
     if (range && range[0]) {
       const { start, end } = range[0]
       fileStream = fs.createReadStream(path, { start, end })
+      res.status(206)
     } else {
       fileStream = fs.createReadStream(path)
     }
@@ -111,6 +112,7 @@ const getCID = async (req, res) => {
         stream = req.app.get('ipfsAPI').catReadableStream(
           CID, { offset: start, length: end - start + 1 }
         )
+        res.status(206)
       } else {
         stream = req.app.get('ipfsAPI').catReadableStream(CID)
       }
