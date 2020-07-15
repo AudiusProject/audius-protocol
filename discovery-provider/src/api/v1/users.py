@@ -3,6 +3,9 @@ from flask import Flask, Blueprint
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
 from src import api_helpers
+from src.api.v1.helpers import encode_int_id, decode_string_id, extend_track
+
+logger = logging.getLogger(__name__)
 
 ns = Namespace('users', description='User related operations')
 
@@ -82,6 +85,7 @@ track = ns.model('Track', {
     "genre": fields.String,
     "has_current_user_reposted": fields.Boolean(required=True),
     "has_current_user_saved": fields.Boolean(required=True),
+    "id": fields.String(required=True),
     "is_current": fields.Boolean(required=True),
     "is_delete": fields.Boolean(required=True),
     "is_unlisted": fields.Boolean(required=True),
@@ -91,7 +95,7 @@ track = ns.model('Track', {
     "license": fields.String,
     "metadata_multihash": fields.String(required=True),
     "mood": fields.String,
-    "owner_id": fields.Integer(required=True),
+    "owner_id": fields.String(required=True),
     "release_date": fields.String,
     "remix_of": fields.Nested(remix_parent),
     "repost_count": fields.Integer(required=True),
@@ -100,7 +104,6 @@ track = ns.model('Track', {
     "stem_of": fields.Nested(stem_parent),
     "tags": fields.String,
     "title": fields.String(required=True),
-    "track_id": fields.Integer(required=True),
     "track_segments": fields.List(fields.Nested(track_segment)),
     "updated_at": fields.String,
 })
@@ -121,14 +124,22 @@ tracks_response = ns.model("tracks_responsek", {
     "version": fields.Nested(version_metadata, required=True),
 })
 
-@ns.route("/<int:user_id>/tracks")
+
+def decode_with_abort(identifier):
+    decoded = decode_string_id(identifier)
+    if decoded is None:
+        ns.abort(404, "Invalid ID: '{}'.".format(identifier))
+    return decoded
+
+@ns.route("/<string:user_id>/tracks")
 class TrackList(Resource):
     @ns.marshal_with(tracks_response)
     def get(self, user_id):
         """Fetch a list of tracks for a user."""
+        user_id = decode_with_abort(user_id)
         args = {"user_id": user_id}
         tracks = get_tracks(args)
-
+        tracks = list(map(lambda t: extend_track(t), tracks))
         # Don't convert the success response to JSON
         response = api_helpers.success_response(tracks, 200, False)
         return response
