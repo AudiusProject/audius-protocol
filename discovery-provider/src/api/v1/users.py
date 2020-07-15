@@ -4,37 +4,37 @@ from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
 from src import api_helpers
 
-logger = logging.getLogger(__name__)
-
 ns = Namespace('users', description='User related operations')
 
-track_segment = {
+# TODO:
+# - Move these models into the models folder. There's some import issue preventing that right now.
+# - Add user to track model once we've created the user model
+
+track_segment = ns.model('track_segment', {
     "duration": fields.Float(required=True),
     "multihash": fields.String(required=True)
-}
-
-track_segment_model = ns.model('track_segment', track_segment)
+})
 
 track_repost = ns.model('track_repost', {
-    "blockhash":	fields.String(required=True),
+    "blockhash": fields.String(required=True),
     "blocknumber": fields.Integer(required=True),
     "created_at": fields.String(required=True),
-    "is_current":	fields.Boolean(required=True),
-    "is_delete":	fields.Boolean(required=True),
-    "repost_item_id":	fields.Integer(required=True),
-    "repost_type":	fields.String(required=True),
-    "user_id":	fields.Integer(required=True)
+    "is_current": fields.Boolean(required=True),
+    "is_delete": fields.Boolean(required=True),
+    "repost_item_id": fields.Integer(required=True),
+    "repost_type": fields.String(required=True),
+    "user_id": fields.Integer(required=True)
 })
 
 track_favorite = ns.model('track_favorite', {
-    "blockhash":	fields.String(required=True),
+    "blockhash": fields.String(required=True),
     "blocknumber": fields.Integer(required=True),
     "created_at": fields.String(required=True),
-    "is_current":	fields.Boolean(required=True),
-    "is_delete":	fields.Boolean(required=True),
+    "is_current": fields.Boolean(required=True),
+    "is_delete": fields.Boolean(required=True),
     "save_item_id":	fields.Integer(required=True),
-    "save_type":	fields.String(required=True),
-    "user_id":	fields.Integer(required=True)
+    "save_type": fields.String(required=True),
+    "user_id": fields.Integer(required=True)
 })
 
 track_element = ns.model('track_element', {
@@ -101,10 +101,8 @@ track = ns.model('Track', {
     "tags": fields.String,
     "title": fields.String(required=True),
     "track_id": fields.Integer(required=True),
-    "track_segments": fields.List(fields.Nested(track_segment_model)),
+    "track_segments": fields.List(fields.Nested(track_segment)),
     "updated_at": fields.String,
-
-    # TODO: Add User when we've created the User models
 })
 
 version_metadata = ns.model("version_metadata", {
@@ -133,10 +131,4 @@ class TrackList(Resource):
 
         # Don't convert the success response to JSON
         response = api_helpers.success_response(tracks, 200, False)
-        logger.error(response)
         return response
-
-
-
-
-
