@@ -22,7 +22,6 @@ def extend_track(track):
     track["owner_id"] = owner_id
     return track
 
-
 def decode_with_abort(identifier, namespace):
     decoded = decode_string_id(identifier)
     if decoded is None:
