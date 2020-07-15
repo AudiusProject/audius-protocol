@@ -94,8 +94,10 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
   return { multihash: multihash, fileUUID: file.fileUUID }
 }
 
-/** Save file to disk given IPFS multihash, and ensure availability.
- *  Steps:
+/**
+ * Save file to disk given IPFS multihash, and ensure availability.
+ * This will only work for non-dir files
+ * Steps:
  *  - If file already stored on disk, return immediately and store to disk.
  *  - If file not already stored, fetch from IPFS and store to disk.
  *    - If multihash available on local inode, retrieve file.
@@ -156,7 +158,6 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       // ..replace(/\/$/, "") removes trailing slashes
       req.logger.debug(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
 
-      // TODO - change this to proper directory gateway
       const urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
 
       // TODO make this more parallel
