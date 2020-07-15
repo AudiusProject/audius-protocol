@@ -1,5 +1,5 @@
 const fs = require('fs')
-const readline = require('readline');
+const readline = require('readline')
 
 const initAudiusLibs = require('../examples/initAudiusLibs')
 const { distributeTokens } = require('./helpers/distributeTokens')
@@ -11,8 +11,7 @@ const {
 } = require('./helpers/spRegistration')
 const { deregisterLocalService } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
-const { getDataContractAccounts, getEthContractAccounts } = require('./helpers/utils')
-const { default: FontStyles } = require('../../identity-service/src/notifications/renderEmail/FontStyles')
+const { getEthContractAccounts } = require('./helpers/utils')
 
 const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service']
 const spDiscProvType = serviceTypeList[0]
@@ -119,7 +118,7 @@ const run = async () => {
       case 'query-sps':
         await queryLocalServices(audiusLibs, serviceTypeList)
         break
-      
+
       case 'update-cnode-1-delegatewallet':
         await _updateCnode1DelegateOwnerWallet(ethAccounts)
         break
@@ -261,7 +260,7 @@ const _updateDelegateOwnerWalletInDockerEnv = async (readPath, writePath, delega
   const rl = readline.createInterface({
     input: fileStream,
     crlfDelay: Infinity
-  });
+  })
   let output = []
   let walletFound = false
   let pkeyFound = false
@@ -285,7 +284,6 @@ const _updateDelegateOwnerWalletInDockerEnv = async (readPath, writePath, delega
     output.push(`delegatePrivateKey=0x${delegateWalletPkey}`)
   }
 
-  let finalUpdatedOutput = output.join("\n")
-  fs.writeFileSync(writePath, finalUpdatedOutput)
+  fs.writeFileSync(writePath, output.join('\n'))
   console.log(`Updated ${writePath} with ${delegateOwnerWallet}:${delegateWalletPkey}`)
 }
