@@ -9,6 +9,7 @@ const { handleResponse, successResponse, errorResponseBadRequest, errorResponseS
 const { getFileUUIDForImageCID, rehydrateIpfsFromFsIfNecessary } = require('../utils')
 const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
 const TranscodingQueue = require('../TranscodingQueue')
+const { getCID } = require('./files')
 
 module.exports = function (app) {
   /**
@@ -457,6 +458,38 @@ module.exports = function (app) {
       return successResponse({ isDownloadable: true, cid: null })
     }
   }))
+
+  /** Gets a streamable mp3 link for a track */
+  app.get('/tracks/stream/:blockchainId', async (req, res) => {
+    const blockchainId = req.params.blockchainId
+    if (!blockchainId) {
+      return errorResponseBadRequest('Please provide blockchainId')
+    }
+
+    const { trackUUID } = await models.Track.findOne({
+      attributes: ['trackUUID'],
+      where: { blockchainId }
+    })
+
+    if (!trackUUID) {
+      return errorResponseBadRequest(`No track found for blockchainId ${blockchainId}`)
+    }
+
+    const { multihash } = await models.File.findOne({
+      attributes: ['multihash'],
+      where: {
+        type: 'copy320',
+        trackUUID
+      }
+    })
+
+    if (!multihash) {
+      return errorResponseBadRequest(`No file found for blockchainId ${blockchainId}`)
+    }
+
+    req.params.CID = multihash
+    return getCID(req, res)
+  })
 
   /** List all unlisted tracks for a user */
   app.get('/tracks/unlisted', authMiddleware, handleResponse(async (req, res) => {
