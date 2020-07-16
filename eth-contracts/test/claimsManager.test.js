@@ -249,7 +249,7 @@ contract('ClaimsManager', async (accounts) => {
       "Governance: Transaction failed."
     )
 
-    let lastClaimBlock = await claimsManager.getLastFundBlock()
+    let lastClaimBlock = await claimsManager.getLastFundedBlock()
     let claimDiff = await claimsManager.getFundingRoundBlockDiff()
     let nextClaimBlock = lastClaimBlock.add(claimDiff)
 
@@ -295,7 +295,7 @@ contract('ClaimsManager', async (accounts) => {
     // Initiate 1st claim
     await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
 
-    let lastClaimBlock = await claimsManager.getLastFundBlock()
+    let lastClaimBlock = await claimsManager.getLastFundedBlock()
     let claimDiff = await claimsManager.getFundingRoundBlockDiff()
     let twiceClaimDiff = claimDiff.mul(_lib.toBN(2))
     let nextClaimBlockTwiceDiff = lastClaimBlock.add(twiceClaimDiff)
