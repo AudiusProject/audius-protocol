@@ -34,7 +34,7 @@ const DECREASE_STAKE_LOCKUP_DURATION = 10
 const callValue0 = _lib.toBN(0)
 
 
-contract('DelegateManager', async (accounts) => {
+contract.only('DelegateManager', async (accounts) => {
   let staking, stakingAddress, token, registry, governance, claimsManager0, claimsManagerProxy
   let serviceProviderFactory, serviceTypeManager, claimsManager, delegateManager
 
@@ -1250,6 +1250,64 @@ contract('DelegateManager', async (accounts) => {
       )
 
       await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
+    })
+
+    it('Undelegate after slash below bounds', async () => {
+      let initialDelegateAmount = _lib.audToWeiBN(60)
+
+      // Approve staking transfer for delegator 1
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      // Stake initial value for delegator 1
+      await delegateManager.delegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      let preSlashInfo = await getAccountStakeInfo(stakerAccount, false)
+      // Set slash amount to all but 1 AUD for this SP
+      let diffAmount = _lib.audToWeiBN(1)
+      let slashAmount = (preSlashInfo.totalInStakingContract).sub(diffAmount)
+      // Perform slash functions
+      await _lib.slash(_lib.audToWei(_lib.fromWei(slashAmount)), slasherAccount, governance, delegateManagerKey, guardianAddress)
+
+      // Confirm bounds have been violated for SP
+      let spDetails = await getAccountStakeInfo(stakerAccount, false)
+      assert.isFalse(
+        spDetails.validBounds,
+        'Bound violation expected')
+
+      // Determine remaining amount
+      let remainingAmount = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
+
+      // Submit request to undelegate
+      await delegateManager.requestUndelegateStake(
+        stakerAccount,
+        remainingAmount,
+        { from: delegatorAccount1 }
+      )
+
+      let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      assert.isTrue(
+        undelegateRequestInfo.amount.eq(remainingAmount),
+        'Expect request to match undelegate amount')
+
+      // Advance to valid block
+      await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
+      let delegatorBalance = await token.balanceOf(delegatorAccount1)
+
+      // Confirm undelegation works despite bound violation
+      await delegateManager.undelegateStake({ from: delegatorAccount1 })
+      let delegatorBalanceAfterUndelegation = await token.balanceOf(delegatorAccount1)
+      // Confirm transfer of token balance
+      assert.isTrue((delegatorBalanceAfterUndelegation.sub(remainingAmount)).eq(delegatorBalance))
+      // Confirm no balance remaining
+      assert.isTrue(
+        (await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)).eq(_lib.toBN(0))
+      )
     })
 
     it('Slash below sp bounds', async () => {
