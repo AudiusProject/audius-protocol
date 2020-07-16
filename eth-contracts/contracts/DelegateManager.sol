@@ -68,27 +68,27 @@ contract DelegateManager is InitializableV2 {
     mapping (address => UndelegateStakeRequest) private undelegateRequests;
 
     event IncreaseDelegatedStake(
-      address _delegator,
-      address _serviceProvider,
-      uint256 _increaseAmount
+      address indexed _delegator,
+      address indexed _serviceProvider,
+      uint256 indexed _increaseAmount
     );
 
     event DecreaseDelegatedStake(
-      address _delegator,
-      address _serviceProvider,
-      uint256 _decreaseAmount
+      address indexed _delegator,
+      address indexed _serviceProvider,
+      uint256 indexed _decreaseAmount
     );
 
     event Claim(
-      address _claimer,
-      uint256 _rewards,
-      uint256 newTotal
+      address indexed _claimer,
+      uint256 indexed _rewards,
+      uint256 indexed _newTotal
     );
 
     event Slash(
-      address _target,
-      uint256 _amount,
-      uint256 _newTotal
+      address indexed _target,
+      uint256 indexed _amount,
+      uint256 indexed _newTotal
     );
 
     event MaxDelegatorsUpdated(uint256 indexed _maxDelegators);

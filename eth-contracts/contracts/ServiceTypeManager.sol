@@ -36,9 +36,18 @@ contract ServiceTypeManager is InitializableV2 {
     /// @dev mapping of service type info
     mapping(bytes32 => ServiceTypeInfo) private serviceTypeInfo;
 
-    event SetServiceVersion(bytes32 _serviceType, bytes32 _serviceVersion);
-    event ServiceTypeAdded(bytes32 _serviceType, uint256 _serviceTypeMin, uint256 _serviceTypeMax);
-    event ServiceTypeRemoved(bytes32 _serviceType);
+    event SetServiceVersion(
+        bytes32 indexed _serviceType,
+        bytes32 indexed _serviceVersion
+    );
+
+    event ServiceTypeAdded(
+        bytes32 indexed _serviceType,
+        uint256 indexed _serviceTypeMin,
+        uint256 indexed _serviceTypeMax
+    );
+
+    event ServiceTypeRemoved(bytes32 indexed _serviceType);
 
     /**
      * @notice Function to initialize the contract
