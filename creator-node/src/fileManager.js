@@ -8,6 +8,7 @@ const getUuid = require('uuid/v4')
 
 const config = require('./config')
 const models = require('./models')
+const utils = require('./utils')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -148,12 +149,15 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath) {
   return storagePath
 }
 
-/** (1) Remove all files in requested fileDir
- *  (2) Confirm the only subdirectory is 'fileDir/segments'
- *  (3) Remove all files in 'fileDir/segments' - throw if any subdirectories found
- *  (4) Remove 'fileDir/segments' and fileDir
+/**
+ * Removes all upload artifacts for track from filesystem. After successful upload these artifacts
+ *    are all redundant since all synced content is replicated outside the upload folder.
+ * (1) Remove all files in requested fileDir
+ * (2) Confirm the only subdirectory is 'fileDir/segments'
+ * (3) Remove all files in 'fileDir/segments' - throw if any subdirectories found
+ * (4) Remove 'fileDir/segments' and fileDir
  */
-function removeTrackFolder (req, fileDir) {
+async function removeTrackFolder (req, fileDir) {
   try {
     let fileDirInfo = fs.lstatSync(fileDir)
     if (!fileDirInfo.isDirectory()) {
