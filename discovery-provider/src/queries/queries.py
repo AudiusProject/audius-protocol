@@ -29,6 +29,7 @@ from src.queries.get_stems_of import get_stems_of
 from src.queries.get_feed import get_feed
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from src.queries.get_follow_intersection_users import get_follow_intersection_users
+from src.queries.get_track_repost_intersection_users import get_track_repost_intersection_users
 
 
 logger = logging.getLogger(__name__)
@@ -118,45 +119,12 @@ def get_follow_intersection_users_route(followee_user_id, follower_user_id):
 # - Followee = user that is followed. Follower = user that follows.
 # - repost_track_id = track that is reposted. repost_user_id = user that reposted track.
 @bp.route("/users/intersection/repost/track/<int:repost_track_id>/<int:follower_user_id>", methods=("GET",))
-def get_track_repost_intersection_users(repost_track_id, follower_user_id):
-    users = []
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        # ensure track_id exists
-        track_entry = session.query(Track).filter(
-            Track.track_id == repost_track_id,
-            Track.is_current == True
-        ).first()
-        if track_entry is None:
-            return api_helpers.error_response('Resource not found for provided track id', 404)
-
-        query = (
-            session.query(User)
-            .filter(
-                User.is_current == True,
-                User.user_id.in_(
-                    session.query(Repost.user_id)
-                    .filter(
-                        Repost.repost_item_id == repost_track_id,
-                        Repost.repost_type == RepostType.track,
-                        Repost.is_current == True,
-                        Repost.is_delete == False
-                    )
-                    .intersect(
-                        session.query(Follow.followee_user_id)
-                        .filter(
-                            Follow.follower_user_id == follower_user_id,
-                            Follow.is_current == True,
-                            Follow.is_delete == False
-                        )
-                    )
-                )
-            )
-        )
-        users = paginate_query(query).all()
-        users = helpers.query_result_to_list(users)
-
-    return api_helpers.success_response(users)
+def get_track_repost_intersection_users_route(repost_track_id, follower_user_id):
+    try:
+        users = get_track_repost_intersection_users(repost_track_id, follower_user_id)
+        return api_helpers.success_response(users)
+    except Exception as e:
+        return api_helpers.error_response(str(e), 404)
 
 
 # Get intersection of users that have reposted provided repost_playlist_id and users that
