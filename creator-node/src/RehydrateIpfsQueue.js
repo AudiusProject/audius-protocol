@@ -11,7 +11,7 @@ const PROCESS_NAMES = Object.freeze({
 class RehydrateIpfsQueue {
   constructor () {
     this.queue = new Bull(
-      'rehydrateIPFS',
+      'rehydrateIpfs',
       {
         redis: {
           host: config.get('redisHost'),
