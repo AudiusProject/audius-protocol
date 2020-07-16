@@ -17,8 +17,7 @@ module.exports = function (app) {
    *      - this should be addressed eventually
    * @dev - Every error scenario removes upload artifacts without awaiting - async bullQ will enforce
    */
-  // app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
-   app.post('/track_content', authMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
+  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
     if (req.fileSizeError) return errorResponseBadRequest(req.fileSizeError)
     if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
     const routeTimeStart = Date.now()
@@ -39,7 +38,7 @@ module.exports = function (app) {
     } catch (err) {
       // Prune upload artifacts
       removeTrackFolder(req, req.fileDir)
-      
+
       return errorResponseServerError(err)
     }
 
