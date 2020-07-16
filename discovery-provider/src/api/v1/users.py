@@ -3,7 +3,7 @@ from flask import Flask, Blueprint
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
 from src import api_helpers
-from src.api.v1.helpers import decode_with_abort, extend_track
+from src.api.v1.helpers import decode_with_abort, extend_track, make_response
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ track_segment = ns.model('track_segment', {
     "multihash": fields.String(required=True)
 })
 
-track_repost = ns.model('track_repost', {
+repost = ns.model('repost', {
     "blockhash": fields.String(required=True),
     "blocknumber": fields.Integer(required=True),
     "created_at": fields.String(required=True),
@@ -29,7 +29,7 @@ track_repost = ns.model('track_repost', {
     "user_id": fields.Integer(required=True)
 })
 
-track_favorite = ns.model('track_favorite', {
+favorite = ns.model('favorite', {
     "blockhash": fields.String(required=True),
     "blocknumber": fields.Integer(required=True),
     "created_at": fields.String(required=True),
@@ -80,8 +80,8 @@ track = ns.model('Track', {
     "download": fields.Nested(download),
     "field_visibility": fields.Nested(field_visibility),
     "file_type": fields.String,
-    "followee_reposts": fields.List(fields.Nested(track_repost), required=True),
-    "followee_saves": fields.List(fields.Nested(track_favorite), required=True),
+    "followee_reposts": fields.List(fields.Nested(repost), required=True),
+    "followee_saves": fields.List(fields.Nested(favorite), required=True),
     "genre": fields.String,
     "has_current_user_reposted": fields.Boolean(required=True),
     "has_current_user_saved": fields.Boolean(required=True),
@@ -95,7 +95,6 @@ track = ns.model('Track', {
     "license": fields.String,
     "metadata_multihash": fields.String(required=True),
     "mood": fields.String,
-    "owner_id": fields.String(required=True),
     "release_date": fields.String,
     "remix_of": fields.Nested(remix_parent),
     "repost_count": fields.Integer(required=True),
@@ -106,23 +105,10 @@ track = ns.model('Track', {
     "title": fields.String(required=True),
     "track_segments": fields.List(fields.Nested(track_segment)),
     "updated_at": fields.String,
+    "user_id": fields.String(required=True)
 })
 
-version_metadata = ns.model("version_metadata", {
-    "service": fields.String(required=True),
-    "version": fields.String(required=True)
-})
-
-tracks_response = ns.model("tracks_responsek", {
-    "data": fields.List(fields.Nested(track), required=True),
-    "latest_chain_block":	fields.Integer(required=True),
-    "latest_indexed_block":	fields.Integer(required=True),
-    "owner_wallet":	fields.Integer(required=True),
-    "signature": fields.String(required=True),
-    "success": fields.Boolean(required=True),
-    "timestamp": fields.String(required=True)	,
-    "version": fields.Nested(version_metadata, required=True),
-})
+tracks_response = make_response("tracks_response", ns, fields.List(fields.Nested(track)))
 
 @ns.route("/<string:user_id>/tracks")
 class TrackList(Resource):
@@ -132,7 +118,7 @@ class TrackList(Resource):
         user_id = decode_with_abort(user_id, ns)
         args = {"user_id": user_id}
         tracks = get_tracks(args)
-        tracks = list(map(lambda t: extend_track(t), tracks))
+        tracks = list(map(extend_track, tracks))
         # Don't convert the success response to JSON
         response = api_helpers.success_response(tracks, 200, False)
         return response
