@@ -219,7 +219,7 @@ contract('ServiceProvider test', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'uint'],
+      ['address', 'uint256'],
       [governance.address, DECREASE_STAKE_LOCKUP_DURATION]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
@@ -1149,7 +1149,7 @@ contract('ServiceProvider test', async (accounts) => {
       // Confirm only governance can call set functions
       await _lib.assertRevert(
         serviceTypeManager.setGovernanceAddress(_lib.addressZero),
-        'Only governance'
+        'Only callable by Governance contract'
       )
       await _lib.assertRevert(
         serviceTypeManager.setServiceVersion(web3.utils.utf8ToHex('fake-type'), web3.utils.utf8ToHex('0.0')),

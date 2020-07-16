@@ -938,7 +938,10 @@ contract ServiceProviderFactory is InitializableV2 {
     // ========================================= Private Functions =========================================
 
     function _requireStakingAddressIsSet() private view {
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        require(
+            stakingAddress != address(0x00),
+            "ServiceProviderFactory: stakingAddress is not set"
+        );
     }
 
     function _requireDelegateManagerAddressIsSet() private view {

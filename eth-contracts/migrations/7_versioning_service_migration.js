@@ -106,7 +106,7 @@ module.exports = (deployer, network, accounts) => {
     const serviceProviderFactory0 = await deployer.deploy(ServiceProviderFactory, { from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'uint'],
+      ['address', 'uint256'],
       [process.env.governanceAddress, decreaseStakeLockupDuration]
     )
     const serviceProviderFactoryProxy = await deployer.deploy(

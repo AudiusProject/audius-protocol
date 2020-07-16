@@ -115,7 +115,7 @@ contract('DelegateManager', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'uint'],
+      ['address', 'uint256'],
       [governance.address, DECREASE_STAKE_LOCKUP_DURATION]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
@@ -704,7 +704,7 @@ contract('DelegateManager', async (accounts) => {
       // Get rewards
       await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
       await delegateManager.claimRewards(stakerAccount2, { from: stakerAccount2 })
-      let fundBlock = await claimsManager.getLastFundBlock()
+      let fundBlock = await claimsManager.getLastFundedBlock()
       let blockDiff = await claimsManager.getFundingRoundBlockDiff()
       let roundEndBlock = fundBlock.add(blockDiff)
       await time.advanceBlockTo(roundEndBlock)

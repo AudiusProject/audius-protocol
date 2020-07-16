@@ -20,9 +20,21 @@ contract Registry is InitializableV2, Ownable {
     mapping(bytes32 => address) private addressStorage;
     mapping(bytes32 => address[]) private addressStorageHistory;
 
-    event ContractAdded(bytes32 _name, address _address);
-    event ContractRemoved(bytes32 _name, address _address);
-    event ContractUpgraded(bytes32 _name, address _oldAddress, address _newAddress);
+    event ContractAdded(
+        bytes32 indexed _name,
+        address indexed _address
+    );
+
+    event ContractRemoved(
+        bytes32 indexed _name,
+        address indexed _address
+    );
+
+    event ContractUpgraded(
+        bytes32 indexed _name,
+        address indexed _oldAddress,
+        address indexed _newAddress
+    );
 
     function initialize() public initializer {
         /// @notice Ownable.initialize(address _sender) sets contract owner to _sender.

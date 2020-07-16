@@ -54,9 +54,9 @@ contract ClaimsManager is InitializableV2 {
     // 2) Total funded for this round
     // 3) Total claimed in round
     struct Round {
-        uint fundedBlock;
-        uint fundedAmount;
-        uint totalClaimedInRound;
+        uint256 fundedBlock;
+        uint256 fundedAmount;
+        uint256 totalClaimedInRound;
     }
 
     // Current round information
@@ -121,7 +121,7 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /// @notice Get the last block where a funding round was initiated
-    function getLastFundBlock() external view returns (uint256)
+    function getLastFundedBlock() external view returns (uint256)
     {
         _requireIsInitialized();
 
