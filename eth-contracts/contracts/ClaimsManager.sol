@@ -121,7 +121,7 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /// @notice Get the last block where a funding round was initiated
-    function getLastFundBlock() external view returns (uint256)
+    function getLastFundedBlock() external view returns (uint256)
     {
         _requireIsInitialized();
 
