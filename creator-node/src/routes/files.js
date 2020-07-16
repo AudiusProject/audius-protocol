@@ -12,7 +12,10 @@ const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('.
 const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary, ipfsSingleByteCat } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 
-// Helper method to stream file from file system on creator node
+/**
+ * Helper method to stream file from file system on creator node
+ * Serves partial content using range requests
+ */
 const streamFromFileSystem = async (req, res, path) => {
   try {
     // If file cannot be found on disk, throw error
@@ -25,11 +28,21 @@ const streamFromFileSystem = async (req, res, path) => {
 
     // If a range header is present, use that to create the readstream
     // otherwise, stream the whole file.
+
+    // https://expressjs.com/en/5x/api.html#req.range
+    // Returns array of range objects - [{start, end}]
     const range = req.range()
+
+    // TODO - route doesn't support multipart ranges (see spec above),
+    //    need to send 416 on invalid or multipart range
     if (range && range[0]) {
       const { start, end } = range[0]
       fileStream = fs.createReadStream(path, { start, end })
+
+      // set 206 "Partial Content" success status response code
       res.status(206)
+
+      // TODO - set Accept-Ranges and Content-Length response headers
     } else {
       fileStream = fs.createReadStream(path)
     }
