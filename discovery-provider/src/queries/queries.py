@@ -25,6 +25,8 @@ from src.queries.get_users import get_users
 from src.queries.get_tracks import get_tracks
 from src.queries.get_playlists import get_playlists
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
+from src.queries.get_stems_of import get_stems_of
+
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("queries", __name__)
@@ -59,29 +61,10 @@ def get_tracks_including_unlisted_route():
 
 
 @bp.route("/stems/<int:track_id>", methods=("GET",))
-def get_stems_of(track_id):
-    db = get_db_read_replica()
-    stems = []
-    with db.scoped_session() as session:
-        parent_not_deleted_subquery = (
-            session.query(Track.is_delete)
-                .filter(Track.track_id == track_id)
-                .subquery()
-            )
-
-        stem_results = (
-            session.query(Track)
-            .join(
-                Stem,
-                Stem.child_track_id == Track.track_id,
-            )
-            .filter(Track.is_current == True, Track.is_delete == False)
-            .filter(Stem.parent_track_id == track_id)
-            .filter(parent_not_deleted_subquery.c.is_delete == False)
-            .all())
-        stems = helpers.query_result_to_list(stem_results)
-
+def get_stems_of_route(track_id):
+    stems = get_stems_of(track_id)
     return api_helpers.success_response(stems)
+
 
 # Return playlist content in json form
 # optional parameters playlist owner's user_id, playlist_id = []
