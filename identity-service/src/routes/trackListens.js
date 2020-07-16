@@ -440,7 +440,7 @@ module.exports = function (app) {
 
   /**
    * Gets user listen records in bulk.
-   * 
+   *
    * GET query parameters:
    *  startTime (string) the start time to fetch listens from (in unix seconds format)
    *  limit (number) the number of records to fetch from each user listens and anonymous listens
@@ -457,7 +457,7 @@ module.exports = function (app) {
       createdAtMoment = moment.unix(startTime)
       if (!createdAtMoment.isValid()) throw new Error()
     } catch (e) {
-      return errorResponseBadRequest(`Provided startTime ${startTime} not parseable`)      
+      return errorResponseBadRequest(`Provided startTime ${startTime} not parseable`)
     }
 
     const userListens = await models.UserTrackListen.findAll({
