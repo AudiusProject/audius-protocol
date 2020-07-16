@@ -342,13 +342,6 @@ contract DelegateManager is InitializableV2 {
         // Reset undelegate request
         _resetUndelegateStakeRequest(delegator);
 
-        // Validate balance
-        /*
-        ServiceProviderFactory(
-            serviceProviderFactoryAddress
-        ).validateAccountStakeBalance(serviceProvider);
-        */
-
         emit DecreaseDelegatedStake(
             delegator,
             serviceProvider,
