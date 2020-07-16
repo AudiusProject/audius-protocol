@@ -30,13 +30,11 @@ def extend_playlist(playlist):
     playlist["user_id"] = owner_id
     return playlist
 
-
 def decode_with_abort(identifier, namespace):
     decoded = decode_string_id(identifier)
     if decoded is None:
         namespace.abort(404, "Invalid ID: '{}'.".format(identifier))
     return decoded
-
 
 def make_response(name, namespace, modelType):
     version_metadata = namespace.model("version_metadata", {

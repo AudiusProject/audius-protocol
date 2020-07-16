@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 ns = Namespace('playlists', description='User related operations')
 
-
 playlist_track = ns.model('playlist_track', {
     "time": fields.Integer(required=True),
     "track": fields.Integer(required=True)
@@ -58,6 +57,5 @@ class Playlist(Resource):
         args = {"playlist_id": [playlist_id]}
         playlists = get_playlists(args)
         playlists = list(map(extend_playlist, playlists))
-        logger.error(playlists)
         response = api_helpers.success_response(playlists, 200, False)
         return response

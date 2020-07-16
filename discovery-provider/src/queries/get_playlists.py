@@ -10,6 +10,7 @@ from src.queries.query_helpers import get_current_user_id, paginate_query, parse
   populate_playlist_metadata, get_users_ids, get_users_by_id
 
 logger = logging.getLogger(__name__)
+
 def get_playlists(args):
     playlists = []
     current_user_id = get_current_user_id(required=False)
