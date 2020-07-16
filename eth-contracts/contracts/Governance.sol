@@ -605,7 +605,10 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
-        require(_newMaxInProgressProposals > 0, "Governance: Requires non-zero _newMaxInProgressProposals");
+        require(
+            _newMaxInProgressProposals > 0,
+            "Governance: Requires non-zero _newMaxInProgressProposals"
+        );
         maxInProgressProposals = _newMaxInProgressProposals;
     }
 
@@ -618,7 +621,10 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == address(this), "Only callable by self");
-        require(_newMaxDescriptionLength > 0, "Governance: Requires non-zero _newMaxDescriptionLength");
+        require(
+            _newMaxDescriptionLength > 0,
+            "Governance: Requires non-zero _newMaxDescriptionLength"
+        );
         maxDescriptionLength = _newMaxDescriptionLength;
     }
 
