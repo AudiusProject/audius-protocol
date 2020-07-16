@@ -118,7 +118,7 @@ class TrackList(Resource):
         user_id = decode_with_abort(user_id, ns)
         args = {"user_id": user_id}
         tracks = get_tracks(args)
-        tracks = list(map(lambda t: extend_track(t), tracks))
+        tracks = list(map(extend_track, tracks))
         # Don't convert the success response to JSON
         response = api_helpers.success_response(tracks, 200, False)
         return response
