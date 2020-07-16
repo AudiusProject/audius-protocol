@@ -1149,7 +1149,7 @@ contract('ServiceProvider test', async (accounts) => {
       // Confirm only governance can call set functions
       await _lib.assertRevert(
         serviceTypeManager.setGovernanceAddress(_lib.addressZero),
-        'Only governance'
+        'Only callable by Governance contract'
       )
       await _lib.assertRevert(
         serviceTypeManager.setServiceVersion(web3.utils.utf8ToHex('fake-type'), web3.utils.utf8ToHex('0.0')),
