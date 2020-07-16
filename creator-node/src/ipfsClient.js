@@ -26,7 +26,6 @@ const initIPFS = async () => {
   const identityLatest = await ipfsWithCat.id()
   logger.info(`Current IPFS Peer ID (using latest version of ipfs client): ${JSON.stringify(identityLatest, null, 2)}`)
 
-  logger.info('done initliaitong ipfs')
   console.log({ ipfs, ipfsWithCat })
   return { ipfs, ipfsWithCat }
 }

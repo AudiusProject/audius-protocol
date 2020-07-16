@@ -20,7 +20,7 @@ class RehydrateIpfsQueue {
       }
     )
 
-    this.queue.process(PROCESS_NAMES.rehydrate_file, config.get('rehydrateConcurrencyCount'), async (job, done) => {
+    this.queue.process(PROCESS_NAMES.rehydrate_file, config.get('rehydrateMaxConcurrency'), async (job, done) => {
       const { multihash, storagePath, filename, logContext } = job.data
 
       this.logStatus(logContext, `RehydrateIpfsQueue - Processing a rehydrateIpfsFromFsIfNecessary task for ${multihash}`)
@@ -35,7 +35,7 @@ class RehydrateIpfsQueue {
       }
     })
 
-    this.queue.process(PROCESS_NAMES.rehydrate_dir, config.get('rehydrateConcurrencyCount'), async (job, done) => {
+    this.queue.process(PROCESS_NAMES.rehydrate_dir, config.get('rehydrateMaxConcurrency'), async (job, done) => {
       const { multihash, logContext } = job.data
       this.logStatus(logContext, `RehydrateIpfsQueue - Processing a rehydrateIpfsDirFromFsIfNecessary task for ${multihash}`)
       try {

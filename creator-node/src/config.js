@@ -345,6 +345,12 @@ const config = convict({
     format: Boolean,
     env: 'creatorNodeIsDebug',
     default: false
+  },
+  rehydrateMaxConcurrency: {
+    doc: 'Number of concurrent rehydrate queue tasks running',
+    format: 'nat',
+    env: 'rehydrateMaxConcurrency',
+    default: 10
   }
 
   // unsupported options at the moment
