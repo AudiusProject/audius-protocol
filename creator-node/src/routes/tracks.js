@@ -459,7 +459,10 @@ module.exports = function (app) {
     }
   }))
 
-  /** Gets a streamable mp3 link for a track */
+  /**
+   * Gets a streamable mp3 link for a track by blockchainId. Supports range request headers.
+   * @dev - Wrapper around getCID, which retrieves track given its CID.
+   **/
   app.get('/tracks/stream/:blockchainId', async (req, res) => {
     const blockchainId = req.params.blockchainId
     if (!blockchainId) {
