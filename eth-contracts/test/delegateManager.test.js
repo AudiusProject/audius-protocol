@@ -115,7 +115,7 @@ contract('DelegateManager', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'uint'],
+      ['address', 'uint256'],
       [governance.address, DECREASE_STAKE_LOCKUP_DURATION]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
