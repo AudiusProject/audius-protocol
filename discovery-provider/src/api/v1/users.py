@@ -18,7 +18,7 @@ track_segment = ns.model('track_segment', {
     "multihash": fields.String(required=True)
 })
 
-track_repost = ns.model('track_repost', {
+repost = ns.model('repost', {
     "blockhash": fields.String(required=True),
     "blocknumber": fields.Integer(required=True),
     "created_at": fields.String(required=True),
@@ -29,7 +29,7 @@ track_repost = ns.model('track_repost', {
     "user_id": fields.Integer(required=True)
 })
 
-track_favorite = ns.model('track_favorite', {
+favorite = ns.model('favorite', {
     "blockhash": fields.String(required=True),
     "blocknumber": fields.Integer(required=True),
     "created_at": fields.String(required=True),
@@ -80,8 +80,8 @@ track = ns.model('Track', {
     "download": fields.Nested(download),
     "field_visibility": fields.Nested(field_visibility),
     "file_type": fields.String,
-    "followee_reposts": fields.List(fields.Nested(track_repost), required=True),
-    "followee_saves": fields.List(fields.Nested(track_favorite), required=True),
+    "followee_reposts": fields.List(fields.Nested(repost), required=True),
+    "followee_saves": fields.List(fields.Nested(favorite), required=True),
     "genre": fields.String,
     "has_current_user_reposted": fields.Boolean(required=True),
     "has_current_user_saved": fields.Boolean(required=True),
@@ -113,7 +113,7 @@ version_metadata = ns.model("version_metadata", {
     "version": fields.String(required=True)
 })
 
-tracks_response = ns.model("tracks_responsek", {
+tracks_response = ns.model("tracks_response", {
     "data": fields.List(fields.Nested(track), required=True),
     "latest_chain_block":	fields.Integer(required=True),
     "latest_indexed_block":	fields.Integer(required=True),
