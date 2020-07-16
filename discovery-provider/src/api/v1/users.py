@@ -3,7 +3,7 @@ from flask import Flask, Blueprint
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
 from src import api_helpers
-from src.api.v1.helpers import decode_with_abort, extend_track
+from src.api.v1.helpers import decode_with_abort, extend_track, make_response
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +95,6 @@ track = ns.model('Track', {
     "license": fields.String,
     "metadata_multihash": fields.String(required=True),
     "mood": fields.String,
-    "owner_id": fields.String(required=True),
     "release_date": fields.String,
     "remix_of": fields.Nested(remix_parent),
     "repost_count": fields.Integer(required=True),
@@ -106,23 +105,10 @@ track = ns.model('Track', {
     "title": fields.String(required=True),
     "track_segments": fields.List(fields.Nested(track_segment)),
     "updated_at": fields.String,
+    "user_id": fields.String(required=True)
 })
 
-version_metadata = ns.model("version_metadata", {
-    "service": fields.String(required=True),
-    "version": fields.String(required=True)
-})
-
-tracks_response = ns.model("tracks_response", {
-    "data": fields.List(fields.Nested(track), required=True),
-    "latest_chain_block":	fields.Integer(required=True),
-    "latest_indexed_block":	fields.Integer(required=True),
-    "owner_wallet":	fields.Integer(required=True),
-    "signature": fields.String(required=True),
-    "success": fields.Boolean(required=True),
-    "timestamp": fields.String(required=True)	,
-    "version": fields.Nested(version_metadata, required=True),
-})
+tracks_response = make_response("tracks_response", ns, fields.List(fields.Nested(track)))
 
 @ns.route("/<string:user_id>/tracks")
 class TrackList(Resource):
