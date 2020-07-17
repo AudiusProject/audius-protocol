@@ -100,10 +100,10 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
  * Steps:
  *  - If file already stored on disk, return immediately and store to disk.
  *  - If file not already stored, fetch from IPFS and store to disk.
- *    - If multihash available on local inode, retrieve file.
+ *    - If multihash available on local ipfs node, retrieve file.
  *    - If multihash not available locally, fetch file from IPFS.
  *  - If file is not available via IPFS try other cnode gateways for user's replica set.
- *  - Add file to local inode if not already.
+ *  - Add file to local ipfs node if not already there.
  */
 async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry) {
   // If file already stored on disk, return immediately.
@@ -115,10 +115,10 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
   // If file not already stored, fetch and store at storagePath.
   let fileFound = false
 
-  // If multihash already available on local INode, cat file from local ipfs node
+  // If multihash already available on local ipfs node, cat file from local ipfs node
   req.logger.debug(`checking if ${multihash} already available on local ipfs node`)
   try {
-    let fileBuffer = await Utils.ipfsCat(multihash, req, 500)
+    let fileBuffer = await Utils.ipfsCat(multihash, req, 1000)
     fileFound = true
     req.logger.debug(`Retrieved file for ${multihash} from local ipfs node`)
     // Write file to disk.
@@ -128,13 +128,13 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     req.logger.info(`Multihash ${multihash} is not available on local ipfs node`)
   }
 
-  // If file not already available on local INode, fetch from IPFS.
+  // If file not already available on local ipfs node, fetch from IPFS.
   if (!fileFound) {
     req.logger.debug(`Attempting to get ${multihash} from IPFS`)
     try {
-      // ipfsGet returns a BufferList object, not a buffer
-      // not compatible into writeFile directly
-      let fileBL = await Utils.ipfsGet(multihash, req, 2000)
+      // ipfsGet returns a BufferListStream object which is not a buffer
+      // not compatible into writeFile directly, but it can be streamed to a file
+      let fileBL = await Utils.ipfsGet(multihash, req, 5000)
       req.logger.debug(`retrieved file for multihash ${multihash} from local ipfs node`)
 
       // Write file to disk.
@@ -168,7 +168,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
             method: 'get',
             url,
             responseType: 'stream',
-            timeout: 4000 /* ms */
+            timeout: 20000 /* ms */
           })
           if (resp.data) {
             response = resp
