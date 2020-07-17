@@ -112,7 +112,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     return expectedStoragePath
   }
 
-  // If file not already stored, fetch from IPFS and store at storagePath.
+  // If file not already stored, fetch and store at storagePath.
   let fileBuffer = null
 
   // If multihash already available on local INode, cat file from local ipfs node
@@ -195,6 +195,15 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       throw new Error(`Failed to retrieve file for multihash ${multihash} from other creator node gateways: ${e.message}`)
     }
   }
+
+  // for debugging only - dont' delete. verifies that the contents of the file match the file's cid
+  // const ipfs = req.app.get('ipfsLatestAPI')
+  // const content = fs.readFileSync(expectedStoragePath)
+  // for await (const result of ipfs.add(content, { onlyHash: true })) {
+  //   if (multihash !== result.path) console.error(`File contents don't match IPFS hash multihash: ${multihash} result.path: ${result.path}`)
+  //   else console.log("files matched", multihash)
+  // }
+
   return expectedStoragePath
 }
 
