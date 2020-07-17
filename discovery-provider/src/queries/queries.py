@@ -39,6 +39,7 @@ from src.queries.get_reposters_for_track import get_reposters_for_track
 from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
 from src.queries.get_savers_for_track import get_savers_for_track
 from src.queries.get_savers_for_playlist import get_savers_for_playlist
+from src.queries.get_saves import get_saves
 
 
 logger = logging.getLogger(__name__)
@@ -205,62 +206,13 @@ def get_savers_for_playlist_route(save_playlist_id):
 
 # Get paginated saves of provided save_type for current user.
 @bp.route("/saves/<save_type>", methods=("GET",))
-def get_saves(save_type):
-    save_query_type = None
-    if save_type == 'albums':
-        save_query_type = SaveType.album
-    elif save_type == 'playlists':
-        save_query_type = SaveType.playlist
-    elif save_type == 'tracks':
-        save_query_type = SaveType.track
-    else:
-        raise exceptions.ArgumentError("Invalid save type provided")
+def get_saves_route(save_type):
+    try:
+        save_results = get_saves(save_type)
+        return api_helpers.success_response(save_results)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
 
-    save_results = []
-    current_user_id = get_current_user_id()
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        query = (
-            session.query(Save)
-            .filter(
-                Save.user_id == current_user_id,
-                Save.is_current == True,
-                Save.is_delete == False,
-                Save.save_type == save_query_type
-            )
-        )
-        # filter out saves for deleted entries
-        if save_type == 'albums':
-            query = query.filter(
-                Save.save_item_id.in_(
-                    session.query(Playlist.playlist_id).filter(
-                        Playlist.is_album == True,
-                        Playlist.is_current == True
-                    )
-                )
-            )
-        elif save_type == 'playlists':
-            query = query.filter(
-                Save.save_item_id.in_(
-                    session.query(Playlist.playlist_id).filter(
-                        Playlist.is_album == False,
-                        Playlist.is_current == True
-                    )
-                )
-            )
-        elif save_type == 'tracks':
-            query = query.filter(
-                Save.save_item_id.in_(
-                    session.query(Track.track_id).filter(
-                        Track.is_current == True
-                    )
-                )
-            )
-
-        query_results = paginate_query(query).all()
-        save_results = helpers.query_result_to_list(query_results)
-
-    return api_helpers.success_response(save_results)
 
 # Get the user saved collections & uploaded collections along with the collection user owners
 # NOTE: This is a one off endpoint for retrieving a user's collections/associated user and should
