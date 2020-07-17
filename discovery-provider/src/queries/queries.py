@@ -40,6 +40,7 @@ from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
 from src.queries.get_savers_for_track import get_savers_for_track
 from src.queries.get_savers_for_playlist import get_savers_for_playlist
 from src.queries.get_saves import get_saves
+from src.queries.get_users_account import get_users_account
 
 
 logger = logging.getLogger(__name__)
@@ -218,84 +219,13 @@ def get_saves_route(save_type):
 # NOTE: This is a one off endpoint for retrieving a user's collections/associated user and should
 # be consolidated later in the client
 @bp.route("/users/account", methods=("GET",))
-def get_users_account():
+def get_users_account_route():
+    try:
+        user = get_users_account(request.args.to_dict())
+        return api_helpers.success_response(user)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
 
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        # Create initial query
-        base_query = session.query(User)
-        # Don't return the user if they have no wallet or handle (user creation did not finish properly on chain)
-        base_query = base_query.filter(User.is_current == True, User.wallet != None, User.handle != None)
-
-        if "wallet" not in request.args:
-            return api_helpers.error_response('Missing wallet param', 404)
-
-        wallet = request.args.get("wallet")
-        wallet = wallet.lower()
-        if len(wallet) == 42:
-            base_query = base_query.filter_by(wallet=wallet)
-            base_query = base_query.order_by(asc(User.created_at))
-        else:
-            return api_helpers.error_response('Invalid wallet length', 400)
-
-        # If user cannot be found, exit early and return empty response
-        user = base_query.first()
-        if not user:
-            return api_helpers.success_response(None)
-
-        user = helpers.model_to_dictionary(user)
-        user_id = user['user_id']
-
-        # bundle peripheral info into user results
-        users = populate_user_metadata(session, [user_id], [user], user_id, True)
-        user = users[0]
-
-        # Get saved playlists / albums ids
-        saved_query = session.query(Save.save_item_id).filter(
-            Save.user_id == user_id,
-            Save.is_current == True,
-            Save.is_delete == False,
-            or_(Save.save_type == SaveType.playlist, Save.save_type == SaveType.album)
-        )
-
-        saved_query_results = saved_query.all()
-        save_collection_ids = [item[0] for item in saved_query_results]
-
-        # Get Playlist/Albums saved or owned by the user
-        playlist_query = session.query(Playlist).filter(
-                or_(
-                    and_(Playlist.is_current == True, Playlist.is_delete == False, Playlist.playlist_owner_id == user_id),
-                    and_(Playlist.is_current == True, Playlist.is_delete == False, Playlist.playlist_id.in_(save_collection_ids))
-                )
-            ).order_by(desc(Playlist.created_at))
-        playlists = playlist_query.all()
-        playlists = helpers.query_result_to_list(playlists)
-
-        playlist_owner_ids = list(set([playlist['playlist_owner_id'] for playlist in playlists]))
-
-        # Get Users for the Playlist/Albums
-        user_query = session.query(User).filter(
-                and_(User.is_current == True, User.user_id.in_(playlist_owner_ids))
-            )
-        users = user_query.all()
-        users = helpers.query_result_to_list(users)
-        user_map = {}
-
-        stripped_playlists = []
-        # Map the users to the playlists/albums
-        for playlist_owner in users:
-             user_map[playlist_owner['user_id']] = playlist_owner
-        for playlist in playlists:
-            playlist_owner = user_map[playlist['playlist_owner_id']]
-            stripped_playlists.append({
-                'id': playlist['playlist_id'],
-                'name': playlist['playlist_name'],
-                'is_album': playlist['is_album'],
-                'user': { 'id': playlist_owner['user_id'], 'handle': playlist_owner['handle'] }
-            })
-        user['playlists'] = stripped_playlists
-
-    return api_helpers.success_response(user)
 
 # Gets the max id for tracks, playlists, or users.
 @bp.route("/latest/<type>", methods=("GET",))
