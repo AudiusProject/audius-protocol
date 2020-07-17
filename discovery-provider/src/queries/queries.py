@@ -41,6 +41,7 @@ from src.queries.get_savers_for_track import get_savers_for_track
 from src.queries.get_savers_for_playlist import get_savers_for_playlist
 from src.queries.get_saves import get_saves
 from src.queries.get_users_account import get_users_account
+from src.queries.get_max_id import get_max_id
 
 
 logger = logging.getLogger(__name__)
@@ -229,38 +230,15 @@ def get_users_account_route():
 
 # Gets the max id for tracks, playlists, or users.
 @bp.route("/latest/<type>", methods=("GET",))
-def get_max_id(type):
-    if not type:
-        return api_helpers.error_response(
-            "Invalid type provided, must be one of 'track', 'playlist', 'user'", 400
-        )
+def get_max_id_route(type):
+    try:
+        latest = get_max_id(type)
+        return api_helpers.success_response(latest)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+    except Exception as e:
+        return api_helpers.error_response(str(e), 404)
 
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        if type == 'track':
-            latest = (
-                session
-                .query(func.max(Track.track_id))
-                .filter(Track.is_unlisted == False)
-                .scalar()
-            )
-            return api_helpers.success_response(latest)
-        elif type == 'playlist':
-            latest = (
-                session
-                .query(func.max(Playlist.playlist_id))
-                .filter(Playlist.is_private == False)
-                .scalar()
-            )
-            return api_helpers.success_response(latest)
-        elif type == 'user':
-            latest = (
-                session
-                .query(func.max(User.user_id))
-                .scalar()
-            )
-            return api_helpers.success_response(latest)
-    return api_helpers.error_response("Unable to compute latest", 400)
 
 @bp.route("/top/<type>", methods=("GET",))
 def get_top_playlists(type):
