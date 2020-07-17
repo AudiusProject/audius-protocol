@@ -1,11 +1,11 @@
 const ipfsClient = require('ipfs-http-client')
-const ipfsClientWithCat = require('ipfs-http-client-cat')
+const ipfsClientLatest = require('ipfs-http-client-latest')
 
 const config = require('./config')
 const { logger } = require('./logging')
 
 let ipfs
-let ipfsWithCat
+let ipfsLatest
 
 // Make ipfs clients exportable to be used in rehydrate queue
 
@@ -15,7 +15,7 @@ const initIPFS = async () => {
     throw new Error('Must set ipfsAddr')
   }
   ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
-  ipfsWithCat = ipfsClientWithCat({ host: ipfsAddr, port: config.get('ipfsPort'), protocol: 'http' })
+  ipfsLatest = ipfsClientLatest({ host: ipfsAddr, port: config.get('ipfsPort'), protocol: 'http' })
 
   // initialize ipfs here
   const identity = await ipfs.id()
@@ -23,17 +23,16 @@ const initIPFS = async () => {
   logger.info(`Current IPFS Peer ID: ${JSON.stringify(identity, null, 2)}`)
 
   // init latest version of ipfs
-  const identityLatest = await ipfsWithCat.id()
+  const identityLatest = await ipfsLatest.id()
   logger.info(`Current IPFS Peer ID (using latest version of ipfs client): ${JSON.stringify(identityLatest, null, 2)}`)
 
-  console.log({ ipfs, ipfsWithCat })
-  return { ipfs, ipfsWithCat }
+  return { ipfs, ipfsLatest }
 }
 
 module.exports = (async function () {
-  if (!ipfs || !ipfsWithCat) {
+  if (!ipfs || !ipfsLatest) {
     await initIPFS()
   }
 
-  return { ipfs, ipfsWithCat }
+  return { ipfs, ipfsLatest }
 })()

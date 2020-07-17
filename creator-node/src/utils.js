@@ -5,12 +5,12 @@ const config = require('./config')
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 
-let ipfsWithCat, ipfs
+let ipfsLatest, ipfs
 (
   async function () {
     const ipfsInstances = await require('./ipfsClient')
     ipfs = ipfsInstances.ipfs
-    ipfsWithCat = ipfsInstances.ipfsWithCat
+    ipfsLatest = ipfsInstances.ipfsLatest
   }
 )()
 
@@ -98,7 +98,7 @@ const ipfsSingleByteCat = (path, logContext, timeout = 1000) => {
       // ipfs.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
       // don't keep track of the results as this call is a proof-of-concept that the file exists in ipfs
       /* eslint-disable-next-line no-unused-vars */
-      for await (const chunk of ipfsWithCat.cat(path, { length: 1, timeout })) {
+      for await (const chunk of ipfsLatest.cat(path, { length: 1, timeout })) {
         continue
       }
       logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
@@ -234,7 +234,7 @@ async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContex
     }
 
     try {
-      let addResp = await ipfsWithCat.add(ipfsAddArray, { pin: false })
+      let addResp = await ipfsLatest.add(ipfsAddArray, { pin: false })
       logger.info(`rehydrateIpfsFromFsIfNecessary - addResp ${JSON.stringify(addResp)}`)
     } catch (e) {
       logger.error(`rehydrateIpfsFromFsIfNecessary - addResp ${e}, ${ipfsAddArray}`)

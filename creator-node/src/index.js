@@ -10,14 +10,14 @@ const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const BlacklistManager = require('./blacklistManager')
-let ipfs, ipfsWithCat
+let ipfs, ipfsLatest
 
 (
   async function () {
     try {
       const ipfsInstances = await require('./ipfsClient')
       ipfs = ipfsInstances.ipfs
-      ipfsWithCat = ipfsInstances.ipfsWithCat
+      ipfsLatest = ipfsInstances.ipfsLatest
     } catch (e) {
       exitWithError(e.message)
     }
@@ -123,7 +123,7 @@ const startApp = async () => {
     const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
     logger.info('Initialized audius libs')
 
-    appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager, ipfsWithCat)
+    appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager, ipfsLatest)
   }
 
   // when app terminates, close down any open DB connections gracefully

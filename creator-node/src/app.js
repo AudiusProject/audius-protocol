@@ -40,15 +40,15 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
-const initializeApp = (port, storageDir, ipfsAPI, audiusLibs, blacklistManager, ipfsAPIWithCat) => {
+const initializeApp = (port, storageDir, ipfsAPI, audiusLibs, blacklistManager, ipfsAPILatest) => {
   app.set('ipfsAPI', ipfsAPI)
   app.set('storagePath', storageDir)
   app.set('redisClient', redisClient)
   app.set('audiusLibs', audiusLibs)
   app.set('blacklistManager', blacklistManager)
 
-  // add version of ipfs with ipfs.cat() as app property
-  app.set('ipfsAPIWithCat', ipfsAPIWithCat)
+  // add a newer version of ipfs as app property
+  app.set('ipfsAPILatest', ipfsAPILatest)
 
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 
