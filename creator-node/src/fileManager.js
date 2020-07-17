@@ -96,7 +96,7 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
 
 /**
  * Save file to disk given IPFS multihash, and ensure availability.
- * This will only work for non-dir files
+ * @notice This will only work for non-dir files
  * Steps:
  *  - If file already stored on disk, return immediately and store to disk.
  *  - If file not already stored, fetch from IPFS and store to disk.
@@ -118,6 +118,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
   // If multihash already available on local ipfs node, cat file from local ipfs node
   req.logger.debug(`checking if ${multihash} already available on local ipfs node`)
   try {
+    // ipfsCat returns a Buffer
     let fileBuffer = await Utils.ipfsCat(multihash, req, 1000)
     fileFound = true
     req.logger.debug(`Retrieved file for ${multihash} from local ipfs node`)
@@ -158,9 +159,10 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       // ..replace(/\/$/, "") removes trailing slashes
       req.logger.debug(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
 
+      // Note - this is not compatible with image retrieval, which uses endpoint /ipfs/dir/[cid]
       const urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
 
-      // TODO make this more parallel
+      // Note - Requests are intentionally not parallel to minimize additional load on gateways
       for (let index = 0; index < urls.length; index++) {
         const url = urls[index]
         try {
@@ -202,7 +204,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     throw new Error(`Failed to retrieve file for multihash ${multihash} after trying ipfs & other creator node gateways`)
   }
 
-  // for verification purposes - dont' delete. verifies that the contents of the file match the file's cid
+  // for verification purposes - don't delete. verifies that the contents of the file match the file's cid
   const ipfs = req.app.get('ipfsLatestAPI')
   const content = fs.createReadStream(expectedStoragePath)
   for await (const result of ipfs.add(content, { onlyHash: true })) {

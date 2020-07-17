@@ -97,6 +97,14 @@ const ipfsSingleByteCat = (path, req, timeout = 1000) => new Promise(async (reso
   }
 })
 
+/**
+ * Call ipfs.cat on a path with optional timeout and length parameters
+ * @param {*} path IPFS cid for file
+ * @param {*} req request object
+ * @param {*} timeout timeout for IPFS op in ms
+ * @param {*} length length of data to retrieve from file
+ * @returns {Buffer}
+ */
 const ipfsCat = (path, req, timeout = 1000, length = null) => new Promise(async (resolve, reject) => {
   const start = Date.now()
   let ipfs = req.app.get('ipfsLatestAPI')
