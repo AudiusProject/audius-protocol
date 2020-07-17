@@ -1,5 +1,6 @@
 import logging # pylint: disable=C0302
 import datetime
+from src.queries.get_top_followee_windowed import get_top_followee_windowed
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
@@ -43,6 +44,8 @@ from src.queries.get_saves import get_saves
 from src.queries.get_users_account import get_users_account
 from src.queries.get_max_id import get_max_id
 from src.queries.get_top_playlists import get_top_playlists
+from src.queries.get_top_followee_windowed import get_top_followee_windowed
+from src.queries.get_top_followee_saves import get_top_followee_saves
 
 
 logger = logging.getLogger(__name__)
@@ -263,11 +266,11 @@ def get_top_playlists_route(type):
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
     except Exception as e:
-        return api_helpers.error_response(str(e), 400)
+        return api_helpers.error_response(str(e), 404)
 
 
 @bp.route("/top_followee_windowed/<type>/<window>")
-def get_top_followee_windowed(type, window):
+def get_top_followee_windowed_route(type, window):
     """
         Gets a windowed (over a certain timerange) view into the "top" of a certain type
         amongst followees. Requires an account.
@@ -281,85 +284,17 @@ def get_top_followee_windowed(type, window):
                 SqlAlchemy interval notation (week, month, year, etc.).
             limit?: (number) default=25, max=100
     """
-    if type != 'track':
-        return api_helpers.error_response(
-            "Invalid type provided, must be one of 'track'", 400
-        )
+    try:
+        tracks = get_top_followee_windowed(type, window, request.args.to_dict())
+        return api_helpers.success_response(tracks)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+    except Exception as e:
+        return api_helpers.error_response(str(e), 404)
 
-    valid_windows =['week', 'month', 'year']
-    if not window or window not in valid_windows:
-        return api_helpers.error_response(
-            "Invalid window provided, must be one of {}".format(valid_windows)
-        )
-
-    if 'limit' in request.args:
-        limit = min(int(request.args.get('limit')), 100)
-    else:
-        limit = 25
-
-    current_user_id = get_current_user_id()
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        # Construct a subquery to get the summed save + repost count for the `type`
-        count_subquery = create_save_repost_count_subquery(session, type)
-
-        followee_user_ids = (
-            session.query(Follow.followee_user_id)
-            .filter(
-                Follow.follower_user_id == current_user_id,
-                Follow.is_current == True,
-                Follow.is_delete == False
-            )
-        )
-        followee_user_ids_subquery = followee_user_ids.subquery()
-
-        # Queries for tracks joined against followed users and counts
-        tracks_query = (
-            session.query(
-                Track,
-            )
-            .join(
-                followee_user_ids_subquery,
-                Track.owner_id == followee_user_ids_subquery.c.followee_user_id
-            )
-            .join(
-                count_subquery,
-                Track.track_id == count_subquery.c['id']
-            )
-            .filter(
-                Track.is_current == True,
-                Track.is_delete == False,
-                Track.is_unlisted == False,
-                Track.stem_of == None,
-                # Query only tracks created `window` time ago (week, month, etc.)
-                Track.created_at >= text("NOW() - interval '1 {}'".format(window)),
-            )
-            .order_by(
-                desc(count_subquery.c['count']),
-                desc(Track.track_id)
-            )
-            .limit(limit)
-        )
-
-        tracks_query_results = tracks_query.all()
-        tracks = helpers.query_result_to_list(tracks_query_results)
-        track_ids = list(map(lambda track: track['track_id'], tracks))
-
-        # Bundle peripheral info into track results
-        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
-
-        if 'with_users' in request.args and request.args.get('with_users') != 'false':
-            user_id_list = get_users_ids(tracks)
-            users = get_users_by_id(session, user_id_list)
-            for track in tracks:
-                user = users[track['owner_id']]
-                if user:
-                    track['user'] = user
-
-    return api_helpers.success_response(tracks)
 
 @bp.route("/top_followee_saves/<type>")
-def get_top_followee_saves(type):
+def get_top_followee_saves_route(type):
     """
         Gets a global view into the most saved of `type` amongst followees. Requires an account.
         This endpoint is useful in generating views like:
@@ -370,88 +305,14 @@ def get_top_followee_saves(type):
                 track is supported.
             limit?: (number) default=25, max=100
     """
-    if type != 'track':
-        return api_helpers.error_response(
-            "Invalid type provided, must be one of 'track'", 400
-        )
-
-    if 'limit' in request.args:
-        limit = min(int(request.args.get('limit')), 100)
-    else:
-        limit = 25
-
-    current_user_id = get_current_user_id()
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        # Construct a subquery of all followees
-        followee_user_ids = (
-            session.query(Follow.followee_user_id)
-            .filter(
-                Follow.follower_user_id == current_user_id,
-                Follow.is_current == True,
-                Follow.is_delete == False
-            )
-        )
-        followee_user_ids_subquery = followee_user_ids.subquery()
-
-        # Construct a subquery of all saves from followees aggregated by id
-        save_count = (
-            session.query(
-                Save.save_item_id,
-                func.count(Save.save_item_id).label(response_name_constants.save_count)
-            )
-            .join(
-                followee_user_ids_subquery,
-                Save.user_id == followee_user_ids_subquery.c.followee_user_id
-            )
-            .filter(
-                Save.is_current == True,
-                Save.is_delete == False,
-                Save.save_type == type,
-            )
-            .group_by(
-                Save.save_item_id
-            )
-            .order_by(
-                desc(response_name_constants.save_count)
-            )
-            .limit(limit)
-        )
-        save_count_subquery = save_count.subquery()
-
-        # Query for tracks joined against followee save counts
-        tracks_query = (
-            session.query(
-                Track,
-            )
-            .join(
-                save_count_subquery,
-                Track.track_id == save_count_subquery.c.save_item_id
-            )
-            .filter(
-                Track.is_current == True,
-                Track.is_delete == False,
-                Track.is_unlisted == False,
-                Track.stem_of == None,
-            )
-        )
-
-        tracks_query_results = tracks_query.all()
-        tracks = helpers.query_result_to_list(tracks_query_results)
-        track_ids = list(map(lambda track: track['track_id'], tracks))
-
-        # bundle peripheral info into track results
-        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
-
-        if 'with_users' in request.args and request.args.get('with_users') != 'false':
-            user_id_list = get_users_ids(tracks)
-            users = get_users_by_id(session, user_id_list)
-            for track in tracks:
-                user = users[track['owner_id']]
-                if user:
-                    track['user'] = user
-
-    return api_helpers.success_response(tracks)
+    try:
+        tracks = get_top_followee_saves(type, request.args.to_dict())
+        return api_helpers.success_response(tracks)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+    except Exception as e:
+        return api_helpers.error_response(str(e), 404)
+    
 
 # Retrieves the top users for a requested genre under the follow parameters
 # - A given user can only be associated w/ one genre
