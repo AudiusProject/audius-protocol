@@ -1,13 +1,14 @@
 const path = require('path')
-const assert = require('assert')
 const fs = require('fs')
 const { promisify } = require('util')
 const writeFile = promisify(fs.writeFile)
 const multer = require('multer')
 const getUuid = require('uuid/v4')
+const axios = require('axios')
 
 const config = require('./config')
 const models = require('./models')
+const Utils = require('./utils')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -93,59 +94,126 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
   return { multihash: multihash, fileUUID: file.fileUUID }
 }
 
-/** Save file to disk given IPFS multihash, and ensure availability.
- *  Steps:
- *  - If file already stored on disk, return immediately.
- *  - If file not already stored, fetch from IPFS and store.
- *    - If multihash available on local inode, retrieve file.
+/**
+ * Save file to disk given IPFS multihash, and ensure availability.
+ * @notice This will only work for non-dir files
+ * Steps:
+ *  - If file already stored on disk, return immediately and store to disk.
+ *  - If file not already stored, fetch from IPFS and store to disk.
+ *    - If multihash available on local ipfs node, retrieve file.
  *    - If multihash not available locally, fetch file from IPFS.
- *  - Write file to disk.
- *  - Add file to local inode if not already.
+ *  - If file is not available via IPFS try other cnode gateways for user's replica set.
+ *  - Add file to local ipfs node if not already there.
  */
-async function saveFileForMultihash (req, multihash, expectedStoragePath) {
+async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry = []) {
   // If file already stored on disk, return immediately.
   if (fs.existsSync(expectedStoragePath)) {
     req.logger.info(`File already stored at ${expectedStoragePath} for ${multihash}`)
     return expectedStoragePath
   }
 
-  // If file not already stored, fetch from IPFS and store at storagePath.
-  const ipfs = req.app.get('ipfsAPI')
-  let fileBuffer = null
-  req.logger.info(`Storing file at ${expectedStoragePath} for track multihash ${multihash}`)
+  // If file not already stored, fetch and store at storagePath.
+  let fileFound = false
 
-  // If multihash already available on local INode, cat file from local ipfs node
-  req.logger.info(`checking if ${multihash} already available on local ipfs node`)
+  // If multihash already available on local ipfs node, cat file from local ipfs node
+  req.logger.debug(`checking if ${multihash} already available on local ipfs node`)
   try {
-    fileBuffer = await ipfs.cat(multihash)
-    req.logger.info(`Retrieved file for ${multihash} from local ipfs node`)
+    // ipfsCat returns a Buffer
+    let fileBuffer = await Utils.ipfsCat(multihash, req, 1000)
+    fileFound = true
+    req.logger.debug(`Retrieved file for ${multihash} from local ipfs node`)
+    // Write file to disk.
+    await writeFile(expectedStoragePath, fileBuffer)
+    req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs cat`)
   } catch (e) {
     req.logger.info(`Multihash ${multihash} is not available on local ipfs node`)
   }
 
-  // If file not already available on local INode, fetch from IPFS.
-  if (fileBuffer === null) {
-    req.logger.info(`Attempting to get ${multihash} from IPFS`)
-    let output
+  // If file not already available on local ipfs node, fetch from IPFS.
+  if (!fileFound) {
+    req.logger.debug(`Attempting to get ${multihash} from IPFS`)
     try {
-      output = await ipfs.get(multihash)
+      // ipfsGet returns a BufferListStream object which is not a buffer
+      // not compatible into writeFile directly, but it can be streamed to a file
+      let fileBL = await Utils.ipfsGet(multihash, req, 5000)
+      req.logger.debug(`retrieved file for multihash ${multihash} from local ipfs node`)
+
+      // Write file to disk.
+      const destinationStream = fs.createWriteStream(expectedStoragePath)
+      fileBL.pipe(destinationStream)
+      await new Promise((resolve, reject) => {
+        destinationStream.on('finish', () => { resolve() })
+        destinationStream.on('error', err => { reject(err) })
+        fileBL.on('error', err => { destinationStream.end(); reject(err) })
+      })
+      req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs get`)
     } catch (e) {
-      throw new Error(`Failed to retrieve file for multihash ${multihash} from IPFS`)
+      req.logger.info(`Failed to retrieve file for multihash ${multihash} from IPFS ${e.message}`)
     }
-    if (output.length !== 1) throw new Error('Audius track segment multihash must map to 1 file')
-    fileBuffer = output[0].content
-    req.logger.info(`retrieved file for multihash ${multihash} from path ${output[0].path}`)
   }
 
-  // Write file to disk.
-  const storagePath = path.join(req.app.get('storagePath'), multihash)
-  assert.strictEqual(storagePath, expectedStoragePath)
-  req.logger.info(`writing file to ${storagePath}...`)
-  await writeFile(storagePath, fileBuffer)
-  req.logger.info(`wrote file to ${storagePath}`)
+  // if file is still null, try to fetch from other cnode gateways if user has nodes in replica set
+  if (!fileFound && gatewaysToTry.length > 0) {
+    try {
+      let response
+      // ..replace(/\/$/, "") removes trailing slashes
+      req.logger.debug(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
 
-  req.logger.info(`\nAdded file: ${multihash} at ${storagePath}`)
-  return storagePath
+      // Note - this is not compatible with image retrieval, which uses endpoint /ipfs/dir/[cid]
+      const urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
+
+      // Note - Requests are intentionally not parallel to minimize additional load on gateways
+      for (let index = 0; index < urls.length; index++) {
+        const url = urls[index]
+        try {
+          const resp = await axios({
+            method: 'get',
+            url,
+            responseType: 'stream',
+            timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
+          })
+          if (resp.data) {
+            response = resp
+            break
+          }
+        } catch (e) {
+          continue
+        }
+      }
+
+      if (!response || !response.data) {
+        throw new Error(`Couldn't find files on other creator nodes`)
+      }
+
+      const destinationStream = fs.createWriteStream(expectedStoragePath)
+      response.data.pipe(destinationStream)
+      await new Promise((resolve, reject) => {
+        destinationStream.on('finish', () => { resolve() })
+        destinationStream.on('error', err => { reject(err) })
+        response.data.on('error', err => { destinationStream.end(); reject(err) })
+      })
+
+      req.logger.info(`wrote file to ${expectedStoragePath}`)
+    } catch (e) {
+      throw new Error(`Failed to retrieve file for multihash ${multihash} from other creator node gateways: ${e.message}`)
+    }
+  }
+
+  // file was not found on ipfs or any gateway
+  if (!fileFound) {
+    throw new Error(`Failed to retrieve file for multihash ${multihash} after trying ipfs & other creator node gateways`)
+  }
+
+  // for verification purposes - don't delete. verifies that the contents of the file match the file's cid
+  const ipfs = req.app.get('ipfsLatestAPI')
+  const content = fs.createReadStream(expectedStoragePath)
+  for await (const result of ipfs.add(content, { onlyHash: true, timeout: 2000 })) {
+    if (multihash !== result.cid.toString()) {
+      throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${result.cid.toString()}`)
+    }
+  }
+
+  return expectedStoragePath
 }
 
 /** (1) Remove all files in requested fileDir

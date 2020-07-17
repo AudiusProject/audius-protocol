@@ -1,5 +1,6 @@
 const { recoverPersonalSignature } = require('eth-sig-util')
 const fs = require('fs')
+const { BufferListStream } = require('bl')
 
 const models = require('./models')
 
@@ -73,7 +74,8 @@ async function getIPFSPeerId (ipfs, config) {
   return ipfsIDObj
 }
 
-/** Cat single byte of file at given filepath. If ipfs.cat() call takes longer than the timeout time or
+/**
+ * Cat single byte of file at given filepath. If ipfs.cat() call takes longer than the timeout time or
  * something goes wrong, an error will be thrown.
 */
 const ipfsSingleByteCat = (path, req, timeout = 1000) => new Promise(async (resolve, reject) => {
@@ -91,6 +93,70 @@ const ipfsSingleByteCat = (path, req, timeout = 1000) => new Promise(async (reso
     resolve()
   } catch (e) {
     req.logger.error(`ipfsSingleByteCat - Error: ${e}`)
+    reject(e)
+  }
+})
+
+/**
+ * Call ipfs.cat on a path with optional timeout and length parameters
+ * @param {*} path IPFS cid for file
+ * @param {*} req request object
+ * @param {*} timeout timeout for IPFS op in ms
+ * @param {*} length length of data to retrieve from file
+ * @returns {Buffer}
+ */
+const ipfsCat = (path, req, timeout = 1000, length = null) => new Promise(async (resolve, reject) => {
+  const start = Date.now()
+  let ipfs = req.app.get('ipfsLatestAPI')
+
+  try {
+    let chunks = []
+    let options = {}
+    if (length) options.length = length
+    if (timeout) options.timeout = timeout
+    // ipfs.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
+    /* eslint-disable-next-line no-unused-vars */
+    for await (const chunk of ipfs.cat(path, options)) {
+      chunks.push(chunk)
+    }
+    req.logger.info(`ipfsCat - Retrieved ${path} in ${Date.now() - start}ms`)
+    resolve(Buffer.concat(chunks))
+  } catch (e) {
+    req.logger.error(`ipfsCat - Error: ${e}`)
+    reject(e)
+  }
+})
+
+/**
+ * Call ipfs.get on a path with an optional timeout
+ * @param {String} path IPFS cid for file
+ * @param {Object} req request object
+ * @param {Number} timeout timeout in ms
+ * @returns {BufferListStream}
+ */
+const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, reject) => {
+  const start = Date.now()
+  let ipfs = req.app.get('ipfsLatestAPI')
+
+  try {
+    let chunks = []
+    let options = {}
+    if (timeout) options.timeout = timeout
+    // ipfs.get() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
+    /* eslint-disable-next-line no-unused-vars */
+    for await (const file of ipfs.get(path, options)) {
+      if (!file.content) continue
+
+      const content = new BufferListStream()
+      for await (const chunk of file.content) {
+        content.append(chunk)
+      }
+      resolve(content)
+    }
+    req.logger.info(`ipfsGet - Retrieved ${path} in ${Date.now() - start}ms`)
+    resolve(Buffer.concat(chunks))
+  } catch (e) {
+    req.logger.error(`ipfsGet - Error: ${e}`)
     reject(e)
   }
 })
@@ -219,3 +285,5 @@ module.exports.getIPFSPeerId = getIPFSPeerId
 module.exports.rehydrateIpfsFromFsIfNecessary = rehydrateIpfsFromFsIfNecessary
 module.exports.rehydrateIpfsDirFromFsIfNecessary = rehydrateIpfsDirFromFsIfNecessary
 module.exports.ipfsSingleByteCat = ipfsSingleByteCat
+module.exports.ipfsCat = ipfsCat
+module.exports.ipfsGet = ipfsGet
