@@ -105,7 +105,7 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
  *  - If file is not available via IPFS try other cnode gateways for user's replica set.
  *  - Add file to local ipfs node if not already there.
  */
-async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry) {
+async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry = []) {
   // If file already stored on disk, return immediately.
   if (fs.existsSync(expectedStoragePath)) {
     req.logger.info(`File already stored at ${expectedStoragePath} for ${multihash}`)
@@ -152,8 +152,8 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     }
   }
 
-  // if file is still null, try to fetch from other cnode gateways with onlyFS=true
-  if (!fileFound) {
+  // if file is still null, try to fetch from other cnode gateways if user has nodes in replica set
+  if (!fileFound && gatewaysToTry.length > 0) {
     try {
       let response
       // ..replace(/\/$/, "") removes trailing slashes
@@ -207,7 +207,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
   // for verification purposes - don't delete. verifies that the contents of the file match the file's cid
   const ipfs = req.app.get('ipfsLatestAPI')
   const content = fs.createReadStream(expectedStoragePath)
-  for await (const result of ipfs.add(content, { onlyHash: true })) {
+  for await (const result of ipfs.add(content, { onlyHash: true, timeout: 2000 })) {
     if (multihash !== result.cid.toString()) {
       throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${result.cid.toString()}`)
     }

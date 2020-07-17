@@ -200,14 +200,23 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         throw new Error(`Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`)
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
-      const myCnodeEndpoint = await middlewares.getOwnEndpoint(req)
-      const userReplicaSet = await middlewares.getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
+      let userReplicaSet = []
+      try{
+        const myCnodeEndpoint = await middlewares.getOwnEndpoint(req)
+        userReplicaSet = await middlewares.getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
+        
+        // push user metadata node to user's replica set if defined
+        if (config.get('userMetadataNodeUrl')) userReplicaSet.push(config.get('userMetadataNodeUrl'))
 
-      // gateways to try  is user metadata + replica set (excluding self). Spread + set uniq's the array
-      const gatewaysToTry = [...new Set([
-        config.get('userMetadataNodeUrl'),
-        ...userReplicaSet.filter(url => url !== myCnodeEndpoint)
-      ])]
+        // filter out current node from user's replica set
+        userReplicaSet = userReplicaSet.filter(url => url !== myCnodeEndpoint)
+
+        // Spread + set uniq's the array
+        userReplicaSet = [...new Set(userReplicaSet)]
+      } catch (e) {
+        req.logger.error(`Couldn't get user's replica sets, can't use cnode gateways in saveFileForMultihash`)
+      }
+
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
         throw new Error(`Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`)
       }
@@ -310,7 +319,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
           req.logger.info(`TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit}...`)
           await Promise.all(trackFilesSlice.map(
-            trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath, gatewaysToTry)
+            trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
           ))
         }
         req.logger.info('Saved all track files to disk and ipfs.')
