@@ -1,3 +1,4 @@
+from src import exceptions
 from sqlalchemy import func, desc
 
 from src.models import User, Playlist, Save, SaveType, Follow
@@ -17,7 +18,7 @@ def get_savers_for_playlist(save_playlist_id):
             Playlist.is_current == True
         ).first()
         if playlist_entry is None:
-            raise Exception('Resource not found for provided playlist id')
+            raise exceptions.NotFoundError('Resource not found for provided playlist id')
 
         # Subquery to get all (user_id, follower_count) entries from Follows table.
         follower_count_subquery = (

@@ -1,28 +1,8 @@
-import logging # pylint: disable=C0302
-import datetime
-from src.queries.get_top_followee_windowed import get_top_followee_windowed
-from src.queries.get_followees_for_user import get_followees_for_user
-from src.queries.get_followers_for_user import get_followers_for_user
-from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
-import sqlalchemy
-from sqlalchemy import func, asc, desc, text, case, or_, and_, Integer, Float, Date
-from sqlalchemy.orm import aliased
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.dialects import postgresql
+import logging  # pylint: disable=C0302
 
 from flask import Blueprint, request
 
 from src import api_helpers, exceptions
-from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType, Remix, Stem
-from src.utils import helpers
-from src.utils.db_session import get_db_read_replica
-from src.queries import response_name_constants
-from src.queries.query_helpers import get_current_user_id, parse_sort_param, populate_user_metadata, \
-    populate_track_metadata, populate_playlist_metadata, get_repost_counts, get_save_counts, \
-    get_pagination_vars, paginate_query, get_users_by_id, get_users_ids, \
-    create_save_repost_count_subquery, decayed_score, filter_to_playlist_mood, \
-    create_followee_playlists_subquery, add_users_to_tracks, create_save_count_subquery, \
-    create_repost_count_subquery
 
 from src.queries.get_users import get_users
 from src.queries.get_tracks import get_tracks
@@ -56,14 +36,17 @@ from src.queries.get_previously_private_playlists import get_previously_private_
 logger = logging.getLogger(__name__)
 bp = Blueprint("queries", __name__)
 
+
 def to_dict(multi_dict):
     """Converts a multi dict into a dict where only list entries are not flat"""
-    return { k: v if len(v) > 1 else v[0] for (k, v) in multi_dict.to_dict(flat=False).items() }
+    return {k: v if len(v) > 1 else v[0] for (k, v) in multi_dict.to_dict(flat=False).items()}
 
 ######## ROUTES ########
 
 # Returns all users (paginated) with each user's follow count
 # Optionally filters by is_creator, wallet, or user ids
+
+
 @bp.route("/users", methods=("GET",))
 def get_users_route():
     users = get_users(to_dict(request.args))
@@ -71,6 +54,8 @@ def get_users_route():
 
 # Returns all tracks (paginated) with each track's repost count
 # optionally filters by track ids
+
+
 @bp.route("/tracks", methods=("GET",))
 def get_tracks_route():
     tracks = get_tracks(to_dict(request.args))
@@ -82,7 +67,8 @@ def get_tracks_route():
 #   { "tracks": [{ "id": number, "url_title": string, "handle": string }]}
 @bp.route("/tracks_including_unlisted", methods=("POST",))
 def get_tracks_including_unlisted_route():
-    tracks = get_tracks_including_unlisted(to_dict(request.args), request.get_json())
+    tracks = get_tracks_including_unlisted(
+        to_dict(request.args), request.get_json())
     return api_helpers.success_response(tracks)
 
 
@@ -146,9 +132,10 @@ def get_follow_intersection_users_route(followee_user_id, follower_user_id):
 @bp.route("/users/intersection/repost/track/<int:repost_track_id>/<int:follower_user_id>", methods=("GET",))
 def get_track_repost_intersection_users_route(repost_track_id, follower_user_id):
     try:
-        users = get_track_repost_intersection_users(repost_track_id, follower_user_id)
+        users = get_track_repost_intersection_users(
+            repost_track_id, follower_user_id)
         return api_helpers.success_response(users)
-    except Exception as e:
+    except exceptions.NotFoundError as e:
         return api_helpers.error_response(str(e), 404)
 
 
@@ -159,9 +146,10 @@ def get_track_repost_intersection_users_route(repost_track_id, follower_user_id)
 @bp.route("/users/intersection/repost/playlist/<int:repost_playlist_id>/<int:follower_user_id>", methods=("GET",))
 def get_playlist_repost_intersection_users_route(repost_playlist_id, follower_user_id):
     try:
-        users = get_playlist_repost_intersection_users(repost_playlist_id, follower_user_id)
+        users = get_playlist_repost_intersection_users(
+            repost_playlist_id, follower_user_id)
         return api_helpers.success_response(users)
-    except Exception as e:
+    except exceptions.NotFoundError as e:
         return api_helpers.error_response(str(e), 404)
 
 
@@ -185,7 +173,7 @@ def get_reposters_for_track_route(repost_track_id):
     try:
         user_results = get_reposters_for_track(repost_track_id)
         return api_helpers.success_response(user_results)
-    except Exception as e:
+    except exceptions.NotFoundError as e:
         return api_helpers.error_response(str(e), 404)
 
 
@@ -195,7 +183,7 @@ def get_reposters_for_playlist_route(repost_playlist_id):
     try:
         user_results = get_reposters_for_playlist(repost_playlist_id)
         return api_helpers.success_response(user_results)
-    except Exception as e:
+    except exceptions.NotFoundError as e:
         return api_helpers.error_response(str(e), 404)
 
 
@@ -205,7 +193,7 @@ def get_savers_for_track_route(save_track_id):
     try:
         user_results = get_savers_for_track(save_track_id)
         return api_helpers.success_response(user_results)
-    except Exception as e:
+    except exceptions.NotFoundError as e:
         return api_helpers.error_response(str(e), 404)
 
 
@@ -215,7 +203,7 @@ def get_savers_for_playlist_route(save_playlist_id):
     try:
         user_results = get_savers_for_playlist(save_playlist_id)
         return api_helpers.success_response(user_results)
-    except Exception as e:
+    except exceptions.NotFoundError as e:
         return api_helpers.error_response(str(e), 404)
 
 
@@ -249,8 +237,6 @@ def get_max_id_route(type):
         return api_helpers.success_response(latest)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
-    except Exception as e:
-        return api_helpers.error_response(str(e), 404)
 
 
 @bp.route("/top/<type>", methods=("GET",))
@@ -274,8 +260,6 @@ def get_top_playlists_route(type):
         return api_helpers.success_response(playlists)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
-    except Exception as e:
-        return api_helpers.error_response(str(e), 404)
 
 
 @bp.route("/top_followee_windowed/<type>/<window>")
@@ -298,8 +282,6 @@ def get_top_followee_windowed_route(type, window):
         return api_helpers.success_response(tracks)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
-    except Exception as e:
-        return api_helpers.error_response(str(e), 404)
 
 
 @bp.route("/top_followee_saves/<type>")
@@ -319,8 +301,6 @@ def get_top_followee_saves_route(type):
         return api_helpers.success_response(tracks)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
-    except Exception as e:
-        return api_helpers.error_response(str(e), 404)
 
 
 # Retrieves the top users for a requested genre under the follow parameters
@@ -346,8 +326,6 @@ def get_remixes_of_route(track_id):
         return api_helpers.success_response(remixes)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
-    except Exception as e:
-        return api_helpers.error_response(str(e), 404)
 
 
 # Get the tracks that are 'parent' remixes of the requested track
@@ -365,8 +343,6 @@ def get_previously_unlisted_tracks_route():
         return api_helpers.success_response(tracks)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
-    except Exception as e:
-        return api_helpers.error_response(str(e), 404)
 
 
 # Get the playlists that were previously private and became public after the date provided
@@ -377,5 +353,3 @@ def get_previously_private_playlists_route():
         return api_helpers.success_response(playlists)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
-    except Exception as e:
-        return api_helpers.error_response(str(e), 404)

@@ -29,12 +29,11 @@ def get_max_id(type):
                 .scalar()
             )
             return latest
-        elif type == 'user':
-            latest = (
-                session
-                .query(func.max(User.user_id))
-                .scalar()
-            )
-            return latest
 
-    raise Exception("Unable to compute latest")
+        # user
+        latest = (
+            session
+            .query(func.max(User.user_id))
+            .scalar()
+        )
+        return latest

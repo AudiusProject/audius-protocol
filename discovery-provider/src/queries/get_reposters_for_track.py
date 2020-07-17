@@ -1,3 +1,4 @@
+from src import exceptions
 from sqlalchemy import func, desc
 
 from src.models import User, Track, Repost, RepostType, Follow
@@ -17,7 +18,7 @@ def get_reposters_for_track(repost_track_id):
             Track.is_current == True
         ).first()
         if track_entry is None:
-            raise Exception('Resource not found for provided track id')
+            raise exceptions.NotFoundError('Resource not found for provided track id')
 
         # Subquery to get all (user_id, follower_count) entries from Follows table.
         follower_count_subquery = (

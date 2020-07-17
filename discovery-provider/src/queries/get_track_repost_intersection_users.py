@@ -1,3 +1,4 @@
+from src import exceptions
 from src.models import User, Track, Repost, RepostType, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
@@ -14,7 +15,7 @@ def get_track_repost_intersection_users(repost_track_id, follower_user_id):
             Track.is_current == True
             ).first()
         if track_entry is None:
-            raise Exception('Resource not found for provided track id')
+            raise exceptions.NotFoundError('Resource not found for provided track id')
 
         query = (
             session.query(User)

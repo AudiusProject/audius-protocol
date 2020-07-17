@@ -1,3 +1,4 @@
+from src import exceptions
 from src.models import User, Playlist, Repost, RepostType, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
@@ -14,7 +15,7 @@ def get_playlist_repost_intersection_users(repost_playlist_id, follower_user_id)
             Playlist.is_current == True
         ).first()
         if playlist_entry is None:
-            raise Exception('Resource not found for provided playlist id')
+            raise exceptions.NotFoundError('Resource not found for provided playlist id')
 
         query = (
             session.query(User)
