@@ -48,6 +48,7 @@ from src.queries.get_top_followee_windowed import get_top_followee_windowed
 from src.queries.get_top_followee_saves import get_top_followee_saves
 from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_remixes_of import get_remixes_of
+from src.queries.get_remix_track_parents import get_remix_track_parents
 
 
 logger = logging.getLogger(__name__)
@@ -349,38 +350,10 @@ def get_remixes_of_route(track_id):
 
 # Get the tracks that are 'parent' remixes of the requested track
 @bp.route("/remixes/<int:track_id>/parents", methods=("GET",))
-def get_remix_track_parents(track_id):
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        base_query = (
-            session.query(Track)
-            .join(
-                Remix,
-                and_(
-                    Remix.parent_track_id == Track.track_id,
-                    Remix.child_track_id == track_id
-                )
-            )
-            .filter(
-                Track.is_current == True,
-                Track.is_unlisted == False
-            )
-            .order_by(
-                desc(Track.created_at),
-                desc(Track.track_id)
-            )
-        )
-
-        tracks = paginate_query(base_query).all()
-        tracks = helpers.query_result_to_list(tracks)
-        track_ids = list(map(lambda track: track["track_id"], tracks))
-        current_user_id = get_current_user_id(required=False)
-        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
-
-        if "with_users" in request.args and request.args.get("with_users") != 'false':
-            add_users_to_tracks(session, tracks)
-
+def get_remix_track_parents_route(track_id):
+    tracks = get_remix_track_parents(track_id, to_dict(request.args))
     return api_helpers.success_response(tracks)
+
 
 # Get the tracks that were previously unlisted and became public after the date provided
 @bp.route("/previously_unlisted/track", methods=("GET",))
