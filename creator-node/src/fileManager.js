@@ -142,6 +142,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       fileBL.pipe(destinationStream)
       await new Promise((resolve, reject) => {
         destinationStream.on('finish', () => { resolve() })
+        destinationStream.on('error', err => { reject(err) })
         fileBL.on('error', err => { destinationStream.end(); reject(err) })
       })
       req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs get`)
@@ -186,6 +187,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       response.data.pipe(destinationStream)
       await new Promise((resolve, reject) => {
         destinationStream.on('finish', () => { resolve() })
+        destinationStream.on('error', err => { reject(err) })
         response.data.on('error', err => { destinationStream.end(); reject(err) })
       })
 
