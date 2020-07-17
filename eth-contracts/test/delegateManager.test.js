@@ -1712,14 +1712,27 @@ contract('DelegateManager', async (accounts) => {
         'Expect pending request'
       )
 
-      // fail to removeDelegator from not a SP or governance
+      // Fail to call removeDelegator from not a SP or governance
       await _lib.assertRevert(
         delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: delegatorAccount1 }),
         "Only callable by target SP or governance"
       )
       
-      // Forcibly remove the delegator from service provider account
+      // Confirm failure without a pending request
+      await _lib.assertRevert(
+        delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount }),
+        "No pending request"
+      )
+
+      // Remove delegator
+      await delegateManager.requestRemoveDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+
+      let requestTargetBlock = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount1)
+
+      // Move to valid block and actually perform remove
+      await time.advanceBlockTo(requestTargetBlock)
       await delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+
       let stakeAfterRemoval = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
       let delegatorsList = await delegateManager.getDelegatorsList(stakerAccount)
       pendingUndelegateRequest = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
@@ -1768,7 +1781,11 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('Deregister delegator', async () => {
+    // TODO: Validate behavior around removeDelegator
+    //       - expiry block calculated correctly
+    //       - cancelRemoveDelegator behavior resets request
+    //       - evaluation window enforced 
+    it.only('removeDelegator validation', async () => {
       const delegationAmount = _lib.toBN(100)
       // Transfer tokens to delegator
       await token.transfer(delegatorAccount1, delegationAmount, { from: proxyDeployerAddress })
