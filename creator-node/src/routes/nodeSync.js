@@ -201,10 +201,10 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
       let userReplicaSet = []
-      try{
+      try {
         const myCnodeEndpoint = await middlewares.getOwnEndpoint(req)
         userReplicaSet = await middlewares.getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
-        
+
         // push user metadata node to user's replica set if defined
         if (config.get('userMetadataNodeUrl')) userReplicaSet.push(config.get('userMetadataNodeUrl'))
 
