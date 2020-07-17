@@ -38,6 +38,7 @@ from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_reposters_for_track import get_reposters_for_track
 from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
 from src.queries.get_savers_for_track import get_savers_for_track
+from src.queries.get_savers_for_playlist import get_savers_for_playlist
 
 
 logger = logging.getLogger(__name__)
@@ -194,67 +195,12 @@ def get_savers_for_track_route(save_track_id):
 
 # Get paginated users that saved provided save_playlist_id, sorted by their follower count descending.
 @bp.route("/users/saves/playlist/<int:save_playlist_id>", methods=("GET",))
-def get_savers_for_playlist(save_playlist_id):
-    user_results = []
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        # Ensure Playlist exists for provided save_playlist_id.
-        playlist_entry = session.query(Playlist).filter(
-            Playlist.playlist_id == save_playlist_id,
-            Playlist.is_current == True
-        ).first()
-        if playlist_entry is None:
-            return api_helpers.error_response('Resource not found for provided playlist id', 404)
-
-        # Subquery to get all (user_id, follower_count) entries from Follows table.
-        follower_count_subquery = (
-            session.query(
-                Follow.followee_user_id,
-                func.count(Follow.followee_user_id).label(response_name_constants.follower_count)
-            )
-            .filter(
-                Follow.is_current == True,
-                Follow.is_delete == False
-            )
-            .group_by(Follow.followee_user_id)
-            .subquery()
-        )
-
-        # Get all Users that saved Playlist, ordered by follower_count desc & paginated.
-        query = (
-            session.query(
-                User,
-                # Replace null values from left outer join with 0 to ensure sort works correctly.
-                (func.coalesce(follower_count_subquery.c.follower_count, 0)).label(response_name_constants.follower_count)
-            )
-            # Left outer join to associate users with their follower count.
-            .outerjoin(follower_count_subquery, follower_count_subquery.c.followee_user_id == User.user_id)
-            .filter(
-                User.is_current == True,
-                # Only select users that saved given playlist.
-                User.user_id.in_(
-                    session.query(Save.user_id)
-                    .filter(
-                        Save.save_item_id == save_playlist_id,
-                        # Select Saves for Playlists and Albums (i.e. not Tracks).
-                        Save.save_type != SaveType.track,
-                        Save.is_current == True,
-                        Save.is_delete == False
-                    )
-                )
-            )
-            .order_by(desc(response_name_constants.follower_count))
-        )
-        user_results = paginate_query(query).all()
-
-        # Fix format to return only Users objects with follower_count field.
-        if user_results:
-            users, follower_counts = zip(*user_results)
-            user_results = helpers.query_result_to_list(users)
-            for i, user in enumerate(user_results):
-                user[response_name_constants.follower_count] = follower_counts[i]
-
-    return api_helpers.success_response(user_results)
+def get_savers_for_playlist_route(save_playlist_id):
+    try:
+        user_results = get_savers_for_playlist(save_playlist_id)
+        return api_helpers.success_response(user_results)
+    except Exception as e:
+        return api_helpers.error_response(str(e), 404)
 
 
 # Get paginated saves of provided save_type for current user.
