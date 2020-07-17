@@ -168,7 +168,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
             method: 'get',
             url,
             responseType: 'stream',
-            timeout: 20000 /* ms */
+            timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
           })
           if (resp.data) {
             response = resp
@@ -197,15 +197,19 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     }
   }
 
-  // for debugging purposes - dont' delete. verifies that the contents of the file match the file's cid
-  // const ipfs = req.app.get('ipfsLatestAPI')
-  // const content = fs.readFileSync(expectedStoragePath)
-  // for await (const result of ipfs.add(content, { onlyHash: true })) {
-  //   if (multihash !== result.path) {
-  //     console.error(`File contents don't match IPFS hash multihash: ${multihash} result.path: ${result.path}`)
-  //   }
-  //   else console.log("files matched", multihash)
-  // }
+  // file was not found on ipfs or any gateway
+  if (!fileFound) {
+    throw new Error(`Failed to retrieve file for multihash ${multihash} after trying ipfs & other creator node gateways`)
+  }
+
+  // for verification purposes - dont' delete. verifies that the contents of the file match the file's cid
+  const ipfs = req.app.get('ipfsLatestAPI')
+  const content = fs.createReadStream(expectedStoragePath)
+  for await (const result of ipfs.add(content, { onlyHash: true })) {
+    if (multihash !== result.cid.toString()) {
+      throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${result.cid.toString()}`)
+    }
+  }
 
   return expectedStoragePath
 }
