@@ -46,10 +46,15 @@ from src.queries.get_max_id import get_max_id
 from src.queries.get_top_playlists import get_top_playlists
 from src.queries.get_top_followee_windowed import get_top_followee_windowed
 from src.queries.get_top_followee_saves import get_top_followee_saves
+from src.queries.get_top_genre_users import get_top_genre_users
 
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("queries", __name__)
+
+def to_dict(multi_dict):
+    """Converts a multi dict into a dict where only list entries are not flat"""
+    return { k: v if len(v) > 1 else v[0] for (k, v) in multi_dict.to_dict(flat=False).items() }
 
 ######## ROUTES ########
 
@@ -57,14 +62,14 @@ bp = Blueprint("queries", __name__)
 # Optionally filters by is_creator, wallet, or user ids
 @bp.route("/users", methods=("GET",))
 def get_users_route():
-    users = get_users(request.args.to_dict())
+    users = get_users(to_dict(request.args))
     return api_helpers.success_response(users)
 
 # Returns all tracks (paginated) with each track's repost count
 # optionally filters by track ids
 @bp.route("/tracks", methods=("GET",))
 def get_tracks_route():
-    tracks = get_tracks(request.args.to_dict())
+    tracks = get_tracks(to_dict(request.args))
     return api_helpers.success_response(tracks)
 
 
@@ -73,7 +78,7 @@ def get_tracks_route():
 #   { "tracks": [{ "id": number, "url_title": string, "handle": string }]}
 @bp.route("/tracks_including_unlisted", methods=("POST",))
 def get_tracks_including_unlisted_route():
-    tracks = get_tracks_including_unlisted(request.args.to_dict(), request.get_json())
+    tracks = get_tracks_including_unlisted(to_dict(request.args), request.get_json())
     return api_helpers.success_response(tracks)
 
 
@@ -87,7 +92,7 @@ def get_stems_of_route(track_id):
 # optional parameters playlist owner's user_id, playlist_id = []
 @bp.route("/playlists", methods=("GET",))
 def get_playlists_route():
-    playlists = get_playlists(request.args.to_dict())
+    playlists = get_playlists(to_dict(request.args))
     return api_helpers.success_response(playlists)
 
 
@@ -104,7 +109,7 @@ def get_playlists_route():
 #   - Sort combined results by 'timestamp' field and return
 @bp.route("/feed", methods=("GET",))
 def get_feed_route():
-    feed_results = get_feed(request.args.to_dict())
+    feed_results = get_feed(to_dict(request.args))
     return api_helpers.success_response(feed_results)
 
 
@@ -117,7 +122,7 @@ def get_feed_route():
 # - sort combined results by activity_timestamp field and return
 @bp.route("/feed/reposts/<int:user_id>", methods=("GET",))
 def get_repost_feed_for_user_route(user_id):
-    feed_results = get_repost_feed_for_user(user_id, request.args.to_dict())
+    feed_results = get_repost_feed_for_user(user_id, to_dict(request.args))
     return api_helpers.success_response(feed_results)
 
 
@@ -226,7 +231,7 @@ def get_saves_route(save_type):
 @bp.route("/users/account", methods=("GET",))
 def get_users_account_route():
     try:
-        user = get_users_account(request.args.to_dict())
+        user = get_users_account(to_dict(request.args))
         return api_helpers.success_response(user)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
@@ -261,7 +266,7 @@ def get_top_playlists_route(type):
         filter?: (string) Optional filter to include (supports 'followees') default=None
     """
     try:
-        playlists = get_top_playlists(type, request.args.to_dict())
+        playlists = get_top_playlists(type, to_dict(request.args))
         return api_helpers.success_response(playlists)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
@@ -285,7 +290,7 @@ def get_top_followee_windowed_route(type, window):
             limit?: (number) default=25, max=100
     """
     try:
-        tracks = get_top_followee_windowed(type, window, request.args.to_dict())
+        tracks = get_top_followee_windowed(type, window, to_dict(request.args))
         return api_helpers.success_response(tracks)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
@@ -306,13 +311,13 @@ def get_top_followee_saves_route(type):
             limit?: (number) default=25, max=100
     """
     try:
-        tracks = get_top_followee_saves(type, request.args.to_dict())
+        tracks = get_top_followee_saves(type, to_dict(request.args))
         return api_helpers.success_response(tracks)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
     except Exception as e:
         return api_helpers.error_response(str(e), 404)
-    
+
 
 # Retrieves the top users for a requested genre under the follow parameters
 # - A given user can only be associated w/ one genre
@@ -323,103 +328,9 @@ def get_top_followee_saves_route(type):
 #   urlParam: {Array<string>?}  genre       List of genres to query for the 'top' users
 #   urlParam: {boolean?}        with_user   Boolean if the response should be the user ID or user metadata defaults to false
 @bp.route("/users/genre/top", methods=("GET",))
-def get_top_genre_users():
-
-    genres = []
-    if "genre" in request.args:
-        genres = request.args.getlist("genre")
-
-    # If the with_users url arg is provided, then populate the user metadata else return user ids
-    with_users = "with_users" in request.args and request.args.get("with_users") != 'false'
-
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        with_genres = len(genres) != 0
-
-        # Associate the user w/ a genre by counting the total # of tracks per genre
-        # taking the genre w/ the most tracks (using genre name as secondary sort)
-        user_genre_count_query = (
-            session.query(
-                User.user_id.label('user_id'),
-                Track.genre.label('genre'),
-                func.row_number().over(
-                        partition_by=User.user_id,
-                        order_by=(desc(func.count(Track.genre)), asc(Track.genre))
-                ).label("row_number")
-            ).join(
-                Track,
-                Track.owner_id == User.user_id
-            ).filter(
-                User.is_current == True,
-                User.is_creator == True,
-                Track.is_unlisted == False,
-                Track.stem_of == None,
-                Track.is_current == True,
-                Track.is_delete == False
-            ).group_by(
-                User.user_id,
-                Track.genre
-            ).order_by(
-                desc(func.count(Track.genre)), asc(Track.genre)
-            )
-        )
-
-        user_genre_count_query = user_genre_count_query.subquery('user_genre_count_query')
-
-        user_genre_query = (
-            session.query(
-                user_genre_count_query.c.user_id.label('user_id'),
-                user_genre_count_query.c.genre.label('genre'),
-            ).filter(
-                user_genre_count_query.c.row_number == 1
-            ).subquery('user_genre_query')
-        )
-
-        # Using the subquery of user to associated genre,
-        #   filter by the requested genres and
-        #   sort by user follower count
-        user_genre_followers_query = (
-            session.query(
-                user_genre_query.c.user_id.label('user_id')
-            ).join(
-                Follow, Follow.followee_user_id == user_genre_query.c.user_id
-            ).filter(
-                Follow.is_current == True,
-                Follow.is_delete == False
-            ).group_by(
-                user_genre_query.c.user_id, user_genre_query.c.genre
-            ).order_by(
-                # desc('follower_count')
-                desc(func.count(Follow.follower_user_id))
-            )
-        )
-
-        if with_genres:
-            user_genre_followers_query = user_genre_followers_query.filter(user_genre_query.c.genre.in_(genres))
-
-        # If the with_users flag is not set, respond with the user_ids
-        users = paginate_query(user_genre_followers_query).all()
-        user_ids = list(map(lambda user: user[0], users))
-
-        # If the with_users flag is used, retrieve the user metadata
-        if with_users:
-            user_query = session.query(User).filter(
-                User.user_id.in_(user_ids),
-                User.is_current == True
-            )
-            users = user_query.all()
-            users = helpers.query_result_to_list(users)
-            queried_user_ids = list(map(lambda user: user["user_id"], users))
-            users = populate_user_metadata(session, queried_user_ids, users, None)
-
-            # Sort the users so that it's in the same order as the previous query
-            user_map = {user['user_id']:user for user in users}
-            users = [user_map[user_id] for user_id in user_ids]
-            return api_helpers.success_response({ 'users': users })
-
-
-        return api_helpers.success_response({ 'user_ids': user_ids })
-
+def get_top_genre_users_route():
+    users = get_top_genre_users(to_dict(request.args))
+    return api_helpers.success_response(users)
 
 
 # Get the tracks that are 'children' remixes of the requested track
