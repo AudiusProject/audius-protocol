@@ -49,6 +49,7 @@ from src.queries.get_top_followee_saves import get_top_followee_saves
 from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_remix_track_parents import get_remix_track_parents
+from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_tracks
 
 
 logger = logging.getLogger(__name__)
@@ -357,50 +358,15 @@ def get_remix_track_parents_route(track_id):
 
 # Get the tracks that were previously unlisted and became public after the date provided
 @bp.route("/previously_unlisted/track", methods=("GET",))
-def get_previously_unlisted_tracks():
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        if "date" not in request.args:
-            return api_helpers.error_response(
-                "'date' required to query for retrieving previously unlisted tracks", 400
-            )
+def get_previously_unlisted_tracks_route():
+    try:
+        tracks = get_previously_unlisted_tracks(to_dict(request.args))
+        return api_helpers.success_response(tracks)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+    except Exception as e:
+        return api_helpers.error_response(str(e), 404)
 
-        date = request.args.get("date")
-
-        tracks_after_date = (
-            session.query(
-                Track.track_id,
-                Track.updated_at
-            ).distinct(
-                Track.track_id
-            ).filter(
-                Track.is_unlisted == False,
-                Track.updated_at >= date
-            ).subquery()
-        )
-
-        tracks_before_date = (
-            session.query(
-                Track.track_id,
-                Track.updated_at
-            ).distinct(
-                Track.track_id
-            ).filter(
-                Track.is_unlisted == True,
-                Track.updated_at < date
-            ).subquery()
-        )
-
-        previously_unlisted_results = session.query(
-            tracks_before_date.c['track_id']
-        ).join(
-            tracks_after_date,
-            tracks_after_date.c['track_id'] == tracks_before_date.c['track_id'],
-        ).all()
-
-        track_ids = [result[0] for result in previously_unlisted_results]
-
-    return api_helpers.success_response({ 'ids': track_ids })
 
 # Get the playlists that were previously private and became public after the date provided
 @bp.route("/previously_private/playlist", methods=("GET",))
