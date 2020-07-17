@@ -91,7 +91,7 @@ const getCID = async (req, res) => {
   if (req.query.filename) {
     res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
   }
-  
+
   try {
     // Add a rehydration task to the queue to be processed in the background
     RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, queryResults.storagePath, { logContext: req.logContext })
