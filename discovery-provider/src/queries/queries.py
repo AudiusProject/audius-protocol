@@ -50,6 +50,7 @@ from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_tracks
+from src.queries.get_previously_private_playlists import get_previously_private_playlists
 
 
 logger = logging.getLogger(__name__)
@@ -370,47 +371,11 @@ def get_previously_unlisted_tracks_route():
 
 # Get the playlists that were previously private and became public after the date provided
 @bp.route("/previously_private/playlist", methods=("GET",))
-def get_previously_private_playlist():
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        if "date" not in request.args:
-            return api_helpers.error_response(
-                "'date' required to query for retrieving previously private playlists", 400
-            )
-
-        date = request.args.get("date")
-
-        playlist_after_date = (
-            session.query(
-                Playlist.playlist_id,
-                Playlist.updated_at
-            ).distinct(
-                Playlist.playlist_id
-            ).filter(
-                Playlist.is_private == False,
-                Playlist.updated_at >= date
-            ).subquery()
-        )
-
-        playlist_before_date = (
-            session.query(
-                Playlist.playlist_id,
-                Playlist.updated_at
-            ).distinct(
-                Playlist.playlist_id
-            ).filter(
-                Playlist.is_private == True,
-                Playlist.updated_at < date
-            ).subquery()
-        )
-
-        previously_private_results = session.query(
-            playlist_before_date.c['playlist_id']
-        ).join(
-            playlist_after_date,
-            playlist_after_date.c['playlist_id'] == playlist_before_date.c['playlist_id'],
-        ).all()
-
-        playlist_ids = [result[0] for result in previously_private_results]
-
-    return api_helpers.success_response({ 'ids': playlist_ids })
+def get_previously_private_playlists_route():
+    try:
+        playlists = get_previously_private_playlists(to_dict(request.args))
+        return api_helpers.success_response(playlists)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+    except Exception as e:
+        return api_helpers.error_response(str(e), 404)
