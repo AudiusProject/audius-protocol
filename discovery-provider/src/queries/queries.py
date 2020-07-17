@@ -42,6 +42,7 @@ from src.queries.get_savers_for_playlist import get_savers_for_playlist
 from src.queries.get_saves import get_saves
 from src.queries.get_users_account import get_users_account
 from src.queries.get_max_id import get_max_id
+from src.queries.get_top_playlists import get_top_playlists
 
 
 logger = logging.getLogger(__name__)
@@ -241,7 +242,7 @@ def get_max_id_route(type):
 
 
 @bp.route("/top/<type>", methods=("GET",))
-def get_top_playlists(type):
+def get_top_playlists_route(type):
     """
     An endpoint to retrieve the "top" of a certain demographic of playlists or albums.
     This endpoint is useful in generating views like:
@@ -256,128 +257,14 @@ def get_top_playlists(type):
         mood?: (string) default=None
         filter?: (string) Optional filter to include (supports 'followees') default=None
     """
-    current_user_id = get_current_user_id(required=False)
+    try:
+        playlists = get_top_playlists(type, request.args.to_dict())
+        return api_helpers.success_response(playlists)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+    except Exception as e:
+        return api_helpers.error_response(str(e), 400)
 
-    # Argument parsing and checking
-    if type != 'playlist' and type != 'album':
-        return api_helpers.error_response(
-            "Invalid type provided, must be one of 'playlist', 'album'", 400
-        )
-
-    if 'limit' in request.args:
-        limit = min(int(request.args.get('limit')), 100)
-    else:
-        limit = 16
-
-    if 'mood' in request.args:
-        mood = request.args.get('mood')
-    else:
-        mood = None
-
-    if 'filter' in request.args:
-        query_filter = request.args.get('filter')
-        if query_filter != 'followees':
-            return api_helpers.error_response(
-                "Invalid type provided, must be one of 'followees'", 400
-            )
-        if query_filter == 'followees':
-            if not current_user_id:
-                return api_helpers.error_response(
-                    "User id required to query for followees", 400
-                )
-    else:
-        query_filter = None
-
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        # Construct a subquery to get the summed save + repost count for the `type`
-        count_subquery = create_save_repost_count_subquery(session, type)
-
-        # If filtering by followees, set the playlist view to be only playlists from
-        # users that the current user follows.
-        if query_filter == 'followees':
-            playlists_to_query = create_followee_playlists_subquery(session, current_user_id)
-        # Otherwise, just query all playlists
-        else:
-            playlists_to_query = session.query(Playlist).subquery()
-
-        # Create a decayed-score view of the playlists
-        playlist_query = (
-            session.query(
-                playlists_to_query,
-                count_subquery.c['count'],
-                decayed_score(count_subquery.c['count'], playlists_to_query.c.created_at).label('score')
-            )
-            .select_from(playlists_to_query)
-            .join(
-                count_subquery,
-                count_subquery.c['id'] == playlists_to_query.c.playlist_id
-            )
-            .filter(
-                playlists_to_query.c.is_current == True,
-                playlists_to_query.c.is_delete == False,
-                playlists_to_query.c.is_private == False,
-            )
-        )
-
-        # Filter by mood (no-op if no mood is provided)
-        playlist_query = filter_to_playlist_mood(
-            session,
-            mood,
-            playlist_query,
-            playlists_to_query
-        )
-
-        # Order and limit the playlist query by score
-        playlist_query = (
-            playlist_query.order_by(
-                desc('score'),
-                desc(playlists_to_query.c.playlist_id)
-            )
-            .limit(limit)
-        )
-
-        playlist_results = playlist_query.all()
-
-        # Unzip query results into playlists and scores
-        score_map = {} # playlist_id : score
-        playlists = []
-        if playlist_results:
-            for result in playlist_results:
-                # The playlist is the portion of the query result before repost_count and score
-                playlist = result[0:-2]
-                repost_count = result[-2]
-                score = result[-1]
-
-                # Convert the playlist row tuple into a dictionary keyed by column name
-                playlist = helpers.tuple_to_model_dictionary(playlist, Playlist)
-                score_map[playlist['playlist_id']] = score
-                playlists.append(playlist)
-
-        playlist_ids = list(map(lambda playlist: playlist["playlist_id"], playlists))
-
-        # Bundle peripheral info into playlist results
-        playlists = populate_playlist_metadata(
-            session,
-            playlist_ids,
-            playlists,
-            [RepostType.playlist, RepostType.album],
-            [SaveType.playlist, SaveType.album],
-            current_user_id
-        )
-        # Add scores into the response
-        for playlist in playlists:
-            playlist['score'] = score_map[playlist['playlist_id']]
-
-        if "with_users" in request.args and request.args.get("with_users") != 'false':
-            user_id_list = get_users_ids(playlists)
-            users = get_users_by_id(session, user_id_list)
-            for playlist in playlists:
-                user = users[playlist['playlist_owner_id']]
-                if user:
-                    playlist['user'] = user
-
-    return api_helpers.success_response(playlists)
 
 @bp.route("/top_followee_windowed/<type>/<window>")
 def get_top_followee_windowed(type, window):
