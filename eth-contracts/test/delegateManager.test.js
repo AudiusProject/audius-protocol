@@ -1782,17 +1782,18 @@ contract('DelegateManager', async (accounts) => {
     })
 
     // TODO: Validate behavior around removeDelegator
-    //       - expiry block calculated correctly
+    //       - expiry block calculated correctly (done)
     //       - cancelRemoveDelegator behavior resets request
     //       - evaluation window enforced 
+    //        - Pending request before call to requestRemoveDelegator
+    //       - Unstaked delegator for this sp
     it.only('removeDelegator validation', async () => {
       const delegationAmount = _lib.toBN(100)
+      const delegatorAccount2 = accounts[5]
       // Transfer tokens to delegator
       await token.transfer(delegatorAccount1, delegationAmount, { from: proxyDeployerAddress })
-      await token.approve(
-        stakingAddress,
-        delegationAmount,
-        { from: delegatorAccount1 })
+      await token.transfer(delegatorAccount2, delegationAmount, { from: proxyDeployerAddress })
+      await token.approve(stakingAddress, delegationAmount, { from: delegatorAccount1 })
       await delegateManager.delegateStake(
         stakerAccount,
         delegationAmount,
@@ -1805,9 +1806,22 @@ contract('DelegateManager', async (accounts) => {
         delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: delegatorAccount1 }),
         "Only callable by target SP or governance"
       )
+
+      let removeReqDuration = await delegateManager.getRemoveDelegatorLockupDuration()
       
-      // Forcibly remove the delegator from service provider account
+      // Remove delegator
+      let tx = await delegateManager.requestRemoveDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+      let blocknumber = _lib.toBN(tx.receipt.blockNumber)
+      let expectedTarget = blocknumber.add(removeReqDuration)
+
+      let requestTargetBlock = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount1)
+      assert.isTrue(requestTargetBlock.eq(expectedTarget), 'Target unexpected')
+
+      // Move to valid block and actually perform remove
+      await time.advanceBlockTo(requestTargetBlock)
       await delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+
+      // Forcibly remove the delegator from service provider account
       let stakeAfterRemoval = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
       let delegatorsList = await delegateManager.getDelegatorsList(stakerAccount)
       assert.isTrue(stakeAfterRemoval.eq(_lib.toBN(0)), 'Expect 0 delegated stake')
@@ -1816,6 +1830,39 @@ contract('DelegateManager', async (accounts) => {
       let delegatorTokenBalance2 = await token.balanceOf(delegatorAccount1)
       let diff = delegatorTokenBalance2.sub(delegatorTokenBalance)
       assert.isTrue(diff.eq(delegationAmount), 'Expect full delegation amount to be refunded')
+
+      // Try to remove a delegator that does not yet exist, confirm failure
+      await _lib.assertRevert(
+        delegateManager.requestRemoveDelegator(stakerAccount, delegatorAccount2, { from: stakerAccount }),
+        'Delegator must be staked for SP'
+      )
+
+      // Delegate from a new account
+      await token.approve(
+        stakingAddress,
+        delegationAmount,
+        { from: delegatorAccount2 })
+      await delegateManager.delegateStake(
+        stakerAccount,
+        delegationAmount,
+        { from: delegatorAccount2 })
+
+      tx = await delegateManager.requestRemoveDelegator(stakerAccount, delegatorAccount2, { from: stakerAccount })
+      blocknumber = _lib.toBN(tx.receipt.blockNumber)
+      expectedTarget = blocknumber.add(removeReqDuration)
+
+      requestTargetBlock = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount2)
+      assert.isTrue(requestTargetBlock.eq(expectedTarget), 'Target unexpected')
+
+      // Call from wrong account
+      await _lib.assertRevert(
+        delegateManager.cancelRemoveDelegator(stakerAccount, delegatorAccount2),
+        'Only callable by target SP'
+      )
+      await delegateManager.cancelRemoveDelegator(stakerAccount, delegatorAccount2, { from: stakerAccount })
+
+      let requestTargetBlockAfterCancel = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount2)
+      assert.isTrue(requestTargetBlockAfterCancel.eq(_lib.toBN(0)), 'Expect reset')
     })
 
     describe('Service provider decrease stake behavior', async () => {
