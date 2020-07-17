@@ -113,12 +113,13 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
   }
 
   // If file not already stored, fetch and store at storagePath.
-  let fileBuffer = null
+  let fileFound = false
 
   // If multihash already available on local INode, cat file from local ipfs node
   req.logger.debug(`checking if ${multihash} already available on local ipfs node`)
   try {
-    fileBuffer = await Utils.ipfsCat(multihash, req, 500)
+    let fileBuffer = await Utils.ipfsCat(multihash, req, 500)
+    fileFound = true
     req.logger.debug(`Retrieved file for ${multihash} from local ipfs node`)
     // Write file to disk.
     await writeFile(expectedStoragePath, fileBuffer)
@@ -128,22 +129,20 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
   }
 
   // If file not already available on local INode, fetch from IPFS.
-  if (fileBuffer === null) {
+  if (!fileFound) {
     req.logger.debug(`Attempting to get ${multihash} from IPFS`)
-    let output
     try {
       // ipfsGet returns a BufferList object, not a buffer
-      // but still compatible into writeFile directly
-      output = await Utils.ipfsGet(multihash, req, 5000)
-      fileBuffer = output
+      // not compatible into writeFile directly
+      let fileBL = await Utils.ipfsGet(multihash, req, 2000)
       req.logger.debug(`retrieved file for multihash ${multihash} from local ipfs node`)
 
       // Write file to disk.
       const destinationStream = fs.createWriteStream(expectedStoragePath)
+      fileBL.pipe(destinationStream)
       await new Promise((resolve, reject) => {
-        fileBuffer.pipe(destinationStream)
-        fileBuffer.on('end', () => { resolve() })
-        fileBuffer.on('error', err => { destinationStream.end(); reject(err) })
+        destinationStream.on('finish', () => { resolve() })
+        fileBL.on('error', err => { destinationStream.end(); reject(err) })
       })
       req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs get`)
     } catch (e) {
@@ -152,7 +151,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
   }
 
   // if file is still null, try to fetch from other cnode gateways with onlyFS=true
-  if (fileBuffer === null) {
+  if (!fileFound) {
     try {
       let response
       // ..replace(/\/$/, "") removes trailing slashes
@@ -168,7 +167,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
             method: 'get',
             url,
             responseType: 'stream',
-            timeout: 2000 /* ms */
+            timeout: 4000 /* ms */
           })
           if (resp.data) {
             response = resp
@@ -184,9 +183,9 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       }
 
       const destinationStream = fs.createWriteStream(expectedStoragePath)
+      response.data.pipe(destinationStream)
       await new Promise((resolve, reject) => {
-        response.data.pipe(destinationStream)
-        response.data.on('end', () => { resolve() })
+        destinationStream.on('finish', () => { resolve() })
         response.data.on('error', err => { destinationStream.end(); reject(err) })
       })
 
@@ -196,11 +195,13 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     }
   }
 
-  // for debugging only - dont' delete. verifies that the contents of the file match the file's cid
+  // for debugging purposes - dont' delete. verifies that the contents of the file match the file's cid
   // const ipfs = req.app.get('ipfsLatestAPI')
   // const content = fs.readFileSync(expectedStoragePath)
   // for await (const result of ipfs.add(content, { onlyHash: true })) {
-  //   if (multihash !== result.path) console.error(`File contents don't match IPFS hash multihash: ${multihash} result.path: ${result.path}`)
+  //   if (multihash !== result.path) {
+  //     console.error(`File contents don't match IPFS hash multihash: ${multihash} result.path: ${result.path}`)
+  //   }
   //   else console.log("files matched", multihash)
   // }
 
