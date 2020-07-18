@@ -1877,7 +1877,7 @@ contract('DelegateManager', async (accounts) => {
         tx.tx,
         DelegateManager,
         'DelegatorRemoved',
-        { _serviceProvider: stakerAccount, _delegator: delegatorAccount1 }
+        { _serviceProvider: stakerAccount, _delegator: delegatorAccount1, _unstakedAmount: delegationAmount }
       )
 
       requestTargetBlock = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount1)
