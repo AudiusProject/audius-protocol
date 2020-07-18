@@ -174,14 +174,6 @@ contract('DelegateManager', async (accounts) => {
     delegateManager = await DelegateManager.at(delegateManagerProxy.address)
     await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: proxyDeployerAddress })
 
-    // Clear min delegation amount for testing
-    await governance.guardianExecuteTransaction(
-      delegateManagerKey,
-      _lib.toBN(0),
-      'updateMinDelegationAmount(uint256)',
-      _lib.abiEncode(['uint256'], [0]),
-      { from: guardianAddress }
-    )
     // ---- Configuring addresses
     await _lib.configureGovernanceStakingAddress(
       governance,
@@ -258,6 +250,58 @@ contract('DelegateManager', async (accounts) => {
       serviceTypeManagerProxy.address,
       claimsManagerProxy.address,
       delegateManagerProxy.address
+    )
+
+    // Clear min delegation amount for testing
+    let updateTx = await governance.guardianExecuteTransaction(
+      delegateManagerKey,
+      _lib.toBN(0),
+      'updateMinDelegationAmount(uint256)',
+      _lib.abiEncode(['uint256'], [0]),
+      { from: guardianAddress }
+    )
+    await expectEvent.inTransaction(
+      updateTx.tx,
+      DelegateManager,
+      'MinDelegationUpdated',
+      { _minDelegationAmount: '0' }
+    )
+    // Expect revert for 8 since it is below votingPeriod + votingDelay
+    await _lib.assertRevert(
+      governance.guardianExecuteTransaction(
+        delegateManagerKey,
+        _lib.toBN(0),
+        'updateRemoveDelegatorLockupDuration(uint256)',
+        _lib.abiEncode(['uint256'], [8]),
+        { from: guardianAddress }
+      )
+    )
+    // Reset lockup and eval duration for testing
+    updateTx = await governance.guardianExecuteTransaction(
+      delegateManagerKey,
+      _lib.toBN(0),
+      'updateRemoveDelegatorLockupDuration(uint256)',
+      _lib.abiEncode(['uint256'], [100]),
+      { from: guardianAddress }
+    )
+    await expectEvent.inTransaction(
+      updateTx.tx,
+      DelegateManager,
+      'RemoveDelegatorLockupDurationUpdated',
+      { _removeDelegatorLockupDuration: '100' }
+    )
+    updateTx = await governance.guardianExecuteTransaction(
+      delegateManagerKey,
+      _lib.toBN(0),
+      'updateRemoveDelegatorEvalDuration(uint256)',
+      _lib.abiEncode(['uint256'], [10]),
+      { from: guardianAddress }
+    )
+    await expectEvent.inTransaction(
+      updateTx.tx,
+      DelegateManager,
+      'RemoveDelegatorEvalDurationUpdated',
+      { _removeDelegatorEvalDuration: '10' }
     )
   })
 
@@ -1629,6 +1673,14 @@ contract('DelegateManager', async (accounts) => {
         delegateManager.slash(10, slasherAccount),
         "Only callable by Governance contract"
       )
+      await _lib.assertRevert(
+        delegateManager.updateRemoveDelegatorLockupDuration(10, { from: accounts[3] }),
+        "Only callable by Governance contract"
+      )
+      await _lib.assertRevert(
+        delegateManager.updateRemoveDelegatorEvalDuration(10, { from: accounts[3] }),
+        "Only callable by Governance contract"
+      )
     })
 
     it('Fail to set service addresses from non-governance contract', async () => {
@@ -1820,7 +1872,13 @@ contract('DelegateManager', async (accounts) => {
 
       // Move to valid block and actually perform remove
       await time.advanceBlockTo(requestTargetBlock)
-      await delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+      tx = await delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+      await expectEvent.inTransaction(
+        tx.tx,
+        DelegateManager,
+        'DelegatorRemoved',
+        { _serviceProvider: stakerAccount, _delegator: delegatorAccount1 }
+      )
 
       requestTargetBlock = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount1)
       assert.isTrue(requestTargetBlock.eq(_lib.toBN(0)), 'Reset expected')
@@ -1857,7 +1915,7 @@ contract('DelegateManager', async (accounts) => {
       expectedTarget = blocknumber.add(removeReqDuration)
 
       requestTargetBlock = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount2)
-      assert.isTrue(requestTargetBlock.eq(expectedTarget), 'Target unexpected')
+      assert.isTrue(requestTargetBlock.eq(expectedTarget), 'Target block unexpected')
 
       // Call from wrong account
       await _lib.assertRevert(
