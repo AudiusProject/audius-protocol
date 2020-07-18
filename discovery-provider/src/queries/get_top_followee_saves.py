@@ -9,8 +9,8 @@ from src.queries.query_helpers import get_current_user_id, \
     populate_track_metadata, get_users_by_id, get_users_ids
 
 
-def get_top_followee_saves(type, args):
-    if type != 'track':
+def get_top_followee_saves(saveType, args):
+    if saveType != 'track':
         raise exceptions.ArgumentError(
             "Invalid type provided, must be one of 'track'"
         )
@@ -48,7 +48,7 @@ def get_top_followee_saves(type, args):
             .filter(
                 Save.is_current == True,
                 Save.is_delete == False,
-                Save.save_type == type,
+                Save.save_type == saveType,
             )
             .group_by(
                 Save.save_item_id

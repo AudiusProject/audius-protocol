@@ -1,6 +1,6 @@
-from src import exceptions
 from sqlalchemy import func, desc
 
+from src import exceptions
 from src.models import User, Track, Save, SaveType, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica

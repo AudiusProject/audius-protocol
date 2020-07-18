@@ -45,8 +45,7 @@ def get_repost_feed_for_user(user_id, args):
         playlist_reposts = helpers.query_result_to_list(playlist_reposts)
 
         # build track/playlist id --> repost dict from repost lists
-        track_repost_dict = {repost["repost_item_id"]
-            : repost for repost in track_reposts}
+        track_repost_dict = {repost["repost_item_id"]: repost for repost in track_reposts}
         playlist_repost_dict = {
             repost["repost_item_id"]: repost for repost in playlist_reposts}
 

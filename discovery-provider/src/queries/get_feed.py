@@ -2,7 +2,7 @@ import datetime
 from sqlalchemy import func, desc, or_, and_
 
 from src import api_helpers
-from src.models import Track, Repost, RepostType, Follow, Playlist, Save, SaveType, Remix, Stem
+from src.models import Track, Repost, RepostType, Follow, Playlist, SaveType
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
@@ -25,7 +25,7 @@ def get_feed(args):
         feed_filter = "all"
 
     # Allow for fetching only tracks
-    if ('tracks_only' in args and args.get('tracks_only') != 'false'):
+    if 'tracks_only' in args and args.get('tracks_only') != 'false':
         tracks_only = True
     else:
         tracks_only = False

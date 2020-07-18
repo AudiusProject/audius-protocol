@@ -4,6 +4,7 @@ import datetime
 import redis
 from web3 import Web3
 from web3.auto import w3
+# pylint: disable=no-name-in-module
 from eth_account.messages import encode_defunct
 from flask import jsonify
 

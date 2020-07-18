@@ -8,9 +8,9 @@ def get_stems_of(track_id):
     with db.scoped_session() as session:
         parent_not_deleted_subquery = (
             session.query(Track.is_delete)
-                .filter(Track.track_id == track_id)
-                .subquery()
-            )
+            .filter(Track.track_id == track_id)
+            .subquery()
+        )
 
         stem_results = (
             session.query(Track)

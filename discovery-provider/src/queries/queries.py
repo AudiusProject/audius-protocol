@@ -310,7 +310,8 @@ def get_top_followee_saves_route(type):
 # - The users associated w/ the requested genre are then sorted by follower count
 # Route Parameters
 #   urlParam: {Array<string>?}  genre       List of genres to query for the 'top' users
-#   urlParam: {boolean?}        with_user   Boolean if the response should be the user ID or user metadata defaults to false
+#   urlParam: {boolean?}        with_user
+#             Boolean if the response should be the user ID or user metadata defaults to false
 @bp.route("/users/genre/top", methods=("GET",))
 def get_top_genre_users_route():
     users = get_top_genre_users(to_dict(request.args))

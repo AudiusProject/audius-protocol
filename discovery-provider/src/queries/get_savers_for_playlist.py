@@ -1,6 +1,6 @@
-from src import exceptions
 from sqlalchemy import func, desc
 
+from src import exceptions
 from src.models import User, Playlist, Save, SaveType, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
@@ -39,7 +39,8 @@ def get_savers_for_playlist(save_playlist_id):
             session.query(
                 User,
                 # Replace null values from left outer join with 0 to ensure sort works correctly.
-                (func.coalesce(follower_count_subquery.c.follower_count, 0)).label(response_name_constants.follower_count)
+                (func.coalesce(follower_count_subquery.c.follower_count, 0))
+                .label(response_name_constants.follower_count)
             )
             # Left outer join to associate users with their follower count.
             .outerjoin(follower_count_subquery, follower_count_subquery.c.followee_user_id == User.user_id)

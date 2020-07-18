@@ -1,19 +1,17 @@
-import logging # pylint: disable=C0302
-import sqlalchemy
-
-from flask import Blueprint, request
 from enum import Enum
+import logging  # pylint: disable=C0302
+from flask import Blueprint, request
+import sqlalchemy
 
 from src import api_helpers, exceptions
 from src.models import User, Track, RepostType, Playlist, Save, SaveType, Follow
 from src.utils import helpers
-from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 
 from src.queries.query_helpers import get_current_user_id, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_pagination_vars, \
-    get_followee_count_dict, get_track_play_counts
+    get_track_play_counts
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("search_queries", __name__)
@@ -26,6 +24,8 @@ trackTitleWeight = 0.7
 userNameWeight = 0.7
 playlistNameWeight = 0.7
 minSearchSimilarity = 0.1
+
+
 class SearchKind(Enum):
     all = 1
     tracks = 2
@@ -50,6 +50,7 @@ def search_full():
 def search_autocomplete():
     return search(True)
 
+
 @bp.route("/search/tags", methods=("GET",))
 def search_tags():
     search_str = request.args.get("query", type=str)
@@ -65,11 +66,12 @@ def search_tags():
     validSearchKinds = [SearchKind.all, SearchKind.tracks, SearchKind.users]
     try:
         searchKind = SearchKind[kind]
-        if (searchKind not in validSearchKinds):
+        if searchKind not in validSearchKinds:
             raise Exception
-    except Exception as e:
+    except Exception:
         return api_helpers.error_response(
-            "Invalid value for parameter 'kind' must be in %s" % [k.name for k in validSearchKinds]
+            "Invalid value for parameter 'kind' must be in %s" % [
+                k.name for k in validSearchKinds]
         )
 
     results = {}
@@ -105,8 +107,8 @@ def search_tags():
             track_ids = session.execute(
                 track_res,
                 {
-                    "query":search_str,
-                    "like_tags_query":like_tags_str
+                    "query": search_str,
+                    "like_tags_query": like_tags_str
                 }
             ).fetchall()
 
@@ -128,21 +130,23 @@ def search_tags():
             tracks = helpers.query_result_to_list(tracks)
             track_play_counts = get_track_play_counts(track_ids)
 
-            tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+            tracks = populate_track_metadata(
+                session, track_ids, tracks, current_user_id)
 
             for track in tracks:
                 track_id = track["track_id"]
-                track[response_name_constants.play_count] = track_play_counts.get(track_id, 0)
+                track[response_name_constants.play_count] = track_play_counts.get(
+                    track_id, 0)
 
             play_count_sorted_tracks = \
-                sorted(tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
+                sorted(
+                    tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
 
             # Add pagination parameters to track and user results
             play_count_sorted_tracks = \
-                    play_count_sorted_tracks[slice(offset, offset + limit, 1)]
+                play_count_sorted_tracks[slice(offset, offset + limit, 1)]
 
             results['tracks'] = play_count_sorted_tracks
-
 
         if (searchKind in [SearchKind.all, SearchKind.users]):
             user_res = sqlalchemy.text(
@@ -182,8 +186,8 @@ def search_tags():
             user_ids = session.execute(
                 user_res,
                 {
-                    "query":search_str,
-                    "like_tags_query":like_tags_str,
+                    "query": search_str,
+                    "like_tags_query": like_tags_str,
                     "user_tag_count": user_tag_count
                 }
             ).fetchall()
@@ -201,14 +205,15 @@ def search_tags():
             )
             users = helpers.query_result_to_list(users)
 
-            users = populate_user_metadata(session, user_ids, users, current_user_id)
+            users = populate_user_metadata(
+                session, user_ids, users, current_user_id)
 
             followee_sorted_users = \
-                sorted(users, key=lambda i: i[response_name_constants.follower_count], reverse=True)
-
+                sorted(
+                    users, key=lambda i: i[response_name_constants.follower_count], reverse=True)
 
             followee_sorted_users = \
-                    followee_sorted_users[slice(offset, offset + limit, 1)]
+                followee_sorted_users[slice(offset, offset + limit, 1)]
 
             results['users'] = followee_sorted_users
 
@@ -243,16 +248,19 @@ def search_tags():
             for saved_track in saved_tracks:
                 saved_track_id = saved_track["track_id"]
                 saved_track[response_name_constants.play_count] = \
-                        track_play_counts.get(saved_track_id, 0)
+                    track_play_counts.get(saved_track_id, 0)
             saved_tracks = \
-                    populate_track_metadata(session, saved_track_ids, saved_tracks, current_user_id)
+                populate_track_metadata(
+                    session, saved_track_ids, saved_tracks, current_user_id)
 
             # Sort and paginate
             play_count_sorted_saved_tracks = \
-                sorted(saved_tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
+                sorted(
+                    saved_tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
 
             play_count_sorted_saved_tracks = \
-                    play_count_sorted_saved_tracks[slice(offset, offset + limit, 1)]
+                play_count_sorted_saved_tracks[slice(
+                    offset, offset + limit, 1)]
 
             results['saved_tracks'] = play_count_sorted_saved_tracks
 
@@ -279,12 +287,12 @@ def search_tags():
             )
             followed_users = helpers.query_result_to_list(followed_users)
             followed_users = \
-                    populate_user_metadata(
-                        session,
-                        followed_user_ids,
-                        followed_users,
-                        current_user_id
-                    )
+                populate_user_metadata(
+                    session,
+                    followed_user_ids,
+                    followed_users,
+                    current_user_id
+                )
 
             followed_users_followee_sorted = \
                 sorted(
@@ -293,7 +301,8 @@ def search_tags():
                     reverse=True)
 
             followed_users_followee_sorted = \
-                    followed_users_followee_sorted[slice(offset, offset + limit, 1)]
+                followed_users_followee_sorted[slice(
+                    offset, offset + limit, 1)]
 
             results['followed_users'] = followed_users_followee_sorted
 
@@ -318,16 +327,19 @@ def search_tags():
 #
 # @devnote - track_ids argument should match tracks argument
 
+
 def search(isAutocomplete):
     searchStr = request.args.get("query", type=str)
     if not searchStr:
         return api_helpers.error_response("Invalid value for parameter 'query'")
-    searchStr = searchStr.replace('&', 'and')  # when creating query table, we substitute this too
+    # when creating query table, we substitute this too
+    searchStr = searchStr.replace('&', 'and')
 
     kind = request.args.get("kind", type=str, default="all")
     if kind not in SearchKind.__members__:
         return api_helpers.error_response(
-            "Invalid value for parameter 'kind' must be in %s" % [k.name for k in SearchKind]
+            "Invalid value for parameter 'kind' must be in %s" % [
+                k.name for k in SearchKind]
         )
     searchKind = SearchKind[kind]
 
@@ -338,14 +350,19 @@ def search(isAutocomplete):
         db = get_db_read_replica()
         with db.scoped_session() as session:
             # Set similarity threshold to be used by % operator in queries.
-            session.execute(sqlalchemy.text(f"select set_limit({minSearchSimilarity});"))
+            session.execute(sqlalchemy.text(
+                f"select set_limit({minSearchSimilarity});"))
 
             if (searchKind in [SearchKind.all, SearchKind.tracks]):
-                results['tracks'] = track_search_query(session, searchStr, limit, offset, False, isAutocomplete)
-                results['saved_tracks'] = track_search_query(session, searchStr, limit, offset, True, isAutocomplete)
+                results['tracks'] = track_search_query(
+                    session, searchStr, limit, offset, False, isAutocomplete)
+                results['saved_tracks'] = track_search_query(
+                    session, searchStr, limit, offset, True, isAutocomplete)
             if (searchKind in [SearchKind.all, SearchKind.users]):
-                results['users'] = user_search_query(session, searchStr, limit, offset, False, isAutocomplete)
-                results['followed_users'] = user_search_query(session, searchStr, limit, offset, True, isAutocomplete)
+                results['users'] = user_search_query(
+                    session, searchStr, limit, offset, False, isAutocomplete)
+                results['followed_users'] = user_search_query(
+                    session, searchStr, limit, offset, True, isAutocomplete)
             if (searchKind in [SearchKind.all, SearchKind.playlists]):
                 results['playlists'] = playlist_search_query(
                     session,
@@ -366,7 +383,8 @@ def search(isAutocomplete):
                     isAutocomplete
                 )
             if (searchKind in [SearchKind.all, SearchKind.albums]):
-                results['albums'] = playlist_search_query(session, searchStr, limit, offset, True, False, isAutocomplete)
+                results['albums'] = playlist_search_query(
+                    session, searchStr, limit, offset, True, False, isAutocomplete)
                 results['saved_albums'] = playlist_search_query(
                     session,
                     searchStr,
@@ -459,10 +477,12 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
             track["user"] = users_dict[track["owner_id"]]
     else:
         # bundle peripheral info into track results
-        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+        tracks = populate_track_metadata(
+            session, track_ids, tracks, current_user_id)
 
     # preserve order from track_ids above
-    tracks = [next(t for t in tracks if t["track_id"] == track_id) for track_id in track_ids]
+    tracks = [next(t for t in tracks if t["track_id"] == track_id)
+              for track_id in track_ids]
     return tracks
 
 
@@ -525,10 +545,12 @@ def user_search_query(session, searchStr, limit, offset, personalized, isAutocom
 
     if not isAutocomplete:
         # bundle peripheral info into user results
-        users = populate_user_metadata(session, user_ids, users, current_user_id)
+        users = populate_user_metadata(
+            session, user_ids, users, current_user_id)
 
     # preserve order from user_ids above
-    users = [next(u for u in users if u["user_id"] == user_id) for user_id in user_ids]
+    users = [next(u for u in users if u["user_id"] == user_id)
+             for user_id in user_ids]
     return users
 
 
@@ -600,7 +622,8 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
 
     if isAutocomplete == True:
         # fetch users for playlists
-        playlist_owner_ids = list(map(lambda playlist: playlist["playlist_owner_id"], playlists))
+        playlist_owner_ids = list(
+            map(lambda playlist: playlist["playlist_owner_id"], playlists))
         users = (
             session.query(User)
             .filter(
@@ -610,7 +633,7 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
             .all()
         )
         users = helpers.query_result_to_list(users)
-        users_dict = {user["user_id"]:user for user in users}
+        users_dict = {user["user_id"]: user for user in users}
 
         # attach user objects to playlist objects
         for playlist in playlists:
@@ -627,5 +650,6 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
         )
 
     # preserve order from playlist_ids above
-    playlists = [next(p for p in playlists if p["playlist_id"] == playlist_id) for playlist_id in playlist_ids]
+    playlists = [next(p for p in playlists if p["playlist_id"]
+                      == playlist_id) for playlist_id in playlist_ids]
     return playlists

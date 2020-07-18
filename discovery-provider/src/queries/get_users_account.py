@@ -1,5 +1,4 @@
 from sqlalchemy import asc, desc, or_, and_
-from sqlalchemy.orm import exc
 
 from src import exceptions
 from src.models import User, Playlist, Save, SaveType

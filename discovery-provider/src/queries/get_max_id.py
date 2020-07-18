@@ -21,7 +21,8 @@ def get_max_id(type):
                 .scalar()
             )
             return latest
-        elif type == 'playlist':
+
+        if type == 'playlist':
             latest = (
                 session
                 .query(func.max(Playlist.playlist_id))

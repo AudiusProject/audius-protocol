@@ -10,13 +10,13 @@ from src.queries.query_helpers import get_current_user_id, populate_playlist_met
     create_followee_playlists_subquery
 
 
-def get_top_playlists(type, args):
+def get_top_playlists(kind, args):
     current_user_id = get_current_user_id(required=False)
 
     # Argument parsing and checking
-    if type != 'playlist' and type != 'album':
+    if kind not in ('playlist', 'album'):
         raise exceptions.ArgumentError(
-            "Invalid type provided, must be one of 'playlist', 'album'"
+            "Invalid kind provided, must be one of 'playlist', 'album'"
         )
 
     if 'limit' in args:
@@ -33,7 +33,7 @@ def get_top_playlists(type, args):
         query_filter = args.get('filter')
         if query_filter != 'followees':
             raise exceptions.ArgumentError(
-                "Invalid type provided, must be one of 'followees'"
+                "Invalid filter provided, must be one of 'followees'"
             )
         if query_filter == 'followees':
             if not current_user_id:
@@ -45,8 +45,8 @@ def get_top_playlists(type, args):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        # Construct a subquery to get the summed save + repost count for the `type`
-        count_subquery = create_save_repost_count_subquery(session, type)
+        # Construct a subquery to get the summed save + repost count for the `kind`
+        count_subquery = create_save_repost_count_subquery(session, kind)
 
         # If filtering by followees, set the playlist view to be only playlists from
         # users that the current user follows.
@@ -103,7 +103,6 @@ def get_top_playlists(type, args):
             for result in playlist_results:
                 # The playlist is the portion of the query result before repost_count and score
                 playlist = result[0:-2]
-                repost_count = result[-2]
                 score = result[-1]
 
                 # Convert the playlist row tuple into a dictionary keyed by column name

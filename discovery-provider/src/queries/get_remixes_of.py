@@ -18,7 +18,7 @@ def get_remixes_of(track_id, args):
             Track.track_id == track_id
         ).first()
 
-        if (parent_track == None):
+        if parent_track == None:
             raise exceptions.ArgumentError("Invalid track_id provided")
 
         track_owner_id = parent_track.owner_id

@@ -1,6 +1,5 @@
 import logging # pylint: disable=C0302
 
-
 from src.models import Track
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
@@ -41,9 +40,9 @@ def get_tracks(args):
         # Allow filtering of deletes
         # Note: There is no standard for boolean url parameters, and any value (including 'false')
         # will be evaluated as true, so an explicit check is made for true
-        if ("filter_deleted" in args):
+        if "filter_deleted" in args:
             filter_deleted = args.get("filter_deleted")
-            if (filter_deleted.lower() == 'true'):
+            if filter_deleted.lower() == 'true':
                 base_query = base_query.filter(
                     Track.is_delete == False
                 )
