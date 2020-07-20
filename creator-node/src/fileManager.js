@@ -118,19 +118,18 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
   // eg. `/QmABC` splits into ['', 'QmABC'] so it's exactly two parts so it's a non-dir file
   const splitPath = filePath.split('/')
   if (splitPath.length > 2) {
+    // this is a directory
     const dir = path.dirname(expectedStoragePath)
 
-    if (dir) {
-      // override gateway urls to make it compatible with directory
-      urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${splitPath[1]}/`)
+    // override gateway urls to make it compatible with directory
+    urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${splitPath[1]}/`)
 
-      try {
-        // calling this on an existing directory doesn't overwrite the existing data or throw an error
-        // the mkdir recursive is equivalent to `mkdir -p`
-        await mkdir(dir, { recursive: true })
-      } catch (e) {
-        throw e
-      }
+    try {
+      // calling this on an existing directory doesn't overwrite the existing data or throw an error
+      // the mkdir recursive is equivalent to `mkdir -p`
+      await mkdir(dir, { recursive: true })
+    } catch (e) {
+      throw e
     }
   }
   return _saveFileForMultihashHelper(req, multihash, expectedStoragePath, urls)
