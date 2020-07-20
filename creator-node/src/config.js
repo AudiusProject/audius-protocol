@@ -339,6 +339,12 @@ const config = convict({
     format: String,
     env: 'trackBlacklist',
     default: ''
+  },
+  creatorNodeIsDebug: {
+    doc: 'Whether the creatornode is in debug mode.',
+    format: Boolean,
+    env: 'creatorNodeIsDebug',
+    default: false
   }
 
   // unsupported options at the moment

@@ -13,15 +13,17 @@ class ServiceProviderFactoryClient extends ContractClient {
     contractRegistryKey,
     getRegistryAddress,
     audiusTokenClient,
-    stakingProxyClient
+    stakingProxyClient,
+    isDebug = false
   ) {
     super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress)
     this.audiusTokenClient = audiusTokenClient
     this.stakingProxyClient = stakingProxyClient
+    this.isDebug = isDebug
   }
 
   async registerWithDelegate (serviceType, endpoint, amount, delegateOwnerWallet) {
-    if (!Utils.isFQDN(endpoint)) {
+    if (!this.isDebug && !Utils.isFQDN(endpoint)) {
       throw new Error('Not a fully qualified domain name!')
     }
     if (!Number.isInteger(amount) && !Utils.isBN(amount)) {

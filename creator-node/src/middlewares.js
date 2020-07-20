@@ -207,7 +207,8 @@ async function getCreatorNodeEndpoints (req, wallet) {
 
 // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
 function _isFQDN (url) {
-  let FQDN = new RegExp(/(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm)
+  if (config.get('creatorNodeIsDebug')) return true
+  const FQDN = new RegExp(/(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm)
   return FQDN.test(url)
 }
 

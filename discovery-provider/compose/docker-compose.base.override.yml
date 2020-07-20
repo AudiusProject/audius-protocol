@@ -1,17 +1,23 @@
 version: '3'
 services:
-  db:
-    network_mode: "host"
+  discovery-provider-db:
     image: postgres:11.1
     environment:
       POSTGRES_USER: postgres
       POSTGRES_DB: audius_discovery
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - audius_dev
   redis-server:
-    network_mode: "host"
     image: redis:3.0-alpine
     command: redis-server --save '' 
+    networks:
+      - audius_dev
 
 volumes:
   postgres_data:
+
+networks:
+  audius_dev:
+    external: true

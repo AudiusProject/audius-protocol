@@ -48,7 +48,8 @@ const initAudiusLibs = async () => {
         ownerWallet: config.get('delegateOwnerWallet')
       }
     },
-    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist)
+    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),
+    isDebug: config.get('creatorNodeIsDebug')
   })
   await audiusLibs.init()
   return audiusLibs
@@ -146,5 +147,4 @@ const startApp = async () => {
     if (appInfo) { appInfo.server.close() }
   })
 }
-
 startApp()
