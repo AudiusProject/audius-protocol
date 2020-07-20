@@ -100,13 +100,13 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
  * creating directories, changeing IPFS gateway urls before calling _saveFileForMultihash
  * @param {Object} req request object
  * @param {String} multihash IPFS cid
- * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1` 
+ * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
  *                  for non dir files and `/file_storage/Qmdir/Qm2` for dir files
  * @param {Array} gatewaysToTry List of gateway endpoints to try
  */
 async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry) {
   const storagePath = req.app.get('storagePath') // should be like `/file_storage'
-  const filePath = expectedStoragePath.replace(storagePath, '') //should be `/Qm1/Qm2` for dir and `/Qm1` for non-dir
+  const filePath = expectedStoragePath.replace(storagePath, '') // should be `/Qm1/Qm2` for dir and `/Qm1` for non-dir
 
   // will be modified to directory compatible route later if directory
   let urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/`)
@@ -148,7 +148,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
  *  - If file is not available via IPFS try other cnode gateways for user's replica set.
  *  - Add file to local ipfs node if not already there.
  */
-async function _saveFileForMultihashHelper (req, multihash, expectedStoragePath, gatewaysToTry=[]) {
+async function _saveFileForMultihashHelper (req, multihash, expectedStoragePath, gatewaysToTry = []) {
   // If file already stored on disk, return immediately.
   if (fs.existsSync(expectedStoragePath)) {
     req.logger.info(`File already stored at ${expectedStoragePath} for ${multihash}`)

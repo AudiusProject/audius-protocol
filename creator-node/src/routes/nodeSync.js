@@ -302,6 +302,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           ))
         }
 
+        req.logger.info('Saved all track files to disk.')
+
         // Save all non-track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < nonTrackFiles.length; i += NonTrackFileSaveConcurrencyLimit) {
           const nonTrackFilesSlice = nonTrackFiles.slice(i, i + NonTrackFileSaveConcurrencyLimit)
@@ -316,7 +318,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
             }
           ))
         }
-        req.logger.info('Saved all track files to disk and ipfs.')
+        req.logger.info('Saved all non-track files to disk.')
 
         await models.File.bulkCreate(nonTrackFiles.map(file => ({
           fileUUID: file.fileUUID,
