@@ -5,6 +5,7 @@ const writeFile = promisify(fs.writeFile)
 const multer = require('multer')
 const getUuid = require('uuid/v4')
 const axios = require('axios')
+const mkdir = promisify(fs.mkdir)
 
 const config = require('./config')
 const models = require('./models')
@@ -95,8 +96,50 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
 }
 
 /**
+ * Given a CID, do the prep work to save the file to the local file system including
+ * creating directories, changeing IPFS gateway urls before calling _saveFileForMultihash
+ * @param {Object} req request object
+ * @param {String} multihash IPFS cid
+ * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1` 
+ *                  for non dir files and `/file_storage/Qmdir/Qm2` for dir files
+ * @param {Array} gatewaysToTry List of gateway endpoints to try
+ */
+async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry) {
+  const storagePath = req.app.get('storagePath') // should be like `/file_storage'
+  const filePath = expectedStoragePath.replace(storagePath, '') //should be `/Qm1/Qm2` for dir and `/Qm1` for non-dir
+
+  // will be modified to directory compatible route later if directory
+  let urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/`)
+
+  // Check if the file we are trying to copy is in a directory and if so, create the directory first
+  // E.g if the expectedStoragePath is /file_storage/QmABC/Qm123, we check if filePath contains more than two parts
+  // NOTE - `/QmABC/Qm123 splits into ['', 'QmABC', 'Qm123']. The beginning empty quote is because of the initial slash
+  // eg. `/QmABC/Qm123` contains more than 2 parts and if so, it's a directory
+  // eg. `/QmABC` splits into ['', 'QmABC'] so it's exactly two parts so it's a non-dir file
+  const splitPath = filePath.split('/')
+  if (splitPath.length > 2) {
+    const dir = path.dirname(expectedStoragePath)
+
+    if (dir) {
+      // override gateway urls to make it compatible with directory
+      urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${splitPath[1]}/`)
+
+      try {
+        // calling this on an existing directory doesn't overwrite the existing data or throw an error
+        // the mkdir recursive is equivalent to `mkdir -p`
+        await mkdir(dir, { recursive: true })
+      } catch (e) {
+        throw e
+      }
+    }
+  }
+  return _saveFileForMultihashHelper(req, multihash, expectedStoragePath, urls)
+}
+
+/**
  * Save file to disk given IPFS multihash, and ensure availability.
- * @notice This will only work for non-dir files
+ * @notice This function is agnostic to if dir/non dir file. It will retrieve the file
+ * and write the file to the expected location on the file system
  * Steps:
  *  - If file already stored on disk, return immediately and store to disk.
  *  - If file not already stored, fetch from IPFS and store to disk.
@@ -105,7 +148,7 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
  *  - If file is not available via IPFS try other cnode gateways for user's replica set.
  *  - Add file to local ipfs node if not already there.
  */
-async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry = []) {
+async function _saveFileForMultihashHelper (req, multihash, expectedStoragePath, gatewaysToTry=[]) {
   // If file already stored on disk, return immediately.
   if (fs.existsSync(expectedStoragePath)) {
     req.logger.info(`File already stored at ${expectedStoragePath} for ${multihash}`)
