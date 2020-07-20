@@ -1,7 +1,6 @@
 const { recoverPersonalSignature } = require('eth-sig-util')
 const fs = require('fs')
 const { BufferListStream } = require('bl')
-const config = require('./config')
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 
@@ -176,7 +175,6 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
 
 async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContext, filename = null) {
   const logger = genericLogger.child(logContext)
-
   let ipfsPath = multihash
   if (filename != null) {
     // Indicates we are retrieving a directory multihash
