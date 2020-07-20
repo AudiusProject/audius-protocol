@@ -469,11 +469,10 @@ class CreatorNode {
     let total
     const url = this.creatorNodeEndpoint + route
     try {
-
       // Hack alert!
       //
-      // Axios auto-detects browser vs node based on 
-      // the existance of XMLHttpRequest at the global namespace, which 
+      // Axios auto-detects browser vs node based on
+      // the existance of XMLHttpRequest at the global namespace, which
       // is imported by a web3 module, causing Axios to incorrectly
       // presume we're in a browser env when we're in a node env.
       // For uploads to work in a node env,

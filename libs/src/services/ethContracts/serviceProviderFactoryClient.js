@@ -14,7 +14,7 @@ class ServiceProviderFactoryClient extends ContractClient {
     getRegistryAddress,
     audiusTokenClient,
     stakingProxyClient,
-    isDebug = false,
+    isDebug = false
   ) {
     super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress)
     this.audiusTokenClient = audiusTokenClient

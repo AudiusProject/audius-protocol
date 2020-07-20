@@ -147,5 +147,4 @@ const startApp = async () => {
     if (appInfo) { appInfo.server.close() }
   })
 }
-
 startApp()

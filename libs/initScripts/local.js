@@ -13,7 +13,6 @@ const { deregisterLocalService } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 const { getEthContractAccounts } = require('./helpers/utils')
 
-
 const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service']
 const spDiscProvType = serviceTypeList[0]
 const spCreatorNodeType = serviceTypeList[1]
@@ -99,7 +98,7 @@ const run = async () => {
 
       case 'register-cnode':
         const serviceCount = args[3]
-        if (serviceCount === undefined) throw new Error("register-cnode requires a service # as the second arg")
+        if (serviceCount === undefined) throw new Error('register-cnode requires a service # as the second arg')
         await _registerCnode(ethAccounts, parseInt(serviceCount))
         break
 
@@ -186,7 +185,7 @@ const _registerDiscProv2 = async (audiusLibs, ethAccounts) => {
 
 const makeCreatorNodeEndpoint = (serviceNumber) => `http://cn${serviceNumber}_creator-node_1:${4000 + serviceNumber - 1}`
 
-const _registerCnode = async(ethAccounts, serviceNumber) => {
+const _registerCnode = async (ethAccounts, serviceNumber) => {
   const audiusLibs = await initAudiusLibs(true, null, ethAccounts[serviceNumber])
   const endpoint = makeCreatorNodeEndpoint(serviceNumber)
   await registerLocalService(audiusLibs, spCreatorNodeType, endpoint, amountOfAuds)

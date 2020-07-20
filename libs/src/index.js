@@ -120,7 +120,7 @@ class AudiusLibs {
     discoveryProviderConfig,
     creatorNodeConfig,
     isServer,
-    isDebug = false,
+    isDebug = false
   }) {
     // set version
     this.version = packageJSON.version

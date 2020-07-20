@@ -87,7 +87,7 @@ class EthContracts {
       this.getRegistryAddressForContract,
       this.AudiusTokenClient,
       this.StakingProxyClient,
-      this.isDebug,
+      this.isDebug
     )
 
     this.contractClients = [
