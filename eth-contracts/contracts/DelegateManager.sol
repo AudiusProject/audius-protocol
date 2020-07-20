@@ -151,8 +151,8 @@ contract DelegateManager is InitializableV2 {
         minDelegationAmount = 100 * 10**uint256(18);
         InitializableV2.initialize();
 
-        // 72hr * 60 min/hr * 60 sec/min / ~13 sec/block = 199938 blocks
-        _updateRemoveDelegatorLockupDuration(199938);
+        // 1 week = 168hrs * 60 min/hr * 60 sec/min / ~13 sec/block = 46523 blocks
+        _updateRemoveDelegatorLockupDuration(46523);
 
         // 24hr * 60min/hr * 60sec/min / ~13 sec/block = 6646 blocks
         removeDelegatorEvalDuration = 6646;
