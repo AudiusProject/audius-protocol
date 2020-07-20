@@ -451,9 +451,12 @@ module.exports = function (app) {
       return errorResponseBadRequest('Please provide a startTime and limit')
     }
 
-    limit = Math.min(parseInt(limit), 5000)
+    limit = parseInt(limit)
     if (!limit) {
       return errorResponseBadRequest(`Provided limit ${limit} not parseable`)
+    }
+    if (limit > 5000) {
+      return errorResponseBadRequest(`Provided limit ${limit} too large (must be <= 5000)`)
     }
 
     let createdAtMoment
