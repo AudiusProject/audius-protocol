@@ -96,8 +96,12 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
 }
 
 /**
- * Given a CID, do the prep work to save the file to the local file system including
- * creating directories, changeing IPFS gateway urls before calling _saveFileForMultihash
+ * Given a CID, saves the file to disk. Steps to achieve that:
+ * 1. do the prep work to save the file to the local file system including
+ * creating directories, changing IPFS gateway urls before calling _saveFileForMultihash
+ * 2. attempt to fetch the CID from a variety of sources
+ * 3. throws error if failure, couldn't find the file or file contents don't match CID,
+ * returns expectedStoragePath if successful
  * @param {Object} req request object
  * @param {String} multihash IPFS cid
  * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
@@ -109,7 +113,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
   const filePath = expectedStoragePath.replace(storagePath, '') // should be `/Qm1/Qm2` for dir and `/Qm1` for non-dir
 
   // will be modified to directory compatible route later if directory
-  let urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/`)
+  let gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/`)
 
   // Check if the file we are trying to copy is in a directory and if so, create the directory first
   // E.g if the expectedStoragePath is /file_storage/QmABC/Qm123, we check if filePath contains more than two parts
@@ -122,32 +126,26 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     const dir = path.dirname(expectedStoragePath)
 
     // override gateway urls to make it compatible with directory
-    urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${splitPath[1]}/`)
+    gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${splitPath[1]}/`)
 
     try {
       // calling this on an existing directory doesn't overwrite the existing data or throw an error
       // the mkdir recursive is equivalent to `mkdir -p`
       await mkdir(dir, { recursive: true })
     } catch (e) {
+      req.logger.error(`saveFileForMultihash - Error making directory at ${dir}`, e)
       throw e
     }
   }
-  return _saveFileForMultihashHelper(req, multihash, expectedStoragePath, urls)
-}
 
-/**
- * Save file to disk given IPFS multihash, and ensure availability.
- * @notice This function is agnostic to if dir/non dir file. It will retrieve the file
- * and write the file to the expected location on the file system
- * Steps:
- *  - If file already stored on disk, return immediately and store to disk.
- *  - If file not already stored, fetch from IPFS and store to disk.
- *    - If multihash available on local ipfs node, retrieve file.
- *    - If multihash not available locally, fetch file from IPFS.
- *  - If file is not available via IPFS try other cnode gateways for user's replica set.
- *  - Add file to local ipfs node if not already there.
- */
-async function _saveFileForMultihashHelper (req, multihash, expectedStoragePath, gatewaysToTry = []) {
+  /**
+   * Attempts to fetch CID:
+   *  - If file already stored on disk, return immediately and store to disk.
+   *  - If file not already stored, fetch from IPFS and store to disk. First calls
+   *    IPFS cat, then calls IPFS get
+   *  - If file is not available via IPFS try other cnode gateways for user's replica set.
+   */
+
   // If file already stored on disk, return immediately.
   if (fs.existsSync(expectedStoragePath)) {
     req.logger.info(`File already stored at ${expectedStoragePath} for ${multihash}`)
@@ -195,14 +193,14 @@ async function _saveFileForMultihashHelper (req, multihash, expectedStoragePath,
   }
 
   // if file is still null, try to fetch from other cnode gateways if user has nodes in replica set
-  if (!fileFound && gatewaysToTry.length > 0) {
+  if (!fileFound && gatewayUrlsMapped.length > 0) {
     try {
       let response
       // ..replace(/\/$/, "") removes trailing slashes
       req.logger.debug(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
 
       // Note - this is not compatible with image retrieval, which uses endpoint /ipfs/dir/[cid]
-      const urls = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
+      const urls = gatewayUrlsMapped.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
 
       // Note - Requests are intentionally not parallel to minimize additional load on gateways
       for (let index = 0; index < urls.length; index++) {
