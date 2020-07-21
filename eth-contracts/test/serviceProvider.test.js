@@ -29,13 +29,14 @@ const VOTING_PERIOD = 10
 const EXECUTION_DELAY = VOTING_PERIOD
 const VOTING_QUORUM_PERCENT = 10
 const DECREASE_STAKE_LOCKUP_DURATION = 10
+const DEPLOYER_CUT_LOCKUP_DURATION = 11
 
 const INITIAL_BAL = _lib.audToWeiBN(1000)
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
 
 contract('ServiceProvider test', async (accounts) => {
-  let token, registry, staking0, stakingInitializeData, proxy, claimsManager0, claimsManagerProxy, claimsManager, governance
+  let token, registry, staking0, stakingInitializeData, proxy, claimsManager, governance
   let staking, serviceProviderFactory, serviceTypeManager, mockDelegateManager
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
@@ -169,24 +170,21 @@ contract('ServiceProvider test', async (accounts) => {
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManager.address, { from: proxyDeployerAddress })
 
     // Deploy + register claimsManagerProxy
-    claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
-    const claimsInitializeCallData = _lib.encodeCall(
-      'initialize',
-      ['address', 'address'],
-      [token.address, governance.address]
+    claimsManager = await _lib.deployClaimsManager(
+      artifacts,
+      registry,
+      governance,
+      proxyDeployerAddress,
+      guardianAddress,
+      token.address,
+      10,
+      claimsManagerProxyKey
     )
-    claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
-      claimsManager0.address,
-      governance.address,
-      claimsInitializeCallData,
-      { from: proxyDeployerAddress }
-    )
-    claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
-    await registry.addContract(claimsManagerProxyKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
+    // End claims manager setup
 
     // Deploy mock delegate manager with only function to forward processClaim call
     mockDelegateManager = await MockDelegateManager.new()
-    await mockDelegateManager.initialize(claimsManagerProxy.address)
+    await mockDelegateManager.initialize(claimsManager.address)
     await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
 
     /** addServiceTypes creatornode and discprov via Governance */
@@ -219,8 +217,13 @@ contract('ServiceProvider test', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256'],
-      [governance.address, DECREASE_STAKE_LOCKUP_DURATION]
+      ['address', 'address', 'uint256', 'uint256'],
+      [
+        governance.address,
+        claimsManager.address,
+        DECREASE_STAKE_LOCKUP_DURATION,
+        DEPLOYER_CUT_LOCKUP_DURATION
+      ]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
@@ -248,7 +251,7 @@ contract('ServiceProvider test', async (accounts) => {
       stakingProxyKey,
       staking,
       serviceProviderFactoryProxy.address,
-      claimsManagerProxy.address,
+      claimsManager.address,
       _lib.addressZero
     )
     // ---- Set up claims manager contract permissions
@@ -289,7 +292,7 @@ contract('ServiceProvider test', async (accounts) => {
       serviceProviderFactory,
       staking.address,
       serviceTypeManagerProxy.address,
-      claimsManagerProxy.address,
+      claimsManager.address,
       mockDelegateManager.address
     )
 
@@ -315,7 +318,7 @@ contract('ServiceProvider test', async (accounts) => {
       initTxs.claimsManagerTx.tx,
       ServiceProviderFactory,
       'ClaimsManagerAddressUpdated',
-      { _newClaimsManagerAddress: claimsManagerProxy.address }
+      { _newClaimsManagerAddress: claimsManager.address }
     )
   })
 

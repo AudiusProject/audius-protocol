@@ -250,6 +250,45 @@ export const deployGovernance = async (
   return governance
 }
 
+export const deployClaimsManager = async (
+  artifacts,
+  registry,
+  governance,
+  proxyDeployerAddress,
+  guardianAddress,
+  tokenAddress,
+  fundingDiff,
+  registryKey
+) => {
+  const governanceAddress = governance.address
+  const ClaimsManager = artifacts.require('ClaimsManager')
+  const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+  const claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
+  const claimsInitializeCallData = encodeCall(
+    'initialize',
+    ['address', 'address'],
+    [tokenAddress, governanceAddress]
+  )
+  let claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
+    claimsManager0.address,
+    governanceAddress,
+    claimsInitializeCallData,
+    { from: proxyDeployerAddress }
+  )
+  let claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
+  await registry.addContract(registryKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
+
+  // Update funding found block diff
+  await governance.guardianExecuteTransaction(
+    registryKey,
+    toBN(0),
+    'updateFundingRoundBlockDiff(uint256)',
+    abiEncode(['uint256'], [fundingDiff]),
+    { from: guardianAddress }
+  )
+  return claimsManager
+}
+
 export const addServiceType = async (serviceType, typeMin, typeMax, governance, guardianAddress, serviceTypeManagerRegKey) => {
   const addServiceTypeSignature = 'addServiceType(bytes32,uint256,uint256)'
   const callValue0 = toBN(0)
@@ -538,10 +577,12 @@ export const configureServiceProviderFactoryAddresses = async (
     { from: guardianAddress })
   assert.equal(serviceTypeManagerAddress, await spFactory.getServiceTypeManagerAddress(), 'Unexpected service type manager address')
 
+  /*
   await assertRevert(
     spFactory.increaseStake(100),
     "claimsManagerAddress is not set"
   )
+  */
   let claimsManagerTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
