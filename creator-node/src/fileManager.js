@@ -133,8 +133,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       // the mkdir recursive is equivalent to `mkdir -p`
       await mkdir(dir, { recursive: true })
     } catch (e) {
-      req.logger.error(`saveFileForMultihash - Error making directory at ${dir}`, e)
-      throw e
+      throw new Error(`saveFileForMultihash - Error making directory at ${dir} - ${e.message}`)
     }
   }
 
