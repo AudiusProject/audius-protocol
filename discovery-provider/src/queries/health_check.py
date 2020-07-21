@@ -10,7 +10,8 @@ from src.models import Block
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.utils.config import shared_config
-from src.utils.redis_constants import latest_block_redis_key, latest_block_hash_redis_key
+from src.utils.redis_constants import latest_block_redis_key, \
+    latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, most_recent_indexed_block_redis_key
 from src.api_helpers import success_response_backwards_compat
 
 
@@ -36,24 +37,8 @@ def _get_db_block_state(latest_blocknum, latest_blockhash):
         # Fetch latest block from DB
         db_block_query = session.query(Block).filter(Block.is_current == True).all()
         assert len(db_block_query) == 1, "Expected SINGLE row marked as current"
+        return helpers.model_to_dictionary(db_block_query[0])
 
-        health_results = {
-            "web": {
-                "blocknumber": latest_blocknum,
-                "blockhash": latest_blockhash,
-            },
-            "db": helpers.model_to_dictionary(db_block_query[0]),
-            "git": os.getenv("GIT_SHA"),
-        }
-
-        block_difference = abs(
-            health_results["web"]["blocknumber"] - health_results["db"]["number"]
-        )
-        health_results["block_difference"] = block_difference
-        health_results["maximum_healthy_block_difference"] = default_healthy_block_diff
-        health_results.update(disc_prov_version)
-
-        return health_results
 
 # Returns number of and info on open db connections
 def _get_db_conn_state():
@@ -103,6 +88,7 @@ def health_check():
     latest_block_num = None
     latest_block_hash = None
 
+    # Get latest web block info
     stored_latest_block_num = redis.get(latest_block_redis_key)
     if stored_latest_block_num is not None:
         latest_block_num = int(stored_latest_block_num)
@@ -116,7 +102,38 @@ def health_check():
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash
 
-    health_results = _get_db_block_state(latest_block_num, latest_block_hash)
+    # Get latest indexed block info
+    latest_indexed_block_num = redis.get(most_recent_indexed_block_redis_key)
+    if latest_indexed_block_num is not None:
+        latest_indexed_block_num = int(latest_indexed_block_num)
+
+    latest_indexed_block_hash = redis.get(most_recent_indexed_block_hash_redis_key)
+    if latest_indexed_block_hash is not None:
+        latest_indexed_block_hash = latest_indexed_block_hash.decode("utf-8")
+
+    if latest_indexed_block_num is None or latest_indexed_block_hash is None:
+        db_block_state = _get_db_block_state(latest_block_num, latest_block_hash)
+        latest_indexed_block_num = db_block_state["number"]
+        latest_indexed_block_hash = db_block_state["blockhash"]
+
+    health_results = {
+        "web": {
+            "blocknumber": latest_block_num,
+            "blockhash": latest_block_hash,
+        },
+        "db": {
+            "number": latest_indexed_block_num,
+            "blockhash": latest_indexed_block_hash
+        },
+        "git": os.getenv("GIT_SHA"),
+    }
+
+    block_difference = abs(
+        health_results["web"]["blocknumber"] - health_results["db"]["number"]
+    )
+    health_results["block_difference"] = block_difference
+    health_results["maximum_healthy_block_difference"] = default_healthy_block_diff
+    health_results.update(disc_prov_version)
 
     if verbose:
         # DB connections check
