@@ -505,6 +505,11 @@ contract('ServiceProvider test', async (accounts) => {
         'No update deployer cut operation pending'
       )
 
+      await _lib.assertRevert(
+        serviceProviderFactory.cancelUpdateDeployerCut(stakerAccount),
+        'No update deployer cut operation pending'
+      )
+
       let deployerCutUpdateDuration = await serviceProviderFactory.getDeployerCutLockupDuration()
       let requestTx = await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCutValue, { from: stakerAccount })
       let requestBlock = _lib.toBN(requestTx.receipt.blockNumber)

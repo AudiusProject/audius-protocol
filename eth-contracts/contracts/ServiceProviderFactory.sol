@@ -588,11 +588,15 @@ contract ServiceProviderFactory is InitializableV2 {
         return spId;
     }
 
+    /**
+     * @notice Update the deployer cut for a given service provider
+     * @param _serviceProvider - address of service provider 
+     * @param _cut - new value for deployer cut
+     */
     function requestUpdateDeployerCut(address _serviceProvider, uint256 _cut) external
     {
         _requireIsInitialized();
 
-        // TODO: Or governance
         require(
             msg.sender == _serviceProvider || msg.sender == governanceAddress,
             "ServiceProviderFactory: Service Provider deployer cut update restricted to deployer"
@@ -615,6 +619,10 @@ contract ServiceProviderFactory is InitializableV2 {
         });
     }
 
+    /**
+     * @notice Cancel a pending request to update deployer cut
+     * @param _serviceProvider - address of service provider 
+     */
     function cancelUpdateDeployerCut(address _serviceProvider) external
     {
         _requireIsInitialized();
