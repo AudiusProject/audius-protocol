@@ -2,15 +2,15 @@
 // test resizeImage()
 const resizeImageJob = require('../src/resizeImage')
 
-const Jimp = require('jimp')
-const ExifParser = require('exif-parser')
-const ipfsClient = require('ipfs-http-client')
-const fs = require('fs')
-const path = require('path')
+// const Jimp = require('jimp')
+// const ExifParser = require('exif-parser')
+// const ipfsClient = require('ipfs-http-client')
+// const fs = require('fs')
+// const path = require('path')
 
-const sinon = require('sinon')
+// const sinon = require('sinon')
 const assert = require('assert')
-const Sinon = require('sinon')
+// const Sinon = require('sinon')
 /**
  * Given:
  * When:
