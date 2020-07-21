@@ -24,6 +24,8 @@ def extend_user(user):
 def extend_track(track):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
+    if (track["user"]):
+        track["user"] = extend_user(track["user"])
     track["id"] = track_id
     track["user_id"] = owner_id
     return track
