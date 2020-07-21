@@ -36,6 +36,8 @@ contract DelegateManager is InitializableV2 {
 
     /**
      * Number of blocks an undelegate operation has to wait
+     * The undelegate operation speed bump is to prevent a delegator from
+     *      attempting to remove their delegation in anticipation of a slash.
      * @notice must be >= Governance.votingPeriod
      */
     uint256 private undelegateLockupDuration;
@@ -47,7 +49,9 @@ contract DelegateManager is InitializableV2 {
     uint256 private minDelegationAmount;
 
     /**
-     * Lockup duration for a remove delegator request
+     * Lockup duration for a remove delegator request.
+     * The remove delegator speed bump is to prevent a service provider from maliciously
+     *     removing a delegator prior to the evaluation of a proposal.
      * @notice must be >= Governance.votingPeriod
      */
     uint256 private removeDelegatorLockupDuration;
