@@ -151,14 +151,16 @@ contract ServiceProviderFactory is InitializableV2 {
      */
     function initialize (
         address _governanceAddress,
-        uint256 _decreaseStakeLockupDuration
+        address _claimsManagerAddress,
+        uint256 _decreaseStakeLockupDuration,
+        uint256 _deployerCutLockupDuration
     ) public initializer
     {
-        decreaseStakeLockupDuration = _decreaseStakeLockupDuration;
         _updateGovernanceAddress(_governanceAddress);
+        claimsManagerAddress = _claimsManagerAddress; 
+        decreaseStakeLockupDuration = _decreaseStakeLockupDuration;
+        _updateDeployerCutLockupDuration(_deployerCutLockupDuration);
         InitializableV2.initialize();
-        // TODO: Make constructor or w/e
-        deployerCutLockupDuration = 100;
     }
 
     /**
@@ -1004,12 +1006,15 @@ contract ServiceProviderFactory is InitializableV2 {
         governanceAddress = _governanceAddress;
     }
 
+    /**
+     * @notice Set the deployer cut lockup duration
+     * @param _newDuration - incoming duration
+     */
     function _updateDeployerCutLockupDuration(uint256 _newDuration) internal
     {
-        // TODO: Extend this to accept other setters
         require(
             ClaimsManager(claimsManagerAddress).getFundingRoundBlockDiff() < _newDuration,
-            "ServiceProviderFactory: _governanceAddress is not a valid governance contract"
+            "ServiceProviderFactory: Incoming duration must be greater than funding round block diff"
         );
         deployerCutLockupDuration = _newDuration;
     }
