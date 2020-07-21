@@ -631,7 +631,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function cancelUpdateDeployerCut(address _serviceProvider) external
     {
         _requireIsInitialized();
-        _requirePendingDeployerCutOperation();
+        _requirePendingDeployerCutOperation(_serviceProvider);
 
         require(
             msg.sender == _serviceProvider || msg.sender == governanceAddress,
@@ -651,7 +651,7 @@ contract ServiceProviderFactory is InitializableV2 {
     function updateDeployerCut(address _serviceProvider) external
     {
         _requireIsInitialized();
-        _requirePendingDeployerCutOperation();
+        _requirePendingDeployerCutOperation(_serviceProvider);
 
         require(
             msg.sender == _serviceProvider || msg.sender == governanceAddress,
