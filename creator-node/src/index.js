@@ -10,19 +10,7 @@ const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const BlacklistManager = require('./blacklistManager')
-let ipfs, ipfsLatest
-
-(
-  async function () {
-    try {
-      const ipfsInstances = await require('./ipfsClient')
-      ipfs = ipfsInstances.ipfs
-      ipfsLatest = ipfsInstances.ipfsLatest
-    } catch (e) {
-      exitWithError(e.message)
-    }
-  }
-)()
+const { ipfs, ipfsLatest } = require('./ipfsClient')
 
 const exitWithError = (...msg) => {
   logger.error(...msg)

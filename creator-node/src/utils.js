@@ -3,15 +3,7 @@ const fs = require('fs')
 const { BufferListStream } = require('bl')
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
-
-let ipfsLatest, ipfs
-(
-  async function () {
-    const ipfsInstances = await require('./ipfsClient')
-    ipfs = ipfsInstances.ipfs
-    ipfsLatest = ipfsInstances.ipfsLatest
-  }
-)()
+const { ipfs, ipfsLatest } = require('./ipfsClient')
 
 class Utils {
   static verifySignature (data, sig) {
