@@ -10,7 +10,7 @@ const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const BlacklistManager = require('./blacklistManager')
-const { ipfs, ipfsLatest } = require('./ipfsClient')
+const { ipfs, ipfsLatest, logIpfsPeerIds } = require('./ipfsClient')
 
 const exitWithError = (...msg) => {
   logger.error(...msg)
@@ -104,6 +104,8 @@ const startApp = async () => {
     if (mode === '--run-all') {
       await runDBMigrations()
     }
+
+    await logIpfsPeerIds()
 
     /** Run app */
     await BlacklistManager.blacklist(ipfs)
