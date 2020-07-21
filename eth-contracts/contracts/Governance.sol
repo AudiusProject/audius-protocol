@@ -645,7 +645,7 @@ contract Governance is InitializableV2 {
 
     /**
      * @notice Allows the guardianAddress to execute protocol actions
-     * @param _targetContractRegistryKey - key in registry of target contraact
+     * @param _targetContractRegistryKey - key in registry of target contract
      * @param _callValue - amount of wei if a token transfer is involved
      * @param _functionSignature - function signature of the function to be executed if proposal is successful
      * @param _callData - encoded value(s) to call function with if proposal is successful
@@ -912,7 +912,7 @@ contract Governance is InitializableV2 {
     // ========================================= Internal Functions =========================================
 
     /**
-     * @notice Execute a transaction attached to a governanace proposal
+     * @notice Execute a transaction attached to a governance proposal
      * @dev We are aware of both potential re-entrancy issues and the risks associated with low-level solidity
      *      function calls here, but have chosen to keep this code with those issues in mind. All governance
      *      proposals go through a voting process, and all will be reviewed carefully to ensure that they
