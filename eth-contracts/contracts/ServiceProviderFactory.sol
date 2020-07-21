@@ -157,7 +157,7 @@ contract ServiceProviderFactory is InitializableV2 {
     ) public initializer
     {
         _updateGovernanceAddress(_governanceAddress);
-        claimsManagerAddress = _claimsManagerAddress; 
+        claimsManagerAddress = _claimsManagerAddress;
         decreaseStakeLockupDuration = _decreaseStakeLockupDuration;
         _updateDeployerCutLockupDuration(_deployerCutLockupDuration);
         InitializableV2.initialize();
@@ -592,7 +592,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /**
      * @notice Update the deployer cut for a given service provider
-     * @param _serviceProvider - address of service provider 
+     * @param _serviceProvider - address of service provider
      * @param _cut - new value for deployer cut
      */
     function requestUpdateDeployerCut(address _serviceProvider, uint256 _cut) external
@@ -623,7 +623,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /**
      * @notice Cancel a pending request to update deployer cut
-     * @param _serviceProvider - address of service provider 
+     * @param _serviceProvider - address of service provider
      */
     function cancelUpdateDeployerCut(address _serviceProvider) external
     {

@@ -123,7 +123,15 @@ export const encodeCall = (name, args, values) => {
   return '0x' + methodId + params
 }
 
-export const registerServiceProvider = async (token, staking, serviceProviderFactory, type, endpoint, amount, account) => {
+export const registerServiceProvider = async (
+  token,
+  staking,
+  serviceProviderFactory,
+  type,
+  endpoint,
+  amount,
+  account
+) => {
   // Approve staking transfer
   await token.approve(staking.address, amount, { from: account })
     // register service provider
@@ -577,12 +585,6 @@ export const configureServiceProviderFactoryAddresses = async (
     { from: guardianAddress })
   assert.equal(serviceTypeManagerAddress, await spFactory.getServiceTypeManagerAddress(), 'Unexpected service type manager address')
 
-  /*
-  await assertRevert(
-    spFactory.increaseStake(100),
-    "claimsManagerAddress is not set"
-  )
-  */
   let claimsManagerTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
