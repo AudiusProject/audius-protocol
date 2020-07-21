@@ -120,7 +120,12 @@ module.exports = async (job) => {
   const logger = genericLogger.child(logContext)
 
   // Read the image once, clone it later on
-  let img = await Jimp.read(file)
+  let img
+  try {
+    img = await Jimp.read(file)
+  } catch (e) {
+    throw new Error(`Could not generate image buffer during image resize: ${e}`)
+  }
 
   // Resize all the images
   const resizes = await Promise.all(
