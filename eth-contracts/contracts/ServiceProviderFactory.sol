@@ -17,6 +17,9 @@ contract ServiceProviderFactory is InitializableV2 {
     string private constant ERROR_ONLY_GOVERNANCE = (
         "ServiceProviderFactory: Only callable by Governance contract"
     );
+    string private constant ERROR_ONLY_SP_GOVERNANCE = (
+        "ServiceProviderFactory: Only callable by Service Provider or Governance"
+    );
 
     address private stakingAddress;
     address private delegateManagerAddress;
@@ -601,7 +604,7 @@ contract ServiceProviderFactory is InitializableV2 {
 
         require(
             msg.sender == _serviceProvider || msg.sender == governanceAddress,
-            "ServiceProviderFactory: Service Provider deployer cut update restricted to deployer"
+            ERROR_ONLY_SP_GOVERNANCE
         );
 
         require(
@@ -628,15 +631,11 @@ contract ServiceProviderFactory is InitializableV2 {
     function cancelUpdateDeployerCut(address _serviceProvider) external
     {
         _requireIsInitialized();
-        require(
-            (updateDeployerCutRequests[_serviceProvider].lockupExpiryBlock != 0) &&
-            (updateDeployerCutRequests[_serviceProvider].newDeployerCut != 0),
-            "ServiceProviderFactory: No update deployer cut operation pending"
-        );
+        _requirePendingDeployerCutOperation();
 
         require(
             msg.sender == _serviceProvider || msg.sender == governanceAddress,
-            "ServiceProviderFactory: Service Provider cut update operation restricted to deployer"
+            ERROR_ONLY_SP_GOVERNANCE
         );
 
         // Zero out request information
@@ -652,15 +651,11 @@ contract ServiceProviderFactory is InitializableV2 {
     function updateDeployerCut(address _serviceProvider) external
     {
         _requireIsInitialized();
-        require(
-            (updateDeployerCutRequests[_serviceProvider].lockupExpiryBlock != 0) &&
-            (updateDeployerCutRequests[_serviceProvider].newDeployerCut != 0),
-            "ServiceProviderFactory: No update deployer cut operation pending"
-        );
+        _requirePendingDeployerCutOperation();
 
         require(
-            msg.sender == _serviceProvider,
-            "ServiceProviderFactory: Service Provider cut update operation restricted to deployer"
+            msg.sender == _serviceProvider || msg.sender == governanceAddress,
+            ERROR_ONLY_SP_GOVERNANCE
         );
 
         require(
@@ -1063,6 +1058,13 @@ contract ServiceProviderFactory is InitializableV2 {
     }
 
     // ========================================= Private Functions =========================================
+    function _requirePendingDeployerCutOperation (address _serviceProvider) private view {
+        require(
+            (updateDeployerCutRequests[_serviceProvider].lockupExpiryBlock != 0) &&
+            (updateDeployerCutRequests[_serviceProvider].newDeployerCut != 0),
+            "ServiceProviderFactory: No update deployer cut operation pending"
+        );
+    }
 
     function _requireStakingAddressIsSet() private view {
         require(
