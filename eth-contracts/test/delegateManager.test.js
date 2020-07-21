@@ -30,6 +30,7 @@ const VOTING_PERIOD = 10
 const EXECUTION_DELAY = VOTING_PERIOD
 const VOTING_QUORUM_PERCENT = 10
 const DECREASE_STAKE_LOCKUP_DURATION = 10
+const UNDELEGATE_LOCKUP_DURATION = 21
 
 const callValue0 = _lib.toBN(0)
 
@@ -161,7 +162,7 @@ contract('DelegateManager', async (accounts) => {
     const delegateManagerInitializeData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'uint256'],
-      [token.address, governance.address, 10]
+      [token.address, governance.address, UNDELEGATE_LOCKUP_DURATION]
     )
     let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
     let delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
