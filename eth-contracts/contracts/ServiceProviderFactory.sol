@@ -658,7 +658,9 @@ contract ServiceProviderFactory is InitializableV2 {
             "ServiceProviderFactory: Lockup must be expired"
         );
 
-        spDetails[_serviceProvider].deployerCut = updateDeployerCutRequests[_serviceProvider].newDeployerCut;
+        spDetails[_serviceProvider].deployerCut = (
+            updateDeployerCutRequests[_serviceProvider].newDeployerCut
+        );
 
         // Zero out request information
         delete updateDeployerCutRequests[_serviceProvider];
@@ -822,6 +824,7 @@ contract ServiceProviderFactory is InitializableV2 {
             decreaseStakeRequests[_serviceProvider].lockupExpiryBlock
         );
     }
+
     /**
      * @notice Get information about pending decrease stake requests for service provider
      * @param _serviceProvider - address of service provider
