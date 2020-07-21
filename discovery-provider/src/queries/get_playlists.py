@@ -1,12 +1,12 @@
 import logging # pylint: disable=C0302
+import sqlalchemy
+from sqlalchemy import desc
 
+from src import exceptions
 from src.models import Playlist, RepostType, SaveType
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src import exceptions
-import sqlalchemy
-from sqlalchemy import desc
-from src.queries.query_helpers import get_current_user_id, paginate_query, parse_sort_param, \
+from src.queries.query_helpers import get_current_user_id, paginate_query, \
   populate_playlist_metadata, get_users_ids, get_users_by_id
 
 logger = logging.getLogger(__name__)
