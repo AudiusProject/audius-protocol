@@ -413,9 +413,31 @@ contract('DelegateManager', async (accounts) => {
       let finalBal = await token.balanceOf(stakerAccount)
       assert.isTrue(initialBal.eq(finalBal.add(DEFAULT_AMOUNT)), 'Expect funds to be transferred')
 
-      // Update SP Deployer Cut to 10%
-      await serviceProviderFactory.updateServiceProviderCut(stakerAccount, 10, { from: stakerAccount })
-      await serviceProviderFactory.updateServiceProviderCut(stakerAccount2, 10, { from: stakerAccount2 })
+      let updatedCut = 10
+
+      // Request Update SP Deployer Cut to 10%
+      await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCut, { from: stakerAccount })
+      await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount2, updatedCut, { from: stakerAccount2 })
+
+      // Advance to 2nd update block number
+      let pending2ndUpdate = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount2)
+      await time.advanceBlockTo(pending2ndUpdate.lockupExpiryBlock)
+
+      // Evaluate both updates
+      await serviceProviderFactory.updateDeployerCut(
+        stakerAccount2,
+        { from: stakerAccount2 }
+      )
+      await serviceProviderFactory.updateDeployerCut(
+        stakerAccount,
+        { from: stakerAccount }
+      )
+
+      // Confirm updates
+      let info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCut)), 'Expect updated cut')
+      info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount2)
+      assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCut)), 'Expect updated cut')
     })
 
     it('Initial state + claim', async () => {

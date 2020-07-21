@@ -492,16 +492,44 @@ contract('ServiceProvider test', async (accounts) => {
 
     it('Update service provider cut', async () => {
       let updatedCutValue = 10
+      // Permission of request to input account
       await _lib.assertRevert(
-        serviceProviderFactory.updateServiceProviderCut(
+        serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCutValue, { from: accounts[4] }),
+        'deployer cut update restricted to deployer'
+      )
+      // Eval fails if no pending operation
+      await _lib.assertRevert(
+        serviceProviderFactory.updateDeployerCut(
           stakerAccount,
-          updatedCutValue,
           { from: accounts[4] }),
-        'Service Provider cut update operation restricted to deployer')
-      let updateTx = await serviceProviderFactory.updateServiceProviderCut(
+        'No update deployer cut operation pending'
+      )
+
+      let deployerCutUpdateDuration = await serviceProviderFactory.getDeployerCutLockupDuration()
+      let requestTx = await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCutValue, { from: stakerAccount })
+      let requestBlock = _lib.toBN(requestTx.receipt.blockNumber)
+
+      // Retrieve pending info
+      let pendingOp = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount)
+      assert.isTrue(
+        (requestBlock.add(deployerCutUpdateDuration)).eq(pendingOp.lockupExpiryBlock),
+        'Unexpected expiry block'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.updateDeployerCut(
+          stakerAccount,
+          { from: stakerAccount }
+        ),
+        'Lockup must be expired'
+      )
+
+      await time.advanceBlockTo(pendingOp.lockupExpiryBlock)
+
+      let updateTx = await serviceProviderFactory.updateDeployerCut(
         stakerAccount,
-        updatedCutValue,
-        { from: stakerAccount })
+        { from: stakerAccount }
+      )
 
       await expectEvent.inTransaction(
         updateTx.tx,
@@ -518,7 +546,7 @@ contract('ServiceProvider test', async (accounts) => {
       let base = await serviceProviderFactory.getServiceProviderDeployerCutBase()
       assert.isTrue(_lib.toBN(newCut).gt(base), 'Expect invalid newCut')
       await _lib.assertRevert(
-        serviceProviderFactory.updateServiceProviderCut(stakerAccount, newCut, { from: stakerAccount }),
+        serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, newCut, { from: stakerAccount }),
         'Service Provider cut cannot exceed base value')
     })
 
