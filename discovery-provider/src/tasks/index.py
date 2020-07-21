@@ -10,7 +10,7 @@ from src.tasks.playlists import playlist_state_update
 from src.tasks.user_library import user_library_state_update
 from src.utils.helpers import get_ipfs_info_from_cnode_endpoint
 from src.utils.redis_constants import latest_block_redis_key, \
-    latest_block_hash_redis_key, most_recent_indexed_block_redis_key
+    latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, most_recent_indexed_block_redis_key
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +62,7 @@ def initialize_blocks_table_if_necessary(db):
             # set the last indexed block in redis
             current_block_result = current_block_query_result.first()
             redis.set(most_recent_indexed_block_redis_key, current_block_result.number)
+            redis.set(most_recent_indexed_block_hash_redis_key, current_block_result.blockhash)
 
     return target_blockhash
 
@@ -238,6 +239,7 @@ def index_blocks(self, db, blocks_list):
 
         # add the block number of the most recently processed block to redis
         redis.set(most_recent_indexed_block_redis_key, block.number)
+        redis.set(most_recent_indexed_block_hash_redis_key, block.blockhash)
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
