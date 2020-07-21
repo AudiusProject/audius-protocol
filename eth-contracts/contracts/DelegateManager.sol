@@ -149,11 +149,12 @@ contract DelegateManager is InitializableV2 {
     {
         _updateGovernanceAddress(_governanceAddress);
         audiusToken = ERC20Mintable(_tokenAddress);
-        undelegateLockupDuration = _undelegateLockupDuration;
         maxDelegators = 175;
         // Default minimum delegation amount set to 100AUD
         minDelegationAmount = 100 * 10**uint256(18);
         InitializableV2.initialize();
+
+        _updateUndelegateLockupDuration(_undelegateLockupDuration);
 
         // 1 week = 168hrs * 60 min/hr * 60 sec/min / ~13 sec/block = 46523 blocks
         _updateRemoveDelegatorLockupDuration(46523);
@@ -679,7 +680,7 @@ contract DelegateManager is InitializableV2 {
 
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
 
-        undelegateLockupDuration = _duration;
+        _updateUndelegateLockupDuration(_duration);
         emit UndelegateLockupDurationUpdated(_duration);
     }
 
@@ -1148,7 +1149,7 @@ contract DelegateManager is InitializableV2 {
 
     /**
      * @notice Set the remove delegator lockup duration after validating against governance
-     * @param _duration - Incoming duration value
+     * @param _duration - Incoming remove delegator duration value
      */
     function _updateRemoveDelegatorLockupDuration(uint256 _duration) internal {
         Governance governance = Governance(governanceAddress);
@@ -1157,6 +1158,19 @@ contract DelegateManager is InitializableV2 {
             "DelegateManager: removeDelegatorLockupDuration duration must be greater than governance votingPeriod + executionDelay"
         );
         removeDelegatorLockupDuration = _duration;
+    }
+
+    /**
+     * @notice Set the undelegate lockup duration after validating against governance
+     * @param _duration - Incoming undelegate lockup duration value
+     */
+    function _updateUndelegateLockupDuration(uint256 _duration) internal {
+        Governance governance = Governance(governanceAddress);
+        require(
+            _duration > governance.getVotingPeriod() + governance.getExecutionDelay(),
+            "DelegateManager: undelegateLockupDuration duration must be greater than governance votingPeriod + executionDelay"
+        );
+        undelegateLockupDuration = _duration;
     }
 
     /**
