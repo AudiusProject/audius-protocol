@@ -107,7 +107,7 @@ const getCID = async (req, res) => {
     // Cat 1 byte of CID in ipfs to determine if file exists
     // If the request takes under 500ms, stream the file from ipfs
     // else if the request takes over 500ms, throw an error
-    await ipfsSingleByteCat(CID, req, 500)
+    await ipfsSingleByteCat(CID, req.logContext, 500)
 
     // Stream file from ipfs if cat one byte takes under 500ms
     // If catReadableStream() promise is rejected, throw an error and stream from file system
@@ -186,7 +186,7 @@ const getDirCID = async (req, res) => {
     // Cat 1 byte of CID in ipfs to determine if file exists
     // If the request takes under 500ms, stream the file from ipfs
     // else if the request takes over 500ms, throw an error
-    await ipfsSingleByteCat(ipfsPath, req, 500)
+    await ipfsSingleByteCat(ipfsPath, req.logContext, 500)
 
     await new Promise((resolve, reject) => {
       req.app.get('ipfsAPI').catReadableStream(ipfsPath)
