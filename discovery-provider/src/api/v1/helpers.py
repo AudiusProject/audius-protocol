@@ -16,6 +16,11 @@ def decode_string_id(id):
         return None
     return decoded[0]
 
+def extend_user(user):
+    user_id = encode_int_id(user["user_id"])
+    user["id"] = user_id
+    return user
+
 def extend_track(track):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
@@ -29,6 +34,9 @@ def extend_playlist(playlist):
     playlist["id"] = playlist_id
     playlist["user_id"] = owner_id
     return playlist
+
+def abort_not_found(identifier, namespace):
+    namespace.abort(404, "Oh no! Resource for ID {} not found.".format(identifier))
 
 def decode_with_abort(identifier, namespace):
     decoded = decode_string_id(identifier)

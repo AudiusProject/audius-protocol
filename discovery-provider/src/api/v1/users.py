@@ -1,9 +1,11 @@
 import logging # pylint: disable=C0302
 from flask import Flask, Blueprint
+from src.queries.get_users import get_users
+# from src.queries.get_users import get_users
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
 from src import api_helpers
-from src.api.v1.helpers import decode_with_abort, extend_track, make_response
+from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_track, extend_user, make_response
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +112,54 @@ track = ns.model('Track', {
 
 tracks_response = make_response("tracks_response", ns, fields.List(fields.Nested(track)))
 
+user_model = ns.model('User', {
+    "album_count": fields.Integer(required=True),
+    "bio": fields.String,
+    "blockhash": fields.String(required=True),
+    "blocknumber": fields.Integer(required=True),
+    "cover_photo": fields.String,
+    "cover_photo_sizes": fields.String,
+    "created_at": fields.String(required=True),
+    "creator_node_endpoint": fields.String,
+    "current_user_followee_follow_count": fields.Integer(required=True),
+    "does_current_user_follow": fields.Boolean(required=True),
+    "followee_count": fields.Integer(required=True),
+    "follower_count": fields.Integer(required=True),
+    "handle": fields.String(required=True),
+    "handle_lc": fields.String(required=True),
+    "id": fields.String(required=True),
+    "is_creator": fields.Boolean(required=True),
+    "is_current": fields.Boolean(required=True),
+    "is_verified": fields.Boolean(required=True),
+    "location": fields.String,
+    "metadata_multihash": fields.String(required=True),
+    "name": fields.String(required=True),
+    "playlist_count": fields.Integer(required=True),
+    "profile_picture": fields.String,
+    "profile_picture_sizes": fields.String,
+    "repost_count": fields.Integer(required=True),
+    "track_blocknumber": fields.Integer(required=True),
+    "track_count": fields.Integer(required=True),
+    "updated_at": fields.String(required=True),
+    "wallet": fields.String(required=True)
+})
+
+user_response = make_response("user_response", ns, fields.Nested(user_model))
+
+@ns.route("/<string:user_id>")
+class User(Resource):
+    @ns.marshal_with(user_response)
+    def get(self, user_id):
+        """Fetch a single user"""
+        formatted_id = decode_with_abort(user_id, ns)
+        args = {"id": [formatted_id]}
+        users = get_users(args)
+        if not users:
+            abort_not_found(user_id, ns)
+        user = extend_user(users[0])
+        response = api_helpers.success_response(user, 200, False)
+        return response
+
 @ns.route("/<string:user_id>/tracks")
 class TrackList(Resource):
     @ns.marshal_with(tracks_response)
@@ -119,6 +169,7 @@ class TrackList(Resource):
         args = {"user_id": user_id}
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
-        # Don't convert the success response to JSON
+        if not tracks:
+            abort_not_found(user_id, ns)
         response = api_helpers.success_response(tracks, 200, False)
         return response
