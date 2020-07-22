@@ -1,4 +1,5 @@
 import * as _lib from '../utils/lib.js'
+import { update } from 'lodash'
 const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
 const Staking = artifacts.require('Staking')
@@ -558,6 +559,25 @@ contract('ServiceProvider test', async (accounts) => {
       updateTx = await serviceProviderFactory.updateDeployerCut(stakerAccount, { from: stakerAccount })
       info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCutValue)), 'Expect updated cut')
+
+      // Confirm cancellation works
+      let preUpdatecut = updatedCutValue
+      updatedCutValue = 10
+      // Submit request
+      requestTx = await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCutValue, { from: stakerAccount })
+      // Confirm request status
+      pendingOp = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount)
+      assert.isTrue(pendingOp.newDeployerCut.eq(_lib.toBN(updatedCutValue)), 'Expect in flight request')
+      assert.isTrue(!pendingOp.lockupExpiryBlock.eq(_lib.toBN(0)), 'Expect in flight request')
+      // Submit cancellation
+      await serviceProviderFactory.cancelUpdateDeployerCut(stakerAccount, { from: stakerAccount })
+      // Confirm request status
+      pendingOp = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount)
+      assert.isTrue(pendingOp.newDeployerCut.eq(_lib.toBN(0)), 'Expect cancelled request')
+      assert.isTrue(pendingOp.lockupExpiryBlock.eq(_lib.toBN(0)), 'Expect cancelled request')
+      // Confirm no change in deployer cut
+      info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      assert.isTrue((info.deployerCut).eq(_lib.toBN(preUpdatecut)), 'Expect updated cut')
 
       let invalidCut = 110
       let base = await serviceProviderFactory.getServiceProviderDeployerCutBase()
