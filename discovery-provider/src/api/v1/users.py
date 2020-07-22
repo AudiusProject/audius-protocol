@@ -1,49 +1,18 @@
 import logging
-from .tracks import favorite, track # pylint: disable=C0302
+from src.api.v1.models.common import favorite
+from src.api.v1.models.users import user_model
 from src.queries.get_saves import get_saves
 from src.queries.get_users import get_users
-from flask_restx import Resource, Namespace, fields, reqparse, inputs
+from flask_restx import Resource, Namespace, fields, reqparse
 from src.queries.get_tracks import get_tracks
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_favorite, extend_track, extend_user, make_response, success_response
+from .models.tracks import track
 
 logger = logging.getLogger(__name__)
 
 ns = Namespace('users', description='User related operations')
 
-user_model = ns.model('User', {
-    "album_count": fields.Integer(required=True),
-    "bio": fields.String,
-    "blockhash": fields.String(required=True),
-    "blocknumber": fields.Integer(required=True),
-    "cover_photo": fields.String,
-    "cover_photo_sizes": fields.String,
-    "created_at": fields.String(required=True),
-    "creator_node_endpoint": fields.String,
-    "current_user_followee_follow_count": fields.Integer(required=True),
-    "does_current_user_follow": fields.Boolean(required=True),
-    "followee_count": fields.Integer(required=True),
-    "follower_count": fields.Integer(required=True),
-    "handle": fields.String(required=True),
-    "handle_lc": fields.String(required=True),
-    "id": fields.String(required=True),
-    "is_creator": fields.Boolean(required=True),
-    "is_current": fields.Boolean(required=True),
-    "is_verified": fields.Boolean(required=True),
-    "location": fields.String,
-    "metadata_multihash": fields.String(required=True),
-    "name": fields.String(required=True),
-    "playlist_count": fields.Integer(required=True),
-    "profile_picture": fields.String,
-    "profile_picture_sizes": fields.String,
-    "repost_count": fields.Integer(required=True),
-    "track_blocknumber": fields.Integer(required=True),
-    "track_count": fields.Integer(required=True),
-    "updated_at": fields.String(required=True),
-    "wallet": fields.String(required=True)
-})
-
 user_response = make_response("user_response", ns, fields.Nested(user_model))
-
 @ns.route("/<string:user_id>")
 class User(Resource):
     @ns.marshal_with(user_response)
@@ -82,6 +51,7 @@ class FavoritedTracks(Resource):
         favorites = list(map(extend_favorite, favorites))
         return success_response(favorites)
 
+# Still WIP!
 search_parser = reqparse.RequestParser()
 search_parser.add_argument('query', required=True)
 @ns.route("/search")
