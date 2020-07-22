@@ -493,7 +493,7 @@ contract('ServiceProvider test', async (accounts) => {
       )
     })
 
-    it('Update service provider cut', async () => {
+    it.only('Update service provider cut', async () => {
       let updatedCutValue = 10
       // Permission of request to input account
       await _lib.assertRevert(
@@ -547,14 +547,23 @@ contract('ServiceProvider test', async (accounts) => {
           _updatedCut: `${updatedCutValue}`
         }
       )
-
       let info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCutValue)), 'Expect updated cut')
-      let newCut = 110
+
+      // Reset the value for updated cut to 0
+      updatedCutValue = 0
+      requestTx = await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCutValue, { from: stakerAccount })
+      pendingOp = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount)
+      await time.advanceBlockTo(pendingOp.lockupExpiryBlock)
+      updateTx = await serviceProviderFactory.updateDeployerCut(stakerAccount, { from: stakerAccount })
+      info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCutValue)), 'Expect updated cut')
+
+      let invalidCut = 110
       let base = await serviceProviderFactory.getServiceProviderDeployerCutBase()
-      assert.isTrue(_lib.toBN(newCut).gt(base), 'Expect invalid newCut')
+      assert.isTrue(_lib.toBN(invalidCut).gt(base), 'Expect invalid newCut')
       await _lib.assertRevert(
-        serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, newCut, { from: stakerAccount }),
+        serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, invalidCut, { from: stakerAccount }),
         'Service Provider cut cannot exceed base value')
 
       // Set an invalid value for lockup

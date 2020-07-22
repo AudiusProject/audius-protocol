@@ -1074,8 +1074,7 @@ contract ServiceProviderFactory is InitializableV2 {
     // ========================================= Private Functions =========================================
     function _requirePendingDeployerCutOperation (address _serviceProvider) private view {
         require(
-            (updateDeployerCutRequests[_serviceProvider].lockupExpiryBlock != 0) &&
-            (updateDeployerCutRequests[_serviceProvider].newDeployerCut != 0),
+            (updateDeployerCutRequests[_serviceProvider].lockupExpiryBlock != 0),
             "ServiceProviderFactory: No update deployer cut operation pending"
         );
     }
