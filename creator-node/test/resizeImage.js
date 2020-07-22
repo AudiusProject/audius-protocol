@@ -1,5 +1,6 @@
 const { ipfs } = require('../src/ipfsClient')
 const resizeImageJob = require('../src/resizeImage')
+const config = require('../src/config')
 
 // const Jimp = require('jimp')
 // const ExifParser = require('exif-parser')
@@ -113,7 +114,7 @@ describe('test resizeImage', () => {
       data: {
         file: imageBuffer,
         fileName: 'audiusDj',
-        storagePath: 'file_storage',
+        storagePath: config.get('storagePath'),
         sizes: {
           '150x150.jpg': 150,
           '480x480.jpg': 480,
@@ -162,7 +163,7 @@ describe('test resizeImage', () => {
       data: {
         file: imageBuffer,
         fileName: 'audiusDj',
-        storagePath: 'file_storage', // works
+        storagePath: config.get('storagePath'),
         sizes: {
           '640x.jpg': 640,
           '2000x.jpg': 2000
