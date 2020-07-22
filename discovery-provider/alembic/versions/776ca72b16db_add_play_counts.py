@@ -24,32 +24,28 @@ def upgrade():
         sa.Column('play_item_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime, nullable=False, default=sa.func.now()),
         sa.Column('updated_at', sa.DateTime, nullable=False, onupdate=sa.func.now()),
-        # sa.ForeignKeyConstraint(['user_id'], ['users.user_id']),
         sa.PrimaryKeyConstraint('id')
     )
 
     connection = op.get_bind()
 
-    # playlist search index
+    # aggreagate plays mat view
     connection.execute('''
       CREATE MATERIALIZED VIEW aggregate_plays as
-      SELECT * FROM (
-        SELECT
-          plays.play_item_id as play_item_id,
-          count(*) as count
-        FROM
-            plays
-        GROUP BY plays.play_item_id
-      ) AS words;
+      SELECT
+        plays.play_item_id as play_item_id,
+        count(*) as count
+      FROM
+          plays
+      GROUP BY plays.play_item_id
 
       -- add index on above materialized view
       CREATE INDEX play_item_id_idx ON aggregate_plays (play_item_id);
     ''')
 
 def downgrade():
-
     connection = op.get_bind()
-    # playlist search index
+    # aggreagate plays mat view
     connection.execute('''
       -- Drop
       DROP INDEX IF EXISTS play_item_id_idx;
