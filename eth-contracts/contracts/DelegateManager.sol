@@ -35,24 +35,24 @@ contract DelegateManager is InitializableV2 {
     address private claimsManagerAddress;
 
     /**
-     * Number of blocks an undelegate operation has to wait
+     * Period in  blocks an undelegate operation is delayed.
      * The undelegate operation speed bump is to prevent a delegator from
      *      attempting to remove their delegation in anticipation of a slash.
-     * @notice must be >= Governance.votingPeriod
+     * @notice Must be greater than governance votingPeriod + executionDelay
      */
     uint256 private undelegateLockupDuration;
 
-    // Maximum number of delegators a single account can handle
+    /// @notice Maximum number of delegators a single account can handle
     uint256 private maxDelegators;
 
-    // Minimum amount of delegation allowed
+    /// @notice Minimum amount of delegation allowed
     uint256 private minDelegationAmount;
 
     /**
      * Lockup duration for a remove delegator request.
      * The remove delegator speed bump is to prevent a service provider from maliciously
      *     removing a delegator prior to the evaluation of a proposal.
-     * @notice must be >= Governance.votingPeriod
+     * @notice Must be greater than governance votingPeriod + executionDelay
      */
     uint256 private removeDelegatorLockupDuration;
 
