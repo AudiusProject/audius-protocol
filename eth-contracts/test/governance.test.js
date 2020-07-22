@@ -54,6 +54,7 @@ contract('Governance.sol', async (accounts) => {
   const maxDescriptionLength = 250
   const executionDelay = votingPeriod
   const deployerCutLockupDuration = 11
+  const undelegateLockupDuration = 21
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress, newUpdateAddress] = accounts
@@ -203,7 +204,7 @@ contract('Governance.sol', async (accounts) => {
     const delegateManagerInitializeData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'uint256'],
-      [token.address, governance.address, 10]
+      [token.address, governance.address, undelegateLockupDuration]
     )
     let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
     let delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
