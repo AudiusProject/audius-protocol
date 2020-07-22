@@ -370,7 +370,7 @@ module.exports = function (app) {
             type: 'copy320'
           },
           transaction: t
-        })
+          })
 
         if (numTranscodeAffectedRows === 0) {
           throw new Error('Failed to associate the transcoded file for the provided track UUID.')
