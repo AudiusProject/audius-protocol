@@ -29,14 +29,15 @@ const DEFAULT_AMOUNT = _lib.toBN(DEFAULT_AMOUNT_VAL)
 const VOTING_PERIOD = 10
 const EXECUTION_DELAY = VOTING_PERIOD
 const VOTING_QUORUM_PERCENT = 10
-const DECREASE_STAKE_LOCKUP_DURATION = 10
-const UNDELEGATE_LOCKUP_DURATION = 21
+const DEPLOYER_CUT_LOCKUP_DURATION = 11
+const UNDELEGATE_LOCKUP_DURATION = VOTING_PERIOD + EXECUTION_DELAY + 1
+const DECREASE_STAKE_LOCKUP_DURATION = UNDELEGATE_LOCKUP_DURATION
 
 const callValue0 = _lib.toBN(0)
 
 
 contract('DelegateManager', async (accounts) => {
-  let staking, stakingAddress, token, registry, governance, claimsManager0, claimsManagerProxy
+  let staking, stakingAddress, token, registry, governance
   let serviceProviderFactory, serviceTypeManager, claimsManager, delegateManager
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
@@ -112,12 +113,28 @@ contract('DelegateManager', async (accounts) => {
     // Register discprov serviceType
     await _lib.addServiceType(testDiscProvType, serviceTypeMinStake, serviceTypeMaxStake, governance, guardianAddress, serviceTypeManagerProxyKey)
 
+    claimsManager = await _lib.deployClaimsManager(
+      artifacts,
+      registry,
+      governance,
+      proxyDeployerAddress,
+      guardianAddress,
+      token.address,
+      10,
+      claimsManagerProxyKey
+    )
+
     // Deploy ServiceProviderFactory
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256'],
-      [governance.address, DECREASE_STAKE_LOCKUP_DURATION]
+      ['address', 'address', 'uint256', 'uint256'],
+      [
+        governance.address,
+        claimsManager.address,
+        DECREASE_STAKE_LOCKUP_DURATION,
+        DEPLOYER_CUT_LOCKUP_DURATION
+      ]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
@@ -128,29 +145,7 @@ contract('DelegateManager', async (accounts) => {
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: proxyDeployerAddress })
 
-    // Deploy new claimsManager proxy
-    claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
-    const claimsInitializeCallData = _lib.encodeCall(
-      'initialize',
-      ['address', 'address'],
-      [token.address, governance.address]
-    )
-    claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
-      claimsManager0.address,
-      governance.address,
-      claimsInitializeCallData,
-      { from: proxyDeployerAddress }
-    )
-    claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
-
-    // Register claimsManagerProxy
-    await registry.addContract(
-      claimsManagerProxyKey,
-      claimsManagerProxy.address,
-      { from: proxyDeployerAddress }
-    )
-
-    // Register new contract as a minter, from the same address that deployed the contract
+    // Register new ClaimsManager contract as a minter, from the same address that deployed the contract
     await governance.guardianExecuteTransaction(
       tokenRegKey,
       callValue0,
@@ -189,7 +184,7 @@ contract('DelegateManager', async (accounts) => {
       stakingProxyKey,
       staking,
       serviceProviderFactoryProxy.address,
-      claimsManagerProxy.address,
+      claimsManager.address,
       delegateManagerProxy.address
     )
 
@@ -249,7 +244,7 @@ contract('DelegateManager', async (accounts) => {
       serviceProviderFactory,
       staking.address,
       serviceTypeManagerProxy.address,
-      claimsManagerProxy.address,
+      claimsManager.address,
       delegateManagerProxy.address
     )
 
@@ -458,9 +453,31 @@ contract('DelegateManager', async (accounts) => {
       let finalBal = await token.balanceOf(stakerAccount)
       assert.isTrue(initialBal.eq(finalBal.add(DEFAULT_AMOUNT)), 'Expect funds to be transferred')
 
-      // Update SP Deployer Cut to 10%
-      await serviceProviderFactory.updateServiceProviderCut(stakerAccount, 10, { from: stakerAccount })
-      await serviceProviderFactory.updateServiceProviderCut(stakerAccount2, 10, { from: stakerAccount2 })
+      let updatedCut = 10
+
+      // Request Update SP Deployer Cut to 10%
+      await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCut, { from: stakerAccount })
+      await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount2, updatedCut, { from: stakerAccount2 })
+
+      // Advance to 2nd update block number
+      let pending2ndUpdate = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount2)
+      await time.advanceBlockTo(pending2ndUpdate.lockupExpiryBlock)
+
+      // Evaluate both updates
+      await serviceProviderFactory.updateDeployerCut(
+        stakerAccount2,
+        { from: stakerAccount2 }
+      )
+      await serviceProviderFactory.updateDeployerCut(
+        stakerAccount,
+        { from: stakerAccount }
+      )
+
+      // Confirm updates
+      let info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCut)), 'Expect updated cut')
+      info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount2)
+      assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCut)), 'Expect updated cut')
     })
 
     it('Initial state + claim', async () => {
