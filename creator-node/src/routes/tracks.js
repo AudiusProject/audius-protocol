@@ -239,7 +239,7 @@ module.exports = function (app) {
    * and associates segment & image file entries with track. Ends track creation/update process.
    */
   app.post('/tracks', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
-    const { blockchainTrackId, blockNumber, metadataFileUUID, transcodedTrackUUID } = req.body
+    const { blockchainTrackId, blockNumber, metadataFileUUID } = req.body
 
     if (!blockchainTrackId || !blockNumber || !metadataFileUUID) {
       return errorResponseBadRequest('Must include blockchainTrackId, blockNumber, and metadataFileUUID.')
@@ -300,37 +300,7 @@ module.exports = function (app) {
 
       // if track created, ensure files exist with trackuuid = null and update them.
       if (trackCreated) {
-        // Update the transcoded 320kbps copy
-        if (transcodedTrackUUID) {
-          const transcodedFile = await models.File.findOne({
-            where: {
-              fileUUID: transcodedTrackUUID,
-              cnodeUserUUID,
-              trackUUID: null,
-              type: 'copy320'
-            },
-            transaction: t
-          })
-          if (!transcodedFile) {
-            throw new Error('Did not find a transcoded file for the provided CID.')
-          }
-          const numAffectedRows = await models.File.update(
-            { trackUUID: track.trackUUID },
-            { where: {
-              fileUUID: transcodedTrackUUID,
-              cnodeUserUUID,
-              trackUUID: null,
-              type: 'copy320'
-            },
-            transaction: t
-            }
-          )
-          if (numAffectedRows === 0) {
-            throw new Error('Failed to associate the transcoded file for the provided track UUID.')
-          }
-        }
-
-        // Update the corresponding segment files
+        // Associate created trackUUID to each segment file
         const trackFiles = await models.File.findAll({
           where: {
             multihash: trackSegmentCIDs,
@@ -340,9 +310,15 @@ module.exports = function (app) {
           },
           transaction: t
         })
+
+        if (trackFiles.length === 0) {
+          throw new Error('Did not find any track files for track segments CIDs.')
+        }
+
         if (trackFiles.length < trackSegmentCIDs.length) {
           throw new Error('Did not find files for every track segment CID.')
         }
+
         const numAffectedRows = await models.File.update(
           { trackUUID: track.trackUUID },
           { where: {
@@ -354,38 +330,53 @@ module.exports = function (app) {
           transaction: t
           }
         )
+
         if (numAffectedRows < trackSegmentCIDs.length) {
           throw new Error('Failed to associate files for every track segment CID.')
         }
-      } else { /** If track updated, ensure files exist with trackuuid. */
-        // Check the transcoded copy if present
-        if (transcodedTrackUUID) {
-          const transcodedFile = await models.File.findOne({
-            where: {
-              fileUUID: transcodedTrackUUID,
-              cnodeUserUUID,
-              trackUUID: track.trackUUID,
-              type: 'copy320'
-            },
-            transaction: t
-          })
-          if (!transcodedFile) {
-            throw new Error('Did not find the corresponding transcoded file for the provided track UUID.')
+
+        // Associate created trackUUID to the transcoded copy
+
+        // Using the correct source file, find a transcoded 320kbps copy and associate that
+        const { sourceFile } = trackFiles[0]
+        // Check that each segment file found matches the same source file.
+        // In the case a user uploaded two of the same track twice and failed both times
+        // to associate, this will be exercised. We may want to remove this check here and
+        // let the user recover, but in practice, this may not really happen, so we invariant here
+        // so it's logged.
+        for (let i = 1; i < trackFiles.length; ++i) {
+          if (trackFiles[i].sourceFile !== sourceFile) {
+            throw new Error(
+              `Found non-matching sourcefile ${trackFiles[i].sourceFile} for sourceFile ${sourceFile}`
+            )
           }
         }
 
-        // Check the segment files
-        const trackFiles = await models.File.findAll({
+        const transcodedCopy = await models.File.findOne({
           where: {
-            multihash: trackSegmentCIDs,
+            sourceFile,
             cnodeUserUUID,
-            trackUUID: track.trackUUID,
-            type: 'track'
+            trackUUID: null,
+            type: 'copy320'
           },
           transaction: t
         })
-        if (trackFiles.length < trackSegmentCIDs.length) {
-          throw new Error('Did not find files for every track segment CID with trackUUID.')
+
+        const numTranscodeAffectedRows = await models.File.update(
+          { trackUUID: track.trackUUID },
+          {
+            where: {
+              fileUUID: transcodedCopy.fileUUID,
+              cnodeUserUUID,
+              trackUUID: null,
+              type: 'copy320'
+            },
+            transaction: t
+          }
+        )
+
+        if (numTranscodeAffectedRows === 0) {
+          throw new Error('Failed to associate the transcoded file for the provided track UUID.')
         }
       }
 
