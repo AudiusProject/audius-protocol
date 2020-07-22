@@ -1,3 +1,4 @@
+from src import api_helpers
 from hashids import Hashids
 from flask_restx import fields
 
@@ -16,11 +17,30 @@ def decode_string_id(id):
         return None
     return decoded[0]
 
+def extend_user(user):
+    user_id = encode_int_id(user["user_id"])
+    user["id"] = user_id
+    return user
+
+def extend_repost(repost):
+    repost["user_id"] = encode_int_id(repost["user_id"])
+    repost["repost_item_id"] = encode_int_id(repost["repost_item_id"])
+    return repost
+
+def extend_favorite(favorite):
+    favorite["user_id"] = encode_int_id(favorite["user_id"])
+    favorite["save_item_id"] = encode_int_id(favorite["save_item_id"])
+    return favorite
+
 def extend_track(track):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
+    if (track["user"]):
+        track["user"] = extend_user(track["user"])
     track["id"] = track_id
     track["user_id"] = owner_id
+    track["followee_saves"] = list(map(extend_favorite, track["followee_saves"]))
+    track["followee_resposts"] = list(map(extend_repost, track["followee_reposts"]))
     return track
 
 def extend_playlist(playlist):
@@ -29,6 +49,9 @@ def extend_playlist(playlist):
     playlist["id"] = playlist_id
     playlist["user_id"] = owner_id
     return playlist
+
+def abort_not_found(identifier, namespace):
+    namespace.abort(404, "Oh no! Resource for ID {} not found.".format(identifier))
 
 def decode_with_abort(identifier, namespace):
     decoded = decode_string_id(identifier)
@@ -52,3 +75,6 @@ def make_response(name, namespace, modelType):
         "timestamp": fields.String(required=True)	,
         "version": fields.Nested(version_metadata, required=True),
     })
+
+def success_response(entity):
+    return api_helpers.success_response(entity, 200, False)

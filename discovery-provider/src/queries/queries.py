@@ -31,6 +31,7 @@ from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_tracks
 from src.queries.get_previously_private_playlists import get_previously_private_playlists
+from src.queries.query_helpers import get_current_user_id
 
 
 logger = logging.getLogger(__name__)
@@ -211,7 +212,8 @@ def get_savers_for_playlist_route(save_playlist_id):
 @bp.route("/saves/<save_type>", methods=("GET",))
 def get_saves_route(save_type):
     try:
-        save_results = get_saves(save_type)
+        user_id = get_current_user_id()
+        save_results = get_saves(save_type, user_id)
         return api_helpers.success_response(save_results)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
