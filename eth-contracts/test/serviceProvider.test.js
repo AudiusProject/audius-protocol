@@ -35,7 +35,7 @@ const INITIAL_BAL = _lib.audToWeiBN(1000)
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
 
-contract('ServiceProvider test', async (accounts) => {
+contract.only('ServiceProvider test', async (accounts) => {
   let token, registry, staking0, stakingInitializeData, proxy, claimsManager, governance
   let staking, serviceProviderFactory, serviceTypeManager, mockDelegateManager
 
@@ -562,17 +562,17 @@ contract('ServiceProvider test', async (accounts) => {
         governance.guardianExecuteTransaction(
           serviceProviderFactoryKey,
           callValue,
-          'updateDeployerCutLockupDuration(address)',
+          'updateDeployerCutLockupDuration(uint256)',
           _lib.abiEncode(['uint256'], [1]),
           { from: guardianAddress }
         )
       )
 
-      let validUpdatedDuration = DECREASE_STAKE_LOCKUP_DURATION + 1
-      governance.guardianExecuteTransaction(
+      let validUpdatedDuration = DEPLOYER_CUT_LOCKUP_DURATION + 1
+      await governance.guardianExecuteTransaction(
         serviceProviderFactoryKey,
         callValue,
-        'updateDeployerCutLockupDuration(address)',
+        'updateDeployerCutLockupDuration(uint256)',
         _lib.abiEncode(['uint256'], [validUpdatedDuration]),
         { from: guardianAddress }
       )
