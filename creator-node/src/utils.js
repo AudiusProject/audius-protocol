@@ -89,7 +89,7 @@ const ipfsSingleByteCat = (path, req, timeout = 1000) => new Promise(async (reso
     for await (const chunk of ipfs.cat(path, { length: 1, timeout })) {
       continue
     }
-    req.logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
+    req.logger.debug(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
     resolve()
   } catch (e) {
     req.logger.error(`ipfsSingleByteCat - Error: ${e}`)
@@ -119,7 +119,7 @@ const ipfsCat = (path, req, timeout = 1000, length = null) => new Promise(async 
     for await (const chunk of ipfs.cat(path, options)) {
       chunks.push(chunk)
     }
-    req.logger.info(`ipfsCat - Retrieved ${path} in ${Date.now() - start}ms`)
+    req.logger.debug(`ipfsCat - Retrieved ${path} in ${Date.now() - start}ms`)
     resolve(Buffer.concat(chunks))
   } catch (e) {
     req.logger.error(`ipfsCat - Error: ${e}`)
