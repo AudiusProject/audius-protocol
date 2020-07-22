@@ -257,6 +257,7 @@ jobs:
             export delegatePrivateKey=0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d
             echo 'export storagePath="test_file_storage"' >> $BASH_ENV 
             echo 'export ipfsPort=5001' >> $BASH_ENV
+            source $BASH_ENV
             npm run test
 
   test-discovery-provider:
