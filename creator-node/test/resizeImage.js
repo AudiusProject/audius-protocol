@@ -12,6 +12,9 @@ const sinon = require('sinon')
 const assert = require('assert')
 
 describe('test resizeImage', () => {
+  afterEach(function () {
+    sinon.restore();
+  });
   /**
    * Given: the param image buffer is bad
    * When: Jimp reads a bad image buffer
@@ -30,7 +33,7 @@ describe('test resizeImage', () => {
           '1000x1000.jpg': 1000
         },
         square: true,
-        logContext: 'logContext' // todo: add working
+        logContext: {} // todo: add working
       }
     }
 
@@ -38,6 +41,7 @@ describe('test resizeImage', () => {
       await resizeImageJob(job)
       assert.ok(false)
     } catch (e) {
+      console.error(e)
       assert.ok(e.message.includes('Could not generate image buffer during image resize'))
     }
   })
@@ -61,7 +65,7 @@ describe('test resizeImage', () => {
           '1000x1000.jpg': 1000
         },
         square: true,
-        logContext: 'logContext' // todo: add working
+        logContext: {} // todo: add working
       }
     }
 
@@ -69,6 +73,7 @@ describe('test resizeImage', () => {
       await resizeImageJob(job)
       assert.ok(false)
     } catch (e) {
+      console.error(e)
       assert.ok(true)
     }
   })
@@ -91,7 +96,7 @@ describe('test resizeImage', () => {
           '1000x1000.jpg': 1000
         },
         square: true,
-        logContext: 'logContext' // todo: add working
+        logContext: {} // todo: add working
       }
     }
 
@@ -99,6 +104,7 @@ describe('test resizeImage', () => {
       await resizeImageJob(job)
       assert.ok(false)
     } catch (e) {
+      console.error(e)
       assert.ok(true)
     }
   })
@@ -121,7 +127,7 @@ describe('test resizeImage', () => {
           '1000x1000.jpg': 1000
         },
         square: true,
-        logContext: 'logContext' // todo: add working
+        logContext: {} // todo: add working
       }
     }
 
@@ -129,6 +135,7 @@ describe('test resizeImage', () => {
     try {
       resizeImageResp = await resizeImageJob(job)
     } catch (e) {
+      console.error(e)
       assert.ok(false)
     }
 
@@ -137,6 +144,7 @@ describe('test resizeImage', () => {
     try {
       ipfsDirContents = await ipfs.ls(resizeImageResp.dir.dirCID)
     } catch (e) {
+      console.error(e)
       assert.fail('Directory not found in ipfs.')
     }
 
@@ -169,7 +177,7 @@ describe('test resizeImage', () => {
           '2000x.jpg': 2000
         },
         square: false,
-        logContext: 'logContext' // todo: add working
+        logContext: {} // todo: add working
       }
     }
 
@@ -177,6 +185,7 @@ describe('test resizeImage', () => {
     try {
       resizeImageResp = await resizeImageJob(job)
     } catch (e) {
+      console.error(e)
       assert.ok(false)
     }
 
@@ -185,6 +194,7 @@ describe('test resizeImage', () => {
     try {
       ipfsDirContents = await ipfs.ls(resizeImageResp.dir.dirCID)
     } catch (e) {
+      console.error(e)
       assert.fail('Directory not found in ipfs.')
     }
 
