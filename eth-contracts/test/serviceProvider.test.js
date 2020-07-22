@@ -498,7 +498,7 @@ contract('ServiceProvider test', async (accounts) => {
       // Permission of request to input account
       await _lib.assertRevert(
         serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCutValue, { from: accounts[4] }),
-        'deployer cut update restricted to deployer'
+        'Only callable by Service Provider or Governance'
       )
       // Eval fails if no pending operation
       await _lib.assertRevert(
@@ -556,6 +556,28 @@ contract('ServiceProvider test', async (accounts) => {
       await _lib.assertRevert(
         serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, newCut, { from: stakerAccount }),
         'Service Provider cut cannot exceed base value')
+
+      // Set an invalid value for lockup
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceProviderFactoryKey,
+          callValue,
+          'updateDeployerCutLockupDuration(address)',
+          _lib.abiEncode(['uint256'], [1]),
+          { from: guardianAddress }
+        )
+      )
+
+      let validUpdatedDuration = DECREASE_STAKE_LOCKUP_DURATION + 1
+      governance.guardianExecuteTransaction(
+        serviceProviderFactoryKey,
+        callValue,
+        'updateDeployerCutLockupDuration(address)',
+        _lib.abiEncode(['uint256'], [validUpdatedDuration]),
+        { from: guardianAddress }
+      )
+      let fromChainDuration = await serviceProviderFactory.getDeployerCutLockupDuration()
+      assert.isTrue(fromChainDuration.eq(_lib.toBN(validUpdatedDuration)), 'Expected update')
     })
 
     it('Fails to register duplicate endpoint w/same account', async () => {
