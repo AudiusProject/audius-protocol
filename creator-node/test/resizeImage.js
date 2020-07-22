@@ -13,8 +13,8 @@ const assert = require('assert')
 
 describe('test resizeImage', () => {
   afterEach(function () {
-    sinon.restore();
-  });
+    sinon.restore()
+  })
   /**
    * Given: the param image buffer is bad
    * When: Jimp reads a bad image buffer
