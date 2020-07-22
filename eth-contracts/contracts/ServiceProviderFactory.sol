@@ -161,7 +161,7 @@ contract ServiceProviderFactory is InitializableV2 {
     {
         _updateGovernanceAddress(_governanceAddress);
         claimsManagerAddress = _claimsManagerAddress;
-        decreaseStakeLockupDuration = _decreaseStakeLockupDuration;
+        _updateDecreaseStakeLockupDuration(_decreaseStakeLockupDuration);
         _updateDeployerCutLockupDuration(_deployerCutLockupDuration);
         InitializableV2.initialize();
     }
@@ -706,7 +706,7 @@ contract ServiceProviderFactory is InitializableV2 {
             ERROR_ONLY_GOVERNANCE
         );
 
-        decreaseStakeLockupDuration = _duration;
+        _updateDecreaseStakeLockupDuration(_duration);
         emit DecreaseStakeLockupDurationUpdated(_duration);
     }
 
@@ -1003,15 +1003,29 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /**
      * @notice Set the deployer cut lockup duration
-     * @param _newDuration - incoming duration
+     * @param _duration - incoming duration
      */
-    function _updateDeployerCutLockupDuration(uint256 _newDuration) internal
+    function _updateDeployerCutLockupDuration(uint256 _duration) internal
     {
         require(
-            ClaimsManager(claimsManagerAddress).getFundingRoundBlockDiff() < _newDuration,
+            ClaimsManager(claimsManagerAddress).getFundingRoundBlockDiff() < _duration,
             "ServiceProviderFactory: Incoming duration must be greater than funding round block diff"
         );
-        deployerCutLockupDuration = _newDuration;
+        deployerCutLockupDuration = _duration;
+    }
+
+    /**
+     * @notice Set the decrease stake lockup duration
+     * @param _duration - incoming duration
+     */
+    function _updateDecreaseStakeLockupDuration(uint256 _duration) internal
+    {
+        Governance governance = Governance(governanceAddress);
+        require(
+            _duration > governance.getVotingPeriod() + governance.getExecutionDelay(),
+            "ServiceProviderFactory: decreaseStakeLockupDuration duration must be greater than governance votingPeriod + executionDelay"
+        );
+        decreaseStakeLockupDuration = _duration;
     }
 
     /**

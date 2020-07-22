@@ -49,12 +49,12 @@ contract('Governance.sol', async (accounts) => {
 
   const votingPeriod = 10
   const votingQuorumPercent = 10
-  const decreaseStakeLockupDuration = 10
   const maxInProgressProposals = 20
   const maxDescriptionLength = 250
   const executionDelay = votingPeriod
   const deployerCutLockupDuration = 11
-  const undelegateLockupDuration = 21
+  const undelegateLockupDuration = votingPeriod + executionDelay + 1
+  const decreaseStakeLockupDuration = undelegateLockupDuration
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress, newUpdateAddress] = accounts
