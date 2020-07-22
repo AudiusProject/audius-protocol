@@ -26,7 +26,15 @@ contract ServiceProviderFactory is InitializableV2 {
     address private governanceAddress;
     address private serviceTypeManagerAddress;
     address private claimsManagerAddress;
+
+    /// @notice Period in blocks that a decrease stake operation is delayed.
+    ///         Must be greater than governance votingPeriod + executionDelay in order to
+    ///         prevent pre-emptive withdrawal in anticipation of a slash proposal
     uint256 private decreaseStakeLockupDuration;
+
+    /// @notice Period in blocks that an update deployer cut operation is delayed.
+    ///         Must be greater than funding round block diff in order
+    ///         to prevent manipulation around a funding round
     uint256 private deployerCutLockupDuration;
 
     /// @dev - Stores following entities
