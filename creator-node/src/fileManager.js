@@ -109,32 +109,35 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
  * @param {Array} gatewaysToTry List of gateway endpoints to try
  */
 async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry) {
-  const storagePath = req.app.get('storagePath') // should be like `/file_storage'
-  const filePath = expectedStoragePath.replace(storagePath, '') // should be `/Qm1/Qm2` for dir and `/Qm1` for non-dir
+  const storagePath = req.app.get('storagePath') // should be `/file_storage'
 
   // will be modified to directory compatible route later if directory
   // TODO - don't concat url's by hand like this, use module like urljoin
   let gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/`)
 
   // Check if the file we are trying to copy is in a directory and if so, create the directory first
-  // E.g if the expectedStoragePath is /file_storage/QmABC/Qm123, we check if filePath contains more than two parts
-  // NOTE - `/QmABC/Qm123 splits into ['', 'QmABC', 'Qm123']. The beginning empty quote is because of the initial slash
-  // eg. `/QmABC/Qm123` contains more than 2 parts and if so, it's a directory
-  // eg. `/QmABC` splits into ['', 'QmABC'] so it's exactly two parts so it's a non-dir file
-  const splitPath = filePath.split('/')
-  if (splitPath.length > 2) {
-    // this is a directory
-    const dir = path.dirname(expectedStoragePath)
+  // E.g if the expectedStoragePath includes a dir like /file_storage/QmABC/Qm123, path.parse gives us
+  // { root: '/', dir: '/file_storage/QmABC', base: 'Qm123',ext: '', name: 'Qm2' }
+  // but if expectedStoragePath is a file like /file_storage/Qm123, path.parse gives us
+  // { root: '/', dir: '/file_storage', base: 'Qm123', ext: '', name: 'Qm123' }
+  // In the case where the parsed expectedStoragePath dir contains storagePath (`/file_storage`)
+  // but does not equal it, we know that it's a directory
+  const parsedStoragePath = path.parse(expectedStoragePath).dir
+  if (parsedStoragePath !== storagePath && parsedStoragePath.includes(storagePath)) {
+    const splitPath = parsedStoragePath.split('/')
+    // parsedStoragePath looks like '/file_storage/Qm123' for a dir and when you call split, the result is
+    // ['', 'file_storage', 'Qm123']. the third item in the array is the directory cid, so index 2
+    if (splitPath.length !== 3) throw new Error(`saveFileForMultihash - Invalid expectedStoragePath for directory ${expectedStoragePath}`)
 
     // override gateway urls to make it compatible with directory
-    gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${splitPath[1]}/`)
+    gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${splitPath[2]}/`)
 
     try {
       // calling this on an existing directory doesn't overwrite the existing data or throw an error
       // the mkdir recursive is equivalent to `mkdir -p`
-      await mkdir(dir, { recursive: true })
+      await mkdir(parsedStoragePath, { recursive: true })
     } catch (e) {
-      throw new Error(`saveFileForMultihash - Error making directory at ${dir} - ${e.message}`)
+      throw new Error(`saveFileForMultihash - Error making directory at ${parsedStoragePath} - ${e.message}`)
     }
   }
 
@@ -148,7 +151,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
 
   // If file already stored on disk, return immediately.
   if (fs.existsSync(expectedStoragePath)) {
-    req.logger.info(`File already stored at ${expectedStoragePath} for ${multihash}`)
+    req.logger.debug(`saveFileForMultihash - File already stored at ${expectedStoragePath} for ${multihash}`)
     return expectedStoragePath
   }
 
@@ -156,27 +159,27 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
   let fileFound = false
 
   // If multihash already available on local ipfs node, cat file from local ipfs node
-  req.logger.debug(`checking if ${multihash} already available on local ipfs node`)
+  req.logger.debug(`saveFileForMultihash - checking if ${multihash} already available on local ipfs node`)
   try {
     // ipfsCat returns a Buffer
     let fileBuffer = await Utils.ipfsCat(multihash, req, 1000)
     fileFound = true
-    req.logger.debug(`Retrieved file for ${multihash} from local ipfs node`)
+    req.logger.debug(`saveFileForMultihash - Retrieved file for ${multihash} from local ipfs node`)
     // Write file to disk.
     await writeFile(expectedStoragePath, fileBuffer)
-    req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs cat`)
+    req.logger.info(`saveFileForMultihash - wrote file to ${expectedStoragePath}, obtained via ipfs cat`)
   } catch (e) {
-    req.logger.info(`Multihash ${multihash} is not available on local ipfs node`)
+    req.logger.info(`saveFileForMultihash - Multihash ${multihash} is not available on local ipfs node`)
   }
 
   // If file not already available on local ipfs node, fetch from IPFS.
   if (!fileFound) {
-    req.logger.debug(`Attempting to get ${multihash} from IPFS`)
+    req.logger.debug(`saveFileForMultihash - Attempting to get ${multihash} from IPFS`)
     try {
       // ipfsGet returns a BufferListStream object which is not a buffer
       // not compatible into writeFile directly, but it can be streamed to a file
       let fileBL = await Utils.ipfsGet(multihash, req, 5000)
-      req.logger.debug(`retrieved file for multihash ${multihash} from local ipfs node`)
+      req.logger.debug(`saveFileForMultihash - retrieved file for multihash ${multihash} from local ipfs node`)
 
       // Write file to disk.
       const destinationStream = fs.createWriteStream(expectedStoragePath)
@@ -186,9 +189,9 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
         destinationStream.on('error', err => { reject(err) })
         fileBL.on('error', err => { destinationStream.end(); reject(err) })
       })
-      req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs get`)
+      req.logger.info(`saveFileForMultihash - wrote file to ${expectedStoragePath}, obtained via ipfs get`)
     } catch (e) {
-      req.logger.info(`Failed to retrieve file for multihash ${multihash} from IPFS ${e.message}`)
+      req.logger.info(`saveFileForMultihash - Failed to retrieve file for multihash ${multihash} from IPFS ${e.message}`)
     }
   }
 
@@ -197,7 +200,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     try {
       let response
       // ..replace(/\/$/, "") removes trailing slashes
-      req.logger.debug(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
+      req.logger.debug(`saveFileForMultihash - Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
 
       // Note - this is not compatible with image retrieval, which uses endpoint /ipfs/dir/[cid]
       const urls = gatewayUrlsMapped.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
@@ -233,7 +236,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
         response.data.on('error', err => { destinationStream.end(); reject(err) })
       })
 
-      req.logger.info(`wrote file to ${expectedStoragePath}`)
+      req.logger.info(`saveFileForMultihash - wrote file to ${expectedStoragePath}`)
     } catch (e) {
       throw new Error(`Failed to retrieve file for multihash ${multihash} from other creator node gateways: ${e.message}`)
     }

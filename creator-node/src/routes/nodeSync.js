@@ -313,7 +313,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
               // Skip over directories since there's no actual content to sync
               // The files inside the directory are synced separately
               if (nonTrackFile.type !== 'dir') {
-                saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
+                return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
               }
             }
           ))
