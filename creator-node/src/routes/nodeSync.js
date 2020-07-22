@@ -12,8 +12,6 @@ const syncQueue = {}
 const TrackSaveConcurrencyLimit = 10
 const NonTrackFileSaveConcurrencyLimit = 10
 const RehydrateIPFSConcurrencyLimit = 10
-const TrackTypes = ['track', 'copy320']
-const NonTrackTypes = ['dir', 'image', 'metadata']
 
 module.exports = function (app) {
   /**
@@ -292,8 +290,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
 
         // Files with trackUUIDs cannot be created until tracks have been created,
         // but tracks cannot be created until metadata and cover art files have been created.
-        const trackFiles = fetchedCNodeUser.files.filter(file => TrackTypes.includes(file.type))
-        const nonTrackFiles = fetchedCNodeUser.files.filter(file => NonTrackTypes.includes(file.type))
+        const trackFiles = fetchedCNodeUser.files.filter(file => models.File.TrackTypes.includes(file.type))
+        const nonTrackFiles = fetchedCNodeUser.files.filter(file => models.File.NonTrackTypes.includes(file.type))
 
         // Save all track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
