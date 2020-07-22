@@ -2,10 +2,9 @@ from src import exceptions
 from src.models import Track, Playlist, Save, SaveType
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import get_current_user_id, paginate_query
+from src.queries.query_helpers import paginate_query
 
-
-def get_saves(save_type):
+def get_saves(save_type, user_id):
     save_query_type = None
     if save_type == 'albums':
         save_query_type = SaveType.album
@@ -17,13 +16,12 @@ def get_saves(save_type):
         raise exceptions.ArgumentError("Invalid save type provided")
 
     save_results = []
-    current_user_id = get_current_user_id()
     db = get_db_read_replica()
     with db.scoped_session() as session:
         query = (
             session.query(Save)
             .filter(
-                Save.user_id == current_user_id,
+                Save.user_id == user_id,
                 Save.is_current == True,
                 Save.is_delete == False,
                 Save.save_type == save_query_type

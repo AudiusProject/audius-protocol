@@ -1,3 +1,4 @@
+from src import api_helpers
 from hashids import Hashids
 from flask_restx import fields
 
@@ -21,6 +22,16 @@ def extend_user(user):
     user["id"] = user_id
     return user
 
+def extend_repost(repost):
+    repost["user_id"] = encode_int_id(repost["user_id"])
+    repost["repost_item_id"] = encode_int_id(repost["repost_item_id"])
+    return repost
+
+def extend_favorite(favorite):
+    favorite["user_id"] = encode_int_id(favorite["user_id"])
+    favorite["save_item_id"] = encode_int_id(favorite["save_item_id"])
+    return favorite
+
 def extend_track(track):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
@@ -28,6 +39,8 @@ def extend_track(track):
         track["user"] = extend_user(track["user"])
     track["id"] = track_id
     track["user_id"] = owner_id
+    track["followee_saves"] = list(map(extend_favorite, track["followee_saves"]))
+    track["followee_resposts"] = list(map(extend_repost, track["followee_reposts"]))
     return track
 
 def extend_playlist(playlist):
@@ -62,3 +75,6 @@ def make_response(name, namespace, modelType):
         "timestamp": fields.String(required=True)	,
         "version": fields.Nested(version_metadata, required=True),
     })
+
+def success_response(entity):
+    return api_helpers.success_response(entity, 200, False)

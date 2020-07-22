@@ -1,24 +1,23 @@
 import logging # pylint: disable=C0302
 from flask import Flask, Blueprint
+from src.queries.get_saves import get_saves
 from src.queries.get_users import get_users
 # from src.queries.get_users import get_users
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
 from src import api_helpers
-from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_track, extend_user, make_response
+from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_favorite, extend_track, extend_user, make_response, success_response
 
 logger = logging.getLogger(__name__)
 
 ns = Namespace('users', description='User related operations')
 
-# TODO:
-# - Move these models into the models folder. There's some import issue preventing that right now.
-# - Add user to track model once we've created the user model
-
 track_segment = ns.model('track_segment', {
     "duration": fields.Float(required=True),
     "multihash": fields.String(required=True)
 })
+
+# TODO: extend these...
 
 repost = ns.model('repost', {
     "blockhash": fields.String(required=True),
@@ -37,9 +36,9 @@ favorite = ns.model('favorite', {
     "created_at": fields.String(required=True),
     "is_current": fields.Boolean(required=True),
     "is_delete": fields.Boolean(required=True),
-    "save_item_id":	fields.Integer(required=True),
+    "save_item_id":	fields.String(required=True),
     "save_type": fields.String(required=True),
-    "user_id": fields.Integer(required=True)
+    "user_id": fields.String(required=True)
 })
 
 track_element = ns.model('track_element', {
@@ -143,7 +142,6 @@ track = ns.model('Track', {
     "user_id": fields.String(required=True)
 })
 
-tracks_response = make_response("tracks_response", ns, fields.List(fields.Nested(track)))
 
 user_response = make_response("user_response", ns, fields.Nested(user_model))
 
@@ -158,9 +156,9 @@ class User(Resource):
         if not users:
             abort_not_found(user_id, ns)
         user = extend_user(users[0])
-        response = api_helpers.success_response(user, 200, False)
-        return response
+        return success_response(user)
 
+tracks_response = make_response("tracks_response", ns, fields.List(fields.Nested(track)))
 @ns.route("/<string:user_id>/tracks")
 class TrackList(Resource):
     @ns.marshal_with(tracks_response)
@@ -172,5 +170,16 @@ class TrackList(Resource):
         tracks = list(map(extend_track, tracks))
         if not tracks:
             abort_not_found(user_id, ns)
-        response = api_helpers.success_response(tracks, 200, False)
-        return response
+        return success_response(tracks)
+
+favorites_response = make_response("favorites_response", ns, fields.List(fields.Nested(favorite)))
+@ns.route("/<string:user_id>/favorites")
+class FavoritedTracks(Resource):
+    @ns.marshal_with(favorites_response)
+    def get(self, user_id):
+        """Fetch favorited tracks for a user."""
+        user_id = decode_with_abort(user_id, ns)
+        favorites = get_saves("tracks", user_id)
+        favorites = list(map(extend_favorite, favorites))
+        return success_response(favorites)
+
