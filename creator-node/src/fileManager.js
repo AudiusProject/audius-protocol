@@ -113,6 +113,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
   const filePath = expectedStoragePath.replace(storagePath, '') // should be `/Qm1/Qm2` for dir and `/Qm1` for non-dir
 
   // will be modified to directory compatible route later if directory
+  // TODO - don't concat url's by hand like this, use module like urljoin
   let gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/`)
 
   // Check if the file we are trying to copy is in a directory and if so, create the directory first
