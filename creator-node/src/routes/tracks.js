@@ -339,6 +339,11 @@ module.exports = function (app) {
 
         // Using the correct source file, find a transcoded 320kbps copy and associate that
         const { sourceFile } = trackFiles[0]
+        // Check that each segment file found matches the same source file.
+        // In the case a user uploaded two of the same track twice and failed both times
+        // to associate, this will be exercised. We may want to remove this check here and
+        // let the user recover, but in practice, this may not really happen, so we invariant here
+        // so it's logged.
         for (let i = 1; i < trackFiles.length; ++i) {
           if (trackFiles[i].sourceFile !== sourceFile) {
             throw new Error(
