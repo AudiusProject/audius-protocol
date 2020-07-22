@@ -335,7 +335,7 @@ module.exports = function (app) {
           throw new Error('Failed to associate files for every track segment CID.')
         }
 
-        // Associate created trackUUID the transcoded copy
+        // Associate created trackUUID to the transcoded copy
 
         // Using the correct source file, find a transcoded 320kbps copy and associate that
         const { sourceFile } = trackFiles[0]
@@ -358,19 +358,22 @@ module.exports = function (app) {
             cnodeUserUUID,
             trackUUID: null,
             type: 'copy320'
-          }
+          },
+          transaction: t
         })
 
         const numTranscodeAffectedRows = await models.File.update(
           { trackUUID: track.trackUUID },
-          { where: {
-            fileUUID: transcodedCopy.fileUUID,
-            cnodeUserUUID,
-            trackUUID: null,
-            type: 'copy320'
-          },
-          transaction: t
-          })
+          {
+            where: {
+              fileUUID: transcodedCopy.fileUUID,
+              cnodeUserUUID,
+              trackUUID: null,
+              type: 'copy320'
+            },
+            transaction: t
+          }
+        )
 
         if (numTranscodeAffectedRows === 0) {
           throw new Error('Failed to associate the transcoded file for the provided track UUID.')
