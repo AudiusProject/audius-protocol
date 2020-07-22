@@ -493,7 +493,7 @@ contract('ServiceProvider test', async (accounts) => {
       )
     })
 
-    it.only('Update service provider cut', async () => {
+    it('Update service provider cut', async () => {
       let updatedCutValue = 10
       // Permission of request to input account
       await _lib.assertRevert(
