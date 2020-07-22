@@ -15,7 +15,7 @@ const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 const MAKE_REQUEST_RETRY_COUNT = 3
-const MAX_MAKE_REQUEST_RETRY_COUNT = 50
+const MAX_MAKE_REQUEST_RETRY_COUNT = 20
 
 class DiscoveryProvider {
   constructor (whitelist, userStateManager, ethContracts, web3Manager, reselectTimeout, selectionCallback) {
