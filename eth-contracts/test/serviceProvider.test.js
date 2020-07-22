@@ -35,7 +35,7 @@ const INITIAL_BAL = _lib.audToWeiBN(1000)
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
 
-contract.only('ServiceProvider test', async (accounts) => {
+contract('ServiceProvider test', async (accounts) => {
   let token, registry, staking0, stakingInitializeData, proxy, claimsManager, governance
   let staking, serviceProviderFactory, serviceTypeManager, mockDelegateManager
 
