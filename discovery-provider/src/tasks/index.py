@@ -1,6 +1,10 @@
 import logging
+from urllib.parse import urljoin
+import requests
+import datetime
+from sqlalchemy import desc
 from src import contract_addresses
-from src.models import Block, User, Track, Repost, Follow, Playlist, Save
+from src.models import Block, User, Track, Repost, Follow, Playlist, Save, Play
 from src.tasks.celery_app import celery
 from src.tasks.tracks import track_state_update
 from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
@@ -242,6 +246,61 @@ def index_blocks(self, db, blocks_list):
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
+
+
+# Retrieve the play counts from the identity service
+# NOTE: indexing the plays will eventually be a part of `index_blocks`
+def get_track_plays(self, db):
+    with db.scoped_session() as session:
+        # Get the most retrieved play date in the db to use as an offet for fetching
+        # more play counts from identity
+        most_recent_play_date_query = session.query(
+                Play.updated_at
+            ).order_by(
+                desc(Play.updated_at),
+                desc(Play.id)
+            ).first()
+        if most_recent_play_date == None:
+            # Make the date way back in the past to get the first play count onwards
+            most_recent_play_date = datetime.datetime(2000,1,1,0,0).timestamp()
+        else:
+            most_recent_play_date = most_recent_play_date[0].timestamp()
+
+        # Create and query identity service endpoint for track play counts
+        identity_url = update_task.shared_config['discprov']['identity_service_url']
+        params = { 'startTime': most_recent_play_date, 'limit': 1000 }
+        identity_tracks_endpoint = urljoin(identity_url, 'listens/bulk')
+
+        try:
+            resp = requests.get(identity_tracks_endpoint, params=params)
+        except Exception as e:
+            logger.error(
+                f'Error retrieving track play counts - {identity_tracks_endpoint}, {e}'
+            )
+
+        # Insert a new row for each count instance in the plays table
+        track_listens = resp.json()
+        plays = []
+        if 'listens' in track_listens:
+            for listen in track_listens['listens']:
+                if 'userId' in listen and listen['userId'] != None:
+                    plays.extend([
+                        Play(
+                            user_id=listen['userId'],
+                            play_item_id=listen['trackId'],
+                            created_at=listen['createdAt'],
+                        ) for _ in range(listen['count'])
+                    ])
+                else:
+                    plays.extend([
+                        Play(
+                            play_item_id=listen['trackId'],
+                            created_at=listen['createdAt'],
+                        ) for _ in range(listen['count'])
+                    ])
+        if len(plays) > 0:
+            session.bulk_save_objects(plays)
+            session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
 
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
 def revert_blocks(self, db, revert_blocks_list):
@@ -620,6 +679,7 @@ def update_task(self):
             # Perform indexing operations
             index_blocks(self, db, index_blocks_list)
             logger.info(f"index.py | update_task | {self.request.id} | Processing complete within session")
+            get_track_plays(self, db)
         else:
             logger.error(f"index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock")
     except Exception as e:
