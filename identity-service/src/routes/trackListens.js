@@ -477,6 +477,7 @@ module.exports = function (app) {
     })
 
     const anonListens = await models.TrackListenCount.findAll({
+      attributes: ['trackId', ['listens', 'count'], 'createdAt', 'updatedAt'],
       where: {
         createdAt: { [models.Sequelize.Op.gt]: createdAtMoment.toDate() }
       },
