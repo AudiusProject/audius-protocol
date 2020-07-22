@@ -1,5 +1,5 @@
 {
-  "storagePath": "/file_storage",
+  "storagePath": "/test_file_storage",
   "awsBucket": "",
   "awsAccessKeyId": "",
   "awsSecretAccessKey": "",
