@@ -1,8 +1,9 @@
 import logging
 from urllib.parse import urljoin
 import requests
+import dateutil.parser
 import datetime
-from sqlalchemy import desc
+from sqlalchemy import func, desc
 from src import contract_addresses
 from src.models import Block, User, Track, Repost, Follow, Playlist, Save, Play
 from src.tasks.celery_app import celery
@@ -248,13 +249,27 @@ def index_blocks(self, db, blocks_list):
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
 
 
+def get_user_track_play_counts(session, user_id, track_id):
+    query = text(
+        f"""
+        select play_item_id, count
+        from aggregate_plays
+        where play_item_id in :ids
+        """
+    )
+    query = query.bindparams(bindparam('ids', expanding=True))
+
+    track_play_counts = session.execute(query, { "ids": track_ids }).fetchall()
+    track_play_dict = dict(track_play_counts)
+    return track_play_dict
+
 # Retrieve the play counts from the identity service
 # NOTE: indexing the plays will eventually be a part of `index_blocks`
 def get_track_plays(self, db):
     with db.scoped_session() as session:
         # Get the most retrieved play date in the db to use as an offet for fetching
         # more play counts from identity
-        most_recent_play_date_query = session.query(
+        most_recent_play_date = session.query(
                 Play.updated_at
             ).order_by(
                 desc(Play.updated_at),
@@ -271,33 +286,59 @@ def get_track_plays(self, db):
         params = { 'startTime': most_recent_play_date, 'limit': 1000 }
         identity_tracks_endpoint = urljoin(identity_url, 'listens/bulk')
 
+        track_listens = {}
         try:
             resp = requests.get(identity_tracks_endpoint, params=params)
+            track_listens = resp.json()
         except Exception as e:
             logger.error(
                 f'Error retrieving track play counts - {identity_tracks_endpoint}, {e}'
             )
 
         # Insert a new row for each count instance in the plays table
-        track_listens = resp.json()
         plays = []
         if 'listens' in track_listens:
             for listen in track_listens['listens']:
                 if 'userId' in listen and listen['userId'] != None:
-                    plays.extend([
-                        Play(
-                            user_id=listen['userId'],
-                            play_item_id=listen['trackId'],
-                            created_at=listen['createdAt'],
-                        ) for _ in range(listen['count'])
-                    ])
+                    # If the userId is present, query for exist plays and only
+                    # insert new plays for the difference
+                    user_track_play_count = session.query(
+                        func.count(Play.play_item_id)
+                    ).filter(
+                        Play.play_item_id == listen['trackId'],
+                        Play.user_id == listen['userId']
+                    ).scalar()
+                    new_play_count = listen['count'] - user_track_play_count
+                    if new_play_count > 0:
+                        plays.extend([
+                            Play(
+                                user_id=listen['userId'],
+                                play_item_id=listen['trackId'],
+                                created_at=listen['createdAt'],
+                            ) for _ in range(new_play_count)
+                        ])
                 else:
-                    plays.extend([
-                        Play(
-                            play_item_id=listen['trackId'],
-                            created_at=listen['createdAt'],
-                        ) for _ in range(listen['count'])
-                    ])
+                    # For anon track plays, check the current hour play counts
+                    # and only insert new plays for the difference
+                    current_hour_query = dateutil.parser.parse(
+                            listen['createdAt']
+                        ).replace(microsecond=0, second=0, minute=0)
+                    anon_hr_track_play_count = session.query(
+                        func.count(Play.play_item_id)
+                    ).filter(
+                        Play.play_item_id == listen['trackId'],
+                        Play.user_id == None,
+                        Play.created_at >= current_hour_query
+                    ).scalar()
+                    new_play_count = listen['count'] - anon_hr_track_play_count
+                    if new_play_count > 0:
+                        plays.extend([
+                            Play(
+                                play_item_id=listen['trackId'],
+                                created_at=listen['createdAt'],
+                            ) for _ in range(new_play_count)
+                        ])
+
         if len(plays) > 0:
             session.bulk_save_objects(plays)
             session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
