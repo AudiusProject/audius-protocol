@@ -46,6 +46,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(16),
       allowNull: true,
       validate: {
+        // track and non types broken down below and attached to Track model
         isIn: [['track', 'metadata', 'image', 'dir', 'copy320']]
       }
     }
@@ -75,6 +76,9 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'RESTRICT'
     })
   }
+
+  File.TrackTypes = ['track', 'copy320']
+  File.NonTrackTypes = ['dir', 'image', 'metadata']
 
   return File
 }
