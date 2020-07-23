@@ -9,21 +9,8 @@ from src.tasks.celery_app import celery
 
 logger = logging.getLogger(__name__)
 
-
-######## HELPER FUNCTIONS ########
-def get_user_track_play_counts(session, user_id, track_id):
-    query = text(
-        f"""
-        select play_item_id, count
-        from aggregate_plays
-        where play_item_id in :ids
-        """
-    )
-    query = query.bindparams(bindparam('ids', expanding=True))
-
-    track_play_counts = session.execute(query, { "ids": track_ids }).fetchall()
-    track_play_dict = dict(track_play_counts)
-    return track_play_dict
+# The number of listens to get per request to identity
+REQUEST_LISTENS_LIMIT = 5000
 
 # Retrieve the play counts from the identity service
 # NOTE: indexing the plays will eventually be a part of `index_blocks`
@@ -45,7 +32,7 @@ def get_track_plays(self, db):
 
         # Create and query identity service endpoint for track play counts
         identity_url = update_play_count.shared_config['discprov']['identity_service_url']
-        params = { 'startTime': most_recent_play_date, 'limit': 1000 }
+        params = { 'startTime': most_recent_play_date, 'limit': REQUEST_LISTENS_LIMIT }
         identity_tracks_endpoint = urljoin(identity_url, 'listens/bulk')
 
         track_listens = {}

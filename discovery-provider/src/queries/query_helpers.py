@@ -313,6 +313,8 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
 
 
 def get_track_play_count_dict(session, track_ids):
+    if not track_ids:
+        return {}
     query = text(
         f"""
         select play_item_id, count
