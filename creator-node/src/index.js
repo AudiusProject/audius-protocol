@@ -1,8 +1,6 @@
 'use strict'
 
 const ON_DEATH = require('death')
-const ipfsClient = require('ipfs-http-client')
-const ipfsClientLatest = require('ipfs-http-client-latest')
 const path = require('path')
 const AudiusLibs = require('@audius/libs')
 
@@ -12,6 +10,7 @@ const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const BlacklistManager = require('./blacklistManager')
+const { ipfs, ipfsLatest, logIpfsPeerIds } = require('./ipfsClient')
 
 const exitWithError = (...msg) => {
   logger.error(...msg)
@@ -62,26 +61,6 @@ const configFileStorage = () => {
   return (path.resolve('./', config.get('storagePath')))
 }
 
-const initIPFS = async () => {
-  const ipfsAddr = config.get('ipfsHost')
-  if (!ipfsAddr) {
-    exitWithError('Must set ipfsAddr')
-  }
-  const ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
-  const ipfsLatest = ipfsClientLatest({ host: ipfsAddr, port: config.get('ipfsPort'), protocol: 'http' })
-
-  // initialize ipfs here
-  const identity = await ipfs.id()
-  // Pretty print the JSON obj with no filter fn (e.g. filter by string or number) and spacing of size 2
-  logger.info(`Current IPFS Peer ID: ${JSON.stringify(identity, null, 2)}`)
-
-  // init latest version of ipfs
-  const identityLatest = await ipfsLatest.id()
-  logger.info(`Current IPFS Peer ID (using latest version of ipfs client): ${JSON.stringify(identityLatest, null, 2)}`)
-
-  return { ipfs, ipfsLatest }
-}
-
 const runDBMigrations = async () => {
   try {
     logger.info('Executing database migrations...')
@@ -115,8 +94,6 @@ const startApp = async () => {
   }
   const storagePath = configFileStorage()
 
-  const { ipfs, ipfsLatest } = await initIPFS()
-
   const mode = getMode()
   let appInfo
 
@@ -127,6 +104,8 @@ const startApp = async () => {
     if (mode === '--run-all') {
       await runDBMigrations()
     }
+
+    await logIpfsPeerIds()
 
     /** Run app */
     await BlacklistManager.blacklist(ipfs)
