@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 def get_track_user_creator_node(args):
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        # Create initial query
+        # Get the track's owner creator node
         user = session.query(
           User.creator_node_endpoint
         ).join(
@@ -24,6 +24,5 @@ def get_track_user_creator_node(args):
         ).filter(
             User.is_current
         ).first()
-        print('user')
         creator_nodes = user[0]
         return creator_nodes
