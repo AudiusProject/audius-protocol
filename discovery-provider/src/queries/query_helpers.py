@@ -312,7 +312,7 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
     return users
 
 
-def get_track_play_counts(session, track_ids):
+def get_track_play_count_dict(session, track_ids):
     query = text(
         f"""
         select play_item_id, count
@@ -368,7 +368,7 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
     save_count_dict = {track_id: save_count for (
         track_id, save_count) in save_counts}
 
-    play_count_dict = get_track_play_counts(session, track_ids)
+    play_count_dict = get_track_play_count_dict(session, track_ids)
 
     remixes = get_track_remix_metadata(session, tracks, current_user_id)
 
@@ -938,6 +938,43 @@ def get_follower_count_dict(session, user_ids, max_block_number=None):
     return follower_count_dict
 
 
+def get_track_play_counts(track_ids):
+    track_listen_counts = {}
+
+    if not track_ids:
+        return track_listen_counts
+
+    identity_url = shared_config['discprov']['identity_service_url']
+    # Create and query identity service endpoint
+    identity_tracks_endpoint = urljoin(identity_url, 'tracks/listens')
+
+    post_body = {}
+    post_body['track_ids'] = track_ids
+    try:
+        resp = requests.post(identity_tracks_endpoint, json=post_body)
+    except Exception as e:
+        logger.error(
+            f'Error retrieving play count - {identity_tracks_endpoint}, {e}'
+        )
+        return track_listen_counts
+
+    json_resp = resp.json()
+    keys = list(resp.json().keys())
+    if not keys:
+        return track_listen_counts
+
+    # Scenario should never arise, since we don't impose date parameter on initial query
+    if len(keys) != 1:
+        raise Exception('Invalid number of keys')
+
+    # Parse listen query results into track listen count dictionary
+    date_key = keys[0]
+    listen_count_json = json_resp[date_key]
+    if 'listenCounts' in listen_count_json:
+        for listen_info in listen_count_json['listenCounts']:
+            current_id = listen_info['trackId']
+            track_listen_counts[current_id] = listen_info['listens']
+    return track_listen_count
 
 
 def get_pagination_vars():

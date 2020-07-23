@@ -417,7 +417,7 @@ class Play(Base):
     __tablename__ = "plays"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True, index=False)
+    user_id = Column(Integer, nullable=True, index=False)
     source = Column(String, nullable=True, index=False)
     play_item_id = Column(Integer, nullable=False, index=False)
     created_at = Column(DateTime, nullable=False, default=func.now())

@@ -128,7 +128,7 @@ def search_tags():
             )
 
             tracks = helpers.query_result_to_list(tracks)
-            track_play_counts = get_track_play_counts(session, track_ids)
+            track_play_counts = get_track_play_counts(track_ids)
 
             tracks = populate_track_metadata(
                 session, track_ids, tracks, current_user_id)

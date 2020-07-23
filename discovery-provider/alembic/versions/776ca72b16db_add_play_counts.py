@@ -37,7 +37,7 @@ def upgrade():
         count(*) as count
       FROM
           plays
-      GROUP BY plays.play_item_id
+      GROUP BY plays.play_item_id;
 
       -- add index on above materialized view
       CREATE INDEX play_item_id_idx ON aggregate_plays (play_item_id);
