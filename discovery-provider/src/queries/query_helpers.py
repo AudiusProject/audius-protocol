@@ -1,7 +1,7 @@
 import logging  # pylint: disable=C0302
 from urllib.parse import urljoin
 import requests
-from sqlalchemy import func, desc, text, Integer, and_
+from sqlalchemy import func, desc, text, Integer, and_, bindparam
 
 from flask import request
 
@@ -312,6 +312,23 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
     return users
 
 
+def get_track_play_count_dict(session, track_ids):
+    if not track_ids:
+        return {}
+    query = text(
+        f"""
+        select play_item_id, count
+        from aggregate_plays
+        where play_item_id in :ids
+        """
+    )
+    query = query.bindparams(bindparam('ids', expanding=True))
+
+    track_play_counts = session.execute(query, { "ids": track_ids }).fetchall()
+    track_play_dict = dict(track_play_counts)
+    return track_play_dict
+
+
 # given list of track ids and corresponding tracks, populates each track object with:
 #   repost_count, save_count
 #   if remix: remix users, has_remix_author_reposted, has_remix_author_saved
@@ -352,6 +369,8 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
     )
     save_count_dict = {track_id: save_count for (
         track_id, save_count) in save_counts}
+
+    play_count_dict = get_track_play_count_dict(session, track_ids)
 
     remixes = get_track_remix_metadata(session, tracks, current_user_id)
 
@@ -445,6 +464,8 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
         track[response_name_constants.repost_count] = repost_count_dict.get(
             track_id, 0)
         track[response_name_constants.save_count] = save_count_dict.get(
+            track_id, 0)
+        track[response_name_constants.play_count] = play_count_dict.get(
             track_id, 0)
         # current user specific
         track[response_name_constants.followee_reposts] = followee_track_repost_dict.get(

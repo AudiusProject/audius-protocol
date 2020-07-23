@@ -1,6 +1,7 @@
 # track/playlist metadata
 repost_count = 'repost_count'  # integer - total repost count of given track/playlist
 save_count = 'save_count'  # integer - total save count of given track/playlist
+play_count = 'play_count' # integer - total play count of given track
 # boolean - has current user reposted given track/playlist
 has_current_user_reposted = 'has_current_user_reposted'
 # boolean - has current user saved given track/playlist

@@ -17,6 +17,7 @@ from sqlalchemy import (
     Text,
     Enum,
     PrimaryKeyConstraint,
+    func,
 )
 from src.model_validator import ModelValidator
 
@@ -398,8 +399,8 @@ class Stem(Base):
     PrimaryKeyConstraint(parent_track_id, child_track_id)
 
     def __repr__(self):
-        return f"<Remix(parent_track_id={self.parent_track_id},\
-            child_track_id={self.child_track_id})"
+        return f"<Stem(parent_track_id={self.parent_track_id},\
+child_track_id={self.child_track_id})>"
 
 class Remix(Base):
     __tablename__ = "remixes"
@@ -410,4 +411,23 @@ class Remix(Base):
 
     def __repr__(self):
         return f"<Remix(parent_track_id={self.parent_track_id},\
-            child_track_id={self.child_track_id}>"
+child_track_id={self.child_track_id}>"
+
+class Play(Base):
+    __tablename__ = "plays"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, nullable=True, index=False)
+    source = Column(String, nullable=True, index=False)
+    play_item_id = Column(Integer, nullable=False, index=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<Play(\
+id={self.id},\
+user_id={self.user_id},\
+source={self.source},\
+play_item_id={self.play_item_id}\
+updated_at={self.updated_at}\
+created_at={self.created_at}>"
