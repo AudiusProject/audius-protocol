@@ -12,6 +12,9 @@ export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_creator_nod
 export storagePath='./test_file_storage'
 export logLevel='info'
 
+echo "$(command -v psql)"
+echo "$(which psql)"
+
 # Locally, the docker-compose files set up a database named audius_creator_node. For
 # tests, we use audius_creator_node_test. The below block checks if
 # audius_creator_node_test exists in creator node 1, and if not, creates it (the tests will fail if this
@@ -27,6 +30,7 @@ export logLevel='info'
 if [ -z "${isCIBuild}" ]; then
   docker exec -i cn1_creator-node-db_1 /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_creator_node_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_creator_node_test\""
 elif [ -x "$(command -v psql)" ]; then
+  echo "i am in elif block"
   # taken from https://stackoverflow.com/a/36591842
   psql -U postgres -h localhost -p $PG_PORT -tc "SELECT 1 FROM pg_database WHERE datname = 'audius_creator_node_test'" | grep -q 1 || psql -U postgres -h localhost -p $PG_PORT -c "CREATE DATABASE audius_creator_node_test"
   export ipfsPort=5001
