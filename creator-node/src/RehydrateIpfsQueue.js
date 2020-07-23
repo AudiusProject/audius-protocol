@@ -21,7 +21,7 @@ class RehydrateIpfsQueue {
     )
 
     // Most errors in the rehydrate calls will be caught; this try/catch is to catch unexpected errors
-    
+
     this.queue.process(PROCESS_NAMES.rehydrate_file, config.get('rehydrateMaxConcurrency'), async (job, done) => {
       const { multihash, storagePath, filename, logContext } = job.data
 
