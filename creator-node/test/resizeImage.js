@@ -8,7 +8,7 @@ const sinon = require('sinon')
 const assert = require('assert')
 
 // Image buffer for audiusDj.png test image
-const imageTestDir = 'images/audiusDjContent'
+const imageTestDir = 'resizeImageAssets'
 const imageBuffer = fs.readFileSync(path.join(__dirname, imageTestDir, 'audiusDj.png'))
 
 // TODO: figure out if this parsing is necessary
