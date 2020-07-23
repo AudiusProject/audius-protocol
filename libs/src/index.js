@@ -56,6 +56,7 @@ class AudiusLibs {
    * @param {Object} web3Provider equal to web.currentProvider
    * @param {?number} networkId network chain id
    * @param {?string} walletOverride wallet address to force use instead of the first wallet on the provided web3
+   * @param {?number} walletIndex if using a wallet returned from web3, pick the wallet at this index
    */
   static async configExternalWeb3 (registryAddress, web3Provider, networkId, walletOverride = null) {
     const web3Instance = await Utils.configureWeb3(web3Provider, networkId)
@@ -118,7 +119,8 @@ class AudiusLibs {
     identityServiceConfig,
     discoveryProviderConfig,
     creatorNodeConfig,
-    isServer
+    isServer,
+    isDebug = false
   }) {
     // set version
     this.version = packageJSON.version
@@ -129,6 +131,7 @@ class AudiusLibs {
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
     this.isServer = isServer
+    this.isDebug = isDebug
 
     this.AudiusABIDecoder = AudiusABIDecoder
 
@@ -193,7 +196,8 @@ class AudiusLibs {
         this.ethWeb3Manager,
         this.ethWeb3Config ? this.ethWeb3Config.tokenAddress : null,
         this.ethWeb3Config ? this.ethWeb3Config.registryAddress : null,
-        this.isServer
+        this.isServer,
+        this.isDebug
       )
       contractsToInit.push(this.ethContracts.init())
     }

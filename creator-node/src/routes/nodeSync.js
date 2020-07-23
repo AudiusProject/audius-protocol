@@ -5,10 +5,12 @@ const { saveFileForMultihash } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError } = require('../apiHelpers')
 const config = require('../config')
 const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary, rehydrateIpfsDirFromFsIfNecessary } = require('../utils')
+const middlewares = require('../middlewares')
 
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
 const TrackSaveConcurrencyLimit = 10
+const NonTrackFileSaveConcurrencyLimit = 10
 const RehydrateIPFSConcurrencyLimit = 10
 
 module.exports = function (app) {
@@ -199,6 +201,23 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         throw new Error(`Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`)
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
+      let userReplicaSet = []
+      try {
+        const myCnodeEndpoint = await middlewares.getOwnEndpoint(req)
+        userReplicaSet = await middlewares.getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
+
+        // push user metadata node to user's replica set if defined
+        if (config.get('userMetadataNodeUrl')) userReplicaSet.push(config.get('userMetadataNodeUrl'))
+
+        // filter out current node from user's replica set
+        userReplicaSet = userReplicaSet.filter(url => url !== myCnodeEndpoint)
+
+        // Spread + set uniq's the array
+        userReplicaSet = [...new Set(userReplicaSet)]
+      } catch (e) {
+        req.logger.error(`Couldn't get user's replica sets, can't use cnode gateways in saveFileForMultihash`)
+      }
+
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
         throw new Error(`Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`)
       }
@@ -271,8 +290,36 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
 
         // Files with trackUUIDs cannot be created until tracks have been created,
         // but tracks cannot be created until metadata and cover art files have been created.
-        const trackFiles = fetchedCNodeUser.files.filter(file => file.trackUUID != null)
-        const nonTrackFiles = fetchedCNodeUser.files.filter(file => file.trackUUID == null)
+        const trackFiles = fetchedCNodeUser.files.filter(file => models.File.TrackTypes.includes(file.type))
+        const nonTrackFiles = fetchedCNodeUser.files.filter(file => models.File.NonTrackTypes.includes(file.type))
+
+        // Save all track files to disk in batches (to limit concurrent load)
+        for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
+          const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
+          req.logger.info(`TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit}...`)
+          await Promise.all(trackFilesSlice.map(
+            trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
+          ))
+        }
+
+        req.logger.info('Saved all track files to disk.')
+
+        // Save all non-track files to disk in batches (to limit concurrent load)
+        for (let i = 0; i < nonTrackFiles.length; i += NonTrackFileSaveConcurrencyLimit) {
+          const nonTrackFilesSlice = nonTrackFiles.slice(i, i + NonTrackFileSaveConcurrencyLimit)
+          req.logger.info(`NonTrackFiles saveFileForMultihash - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit}...`)
+          await Promise.all(nonTrackFilesSlice.map(
+            nonTrackFile => {
+              // Skip over directories since there's no actual content to sync
+              // The files inside the directory are synced separately
+              if (nonTrackFile.type !== 'dir') {
+                return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
+              }
+            }
+          ))
+        }
+        req.logger.info('Saved all non-track files to disk.')
+
         await models.File.bulkCreate(nonTrackFiles.map(file => ({
           fileUUID: file.fileUUID,
           trackUUID: null,
@@ -295,16 +342,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           coverArtFileUUID: track.coverArtFileUUID
         })), { transaction: t })
         req.logger.info(redisKey, 'created all tracks')
-
-        // Save all track files to disk in batches (to limit concurrent load)
-        for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
-          const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
-          req.logger.info(`TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit}...`)
-          await Promise.all(trackFilesSlice.map(
-            trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath)
-          ))
-        }
-        req.logger.info('Saved all track files to disk and ipfs.')
 
         // Save all track files to db
         await models.File.bulkCreate(trackFiles.map(trackFile => ({

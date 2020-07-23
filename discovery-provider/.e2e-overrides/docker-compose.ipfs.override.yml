@@ -1,5 +1,0 @@
-version: '3'
-services:
-  ipfs-node:
-    network_mode: "host"
-    image: ipfs/go-ipfs:release

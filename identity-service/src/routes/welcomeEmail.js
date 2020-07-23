@@ -49,6 +49,7 @@ module.exports = function (app) {
     const emailParams = {
       from: 'The Audius Team <team@audius.co>',
       to: existingUser.email,
+      bcc: 'forrest@audius.co',
       subject: 'The Automated Welcome Email',
       html: welcomeHtml
     }

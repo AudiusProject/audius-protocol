@@ -117,7 +117,7 @@ class BlacklistedIPLD(Base):
     blocknumber = Column(Integer, ForeignKey("ipld_blacklist_blocks.number"), nullable=False)
     ipld = Column(String, nullable=False)
     is_blacklisted = Column(Boolean, nullable=False)
-    is_current = Column(Boolean, nullable=False)
+    is_current = Column(Boolean, nullable=False, index=True)
 
     PrimaryKeyConstraint(blockhash, ipld, is_blacklisted, is_current)
 
