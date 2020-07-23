@@ -54,7 +54,7 @@ describe('test resizeImage', () => {
 
     try {
       await resizeImageJob(job)
-      assert.ok(false)
+      assert.fail('Should not have passed if Jimp reads bad image buffer')
     } catch (e) {
       console.error(e)
       assert.ok(e.message.includes('Could not generate image buffer during image resize'))
@@ -85,7 +85,7 @@ describe('test resizeImage', () => {
 
     try {
       await resizeImageJob(job)
-      assert.ok(false)
+      assert.fail('Should not have passed if ipfs is down')
     } catch (e) {
       console.error(e)
       assert.ok(true)
@@ -115,7 +115,7 @@ describe('test resizeImage', () => {
 
     try {
       await resizeImageJob(job)
-      assert.ok(false)
+      assert.fail('Should not have passed if making new directory at path fails')
     } catch (e) {
       console.error(e)
       assert.ok(true)
@@ -150,7 +150,7 @@ describe('test resizeImage', () => {
       await resizeImageJob(job)
     } catch (e) {
       console.error(e)
-      assert.ok(false)
+      assert.fail(e)
     }
 
     // Check fs contains the dir for square cids
@@ -209,7 +209,7 @@ describe('test resizeImage', () => {
       await resizeImageJob(job)
     } catch (e) {
       console.error(e)
-      assert.ok(false)
+      assert.fail(e)
     }
 
     // check what is in file_storage matches what is in ipfs
@@ -260,7 +260,7 @@ describe('test resizeImage', () => {
       await resizeImageJob(job)
     } catch (e) {
       console.error(e)
-      assert.ok(false)
+      assert.fail(e)
     }
 
     // Check fs contains the dir for square cids
@@ -316,7 +316,7 @@ describe('test resizeImage', () => {
       await resizeImageJob(job)
     } catch (e) {
       console.error(e)
-      assert.ok(false)
+      assert.fail(e)
     }
 
     // check what is in file_storage matches what is in ipfs
