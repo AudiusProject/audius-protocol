@@ -72,7 +72,7 @@ track = ns.model('Track', {
     "title": fields.String(required=True),
     "track_segments": fields.List(fields.Nested(track_segment)),
     "updated_at": fields.String,
-    "user": fields.Nested(user_model, allow_null=True),
+    "user": fields.Nested(user_model, required=True),
     "user_id": fields.String(required=True)
 })
 

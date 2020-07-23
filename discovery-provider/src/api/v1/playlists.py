@@ -5,8 +5,9 @@ from src.queries.get_playlists import get_playlists
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
 from src.queries.get_playlist_tracks import get_playlist_tracks
+from src.queries.query_helpers import get_current_user_id
 from src import api_helpers
-from src.api.v1.helpers import decode_with_abort, extend_playlist, extend_track, make_response
+from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track, make_response, success_response
 from .models.tracks import track
 
 logger = logging.getLogger(__name__)
@@ -35,9 +36,10 @@ class PlaylistTracks(Resource):
     def get(self, playlist_id):
         """Fetch tracks within a playlist"""
         playlist_id = decode_with_abort(playlist_id, ns)
-        args = {"playlist_id": playlist_id, "with_users": 'true'}
-
+        current_user_id = get_current_user_id(required=False)
+        args = {"playlist_id": playlist_id, "with_users": 'true', "current_user_id": current_user_id}
         playlist_tracks = get_playlist_tracks(args)
+        if not playlist_tracks:
+            abort_not_found(playlist_id, ns)
         tracks = list(map(extend_track, playlist_tracks))
-        response = api_helpers.success_response(tracks, 200, False)
-        return response
+        return success_response(tracks)

@@ -4,14 +4,14 @@ import sqlalchemy
 from src.models import Playlist, Track
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import get_current_user_id, get_pagination_vars, \
+from src.queries.query_helpers import get_pagination_vars, \
   populate_track_metadata, add_users_to_tracks
 
 logger = logging.getLogger(__name__)
 
 def get_playlist_tracks(args):
     playlists = []
-    current_user_id = get_current_user_id(required=False)
+   current_user_id = args.get("current_user_id")
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
@@ -26,7 +26,7 @@ def get_playlist_tracks(args):
                     )
                     .first()
             )
-            if playlist == None:
+            if playlist is None:
                 return None
 
             playlist_track_ids = [ track_id['track'] for track_id in playlist.playlist_contents['track_ids']]
