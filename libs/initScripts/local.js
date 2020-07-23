@@ -11,7 +11,7 @@ const {
 } = require('./helpers/spRegistration')
 const { deregisterLocalService } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
-const { getEthContractAccounts, getDataContractAccounts } = require('./helpers/utils')
+const { getEthContractAccounts } = require('./helpers/utils')
 
 const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service']
 const spDiscProvType = serviceTypeList[0]
@@ -96,11 +96,12 @@ const run = async () => {
         await _registerDiscProv2(audiusLibs, ethAccounts)
         break
 
-      case 'register-cnode':
+      case 'register-cnode': {
         const serviceCount = args[3]
         if (serviceCount === undefined) throw new Error('register-cnode requires a service # as the second arg')
         await _registerCnode(ethAccounts, parseInt(serviceCount))
         break
+      }
 
       case 'register-cnode-1':
         await _registerCnode1(audiusLibs, ethAccounts)
@@ -126,7 +127,7 @@ const run = async () => {
         await queryLocalServices(audiusLibs, serviceTypeList)
         break
 
-      case 'update-delegate-wallet':
+      case 'update-delegate-wallet': {
         // Update arbitrary cnode
         const serviceCount = args[3]
         if (serviceCount === undefined) throw new Error('update-delegate-wallet requires a service # as the second arg')
@@ -134,6 +135,7 @@ const run = async () => {
         const account = ethAccounts[parseInt(serviceCount)]
         await _updateCnodeDelegateWallet(account, envPath, envPath, /* isShell */ true)
         break
+      }
 
       case 'update-cnode-1-delegatewallet':
         // Account 1 - Cnode 1 Delegate Wallet Update
