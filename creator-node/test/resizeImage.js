@@ -67,7 +67,7 @@ describe('test resizeImage', () => {
    * Then: an error is thrown
    */
   it('should throw error if ipfs is down', async () => {
-    sinon.stub(ipfs, 'add').throws('ipfs is down!')
+    sinon.stub(ipfs, 'add').throws(new Error('ipfs is down!'))
     const job = {
       data: {
         file: imageBuffer,
@@ -88,7 +88,7 @@ describe('test resizeImage', () => {
       assert.fail('Should not have passed if ipfs is down')
     } catch (e) {
       console.error(e)
-      assert.ok(e.message)
+      assert.deepStrictEqual(e.message, 'ipfs is down!')
     }
   })
 
