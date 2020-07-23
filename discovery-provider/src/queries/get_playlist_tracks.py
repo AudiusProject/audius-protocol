@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 def get_playlist_tracks(args):
     playlists = []
-   current_user_id = args.get("current_user_id")
+    current_user_id = args.get("current_user_id")
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
