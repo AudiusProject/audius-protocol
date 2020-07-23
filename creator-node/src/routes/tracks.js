@@ -6,10 +6,11 @@ const { getSegmentsDuration } = require('../segmentDuration')
 const models = require('../models')
 const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, handleTrackContentUpload } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseForbidden } = require('../apiHelpers')
-const { getFileUUIDForImageCID, rehydrateIpfsFromFsIfNecessary } = require('../utils')
+const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
 const TranscodingQueue = require('../TranscodingQueue')
 const { getCID } = require('./files')
+const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 
 module.exports = function (app) {
   /**
@@ -437,13 +438,11 @@ module.exports = function (app) {
       return successResponse({ isDownloadable: true, cid: null })
     }
 
-    // If copyFile exists, only return CID if it is available on local IPFS node.
+    // Asynchronously rehydrate and return CID. If file is not in ipfs, serve from FS
     try {
       // Rehydrate master copy if necessary
-      await rehydrateIpfsFromFsIfNecessary(
-        req,
-        copyFile.multihash,
-        copyFile.storagePath)
+      RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(copyFile.multihash, copyFile.storagePath, { logContext: req.logContext })
+
       return successResponse({ isDownloadable: true, cid: copyFile.multihash })
     } catch (e) {
       return successResponse({ isDownloadable: true, cid: null })
