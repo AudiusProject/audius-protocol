@@ -14,25 +14,29 @@ REQUEST_LISTENS_LIMIT = 5000
 
 # Retrieve the play counts from the identity service
 # NOTE: indexing the plays will eventually be a part of `index_blocks`
+
+
 def get_track_plays(self, db):
     with db.scoped_session() as session:
         # Get the most retrieved play date in the db to use as an offet for fetching
         # more play counts from identity
         most_recent_play_date = session.query(
-                Play.updated_at
-            ).order_by(
-                desc(Play.updated_at),
-                desc(Play.id)
-            ).first()
+            Play.updated_at
+        ).order_by(
+            desc(Play.updated_at),
+            desc(Play.id)
+        ).first()
         if most_recent_play_date == None:
             # Make the date way back in the past to get the first play count onwards
-            most_recent_play_date = datetime.datetime(2000,1,1,0,0).timestamp()
+            most_recent_play_date = datetime.datetime(
+                2000, 1, 1, 0, 0).timestamp()
         else:
             most_recent_play_date = most_recent_play_date[0].timestamp()
 
         # Create and query identity service endpoint for track play counts
         identity_url = update_play_count.shared_config['discprov']['identity_service_url']
-        params = { 'startTime': most_recent_play_date, 'limit': REQUEST_LISTENS_LIMIT }
+        params = {'startTime': most_recent_play_date,
+                  'limit': REQUEST_LISTENS_LIMIT}
         identity_tracks_endpoint = urljoin(identity_url, 'listens/bulk')
 
         track_listens = {}
@@ -70,8 +74,8 @@ def get_track_plays(self, db):
                     # For anon track plays, check the current hour play counts
                     # and only insert new plays for the difference
                     current_hour_query = dateutil.parser.parse(
-                            listen['createdAt']
-                        ).replace(microsecond=0, second=0, minute=0)
+                        listen['createdAt']
+                    ).replace(microsecond=0, second=0, minute=0)
                     anon_hr_track_play_count = session.query(
                         func.count(Play.play_item_id)
                     ).filter(
@@ -110,13 +114,17 @@ def update_play_count(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info(f"index_plays.py | update_play_count | {self.request.id} | Acquired update_play_count_lock")
+            logger.info(
+                f"index_plays.py | update_play_count | {self.request.id} | Acquired update_play_count_lock")
             get_track_plays(self, db)
-            logger.info(f"index_plaus.py | update_play_count | {self.request.id} | Processing complete within session")
+            logger.info(
+                f"index_plays.py | update_play_count | {self.request.id} | Processing complete within session")
         else:
-            logger.error(f"index_plaus.py | update_play_count | {self.request.id} | Failed to acquire update_play_count_lock")
+            logger.error(
+                f"index_plays.py | update_play_count | {self.request.id} | Failed to acquire update_play_count_lock")
     except Exception as e:
-        logger.error("Fatal error in main loop of update_play_count", exc_info=True)
+        logger.error(
+            "Fatal error in main loop of update_play_count", exc_info=True)
         raise e
     finally:
         if have_lock:
