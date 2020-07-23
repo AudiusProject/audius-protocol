@@ -163,7 +163,6 @@ describe('test resizeImage', () => {
     fs.readdir(dirPath, (err, files) => {
       if (err) assert.fail(`Could not read directory at ${dirPath}`)
 
-      console.log(files)
       // Check that 4 files (tentatively 150x150, 480x480, 1000x1000, original) are present
       assert.deepStrictEqual(files.length, 4)
 
@@ -205,9 +204,9 @@ describe('test resizeImage', () => {
       }
     }
 
-    let resizeImageResp
+    // let resizeImageResp
     try {
-      resizeImageResp = await resizeImageJob(job)
+      await resizeImageJob(job)
     } catch (e) {
       console.error(e)
       assert.ok(false)
@@ -216,19 +215,19 @@ describe('test resizeImage', () => {
     // check what is in file_storage matches what is in ipfs
     let ipfsDirContents
     try {
-      ipfsDirContents = await ipfs.ls(resizeImageResp.dir.dirCID)
+      ipfsDirContents = await ipfs.ls(DIR_CID_SQUARE)
     } catch (e) {
       console.error(e)
       assert.fail('Directory not found in ipfs.')
     }
 
     // Ensure that there are the same number of files uploaded to ipfs and to disk
-    assert.ok(ipfsDirContents.length === resizeImageResp.files.length)
+    assert.ok(ipfsDirContents.length === 4)
 
     // If hash found in ipfs is not found in file_storage, fail
     ipfsDirContents.map(ipfsFile => {
-      const pathFromIpfs = path.join(resizeImageResp.dir.dirDestPath, ipfsFile.hash)
-      if (!fs.existsSync(pathFromIpfs)) {
+      const fsPathForIpfsFile = path.join(storagePath, DIR_CID_SQUARE, ipfsFile.hash)
+      if (!fs.existsSync(fsPathForIpfsFile)) {
         assert.fail(`File in ipfs not found in file_storage for size ${ipfsFile.name}`)
       }
     })
@@ -313,9 +312,8 @@ describe('test resizeImage', () => {
       }
     }
 
-    let resizeImageResp
     try {
-      resizeImageResp = await resizeImageJob(job)
+      await resizeImageJob(job)
     } catch (e) {
       console.error(e)
       assert.ok(false)
@@ -324,19 +322,19 @@ describe('test resizeImage', () => {
     // check what is in file_storage matches what is in ipfs
     let ipfsDirContents
     try {
-      ipfsDirContents = await ipfs.ls(resizeImageResp.dir.dirCID)
+      ipfsDirContents = await ipfs.ls(DIR_CID_NOT_SQUARE)
     } catch (e) {
       console.error(e)
       assert.fail('Directory not found in ipfs.')
     }
 
     // Ensure that there are the same number of files uploaded to ipfs and to disk
-    assert.ok(ipfsDirContents.length === resizeImageResp.files.length)
+    assert.ok(ipfsDirContents.length === 3)
 
     // If hash found in ipfs is not found in file_storage, fail
     ipfsDirContents.map(ipfsFile => {
-      const pathFromIpfs = path.join(resizeImageResp.dir.dirDestPath, ipfsFile.hash)
-      if (!fs.existsSync(pathFromIpfs)) {
+      const fsPathForIpfsFile = path.join(storagePath, DIR_CID_NOT_SQUARE, ipfsFile.hash)
+      if (!fs.existsSync(fsPathForIpfsFile)) {
         assert.fail(`File in ipfs not found in file_storage for size ${ipfsFile.name}`)
       }
     })
