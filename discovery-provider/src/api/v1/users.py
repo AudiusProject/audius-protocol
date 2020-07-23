@@ -3,6 +3,7 @@ from src.api.v1.models.common import favorite
 from src.api.v1.models.users import user_model
 from src.queries.get_saves import get_saves
 from src.queries.get_users import get_users
+from src.queries.search_queries import SearchKind, search
 from flask_restx import Resource, Namespace, fields, reqparse
 from src.queries.get_tracks import get_tracks
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_favorite, extend_track, extend_user, make_response, success_response
@@ -51,13 +52,19 @@ class FavoritedTracks(Resource):
         favorites = list(map(extend_favorite, favorites))
         return success_response(favorites)
 
-# Still WIP!
 search_parser = reqparse.RequestParser()
 search_parser.add_argument('query', required=True)
+user_search_result = make_response("user_search", ns, fields.List(fields.Nested(user_model)))
 @ns.route("/search")
 class SearchResult(Resource):
+    @ns.marshal_with(user_search_result)
     @ns.expect(search_parser)
     def get(self):
         args = search_parser.parse_args()
         query = args["query"]
-        return query, 200
+        response = search(False, {
+            "query": query,
+            "kind": SearchKind.users.name
+        })
+        users = response["users"]
+        return success_response(users)
