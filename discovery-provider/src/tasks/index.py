@@ -1,7 +1,7 @@
 import logging
-from sqlalchemy import desc
+
 from src import contract_addresses
-from src.models import Block, User, Track, Repost, Follow, Playlist, Save, Play
+from src.models import Block, User, Track, Repost, Follow, Playlist, Save
 from src.tasks.celery_app import celery
 from src.tasks.tracks import track_state_update
 from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
@@ -243,7 +243,6 @@ def index_blocks(self, db, blocks_list):
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
-
 
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
 def revert_blocks(self, db, revert_blocks_list):
