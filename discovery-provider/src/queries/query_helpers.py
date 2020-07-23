@@ -976,7 +976,7 @@ def get_track_play_counts(track_ids):
         for listen_info in listen_count_json['listenCounts']:
             current_id = listen_info['trackId']
             track_listen_counts[current_id] = listen_info['listens']
-    return track_listen_count
+    return track_listen_counts
 
 
 def get_pagination_vars():
