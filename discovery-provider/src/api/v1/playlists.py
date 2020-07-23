@@ -4,12 +4,14 @@ from src.api.v1.models.playlists import playlist_model
 from src.queries.get_playlists import get_playlists
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
+from src.queries.get_playlist_tracks import get_playlist_tracks
 from src import api_helpers
-from src.api.v1.helpers import decode_with_abort, extend_playlist, make_response
+from src.api.v1.helpers import decode_with_abort, extend_playlist, extend_track, make_response
+from .models.tracks import track
 
 logger = logging.getLogger(__name__)
 
-ns = Namespace('playlists', description='User related operations')
+ns = Namespace('playlists', description='Playlist related operations')
 
 playlists_response = make_response("playlist_response", ns, fields.List(fields.Nested(playlist_model)))
 
@@ -23,4 +25,19 @@ class Playlist(Resource):
         playlists = get_playlists(args)
         playlists = list(map(extend_playlist, playlists))
         response = api_helpers.success_response(playlists, 200, False)
+        return response
+
+playlist_tracks_response = make_response("playlist_tracks_response", ns, fields.List(fields.Nested(track)))
+
+@ns.route("/<string:playlist_id>/tracks")
+class PlaylistTracks(Resource):
+    @ns.marshal_with(playlist_tracks_response)
+    def get(self, playlist_id):
+        """Fetch tracks within a playlist"""
+        playlist_id = decode_with_abort(playlist_id, ns)
+        args = {"playlist_id": playlist_id, "with_users": 'true'}
+
+        playlist_tracks = get_playlist_tracks(args)
+        tracks = list(map(extend_track, playlist_tracks))
+        response = api_helpers.success_response(tracks, 200, False)
         return response
