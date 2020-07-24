@@ -111,7 +111,7 @@ const getCID = async (req, res) => {
 
   try {
     // Add a rehydration task to the queue to be processed in the background
-    // RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, queryResults.storagePath, { logContext: req.logContext })
+    RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, queryResults.storagePath, { logContext: req.logContext })
     // Attempt to stream file to client.
     req.logger.info(`Retrieving ${queryResults.storagePath} directly from filesystem`)
     return await streamFromFileSystem(req, res, queryResults.storagePath)
