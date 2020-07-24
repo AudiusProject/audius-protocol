@@ -109,7 +109,7 @@ class App {
 
   _isIPWhitelisted (ip) {
     const whitelistRegex = config.get('rateLimitingListensIPWhitelist')
-    return !!ip.match(whitelistRegex)
+    return whitelistRegex && !!ip.match(whitelistRegex)
   }
 
   _getRateLimiter ({ prefix, max, expiry = DEFAULT_EXPIRY, keyGenerator = DEFAULT_KEY_GENERATOR, skip }) {
