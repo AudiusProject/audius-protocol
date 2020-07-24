@@ -43,6 +43,13 @@ http {
       proxy_pass ${APP_URL};
     }
 
+    # API routes.
+    location /api {
+      add_header 'Access-Control-Allow-Origin' '*' always;
+      add_header 'Access-Control-Allow-Methods' 'GET';
+      proxy_pass http://node:8000;
+    }
+
     # Bedtime API routes.
     location /embed/api {
       add_header 'Access-Control-Allow-Origin' '*' always;
