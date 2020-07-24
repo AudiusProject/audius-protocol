@@ -74,7 +74,6 @@ class App {
   configureMailgun () {
     // Configure mailgun instance
     let mg = null
-    logger.info(`MG processEmailNotifications`, config.get('mailgunApiKey'), "<---")
     if (config.get('mailgunApiKey')) {
       mg = mailgun({ apiKey: config.get('mailgunApiKey'), domain: DOMAIN })
     }
