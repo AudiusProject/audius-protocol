@@ -1,18 +1,42 @@
 from src import api_helpers
 from src.queries.queries import to_dict
-from src.queries.search_queries import search
+from src.queries.query_helpers import get_current_user_id
+from src.queries.search_queries import SearchKind, search
 from flask import Blueprint, request
 
 bp = Blueprint("search_queries", __name__)
 
-######## ROUTES ########
+def validate_search_args(args):
+    searchStr = args.get("query")
+    if not searchStr:
+        return api_helpers.error_response("Invalid value for parameter 'query'")
+
+    kind = args.get("kind", "all")
+    if kind not in SearchKind.__members__:
+        return api_helpers.error_response(
+            "Invalid value for parameter 'kind' must be in %s" % [
+                k.name for k in SearchKind]
+        )
+    return None
 
 
 # Returns records that match a search term. usage is ```/search/full?query=<search term> ```
 @bp.route("/search/full", methods=("GET",))
 def search_full():
     args = to_dict(request.args)
-    resp = search(False, args)
+    validation_error = validate_search_args(args)
+    if validation_error:
+        return validation_error
+
+    current_user_id = get_current_user_id(required=False)
+    search_args = {
+        "is_auto_complete": False,
+        "kind": args.get("kind", "all"),
+        "query": args.get("query"),
+        "current_user_id": current_user_id,
+        "with_users": False
+    }
+    resp = search(search_args)
     return api_helpers.success_response(resp)
 
 
@@ -22,10 +46,17 @@ def search_full():
 @bp.route("/search/autocomplete", methods=("GET",))
 def search_autocomplete():
     args = to_dict(request.args)
-    resp = search(True, args)
-    return api_helpers.success_response(resp)
+    validation_error = validate_search_args(args)
+    if validation_error:
+        return validation_error
 
-# TODO!
-@bp.route("/search/tags", methods=("GET",))
-def search_tags_route():
-    pass
+    current_user_id = get_current_user_id(required=False)
+    search_args = {
+        "is_auto_complete": True,
+        "kind": args.get("kind", "all"),
+        "query": args.get("query"),
+        "current_user_id": current_user_id,
+        "with_users": False
+    }
+    resp = search(search_args)
+    return api_helpers.success_response(resp)

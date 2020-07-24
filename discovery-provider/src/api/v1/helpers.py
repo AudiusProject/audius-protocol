@@ -1,6 +1,7 @@
 from src import api_helpers
 from hashids import Hashids
-from flask_restx import fields
+from flask_restx import fields, reqparse
+from src.queries.search_queries import SearchKind
 
 HASH_MIN_LENGTH = 5
 HASH_SALT = "azowernasdfoia"
@@ -48,6 +49,8 @@ def extend_playlist(playlist):
     owner_id = encode_int_id(playlist["playlist_owner_id"])
     playlist["id"] = playlist_id
     playlist["user_id"] = owner_id
+    if ("user" in playlist):
+        playlist["user"] = extend_user(playlist["user"])
     return playlist
 
 def abort_not_found(identifier, namespace):
@@ -75,6 +78,10 @@ def make_response(name, namespace, modelType):
         "timestamp": fields.String(required=True)	,
         "version": fields.Nested(version_metadata, required=True),
     })
+
+
+search_parser = reqparse.RequestParser()
+search_parser.add_argument('query', required=True)
 
 def success_response(entity):
     return api_helpers.success_response(entity, 200, False)

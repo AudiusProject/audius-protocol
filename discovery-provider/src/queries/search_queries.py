@@ -9,7 +9,7 @@ from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 
-from src.queries.query_helpers import get_current_user_id, populate_user_metadata, \
+from src.queries.query_helpers import get_current_user_id, get_users_by_id, get_users_ids, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_pagination_vars, \
     get_track_play_counts
 
@@ -293,6 +293,26 @@ def search_tags():
 
     return api_helpers.success_response(results)
 
+def add_users(session, results):
+    user_id_list = get_users_ids(results)
+    logger.warning(user_id_list)
+    users = get_users_by_id(session, user_id_list)
+    for result in results:
+        user_id = None
+        if 'playlist_owner_id' in result:
+            user_id = result['playlist_owner_id']
+            logger.warning(1)
+            logger.warning(user_id)
+        elif 'owner_id' in result:
+            user_id = result['owner_id']
+
+        logger.warning("User id is {}".format(user_id))
+        if user_id is not None:
+            logger.warning(3)
+            user = users[user_id]
+            result["user"] = user
+    return results
+
 # SEARCH QUERIES
 # We chose to use the raw SQL instead of SQLAlchemy because we're pushing SQLAlchemy to it's
 # limit to do this query by creating new wrappers for pg functions that do not exist like
@@ -313,82 +333,82 @@ def search_tags():
 # @devnote - track_ids argument should match tracks argument
 
 
-def search(isAutocomplete, args):
+def search(args):
+    """Perform a search. `args` should contain `is_auto_complete`, `query`, `kind`, `current_user_id`, and `with_users`"""
     searchStr = args.get("query")
-    if not searchStr:
-        logger.error(1)
-        return api_helpers.error_response("Invalid value for parameter 'query'")
+
     # when creating query table, we substitute this too
     searchStr = searchStr.replace('&', 'and')
 
     kind = args.get("kind", "all")
-    if kind not in SearchKind.__members__:
-        logger.error(2)
-        logger.error(kind)
-        return api_helpers.error_response(
-            "Invalid value for parameter 'kind' must be in %s" % [
-                k.name for k in SearchKind]
-        )
-    searchKind = SearchKind[kind]
+    with_users = args.get("with_users")
+    is_auto_complete = args.get("is_auto_complete")
+    current_user_id = args.get("current_user_id")
 
+    searchKind = SearchKind[kind]
     (limit, offset) = get_pagination_vars()
 
     results = {}
     if searchStr:
         db = get_db_read_replica()
         with db.scoped_session() as session:
+            def with_users_added(results):
+                if not with_users:
+                    return results
+                return add_users(session, results)
+
             # Set similarity threshold to be used by % operator in queries.
             session.execute(sqlalchemy.text(
                 f"select set_limit({minSearchSimilarity});"))
 
             if (searchKind in [SearchKind.all, SearchKind.tracks]):
-                results['tracks'] = track_search_query(
-                    session, searchStr, limit, offset, False, isAutocomplete)
-                results['saved_tracks'] = track_search_query(
-                    session, searchStr, limit, offset, True, isAutocomplete)
+                results['tracks'] = with_users_added(track_search_query(
+                    session, searchStr, limit, offset, False, is_auto_complete, current_user_id))
+                results['saved_tracks'] = with_users_added(track_search_query(
+                    session, searchStr, limit, offset, True, is_auto_complete, current_user_id))
             if (searchKind in [SearchKind.all, SearchKind.users]):
                 results['users'] = user_search_query(
-                    session, searchStr, limit, offset, False, isAutocomplete)
+                    session, searchStr, limit, offset, False, is_auto_complete, current_user_id)
                 results['followed_users'] = user_search_query(
-                    session, searchStr, limit, offset, True, isAutocomplete)
+                    session, searchStr, limit, offset, True, is_auto_complete, current_user_id)
             if (searchKind in [SearchKind.all, SearchKind.playlists]):
-                results['playlists'] = playlist_search_query(
+                results['playlists'] = with_users_added(playlist_search_query(
                     session,
                     searchStr,
                     limit,
                     offset,
                     False,
                     False,
-                    isAutocomplete
-                )
-                results['saved_playlists'] = playlist_search_query(
+                    is_auto_complete,
+                    current_user_id
+                ))
+                results['saved_playlists'] = with_users_added(playlist_search_query(
                     session,
                     searchStr,
                     limit,
                     offset,
                     False,
                     True,
-                    isAutocomplete
-                )
+                    is_auto_complete,
+                    current_user_id
+                ))
             if (searchKind in [SearchKind.all, SearchKind.albums]):
-                results['albums'] = playlist_search_query(
-                    session, searchStr, limit, offset, True, False, isAutocomplete)
-                results['saved_albums'] = playlist_search_query(
+                results['albums'] = with_users_added(playlist_search_query(
+                    session, searchStr, limit, offset, True, False, is_auto_complete, current_user_id))
+                results['saved_albums'] = with_users_added(playlist_search_query(
                     session,
                     searchStr,
                     limit,
                     offset,
                     True,
                     True,
-                    isAutocomplete
-                )
+                    is_auto_complete,
+                    current_user_id
+                ))
 
     return results
 
-
-
-def track_search_query(session, searchStr, limit, offset, personalized, isAutocomplete):
-    current_user_id = get_current_user_id(required=False)
+def track_search_query(session, searchStr, limit, offset, personalized, is_auto_complete, current_user_id):
     if personalized and not current_user_id:
         return []
 
@@ -447,7 +467,7 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
     )
     tracks = helpers.query_result_to_list(tracks)
 
-    if isAutocomplete == True:
+    if is_auto_complete == True:
         # fetch users for tracks
         track_owner_ids = list(map(lambda track: track["owner_id"], tracks))
         users = (
@@ -475,8 +495,7 @@ def track_search_query(session, searchStr, limit, offset, personalized, isAutoco
     return tracks
 
 
-def user_search_query(session, searchStr, limit, offset, personalized, isAutocomplete):
-    current_user_id = get_current_user_id(required=False)
+def user_search_query(session, searchStr, limit, offset, personalized, is_auto_complete, current_user_id):
     if personalized and not current_user_id:
         return []
 
@@ -532,7 +551,7 @@ def user_search_query(session, searchStr, limit, offset, personalized, isAutocom
     )
     users = helpers.query_result_to_list(users)
 
-    if not isAutocomplete:
+    if not is_auto_complete:
         # bundle peripheral info into user results
         users = populate_user_metadata(
             session, user_ids, users, current_user_id)
@@ -543,8 +562,7 @@ def user_search_query(session, searchStr, limit, offset, personalized, isAutocom
     return users
 
 
-def playlist_search_query(session, searchStr, limit, offset, is_album, personalized, isAutocomplete):
-    current_user_id = get_current_user_id(required=False)
+def playlist_search_query(session, searchStr, limit, offset, is_album, personalized, is_auto_complete, current_user_id):
     if personalized and not current_user_id:
         return []
 
@@ -609,7 +627,7 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
     )
     playlists = helpers.query_result_to_list(playlists)
 
-    if isAutocomplete == True:
+    if is_auto_complete == True:
         # fetch users for playlists
         playlist_owner_ids = list(
             map(lambda playlist: playlist["playlist_owner_id"], playlists))
