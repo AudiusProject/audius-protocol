@@ -36,9 +36,10 @@ const streamFromFileSystem = async (req, res, path) => {
     // Stream file from file system
     let fileStream
 
+    let stat
     if (req.params.streammable) {
       // Add content length headers
-      const stat = fs.statSync(path)
+      stat = fs.statSync(path)
       res.set('Accept-Ranges', 'bytes')
       res.set('Content-Length', stat.size)
     }
@@ -51,7 +52,7 @@ const streamFromFileSystem = async (req, res, path) => {
     const range = req.range()
 
     // TODO - route doesn't support multipart ranges (see spec above),
-    if (req.params.streammable && range && range[0]) {
+    if (stat && range && range[0]) {
       const { start, end } = range[0]
       if (end > stat.size) {
         // Set "Requested Range Not Satisfiable" header and exit
