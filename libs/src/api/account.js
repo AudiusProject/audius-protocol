@@ -103,7 +103,7 @@ class Account extends Base {
     profilePictureFile = null,
     coverPhotoFile = null,
     hasWallet = false,
-    host = (window && window.location.origin) || null
+    host = (typeof window !== 'undefined' && window.location.origin) || null
   ) {
     let userId
 
