@@ -124,10 +124,10 @@ class NotificationProcessor {
       fs.mkdirSync(emailCachePath)
     }
 
-    // Every minute cron: '* * * * *'
+    // Every 10 minutes cron: '*/10 * * * *'
     this.emailQueue.add(
       { type: 'unreadEmailJob' },
-      { repeat: { cron: '* * * * *' } }
+      { repeat: { cron: '*/10 * * * *' } }
     )
 
     let startBlock = await getHighestBlockNumber()
