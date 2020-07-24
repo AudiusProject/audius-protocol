@@ -4,8 +4,9 @@ from flask import redirect
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
-from src.api.v1.helpers import abort_not_found, decode_with_abort, encode_int_id, extend_favorite, extend_track, extend_user, make_response, success_response
+from src.api.v1.helpers import abort_not_found, decode_with_abort, encode_int_id, extend_favorite, extend_track, extend_user, make_response, search_parser, success_response
 from .models.tracks import track
+from src.queries.search_queries import SearchKind, search
 
 ns = Namespace('tracks', description='Track related operations')
 
@@ -39,3 +40,23 @@ class TrackStream(Resource):
         primary_node = creator_nodes[0]
         stream_url = urljoin(primary_node, 'tracks/stream/{}'.format(track_id))
         return redirect(stream_url)
+
+track_search_result = make_response("track_search", ns, fields.List(fields.Nested(track)))
+@ns.route("/search")
+class TrackSearchResult(Resource):
+    @ns.marshal_with(track_search_result)
+    @ns.expect(search_parser)
+    def get(self):
+        args = search_parser.parse_args()
+        query = args["query"]
+        search_args = {
+            "query": query,
+            "kind": SearchKind.tracks.name,
+            "is_auto_complete": False,
+            "current_user_id": None,
+            "with_users": True
+        }
+        response = search(search_args)
+        tracks = response["tracks"]
+        tracks = list(map(extend_track, tracks))
+        return success_response(tracks)

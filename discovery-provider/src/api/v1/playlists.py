@@ -3,12 +3,11 @@ from flask import Flask, Blueprint
 from src.api.v1.models.playlists import playlist_model
 from src.queries.get_playlists import get_playlists
 from flask_restx import Resource, Namespace, fields
-from src.queries.get_tracks import get_tracks
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.queries.query_helpers import get_current_user_id
-from src import api_helpers
-from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track, make_response, success_response
+from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track, make_response, success_response, search_parser
 from .models.tracks import track
+from src.queries.search_queries import SearchKind, search
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,7 @@ class Playlist(Resource):
         args = {"playlist_id": [playlist_id]}
         playlists = get_playlists(args)
         playlists = list(map(extend_playlist, playlists))
-        response = api_helpers.success_response(playlists, 200, False)
+        response = success_response(playlists)
         return response
 
 playlist_tracks_response = make_response("playlist_tracks_response", ns, fields.List(fields.Nested(track)))
@@ -43,3 +42,24 @@ class PlaylistTracks(Resource):
             abort_not_found(playlist_id, ns)
         tracks = list(map(extend_track, playlist_tracks))
         return success_response(tracks)
+
+playlist_search_result = make_response("playlist_search_result", ns, fields.List(fields.Nested(playlist_model)))
+
+@ns.route("/search")
+class PlaylistSearchResult(Resource):
+    @ns.marshal_with(playlist_search_result)
+    @ns.expect(search_parser)
+    def get(self):
+        """Search for a playlist"""
+        args = search_parser.parse_args()
+        query = args["query"]
+        search_args = {
+            "query": query,
+            "kind": SearchKind.playlists.name,
+            "is_auto_complete": False,
+            "current_user_id": None,
+            "with_users": True
+        }
+        response = search(search_args)
+        playlists = list(map(extend_playlist, response["playlists"]))
+        return success_response(playlists)

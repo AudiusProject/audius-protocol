@@ -1,5 +1,6 @@
 from src.api.v1.helpers import make_response
 from flask_restx import fields
+from src.api.v1.models.users import user_model
 from .common import favorite, ns, repost
 
 playlist_track = ns.model('playlist_track', {
@@ -26,7 +27,6 @@ playlist_model = ns.model('playlist', {
     "is_delete": fields.Boolean(required=True),
     "is_private": fields.Boolean(required=True),
     "playlist_contents": fields.Nested(playlist_contents, required=True),
-    "playlist_id": fields.Integer(required=True),
     "playlist_image_multihash": fields.String,
     "playlist_image_sizes_multihash": fields.String,
     "playlist_name": fields.String(required=True),
@@ -34,5 +34,6 @@ playlist_model = ns.model('playlist', {
     "save_count": fields.Integer(required=True),
     "upc": fields.String,
     "updated_at": fields.String,
+    "user": fields.Nested(user_model, required=True),
     "user_id": fields.String(required=True),
 })
