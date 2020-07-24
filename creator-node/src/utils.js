@@ -112,7 +112,7 @@ const ipfsStat = (CID, logContext, timeout = 1000) => {
     const start = Date.now()
     const timeoutRef = setTimeout(() => {
       logger.error(`ipfsStat - Timeout`)
-      reject('IPFS Stat Timeout')
+      reject(new Error('IPFS Stat Timeout'))
     }, timeout)
 
     try {
