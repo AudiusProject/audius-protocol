@@ -19,7 +19,6 @@ const {
 let mg
 
 async function processEmailNotifications (expressApp, audiusLibs) {
-  console.log
   try {
     logger.info(`${new Date()} - processEmailNotifications`)
 
@@ -112,7 +111,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       attributes: ['userId'],
       where: {
         isViewed: false,
-        userId: { [ models.Sequelize.Op.in]: liveEmailUsers },
+        userId: { [ models.Sequelize.Op.in ]: liveEmailUsers },
         // Over fetch users here, they will get dropped later on if they have 0 notifications
         // to process.
         // We could be more precise here by looking at the last sent email for each user
