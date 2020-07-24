@@ -3,7 +3,7 @@ from urllib.parse import urljoin
 import requests
 import dateutil.parser
 import datetime
-from sqlalchemy import func, desc
+from sqlalchemy import func, desc, or_, and_
 from src.models import Play
 from src.tasks.celery_app import celery
 
@@ -50,17 +50,72 @@ def get_track_plays(self, db):
 
         # Insert a new row for each count instance in the plays table
         plays = []
+        user_track_listens = []
+        track_hours = []
         if 'listens' in track_listens:
             for listen in track_listens['listens']:
                 if 'userId' in listen and listen['userId'] != None:
-                    # If the userId is present, query for exist plays and only
-                    # insert new plays for the difference
-                    user_track_play_count = session.query(
-                        func.count(Play.play_item_id)
-                    ).filter(
+                    user_track_listens.append(and_(
                         Play.play_item_id == listen['trackId'],
                         Play.user_id == listen['userId']
-                    ).scalar()
+                    ))
+                else:
+                    # For anon track plays, check the current hour play counts
+                    # and only insert new plays for the difference
+                    current_hour_query = dateutil.parser.parse(
+                        listen['createdAt']
+                    ).replace(microsecond=0, second=0, minute=0)
+                    track_hours.append(and_(
+                        Play.user_id == None,
+                        Play.play_item_id == listen['trackId'],
+                        Play.created_at >= current_hour_query
+                    ))
+
+            # Query the plays for existsing user-track listens & build
+            # a dict of { '{user_id}-{track_id}' : listen_count }
+            user_track_plays_dict = {}
+            if user_track_listens:
+                user_track_play_counts_query = session.query(
+                    Play.play_item_id,
+                    Play.user_id,
+                    func.count(Play.play_item_id)
+                ).filter(
+                    or_(*user_track_listens)
+                ).group_by(
+                    Play.play_item_id,
+                    Play.user_id
+                ).all()
+
+                user_track_plays_dict = {
+                    f'{play[0]}-{play[1]}': play[2] for play in user_track_play_counts
+                }
+
+            # Query the plays for existsing anon-tracks by date & build
+            # a dict of { '{track_id}-{timestamp}' : listen_count }
+            anon_track_plays_dict = {}
+            if track_hours:
+                track_play_counts = session.query(
+                    Play.play_item_id,
+                    func.min(Play.created_at),
+                    func.count(Play.play_item_id)
+                ).filter(
+                    or_(*track_hours)
+                ).group_by(
+                    Play.play_item_id
+                ).all()
+
+                anon_track_plays_dict = {
+                    f'{play[0]}-{play[1].replace(microsecond=0, second=0, minute=0)}': play[2] for play in track_play_counts
+                }
+
+            for listen in track_listens['listens']:
+                if 'userId' in listen and listen['userId'] != None:
+                    # only plays for the difference in new play count - exists play count
+                    track_id = listen['trackId']
+                    user_id = listen['userId']
+                    user_track_key = f'{track_id}-{user_id}'
+                    user_track_play_count = user_track_plays_dict.get(
+                        user_track_key, 0)
                     new_play_count = listen['count'] - user_track_play_count
                     if new_play_count > 0:
                         plays.extend([
@@ -75,14 +130,11 @@ def get_track_plays(self, db):
                     # and only insert new plays for the difference
                     current_hour_query = dateutil.parser.parse(
                         listen['createdAt']
-                    ).replace(microsecond=0, second=0, minute=0)
-                    anon_hr_track_play_count = session.query(
-                        func.count(Play.play_item_id)
-                    ).filter(
-                        Play.play_item_id == listen['trackId'],
-                        Play.user_id == None,
-                        Play.created_at >= current_hour_query
-                    ).scalar()
+                    ).replace(microsecond=0, second=0, minute=0, tzinfo=None)
+                    track_id = listen['trackId']
+                    track_hr_key = f'{track_id}-{current_hour_query}'
+                    track_play_count = anon_track_plays_dict.get(
+                        track_hr_key, 0)
                     new_play_count = listen['count'] - anon_hr_track_play_count
                     if new_play_count > 0:
                         plays.extend([
