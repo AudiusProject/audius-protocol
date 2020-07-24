@@ -1,8 +1,8 @@
 import logging
 from urllib.parse import urljoin
+import datetime
 import requests
 import dateutil.parser
-import datetime
 from sqlalchemy import func, desc, or_, and_
 from src.models import Play
 from src.tasks.celery_app import celery
@@ -87,7 +87,7 @@ def get_track_plays(self, db):
             # a dict of { '{user_id}-{track_id}' : listen_count }
             user_track_plays_dict = {}
             if user_track_listens:
-                user_track_play_counts_query = session.query(
+                user_track_play_counts = session.query(
                     Play.play_item_id,
                     Play.user_id,
                     func.count(Play.play_item_id)
@@ -147,7 +147,7 @@ def get_track_plays(self, db):
                     track_id = listen['trackId']
                     track_hr_key = f'{track_id}-{current_hour}'
                     # Get the existing listens from for the track_id-curren_hr
-                    track_play_count = anon_track_plays_dict.get(
+                    anon_hr_track_play_count = anon_track_plays_dict.get(
                         track_hr_key, 0)
                     new_play_count = listen['count'] - anon_hr_track_play_count
                     if new_play_count > 0:
@@ -158,7 +158,7 @@ def get_track_plays(self, db):
                             ) for _ in range(new_play_count)
                         ])
 
-        if len(plays) > 0:
+        if plays:
             session.bulk_save_objects(plays)
             session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
 
