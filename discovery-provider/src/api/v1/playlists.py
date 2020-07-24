@@ -42,7 +42,9 @@ class PlaylistTracks(Resource):
             abort_not_found(playlist_id, ns)
         tracks = list(map(extend_track, playlist_tracks))
         return success_response(tracks)
+
 playlist_search_result = make_response("playlist_search_result", ns, fields.List(fields.Nested(playlist_model)))
+
 @ns.route("/search")
 class PlaylistSearchResult(Resource):
     @ns.marshal_with(playlist_search_result)
