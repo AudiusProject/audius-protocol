@@ -485,7 +485,11 @@ module.exports = function (app) {
     }
 
     req.logger.info(`Logging listen for track ${blockchainId} by ${delegateOwnerWallet}`)
-    libs.identityService.logTrackListen(blockchainId, delegateOwnerWallet)
+
+    if (libs.identityService) {
+      // Fire and forget listen recording
+      libs.identityService.logTrackListen(blockchainId, delegateOwnerWallet)
+    }
 
     req.params.CID = multihash
     req.params.streammable = true

@@ -34,6 +34,7 @@
   "spOwnerWallet": "",
   "debounceTime": 30000,
   "discoveryProviderWhitelist": "http://docker.for.mac.localhost:5000",
+  "identityService": "http://docker.for.mac.localhost:7000",
   "userBlacklist": "",
   "trackBlacklist": "",
   "dataRegistryAddress": "",
