@@ -20,7 +20,7 @@ module.exports = {
       })
     // Add 'live' to "UserNotificationSettings" "emailFrequency"
       .then(() => {
-        queryInterface.sequelize.query(
+        return queryInterface.sequelize.query(
           "ALTER TYPE \"enum_UserNotificationSettings_emailFrequency\" ADD VALUE 'live'"
         )
       })
@@ -54,7 +54,7 @@ module.exports = {
     })
     // Change the default back to 'daily'
       .then(() => {
-        queryInterface.sequelize.query(
+        return queryInterface.sequelize.query(
           "ALTER TABLE \"NotificationEmails\" ALTER \"emailFrequency\" set default 'daily'::\"enum_NotificationEmails_emailFrequency\""
         )
       })
