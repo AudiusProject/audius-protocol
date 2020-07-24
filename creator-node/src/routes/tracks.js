@@ -488,6 +488,7 @@ module.exports = function (app) {
     libs.identityService.logTrackListen(blockchainId, delegateOwnerWallet)
 
     req.params.CID = multihash
+    req.params.streammable = true
 
     return getCID(req, res)
   })

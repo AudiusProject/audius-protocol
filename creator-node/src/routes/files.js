@@ -33,13 +33,15 @@ const streamFromFileSystem = async (req, res, path) => {
       throw new Error('File could not be found on disk.')
     }
 
-    // Add content length headers
-    const stat = fs.statSync(path)
-    res.set('Accept-Ranges', 'bytes')
-    res.set('Content-Length', stat.size)
-
     // Stream file from file system
     let fileStream
+
+    if (req.params.streammable) {
+      // Add content length headers
+      const stat = fs.statSync(path)
+      res.set('Accept-Ranges', 'bytes')
+      res.set('Content-Length', stat.size)
+    }
 
     // If a range header is present, use that to create the readstream
     // otherwise, stream the whole file.
@@ -49,7 +51,7 @@ const streamFromFileSystem = async (req, res, path) => {
     const range = req.range()
 
     // TODO - route doesn't support multipart ranges (see spec above),
-    if (range && range[0]) {
+    if (req.params.streammable && range && range[0]) {
       const { start, end } = range[0]
       if (end > stat.size) {
         // Set "Requested Range Not Satisfiable" header and exit
@@ -132,7 +134,7 @@ const getCID = async (req, res) => {
       let stream
       // If a range header is present, use that to create the ipfs stream
       const range = req.range()
-      if (range && range[0]) {
+      if (req.params.streammable && range && range[0]) {
         const { start, end } = range[0]
         if (end > stat.size) {
           // Set "Requested Range Not Satisfiable" header and exit
