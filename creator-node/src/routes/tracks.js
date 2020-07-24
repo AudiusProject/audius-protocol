@@ -484,9 +484,8 @@ module.exports = function (app) {
       return errorResponseBadRequest(`No file found for blockchainId ${blockchainId}`)
     }
 
-    req.logger.info(`Logging listen for track ${blockchainId} by ${delegateOwnerWallet}`)
-
     if (libs.identityService) {
+      req.logger.info(`Logging listen for track ${blockchainId} by ${delegateOwnerWallet}`)
       // Fire and forget listen recording
       libs.identityService.logTrackListen(blockchainId, delegateOwnerWallet)
     }
