@@ -18,6 +18,9 @@ def decode_string_id(id):
         return None
     return decoded[0]
 
+def make_image(endpoint, cid, width, height):
+    return "{e}/ipfs/{cid}/{w}x{h}.jpg?fromFS=true".format(e=endpoint, cid=cid, w=width, h=height)
+
 def extend_user(user):
     user_id = encode_int_id(user["user_id"])
     user["id"] = user_id
@@ -33,6 +36,20 @@ def extend_favorite(favorite):
     favorite["save_item_id"] = encode_int_id(favorite["save_item_id"])
     return favorite
 
+def add_track_artwork(track):
+    if not track["user"]:
+        return track
+    raw_endpoint = track["user"]["creator_node_endpoint"]
+    endpoint = raw_endpoint.split(",")[0]
+    cid = track["cover_art_sizes"]
+    artwork = {
+        "150x150": make_image(endpoint, cid, 150, 150),
+        "480x480": make_image(endpoint, cid, 480, 480),
+        "1000x1000": make_image(endpoint, cid, 1000, 1000),
+    }
+    track["artwork"] = artwork
+    return track
+
 def extend_track(track):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
@@ -42,6 +59,8 @@ def extend_track(track):
     track["user_id"] = owner_id
     track["followee_saves"] = list(map(extend_favorite, track["followee_saves"]))
     track["followee_resposts"] = list(map(extend_repost, track["followee_reposts"]))
+    track = add_track_artwork(track)
+
     return track
 
 def extend_playlist(playlist):

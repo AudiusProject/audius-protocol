@@ -3,6 +3,12 @@ from flask_restx import fields
 from .users import user_model
 from .common import favorite, ns, repost
 
+track_artwork = ns.model('track_artwork', {
+    "150x150": fields.String,
+    "480x480": fields.String,
+    "1000x1000": fields.String,
+})
+
 track_segment = ns.model('track_segment', {
     "duration": fields.Float(required=True),
     "multihash": fields.String(required=True)
@@ -36,10 +42,9 @@ field_visibility = ns.model('field_visibility', {
     "remixes": fields.Boolean
 })
 track = ns.model('Track', {
+    "artwork": fields.Nested(track_artwork),
     "blockhash": fields.String(required=True),
     "blocknumber": fields.Integer(required=True),
-    "cover_art": fields.String,
-    "cover_art_sizes": fields.String,
     "create_date": fields.String,
     "created_at": fields.String,
     "credits_splits": fields.String,
