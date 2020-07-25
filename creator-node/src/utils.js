@@ -102,6 +102,32 @@ const ipfsSingleByteCat = (path, logContext, timeout = 1000) => {
 }
 
 /**
+ * Stat of a file at given filepath. If ipfs.files.stat() call takes longer than the timeout time or
+ * something goes wrong, an error will be thrown.
+*/
+const ipfsStat = (CID, logContext, timeout = 1000) => {
+  const logger = genericLogger.child(logContext)
+
+  return new Promise(async (resolve, reject) => {
+    const start = Date.now()
+    const timeoutRef = setTimeout(() => {
+      logger.error(`ipfsStat - Timeout`)
+      reject(new Error('IPFS Stat Timeout'))
+    }, timeout)
+
+    try {
+      const stats = await ipfsLatest.files.stat(`/ipfs/${CID}`)
+      logger.info(`ipfsStat - Retrieved ${CID} in ${Date.now() - start}ms`)
+      clearTimeout(timeoutRef)
+      resolve(stats)
+    } catch (e) {
+      logger.error(`ipfsStat - Error: ${e}`)
+      reject(e)
+    }
+  })
+}
+
+/**
  * Call ipfs.cat on a path with optional timeout and length parameters
  * @param {*} path IPFS cid for file
  * @param {*} req request object
@@ -291,3 +317,4 @@ module.exports.rehydrateIpfsDirFromFsIfNecessary = rehydrateIpfsDirFromFsIfNeces
 module.exports.ipfsSingleByteCat = ipfsSingleByteCat
 module.exports.ipfsCat = ipfsCat
 module.exports.ipfsGet = ipfsGet
+module.exports.ipfsStat = ipfsStat
