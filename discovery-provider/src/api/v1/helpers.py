@@ -19,7 +19,7 @@ def decode_string_id(id):
     return decoded[0]
 
 def make_image(endpoint, cid, width="", height=""):
-    return "{e}/ipfs/{cid}/{w}x{h}.jpg?fromFS=true".format(e=endpoint, cid=cid, w=width, h=height)
+    return "{e}/ipfs/{cid}/{w}x{h}.jpg".format(e=endpoint, cid=cid, w=width, h=height)
 
 def get_primary_endpoint(user):
     raw_endpoint = user["creator_node_endpoint"]
