@@ -83,16 +83,16 @@ async function processEmailNotifications (expressApp, audiusLibs) {
         }
         if (liveEmailUsers.includes(user)) {
           logger.info(`Announcements - ${id} | Live user ${user}`)
-          liveUsersWithPendingAnnouncements.append(user)
+          liveUsersWithPendingAnnouncements.push(user)
         } else if (dailyEmailUsers.includes(user)) {
           if (timeSinceAnnouncement < (dayInHours * 1.5)) {
             logger.info(`Announcements - ${id} | Daily user ${user}, <1 day`)
-            dailyUsersWithPendingAnnouncements.append(user)
+            dailyUsersWithPendingAnnouncements.push(user)
           }
         } else if (weeklyEmailUsers.includes(user)) {
           if (timeSinceAnnouncement < (weekInHours * 1.5)) {
             logger.info(`Announcements - ${id} | Weekly user ${user}, <1 week`)
-            weeklyUsersWithPendingAnnouncements.append(user)
+            weeklyUsersWithPendingAnnouncements.push(user)
           }
         }
       }
