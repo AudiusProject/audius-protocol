@@ -1,4 +1,5 @@
 import logging
+
 from src import contract_addresses
 from src.models import Block, User, Track, Repost, Follow, Playlist, Save
 from src.tasks.celery_app import celery

@@ -54,9 +54,9 @@ def _get_db_conn_state():
         num_connections = num_connections[0][0]
 
         # Query connection info
-        connection_info = session.execute(
-            sqlalchemy.text("select datname, state, query, wait_event_type, wait_event from pg_stat_activity where state is not null;")
-        ).fetchall()
+        connection_info = session.execute(sqlalchemy.text(
+            "select datname, state, query, wait_event_type, wait_event from pg_stat_activity where state is not null;"
+        )).fetchall()
         connection_info = [dict(row) for row in connection_info]
 
     return {"open_connections": num_connections, "connection_info": connection_info}
