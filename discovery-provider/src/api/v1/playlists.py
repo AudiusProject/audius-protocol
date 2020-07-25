@@ -21,7 +21,7 @@ class Playlist(Resource):
     def get(self, playlist_id):
         """Fetch a playlist"""
         playlist_id = decode_with_abort(playlist_id, ns)
-        args = {"playlist_id": [playlist_id]}
+        args = {"playlist_id": [playlist_id], "with_users": True}
         playlists = get_playlists(args)
         playlists = list(map(extend_playlist, playlists))
         response = success_response(playlists)

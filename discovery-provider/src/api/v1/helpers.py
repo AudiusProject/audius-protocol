@@ -38,6 +38,19 @@ def add_track_artwork(track):
     track["artwork"] = artwork
     return track
 
+def add_playlist_artwork(playlist):
+    if not playlist["user"]:
+        return playlist
+    endpoint = get_primary_endpoint(playlist["user"])
+    cid = playlist["playlist_image_sizes_multihash"]
+    artwork = {
+        "150x150": make_image(endpoint, cid, 150, 150),
+        "480x480": make_image(endpoint, cid, 480, 480),
+        "1000x1000": make_image(endpoint, cid, 1000, 1000),
+    }
+    playlist["artwork"] = artwork
+    return playlist
+
 def add_user_artwork(user):
     endpoint = get_primary_endpoint(user)
     cover_cid = user["cover_photo_sizes"]
@@ -73,7 +86,6 @@ def extend_favorite(favorite):
     favorite["save_item_id"] = encode_int_id(favorite["save_item_id"])
     return favorite
 
-
 def extend_track(track):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
@@ -94,6 +106,7 @@ def extend_playlist(playlist):
     playlist["user_id"] = owner_id
     if ("user" in playlist):
         playlist["user"] = extend_user(playlist["user"])
+    playlist = add_playlist_artwork(playlist)
     return playlist
 
 def abort_not_found(identifier, namespace):
