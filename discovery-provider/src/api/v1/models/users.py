@@ -2,13 +2,23 @@ from src.api.v1.helpers import make_response
 from flask_restx import fields
 from .common import ns
 
+profile_picture = ns.model("profile_picture", {
+    "150x150": fields.String,
+    "480x480": fields.String,
+    "1000x1000": fields.String
+})
+
+cover_photo = ns.model("cover_photo", {
+    "640x": fields.String,
+    "2000x": fields.String
+})
+
 user_model = ns.model("user", {
     "album_count": fields.Integer(required=True),
     "bio": fields.String,
     "blockhash": fields.String(required=True),
     "blocknumber": fields.Integer(required=True),
-    "cover_photo": fields.String,
-    "cover_photo_sizes": fields.String,
+    "cover_photo": fields.Nested(cover_photo, allow_null=True),
     "created_at": fields.String(required=True),
     "creator_node_endpoint": fields.String,
     "current_user_followee_follow_count": fields.Integer(required=True),
@@ -25,8 +35,7 @@ user_model = ns.model("user", {
     "metadata_multihash": fields.String(required=True),
     "name": fields.String(required=True),
     "playlist_count": fields.Integer(required=True),
-    "profile_picture": fields.String,
-    "profile_picture_sizes": fields.String,
+    "profile_picture": fields.Nested(profile_picture, allow_null=True),
     "repost_count": fields.Integer(required=True),
     "track_blocknumber": fields.Integer(required=True),
     "track_count": fields.Integer(required=True),

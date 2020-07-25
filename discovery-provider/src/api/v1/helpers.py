@@ -18,9 +18,70 @@ def decode_string_id(id):
         return None
     return decoded[0]
 
+def make_image(endpoint, cid, width="", height=""):
+    return "{e}/ipfs/{cid}/{w}x{h}.jpg".format(e=endpoint, cid=cid, w=width, h=height)
+
+def get_primary_endpoint(user):
+    raw_endpoint = user["creator_node_endpoint"]
+    if not raw_endpoint:
+        return None
+    return raw_endpoint.split(",")[0]
+
+def add_track_artwork(track):
+    if not "user" in track:
+        return track
+    endpoint = get_primary_endpoint(track["user"])
+    if not endpoint:
+        return track
+    cid = track["cover_art_sizes"]
+    artwork = {
+        "150x150": make_image(endpoint, cid, 150, 150),
+        "480x480": make_image(endpoint, cid, 480, 480),
+        "1000x1000": make_image(endpoint, cid, 1000, 1000),
+    }
+    track["artwork"] = artwork
+    return track
+
+def add_playlist_artwork(playlist):
+    if not "user" in playlist:
+        return playlist
+    endpoint = get_primary_endpoint(playlist["user"])
+    if not endpoint:
+        return playlist
+    cid = playlist["playlist_image_sizes_multihash"]
+    artwork = {
+        "150x150": make_image(endpoint, cid, 150, 150),
+        "480x480": make_image(endpoint, cid, 480, 480),
+        "1000x1000": make_image(endpoint, cid, 1000, 1000),
+    }
+    playlist["artwork"] = artwork
+    return playlist
+
+def add_user_artwork(user):
+    endpoint = get_primary_endpoint(user)
+    if not endpoint:
+        return user
+    cover_cid = user["cover_photo_sizes"]
+    profile_cid = user["profile_picture_sizes"]
+    if profile_cid:
+        profile = {
+            "150x150": make_image(endpoint, profile_cid, 150, 150),
+            "480x480": make_image(endpoint, profile_cid, 480, 480),
+            "1000x1000": make_image(endpoint, profile_cid, 1000, 1000),
+        }
+        user["profile_picture"] = profile
+    if cover_cid:
+        cover = {
+            "640x": make_image(endpoint, cover_cid, 640),
+            "2000x": make_image(endpoint, cover_cid, 2000),
+        }
+        user["cover_photo"] = cover
+    return user
+
 def extend_user(user):
     user_id = encode_int_id(user["user_id"])
     user["id"] = user_id
+    user = add_user_artwork(user)
     return user
 
 def extend_repost(repost):
@@ -42,6 +103,8 @@ def extend_track(track):
     track["user_id"] = owner_id
     track["followee_saves"] = list(map(extend_favorite, track["followee_saves"]))
     track["followee_resposts"] = list(map(extend_repost, track["followee_reposts"]))
+    track = add_track_artwork(track)
+
     return track
 
 def extend_playlist(playlist):
@@ -51,6 +114,7 @@ def extend_playlist(playlist):
     playlist["user_id"] = owner_id
     if ("user" in playlist):
         playlist["user"] = extend_user(playlist["user"])
+    playlist = add_playlist_artwork(playlist)
     return playlist
 
 def abort_not_found(identifier, namespace):
