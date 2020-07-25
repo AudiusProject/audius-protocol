@@ -8,6 +8,7 @@ from src.api.v1.helpers import abort_not_found, decode_with_abort, encode_int_id
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 
+logger = logging.getLogger(__name__)
 ns = Namespace('tracks', description='Track related operations')
 
 track_response = make_response("track_response", ns, fields.Nested(track))
@@ -17,7 +18,7 @@ class Track(Resource):
     def get(self, track_id):
         """Fetch a track"""
         encoded_id = decode_with_abort(track_id, ns)
-        args = {"id": encoded_id}
+        args = {"id": [encoded_id]}
         tracks = get_tracks(args)
         if not tracks:
             abort_not_found(encoded_id, ns)

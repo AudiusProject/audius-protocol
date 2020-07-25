@@ -23,12 +23,16 @@ def make_image(endpoint, cid, width="", height=""):
 
 def get_primary_endpoint(user):
     raw_endpoint = user["creator_node_endpoint"]
+    if not raw_endpoint:
+        return None
     return raw_endpoint.split(",")[0]
 
 def add_track_artwork(track):
-    if not track["user"]:
+    if not "user" in track:
         return track
     endpoint = get_primary_endpoint(track["user"])
+    if not endpoint:
+        return track
     cid = track["cover_art_sizes"]
     artwork = {
         "150x150": make_image(endpoint, cid, 150, 150),
@@ -39,9 +43,11 @@ def add_track_artwork(track):
     return track
 
 def add_playlist_artwork(playlist):
-    if not playlist["user"]:
+    if not "user" in playlist:
         return playlist
     endpoint = get_primary_endpoint(playlist["user"])
+    if not endpoint:
+        return playlist
     cid = playlist["playlist_image_sizes_multihash"]
     artwork = {
         "150x150": make_image(endpoint, cid, 150, 150),
@@ -53,6 +59,8 @@ def add_playlist_artwork(playlist):
 
 def add_user_artwork(user):
     endpoint = get_primary_endpoint(user)
+    if not endpoint:
+        return user
     cover_cid = user["cover_photo_sizes"]
     profile_cid = user["profile_picture_sizes"]
     if profile_cid:

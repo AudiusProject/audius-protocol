@@ -42,7 +42,7 @@ field_visibility = ns.model('field_visibility', {
     "remixes": fields.Boolean
 })
 track = ns.model('Track', {
-    "artwork": fields.Nested(track_artwork),
+    "artwork": fields.Nested(track_artwork, allow_null=True),
     "blockhash": fields.String(required=True),
     "blocknumber": fields.Integer(required=True),
     "create_date": fields.String,

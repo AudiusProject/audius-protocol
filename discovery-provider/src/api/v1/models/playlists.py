@@ -19,7 +19,7 @@ playlist_contents = ns.model('playlist_contents', {
 })
 
 playlist_model = ns.model('playlist', {
-    "artwork": fields.Nested(playlist_artwork),
+    "artwork": fields.Nested(playlist_artwork, allow_null=True),
     "blockhash": fields.String(required=True),
     "blocknumber": fields.Integer(required=True),
     "created_at": fields.String,
