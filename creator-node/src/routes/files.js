@@ -37,8 +37,9 @@ const streamFromFileSystem = async (req, res, path) => {
     let fileStream
 
     let stat
-    if (req.params.streammable) {
+    if (req.params.streamable) {
       // Add content length headers
+      // Stats a file from FS and returns fs stat info, like size in bytes
       stat = fs.statSync(path)
       res.set('Accept-Ranges', 'bytes')
       res.set('Content-Length', stat.size)
@@ -54,7 +55,7 @@ const streamFromFileSystem = async (req, res, path) => {
     // TODO - route doesn't support multipart ranges (see spec above),
     if (stat && range && range[0]) {
       const { start, end } = range[0]
-      if (end > stat.size) {
+      if (end >= stat.size) {
         // Set "Requested Range Not Satisfiable" header and exit
         res.status(416)
         return sendResponse(req, res, errorResponseRangeNotSatisfiable('Range not satisfiable'))
@@ -135,9 +136,9 @@ const getCID = async (req, res) => {
       let stream
       // If a range header is present, use that to create the ipfs stream
       const range = req.range()
-      if (req.params.streammable && range && range[0]) {
+      if (req.params.streamable && range && range[0]) {
         const { start, end } = range[0]
-        if (end > stat.size) {
+        if (end >= stat.size) {
           // Set "Requested Range Not Satisfiable" header and exit
           res.status(416)
           return sendResponse(req, res, errorResponseRangeNotSatisfiable('Range not satisfiable'))
