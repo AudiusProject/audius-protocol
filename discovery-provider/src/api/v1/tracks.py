@@ -18,7 +18,7 @@ class Track(Resource):
     def get(self, track_id):
         """Fetch a track"""
         encoded_id = decode_with_abort(track_id, ns)
-        args = {"id": [encoded_id]}
+        args = {"id": [encoded_id], "with_users": True}
         tracks = get_tracks(args)
         if not tracks:
             abort_not_found(encoded_id, ns)
