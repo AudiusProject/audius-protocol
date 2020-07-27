@@ -301,15 +301,10 @@ def add_users(session, results):
         user_id = None
         if 'playlist_owner_id' in result:
             user_id = result['playlist_owner_id']
-            logger.warning(1)
-            logger.warning(user_id)
         elif 'owner_id' in result:
             user_id = result['owner_id']
 
-        # pylint: disable=W1202
-        logger.warning("User id is {}".format(user_id))
         if user_id is not None:
-            logger.warning(3)
             user = users[user_id]
             result["user"] = user
     return results

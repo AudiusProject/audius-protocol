@@ -31,9 +31,9 @@ def add_track_artwork(track):
     if not "user" in track:
         return track
     endpoint = get_primary_endpoint(track["user"])
-    if not endpoint:
-        return track
     cid = track["cover_art_sizes"]
+    if not endpoint or not cid:
+        return track
     artwork = {
         "150x150": make_image(endpoint, cid, 150, 150),
         "480x480": make_image(endpoint, cid, 480, 480),
@@ -46,9 +46,9 @@ def add_playlist_artwork(playlist):
     if not "user" in playlist:
         return playlist
     endpoint = get_primary_endpoint(playlist["user"])
-    if not endpoint:
-        return playlist
     cid = playlist["playlist_image_sizes_multihash"]
+    if not endpoint or not cid:
+        return playlist
     artwork = {
         "150x150": make_image(endpoint, cid, 150, 150),
         "480x480": make_image(endpoint, cid, 480, 480),
