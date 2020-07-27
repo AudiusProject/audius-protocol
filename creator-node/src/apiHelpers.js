@@ -130,6 +130,10 @@ module.exports.errorResponseBadRequest = (message) => {
   return errorResponse(400, message)
 }
 
+module.exports.errorResponseRangeNotSatisfiable = (message) => {
+  return errorResponse(416, message)
+}
+
 module.exports.errorResponseServerError = (message) => {
   return errorResponse(500, message)
 }

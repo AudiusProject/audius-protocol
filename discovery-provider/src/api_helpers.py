@@ -4,6 +4,7 @@ import datetime
 import redis
 from web3 import Web3
 from web3.auto import w3
+# pylint: disable=no-name-in-module
 from eth_account.messages import encode_defunct
 from flask import jsonify
 
@@ -36,10 +37,11 @@ def success_response_backwards_compat(response_entity=None, status=200):
     return jsonify(response_dictionary), status
 
 # Create a response dict with metadata, data, signature, and timestamp
-def success_response(response_entity=None, status=200):
+def success_response(response_entity=None, status=200, to_json=True):
     starting_response_dictionary = {'data': response_entity}
     response_dictionary = response_dict_with_metadata(starting_response_dictionary)
-    return jsonify(response_dictionary), status
+    response = jsonify(response_dictionary) if to_json else response_dictionary
+    return response, status
 
 # Create a response dict with metadata fields of success, latest_indexed_block, latest_chain_block,
 # version, and owner_wallet

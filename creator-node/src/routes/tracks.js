@@ -2,6 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
 
+const config = require('../config.js')
 const { getSegmentsDuration } = require('../segmentDuration')
 const models = require('../models')
 const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, handleTrackContentUpload } = require('../fileManager')
@@ -454,6 +455,9 @@ module.exports = function (app) {
    * @dev - Wrapper around getCID, which retrieves track given its CID.
    **/
   app.get('/tracks/stream/:blockchainId', async (req, res) => {
+    const libs = req.app.get('audiusLibs')
+    const delegateOwnerWallet = config.get('delegateOwnerWallet')
+
     const blockchainId = req.params.blockchainId
     if (!blockchainId) {
       return errorResponseBadRequest('Please provide blockchainId')
@@ -480,7 +484,16 @@ module.exports = function (app) {
       return errorResponseBadRequest(`No file found for blockchainId ${blockchainId}`)
     }
 
+    if (libs.identityService) {
+      req.logger.info(`Logging listen for track ${blockchainId} by ${delegateOwnerWallet}`)
+      // Fire and forget listen recording
+      // TODO: Consider queueing these requests
+      libs.identityService.logTrackListen(blockchainId, delegateOwnerWallet)
+    }
+
     req.params.CID = multihash
+    req.params.streamable = true
+
     return getCID(req, res)
   })
 

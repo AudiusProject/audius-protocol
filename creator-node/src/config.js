@@ -326,6 +326,12 @@ const config = convict({
     env: 'discoveryProviderWhitelist',
     default: ''
   },
+  identityService: {
+    doc: 'Identity service endpoint to record creator-node driven plays against',
+    format: String,
+    env: 'identityService',
+    default: ''
+  },
 
   /** Manual content blacklists */
   userBlacklist: {
