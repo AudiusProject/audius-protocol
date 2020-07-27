@@ -11,16 +11,16 @@ def get_track_user_creator_node(args):
     with db.scoped_session() as session:
         # Get the track's owner creator node
         user = session.query(
-          User.creator_node_endpoint
+            User.creator_node_endpoint
         ).join(
-          Track,
-          and_(
-            Track.owner_id == User.user_id,
-            Track.is_current == True,
-            Track.is_delete == False,
-            Track.is_unlisted == False,
-            Track.track_id == args.get("track_id")
-          )
+            Track,
+            and_(
+                Track.owner_id == User.user_id,
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.is_unlisted == False,
+                Track.track_id == args.get("track_id")
+            )
         ).filter(
             User.is_current
         ).first()

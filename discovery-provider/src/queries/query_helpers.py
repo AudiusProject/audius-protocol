@@ -324,7 +324,7 @@ def get_track_play_count_dict(session, track_ids):
     )
     query = query.bindparams(bindparam('ids', expanding=True))
 
-    track_play_counts = session.execute(query, { "ids": track_ids }).fetchall()
+    track_play_counts = session.execute(query, {"ids": track_ids}).fetchall()
     track_play_dict = dict(track_play_counts)
     return track_play_dict
 

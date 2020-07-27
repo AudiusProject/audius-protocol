@@ -1,8 +1,8 @@
+from flask import Blueprint, request
 from src import api_helpers
 from src.queries.queries import to_dict
 from src.queries.query_helpers import get_current_user_id
 from src.queries.search_queries import SearchKind, search
-from flask import Blueprint, request
 
 bp = Blueprint("search_queries", __name__)
 
