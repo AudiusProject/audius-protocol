@@ -14,6 +14,7 @@ bp = Blueprint("notifications", __name__)
 max_block_diff = 50000
 
 
+# pylint: disable=R0911
 def get_owner_id(session, entity_type, entity_id):
     """
     Fetches the owner user id of the requested entity_type/entity_id
@@ -35,7 +36,8 @@ def get_owner_id(session, entity_type, entity_id):
             return None
         owner_id = owner_id_query[0][0]
         return owner_id
-    elif entity_type == 'album':
+
+    if entity_type == 'album':
         owner_id_query = session.query(Playlist.playlist_owner_id).filter(
             Playlist.playlist_id == entity_id,
             Playlist.is_delete == False,
@@ -45,7 +47,8 @@ def get_owner_id(session, entity_type, entity_id):
             return None
         owner_id = owner_id_query[0][0]
         return owner_id
-    elif entity_type == 'playlist':
+
+    if entity_type == 'playlist':
         owner_id_query = session.query(Playlist.playlist_owner_id).filter(
             Playlist.playlist_id == entity_id,
             Playlist.is_delete == False,
@@ -55,8 +58,8 @@ def get_owner_id(session, entity_type, entity_id):
             return None
         owner_id = owner_id_query[0][0]
         return owner_id
-    else:
-        return None
+
+    return None
 
 
 def get_cosign_remix_notifications(session, max_block_number, remix_tracks):
@@ -141,6 +144,7 @@ def get_cosign_remix_notifications(session, max_block_number, remix_tracks):
 
 
 @bp.route("/notifications", methods=("GET",))
+# pylint: disable=R0915
 def notifications():
     """
     Fetches the notifications events that occurred between the given block numbers

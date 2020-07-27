@@ -306,6 +306,7 @@ def add_users(session, results):
         elif 'owner_id' in result:
             user_id = result['owner_id']
 
+        # pylint: disable=W1202
         logger.warning("User id is {}".format(user_id))
         if user_id is not None:
             logger.warning(3)
@@ -334,7 +335,9 @@ def add_users(session, results):
 
 
 def search(args):
-    """Perform a search. `args` should contain `is_auto_complete`, `query`, `kind`, `current_user_id`, and `with_users`"""
+    """ Perform a search. `args` should contain `is_auto_complete`,
+    `query`, `kind`, `current_user_id`, and `with_users`.
+    """
     searchStr = args.get("query")
 
     # when creating query table, we substitute this too
@@ -413,6 +416,7 @@ def track_search_query(session, searchStr, limit, offset, personalized, is_auto_
         return []
 
     res = sqlalchemy.text(
+        # pylint: disable=C0301
         f"""
         select track_id from (
             select track_id, (sum(score) + (:title_weight * similarity(coalesce(title, ''), query))) as total_score from (
@@ -574,6 +578,7 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
     # single-quotes, so we have to use traditional string substitution. This is safe
     # because the value is not user-specified.
     res = sqlalchemy.text(
+        # pylint: disable=C0301
         f"""
         select playlist_id from (
             select playlist_id, (sum(score) + (:name_weight * similarity(coalesce(playlist_name, ''), query))) as total_score from (
