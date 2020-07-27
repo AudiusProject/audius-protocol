@@ -41,7 +41,7 @@ describe('test resizeImage', () => {
       data: {
         file: imageBuffer,
         fileName: 'audiusDj',
-        storagePath: 'some/storage/path',
+        storagePath,
         sizes: {
           '150x150.jpg': 150,
           '480x480.jpg': 480,
@@ -72,7 +72,7 @@ describe('test resizeImage', () => {
       data: {
         file: imageBuffer,
         fileName: 'audiusDj',
-        storagePath: 'some/storage/path',
+        storagePath,
         sizes: {
           '150x150.jpg': 150,
           '480x480.jpg': 480,
@@ -88,7 +88,7 @@ describe('test resizeImage', () => {
       assert.fail('Should not have passed if ipfs is down')
     } catch (e) {
       console.error(e)
-      assert.ok(true)
+      assert.ok(e)
     }
   })
 
@@ -118,7 +118,7 @@ describe('test resizeImage', () => {
       assert.fail('Should not have passed if making new directory at path fails')
     } catch (e) {
       console.error(e)
-      assert.ok(true)
+      assert.ok(e)
     }
   })
 
@@ -284,7 +284,7 @@ describe('test resizeImage', () => {
         const fsBuf = fs.readFileSync(path.join(dirPath, file))
         const expectedBuf = fs.readFileSync(path.join(__dirname, imageTestDir, DIR_CID_NOT_SQUARE, file))
         // If comparison does not return 0, buffers are not the same
-        assert.deepStrictEqual(fsBuf.compare(expectedBuf), 0)
+        assert.deepStrictEqual(expectedBuf.compare(fsBuf), 0)
 
         // Remove from set to test that only unique files are added
         dirContentCIDs.delete(file)
