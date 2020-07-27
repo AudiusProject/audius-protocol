@@ -88,7 +88,7 @@ describe('test resizeImage', () => {
       assert.fail('Should not have passed if ipfs is down')
     } catch (e) {
       console.error(e)
-      assert.ok(e)
+      assert.ok(e.message)
     }
   })
 
@@ -118,7 +118,7 @@ describe('test resizeImage', () => {
       assert.fail('Should not have passed if making new directory at path fails')
     } catch (e) {
       console.error(e)
-      assert.ok(e)
+      assert.ok(e.message)
     }
   })
 
