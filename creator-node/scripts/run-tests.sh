@@ -40,3 +40,7 @@ mkdir -p $storagePath
 ./node_modules/mocha/bin/mocha --timeout 30000 --exit
 
 rm -r $storagePath
+
+# remove test generated segments folder and .m3u8 file
+rm -rf "./test/segments"
+rm -rf "./test/testTrack.m3u8"
