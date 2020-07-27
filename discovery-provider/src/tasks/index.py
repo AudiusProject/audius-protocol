@@ -239,7 +239,7 @@ def index_blocks(self, db, blocks_list):
 
         # add the block number of the most recently processed block to redis
         redis.set(most_recent_indexed_block_redis_key, block.number)
-        redis.set(most_recent_indexed_block_hash_redis_key, block.blockhash)
+        redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
