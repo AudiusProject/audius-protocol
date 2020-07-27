@@ -326,6 +326,12 @@ const config = convict({
     env: 'discoveryProviderWhitelist',
     default: ''
   },
+  identityService: {
+    doc: 'Identity service endpoint to record creator-node driven plays against',
+    format: String,
+    env: 'identityService',
+    default: ''
+  },
 
   /** Manual content blacklists */
   userBlacklist: {
@@ -339,6 +345,18 @@ const config = convict({
     format: String,
     env: 'trackBlacklist',
     default: ''
+  },
+  creatorNodeIsDebug: {
+    doc: 'Whether the creatornode is in debug mode.',
+    format: Boolean,
+    env: 'creatorNodeIsDebug',
+    default: false
+  },
+  rehydrateMaxConcurrency: {
+    doc: 'Number of concurrent rehydrate queue tasks running',
+    format: 'nat',
+    env: 'rehydrateMaxConcurrency',
+    default: 10
   }
 
   // unsupported options at the moment

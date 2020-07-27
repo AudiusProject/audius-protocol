@@ -3,14 +3,24 @@ const fs = require('fs')
 var contentDisposition = require('content-disposition')
 
 const { uploadTempDiskStorage } = require('../fileManager')
-const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseNotFound, errorResponseForbidden } = require('../apiHelpers')
+const {
+  handleResponse,
+  sendResponse,
+  successResponse,
+  errorResponseBadRequest,
+  errorResponseServerError,
+  errorResponseNotFound,
+  errorResponseForbidden,
+  errorResponseRangeNotSatisfiable
+} = require('../apiHelpers')
 
 const models = require('../models')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
-const { getIPFSPeerId, rehydrateIpfsFromFsIfNecessary, ipfsSingleByteCat } = require('../utils')
+const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
+const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 
 /**
  * Helper method to stream file from file system on creator node
@@ -26,6 +36,15 @@ const streamFromFileSystem = async (req, res, path) => {
     // Stream file from file system
     let fileStream
 
+    let stat
+    if (req.params.streamable) {
+      // Add content length headers
+      // Stats a file from FS and returns fs stat info, like size in bytes
+      stat = fs.statSync(path)
+      res.set('Accept-Ranges', 'bytes')
+      res.set('Content-Length', stat.size)
+    }
+
     // If a range header is present, use that to create the readstream
     // otherwise, stream the whole file.
 
@@ -34,15 +53,18 @@ const streamFromFileSystem = async (req, res, path) => {
     const range = req.range()
 
     // TODO - route doesn't support multipart ranges (see spec above),
-    //    need to send 416 on invalid or multipart range
-    if (range && range[0]) {
+    if (stat && range && range[0]) {
       const { start, end } = range[0]
+      if (end >= stat.size) {
+        // Set "Requested Range Not Satisfiable" header and exit
+        res.status(416)
+        return sendResponse(req, res, errorResponseRangeNotSatisfiable('Range not satisfiable'))
+      }
+
       fileStream = fs.createReadStream(path, { start, end })
 
       // set 206 "Partial Content" success status response code
       res.status(206)
-
-      // TODO - set Accept-Ranges and Content-Length response headers
     } else {
       fileStream = fs.createReadStream(path)
     }
@@ -91,14 +113,9 @@ const getCID = async (req, res) => {
     res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
   }
 
-  // Fire-and-forget rehydration
-  rehydrateIpfsFromFsIfNecessary(
-    req,
-    CID,
-    queryResults.storagePath
-  )
-
   try {
+    // Add a rehydration task to the queue to be processed in the background
+    RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, queryResults.storagePath, { logContext: req.logContext })
     // Attempt to stream file to client.
     req.logger.info(`Retrieving ${queryResults.storagePath} directly from filesystem`)
     return await streamFromFileSystem(req, res, queryResults.storagePath)
@@ -107,11 +124,11 @@ const getCID = async (req, res) => {
   }
 
   try {
-    // For files not found on disk, attempt to stream from IPFS
-    // Cat 1 byte of CID in ipfs to determine if file exists
-    // If the request takes under 500ms, stream the file from ipfs
-    // else if the request takes over 500ms, throw an error
-    await ipfsSingleByteCat(CID, req, 500)
+    // Add content length headers
+    // If the IPFS stat call fails or timesout, an error is thrown
+    const stat = await ipfsStat(CID, req.logContext, 500)
+    res.set('Accept-Ranges', 'bytes')
+    res.set('Content-Length', stat.size)
 
     // Stream file from ipfs if cat one byte takes under 500ms
     // If catReadableStream() promise is rejected, throw an error and stream from file system
@@ -119,8 +136,14 @@ const getCID = async (req, res) => {
       let stream
       // If a range header is present, use that to create the ipfs stream
       const range = req.range()
-      if (range && range[0]) {
+      if (req.params.streamable && range && range[0]) {
         const { start, end } = range[0]
+        if (end >= stat.size) {
+          // Set "Requested Range Not Satisfiable" header and exit
+          res.status(416)
+          return sendResponse(req, res, errorResponseRangeNotSatisfiable('Range not satisfiable'))
+        }
+
         // Set length to be end - start + 1 so it matches behavior of fs.createReadStream
         stream = req.app.get('ipfsAPI').catReadableStream(
           CID, { offset: start, length: end - start + 1 }
@@ -175,15 +198,9 @@ const getDirCID = async (req, res) => {
   req.logger.info(`IPFS Standalone Request - ${ipfsPath}`)
   req.logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
-  // Fire-and-forget rehydration
-  rehydrateIpfsFromFsIfNecessary(
-    req,
-    dirCID,
-    parentStoragePath,
-    filename
-  )
-
   try {
+    // Add rehydrate task to queue to be processed in background
+    RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(dirCID, parentStoragePath, { logContext: req.logContext }, filename)
     // Attempt to stream file to client.
     req.logger.info(`Retrieving ${queryResults.storagePath} directly from filesystem`)
     return await streamFromFileSystem(req, res, queryResults.storagePath)
@@ -196,7 +213,7 @@ const getDirCID = async (req, res) => {
     // Cat 1 byte of CID in ipfs to determine if file exists
     // If the request takes under 500ms, stream the file from ipfs
     // else if the request takes over 500ms, throw an error
-    await ipfsSingleByteCat(ipfsPath, req, 500)
+    await ipfsSingleByteCat(ipfsPath, req.logContext, 500)
 
     await new Promise((resolve, reject) => {
       req.app.get('ipfsAPI').catReadableStream(ipfsPath)

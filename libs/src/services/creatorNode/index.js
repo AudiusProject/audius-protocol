@@ -469,11 +469,23 @@ class CreatorNode {
     let total
     const url = this.creatorNodeEndpoint + route
     try {
+      // Hack alert!
+      //
+      // Axios auto-detects browser vs node based on
+      // the existance of XMLHttpRequest at the global namespace, which
+      // is imported by a web3 module, causing Axios to incorrectly
+      // presume we're in a browser env when we're in a node env.
+      // For uploads to work in a node env,
+      // axios needs to correctly detect we're in node and use the `http` module
+      // rather than XMLHttpRequest. We force that here.
+      // https://github.com/axios/axios/issues/1180
+      const isBrowser = typeof window !== 'undefined'
       const resp = await axios.post(
         url,
         formData,
         {
           headers: headers,
+          adapter: isBrowser ? require('axios/lib/adapters/xhr') : require('axios/lib/adapters/http'),
           // Add a 10% inherit processing time for the file upload.
           onUploadProgress: (progressEvent) => {
             if (!total) total = progressEvent.total

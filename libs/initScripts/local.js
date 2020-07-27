@@ -96,6 +96,13 @@ const run = async () => {
         await _registerDiscProv2(audiusLibs, ethAccounts)
         break
 
+      case 'register-cnode': {
+        const serviceCount = args[3]
+        if (serviceCount === undefined) throw new Error('register-cnode requires a service # as the second arg')
+        await _registerCnode(ethAccounts, parseInt(serviceCount))
+        break
+      }
+
       case 'register-cnode-1':
         await _registerCnode1(audiusLibs, ethAccounts)
         break
@@ -119,6 +126,16 @@ const run = async () => {
       case 'query-sps':
         await queryLocalServices(audiusLibs, serviceTypeList)
         break
+
+      case 'update-delegate-wallet': {
+        // Update arbitrary cnode
+        const serviceCount = args[3]
+        if (serviceCount === undefined) throw new Error('update-delegate-wallet requires a service # as the second arg')
+        envPath = '../creator-node/compose/env/commonEnv.sh'
+        const account = ethAccounts[parseInt(serviceCount)]
+        await _updateCnodeDelegateWallet(account, envPath, envPath, /* isShell */ true)
+        break
+      }
 
       case 'update-cnode-1-delegatewallet':
         // Account 1 - Cnode 1 Delegate Wallet Update
@@ -167,13 +184,22 @@ const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
 
 // Account 0
 const _registerDiscProv1 = async (audiusLibs, ethAccounts) => {
-  await registerLocalService(audiusLibs, spDiscProvType, discProvEndpoint1, amountOfAuds)
+  let audiusLibs10 = await initAudiusLibs(true, null, ethAccounts[10])
+  await registerLocalService(audiusLibs10, spDiscProvType, discProvEndpoint1, amountOfAuds)
 }
 
 // Account 3
 const _registerDiscProv2 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[3])
-  await registerLocalService(audiusLibs4, spDiscProvType, discProvEndpoint2, amountOfAuds)
+  let audiusLibs11 = await initAudiusLibs(true, null, ethAccounts[11])
+  await registerLocalService(audiusLibs11, spDiscProvType, discProvEndpoint2, amountOfAuds)
+}
+
+const makeCreatorNodeEndpoint = (serviceNumber) => `http://cn${serviceNumber}_creator-node_1:${4000 + serviceNumber - 1}`
+
+const _registerCnode = async (ethAccounts, serviceNumber) => {
+  const audiusLibs = await initAudiusLibs(true, null, ethAccounts[serviceNumber])
+  const endpoint = makeCreatorNodeEndpoint(serviceNumber)
+  await registerLocalService(audiusLibs, spCreatorNodeType, endpoint, amountOfAuds)
 }
 
 // Account 1
@@ -189,24 +215,24 @@ const _registerCnode2 = async (audiusLibs, ethAccounts) => {
   await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint2, amountOfAuds)
 }
 
-// Account 4
+// Account 3
 const _registerCnode3 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[4])
+  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[3])
   await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint3, amountOfAuds)
 }
 
-// Account 5
+// Account 4
 const _registerCnode4 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[5])
+  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[4])
   await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint4, amountOfAuds)
 }
 
-const _updateCnodeDelegateWallet = async (account, readPath, writePath = readPath) => {
+const _updateCnodeDelegateWallet = async (account, readPath, writePath = readPath, isShell = false) => {
   let acct = account.toLowerCase()
   let ganacheEthAccounts = await getEthContractAccounts()
   // PKey is now recovered
   let delegateWalletPkey = ganacheEthAccounts['private_keys'][`${acct}`]
-  await _updateDelegateOwnerWalletInDockerEnv(readPath, writePath, acct, delegateWalletPkey)
+  await _updateDelegateOwnerWalletInDockerEnv(readPath, writePath, acct, delegateWalletPkey, isShell)
 }
 
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
@@ -231,7 +257,7 @@ const _initAllVersions = async (audiusLibs) => {
   }
 }
 
-const _updateDelegateOwnerWalletInDockerEnv = async (readPath, writePath, delegateOwnerWallet, delegateWalletPkey) => {
+const _updateDelegateOwnerWalletInDockerEnv = async (readPath, writePath, delegateOwnerWallet, delegateWalletPkey, isShell) => {
   const fileStream = fs.createReadStream(readPath)
   const rl = readline.createInterface({
     input: fileStream,
@@ -240,13 +266,16 @@ const _updateDelegateOwnerWalletInDockerEnv = async (readPath, writePath, delega
   let output = []
   let walletFound = false
   let pkeyFound = false
+  const ownerWalletLine = `${isShell ? 'export ' : ''}delegateOwnerWallet=${delegateOwnerWallet}`
+  const pkeyLine = `${isShell ? 'export ' : ''}delegatePrivateKey=0x${delegateWalletPkey}`
+
   for await (const line of rl) {
     // Each line in input.txt will be successively available here as `line`.
     if (line.includes('delegateOwnerWallet')) {
-      output.push(`delegateOwnerWallet=${delegateOwnerWallet}`)
+      output.push(ownerWalletLine)
       walletFound = true
     } else if (line.includes('delegatePrivateKey')) {
-      output.push(`delegatePrivateKey=0x${delegateWalletPkey}`)
+      output.push(pkeyLine)
       pkeyFound = true
     } else {
       output.push(line)
@@ -254,10 +283,10 @@ const _updateDelegateOwnerWalletInDockerEnv = async (readPath, writePath, delega
   }
 
   if (!walletFound) {
-    output.push(`delegateOwnerWallet=${delegateOwnerWallet}`)
+    output.push(ownerWalletLine)
   }
   if (!pkeyFound) {
-    output.push(`delegatePrivateKey=0x${delegateWalletPkey}`)
+    output.push(pkeyLine)
   }
 
   fs.writeFileSync(writePath, output.join('\n'))

@@ -240,10 +240,9 @@ const ethSignTypedData = (web3, wallet, signatureData) => {
     } else {
       method = 'eth_signTypedData'
       // fix per https://github.com/ethereum/web3.js/issues/1119
-      web3.providers.HttpProvider.prototype.sendAsync = web3.providers.HttpProvider.prototype.send
     }
 
-    web3.currentProvider.sendAsync({
+    web3.currentProvider.send({
       method: method,
       params: [wallet, signatureData],
       from: wallet
