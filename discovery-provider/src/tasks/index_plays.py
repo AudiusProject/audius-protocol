@@ -51,6 +51,7 @@ def get_track_plays(self, db):
         plays = []
         user_track_listens = []
         track_hours = []
+        # pylint: disable=W0105
         """
         Insert a row for each new count instance in the plays table
         1.) Loop through the listens to build a list of user_id to track_id pairs
@@ -115,8 +116,8 @@ def get_track_plays(self, db):
                 ).group_by(
                     Play.play_item_id
                 ).all()
-
                 anon_track_plays_dict = {
+                    # pylint: disable=C0301
                     f'{play[0]}-{play[1].replace(microsecond=0, second=0, minute=0)}': play[2] for play in track_play_counts
                 }
 

@@ -8,6 +8,7 @@ from web3.auto import w3
 from eth_account.messages import encode_defunct
 from flask import jsonify
 
+# pylint: disable=R0401
 from src.utils import helpers
 from src.utils.config import shared_config
 from src.utils.redis_constants import latest_block_redis_key, most_recent_indexed_block_redis_key
