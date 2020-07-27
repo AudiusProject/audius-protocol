@@ -12,7 +12,7 @@ describe('test segmentFile', () => {
       try {
         fs.mkdirSync(segmentsDirPath)
       } catch (e) {
-        assert.fail(`Could not create dir at ${segmentsDirPath}`)
+        assert.fail(`Could not create dir at ${segmentsDirPath}: ${e}`)
       }
     }
   })
@@ -28,7 +28,7 @@ describe('test segmentFile', () => {
       assert.fail('Should have thrown error with bad params')
     } catch (e) {
       console.error(e)
-      assert.ok(true)
+      assert.ok(e)
     }
   })
 
@@ -46,7 +46,7 @@ describe('test segmentFile', () => {
       assert.fail('Should have thrown error when segmenting a bad track (image)')
     } catch (e) {
       console.error(e)
-      assert.ok(true)
+      assert.ok(e)
     }
   })
 
