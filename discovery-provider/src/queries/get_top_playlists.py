@@ -19,15 +19,8 @@ def get_top_playlists(kind, args):
             "Invalid kind provided, must be one of 'playlist', 'album'"
         )
 
-    if 'limit' in args:
-        limit = min(int(args.get('limit')), 100)
-    else:
-        limit = 16
-
-    if 'mood' in args:
-        mood = args.get('mood')
-    else:
-        mood = None
+    limit = args.get('limit', 16)
+    mood = args.get('mood', None)
 
     if 'filter' in args:
         query_filter = args.get('filter')
@@ -127,7 +120,7 @@ def get_top_playlists(kind, args):
         for playlist in playlists:
             playlist['score'] = score_map[playlist['playlist_id']]
 
-        if "with_users" in args and args.get("with_users") != 'false':
+        if args.get("with_users", False):
             user_id_list = get_users_ids(playlists)
             users = get_users_by_id(session, user_id_list)
             for playlist in playlists:
