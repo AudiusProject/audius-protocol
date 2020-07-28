@@ -36,7 +36,7 @@ class PlaylistTracks(Resource):
         """Fetch tracks within a playlist"""
         playlist_id = decode_with_abort(playlist_id, ns)
         current_user_id = get_current_user_id(required=False)
-        args = {"playlist_id": playlist_id, "with_users": 'true', "current_user_id": current_user_id}
+        args = {"playlist_id": playlist_id, "with_users": True, "current_user_id": current_user_id}
         playlist_tracks = get_playlist_tracks(args)
         if not playlist_tracks:
             abort_not_found(playlist_id, ns)
