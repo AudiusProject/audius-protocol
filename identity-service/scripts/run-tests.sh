@@ -15,7 +15,7 @@ export ethOwnerWallet=''
 export isTestRun=true
 export isTestRun=true
 export redisHost='localhost'
-export redisPort='7379'
+export redisPort='6379'
 export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_identity_service_test"
 export logLevel='debug' #should be error
 
