@@ -147,6 +147,11 @@ module.exports = function (app) {
       return errorResponseForbidden(e.message)
     }
 
+    // Error if download CID not provided for downloadable track
+    if (metadataJSON.download && metadataJSON.download.is_downloadable && !metadataJSON.download.cid) {
+      return errorResponseBadRequest('Metadata object must include cid if is_downloadable = true')
+    }
+
     // Store + pin metadata multihash to disk + IPFS.
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
@@ -436,24 +441,4 @@ module.exports = function (app) {
       }))
     })
   }))
-}
-
-/** Transcode track master file to 320kbps for downloading. Save to disk, IPFS, & DB. */
-async function createDownloadableCopy (req, fileName) {
-  try {
-    const start = Date.now()
-    req.logger.info(`Transcoding file ${fileName}...`)
-
-    const fileDir = path.resolve(req.app.get('storagePath'), fileName.split('.')[0])
-    const transcoding = await TranscodingQueue.transcode320(fileDir, fileName)
-    const { filePath: dlCopyFilePath } = transcoding
-
-    req.logger.info(`Transcoded file ${fileName} in ${Date.now() - start}ms.`)
-
-    await saveFileToIPFSFromFS(req, dlCopyFilePath, 'copy320', fileName)
-
-    return dlCopyFilePath
-  } catch (err) {
-    req.logger.error(err)
-  }
 }
