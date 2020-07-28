@@ -1,8 +1,6 @@
 'use strict'
 
 const ON_DEATH = require('death')
-const ipfsClient = require('ipfs-http-client')
-const ipfsClientLatest = require('ipfs-http-client-latest')
 const path = require('path')
 const AudiusLibs = require('@audius/libs')
 
@@ -12,6 +10,7 @@ const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const BlacklistManager = require('./blacklistManager')
+const { ipfs, ipfsLatest, logIpfsPeerIds } = require('./ipfsClient')
 
 const exitWithError = (...msg) => {
   logger.error(...msg)
@@ -32,6 +31,7 @@ const initAudiusLibs = async () => {
   const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
     ? new Set(config.get('discoveryProviderWhitelist').split(','))
     : null
+  const identityService = config.get('identityService')
 
   const audiusLibs = new AudiusLibs({
     ethWeb3Config: AudiusLibs.configEthWeb3(
@@ -48,7 +48,10 @@ const initAudiusLibs = async () => {
         ownerWallet: config.get('delegateOwnerWallet')
       }
     },
-    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist)
+    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),
+    // If an identity service config is present, set up libs with the connection, otherwise do nothing
+    identityServiceConfig: identityService ? AudiusLibs.configIdentityService(identityService) : undefined,
+    isDebug: config.get('creatorNodeIsDebug')
   })
   await audiusLibs.init()
   return audiusLibs
@@ -59,26 +62,6 @@ const configFileStorage = () => {
     exitWithError('Must set storagePath to use for content repository.')
   }
   return (path.resolve('./', config.get('storagePath')))
-}
-
-const initIPFS = async () => {
-  const ipfsAddr = config.get('ipfsHost')
-  if (!ipfsAddr) {
-    exitWithError('Must set ipfsAddr')
-  }
-  const ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
-  const ipfsLatest = ipfsClientLatest({ host: ipfsAddr, port: config.get('ipfsPort'), protocol: 'http' })
-
-  // initialize ipfs here
-  const identity = await ipfs.id()
-  // Pretty print the JSON obj with no filter fn (e.g. filter by string or number) and spacing of size 2
-  logger.info(`Current IPFS Peer ID: ${JSON.stringify(identity, null, 2)}`)
-
-  // init latest version of ipfs
-  const identityLatest = await ipfsLatest.id()
-  logger.info(`Current IPFS Peer ID (using latest version of ipfs client): ${JSON.stringify(identityLatest, null, 2)}`)
-
-  return { ipfs, ipfsLatest }
 }
 
 const runDBMigrations = async () => {
@@ -114,8 +97,6 @@ const startApp = async () => {
   }
   const storagePath = configFileStorage()
 
-  const { ipfs, ipfsLatest } = await initIPFS()
-
   const mode = getMode()
   let appInfo
 
@@ -126,6 +107,8 @@ const startApp = async () => {
     if (mode === '--run-all') {
       await runDBMigrations()
     }
+
+    await logIpfsPeerIds()
 
     /** Run app */
     await BlacklistManager.blacklist(ipfs)
@@ -146,5 +129,4 @@ const startApp = async () => {
     if (appInfo) { appInfo.server.close() }
   })
 }
-
 startApp()

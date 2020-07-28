@@ -47,7 +47,7 @@ const initializeApp = (port, storageDir, ipfsAPI, audiusLibs, blacklistManager, 
   app.set('audiusLibs', audiusLibs)
   app.set('blacklistManager', blacklistManager)
 
-  // add latest version of ipfs as app property
+  // add a newer version of ipfs as app property
   app.set('ipfsLatestAPI', ipfsAPILatest)
 
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))

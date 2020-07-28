@@ -76,6 +76,7 @@ async function renderAndSendEmail (
     const emailParams = {
       from: 'The Audius Team <team@audius.co>',
       to: userEmail,
+      bcc: 'forrest@audius.co',
       html: downloadAppHtml,
       subject: 'Audius Is Better On The Go 📱'
     }

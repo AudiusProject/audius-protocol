@@ -4,7 +4,7 @@ API_PORT=6001
 SWARM_PORT=6002
 CONTAINER_NAME=local_ipfs_node
 
-if [[ "$1" =~ ^up|down$ ]]; then 
+if [[ "$1" =~ ^up|down$ ]]; then
   echo "Local ipfs operations:"
 else
   echo "Must be a valid command - ./scripts/ipfs.sh <up|down>"

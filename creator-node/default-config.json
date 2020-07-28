@@ -34,9 +34,12 @@
   "spOwnerWallet": "",
   "debounceTime": 30000,
   "discoveryProviderWhitelist": "http://docker.for.mac.localhost:5000",
+  "identityService": "http://docker.for.mac.localhost:7000",
   "userBlacklist": "",
   "trackBlacklist": "",
   "dataRegistryAddress": "",
   "dataProviderUrl": "http://docker.for.mac.localhost:8545",
-  "dataNetworkId": ""
+  "dataNetworkId": "",
+  "userMetadataNodeUrl": "http://docker.for.mac.localhost:4000",
+  "rehydrateMaxConcurrency": 10
 }
