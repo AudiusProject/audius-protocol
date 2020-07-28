@@ -11,16 +11,22 @@ const models = require('../src/models')
 
 let storagePath = config.get('storagePath')
 storagePath = storagePath.charAt(0) === '/' ? storagePath.slice(1) : storagePath
+
+const reqFnStubs = {
+  ipfsAPI: ipfs,
+  storagePath
+}
 const req = {
   session: {
-    // TODO: prob should generate cnodeUserUUID for purpose of test, and not use existing UUID
     cnodeUserUUID: uuid()
   },
   logger: {
     info: () => {}
   },
   app: {
-    get: () => { return path.join(storagePath) }
+    get: key => {
+      return reqFnStubs[key]
+    }
   }
 }
 const segmentsDirPath = 'test/test-segments'
@@ -72,6 +78,7 @@ describe('test saveFileToIpfsFromFs', () => {
       assert.deepStrictEqual(e.message, 'ipfs is down!')
     }
   })
+
   /**
    * Given: a file is being saved to ipfs from fs
    * When: ipfs is down

@@ -7,7 +7,6 @@ const getUuid = require('uuid/v4')
 const axios = require('axios')
 const mkdir = promisify(fs.mkdir)
 
-const { ipfs } = require('./ipfsClient')
 const config = require('./config')
 const models = require('./models')
 const Utils = require('./utils')
@@ -62,6 +61,8 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
   if (!req.session.cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
   }
+
+  const ipfs = req.app.get('ipfsAPI')
 
   req.logger.info(`beginning saveFileToIPFSFromFS for srcPath ${srcPath}`)
 
