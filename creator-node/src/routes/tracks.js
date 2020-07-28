@@ -92,7 +92,7 @@ module.exports = function (app) {
       await t.commit()
     } catch (e) {
       req.logger.info(`failed to commit...rolling back. file ${req.fileName}`)
-      
+
       await t.rollback()
 
       // Prune upload artifacts
