@@ -391,7 +391,8 @@ jobs:
       - run:
           name: Get tag or latest
           command: |
-            echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || echo "latest" `" | tee -a $BASH_ENV
+            # order of precendence for IMAGE tag is CIRCLE_TAG, 'stage' or 'production' if on that branch, 'latest'
+            echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ ^(stage|production)$ ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
       - run:
           name: Docker login
           command: |
@@ -471,27 +472,27 @@ workflows:
       - test-libs:
           filters:
             branches:
-              ignore: master
+              ignore: /(^master)|(^stage)|(^production)$/
       - test-contracts:
           filters:
             branches:
-              ignore: master
+              ignore: /(^master)|(^stage)|(^production)$/
       - test-eth-contracts:
           filters:
             branches:
-              ignore: master
+              ignore: /(^master)|(^stage)|(^production)$/
       - test-creator-node:
           filters:
             branches:
-              ignore: master
+              ignore: /(^master)|(^stage)|(^production)$/
       - test-discovery-provider:
           filters:
             branches:
-              ignore: master
+              ignore: /(^master)|(^stage)|(^production)$/
       - test-identity-service:
           filters:
             branches:
-              ignore: master
+              ignore: /(^master)|(^stage)|(^production)$/
 
   # push public docker images when a git tag is present
   # tag must be in the format @audius/<service>@x.x.x
