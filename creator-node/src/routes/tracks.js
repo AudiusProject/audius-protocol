@@ -18,8 +18,18 @@ module.exports = function (app) {
    * @dev - Every error scenario removes upload artifacts without awaiting - async bullQ will enforce
    */
   app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
-    if (req.fileSizeError) return errorResponseBadRequest(req.fileSizeError)
-    if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
+    if (req.fileSizeError) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseBadRequest(req.fileSizeError)
+    }
+    if (req.fileFilterError) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseBadRequest(req.fileFilterError)
+    }
     const routeTimeStart = Date.now()
     let codeBlockTimeStart = Date.now()
 
@@ -99,7 +109,12 @@ module.exports = function (app) {
     trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
 
     // error if there are no track segments
-    if (!trackSegments || !trackSegments.length) return errorResponseServerError('Track upload failed - no track segments')
+    if (!trackSegments || !trackSegments.length) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseServerError('Track upload failed - no track segments')
+    }
 
     // Don't allow if any segment CID is in blacklist.
     try {
