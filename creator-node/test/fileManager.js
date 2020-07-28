@@ -53,7 +53,7 @@ describe('test saveFileToIpfsFromFs', () => {
       await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile)
       assert.fail('Should not have passed if cnodeUserUUID is not present in request.')
     } catch (e) {
-      assert.ok(e.message === 'User must be authenticated to save a file')
+      assert.deepStrictEqual(e.message, 'User must be authenticated to save a file')
     }
   })
 
@@ -69,7 +69,7 @@ describe('test saveFileToIpfsFromFs', () => {
       await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile)
       assert.fail('Should not have passed if ipfs is down.')
     } catch (e) {
-      assert.ok(e.message === 'ipfs is down!')
+      assert.deepStrictEqual(e.message, 'ipfs is down!')
     }
   })
   /**
@@ -84,7 +84,7 @@ describe('test saveFileToIpfsFromFs', () => {
       await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile)
       assert.fail('Should not have passed if file syncing fails.')
     } catch (e) {
-      assert.ok(e.message === 'Failed to sync over files!!')
+      assert.deepStrictEqual(e.message, 'Failed to sync over files!!')
     }
   })
 
@@ -100,7 +100,7 @@ describe('test saveFileToIpfsFromFs', () => {
       await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile)
       assert.fail('Should not have if db connection is down.')
     } catch (e) {
-      assert.ok(e.message === 'Failed to find or create file!!!')
+      assert.deepStrictEqual(e.message, 'Failed to find or create file!!!')
     }
   })
 
