@@ -463,7 +463,7 @@ workflows:
           cron: "0 5 * * *"
           filters:
             branches:
-              only: master
+              only: /(^master)$/
 
   # run tests for PRs/branches other than master
   test-branch:
@@ -505,7 +505,7 @@ workflows:
             tags:
               only: /^@audius/libs@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master)|(^stage)|(^production)$/
       - docker-build-and-push:
           name: build-libs
           repo: libs
@@ -515,7 +515,7 @@ workflows:
             tags:
               only: /^@audius/libs@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master)|(^stage)|(^production)$/
       # contracts: test, build and push
       - test-contracts:
           force: true
@@ -523,7 +523,7 @@ workflows:
             tags:
               only: /^@audius/contracts@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master)|(^stage)|(^production)$/
       - docker-build-and-push:
           name: build-contracts
           repo: contracts
@@ -533,7 +533,7 @@ workflows:
             tags:
               only: /^@audius/contracts@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master)|(^stage)|(^production)$/
       # eth-contracts: test, build and push
       - test-eth-contracts:
           force: true
@@ -541,7 +541,7 @@ workflows:
             tags:
               only: /^@audius/eth-contracts@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master)|(^stage)|(^production)$/
       - docker-build-and-push:
           name: build-eth-contracts
           repo: eth-contracts
@@ -551,7 +551,7 @@ workflows:
             tags:
               only: /^@audius/eth-contracts@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master)|(^stage)|(^production)$/
       # creator node: test, build and push
       - test-creator-node:
           force: true
@@ -559,7 +559,7 @@ workflows:
             tags:
               only: /^@audius/creator-node@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master)|(^stage)|(^production)$/
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
@@ -569,7 +569,7 @@ workflows:
             tags:
               only: /^@audius/creator-node@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master)|(^stage)|(^production)$/
       # discovery provider: test, build and push
       - test-discovery-provider:
           force: true
@@ -577,7 +577,7 @@ workflows:
             tags:
               only: /^@audius/discovery-provider@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master)|(^stage)|(^production)$/
       - docker-build-and-push:
           name: build-discovery-provider
           repo: discovery-provider
@@ -587,7 +587,7 @@ workflows:
             tags:
               only: /^@audius/discovery-provider@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master)|(^stage)|(^production)$/
       # identity service: test, build and push
       - test-identity-service:
           force: true
@@ -595,7 +595,7 @@ workflows:
             tags:
               only: /^@audius/identity-service@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master)|(^stage)|(^production)$/
       - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
@@ -605,7 +605,7 @@ workflows:
             tags:
               only: /^@audius/identity-service@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master)|(^stage)|(^production)$/
       # DEPLOY MASTER TO CI ENVIRONMENT
       - deploy:
           name: deploy-ci
@@ -621,4 +621,4 @@ workflows:
             - build-identity-service
           filters:
             branches:
-              only: master
+              only: /(^master)$/
