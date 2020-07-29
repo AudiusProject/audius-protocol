@@ -446,7 +446,7 @@ describe('test /track_content with actual ipfsClient', function () {
     storagePath = storagePath.slice(0, 1) === '/' ? '.' + storagePath : storagePath
 
     // check if track UUID dir exists
-    const originalTrackUUID = resp.body.source_file.slice(0, -4) // trim off .mp3
+    const originalTrackUUID = resp.body.source_file.split('.').slice(0, -1).join('.') // remove extension
     const originalTrackUUIDPath = path.join(storagePath, originalTrackUUID)
     assert.ok(fs.existsSync(originalTrackUUIDPath))
 

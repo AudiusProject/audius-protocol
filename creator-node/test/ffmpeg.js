@@ -4,8 +4,10 @@ const path = require('path')
 const fs = require('fs')
 const assert = require('assert')
 
-describe('test segmentFile', () => {
-  // Create the segments directory to store segments in
+describe('test segmentFile()', () => {
+  // Create the segments directory to store segments in.
+  // Middleware would normally handle this, however, in this test
+  // context, segmentFile() is unit tested directly without the middleware.
   before(() => {
     const segmentsDirPath = path.join(__dirname, 'segments')
     if (!fs.existsSync(segmentsDirPath)) {
@@ -28,7 +30,7 @@ describe('test segmentFile', () => {
       assert.fail('Should have thrown error with bad params')
     } catch (e) {
       console.error(e)
-      assert.ok(e)
+      assert.ok(e.message)
     }
   })
 
@@ -46,7 +48,7 @@ describe('test segmentFile', () => {
       assert.fail('Should have thrown error when segmenting a bad track (image)')
     } catch (e) {
       console.error(e)
-      assert.ok(e)
+      assert.deepStrictEqual(e.message, 'FFMPEG Error')
     }
   })
 
@@ -63,7 +65,7 @@ describe('test segmentFile', () => {
       await segmentFile(fileDir, fileName, {})
     } catch (e) {
       console.error(e)
-      assert.fail(e)
+      assert.fail(e.message)
     }
 
     // read segments assets from /test-segments
