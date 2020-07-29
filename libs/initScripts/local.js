@@ -234,7 +234,7 @@ const _updateConfigFile = async (account, readPath, writePath = readPath, isShel
   let ganacheEthAccounts = await getEthContractAccounts()
   // PKey is now recovered
   let delegateWalletPkey = ganacheEthAccounts['private_keys'][`${acct}`]
-  await _updateConfigFile(readPath, writePath, acct, delegateWalletPkey, isShell, endpoint)
+  await _writeConfigFile(readPath, writePath, acct, delegateWalletPkey, isShell, endpoint)
 }
 
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
@@ -261,7 +261,7 @@ const _initAllVersions = async (audiusLibs) => {
 
 // Overwrite configs in either shell file or .env
 // If not found, configs appeneded to end of file
-const _updateConfigFile = async (readPath, writePath, delegateOwnerWallet, delegateWalletPkey, isShell, endpoint = null) => {
+const _writeConfigFile = async (readPath, writePath, delegateOwnerWallet, delegateWalletPkey, isShell, endpoint = null) => {
   const fileStream = fs.createReadStream(readPath)
   const rl = readline.createInterface({
     input: fileStream,
