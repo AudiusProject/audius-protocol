@@ -147,10 +147,14 @@ module.exports = function (app) {
       return errorResponseForbidden(e.message)
     }
 
+    // TODO - confirm all segment files have same sourceFile (see POST /tracks code below)
+
     // Error if download CID not provided for downloadable track
     if (metadataJSON.download && metadataJSON.download.is_downloadable && !metadataJSON.download.cid) {
       return errorResponseBadRequest('Metadata object must include cid if is_downloadable = true')
     }
+
+    // TODO - if transcode CID provided, confirm CID file entry has same sourceFile as track segment file entries
 
     // Store + pin metadata multihash to disk + IPFS.
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
