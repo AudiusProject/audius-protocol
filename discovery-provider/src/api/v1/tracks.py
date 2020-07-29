@@ -1,17 +1,24 @@
 from urllib.parse import urljoin
-import logging # pylint: disable=C0302
+import logging  # pylint: disable=C0302
 from flask import redirect
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
-from src.api.v1.helpers import abort_not_found, decode_with_abort, encode_int_id, extend_favorite, extend_track, extend_user, make_response, search_parser, success_response
+from src.api.v1.helpers import abort_not_found, decode_with_abort, encode_int_id, \
+    extend_favorite, extend_track, extend_user, make_response, search_parser, \
+    trending_parser, success_response
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
+from src.queries.get_trending_tracks import get_trending_tracks
 
 logger = logging.getLogger(__name__)
 ns = Namespace('tracks', description='Track related operations')
 
 track_response = make_response("track_response", ns, fields.Nested(track))
+tracks_response = make_response(
+    "tracks_response", ns, fields.List(fields.Nested(track)))
+
+
 @ns.route('/<string:track_id>')
 class Track(Resource):
     @ns.marshal_with(track_response)
@@ -24,6 +31,7 @@ class Track(Resource):
             abort_not_found(encoded_id, ns)
         single_track = extend_track(tracks[0])
         return success_response(single_track)
+
 
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
@@ -42,7 +50,11 @@ class TrackStream(Resource):
         stream_url = urljoin(primary_node, 'tracks/stream/{}'.format(track_id))
         return redirect(stream_url)
 
-track_search_result = make_response("track_search", ns, fields.List(fields.Nested(track)))
+
+track_search_result = make_response(
+    "track_search", ns, fields.List(fields.Nested(track)))
+
+
 @ns.route("/search")
 class TrackSearchResult(Resource):
     @ns.marshal_with(track_search_result)
@@ -59,5 +71,21 @@ class TrackSearchResult(Resource):
         }
         response = search(search_args)
         tracks = response["tracks"]
+        tracks = list(map(extend_track, tracks))
+        return success_response(tracks)
+
+
+@ns.route("/trending")
+class Trending(Resource):
+    @ns.marshal_with(tracks_response)
+    def get(self):
+        """Get the trending tracks"""
+        args = trending_parser.parse_args()
+        time = args.get("time") if args.get("time") is not None else 'week'
+        args = {
+            'time': time,
+            'genre': args.get("genre", None)
+        }
+        tracks = get_trending_tracks(args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)

@@ -9,9 +9,9 @@ repost = ns.model('repost', {
     "created_at": fields.String(required=True),
     "is_current": fields.Boolean(required=True),
     "is_delete": fields.Boolean(required=True),
-    "repost_item_id": fields.Integer(required=True),
+    "repost_item_id": fields.String(required=True),
     "repost_type": fields.String(required=True),
-    "user_id": fields.Integer(required=True)
+    "user_id": fields.String(required=True)
 })
 
 favorite = ns.model('favorite', {
