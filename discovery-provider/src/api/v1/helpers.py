@@ -147,5 +147,9 @@ def make_response(name, namespace, modelType):
 search_parser = reqparse.RequestParser()
 search_parser.add_argument('query', required=True)
 
+trending_parser = reqparse.RequestParser()
+trending_parser.add_argument('genre', required=False)
+trending_parser.add_argument('time', required=False)
+
 def success_response(entity):
     return api_helpers.success_response(entity, 200, False)

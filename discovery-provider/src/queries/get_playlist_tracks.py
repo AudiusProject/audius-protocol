@@ -48,7 +48,7 @@ def get_playlist_tracks(args):
             tracks = populate_track_metadata(
                 session, playlist_track_ids, tracks, current_user_id)
 
-            if "with_users" in args and args.get("with_users") != 'false':
+            if args.get("with_users", False):
                 add_users_to_tracks(session, tracks)
 
             tracks_dict = {track['track_id']: track for track in tracks}

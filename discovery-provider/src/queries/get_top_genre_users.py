@@ -12,7 +12,7 @@ def get_top_genre_users(args):
         genres = args.get("genre")
 
     # If the with_users url arg is provided, then populate the user metadata else return user ids
-    with_users = "with_users" in args and args.get("with_users") != 'false'
+    with_users = args.get("with_users", False)
 
     db = get_db_read_replica()
     with db.scoped_session() as session:

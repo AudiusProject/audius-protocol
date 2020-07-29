@@ -30,12 +30,12 @@ async function registerLocalService (audiusLibs, serviceType, serviceEndpoint, a
 
   try {
     // Register service
-    console.log(`\nregistering service ${serviceType} ${serviceEndpoint}`)
+    console.log(`registering service ${serviceType} ${serviceEndpoint}`)
     let tx = await audiusLibs.ethContracts.ServiceProviderFactoryClient.register(
       serviceType,
       serviceEndpoint,
       initialTokenInAudWeiBN)
-    console.dir(tx, { depth: 5 })
+    console.log(`registered service ${serviceType} ${serviceEndpoint} - ${tx.txReceipt.transactionHash}`)
   } catch (e) {
     if (!e.toString().includes('already registered')) {
       console.log(e)

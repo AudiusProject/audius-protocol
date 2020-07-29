@@ -26,10 +26,8 @@ def get_playlists(args):
 
             # playlist ids filter if the optional query param is passed in
             if "playlist_id" in args:
-                playlist_id_str_list = args.get("playlist_id")
-                playlist_id_list = []
+                playlist_id_list = args.get("playlist_id")
                 try:
-                    playlist_id_list = [int(y) for y in playlist_id_str_list]
                     playlist_query = playlist_query.filter(Playlist.playlist_id.in_(playlist_id_list))
                 except ValueError as e:
                     raise exceptions.ArgumentError("Invalid value found in playlist id list", e)
@@ -77,7 +75,7 @@ def get_playlists(args):
                 current_user_id
             )
 
-            if "with_users" in args and args.get("with_users") != 'false':
+            if args.get("with_users", False):
                 user_id_list = get_users_ids(playlists)
                 users = get_users_by_id(session, user_id_list)
                 for playlist in playlists:

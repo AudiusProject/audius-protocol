@@ -17,18 +17,9 @@ def get_feed(args):
     feed_results = []
     db = get_db_read_replica()
 
-    # filter should be one of ["all", "reposts", "original"]
-    # empty filter value results in "all"
-    if "filter" in args and args.get("filter") in ["all", "repost", "original"]:
-        feed_filter = args.get("filter")
-    else:
-        feed_filter = "all"
-
+    feed_filter = args.get("filter")
     # Allow for fetching only tracks
-    if 'tracks_only' in args and args.get('tracks_only') != 'false':
-        tracks_only = True
-    else:
-        tracks_only = False
+    tracks_only = args.get('tracks_only', False)
 
     # Current user - user for whom feed is being generated
     current_user_id = get_current_user_id()
