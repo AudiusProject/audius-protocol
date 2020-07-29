@@ -35,7 +35,7 @@ async function registerLocalService (audiusLibs, serviceType, serviceEndpoint, a
       serviceType,
       serviceEndpoint,
       initialTokenInAudWeiBN)
-    console.log(`registered service ${serviceType} ${serviceEndpoint}`)
+    console.log(`registered service ${serviceType} ${serviceEndpoint} - ${tx.txReceipt.transactionHash}`)
   } catch (e) {
     if (!e.toString().includes('already registered')) {
       console.log(e)

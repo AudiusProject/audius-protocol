@@ -14,7 +14,7 @@ async function distributeTokens (audiusLibs, amountOfAUDS) {
   await Promise.all(ethAccounts.map(async (account) => {
     if (account === ethAccounts[0]) { return }
     let tx = await audiusLibs.ethContracts.AudiusTokenClient.transfer(account, initialTokenInAudWeiBN)
-    console.log(`Transferred ${amountOfAUDS} to ${account}`)
+    console.log(`${tx.txReceipt.transactionHash} Transferred ${amountOfAUDS} to ${account}`)
   }))
   for (const account of ethAccounts) {
     if (account === ethAccounts[0]) { continue }
