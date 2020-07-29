@@ -76,7 +76,7 @@ async function crossCnodeAuth (req, res, next) {
     // Fetch artist replica set from chain
     let artistReplicaSet
     try {
-      artistReplicaSet = await _getCreatorNodeEndpoints(req, artistWallet)
+      artistReplicaSet = await getCreatorNodeEndpoints(req, artistWallet)
     } catch (e) {
       return sendResponse(req, res, errorResponseServerError(e))
     }
