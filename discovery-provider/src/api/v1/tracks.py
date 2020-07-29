@@ -1,7 +1,6 @@
 from urllib.parse import urljoin
 import logging  # pylint: disable=C0302
 from flask import redirect
-from flask.globals import request
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
@@ -16,6 +15,7 @@ import json
 from src.utils.config import shared_config
 from flask.json import dumps
 import functools
+from src.utils.redis_cache import cached
 
 
 REDIS_URL = shared_config["redis"]["url"]
@@ -23,49 +23,6 @@ REDIS = redis.Redis.from_url(url=REDIS_URL)
 
 logger = logging.getLogger(__name__)
 ns = Namespace('tracks', description='Track related operations')
-
-# Redis Key Convention:
-# API_V1:path:queryparams:headers
-cache_prefix = "API_V1_ROUTE"
-exclude_param_set = {"app_name"}
-required_headers_set = {"X-User-ID"}
-default_ttl_sec = 60
-
-def cached(**kwargs):
-    ttl_sec = kwargs["ttl_sec"] if "ttl_sec" in kwargs else default_ttl_sec
-    def outer_wrap(func):
-        @functools.wraps(func)
-        def inner_wrap(*args, **kwargs):
-            path = request.path
-            req_args = request.args.items()
-            req_args = filter(lambda x: x[0] not in exclude_param_set, req_args)
-            req_args = sorted(req_args)
-            req_args = "&".join(["{}={}".format(x[0], x[1]) for x in req_args])
-            headers = []
-            for required_header in required_headers_set:
-                val = request.headers.get(required_header)
-                if val:
-                    headers.append((required_header, val))
-            headers_str = "&".join(["{}={}".format(x[0], x[1]) for x in headers])
-
-            key = f"{cache_prefix}:{path}:{req_args}:{headers_str}"
-
-            logger.warn(f"key: {key}")
-            cached_resp = REDIS.get(key)
-
-            if (cached_resp):
-                logger.warn("GOT CACHED RESP!")
-                deserialized = json.loads(cached_resp)
-                return deserialized, 200
-
-            resp, status = func(*args, **kwargs)
-            if status == 200:
-                serialized = dumps(resp)
-                logger.warning("Caching for {}".format(ttl_sec))
-                REDIS.set(key, serialized, ttl_sec)
-            return resp, status
-        return inner_wrap
-    return outer_wrap
 
 track_response = make_response("track_response", ns, fields.Nested(track))
 tracks_response = make_response(
