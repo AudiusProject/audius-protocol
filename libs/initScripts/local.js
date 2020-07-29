@@ -291,7 +291,7 @@ const _writeConfigFile = async (readPath, writePath, delegateOwnerWallet, delega
     } else if (endpoint && (line.includes('creatorNodeEndpoint'))) {
       output.push(endpointLine)
       endpointFound = true
-    }else {
+    } else {
       output.push(line)
     }
   }

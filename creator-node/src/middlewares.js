@@ -60,7 +60,7 @@ async function crossCnodeAuth (req, res, next) {
     // Fetch own service endpoint from local config or eth contract
     let serviceEndpoint
     try {
-      serviceEndpoint = await _getOwnEndpoint(req)
+      serviceEndpoint = await getOwnEndpoint(req)
     } catch (e) {
       return sendResponse(req, res, errorResponseServerError(e))
     }
