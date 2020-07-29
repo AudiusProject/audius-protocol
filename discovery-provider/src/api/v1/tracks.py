@@ -47,7 +47,7 @@ class TrackStream(Resource):
             abort_not_found(encoded_id, ns)
 
         primary_node = creator_nodes[0]
-        stream_url = urljoin(primary_node, 'tracks/stream/{}'.format(track_id))
+        stream_url = urljoin(primary_node, 'tracks/stream/{}'.format(encoded_id))
         return redirect(stream_url)
 
 
