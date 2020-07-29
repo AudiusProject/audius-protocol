@@ -32,7 +32,7 @@ tracks_response = make_response(
 @ns.route('/<string:track_id>')
 class Track(Resource):
     @ns.marshal_with(track_response)
-    @cached(ttl_sec=5)
+    @cache(ttl_sec=5)
     def get(self, track_id):
         """Fetch a track"""
         encoded_id = decode_with_abort(track_id, ns)
@@ -46,7 +46,7 @@ class Track(Resource):
 
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
-    @cached(ttl_sec=5)
+    @cache(ttl_sec=5)
     def get(self, track_id):
         """Redirect to track mp3"""
         encoded_id = decode_with_abort(track_id, ns)
@@ -71,7 +71,7 @@ track_search_result = make_response(
 class TrackSearchResult(Resource):
     @ns.marshal_with(track_search_result)
     @ns.expect(search_parser)
-    @cached(ttl_sec=60)
+    @cache(ttl_sec=60)
     def get(self):
         args = search_parser.parse_args()
         query = args["query"]

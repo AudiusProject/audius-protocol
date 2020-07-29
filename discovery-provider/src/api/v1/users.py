@@ -19,7 +19,7 @@ user_response = make_response("user_response", ns, fields.Nested(user_model))
 @ns.route("/<string:user_id>")
 class User(Resource):
     @ns.marshal_with(user_response)
-    @cached(ttl_sec=5)
+    @cache(ttl_sec=5)
     def get(self, user_id):
         """Fetch a single user"""
         formatted_id = decode_with_abort(user_id, ns)
@@ -34,7 +34,7 @@ tracks_response = make_response("tracks_response", ns, fields.List(fields.Nested
 @ns.route("/<string:user_id>/tracks")
 class TrackList(Resource):
     @ns.marshal_with(tracks_response)
-    @cached(ttl_sec=5)
+    @cache(ttl_sec=5)
     def get(self, user_id):
         """Fetch a list of tracks for a user."""
         user_id = decode_with_abort(user_id, ns)
@@ -49,7 +49,7 @@ favorites_response = make_response("favorites_response", ns, fields.List(fields.
 @ns.route("/<string:user_id>/favorites")
 class FavoritedTracks(Resource):
     @ns.marshal_with(favorites_response)
-    @cached(ttl_sec=5)
+    @cache(ttl_sec=5)
     def get(self, user_id):
         """Fetch favorited tracks for a user."""
         user_id = decode_with_abort(user_id, ns)

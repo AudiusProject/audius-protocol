@@ -19,7 +19,7 @@ playlists_response = make_response("playlist_response", ns, fields.List(fields.N
 @ns.route("/<string:playlist_id>")
 class Playlist(Resource):
     @ns.marshal_with(playlists_response)
-    @cached(ttl_sec=5)
+    @cache(ttl_sec=5)
     def get(self, playlist_id):
         """Fetch a playlist"""
         playlist_id = decode_with_abort(playlist_id, ns)
@@ -34,7 +34,7 @@ playlist_tracks_response = make_response("playlist_tracks_response", ns, fields.
 @ns.route("/<string:playlist_id>/tracks")
 class PlaylistTracks(Resource):
     @ns.marshal_with(playlist_tracks_response)
-    @cached(ttl_sec=5)
+    @cache(ttl_sec=5)
     def get(self, playlist_id):
         """Fetch tracks within a playlist"""
         playlist_id = decode_with_abort(playlist_id, ns)
@@ -52,7 +52,7 @@ playlist_search_result = make_response("playlist_search_result", ns, fields.List
 class PlaylistSearchResult(Resource):
     @ns.marshal_with(playlist_search_result)
     @ns.expect(search_parser)
-    @cached(ttl_sec=5)
+    @cache(ttl_sec=5)
     def get(self):
         """Search for a playlist"""
         args = search_parser.parse_args()

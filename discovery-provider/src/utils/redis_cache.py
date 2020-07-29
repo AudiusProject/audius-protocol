@@ -37,7 +37,7 @@ def extract_key():
     return key
 
 # Cache decorator.
-def cached(**kwargs):
+def cache(**kwargs):
     ttl_sec = kwargs["ttl_sec"] if "ttl_sec" in kwargs else default_ttl_sec
     def outer_wrap(func):
         @functools.wraps(func)
@@ -46,14 +46,12 @@ def cached(**kwargs):
             cached_resp = REDIS.get(key)
 
             if (cached_resp):
-                logger.warn("GOT CACHED RESP!")
                 deserialized = json.loads(cached_resp)
                 return deserialized, 200
 
             resp, status = func(*args, **kwargs)
             if status == 200:
                 serialized = dumps(resp)
-                logger.warning("Caching for {}".format(ttl_sec))
                 REDIS.set(key, serialized, ttl_sec)
             return resp, status
         return inner_wrap
