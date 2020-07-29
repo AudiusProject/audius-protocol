@@ -35,7 +35,8 @@ async function registerLocalService (audiusLibs, serviceType, serviceEndpoint, a
       serviceType,
       serviceEndpoint,
       initialTokenInAudWeiBN)
-    console.dir(tx, { depth: 5 })
+    // console.dir(tx, { depth: 5 })
+    console.log(`\nregistered service ${serviceType} ${serviceEndpoint}`)
   } catch (e) {
     if (!e.toString().includes('already registered')) {
       console.log(e)
