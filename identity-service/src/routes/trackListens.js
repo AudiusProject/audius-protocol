@@ -459,10 +459,10 @@ module.exports = function (app) {
       return errorResponseBadRequest(`Provided limit ${limit} too large (must be <= 5000)`)
     }
 
-    let createdAtMoment
+    let updatedAtMoment
     try {
-      createdAtMoment = moment.unix(startTime)
-      if (!createdAtMoment.isValid()) throw new Error()
+      updatedAtMoment = moment.unix(startTime)
+      if (!updatedAtMoment.isValid()) throw new Error()
     } catch (e) {
       return errorResponseBadRequest(`Provided startTime ${startTime} not parseable`)
     }
@@ -470,15 +470,16 @@ module.exports = function (app) {
     const userListens = await models.UserTrackListen.findAll({
       attributes: { exclude: ['id'] },
       where: {
-        createdAt: { [models.Sequelize.Op.gt]: createdAtMoment.toDate() }
+        updatedAt: { [models.Sequelize.Op.gt]: updatedAtMoment.toDate() }
       },
       order: [['createdAt', 'ASC'], ['trackId', 'ASC']],
       limit
     })
 
     const anonListens = await models.TrackListenCount.findAll({
+      attributes: ['trackId', ['listens', 'count'], 'createdAt', 'updatedAt'],
       where: {
-        createdAt: { [models.Sequelize.Op.gt]: createdAtMoment.toDate() }
+        updatedAt: { [models.Sequelize.Op.gt]: updatedAtMoment.toDate() }
       },
       order: [['createdAt', 'ASC'], ['trackId', 'ASC']],
       limit

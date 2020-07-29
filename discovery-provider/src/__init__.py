@@ -21,6 +21,7 @@ import alembic.config  # pylint: disable=E0611
 
 from src import exceptions
 from src.queries import queries, search, health_check, trending, notifications
+from src.api.v1 import api as api_v1
 from src.utils import helpers, config
 from src.utils.db_session import SessionManager
 from src.utils.config import config_files, shared_config, ConfigIni
@@ -250,6 +251,9 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(search.bp)
     app.register_blueprint(notifications.bp)
     app.register_blueprint(health_check.bp)
+
+    app.register_blueprint(api_v1.bp)
+
     return app
 
 
@@ -265,7 +269,7 @@ def configure_celery(flask_app, celery, test_config=None):
 
     # Update celery configuration
     celery.conf.update(
-        imports=["src.tasks.index", "src.tasks.index_blacklist", "src.tasks.index_cache"],
+        imports=["src.tasks.index", "src.tasks.index_blacklist", "src.tasks.index_cache", "src.tasks.index_plays"],
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
@@ -278,6 +282,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_cache": {
                 "task": "update_discovery_cache",
                 "schedule": timedelta(seconds=60)
+            },
+            "update_play_count": {
+                "task": "update_play_count",
+                "schedule": timedelta(seconds=5)
             }
         },
         task_serializer="json",

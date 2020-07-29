@@ -32,6 +32,7 @@ const initAudiusLibs = async () => {
   const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
     ? new Set(config.get('discoveryProviderWhitelist').split(','))
     : null
+  const identityService = config.get('identityService')
 
   const audiusLibs = new AudiusLibs({
     ethWeb3Config: AudiusLibs.configEthWeb3(
@@ -49,6 +50,8 @@ const initAudiusLibs = async () => {
       }
     },
     discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),
+    // If an identity service config is present, set up libs with the connection, otherwise do nothing
+    identityServiceConfig: identityService ? AudiusLibs.configIdentityService(identityService) : undefined,
     isDebug: config.get('creatorNodeIsDebug')
   })
   await audiusLibs.init()

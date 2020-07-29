@@ -25,7 +25,7 @@
   "delegatePrivateKey": "",
   "spID": 0,
 
-  "ethProviderUrl": "http://docker.for.mac.localhost:8546",
+  "ethProviderUrl": "http://audius_ganache_cli_eth_contracts:8545",
   "ethNetworkId": "",
   "ethTokenAddress": "",
   "ethRegistryAddress": "",
@@ -34,7 +34,8 @@
   "spOwnerWalletIndex": 1,
   "spOwnerWallet": "",
   "debounceTime": 30000,
-  "discoveryProviderWhitelist": "http://docker.for.mac.localhost:5000",
+  "discoveryProviderWhitelist": "http://audius-disc-prov_web-server_1:5000",
+  "identityService": "http://audius-identity-service_identity-service_1:7000",
   "userBlacklist": "",
   "trackBlacklist": "",
   "dataRegistryAddress": "",

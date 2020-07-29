@@ -17,6 +17,11 @@ class ArgumentError(Base):
     pass # pylint: disable=W0107
 
 
+class NotFoundError(Base):
+    ''' Invalid arguments passed to request '''
+    pass # pylint: disable=W0107
+
+
 def register_exception_handlers(flask_app):
     # catch exceptions thrown by us and propagate error message through
     @flask_app.errorhandler(Base)

@@ -338,6 +338,12 @@ const config = convict({
     env: 'discoveryProviderWhitelist',
     default: ''
   },
+  identityService: {
+    doc: 'Identity service endpoint to record creator-node driven plays against',
+    format: String,
+    env: 'identityService',
+    default: ''
+  },
   /** Manual content blacklists */
   userBlacklist: {
     doc: 'Comma-separated list of user blockchain IDs that creator node should avoid serving / storing',
