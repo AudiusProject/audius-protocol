@@ -2,10 +2,12 @@ const request = require('supertest')
 const fs = require('fs')
 const path = require('path')
 const assert = require('assert')
+const sinon = require('sinon')
 
 const defaultConfig = require('../default-config.json')
 
 const blacklistManager = require('../src/blacklistManager')
+const TranscodingQueue = require('../src/TranscodingQueue')
 
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
@@ -31,6 +33,7 @@ describe('test Tracks', function () {
   })
 
   afterEach(async () => {
+    sinon.restore()
     await server.close()
   })
 
@@ -380,5 +383,100 @@ describe('test Tracks', function () {
       .set('X-Session-ID', session)
       .send({ blockchainTrackId: 1, blockNumber: 10, metadataFileUUID: resp2.body.metadataFileUUID })
       .expect(200)
+  })
+})
+
+describe('test /track_content with actual ipfsClient', function () {
+  let app, server, session, ipfs, libsMock
+
+  beforeEach(async () => {
+    ipfs = require('../src/ipfsClient').ipfs
+    libsMock = getLibsMock()
+
+    const appInfo = await getApp(ipfs, libsMock, blacklistManager)
+    await blacklistManager.blacklist(ipfs)
+
+    app = appInfo.app
+    server = appInfo.server
+    session = await createStarterCNodeUser()
+  })
+
+  afterEach(async () => {
+    sinon.restore()
+    await server.close()
+  })
+
+  it('sends server error response if segmenting fails', async function () {
+    const file = fs.readFileSync(testAudioFilePath)
+    sinon.stub(TranscodingQueue, 'segment').rejects(new Error('failed to segment'))
+
+    await request(app)
+      .post('/track_content')
+      .attach('file', file, { filename: 'fname.mp3' })
+      .set('Content-Type', 'multipart/form-data')
+      .set('X-Session-ID', session)
+      .expect(500)
+  })
+
+  it('sends server error response if transcoding fails', async function () {
+    const file = fs.readFileSync(testAudioFilePath)
+    sinon.stub(TranscodingQueue, 'transcode320').rejects(new Error('failed to transcode'))
+
+    await request(app)
+      .post('/track_content')
+      .attach('file', file, { filename: 'fname.mp3' })
+      .set('Content-Type', 'multipart/form-data')
+      .set('X-Session-ID', session)
+      .expect(500)
+  })
+
+  it('should upload 32 segments and 1 320kbps copy to storagePath', async function () {
+    const file = fs.readFileSync(testAudioFilePath)
+    libsMock.User.getUsers.exactly(4)
+
+    const resp = await request(app)
+      .post('/track_content')
+      .attach('file', file, { filename: 'fname.mp3' })
+      .set('Content-Type', 'multipart/form-data')
+      .set('X-Session-ID', session)
+      .expect(200)
+
+    let storagePath = defaultConfig['storagePath']
+    storagePath = storagePath.slice(0, 1) === '/' ? '.' + storagePath : storagePath
+
+    // check if track UUID dir exists
+    const originalTrackUUID = resp.body.source_file.slice(0, -4) // trim off .mp3
+    const originalTrackUUIDPath = path.join(storagePath, originalTrackUUID)
+    assert.ok(fs.existsSync(originalTrackUUIDPath))
+
+    // check that the track UUID dir contains the transcoded copy
+    const transcodedTrackPath = path.join(originalTrackUUIDPath, originalTrackUUID + '-dl.mp3')
+    assert.ok(fs.existsSync(transcodedTrackPath))
+
+    // check that the track UUID dir contains the source file
+    const sourceFile = resp.body.source_file
+    const sourceFilePath = path.join(originalTrackUUIDPath, sourceFile)
+    assert.ok(fs.existsSync(sourceFilePath))
+
+    // check that there are 32 segments in <uuid>/segments and that they follow
+    // the naming convention 'segment<3 digit #>.ts'
+    const segmentsPath = path.join(originalTrackUUIDPath, 'segments')
+    fs.readdir(segmentsPath, (err, files) => {
+      if (err) assert.fail(err.message)
+      assert.deepStrictEqual(files.length, 32)
+
+      for (let i = 0; i < 32; i++) {
+        const indexSuffix = ('000' + i).slice(-3)
+        assert.deepStrictEqual(files[i], `segment${indexSuffix}.ts`)
+      }
+    })
+
+    // check that there are 32 CIDs that have been added to fs
+    const segmentCIDs = resp.body.track_segments
+    assert.deepStrictEqual(segmentCIDs.length, 32)
+    segmentCIDs.map(cid => {
+      const cidPath = path.join(storagePath, cid.multihash)
+      assert.ok(fs.existsSync(cidPath))
+    })
   })
 })
