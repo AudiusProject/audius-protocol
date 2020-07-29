@@ -24,24 +24,33 @@ REDIS = redis.Redis.from_url(url=REDIS_URL)
 logger = logging.getLogger(__name__)
 ns = Namespace('tracks', description='Track related operations')
 
-# def with_redis(fn):
-#     def wrapped():
-#         key = request.url
-#         cached = REDIS.get(key)
-#         if cached:
-#             return success_response(json.loads(cached))
-#         resp = fn()
-#         # TODO: Only return for 200 status codes
-#         REDIS.set(key, resp)
-#     return wrapped
+# Redis Key Convention:
+# API_V1:path:queryparams:headers
+cache_prefix = "API_V1_ROUTE"
+exclude_param_set = {"app_name"}
+required_headers_set = {"X-User-ID"}
+default_ttl_sec = 60
 
-cache_prefix = "API_V1:"
 def cached(**kwargs):
-    ttl_sec = kwargs["ttl_sec"] if "ttl_sec" in kwargs else None
+    ttl_sec = kwargs["ttl_sec"] if "ttl_sec" in kwargs else default_ttl_sec
     def outer_wrap(func):
         @functools.wraps(func)
         def inner_wrap(*args, **kwargs):
-            key = request.url
+            path = request.path
+            req_args = request.args.items()
+            req_args = filter(lambda x: x[0] not in exclude_param_set, req_args)
+            req_args = sorted(req_args)
+            req_args = "&".join(["{}={}".format(x[0], x[1]) for x in req_args])
+            headers = []
+            for required_header in required_headers_set:
+                val = request.headers.get(required_header)
+                if val:
+                    headers.append((required_header, val))
+            headers_str = "&".join(["{}={}".format(x[0], x[1]) for x in headers])
+
+            key = f"{cache_prefix}:{path}:{req_args}:{headers_str}"
+
+            logger.warn(f"key: {key}")
             cached_resp = REDIS.get(key)
 
             if (cached_resp):
