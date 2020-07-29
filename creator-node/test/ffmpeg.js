@@ -75,9 +75,10 @@ describe('test segmentFile', () => {
       assert.deepStrictEqual(files.length, 32)
 
       const allSegmentsSet = new Set(files)
-      files.map(file => {
-        // check that the segment exists
-        assert.ok(fs.existsSync(path.join(fileDir, 'segments', file)))
+      files.map((file, i) => {
+        // check that the segment follows naming convention
+        const indexSuffix = ('000' + i).slice(-3)
+        assert.deepStrictEqual(file, `segment${indexSuffix}.ts`)
 
         // check that the segment is proper by comparing its buffer to test assets
         const testGeneratedSegmentBuf = fs.readFileSync(path.join(fileDir, 'segments', file))

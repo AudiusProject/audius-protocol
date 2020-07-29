@@ -4,6 +4,7 @@ const path = require('path')
 const assert = require('assert')
 const sinon = require('sinon')
 
+const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
 
 const blacklistManager = require('../src/blacklistManager')
@@ -441,7 +442,7 @@ describe('test /track_content with actual ipfsClient', function () {
       .set('X-Session-ID', session)
       .expect(200)
 
-    let storagePath = defaultConfig['storagePath']
+    let storagePath = config.get('storagePath')
     storagePath = storagePath.slice(0, 1) === '/' ? '.' + storagePath : storagePath
 
     // check if track UUID dir exists
