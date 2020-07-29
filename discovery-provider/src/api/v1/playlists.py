@@ -8,7 +8,7 @@ from src.queries.query_helpers import get_current_user_id
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track, make_response, success_response, search_parser
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
-from src.utils.redis_cache import cached
+from src.utils.redis_cache import cache
 
 logger = logging.getLogger(__name__)
 

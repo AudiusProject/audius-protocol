@@ -16,6 +16,7 @@ from src.utils.config import shared_config
 from flask.json import dumps
 import functools
 from src.utils.redis_cache import cached
+from src.utils.redis_cache import cache
 
 
 REDIS_URL = shared_config["redis"]["url"]

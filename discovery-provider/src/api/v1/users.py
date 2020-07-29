@@ -9,7 +9,7 @@ from flask_restx import Resource, Namespace, fields, reqparse
 from src.queries.get_tracks import get_tracks
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_favorite, extend_track, extend_user, make_response, search_parser, success_response
 from .models.tracks import track
-from src.utils.redis_cache import cached
+from src.utils.redis_cache import cache
 
 logger = logging.getLogger(__name__)
 
