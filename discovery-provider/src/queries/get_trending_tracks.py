@@ -2,7 +2,6 @@ import logging  # pylint: disable=C0302
 import datetime
 from dateutil.parser import parse
 
-from src import exceptions
 from src.models import Track
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
@@ -12,16 +11,17 @@ from src.tasks.generate_trending import generate_trending
 
 logger = logging.getLogger(__name__)
 
-N=1
-a=max
-M=pow
-F=50
-O=1
-R=0.25
-i=0.01
-q=5.0
-T={'week':7,'month':30,'year':365}
-def z(time,track):
+N = 1
+a = max
+M = pow
+F = 50
+O = 1
+R = 0.25
+i = 0.01
+q = 5.0
+T = {'week':7, 'month':30, 'year':365}
+def z(time, track):
+    # pylint: disable=W,C,R
     E=track['listens']
     e=track['windowed_repost_count']
     t=track['repost_count']
