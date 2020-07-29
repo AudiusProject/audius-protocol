@@ -46,6 +46,7 @@ class Track(Resource):
 
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
+    @cached(ttl_sec=5)
     def get(self, track_id):
         """Redirect to track mp3"""
         encoded_id = decode_with_abort(track_id, ns)
@@ -70,6 +71,7 @@ track_search_result = make_response(
 class TrackSearchResult(Resource):
     @ns.marshal_with(track_search_result)
     @ns.expect(search_parser)
+    @cached(ttl_sec=60)
     def get(self):
         args = search_parser.parse_args()
         query = args["query"]

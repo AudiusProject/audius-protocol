@@ -20,7 +20,6 @@ exclude_param_set = {"app_name"}
 required_headers_set = {"X-User-ID"}
 default_ttl_sec = 60
 
-
 def extract_key():
     path = request.path
     req_args = request.args.items()
