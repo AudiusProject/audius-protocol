@@ -106,7 +106,7 @@ class NotificationProcessor {
     // Email notification queue
     this.emailQueue.process(async (job, done) => {
       logger.info('processEmailNotifications')
-      await processEmailNotifications(expressApp, audiusLibs)
+      // await processEmailNotifications(expressApp, audiusLibs)
       await processDownloadAppEmail(expressApp, audiusLibs)
       done()
     })
