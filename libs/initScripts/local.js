@@ -56,7 +56,9 @@ if (args.length < 3) {
 const run = async () => {
   try {
     let audiusLibs = await initAudiusLibs(true)
+    let web3 = audiusLibs.web3Manager.getWeb3()
     let ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
+    const accounts = await web3.eth.getAccounts()
     const ethAccounts = await ethWeb3.eth.getAccounts()
     let envPath
 
@@ -126,6 +128,63 @@ const run = async () => {
       case 'query-sps':
         await queryLocalServices(audiusLibs, serviceTypeList)
         break
+      
+      case 'add-cnode-delegatewallet-data-contracts': {
+        // Update arbitrary cnode
+        const spID = args[3]
+        if (spID === undefined) {
+          throw new Error('add-cnode-delegatewallet-data-contracts requires a spID # as the second arg')
+        }
+
+        const zeroAddress = '0x0000000000000000000000000000000000000000'
+        let cnType = 'creator-node'
+        let spClient = audiusLibs.ethContracts.ServiceProviderFactoryClient 
+        let spInfo = await spClient.getServiceProviderInfo(cnType, spID)
+
+        if (spInfo.owner === zeroAddress) {
+          console.log(`${spID} invalid, no matching provider found`)
+          return
+        }
+
+        let rsManagerClient = audiusLibs.contracts.UserReplicaSetManagerClient 
+
+        let currentWallet = await rsManagerClient.getCreatorNodeWallet(spID)
+        if (currentWallet === spInfo.delegateOwnerWallet) {
+          console.log(`Already up to date! spID=${spID} - delegateOwnerWallet=${currentWallet} matches on eth-contracts and data-contracts`)
+          return
+        }
+
+        let allCnodes = await spClient.getServiceProviderList(cnType)
+        let otherCnodes = allCnodes.filter(x=>x.owner != spInfo.owner)
+        if (otherCnodes.length === 0) {
+          let deployer = accounts[0]
+          console.log(`No cnodes found, registering from deployer ${deployer}`)
+          // Register from deployer libs instance
+          await rsManagerClient.addOrUpdateCreatorNode(spID, spInfo.delegateOwnerWallet, 0)
+        }
+
+        console.log(otherCnodes)
+        for (const n of otherCnodes) {
+          console.log(`other cnode`)
+          console.log(n)
+          let nodeSPId = n.spID
+          let nodeWalletFromDataContracts = await rsManagerClient.getCreatorNodeWallet(nodeSPId) 
+          if (
+            nodeWalletFromDataContracts != zeroAddress &&
+            nodeWalletFromDataContracts == n.delegateOwnerWallet
+          ) {
+            console.log(`Valid sender found`)
+            let senderWallet = nodeWalletFromDataContracts
+            let otherCnodeLibs = await initAudiusLibs(true, null, senderWallet)
+            await otherCnodeLibs.contracts.UserReplicaSetManagerClient.addOrUpdateCreatorNode(
+              spID,
+              spInfo.delegateOwnerWallet,
+              nodeSPId
+            )
+          }
+        }
+        break
+      }
 
       case 'update-delegate-wallet': {
         console.log(`WARNING: This function update delegate wallet and creator node endpoint in each service config`)

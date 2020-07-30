@@ -74,13 +74,17 @@ async function queryLocalServices (audiusLibs, serviceTypeList) {
   if (!audiusLibs) throw new Error('audiusLibs is not defined')
 
   const { ethAccounts } = await getEthWeb3AndAccounts(audiusLibs)
+  let cnodesInfoList = []
 
+  // Iterate over all services registered in eth-contracts
+  console.log('----querying service providers')
   for (const spType of serviceTypeList) {
     console.log(`\n${spType}`)
     let spList = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(spType)
     for (const sp of spList) {
       console.log(sp)
       const { spID, type, endpoint } = sp
+
       let idFromEndpoint =
         await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(endpoint)
       console.log(`ID from endpoint: ${idFromEndpoint}`)
@@ -88,6 +92,11 @@ async function queryLocalServices (audiusLibs, serviceTypeList) {
         await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo(type, spID)
       let jsonInfoFromId = JSON.stringify(infoFromId)
       console.log(`Info from ID: ${jsonInfoFromId}`)
+
+      if (spType === 'creator-node') {
+        cnodesInfoList.push(infoFromId)
+      }
+
       let idsFromAddress =
         await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(
           ethAccounts[0],
@@ -97,7 +106,17 @@ async function queryLocalServices (audiusLibs, serviceTypeList) {
     let numProvs = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getTotalServiceTypeProviders(spType)
     console.log(`num ${spType}: ${numProvs}`)
   }
-  console.log('----querying service providers done')
+  console.log('----done querying service providers')
+
+  console.log('----querying data contracts')
+  for (const cnode of cnodesInfoList) {
+    console.log(cnode)
+    let id = cnode.spID
+    let delegateWalletFromData = await audiusLibs.contracts.UserReplicaSetManagerClient.getCreatorNodeWallet(id)
+    console.log(` spID ${id} - data-contracts delegateOwnerWallet ${delegateWalletFromData}`)
+    console.log(` spID ${id} - eth-contracts delegateOwnerWallet: ${cnode.delegateOwnerWallet}`)
+  }
+  console.log('----done querying data contracts')
 }
 
 module.exports = { getStakingParameters, registerLocalService, deregisterLocalService, queryLocalServices }
