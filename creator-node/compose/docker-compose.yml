@@ -24,6 +24,7 @@ services:
       - spOwnerWalletIndex=${SP_OWNER_WALLET_INDEX}
       - delegateOwnerWallet=${delegateOwnerWallet}
       - delegatePrivateKey=${delegatePrivateKey}
+      - creatorNodeEndpoint=${creatorNodeEndpoint}
       - port=${CREATOR_NODE_HOST_PORT}
     env_file:
       - ./env/base.env
