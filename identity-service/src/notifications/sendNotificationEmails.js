@@ -60,6 +60,10 @@ async function processEmailNotifications (expressApp, audiusLibs) {
     for (var announcement of appAnnouncements) {
       let announcementDate = moment(announcement['datePublished'])
       let timeSinceAnnouncement = moment.duration(currentTime.diff(announcementDate)).asHours()
+      // If the announcement is too old skip it, it's not necessary to process.
+      if (timeSinceAnnouncement > (weekInHours * 1.5)) {
+        continue
+      }
       let announcementEntityId = announcement['entityId']
       let id = announcement['id']
       let usersCreatedAfterAnnouncement = await models.User.findAll({
@@ -82,8 +86,11 @@ async function processEmailNotifications (expressApp, audiusLibs) {
           continue
         }
         if (liveEmailUsers.includes(user)) {
-          logger.info(`Announcements - ${id} | Live user ${user}`)
-          liveUsersWithPendingAnnouncements.push(user)
+          // As an added safety check, check only process if the announcement was made in the last hour
+          if (timeSinceAnnouncement < 1) {
+            logger.info(`Announcements - ${id} | Live user ${user}`)
+            liveUsersWithPendingAnnouncements.push(user)
+          }
         } else if (dailyEmailUsers.includes(user)) {
           if (timeSinceAnnouncement < (dayInHours * 1.5)) {
             logger.info(`Announcements - ${id} | Daily user ${user}, <1 day`)
