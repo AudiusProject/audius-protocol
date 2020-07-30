@@ -57,7 +57,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       // If the announcement is too old filter it out, it's not necessary to process.
       return timeSinceAnnouncement < (weekInHours * 1.5)
     })
-    logger.info({ appAnnouncements })
+
     // For each announcement, we generate a list of valid users
     // Based on the user's email frequency
     let liveUsersWithPendingAnnouncements = []
