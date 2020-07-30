@@ -129,6 +129,7 @@ const startApp = async () => {
       const recoveredSpID = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
         config.get('creatorNodeEndpoint')
       )
+      console.log(`Recovered ${recoveredSpID} for ${config.get('creatorNodeEndpoint')}`)
       config.set('spID', recoveredSpID)
     }
 

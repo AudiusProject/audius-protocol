@@ -1,7 +1,7 @@
 """add is_current index to ipld blacklist
 
 Revision ID: 626aa04489af
-Revises: 042c55d0efda
+Revises: b2b339a1e3b8
 Create Date: 2020-07-20 18:30:43.637217
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '626aa04489af'
-down_revision = '042c55d0efda'
+down_revision = 'b2b339a1e3b8'
 branch_labels = None
 depends_on = None
 

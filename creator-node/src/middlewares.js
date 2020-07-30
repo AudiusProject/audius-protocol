@@ -60,7 +60,7 @@ async function crossCnodeAuth (req, res, next) {
     // Fetch own service endpoint from local config or eth contract
     let serviceEndpoint
     try {
-      serviceEndpoint = await _getOwnEndpoint(req)
+      serviceEndpoint = await getOwnEndpoint(req)
     } catch (e) {
       return sendResponse(req, res, errorResponseServerError(e))
     }
@@ -76,7 +76,7 @@ async function crossCnodeAuth (req, res, next) {
     // Fetch artist replica set from chain
     let artistReplicaSet
     try {
-      artistReplicaSet = await _getCreatorNodeEndpoints(req, artistWallet)
+      artistReplicaSet = await getCreatorNodeEndpoints(req, artistWallet)
     } catch (e) {
       return sendResponse(req, res, errorResponseServerError(e))
     }
