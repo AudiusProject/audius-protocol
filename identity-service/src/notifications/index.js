@@ -11,7 +11,7 @@ const {
   calculateTrackListenMilestones,
   getHighestBlockNumber
 } = require('./utils')
-const { processEmailNotifications } = require('./sendNotificationEmails')
+// const { processEmailNotifications } = require('./sendNotificationEmails')
 const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
 const { pushAnnouncementNotifications } = require('./pushAnnouncementNotifications')
 const { notificationJobType, announcementJobType } = require('./constants')
