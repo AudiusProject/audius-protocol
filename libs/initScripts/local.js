@@ -128,13 +128,15 @@ const run = async () => {
         break
 
       case 'update-delegate-wallet': {
+        console.log(`WARNING: This function update delegate wallet and creator node endpoint in each service config`)
+        console.log(`This is intentional for our working branch to have the same surface area as master for service-commands`)
         // Update arbitrary cnode
         const serviceNumber = args[3]
         if (serviceNumber === undefined) throw new Error('update-delegate-wallet requires a service # as the second arg')
         envPath = '../creator-node/compose/env/commonEnv.sh'
         const account = ethAccounts[parseInt(serviceNumber)]
         let endpoint = makeCreatorNodeEndpoint(serviceNumber)
-        console.log(endpoint)
+        console.log(`Generated ${endpoint} for creatorNode ${serviceNumber}`)
         await _updateConfigFile(account, envPath, envPath, /* isShell */ true, endpoint)
         break
       }
