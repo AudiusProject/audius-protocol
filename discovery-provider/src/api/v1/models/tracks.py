@@ -15,7 +15,7 @@ track_segment = ns.model('track_segment', {
 })
 
 track_element = ns.model('track_element', {
-    "parent_track_id": fields.Integer(required=True)
+    "parent_track_id": fields.String(required=True)
 })
 
 remix_parent = ns.model('remix_parent', {
