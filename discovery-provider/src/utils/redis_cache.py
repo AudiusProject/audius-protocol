@@ -11,13 +11,11 @@ REDIS_URL = shared_config["redis"]["url"]
 REDIS = redis.Redis.from_url(url=REDIS_URL)
 
 # Redis Key Convention:
-# API_V1:path:queryparams:headers
+# API_V1:path:queryparams
 
 cache_prefix = "API_V1_ROUTE"
 # query params to always exclude from key construction
 exclude_param_set = {"app_name"}
-# headers to always include in key construction
-required_headers_set = {"X-User-ID"}
 default_ttl_sec = 60
 
 def extract_key():
@@ -26,18 +24,25 @@ def extract_key():
     req_args = filter(lambda x: x[0] not in exclude_param_set, req_args)
     req_args = sorted(req_args)
     req_args = "&".join(["{}={}".format(x[0], x[1]) for x in req_args])
-    headers = []
-    for required_header in required_headers_set:
-        val = request.headers.get(required_header)
-        if val:
-            headers.append((required_header, val))
-    headers_str = "&".join(["{}={}".format(x[0], x[1]) for x in headers])
-
-    key = f"{cache_prefix}:{path}:{req_args}:{headers_str}"
+    key = f"{cache_prefix}:{path}:{req_args}"
     return key
 
-# Cache decorator.
 def cache(**kwargs):
+    """
+    Cache decorator.
+    Should be called with `@cache(ttl_sec=123)`
+
+    Decorators in Python are just higher-order-functions that accept a function
+    as a single parameter, and return a function that wraps the input function.
+
+    In this case, because we need to pass kwargs into our decorator function,
+    we need an additional layer of wrapping; the outermost function accepts the kwargs,
+    and when called, returns the decorating function `outer_wrap`, which in turn returns
+    the wrapper input function, `inner_wrap`.
+
+    @functools.wraps simply ensures that if Python introspects `inner_wrap`, it refers to
+    `func` rather than `inner_wrap`.
+    """
     ttl_sec = kwargs["ttl_sec"] if "ttl_sec" in kwargs else default_ttl_sec
     def outer_wrap(func):
         @functools.wraps(func)
