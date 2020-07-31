@@ -309,6 +309,7 @@ const _updateUserReplicaSetManagerDelegateWallet = async (spID, defaultLibs) => 
     console.log(`No cnodes found, registering from deployer ${deployer}`)
     // Register from deployer libs instance
     await rsManagerClient.addOrUpdateCreatorNode(spID, spInfo.delegateOwnerWallet, 0)
+    return
   }
 
   // Iterate over all cnodes
