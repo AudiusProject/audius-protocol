@@ -21,7 +21,7 @@ module.exports = function (app) {
       multihash = fileResp.multihash
       fileUUID = fileResp.fileUUID
     } catch (e) {
-      return errorResponseBadRequest(`Could not save file to disk, ipfs, and/or db: ${e}`)
+      return errorResponseServerError(`Could not save file to disk, ipfs, and/or db: ${e}`)
     }
 
     return successResponse({ 'metadataMultihash': multihash, 'metadataFileUUID': fileUUID })

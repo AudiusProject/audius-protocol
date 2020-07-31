@@ -1,7 +1,11 @@
 const request = require('supertest')
 const assert = require('assert')
 const sinon = require('sinon')
+const path = require('path')
+const fs = require('fs')
 
+const ipfsClient = require('../src/ipfsClient')
+const config = require('../src/config')
 const fileManager = require('../src/fileManager')
 const BlacklistManager = require('../src/blacklistManager')
 
@@ -9,7 +13,6 @@ const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
-const { save } = require('../src/redis')
 
 describe('test AudiusUsers', function () {
   let app, server, session, ipfsMock, libsMock
@@ -70,6 +73,37 @@ describe('test AudiusUsers', function () {
       .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.metadataFileUUID })
       .expect(200)
   })
+})
+
+describe('tests /audius_users/metadata metadata upload with actual ipfsClient', async function () {
+  let app, server, session, libsMock, ipfs
+
+  // Will need a '.' in front of storagePath to look at current dir
+  // a '/' will search the root dir
+  before(async () => {
+    const originalStoragePath = config.get('storagePath')
+    if (originalStoragePath.slice(0, 1) === '/') {
+      const updatedStoragePath = '.' + originalStoragePath
+      config.set('storagePath', updatedStoragePath)
+    }
+  })
+
+  beforeEach(async () => {
+    ipfs = ipfsClient.ipfs
+    libsMock = getLibsMock()
+
+    const appInfo = await getApp(ipfs, libsMock, BlacklistManager)
+    await BlacklistManager.blacklist(ipfs)
+
+    app = appInfo.app
+    server = appInfo.server
+    session = await createStarterCNodeUser()
+  })
+
+  afterEach(async () => {
+    sinon.restore()
+    await server.close()
+  })
 
   it('should fail if metadatda is not found in request body', async function () {
     const resp = await request(app)
@@ -81,20 +115,33 @@ describe('test AudiusUsers', function () {
     assert.deepStrictEqual(resp.body.error, 'Internal server error') // should be specific?
   })
 
-  it.only('should fail if metadata was not properly saved to filesystem', async function () {
-    sinon.stub(fileManager, 'saveFileFromBuffer').rejects(new Error('saveFileFromBuffer failed'))
-    require('../src/routes/audiusUsers')
+  it('should throw error response if metadata route fails', async function () {
+    sinon.stub(ipfs, 'add').rejects(new Error('ipfs add failed!'))
 
+    const metadata = { metadata: 'spaghetti' }
     const resp = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', session)
-      .send({ metadata: 'spaghetti' })
+      .send(metadata)
       .expect(500)
 
-    assert.ok(resp.body.error.includes('Could not save file to disk, ipfs, and/or db'))
+    assert.deepStrictEqual(resp.body.error, 'Could not save file to disk, ipfs, and/or db: Error: ipfs add failed!')
   })
 
   it('successfully adds metadata to filesystem', async function () {
+    const metadata = { metadata: 'spaghetti' }
+    const resp = await request(app)
+      .post('/audius_users/metadata')
+      .set('X-Session-ID', session)
+      .send(metadata)
+      .expect(200)
 
+    // check that the metadata file was written to storagePath under its multihash
+    const metadataPath = path.join(config.get('storagePath'), resp.body.metadataMultihash)
+    assert.ok(fs.existsSync(metadataPath))
+
+    // check that the metadata file contents match the metadata specified
+    const metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
+    assert.ok(metadataFileData, 'spaghetti')
   })
 })
