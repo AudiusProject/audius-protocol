@@ -34,8 +34,6 @@ def get_tracks(args):
             )
 
         # Allow filtering of deletes
-        # Note: There is no standard for boolean url parameters, and any value (including 'false')
-        # will be evaluated as true, so an explicit check is made for true
         if "filter_deleted" in args:
             filter_deleted = args.get("filter_deleted")
             if filter_deleted:
