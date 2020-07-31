@@ -360,6 +360,12 @@ class Users extends Base {
 
     await this.creatorNode.setEndpoint(newPrimary)
 
+    // WORKING TEMP STUFF
+    // TODO: Synchronize data contracts
+    console.log(`TMP - Updating metadata ${newMetadata}`)
+
+    // END WORKING TEMP STUFF
+
     // Upload new metadata
     const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
       newMetadata
@@ -448,6 +454,7 @@ class Users extends Base {
     }
     if (metadata['creator_node_endpoint']) {
       addOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata['creator_node_endpoint']))
+      // TODO: When this changes, update UserReplicaSetManager
     }
 
     // Execute update promises concurrently
@@ -489,6 +496,7 @@ class Users extends Base {
         }
         if (key === 'creator_node_endpoint') {
           updateOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata['creator_node_endpoint']))
+          // TODO: When this changes, update UserReplicaSetManager
         }
       }
     }
