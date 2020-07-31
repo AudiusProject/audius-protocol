@@ -46,23 +46,20 @@ class RehydrateIpfsQueue {
         done(e)
       }
     })
-
-    this.addRehydrateIpfsFromFsTask = this.addRehydrateIpfsFromFsIfNecessaryTask.bind(this)
-    this.addRehydrateIpfsDirFromFsIfNecessaryTask = this.addRehydrateIpfsDirFromFsIfNecessaryTask.bind(this)
   }
 
   async logStatus (logContext, message) {
     const logger = genericLogger.child(logContext)
     const count = await this.queue.count()
-    logger.info(`RehydrateIpfsQueue: ${message}`)
-    logger.info(`RehydrateIpfsQueue: count: ${count}`)
+    logger.debug(`RehydrateIpfsQueue: ${message}`)
+    logger.debug(`RehydrateIpfsQueue: count: ${count}`)
   }
 
   async logError (logContext, message) {
     const logger = genericLogger.child(logContext)
     const count = await this.queue.count()
     logger.error(`RehydrateIpfsQueue error: ${message}`)
-    logger.info(`RehydrateIpfsQueue: count: ${count}`)
+    logger.debug(`RehydrateIpfsQueue: count: ${count}`)
   }
 
   /**
