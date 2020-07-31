@@ -38,7 +38,7 @@ def cache(**kwargs):
     In this case, because we need to pass kwargs into our decorator function,
     we need an additional layer of wrapping; the outermost function accepts the kwargs,
     and when called, returns the decorating function `outer_wrap`, which in turn returns
-    the wrapper input function, `inner_wrap`.
+    the wrapped input function, `inner_wrap`.
 
     @functools.wraps simply ensures that if Python introspects `inner_wrap`, it refers to
     `func` rather than `inner_wrap`.
