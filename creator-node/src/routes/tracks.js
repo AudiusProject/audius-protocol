@@ -11,6 +11,7 @@ const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
 const TranscodingQueue = require('../TranscodingQueue')
 const { getCID } = require('./files')
+const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 
 module.exports = function (app) {
@@ -463,14 +464,26 @@ module.exports = function (app) {
    * Gets a streamable mp3 link for a track by blockchainId. Supports range request headers.
    * @dev - Wrapper around getCID, which retrieves track given its CID.
    **/
-  app.get('/tracks/stream/:blockchainId', async (req, res) => {
+  app.get('/tracks/stream/:encodedId', handleResponse(async (req, res) => {
+    console.log("Hitting stream")
     const libs = req.app.get('audiusLibs')
     const delegateOwnerWallet = config.get('delegateOwnerWallet')
 
-    const blockchainId = req.params.blockchainId
-    if (!blockchainId) {
-      return errorResponseBadRequest('Please provide blockchainId')
+    const encodedId = req.params.encodedId
+    if (!encodedId) {
+      return errorResponseBadRequest('Please provide a track ID')
     }
+
+    // TODO: Handle if it doesn't work
+    const blockchainId = decode(encodedId)
+    console.log({blockchainId})
+    if (!blockchainId) {
+      console.log("HERE!!!")
+      return errorResponseBadRequest(`Invalid ID: ${encodedId}`)
+    }
+    console.log("DECODED!")
+    console.log({blockchainId})
+    // TODO: add error handling here
 
     const { trackUUID } = await models.Track.findOne({
       attributes: ['trackUUID'],
@@ -504,7 +517,7 @@ module.exports = function (app) {
     req.params.streamable = true
 
     return getCID(req, res)
-  })
+  }))
 
   /** List all unlisted tracks for a user */
   app.get('/tracks/unlisted', authMiddleware, handleResponse(async (req, res) => {
