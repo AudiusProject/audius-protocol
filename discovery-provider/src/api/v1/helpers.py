@@ -127,20 +127,8 @@ def decode_with_abort(identifier, namespace):
     return decoded
 
 def make_response(name, namespace, modelType):
-    version_metadata = namespace.model("version_metadata", {
-        "service": fields.String(required=True),
-        "version": fields.String(required=True)
-    })
-
     return namespace.model(name, {
         "data": modelType,
-        "latest_chain_block":	fields.Integer(required=True),
-        "latest_indexed_block":	fields.Integer(required=True),
-        "owner_wallet":	fields.Integer(required=True),
-        "signature": fields.String(required=True),
-        "success": fields.Boolean(required=True),
-        "timestamp": fields.String(required=True)	,
-        "version": fields.Nested(version_metadata, required=True),
     })
 
 
