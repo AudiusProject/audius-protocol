@@ -84,9 +84,9 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
     // 3.) created within the last 10 days
     const validUserAnnouncements = announcements
       .filter(a => (
-        moment(a.datePublished).isAfter(user.createdAt)
-        && moment(a.datePublished).isAfter(fromTime)
-        && moment(a.datePublished).isAfter(tenDaysAgo)
+        moment(a.datePublished).isAfter(user.createdAt) &&
+        moment(a.datePublished).isAfter(fromTime) &&
+        moment(a.datePublished).isAfter(tenDaysAgo)
       ))
 
     const userNotifications = mergeAudiusAnnoucements(validUserAnnouncements, filteredNotifications)
