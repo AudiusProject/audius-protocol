@@ -454,6 +454,13 @@ describe('test /track_content with actual ipfsClient', function () {
     const transcodedTrackPath = path.join(originalTrackUUIDPath, originalTrackUUID + '-dl.mp3')
     assert.ok(fs.existsSync(transcodedTrackPath))
 
+    // check that the generated transcoded track is the same as the transcoded track in /tests
+    const transcodedTrackAssetPath = path.join(__dirname, 'testTranscoded320Track.mp3')
+    const transcodedTrackAssetBuf = fs.readFileSync(transcodedTrackAssetPath)
+    const transcodedTrackTestBuf = fs.readFileSync(transcodedTrackPath)
+    assert.deepStrictEqual(transcodedTrackAssetBuf.compare(transcodedTrackTestBuf), 0)
+
+
     // check that the track UUID dir contains the source file
     const sourceFile = resp.body.source_file
     const sourceFilePath = path.join(originalTrackUUIDPath, sourceFile)
