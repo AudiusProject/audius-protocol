@@ -46,17 +46,23 @@ async function processEmailNotifications (expressApp, audiusLibs) {
     logger.info(`processEmailNotifications - ${liveEmailUsers.length} live users`)
     logger.info(`processEmailNotifications - ${dailyEmailUsers.length} daily users`)
     logger.info(`processEmailNotifications - ${weeklyEmailUsers.length} weekly users`)
+    let currentTime = moment.utc()
     let now = moment()
     let dayAgo = now.clone().subtract(1, 'days')
     let weekAgo = now.clone().subtract(7, 'days')
 
-    let appAnnouncements = expressApp.get('announcements')
+    let appAnnouncements = expressApp.get('announcements').filter(a => {
+      let announcementDate = moment(a['datePublished'])
+      let timeSinceAnnouncement = moment.duration(currentTime.diff(announcementDate)).asHours()
+      // If the announcement is too old filter it out, it's not necessary to process.
+      return timeSinceAnnouncement < (weekInHours * 1.5)
+    })
+
     // For each announcement, we generate a list of valid users
     // Based on the user's email frequency
     let liveUsersWithPendingAnnouncements = []
     let dailyUsersWithPendingAnnouncements = []
     let weeklyUsersWithPendingAnnouncements = []
-    let currentTime = moment.utc()
     for (var announcement of appAnnouncements) {
       let announcementDate = moment(announcement['datePublished'])
       let timeSinceAnnouncement = moment.duration(currentTime.diff(announcementDate)).asHours()
@@ -82,8 +88,11 @@ async function processEmailNotifications (expressApp, audiusLibs) {
           continue
         }
         if (liveEmailUsers.includes(user)) {
-          logger.info(`Announcements - ${id} | Live user ${user}`)
-          liveUsersWithPendingAnnouncements.push(user)
+          // As an added safety check, only process if the announcement was made in the last hour
+          if (timeSinceAnnouncement < 1) {
+            logger.info(`Announcements - ${id} | Live user ${user}`)
+            liveUsersWithPendingAnnouncements.push(user)
+          }
         } else if (dailyEmailUsers.includes(user)) {
           if (timeSinceAnnouncement < (dayInHours * 1.5)) {
             logger.info(`Announcements - ${id} | Daily user ${user}, <1 day`)
