@@ -1,11 +1,15 @@
 const request = require('supertest')
+const assert = require('assert')
+const sinon = require('sinon')
 
+const fileManager = require('../src/fileManager')
 const BlacklistManager = require('../src/blacklistManager')
 
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
+const { save } = require('../src/redis')
 
 describe('test AudiusUsers', function () {
   let app, server, session, ipfsMock, libsMock
@@ -23,6 +27,7 @@ describe('test AudiusUsers', function () {
   })
 
   afterEach(async () => {
+    sinon.restore()
     await server.close()
   })
 
@@ -64,5 +69,32 @@ describe('test AudiusUsers', function () {
       .set('X-Session-ID', session)
       .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.metadataFileUUID })
       .expect(200)
+  })
+
+  it('should fail if metadatda is not found in request body', async function () {
+    const resp = await request(app)
+      .post('/audius_users/metadata')
+      .set('X-Session-ID', session)
+      .send({ dummy: 'data' })
+      .expect(500)
+
+    assert.deepStrictEqual(resp.body.error, 'Internal server error') // should be specific?
+  })
+
+  it.only('should fail if metadata was not properly saved to filesystem', async function () {
+    sinon.stub(fileManager, 'saveFileFromBuffer').rejects(new Error('saveFileFromBuffer failed'))
+    require('../src/routes/audiusUsers')
+
+    const resp = await request(app)
+      .post('/audius_users/metadata')
+      .set('X-Session-ID', session)
+      .send({ metadata: 'spaghetti' })
+      .expect(500)
+
+    assert.ok(resp.body.error.includes('Could not save file to disk, ipfs, and/or db'))
+  })
+
+  it('successfully adds metadata to filesystem', async function () {
+
   })
 })
