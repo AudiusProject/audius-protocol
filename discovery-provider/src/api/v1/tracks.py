@@ -10,17 +10,9 @@ from src.api.v1.helpers import abort_not_found, decode_with_abort, encode_int_id
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_trending_tracks import get_trending_tracks
-import redis
-import json
 from src.utils.config import shared_config
 from flask.json import dumps
-import functools
-from src.utils.redis_cache import cached
 from src.utils.redis_cache import cache
-
-
-REDIS_URL = shared_config["redis"]["url"]
-REDIS = redis.Redis.from_url(url=REDIS_URL)
 
 logger = logging.getLogger(__name__)
 ns = Namespace('tracks', description='Track related operations')
@@ -28,7 +20,6 @@ ns = Namespace('tracks', description='Track related operations')
 track_response = make_response("track_response", ns, fields.Nested(track))
 tracks_response = make_response(
     "tracks_response", ns, fields.List(fields.Nested(track)))
-
 
 @ns.route('/<string:track_id>')
 class Track(Resource):
