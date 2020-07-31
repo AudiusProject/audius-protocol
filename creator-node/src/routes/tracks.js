@@ -461,7 +461,7 @@ module.exports = function (app) {
   }))
 
   /**
-   * Gets a streamable mp3 link for a track by blockchainId. Supports range request headers.
+   * Gets a streamable mp3 link for a track by encodedId. Supports range request headers.
    * @dev - Wrapper around getCID, which retrieves track given its CID.
    **/
   app.get('/tracks/stream/:encodedId', handleResponse(async (req, res) => {
@@ -474,16 +474,10 @@ module.exports = function (app) {
       return errorResponseBadRequest('Please provide a track ID')
     }
 
-    // TODO: Handle if it doesn't work
     const blockchainId = decode(encodedId)
-    console.log({blockchainId})
     if (!blockchainId) {
-      console.log("HERE!!!")
       return errorResponseBadRequest(`Invalid ID: ${encodedId}`)
     }
-    console.log("DECODED!")
-    console.log({blockchainId})
-    // TODO: add error handling here
 
     const { trackUUID } = await models.Track.findOne({
       attributes: ['trackUUID'],
