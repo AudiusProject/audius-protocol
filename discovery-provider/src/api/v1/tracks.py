@@ -83,6 +83,7 @@ class TrackSearchResult(Resource):
 @ns.route("/trending")
 class Trending(Resource):
     @ns.marshal_with(tracks_response)
+    @cache(ttl_sec=30 * 60)
     def get(self):
         """Get the trending tracks"""
         args = trending_parser.parse_args()
