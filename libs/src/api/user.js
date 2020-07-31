@@ -455,6 +455,7 @@ class Users extends Base {
     if (metadata['creator_node_endpoint']) {
       addOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata['creator_node_endpoint']))
       // TODO: When this changes, update UserReplicaSetManager
+      console.log(`TMP - addUserOperations - Updating metadata ${metadata}`)
     }
 
     // Execute update promises concurrently
@@ -465,6 +466,7 @@ class Users extends Base {
 
   async _updateUserOperations (metadata, currentMetadata, userId) {
     let updateOps = []
+    let updateUserReplicaSet = false
 
     // Compare the existing metadata with the new values and conditionally
     // perform update operations
@@ -497,12 +499,58 @@ class Users extends Base {
         if (key === 'creator_node_endpoint') {
           updateOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata['creator_node_endpoint']))
           // TODO: When this changes, update UserReplicaSetManager
+          console.log(`TMP - updateUserOps - Updating metadata ${metadata}`)
+          updateUserReplicaSet = true
         }
       }
     }
 
+    console.log(`Executing all ops`)
     const ops = await Promise.all(updateOps)
+    if (updateUserReplicaSet) {
+      await this._updateUserReplicaSet(userId, metadata['creator_node_endpoint'])
+    }
     return { ops: ops, latestBlockNumber: Math.max(...ops.map(op => op.txReceipt.blockNumber)) }
+  }
+
+  async _updateUserReplicaSet(userId, cnodeEndpoints) {
+    console.warn(`START _updateUserReplicaSet ${userId}, ${cnodeEndpoints}`)
+    let endpointToId = {}
+    const newPrimary = CreatorNode.getPrimary(cnodeEndpoints)
+    const newSecondaries = CreatorNode.getSecondaries(cnodeEndpoints)
+    let endpointsArray = [newPrimary, ...newSecondaries]
+    await Promise.all(endpointsArray.map(async endpoint => {
+      let id = await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(endpoint)
+      // TODO: Extra validation around returned ID
+      endpointToId[endpoint] = parseInt(id)
+    }))
+    let newPrimaryId = endpointToId[newPrimary]
+    let newSecondaryIds = []
+    for (const secondary of newSecondaries) {
+      newSecondaryIds.push(endpointToId[secondary])
+    }
+    console.log(`newPrimaryId ${newPrimaryId}`)
+    console.log(`newSecondary Ids ${newSecondaryIds}`)
+    console.log(typeof newSecondaryIds)
+    let currentReplicaSet = await this.contracts.UserReplicaSetManagerClient.getArtistReplicaSet(userId)
+    console.log(`Current replica set ${currentReplicaSet}`)
+    console.log(currentReplicaSet)
+    console.warn(`END _updateUserReplicaSet ${userId}, ${cnodeEndpoints}`)
+    await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+      userId,
+      newPrimaryId,
+      newSecondaryIds,
+      parseInt(currentReplicaSet.primary),
+      currentReplicaSet.secondaries
+    )
+    /*
+        await audius0.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+      existingUserId,
+      newPrimary,
+      newSecondaries,
+      currentReplicaSet.primary,
+      currentReplicaSet.secondaries)
+      */
   }
 
   _validateUserMetadata (metadata) {
