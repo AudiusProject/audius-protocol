@@ -324,7 +324,7 @@ const _updateUserReplicaSetManagerDelegateWallet = async (spID, defaultLibs) => 
       // Initialize libs with the account that is already registered on UserReplicaSetManager
       // NOTE - the only reason this works locally is because ganache accounts are all unlocked
       //         In reality what should happen is a registration from the deployer ONLY for the first cnode
-      //         All others will use the WIP 'chain-of-trust' auth scheme to onboard themselves by 
+      //         All others will use the WIP 'chain-of-trust' auth scheme to onboard themselves by
       //         broadcasting a request to other cnodes
       let otherCnodeLibs = await initAudiusLibs(true, null, senderWallet)
       await otherCnodeLibs.contracts.UserReplicaSetManagerClient.addOrUpdateCreatorNode(
