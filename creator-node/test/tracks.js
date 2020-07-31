@@ -526,6 +526,12 @@ describe('test /track_content and /tracks/metadata with actual ipfsClient', func
       .post('/tracks/metadata')
       .set('X-Session-ID', session)
       .send({ metadata })
+      .expect(function (res) {
+        if (res.body.error) {
+          console.error(res.body.error)
+          assert.fail(res.body.error)
+        }
+      })
       .expect(500)
 
     assert.deepStrictEqual(resp.body.error, 'Could not save file to disk, ipfs, and/or db: Error: ipfs add failed!')
@@ -542,6 +548,12 @@ describe('test /track_content and /tracks/metadata with actual ipfsClient', func
       .post('/tracks/metadata')
       .set('X-Session-ID', session)
       .send({ metadata })
+      .expect(function (res) {
+        if (res.body.error) {
+          console.error(res.body.error)
+          assert.fail(res.body.error)
+        }
+      })
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash

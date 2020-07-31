@@ -144,6 +144,12 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient', 
       .post('/audius_users/metadata')
       .set('X-Session-ID', session)
       .send({ metadata })
+      .expect(function (res) {
+        if (res.body.error) {
+          console.error(res.body.error)
+          assert.fail(res.body.error)
+        }
+      })
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
