@@ -127,6 +127,16 @@ const run = async () => {
         await queryLocalServices(audiusLibs, serviceTypeList)
         break
 
+      case 'add-cnode-delegatewallet-data-contracts': {
+        // Update arbitrary cnode
+        const spID = args[3]
+        if (spID === undefined) {
+          throw new Error('add-cnode-delegatewallet-data-contracts requires a spID # as the second arg')
+        }
+        await _updateUserReplicaSetManagerDelegateWallet(spID, audiusLibs)
+        break
+      }
+
       case 'update-delegate-wallet': {
         console.log(`WARNING: This function update delegate wallet and creator node endpoint in each service config`)
         console.log(`This is intentional for our working branch to have the same surface area as master for service-commands`)
@@ -203,6 +213,11 @@ const _registerCnode = async (ethAccounts, serviceNumber) => {
   const audiusLibs = await initAudiusLibs(true, null, ethAccounts[serviceNumber])
   const endpoint = makeCreatorNodeEndpoint(serviceNumber)
   await registerLocalService(audiusLibs, spCreatorNodeType, endpoint, amountOfAuds)
+  let spID = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(endpoint)
+  console.log(`Configuring UserReplicaSetManager contract for spID=${spID}`)
+  await _updateUserReplicaSetManagerDelegateWallet(spID, audiusLibs)
+  console.log(`Configured UserReplicaSetManager contract`)
+  await queryLocalServices(audiusLibs, serviceTypeList)
 }
 
 // Account 1
@@ -258,6 +273,68 @@ const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
 const _initAllVersions = async (audiusLibs) => {
   for (let serviceType of serviceTypeList) {
     await setServiceVersion(audiusLibs, serviceType, serviceVersions[serviceType])
+  }
+}
+
+// Register spID <-> delegateOwnerWallet on UserReplicaSetManager
+const _updateUserReplicaSetManagerDelegateWallet = async (spID, defaultLibs) => {
+  let web3 = defaultLibs.web3Manager.getWeb3()
+  const accounts = await web3.eth.getAccounts()
+  const zeroAddress = '0x0000000000000000000000000000000000000000'
+  let cnType = 'creator-node'
+  let spClient = defaultLibs.ethContracts.ServiceProviderFactoryClient
+  let rsManagerClient = defaultLibs.contracts.UserReplicaSetManagerClient
+  let spInfo = await spClient.getServiceProviderInfo(cnType, spID)
+
+  // Exit if this spID is not present in eth-contracts
+  if (spInfo.owner === zeroAddress) {
+    console.log(`${spID} invalid, no matching provider found`)
+    return
+  }
+
+  // Check whether the spID <-> delegateOwnerWallet is already up to date
+  let currentWallet = await rsManagerClient.getCreatorNodeWallet(spID)
+  if (currentWallet === spInfo.delegateOwnerWallet) {
+    console.log(`Already up to date! spID=${spID} - delegateOwnerWallet=${currentWallet} matches on eth-contracts and data-contracts`)
+    return
+  }
+
+  // Retrieve all cnodes
+  let allCnodes = await spClient.getServiceProviderList(cnType)
+  // Exclude current spID owner from list
+  let otherCnodes = allCnodes.filter(x => x.owner !== spInfo.owner)
+  // If no other cnodes are found, the only valid caller is the contract deployer
+  if (otherCnodes.length === 0) {
+    let deployer = accounts[0]
+    console.log(`No cnodes found, registering from deployer ${deployer}`)
+    // Register from deployer libs instance
+    await rsManagerClient.addOrUpdateCreatorNode(spID, spInfo.delegateOwnerWallet, 0)
+    return
+  }
+
+  // Iterate over all cnodes
+  for (const n of otherCnodes) {
+    let nodeSPId = n.spID
+    let nodeWalletFromDataContracts = await rsManagerClient.getCreatorNodeWallet(nodeSPId)
+    // Confirm this cnode has been registered with UserReplicaSetManager
+    if (
+      nodeWalletFromDataContracts !== zeroAddress &&
+      nodeWalletFromDataContracts === n.delegateOwnerWallet
+    ) {
+      let senderWallet = nodeWalletFromDataContracts
+      // Initialize libs with the account that is already registered on UserReplicaSetManager
+      // NOTE - the only reason this works locally is because ganache accounts are all unlocked
+      //         In reality what should happen is a registration from the deployer ONLY for the first cnode
+      //         All others will use the WIP 'chain-of-trust' auth scheme to onboard themselves by
+      //         broadcasting a request to other cnodes
+      let otherCnodeLibs = await initAudiusLibs(true, null, senderWallet)
+      await otherCnodeLibs.contracts.UserReplicaSetManagerClient.addOrUpdateCreatorNode(
+        spID,
+        spInfo.delegateOwnerWallet,
+        nodeSPId
+      )
+      console.log(`Updated spID ${spID} - ${spInfo.delegateOwnerWallet} from account ${senderWallet}`)
+    }
   }
 }
 
