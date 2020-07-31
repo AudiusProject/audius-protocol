@@ -460,7 +460,6 @@ describe('test /track_content with actual ipfsClient', function () {
     const transcodedTrackTestBuf = fs.readFileSync(transcodedTrackPath)
     assert.deepStrictEqual(transcodedTrackAssetBuf.compare(transcodedTrackTestBuf), 0)
 
-
     // check that the track UUID dir contains the source file
     const sourceFile = resp.body.source_file
     const sourceFilePath = path.join(originalTrackUUIDPath, sourceFile)
