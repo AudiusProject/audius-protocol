@@ -13,7 +13,7 @@ services:
       - audius_dev
   creator-node:
     build: ../.
-    command: sh -c '/usr/bin/wait && exec ./node_modules/.bin/nodemon src/index.js | ./node_modules/.bin/bunyan'
+    command: sh -c '/usr/bin/wait && exec ./scripts/dev-server.sh'
     depends_on:
       - creator-node-db
       - creator-node-redis
@@ -36,6 +36,8 @@ services:
       # Prevent hiding node_modules on container with host volume
       # From https://github.com/barrysteyn/node-scrypt/issues/148
       - /usr/src/app/node_modules
+      # Mount audius libs as a directory
+      - ../../libs:/usr/src/audius-libs
     networks:
       - audius_dev
   creator-node-redis:
