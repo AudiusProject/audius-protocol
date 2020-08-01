@@ -19,7 +19,7 @@ services:
       - audius_dev
   identity-service:
     build: ../.
-    command: sh -c '/usr/bin/wait && exec ./node_modules/.bin/nodemon --ignore "./emailCache" src/index.js'
+    command: sh -c '/usr/bin/wait && exec ./scripts/dev-server.sh'
     env_file:
       - .env
     depends_on:
@@ -30,6 +30,7 @@ services:
       # Prevent hiding node_modules on container with host volume
       # From https://github.com/barrysteyn/node-scrypt/issues/148
       - /usr/src/app/node_modules
+      - ../../libs:/usr/src/audius-libs
     ports:
       - '7000:7000'
     networks:
