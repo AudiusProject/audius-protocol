@@ -529,28 +529,17 @@ class Users extends Base {
     for (const secondary of newSecondaries) {
       newSecondaryIds.push(endpointToId[secondary])
     }
-    console.log(`newPrimaryId ${newPrimaryId}`)
-    console.log(`newSecondary Ids ${newSecondaryIds}`)
-    console.log(typeof newSecondaryIds)
     let currentReplicaSet = await this.contracts.UserReplicaSetManagerClient.getArtistReplicaSet(userId)
     console.log(`Current replica set ${currentReplicaSet}`)
     console.log(currentReplicaSet)
-    console.warn(`END _updateUserReplicaSet ${userId}, ${cnodeEndpoints}`)
     await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
       userId,
       newPrimaryId,
       newSecondaryIds,
-      parseInt(currentReplicaSet.primary),
+      currentReplicaSet.primary,
       currentReplicaSet.secondaries
     )
-    /*
-        await audius0.contracts.UserReplicaSetManagerClient.updateReplicaSet(
-      existingUserId,
-      newPrimary,
-      newSecondaries,
-      currentReplicaSet.primary,
-      currentReplicaSet.secondaries)
-      */
+    console.warn(`END SUCCESS _updateUserReplicaSet ${userId}, ${cnodeEndpoints}`)
   }
 
   _validateUserMetadata (metadata) {
