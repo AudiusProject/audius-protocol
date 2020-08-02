@@ -239,7 +239,7 @@ class IPFSClient:
         return self._multiaddr
     
     def ipld_is_valid(self, multihash):
-        if re.match(r"^Qm[a-zA-Z0-9]{44}$", multihash):
+        if multihash and re.match(r"^Qm[a-zA-Z0-9]{44}$", multihash):
             return True
         
         return False
