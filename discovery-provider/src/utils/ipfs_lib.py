@@ -167,7 +167,7 @@ class IPFSClient:
     def multihash_is_directory(self, multihash):
         # Check if the multihash is valid
         if not self.ipld_is_valid(multihash):
-            raise Exception('invalid multihash')
+            raise Exception(f'invalid multihash {multihash}')
 
         # First attempt to cat multihash locally.
         try:
