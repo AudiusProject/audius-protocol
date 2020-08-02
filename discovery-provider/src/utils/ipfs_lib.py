@@ -1,12 +1,12 @@
 import logging
 import json
 import time
+import re
 from urllib.parse import urlparse, urljoin
 import requests
 from requests.exceptions import ReadTimeout
 import ipfshttpclient
 from src.utils.helpers import get_valid_multiaddr_from_id_json
-import re
 
 logger = logging.getLogger(__name__)
 
@@ -237,9 +237,9 @@ class IPFSClient:
 
     def ipfs_id_multiaddr(self):
         return self._multiaddr
-    
+
     def ipld_is_valid(self, multihash):
         if multihash and re.match(r"^Qm[a-zA-Z0-9]{44}$", multihash):
             return True
-        
+
         return False
