@@ -27,6 +27,9 @@ describe('DiscoveryProviderSelection', () => {
     const localStorage = new LocalStorage('./local-storage')
     localStorage.removeItem('@audius/libs:discovery-provider-timestamp')
   })
+  afterEach(() => {
+    nock.cleanAll()
+  })
 
   it('selects a healthy service', async () => {
     const healthy = 'https://healthy.audius.co'
@@ -127,7 +130,6 @@ describe('DiscoveryProviderSelection', () => {
   it('can select an old version', async () => {
     const healthyButBehind = 'https://healthyButBehind.audius.co'
     nock(healthyButBehind)
-      .log(console.log)
       .get('/health_check')
       .reply(200, { data: {
         service: 'discovery-provider',
@@ -136,7 +138,6 @@ describe('DiscoveryProviderSelection', () => {
       } })
     const pastVersionNotBehind = 'https://pastVersionNotBehind.audius.co'
     nock(pastVersionNotBehind)
-      .log(console.log)
       .get('/health_check')
       .reply(200, { data: {
         service: 'discovery-provider',
