@@ -7,7 +7,6 @@ const {
   REGRESSED_MODE_TIMEOUT
 } = require('./constants')
 const semver = require('semver')
-const { isActive } = require('nock')
 
 const PREVIOUS_VERSIONS_TO_CHECK = 5
 
@@ -191,7 +190,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     // { blockdiff => [provider] }
     Object.keys(this.backups).forEach(backup => {
       const { block_difference: blockDiff, version } = this.backups[backup]
-      
+
       let isVersionOk = false
       for (let i = 0; i < this.validVersions.length; ++i) {
         if (this.ethContracts.hasSameMajorAndMinorVersion(this.validVersions[i], version)) {
