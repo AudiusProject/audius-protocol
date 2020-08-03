@@ -1,10 +1,10 @@
-import redis
 import logging # pylint: disable=C0302
-import json
 import functools
-from src.utils.config import shared_config
+import json
+import redis
 from flask.json import dumps
 from flask.globals import request
+from src.utils.config import shared_config
 logger = logging.getLogger(__name__)
 
 REDIS_URL = shared_config["redis"]["url"]
@@ -50,7 +50,7 @@ def cache(**kwargs):
             key = extract_key()
             cached_resp = REDIS.get(key)
 
-            if (cached_resp):
+            if cached_resp:
                 deserialized = json.loads(cached_resp)
                 return deserialized, 200
 
