@@ -10,6 +10,9 @@ from src.api.v1.helpers import abort_not_found, decode_with_abort, encode_int_id
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_trending_tracks import get_trending_tracks
+from src.utils.config import shared_config
+from flask.json import dumps
+from src.utils.redis_cache import cache
 
 logger = logging.getLogger(__name__)
 ns = Namespace('tracks', description='Track related operations')
@@ -18,10 +21,10 @@ track_response = make_response("track_response", ns, fields.Nested(track))
 tracks_response = make_response(
     "tracks_response", ns, fields.List(fields.Nested(track)))
 
-
 @ns.route('/<string:track_id>')
 class Track(Resource):
     @ns.marshal_with(track_response)
+    @cache(ttl_sec=5)
     def get(self, track_id):
         """Fetch a track"""
         decoded_id = decode_with_abort(track_id, ns)
@@ -35,6 +38,7 @@ class Track(Resource):
 
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
+    @cache(ttl_sec=5)
     def get(self, track_id):
         """Redirect to track mp3"""
         decoded_id = decode_with_abort(track_id, ns)
@@ -59,6 +63,7 @@ track_search_result = make_response(
 class TrackSearchResult(Resource):
     @ns.marshal_with(track_search_result)
     @ns.expect(search_parser)
+    @cache(ttl_sec=60)
     def get(self):
         args = search_parser.parse_args()
         query = args["query"]
@@ -78,6 +83,7 @@ class TrackSearchResult(Resource):
 @ns.route("/trending")
 class Trending(Resource):
     @ns.marshal_with(tracks_response)
+    @cache(ttl_sec=30 * 60)
     def get(self):
         """Get the trending tracks"""
         args = trending_parser.parse_args()
