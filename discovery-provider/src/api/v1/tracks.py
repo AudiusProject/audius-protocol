@@ -24,11 +24,11 @@ class Track(Resource):
     @ns.marshal_with(track_response)
     def get(self, track_id):
         """Fetch a track"""
-        encoded_id = decode_with_abort(track_id, ns)
-        args = {"id": [encoded_id], "with_users": True}
+        decoded_id = decode_with_abort(track_id, ns)
+        args = {"id": [decoded_id], "with_users": True, "filter_deleted": True}
         tracks = get_tracks(args)
         if not tracks:
-            abort_not_found(encoded_id, ns)
+            abort_not_found(track_id, ns)
         single_track = extend_track(tracks[0])
         return success_response(single_track)
 
@@ -37,17 +37,17 @@ class Track(Resource):
 class TrackStream(Resource):
     def get(self, track_id):
         """Redirect to track mp3"""
-        encoded_id = decode_with_abort(track_id, ns)
-        args = {"track_id": encoded_id}
+        decoded_id = decode_with_abort(track_id, ns)
+        args = {"track_id": decoded_id}
         creator_nodes = get_track_user_creator_node(args)
         if creator_nodes is None:
-            abort_not_found(encoded_id, ns)
+            abort_not_found(track_id, ns)
         creator_nodes = creator_nodes.split(',')
         if not creator_nodes:
-            abort_not_found(encoded_id, ns)
+            abort_not_found(track_id, ns)
 
         primary_node = creator_nodes[0]
-        stream_url = urljoin(primary_node, 'tracks/stream/{}'.format(encoded_id))
+        stream_url = urljoin(primary_node, 'tracks/stream/{}'.format(track_id))
         return redirect(stream_url)
 
 

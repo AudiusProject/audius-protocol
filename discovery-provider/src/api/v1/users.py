@@ -20,8 +20,8 @@ class User(Resource):
     @ns.marshal_with(user_response)
     def get(self, user_id):
         """Fetch a single user"""
-        formatted_id = decode_with_abort(user_id, ns)
-        args = {"id": [formatted_id]}
+        decoded_id = decode_with_abort(user_id, ns)
+        args = {"id": [decoded_id]}
         users = get_users(args)
         if not users:
             abort_not_found(user_id, ns)
@@ -34,8 +34,8 @@ class TrackList(Resource):
     @ns.marshal_with(tracks_response)
     def get(self, user_id):
         """Fetch a list of tracks for a user."""
-        user_id = decode_with_abort(user_id, ns)
-        args = {"user_id": user_id, "with_users": True}
+        decoded_id = decode_with_abort(user_id, ns)
+        args = {"user_id": decoded_id, "with_users": True, "filter_deleted": True}
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
         if not tracks:
@@ -48,8 +48,8 @@ class FavoritedTracks(Resource):
     @ns.marshal_with(favorites_response)
     def get(self, user_id):
         """Fetch favorited tracks for a user."""
-        user_id = decode_with_abort(user_id, ns)
-        favorites = get_saves("tracks", user_id)
+        decoded_id = decode_with_abort(user_id, ns)
+        favorites = get_saves("tracks", decoded_id)
         favorites = list(map(extend_favorite, favorites))
         return success_response(favorites)
 
