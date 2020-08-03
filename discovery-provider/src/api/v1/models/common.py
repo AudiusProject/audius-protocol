@@ -31,9 +31,9 @@ version_metadata = ns.model("version_metadata", {
 })
 
 full_response = ns.model("full_response", {
-    "latest_chain_block":	fields.Integer(required=True),
-    "latest_indexed_block":	fields.Integer(required=True),
-    "owner_wallet":	fields.Integer(required=True),
+    "latest_chain_block": fields.Integer(required=True),
+    "latest_indexed_block": fields.Integer(required=True),
+    "owner_wallet": fields.Integer(required=True),
     "signature": fields.String(required=True),
     "success": fields.Boolean(required=True),
     "timestamp": fields.String(required=True)	,
