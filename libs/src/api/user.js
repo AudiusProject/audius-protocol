@@ -516,7 +516,7 @@ class Users extends Base {
 
   // NOTE - This is a working function intended to propagate data to the UserReplicaSetManagere contract
   // In the end state, the second argument will be <cnodePrimary>, [<cnodeSecondaries>]
-  async _updateUserReplicaSet(userId, cnodeEndpoints) {
+  async _updateUserReplicaSet (userId, cnodeEndpoints) {
     console.log(`START _updateUserReplicaSet ${userId}, ${cnodeEndpoints}`)
     let endpointToId = {}
     const newPrimary = CreatorNode.getPrimary(cnodeEndpoints)
@@ -541,7 +541,7 @@ class Users extends Base {
     let currentReplicaSet = await this.contracts.UserReplicaSetManagerClient.getArtistReplicaSet(userId)
     let performUpdate = true
     // Determine if an update is required
-    if (parseInt(currentReplicaSet.primary) == newPrimaryId) {
+    if (parseInt(currentReplicaSet.primary) === newPrimaryId) {
       performUpdate = false
       await Promise.all(currentReplicaSet.secondaries.map(async (id, index) => {
         if (parseInt(id) !== newSecondaryIds[index]) {
