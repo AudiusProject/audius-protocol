@@ -12,9 +12,6 @@ export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_creator_nod
 export storagePath='./test_file_storage'
 export logLevel='info'
 
-echo "$(command -v psql)"
-echo "$(which psql)"
-
 # Locally, the docker-compose files set up a database named audius_creator_node. For
 # tests, we use audius_creator_node_test. The below block checks if
 # audius_creator_node_test exists in creator node 1, and if not, creates it (the tests will fail if this
