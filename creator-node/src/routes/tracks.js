@@ -211,7 +211,15 @@ module.exports = function (app) {
 
     // Store + pin metadata multihash to disk + IPFS.
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
-    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
+
+    let multihash, fileUUID
+    try {
+      const saveFileFromBufferResp = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
+      multihash = saveFileFromBufferResp.multihash
+      fileUUID = saveFileFromBufferResp.fileUUID
+    } catch (e) {
+      return errorResponseServerError(`Could not save file to disk, ipfs, and/or db: ${e}`)
+    }
 
     return successResponse({
       'metadataMultihash': multihash,

@@ -17,9 +17,9 @@ module.exports = function (app) {
     let multihash, fileUUID
 
     try {
-      const fileResp = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
-      multihash = fileResp.multihash
-      fileUUID = fileResp.fileUUID
+      const saveFileFromBufferResp = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
+      multihash = saveFileFromBufferResp.multihash
+      fileUUID = saveFileFromBufferResp.fileUUID
     } catch (e) {
       return errorResponseServerError(`Could not save file to disk, ipfs, and/or db: ${e}`)
     }

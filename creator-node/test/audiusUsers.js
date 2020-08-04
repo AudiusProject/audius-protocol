@@ -4,9 +4,9 @@ const sinon = require('sinon')
 const path = require('path')
 const fs = require('fs')
 
+const models = require('../src/models')
 const ipfsClient = require('../src/ipfsClient')
 const config = require('../src/config')
-const fileManager = require('../src/fileManager')
 const BlacklistManager = require('../src/blacklistManager')
 
 const { getApp } = require('./lib/app')
@@ -16,6 +16,16 @@ const { getLibsMock } = require('./lib/libsMock')
 
 describe('test AudiusUsers', function () {
   let app, server, session, ipfsMock, libsMock
+
+  // Will need a '.' in front of storagePath to look at current dir
+  // a '/' will search the root dir
+  before(async () => {
+    const originalStoragePath = config.get('storagePath')
+    if (originalStoragePath.slice(0, 1) === '/') {
+      const updatedStoragePath = '.' + originalStoragePath
+      config.set('storagePath', updatedStoragePath)
+    }
+  })
 
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
@@ -75,7 +85,7 @@ describe('test AudiusUsers', function () {
   })
 })
 
-describe('tests /audius_users/metadata metadata upload with actual ipfsClient', async function () {
+describe('tests /audius_users/metadata metadata upload with actual ipfsClient', function () {
   let app, server, session, libsMock, ipfs
 
   // Will need a '.' in front of storagePath to look at current dir
@@ -115,7 +125,7 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient', 
     assert.deepStrictEqual(resp.body.error, 'Internal server error') // should be specific?
   })
 
-  it('should throw error response if metadata route fails', async function () {
+  it('should throw error response if saving metadata to fails', async function () {
     sinon.stub(ipfs, 'add').rejects(new Error('ipfs add failed!'))
 
     const metadata = { metadata: 'spaghetti' }
@@ -128,12 +138,12 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient', 
     assert.deepStrictEqual(resp.body.error, 'Could not save file to disk, ipfs, and/or db: Error: ipfs add failed!')
   })
 
-  it('successfully adds metadata to filesystem', async function () {
-    const metadata = { metadata: 'spaghetti' }
+  it('successfully adds metadata file to filesystem, db, and ipfs', async function () {
+    const metadata = { spaghetti: 'spaghetti' }
     const resp = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', session)
-      .send(metadata)
+      .send({ metadata })
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
@@ -142,6 +152,14 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient', 
 
     // check that the metadata file contents match the metadata specified
     const metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
-    assert.ok(metadataFileData, 'spaghetti')
+    assert.ok(metadataFileData, metadata)
+
+    // check that the correct metadata file properties were written to db
+    const file = await models.File.findOne({ where: {
+      multihash: resp.body.metadataMultihash,
+      storagePath: metadataPath,
+      type: 'metadata'
+    } })
+    assert.ok(file)
   })
 })
