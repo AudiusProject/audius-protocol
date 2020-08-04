@@ -360,10 +360,8 @@ class Users extends Base {
 
     await this.creatorNode.setEndpoint(newPrimary)
 
-    // WORKING TEMP STUFF
-    // TODO: Synchronize data contracts
+    // Update UserReplicaSetManager contract
     await this._updateUserReplicaSet(userId, newMetadata.creator_node_endpoint)
-    // END WORKING TEMP STUFF
 
     // Upload new metadata
     const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
@@ -459,7 +457,8 @@ class Users extends Base {
     }
 
     if (updateUserReplicaSet) {
-      console.log(`addUserOperations - Updating metadata ${metadata}`)
+      // Update UserReplicaSetManager contract
+      console.log(`addUserOperations - _updateUserReplicaSet ${metadata}`)
       await this._updateUserReplicaSet(userId, metadata['creator_node_endpoint'])
     }
     // Execute update promises concurrently
@@ -509,6 +508,7 @@ class Users extends Base {
 
     const ops = await Promise.all(updateOps)
     if (updateUserReplicaSet) {
+      // Update UserReplicaSetManager contract
       await this._updateUserReplicaSet(userId, metadata['creator_node_endpoint'])
     }
     return { ops: ops, latestBlockNumber: Math.max(...ops.map(op => op.txReceipt.blockNumber)) }
@@ -528,7 +528,6 @@ class Users extends Base {
       if (id === 0) {
         throw new Error(`Received invalid endpoint ${endpoint} in _updateUserReplicaSet`)
       }
-      // TODO: Extra validation around returned ID
       endpointToId[endpoint] = id
     }))
     // Cache the primary and secondary IDs in local variables
