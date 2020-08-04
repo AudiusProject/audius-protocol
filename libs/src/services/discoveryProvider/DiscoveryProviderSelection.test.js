@@ -189,7 +189,7 @@ describe('DiscoveryProviderSelection', () => {
       mockEthContracts([behind20, behind40], '1.2.3')
     )
     const service = await s.select()
-    assert.strictEqual(service, behind40)
+    assert.strictEqual(service, behind20)
     assert.deepStrictEqual(s.backups, {
       [behind20]: {
         service: 'discovery-provider',
@@ -233,7 +233,7 @@ describe('DiscoveryProviderSelection', () => {
       )
     )
     const service = await s.select()
-    assert.strictEqual(service, behind200)
+    assert.strictEqual(service, behind100)
     assert.deepStrictEqual(s.backups, {
       [behind100]: {
         service: 'discovery-provider',

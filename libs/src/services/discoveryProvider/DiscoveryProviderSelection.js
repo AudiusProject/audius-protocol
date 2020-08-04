@@ -234,7 +234,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     }
 
     // Select the best block diff provider
-    const bestBlockDiff = blockDiffs.sort().reverse()[0]
+    const bestBlockDiff = blockDiffs.sort()[0]
 
     selected = blockDiffMap[bestBlockDiff][0]
     this.enterRegressedMode()
