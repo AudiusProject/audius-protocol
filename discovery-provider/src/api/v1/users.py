@@ -9,6 +9,7 @@ from flask_restx import Resource, Namespace, fields, reqparse
 from src.queries.get_tracks import get_tracks
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_favorite, extend_track, extend_user, make_response, search_parser, success_response
 from .models.tracks import track
+from src.utils.redis_cache import cache
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +19,11 @@ user_response = make_response("user_response", ns, fields.Nested(user_model))
 @ns.route("/<string:user_id>")
 class User(Resource):
     @ns.marshal_with(user_response)
+    @cache(ttl_sec=5)
     def get(self, user_id):
         """Fetch a single user"""
-        formatted_id = decode_with_abort(user_id, ns)
-        args = {"id": [formatted_id]}
+        decoded_id = decode_with_abort(user_id, ns)
+        args = {"id": [decoded_id]}
         users = get_users(args)
         if not users:
             abort_not_found(user_id, ns)
@@ -32,10 +34,11 @@ tracks_response = make_response("tracks_response", ns, fields.List(fields.Nested
 @ns.route("/<string:user_id>/tracks")
 class TrackList(Resource):
     @ns.marshal_with(tracks_response)
+    @cache(ttl_sec=5)
     def get(self, user_id):
         """Fetch a list of tracks for a user."""
-        user_id = decode_with_abort(user_id, ns)
-        args = {"user_id": user_id, "with_users": True}
+        decoded_id = decode_with_abort(user_id, ns)
+        args = {"user_id": decoded_id, "with_users": True, "filter_deleted": True}
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
         if not tracks:
@@ -46,10 +49,11 @@ favorites_response = make_response("favorites_response", ns, fields.List(fields.
 @ns.route("/<string:user_id>/favorites")
 class FavoritedTracks(Resource):
     @ns.marshal_with(favorites_response)
+    @cache(ttl_sec=5)
     def get(self, user_id):
         """Fetch favorited tracks for a user."""
-        user_id = decode_with_abort(user_id, ns)
-        favorites = get_saves("tracks", user_id)
+        decoded_id = decode_with_abort(user_id, ns)
+        favorites = get_saves("tracks", decoded_id)
         favorites = list(map(extend_favorite, favorites))
         return success_response(favorites)
 

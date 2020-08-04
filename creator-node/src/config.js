@@ -198,7 +198,7 @@ const config = convict({
     default: 6
   },
   hlsSegmentType: {
-    doc: 'Time of each HLS segment',
+    doc: 'Segment type of each HLS segment',
     format: String,
     env: 'hlsSegmentType',
     default: 'mpegts'
