@@ -15,7 +15,7 @@
 
 ### How Has This Been Tested?
 
-Please describe the tests that you ran to verify your changes. Provider repro instructions & any configuration.
+Please describe the tests that you ran to verify your changes. Provide repro instructions & any configuration.
 
 1. Test 1
 - Step 1
