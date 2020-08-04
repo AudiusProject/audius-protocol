@@ -94,6 +94,18 @@ def extend_favorite(favorite):
     favorite["save_item_id"] = encode_int_id(favorite["save_item_id"])
     return favorite
 
+def extend_remix_of(remix_of):
+    def extend_track_element(track):
+        track_id = track["parent_track_id"]
+        track["parent_track_id"] = encode_int_id(track_id)
+        return track
+
+    if not remix_of or not "tracks" in remix_of or not remix_of["tracks"]:
+        return remix_of
+
+    remix_of["tracks"] = list(map(extend_track_element, remix_of["tracks"]))
+    return remix_of
+
 def extend_track(track):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
@@ -104,7 +116,7 @@ def extend_track(track):
     track["followee_saves"] = list(map(extend_favorite, track["followee_saves"]))
     track["followee_resposts"] = list(map(extend_repost, track["followee_reposts"]))
     track = add_track_artwork(track)
-
+    track["remix_of"] = extend_remix_of(track["remix_of"])
     return track
 
 def extend_playlist(playlist):
@@ -127,20 +139,8 @@ def decode_with_abort(identifier, namespace):
     return decoded
 
 def make_response(name, namespace, modelType):
-    version_metadata = namespace.model("version_metadata", {
-        "service": fields.String(required=True),
-        "version": fields.String(required=True)
-    })
-
     return namespace.model(name, {
         "data": modelType,
-        "latest_chain_block":	fields.Integer(required=True),
-        "latest_indexed_block":	fields.Integer(required=True),
-        "owner_wallet":	fields.Integer(required=True),
-        "signature": fields.String(required=True),
-        "success": fields.Boolean(required=True),
-        "timestamp": fields.String(required=True)	,
-        "version": fields.Nested(version_metadata, required=True),
     })
 
 
