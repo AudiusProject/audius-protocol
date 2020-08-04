@@ -28,9 +28,8 @@ echo "$(which psql)"
 # https://circleci.com/docs/2.0/building-docker-images/#separation-of-environments
 # So, if tests are run locally, run docker exec command. Else, run the psql command in the job.
 if [ -z "${isCIBuild}" ]; then
-  docker exec -i audius-creator-node_db_1 /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_creator_node_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_creator_node_test\""
+  docker exec -i cn1_creator-node-db_1 /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_creator_node_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_creator_node_test\""
 fi
-
 
 mkdir -p $storagePath
 
