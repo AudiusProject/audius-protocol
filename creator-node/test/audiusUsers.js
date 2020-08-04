@@ -86,6 +86,8 @@ describe('test AudiusUsers', function () {
   })
 })
 
+// Below block uses actual ipfsClient (unlike first describe block), hence
+// another describe block for this purpose
 describe('tests /audius_users/metadata metadata upload with actual ipfsClient', function () {
   let app, server, session, libsMock, ipfs
 
