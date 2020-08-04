@@ -12,19 +12,23 @@
                 },
                 "profile_picture": {
                     "type": ["string", "null"],
-                    "default": null
+                    "default": null,
+                    "$ref": "#/definitions/CID"
                 },
                 "profile_picture_sizes": {
                     "type": ["string", "null"],
-                    "default": null
+                    "default": null,
+                    "$ref": "#/definitions/CID"
                 },
                 "cover_photo": {
                     "type": ["string", "null"],
-                    "default": null
+                    "default": null,
+                    "$ref": "#/definitions/CID"
                 },
                 "cover_photo_sizes": {
                     "type": ["string", "null"],
-                    "default": null
+                    "default": null,
+                    "$ref": "#/definitions/CID"
                 },
                 "bio": {
                     "type": ["string", "null"],
@@ -45,6 +49,13 @@
                 "profile_picture_sizes"
             ],
             "title": "User"
+        },
+        "CID": {
+            "type": ["string", "null"],
+            "minLength": 46,
+            "maxLength": 46,
+            "pattern": "^Qm[a-zA-Z0-9]{44}$",
+            "title": "CID"
         }
     }
 }
