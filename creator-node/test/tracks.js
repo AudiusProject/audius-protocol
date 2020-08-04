@@ -15,6 +15,7 @@ const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
+const { sortKeys } = require('./lib/utils')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
@@ -395,10 +396,10 @@ describe('test /track_content and /tracks/metadata with actual ipfsClient', func
   // Will need a '.' in front of storagePath to look at current dir
   // a '/' will search the root dir
   before(async () => {
-    const originalStoragePath = config.get('storagePath')
-    if (originalStoragePath.slice(0, 1) === '/') {
-      const updatedStoragePath = '.' + originalStoragePath
-      config.set('storagePath', updatedStoragePath)
+    let storagePath = config.get('storagePath')
+    if (storagePath.startsWith('/')) {
+      storagePath = '.' + storagePath
+      config.set('storagePath', storagePath)
     }
   })
 
@@ -532,11 +533,11 @@ describe('test /track_content and /tracks/metadata with actual ipfsClient', func
   })
 
   it('successfully adds metadata file to filesystem, db, and ipfs', async function () {
-    const metadata = {
+    const metadata = sortKeys({
       test: 'field1',
       track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
       owner_id: 1
-    }
+    })
 
     const resp = await request(app)
       .post('/tracks/metadata')
@@ -555,8 +556,9 @@ describe('test /track_content and /tracks/metadata with actual ipfsClient', func
     assert.ok(fs.existsSync(metadataPath))
 
     // check that the metadata file contents match the metadata specified
-    const metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
-    assert.ok(metadataFileData, metadata)
+    let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
+    metadataFileData = sortKeys(JSON.parse(metadataFileData))
+    assert.deepStrictEqual(metadataFileData, metadata)
 
     // check that the correct metadata file properties were written to db
     const file = await models.File.findOne({ where: {

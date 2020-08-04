@@ -6,9 +6,11 @@ const fsExtra = require('fs-extra')
 const path = require('path')
 
 const { ipfs } = require('../src/ipfsClient')
-const { saveFileToIPFSFromFS, removeTrackFolder } = require('../src/fileManager')
+const { saveFileToIPFSFromFS, removeTrackFolder, saveFileFromBuffer } = require('../src/fileManager')
 const config = require('../src/config')
 const models = require('../src/models')
+
+const { sortKeys } = require('./lib/utils')
 
 let storagePath = config.get('storagePath')
 storagePath = storagePath.charAt(0) === '/' ? storagePath.slice(1) : storagePath
@@ -32,15 +34,26 @@ const req = {
 }
 
 // TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
+// consts used for testing saveFileToIpfsFromFs()
 const segmentsDirPath = 'test/test-segments'
 const sourceFile = 'segment001.ts'
 const srcPath = path.join(segmentsDirPath, sourceFile)
 const fileType = 'track'
 
-describe('test saveFileToIpfsFromFs', () => {
+// consts used for testing saveFileFromBuffer()
+const metadata = {
+  test: 'field1',
+  track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
+  owner_id: 1
+}
+const buffer = Buffer.from(JSON.stringify(metadata))
+
+describe('test fileManager', () => {
   afterEach(function () {
     sinon.restore()
   })
+
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileToIpfsFromFs() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
 
   /**
    * Given: a file is being saved to ipfs from fs
@@ -84,7 +97,7 @@ describe('test saveFileToIpfsFromFs', () => {
 
   /**
    * Given: a file is being saved to ipfs from fs
-   * When: ipfs is down
+   * When: file syncing fails
    * Then: an error is thrown
    */
   it('should throw an error if file syncing fails', async () => {
@@ -122,7 +135,7 @@ describe('test saveFileToIpfsFromFs', () => {
    *  - that segment content should match the original sourcefile
    *  - that segment should be present in IPFS
    */
-  it('should pass (happy path)', async () => {
+  it('should pass saving file to ipfs from fs (happy path)', async () => {
     sinon.stub(models.File, 'findOrCreate').returns([{ dataValues: 'data' }])
 
     try {
@@ -151,6 +164,115 @@ describe('test saveFileToIpfsFromFs', () => {
     }
 
     assert.deepStrictEqual(originalSegmentBuf.compare(ipfsResp), 0)
+  })
+
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileFromBuffer() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  /**
+   * Given: a file buffer is being saved to ipfs, fs, and db
+   * When: cnodeUserUUID is not present
+   * Then: an error is thrown
+   */
+  it('should throw error if cnodeUserUUID is not present', async () => {
+    const req = {
+      session: {},
+      logger: {
+        info: () => {}
+      },
+      app: {
+        get: () => { return path.join(storagePath) }
+      }
+    }
+
+    try {
+      await saveFileFromBuffer(req, buffer, 'metadata')
+      assert.fail('Should not have passed if cnodeUserUUID is not present in request.')
+    } catch (e) {
+      assert.deepStrictEqual(e.message, 'User must be authenticated to save a file')
+    }
+  })
+
+  /**
+   * Given: a file buffer is being saved to ipfs, fs, and db
+   * When: ipfs is down
+   * Then: an error is thrown
+   */
+  it('should throw an error if ipfs is down', async () => {
+    sinon.stub(ipfs, 'add').rejects(new Error('ipfs is down!'))
+
+    try {
+      await saveFileFromBuffer(req, buffer, 'metadata')
+      assert.fail('Should not have passed if ipfs is down.')
+    } catch (e) {
+      assert.deepStrictEqual(e.message, 'ipfs is down!')
+    }
+  })
+
+  /**
+   * Given: a file buffer is being saved to ipfs, fs, and db
+   * When: writing to filesystem fails
+   * Then: an error is thrown
+   */
+  it('should throw an error if writing file to filesystem fails', async () => {
+    sinon.stub(ipfs, 'add').resolves([{ hash: 'bad/path/fail' }]) // pass bad data to writeFile()
+
+    try {
+      await saveFileFromBuffer(req, buffer, 'metadata')
+      assert.fail('Should not have passed if writing to filesystem fails.')
+    } catch (e) {
+      assert.ok(e.message)
+    }
+  })
+
+  /**
+   * Given: a file buffer is being saved to ipfs, fs, and db
+   * When: adding reference to db fails
+   * Then: an error is thrown
+   */
+  it('should throw an error if writing reference to db fails', async () => {
+    sinon.stub(models.File, 'findOrCreate').rejects(new Error('Failed to find or create file!!!'))
+
+    try {
+      await saveFileFromBuffer(req, buffer, 'metadata')
+      assert.fail('Should not have if db connection is down.')
+    } catch (e) {
+      assert.deepStrictEqual(e.message, 'Failed to find or create file!!!')
+    }
+  })
+
+  /**
+   * Given: a file buffer is being saved to ipfs, fs, and db
+   * When: everything works as expected
+   * Then: ipfs, fs, and db should have the buffer contents
+   */
+  it('should pass saving file from buffer (happy path)', async () => {
+    sinon.stub(models.File, 'findOrCreate').returns([{ dataValues: { fileUUID: 'uuid' } }])
+
+    let resp
+    try {
+      resp = await saveFileFromBuffer(req, buffer, 'metadata')
+    } catch (e) {
+      assert.fail(e.message)
+    }
+
+    // check that the metadata file was written to storagePath under its multihash
+    const metadataPath = path.join(storagePath, resp.multihash)
+    assert.ok(fs.existsSync(metadataPath))
+
+    // check that the contents of the metadata file is what we expect
+    let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
+    metadataFileData = sortKeys(JSON.parse(metadataFileData))
+    assert.deepStrictEqual(metadataFileData, metadata)
+
+    // check that ipfs contains the metadata file with proper contents
+    let ipfsResp
+    try {
+      ipfsResp = await ipfs.cat(resp.multihash)
+    } catch (e) {
+      assert.fail(e.message)
+    }
+
+    assert.deepStrictEqual(buffer.compare(ipfsResp), 0)
   })
 })
 

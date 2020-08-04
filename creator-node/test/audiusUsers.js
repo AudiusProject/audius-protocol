@@ -13,6 +13,7 @@ const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
+const { sortKeys } = require('./lib/utils')
 
 describe('test AudiusUsers', function () {
   let app, server, session, ipfsMock, libsMock
@@ -91,10 +92,10 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient', 
   // Will need a '.' in front of storagePath to look at current dir
   // a '/' will search the root dir
   before(async () => {
-    const originalStoragePath = config.get('storagePath')
-    if (originalStoragePath.slice(0, 1) === '/') {
-      const updatedStoragePath = '.' + originalStoragePath
-      config.set('storagePath', updatedStoragePath)
+    let storagePath = config.get('storagePath')
+    if (storagePath.startsWith('/')) {
+      storagePath = '.' + storagePath
+      config.set('storagePath', storagePath)
     }
   })
 
@@ -138,8 +139,8 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient', 
     assert.deepStrictEqual(resp.body.error, 'Could not save file to disk, ipfs, and/or db: Error: ipfs add failed!')
   })
 
-  it('successfully adds metadata file to filesystem, db, and ipfs', async function () {
-    const metadata = { spaghetti: 'spaghetti' }
+  it('should successfully adds metadata file to filesystem, db, and ipfs', async function () {
+    const metadata = sortKeys({ spaghetti: 'spaghetti' })
     const resp = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', session)
@@ -157,8 +158,9 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient', 
     assert.ok(fs.existsSync(metadataPath))
 
     // check that the metadata file contents match the metadata specified
-    const metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
-    assert.ok(metadataFileData, metadata)
+    let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
+    metadataFileData = sortKeys(JSON.parse(metadataFileData))
+    assert.deepStrictEqual(metadataFileData, metadata)
 
     // check that the correct metadata file properties were written to db
     const file = await models.File.findOne({ where: {
