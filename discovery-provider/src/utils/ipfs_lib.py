@@ -166,7 +166,7 @@ class IPFSClient:
 
     def multihash_is_directory(self, multihash):
         # Check if the multihash is valid
-        if not self.ipld_is_valid(multihash):
+        if not self.cid_is_valid(multihash):
             raise Exception(f'invalid multihash {multihash}')
 
         # First attempt to cat multihash locally.
@@ -238,8 +238,8 @@ class IPFSClient:
     def ipfs_id_multiaddr(self):
         return self._multiaddr
 
-    def ipld_is_valid(self, multihash):
-        if multihash and re.match(r"^Qm[a-zA-Z0-9]{44}$", multihash):
+    def cid_is_valid(self, cid):
+        if cid and re.match(r"^Qm[a-zA-Z0-9]{44}$", cid):
             return True
 
         return False
