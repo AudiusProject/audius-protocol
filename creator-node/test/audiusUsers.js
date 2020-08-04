@@ -125,7 +125,7 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient', 
       .send({ dummy: 'data' })
       .expect(500)
 
-    assert.deepStrictEqual(resp.body.error, 'Internal server error') // should be specific?
+    assert.deepStrictEqual(resp.body.error, 'Internal server error')
   })
 
   it('should throw error response if saving metadata to fails', async function () {
