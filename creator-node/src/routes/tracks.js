@@ -465,7 +465,6 @@ module.exports = function (app) {
    * @dev - Wrapper around getCID, which retrieves track given its CID.
    **/
   app.get('/tracks/stream/:encodedId', handleResponse(async (req, res) => {
-    console.log("Hitting stream")
     const libs = req.app.get('audiusLibs')
     const delegateOwnerWallet = config.get('delegateOwnerWallet')
 

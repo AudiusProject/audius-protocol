@@ -1,5 +1,12 @@
 const Hashids = require('hashids/cjs')
 
+/* We use a JS implementation of the the HashIds protocol (http://hashids.org)
+ * to obfuscate our monotonically increasing int IDs as
+ * strings in our consumable API.
+ *
+ * Discovery provider uses a python implementation of the same protocol
+ * to encode and decode IDs.
+ */
 const HASH_SALT = "azowernasdfoia"
 const hashids = new Hashids(HASH_SALT, 5)
 
