@@ -8,7 +8,8 @@ const Hashids = require('hashids/cjs')
  * to encode and decode IDs.
  */
 const HASH_SALT = "azowernasdfoia"
-const hashids = new Hashids(HASH_SALT, 5)
+const MIN_LENGTH = 5
+const hashids = new Hashids(HASH_SALT, MIN_LENGTH)
 
 /** Encodes an int ID into a string. */
 function encode(id) {
