@@ -11,10 +11,12 @@ const assert = require('assert')
 const imageTestDir = 'resizeImageAssets'
 const imageBuffer = fs.readFileSync(path.join(__dirname, imageTestDir, 'audiusDj.png'))
 
-// TODO: figure out if this parsing is necessary
+// Will need a '.' in front of storagePath to look at current dir
+// a '/' will search the root dir
 let storagePath = config.get('storagePath')
-// / in front of path = root ; local testing purposes, remove
-storagePath = storagePath.charAt(0) === '/' ? storagePath.slice(1) : storagePath
+if (storagePath.startsWith('/')) {
+  storagePath = '.' + storagePath
+}
 
 // CIDs for audiusDj.png
 const DIR_CID_SQUARE = 'QmNfiyESzN4rNQikeHUiF4HBfAEKF38DTo1JtiDMukqwE9'
