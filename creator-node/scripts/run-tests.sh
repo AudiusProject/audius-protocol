@@ -12,6 +12,26 @@ export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_creator_nod
 export storagePath='./test_file_storage'
 export logLevel='info'
 
+export COMPOSE_PROJECT_NAME="cn1" 
+export CREATOR_NODE_DB_HOST_PORT=4432 
+export CREATOR_NODE_REDIS_HOST_PORT=4379 
+export CREATOR_NODE_HOST_PORT=4000 
+
+if [ "$1" == "restart" ]; then
+  set +e
+  docker network create audius_dev
+  docker container stop local-ipfs-node
+  docker container rm local-ipfs-node
+  cd ../
+  libs/scripts/ipfs.sh down local-ipfs-node
+  set -e
+
+  libs/scripts/ipfs.sh up local-ipfs-node
+
+  cd creator-node/
+  docker-compose -f compose/docker-compose.yml up --force-recreate -d creator-node-db creator-node-redis 
+fi
+
 # Locally, the docker-compose files set up a database named audius_creator_node. For
 # tests, we use audius_creator_node_test. The below block checks if
 # audius_creator_node_test exists in creator node 1, and if not, creates it (the tests will fail if this
@@ -45,3 +65,10 @@ rm -r $storagePath
 # remove test generated segments folder and .m3u8 file
 rm -rf "./test/segments"
 rm -rf "./test/testTrack.m3u8"
+
+if [ "$2" == "teardown" ]; then
+  docker-compose -f compose/docker-compose.yml down
+  cd ../
+  libs/scripts/ipfs.sh down local-ipfs-node
+  cd creator-node/
+fi

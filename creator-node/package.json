@@ -5,6 +5,7 @@
   "scripts": {
     "start": "nodemon src/index.js | ./node_modules/.bin/bunyan || exit 0",
     "test": "./scripts/run-tests.sh",
+    "test-local": "./scripts/run-tests.sh restart",
     "coverage": "nyc npm run test",
     "report": "nyc report --reporter=html",
     "lint": "./node_modules/.bin/standard",
