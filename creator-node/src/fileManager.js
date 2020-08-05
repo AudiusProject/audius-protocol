@@ -275,6 +275,11 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
  */
 async function removeTrackFolder (req, fileDir) {
   try {
+    req.logger.info(`Removing track folder at fileDir ${fileDir}...`)
+    if (!fileDir) {
+      throw new Error('Cannot remove null fileDir')
+    }
+
     let fileDirInfo = fs.lstatSync(fileDir)
     if (!fileDirInfo.isDirectory()) {
       throw new Error('Expected directory input')
@@ -308,6 +313,7 @@ async function removeTrackFolder (req, fileDir) {
       }
     })
     fs.rmdirSync(fileDir)
+    req.logger.info(`Removed track folder at fileDir ${fileDir}`)
   } catch (err) {
     req.logger.error(`Error removing ${fileDir}. ${err}`)
   }

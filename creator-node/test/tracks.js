@@ -4,6 +4,7 @@ const path = require('path')
 const assert = require('assert')
 const sinon = require('sinon')
 
+const utils = require('../src/utils')
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
 
@@ -390,6 +391,7 @@ describe('test Tracks', function () {
 describe('test /track_content with actual ipfsClient', function () {
   let app, server, session, ipfs, libsMock
 
+  /** Inits ipfs client, libs mock, web server app, blacklist manager, and creates starter CNodeUser */
   beforeEach(async () => {
     ipfs = require('../src/ipfsClient').ipfs
     libsMock = getLibsMock()
@@ -431,10 +433,11 @@ describe('test /track_content with actual ipfsClient', function () {
       .expect(500)
   })
 
-  it('should upload 32 segments and 1 320kbps copy to storagePath', async function () {
+  it('should successfully upload track + transcode and prune upload artifacts', async function () {
     const file = fs.readFileSync(testAudioFilePath)
     libsMock.User.getUsers.exactly(4)
 
+    // Make /track_content call with test file + expect success
     const resp = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
@@ -445,38 +448,21 @@ describe('test /track_content with actual ipfsClient', function () {
     let storagePath = config.get('storagePath')
     storagePath = storagePath.slice(0, 1) === '/' ? '.' + storagePath : storagePath
 
-    // check if track UUID dir exists
+    // Wait before checking disk state since disk pruning action is made as a non-blocking call and may
+    //  complete after /track_content route returns
+    await utils.timeout(2000)
+
+    // Ensure original trackUUID dir has been pruned and does not exist
     const originalTrackUUID = resp.body.source_file.split('.').slice(0, -1).join('.') // remove extension
     const originalTrackUUIDPath = path.join(storagePath, originalTrackUUID)
-    assert.ok(fs.existsSync(originalTrackUUIDPath))
-
-    // check that the track UUID dir contains the transcoded copy
-    const transcodedTrackPath = path.join(originalTrackUUIDPath, originalTrackUUID + '-dl.mp3')
-    assert.ok(fs.existsSync(transcodedTrackPath))
+    assert.ok(!fs.existsSync(originalTrackUUIDPath))
 
     // check that the generated transcoded track is the same as the transcoded track in /tests
     const transcodedTrackAssetPath = path.join(__dirname, 'testTranscoded320Track.mp3')
     const transcodedTrackAssetBuf = fs.readFileSync(transcodedTrackAssetPath)
+    const transcodedTrackPath = path.join(storagePath, resp.body.data.transcodedTrackCID)
     const transcodedTrackTestBuf = fs.readFileSync(transcodedTrackPath)
     assert.deepStrictEqual(transcodedTrackAssetBuf.compare(transcodedTrackTestBuf), 0)
-
-    // check that the track UUID dir contains the source file
-    const sourceFile = resp.body.source_file
-    const sourceFilePath = path.join(originalTrackUUIDPath, sourceFile)
-    assert.ok(fs.existsSync(sourceFilePath))
-
-    // check that there are 32 segments in <uuid>/segments and that they follow
-    // the naming convention 'segment<3 digit #>.ts'
-    const segmentsPath = path.join(originalTrackUUIDPath, 'segments')
-    fs.readdir(segmentsPath, (err, files) => {
-      if (err) assert.fail(err.message)
-      assert.deepStrictEqual(files.length, 32)
-
-      for (let i = 0; i < 32; i++) {
-        const indexSuffix = ('000' + i).slice(-3)
-        assert.deepStrictEqual(files[i], `segment${indexSuffix}.ts`)
-      }
-    })
 
     // check that there are 32 CIDs that have been added to fs
     const segmentCIDs = resp.body.track_segments
@@ -485,5 +471,7 @@ describe('test /track_content with actual ipfsClient', function () {
       const cidPath = path.join(storagePath, cid.multihash)
       assert.ok(fs.existsSync(cidPath))
     })
+
+    // TODO - check that each track segment CID matches the expected CIDs
   })
 })

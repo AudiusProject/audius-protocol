@@ -56,7 +56,7 @@ module.exports = function (app) {
     }
 
     // for each path, call saveFile and get back multihash; return multihash + segment duration
-    // run all async ops in parallel as they are not independent
+    // run all async ops in parallel as they are independent
     codeBlockTimeStart = Date.now()
     const t = await models.sequelize.transaction()
 
