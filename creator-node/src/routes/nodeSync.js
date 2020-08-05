@@ -307,7 +307,10 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
               // Skip over directories since there's no actual content to sync
               // The files inside the directory are synced separately
               if (nonTrackFile.type !== 'dir') {
-                return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
+                // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
+                if (nonTrackFile.type === 'image') {
+                  return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
+                } else return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
               }
             }
           ))

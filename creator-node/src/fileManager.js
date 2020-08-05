@@ -107,13 +107,15 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
  * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
  *                  for non dir files and `/file_storage/Qmdir/Qm2` for dir files
  * @param {Array} gatewaysToTry List of gateway endpoints to try
+ * @param {String?} fileNameForImage file name if the multihash is image in dir.
+ *                  eg original.jpg or 150x150.jpg
  */
-async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry) {
+async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
   const storagePath = req.app.get('storagePath') // should be `/file_storage'
 
   // will be modified to directory compatible route later if directory
   // TODO - don't concat url's by hand like this, use module like urljoin
-  let gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/`)
+  let gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
 
   // Check if the file we are trying to copy is in a directory and if so, create the directory first
   // E.g if the expectedStoragePath includes a dir like /file_storage/QmABC/Qm123, path.parse gives us
@@ -123,14 +125,14 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
   // In the case where the parsed expectedStoragePath dir contains storagePath (`/file_storage`)
   // but does not equal it, we know that it's a directory
   const parsedStoragePath = path.parse(expectedStoragePath).dir
-  if (parsedStoragePath !== storagePath && parsedStoragePath.includes(storagePath)) {
+  if (parsedStoragePath !== storagePath && parsedStoragePath.includes(storagePath) && fileNameForImage) {
     const splitPath = parsedStoragePath.split('/')
     // parsedStoragePath looks like '/file_storage/Qm123' for a dir and when you call split, the result is
     // ['', 'file_storage', 'Qm123']. the third item in the array is the directory cid, so index 2
     if (splitPath.length !== 3) throw new Error(`saveFileForMultihash - Invalid expectedStoragePath for directory ${expectedStoragePath}`)
 
     // override gateway urls to make it compatible with directory
-    gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${splitPath[2]}/`)
+    gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${splitPath[2]}/${fileNameForImage}`)
 
     try {
       // calling this on an existing directory doesn't overwrite the existing data or throw an error
@@ -185,7 +187,10 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       const destinationStream = fs.createWriteStream(expectedStoragePath)
       fileBL.pipe(destinationStream)
       await new Promise((resolve, reject) => {
-        destinationStream.on('finish', () => { resolve() })
+        destinationStream.on('finish', () => {
+          fileFound = true
+          resolve()
+        })
         destinationStream.on('error', err => { reject(err) })
         fileBL.on('error', err => { destinationStream.end(); reject(err) })
       })
@@ -202,12 +207,9 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       // ..replace(/\/$/, "") removes trailing slashes
       req.logger.debug(`saveFileForMultihash - Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
 
-      // Note - this is not compatible with image retrieval, which uses endpoint /ipfs/dir/[cid]
-      const urls = gatewayUrlsMapped.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
-
       // Note - Requests are intentionally not parallel to minimize additional load on gateways
-      for (let index = 0; index < urls.length; index++) {
-        const url = urls[index]
+      for (let index = 0; index < gatewayUrlsMapped.length; index++) {
+        const url = gatewayUrlsMapped[index]
         try {
           const resp = await axios({
             method: 'get',
@@ -220,6 +222,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
             break
           }
         } catch (e) {
+          req.logger.error(`Error fetching file from other cnode ${url} ${e.message}`)
           continue
         }
       }
@@ -231,7 +234,10 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       const destinationStream = fs.createWriteStream(expectedStoragePath)
       response.data.pipe(destinationStream)
       await new Promise((resolve, reject) => {
-        destinationStream.on('finish', () => { resolve() })
+        destinationStream.on('finish', () => {
+          fileFound = true
+          resolve()
+        })
         destinationStream.on('error', err => { reject(err) })
         response.data.on('error', err => { destinationStream.end(); reject(err) })
       })

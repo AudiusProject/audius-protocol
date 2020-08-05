@@ -98,7 +98,7 @@ const outputJsonConfigFile = async (outputPath) => {
         console.log(err)
       }
     })
-    console.log(outputDictionary)
+    console.log(`contracts JSON Config written to ${outputPath}`)
   }
   catch (e) {
     console.log(e)
