@@ -70,7 +70,7 @@ docker-compose -f docker-compose.base.yml up -d
 sleep 5
 
 # Unit tests
-pytest src -s -v --fulltrace
+pytest src
 
 # Integration tests
-pytest tests -s -v --fulltrace 
+pytest tests
