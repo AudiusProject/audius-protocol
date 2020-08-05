@@ -7,17 +7,17 @@ const Hashids = require('hashids/cjs')
  * Discovery provider uses a python implementation of the same protocol
  * to encode and decode IDs.
  */
-const HASH_SALT = "azowernasdfoia"
+const HASH_SALT = 'azowernasdfoia'
 const MIN_LENGTH = 5
 const hashids = new Hashids(HASH_SALT, MIN_LENGTH)
 
 /** Encodes an int ID into a string. */
-function encode(id) {
-  hashids.encode(id)
+function encode (id) {
+  return hashids.encode([id])
 }
 
 /** Decodes a string id into an int. Returns null if an invalid ID. */
-function decode(id) {
+function decode (id) {
   const ids = hashids.decode(id)
   if (!ids.length) return null
   return ids[0]
