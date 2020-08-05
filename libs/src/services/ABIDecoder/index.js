@@ -16,6 +16,7 @@ loadABI('DiscoveryProviderFactory.json')
 loadABI('SocialFeatureFactory.json')
 loadABI('PlaylistFactory.json')
 loadABI('UserLibraryFactory.json')
+loadABI('UserReplicaSetManager.json')
 
 class AudiusABIDecoder {
   static decodeMethod (contractName, encodedABI) {
