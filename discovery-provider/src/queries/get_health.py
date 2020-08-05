@@ -94,7 +94,7 @@ def get_health(args, use_redis_cache=True):
     if latest_block_num is None or latest_block_hash is None:
         latest_block = web3.eth.getBlock("latest", True)
         latest_block_num = latest_block.number
-        latest_block_hash = latest_block.hash
+        latest_block_hash = latest_block.hash.hex()
 
     latest_indexed_block_num = None
     latest_indexed_block_hash = None

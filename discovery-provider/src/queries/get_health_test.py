@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+from hexbytes import HexBytes
 from src.utils.redis_constants import \
     latest_block_hash_redis_key, latest_block_redis_key, \
     most_recent_indexed_block_hash_redis_key, most_recent_indexed_block_redis_key
@@ -12,7 +13,7 @@ def test_get_health(web3_mock, redis_mock, db_mock):
     def getBlock(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 2
-        block.hash = "0x2"
+        block.hash = HexBytes(b"\x02")
         return block
     web3_mock.eth.getBlock = getBlock
 
@@ -20,9 +21,9 @@ def test_get_health(web3_mock, redis_mock, db_mock):
     with db_mock.scoped_session() as session:
         Block.__table__.create(db_mock._engine)
         session.add(Block(
-            blockhash='0x1',
+            blockhash='0x01',
             number=1,
-            parenthash='0x1',
+            parenthash='0x01',
             is_current=True,
         ))
 
@@ -32,9 +33,9 @@ def test_get_health(web3_mock, redis_mock, db_mock):
     assert error == False
 
     assert health_results["web"]["blocknumber"] == 2
-    assert health_results["web"]["blockhash"] == "0x2"
+    assert health_results["web"]["blockhash"] == "0x02"
     assert health_results["db"]["number"] == 1
-    assert health_results["db"]["blockhash"] == "0x1"
+    assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 1
 
     assert "maximum_healthy_block_difference" in health_results
@@ -48,7 +49,7 @@ def test_get_health_using_redis(web3_mock, redis_mock, db_mock):
     def getBlock(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 2
-        block.hash = "0x2"
+        block.hash = HexBytes(b"\x02")
         return block
     web3_mock.eth.getBlock = getBlock
 
@@ -56,15 +57,15 @@ def test_get_health_using_redis(web3_mock, redis_mock, db_mock):
     redis_mock.set(latest_block_redis_key, '3')
     redis_mock.set(latest_block_hash_redis_key, '0x3')
     redis_mock.set(most_recent_indexed_block_redis_key, '2')
-    redis_mock.set(most_recent_indexed_block_hash_redis_key, '0x2')
+    redis_mock.set(most_recent_indexed_block_hash_redis_key, '0x02')
 
     # Set up db state
     with db_mock.scoped_session() as session:
         Block.__table__.create(db_mock._engine)
         session.add(Block(
-            blockhash='0x1',
+            blockhash='0x01',
             number=1,
-            parenthash='0x1',
+            parenthash='0x01',
             is_current=True,
         ))
 
@@ -76,7 +77,7 @@ def test_get_health_using_redis(web3_mock, redis_mock, db_mock):
     assert health_results["web"]["blocknumber"] == 3
     assert health_results["web"]["blockhash"] == "0x3"
     assert health_results["db"]["number"] == 2
-    assert health_results["db"]["blockhash"] == "0x2"
+    assert health_results["db"]["blockhash"] == "0x02"
     assert health_results["block_difference"] == 1
 
     assert "maximum_healthy_block_difference" in health_results
@@ -90,7 +91,7 @@ def test_get_health_partial_redis(web3_mock, redis_mock, db_mock):
     def getBlock(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 2
-        block.hash = "0x2"
+        block.hash = HexBytes(b"\x02")
         return block
     web3_mock.eth.getBlock = getBlock
 
@@ -102,9 +103,9 @@ def test_get_health_partial_redis(web3_mock, redis_mock, db_mock):
     with db_mock.scoped_session() as session:
         Block.__table__.create(db_mock._engine)
         session.add(Block(
-            blockhash='0x1',
+            blockhash='0x01',
             number=1,
-            parenthash='0x1',
+            parenthash='0x01',
             is_current=True,
         ))
 
@@ -114,9 +115,9 @@ def test_get_health_partial_redis(web3_mock, redis_mock, db_mock):
     assert error == False
 
     assert health_results["web"]["blocknumber"] == 2
-    assert health_results["web"]["blockhash"] == "0x2"
+    assert health_results["web"]["blockhash"] == "0x02"
     assert health_results["db"]["number"] == 1
-    assert health_results["db"]["blockhash"] == "0x1"
+    assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 1
 
     assert "maximum_healthy_block_difference" in health_results
@@ -130,7 +131,7 @@ def test_get_health_with_invalid_db_state(web3_mock, redis_mock, db_mock):
     def getBlock(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 2
-        block.hash = "0x2"
+        block.hash = HexBytes(b"\x02")
         return block
     web3_mock.eth.getBlock = getBlock
 
@@ -138,9 +139,9 @@ def test_get_health_with_invalid_db_state(web3_mock, redis_mock, db_mock):
     with db_mock.scoped_session() as session:
         Block.__table__.create(db_mock._engine)
         session.add(Block(
-            blockhash='0x1',
+            blockhash='0x01',
             number=None, # NoneType
-            parenthash='0x1',
+            parenthash='0x01',
             is_current=True,
         ))
 
@@ -150,9 +151,9 @@ def test_get_health_with_invalid_db_state(web3_mock, redis_mock, db_mock):
     assert error == False
 
     assert health_results["web"]["blocknumber"] == 2
-    assert health_results["web"]["blockhash"] == "0x2"
+    assert health_results["web"]["blockhash"] == "0x02"
     assert health_results["db"]["number"] == 0
-    assert health_results["db"]["blockhash"] == "0x1"
+    assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 2
 
     assert "maximum_healthy_block_difference" in health_results
@@ -166,7 +167,7 @@ def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
     def getBlock(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 2
-        block.hash = "0x2"
+        block.hash = HexBytes(b"\x02")
         return block
     web3_mock.eth.getBlock = getBlock
 
@@ -174,15 +175,15 @@ def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
     redis_mock.set(latest_block_redis_key, '3')
     redis_mock.set(latest_block_hash_redis_key, '0x3')
     redis_mock.set(most_recent_indexed_block_redis_key, '2')
-    redis_mock.set(most_recent_indexed_block_hash_redis_key, '0x2')
+    redis_mock.set(most_recent_indexed_block_hash_redis_key, '0x02')
 
     # Set up db state
     with db_mock.scoped_session() as session:
         Block.__table__.create(db_mock._engine)
         session.add(Block(
-            blockhash='0x1',
+            blockhash='0x01',
             number=1,
-            parenthash='0x1',
+            parenthash='0x01',
             is_current=True,
         ))
 
@@ -192,9 +193,9 @@ def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
     assert error == False
 
     assert health_results["web"]["blocknumber"] == 2
-    assert health_results["web"]["blockhash"] == "0x2"
+    assert health_results["web"]["blockhash"] == "0x02"
     assert health_results["db"]["number"] == 1
-    assert health_results["db"]["blockhash"] == "0x1"
+    assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 1
 
     assert "maximum_healthy_block_difference" in health_results
@@ -208,7 +209,7 @@ def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
     def getBlock(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 50
-        block.hash = "0x50"
+        block.hash = HexBytes(b"\x50")
         return block
     web3_mock.eth.getBlock = getBlock
 
@@ -216,9 +217,9 @@ def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
     with db_mock.scoped_session() as session:
         Block.__table__.create(db_mock._engine)
         session.add(Block(
-            blockhash='0x1',
+            blockhash='0x01',
             number=1,
-            parenthash='0x1',
+            parenthash='0x01',
             is_current=True,
         ))
 
@@ -233,7 +234,7 @@ def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
     assert health_results["web"]["blocknumber"] == 50
     assert health_results["web"]["blockhash"] == "0x50"
     assert health_results["db"]["number"] == 1
-    assert health_results["db"]["blockhash"] == "0x1"
+    assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 49
 
     assert "maximum_healthy_block_difference" in health_results
@@ -247,7 +248,7 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock):
     def getBlock(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 2
-        block.hash = "0x2"
+        block.hash = HexBytes(b"\x02")
         return block
     web3_mock.eth.getBlock = getBlock
 
@@ -276,9 +277,9 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock):
 
         Block.__table__.create(db_mock._engine)
         session.add(Block(
-            blockhash='0x1',
+            blockhash='0x01',
             number=1,
-            parenthash='0x1',
+            parenthash='0x01',
             is_current=True,
         ))
 
@@ -290,9 +291,9 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock):
     assert error == False
 
     assert health_results["web"]["blocknumber"] == 2
-    assert health_results["web"]["blockhash"] == "0x2"
+    assert health_results["web"]["blockhash"] == "0x02"
     assert health_results["db"]["number"] == 1
-    assert health_results["db"]["blockhash"] == "0x1"
+    assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 1
 
     assert health_results["db_connections"]["open_connections"] == 2
