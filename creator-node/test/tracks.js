@@ -472,6 +472,7 @@ describe('test /track_content with actual ipfsClient', function () {
       assert.ok(fs.existsSync(cidPath))
     })
 
-    // TODO - check that each track segment CID matches the expected CIDs
+    // TODO - add more granular check for segment correctness -> e.g. sum segment file sizes, sum segment durations via ffprobe, etc
+    //  might not be possible to assert segment CIDs equality since ffmpeg segmenting may not be deterministic in all conditions
   })
 })
