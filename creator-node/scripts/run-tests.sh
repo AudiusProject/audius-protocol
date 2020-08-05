@@ -3,6 +3,16 @@
 set -o xtrace
 set -e
 
+IPFS_NODE=local-ipfs-node
+
+tear_down () {
+  docker-compose -f compose/docker-compose.yml down
+  docker-compose -f compose/docker-compose.yml rm -f
+  docker container stop $IPFS_NODE
+  docker container rm $IPFS_NODE
+  exit
+}
+
 PG_PORT=$POSTGRES_TEST_PORT
 if [ -z "${PG_PORT}" ]; then
   PG_PORT=4432
@@ -17,19 +27,42 @@ export CREATOR_NODE_DB_HOST_PORT=4432
 export CREATOR_NODE_REDIS_HOST_PORT=4379 
 export CREATOR_NODE_HOST_PORT=4000 
 
-if [ "$1" == "restart" ]; then
+if [ "$1" == "standalone_creator" ]; then
+  # Ignore error on create audius_dev network
   set +e
   docker network create audius_dev
-  docker container stop local-ipfs-node
-  docker container rm local-ipfs-node
-  cd ../
-  libs/scripts/ipfs.sh down local-ipfs-node
+
+  IPFS_CONTAINER=$IPFS_NODE
+  DB_CONTAINER='cn1_creator-node-db_1'
+  REDIS_CONTAINER='cn1_creator-node-db_1'
+
+  IPFS_EXISTS=$(docker ps -q -f status=running -f name=^/${IPFS_CONTAINER}$)
+  DB_EXISTS=$(docker ps -q -f status=running -f name=^/${DB_CONTAINER}$)
+  REDIS_EXISTS=$(docker ps -q -f status=running -f name=^/${REDIS_CONTAINER}$)
+
+  if [ ! "${IPFS_EXISTS}" ]; then
+    echo "IPFS Container doesn't exist"
+    docker container stop $IPFS_NODE
+    docker container rm $IPFS_NODE
+    cd ../
+    libs/scripts/ipfs.sh down $IPFS_NODE
+    libs/scripts/ipfs.sh up $IPFS_NODE
+    cd creator-node/
+  fi
+
+  # Enable errors
   set -e
 
-  libs/scripts/ipfs.sh up local-ipfs-node
-
-  cd creator-node/
-  docker-compose -f compose/docker-compose.yml up --force-recreate -d creator-node-db creator-node-redis 
+  if [ ! "${DB_EXISTS}" ]; then
+    echo "DB Container doesn't exist"
+    docker-compose -f compose/docker-compose.yml up --force-recreate -d creator-node-db 
+  fi
+  if [ ! "${REDIS_EXISTS}" ]; then
+    echo "Redis Container doesn't exist"
+    docker-compose -f compose/docker-compose.yml up --force-recreate -d creator-node-redis 
+  fi
+elif [ "$1" == "teardown" ]; then
+  tear_down
 fi
 
 # Locally, the docker-compose files set up a database named audius_creator_node. For
@@ -67,8 +100,5 @@ rm -rf "./test/segments"
 rm -rf "./test/testTrack.m3u8"
 
 if [ "$2" == "teardown" ]; then
-  docker-compose -f compose/docker-compose.yml down
-  cd ../
-  libs/scripts/ipfs.sh down local-ipfs-node
-  cd creator-node/
+  tear_down
 fi
