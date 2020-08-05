@@ -214,10 +214,18 @@ def parse_playlist_event(
         # if playlist_image_multihash CID is of a dir, store under _sizes field instead
         if playlist_record.playlist_image_multihash:
             logger.warning(f"playlists.py | Processing playlist image {playlist_record.playlist_image_multihash}")
-            is_directory = update_task.ipfs_client.multihash_is_directory(playlist_record.playlist_image_multihash)
-            if is_directory:
-                playlist_record.playlist_image_sizes_multihash = playlist_record.playlist_image_multihash
-                playlist_record.playlist_image_multihash = None
+            try:
+                is_directory = update_task.ipfs_client.multihash_is_directory(playlist_record.playlist_image_multihash)
+                if is_directory:
+                    playlist_record.playlist_image_sizes_multihash = playlist_record.playlist_image_multihash
+                    playlist_record.playlist_image_multihash = None
+            except Exception as e:
+                # we are unable to get the playlist image
+                if 'invalid multihash' in str(e):
+                    playlist_record.playlist_image_sizes_multihash = None
+                    playlist_record.playlist_image_multihash = None
+                else:
+                    raise e
 
     if event_type == playlist_event_types_lookup["playlist_description_updated"]:
         playlist_record.description = event_args._playlistDescription
