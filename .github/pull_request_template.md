@@ -23,7 +23,6 @@ Include log analysis if applicable.
 - Step 2
 - Step 3
 
-Each PR (into master) that touches a live codepath (as opposed to tests or local tooling) requires at least one unit test, so we can slowly work our way to better coverage and make all our lives easier :)
 Please list the unit test(s) you added to verify your changes.
 
 1. Unit test 1
