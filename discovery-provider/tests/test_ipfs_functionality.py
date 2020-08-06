@@ -54,7 +54,7 @@ class TestMultihashIsDirectory:
         try:
             ipfsclient.multihash_is_directory('Qmfake')
         except Exception as e:
-            assert 'invalid multihash' in  str(e)
+            assert 'invalid multihash' in str(e)
 
     # Invoke multihash_is_directory with cat function handler that returns some other response
     def test_valid_cid_directory(self, app):
