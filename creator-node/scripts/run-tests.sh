@@ -6,7 +6,9 @@ set -e
 IPFS_CONTAINER=cn-test-ipfs-node
 DB_CONTAINER='cn_test_db'
 REDIS_CONTAINER='cn_test_redis'
-export PG_PORT=4432
+if [ -z "${PG_PORT}" ]; then	
+  PG_PORT=4432
+fi
 
 export storagePath='./test_file_storage'
 export logLevel='info'
@@ -19,17 +21,13 @@ tear_down () {
   docker container rm $IPFS_CONTAINER
   docker container rm $DB_CONTAINER
   docker container rm $REDIS_CONTAINER
-  unset IPFS_CONTAINER
-  unset DB_CONTAINER
-  unset REDIS_CONTAINER
-  unset PG_PORT
   set -e
 }
 
 if [ "$1" == "standalone_creator" ]; then
   export ipfsPort=6901
   export redisPort=4377
-  export PG_PORT=1432
+  PG_PORT=1432
   # Ignore error on create audius_dev network
   IPFS_EXISTS=$(docker ps -q -f status=running -f name=^/${IPFS_CONTAINER}$)
   DB_EXISTS=$(docker ps -q -f status=running -f name=^/${DB_CONTAINER}$)
