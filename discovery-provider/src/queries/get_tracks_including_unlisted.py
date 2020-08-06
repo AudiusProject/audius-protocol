@@ -37,7 +37,7 @@ def get_tracks_including_unlisted(args, body):
         # will be evaluated as true, so an explicit check is made for true
         if "filter_deleted" in args:
             filter_deleted = args.get("filter_deleted")
-            if filter_deleted.lower() == 'true':
+            if filter_deleted:
                 base_query = base_query.filter(
                     Track.is_delete == False
                 )
@@ -62,7 +62,7 @@ def get_tracks_including_unlisted(args, body):
 
         tracks = list(filter(filter_fn, tracks))
 
-        if "with_users" in args and args.get("with_users") != 'false':
+        if args.get("with_users", False):
             user_id_list = get_users_ids(tracks)
             users = get_users_by_id(session, user_id_list)
             for track in tracks:

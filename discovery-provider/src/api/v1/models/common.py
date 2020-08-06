@@ -9,9 +9,9 @@ repost = ns.model('repost', {
     "created_at": fields.String(required=True),
     "is_current": fields.Boolean(required=True),
     "is_delete": fields.Boolean(required=True),
-    "repost_item_id": fields.Integer(required=True),
+    "repost_item_id": fields.String(required=True),
     "repost_type": fields.String(required=True),
-    "user_id": fields.Integer(required=True)
+    "user_id": fields.String(required=True)
 })
 
 favorite = ns.model('favorite', {
@@ -23,4 +23,19 @@ favorite = ns.model('favorite', {
     "save_item_id":	fields.String(required=True),
     "save_type": fields.String(required=True),
     "user_id": fields.String(required=True)
+})
+
+version_metadata = ns.model("version_metadata", {
+    "service": fields.String(required=True),
+    "version": fields.String(required=True)
+})
+
+full_response = ns.model("full_response", {
+    "latest_chain_block": fields.Integer(required=True),
+    "latest_indexed_block": fields.Integer(required=True),
+    "owner_wallet": fields.Integer(required=True),
+    "signature": fields.String(required=True),
+    "success": fields.Boolean(required=True),
+    "timestamp": fields.String(required=True)	,
+    "version": fields.Nested(version_metadata, required=True),
 })

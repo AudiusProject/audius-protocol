@@ -108,7 +108,7 @@ def get_remixes_of(track_id, args):
         tracks = populate_track_metadata(
             session, track_ids, tracks, current_user_id)
 
-        if "with_users" in args and args.get("with_users") != 'false':
+        if args.get("with_users", False):
             add_users_to_tracks(session, tracks)
 
     return {'tracks': tracks, 'count': count}

@@ -42,15 +42,29 @@ def to_dict(multi_dict):
     """Converts a multi dict into a dict where only list entries are not flat"""
     return {k: v if len(v) > 1 else v[0] for (k, v) in multi_dict.to_dict(flat=False).items()}
 
+def parse_bool_param(field):
+    """Converts a url param to a boolean value"""
+    return field.lower() == "true"
+
+def parse_id_array_param(list):
+    """Converts a list of strings ids to int"""
+    return [int(y) for y in list]
+
 ######## ROUTES ########
 
 # Returns all users (paginated) with each user's follow count
 # Optionally filters by is_creator, wallet, or user ids
 
-
 @bp.route("/users", methods=("GET",))
 def get_users_route():
-    users = get_users(to_dict(request.args))
+    args = to_dict(request.args)
+    if "is_creator" in request.args:
+        args["is_creator"] = parse_bool_param(request.args.get("is_creator"))
+    if "id" in request.args:
+        args["id"] = parse_id_array_param(request.args.getlist("id"))
+    if "min_block_number" in request.args:
+        args["min_block_number"] = request.args.get("min_block_number", type=int)
+    users = get_users(args)
     return api_helpers.success_response(users)
 
 # Returns all tracks (paginated) with each track's repost count
@@ -59,7 +73,18 @@ def get_users_route():
 
 @bp.route("/tracks", methods=("GET",))
 def get_tracks_route():
-    tracks = get_tracks(to_dict(request.args))
+    args = to_dict(request.args)
+    if "id" in request.args:
+        args["id"] = parse_id_array_param(request.args.getlist("id"))
+    if "user_id" in request.args:
+        args["user_id"] = request.args.get("user_id", type=int)
+    if "filter_deleted" in request.args:
+        args["filter_deleted"] = parse_bool_param(request.args.get("filter_deleted"))
+    if "with_users" in request.args:
+        args["with_users"] = parse_bool_param(request.args.get("with_users"))
+    if "min_block_number" in request.args:
+        args["min_block_number"] = request.args.get("min_block_number", type=int)
+    tracks = get_tracks(args)
     return api_helpers.success_response(tracks)
 
 
@@ -68,8 +93,13 @@ def get_tracks_route():
 #   { "tracks": [{ "id": number, "url_title": string, "handle": string }]}
 @bp.route("/tracks_including_unlisted", methods=("POST",))
 def get_tracks_including_unlisted_route():
+    args = to_dict(request.args)
+    if "filter_deleted" in request.args:
+        args["filter_deleted"] = parse_bool_param(request.args.get("filter_deleted"))
+    if "with_users" in request.args:
+        args["with_users"] = parse_bool_param(request.args.get("with_users"))
     tracks = get_tracks_including_unlisted(
-        to_dict(request.args), request.get_json())
+        args, request.get_json())
     return api_helpers.success_response(tracks)
 
 
@@ -83,7 +113,14 @@ def get_stems_of_route(track_id):
 # optional parameters playlist owner's user_id, playlist_id = []
 @bp.route("/playlists", methods=("GET",))
 def get_playlists_route():
-    playlists = get_playlists(to_dict(request.args))
+    args = to_dict(request.args)
+    if "playlist_id" in request.args:
+        args["playlist_id"] = [int(y) for y in request.args.getlist("playlist_id")]
+    if "user_id" in request.args:
+        args["user_id"] = request.args.get("user_id", type=int)
+    if "with_users" in request.args:
+        args["with_users"] = parse_bool_param(request.args.get("with_users"))
+    playlists = get_playlists(args)
     return api_helpers.success_response(playlists)
 
 
@@ -100,7 +137,18 @@ def get_playlists_route():
 #   - Sort combined results by 'timestamp' field and return
 @bp.route("/feed", methods=("GET",))
 def get_feed_route():
-    feed_results = get_feed(to_dict(request.args))
+    args = to_dict(request.args)
+    # filter should be one of ["all", "reposts", "original"]
+    # empty filter value results in "all"
+    if "filter" in request.args and request.args.get("filter") in ["all", "repost", "original"]:
+        args["filter"] = args.get("filter")
+    else:
+        args["filter"] = "all"
+    if "tracks_only" in request.args:
+        args["tracks_only"] = parse_bool_param(request.args.get("tracks_only"))
+    if "with_users" in request.args:
+        args["with_users"] = parse_bool_param(request.args.get("with_users"))
+    feed_results = get_feed(args)
     return api_helpers.success_response(feed_results)
 
 
@@ -113,7 +161,10 @@ def get_feed_route():
 # - sort combined results by activity_timestamp field and return
 @bp.route("/feed/reposts/<int:user_id>", methods=("GET",))
 def get_repost_feed_for_user_route(user_id):
-    feed_results = get_repost_feed_for_user(user_id, to_dict(request.args))
+    args = to_dict(request.args)
+    if "with_users" in request.args:
+        args["with_users"] = parse_bool_param(request.args.get("with_users"))
+    feed_results = get_repost_feed_for_user(user_id, args)
     return api_helpers.success_response(feed_results)
 
 
@@ -257,8 +308,20 @@ def get_top_playlists_route(type):
         mood?: (string) default=None
         filter?: (string) Optional filter to include (supports 'followees') default=None
     """
+    args = to_dict(request.args)
+    if 'limit' in request.args:
+        args['limit'] = min(request.args.get('limit', type=int), 100)
+    else:
+        args['limit'] = 16
+
+    if 'mood' in request.args:
+        args['mood'] = request.args.get('mood')
+    else:
+        args['mood'] = None
+    if "with_users" in request.args:
+        args["with_users"] = parse_bool_param(request.args.get("with_users"))
     try:
-        playlists = get_top_playlists(type, to_dict(request.args))
+        playlists = get_top_playlists(type, args)
         return api_helpers.success_response(playlists)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
@@ -279,8 +342,16 @@ def get_top_followee_windowed_route(type, window):
                 SqlAlchemy interval notation (week, month, year, etc.).
             limit?: (number) default=25, max=100
     """
+    args = to_dict(request.args)
+    if 'limit' in request.args:
+        args['limit'] = min(request.args.get('limit', type=int), 100)
+    else:
+        args['limit'] = 25
+    if "with_users" in request.args:
+        args["with_users"] = parse_bool_param(request.args.get("with_users"))
+
     try:
-        tracks = get_top_followee_windowed(type, window, to_dict(request.args))
+        tracks = get_top_followee_windowed(type, window, args)
         return api_helpers.success_response(tracks)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
@@ -298,8 +369,16 @@ def get_top_followee_saves_route(type):
                 track is supported.
             limit?: (number) default=25, max=100
     """
+    args = to_dict(request.args)
+    if 'limit' in request.args:
+        args['limit'] = min(request.args.get('limit', type=int), 100)
+    else:
+        args['limit'] = 25
+    if "with_users" in request.args:
+        args["with_users"] = parse_bool_param(request.args.get("with_users"))
+
     try:
-        tracks = get_top_followee_saves(type, to_dict(request.args))
+        tracks = get_top_followee_saves(type, args)
         return api_helpers.success_response(tracks)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
@@ -316,7 +395,10 @@ def get_top_followee_saves_route(type):
 #             Boolean if the response should be the user ID or user metadata defaults to false
 @bp.route("/users/genre/top", methods=("GET",))
 def get_top_genre_users_route():
-    users = get_top_genre_users(to_dict(request.args))
+    args = to_dict(request.args)
+    if "with_users" in request.args:
+        args["with_users"] = parse_bool_param(request.args.get("with_users"))
+    users = get_top_genre_users(args)
     return api_helpers.success_response(users)
 
 
@@ -324,8 +406,11 @@ def get_top_genre_users_route():
 # The results are sorted by if the original artist has reposted or saved the track
 @bp.route("/remixes/<int:track_id>/children", methods=("GET",))
 def get_remixes_of_route(track_id):
+    args = to_dict(request.args)
+    if "with_users" in request.args:
+        args["with_users"] = parse_bool_param(request.args.get("with_users"))
     try:
-        remixes = get_remixes_of(track_id, to_dict(request.args))
+        remixes = get_remixes_of(track_id, args)
         return api_helpers.success_response(remixes)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
@@ -334,7 +419,10 @@ def get_remixes_of_route(track_id):
 # Get the tracks that are 'parent' remixes of the requested track
 @bp.route("/remixes/<int:track_id>/parents", methods=("GET",))
 def get_remix_track_parents_route(track_id):
-    tracks = get_remix_track_parents(track_id, to_dict(request.args))
+    args = to_dict(request.args)
+    if "with_users" in request.args:
+        args["with_users"] = parse_bool_param(request.args.get("with_users"))
+    tracks = get_remix_track_parents(track_id, args)
     return api_helpers.success_response(tracks)
 
 

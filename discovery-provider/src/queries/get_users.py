@@ -21,8 +21,7 @@ def get_users(args):
 
         # Process filters
         if "is_creator" in args:
-            is_creator_flag = args.get("is_creator") == "true"
-            base_query = base_query.filter(User.is_creator == is_creator_flag)
+            base_query = base_query.filter(User.is_creator == args.get("is_creator"))
         if "wallet" in args:
             wallet = args.get("wallet")
             wallet = wallet.lower()
@@ -37,18 +36,15 @@ def get_users(args):
 
         # Conditionally process an array of users
         if "id" in args:
-            user_id_str_list = args.get("id")
-            user_id_list = []
+            user_id_list = args.get("id")
             try:
-                user_id_list = [int(y) for y in user_id_str_list]
                 base_query = base_query.filter(User.user_id.in_(user_id_list))
             except ValueError as e:
                 raise exceptions.ArgumentError(
                     "Invalid value found in user id list", e)
         if "min_block_number" in args:
-            min_block_number = args.get("min_block_number", type=int)
             base_query = base_query.filter(
-                User.blocknumber >= min_block_number
+                User.blocknumber >= args.get("min_block_number")
             )
         users = paginate_query(base_query).all()
         users = helpers.query_result_to_list(users)

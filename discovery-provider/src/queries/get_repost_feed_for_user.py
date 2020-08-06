@@ -257,7 +257,7 @@ def get_repost_feed_for_user(user_id, args):
         feed_results = sorted(
             unsorted_feed, key=lambda entry: entry[response_name_constants.activity_timestamp], reverse=True)
 
-        if "with_users" in args and args.get("with_users") != 'false':
+        if args.get("with_users", False):
             user_id_list = get_users_ids(feed_results)
             users = get_users_by_id(session, user_id_list)
             for result in feed_results:

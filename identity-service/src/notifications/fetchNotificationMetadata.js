@@ -76,8 +76,18 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
     const announcementIds = new Set(announcements.map(({ entityId }) => entityId))
     const filteredNotifications = notifications.filter(({ id }) => !announcementIds.has(id))
 
+    let tenDaysAgo = moment().subtract(10, 'days')
+
+    // An announcement is valid if it's
+    // 1.) created after the user
+    // 2.) created after "fromTime" which represent the time the last email was sent
+    // 3.) created within the last 10 days
     const validUserAnnouncements = announcements
-      .filter(a => moment(a.datePublished).isAfter(user.createdAt) && moment(a.datePublished).isAfter(fromTime))
+      .filter(a => (
+        moment(a.datePublished).isAfter(user.createdAt) &&
+        moment(a.datePublished).isAfter(fromTime) &&
+        moment(a.datePublished).isAfter(tenDaysAgo)
+      ))
 
     const userNotifications = mergeAudiusAnnoucements(validUserAnnouncements, filteredNotifications)
     let unreadAnnouncementCount = 0

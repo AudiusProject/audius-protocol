@@ -18,12 +18,8 @@ def get_tracks(args):
 
         # Conditionally process an array of tracks
         if "id" in args:
-            # Retrieve argument from flask request object
-            # Ensures empty parameters are not processed
-            track_id_str_list = args.get("id")
-            track_id_list = []
+            track_id_list = args.get("id")
             try:
-                track_id_list = [int(y) for y in track_id_str_list]
                 # Update query with track_id list
                 base_query = base_query.filter(Track.track_id.in_(track_id_list))
             except ValueError as e:
@@ -38,17 +34,15 @@ def get_tracks(args):
             )
 
         # Allow filtering of deletes
-        # Note: There is no standard for boolean url parameters, and any value (including 'false')
-        # will be evaluated as true, so an explicit check is made for true
         if "filter_deleted" in args:
             filter_deleted = args.get("filter_deleted")
-            if filter_deleted.lower() == 'true':
+            if filter_deleted:
                 base_query = base_query.filter(
                     Track.is_delete == False
                 )
 
         if "min_block_number" in args:
-            min_block_number = args.get("min_block_number", type=int)
+            min_block_number = args.get("min_block_number")
             base_query = base_query.filter(
                 Track.blocknumber >= min_block_number
             )
@@ -65,7 +59,7 @@ def get_tracks(args):
         # bundle peripheral info into track results
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
-        if "with_users" in args and args.get("with_users") != 'false':
+        if args.get("with_users", False):
             user_id_list = get_users_ids(tracks)
             users = get_users_by_id(session, user_id_list)
             for track in tracks:

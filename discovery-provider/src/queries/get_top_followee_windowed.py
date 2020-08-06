@@ -21,10 +21,7 @@ def get_top_followee_windowed(type, window, args):
             "Invalid window provided, must be one of {}".format(valid_windows)
         )
 
-    if 'limit' in args:
-        limit = min(int(args.get('limit')), 100)
-    else:
-        limit = 25
+    limit = args.get('limit', 25)
 
     current_user_id = get_current_user_id()
     db = get_db_read_replica()
@@ -79,7 +76,7 @@ def get_top_followee_windowed(type, window, args):
         tracks = populate_track_metadata(
             session, track_ids, tracks, current_user_id)
 
-        if 'with_users' in args and args.get('with_users') != 'false':
+        if args.get('with_users', False):
             user_id_list = get_users_ids(tracks)
             users = get_users_by_id(session, user_id_list)
             for track in tracks:
