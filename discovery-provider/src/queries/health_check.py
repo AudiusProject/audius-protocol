@@ -1,7 +1,6 @@
 import logging
-
 from flask import Blueprint, request
-
+from src.queries.queries import parse_bool_param
 from src.api_helpers import success_response_backwards_compat
 from src.queries.get_health import get_health
 from src.utils import helpers
@@ -24,7 +23,13 @@ def version():
 #   has been added (ex. if it's been more than 30 minutes since last block), etc.
 @bp.route("/health_check", methods=["GET"])
 def health_check():
-    (health_results, error) = get_health(request.args.to_dict())
+    args = {
+        "verbose": parse_bool_param(request.args.get("verbose")),
+        "healthy_block_diff": request.args.get("healthy_block_diff", type=int),
+        "enforce_block_diff": parse_bool_param(request.args.get("enforce_block_diff"))
+    }
+
+    (health_results, error) = get_health(args)
     return success_response_backwards_compat(
         health_results,
         500 if error else 200
@@ -34,8 +39,11 @@ def health_check():
 # Health check for block diff between DB and chain.
 @bp.route("/block_check", methods=["GET"])
 def block_check():
-    args = request.args.to_dict()
-    args["enforce_block_diff"] = 'true'
+    args = {
+        "verbose": parse_bool_param(request.args.get("verbose")),
+        "healthy_block_diff": request.args.get("healthy_block_diff", type=int),
+        "enforce_block_diff": True
+    }
 
     (health_results, error) = get_health(args, use_redis_cache=False)
     return success_response_backwards_compat(

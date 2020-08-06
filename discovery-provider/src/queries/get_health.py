@@ -53,12 +53,12 @@ def get_health(args, use_redis_cache=True):
     Gets health status for the service
 
     :param args: dictionary
-    :param args.verbose: string
-        if 'true', returns db connection information
-    :param args.healthy_block_diff: string (int-like)
+    :param args.verbose: bool
+        if True, returns db connection information
+    :param args.healthy_block_diff: int
         determines the point at which a block difference is considered unhealthy
-    :param args.enforce_block_diff: string if 'true', and the block difference is unhealthy
-        and error is returned
+    :param args.enforce_block_diff: bool
+        if true and the block difference is unhealthy an error is returned
 
     :rtype: (dictionary, bool)
     :return: tuple of health results and a boolean indicating an error
@@ -66,13 +66,9 @@ def get_health(args, use_redis_cache=True):
     redis = redis_connection.get_redis()
     web3 = web3_provider.get_web3()
 
-    verbose = args.get("verbose") == 'true'
-    enforce_block_diff = args.get("enforce_block_diff") == 'true'
-
-    # If the value given is not a valid int, will default to None
-    qs_healthy_block_diff = \
-        int(args.get("healthy_block_diff")) if args.get(
-            "healthy_block_diff") else None
+    verbose = args.get("verbose")
+    enforce_block_diff = args.get("enforce_block_diff")
+    qs_healthy_block_diff = args.get("healthy_block_diff")
 
     # If healthy block diff is given in url and positive, override config value
     healthy_block_diff = qs_healthy_block_diff if qs_healthy_block_diff is not None \

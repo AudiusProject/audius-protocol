@@ -224,8 +224,8 @@ def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
         ))
 
     args = {
-        "enforce_block_diff": "true",
-        "healthy_block_diff": "40"
+        "enforce_block_diff": True,
+        "healthy_block_diff": 40
     }
     health_results, error = get_health(args)
 
@@ -284,7 +284,7 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock):
         ))
 
     args = {
-        "verbose": "true"
+        "verbose": True
     }
     health_results, error = get_health(args)
 
