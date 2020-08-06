@@ -7,10 +7,7 @@ IPFS_CONTAINER=cn-test-ipfs-node
 DB_CONTAINER='cn_test_db'
 REDIS_CONTAINER='cn_test_redis'
 
-PG_PORT=$POSTGRES_TEST_PORT
-if [ -z "${PG_PORT}" ]; then
-  PG_PORT=4432
-fi
+PG_PORT=1432
 
 export testRedisPort=4379 
 export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_creator_node_test"
@@ -19,12 +16,14 @@ export logLevel='info'
 
 
 tear_down () {
+  set +e
   docker container stop $IPFS_CONTAINER
   docker container stop $DB_CONTAINER
   docker container stop $REDIS_CONTAINER
   docker container rm $IPFS_CONTAINER
   docker container rm $DB_CONTAINER
   docker container rm $REDIS_CONTAINER
+  set -e
 }
 
 if [ "$1" == "standalone_creator" ]; then
