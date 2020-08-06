@@ -3,63 +3,51 @@
 set -o xtrace
 set -e
 
-IPFS_NODE=local-ipfs-node
-
-tear_down () {
-  docker-compose -f compose/docker-compose.yml down
-  docker-compose -f compose/docker-compose.yml rm -f
-  docker container stop $IPFS_NODE
-  docker container rm $IPFS_NODE
-  exit
-}
+IPFS_CONTAINER=cn-test-ipfs-node
+DB_CONTAINER='cn_test_dib'
+REDIS_CONTAINER='cn_test_redis'
 
 PG_PORT=$POSTGRES_TEST_PORT
 if [ -z "${PG_PORT}" ]; then
   PG_PORT=4432
 fi
 
+export ipfsPort=6901
+export testRedisPort=4379 
 export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_creator_node_test"
 export storagePath='./test_file_storage'
 export logLevel='info'
 
-export COMPOSE_PROJECT_NAME="cn1" 
-export CREATOR_NODE_DB_HOST_PORT=4432 
-export CREATOR_NODE_REDIS_HOST_PORT=4379 
-export CREATOR_NODE_HOST_PORT=4000 
+
+tear_down () {
+  docker container stop $IPFS_CONTAINER
+  docker container stop $DB_CONTAINER
+  docker container stop $REDIS_CONTAINER
+  docker container rm $IPFS_CONTAINER
+  docker container rm $DB_CONTAINER
+  docker container rm $REDIS_CONTAINER
+}
 
 if [ "$1" == "standalone_creator" ]; then
   # Ignore error on create audius_dev network
-  set +e
-  docker network create audius_dev
-
-  IPFS_CONTAINER=$IPFS_NODE
-  DB_CONTAINER='cn1_creator-node-db_1'
-  REDIS_CONTAINER='cn1_creator-node-db_1'
-
   IPFS_EXISTS=$(docker ps -q -f status=running -f name=^/${IPFS_CONTAINER}$)
   DB_EXISTS=$(docker ps -q -f status=running -f name=^/${DB_CONTAINER}$)
   REDIS_EXISTS=$(docker ps -q -f status=running -f name=^/${REDIS_CONTAINER}$)
 
   if [ ! "${IPFS_EXISTS}" ]; then
     echo "IPFS Container doesn't exist"
-    docker container stop $IPFS_NODE
-    docker container rm $IPFS_NODE
-    cd ../
-    libs/scripts/ipfs.sh down $IPFS_NODE
-    libs/scripts/ipfs.sh up $IPFS_NODE
-    cd creator-node/
+    docker run -d --name $IPFS_CONTAINER -p 127.0.0.1:$ipfsPort:5001 ipfs/go-ipfs:v0.4.23 daemon
   fi
-
-  # Enable errors
-  set -e
 
   if [ ! "${DB_EXISTS}" ]; then
     echo "DB Container doesn't exist"
-    docker-compose -f compose/docker-compose.yml up --force-recreate -d creator-node-db 
+    docker run -d --name $DB_CONTAINER -p 127.0.0.1:$PG_PORT:5432 postgres:11.1
+    sleep 1
   fi
   if [ ! "${REDIS_EXISTS}" ]; then
     echo "Redis Container doesn't exist"
-    docker-compose -f compose/docker-compose.yml up --force-recreate -d creator-node-redis 
+    docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$testRedisPort:6479 redis:5.0.4
+    sleep 1
   fi
 elif [ "$1" == "teardown" ]; then
   tear_down
@@ -78,7 +66,7 @@ fi
 # https://circleci.com/docs/2.0/building-docker-images/#separation-of-environments
 # So, if tests are run locally, run docker exec command. Else, run the psql command in the job.
 if [ -z "${isCIBuild}" ]; then
-  docker exec -i cn1_creator-node-db_1 /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_creator_node_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_creator_node_test\""
+  docker exec -i $DB_CONTAINER /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_creator_node_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_creator_node_test\""
 fi
 
 mkdir -p $storagePath
