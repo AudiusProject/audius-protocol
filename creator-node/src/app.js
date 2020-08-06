@@ -9,6 +9,7 @@ const { userNodeMiddleware } = require('./userNodeMiddleware')
 const { userReqLimiter, trackReqLimiter, audiusUserReqLimiter, metadataReqLimiter, imageReqLimiter } = require('./reqLimiter')
 const redisClient = require('./redis')
 const config = require('./config')
+const healthCheckRoutes = require('./components/healthCheck/healthCheckAPI')
 
 const app = express()
 // middleware functions will be run in order they are added to the app below
@@ -32,6 +33,7 @@ app.use('/image_upload', imageReqLimiter)
 
 // import routes
 require('./routes')(app)
+app.use('/', healthCheckRoutes)
 
 function errorHandler (err, req, res, next) {
   req.logger.error('Internal server error')

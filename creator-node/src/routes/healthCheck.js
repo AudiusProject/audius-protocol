@@ -8,24 +8,6 @@ const MAX_DB_CONNECTIONS = 90
 const MAX_DISK_USAGE_PERCENT = 90 // 90%
 
 module.exports = function (app) {
-  /** @dev TODO - Explore checking more than just DB (ex. IPFS) */
-  app.get('/health_check', handleResponse(async (req, res) => {
-    const libs = req.app.get('audiusLibs')
-
-    let response = {
-      ...versionInfo,
-      'healthy': true,
-      'git': process.env.GIT_SHA,
-      'selectedDiscoveryProvider': 'none'
-    }
-
-    if (libs) {
-      response.selectedDiscoveryProvider = req.app.get('audiusLibs').discoveryProvider.discoveryProviderEndpoint
-    }
-
-    return successResponse(response)
-  }))
-
   /**
    * Performs diagnostic ipfs operations to confirm functionality
    */
