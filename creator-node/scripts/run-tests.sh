@@ -12,7 +12,6 @@ if [ -z "${PG_PORT}" ]; then
   PG_PORT=4432
 fi
 
-export ipfsPort=6901
 export testRedisPort=4379 
 export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_creator_node_test"
 export storagePath='./test_file_storage'
@@ -29,6 +28,7 @@ tear_down () {
 }
 
 if [ "$1" == "standalone_creator" ]; then
+  export ipfsPort=6901
   # Ignore error on create audius_dev network
   IPFS_EXISTS=$(docker ps -q -f status=running -f name=^/${IPFS_CONTAINER}$)
   DB_EXISTS=$(docker ps -q -f status=running -f name=^/${DB_CONTAINER}$)
