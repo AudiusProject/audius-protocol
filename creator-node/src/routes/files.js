@@ -341,6 +341,7 @@ module.exports = function (app) {
    * @param {boolean} req.query.fromFS whether or not to retrieve directly from the filesystem and
    * rehydrate IPFS asynchronously
    * @dev This route does not handle responses by design, so we can pipe the response to client.
+   * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
   app.get('/ipfs/:CID', getCID)
 
@@ -352,6 +353,7 @@ module.exports = function (app) {
    * @param {boolean} req.query.fromFS whether or not to retrieve directly from the filesystem and
    * rehydrate IPFS asynchronously
    * @dev This route does not handle responses by design, so we can pipe the gateway response.
+   * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
   app.get('/ipfs/:dirCID/:filename', getDirCID)
 }
