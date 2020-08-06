@@ -393,8 +393,11 @@ jobs:
       - run:
           name: Get tag or latest
           command: |
-            # order of precendence for IMAGE tag is CIRCLE_TAG, 'stage' or 'production' if on that branch, 'latest'
-            echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ ^(stage|production)$ ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
+            # order of precendence for IMAGE tag is:
+            # 1. CIRCLE_TAG if defined,
+            # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
+            # 3. 'latest', which is the default
+            echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
       - run:
           name: Docker login
           command: |
@@ -474,27 +477,27 @@ workflows:
       - test-libs:
           filters:
             branches:
-              ignore: /(^master)|(^stage)|(^production)$/
+              ignore: /(^master)|(hotfix)$/
       - test-contracts:
           filters:
             branches:
-              ignore: /(^master)|(^stage)|(^production)$/
+              ignore: /(^master)|(hotfix)$/
       - test-eth-contracts:
           filters:
             branches:
-              ignore: /(^master)|(^stage)|(^production)$/
+              ignore: /(^master)|(hotfix)$/
       - test-creator-node:
           filters:
             branches:
-              ignore: /(^master)|(^stage)|(^production)$/
+              ignore: /(^master)|(hotfix)$/
       - test-discovery-provider:
           filters:
             branches:
-              ignore: /(^master)|(^stage)|(^production)$/
+              ignore: /(^master)|(hotfix)$/
       - test-identity-service:
           filters:
             branches:
-              ignore: /(^master)|(^stage)|(^production)$/
+              ignore: /(^master)|(hotfix)$/
 
   # push public docker images when a git tag is present
   # tag must be in the format @audius/<service>@x.x.x
@@ -508,7 +511,7 @@ workflows:
             tags:
               only: /^@audius/libs@\d+\.\d+\.\d+/
             branches:
-              only: /(^master)|(^stage)|(^production)$/
+              only: /(^master)|(hotfix)$/
       - docker-build-and-push:
           name: build-libs
           repo: libs
@@ -518,7 +521,7 @@ workflows:
             tags:
               only: /^@audius/libs@\d+\.\d+\.\d+/
             branches:
-              only: /(^master)|(^stage)|(^production)$/
+              only: /(^master)|(hotfix)$/
       # contracts: test, build and push
       - test-contracts:
           force: true
@@ -526,7 +529,7 @@ workflows:
             tags:
               only: /^@audius/contracts@\d+\.\d+\.\d+/
             branches:
-              only: /(^master)|(^stage)|(^production)$/
+              only: /(^master)|(hotfix)$/
       - docker-build-and-push:
           name: build-contracts
           repo: contracts
@@ -536,7 +539,7 @@ workflows:
             tags:
               only: /^@audius/contracts@\d+\.\d+\.\d+/
             branches:
-              only: /(^master)|(^stage)|(^production)$/
+              only: /(^master)|(hotfix)$/
       # eth-contracts: test, build and push
       - test-eth-contracts:
           force: true
@@ -544,7 +547,7 @@ workflows:
             tags:
               only: /^@audius/eth-contracts@\d+\.\d+\.\d+/
             branches:
-              only: /(^master)|(^stage)|(^production)$/
+              only: /(^master)|(hotfix)$/
       - docker-build-and-push:
           name: build-eth-contracts
           repo: eth-contracts
@@ -554,7 +557,7 @@ workflows:
             tags:
               only: /^@audius/eth-contracts@\d+\.\d+\.\d+/
             branches:
-              only: /(^master)|(^stage)|(^production)$/
+              only: /(^master)|(hotfix)$/
       # creator node: test, build and push
       - test-creator-node:
           force: true
@@ -562,7 +565,7 @@ workflows:
             tags:
               only: /^@audius/creator-node@\d+\.\d+\.\d+/
             branches:
-              only: /(^master)|(^stage)|(^production)$/
+              only: /(^master)|(hotfix)$/
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
@@ -572,7 +575,7 @@ workflows:
             tags:
               only: /^@audius/creator-node@\d+\.\d+\.\d+/
             branches:
-              only: /(^master)|(^stage)|(^production)$/
+              only: /(^master)|(hotfix)$/
       # discovery provider: test, build and push
       - test-discovery-provider:
           force: true
@@ -580,7 +583,7 @@ workflows:
             tags:
               only: /^@audius/discovery-provider@\d+\.\d+\.\d+/
             branches:
-              only: /(^master)|(^stage)|(^production)$/
+              only: /(^master)|(hotfix)$/
       - docker-build-and-push:
           name: build-discovery-provider
           repo: discovery-provider
@@ -590,7 +593,7 @@ workflows:
             tags:
               only: /^@audius/discovery-provider@\d+\.\d+\.\d+/
             branches:
-              only: /(^master)|(^stage)|(^production)$/
+              only: /(^master)|(hotfix)$/
       # identity service: test, build and push
       - test-identity-service:
           force: true
@@ -598,7 +601,7 @@ workflows:
             tags:
               only: /^@audius/identity-service@\d+\.\d+\.\d+/
             branches:
-              only: /(^master)|(^stage)|(^production)$/
+              only: /(^master)|(hotfix)$/
       - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
@@ -608,7 +611,7 @@ workflows:
             tags:
               only: /^@audius/identity-service@\d+\.\d+\.\d+/
             branches:
-              only: /(^master)|(^stage)|(^production)$/
+              only: /(^master)|(hotfix)$/
       # DEPLOY MASTER TO CI ENVIRONMENT
       - deploy:
           name: deploy-ci
