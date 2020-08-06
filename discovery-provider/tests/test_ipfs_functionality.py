@@ -40,3 +40,44 @@ def test_ipfs(app):
     for key in test_metadata_object:
         assert key in ipfs_metadata
         assert test_metadata_object[key] == ipfs_metadata[key]
+
+def test_ipfs_multihash_is_directory(app):
+    ipfs_peer_host = app.config["ipfs"]["host"]
+    ipfs_peer_port = app.config["ipfs"]["port"]
+
+    # Instantiate IPFS client from src lib
+    ipfsclient = IPFSClient(ipfs_peer_host, ipfs_peer_port, [])
+
+    '''
+    CASE 1 - not a valid cid
+    Invoke multihash_is_directory with a invalid cid, verify that it throws an 'invalid multihash' error
+    '''
+    try:
+        is_directory = ipfsclient.multihash_is_directory('Qmfake')
+    except Exception as e:
+        assert 'invalid multihash' in  str(e)
+
+    '''
+    CASE 2 - valid cid, directory
+    Invoke multihash_is_directory with cat function handler that returns `this dag node is a directory error`
+    '''
+    def cat_handler_dir(cid, s, e,  timeout):
+        raise Exception('this dag node is a directory')
+    ipfsclient._api.cat = cat_handler_dir
+
+    # Invoke audius-ipfs with a invalid cid, verify that it throws an 'invalid multihash' error
+    is_directory = ipfsclient.multihash_is_directory('QmVmEZnQr49gDtd7xpcsNdmgrtRTT5Te2x27KbTRPNapqy')
+    assert is_directory is True
+
+    '''
+    CASE 3 - valid cid, not directory
+    Invoke multihash_is_directory with cat function handler that returns some other response
+    '''
+    def cat_handler_not_dir(cid, s, e,  timeout):
+        return 'not a directory'
+    ipfsclient._api.cat = cat_handler_not_dir
+
+    # Invoke audius-ipfs with a invalid cid, verify that it throws an 'invalid multihash' error
+    is_directory = ipfsclient.multihash_is_directory('QmVmEZnQr49gDtd7xpcsNdmgrtRTT5Te2x27KbTRPNapqy')
+    assert is_directory is False
+    
