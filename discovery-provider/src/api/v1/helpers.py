@@ -144,6 +144,10 @@ def make_response(name, namespace, modelType):
         "data": modelType,
     })
 
+def to_dict(multi_dict):
+    """Converts a multi dict into a dict where only list entries are not flat"""
+    return {k: v if len(v) > 1 else v[0] for (k, v) in multi_dict.to_dict(flat=False).items()}
+
 
 search_parser = reqparse.RequestParser()
 search_parser.add_argument('query', required=True)
