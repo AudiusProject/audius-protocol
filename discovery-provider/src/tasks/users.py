@@ -32,11 +32,8 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
     # loop through all audius event types within that tx and get all event logs
     # for each event, apply changes to the user in user_events_lookup
     for tx_receipt in user_factory_txs:
-        logger.warning(f'tx_receipt {tx_receipt}')
         for event_type in user_event_types_arr:
-            logger.warning(f'getattr(user_contract.events, event_type) {getattr(user_contract.events, event_type)}')
             user_events_tx = getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
-            logger.warning(f'user_events_tx {user_events_tx}')
             for entry in user_events_tx:
                 user_id = entry["args"]._userId
 
@@ -196,11 +193,11 @@ def parse_user_event(
                 user_record.profile_picture = None
         except Exception as e:
             # we are unable to get the profile picture
-                if 'invalid multihash' in str(e):
-                    user_record.profile_picture_sizes = None
-                    user_record.profile_picture = None
-                else:
-                    raise e
+            if 'invalid multihash' in str(e):
+                user_record.profile_picture_sizes = None
+                user_record.profile_picture = None
+            else:
+                raise e
 
     # if cover_photo CID is of a dir, store under _sizes field instead
     if user_record.cover_photo:

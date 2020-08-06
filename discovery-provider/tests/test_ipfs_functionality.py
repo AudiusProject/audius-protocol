@@ -80,4 +80,3 @@ def test_ipfs_multihash_is_directory(app):
     # Invoke audius-ipfs with a invalid cid, verify that it throws an 'invalid multihash' error
     is_directory = ipfsclient.multihash_is_directory('QmVmEZnQr49gDtd7xpcsNdmgrtRTT5Te2x27KbTRPNapqy')
     assert is_directory is False
-    
