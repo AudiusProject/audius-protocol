@@ -10,7 +10,7 @@ const { saveFileToIPFSFromFS, removeTrackFolder, saveFileFromBuffer } = require(
 const config = require('../src/config')
 const models = require('../src/models')
 
-const { sortKeys } = require('./lib/utils')
+const { sortKeys } = require('../src/apiHelpers')
 
 let storagePath = config.get('storagePath')
 storagePath = storagePath.charAt(0) === '/' ? storagePath.slice(1) : storagePath
