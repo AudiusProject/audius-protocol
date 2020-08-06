@@ -1,4 +1,5 @@
 from src import api_helpers
+from src.utils.config import shared_config
 from hashids import Hashids
 from flask_restx import fields, reqparse
 from src.queries.search_queries import SearchKind
@@ -24,7 +25,7 @@ def make_image(endpoint, cid, width="", height=""):
 def get_primary_endpoint(user):
     raw_endpoint = user["creator_node_endpoint"]
     if not raw_endpoint:
-        return None
+        return shared_config["discprov"]["user_metadata_service_url"]
     return raw_endpoint.split(",")[0]
 
 def add_track_artwork(track):

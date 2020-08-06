@@ -1,11 +1,10 @@
 const Jimp = require('jimp')
 const ExifParser = require('exif-parser')
 const { logger: genericLogger } = require('./logging')
-const config = require('./config')
+const { ipfs } = require('./ipfsClient')
 const fs = require('fs')
 const path = require('path')
 const { promisify } = require('util')
-const ipfsClient = require('ipfs-http-client')
 const writeFile = promisify(fs.writeFile)
 const mkdir = promisify(fs.mkdir)
 
@@ -112,15 +111,15 @@ module.exports = async (job) => {
     square,
     logContext
   } = job.data
-  const ipfs = ipfsClient(
-    config.get('ipfsHost'),
-    config.get('ipfsPort')
-  )
-
   const logger = genericLogger.child(logContext)
 
   // Read the image once, clone it later on
-  let img = await Jimp.read(file)
+  let img
+  try {
+    img = await Jimp.read(file)
+  } catch (e) {
+    throw new Error(`Could not generate image buffer during image resize: ${e}`)
+  }
 
   // Resize all the images
   const resizes = await Promise.all(

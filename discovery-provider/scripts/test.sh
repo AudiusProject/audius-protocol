@@ -69,4 +69,8 @@ docker-compose -f docker-compose.base.yml up -d
 # docker-compose -f docker-compose.ipfs.yml up -d
 sleep 5
 
-pytest -s -v --fulltrace 
+# Unit tests
+pytest src
+
+# Integration tests
+pytest tests
