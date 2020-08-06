@@ -9,7 +9,7 @@ from web3 import HTTPProvider, Web3
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import exc
 from celery import Task
-from celery.schedules import timedelta
+from celery.schedules import timedelta, crontab
 
 import redis
 from flask import Flask
@@ -258,7 +258,7 @@ def configure_celery(flask_app, celery, test_config=None):
 
     # Update celery configuration
     celery.conf.update(
-        imports=["src.tasks.index", "src.tasks.index_blacklist", "src.tasks.index_cache", "src.tasks.index_plays"],
+        imports=["src.tasks.index", "src.tasks.index_blacklist", "src.tasks.index_cache", "src.tasks.index_plays", "src.tasks.index_metrics"],
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
@@ -275,6 +275,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_play_count": {
                 "task": "update_play_count",
                 "schedule": timedelta(seconds=5)
+            },
+            "update_metrics": {
+                "task": "update_metrics",
+                "schedule": crontab(minute=0, hour="*")
             }
         },
         task_serializer="json",
