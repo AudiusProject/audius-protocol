@@ -9,7 +9,7 @@ REDIS_CONTAINER='cn_test_redis'
 
 PG_PORT=1432
 
-export testRedisPort=4379 
+export redisPort=4379 
 export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_creator_node_test"
 export storagePath='./test_file_storage'
 export logLevel='info'
@@ -45,7 +45,7 @@ if [ "$1" == "standalone_creator" ]; then
   fi
   if [ ! "${REDIS_EXISTS}" ]; then
     echo "Redis Container doesn't exist"
-    docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$testRedisPort:6479 redis:5.0.4
+    docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$redisPort:6379 redis:5.0.4
     sleep 1
   fi
 elif [ "$1" == "teardown" ]; then
