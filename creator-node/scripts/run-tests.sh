@@ -9,7 +9,6 @@ REDIS_CONTAINER='cn_test_redis'
 
 PG_PORT=1432
 
-export redisPort=4379 
 export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_creator_node_test"
 export storagePath='./test_file_storage'
 export logLevel='info'
@@ -28,6 +27,7 @@ tear_down () {
 
 if [ "$1" == "standalone_creator" ]; then
   export ipfsPort=6901
+  export redisPort=4377 
   # Ignore error on create audius_dev network
   IPFS_EXISTS=$(docker ps -q -f status=running -f name=^/${IPFS_CONTAINER}$)
   DB_EXISTS=$(docker ps -q -f status=running -f name=^/${DB_CONTAINER}$)
