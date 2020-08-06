@@ -4,7 +4,7 @@ set -o xtrace
 set -e
 
 IPFS_CONTAINER=cn-test-ipfs-node
-DB_CONTAINER='cn_test_dib'
+DB_CONTAINER='cn_test_db'
 REDIS_CONTAINER='cn_test_redis'
 
 PG_PORT=$POSTGRES_TEST_PORT
