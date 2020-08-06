@@ -25,10 +25,19 @@ tracks_response = make_response(
 @ns.route('/<string:track_id>')
 class Track(Resource):
     @record_metrics
+    @ns.doc(
+        id="""Get Track""",
+        params={'track_id': 'A Track ID'},
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
     @ns.marshal_with(track_response)
     @cache(ttl_sec=5)
     def get(self, track_id):
-        """Fetch a track"""
+        """Fetch a track."""
         decoded_id = decode_with_abort(track_id, ns)
         args = {"id": [decoded_id], "with_users": True, "filter_deleted": True}
         tracks = get_tracks(args)
@@ -41,9 +50,27 @@ class Track(Resource):
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
     @record_metrics
+    @ns.doc(
+        id="""Stream Track""",
+        params={'track_id': 'A Track ID'},
+        responses={
+            200: 'Success',
+            216: 'Partial content',
+            400: 'Bad request',
+            416: 'Content range invalid',
+            500: 'Server error'
+        }
+    )
     @cache(ttl_sec=5)
     def get(self, track_id):
-        """Redirect to track mp3"""
+        """
+        Get the track's streammable mp3 file.
+
+        This endpoint accepts the Range header for streaming.
+        https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
+
+        Note: This endpoint returns a 302 to an Audius Creator Node that surfaces the audio
+        """
         decoded_id = decode_with_abort(track_id, ns)
         args = {"track_id": decoded_id}
         creator_nodes = get_track_user_creator_node(args)
@@ -65,10 +92,20 @@ track_search_result = make_response(
 @ns.route("/search")
 class TrackSearchResult(Resource):
     @record_metrics
+    @ns.doc(
+        id="""Search Tracks""",
+        params={'query': 'Search Query'},
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
     @ns.marshal_with(track_search_result)
     @ns.expect(search_parser)
     @cache(ttl_sec=60)
     def get(self):
+        """Search for a track."""
         args = search_parser.parse_args()
         query = args["query"]
         search_args = {
@@ -87,6 +124,14 @@ class TrackSearchResult(Resource):
 @ns.route("/trending")
 class Trending(Resource):
     @record_metrics
+    @ns.doc(
+        id="""Trending Tracks""",
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=30 * 60)
     def get(self):

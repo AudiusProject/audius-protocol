@@ -20,10 +20,19 @@ user_response = make_response("user_response", ns, fields.Nested(user_model))
 @ns.route("/<string:user_id>")
 class User(Resource):
     @record_metrics
+    @ns.doc(
+        id="""Get User""",
+        params={'user_id': 'A User ID'},
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
     @ns.marshal_with(user_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
-        """Fetch a single user"""
+        """Fetch a single user."""
         decoded_id = decode_with_abort(user_id, ns)
         args = {"id": [decoded_id]}
         users = get_users(args)
@@ -36,6 +45,15 @@ tracks_response = make_response("tracks_response", ns, fields.List(fields.Nested
 @ns.route("/<string:user_id>/tracks")
 class TrackList(Resource):
     @record_metrics
+    @ns.doc(
+        id="""Get User's Tracks""",
+        params={'user_id': 'A User ID'},
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
@@ -52,6 +70,15 @@ favorites_response = make_response("favorites_response", ns, fields.List(fields.
 @ns.route("/<string:user_id>/favorites")
 class FavoritedTracks(Resource):
     @record_metrics
+    @ns.doc(
+        id="""Get User's Favorite Tracks""",
+        params={'user_id': 'A User ID'},
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
     @ns.marshal_with(favorites_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
@@ -66,10 +93,19 @@ user_search_result = make_response("user_search", ns, fields.List(fields.Nested(
 @ns.route("/search")
 class UserSearchResult(Resource):
     @record_metrics
+    @ns.doc(
+        id="""Search Users""",
+        params={'query': 'Search query'},
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
     @ns.marshal_with(user_search_result)
     @ns.expect(search_parser)
     def get(self):
-        """Seach for a user"""
+        """Seach for a user."""
         args = search_parser.parse_args()
         query = args["query"]
         search_args = {
