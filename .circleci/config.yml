@@ -469,7 +469,7 @@ workflows:
           cron: "0 5 * * *"
           filters:
             branches:
-              only: /(^master)$/
+              only: /(^master$)/
 
   # run tests for PRs/branches other than master
   test-branch:
@@ -627,5 +627,5 @@ workflows:
             - build-identity-service
           filters:
             branches:
-              only: /(^master)$/
+              only: /(^master$)/
 
