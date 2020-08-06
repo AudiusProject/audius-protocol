@@ -10,6 +10,7 @@ from src.queries.get_tracks import get_tracks
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_favorite, extend_track, extend_user, make_response, search_parser, success_response
 from .models.tracks import track
 from src.utils.redis_cache import cache
+from src.utils.redis_metrics import metrics
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ ns = Namespace('users', description='User related operations')
 user_response = make_response("user_response", ns, fields.Nested(user_model))
 @ns.route("/<string:user_id>")
 class User(Resource):
+    @metrics
     @ns.marshal_with(user_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
@@ -33,6 +35,7 @@ class User(Resource):
 tracks_response = make_response("tracks_response", ns, fields.List(fields.Nested(track)))
 @ns.route("/<string:user_id>/tracks")
 class TrackList(Resource):
+    @metrics
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
@@ -48,6 +51,7 @@ class TrackList(Resource):
 favorites_response = make_response("favorites_response", ns, fields.List(fields.Nested(favorite)))
 @ns.route("/<string:user_id>/favorites")
 class FavoritedTracks(Resource):
+    @metrics
     @ns.marshal_with(favorites_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
@@ -61,6 +65,7 @@ user_search_result = make_response("user_search", ns, fields.List(fields.Nested(
 
 @ns.route("/search")
 class UserSearchResult(Resource):
+    @metrics
     @ns.marshal_with(user_search_result)
     @ns.expect(search_parser)
     def get(self):

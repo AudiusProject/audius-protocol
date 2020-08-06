@@ -13,6 +13,7 @@ from src.queries.get_trending_tracks import get_trending_tracks
 from src.utils.config import shared_config
 from flask.json import dumps
 from src.utils.redis_cache import cache
+from src.utils.redis_metrics import metrics
 
 logger = logging.getLogger(__name__)
 ns = Namespace('tracks', description='Track related operations')
@@ -23,6 +24,7 @@ tracks_response = make_response(
 
 @ns.route('/<string:track_id>')
 class Track(Resource):
+    @metrics
     @ns.marshal_with(track_response)
     @cache(ttl_sec=5)
     def get(self, track_id):
@@ -38,6 +40,7 @@ class Track(Resource):
 
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
+    @metrics
     @cache(ttl_sec=5)
     def get(self, track_id):
         """Redirect to track mp3"""
@@ -61,6 +64,7 @@ track_search_result = make_response(
 
 @ns.route("/search")
 class TrackSearchResult(Resource):
+    @metrics
     @ns.marshal_with(track_search_result)
     @ns.expect(search_parser)
     @cache(ttl_sec=60)
@@ -82,6 +86,7 @@ class TrackSearchResult(Resource):
 
 @ns.route("/trending")
 class Trending(Resource):
+    @metrics
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=30 * 60)
     def get(self):
