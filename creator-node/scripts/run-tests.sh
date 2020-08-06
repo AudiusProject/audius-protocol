@@ -19,6 +19,10 @@ tear_down () {
   docker container rm $IPFS_CONTAINER
   docker container rm $DB_CONTAINER
   docker container rm $REDIS_CONTAINER
+  unset IPFS_CONTAINER
+  unset DB_CONTAINER
+  unset REDIS_CONTAINER
+  unset PG_PORT
   set -e
 }
 
