@@ -460,7 +460,7 @@ def refresh_peer_connections(task_context):
             stored_in_redis = redis.get(cnode_url)
             if stored_in_redis is not None:
                 continue
-            if cnode_url == '':
+            if cnode_url == "''":
                 continue
 
             try:
