@@ -46,7 +46,6 @@ track = ns.model('Track', {
     "description": fields.String,
     "genre": fields.String,
     "id": fields.String(required=True),
-    "length": fields.Integer,
     "mood": fields.String,
     "release_date": fields.String,
     "remix_of": fields.Nested(remix_parent),
@@ -55,6 +54,7 @@ track = ns.model('Track', {
     "tags": fields.String,
     "title": fields.String(required=True),
     "user": fields.Nested(user_model, required=True),
+    "duration": fields.Float(required=True)
 })
 
 track_full = ns.clone('track_full', track, {
@@ -64,6 +64,7 @@ track_full = ns.clone('track_full', track, {
     "credits_splits": fields.String,
     "download": fields.Nested(download),
     "isrc": fields.String,
+    "length": fields.Integer,
     "license": fields.String,
     "iswc": fields.String,
     "field_visibility": fields.Nested(field_visibility),

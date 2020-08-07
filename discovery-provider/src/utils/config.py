@@ -69,6 +69,7 @@ class ConfigIni(configparser.ConfigParser):  # pylint: disable=too-many-ancestor
             current_app.config['db']['url_read_replica'] = current_app.config['db']['url']
 
         # Always disable (not included in app.default_config)
+        # See https://flask-restx.readthedocs.io/en/latest/mask.html#usage
         current_app.config['RESTX_MASK_SWAGGER'] = False
 
     def _load_item(self, section_name, key):

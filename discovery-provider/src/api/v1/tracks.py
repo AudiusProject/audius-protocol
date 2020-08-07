@@ -64,12 +64,10 @@ class TrackStream(Resource):
     @cache(ttl_sec=5)
     def get(self, track_id):
         """
-        Get the track's streammable mp3 file.
+        Get the track's streamable mp3 file.
 
         This endpoint accepts the Range header for streaming.
         https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
-
-        Note: This endpoint returns a 302 to an Audius Creator Node that surfaces the audio
         """
         decoded_id = decode_with_abort(track_id, ns)
         args = {"track_id": decoded_id}
@@ -135,7 +133,7 @@ class Trending(Resource):
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=30 * 60)
     def get(self):
-        """Get the trending tracks"""
+        """Gets the top 100 trending (most popular) tracks on Audius"""
         args = trending_parser.parse_args()
         time = args.get("time") if args.get("time") is not None else 'week'
         args = {

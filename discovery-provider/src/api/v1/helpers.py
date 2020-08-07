@@ -120,6 +120,10 @@ def extend_track(track):
     track = add_track_artwork(track)
     track["remix_of"] = extend_remix_of(track["remix_of"])
     track["favorite_count"] = track["save_count"]
+    duration = 0.
+    for segment in track["track_segments"]:
+        duration += segment["duration"]
+    track["duration"] = duration
     return track
 
 def extend_playlist(playlist):
