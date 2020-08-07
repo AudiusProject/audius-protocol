@@ -65,8 +65,8 @@ const configFileStorage = () => {
   return (path.resolve('./', config.get('storagePath')))
 }
 
-const initRecurringSyncs = async () => {
-  const recurringSync = new RecurringSync()
+const initRecurringSyncs = async (libs) => {
+  const recurringSync = new RecurringSync(libs)
   await recurringSync.init()
 }
 
@@ -136,7 +136,7 @@ const startApp = async () => {
     appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager, ipfsLatest)
 
     // start recurring sync jobs
-    await initRecurringSyncs()
+    await initRecurringSyncs(audiusLibs)
   }
 
   // when app terminates, close down any open DB connections gracefully
