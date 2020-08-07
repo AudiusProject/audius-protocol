@@ -32,7 +32,6 @@ class StateMachine {
   }
 
   async processStateMachineOperation (job) {
-    await utils.timeout(1000) 
     logger.info('------------------Process state machine operation------------------')
     logger.info(`job: ${job}`)
     if (this.audiusLibs == null) {
@@ -53,6 +52,8 @@ class StateMachine {
     }
 
     console.log(info)
+    // Retrieve all users for this creator node
+    // TODO: Consider pagination here - already enabled in query
     let cnodeUsers = await this.audiusLibs.discoveryProvider.getUsersForCreatorNode(info.spID)
     console.log(`Users:`)
     console.log(cnodeUsers)
@@ -70,6 +71,7 @@ class StateMachine {
 
     this.stateMachineQueue.process(async (job, done) => {
       try {
+        await utils.timeout(3000) 
         await this.processStateMachineOperation(job)
       } catch (e) {
         logger.info(`Error processing ${e}`)
