@@ -1,11 +1,10 @@
 import logging # pylint: disable=C0302
-from flask import Flask, Blueprint
 from src.api.v1.models.playlists import playlist_model
 from src.queries.get_playlists import get_playlists
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_playlist_tracks import get_playlist_tracks
-from src.queries.query_helpers import get_current_user_id
-from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track, make_response, success_response, search_parser
+from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track,\
+    make_response, success_response, search_parser, truncate_search
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache
@@ -69,4 +68,5 @@ class PlaylistSearchResult(Resource):
         }
         response = search(search_args)
         playlists = list(map(extend_playlist, response["playlists"]))
+        playlists = truncate_search(playlists)
         return success_response(playlists)

@@ -4,9 +4,9 @@ from flask import redirect
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
-from src.api.v1.helpers import abort_not_found, decode_with_abort, encode_int_id, \
-    extend_favorite, extend_track, extend_user, make_response, search_parser, \
-    trending_parser, success_response
+from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
+    extend_track, make_response, search_parser, \
+    trending_parser, success_response, truncate_search
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_trending_tracks import get_trending_tracks
@@ -80,7 +80,8 @@ class TrackSearchResult(Resource):
         }
         response = search(search_args)
         tracks = response["tracks"]
-        tracks = list(map(extend_track, tracks))
+        tracks =  list(map(extend_track, tracks))
+        tracks = truncate_search(tracks)
         return success_response(tracks)
 
 

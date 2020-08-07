@@ -130,6 +130,10 @@ def extend_playlist(playlist):
     playlist = add_playlist_artwork(playlist)
     return playlist
 
+MAX_SEARCH_LEN = 10
+def truncate_search(results):
+    return results[:MAX_SEARCH_LEN]
+
 def abort_not_found(identifier, namespace):
     namespace.abort(404, "Oh no! Resource for ID {} not found.".format(identifier))
 
