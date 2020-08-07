@@ -16,7 +16,7 @@ class ApiWithHTTPS(Api):
         """
         # TODO: It would be better to use an env var here to determine whether http or https
         # is applicable to the current context, but `localhost` suffices
-        scheme = 'http' if 'localhost' in self.base_url else 'https'
+        scheme = 'https' if 'https' in self.base_url else 'http'
         return url_for(self.endpoint('specs'), _external=True, _scheme=scheme)
 
 
