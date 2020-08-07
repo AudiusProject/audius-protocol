@@ -90,8 +90,7 @@ def sweep_metrics(db, redis):
     If it is before the current time, then process the redis hset.
     """
     with db.scoped_session() as session:
-        all_keys = redis.keys(f"{metrics_prefix}:*")
-        for key_byte in all_keys:
+        for key_byte in redis.scan_iter(f"{metrics_prefix}:*"):
             key = key_byte.decode("utf-8")
             parsed_key = parse_metrics_key(key)
 
