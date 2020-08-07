@@ -4,7 +4,6 @@ const path = require('path')
 const assert = require('assert')
 const sinon = require('sinon')
 
-const utils = require('../src/utils')
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
 
@@ -127,6 +126,18 @@ describe('test Tracks', function () {
     assert.deepStrictEqual(resp1.body.source_file.includes('.mp3'), true)
     assert.deepStrictEqual(resp1.body.transcodedTrackCID, 'testCIDLink')
     assert.deepStrictEqual(typeof resp1.body.transcodedTrackUUID, 'string')
+  })
+
+  it('TODO - Successfully prunes upload artifacts', async function () {
+    /**
+     * unit test removeTrackFolder
+     * - replicate /track_content upload flow -> is there a better way to do this without re-writing track_content?
+     * - confirm desired disk state
+     * - call removeTrackFolder()
+     * - confirm desired disk state
+     *
+     * for now, test happy path and add TODO to test failure cases
+     */
   })
 
   // depends on "upload file to IPFS"
@@ -448,14 +459,11 @@ describe('test /track_content with actual ipfsClient', function () {
     let storagePath = config.get('storagePath')
     storagePath = storagePath.slice(0, 1) === '/' ? '.' + storagePath : storagePath
 
-    // Wait before checking disk state since disk pruning action is made as a non-blocking call and may
-    //  complete after /track_content route returns
-    await utils.timeout(2000)
-
-    // Ensure original trackUUID dir has been pruned and does not exist
-    const originalTrackUUID = resp.body.source_file.split('.').slice(0, -1).join('.') // remove extension
-    const originalTrackUUIDPath = path.join(storagePath, originalTrackUUID)
-    assert.ok(!fs.existsSync(originalTrackUUIDPath))
+    // TODO - move to separate unit test above
+    // // Ensure original trackUUID dir has been pruned and does not exist
+    // const originalTrackUUID = resp.body.source_file.split('.').slice(0, -1).join('.') // remove extension
+    // const originalTrackUUIDPath = path.join(storagePath, originalTrackUUID)
+    // assert.ok(!fs.existsSync(originalTrackUUIDPath))
 
     // check that the generated transcoded track is the same as the transcoded track in /tests
     const transcodedTrackAssetPath = path.join(__dirname, 'testTranscoded320Track.mp3')
@@ -473,6 +481,7 @@ describe('test /track_content with actual ipfsClient', function () {
     })
 
     // TODO - add more granular check for segment correctness -> e.g. sum segment file sizes, sum segment durations via ffprobe, etc
-    //  might not be possible to assert segment CIDs equality since ffmpeg segmenting may not be deterministic in all conditions
+    //    might not be possible to assert segment CIDs equality since ffmpeg segmenting may not be deterministic in all conditions
+    //    We already have each segment stored in /test/test-segments, can do buffer comparison with resp.body.data.segments[]
   })
 })

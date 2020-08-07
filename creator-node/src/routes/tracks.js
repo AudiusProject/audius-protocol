@@ -18,7 +18,7 @@ module.exports = function (app) {
    * upload track segment files and make avail - will later be associated with Audius track
    * @dev - currently stores each segment twice, once under random file UUID & once under IPFS multihash
    *      - this should be addressed eventually
-   * @dev - Every error scenario removes upload artifacts without awaiting - async bullQ will enforce
+   * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
    */
   app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
     if (req.fileSizeError) {
