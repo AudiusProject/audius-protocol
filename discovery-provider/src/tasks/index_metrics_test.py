@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from unittest.mock import patch
 from src.models import RouteMetrics, AppNameMetrics
 from src.tasks.index_metrics import process_route_keys, \
     process_app_name_keys, sweep_metrics

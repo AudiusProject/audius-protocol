@@ -1,4 +1,5 @@
 import logging
+import time
 from sqlalchemy import desc
 
 from src.models import AppNameMetrics
@@ -11,12 +12,14 @@ def get_app_name_metrics(app_name, args):
     """
     Returns the usage metrics for a specified app_name
 
-    Parameters:
-        app_name: string
-        args: {
-            start_time: timestamp
-            limit: number
-        }
+    Args:
+        app_name: string The name of the app to query for metrics
+        args: dict The parsed args from the request
+        args.start_time: date The date to start the query from
+        args.limit: number The max number of metrics to return
+
+    Returns:
+        Array of dictionaries with the timestamp and count
     """
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
@@ -34,7 +37,7 @@ def get_app_name_metrics(app_name, args):
             .all()
         )
 
-        metrics = [{'timestamp': m[0].strftime(
-            "%m/%d/%Y, %H:%M:%S"), 'count': m[1]} for m in metrics]
+        metrics = [{'timestamp': int(time.mktime(
+            m[0].timetuple())), 'count': m[1]} for m in metrics]
 
         return metrics

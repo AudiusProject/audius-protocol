@@ -1,22 +1,24 @@
 import logging
+import time
 from sqlalchemy import func, desc, or_
 from src.models import RouteMetrics
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
 
-
 def get_route_metrics(args):
     """
     Returns the usage metrics for routes
 
-    Parameters:
-        args: {
-            path: string
-            start_time: timestamp
-            query_string: [optional] string
-            limit: number
-        }
+    Args:
+        args: dict THe parsed args from the request
+        args.path: string The route path of the query
+        args.start_time: date The start of the query
+        args.query_string: optional string The query string to filter on
+        args.limit: number The max number of responses to return
+
+    Returns:
+        Array of dictionaries with the route, timestamp and count
     """
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
@@ -53,7 +55,7 @@ def get_route_metrics(args):
         )
 
         metrics = metrics_query.all()
-        metrics = [{'route': m[0], 'timestamp': m[1].strftime(
-            "%m/%d/%Y, %H:%M:%S"), 'count': m[2]} for m in metrics]
+        metrics = [{'route': m[0], 'timestamp': int(time.mktime(
+            m[1].timetuple())), 'count': m[2]} for m in metrics]
 
         return metrics

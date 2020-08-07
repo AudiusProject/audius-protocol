@@ -1,5 +1,5 @@
 import logging # pylint: disable=C0302
-from dateutil.parser import parse
+from datetime import datetime
 from flask import Flask, Blueprint
 from flask_restx import Resource, Namespace, fields, reqparse
 from src import api_helpers
@@ -20,7 +20,7 @@ app_name_metrics_response = make_response("app_name_metrics_response", ns, field
 metrics_route_parser = reqparse.RequestParser()
 metrics_route_parser.add_argument('path', required=True)
 metrics_route_parser.add_argument('query_string', required=False)
-metrics_route_parser.add_argument('start_time', required=True)
+metrics_route_parser.add_argument('start_time', required=True, type=int)
 metrics_route_parser.add_argument('limit', required=False, type=int)
 metrics_route_parser.add_argument('version', required=False, action='append')
 
@@ -36,7 +36,7 @@ class RouteMetrics(Resource):
         else:
             args['limit'] = min(args.get('limit'), 48)
         try:
-            args['start_time'] = parse(args['start_time'])
+            args['start_time'] = datetime.utcfromtimestamp(args['start_time'])
         except:
             return api_helpers.error_response('Poorly formated start_time parameter', 400)
 
@@ -69,7 +69,7 @@ class AppNameListMetrics(Resource):
 
 
 metrics_app_name_parser = reqparse.RequestParser()
-metrics_app_name_parser.add_argument('start_time', required=True)
+metrics_app_name_parser.add_argument('start_time', required=True, type=int)
 metrics_app_name_parser.add_argument('limit', required=False, type=int)
 
 @ns.route("/app_name/<string:app_name>")
@@ -84,7 +84,7 @@ class AppNameMetrics(Resource):
         else:
             args['limit'] = min(args.get('limit'), 48)
         try:
-            args['start_time'] = parse(args['start_time'])
+            args['start_time'] = datetime.utcfromtimestamp(args['start_time'])
         except:
             return api_helpers.error_response('Poorly formated start_time parameter', 400)
         app_name_metrics = get_app_name_metrics(app_name, args)
