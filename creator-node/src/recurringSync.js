@@ -4,7 +4,7 @@ const utils = require('./utils')
 const config = require('./config.js')
 
 class StateMachine {
-  constructor () {
+  constructor (audiusLibs) {
     this.stateMachineQueue = new Bull(
       'creator-node-state-machine',
       {
@@ -15,7 +15,7 @@ class StateMachine {
       }
     )
 
-    this.audiusLibs = null
+    this.audiusLibs = audiusLibs
   }
 
   async getSPInfo () {
@@ -47,11 +47,13 @@ class StateMachine {
       return
     }
     console.log(info)
+    let cnodeUsers = await this.audiusLibs.discoveryProvider.getUsersForCreatorNode(info.spID)
+    console.log(`Users:`)
+    console.log(cnodeUsers)
     logger.info('------------------END Process state machine operation------------------')
   }
 
-  async init (audiusLibs) {
-    this.audiusLibs = audiusLibs
+  async init () {
     await this.stateMachineQueue.empty()
 
     // TODO: Enable after dev
