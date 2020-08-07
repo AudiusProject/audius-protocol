@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 from src import api_helpers
 from src.queries.queries import to_dict
-from src.queries.query_helpers import get_current_user_id
+from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.queries.search_queries import SearchKind, search
 
 bp = Blueprint("search_queries", __name__)
@@ -29,12 +29,15 @@ def search_full():
         return validation_error
 
     current_user_id = get_current_user_id(required=False)
+    limit, offset = get_pagination_vars()
     search_args = {
         "is_auto_complete": False,
         "kind": args.get("kind", "all"),
         "query": args.get("query"),
         "current_user_id": current_user_id,
-        "with_users": False
+        "with_users": False,
+        "limit": limit,
+        "offset": offset
     }
     resp = search(search_args)
     return api_helpers.success_response(resp)
@@ -51,12 +54,15 @@ def search_autocomplete():
         return validation_error
 
     current_user_id = get_current_user_id(required=False)
+    limit, offset = get_pagination_vars()
     search_args = {
         "is_auto_complete": True,
         "kind": args.get("kind", "all"),
         "query": args.get("query"),
         "current_user_id": current_user_id,
-        "with_users": False
+        "with_users": False,
+        "limit": limit,
+        "offset": offset
     }
     resp = search(search_args)
     return api_helpers.success_response(resp)

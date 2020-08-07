@@ -1,11 +1,10 @@
 import logging # pylint: disable=C0302
-from flask import Flask, Blueprint
 from src.api.v1.models.playlists import playlist_model
 from src.queries.get_playlists import get_playlists
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_playlist_tracks import get_playlist_tracks
-from src.queries.query_helpers import get_current_user_id
-from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track, make_response, success_response, search_parser
+from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track,\
+    make_response, success_response, search_parser
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache
@@ -92,7 +91,9 @@ class PlaylistSearchResult(Resource):
             "kind": SearchKind.playlists.name,
             "is_auto_complete": False,
             "current_user_id": None,
-            "with_users": True
+            "with_users": True,
+            "limit": 10,
+            "offset": 1
         }
         response = search(search_args)
         playlists = list(map(extend_playlist, response["playlists"]))

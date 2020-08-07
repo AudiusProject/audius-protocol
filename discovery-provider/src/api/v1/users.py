@@ -3,14 +3,15 @@ from src.api.v1.models.common import favorite
 from src.api.v1.models.users import user_model
 from src.queries.get_saves import get_saves
 from src.queries.get_users import get_users
-from src.queries.query_helpers import get_current_user_id
 from src.queries.search_queries import SearchKind, search
-from flask_restx import Resource, Namespace, fields, reqparse
+from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
-from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_favorite, extend_track, extend_user, make_response, search_parser, success_response
+from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_favorite, extend_track, \
+     extend_user, make_response, search_parser, success_response
 from .models.tracks import track
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
+
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +112,9 @@ class UserSearchResult(Resource):
             "kind": SearchKind.users.name,
             "is_auto_complete": False,
             "current_user_id": None,
-            "with_users": True
+            "with_users": True,
+            "limit": 10,
+            "offset": 1,
         }
         response = search(search_args)
         users = response["users"]
