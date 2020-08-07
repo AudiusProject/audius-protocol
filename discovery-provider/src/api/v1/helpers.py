@@ -123,7 +123,7 @@ def extend_track(track):
     duration = 0.
     for segment in track["track_segments"]:
         duration += segment["duration"]
-    track["duration"] = duration
+    track["duration"] = round(duration)
     return track
 
 def extend_playlist(playlist):
