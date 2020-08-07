@@ -14,8 +14,6 @@ class ApiWithHTTPS(Api):
         Monkey patch for HTTPS or else swagger docs do not serve over HTTPS
         https://stackoverflow.com/questions/47508257/serving-flask-restplus-on-https-server
         """
-        # TODO: It would be better to use an env var here to determine whether http or https
-        # is applicable to the current context, but `localhost` suffices
         scheme = 'https' if 'https' in self.base_url else 'http'
         return url_for(self.endpoint('specs'), _external=True, _scheme=scheme)
 
