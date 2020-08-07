@@ -43,9 +43,15 @@ class StateMachine {
     // Retrieve base information for state machine operations
     let info = await this.getSPInfo()
     if (info.spID == 0) {
-      console.error(`Invalid spID, processing no further operations ${info}`)
+      console.error(`Invalid spID, recovering ${info}`)
+      const recoveredSpID = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
+        config.get('creatorNodeEndpoint')
+      )
+      console.log(`Recovered ${recoveredSpID} for ${config.get('creatorNodeEndpoint')}`)
+      config.set('spID', recoveredSpID)
       return
     }
+
     console.log(info)
     let cnodeUsers = await this.audiusLibs.discoveryProvider.getUsersForCreatorNode(info.spID)
     console.log(`Users:`)
