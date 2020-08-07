@@ -24,7 +24,7 @@ metrics_route_parser.add_argument('start_time', required=True, type=int)
 metrics_route_parser.add_argument('limit', required=False, type=int)
 metrics_route_parser.add_argument('version', required=False, action='append')
 
-@ns.route("/routes")
+@ns.route("/routes", doc=False)
 class RouteMetrics(Resource):
     @ns.expect(metrics_route_parser)
     @ns.marshal_with(route_metrics_response)
@@ -49,7 +49,7 @@ metrics_app_name_list_parser = reqparse.RequestParser()
 metrics_app_name_list_parser.add_argument('limit', required=False, type=int)
 metrics_app_name_list_parser.add_argument('offset', required=False, type=int)
 
-@ns.route("/app_name")
+@ns.route("/app_name", doc=False)
 class AppNameListMetrics(Resource):
     @ns.expect(metrics_app_name_list_parser)
     @ns.marshal_with(app_name_response)
@@ -72,7 +72,7 @@ metrics_app_name_parser = reqparse.RequestParser()
 metrics_app_name_parser.add_argument('start_time', required=True, type=int)
 metrics_app_name_parser.add_argument('limit', required=False, type=int)
 
-@ns.route("/app_name/<string:app_name>")
+@ns.route("/app_name/<string:app_name>", doc=False)
 class AppNameMetrics(Resource):
     @ns.expect(metrics_app_name_parser)
     @ns.marshal_with(app_name_metrics_response)
