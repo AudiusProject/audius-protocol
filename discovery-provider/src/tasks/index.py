@@ -49,7 +49,6 @@ def initialize_blocks_table_if_necessary(db):
                 parenthash=target_blockhash,
                 is_current=True,
             )
-
             if target_block.number == 0:
                 block_model.number = None
 
@@ -62,8 +61,10 @@ def initialize_blocks_table_if_necessary(db):
 
             # set the last indexed block in redis
             current_block_result = current_block_query_result.first()
-            redis.set(most_recent_indexed_block_redis_key, current_block_result.number)
-            redis.set(most_recent_indexed_block_hash_redis_key, current_block_result.blockhash)
+            if current_block_result.number:
+                redis.set(most_recent_indexed_block_redis_key, current_block_result.number)
+            if current_block_result.blockhash:
+                redis.set(most_recent_indexed_block_hash_redis_key, current_block_result.blockhash)
 
     return target_blockhash
 
