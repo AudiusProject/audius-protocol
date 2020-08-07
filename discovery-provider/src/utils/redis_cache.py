@@ -1,12 +1,9 @@
-import logging # pylint: disable=C0302
+import logging  # pylint: disable=C0302
 import functools
 import json
-import redis
-from flask import redirect
 from flask.json import dumps
 from flask.globals import request
 from src.utils import redis_connection
-from src.utils.config import shared_config
 from src.utils.query_params import stringify_query_params
 logger = logging.getLogger(__name__)
 
@@ -16,12 +13,14 @@ logger = logging.getLogger(__name__)
 cache_prefix = "API_V1_ROUTE"
 default_ttl_sec = 60
 
+
 def extract_key():
     path = request.path
     req_args = request.args.items()
     req_args = stringify_query_params(req_args)
     key = f"{cache_prefix}:{path}:{req_args}"
     return key
+
 
 def cache(**kwargs):
     """
@@ -56,6 +55,7 @@ def cache(**kwargs):
     ttl_sec = kwargs["ttl_sec"] if "ttl_sec" in kwargs else default_ttl_sec
     transform = kwargs["transform"] if "transform" in kwargs else None
     redis = redis_connection.get_redis()
+
     def outer_wrap(func):
         @functools.wraps(func)
         def inner_wrap(*args, **kwargs):
@@ -76,9 +76,8 @@ def cache(**kwargs):
                     serialized = dumps(resp)
                     redis.set(key, serialized, ttl_sec)
                 return resp, status_code
-            else:
-                serialized = dumps(response)
-                redis.set(key, serialized, ttl_sec)
-                return transform(response)
+            serialized = dumps(response)
+            redis.set(key, serialized, ttl_sec)
+            return transform(response)
         return inner_wrap
     return outer_wrap
