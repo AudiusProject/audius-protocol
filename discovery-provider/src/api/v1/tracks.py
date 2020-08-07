@@ -47,6 +47,9 @@ class Track(Resource):
         return success_response(single_track)
 
 
+def tranform_stream_cache(stream_url):
+    return redirect(stream_url)
+
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
     @record_metrics
@@ -61,7 +64,7 @@ class TrackStream(Resource):
             500: 'Server error'
         }
     )
-    @cache(ttl_sec=5)
+    @cache(ttl_sec=5, transform=tranform_stream_cache)
     def get(self, track_id):
         """
         Get the track's streamable mp3 file.
@@ -80,8 +83,8 @@ class TrackStream(Resource):
 
         primary_node = creator_nodes[0]
         stream_url = urljoin(primary_node, 'tracks/stream/{}'.format(track_id))
-        return redirect(stream_url)
 
+        return stream_url
 
 track_search_result = make_response(
     "track_search", ns, fields.List(fields.Nested(track)))
