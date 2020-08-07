@@ -114,7 +114,7 @@ class UserSearchResult(Resource):
             "current_user_id": None,
             "with_users": True,
             "limit": 10,
-            "offset": 1,
+            "offset": 0,
         }
         response = search(search_args)
         users = response["users"]
