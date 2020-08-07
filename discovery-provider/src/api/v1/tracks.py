@@ -90,7 +90,8 @@ class Trending(Resource):
         time = args.get("time") if args.get("time") is not None else 'week'
         args = {
             'time': time,
-            'genre': args.get("genre", None)
+            'genre': args.get("genre", None),
+            'with_users': True
         }
         tracks = get_trending_tracks(args)
         tracks = list(map(extend_track, tracks))
