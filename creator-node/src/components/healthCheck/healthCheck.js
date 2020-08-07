@@ -1,6 +1,6 @@
 const versionInfo = require('../../../.version.json')
 
-const healthCheck = ({ libs }) => {
+const healthCheck = ({ libs } = {}) => {
     let response = {
       ...versionInfo,
       'healthy': true,
