@@ -9,7 +9,6 @@ def test_get_route_metrics(db_mock):
     date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
     before_all_date = (date + timedelta(hours=-2))
     before_date = (date + timedelta(hours=-1))
-    after_date = (date + timedelta(hours=1))
 
     route_metrics = [{
         'version': '1',
@@ -17,7 +16,7 @@ def test_get_route_metrics(db_mock):
         'query_string': '',
         'count': 3,
         'timestamp': before_date
-    },{
+    }, {
         'version': '1',
         'route_path': 'tracks/some_hash',
         'query_string': 'with_users=true',
@@ -30,13 +29,13 @@ def test_get_route_metrics(db_mock):
     # Set up db state
     with db_mock.scoped_session() as session:
         route_metric_obj = [RouteMetrics(
-            version = metric['version'],
-            route_path = metric['route_path'],
-            query_string = metric['query_string'],
-            count = metric['count'],
-            timestamp = metric['timestamp']
+            version=metric['version'],
+            route_path=metric['route_path'],
+            query_string=metric['query_string'],
+            count=metric['count'],
+            timestamp=metric['timestamp']
         ) for metric in route_metrics]
- 
+
         session.bulk_save_objects(route_metric_obj)
 
     args_1 = {
@@ -68,4 +67,4 @@ def test_get_route_metrics(db_mock):
     }
     metrics_3 = get_route_metrics(args_3)
 
-    assert len(metrics_3) == 0
+    assert not metrics_3

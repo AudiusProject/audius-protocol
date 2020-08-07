@@ -6,7 +6,18 @@ from src.utils import db_session
 
 logger = logging.getLogger(__name__)
 
+
 def get_app_name_metrics(app_name, args):
+    """
+    Returns the usage metrics for a specified app_name
+
+    Parameters:
+        app_name: string
+        args: {
+            start_time: timestamp
+            limit: number
+        }
+    """
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
 
@@ -23,6 +34,7 @@ def get_app_name_metrics(app_name, args):
             .all()
         )
 
-        metrics = [{'timestamp': m[0].strftime("%m/%d/%Y, %H:%M:%S"), 'count': m[1]} for m in metrics]
+        metrics = [{'timestamp': m[0].strftime(
+            "%m/%d/%Y, %H:%M:%S"), 'count': m[1]} for m in metrics]
 
         return metrics

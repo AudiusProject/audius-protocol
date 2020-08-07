@@ -1,17 +1,23 @@
 import logging
-from sqlalchemy import func, desc, case, and_, or_
-
-from src import exceptions
+from sqlalchemy import func, desc, or_
 from src.models import RouteMetrics
-from src.utils import helpers
 from src.utils import db_session
-from src.queries.query_helpers import get_current_user_id, populate_track_metadata, \
-    paginate_query, add_users_to_tracks, create_save_count_subquery, \
-    create_repost_count_subquery
 
 logger = logging.getLogger(__name__)
 
+
 def get_route_metrics(args):
+    """
+    Returns the usage metrics for routes
+
+    Parameters:
+        args: {
+            path: string
+            start_time: timestamp
+            query_string: [optional] string
+            limit: number
+        }
+    """
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
 
@@ -31,20 +37,23 @@ def get_route_metrics(args):
             metrics_query = (
                 metrics_query.filter(
                     or_(
-                        RouteMetrics.query_string.like('%{}'.format(args.get("query_string"))),
-                        RouteMetrics.query_string.like('%{}&%'.format(args.get("query_string")))
+                        RouteMetrics.query_string.like(
+                            '%{}'.format(args.get("query_string"))),
+                        RouteMetrics.query_string.like(
+                            '%{}&%'.format(args.get("query_string")))
                     )
                 )
             )
 
         metrics_query = (
             metrics_query
-                .group_by(RouteMetrics.route_path, RouteMetrics.timestamp)
-                .order_by(desc(RouteMetrics.timestamp))
-                .limit(args.get('limit'))
+            .group_by(RouteMetrics.route_path, RouteMetrics.timestamp)
+            .order_by(desc(RouteMetrics.timestamp))
+            .limit(args.get('limit'))
         )
 
         metrics = metrics_query.all()
-        metrics = [{'route': m[0], 'timestamp': m[1].strftime("%m/%d/%Y, %H:%M:%S"), 'count': m[2]} for m in metrics]
-        logger.debug(metrics)
+        metrics = [{'route': m[0], 'timestamp': m[1].strftime(
+            "%m/%d/%Y, %H:%M:%S"), 'count': m[2]} for m in metrics]
+
         return metrics

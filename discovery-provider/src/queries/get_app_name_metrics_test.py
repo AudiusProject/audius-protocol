@@ -16,15 +16,15 @@ def test_get_app_name_metrics(db_mock):
         'application_name': 'joe',
         'count': 3,
         'timestamp': date
-    },{
+    }, {
         'application_name': 'joe',
         'count': 4,
         'timestamp': after_date
-    },{
+    }, {
         'application_name': 'mike',
         'count': 1,
         'timestamp': date
-    },{
+    }, {
         'application_name': 'ray',
         'count': 2,
         'timestamp': date
@@ -35,11 +35,11 @@ def test_get_app_name_metrics(db_mock):
     # Set up db state
     with db_mock.scoped_session() as session:
         app_name_rows = [AppNameMetrics(
-            application_name = app_name['application_name'],
-            count = app_name['count'],
-            timestamp = app_name['timestamp']
+            application_name=app_name['application_name'],
+            count=app_name['count'],
+            timestamp=app_name['timestamp']
         ) for app_name in app_names]
- 
+
         session.bulk_save_objects(app_name_rows)
 
     app_name = 'joe'

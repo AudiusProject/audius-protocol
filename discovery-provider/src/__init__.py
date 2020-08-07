@@ -46,7 +46,8 @@ logger = logging.getLogger(__name__)
 
 
 def initContracts():
-    registry_address = web3.toChecksumAddress(shared_config["contracts"]["registry"])
+    registry_address = web3.toChecksumAddress(
+        shared_config["contracts"]["registry"])
     registry_instance = web3.eth.contract(
         address=registry_address, abi=abi_values["Registry"]["abi"]
     )
@@ -113,8 +114,6 @@ def initContracts():
         ipld_blacklist_factory_inst,
         contract_address_dict,
     )
-
-
 
 
 def create_app(test_config=None):
@@ -248,7 +247,8 @@ def configure_flask(test_config, app, mode="app"):
 
 def configure_celery(flask_app, celery, test_config=None):
     database_url = shared_config["db"]["url"]
-    engine_args_literal = ast.literal_eval(shared_config["db"]["engine_args_literal"])
+    engine_args_literal = ast.literal_eval(
+        shared_config["db"]["engine_args_literal"])
     redis_url = shared_config["redis"]["url"]
 
     if test_config is not None:
@@ -258,7 +258,8 @@ def configure_celery(flask_app, celery, test_config=None):
 
     # Update celery configuration
     celery.conf.update(
-        imports=["src.tasks.index", "src.tasks.index_blacklist", "src.tasks.index_cache", "src.tasks.index_plays", "src.tasks.index_metrics"],
+        imports=["src.tasks.index", "src.tasks.index_blacklist",
+                 "src.tasks.index_cache", "src.tasks.index_plays", "src.tasks.index_metrics"],
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
@@ -292,7 +293,8 @@ def configure_celery(flask_app, celery, test_config=None):
 
     # Initialize IPFS client for celery task context
     gateway_addrs = shared_config["ipfs"]["gateway_hosts"].split(',')
-    gateway_addrs.append(shared_config["discprov"]["user_metadata_service_url"])
+    gateway_addrs.append(
+        shared_config["discprov"]["user_metadata_service_url"])
     logger.warning(f"__init__.py | {gateway_addrs}")
     ipfs_client = IPFSClient(
         shared_config["ipfs"]["host"], shared_config["ipfs"]["port"], gateway_addrs

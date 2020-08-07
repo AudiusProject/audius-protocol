@@ -2,9 +2,9 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 from src.models import RouteMetrics, AppNameMetrics
 from src.tasks.index_metrics import process_route_keys, \
-    process_app_name_keys, update_route_metrics
-from src.utils.redis_metrics import get_rounded_date_time
+    process_app_name_keys, sweep_metrics
 from src.utils.redis_metrics import datetime_format
+
 
 def test_process_route_keys(redis_mock, db_mock):
     """Tests that a redis hash is parsed correctly to generate db rows and delete the redis key"""
@@ -55,9 +55,9 @@ def test_process_route_keys(redis_mock, db_mock):
         ).all()
 
         assert len(playlist_route) == 1
-    
+
     keys = redis_mock.keys(key)
-    assert len(keys) == 0
+    assert not keys
 
 
 def test_process_app_name_keys(redis_mock, db_mock):
@@ -97,10 +97,10 @@ def test_process_app_name_keys(redis_mock, db_mock):
         assert len(music_corp_results) == 1
 
     keys = redis_mock.keys(key)
-    assert len(keys) == 0
+    assert not keys
 
 
-def test_update_route_metrics(redis_mock, db_mock):
+def test_sweep_metrics(redis_mock, db_mock):
     """Test that the app name redis hash is parsed correctly to generate db rows"""
 
     app_names = {
@@ -110,7 +110,7 @@ def test_update_route_metrics(redis_mock, db_mock):
     date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
     before_date = (date + timedelta(hours=-1))
     after_date = (date + timedelta(hours=1))
-    
+
     current = date.strftime(datetime_format)
     before = before_date.strftime(datetime_format)
     after = after_date.strftime(datetime_format)
@@ -123,14 +123,8 @@ def test_update_route_metrics(redis_mock, db_mock):
     redis_mock.hmset(beforeKey, app_names)
     redis_mock.hmset(afterKey, app_names)
 
-
-    @patch('src.utils.redis_metrics.get_rounded_date_time')
-    def mock_update_route_metrics(mockBar):
-        mockBar.return_value = date
-        update_route_metrics(db_mock, redis_mock)
-
     AppNameMetrics.__table__.create(db_mock._engine)
-    mock_update_route_metrics()    
+    sweep_metrics(db_mock, redis_mock)
 
     with db_mock.scoped_session() as session:
 
@@ -150,6 +144,3 @@ def test_update_route_metrics(redis_mock, db_mock):
     assert len(keys) == 2
     assert currentKey in key_strs
     assert afterKey in key_strs
-
-
-

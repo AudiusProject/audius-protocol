@@ -9,7 +9,7 @@ from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playli
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache
-from src.utils.redis_metrics import metrics
+from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ playlists_response = make_response("playlist_response", ns, fields.List(fields.N
 
 @ns.route("/<string:playlist_id>")
 class Playlist(Resource):
-    @metrics
+    @record_metrics
     @ns.marshal_with(playlists_response)
     @cache(ttl_sec=5)
     def get(self, playlist_id):
@@ -35,7 +35,7 @@ playlist_tracks_response = make_response("playlist_tracks_response", ns, fields.
 
 @ns.route("/<string:playlist_id>/tracks")
 class PlaylistTracks(Resource):
-    @metrics
+    @record_metrics
     @ns.marshal_with(playlist_tracks_response)
     @cache(ttl_sec=5)
     def get(self, playlist_id):
@@ -52,7 +52,7 @@ playlist_search_result = make_response("playlist_search_result", ns, fields.List
 
 @ns.route("/search")
 class PlaylistSearchResult(Resource):
-    @metrics
+    @record_metrics
     @ns.marshal_with(playlist_search_result)
     @ns.expect(search_parser)
     @cache(ttl_sec=5)

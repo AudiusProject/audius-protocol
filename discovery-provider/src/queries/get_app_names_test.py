@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from src.models import AppNameMetrics
 from src.queries.get_app_names import get_app_names
 
@@ -12,11 +12,11 @@ def test_get_app_names(db_mock):
         'application_name': 'joe',
         'count': 3,
         'timestamp': date
-    },{
+    }, {
         'application_name': 'mike',
         'count': 2,
         'timestamp': date
-    },{
+    }, {
         'application_name': 'ray',
         'count': 2,
         'timestamp': date
@@ -27,11 +27,11 @@ def test_get_app_names(db_mock):
     # Set up db state
     with db_mock.scoped_session() as session:
         app_names = [AppNameMetrics(
-            application_name = metric['application_name'],
-            count = metric['count'],
-            timestamp = metric['timestamp']
+            application_name=metric['application_name'],
+            count=metric['count'],
+            timestamp=metric['timestamp']
         ) for metric in app_names]
- 
+
         session.bulk_save_objects(app_names)
 
     args = {

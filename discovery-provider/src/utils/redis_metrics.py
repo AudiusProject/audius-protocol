@@ -1,9 +1,10 @@
-import redis
 import logging # pylint: disable=C0302
 import functools
 from datetime import datetime
-from src.utils.config import shared_config
+import redis
 from flask.globals import request
+from src.utils.config import shared_config
+from src.utils.query_params import stringify_query_params, app_name_param
 logger = logging.getLogger(__name__)
 
 REDIS_URL = shared_config["redis"]["url"]
@@ -16,38 +17,40 @@ REDIS = redis.Redis.from_url(url=REDIS_URL)
 metrics_prefix = "API_METRICS"
 metrics_routes = "routes"
 metrics_application = "applications"
-app_name_parm = "app_name"
-exclude_param_set = {app_name_parm}
 
-
-# NOTE: if you want to change the time interval to recording metrics,
-# change the `datetime_format` and func `get_rounded_date_time` to reflect the interval
-
+'''
+NOTE: if you want to change the time interval to recording metrics,
+change the `datetime_format` and func `get_rounded_date_time` to reflect the interval
+ie. If you wanted to record metrics per minute:
+datetime_format = "%Y/%m/%d:%H-%M" # Add the minute template
+def get_rounded_date_time():
+    return datetime.utcnow().replace(second=0, microsecond=0) # Remove rounding min.
+'''
 datetime_format = "%Y/%m/%d:%H"
 def get_rounded_date_time():
     return datetime.utcnow().replace(minute=0, second=0, microsecond=0)
 
 def parse_metrics_key(key):
     """
-    Validates that a key is correctly formatted and returns 
+    Validates that a key is correctly formatted and returns
     the source: (routes|applications) and date of key
     """
     if not metrics_prefix.startswith(metrics_prefix):
-        logger.warn(f"Bad redis key inserted w/out metrics prefix {key}")
+        logger.warning(f"Bad redis key inserted w/out metrics prefix {key}")
         return None
 
     fragments = key.split(':')
     if len(fragments) != 4:
-        logger.warn(f"Bad redis key inserted: must have 4 parts {key}")
+        logger.warning(f"Bad redis key inserted: must have 4 parts {key}")
         return None
 
-    prefix, source, date, time = fragments
-    if source != metrics_routes and source != metrics_application:
-        logger.warn(f"Bad redis key inserted: must be routes or application {key}")
+    _, source, date, time = fragments
+    if source not in (metrics_routes, metrics_application):
+        logger.warning(f"Bad redis key inserted: must be routes or application {key}")
         return None
     date_time = datetime.strptime(f"{date}:{time}", datetime_format)
 
-    return source, date_time 
+    return source, date_time
 
 def extract_app_name_key():
     """
@@ -59,10 +62,9 @@ def extract_app_name_key():
         <app_name>
         ie: "audius_dapp"
     """
-    application_name = request.args.get(app_name_parm, type=str, default=None)
+    application_name = request.args.get(app_name_param, type=str, default=None)
     date_time = get_rounded_date_time().strftime(datetime_format)
 
-    route_key = f"{metrics_prefix}:{metrics_routes}:{date_time}"
     appplication_key = f"{metrics_prefix}:{metrics_application}:{date_time}"
     return (appplication_key, application_name)
 
@@ -78,9 +80,7 @@ def extract_route_key():
     """
     path = request.path
     req_args = request.args.items()
-    req_args = filter(lambda x: x[0] not in exclude_param_set, req_args)
-    req_args = sorted(req_args)
-    req_args = f"&".join(["{}={}".format(x[0].lower(), x[1].lower()) for x in req_args])
+    req_args = stringify_query_params(req_args)
     route = f"{path}?{req_args}" if req_args else path
 
     date_time = get_rounded_date_time().strftime(datetime_format)
@@ -88,11 +88,11 @@ def extract_route_key():
     return (route_key, route)
 
 # Metrics decorator.
-def metrics(func):
+def record_metrics(func):
     """
     The metrics decorator records each time a route is hit in redis
-    The number of times a route is hit and an app_name query param are used are recorded. 
-    A redis a redis hash map is used to store each of these values. 
+    The number of times a route is hit and an app_name query param are used are recorded.
+    A redis a redis hash map is used to store each of these values.
 
     NOTE: This must be placed before the cache decorator in order for the redis incr to occur
     """
@@ -104,8 +104,8 @@ def metrics(func):
             REDIS.hincrby(route_key, route, 1)
             if application_name:
                 REDIS.hincrby(appplication_key, application_name, 1)
-        except:
-            logger.error('Error while recording metrios')
+        except Exception as e:
+            logger.error('Error while recording metrics: %s', e.message)
 
         return func(*args, **kwargs)
     return wrap

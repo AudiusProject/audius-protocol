@@ -3,13 +3,12 @@ from .common import ns
 
 route_metric = ns.model('route_metric', {
     "route": fields.String,
-    "timstamp": fields.String,
+    "timestamp": fields.String,
     "count": fields.Integer
 })
 
 app_name_metric = ns.model('app_name_metric', {
-    "route": fields.String,
-    "timstamp": fields.String,
+    "timestamp": fields.String,
     "count": fields.Integer
 })
 
