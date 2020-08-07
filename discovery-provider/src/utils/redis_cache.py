@@ -5,6 +5,7 @@ import redis
 from flask.json import dumps
 from flask.globals import request
 from src.utils.config import shared_config
+from src.utils.query_params import stringify_query_params
 logger = logging.getLogger(__name__)
 
 REDIS_URL = shared_config["redis"]["url"]
@@ -14,16 +15,12 @@ REDIS = redis.Redis.from_url(url=REDIS_URL)
 # API_V1:path:queryparams
 
 cache_prefix = "API_V1_ROUTE"
-# query params to always exclude from key construction
-exclude_param_set = {"app_name"}
 default_ttl_sec = 60
 
 def extract_key():
     path = request.path
     req_args = request.args.items()
-    req_args = filter(lambda x: x[0] not in exclude_param_set, req_args)
-    req_args = sorted(req_args)
-    req_args = "&".join(["{}={}".format(x[0], x[1]) for x in req_args])
+    req_args = stringify_query_params(req_args)
     key = f"{cache_prefix}:{path}:{req_args}"
     return key
 
