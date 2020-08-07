@@ -62,8 +62,6 @@ class TrackList(Resource):
         args = {"user_id": decoded_id, "with_users": True, "filter_deleted": True}
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
-        if not tracks:
-            abort_not_found(user_id, ns)
         return success_response(tracks)
 
 favorites_response = make_response("favorites_response", ns, fields.List(fields.Nested(favorite)))
