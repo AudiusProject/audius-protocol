@@ -3,6 +3,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const responseTime = require('response-time')
 
+const { serviceRegistry } = require('./serviceRegistry')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
 const { userNodeMiddleware } = require('./userNodeMiddleware')
@@ -19,10 +20,6 @@ app.use(loggingMiddleware)
 app.use(bodyParser.json({ limit: '1mb' }))
 app.use(userNodeMiddleware)
 app.use(cors())
-
-// Initialize private IPFS gateway counters
-redisClient.set('ipfsGatewayReqs', 0)
-redisClient.set('ipfsStandaloneReqs', 0)
 
 // Rate limit routes
 app.use('/users/', userReqLimiter)
@@ -42,15 +39,17 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
-const initializeApp = (port, storageDir, ipfsAPI, audiusLibs, blacklistManager, ipfsAPILatest) => {
-  app.set('ipfsAPI', ipfsAPI)
+const initializeApp = (port, storageDir) => {
+  // TODO: Can remove these when all routes
+  // consume serviceRegistry
+  app.set('ipfsAPI', serviceRegistry.ipfs)
   app.set('storagePath', storageDir)
-  app.set('redisClient', redisClient)
-  app.set('audiusLibs', audiusLibs)
-  app.set('blacklistManager', blacklistManager)
+  app.set('redisClient', serviceRegistry.redis)
+  app.set('audiusLibs', serviceRegistry.libs)
+  app.set('blacklistManager', serviceRegistry.blacklistManager)
 
   // add a newer version of ipfs as app property
-  app.set('ipfsLatestAPI', ipfsAPILatest)
+  app.set('ipfsLatestAPI', serviceRegistry.ipfsLatest)
 
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 
