@@ -31,6 +31,13 @@ class StateMachine {
       delegatePrivateKey
     }
   }
+  async recoverSpID () {
+    const recoveredSpID = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
+      config.get('creatorNodeEndpoint')
+    )
+    console.log(`Recovered ${recoveredSpID} for ${config.get('creatorNodeEndpoint')}`)
+    config.set('spID', recoveredSpID)
+  }
 
   async processStateMachineOperation (job) {
     logger.info('------------------Process state machine operation------------------')
@@ -44,11 +51,7 @@ class StateMachine {
     let info = await this.getSPInfo()
     if (info.spID == 0) {
       console.error(`Invalid spID, recovering ${info}`)
-      const recoveredSpID = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
-        config.get('creatorNodeEndpoint')
-      )
-      console.log(`Recovered ${recoveredSpID} for ${config.get('creatorNodeEndpoint')}`)
-      config.set('spID', recoveredSpID)
+      await this.getSPInfo()
       return
     }
 
