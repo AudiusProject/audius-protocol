@@ -20,25 +20,28 @@ playlist_contents = ns.model('playlist_contents', {
 
 playlist_model = ns.model('playlist', {
     "artwork": fields.Nested(playlist_artwork, allow_null=True),
+    "description": fields.String,
+    "id": fields.String(required=True),
+    "is_album": fields.Boolean(required=True),
+    "playlist_name": fields.String(required=True),
+    "repost_count": fields.Integer(required=True),
+    "favorite_count": fields.Integer(required=True),
+    "user": fields.Nested(user_model, required=True),
+})
+
+playlist_full = ns.model('playlist_full', playlist_model, {
     "blockhash": fields.String(required=True),
     "blocknumber": fields.Integer(required=True),
     "created_at": fields.String,
-    "description": fields.String,
     "followee_reposts": fields.List(fields.Nested(repost)),
     "followee_saves": fields.List(fields.Nested(favorite)),
     "has_current_user_reposted": fields.Boolean(required=True),
     "has_current_user_saved	true": fields.Boolean(required=True),
-    "id": fields.String(required=True),
-    "is_album": fields.Boolean(required=True),
     "is_current": fields.Boolean(required=True),
     "is_delete": fields.Boolean(required=True),
     "is_private": fields.Boolean(required=True),
-    "playlist_contents": fields.Nested(playlist_contents, required=True),
-    "playlist_name": fields.String(required=True),
-    "repost_count": fields.Integer(required=True),
-    "save_count": fields.Integer(required=True),
     "upc": fields.String,
     "updated_at": fields.String,
-    "user": fields.Nested(user_model, required=True),
+    "playlist_contents": fields.Nested(playlist_contents, required=True),
     "user_id": fields.String(required=True),
 })
