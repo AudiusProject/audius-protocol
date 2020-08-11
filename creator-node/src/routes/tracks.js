@@ -148,14 +148,38 @@ module.exports = function (app) {
       return errorResponseForbidden(e.message)
     }
 
-    // TODO - confirm all segment files have same sourceFile (see POST /tracks code below)
-
-    // Error if download CID not provided for downloadable track
+    // If metadata indicates track is downloadable but doesn't provide a transcode CID,
+    //    ensure that a transcoded master record exists in DB
     if (metadataJSON.download && metadataJSON.download.is_downloadable && !metadataJSON.download.cid) {
-      return errorResponseBadRequest('Metadata object must include cid if is_downloadable = true')
-    }
+      let sourceFile = req.body.sourceFile
+      const trackId = metadataJSON.track_id
+      if (!sourceFile && !trackId) {
+        return errorResponseBadRequest('Cannot make downloadable - A sourceFile must be provided or the metadata object must include track_id')
+      }
 
-    // TODO - if transcode CID provided, confirm CID file entry has same sourceFile as track segment file entries
+      // See if the track already has a transcoded master
+      if (trackId) {
+        const { trackUUID } = await models.Track.findOne({
+          attributes: ['trackUUID'],
+          where: {
+            blockchainId: trackId
+          }
+        })
+
+        // Error if no DB entry for transcode found
+        const transcodedFile = await models.File.findOne({
+          attributes: ['multihash'],
+          where: {
+            cnodeUserUUID: req.session.cnodeUserUUID,
+            type: 'copy320',
+            trackUUID
+          }
+        })
+        if (!transcodedFile) {
+          return errorResponseServerError('Failed to find transcoded file ')
+        }
+      }
+    }
 
     // Store + pin metadata multihash to disk + IPFS.
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
