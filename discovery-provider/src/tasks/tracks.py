@@ -62,6 +62,11 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
             num_total_changes += len(track_events_tx)
 
     for track_id, value_obj in track_events.items():
+        # If track record object is null, it has a blacklisted metadata CID
+        if value_obj['track'] is None:
+            logger.warning(f"tracks.py | Skipping over track record with id ({track_id})")
+            continue
+
         logger.info(f"tracks.py | Adding {value_obj['track']}")
         invalidate_old_track(session, track_id)
         session.add(value_obj["track"])
@@ -167,7 +172,8 @@ def parse_track_event(
         # If the IPLD is blacklisted, do not keep processing the current entry
         # continue with the next entry in the update_track_events list
         if is_blacklisted_ipld(session, track_metadata_multihash):
-            return track_record
+            logger.warning(f"Encountered blacklisted CID {track_metadata_multihash} in indexing new track")
+            return None
 
         owner_id = event_args._trackOwnerId
         handle = (
@@ -182,6 +188,8 @@ def parse_track_event(
         refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
 
         track_record.is_delete = False
+
+        # TODO: wrap in try/execpt to catch errors thrown, then add CID to blacklist
         track_metadata = update_task.ipfs_client.get_metadata(
             track_metadata_multihash,
             track_metadata_format
@@ -217,7 +225,8 @@ def parse_track_event(
         # If the IPLD is blacklisted, do not keep processing the current entry
         # continue with the next entry in the update_track_events list
         if is_blacklisted_ipld(session, upd_track_metadata_multihash):
-            return track_record
+            logger.warning(f"Encountered blacklisted CID {upd_track_metadata_multihash} in indexing update track")
+            return None 
 
         owner_id = event_args._trackOwnerId
         handle = (
@@ -231,6 +240,7 @@ def parse_track_event(
         # Reconnect to creator nodes for this user
         refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
 
+        # TODO: wrap in try/execpt to catch errors thrown, then add CID to blacklist
         track_metadata = update_task.ipfs_client.get_metadata(
             upd_track_metadata_multihash,
             track_metadata_format
