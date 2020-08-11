@@ -1,5 +1,8 @@
 const bunyan = require('bunyan')
 const shortid = require('shortid')
+const { createNamespace } = require("cls-hooked")
+
+const namespace = createNamespace("namespace")
 
 const config = require('./config')
 
@@ -33,23 +36,43 @@ function getRequestLoggingContext (req) {
 }
 
 function loggingMiddleware (req, res, next) {
-  const requestID = shortid.generate()
-  res.set('CN-Request-ID', requestID)
+  namespace.run(() => {
+    const requestID = shortid.generate()
 
-  req.logContext = getRequestLoggingContext(req)
-  req.logger = logger.child(req.logContext)
+    res.set('CN-Request-ID', requestID)
 
-  res.on('finish', function () {
-    // header is set by response-time npm module, but it's only set
-    // when you're about to write headers, so that's why this is in
-    // finish event
-    req.logger.info('Request Duration', res.get('X-Response-Time'))
+    const logContext = getRequestLoggingContext(req)
+    const scopedLogger = logger.child(logContext)
+    req.logContext = logContext
+    req.logger = scopedLogger
+
+    // Attach the logger to the CLS namespace
+    namespace.set("logger", scopedLogger)
+
+    res.on('finish', function () {
+      // header is set by response-time npm module, but it's only set
+      // when you're about to write headers, so that's why this is in
+      // finish event
+      scopedLogger.info('Request Duration', res.get('X-Response-Time'))
+    })
+
+    if (requestNotExcludedFromLogging(req.originalUrl)) {
+      scopedLogger.debug('Begin processing request')
+    }
+    next()
   })
-
-  if (requestNotExcludedFromLogging(req.originalUrl)) {
-    req.logger.debug('Begin processing request')
-  }
-  next()
 }
 
-module.exports = { logger, loggingMiddleware, requestNotExcludedFromLogging, getRequestLoggingContext }
+const getLogger = () => {
+  const scopedLogger = namespace.get("logger")
+  if (scopedLogger) return scopedLogger
+  return logger
+}
+
+module.exports = {
+  logger,
+  loggingMiddleware,
+  requestNotExcludedFromLogging,
+  getRequestLoggingContext,
+  getLogger
+}

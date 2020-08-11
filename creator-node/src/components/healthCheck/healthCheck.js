@@ -1,18 +1,23 @@
 const versionInfo = require('../../../.version.json')
+const { getLogger } = require('../../logging.js')
 
 const healthCheck = ({ libs } = {}) => {
-    let response = {
-      ...versionInfo,
-      'healthy': true,
-      'git': process.env.GIT_SHA,
-      'selectedDiscoveryProvider': 'none'
-    }
+  const logger = getLogger()
 
-    if (libs) {
-      response.selectedDiscoveryProvider = libs.discoveryProvider.discoveryProviderEndpoint
-    }
+  let response = {
+    ...versionInfo,
+    'healthy': true,
+    'git': process.env.GIT_SHA,
+    'selectedDiscoveryProvider': 'none'
+  }
 
-    return response
+  if (libs) {
+    response.selectedDiscoveryProvider = libs.discoveryProvider.discoveryProviderEndpoint
+  } else {
+    logger.warn("Health check with no libs")
+  }
+
+  return response
 }
 
 module.exports = {
