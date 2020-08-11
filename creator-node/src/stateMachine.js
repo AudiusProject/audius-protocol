@@ -17,7 +17,7 @@ class StateMachine {
     )
 
     this.audiusLibs = audiusLibs
-    console.log(`${this.audiusLibs == null}`)
+    logger.info(`${this.audiusLibs == null}`)
   }
 
   // Helper function to retrieve all config based
@@ -36,15 +36,15 @@ class StateMachine {
 
   // Query eth-contracts chain for endpoint to ID info
   async recoverSpID () {
-    if (config.get('spID') != 0) {
-      console.log(`Recovered spID=${config.get('spID')}`)
+    if (config.get('spID') !== 0) {
+      logger.info(`Known spID=${config.get('spID')}`)
       return
     }
 
-    const recoveredSpID = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
+    const recoveredSpID = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
       config.get('creatorNodeEndpoint')
     )
-    console.log(`Recovered ${recoveredSpID} for ${config.get('creatorNodeEndpoint')}`)
+    logger.info(`Recovered ${recoveredSpID} for ${config.get('creatorNodeEndpoint')}`)
     config.set('spID', recoveredSpID)
   }
 
@@ -60,13 +60,14 @@ class StateMachine {
 
     // 1.) Retrieve base information for state machine operations
     let spInfo = await this.getSPInfo()
-    if (spInfo.spID == 0) {
+    if (spInfo.spID === 0) {
       console.error(`Invalid spID, recovering ${spInfo}`)
       await this.recoverSpID()
       return
     }
 
-    console.log(spInfo)
+    logger.info(`--spInfo--`)
+    logger.info(spInfo)
     // 2.) Retrieve all users for this creator node
     // TODO: Consider pagination here - already enabled in query
     let cnodeUsers = await this.audiusLibs.discoveryProvider.getUsersForCreatorNode(spInfo.spID)
@@ -80,8 +81,6 @@ class StateMachine {
     // TODO: Evaluate thread safety?
     // What happens in the case of parallel updates to nodeList?
     cnodeUsers.map((user) => {
-      console.log(`<<<<<<`)
-      console.log(`From map: `)
       const primary = user.primary
       const secondaries = user.secondaries
 
@@ -100,9 +99,7 @@ class StateMachine {
 
       // Check if secondary spIDs exist in nodeList, if not add to object
       for (const secondary of secondaries) {
-        console.log(`${user.wallet} - replicaID ${secondary} processing`)
         if (secondary === spInfo.spID) {
-          console.log(`${user.wallet} - replicaID ${secondary} excluding ${secondary}`)
           continue
         }
         if (!nodeList[secondary]) {
@@ -113,16 +110,15 @@ class StateMachine {
           sharedRsets[secondary] = []
         }
         sharedRsets[secondary].push(user)
-      } 
+      }
     })
 
     // At this point, nodeList and sharedRsets are ready for further processing
     nodeList = Object.keys(nodeList)
-    console.log('----')
-    console.log(nodeList)
-    console.log('----')
-    console.log(sharedRsets)
-    console.log(`<<<<<<`)
+    logger.info('--nodeList--')
+    logger.info(nodeList)
+    logger.info('--sharedRsets--')
+    logger.info(sharedRsets)
     logger.info('------------------END Process state machine operation------------------')
   }
 
@@ -134,18 +130,18 @@ class StateMachine {
     // Run the task every x hours
     // this.stateMachineQueue.add({}, { repeat: { cron: '0 */x * * *' } })
 
-    this.stateMachineQueue.add({ startTime : Date.now() })
+    this.stateMachineQueue.add({ startTime: Date.now() })
 
     this.stateMachineQueue.process(async (job, done) => {
       try {
-        await utils.timeout(3000) 
+        await utils.timeout(3000)
         await this.processStateMachineOperation(job)
       } catch (e) {
         logger.info(`Error processing ${e}`)
       } finally {
         // Restart job
         // Can be replaced with cron after development is complete
-        this.stateMachineQueue.add({ startTime : Date.now() })
+        this.stateMachineQueue.add({ startTime: Date.now() })
         done()
       }
     })
