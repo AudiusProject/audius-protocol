@@ -44,6 +44,11 @@ const initAudiusLibs = async () => {
   return audiusLibs
 }
 
+/**
+ * Construct a ServiceRegistry object.
+ *
+ * `initServices` must be called before services are consumed.
+ */
 function ServiceRegistry () {
   this.redis = redisClient
   this.ipfs = ipfs
@@ -51,6 +56,9 @@ function ServiceRegistry () {
   this.blacklistManager = BlacklistManager
   this.audiusLibs = null
 
+  /**
+   * Configure services, init libs.
+   */
   this.initServices = async () => {
     // Initialize private IPFS gateway counters
     this.redis.set('ipfsGatewayReqs', 0)
