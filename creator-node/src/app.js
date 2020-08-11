@@ -3,12 +3,10 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const responseTime = require('response-time')
 
-const { serviceRegistry } = require('./serviceRegistry')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
 const { userNodeMiddleware } = require('./userNodeMiddleware')
 const { userReqLimiter, trackReqLimiter, audiusUserReqLimiter, metadataReqLimiter, imageReqLimiter } = require('./reqLimiter')
-const redisClient = require('./redis')
 const config = require('./config')
 const healthCheckRoutes = require('./components/healthCheck/healthCheckAPI')
 
@@ -39,7 +37,7 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
-const initializeApp = (port, storageDir) => {
+const initializeApp = (port, storageDir, serviceRegistry) => {
   // TODO: Can remove these when all routes
   // consume serviceRegistry
   app.set('ipfsAPI', serviceRegistry.ipfs)

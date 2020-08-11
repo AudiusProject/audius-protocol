@@ -16,7 +16,6 @@ const exitWithError = (...msg) => {
   process.exit(1)
 }
 
-
 const configFileStorage = () => {
   if (!config.get('storagePath')) {
     exitWithError('Must set storagePath to use for content repository.')
@@ -73,7 +72,7 @@ const startApp = async () => {
     await serviceRegistry.initServices()
     logger.info('Initialized services!')
 
-    appInfo = initializeApp(config.get('port'), storagePath)
+    appInfo = initializeApp(config.get('port'), storagePath, serviceRegistry)
   }
 
   // when app terminates, close down any open DB connections gracefully
