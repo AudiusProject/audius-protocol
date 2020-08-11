@@ -1,8 +1,8 @@
 const bunyan = require('bunyan')
 const shortid = require('shortid')
-const { createNamespace } = require("cls-hooked")
+const { createNamespace } = require('cls-hooked')
 
-const namespace = createNamespace("namespace")
+const namespace = createNamespace('namespace')
 
 const config = require('./config')
 
@@ -47,7 +47,7 @@ function loggingMiddleware (req, res, next) {
     req.logger = scopedLogger
 
     // Attach the logger to the CLS namespace
-    namespace.set("logger", scopedLogger)
+    namespace.set('logger', scopedLogger)
 
     res.on('finish', function () {
       // header is set by response-time npm module, but it's only set
@@ -64,7 +64,7 @@ function loggingMiddleware (req, res, next) {
 }
 
 const getLogger = () => {
-  const scopedLogger = namespace.get("logger")
+  const scopedLogger = namespace.get('logger')
   if (scopedLogger) return scopedLogger
   return logger
 }

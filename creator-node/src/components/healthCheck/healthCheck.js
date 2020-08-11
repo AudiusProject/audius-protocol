@@ -14,7 +14,7 @@ const healthCheck = ({ libs } = {}) => {
   if (libs) {
     response.selectedDiscoveryProvider = libs.discoveryProvider.discoveryProviderEndpoint
   } else {
-    logger.warn("Health check with no libs")
+    logger.warn('Health check with no libs')
   }
 
   return response

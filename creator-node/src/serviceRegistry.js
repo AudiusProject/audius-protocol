@@ -1,5 +1,5 @@
 const redisClient = require('./redis')
-const { ipfs, ipfsLatest, logIpfsPeerIds } = require('./ipfsClient')
+const { ipfs, ipfsLatest } = require('./ipfsClient')
 const BlacklistManager = require('./blacklistManager')
 const AudiusLibs = require('@audius/libs')
 const config = require('./config')
@@ -44,10 +44,10 @@ const initAudiusLibs = async () => {
   return audiusLibs
 }
 
-function ServiceRegistry() {
-  this.redis = redisClient,
-  this.ipfs = ipfs,
-  this.ipfsLatest = ipfsLatest,
+function ServiceRegistry () {
+  this.redis = redisClient
+  this.ipfs = ipfs
+  this.ipfsLatest = ipfsLatest
   this.blacklistManager = BlacklistManager
   this.audiusLibs = null
 
