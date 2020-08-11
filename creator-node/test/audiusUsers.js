@@ -88,7 +88,8 @@ describe('test AudiusUsers', function () {
 
 // Below block uses actual ipfsClient (unlike first describe block), hence
 // another describe block for this purpose
-describe('tests /audius_users/metadata metadata upload with actual ipfsClient', function () {
+// NOTE: these tests mock ipfs client errors; otherwise, for happy path, uses actual ipfsClient
+describe('tests /audius_users/metadata metadata upload with actual ipfsClient for happy path', function () {
   let app, server, session, libsMock, ipfs
 
   // Will need a '.' in front of storagePath to look at current dir
