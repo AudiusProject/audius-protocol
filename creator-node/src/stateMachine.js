@@ -79,7 +79,7 @@ class StateMachine {
 
     // TODO: Evaluate thread safety?
     // What happens in the case of parallel updates to nodeList?
-    await Promise.all(cnodeUsers.map(async (user) => {
+    cnodeUsers.map((user) => {
       console.log(`<<<<<<`)
       console.log(`From map: `)
       const primary = user.primary
@@ -114,7 +114,8 @@ class StateMachine {
         }
         sharedRsets[secondary].push(user)
       } 
-    }))
+    })
+
     // At this point, nodeList and sharedRsets are ready for further processing
     nodeList = Object.keys(nodeList)
     console.log('----')
