@@ -97,17 +97,17 @@ describe('test fileManager', () => {
 
     /**
      * Given: a file is being saved to ipfs from fs
-     * When: file syncing fails
+     * When: file copying fails
      * Then: an error is thrown
      */
-    it('should throw an error if file syncing fails', async () => {
-      sinon.stub(fs, 'copyFileSync').throws(new Error('Failed to sync over files!!'))
+    it('should throw an error if file copy fails', async () => {
+      sinon.stub(fs, 'copyFileSync').throws(new Error('Failed to copy files!!'))
 
       try {
         await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile)
-        assert.fail('Should not have passed if file syncing fails.')
+        assert.fail('Should not have passed if file copying fails.')
       } catch (e) {
-        assert.deepStrictEqual(e.message, 'Failed to sync over files!!')
+        assert.deepStrictEqual(e.message, 'Failed to copy files!!')
       }
     })
 
@@ -121,7 +121,7 @@ describe('test fileManager', () => {
 
       try {
         await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile)
-        assert.fail('Should not have if db connection is down.')
+        assert.fail('Should not have passed if db connection is down.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'Failed to find or create file!!!')
       }

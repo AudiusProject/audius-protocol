@@ -567,6 +567,19 @@ describe('test /track_content and /tracks/metadata with actual ipfsClient', func
       type: 'metadata'
     } })
     assert.ok(file)
+
+    // check that the metadata file is in IPFS
+    let ipfsResp
+    try {
+      ipfsResp = await ipfs.cat(resp.body.metadataMultihash)
+    } catch (e) {
+      // If CID is not present, will throw timeout error
+      assert.fail(e.message)
+    }
+
+    // check that the ipfs content matches what we expect
+    const metadataBuffer = Buffer.from(JSON.stringify(metadata))
+    assert.deepStrictEqual(metadataBuffer.compare(ipfsResp), 0)
   })
 })
 

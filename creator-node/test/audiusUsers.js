@@ -118,7 +118,7 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient', 
     await server.close()
   })
 
-  it('should fail if metadatda is not found in request body', async function () {
+  it('should fail if metadata is not found in request body', async function () {
     const resp = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', session)
@@ -128,7 +128,7 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient', 
     assert.deepStrictEqual(resp.body.error, 'Internal server error')
   })
 
-  it('should throw error response if saving metadata to fails', async function () {
+  it('should throw error response if saving metadata fails', async function () {
     sinon.stub(ipfs, 'add').rejects(new Error('ipfs add failed!'))
 
     const metadata = { metadata: 'spaghetti' }
@@ -141,7 +141,7 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient', 
     assert.deepStrictEqual(resp.body.error, 'Could not save file to disk, ipfs, and/or db: Error: ipfs add failed!')
   })
 
-  it('should successfully adds metadata file to filesystem, db, and ipfs', async function () {
+  it('should successfully add metadata file to filesystem, db, and ipfs', async function () {
     const metadata = sortKeys({ spaghetti: 'spaghetti' })
     const resp = await request(app)
       .post('/audius_users/metadata')
@@ -171,5 +171,18 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient', 
       type: 'metadata'
     } })
     assert.ok(file)
+
+    // check that the metadata file is in IPFS
+    let ipfsResp
+    try {
+      ipfsResp = await ipfs.cat(resp.body.metadataMultihash)
+    } catch (e) {
+      // If CID is not present, will throw timeout error
+      assert.fail(e.message)
+    }
+
+    // check that the ipfs content matches what we expect
+    const metadataBuffer = Buffer.from(JSON.stringify(metadata))
+    assert.deepStrictEqual(metadataBuffer.compare(ipfsResp), 0)
   })
 })
