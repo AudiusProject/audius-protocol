@@ -2,10 +2,11 @@ const assert = require('assert')
 const sinon = require('sinon')
 const uuid = require('uuid/v4')
 const fs = require('fs')
+const fsExtra = require('fs-extra')
 const path = require('path')
 
 const { ipfs } = require('../src/ipfsClient')
-const { saveFileToIPFSFromFS } = require('../src/fileManager')
+const { saveFileToIPFSFromFS, removeTrackFolder } = require('../src/fileManager')
 const config = require('../src/config')
 const models = require('../src/models')
 
@@ -148,5 +149,41 @@ describe('test saveFileToIpfsFromFs', () => {
     }
 
     assert.deepStrictEqual(originalSegmentBuf.compare(ipfsResp), 0)
+  })
+})
+
+describe('test removeTrackFolder()', async function () {
+  const testTrackUploadDir = './test/testTrackUploadDir/'
+  const trackSourceFileDir = path.join(storagePath, 'testTrackSourceFileDir')
+
+  // copy test dir into /test_file_storage dir to be deleted by removeTrackFolder()
+  beforeEach(async function () {
+    // uses `fs-extra` module for recursive directory copy since base `fs` module doesn't provide this
+    await fsExtra.copy(testTrackUploadDir, storagePath)
+  })
+
+  afterEach(async function () {
+    sinon.restore()
+  })
+
+  it.skip('TODO - Failure cases', async function () {})
+
+  it('Successfully removes track folder', async function () {
+    // Ensure expected dir state before calling removeTrackFolder()
+    assert.ok(fs.existsSync(trackSourceFileDir))
+    assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'segments')))
+    assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'master.mp3')))
+    assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'trackManifest.m3u8')))
+    assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'transcode.mp3')))
+
+    // Call removeTrackFolder + expect success
+    try {
+      await removeTrackFolder(req, trackSourceFileDir)
+    } catch (e) {
+      assert.fail(e.message)
+    }
+
+    // Ensure dir has been removed
+    assert.ok(!fs.existsSync(trackSourceFileDir))
   })
 })

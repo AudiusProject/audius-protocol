@@ -17,6 +17,7 @@ const { getLibsMock } = require('./lib/libsMock')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
+const testAudiusFileNumSegments = 32
 
 describe('test Tracks', function () {
   let app, server, session, ipfsMock, libsMock
@@ -126,18 +127,6 @@ describe('test Tracks', function () {
     assert.deepStrictEqual(resp1.body.source_file.includes('.mp3'), true)
     assert.deepStrictEqual(resp1.body.transcodedTrackCID, 'testCIDLink')
     assert.deepStrictEqual(typeof resp1.body.transcodedTrackUUID, 'string')
-  })
-
-  it('TODO - Successfully prunes upload artifacts', async function () {
-    /**
-     * unit test removeTrackFolder
-     * - replicate /track_content upload flow -> is there a better way to do this without re-writing track_content?
-     * - confirm desired disk state
-     * - call removeTrackFolder()
-     * - confirm desired disk state
-     *
-     * for now, test happy path and add TODO to test failure cases
-     */
   })
 
   // depends on "upload file to IPFS"
@@ -446,7 +435,6 @@ describe('test /track_content with actual ipfsClient', function () {
 
   it('should successfully upload track + transcode and prune upload artifacts', async function () {
     const file = fs.readFileSync(testAudioFilePath)
-    libsMock.User.getUsers.exactly(4)
 
     // Make /track_content call with test file + expect success
     const resp = await request(app)
@@ -459,12 +447,6 @@ describe('test /track_content with actual ipfsClient', function () {
     let storagePath = config.get('storagePath')
     storagePath = storagePath.slice(0, 1) === '/' ? '.' + storagePath : storagePath
 
-    // TODO - move to separate unit test above
-    // // Ensure original trackUUID dir has been pruned and does not exist
-    // const originalTrackUUID = resp.body.source_file.split('.').slice(0, -1).join('.') // remove extension
-    // const originalTrackUUIDPath = path.join(storagePath, originalTrackUUID)
-    // assert.ok(!fs.existsSync(originalTrackUUIDPath))
-
     // check that the generated transcoded track is the same as the transcoded track in /tests
     const transcodedTrackAssetPath = path.join(__dirname, 'testTranscoded320Track.mp3')
     const transcodedTrackAssetBuf = fs.readFileSync(transcodedTrackAssetPath)
@@ -472,16 +454,32 @@ describe('test /track_content with actual ipfsClient', function () {
     const transcodedTrackTestBuf = fs.readFileSync(transcodedTrackPath)
     assert.deepStrictEqual(transcodedTrackAssetBuf.compare(transcodedTrackTestBuf), 0)
 
-    // check that there are 32 CIDs that have been added to fs
+    // Ensure 32 segments are returned, each segment has a corresponding file on disk,
+    //    and each segment disk file is exactly as expected
     const segmentCIDs = resp.body.track_segments
-    assert.deepStrictEqual(segmentCIDs.length, 32)
-    segmentCIDs.map(cid => {
+    assert.deepStrictEqual(segmentCIDs.length, testAudiusFileNumSegments)
+    segmentCIDs.map(function (cid, index) {
       const cidPath = path.join(storagePath, cid.multihash)
-      assert.ok(fs.existsSync(cidPath))
-    })
 
-    // TODO - add more granular check for segment correctness -> e.g. sum segment file sizes, sum segment durations via ffprobe, etc
-    //    might not be possible to assert segment CIDs equality since ffmpeg segmenting may not be deterministic in all conditions
-    //    We already have each segment stored in /test/test-segments, can do buffer comparison with resp.body.data.segments[]
+      // Ensure file exists
+      assert.ok(fs.existsSync(cidPath))
+
+      // Ensure file is identical to expected segment file
+      const expectedSegmentFilePath = _getTestSegmentFilePathAtIndex(index)
+      const expectedSegmentFileBuf = fs.readFileSync(expectedSegmentFilePath)
+      const returnedSegmentFileBuf = fs.readFileSync(cidPath)
+      assert.deepStrictEqual(expectedSegmentFileBuf.compare(returnedSegmentFileBuf), 0)
+    })
   })
 })
+
+/** Given index of segment, returns filepath of expected segment file in /test/test-segments/ dir */
+function _getTestSegmentFilePathAtIndex (index) {
+  let suffix = '0'
+
+  if (index >= 0 && index < 10) suffix += `0${index}`
+  else if (index >= 10 && index < 32) suffix += `${index}`
+  else throw new Error('Index must be [0, 32)')
+
+  return path.join(__dirname, 'test-segments', `segment${suffix}.ts`)
+}
