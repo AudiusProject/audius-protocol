@@ -3,10 +3,13 @@ const assert = require('assert')
 const semver = require('semver')
 const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 
-const mockEthContracts = (urls, currrentVersion) => ({
+const mockEthContracts = (urls, currrentVersion, previousVersions = null) => ({
   getCurrentVersion: async () => currrentVersion,
   getNumberOfVersions: async (spType) => 2,
   getVersion: async (spType, queryIndex) => {
+    if (previousVersions) {
+      return previousVersions[queryIndex]
+    }
     return ['1.2.2', '1.2.3'][queryIndex]
   },
   getServiceProviderList: async () => urls.map(u => ({ endpoint: u })),
@@ -23,6 +26,9 @@ describe('DiscoveryProviderSelection', () => {
     const LocalStorage = require('node-localstorage').LocalStorage
     const localStorage = new LocalStorage('./local-storage')
     localStorage.removeItem('@audius/libs:discovery-provider-timestamp')
+  })
+  afterEach(() => {
+    nock.cleanAll()
   })
 
   it('selects a healthy service', async () => {
@@ -124,7 +130,6 @@ describe('DiscoveryProviderSelection', () => {
   it('can select an old version', async () => {
     const healthyButBehind = 'https://healthyButBehind.audius.co'
     nock(healthyButBehind)
-      .log(console.log)
       .get('/health_check')
       .reply(200, { data: {
         service: 'discovery-provider',
@@ -133,7 +138,6 @@ describe('DiscoveryProviderSelection', () => {
       } })
     const pastVersionNotBehind = 'https://pastVersionNotBehind.audius.co'
     nock(pastVersionNotBehind)
-      .log(console.log)
       .get('/health_check')
       .reply(200, { data: {
         service: 'discovery-provider',
@@ -185,7 +189,7 @@ describe('DiscoveryProviderSelection', () => {
       mockEthContracts([behind20, behind40], '1.2.3')
     )
     const service = await s.select()
-    assert.strictEqual(service, behind40)
+    assert.strictEqual(service, behind20)
     assert.deepStrictEqual(s.backups, {
       [behind20]: {
         service: 'discovery-provider',
@@ -196,6 +200,50 @@ describe('DiscoveryProviderSelection', () => {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 40
+      }
+    })
+    assert.strictEqual(s.getTotalAttempts(), 2)
+    assert.strictEqual(s.isInRegressedMode(), true)
+  })
+
+  it('can select the discprov that is the least number of blocks behind for past versions', async () => {
+    const behind100 = 'https://behind100.audius.co'
+    nock(behind100)
+      .get('/health_check')
+      .reply(200, { data: {
+        service: 'discovery-provider',
+        version: '1.2.3',
+        block_difference: 100
+      } })
+    const behind200 = 'https://behind200.audius.co'
+    nock(behind200)
+      .get('/health_check')
+      .reply(200, { data: {
+        service: 'discovery-provider',
+        version: '1.2.3',
+        block_difference: 200
+      } })
+
+    const s = new DiscoveryProviderSelection(
+      { requestTimeout: 100 },
+      mockEthContracts(
+        [behind100, behind200],
+        '1.2.0',
+        ['1.2.0']
+      )
+    )
+    const service = await s.select()
+    assert.strictEqual(service, behind100)
+    assert.deepStrictEqual(s.backups, {
+      [behind100]: {
+        service: 'discovery-provider',
+        version: '1.2.3',
+        block_difference: 100
+      },
+      [behind200]: {
+        service: 'discovery-provider',
+        version: '1.2.3',
+        block_difference: 200
       }
     })
     assert.strictEqual(s.getTotalAttempts(), 2)
