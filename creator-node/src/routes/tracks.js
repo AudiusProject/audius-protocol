@@ -148,8 +148,8 @@ module.exports = function (app) {
       return errorResponseForbidden(e.message)
     }
 
-    // If track marked as downloadable, kick off the transcoding process if there doesn't
-    // already exist a transcoded master.
+    // If metadata indicates track is downloadable but doesn't provide a transcode CID,
+    //    ensure that a transcoded master record exists in DB
     if (metadataJSON.download && metadataJSON.download.is_downloadable && !metadataJSON.download.cid) {
       let sourceFile = req.body.sourceFile
       const trackId = metadataJSON.track_id
@@ -158,7 +158,6 @@ module.exports = function (app) {
       }
 
       // See if the track already has a transcoded master
-      let hasTranscodedMaster = false
       if (trackId) {
         const { trackUUID } = await models.Track.findOne({
           attributes: ['trackUUID'],
@@ -166,7 +165,8 @@ module.exports = function (app) {
             blockchainId: trackId
           }
         })
-        // Short circuit if there is a transcoded version available
+
+        // Error if no DB entry for transcode found
         const transcodedFile = await models.File.findOne({
           attributes: ['multihash'],
           where: {
@@ -175,55 +175,9 @@ module.exports = function (app) {
             trackUUID
           }
         })
-
-        if (transcodedFile && transcodedFile.multihash) hasTranscodedMaster = true
-      }
-
-      // If it does not, create it from the source file
-      if (!hasTranscodedMaster) {
-        if (!sourceFile) {
-          // Find the source file.
-          const { trackUUID } = await models.Track.findOne({
-            attributes: ['trackUUID'],
-            where: {
-              blockchainId: trackId
-            }
-          })
-
-          const firstSegment = metadataJSON.track_segments[0]
-          if (!firstSegment) return errorResponseServerError('No segment found for track')
-
-          const file = await models.File.findOne({
-            where: {
-              multihash: firstSegment.multihash,
-              cnodeUserUUID: req.session.cnodeUserUUID,
-              trackUUID
-            }
-          })
-          if (!file || !file.sourceFile) {
-            return errorResponseBadRequest(`Invalid track_segments input - no matching source file found for segment CIDs.`)
-          }
-          sourceFile = file.sourceFile
+        if (!transcodedFile) {
+          return errorResponseServerError('Failed to find transcoded file ')
         }
-
-        // Sanity check that the source file exists in the db.
-        const file = await models.File.findOne({
-          where: {
-            sourceFile
-          }
-        })
-        if (!file) {
-          return errorResponseBadRequest(`Invalid sourceFile input - no matching file entry found.`)
-        }
-        // Ensure sourceFile exists on disk.
-        const fileDir = path.resolve(req.app.get('storagePath'), sourceFile.split('.')[0])
-        const filePath = path.resolve(fileDir, sourceFile)
-        if (!fs.existsSync(filePath)) {
-          req.logger.error(`SourceFile not found at ${filePath}.`)
-          return errorResponseServerError('Cannot make downloadable - no sourceFile found on disk.')
-        }
-
-        createDownloadableCopy(req, sourceFile)
       }
     }
 
@@ -530,24 +484,4 @@ module.exports = function (app) {
       }))
     })
   }))
-}
-
-/** Transcode track master file to 320kbps for downloading. Save to disk, IPFS, & DB. */
-async function createDownloadableCopy (req, fileName) {
-  try {
-    const start = Date.now()
-    req.logger.info(`Transcoding file ${fileName}...`)
-
-    const fileDir = path.resolve(req.app.get('storagePath'), fileName.split('.')[0])
-    const transcoding = await TranscodingQueue.transcode320(fileDir, fileName)
-    const { filePath: dlCopyFilePath } = transcoding
-
-    req.logger.info(`Transcoded file ${fileName} in ${Date.now() - start}ms.`)
-
-    await saveFileToIPFSFromFS(req, dlCopyFilePath, 'copy320', fileName)
-
-    return dlCopyFilePath
-  } catch (err) {
-    req.logger.error(err)
-  }
 }
