@@ -12,6 +12,15 @@
 - [ ] Libs
 - [ ] Contracts
 
+### Touches critical flows?
+Delete one of the following options:
+- 🚨 Yes, this touches:
+    - Discovery Provider Indexing
+    - Creator Node File System
+    - Creator Node Gateways
+    - Creator Node Track Upload
+- ✅ Nope
+
 
 ### How Has This Been Tested?
 
