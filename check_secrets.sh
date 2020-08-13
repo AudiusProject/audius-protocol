@@ -1,4 +1,4 @@
-# used to exercise the if command is not git command logic. change this to an invalid value
+# used to exercise the `if command is not git command` logic below. change this to an invalid value to test printing out install message
 COMMAND_PREFIX='secrets'
 
 # 2>&1 sends stderr to stdout
