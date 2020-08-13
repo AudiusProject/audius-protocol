@@ -30,6 +30,8 @@ const req = {
     }
   }
 }
+
+// TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
 const segmentsDirPath = 'test/test-segments'
 const sourceFile = 'segment001.ts'
 const srcPath = path.join(segmentsDirPath, sourceFile)
@@ -170,6 +172,8 @@ describe('test removeTrackFolder()', async function () {
 
   it('Successfully removes track folder', async function () {
     // Ensure expected dir state before calling removeTrackFolder()
+    // Note that the contents of these files are never checked as only the dir structure/file naming matters here.
+    //    The file contents don't matter as these files are never accessed after completing track upload.
     assert.ok(fs.existsSync(trackSourceFileDir))
     assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'segments')))
     assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'master.mp3')))

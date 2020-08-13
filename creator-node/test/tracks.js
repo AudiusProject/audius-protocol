@@ -456,6 +456,8 @@ describe('test /track_content with actual ipfsClient', function () {
 
     // Ensure 32 segments are returned, each segment has a corresponding file on disk,
     //    and each segment disk file is exactly as expected
+    // Note - The exact output of track segmentation is deterministic only for a given environment/ffmpeg version
+    //    This test may break in the future but at that point we should re-generate the reference segment files.
     const segmentCIDs = resp.body.track_segments
     assert.deepStrictEqual(segmentCIDs.length, testAudiusFileNumSegments)
     segmentCIDs.map(function (cid, index) {
@@ -473,7 +475,10 @@ describe('test /track_content with actual ipfsClient', function () {
   })
 })
 
-/** Given index of segment, returns filepath of expected segment file in /test/test-segments/ dir */
+/**
+ * Given index of segment, returns filepath of expected segment file in /test/test-segments/ dir
+ * TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
+*/
 function _getTestSegmentFilePathAtIndex (index) {
   let suffix = '0'
 
