@@ -308,9 +308,12 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
               // The files inside the directory are synced separately
               if (nonTrackFile.type !== 'dir') {
                 // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
-                if (nonTrackFile.type === 'image') {
+                // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
+                if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
                   return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
-                } else return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
+                } else {
+                  return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
+                }
               }
             }
           ))
