@@ -2,16 +2,15 @@ import logging
 import os
 import json
 import re
+import time
 import contextlib
 from urllib.parse import urljoin
 from functools import reduce
 import requests
-import time
-import datetime
-from src import exceptions
-from . import multihash
 from flask import g, request
 from jsonformatter import JsonFormatter
+from src import exceptions
+from . import multihash
 
 @contextlib.contextmanager
 def cd(path):
@@ -36,7 +35,8 @@ def bytes32_to_str(bytes32input):
 def query_result_to_list(query_result, relationships_to_include=None):
     results = []
     for row in query_result:
-        results.append(model_to_dictionary(row, None, relationships_to_include))
+        results.append(model_to_dictionary(
+            row, None, relationships_to_include))
     return results
 
 
@@ -85,7 +85,7 @@ log_format = {
 
 formatter = JsonFormatter(
     log_format,
-    ensure_ascii=False, 
+    ensure_ascii=False,
     mix_extra=True
 )
 
@@ -119,20 +119,18 @@ def configure_flask_app_logging(app, loglevel_str):
 
     # Set a timer before the req to get the request time
     @app.before_request
-    def start_timer():
+    def start_timer(): # pylint: disable=W0612
         g.start = time.time()
 
     # Log the request
     @app.after_request
-    def log_request(response):
+    def log_request(response): # pylint: disable=W0612
 
         now = time.time()
         duration = int((now - g.start) * 1000)
-        dt = datetime.datetime.fromtimestamp(now)
-
         ip = request.headers.get('X-Forwarded-For', request.remote_addr)
         host = request.host.split(':', 1)[0]
-        args = request.query_string.decode("utf-8") 
+        args = request.query_string.decode("utf-8")
 
         log_params = {
             'method': request.method,
@@ -182,8 +180,10 @@ def remove_test_file(filepath):
 def multihash_digest_to_cid(multihash_digest):
     user_metadata_digest = multihash_digest.hex()
     user_metadata_hash_fn = 18
-    buf = multihash.encode(bytes.fromhex(user_metadata_digest), user_metadata_hash_fn)
+    buf = multihash.encode(bytes.fromhex(
+        user_metadata_digest), user_metadata_hash_fn)
     return multihash.to_b58_string(buf)
+
 
 def get_web3_endpoint(shared_config):
     if shared_config["web3"]["port"] != '443':
@@ -193,6 +193,7 @@ def get_web3_endpoint(shared_config):
     else:
         web3endpoint = "https://{}".format(shared_config["web3"]["host"])
     return web3endpoint
+
 
 def get_discovery_provider_version():
     versionFilePath = os.path.join(os.getcwd(), ".version.json")
@@ -221,7 +222,7 @@ def get_valid_multiaddr_from_id_json(id_json):
 
 def get_ipfs_info_from_cnode_endpoint(url, self_multiaddr):
     id_url = urljoin(url, 'ipfs_peer_info')
-    data = {'caller_ipfs_id' : self_multiaddr}
+    data = {'caller_ipfs_id': self_multiaddr}
     resp = requests.get(
         id_url,
         timeout=5,
@@ -239,14 +240,15 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
         return
     redis = update_task.redis
     cnode_entries = cnode_url_list.split(',')
-    interval = int(update_task.shared_config["discprov"]["peer_refresh_interval"])
+    interval = int(
+        update_task.shared_config["discprov"]["peer_refresh_interval"])
     for cnode_url in cnode_entries:
         if cnode_url == '':
             continue
         try:
             multiaddr = get_ipfs_info_from_cnode_endpoint(
                 cnode_url,
-                None # update_task.ipfs_client.ipfs_id_multiaddr()
+                None  # update_task.ipfs_client.ipfs_id_multiaddr()
             )
             update_task.ipfs_client.connect_peer(multiaddr)
             redis.set(cnode_url, multiaddr, interval)
@@ -255,9 +257,12 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
 
 # Constructs a track's route_id from an unsanitized title and handle.
 # Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
+
+
 def create_track_route_id(title, handle):
     # Strip out invalid character
-    sanitized_title = re.sub(r'!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]', '', title)
+    sanitized_title = re.sub(
+        r'!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]', '', title)
 
     # Convert whitespaces to dashes
     sanitized_title = re.sub(r'\s+', '-', sanitized_title)
@@ -278,6 +283,7 @@ def create_track_route_id(title, handle):
 def validate_arguments(req_args, expected_args):
     if req_args is None:
         raise exceptions.ArgumentError("No arguments present.")
-    all_exist = reduce((lambda acc, cur: cur in req_args and acc), expected_args, True)
+    all_exist = reduce(
+        (lambda acc, cur: cur in req_args and acc), expected_args, True)
     if not all_exist:
         raise exceptions.ArgumentError("Not all required arguments exist.")
