@@ -6,8 +6,12 @@ import contextlib
 from urllib.parse import urljoin
 from functools import reduce
 import requests
+import time
+import datetime
 from src import exceptions
 from . import multihash
+from flask import g, request
+from jsonformatter import JsonFormatter
 
 @contextlib.contextmanager
 def cd(path):
@@ -73,15 +77,24 @@ def tuple_to_model_dictionary(t, model):
     return dict(zip(keys, t))
 
 
+log_format = {
+    "levelno": "levelno",
+    "level": "levelname",
+    "msg": "message"
+}
+
+formatter = JsonFormatter(
+    log_format,
+    ensure_ascii=False, 
+    mix_extra=True
+)
+
 # Configures root logger with custom format and loglevel
 # All child loggers will inherit settings from root logger as configured in this function
 def configure_logging(loglevel_str='WARN'):
     logger = logging.getLogger()  # retrieve root logger
 
     handler = logging.StreamHandler()
-    formatter = logging.Formatter(
-        "[%(asctime)s] {%(name)s:%(lineno)d} (%(levelname)s) - %(message)s"
-    )
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
@@ -94,6 +107,56 @@ def configure_logging(loglevel_str='WARN'):
         loglevel = logging.WARN
 
     logger.setLevel(loglevel)
+
+
+def configure_flask_app_logging(app, loglevel_str):
+    # Disable werkzeug logger to remove default flask logs in favor of app decorator log below
+    werkzeug_log = logging.getLogger('werkzeug')
+    werkzeug_log.disabled = True
+
+    configure_logging(loglevel_str)
+    logger = logging.getLogger()  # retrieve root logger
+
+    # Set a timer before the req to get the request time
+    @app.before_request
+    def start_timer():
+        g.start = time.time()
+
+    # Log the request
+    @app.after_request
+    def log_request(response):
+
+        now = time.time()
+        duration = int((now - g.start) * 1000)
+        dt = datetime.datetime.fromtimestamp(now)
+
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        host = request.host.split(':', 1)[0]
+        args = request.query_string.decode("utf-8") 
+
+        log_params = {
+            'method': request.method,
+            'path': request.path,
+            'status': response.status_code,
+            'duration': duration,
+            'ip': ip,
+            'host': host,
+            'params': args
+        }
+
+        request_user_id = request.headers.get('X-User-ID')
+        if request_user_id:
+            log_params['request_user_id'] = request_user_id
+
+        parts = []
+        for name, value in log_params.items():
+            part = "{}={}".format(name, value)
+            parts.append(part)
+
+        line = " ".join(parts)
+        logger.info(line, extra=log_params)
+
+        return response
 
 
 def loadAbiValues():

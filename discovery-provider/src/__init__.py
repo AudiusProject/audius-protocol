@@ -167,7 +167,7 @@ def create(test_config=None, mode="app"):
     configure_flask(test_config, app, mode)
 
     if mode == "app":
-        helpers.configure_logging(shared_config["discprov"]["loglevel_flask"])
+        helpers.configure_flask_app_logging(app, shared_config["discprov"]["loglevel_flask"])
         return app
 
     if mode == "celery":
