@@ -4,7 +4,6 @@ import json
 import re
 import time
 import contextlib
-from datetime import datetime
 from urllib.parse import urljoin
 from functools import reduce
 import requests
@@ -153,7 +152,6 @@ def configure_flask_app_logging(app, loglevel_str):
             part = "{}={}".format(name, value)
             parts.append(part)
 
-        line = " ".join(parts)
         logger.info('handle flask request', extra=log_params)
         return response
 

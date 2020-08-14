@@ -1,7 +1,4 @@
 import logging
-
-from flask import request
-
 from src import api_helpers
 
 
