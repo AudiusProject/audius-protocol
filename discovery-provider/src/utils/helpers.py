@@ -81,7 +81,8 @@ def tuple_to_model_dictionary(t, model):
 log_format = {
     "levelno": "levelno",
     "level": "levelname",
-    "msg": "message"
+    "msg": "message",
+    "timestamp": "asctime",
 }
 
 formatter = JsonFormatter(
@@ -132,14 +133,11 @@ def configure_flask_app_logging(app, loglevel_str):
         ip = request.headers.get('X-Forwarded-For', request.remote_addr)
         host = request.host.split(':', 1)[0]
         args = request.query_string.decode("utf-8")
-        now = datetime.now()
-        timestamp = now.strftime("%Y/%m/%d %H:%M:%S")
 
         log_params = {
             'method': request.method,
             'path': request.path,
             'status': response.status_code,
-            'timestamp': timestamp,
             'duration': duration,
             'ip': ip,
             'host': host,
