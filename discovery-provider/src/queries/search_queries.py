@@ -342,9 +342,10 @@ def search(args):
     with_users = args.get("with_users")
     is_auto_complete = args.get("is_auto_complete")
     current_user_id = args.get("current_user_id")
+    limit = args.get("limit")
+    offset = args.get("offset")
 
     searchKind = SearchKind[kind]
-    (limit, offset) = get_pagination_vars()
 
     results = {}
     if searchStr:

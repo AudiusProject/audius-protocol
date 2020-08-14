@@ -17,6 +17,7 @@ const { getLibsMock } = require('./lib/libsMock')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
+const testAudiusFileNumSegments = 32
 
 describe('test Tracks', function () {
   let app, server, session, ipfsMock, libsMock
@@ -390,6 +391,7 @@ describe('test Tracks', function () {
 describe('test /track_content with actual ipfsClient', function () {
   let app, server, session, ipfs, libsMock
 
+  /** Inits ipfs client, libs mock, web server app, blacklist manager, and creates starter CNodeUser */
   beforeEach(async () => {
     ipfs = require('../src/ipfsClient').ipfs
     libsMock = getLibsMock()
@@ -431,10 +433,10 @@ describe('test /track_content with actual ipfsClient', function () {
       .expect(500)
   })
 
-  it('should upload 32 segments and 1 320kbps copy to storagePath', async function () {
+  it('should successfully upload track + transcode and prune upload artifacts', async function () {
     const file = fs.readFileSync(testAudioFilePath)
-    libsMock.User.getUsers.exactly(4)
 
+    // Make /track_content call with test file + expect success
     const resp = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
@@ -445,45 +447,44 @@ describe('test /track_content with actual ipfsClient', function () {
     let storagePath = config.get('storagePath')
     storagePath = storagePath.slice(0, 1) === '/' ? '.' + storagePath : storagePath
 
-    // check if track UUID dir exists
-    const originalTrackUUID = resp.body.source_file.split('.').slice(0, -1).join('.') // remove extension
-    const originalTrackUUIDPath = path.join(storagePath, originalTrackUUID)
-    assert.ok(fs.existsSync(originalTrackUUIDPath))
-
-    // check that the track UUID dir contains the transcoded copy
-    const transcodedTrackPath = path.join(originalTrackUUIDPath, originalTrackUUID + '-dl.mp3')
-    assert.ok(fs.existsSync(transcodedTrackPath))
-
     // check that the generated transcoded track is the same as the transcoded track in /tests
     const transcodedTrackAssetPath = path.join(__dirname, 'testTranscoded320Track.mp3')
     const transcodedTrackAssetBuf = fs.readFileSync(transcodedTrackAssetPath)
+    const transcodedTrackPath = path.join(storagePath, resp.body.data.transcodedTrackCID)
     const transcodedTrackTestBuf = fs.readFileSync(transcodedTrackPath)
     assert.deepStrictEqual(transcodedTrackAssetBuf.compare(transcodedTrackTestBuf), 0)
 
-    // check that the track UUID dir contains the source file
-    const sourceFile = resp.body.source_file
-    const sourceFilePath = path.join(originalTrackUUIDPath, sourceFile)
-    assert.ok(fs.existsSync(sourceFilePath))
-
-    // check that there are 32 segments in <uuid>/segments and that they follow
-    // the naming convention 'segment<3 digit #>.ts'
-    const segmentsPath = path.join(originalTrackUUIDPath, 'segments')
-    fs.readdir(segmentsPath, (err, files) => {
-      if (err) assert.fail(err.message)
-      assert.deepStrictEqual(files.length, 32)
-
-      for (let i = 0; i < 32; i++) {
-        const indexSuffix = ('000' + i).slice(-3)
-        assert.deepStrictEqual(files[i], `segment${indexSuffix}.ts`)
-      }
-    })
-
-    // check that there are 32 CIDs that have been added to fs
+    // Ensure 32 segments are returned, each segment has a corresponding file on disk,
+    //    and each segment disk file is exactly as expected
+    // Note - The exact output of track segmentation is deterministic only for a given environment/ffmpeg version
+    //    This test may break in the future but at that point we should re-generate the reference segment files.
     const segmentCIDs = resp.body.track_segments
-    assert.deepStrictEqual(segmentCIDs.length, 32)
-    segmentCIDs.map(cid => {
+    assert.deepStrictEqual(segmentCIDs.length, testAudiusFileNumSegments)
+    segmentCIDs.map(function (cid, index) {
       const cidPath = path.join(storagePath, cid.multihash)
+
+      // Ensure file exists
       assert.ok(fs.existsSync(cidPath))
+
+      // Ensure file is identical to expected segment file
+      const expectedSegmentFilePath = _getTestSegmentFilePathAtIndex(index)
+      const expectedSegmentFileBuf = fs.readFileSync(expectedSegmentFilePath)
+      const returnedSegmentFileBuf = fs.readFileSync(cidPath)
+      assert.deepStrictEqual(expectedSegmentFileBuf.compare(returnedSegmentFileBuf), 0)
     })
   })
 })
+
+/**
+ * Given index of segment, returns filepath of expected segment file in /test/test-segments/ dir
+ * TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
+*/
+function _getTestSegmentFilePathAtIndex (index) {
+  let suffix = '0'
+
+  if (index >= 0 && index < 10) suffix += `0${index}`
+  else if (index >= 10 && index < 32) suffix += `${index}`
+  else throw new Error('Index must be [0, 32)')
+
+  return path.join(__dirname, 'test-segments', `segment${suffix}.ts`)
+}
