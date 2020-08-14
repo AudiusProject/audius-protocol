@@ -4,6 +4,7 @@ import json
 import re
 import time
 import contextlib
+from datetime import datetime
 from urllib.parse import urljoin
 from functools import reduce
 import requests
@@ -131,11 +132,14 @@ def configure_flask_app_logging(app, loglevel_str):
         ip = request.headers.get('X-Forwarded-For', request.remote_addr)
         host = request.host.split(':', 1)[0]
         args = request.query_string.decode("utf-8")
+        now = datetime.now()
+        timestamp = now.strftime("%Y/%m/%d %H:%M:%S")
 
         log_params = {
             'method': request.method,
             'path': request.path,
             'status': response.status_code,
+            'timestamp': timestamp,
             'duration': duration,
             'ip': ip,
             'host': host,
@@ -152,8 +156,7 @@ def configure_flask_app_logging(app, loglevel_str):
             parts.append(part)
 
         line = " ".join(parts)
-        logger.info(line, extra=log_params)
-
+        logger.info('handle flask request', extra=log_params)
         return response
 
 
