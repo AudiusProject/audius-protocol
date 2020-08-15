@@ -126,6 +126,7 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient fo
       .send({ dummy: 'data' })
       .expect(500)
 
+    // Route will throw error at `Buffer.from(JSON.stringify(metadataJSON))`
     assert.deepStrictEqual(resp.body.error, 'Internal server error')
   })
 
@@ -148,12 +149,6 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient fo
       .post('/audius_users/metadata')
       .set('X-Session-ID', session)
       .send({ metadata })
-      .expect(function (res) {
-        if (res.body.error) {
-          console.error(res.body.error)
-          assert.fail(res.body.error)
-        }
-      })
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash

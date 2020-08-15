@@ -169,11 +169,11 @@ describe('test fileManager', () => {
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileFromBuffer() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   describe('test saveFileFromBuffer()', () => {
-  /**
-   * Given: a file buffer is being saved to ipfs, fs, and db
-   * When: cnodeUserUUID is not present
-   * Then: an error is thrown
-   */
+    /**
+     * Given: a file buffer is being saved to ipfs, fs, and db
+     * When: cnodeUserUUID is not present
+     * Then: an error is thrown
+     */
     it('should throw error if cnodeUserUUID is not present', async () => {
       const reqOverride = {
         session: {},
@@ -194,10 +194,10 @@ describe('test fileManager', () => {
     })
 
     /**
-   * Given: a file buffer is being saved to ipfs, fs, and db
-   * When: ipfs is down
-   * Then: an error is thrown
-   */
+     * Given: a file buffer is being saved to ipfs, fs, and db
+     * When: ipfs is down
+     * Then: an error is thrown
+     */
     it('should throw an error if ipfs is down', async () => {
       sinon.stub(ipfs, 'add').rejects(new Error('ipfs is down!'))
 
@@ -210,10 +210,10 @@ describe('test fileManager', () => {
     })
 
     /**
-   * Given: a file buffer is being saved to ipfs, fs, and db
-   * When: writing to filesystem fails
-   * Then: an error is thrown
-   */
+     * Given: a file buffer is being saved to ipfs, fs, and db
+     * When: writing to filesystem fails
+     * Then: an error is thrown
+     */
     it('should throw an error if writing file to filesystem fails', async () => {
       sinon.stub(ipfs, 'add').resolves([{ hash: 'bad/path/fail' }]) // pass bad data to writeFile()
 
@@ -226,10 +226,10 @@ describe('test fileManager', () => {
     })
 
     /**
-   * Given: a file buffer is being saved to ipfs, fs, and db
-   * When: adding reference to db fails
-   * Then: an error is thrown
-   */
+     * Given: a file buffer is being saved to ipfs, fs, and db
+     * When: adding reference to db fails
+     * Then: an error is thrown
+     */
     it('should throw an error if writing reference to db fails', async () => {
       sinon.stub(models.File, 'findOrCreate').rejects(new Error('Failed to find or create file!!!'))
 
@@ -242,10 +242,10 @@ describe('test fileManager', () => {
     })
 
     /**
-   * Given: a file buffer is being saved to ipfs, fs, and db
-   * When: everything works as expected
-   * Then: ipfs, fs, and db should have the buffer contents
-   */
+    * Given: a file buffer is being saved to ipfs, fs, and db
+    * When: everything works as expected
+    * Then: ipfs, fs, and db should have the buffer contents
+    */
     it('should pass saving file from buffer (happy path)', async () => {
       sinon.stub(models.File, 'findOrCreate').returns([{ dataValues: { fileUUID: 'uuid' } }])
 
