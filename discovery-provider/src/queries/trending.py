@@ -34,11 +34,11 @@ def trending(time):
             json_cache = json.loads(redis_cache_value.decode('utf-8'))
             if json_cache is not None:
                 num_cached_entries = len(json_cache['listen_counts'])
-                logger.error(
+                logger.info(
                     f'Cache for {redis_key}, {num_cached_entries} entries, request limit {limit}')
                 if offset + limit <= num_cached_entries:
                     json_cache['listen_counts'] = json_cache['listen_counts'][offset:offset + limit]
-                    logger.error(f'Returning cache for {redis_key}')
+                    logger.info(f'Returning cache for {redis_key}')
                     # Increment cache hit count
                     REDIS.incr(trending_cache_hits_key, 1)
                     return api_helpers.success_response(json_cache)
