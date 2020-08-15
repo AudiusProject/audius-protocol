@@ -443,7 +443,7 @@ def refresh_peer_connections(task_context):
             for cnode_user_set in entry:
                 cnode_entries = cnode_user_set.split(',')
                 for cnode_url in cnode_entries:
-                    if cnode_url == '':
+                    if cnode_url == "''":
                         continue
                     cnode_endpoints[cnode_url] = True
 
@@ -460,7 +460,7 @@ def refresh_peer_connections(task_context):
             stored_in_redis = redis.get(cnode_url)
             if stored_in_redis is not None:
                 continue
-            if cnode_url == '':
+            if cnode_url == "''":
                 continue
 
             try:
