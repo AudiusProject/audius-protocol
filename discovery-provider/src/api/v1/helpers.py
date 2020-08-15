@@ -1,5 +1,4 @@
 from src import api_helpers
-from src.utils.config import shared_config
 from hashids import Hashids
 from flask_restx import fields, reqparse
 from src.queries.search_queries import SearchKind
@@ -25,7 +24,7 @@ def make_image(endpoint, cid, width="", height=""):
 def get_primary_endpoint(user):
     raw_endpoint = user["creator_node_endpoint"]
     if not raw_endpoint:
-        return shared_config["discprov"]["user_metadata_service_url"]
+        return None
     return raw_endpoint.split(",")[0]
 
 def add_track_artwork(track):
@@ -92,8 +91,7 @@ def extend_repost(repost):
 
 def extend_favorite(favorite):
     favorite["user_id"] = encode_int_id(favorite["user_id"])
-    favorite["favorite_item_id"] = encode_int_id(favorite["save_item_id"])
-    favorite["favorite_type"] = favorite["save_type"]
+    favorite["save_item_id"] = encode_int_id(favorite["save_item_id"])
     return favorite
 
 def extend_remix_of(remix_of):
@@ -115,15 +113,10 @@ def extend_track(track):
         track["user"] = extend_user(track["user"])
     track["id"] = track_id
     track["user_id"] = owner_id
-    track["followee_favorites"] = list(map(extend_favorite, track["followee_saves"]))
+    track["followee_saves"] = list(map(extend_favorite, track["followee_saves"]))
     track["followee_resposts"] = list(map(extend_repost, track["followee_reposts"]))
     track = add_track_artwork(track)
     track["remix_of"] = extend_remix_of(track["remix_of"])
-    track["favorite_count"] = track["save_count"]
-    duration = 0.
-    for segment in track["track_segments"]:
-        duration += segment["duration"]
-    track["duration"] = round(duration)
     return track
 
 def extend_playlist(playlist):
@@ -134,7 +127,6 @@ def extend_playlist(playlist):
     if ("user" in playlist):
         playlist["user"] = extend_user(playlist["user"])
     playlist = add_playlist_artwork(playlist)
-    playlist["favorite_count"] = playlist["save_count"]
     return playlist
 
 def abort_not_found(identifier, namespace):
@@ -150,10 +142,6 @@ def make_response(name, namespace, modelType):
     return namespace.model(name, {
         "data": modelType,
     })
-
-def to_dict(multi_dict):
-    """Converts a multi dict into a dict where only list entries are not flat"""
-    return {k: v if len(v) > 1 else v[0] for (k, v) in multi_dict.to_dict(flat=False).items()}
 
 
 search_parser = reqparse.RequestParser()

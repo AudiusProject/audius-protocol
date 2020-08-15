@@ -42,7 +42,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     // want to consider blocking writes.
     this._regressedMode = false
 
-    // List of valid past discovery provider versions registered on chain
+    // Set of valid past discovery provider versions registered on chain
     this.validVersions = null
   }
 
@@ -172,7 +172,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     // TODO: Clean up this logic when we can validate a specific version rather
     // than traversing backwards through all the versions
     if (!this.validVersions) {
-      this.validVersions = [this.currentVersion]
+      this.validVersions = new Set([this.currentVersion])
       const numberOfVersions = await this.ethContracts.getNumberOfVersions(DISCOVERY_SERVICE_NAME)
       for (let i = 0; i < Math.min(PREVIOUS_VERSIONS_TO_CHECK, numberOfVersions - 1); ++i) {
         const pastServiceVersion = await this.ethContracts.getVersion(
@@ -181,7 +181,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
           // Latest index is numberOfVersions - 1, so 2nd oldest version starts at numberOfVersions - 2
           numberOfVersions - 2 - i
         )
-        this.validVersions.push(pastServiceVersion)
+        this.validVersions.add(pastServiceVersion)
       }
     }
 
@@ -190,16 +190,8 @@ class DiscoveryProviderSelection extends ServiceSelection {
     // { blockdiff => [provider] }
     Object.keys(this.backups).forEach(backup => {
       const { block_difference: blockDiff, version } = this.backups[backup]
-
-      let isVersionOk = false
-      for (let i = 0; i < this.validVersions.length; ++i) {
-        if (this.ethContracts.hasSameMajorAndMinorVersion(this.validVersions[i], version)) {
-          isVersionOk = true
-          break
-        }
-      }
-      // Filter out any version that wasn't valid given what's registered on chain
-      if (!isVersionOk) return
+      // Filter out any version that wasn't registered on chain
+      if (!this.validVersions.has(version)) return
 
       versions.push(version)
       blockDiffs.push(blockDiff)
@@ -234,7 +226,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     }
 
     // Select the best block diff provider
-    const bestBlockDiff = blockDiffs.sort()[0]
+    const bestBlockDiff = blockDiffs.sort().reverse()[0]
 
     selected = blockDiffMap[bestBlockDiff][0]
     this.enterRegressedMode()

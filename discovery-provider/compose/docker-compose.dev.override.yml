@@ -11,8 +11,6 @@ services:
     depends_on:
       - discovery-provider-db
       - redis-server
-    volumes:
-      - '../.:/audius-discovery-provider'
     networks:
       - audius_dev
   celery-beat:
@@ -23,8 +21,6 @@ services:
       - .env
     depends_on:
       - celery-worker
-    volumes:
-      - '../.:/audius-discovery-provider'
     networks:
       - audius_dev
   web-server:

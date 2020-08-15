@@ -1,15 +1,10 @@
 const path = require('path')
 const fs = require('fs')
+const { promisify } = require('util')
+const writeFile = promisify(fs.writeFile)
 const multer = require('multer')
 const getUuid = require('uuid/v4')
 const axios = require('axios')
-const { promisify } = require('util')
-
-const lstat = promisify(fs.lstat)
-const readdir = promisify(fs.readdir)
-const unlink = promisify(fs.unlink)
-const rmdir = promisify(fs.rmdir)
-const writeFile = promisify(fs.writeFile)
 const mkdir = promisify(fs.mkdir)
 
 const config = require('./config')
@@ -270,64 +265,46 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
   return expectedStoragePath
 }
 
-/**
- * Removes all upload artifacts for track from filesystem. After successful upload these artifacts
- *    are all redundant since all synced content is replicated outside the upload folder.
- * (1) Remove all files in requested fileDir
- * (2) Confirm the only subdirectory is 'fileDir/segments'
- * (3) Remove all files in 'fileDir/segments' - throw if any subdirectories found
- * (4) Remove 'fileDir/segments' and fileDir
- * @dev - Eventually this function execution should be moved off of main server process
+/** (1) Remove all files in requested fileDir
+ *  (2) Confirm the only subdirectory is 'fileDir/segments'
+ *  (3) Remove all files in 'fileDir/segments' - throw if any subdirectories found
+ *  (4) Remove 'fileDir/segments' and fileDir
  */
-async function removeTrackFolder (req, fileDir) {
+function removeTrackFolder (req, fileDir) {
   try {
-    req.logger.info(`Removing track folder at fileDir ${fileDir}...`)
-    if (!fileDir) {
-      throw new Error('Cannot remove null fileDir')
-    }
-
-    let fileDirInfo = await lstat(fileDir)
+    let fileDirInfo = fs.lstatSync(fileDir)
     if (!fileDirInfo.isDirectory()) {
       throw new Error('Expected directory input')
     }
 
-    // Remove all contents of track dir (process sequentially to limit cpu load)
-    const files = await readdir(fileDir)
-    for (const file of files) {
+    const files = fs.readdirSync(fileDir)
+    // Remove all files in working track folder
+    files.forEach((file, index) => {
       let curPath = path.join(fileDir, file)
-
-      if ((await lstat(curPath)).isDirectory()) {
+      if (fs.lstatSync(curPath).isDirectory()) {
         // Only the 'segments' subdirectory is expected
         if (file !== 'segments') {
           throw new Error(`Unexpected subdirectory in ${fileDir} - ${curPath}`)
         }
-
-        // Delete each segment file inside /fileDir/segments/ (process sequentially to limit cpu load)
-        const segmentFiles = await readdir(curPath)
-        for (const segmentFile of segmentFiles) {
-          let curSegmentPath = path.join(curPath, segmentFile)
-
-          // Throw if a subdirectory found in /fileDir/segments/
-          if ((await lstat(curSegmentPath)).isDirectory()) {
+        const segmentFiles = fs.readdirSync(curPath)
+        segmentFiles.forEach((sFile, sIndex) => {
+          let curSegmentPath = path.join(curPath, sFile)
+          // Throw if a subdirectory found in <uuid>/segments
+          if (fs.lstatSync(curSegmentPath).isDirectory()) {
             throw new Error(`Unexpected subdirectory in segments ${fileDir} - ${curPath}`)
           }
 
-          // Delete segment file
-          await unlink(curSegmentPath)
-        }
-
-        // Delete /fileDir/segments/ directory after all its contents have been deleted
-        await rmdir(curPath)
+          // Remove segment file
+          fs.unlinkSync(curSegmentPath)
+        })
+        fs.rmdirSync(curPath)
       } else {
-        // Delete file inside /fileDir/
+        // Remove file
         req.logger.info(`Removing ${curPath}`)
-        await unlink(curPath)
+        fs.unlinkSync(curPath)
       }
-    }
-
-    // Delete fileDir after all its contents have been deleted
-    await rmdir(fileDir)
-    req.logger.info(`Removed track folder at fileDir ${fileDir}`)
+    })
+    fs.rmdirSync(fileDir)
   } catch (err) {
     req.logger.error(`Error removing ${fileDir}. ${err}`)
   }

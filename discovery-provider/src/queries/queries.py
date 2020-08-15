@@ -44,7 +44,7 @@ def to_dict(multi_dict):
 
 def parse_bool_param(field):
     """Converts a url param to a boolean value"""
-    return field.lower() == "true" if field else False
+    return field.lower() == "true"
 
 def parse_id_array_param(list):
     """Converts a list of strings ids to int"""
