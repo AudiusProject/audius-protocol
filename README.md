@@ -1,5 +1,3 @@
-<img src="https://user-images.githubusercontent.com/2731362/62400456-224e6280-b534-11e9-82c4-3b04175d4e01.png" alt="drawing" width="400"/>
-
 ## Audius frontend gateway for 3p traffic
 
 There are two modes of operation of General Admission
