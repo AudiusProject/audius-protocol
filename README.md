@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/AudiusProject/general-admission.svg?style=svg)](https://circleci.com/gh/AudiusProject/general-admission)
+
 ## Audius frontend gateway for 3p traffic
 
 There are two modes of operation of General Admission
