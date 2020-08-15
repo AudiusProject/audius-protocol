@@ -8,6 +8,45 @@ orbs:
   helm: circleci/helm@0.1.2
   kubernetes: circleci/kubernetes@0.3.0
 jobs:
+  test-mad-dog-e2e:
+    machine:
+      image: ubuntu-1604:201903-01    # recommended linux image - includes Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
+    steps:
+      - add_ssh_keys
+      - checkout
+      - run:
+          name: clone tooling and mad dog 
+          command: |
+            cd ../
+            mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
+            git clone git@github.com:AudiusProject/audius-tooling.git
+            git clone git@github.com:AudiusProject/mad-dog.git
+      - run:
+          name: execute
+          command: |
+            export PROTOCOL_DIR=/home/circleci/project/
+            source ~/.bash_profile
+            nvm install v10.16
+            nvm use 10.16
+            cd /home/circleci/project/libs/
+            npm install
+            npm link
+            cd /home/circleci/audius-tooling/service-commands/
+            npm install
+            npm link
+            npm link @audius/libs
+            cd /home/circleci/mad-dog/
+            npm install
+            npm link @audius/libs
+            npm link @audius/service-commands
+            cd /home/circleci/audius-tooling/service-commands/scripts/
+            sh init-repos.sh
+            sudo "$(which node)" hosts.js add
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            "$(which node)" setup.js up -nc 3
+            cd /home/circleci/mad-dog/
+            docker ps
+            npm run start test-ci
   test-libs:
     docker:
       # specify the version you desire here
@@ -257,7 +296,7 @@ jobs:
             export delegatePrivateKey=0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d
             export storagePath="test_file_storage"
             export ipfsPort=5001
-            npm run test
+            npm run test:ci
 
   test-discovery-provider:
     docker:
@@ -393,7 +432,11 @@ jobs:
       - run:
           name: Get tag or latest
           command: |
-            echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || echo "latest" `" | tee -a $BASH_ENV
+            # order of precendence for IMAGE tag is:
+            # 1. CIRCLE_TAG if defined,
+            # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
+            # 3. 'latest', which is the default
+            echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
       - run:
           name: Docker login
           command: |
@@ -465,7 +508,7 @@ workflows:
           cron: "0 5 * * *"
           filters:
             branches:
-              only: master
+              only: /(^master$)/
 
   # run tests for PRs/branches other than master
   test-branch:
@@ -473,27 +516,33 @@ workflows:
       - test-libs:
           filters:
             branches:
-              ignore: master
+              ignore: /(^master$)|(.*?hotfix(.*)?)/
       - test-contracts:
           filters:
             branches:
-              ignore: master
+              ignore: /(^master$)|(.*?hotfix(.*)?)/
       - test-eth-contracts:
           filters:
             branches:
-              ignore: master
+              ignore: /(^master$)|(.*?hotfix(.*)?)/
       - test-creator-node:
           filters:
             branches:
-              ignore: master
+              ignore: /(^master$)|(.*?hotfix(.*)?)/
       - test-discovery-provider:
           filters:
             branches:
-              ignore: master
+              ignore: /(^master$)|(.*?hotfix(.*)?)/
       - test-identity-service:
           filters:
             branches:
-              ignore: master
+              ignore: /(^master$)|(.*?hotfix(.*)?)/
+      - test-mad-dog-e2e:
+          filters:
+            branches:
+              only: /(^master$)/
+
+
 
   # push public docker images when a git tag is present
   # tag must be in the format @audius/<service>@x.x.x
@@ -507,7 +556,7 @@ workflows:
             tags:
               only: /^@audius/libs@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master$)|(.*?hotfix(.*)?)/
       - docker-build-and-push:
           name: build-libs
           repo: libs
@@ -517,7 +566,7 @@ workflows:
             tags:
               only: /^@audius/libs@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master$)|(.*?hotfix(.*)?)/
       # contracts: test, build and push
       - test-contracts:
           force: true
@@ -525,7 +574,7 @@ workflows:
             tags:
               only: /^@audius/contracts@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master$)|(.*?hotfix(.*)?)/
       - docker-build-and-push:
           name: build-contracts
           repo: contracts
@@ -535,7 +584,7 @@ workflows:
             tags:
               only: /^@audius/contracts@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master$)|(.*?hotfix(.*)?)/
       # eth-contracts: test, build and push
       - test-eth-contracts:
           force: true
@@ -543,7 +592,7 @@ workflows:
             tags:
               only: /^@audius/eth-contracts@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master$)|(.*?hotfix(.*)?)/
       - docker-build-and-push:
           name: build-eth-contracts
           repo: eth-contracts
@@ -553,7 +602,7 @@ workflows:
             tags:
               only: /^@audius/eth-contracts@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master$)|(.*?hotfix(.*)?)/
       # creator node: test, build and push
       - test-creator-node:
           force: true
@@ -561,7 +610,7 @@ workflows:
             tags:
               only: /^@audius/creator-node@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master$)|(.*?hotfix(.*)?)/
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
@@ -571,7 +620,7 @@ workflows:
             tags:
               only: /^@audius/creator-node@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master$)|(.*?hotfix(.*)?)/
       # discovery provider: test, build and push
       - test-discovery-provider:
           force: true
@@ -579,7 +628,7 @@ workflows:
             tags:
               only: /^@audius/discovery-provider@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master$)|(.*?hotfix(.*)?)/
       - docker-build-and-push:
           name: build-discovery-provider
           repo: discovery-provider
@@ -589,7 +638,7 @@ workflows:
             tags:
               only: /^@audius/discovery-provider@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master$)|(.*?hotfix(.*)?)/
       # identity service: test, build and push
       - test-identity-service:
           force: true
@@ -597,7 +646,7 @@ workflows:
             tags:
               only: /^@audius/identity-service@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master$)|(.*?hotfix(.*)?)/
       - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
@@ -607,7 +656,7 @@ workflows:
             tags:
               only: /^@audius/identity-service@\d+\.\d+\.\d+/
             branches:
-              only: master
+              only: /(^master$)|(.*?hotfix(.*)?)/
       # DEPLOY MASTER TO CI ENVIRONMENT
       - deploy:
           name: deploy-ci
@@ -623,4 +672,4 @@ workflows:
             - build-identity-service
           filters:
             branches:
-              only: master
+              only: /(^master$)/

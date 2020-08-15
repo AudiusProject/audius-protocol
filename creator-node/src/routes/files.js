@@ -103,6 +103,8 @@ const getCID = async (req, res) => {
     return sendResponse(req, res, errorResponseNotFound(`No valid file found for provided CID: ${CID}`))
   }
 
+  if (queryResults.type === 'dir') return sendResponse(req, res, errorResponseBadRequest('this dag node is a directory'))
+
   redisClient.incr('ipfsStandaloneReqs')
   const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
   req.logger.info(`IPFS Standalone Request - ${CID}`)
@@ -341,6 +343,7 @@ module.exports = function (app) {
    * @param {boolean} req.query.fromFS whether or not to retrieve directly from the filesystem and
    * rehydrate IPFS asynchronously
    * @dev This route does not handle responses by design, so we can pipe the response to client.
+   * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
   app.get('/ipfs/:CID', getCID)
 
@@ -352,6 +355,7 @@ module.exports = function (app) {
    * @param {boolean} req.query.fromFS whether or not to retrieve directly from the filesystem and
    * rehydrate IPFS asynchronously
    * @dev This route does not handle responses by design, so we can pipe the gateway response.
+   * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
   app.get('/ipfs/:dirCID/:filename', getDirCID)
 }

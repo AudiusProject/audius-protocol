@@ -3,3 +3,4 @@
 *.swo
 *.swn
 .vscode
+node_modules/
