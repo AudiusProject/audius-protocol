@@ -1,0 +1,245 @@
+.container {
+  flex-shrink: 0;
+  position: relative;
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 100px;
+}
+
+/* BG Images */
+.bg {
+  z-index: 1;
+  width: 100%;
+  min-height: 920px;
+  height: 104vh;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%, 0 97%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 97%);
+}
+
+.parallaxBg {
+  z-index: -1;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgb(76, 29, 133)
+}
+
+.bgImageLoading {
+  filter: blur(3px);
+  opacity: 0.8;
+}
+
+.imgContainer {
+  position: absolute;
+  width: 100%;
+  overflow: hidden;
+}
+
+.fgContainer {
+  user-select: none;
+  z-index: 20;
+}
+
+.foreground {
+  width: 138%;
+  min-width: 1800px;
+  height: auto;
+  min-height: 1800px;
+}
+
+.bgContainer {
+  z-index: 0;
+}
+
+.background {
+  user-select: none;
+  width: 100%;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: auto;
+  position: absolute;
+  overflow: hidden;
+}
+
+.textContent {
+  position: relative;
+  z-index: 10;
+  margin: 0px auto;
+  width: 100%;
+  max-width: 1140px;
+}
+
+.buttonContentParallax {
+  position: relative;
+  z-index: 30;
+  width: 100%;
+  max-width: 1140px;
+}
+
+.content {
+  position: relative;
+  z-index: 10;
+  padding-top: 16px;
+}
+
+.title {
+  max-width: 1100px;
+  color: #FFFFFF;
+  font-family: Gilroy;
+  font-size: 220px;
+  font-weight: 900;
+  line-height: 180px;
+  text-shadow: 0 5px 20px rgba(25,0,96,0.5);
+}
+
+.subtitle {
+  font-family: Gilroy;
+  color: #FFFFFF;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 44px;
+  text-shadow: 0 2px 5px rgba(25,0,96,0.75);
+  margin-bottom: 60px;
+}
+
+.buttonContent {
+  position: relative;
+  z-index: 30;
+}
+
+.ctaButton {
+  user-select: none;
+  transition: all 0.15s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  height: 58px;
+  border: none;
+  border-radius: 8px;
+  background-color: #CC0FE0;
+  box-shadow: 0 5px 20px -1px rgba(25,0,96,0.5);
+  color: #FFFFFF;
+  padding: 16px 40px;
+
+  font-family: Gilroy !important;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  line-height: 26px;
+  text-align: center;
+  text-shadow: 0 2px 2px rgba(0,0,0,0.2);
+  transform: scale3d(1, 1, 1);
+  cursor: pointer;
+}
+
+.ctaButton:hover {
+  transform: scale3d(1.03, 1.03, 1.03);
+	background-color: #DC19F0;
+	box-shadow: 0 10px 20px -1px rgba(25,0,96,0.5);
+}
+
+.ctaButton:active {
+  transform: scale3d(0.99, 0.99, 0.99);
+  background-color: #BA02CE;
+  box-shadow: 0 0 2px -1px rgba(25,0,96,0.5);
+}
+
+.ctaArrow {
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+  height: 24px;
+  width: 24px;
+}
+
+.ctaMessage {
+  margin-right: 4px;
+}
+
+.glyphPattern {
+  width: 100%;
+  position: absolute;
+  z-index: 0;
+  bottom: 0;
+}
+
+
+/* Mobile */
+.mobileContainer {
+  height: 600px;
+  min-height: calc(104vh + 100px);
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 100px;
+  width: 100%;
+}
+
+.mobileBG {
+  user-select: none;
+  min-width: 100%;
+  min-height: 200%;
+  position: absolute;
+  top: 0;
+  z-index: -1;
+}
+
+.mobileImgBG {
+  min-width: 100%;
+  width: 300%;
+  margin: 25% -75% 0px;
+}
+
+.mobileContainer .content {
+  height: 100%;
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+
+  background-size: auto 140%;
+  background-position: 40% 10%;
+  -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%, 0 97%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 97%);
+}
+
+.mobileContainer .content .title {
+  color: #FFFFFF;
+  font-family: Gilroy;
+  font-size: 81px;
+  font-weight: 900;
+  line-height: 66px;
+  text-align: center;
+  text-shadow: 0 2px 7px rgba(25,0,96,0.5);
+  margin-bottom: 12px;
+}
+
+
+.mobileContainer .content .subtitle {
+	color: #FFFFFF;
+	font-family: Gilroy;
+	font-size: 24px;
+	font-weight: 800;
+	line-height: normal;
+	text-align: center;
+  text-shadow: 0 2px 5px rgba(25,0,96,0.75);
+}
+
+.mobileContainer .glyphPattern {
+  width: 100%;
+  position: absolute;
+  z-index: 0;
+  bottom: 0px;
+  left: 0;
+  transform: scale3d(3, 3, 3);
+}

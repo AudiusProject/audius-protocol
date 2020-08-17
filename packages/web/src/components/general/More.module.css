@@ -1,0 +1,45 @@
+.more {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  text-decoration: underline;
+  cursor: pointer;
+  user-select: none;
+  transition: all .07s ease-in-out;
+}
+.more.light {
+  color: var(--neutral-light-4);
+}
+.more.dark {
+  color: var(--neutral);	
+}
+.more:hover {
+  transform: scale(1.03);
+}
+.more.light:hover {
+  color: var(--neutral-light-2);
+}
+.more.dark:hover {
+  color: var(--neutral-light-1);
+}
+.more:active {
+  transform: scale(0.98);
+}
+.iconArrow {
+  margin-left: 6px;
+  width: 9px;
+}
+.more.light .iconArrow g path {
+  fill: var(--neutral-light-4);
+}
+.more.dark .iconArrow g path {
+  fill: var(--neutral);
+}
+.more.light:hover .iconArrow g path {
+  fill: var(--neutral-light-2);
+}
+.more.dark:hover .iconArrow g path {
+  fill: var(--neutral-light-1);
+}

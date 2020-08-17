@@ -1,0 +1,254 @@
+.container {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 49px 0px 39px;
+}
+
+.content {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 1140px;
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.logoLinkContainer {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.logo {
+  cursor: pointer;
+  height: auto;
+  width: 243px;
+}
+
+.startListeningButton {
+  user-select: none;
+  transition: all 0.15s ease-in-out;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--static-secondary);
+  box-shadow: 0 10px 30px -2px rgba(89,11,151,0.3);
+  padding: 12px 24px;
+
+
+  color: var(--static-white);
+  font-family: Gilroy !important;
+  font-size: var(--font-m);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.2px;
+  line-height: 19px;
+  text-align: center;
+  cursor: pointer;
+  transform: scale3d(1, 1, 1);
+}
+
+.startListeningButton:hover {
+  transform: scale3d(1.03, 1.03, 1.03);
+  background-color: #8615DF;
+  box-shadow: 0 20px 30px -2px rgba(89,11,151,0.3);
+}
+
+.startListeningButton:active {
+  transform: scale3d(0.99, 0.99, 0.99);
+  background-color: #6A08B7;
+  box-shadow: 0 1px 2px -2px rgba(89,11,151,0.3);
+}
+
+.divider {
+  flex-shrink: 0;
+  width: 100%;
+  border-bottom: 1px solid var(--static-neutral-light-6);
+  margin: 30px 0px 32px;
+}
+
+/* Links */
+.linksContainer {
+  flex-shrink: 0;
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 37px;
+}
+
+
+/* Site Links */
+.siteLinksContainer {
+  flex: 1;
+  flex-direction: column;
+  display: inline-flex;
+  margin-bottom: 12px;
+}
+
+.siteLinksRowContainer {
+  max-width: 269px;
+  display: inline-flex;
+  justify-content: space-between;
+}
+
+.siteLink {
+  color: var(--static-neutral) !important;
+  font-family: Gilroy !important;
+  font-size: var(--font-s);
+  line-height: 24px;
+  margin-right: 48px;
+  text-decoration-color: var(--static-neutral) !important;
+}
+
+.siteLink:hover {
+  text-decoration: underline var(--static-neutral) !important;
+}
+
+.siteLink:last-child {
+  margin-right: 0px;
+}
+
+/* Copyright and made with love */
+.rightsContainer {
+  flex: 1;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  color: var(--static-neutral);
+  font-family: Gilroy !important;
+  font-size: var(--font-s);
+  line-height: 20px;
+  text-align: center;
+}
+
+.heart {
+  color: var(--static-secondary);
+  margin: 0px 3px;
+}
+
+/* social links */
+.socialLinks {
+  flex: 1;
+  display: inline-flex;
+  justify-content: flex-end;
+}
+
+.socialIconLinkContainer {
+  margin-left: 48px;
+}
+
+.socialIconLink {
+  height: 24px;
+  width: 24px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  transform: scale3d(1, 1, 1);
+}
+
+.socialIconLink:hover {
+  opacity: 0.8;
+  transform: scale3d(1.1, 1.1, 1.1);
+}
+
+.socialIconLink:active {
+  opacity: 0.8;
+  transform: scale3d(0.99, 0.99, 0.99);
+}
+
+.socialIconLink:first-child {
+  margin-left: 0px;
+}
+
+.socialIconLink path {
+  fill: var(--static-neutral-light-4);
+}
+
+/* Bottom Links */
+.bottomLinks {
+  margin: 0px auto;
+  width: 100%;
+  max-width: 250px;
+  display: inline-flex;
+  justify-content: space-between;
+}
+
+.bottomLink {
+  color: var(--static-neutral-light-4) !important;
+  font-family: Gilroy !important;
+  font-size: var(--font-s);
+  text-decoration-color: var(--static-neutral-light-4) !important;
+}
+
+.bottomLink:hover {
+  text-decoration: underline var(--static-neutral-light-4) !important;
+}
+
+.link {
+  cursor: pointer;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* Mobile */
+.isMobile.container {
+  padding: 40px 36px 24px;
+}
+
+.isMobile .logoLinkContainer {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.isMobile .logo {
+  width: 100%;
+  max-width: 243px; 
+}
+
+.isMobile .startListeningButton {
+  margin: 24px auto 0px; 
+}
+
+.isMobile .divider {
+  width: 100%;
+  border-bottom: 1px solid #DAD9E0;
+  margin: 30px 0px 18px;
+}
+
+.isMobile .linksContainer {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.isMobile .rightsContainer {
+  order: 3;
+}
+
+.isMobile .socialLinks {
+  margin: 24px auto;
+}
+
+.isMobile .bottomLinks {
+  margin-top: 22px;
+}
+
+.isMobile .siteLinksContainer {
+  margin-bottom: 0px;
+}
+
+.isMobile .siteLinksRowContainer {
+  height: 32px;
+}
+
+.isMobile .linksContainer {
+  margin-bottom: 0px;
+}
+
+.isMobile .socialIconLinkContainer {
+  margin: 0px 24px;
+}

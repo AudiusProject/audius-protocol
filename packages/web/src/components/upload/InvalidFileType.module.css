@@ -1,0 +1,13 @@
+.invalidFileType {
+  height: 32px;
+  width: 210px;
+  border-radius: 8px;
+  background-color: var(--accent-red);
+  color: var(--white);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+}

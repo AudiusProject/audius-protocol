@@ -1,0 +1,41 @@
+.modal {
+  max-width: 500px;
+}
+
+.account {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 64px;
+  margin-bottom: 24px;
+}
+
+.profilePicture {
+  height: 128px;
+  width: 128px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  margin-bottom: 8px;
+  background-color: var(--default-profile-picture-background);
+}
+
+.info {
+  text-align: center;
+  font-size: var(--font-m);
+}
+
+.name {
+  font-weight: var(--font-bold);
+  margin-bottom: 8px;
+}
+
+.handle {
+  font-weight: var(--font-medium);
+}
+
+.resetButton, .signOutButton {
+  width: 100%;
+}

@@ -1,0 +1,45 @@
+.tableRepostButton {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  padding: 4px;
+}
+.tableRepostButton > div {
+  display: flex;
+  align-items: center;
+}
+.icon {
+  width: 16px;
+  height: 16px;
+  position: relative;
+  transition: all .07s ease-in-out !important;
+}
+.icon.notReposted {
+  opacity: 0.0;
+}
+:global(.ant-table-tbody > tr:hover:not(.ant-table-expanded-row)) .icon {
+  opacity: 1.0;
+}
+
+.icon g path {
+  fill: var(--neutral-light-5);
+}
+.icon.reposted g path {
+  fill: var(--primary);
+}
+.tableRepostButton:hover .icon {
+  transform: scale3d(1.10,1.10,1.10);
+}
+.tableRepostButton:hover .icon g path {
+  fill: var(--primary);
+}
+.tableRepostButton:active .icon {
+  transform: scale(0.95);
+}
+
+.iconContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

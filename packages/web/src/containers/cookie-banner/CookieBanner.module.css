@@ -1,0 +1,82 @@
+.container {
+  position: fixed;
+  bottom: 136px;
+  right: 63px;
+  opacity: 1;
+  border: 1px solid #FAFAFA;
+  border-radius: 4px;
+  background-color: var(--white);
+  box-shadow: 0 2px 5px -2px rgba(133,129,153,0.1), 0 16px 20px -5px rgba(133,129,153,0.15);
+  display: inline-flex;
+  align-items: stretch;
+  justify-content: space-between;
+  z-index: 10;
+  height: 85px;
+}
+
+.description {
+  padding: 13px 0px 13px 15px;
+  max-width: 255px;
+  fill: var(--neutral);
+  font-size: var(--font-xs);
+  line-height: 19px;
+}
+
+.link {
+  cursor: pointer;
+  margin-left: 3px;
+  color: var(--primary);
+}
+
+.iconContainer {
+  align-self: stretch;
+  padding: 0px 15px 0px 0px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.iconRemove {
+  height: 24px;
+  width: 21px;
+  cursor: pointer;
+  transition: all ease-in-out .07s;
+}
+
+.iconRemove path {
+  fill: var(--neutral-light-4);
+}
+
+.iconRemove:hover {
+  transform: scale(1.1);
+}
+
+.iconRemove:hover path {
+  fill: var(--neutral);
+}
+
+.iconRemove:active {
+  transform: scale(0.95);
+}
+
+/* Mobile Styles */
+.isMobile {
+  transition: all .07s ease-in-out;
+  bottom: 18px;
+  left: 0px;
+  right: 0px;
+  margin: 0px 12px;
+}
+
+.isMobile.isPlaying {
+  bottom: 60px;
+}
+
+.isMobile .description {
+  flex: 1;
+  max-width: 100%;
+}
+
+.isMobile .iconContainer {
+  padding: 0px 15px 0px 15px;
+}

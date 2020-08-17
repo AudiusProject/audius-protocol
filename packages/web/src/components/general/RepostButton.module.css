@@ -1,0 +1,22 @@
+.repostButton {
+  height: 24px !important;
+  width: 102px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 !important;
+}
+
+.repostButton .repostButtonIcon {
+  width: 20px !important;
+  margin-right: 5px !important;
+}
+
+.repostButton .repostButtonText {
+  font-family: var(--font-family);
+  font-size: var(--font-xs);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.48px;
+  padding: 0px;
+}

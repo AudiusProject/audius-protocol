@@ -1,0 +1,110 @@
+import React, { useState, useEffect } from 'react'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+
+import { isMobile } from 'utils/clientUtil'
+import { AppState, Status } from 'store/types'
+import { changePassword } from './store/actions'
+import { getStatus } from './store/selectors'
+import { getNeedsAccountRecovery } from 'store/account/selectors'
+
+import Modal from 'components/general/Modal'
+import EnterPassword from 'components/sign-on/EnterPassword'
+
+import styles from './PasswordResetModal.module.css'
+import { RESET_REQUIRED_KEY } from 'store/account/mobileSagas'
+
+const messages = {
+  title: 'Reset Your Password',
+  continueLabel: 'Submit',
+  helpText:
+    'Create a password that is secure and easy to remember. Write it down or use a password manager.'
+}
+
+type PasswordResetModalProps = ReturnType<typeof mapStateToProps> &
+  ReturnType<typeof mapDispatchToProps>
+
+const PasswordResetModal = ({
+  isMobile,
+  needsAccountRecovery,
+  status,
+  onChangePassword
+}: PasswordResetModalProps) => {
+  const [showModal, setShowModal] = useState(needsAccountRecovery)
+  const [isLoading, setIsLoading] = useState(false)
+  // When the component mounts, show the modal if the reset key exists
+  useEffect(() => {
+    const resetRequiredEmail = window.localStorage.getItem(RESET_REQUIRED_KEY)
+    if (resetRequiredEmail) setShowModal(true)
+
+    // Clean up the required set key when the user leaves
+    window.addEventListener('beforeunload', () => {
+      window.localStorage.removeItem(RESET_REQUIRED_KEY)
+    })
+  }, [needsAccountRecovery])
+
+  // Cleanup RESET_REQUIRED_KEY on unmount
+  useEffect(
+    () => () => {
+      window.localStorage.removeItem(RESET_REQUIRED_KEY)
+    },
+    []
+  )
+
+  // When the status changes, if success clear the key and close the modal.
+  // Otherwise, let the user try again or close the modal.
+  useEffect(() => {
+    if (status === Status.SUCCESS) {
+      window.localStorage.removeItem(RESET_REQUIRED_KEY)
+      setShowModal(false)
+      setIsLoading(false)
+    }
+    if (status === Status.ERROR) {
+      setIsLoading(false)
+    }
+  }, [status])
+
+  const onSubmit = (password: string) => {
+    const resetRequiredEmail = decodeURIComponent(
+      // @ts-ignore
+      window.localStorage.getItem(RESET_REQUIRED_KEY)
+    )
+    onChangePassword(resetRequiredEmail, password)
+    setIsLoading(true)
+    window.localStorage.removeItem(RESET_REQUIRED_KEY)
+  }
+
+  return (
+    <Modal
+      title={messages.title}
+      width={480}
+      closeable={false}
+      visible={showModal}
+    >
+      <div className={styles.helpText}>{messages.helpText}</div>
+      <EnterPassword
+        continueLabel={messages.continueLabel}
+        onSubmit={onSubmit}
+        isMobile={isMobile}
+        isLoading={isLoading}
+      />
+    </Modal>
+  )
+}
+
+function mapStateToProps(state: AppState) {
+  return {
+    needsAccountRecovery: getNeedsAccountRecovery(state),
+    isMobile: isMobile(),
+    status: getStatus(state)
+  }
+}
+
+function mapDispatchToProps(dispatch: Dispatch) {
+  return {
+    onChangePassword: (email: string, password: string) =>
+      dispatch(changePassword(email, password))
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(PasswordResetModal)

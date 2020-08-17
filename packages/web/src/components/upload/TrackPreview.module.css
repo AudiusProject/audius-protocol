@@ -1,0 +1,76 @@
+.trackPreview {
+  background-color: var(--white);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-right: 12px;
+}
+
+.trackPreview.single {
+  box-shadow: 0 2px 5px -2px rgba(133,129,153,0.25);
+  height: 64px;
+  padding: inherit;
+}
+
+.trackDetails {
+  margin-left: 20px;
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+}
+.trackDetails > img {
+  margin-right: 24px;
+}
+
+.trackTitle {
+  flex: 1;
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 600;
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  line-height: 17px;
+}
+
+.fileSize {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  margin-right: 8px;
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  line-height: 17px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+}
+
+.remove {
+  margin-left: 28px;
+  cursor: pointer;
+  padding: 1px;
+}
+.remove g path {
+  fill: var(--neutral-light-6);
+}
+
+.remove g path {
+  transition: all ease-in-out .07s;
+}
+.remove:hover {
+  transform: scale(1.1);
+}
+.remove:hover g path {
+  fill: var(--neutral-light-4);
+}
+.remove:active {
+  transform: scale(0.95);
+}

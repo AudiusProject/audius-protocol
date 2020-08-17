@@ -1,0 +1,18 @@
+.container {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: inline-flex;
+  justify-content: center;
+  border-radius: 8px;
+  background-color: var(--secondary);
+  padding: 12px 0px;
+  margin: 0px 64px;
+
+  color: var(--static-white);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  text-align: center;
+}

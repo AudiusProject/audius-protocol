@@ -1,0 +1,27 @@
+.trackContent {
+  padding: 14px 12px 0px;
+  width: 100%;
+}
+
+.tracksContainer {
+  padding-top: 41px;
+}
+
+.remixes {
+  width: 100%;
+  margin-top: 32px;
+}
+
+.lineupHeader {
+  color: var(--neutral-light-3);
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  margin-top: 24px;
+  text-transform: uppercase;
+}
+
+.originalTrack {
+  margin-bottom: 16px !important;
+}

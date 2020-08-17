@@ -1,0 +1,37 @@
+.headerText {
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+}
+
+.isMobile.headerText {
+  text-align: left;
+  display: inline-block;
+  font-size: var(--font-xs);
+}
+
+.headerLink,
+.headerLink:hover,
+.headerLink:active,
+.headerLink a,
+.headerLink :global(.artistPopover) a {
+  color: var(--secondary);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  line-height: 21px;
+  cursor: pointer;
+}
+
+.isMobile .headerLink,
+.isMobile .headerLink:hover,
+.isMobile .headerLink:active,
+.isMobile .headerLink a,
+.isMobile .headerLink :global(.artistPopover) a {
+ font-size: var(--font-xs);
+}
+
+.headerLink:hover,
+.headerLink:hover a {
+  text-decoration: underline !important;
+}
+

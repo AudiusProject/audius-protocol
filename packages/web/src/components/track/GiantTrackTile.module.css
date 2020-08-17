@@ -1,0 +1,276 @@
+.giantTrackTile {
+  width: 100%;
+  max-width: 960px;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: var(--white);
+  box-shadow: 0 16px 20px 0 var(--table-shadow);
+
+  margin: 0 auto;
+  text-align: left;
+  user-select: none;
+}
+
+.topSection {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  background-color: var(--neutral-light-10);
+
+  padding: 24px;
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+
+.infoSection {
+  padding-left: 22px;
+  flex-direction: column;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+  padding-bottom: 4px;
+  margin-bottom: -4px;
+}
+
+.infoSectionHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+ }
+
+.typeLabel {
+  color: var(--neutral-light-4);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  letter-spacing: 3.5px;
+  line-height: 28px;
+
+  user-select: none;
+}
+
+.title {
+  color: var(--neutral);
+  font-size: 38px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  width: 100%;
+  position: relative;
+  min-height: 38px;
+}
+
+.title h1 {
+  color: var(--neutral);
+}
+
+.trackLength {
+  padding-left: 18px;
+  color: var(--neutral-light-4);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.artistWrapper {
+  color: var(--neutral-light-5);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+.artistWrapper :global(.artistPopover) {
+  display: inline;
+}
+
+.artistWrapper .artist {
+  display: inline;
+  color: var(--secondary);
+  font-size: var(--font-l);
+  font-weight: var(--font-medium);
+  padding-left: 4px;
+}
+
+.artistWrapper .artist:hover {
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.playSection {
+  margin-top: 7px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.playSection > * {
+  margin-top: 16px;
+}
+
+.playButton {
+  width: 144px !important;
+  height: 60px !important;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  margin-right: 40px;
+}
+
+.playButton .playButtonText {
+  font-size: var(--font-xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.71px;
+}
+
+.playSection .listens {
+}
+
+.playSection .numberOfListens {
+  color: var(--neutral);
+  font-size: var(--font-l);
+  font-weight: bold;
+}
+
+.playSection .listenText {
+  color: var(--neutral-light-5);
+  font-size: var(--font-l);
+  font-weight: bold;
+  padding-left: 8px;
+}
+
+.playSection .firstListen {
+  color: var(--neutral-light-4);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+}
+
+.commonButtonSection {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  padding-top: 22px;
+}
+
+.commonButtonSection > * {
+  margin-right: 16px;
+}
+
+.buttonFormatting {
+  padding: 0 16px;
+}
+
+.buttonFormatting .buttonTextFormatting {
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.5px;
+}
+
+.bottomSection {
+  padding: 20px 24px 20px;
+}
+
+.infoLabelsSection {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.infoLabelsSection .infoLabelPlacement {
+  display: inline-block;
+  padding-right: 24px;
+}
+
+.description {
+  padding-top: 13px;
+  white-space: pre-line;
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  line-height: 26px;
+}
+
+.description > a {
+  color: var(--primary);
+}
+
+.badgePlacement {
+  position: absolute;
+  right: 24px;
+}
+
+.tagSection {
+  padding-top: 13px;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  flex-wrap: wrap;
+}
+
+.tagSection .tagFormatting {
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+.downloadButtons {
+  margin-top: 6px !important;
+}
+
+.verified {
+  height: 16px;
+  width: 16px;
+  margin-left: 8px;
+}
+
+.makePublicButton {
+  width: 166px;
+  flex-shrink: 0;
+}
+
+.headerContainer {
+  padding-top: 20px;
+  padding-bottom: 22px;
+  display: flex;
+}
+
+.downloadableIconContainer {
+  margin-left: 10px;
+  position: relative;
+  top: -2px;
+}
+
+.hide {
+  opacity: 0;
+}
+
+.show {
+  opacity: 1;
+  transition: opacity ease-in-out 0.5s;
+}
+
+.skeleton {
+  position: absolute;
+  top: 0;
+}
+
+.statsSection {
+  margin-top: 20px;
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+}
+
+.spinner {
+  display: block;
+  height: 16px;
+  width: 16px;
+}
+
+.spinner :global(.ant-spin-dot) {
+  height: 16px;
+  width: 16px;
+}
+
+.spinner :global(.ant-spin-dot i) {
+  background-color: var(--static-white);
+}

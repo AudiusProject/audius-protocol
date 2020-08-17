@@ -1,0 +1,28 @@
+.copy {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.box {
+  min-height: 120px;
+  min-width: 400px;
+  border: 1px solid var(--neutral-light-6);
+  background-color: var(--white);
+
+  padding: 20px 16px;
+
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  line-height: 20px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.click {
+  color: var(--neutral-light-4);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  line-height: 15px;
+}

@@ -1,0 +1,298 @@
+.tracksTableContainer {
+  width: 100%;
+}
+
+.table {
+  overflow: hidden;
+}
+
+.transitioningTable {
+  transition: all 0.18s ease-in-out;
+}
+
+/* Rounded Corners On Table Header */
+:global(.ant-table-thead > tr:first-child > th:first-child) {
+  border-top-left-radius: 8px;
+}
+:global(.ant-table-thead > tr:first-child > th:last-child) {
+  border-top-right-radius: 8px;
+}
+
+/* Header Cell */
+:global(.ant-table-thead > tr > th) {
+  background: var(--neutral-light-10);
+
+  color: var(--neutral-light-1);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.25px;
+  text-transform: uppercase;
+
+  padding-top: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--neutral-light-8);
+  user-select: none;
+}
+
+/* Header Cell Hover Color */
+:global(.ant-table-thead > tr > th.ant-table-column-has-actions.ant-table-column-has-sorters:hover) {
+  background: var(--neutral-light-10) !important;
+}
+
+/* Don't highlight column even if sorting by values */
+:global(.ant-table-thead > tr > th.ant-table-column-sort),
+:global(.ant-table-tbody > tr > td.ant-table-column-sort),
+:global(.ant-table-thead > tr > th .ant-table-column-sorters:before) {
+  background: inherit;
+}
+:global(.ant-table-thead > tr > th .ant-table-column-sorters:hover:before) {
+  background: none !important;
+}
+
+/* Hide header sort caret in col header when not on */
+:global(.ant-table-column-has-sorters:not(.ant-table-column-sort)>svg),
+:global(.ant-table-thead > tr > th .off) {
+  display: none !important;
+}
+
+/* Caret formatting in header */
+:global(.ant-table-thead > tr > th .ant-table-column-sorter) {
+  position: absolute !important;
+  right: unset !important;
+  width: 14px !important;
+  height: 17px !important;
+  text-align: center !important;
+  transition: all 0.3s !important;
+  display: inline-block !important;
+}
+:global(.ant-table-thead > tr > th .ant-table-column-sorter-up), 
+:global(.ant-table-thead > tr > th .ant-table-column-sorter-down) {
+  color: var(--neutral-light-1) !important;
+  font-size: 14px !important;
+}
+
+:global(.ant-table-thead > tr > th .ant-table-column-sorter-up) {
+  margin-top: 1px !important;
+}
+
+
+
+/* Body Cell */
+:global(.ant-table-tbody > tr > td) {
+  background: var(--white);
+
+  color: var(--neutral);
+  font-size: 12px;
+  font-weight: 500;
+
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--neutral-light-8);
+  user-select: none;
+  transition: all 0.05s ease-in-out;
+  position: relative;
+}
+
+:global(.ant-table-tbody > tr > td) .textContainer {
+  position: relative;
+  width: 100%;
+  height: 18px;
+  display: flex;
+}
+
+:global(.ant-table-tbody > tr > td) .textCell {
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+/* Body Row Hover */
+:global(.ant-table-tbody > tr:hover:not(.ant-table-expanded-row) > td) {
+  background: var(--neutral-light-9);
+  cursor: pointer;
+  transition: all 0.07s ease-in-out;
+}
+
+.loading :global(.ant-table-tbody > tr:hover:not(.ant-table-expanded-row) > td) {
+  background: var(--white);
+  cursor: default;
+}
+
+.playButtonFormatting {
+  position: absolute;
+  left: 16px;
+  top: 7px;
+}
+
+:global(.colPlayButton) {
+  min-width: 64px !important;
+  width: 64px !important;
+}
+
+:global(.colFavoriteButton) {
+  padding: 0px !important;
+  vertical-align: middle;
+  min-width: 16px !important;
+  width: 16px !important;
+}
+
+:global(.colRepostButton) {
+  padding: 0px 10px 0px 10px !important;
+  vertical-align: middle;
+  min-width: 48px !important;
+  width: 48px !important;
+}
+
+.favoriteButtonFormatting {
+  position: relative;
+  left: auto;
+  top: auto;
+}
+
+:global(.colDate), :global(.colTime) {
+  text-align: right !important;
+  padding-right: 30px !important;
+}
+
+:global(.colDate) {
+  width: 140px;
+}
+
+:global(.colTime) {
+  width: 85px !important;
+}
+
+:global(.colPlays) {
+  text-align: right !important;
+  padding-right: 10px !important;
+  min-width: 72px !important;
+  width: 72px !important;
+}
+
+.optionsButtonFormatting {
+  position: absolute;
+  left: -6px;
+  top: 9px;
+}
+
+:global(.colOptionsButton) {
+  min-width: 32px !important;
+  width: 32px !important;
+}
+
+:global(.colTrackName) {
+  min-width: 200px !important;
+  width: 350px !important;
+  vertical-align: bottom;
+}
+
+.trackName {
+/* The width at which ellipsis start */
+  max-width: 350px
+}
+
+
+:global(.colTrackName) > div:hover .trackName {
+  transition: color 0.07s ease-out;
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: var(--primary-light-2);
+}
+
+:global(.colArtistName) {
+  min-width: 200px !important;
+  width: 250px !important;
+  vertical-align: bottom;
+}
+
+.artistName {
+  max-width: 250px
+}
+
+:global(.ant-table-column-has-actions)>div:hover{
+  transition: color 0.1s ease-in-out;
+  color: var(--neutral);
+}
+
+.showMoreContainer {
+  height: 40px;
+  width: 100%;
+  background-color: var(--neutral-light-10);
+  border-radius: 0px 0px 6px 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  transition: all .07s ease-in-out;
+}
+
+.showMoreText {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.86px;
+  margin-right: 4px;
+}
+
+.showMoreIcon {
+  height: 4px;
+  width: 7px;
+  transition: all 0.18s ease-in-out;
+}
+
+.iconShowLess {
+  transform: rotate(-180deg);
+}
+
+tr.deleted {
+  cursor: default;
+}
+
+tr.deleted td {
+  color: var(--neutral-light-4);
+}
+
+tr.deleted td,
+tr.deleted:hover td {
+  background-color: var(--neutral-light-9);
+}
+
+:global(.ant-table-tbody) > tr.deleted:hover > td {
+  background-color: var(--neutral-light-9);
+}
+
+.activeRow :global(.colTrackName),
+.activeRow :global(.colArtistName),
+.activeRow :global(.colDate),
+.activeRow :global(.colTime),
+.activeRow :global(.colPlays) {
+  color: var(--primary);
+}
+
+:global(.ant-empty-image), :global(.ant-empty-description) {
+  display: none !important;
+}
+
+:global(.ant-table-placeholder) {
+  border: none !important;
+  background: var(--white);
+  color: var(--neutral);
+}
+
+.skeleton {
+  width: 100%;
+  height: 18px;
+  border-radius: 4px;
+  background-color: var(--skeleton);
+}
+
+/* Drag + Drop */
+.dragging {
+  display: table !important;
+}

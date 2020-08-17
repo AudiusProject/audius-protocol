@@ -1,0 +1,74 @@
+.socialLink {
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.5px;
+  
+  margin-bottom: 12px;
+  user-select: none;
+}
+
+.wrapper {
+  margin-left: 8px;
+  display: inline-flex;
+  transition: all 0.18 ease-in-out;
+}
+
+.wrapper.singleLink {
+  align-items: center;
+  cursor: pointer;
+}
+
+.socialLink .icon {
+  width: 20px;
+  height: 20px;
+}
+
+.socialLink .text {
+  margin-left: 6px;
+  max-width: 180px;
+  max-height: 40px;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+}
+
+.socialLink .singleLink .text {
+  white-space: nowrap;
+}
+
+.socialLink :not(.singleLink) .text span {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.icon path {
+  fill: var(--neutral);
+}
+
+.wrapper.singleLink:hover {
+  color: var(--primary);
+  transform: scale(1.01);
+}
+
+.wrapper.singleLink:hover .icon path {
+  fill: var(--primary);
+}
+
+.wrapper.singleLink:active {
+  transform: scale(0.98);
+}
+
+.wrapper a {
+  color: var(--primary);
+  display: inline-block;
+  max-width: 160px;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.wrapper a:hover {
+  text-decoration: underline !important;
+}

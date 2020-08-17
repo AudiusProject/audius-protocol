@@ -1,0 +1,15 @@
+.ant-skeleton.ant-skeleton-active .ant-skeleton-header .ant-skeleton-avatar,
+.ant-skeleton.ant-skeleton-active .ant-skeleton-content .ant-skeleton-paragraph > li,
+.ant-skeleton.ant-skeleton-active .ant-skeleton-content .ant-skeleton-title {
+  background: var(--skeleton-gradient);
+  background-size: 400% 100%;
+  animation: test 1.4s ease infinite;
+}
+@keyframes test {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}

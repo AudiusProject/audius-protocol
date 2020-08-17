@@ -1,0 +1,49 @@
+@keyframes spinAnimation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    40% {
+        transform: rotate(185deg);
+    }
+
+    60% {
+        transform: rotate(195deg);
+    }
+
+    80% {
+        transform: rotate(185deg);
+    }
+
+    100% {
+        transform: rotate(180deg);
+    }
+}
+
+@keyframes depressAnimation {
+    0%, 100% {
+        transform: scale(1)
+    }
+    25% {
+        transform: scale(0.8)
+    }
+}
+
+.spin {
+    animation: spinAnimation 0.6s ease-out 1;
+    transform: rotate(0deg);
+}
+
+
+.depress {
+    animation: depressAnimation 0.3s ease-out 1;
+    transform: scale(1);
+}
+
+.icon {
+    height: 24px;
+    width: 24px;
+    background-size: cover;
+    cursor: pointer;
+}
+

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="18px" height="5px" viewBox="0 0 18 5" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g id="🌈-Style-Guides" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icon-Guide" transform="translate(-69.000000, -881.000000)">
+            <g id="Stacked-Group-2" transform="translate(66.000000, 199.000000)">
+                <g id="icon/more" transform="translate(0.000000, 672.000000)">
+                    <rect id="bound" x="0" y="0" width="24" height="24"></rect>
+                    <path d="M5.25,14.5 C4.00735931,14.5 3,13.4926407 3,12.25 C3,11.0073593 4.00735931,10 5.25,10 C6.49264069,10 7.5,11.0073593 7.5,12.25 C7.5,13.4926407 6.49264069,14.5 5.25,14.5 Z M12,14.5 C10.7573593,14.5 9.75,13.4926407 9.75,12.25 C9.75,11.0073593 10.7573593,10 12,10 C13.2426407,10 14.25,11.0073593 14.25,12.25 C14.25,13.4926407 13.2426407,14.5 12,14.5 Z M18.75,14.5 C17.5073593,14.5 16.5,13.4926407 16.5,12.25 C16.5,11.0073593 17.5073593,10 18.75,10 C19.9926407,10 21,11.0073593 21,12.25 C21,13.4926407 19.9926407,14.5 18.75,14.5 Z" id="Combined-Shape" fill="#858199" fill-rule="evenodd"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
