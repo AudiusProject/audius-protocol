@@ -122,7 +122,8 @@ def extend_track(track):
     track["favorite_count"] = track["save_count"]
     duration = 0.
     for segment in track["track_segments"]:
-        duration += segment["duration"]
+        # NOTE: Legacy track segments store the duration as a string
+        duration += float(segment["duration"])
     track["duration"] = round(duration)
     return track
 
