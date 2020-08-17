@@ -69,6 +69,7 @@ describe('test segmentFile()', () => {
     }
 
     // read segments assets from /test-segments
+    // TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
     const testSegmentsPath = path.join(fileDir, 'test-segments')
     fs.readdir(testSegmentsPath, (err, files) => {
       if (err) assert.fail(`Could not read directory at ${testSegmentsPath}`)

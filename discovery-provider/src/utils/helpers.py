@@ -2,10 +2,13 @@ import logging
 import os
 import json
 import re
+import time
 import contextlib
 from urllib.parse import urljoin
 from functools import reduce
 import requests
+from flask import g, request
+from jsonformatter import JsonFormatter
 from src import exceptions
 from . import multihash
 
@@ -32,7 +35,8 @@ def bytes32_to_str(bytes32input):
 def query_result_to_list(query_result, relationships_to_include=None):
     results = []
     for row in query_result:
-        results.append(model_to_dictionary(row, None, relationships_to_include))
+        results.append(model_to_dictionary(
+            row, None, relationships_to_include))
     return results
 
 
@@ -73,15 +77,25 @@ def tuple_to_model_dictionary(t, model):
     return dict(zip(keys, t))
 
 
+log_format = {
+    "levelno": "levelno",
+    "level": "levelname",
+    "msg": "message",
+    "timestamp": "asctime",
+}
+
+formatter = JsonFormatter(
+    log_format,
+    ensure_ascii=False,
+    mix_extra=True
+)
+
 # Configures root logger with custom format and loglevel
 # All child loggers will inherit settings from root logger as configured in this function
 def configure_logging(loglevel_str='WARN'):
     logger = logging.getLogger()  # retrieve root logger
 
     handler = logging.StreamHandler()
-    formatter = logging.Formatter(
-        "[%(asctime)s] {%(name)s:%(lineno)d} (%(levelname)s) - %(message)s"
-    )
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
@@ -94,6 +108,52 @@ def configure_logging(loglevel_str='WARN'):
         loglevel = logging.WARN
 
     logger.setLevel(loglevel)
+
+
+def configure_flask_app_logging(app, loglevel_str):
+    # Disable werkzeug logger to remove default flask logs in favor of app decorator log below
+    werkzeug_log = logging.getLogger('werkzeug')
+    werkzeug_log.disabled = True
+
+    configure_logging(loglevel_str)
+    logger = logging.getLogger()  # retrieve root logger
+
+    # Set a timer before the req to get the request time
+    @app.before_request
+    def start_timer(): # pylint: disable=W0612
+        g.start = time.time()
+
+    # Log the request
+    @app.after_request
+    def log_request(response): # pylint: disable=W0612
+
+        now = time.time()
+        duration = int((now - g.start) * 1000)
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        host = request.host.split(':', 1)[0]
+        args = request.query_string.decode("utf-8")
+
+        log_params = {
+            'method': request.method,
+            'path': request.path,
+            'status': response.status_code,
+            'duration': duration,
+            'ip': ip,
+            'host': host,
+            'params': args
+        }
+
+        request_user_id = request.headers.get('X-User-ID')
+        if request_user_id:
+            log_params['request_user_id'] = request_user_id
+
+        parts = []
+        for name, value in log_params.items():
+            part = "{}={}".format(name, value)
+            parts.append(part)
+
+        logger.info('handle flask request', extra=log_params)
+        return response
 
 
 def load_abi_values():
@@ -119,8 +179,10 @@ def remove_test_file(filepath):
 def multihash_digest_to_cid(multihash_digest):
     user_metadata_digest = multihash_digest.hex()
     user_metadata_hash_fn = 18
-    buf = multihash.encode(bytes.fromhex(user_metadata_digest), user_metadata_hash_fn)
+    buf = multihash.encode(bytes.fromhex(
+        user_metadata_digest), user_metadata_hash_fn)
     return multihash.to_b58_string(buf)
+
 
 def get_web3_endpoint(shared_config):
     if shared_config["web3"]["port"] != '443':
@@ -130,6 +192,7 @@ def get_web3_endpoint(shared_config):
     else:
         web3endpoint = "https://{}".format(shared_config["web3"]["host"])
     return web3endpoint
+
 
 def get_discovery_provider_version():
     versionFilePath = os.path.join(os.getcwd(), ".version.json")
@@ -158,7 +221,7 @@ def get_valid_multiaddr_from_id_json(id_json):
 
 def get_ipfs_info_from_cnode_endpoint(url, self_multiaddr):
     id_url = urljoin(url, 'ipfs_peer_info')
-    data = {'caller_ipfs_id' : self_multiaddr}
+    data = {'caller_ipfs_id': self_multiaddr}
     resp = requests.get(
         id_url,
         timeout=5,
@@ -176,14 +239,15 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
         return
     redis = update_task.redis
     cnode_entries = cnode_url_list.split(',')
-    interval = int(update_task.shared_config["discprov"]["peer_refresh_interval"])
+    interval = int(
+        update_task.shared_config["discprov"]["peer_refresh_interval"])
     for cnode_url in cnode_entries:
         if cnode_url == '':
             continue
         try:
             multiaddr = get_ipfs_info_from_cnode_endpoint(
                 cnode_url,
-                None # update_task.ipfs_client.ipfs_id_multiaddr()
+                None  # update_task.ipfs_client.ipfs_id_multiaddr()
             )
             update_task.ipfs_client.connect_peer(multiaddr)
             redis.set(cnode_url, multiaddr, interval)
@@ -192,9 +256,12 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
 
 # Constructs a track's route_id from an unsanitized title and handle.
 # Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
+
+
 def create_track_route_id(title, handle):
     # Strip out invalid character
-    sanitized_title = re.sub(r'!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]', '', title)
+    sanitized_title = re.sub(
+        r'!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]', '', title)
 
     # Convert whitespaces to dashes
     sanitized_title = re.sub(r'\s+', '-', sanitized_title)
@@ -215,6 +282,7 @@ def create_track_route_id(title, handle):
 def validate_arguments(req_args, expected_args):
     if req_args is None:
         raise exceptions.ArgumentError("No arguments present.")
-    all_exist = reduce((lambda acc, cur: cur in req_args and acc), expected_args, True)
+    all_exist = reduce(
+        (lambda acc, cur: cur in req_args and acc), expected_args, True)
     if not all_exist:
         raise exceptions.ArgumentError("Not all required arguments exist.")

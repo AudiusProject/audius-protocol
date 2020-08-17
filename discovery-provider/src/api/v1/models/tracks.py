@@ -46,16 +46,15 @@ track = ns.model('Track', {
     "description": fields.String,
     "genre": fields.String,
     "id": fields.String(required=True),
-    "length": fields.Integer,
     "mood": fields.String,
     "release_date": fields.String,
     "remix_of": fields.Nested(remix_parent),
     "repost_count": fields.Integer(required=True),
-    "route_id": fields.String(required=True),
-    "save_count": fields.Integer(required=True),
+    "favorite_count": fields.Integer(required=True),
     "tags": fields.String,
     "title": fields.String(required=True),
     "user": fields.Nested(user_model, required=True),
+    "duration": fields.Integer(required=True)
 })
 
 track_full = ns.clone('track_full', track, {
@@ -65,6 +64,7 @@ track_full = ns.clone('track_full', track, {
     "credits_splits": fields.String,
     "download": fields.Nested(download),
     "isrc": fields.String,
+    "length": fields.Integer,
     "license": fields.String,
     "iswc": fields.String,
     "field_visibility": fields.Nested(field_visibility),
@@ -74,8 +74,9 @@ track_full = ns.clone('track_full', track, {
     "is_delete": fields.Boolean(required=True),
     "is_unlisted": fields.Boolean(required=True),
     "has_current_user_saved": fields.Boolean(required=True),
-    "followee_saves": fields.List(fields.Nested(favorite), required=True),
+    "followee_favorites": fields.List(fields.Nested(favorite), required=True),
     "file_type": fields.String,
+    "route_id": fields.String(required=True),
     "blocknumber": fields.Integer(required=True),
     "metadata_multihash": fields.String(required=True),
     "stem_of": fields.Nested(stem_parent),

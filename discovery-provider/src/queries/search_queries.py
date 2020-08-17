@@ -295,7 +295,6 @@ def search_tags():
 
 def add_users(session, results):
     user_id_list = get_users_ids(results)
-    logger.warning(user_id_list)
     users = get_users_by_id(session, user_id_list)
     for result in results:
         user_id = None
@@ -342,9 +341,10 @@ def search(args):
     with_users = args.get("with_users")
     is_auto_complete = args.get("is_auto_complete")
     current_user_id = args.get("current_user_id")
+    limit = args.get("limit")
+    offset = args.get("offset")
 
     searchKind = SearchKind[kind]
-    (limit, offset) = get_pagination_vars()
 
     results = {}
     if searchStr:
