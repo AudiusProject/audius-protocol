@@ -1,0 +1,315 @@
+version: 2.1
+
+orbs:
+  ruby: circleci/ruby@0.2.1
+
+jobs:
+  init:
+    working_directory: ~/react-native-wrapper
+    docker:
+      - image: circleci/node:10.13
+    steps:
+      - checkout
+      - run:
+          name: copy staging env
+          command: |
+            echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.staging
+            echo "SEGMENT_IOS_WRITE_KEY=$SEGMENT_IOS_WRITE_KEY_STAGING" >> .env.staging
+            echo "SEGMENT_ANDROID_WRITE_KEY=$SEGMENT_ANDROID_WRITE_KEY_STAGING" >> .env.staging
+      - run:
+          name: copy production env
+          command: |
+            echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.production
+            echo "SEGMENT_IOS_WRITE_KEY=$SEGMENT_IOS_WRITE_KEY" >> .env.production
+            echo "SEGMENT_ANDROID_WRITE_KEY=$SEGMENT_ANDROID_WRITE_KEY" >> .env.production
+      - run:
+          name: update-npm
+          command: 'sudo npm install -g npm@latest'
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - dependency-cache-
+      - run: npm install
+
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - node_modules
+            - .env.staging
+            - .env.production
+      
+  pull-web-app:
+    working_directory: ~/react-native-wrapper
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - checkout
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run: mkdir -p web-app/Web.bundle/build
+      - run: rm -rf web-app/Web.bundle/build
+      - run: aws s3 sync s3://audius-mobile/build web-app/Web.bundle/build
+      # Persist the web app build directory to a workspace
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - web-app
+
+  pull-staging-web-app:
+    working_directory: ~/react-native-wrapper
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - checkout
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run: mkdir -p web-app-staging/Web.bundle/build
+      - run: rm -rf web-app-staging/Web.bundle/build
+      - run: aws s3 sync s3://audius-mobile-staging/build web-app-staging/Web.bundle/build
+      # Persist the web app build directory to a workspace
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - web-app-staging
+
+  upload-staging-ios:
+    working_directory: ~/react-native-wrapper
+    macos: # Run on osx so app can be created and signed.
+      xcode: "11.2.1"
+    environment:
+      FL_OUTPUT_DIR: output
+      FASTLANE_LANE: bounce
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Move Staging build 
+          command: mv web-app-staging web-app
+      - run:
+          name: Set Ruby Version
+          command: echo 'chruby ruby-2.6' >> ~/.bash_profile
+      - run:
+          name: update cocoapods
+          command: sudo gem install cocoapods
+      - run:
+          name: copy bundle
+          command: npm run bundle:ios
+
+      - run:
+          name: install pods
+          command: cd ios && pod install
+      - restore_cache:
+          key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
+      - run: cd ios && (bundle check || bundle install --path vendor/bundle)
+      - save_cache:
+          key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
+          paths:
+            - ios/vendor/bundle
+
+      - run:
+          name: update fastlane
+          command: cd ios && bundle update fastlane
+      - run:
+          name: fastlane
+          command: cp .env.staging ios/ && cd ios && bundle exec fastlane $FASTLANE_LANE
+      - store_artifacts:
+          path: output
+      - store_test_results:
+          path: output/scan
+
+  upload-ios:
+    working_directory: ~/react-native-wrapper
+    macos: # Run on osx so app can be created and signed.
+      xcode: "11.2.1"
+    environment:
+      FL_OUTPUT_DIR: output
+      FASTLANE_LANE: beta
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Set Ruby Version
+          command: echo 'chruby ruby-2.6' >> ~/.bash_profile
+      - run:
+          name: update cocoapods
+          command: sudo gem install cocoapods
+      - run:
+          name: copy bundle
+          command: npm run bundle:ios
+
+      - run:
+          name: install pods
+          command: cd ios && pod install
+      - restore_cache:
+          key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
+      - run: cd ios && (bundle check || bundle install --path vendor/bundle)
+      - save_cache:
+          key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
+          paths:
+            - ios/vendor/bundle
+
+      - run:
+          name: update fastlane
+          command: cd ios && bundle update fastlane
+      - run:
+          name: fastlane
+          command: cp .env.production ios/ && cd ios && bundle exec fastlane $FASTLANE_LANE
+      - store_artifacts:
+          path: output
+      - store_test_results:
+          path: output/scan
+
+  upload-staging-android:
+    working_directory: ~/react-native-wrapper
+    docker:
+      - image: circleci/android:api-27-node8-alpha
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Move Staging build 
+          command: mv web-app-staging web-app
+      - run:
+          name: migrate support libraried for androidX packages
+          command: |
+            npm run jetifier
+      - run:
+          name: generating the staging release apk & bundle
+          command: |
+            echo "yes" | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-28" && cd android && ./gradlew bundleBounceRelease
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - run: aws s3 sync ~/react-native-wrapper/android/app/build/outputs s3://audius-mobile-staging/android --delete
+
+      - restore_cache:
+          key: 1-gems-{{ checksum "android/Gemfile.lock" }}
+      - run: cd android && (bundle check || bundle install --path vendor/bundle)
+      - save_cache:
+          key: 1-gems-{{ checksum "android/Gemfile.lock" }}
+          paths:
+            - android/vendor/bundle
+
+      - run:
+          name: fetch app fastlane json config to upload to play store
+          command: |
+            echo "$FASTLANE_PLAYSTORE_JSON" > android/app/api.txt
+            base64 --decode android/app/api.txt > android/app/api.json
+
+      - run:
+          name: Upload to Play Store
+          command: cd android && bundle exec fastlane bounce
+
+
+  upload-android:
+    working_directory: ~/react-native-wrapper
+    docker:
+      - image: circleci/android:api-27-node8-alpha
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: migrate support libraried for androidX packages
+          command: |
+            npm run jetifier
+      - run:
+          name: generating the release apk & bundle
+          command: |
+            echo "yes" | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-28" && cd android && ./gradlew bundleRelease
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - run: aws s3 sync ~/react-native-wrapper/android/app/build/outputs s3://audius-mobile/android --delete
+
+      - restore_cache:
+          key: 1-gems-{{ checksum "android/Gemfile.lock" }}
+      - run: cd android && (bundle check || bundle install --path vendor/bundle)
+      - save_cache:
+          key: 1-gems-{{ checksum "android/Gemfile.lock" }}
+          paths:
+            - android/vendor/bundle
+
+      - run:
+          name: fetch app fastlane json config to upload to play store
+          command: |
+            echo "$FASTLANE_PLAYSTORE_JSON" > android/app/api.txt
+            base64 --decode android/app/api.txt > android/app/api.json
+
+      - run:
+          name: Upload to Play Store
+          command: cd android && bundle exec fastlane alpha
+
+workflows:
+  version: 2
+  build-upload:
+    jobs:
+      - init:
+          context: Audius Mobile Client
+
+      - pull-web-app:
+          context: Audius Mobile Client
+          requires:
+            - init
+          filters:
+            branches:
+              only: /^master$/
+
+      - pull-staging-web-app:
+          context: Audius Mobile Client
+          requires:
+            - init
+          filters:
+            branches:
+              only: /^master$/
+
+      - upload-staging-ios:
+          context: Audius Mobile Client
+          requires:
+            - pull-staging-web-app
+          filters:
+            branches:
+              only: /^master$/
+
+      - upload-staging-android:
+          context: Audius Mobile Client
+          requires:
+            - pull-staging-web-app
+          filters:
+            branches:
+              only: /^master$/
+
+      - upload-ios:
+          context: Audius Mobile Client
+          requires:
+            - pull-web-app
+          filters:
+            branches:
+              only: /^master$/
+
+      - upload-android:
+          context: Audius Mobile Client
+          requires:
+            - init
+            - pull-web-app
+          filters:
+            branches:
+              only: /^master$/
