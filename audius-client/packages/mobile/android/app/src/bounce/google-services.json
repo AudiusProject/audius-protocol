@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "970637892016",
+    "firebase_url": "https://audius-android-bounce.firebaseio.com",
+    "project_id": "audius-android-bounce",
+    "storage_bucket": "audius-android-bounce.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:970637892016:android:d1041e302ba95ccc9e1e75",
+        "android_client_info": {
+          "package_name": "co.audius.app.bounce"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "970637892016-dp3ne2v6ksdkieicflm7fp67adi7duci.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtQKuaJ3GcvWxQfAfdt4cgZRGYpQbYVGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "970637892016-dp3ne2v6ksdkieicflm7fp67adi7duci.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

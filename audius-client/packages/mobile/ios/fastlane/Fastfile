@@ -1,0 +1,117 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+MY_APP_ID = "co.audius.audiusmusic"
+MY_STAGING_APP_ID = "co.audius.audiusmusic.bounce"
+MY_PROFILE = "match AppStore co.audius.audiusmusic"
+MY_STAGING_PROFILE = "match AppStore co.audius.audiusmusic.bounce"
+MY_TEAM = "LRFCG93S85"
+
+platform :ios do
+  before_all do
+    setup_circle_ci
+  end
+  desc "Push a new beta build to TestFlight"
+  lane :beta do
+    match(
+      type: "appstore",
+      readonly: is_ci
+    )
+
+    settings_to_override = {
+      :BUNDLE_IDENTIFIER => MY_APP_ID,
+      :PROVISIONING_PROFILE_SPECIFIER => MY_PROFILE,
+      :DEVELOPMENT_TEAM => MY_TEAM
+    }
+
+    if ENV["IS_PRODUCTION"] == "true"
+      api_environment = "production"
+      ENV["ENVFILE"]=".env.#{api_environment}"
+      puts "IS_PRODUCTION: #{ENV['IS_PRODUCTION']}"
+      puts "ENVFILE: #{ENV['ENVFILE']}"
+    end
+
+
+    # Build ios
+    gym(
+      workspace: "AudiusReactNative.xcworkspace",
+      codesigning_identity: "iPhone Distribution",
+      scheme: "AudiusReactNative",
+      xcargs: settings_to_override,
+      export_method: "app-store",
+      export_options: {
+          provisioningProfiles: {
+              MY_APP_ID => MY_PROFILE
+          }
+      }
+    )
+
+    # Upload to test flight
+    pilot(
+      skip_waiting_for_build_processing: true,
+      apple_id: "1491270519",
+      # Don't actually distribute, just upload
+      skip_submission: true
+    )
+  end
+  desc "Push a new bounce build to TestFlight"
+  lane :bounce do
+    match(
+      type: "appstore",
+      readonly: is_ci,
+      app_identifier: "co.audius.audiusmusic.bounce"
+    )
+
+    settings_to_override = {
+      :BUNDLE_IDENTIFIER => MY_STAGING_APP_ID,
+      :PROVISIONING_PROFILE_SPECIFIER => MY_STAGING_PROFILE,
+      :DEVELOPMENT_TEAM => MY_TEAM
+    }
+
+    if ENV["IS_PRODUCTION"] == "true"
+      api_environment = "staging"
+      ENV["ENVFILE"]=".env.#{api_environment}"
+      puts "IS_PRODUCTION: #{ENV['IS_PRODUCTION']}"
+      puts "ENVFILE: #{ENV['ENVFILE']}"
+    end
+
+
+    # Build ios
+    gym(
+      workspace: "AudiusReactNative.xcworkspace",
+      codesigning_identity: "iPhone Distribution",
+      scheme: "Bounce",
+      configuration: "Bounce.Release",
+      xcargs: settings_to_override,
+      export_method: "app-store",
+      export_options: {
+          provisioningProfiles: {
+              MY_STAGING_APP_ID => MY_STAGING_PROFILE
+          }
+      }
+    )
+
+    # Upload to test flight
+    pilot(
+      skip_waiting_for_build_processing: true,
+      apple_id: "1510764836",
+      app_identifier: "co.audius.audiusmusic.bounce",
+      # Don't actually distribute, just upload
+      skip_submission: true
+    )
+  end
+end
