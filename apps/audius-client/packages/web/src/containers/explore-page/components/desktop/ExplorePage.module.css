@@ -1,0 +1,27 @@
+.cardsContainer {
+  margin-bottom: 50px;
+  width: 100%;
+  margin-left: -16px;
+}
+.cardsContainer > * {
+  margin: 6px;
+}
+
+.loadingSpinner {
+  margin: 0 auto;
+}
+
+.loadingSpinner > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loadingSpinner svg {
+  max-height: 64px;
+  max-width: 64px;
+}
+
+.loadingSpinner g path {
+  stroke: var(--neutral-light-3) !important;
+}

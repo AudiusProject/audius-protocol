@@ -1,0 +1,68 @@
+.button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  transition: all .08s ease-in;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.button > * {
+  display: flex;
+  width: 100%;
+}
+
+.buttonFixedSize {
+  height: 40px;
+  width: 40px;
+}
+
+.buttonFixedSize > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.repeat svg {
+  height: 22px !important;
+  width: 22px !important;
+}
+
+.shuffle svg {
+  height: 22px !important;
+  width: 22px !important;
+}
+
+.previousNext svg {
+  height: 30px !important;
+  width: 30px !important;
+}
+
+.button:hover {
+  transform: scale(1.05);
+  opacity: 0.95;
+}
+.button:active {
+  transform: scale(0.95);
+}
+.button:focus {
+  outline: none;
+}
+.noAnimation path {
+  fill: var(--neutral);
+}
+
+.animation {
+  max-width: 100%;
+  max-height: 100%;
+  pointer-events: none;
+}
+
+.animation > div {
+  /* On some devices (iOS 13) the animation can get clipped with overflow hidden */
+  overflow: visible !important;
+}

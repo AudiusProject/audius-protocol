@@ -1,0 +1,121 @@
+.profilePictureWrapper {
+  position: relative;
+  height: 208px;
+}
+
+.profilePictureBackground {
+  background: var(--white);
+  width: 208px;
+  height: 208px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px -2px rgba(13,16,18,0.5);
+}
+
+.profilePicture {
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 4px solid var(--neutral-light-10);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--default-profile-picture-background);
+  overflow: hidden;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profilePicture .overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  background-color: rgba(17, 17, 17, 0.25);
+  border-radius: 50%;
+  transition: all .07s ease-in-out;
+}
+
+.profilePicture .overlay > div {
+  width: 56px !important;
+  opacity: 0;
+}
+
+.profilePicture .overlay.processing,
+.profilePicture .overlay.processing > * {
+  opacity: 1;
+}
+
+.imageSelectionButtonWrapper {
+  position: absolute;
+  bottom: 48px;
+  right: 0;
+  left: 0;
+  z-index: 4;
+}
+
+.isMobile .imageSelectionButtonWrapper {
+  bottom: 32px;
+}
+
+.imageSelectionButton {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.editMode .overlay,
+.editMode .imageSelectionButton {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modalOpen .overlay,
+.modalOpen .imageSelectionButton {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hasChanged .overlay,
+.hasChanged .imageSelectionButton {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.editMode.hasChanged:not(.modalOpen) .profilePictureBackground:hover .overlay,
+.editMode.hasChanged:not(.modalOpen) .profilePictureBackground:hover .imageSelectionButton {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.loadingSkeleton, .loadingSkeleton :global(.ant-skeleton-content),
+.loadingSkeleton, .loadingSkeleton :global(.ant-skeleton-header) {
+  padding: 0 !important;
+}
+.profilePictureWrapper .loadingSkeleton :global(.ant-skeleton-avatar) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 208px;
+  width: 208px !important;
+}
+
+.invalidProfilePictureFile {
+  position: absolute;
+  top: -40px;
+  left: 0px;
+  right: 0px;
+  margin: auto;
+}
+
+.hide {
+  opacity: 0;
+  transition: opacity ease-in-out .5s;
+}
+
+.hide :global(.ant-skeleton-avatar) {
+  opacity: 0;
+}
+
+.show {
+  opacity: 1;
+}

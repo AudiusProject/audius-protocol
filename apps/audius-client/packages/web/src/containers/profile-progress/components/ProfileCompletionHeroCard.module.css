@@ -1,0 +1,74 @@
+.container {
+  display: flex;
+  border-radius: 8px;
+  max-width: 722px;
+  overflow: hidden;
+  box-shadow: 0 15px 20px -5px var(--profile-completion-shadow-1), 0 15px 20px -5px var(--profile-completion-shadow-2);
+  position: relative;
+  margin: 3px 0px 24px 0px;
+  user-select: none;
+}
+
+.leftContainer {
+  background-color: var(--white);
+  width: 289px;
+  padding: 0 16px;
+  height: 182px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 26px;
+  font-weight: bold;
+  line-height: 32px;
+  letter-spacing: 0.93px;
+}
+
+.rightContainer {
+  width: 433px;
+  height: 182px;
+  padding: 26px 26px 26px 15px;
+}
+
+@media screen and (max-width: 1200px) {
+  .rightContainer {
+    padding: 8px 8px 8px 15px;
+  }
+}
+
+.completionTextPercentage {
+  color: var(--secondary);
+  font-size: 52px;	
+  font-weight: 900;
+  letter-spacing: 1.86px;
+  line-height: 32px; 
+  margin-top: 34px;
+}
+
+.complete {
+  color: var(--neutral-light-2);
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 1.14px;
+  line-height: 18px;
+  margin: 10px 0px 10px;
+}
+
+.dismissButton {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background-color: transparent;
+  border: none;
+  color: var(--static-white);
+  font-size: 12px;
+  opacity: 0.5;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 0.43px;
+  cursor: pointer;
+}
+
+.dismissButton:hover {
+  text-decoration: underline;
+}

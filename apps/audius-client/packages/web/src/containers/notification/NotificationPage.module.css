@@ -1,0 +1,27 @@
+.notificationContainer {
+  background-color: var(--white);
+  padding: 8px 12px;
+  width: 100%;
+}
+
+.backgruond {
+  background-color: var(--white);
+}
+
+.spinnerContainer > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding-top: 2px;
+}
+
+.spinnerContainer svg {
+  max-height: 32px;
+  max-width: 32px;
+}
+
+.spinnerContainer g path {
+  stroke: var(--neutral-light-5) !important;
+  stroke-width: 3px;
+}

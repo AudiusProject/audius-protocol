@@ -1,0 +1,47 @@
+.wrapper {
+  min-height: 40px;
+  background: var(--neutral-light-10);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border-bottom: 1px solid var(--neutral-light-8);
+  -webkit-app-region: drag;
+}
+
+.backButton, .forwardButton {
+  height: 20px;
+  width: 20px;
+  margin: 0 16px;
+  -webkit-app-region: no-drag;
+
+  transition: all .07s ease-in-out;
+}
+
+.backButton g path, .forwardButton g path {
+  fill: var(--neutral-light-4)
+}
+
+.forwardButton:hover {
+  transform: scale(1.1);
+}
+
+.backButton:hover g path,
+.forwardButton:hover g path {
+  fill: var(--neutral-light-2);
+}
+
+.backButton:hover {
+  transform: scale(1.1) rotate(180deg);
+}
+
+.backButton:active {
+  transform: scale(0.95) rotate(180deg);
+}
+
+.forwardButton:active {
+  transform: scale(0.95);
+}
+
+.backButton {
+  transform: rotate(180deg);
+}

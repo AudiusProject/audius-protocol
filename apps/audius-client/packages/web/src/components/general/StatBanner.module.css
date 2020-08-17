@@ -1,0 +1,44 @@
+.wrapper {
+  height: 56px;
+  width: 100%;
+  background-color: var(--neutral-light-10);
+  border-bottom: 1px solid var(--neutral-light-8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.statBanner {
+  margin-left: 233px;
+  padding-left: 30px;
+  padding-right: 16px;
+  width: 756px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.stats {
+  width: 330px;
+}
+
+.statBanner > .buttons {
+  z-index: 3;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.statBanner > .buttons > *:first-child {
+  margin: 0 6px;
+}
+
+.statBanner > .buttons > .buttonTwo {
+  max-width: 144px;
+  display: flex;
+  padding: 0 16px;
+  justify-content: center;
+}
+
+.subscribeButton {
+  margin-right: 6px;
+}

@@ -1,0 +1,29 @@
+.container {
+  z-index: 100;
+  position: fixed;
+  top: 40px;
+  top: calc(40px + env(safe-area-inset-top, 0px));
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bar {
+  background-color: rgba(126,27,204,0.9);
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  color: var(--white);
+  font-size: var(--font-m);
+  font-weight: var(--font-bold);
+}
+
+.barWrapper {
+  position: relative;
+  top: 0px;
+  width: 100%;
+}

@@ -1,0 +1,127 @@
+.section {
+  background: var(--white);
+  padding: 20px 28px 24px;
+  border-radius: 8px;
+  box-shadow: 0 16px 20px -5px var(--table-shadow);
+  max-width: 1080px;
+  margin-bottom: 32px;
+}
+
+.title {
+  text-align: left;
+  color: var(--secondary);
+  font-size: 28px;
+  font-weight: var(--font-bold);
+  letter-spacing: 0.35px;
+  line-height: 34px;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  text-align: left;
+  color: var(--neutral);  
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  letter-spacing: 0;
+  line-height: 20px;
+  margin-bottom: 12px;
+}
+
+.children {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.children {
+  margin: -8px;
+}
+
+.children > * {
+  margin: 8px;
+}
+
+.twoColumnDynamic .children {
+  margin: -10px;
+}
+
+.twoColumnDynamic .children > * {
+  margin: 12px 10px;
+}
+
+.twoColumnDynamic .children > *:nth-child(8n + 1),
+.twoColumnDynamic .children > *:nth-child(8n + 2) {
+  width: calc(50% - 20px);
+}
+
+.twoColumnDynamic .children > *:nth-child(8n + 3),
+.twoColumnDynamic .children > *:nth-child(8n + 6),
+.twoColumnDynamic .children > *:nth-child(8n + 7) {
+  width: calc(66% - 20px);
+}
+
+.twoColumnDynamic .children > *:nth-child(8n + 4),
+.twoColumnDynamic .children > *:nth-child(8n + 5),
+.twoColumnDynamic .children > *:nth-child(8n + 8) {
+  width: calc(34% - 20px);
+}
+
+@media screen and (max-width: 1020px) {
+  .twoColumnDynamic .children > *:nth-child(n) {
+    width: 100%;
+  }
+}
+
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 1) {
+  width: 100%;
+}
+
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 2),
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 3) {
+  width: calc(50% - 20px);
+}
+
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 4),
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 7),
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 8) {
+  width: calc(66% - 20px);
+}
+
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 5),
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 6),
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 9) {
+  width: calc(34% - 20px);
+}
+
+@media screen and (max-width: 1020px) {
+  .twoColumnDynamicWithLeadingElement .children > *:nth-child(n) {
+    width: 100%;
+  }
+}
+
+.expandable .children {
+  overflow: hidden;
+  max-height: 322px;
+  min-height: 322px;
+  transition: max-height ease-in-out 1s;
+  /* Negative margin to allow things inside to overflow outside */
+  margin: -16px -24px;
+  padding: 16px;
+  box-sizing: content-box;
+}
+
+.expandable .children > * {
+  margin: 12px 10px;
+}
+
+.expandable.expanded .children {
+  max-height: 4000px;
+}
+
+.expandButton {
+  margin-top: 32px;
+}
+
+.expandable .expandButton .expandButtonText {
+  text-transform: uppercase;
+}

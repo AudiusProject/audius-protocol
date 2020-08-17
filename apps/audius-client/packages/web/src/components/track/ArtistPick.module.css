@@ -1,0 +1,40 @@
+.artistPick {
+  position: absolute;
+  z-index: 10;
+  width: 80px;
+  height: 80px;
+  pointer-events: none;
+}
+
+.container {
+  position: absolute;
+  transform: rotate(45deg) translateX(-64px);
+  background: linear-gradient(314.61deg, #7E1BCC 0%, #A22FEB 100%);
+  box-shadow: 1px 1px 7px -2px rgba(0,0,0,.5);
+  width: 80px;
+  height: 80px;
+  overflow: hidden;
+}
+
+.isMobile .container {
+  transform: rotate(45deg) translateX(-68px);
+}
+
+.artistPick svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin-left: 5px;
+  margin-top: 2px;
+  width: 17px;
+}
+
+.isMobile svg {
+  margin: 4px 0px 0px 4px;
+  width: 16px;
+  height: 16px;
+}
+
+.artistPick svg path {
+  fill: var(--static-white);
+}

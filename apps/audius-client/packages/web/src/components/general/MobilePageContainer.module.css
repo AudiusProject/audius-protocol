@@ -1,0 +1,23 @@
+.container {
+  position: relative;
+  top: 0px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  min-width: 0;
+}
+
+.hasDefaultHeader {
+  margin-top: var(--header-padding-top);
+}
+
+.background {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  background-color: var(--white);
+}

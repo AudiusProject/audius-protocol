@@ -1,0 +1,15 @@
+.pageContainer {
+  overflow: hidden;
+}
+
+.lineupContainer {
+  padding: 16px 11px 12px;
+}
+
+.spin {
+  padding-top: 40%; 
+}
+
+.spin :global(.ant-spin-dot i) {
+  background-color: var(--secondary) !important;
+}

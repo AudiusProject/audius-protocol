@@ -1,0 +1,17 @@
+.long {
+  margin-left: 4px;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: normal;
+}
+
+.first {
+  margin-left: 4px;
+  text-decoration: none !important;
+}
+
+.end {
+  flex: 1 0 auto;
+}

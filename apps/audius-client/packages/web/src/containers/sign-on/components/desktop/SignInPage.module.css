@@ -1,0 +1,230 @@
+.container {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+}
+
+/*  */
+.logo {
+  max-height: 204px;
+  max-width: 180px;
+  height: 100%;
+  width: 100%;
+  margin-top: 40px;
+  margin-bottom: 31px;
+}
+
+.metaMask .logo {
+  max-height: 180px;
+  max-width: 159px;
+  height: 100%;
+  width: 100%;
+  margin: 40px auto 20px;
+}
+
+/* Title */
+.title {
+  color: var(--secondary);
+  font-size: var(--font-l);
+  height: 26px;
+  font-weight: var(--font-demi-bold);
+  margin-bottom: 3px;
+  user-select: none;
+}
+
+/* Sign In Button */
+.signInInput {
+  margin-top: 30px;
+  text-align: center;
+  height: 66px !important;
+  width: 354px !important;
+}
+.signInInput > input {
+  height: 100% !important;
+  width: 100% !important;
+  font-size: 20px !important;
+  color: var(--neutral);
+  border: 1px solid #F2F2F4;
+  border-radius: 4px;
+}
+.signInInput.hasMetaMask {
+  margin-top: 15px;
+}
+
+.signInInput :global(.placeholder) {
+  top: 37% !important;
+  left: 19px !important;
+  font-size: var(--font-xl) !important;
+  font-weight: var(--font-demi-bold) !important;
+}
+
+.signInInput :global(.placeholder.focus) {
+  font-weight: var(--font-demi-bold) !important;
+  transform: translate(0px, -12px) !important;
+}
+
+/* Sign In Button */
+.signInButton {
+  margin-top: 31px;
+  transition: none;
+}
+
+.signInError .signInButton {
+  margin-top: 6px;
+}
+
+.signInButton .signInButtonText {
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+}
+
+/* Bottom Text */
+.newUserText {
+  margin-top: 31px;
+  margin-bottom: 17px;
+  color: var(--neutral);
+  font-family: "Avenir Next LT Pro";
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  user-select: none;
+  cursor: default;
+}
+
+.signInError .newUserText {
+  transition: none;
+  margin-top: 16px;
+}
+
+.createAccountText {
+  text-decoration: none;
+  color: var(--secondary-light-2);
+  cursor: pointer;
+}
+.createAccountText:hover,
+.createAccountText:active {
+  text-decoration: underline !important;
+  color: var(--secondary);
+}
+
+.hidden {
+  display: none;
+}
+
+
+.errorContainer {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  margin: 12px 12px 12px 39px;
+}
+
+/* Mobile Styles */
+.container.isMobile {
+  padding: 0px 16px;
+}
+
+.isMobile .logo {
+  max-height: 164px;
+  max-width: 144px;
+  height: 100%;
+  width: 100%;
+  margin-top: 24px;
+  margin-bottom: 32px;
+}
+
+/* Title */
+.isMobile .title {
+  color: var(--secondary);
+  font-size: var(--font-l);
+  height: 26px;
+  font-weight: var(--font-demi-bold);
+  user-select: none;
+  margin-bottom: 16px;
+}
+
+/* Sign In Button */
+.isMobile .signInInput {
+  margin-top: 14px;
+  text-align: center;
+  height: 42px !important;
+  width: 100% !important;
+  max-width: 354px !important;
+}
+.isMobile .signInInput > input {
+  font-size: 16px !important;
+}
+
+.isMobile input::-webkit-input-placeholder { 
+  line-height: normal !important; 
+}
+
+/* Sign In Button */
+.isMobile .signInButton {
+  margin-top: 31px;
+  transition: none;
+}
+
+.isMobile.signInError .signInButton {
+  margin-top: 12px;
+}
+
+.isMobile .signInButton :global(.btnRightIcon) span i {
+  background-color: var(--white);
+}
+
+/* Bottom Text */
+.isMobile .newUserText {
+  margin-top: 32px;
+  margin-bottom: 17px;
+  color: var(--secondary);
+  font-family: "Avenir Next LT Pro";
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  user-select: none;
+  cursor: default;
+}
+
+.isMobile.signInError .newUserText {
+  transition: none;
+  margin-top: 23px;
+}
+
+.isMobile .createAccountText {
+  text-decoration: none;
+  color: var(--secondary-light-2);
+  cursor: pointer;
+}
+.isMobile .createAccountText:hover,
+.isMobile .createAccountText:active {
+  text-decoration: underline !important;
+  color: var(--secondary);
+}
+
+.isMobile .hidden {
+  display: none;
+}
+
+.isMobile .errorContainer {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  margin: 12px 0px 0px -24px;
+}
+
+.spinner {
+  display: block;
+  height: 16px;
+  width: 16px;
+}
+
+.spinner :global(.ant-spin-dot) {
+  height: 16px;
+  width: 16px;
+}
+
+.spinner :global(.ant-spin-dot i) {
+  background-color: var(--static-white);
+}

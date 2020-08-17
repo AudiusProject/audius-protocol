@@ -1,0 +1,145 @@
+.hide {
+  opacity: 0;
+}
+
+/** Modal **/
+
+.modal {
+  background-color: var(--neutral-light-8);
+  padding-bottom: 0;
+}
+
+.modalHeader {
+  margin-bottom: 0;
+}
+
+.title {
+  color: var(--neutral);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.5px;
+  text-transform: capitalize;
+}
+
+.scrollable {
+  max-height: 600px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+.scrollable :global(.simplebar-scrollbar) {
+  width: 6px;
+  right: 0px;
+  border-radius: 4px;
+  opacity: 0.5;
+}
+
+.scrollable :global(.simplebar-scrollbar:before) {
+  margin-bottom: 20px;
+}
+
+
+.subtitle {
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.44px;
+  text-align: center;
+  padding-top: 4px;
+  margin-top: 12px;
+}
+
+.sections {
+  padding: 0px 24px;
+}
+
+.section {
+  margin-top: 20px;
+}
+
+.section.available {
+  margin-top: 16px;
+  margin-bottom: 20px;
+}
+
+/** Services **/
+
+.header {
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  letter-spacing: 0.39px;
+  line-height: 20px;
+  margin-bottom: 8px;
+}
+
+.services {
+  padding-bottom: 4px;
+}
+
+.services .service:first-child {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.services .service:last-child {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.primaryServices {
+  max-height: 44px;
+}
+
+.moveUpSection {
+  transform: translateY(-90px) !important;
+}
+
+.moveDownSection {
+  transform: translateY(90px) !important;
+}
+
+.service.dragging {
+  border-radius: 6px;
+}
+
+.dragging .service {
+  border-radius: 6px;
+}
+
+.searchBar {
+  margin-bottom: 8px;
+}
+
+/* Bottom text */
+
+.bottomText {
+  margin-top: 12px;
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.39px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.noMatch {
+  color: var(--neutral);
+}
+
+.clearSearch {
+  text-align: center;
+}
+
+.clearSearch div {
+  color: var(--secondary);
+  cursor: pointer;
+  display: inline;
+  transition: border 0.07s ease-in-out;
+  border-bottom: 1px solid rgba(0,0,0,0);
+}
+
+.clearSearch div:hover {
+  border-bottom: 1px solid var(--secondary);
+}

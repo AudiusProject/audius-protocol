@@ -1,0 +1,15 @@
+.categoryHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.delineator {
+  margin: 0;
+  font-size: var(--font-l);
+}
+
+.more {
+  margin-left: 16px;
+  width: 110px;
+}

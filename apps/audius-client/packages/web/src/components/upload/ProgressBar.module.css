@@ -1,0 +1,15 @@
+.progressBar :global(.ant-progress-inner) {
+  height: 12px;
+  background: var(--neutral-light-9);
+}
+
+.progressBar :global(.ant-progress-bg) {
+  background: var(--primary-gradient-alt-1);
+  /** !important because antd sets these as inline styles. */
+  height: 12px !important;
+  border-radius: 100px 0px 0px 100px !important;
+}
+
+.progressBar.complete :global(.ant-progress-bg) {
+  border-radius: 100px !important;
+}

@@ -1,0 +1,85 @@
+.modalContainer {
+  max-width: 536px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  margin: 0px 16px;
+  padding-bottom: 8px;
+}
+
+.modalTitle {
+  color: var(--neutral);
+  font-size: var(--font-l);
+  font-weight: var(--font-heavy);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 23px;
+  margin-bottom: 7px;
+}
+
+.modalSubtitle {
+  color: var(--neutral-light-4);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  letter-spacing: 0;
+  line-height: 18px;
+}
+
+.content {
+  padding: 16px 16px 0px;
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  letter-spacing: 0;
+  line-height: 18px;
+}
+
+.info {
+  margin-bottom: 8px;
+}
+
+.bottom {
+  margin-top: 8px;
+  height: 62px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.error {
+  width: 100%;
+  color: var(--accent-red);
+}
+
+.track {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.artwork {
+  height: 34px;
+  width: 34px;
+  box-sizing: border-box;
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 3.33px;
+  overflow: hidden;
+  margin-right: 8px;
+}
+
+.by {
+  margin: 0px 4px;
+}
+
+.iconVerified {
+  height: 8px;
+  width: 8px;
+  margin-left: 4px;
+}
+
+.doneButton {
+  align-self: flex-end;
+  margin: 16px;
+}

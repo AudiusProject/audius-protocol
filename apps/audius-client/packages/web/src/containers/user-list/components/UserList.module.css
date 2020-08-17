@@ -1,0 +1,66 @@
+.user {
+  padding: 14px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.content {
+  width: 100%;
+  background-color: var(--white);
+}
+
+.artistChipContainer :global(.name) {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  line-height: normal;
+  margin-bottom: 8px;
+}
+
+.artistChipContainer :global(.followers) {
+  text-align: left;
+  width: 104px;
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  line-height: normal;
+}
+
+.followButton {
+  flex: 0 0 82px;
+}
+
+.loadingAnimation {
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  display: none;
+}
+
+.loadingAnimation.show {
+  opacity: 1;
+  display: block;
+}
+
+.loadingAnimation > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loadingAnimation svg {
+  max-height: 24px;
+  max-width: 24px;
+}
+
+.loadingAnimation g path {
+  stroke: var(--neutral-light-3) !important;
+}
+
+.spacer {
+  display: flex;
+  height: 100px;
+}

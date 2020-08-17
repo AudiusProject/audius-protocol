@@ -1,0 +1,94 @@
+.playBar {
+  height: 48px;
+  max-height: 48px;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  background: var(--white);
+}
+
+.controls {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0 4px;
+}
+
+.favorite {
+  position: relative;
+  cursor: pointer;
+  height: 28px !important;
+  width: 28px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 8px;
+}
+
+
+.artwork {
+  flex: 0 0 26px;
+  margin-left: 12px;
+  box-sizing: border-box;
+  height: 26px;
+  width: 26px;
+  border: 1px solid var(--neutral-light-8);
+}
+
+.image {
+  height: 26px;
+  width: 26px;
+  border-radius: 2px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.info {
+  flex: 1 1;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  height: 100%;
+  width: 100%;
+  max-width: calc(100vw - 98px);
+  user-select: none;
+  padding-top: 20px;
+  margin-top: -20px;
+}
+
+.separator {
+  margin: 0px 4px;
+}
+
+.title {
+  max-width: calc(66% - 23px);
+  line-height: normal;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-left: 8px;
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  font-weight: var(--font-bold);
+}
+
+.artist {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: normal;
+  max-width: calc(33% - 12px);
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+}
+
+.play {
+  margin-left: auto;
+  margin-right: 8px;
+  justify-self: flex-end;
+  width: 32px;
+}

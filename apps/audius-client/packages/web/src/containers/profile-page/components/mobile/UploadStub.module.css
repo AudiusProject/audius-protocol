@@ -1,0 +1,46 @@
+.uploadStub {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uploadStub.hide {
+  visibility: hidden;
+}
+
+.screen {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background: #000000;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.iconUpload {
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+  transition: transform 0.17s ease-in-out;
+}
+
+.animation {
+  width: 24px;
+  height: 24px;
+}
+
+.uploadStub:active .iconUpload {
+  transform: scale(0.85);
+}
+
+.iconUpload path {
+  fill: var(--static-white);
+}

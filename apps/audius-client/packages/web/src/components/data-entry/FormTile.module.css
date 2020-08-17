@@ -1,0 +1,219 @@
+.formTile {
+  width: 100%;
+  background-color: var(--white);
+
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+
+.basic {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0px 8px;
+}
+
+.preview {
+  margin-right: 24px;
+  padding-bottom: 16px;
+}
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 0px 8px;
+  justify-content: space-between;
+}
+
+.form {
+  flex: 1 auto;
+  min-width: 335px;
+}
+.form > div {
+  margin-bottom: 14px;
+}
+.form > div.description > .textArea > textarea {
+  min-height: 90px;
+}
+.form > div.description {
+  margin-bottom: 12px;
+}
+.form > div.downloadOptions {
+  margin: 0;
+}
+
+.categorization {
+  display: flex;
+  align-items: center;
+}
+.categorization > div {
+  flex: 1 auto;
+}
+.categorization > div:first-child {
+  margin-right: 14px;
+}
+
+.menuButton {
+  height: 28px !important;
+  padding: 0px 10px;
+}
+.menuButton .menuButtonText {
+  font-size: var(--font-xs);
+  font-weight: var(--font-demi-bold);
+}
+.menuButton .menuButtonIcon {
+  margin-right: 4px !important;
+}
+.advancedButton {
+  margin-left: 24px;
+}
+.menuButtonIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.remixSwitch {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-right: 24px;
+
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  letter-spacing: 0;
+  line-height: 18px;
+}
+
+.remixText {
+  margin-right: 4px;
+}
+
+.remixEdit {
+  margin-left: 4px;
+  color: var(--secondary);
+  cursor: pointer;
+  transition: all 0.18s ease-in-out;
+}
+
+.remixEdit:hover {
+  color: var(--secondary-dark-2);
+}
+
+.advanced {
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 8px;
+  transition:
+  max-height ease-in-out .18s,
+  margin ease-in-out .18s;
+}
+.advanced.show {
+  max-height: 800px;
+  margin-top: 16px;
+}
+.advanced.visible {
+  overflow: visible;
+}
+.advanced > div {
+  margin-bottom: 16px;
+}
+
+.release {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.release > div:first-child {
+  flex: 0 0 158px;
+  margin-right: 38px;
+}
+.release > div:last-child {
+  flex: 1 auto;
+}
+
+.trackId {
+  display: flex;
+}
+.trackId > div {
+  flex: 1 auto;
+}
+.trackId > div:first-child {
+  margin-right: 38px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+}
+.divider > .label {
+  font-weight: 500;
+  line-height: 14px;
+  font-size: 12px;
+  margin-right: 16px;
+}
+.divider > .border {
+  flex: 1 auto;
+  border-top: 1px solid var(--neutral-light-8);
+}
+
+.licenseMenus {
+  display: flex;
+  justify-content: space-between;
+}
+.licenseMenus > div {
+  width: 30%;
+}
+
+.licenseInfo {
+  margin-left: 20px;
+  text-align: left;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.children {
+  margin-top: 16px;
+}
+
+.hiddenTrackButton {
+  height: 35px !important;
+}
+
+.hiddenTrackButton .hiddenTrackButtonText {
+  font-size: var(--font-xs);
+  font-weight: var(--font-demi-bold);
+}
+
+.datePicker {
+  margin-right: 38px;
+  flex-shrink: 0;
+}
+
+.floatRight {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  flex-grow: 1;
+  justify-content: flex-end;
+  margin: -8px;
+}
+
+.floatRight > * {
+  margin: 8px;
+}
+
+.hideRemixes {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 17px;
+  height: 34px;
+}
+
+.hideRemixesText {
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  margin-right: 8px;
+}

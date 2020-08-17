@@ -1,0 +1,300 @@
+.container {
+  flex-shrink: 0;
+  margin: 44px 0px 16px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.content {
+  width: 100%;
+  max-width: 1144px;
+  position: relative;
+}
+
+.foreground {
+  position: relative;
+  z-index: 5;
+  display: inline-flex;
+  width: 100%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.productShot {
+  width: 100%;
+  max-width: 807px;
+}
+
+.title {
+  color: #480B79;
+  font-family: Gilroy !important;
+  font-size: 42px;
+  font-weight: bold;
+  line-height: 56px;
+  width: 100%;
+}
+
+.subTitle {
+  color: #C2C0CC;
+  font-family: Gilroy !important;
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 34px;
+  width: 100%;
+}
+
+.dotsBackgroundContainer {
+  position: absolute;
+  top: -69px; 
+  left: -152px;
+  z-index: 0
+}
+
+.dotsBackground {
+  height: 505px;	
+  width: 611px;
+  position: absolute;
+  background-repeat: repeat;
+  background-size: 500px 201px;
+  top: -69px; 
+  left: -152px;
+  z-index: 0
+}
+
+.cardMoveContainer {
+  user-select: none;
+}
+
+.artistsContainer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 40px;
+}
+
+/*  Artist Component */
+
+.artistContainer {
+  display: inline-flex;
+  flex-direction: column;
+  height: 200px;
+  width: 200px;
+  transition: all 0.25s ease-in-out;
+  transform: scale3d(1, 1, 1);
+  cursor: pointer;
+}
+
+.artistContainer:hover {
+  transform: scale3d(1.1, 1.1, 1.1);
+}
+
+.artistImage {
+  height: 100%;
+  width: 100%;
+  border-radius: 50%;
+}
+
+.artistName {
+  color: #480B79;
+  font-family: Gilroy !important;
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 25px;
+  text-align: center;
+  margin: 18px auto 0px;
+}
+
+/* Quote Container */
+.quoteContainer {
+  width: 100%;
+  margin: 0px -64px;
+  position: relative;
+  height: 211px;
+}
+
+.quoteBlock {
+  margin-top: 34px;
+  width: 100%;
+  max-width: 510px;
+  border: 2px solid rgba(72,11,121,0.25);
+  border-radius: 12px;
+  background: linear-gradient(315deg, #5D24E6 0%, #882FEB 100%);
+  box-shadow: 0 11px 50px -2px rgba(110,40,232,0.4);
+}
+
+.quoteCarrotContainer {
+  position: relative;
+  width: 100%;
+}
+
+.quoteCarrot {
+  height: 18px;
+  background: linear-gradient(315deg, #5D24E6 0%, #882FEB 100%);
+  width: 100%;
+  position: absolute;
+  top: -18px;
+  left: 0px;
+}
+
+.quoteContent {
+  position: relative;
+  height: 155px;
+  overflow: hidden;
+}
+
+.quote {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.artistQuoteContainer {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 16px 32px;
+  color: #FFFFFF;
+  font-family: Gilroy !important;
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 25px;
+}
+
+.byArtistName {
+  color: #FFFFFF;
+  font-family: Gilroy !important;
+  font-size: 18px;
+  font-weight: bold;
+  width: 100%;
+  text-align: right;
+  margin-top: 4px;
+}
+
+.animateTitleContainer {
+  overflow: hidden;
+  width: 100%;
+}
+
+
+/* Mobile */
+
+.mobileContainer {
+  overflow: hidden;
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+.mobileContainer .title {
+  z-index: 1;
+  color: #480B79;
+  font-family: Gilroy;
+  font-size: 32px;
+  font-weight: bold;
+  line-height: 56px;
+  text-align: center;
+}
+
+.mobileContainer .subTitle {
+  z-index: 1;
+  max-width: 300px;
+  color: #C2C0CC;
+  font-family: Gilroy;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 23px;
+  text-align: center;
+}
+
+.mobileContainer .artistsContainer {
+  max-width: 400px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.mobileContainer .artistCard {
+  margin: 0px 12px 16px;
+  max-width: 118px;
+}
+
+.mobileContainer .artistImage {
+  height: 118px;
+  width: 118px;
+  border-radius: 50%;
+  margin-bottom: 8px;
+}
+
+.mobileContainer .artistName {
+  color: #480B79;
+  font-family: Gilroy;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 19px;
+  text-align: center;
+  margin: 0px auto;
+}
+
+
+.mobileContainer .quoteCarrot {
+  position: relative;
+  top: 2px;
+  margin: 18px 0px 0px;
+  height: 16px;
+  z-index: 5;
+  background: linear-gradient(315deg, #5D24E6 0%, #882FEB 100%);
+  width: 100%;
+  clip-path: polygon(50% 0, calc(50% - 10px) 100%, calc(50% + 10px) 100%);
+}
+
+.mobileContainer .quoteBlock {
+  z-index: 1;
+  position: relative;
+  margin: 0px 6px 55px;
+  width: auto;
+  padding: 17px 26px;
+  border: 2px solid rgba(72,11,121,0.25);
+  border-radius: 12px;
+  background: linear-gradient(315deg, #5D24E6 0%, #882FEB 100%);
+  box-shadow: 0 11px 50px -2px rgba(110,40,232,0.4);
+  display: inline-flex;
+  flex-direction: column;
+
+  color: #FFFFFF;
+  font-family: Gilroy;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.mobileContainer .artistQuoteName {
+  margin-top: 8px;
+  color: #FFFFFF;
+  width: 100%;
+  font-family: Gilroy;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 19px;
+  text-align: right;
+}
+
+.mobileContainer .dotsBackground {
+  height: 505px;	
+  width: 611px;
+  position: absolute;
+  background-repeat: repeat;
+  background-size: 500px 201px;
+  top: 140px; 
+  left: -152px;
+  z-index: 0
+}

@@ -1,0 +1,210 @@
+.container {
+  flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background: linear-gradient(129.23deg, #F3F2F5 0%, #FBFBFC 100%);
+  -webkit-clip-path: polygon(0 8%, 100% 0, 100% 92%, 0 100%);
+  clip-path: polygon(0 8%, 100% 0, 100% 92%, 0 100%);
+  padding: 94px 0px 114px;
+}
+
+.content {
+  width: 100%;
+  max-width: 1144px;
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.animateTitleContainer {
+  overflow: hidden;
+  position: relative;
+  z-index: 5;
+  text-align: center;
+  margin-bottom: 58px;
+}
+
+.header {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  color: #480B79;
+  font-family: Gilroy !important;
+  font-size: 42px;
+  font-weight: bold;
+  line-height: 56px;
+  text-align: center;
+}
+
+.subTitle {
+  max-width: 608px;
+  color: #C2C0CC;
+  font-family: Gilroy !important;
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 31px;
+  text-align: center;
+}
+
+.body {
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.guitarImage {
+  user-select: none;
+  flex: 1;
+  object-fit: cover;
+  height: 408px;
+  width: 100%;
+  max-width: 563px;
+  border-radius: 8px;
+  box-shadow: 0 10px 50px -2px rgba(53,5,152,0.4);
+}
+
+.features {
+  flex: 1;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 395px;
+}
+
+.feature {
+  margin-left: 21px;
+  padding: 20px 15px 22px 37px;
+  border-radius: 12px;
+  background-color: #FFFFFF;
+  box-shadow: 0 16px 20px 0 rgba(232,228,234,0.5);
+  display: inline-flex;
+  align-items: center;
+}
+
+.featureIcon {
+  width: 100%;
+  max-width: 48px;
+  height: auto;
+  margin-right: 37px;
+}
+
+.featureText {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.featureTitle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 8px 3px;
+  text-transform: uppercase;
+  border-radius: 13px;
+  background-color: #7E1BCC;
+  color: #FFFFFF;
+  font-family: Gilroy !important;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.featureDescription {
+  color: #858199;
+  font-family: Gilroy !important;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+
+/* Mobile Styles */
+
+.isMobile.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: linear-gradient(129.23deg, #F3F2F5 0%, #FBFBFC 100%);
+  -webkit-clip-path: polygon(0 3%, 100% 0, 100% 97%, 0 100%);
+  clip-path: polygon(0 3%, 100% 0, 100% 97%, 0 100%);
+  padding: 65px 35px;
+}
+
+.isMobile .header {
+  margin: 0px;
+}
+
+.isMobile .title {
+  color: #480B79;
+  font-family: Gilroy;
+  font-size: 32px;
+  font-weight: bold;
+  line-height: 56px;
+  text-align: center;
+}
+
+.isMobile .subTitle {
+  color: #C2C0CC;
+  font-family: Gilroy;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 23px;
+  text-align: center;
+}
+
+.isMobile .body {
+  margin-top: 32px;
+  flex-direction: column;
+}
+
+.isMobile .guitarImage {
+  height: auto;
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 10px 50px -2px rgba(53,5,152,0.4);
+}
+
+.isMobile .features {
+  margin-top: 31px;
+}
+
+.isMobile .feature {
+  display: inline-flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  background-color: rgba(0,0,0,0);
+  box-shadow: none;
+  margin: 0px 0px 32px;
+  padding: 0px;
+}
+
+.isMobile .featureIcon {
+  margin: 0px;
+}
+
+.isMobile .featureText {
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.isMobile .featureTitle {
+  margin: 8px 0px;
+  display: block;
+  text-align: center;
+}
+
+.isMobile .featureDescription {
+  color: #858199;
+  font-family: Gilroy;
+  font-size: 14px;
+  line-height: 24px;
+  text-align: center;
+}

@@ -1,0 +1,708 @@
+version: 2.1
+orbs:
+  aws-ecr: circleci/aws-ecr@6.0.0
+
+commands:
+  pr-comment:
+    parameters:
+      comment:
+        description: The comment to add to the PR
+        type: string
+      maxComments:
+        default: 1
+        description: Max nb of comments per PR
+        type: integer
+      pr:
+        default: $CIRCLE_PULL_REQUEST
+        description: The PR number or URL
+        type: string
+    steps:
+      - run:
+          command: sudo apt-get update && sudo apt-get install -y --force-yes ruby-full
+          name: Install Ruby
+      - run:
+          command: |
+            curl -sL https://raw.githubusercontent.com/stephencelis/ghi/master/ghi > ghi
+            chmod 755 ghi
+            sudo mv ghi /usr/local/bin
+          name: Install GHI
+      - run:
+          command: |
+            if [[ -z "${GHI_TOKEN}" ]]; then
+              echo "GHI_TOKEN not set"
+              /bin/false
+            fi
+          name: Check Token
+      - run:
+          command: |
+            GH_LOGIN=$(curl -sS https://api.github.com/user\?access_token\=$GHI_TOKEN | jq '.login' --raw-output)
+            echo "Authenticated with $GH_LOGIN"
+            PR_URL=<< parameters.pr >>
+            PR_ID=${PR_URL##*/}
+            echo "PR_ID=$PR_ID"
+            if [ -z $PR_ID ]; then
+              echo "No PR found, skipping"
+            else
+              if [ $(ghi comment --list $PR_ID | grep -c $GH_LOGIN) -ge << parameters.maxComments >> ]; then
+                echo "Already commented, skip"
+              else
+                ghi comment -m "<< parameters.comment >>"  $PR_ID
+              fi
+            fi
+          name: Send Comment
+
+jobs:
+  init:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/node:10.13
+    steps:
+      - checkout
+
+      - run:
+          name: update-npm
+          command: 'sudo npm install -g npm@latest'
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - dependency-cache-
+
+      - run: rm -rf /home/circleci/audius-dapp/node_modules/websocket/.git
+
+      - run: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > .npmrc
+
+      - run: npm install
+
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+
+      # Lint
+      - run:
+          name: lint
+          command: npm run lint
+
+      # Run tests
+      - run:
+          name: test
+          command: npm test
+
+      # Build Storybook
+      # - run:
+      #     name: build-storybook
+      #     command: npm run build:storybook
+
+      # Persist the build directory to a workspace
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - node_modules
+            - storybook-static
+
+  build-demo:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/node:10.13
+    resource_class: large
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: build-demo
+          command: export PUBLIC_URL=/${CIRCLE_BRANCH} && npm run build:demo
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - build-demo
+
+  build-staging:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/node:10.13
+    resource_class: large
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: build-staging
+          command: npm run build:staging
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - build-staging
+
+  build-mobile-staging:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/node:10.13
+    resource_class: large
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: build-mobile-staging
+          command: npm run build:mobile-staging
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - build-mobile-staging
+
+  build-ci:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/node:10.13
+    resource_class: large
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: build-ci
+          command: npm run build:ci
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - build-ci
+
+  test-staging:
+    working_directory: ~/
+    docker:
+      - image: circleci/node:latest-browsers
+    steps:
+      - run:
+          name: download probers
+          command: |
+            mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
+            git clone git@github.com:AudiusProject/probers.git
+            cd probers
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - probers-dependency-cache-{{ checksum "probers/package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - probers-dependency-cache-
+      - run:
+          name: install probers dependencies
+          command: |
+            cd probers
+            npm install
+      - save_cache:
+          key: probers-dependency-cache-{{ checksum "probers/package.json" }}
+          paths:
+            - ./probers/node_modules
+      - attach_workspace:
+          at: ./
+      - run:
+          name: serve and run prober tests
+          command: |
+            npm install serve
+            node node_modules/serve/bin/serve.js -l 3001 -s build-staging &
+            cd probers
+            npm run test:ci
+
+  build-production:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/node:10.13
+    resource_class: large
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: build-production
+          command: npm run build:production-source-maps
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - build-production
+
+  build-mobile-production:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/node:10.13
+    resource_class: large
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: build-mobile-production
+          command: npm run build:mobile-production
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - build-mobile-production
+
+  deploy-demo:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - checkout
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Deploy to S3
+          command: aws s3 sync build-demo s3://frontend-demo.audius.co/${CIRCLE_BRANCH} --delete --cache-control max-age=0
+      - pr-comment:
+          comment: Preview this change https://frontend-demo.audius.co/${CIRCLE_BRANCH}
+
+  deploy-ci:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Deploy to S3
+          command: aws s3 sync build-ci s3://ci.audius.co --delete --cache-control max-age=0
+      - run:
+          name: Invalidate cache
+          # Note: cache invalidation is charged per path, so this only counts as 1/1000 monthly quota.
+          command: aws cloudfront create-invalidation --distribution-id EOMGWGQC168GB --paths "/*"
+
+  deploy-staging:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - checkout
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Deploy to S3
+          command: |
+            aws s3 sync --exclude ./resources/apple-app-site-association --exclude "sitemaps/*" build-staging s3://staging.audius.co --delete --cache-control max-age=0
+            aws s3 cp ./resources/apple-app-site-association s3://staging.audius.co --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
+
+  deploy-mobile-staging:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Deploy to S3
+          command: aws s3 sync build-mobile-staging s3://audius-mobile-staging/build --delete
+
+  deploy-release:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - checkout
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Deploy to S3
+          command: |
+            aws s3 sync --exclude "*.map" --exclude ./resources/apple-app-site-association --exclude robots.txt --exclude "sitemaps/*" build-production s3://release.audius.co --delete --cache-control max-age=604800
+            aws s3 cp s3://release.audius.co/index.html s3://release.audius.co/index.html --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --metadata-directive REPLACE --acl public-read
+            aws s3 cp ./resources/apple-app-site-association s3://release.audius.co --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
+
+  deploy-production:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - checkout
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Deploy to S3
+          # Deploy, but exclude sourcemaps
+          command: |
+            aws s3 sync --exclude "*.map" --exclude ./resources/apple-app-site-association --exclude robots.txt --exclude "sitemaps/*" build-production s3://audius.co --delete --cache-control max-age=604800
+            aws s3 cp s3://audius.co/index.html s3://audius.co/index.html --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --metadata-directive REPLACE --acl public-read
+            aws s3 cp ./resources/apple-app-site-association s3://audius.co --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
+            aws s3 cp robots.txt s3://audius.co --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
+      - run:
+          name: Invalidate cache
+          # Note: cache invalidation is charged per path, so this only counts as 1/1000 monthly quota.
+          command: aws cloudfront create-invalidation --distribution-id E1ZJ9Z971FJQJ8 --paths "/*"
+
+  deploy-sentry-sourcemaps:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/node:10.13
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: update-npm
+          command: 'sudo npm install -g npm@latest'
+      - run:
+          name: install-sentry-cli
+          command: npm install @sentry/cli
+      - run:
+          name: cut-sentry-release
+          command: node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-dapp new ${CIRCLE_SHA1}
+      - run:
+          name: upload-sourcemaps
+          command: node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-dapp files ${CIRCLE_SHA1} upload-sourcemaps --no-rewrite build-production
+      - run:
+          name: finalize-release
+          command: node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-dapp finalize ${CIRCLE_SHA1}
+
+  deploy-mobile-production:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Deploy to S3
+          command: aws s3 sync build-mobile-production s3://audius-mobile/build --delete
+
+  deploy-storybook:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Deploy to S3
+          command: aws s3 sync storybook-static s3://storybook.audius.co --delete
+
+  dist-mac-staging:
+    working_directory: ~/audius-dapp
+    macos: # Run on osx so dmg can be created and signed.
+      xcode: "10.2.1"
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+
+      - run:
+          name: distribute
+          command: npm run dist:mac-publish
+
+  dist-win-staging:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: electronuserland/builder:wine-mono
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+
+      - run:
+          name: distribute
+          command: npm run dist:win-publish
+
+  dist-linux-staging:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: electronuserland/builder
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+
+      - run:
+          name: distribute
+          command: npm run dist:linux-publish
+
+  dist-mac-production:
+    working_directory: ~/audius-dapp
+    macos: # Run on osx so dmg can be created and signed.
+      xcode: "10.2.1"
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+
+      - run:
+          name: distribute
+          command: npm run dist:mac-publish-production
+
+  dist-win-production:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: electronuserland/builder:wine-mono
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+
+      - run:
+          name: distribute
+          command: npm run dist:win-publish-production
+
+  dist-linux-production:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: electronuserland/builder
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+
+      - run:
+          name: distribute
+          command: npm run dist:linux-publish-production
+
+  publish-github-release:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            VERSION=$(grep -m1 version ./package.json | awk -F: '{ print $2 }' | sed 's/[", ]//g')
+            echo "$VERSION"
+            ghr -t ${GHI_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./
+
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - init
+
+      # Cut a demo if not master
+      - build-demo:
+          requires:
+            - init
+          filters:
+            branches:
+              ignore: /^master$/
+      - deploy-demo:
+          context: Audius Client
+          requires:
+            - build-demo
+          filters:
+            branches:
+              ignore: /^master$/
+
+      # Deploy storybook
+      # - deploy-storybook:
+      #     requires:
+      #       - init
+      #     filters:
+      #       branches:
+      #         only: /^master$/
+
+      # Build
+      - build-staging:
+          requires:
+            - init
+      - build-production:
+          requires:
+            - init
+          filters:
+            branches:
+              only: /(^master)|(^hotfix.*)$/
+
+      - test-staging:
+          context: Audius Client
+          requires:
+            - build-staging
+
+      - deploy-staging:
+          context: Audius Client
+          requires:
+            - test-staging
+          filters:
+            branches:
+              only: /^master$/
+      - deploy-release:
+          context: Audius Client
+          requires:
+            - init
+            - test-staging
+            - build-production
+          filters:
+            branches:
+              only: /(^master)|(^hotfix.*)$/
+
+      # Staging Native Mobile
+      - build-mobile-staging:
+          requires:
+            - init
+          filters:
+            branches:
+              only: /^master$/
+      - deploy-mobile-staging:
+          context: Audius Client
+          requires:
+            - build-mobile-staging
+          filters:
+            branches:
+              only: /^master$/
+
+      # Native Mobile
+      - build-mobile-production:
+          requires:
+            - init
+          filters:
+            branches:
+              only: /^master$/
+      - deploy-mobile-production:
+          context: Audius Client
+          requires:
+            - build-mobile-production
+          filters:
+            branches:
+              only: /^master$/
+
+      # Release production web.
+      - hold-production:
+          type: approval
+          requires:
+            - build-production
+          filters:
+            branches:
+              only: /(^master)|(^hotfix.*)$/
+      - deploy-production:
+          context: Audius Client
+          requires:
+            - hold-production
+          filters:
+            branches:
+              only: /(^master)|(^hotfix.*)$/
+
+      # Upload sourcemaps
+      - deploy-sentry-sourcemaps:
+          context: Audius Client
+          requires:
+            - deploy-production
+          filters:
+            branches:
+              only: /^master$/
+
+      - publish-github-release:
+          context: Audius Client
+          requires:
+            - hold-production
+          filters:
+            branches:
+              only: /(^master)|(^hotfix.*)$/
+
+      # Distribute staging desktop binaries.
+      - hold-dist-mac-staging:
+          type: approval
+          requires:
+            - build-staging
+          filters:
+            branches:
+              only: /(^master)|(^bounce.*)$/
+      - dist-mac-staging:
+          context: Audius Client
+          requires:
+            - hold-dist-mac-staging
+          filters:
+            branches:
+              only: /(^master)|(^bounce.*)$/
+      - hold-dist-win-staging:
+          type: approval
+          requires:
+            - build-staging
+          filters:
+            branches:
+              only: /(^master)|(^bounce.*)$/
+      - dist-win-staging:
+          context: Audius Client
+          requires:
+              - hold-dist-win-staging
+          filters:
+            branches:
+              only: /(^master)|(^bounce.*)$/
+      - hold-dist-linux-staging:
+          type: approval
+          requires:
+            - build-staging
+          filters:
+            branches:
+              only: /(^master)|(^bounce.*)$/
+      - dist-linux-staging:
+          context: Audius Client
+          requires:
+            - hold-dist-linux-staging
+          filters:
+            branches:
+              only: /(^master)|(^bounce.*)$/
+
+      # Distribute production desktop binaries.
+      - hold-dist-mac-production:
+          type: approval
+          requires:
+            - build-production
+          filters:
+            branches:
+              only: /(^master)|(^hotfix.*)$/
+      - dist-mac-production:
+          context: Audius Client
+          requires:
+            - hold-dist-mac-production
+          filters:
+            branches:
+              only: /(^master)|(^hotfix.*)$/
+      - hold-dist-win-production:
+          type: approval
+          requires:
+            - build-production
+          filters:
+            branches:
+              only: /(^master)|(^hotfix.*)$/
+      - dist-win-production:
+          context: Audius Client
+          requires:
+            - hold-dist-win-production
+          filters:
+            branches:
+              only: /(^master)|(^hotfix.*)$/
+      - hold-dist-linux-production:
+          type: approval
+          requires:
+            - build-production
+          filters:
+            branches:
+              only: /(^master)|(^hotfix.*)$/
+      - dist-linux-production:
+          context: Audius Client
+          requires:
+            - hold-dist-linux-production
+          filters:
+            branches:
+              only: /(^master)|(^hotfix.*)$/

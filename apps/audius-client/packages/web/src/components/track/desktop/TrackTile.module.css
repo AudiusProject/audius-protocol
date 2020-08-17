@@ -1,0 +1,401 @@
+.container {
+  position: relative;
+  background: var(--white);
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 8px 8px 0px 0px;
+  display: inline-flex;
+  overflow: hidden;
+  width: 100%;
+  cursor: pointer;
+  transition: all .18s ease-in-out;
+}
+
+.container.standalone {
+  transform: scale3d(1, 1, 1);
+  border-radius: 8px;
+  box-shadow: 0px 2px 5px rgba(133, 129, 153, 0.25), 0px 1px 0px var(--tile-shadow-2), 0px 0px 1px rgba(133, 129, 153, 0.1);
+}
+
+.container.standalone:not(.loading):not(.isDisabled):hover {
+  box-shadow: 0 1px 5px 1px var(--tile-shadow-1-alt), 0 1px 0 0 var(--tile-shadow-2), 0 2px 10px -2px var(--tile-shadow-3);
+  transform: scale3d(1.005, 1.005, 1.005);
+}
+.container.standalone:not(.loading):not(.isDisabled):active {
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 2px 3px -2px var(--tile-shadow-3);
+}
+
+.container.large.standalone {
+  margin-bottom: 16px;
+}
+
+.container.small.standalone {
+  margin-bottom: 12px;
+}
+
+.container.large {
+  height: 154px;
+}
+
+.container.small {
+  height: 124px;
+}
+
+.order {
+  flex: 0 0 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  color: var(--neutral-light-4); 
+}
+
+.large .imageContainer {
+  flex: 0 0 128px;
+  height: 128px;
+  margin: 12px 0px;
+}
+
+/* If the ordering is not present, add extra space to the left */
+.large .imageContainer.leftSpacing {
+  margin-left: 12px;
+}
+
+.small .imageContainer {
+  flex: 0 0 108px;
+  height: 108px;
+  margin: 8px 0px;
+}
+
+/* If the ordering is not present, add extra space to the left */
+.small .imageContainer.leftSpacing {
+  margin-left: 8px;
+}
+
+.container:hover .artworkIcon {
+  opacity: 0.75;
+}
+
+.container.isDisabled {
+  cursor: default;
+}
+
+.body {
+  display: inline-flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1 1 auto;
+  padding: 10px 12px 8px 18px;
+
+}
+
+.topSection {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.large .withoutHeader .headerRow {
+  height: 10px;
+}
+
+/* Playlist or Album Header */
+.headerRow {
+  margin-top: 2px;
+  margin-bottom: 4px;
+
+  font-style: normal;
+  font-weight: var(--font-medium);
+  font-size: var(--font-xs);
+  letter-spacing: 2.5px;
+  text-align: left;
+
+  /* Neutral Light 4 [day] */
+  color: var(--neutral-light-4);
+}
+
+.titleRow {
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: normal;
+  user-select: none;
+  margin-right: 132px;
+  padding-bottom: 2px;
+}
+
+.titleRow .skeleton {
+  height: 20px;
+}
+
+.title {
+  font-style: normal;
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  color: var(--neutral);
+}
+
+.volumeIcon {
+  margin-left: 6px;
+}
+
+.isActive .title {
+  color: var(--primary);
+}
+
+.isActive .volumeIcon path {
+  fill: var(--primary);
+}
+
+.creatorRow {
+  display: inline-flex;
+}
+
+.creatorRow .skeleton {
+  height: 16px;
+}
+
+.large .creatorRow {
+  margin-bottom: 4px;
+}
+
+.small .creatorRow {
+  margin-bottom: 12px;
+}
+
+.large .withoutHeader .creatorRow {
+  margin-bottom: 8px;
+}
+
+.creatorRow .by {
+  font-style: normal;
+  font-weight: var(--font-medium);
+  font-size: var(--font-m);
+  color: var(--neutral-light-6);
+
+  margin-right: 4px;
+}
+
+.creatorRow .name {
+  font-style: normal;
+  font-weight: var(--font-medium);
+  font-size: var(--font-m);
+
+  color: var(--neutral);
+}
+
+.isActive .withoutHeader .creatorRow .name {
+  color: var(--primary);
+}
+
+
+.title:hover,
+.creatorRow .name.artistNameLink:hover {
+  cursor: pointer;
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: var(--primary-light-2);
+}
+
+.isDisabled .title:hover,
+.isDisabled .creatorRow .name.artistNameLink:hover {
+  cursor: default;
+  color: inherit;
+  text-decoration: none;
+}
+
+
+.large .socialsRow .skeleton {
+  height: 24px;
+}
+
+.small .socialsRow .skeleton {
+  height: 18px;
+}
+
+
+.large .socialsRow {
+  height: 24px;
+  margin-right: 80px;
+}
+
+.small .socialsRow {
+  height: 18px;
+  margin-right: 80px;
+}
+
+.socialInfo {
+  display: inline-flex;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+ /* Right side of the track tile */
+.topRight {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+}
+
+.duration {
+  font-style: normal;
+  font-weight: var(--font-medium);
+  font-size: var(--font-xs);
+
+  text-align: right;
+  letter-spacing: 0.2px;
+  
+  /* Neutral Light 4 [day] */
+  color: var(--neutral-light-4);
+}
+
+.iconStar {
+  height: 16px;
+  width: 16px;
+  margin-right: 6px;
+}
+
+.iconStar path {
+  fill: var(--neutral-light-4);
+}
+
+.artistPickLabel {
+  display: inline-flex;
+  align-items: center;
+
+  font-weight: var(--font-medium);
+  font-size: var(--font-xs);
+  color: var(--neutral-light-4);
+
+  margin-top: -3px;
+  margin-right: 12px;
+}
+
+.bottomRight {
+  position: absolute;
+  right: 0;
+  display: inline-flex;
+}
+
+.large .bottomRight {
+  bottom: 0;
+}
+
+.small .bottomRight {
+  bottom: 8px;
+}
+
+.plays {
+  font-style: normal;
+  font-weight: var(--font-medium);
+  font-size: var(--font-xs);
+  line-height: 11px;
+
+  text-align: right;
+  letter-spacing: 0.2px;
+  color: var(--neutral-light-4);
+}
+
+
+/* Track Tile Divider */
+.divider {
+  height: 1px;
+  min-height: 1px;
+  width: 100%;
+  background: var(--neutral-light-8);
+}
+
+.large .divider {
+  margin: 6px 10px 8px 0px;
+}
+
+/* If Header (Playlist or Album) is not present, add more spacing up top */
+.large .withoutHeader .divider {
+  margin: 12px 10px 8px 0px;
+}
+
+.small .divider {
+  margin: 2px 13px 6px 0px;
+}
+
+/* Bottom Row Track TIle */
+.bottomRow {
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.bottomRow .iconButtons {
+  display: inline-flex;
+}
+
+.bottomRow .iconButtonContainer {
+  position: relative;
+}
+
+.bottomRow .iconButtonContainer:not(:last-child) {
+  margin-right: 32px;
+}
+
+.bottomRow .iconButton {
+  display: flex;
+  height: 24px;
+  width: 24px;
+  align-items: center;
+  transform: scale3d(1,1,1);
+  transition: all .12s ease-in-out !important;
+}
+
+.bottomRow .iconButton:hover {
+  transform: scale3d(1.18,1.18,1.18);
+}
+
+.bottomRow .iconButtonContainer.isDisabled .iconButton:hover {
+  transform: scale3d(1,1,1);
+}
+
+.bottomRow .iconButton:active {
+  transform: scale3d(0.95,0.95,0.95);
+}
+
+.bottomRow .iconButtonContainer.isDisabled .iconButton:active {
+  transform: scale3d(1,1,1);
+}
+
+.iconShareContainer {
+  height: 24px;
+  width: 24px;
+}
+
+/* Make the icon buttons a larger click target */
+.bottomRow .iconButton:after {
+  content: "";
+  padding: 16px;
+  position: absolute;
+  left: -4px;
+  top: -4px;
+}
+
+.iconKebabHorizontal path {
+  fill: var(--neutral-light-4);
+}
+
+.menuContainer {
+  transform: scale3d(1,1,1);
+  transition: all .07s ease-in-out !important;
+  display: flex;
+  align-items: center;
+  height: 24px;
+}
+
+.menuContainer:hover {
+  transform: scale3d(1.10,1.10,1.10);
+}
+
+.menuContainer:active {
+  transform: scale3d(0.95,0.95,0.95);
+}

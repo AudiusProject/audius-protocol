@@ -1,0 +1,20 @@
+.tableDragHandle {
+  padding: 0px !important;
+  vertical-align: middle;
+  width: 32px !important;
+}
+
+.wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  height: 16px;
+  margin-left: 16px;
+}
+
+.iconDrag {
+  /* position: absolute; */
+  /* margin-left: 16px; */
+  /* left: 16px; */
+}

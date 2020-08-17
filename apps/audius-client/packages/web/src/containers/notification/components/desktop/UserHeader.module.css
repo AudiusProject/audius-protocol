@@ -1,0 +1,69 @@
+.profilePictureWrapper {
+  height: 32px;
+  width: 32px;
+}
+
+.profilePictureWrapper:hover {
+  opacity: 0.8;
+}
+
+.profilePicture {
+  border-radius: 50%;
+  background-color: var(--default-profile-picture-background);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.userHeader {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+
+.userHeader.notRead {
+  border-bottom: 1px solid var(--neutral-light-7);
+}
+
+.userHeaderImage {
+  margin-right: 5px;
+}
+
+.userImageCount {
+  cursor: pointer;
+  flex: 0 0 32px;
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--neutral-light-4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--neutral-light-2);
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  line-height: 14px;
+  text-align: center;
+}
+
+.userImageCount:hover {
+  background-color: var(--neutral-light-8);
+}
+
+
+.userImage {
+  height: 32px;
+  transition: all .07s ease-in-out;
+  transform: scale3d(1,1,1);
+}
+
+.userImage:hover {
+  transform: scale3d(1.05,1.05,1.05);
+}
+
+.userImage:active {
+  transform: scale3d(0.95,0.95,0.95);
+}

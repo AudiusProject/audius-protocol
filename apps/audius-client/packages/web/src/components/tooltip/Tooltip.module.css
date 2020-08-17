@@ -1,0 +1,54 @@
+.tooltip {
+  --tooltip-background-color: var(--secondary-transparent);
+  z-index: 10000;
+}
+
+.nonWrappingTooltip:global(.ant-tooltip) {
+  max-width: none;
+}
+
+.tooltip :global(.ant-tooltip-inner) {
+  color: var(--static-white);
+  font-family: var(--font-family);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  user-select: none;
+  text-transform: none;
+}
+
+.tooltip :global(.ant-tooltip-inner) {
+	border-radius: 4px;
+	background-color: var(--tooltip-background-color);
+}
+
+/* The little tooltip arrow is a square rotated 45 deg
+ * clockwise, so take that + the modal position into account
+ * to figure out which two border segments to color.
+ */
+.tooltip:global(.ant-tooltip-placement-right .ant-tooltip-arrow), 
+.tooltip:global(.ant-tooltip-placement-rightTop .ant-tooltip-arrow), 
+.tooltip:global(.ant-tooltip-placement-rightBottom .ant-tooltip-arrow) {
+  border-left-color: var(--tooltip-background-color);
+  border-bottom-color: var(--tooltip-background-color);
+}
+
+.tooltip:global(.ant-tooltip-placement-bottom .ant-tooltip-arrow), 
+.tooltip:global(.ant-tooltip-placement-bottomLeft .ant-tooltip-arrow), 
+.tooltip:global(.ant-tooltip-placement-bottomRight .ant-tooltip-arrow) {
+  border-top-color: var(--tooltip-background-color);
+  border-left-color: var(--tooltip-background-color);
+}
+
+.tooltip:global(.ant-tooltip-placement-left .ant-tooltip-arrow), 
+.tooltip:global(.ant-tooltip-placement-leftTop .ant-tooltip-arrow), 
+.tooltip:global(.ant-tooltip-placement-leftBottom .ant-tooltip-arrow) {
+  border-right-color: var(--tooltip-background-color);
+  border-top-color: var(--tooltip-background-color);
+}
+
+.tooltip:global(.ant-tooltip-placement-top .ant-tooltip-arrow), 
+.tooltip:global(.ant-tooltip-placement-topLeft .ant-tooltip-arrow), 
+.tooltip:global(.ant-tooltip-placement-topRight .ant-tooltip-arrow) {
+  border-right-color: var(--tooltip-background-color);
+  border-bottom-color: var(--tooltip-background-color);
+}

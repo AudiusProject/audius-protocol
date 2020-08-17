@@ -1,0 +1,130 @@
+import React, { memo, useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
+import cn from 'classnames'
+import Lottie from 'react-lottie'
+
+import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { SquareSizes } from 'models/common/ImageSizes'
+import { useUserProfilePicture } from 'hooks/useImageSize'
+
+import loadingSpinner from 'assets/animations/loadingSpinner.json'
+
+import styles from './ProfilePicture.module.css'
+
+const ProfilePicture = ({
+  editMode,
+  userId,
+  profilePictureSizes,
+  updatedProfilePicture,
+  onDrop,
+  showEdit,
+  isMobile,
+  loading,
+  url,
+  error,
+  includePopup,
+  hasProfilePicture
+}) => {
+  const image = useUserProfilePicture(
+    userId,
+    profilePictureSizes,
+    SquareSizes.SIZE_480_BY_480
+  )
+  const [hasChanged, setHasChanged] = useState(false)
+  const [processing, setProcessing] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+
+  useEffect(() => {
+    if (editMode) {
+      setHasChanged(false)
+    }
+  }, [editMode])
+
+  const onSelect = async (file, source) => {
+    setProcessing(true)
+    const image = await file
+    await onDrop([].concat(image), source)
+    setHasChanged(true)
+    setProcessing(false)
+  }
+
+  const onClick = () => {
+    setModalOpen(true)
+  }
+
+  const onClose = () => {
+    setModalOpen(false)
+  }
+
+  return (
+    <div
+      className={cn(styles.profilePictureWrapper, {
+        [styles.editMode]: editMode,
+        [styles.hasChanged]: hasChanged,
+        [styles.modalOpen]: modalOpen,
+        [styles.isMobile]: isMobile
+      })}
+    >
+      <div className={styles.profilePictureBackground}>
+        <DynamicImage
+          image={updatedProfilePicture || image}
+          wrapperClassName={styles.profilePicture}
+        >
+          {editMode && (
+            <div
+              className={cn(styles.overlay, {
+                [styles.processing]: processing
+              })}
+            >
+              <Lottie
+                options={{
+                  loop: true,
+                  autoplay: true,
+                  animationData: loadingSpinner
+                }}
+              />
+            </div>
+          )}
+        </DynamicImage>
+        {(editMode || showEdit) && (
+          <ImageSelectionButton
+            wrapperClassName={styles.imageSelectionButtonWrapper}
+            buttonClassName={styles.imageSelectionButton}
+            onSelect={onSelect}
+            onClick={onClick}
+            onAfterClose={onClose}
+            includePopup={includePopup}
+            error={!!error}
+            hasImage={hasProfilePicture}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+ProfilePicture.propTypes = {
+  userId: PropTypes.number,
+  profilePictureSizes: PropTypes.object,
+  updatedProfilePicture: PropTypes.string,
+  isMobile: PropTypes.bool,
+  showEdit: PropTypes.bool,
+  editMode: PropTypes.bool.isRequired,
+  // Whether or not the use has a non-default profile picture
+  hasProfilePicture: PropTypes.bool.isRequired,
+  includePopup: PropTypes.bool,
+  loading: PropTypes.bool.isRequired,
+  url: PropTypes.string,
+  onDrop: PropTypes.func.isRequired
+}
+
+ProfilePicture.defaultProps = {
+  isMobile: false,
+  showEdit: false,
+  includePopup: true,
+  editMode: true,
+  loading: false
+}
+
+export default memo(ProfilePicture)

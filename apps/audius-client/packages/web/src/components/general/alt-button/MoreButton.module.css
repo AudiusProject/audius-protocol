@@ -1,0 +1,12 @@
+.icon {
+    transform: perspective(0px) scale3d(1, 1, 1);
+    transition: all .07s ease-in-out;
+    width: 24px;
+    height: 24px;
+    background-size: cover;
+}
+
+.icon:active {
+    transform: perspective(1px) scale3d(0.9, 0.9, 0.9);
+    filter: brightness(0.8);
+}

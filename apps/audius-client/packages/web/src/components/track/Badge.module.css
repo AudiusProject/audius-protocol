@@ -1,0 +1,36 @@
+.badge {
+  padding: 10px 17px;
+  height: 36px;
+  border-radius: 6px;
+  background: linear-gradient(315deg, #196AE3 0%, #1977E3 100%);
+  user-select: none;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.badgeIcon {
+  filter: drop-shadow(0 1px 2px rgba(39,31,71,0.25));
+}
+.badgeIcon svg {
+  width: 16px;
+}
+.badgeIcon g path {
+  fill: var(--static-white);
+}
+
+.badgeTextLabel {
+  display: inline-block;
+  margin-top: 1px;
+  color: var(--static-white);
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 0.7px;
+  padding-left: 9px;
+  vertical-align: text-top;
+  text-transform: uppercase;
+  white-space: nowrap;
+  word-break: keep-all;
+  text-decoration: none;
+  text-shadow: 0 1px 2px rgba(39,31,71,0.25);
+}

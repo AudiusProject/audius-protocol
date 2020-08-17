@@ -1,0 +1,40 @@
+.container {
+  position: relative;
+  flex: 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  margin-top: -2px;
+  margin-right: -1px;
+  background-color: var(--white);
+  border: 1px solid var(--neutral-light-8);
+  cursor: pointer;
+}
+
+.container:active {
+  box-shadow: inset 1px 1px 0 0 var(--neutral-light-7);
+  border-color: var(--neutral-light-7);
+  background: var(--neutral-light-8);
+}
+
+.container:active g path {
+  fill: var(--neutral);
+}
+
+.container:hover svg {
+  transform: scale3d(1.10,1.10,1.10);
+}
+
+.container:active svg {
+  transform: scale(0.95);
+}
+
+.container svg {
+  transition: all .07s ease-in-out !important;
+}
+
+.container:hover {
+  background: var(--neutral-light-9);
+  border-color: var(--neutral-light-7);
+}

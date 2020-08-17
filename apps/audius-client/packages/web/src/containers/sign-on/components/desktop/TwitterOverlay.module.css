@@ -1,0 +1,100 @@
+/* Twitter Button */
+.twitterOverlayContainer {
+  width: 100%;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  flex-direction: column;
+  padding-top: 101px;
+  background-color: rgba(255,255,255,0.75);
+  transition: all .07s ease-in-out;
+}
+
+.twitterButton {
+  margin-bottom: 40px;
+  height: 80px !important;
+  width: 284px !important;
+  border-radius: 6px;
+  background-color: var(--static-twitter-blue);
+  box-shadow: 0 2px 5px -2px rgba(133,129,153,0.5), 0 2px 8px -2px rgba(27,161,241,0.25);
+}
+.twitterButton svg {
+  height: 42px !important;
+  width: 42px !important;
+}
+
+
+.twitterButton :global(.btnTextLabel) {
+  color: var(--white);
+  font-size: var(--font-l);
+  font-weight: var(-font-demi-bold);
+  letter-spacing: 0.25px;
+}
+
+/* Checklist  */
+
+.autofill {
+  font-weight: var(--font-demi-bold);
+  margin-bottom: 18px;
+  cursor: default;
+  user-select: none;
+}
+
+.autofillChecklist {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: column;
+  margin-bottom:81px;
+}
+
+.checkItem {
+  width: 100%;
+  display: inline-flex;
+  margin-bottom: 16px;
+  color: var(--neutral-light-1);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  cursor: default;
+  user-select: none;
+}
+
+.checkIcon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  border-radius: 50%;
+}
+
+.checkIcon > svg path {
+  fill: var(--white);
+}
+.checkIcon > svg circle {
+  fill: var(--secondary);  
+}
+
+.pwdCheckLabel {
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  cursor: default;
+  user-select: none;
+}
+
+/* manual */
+
+.manualText {
+  color: var(--secondary-light-2);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.manualText:hover {
+  color: var(--secondary);
+  text-decoration: underline;
+}
+

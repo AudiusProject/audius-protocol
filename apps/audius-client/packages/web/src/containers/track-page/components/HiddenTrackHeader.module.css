@@ -1,0 +1,22 @@
+.hiddenHeaderContainer {
+  align-items: center;
+  display: flex;
+}
+
+.hiddenTrackLabel {
+  color: var(--accent-orange);
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-s);
+  line-height: 18px;
+  letter-spacing: 3.5px;
+
+  user-select: none;
+}
+
+.hiddenHeaderContainer path {
+  fill: var(--accent-orange);
+}
+
+.hiddenHeaderContainer svg {
+  margin-right: 8px;
+}

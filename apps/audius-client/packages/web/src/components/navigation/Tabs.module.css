@@ -1,0 +1,70 @@
+.tabs {
+  line-height: unset;
+  margin: 0 -4px;
+  padding: 0 4px;
+}
+
+.tabs > :global(.ant-tabs-top-bar) {
+  user-select: none !important;
+}
+
+.tabs > :global(.ant-tabs-top-bar) svg {
+  margin-right: 11px;
+  margin-bottom: -3px;
+}
+
+.tabs :global(.ant-tabs-tab) {
+  color: var(--neutral-light-4);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.66px;
+  padding-left: 5px;
+  padding-right: 2px;
+  padding-bottom: 12px;
+  padding-top: 0;
+  transition: all ease-in-out .18s;
+}
+.tabs :global(.ant-tabs-tab) g path {
+  fill: var(--neutral-light-4);
+  transition: all ease-in-out .18s;
+}
+.tabs :global(.ant-tabs-tab-active) {
+  color: var(--neutral);
+}
+.tabs :global(.ant-tabs-tab-active) g path {
+  fill: var(--neutral);
+}
+
+.tabs :global(.ant-tabs-tab:hover) {
+  color: var(--neutral);
+}
+.tabs :global(.ant-tabs-tab:hover) g path {
+  fill: var(--neutral);
+}
+
+.tabs :global(.ant-tabs-ink-bar) {
+  background-color: var(--primary);
+  height: 3px;
+  border-radius: 0 0 2px 2px;
+}
+
+.tabs :global(.ant-tabs-nav-container) {
+  margin-bottom: -3px;
+}
+
+.tabs :global(.ant-tabs-nav-scroll) {
+  text-align: left;
+}
+
+.tabs :global(.ant-tabs-bar) {
+  border-color: var(--neutral-light-7);
+}
+
+.tabs.noBorder :global(.ant-tabs-bar) {
+  border: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+}

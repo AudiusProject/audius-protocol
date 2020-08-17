@@ -1,0 +1,13 @@
+.giantArtwork {
+  height: 338px;
+  width: 338px;
+  min-height: 338px;
+  min-width: 338px;
+  user-select: none;
+}
+
+.imageWrapper {
+  border-radius: 8px;
+  border: 1px solid var(--neutral-light-8);
+  overflow: hidden;
+}
