@@ -1,0 +1,223 @@
+.collectionHeader {
+  padding: 16px 16px 24px 16px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.topSection {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+}
+
+.coverArtWrapper {
+  height: 272px;
+  width: 272px;
+  min-height: 272px;
+  min-width: 272px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--neutral-light-8);
+  user-select: none;
+}
+
+.coverArt {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.infoSection {
+  margin-left: 38px;
+  flex-direction: column;
+  width: 100%;
+}
+
+.typeLabel {
+  text-transform: uppercase;
+  color: var(--neutral-light-4);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  letter-spacing: 3px;
+
+  user-select: none;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.title {
+  color: var(--neutral);
+  font-size: 36px;
+  line-height: 40px;
+  min-height: 40px;
+  font-weight: var(--font-bold);
+  margin-bottom: 4px;
+  width: 100%;
+  user-select: none;
+  position: relative;
+}
+
+.artistWrapper {
+  color: var(--neutral-light-4);
+  font-size: var(--font-m);
+  font-weight: var(--font-demi-bold);
+  display: flex;
+  user-select: none;
+  position: relative;
+}
+
+.artistWrapper :global(.artistPopover) {
+  display: inline;
+}
+
+.artistWrapper .artist {
+  display: inline;
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-demi-bold);
+  line-height: 18px;
+  min-height: 18px;
+  padding-left: 4px;
+}
+
+.artistWrapper .artist:hover {
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.verified {
+  height: 12px;
+  width: 12px;
+  margin-left: 8px;
+}
+
+.buttonSection {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+}
+
+
+.infoLabelsSection {
+  margin-top: 24px;
+  line-height: 10px;
+  user-select: none;
+}
+.infoLabelsSection .infoLabelPlacement {
+  display: inline-block;
+  padding-right: 24px;
+}
+.infoLabelsSection .infoDuration {
+  padding-right: 24px;
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-s);
+}
+
+.description {
+  user-select: none;
+  min-height: 22px;
+  white-space: pre-line;
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  line-height: 18px;
+  margin-top: 14px;
+  margin-bottom: 6px;
+}
+
+.description a {
+  color: var(--primary);
+}
+
+
+/* Filter Input */
+.inputWrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.inputWrapper :global(.ant-input-affix-wrapper) {
+  position: absolute;
+  right: 0px;
+  width: 120px;
+  user-select: none;
+}
+.inputWrapper :global(.ant-input-affix-wrapper .ant-input) {
+  border-radius: 4px;
+  border: 1px solid var(--neutral-light-8) !important;
+  box-shadow: none !important;
+  background-color: var(--neutral-light-10);
+  transition: width 0.2s ease-in-out, background 0.04s ease-in-out;
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  height: 24px;
+}
+.inputWrapper :global(.ant-input-prefix)>svg {
+  width: 12px;
+  height: 12px;
+}
+.inputWrapper :global(.ant-input-prefix)>svg g path {
+  fill: var(--neutral-light-4);
+}
+
+.buttonSpacing {
+  margin-right: 16px;
+}
+
+.buttonFormatting {
+  padding: 0 16px;
+}
+
+.buttonFormatting .buttonTextFormatting {
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.5px;
+}
+
+.hide {
+  opacity: 0;
+}
+
+.show {
+  opacity: 1;
+  transition: opacity ease-in-out 0.5s;
+}
+
+.skeleton {
+  position: absolute;
+  top: 0;
+}
+
+.statsWrapper {
+  font-size: var(--font-s);
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+}
+
+.statsRow {
+  min-height: 26px;
+}
+
+.imageIcon {
+  opacity: 0.3;
+  mix-blend-mode: overlay;
+}
+
+.spinner {
+  display: block;
+  height: 16px;
+  width: 16px;
+}
+
+.spinner :global(.ant-spin-dot) {
+  height: 16px;
+  width: 16px;
+}
+
+.spinner :global(.ant-spin-dot i) {
+  background-color: var(--static-white);
+}

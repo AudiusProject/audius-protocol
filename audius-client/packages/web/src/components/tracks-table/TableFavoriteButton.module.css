@@ -1,0 +1,7 @@
+.tableFavoriteButton.notFavorited {
+  opacity: 0.0
+}
+
+:global(.ant-table-tbody > tr:hover:not(.ant-table-expanded-row)) .tableFavoriteButton {
+  opacity: 1.0;
+}

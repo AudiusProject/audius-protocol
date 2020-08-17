@@ -1,0 +1,155 @@
+.container {
+  position: fixed;
+  z-index: 10000;
+  height: 100vh;
+  width: 100vw; 
+  top: 0;
+  left: 0;
+  opacity: 1;
+  transition: all 0.15s ease-in-out;
+}
+
+.container.hide {
+  opacity: 0;
+  z-index: -5;
+}
+
+.backgroundContainer {
+  position: absolute;
+  z-index: 1000;
+  height: calc(100vh + 30px);
+  width: calc(100vw + 30px);
+  margin: -10px;
+  filter: blur(5px);
+  background-size: 1000px;
+  background-position: 50% 5%;
+}
+
+.background {
+  height: 100%; 
+  width: 100%;
+  background-color: rgba(126,27,204,0.5);
+}
+
+.content {
+  position: absolute;
+  z-index: 2000;
+  height: 100vh;
+  width: 100vw; 
+  padding: 24px 24px 54px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.iconContainer {
+  width: 100%;
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.iconClose {
+  width: 32px;
+  height: 32px;
+}
+
+.iconClose path {
+  fill: var(--static-white);
+}
+
+.centerLogo {
+  flex: 0 1 133px;
+  margin: 0px auto;
+}
+
+.horizontalLogo {
+  width: 182px;
+  margin: 0px auto;
+  filter: brightness(0) invert(1);
+}
+
+.startListeningButtonContainer {
+  flex: 0 1 143px;
+}
+
+.startListeningButton {
+  border-radius: 9px;
+  background-color: var(--static-primary);
+  box-shadow: 0 5px 20px 0 rgba(25,0,96,0.5);
+  padding: 16px 40px;
+  color: var(--static-white);
+  font-family: Gilroy;
+  font-size: var(--font-2xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.3px;
+  line-height: 29px;
+  text-align: center;
+}
+
+.dappLinksContainer {
+  flex: 0 1 173px;
+}
+
+.dappLinks {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-bottom: 48px;
+  height: 125px;
+}
+
+.dappLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dappLinkIcon {
+  height: 20px;
+  width: 20px;
+}
+
+.dappLinkIcon path {
+  fill: var(--static-white);
+}
+
+.dappLinkText {
+  margin-left: 16px;
+  color: var(--static-white);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.3px;
+}
+
+.linksContainer {
+  flex: 1;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.link {
+  font-size: var(--font-m);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.2px;
+  line-height: 19px;
+  text-align: center;
+  color: var(--static-white);
+  font-family: Gilroy;
+}
+
+.iconsContainer {
+  margin-top: 48px;
+  width: 100%;
+  display: flex;
+  justify-content: space-around
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+}
+
+.icon path {
+  fill: var(--static-white);
+}

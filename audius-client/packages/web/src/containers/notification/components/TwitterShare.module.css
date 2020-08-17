@@ -1,0 +1,23 @@
+.twitterContainer {
+  height: 32px;
+  min-width: 180px;
+  border-radius: 4px;
+  background-color: var(--static-twitter-blue);
+  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+
+  color: var(--static-white);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  line-height: 18px;
+  margin-top: 12px;
+}
+
+.iconTwitterBird {
+  margin-right: 8px;
+}
+
+.iconTwitterBird path {
+  fill: var(--static-white);
+}

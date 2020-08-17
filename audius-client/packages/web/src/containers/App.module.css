@@ -1,0 +1,66 @@
+body {
+  background: var(--background);
+  backface-visibility: hidden;
+  /** Turn off user select so the web app behaves more like "an app" */
+  user-select: none;
+}
+
+.bannerMargin {
+  margin-top: 40px;
+}
+
+.modalRoot {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.app {
+  --nav-width: 240px;
+  --nav-width-minus-border: 239px;
+  --mobile-min-width: 280px;
+  position: relative;
+}
+
+.mobileApp {
+  min-width: var(--mobile-min-width);
+}
+
+.notificationWrapper {
+  position: absolute;
+  left: 256px;
+  top: 56px;
+  z-index: 5;
+}
+
+.draggableArea {
+  position: absolute;
+  top: 0;
+  left: var(--nav-width);
+  right: 0;
+  height: 88px;
+  background: rgba(0,0,0,0);
+  opacity: 0;
+  -webkit-app-region: drag;
+}
+
+.mainContentWrapper {
+  margin-left: var(--nav-width);
+  margin-bottom: 88px;
+  width: 100%;
+  text-align: center;
+  /* Show scrollbar always so the page doesn't jump around. */
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+.mainContentWrapperMobile {
+  min-height: 100vh;
+  position: relative;
+  margin-left: 0px;
+  overflow-y: visible;
+  overflow-x: visible;
+  margin-top: 40px;
+  margin-top: calc(env(safe-area-inset-top, 0px) + 40px);
+  margin-bottom: 0;
+}

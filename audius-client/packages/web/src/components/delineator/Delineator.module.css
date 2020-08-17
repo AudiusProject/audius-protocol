@@ -1,0 +1,74 @@
+.delineator {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  margin-top: 4px;
+  margin-bottom: 16px;
+  padding: 0px 12px;
+}
+
+.delineator.padTop {
+  padding-top: 8px;
+}
+
+.delineator.isMobile {
+  margin: 12px;
+  width: inherit;
+}
+
+.delineator.left {
+  padding: 0px;
+}
+
+.line {
+  height: 2px;
+  flex-grow: 1;
+  background-color: var(--neutral-light-7);
+}
+
+.box {
+  border-radius: 4px;
+  background-color: var(--neutral-light-6);
+  display: flex;
+  align-items: center;
+  height: 16px;
+  padding: 0px 6px;
+}
+
+.large .box {
+  height: 24px;
+}
+
+.caret {
+  transform: rotate(90deg);
+  width: 10px;
+  height: 10px;
+}
+
+.caret g path {
+  fill: var(--white);
+}
+
+.text {
+  color: var(--white);
+  font-size: var(--font-2xs);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.63px;
+  text-transform: uppercase;
+  padding: 0px 8px;
+}
+
+.large .text {
+  font-size: var(--font-l);
+  letter-spacing: 1.13px;
+}
+
+/** TODO: Figure out why Avenir when all caps causes line-height v-align issues */
+@-moz-document url-prefix() {
+  .large .text {
+    line-height: 20px;
+    height: 18px;
+  }
+}

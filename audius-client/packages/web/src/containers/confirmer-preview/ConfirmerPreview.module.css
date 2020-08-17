@@ -1,0 +1,39 @@
+.container {
+  position: absolute;
+  bottom: 100px;
+  right: 30px;
+  min-height: 100px;
+  width: 200px;
+  border-radius: 20px;
+  box-shadow: 0 0 ;
+  background-color: var(--white);
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+}
+
+.title {
+  font-size: 20;
+  font-weight: bold;
+  width: 100%;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.inProgressTitle {
+  font-size: 14px;
+  margin-top: 12px;
+  font-weight: bold;
+}
+
+.entity {
+  margin: 6px 0px;
+}
+
+.entityName {
+  font-size: 12px;
+}
+
+.inProgress {
+  font-size: 10px;
+}

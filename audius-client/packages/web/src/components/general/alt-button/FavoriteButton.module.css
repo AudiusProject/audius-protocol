@@ -1,0 +1,42 @@
+@keyframes scaleX {
+    0% {
+        transform: scale(1, 1);
+    }
+
+    40% {
+        transform: scale(1.2, 1);
+    }
+
+    80% {
+        transform: scale(1, 1.05);
+    }
+
+}
+
+@keyframes scaleY {
+    0%, 100% {
+        transform: scale(1, 1);
+    }
+
+    30% {
+        transform: scale(1, 1.25);
+    }
+    70% {
+        transform: scale(1, 1.05);
+    }
+}
+
+.scaleXHolder {
+    animation: scaleX 0.5s ease-out 1;
+}
+
+.scaleYHolder {
+    animation: scaleY 0.3s ease-out 1;
+}
+
+.heart {
+    height: 22px;
+    width: 22px;
+    background-size: cover;
+    cursor: pointer;
+}

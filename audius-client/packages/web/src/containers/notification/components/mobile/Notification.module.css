@@ -1,0 +1,153 @@
+.container {
+  position: relative;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--notification-border);
+  border-radius: 4px;
+  background-color: var(--notification-background);
+  padding: 16px;
+  transition: all 0.12s ease-in-out;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transform: scale3d(1,1,1);
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.container.unRead {
+  border: 1px solid var(--notification-unread-border);
+  background-color: var(--notification-unread-background);
+}
+
+.container:active {
+  border-color: var(--notification-border-active);
+  background-color: var(--notification-background-active);
+  transform: scale3d(1,1,1);
+}
+
+.unRead.container:active {
+  border-color: var(--notification-unread-border-active);
+  background-color: var(--notification-unread-background-active);
+}
+
+
+.unReadDot {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  height: 8px;
+  width: 8px;
+  border-radius: 8px;
+  background-color: var(--secondary);
+  opacity: 0;
+  transition: all 0.12s ease-in-out
+}
+
+.unRead .unReadDot {
+  opacity: 1;
+}
+
+.headerText {
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  display: inline-block;
+}
+
+.headerLink,
+.headerLink:active,
+.headerLink :global(.artistPopover) a {
+  color: var(--secondary);
+  font-size: var(--font-xs);
+  font-weight: var(--font-demi-bold);
+  line-height: 21px;
+  cursor: pointer;
+}
+
+.container .headerLink :global(.artistPopover) {
+  height: auto;
+  display: inline-flex;
+}
+
+.headerContainer {
+  position: relative;
+  width: 100%;
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.bodyContainer {
+  position: relative;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+}
+
+.userImage {
+  height: 32px;
+  width: 32px;
+}
+
+.singleUserImage {
+  flex: 0 0 24px;
+  margin-right: 4px;
+}
+
+.body {
+  position: relative;
+  padding-right: 28px;
+  flex: 1;
+  text-align: left;
+}
+
+.timeLabel {
+  margin-top: 12px;
+  line-height: 8px;
+  color: var(--neutral-light-4);
+  font-size: var(--font-2xs);
+  font-weight: var(--font-demi-bold);
+  text-align: left;
+}
+
+.container :global(.artistPopover) {
+  height: 32px;
+}
+
+.iconKebabHorizontal {
+  height: 20px;
+  width: 20px;
+  transition: all .07s ease-in-out !important;
+}
+
+.iconKebabHorizontal:active {
+  transform: scale(0.95);
+}
+
+.iconKebabHorizontal path {
+  fill: var(--static-neutral-light-6);
+}
+
+.iconKebabHorizontal:active path,
+:global(.ant-tooltip-open) .iconKebabHorizontal path {
+  fill: var(--neutral-light-2);
+}
+
+.iconContainer {
+  padding: 0px 10px;
+}
+
+.menu {
+  height: 32px;
+  width: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu svg path {
+  fill: var(--neutral-light-6);
+}

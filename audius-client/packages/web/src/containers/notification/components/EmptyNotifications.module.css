@@ -1,0 +1,23 @@
+.emptyContainer {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top: 68px;
+  padding-bottom: 61px;
+  user-select: none;
+}
+
+.emptyContainer .icon {
+  margin-bottom: 14px;
+  height: 35px;
+  width: 35px; 
+}
+
+.emptyMessage {
+  color: var(--neutral-light-4);
+  font-family: var(--font-family);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  line-height: 20px;
+}

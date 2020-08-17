@@ -1,0 +1,41 @@
+.wrapper {
+  position: relative;
+}
+
+.dropzone {
+  height: 100%;
+  text-align: center;
+}
+
+.invalidFileType {
+  position: absolute;
+  right: 0;
+  left: 0;
+  margin: 4px auto;
+}
+
+.button {
+  height: 40px !important;
+  box-sizing: content-box;
+  border-radius: 6px;
+  opacity: 1;
+  transition: all 0.07s ease-in-out;
+}
+
+.hide {
+  opacity: 0;
+  cursor: default;
+  pointer-events: none;
+}
+
+.popup {
+  position: absolute;
+  top: 100%;
+  left: calc(-180px + 50%);
+}
+
+.wrapper:hover .noPopup.hide {
+  opacity: 1;
+  cursor: pointer;
+  pointer-events: all;
+}

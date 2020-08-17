@@ -1,0 +1,46 @@
+.editPlaylistPage {
+  margin-bottom: 80px;
+}
+
+.artwork {
+  margin-top: 24px;
+  margin-bottom: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.imageWrapper {
+  width: 216px;
+  height: 216px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.random {
+  display: flex;
+  align-items: center;
+  transition: opacity 0.17s ease-in-out;
+}
+
+.random:active {
+  transition: none;
+  opacity: 0.75;
+}
+
+.iconCamera {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+.iconCamera path {
+  fill: var(--secondary);
+}
+
+.text {
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  color: var(--secondary);
+}

@@ -1,0 +1,108 @@
+.container {
+  flex: 1 1 352px;
+  border: 1px solid var(--neutral-light-8);
+  background-color: var(--white);
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2), 0 2px 5px -2px var(--tile-shadow-3);
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  width: calc(100vw - 24px);
+  max-width: 400px;
+  transition: all 0.2 ease-in-out;
+  user-select: none;
+  position: relative;
+}
+
+.top {
+  width: 100%;
+  display: inline-flex;
+}
+
+/* Left Container (Img & Time) */
+.leftContainer {
+  display: inline-flex;
+  height: 100%;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.loadingArtImageSkeleton {
+  padding: 12px 0px 0px 12px;
+  flex: 0 0 74px;
+}
+
+
+.loadingArtImageSkeleton span {
+  border-radius: 4px !important;
+  height: 74px !important;
+  width: 74px !important;
+  border: 1px solid var(--neutral-light-8);
+}
+
+.skeletonText :global(.ant-skeleton-paragraph) li {
+  border-radius: 4px !important;
+	border: 1px solid var(--neutral-light-8);
+}
+
+.trackInfo {
+  flex: 1;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 26px;
+  padding-right: 8px;
+}
+
+.trackTitle {
+  margin-bottom: 8px;
+  width: 150px;
+}
+
+.trackDetails {
+  padding-bottom: 10px;
+  width: 115px;
+}
+
+.artistName {
+  margin-bottom: 32px;  
+  width: 115px;
+}
+
+.duration {
+  width: 34px;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.trackTime {
+  margin: 5px 12px;
+  width: 34px;
+}
+
+.trackDetails li {
+  float: right;
+  width: 100% !important;
+}
+
+.trackTitle li {
+  width: 100% !important;
+}
+
+.artistName li {
+  width: 100% !important;
+}
+
+.duration li {
+  width: 100% !important;
+}
+
+.trackTime li {
+  width: 100% !important;
+}
+
+.bottom {
+  margin: 0px 12px;
+  border-top: 1px solid var(--neutral-light-8);
+  height: 38px;
+}

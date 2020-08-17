@@ -1,0 +1,48 @@
+.achievementTileContainer {
+  height: 88px;
+  width: 240px;
+  margin-left: 16px;
+  border-radius: 6px;
+  background-color: var(--white);
+  box-shadow: var(--table-shadow) 0px 16px 20px 0px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.achievementDescription {
+  display: flex;
+  flex-direction: column;
+}
+.achievementMetric {
+  display: flex;
+  align-items: flex-start;
+  color: var(--secondary);
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+.achievementValue {
+  font-size: 32px;
+}
+
+.achievementValueLabel {
+  font-size: 16px;
+}
+
+.achievementLabel {
+  font-size: 10px;
+  letter-spacing: 0.83px;
+  font-weight: bold;
+  color: var(--neutral-light-4);
+  text-transform: uppercase;
+}
+
+.achievementTrophy {
+  height: 37px;
+  width: 44px;
+  margin-right: 20px;
+}
+
+.achievementTrophy g path {
+  fill: var(--secondary);
+}

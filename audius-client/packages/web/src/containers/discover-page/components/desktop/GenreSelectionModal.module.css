@@ -1,0 +1,19 @@
+.modalBody {
+  overflow: hidden;
+  height: 650px;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.simpleBar {
+  flex: 1;
+  min-height: 0px;
+}
+
+.simpleBar :global(.simplebar-scrollbar) {
+  width: 6px;
+  right: 4px;
+  border-radius: 4px;
+  opacity: 0.5;
+}

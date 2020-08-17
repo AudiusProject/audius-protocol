@@ -1,0 +1,205 @@
+.container {
+  flex-shrink: 0;
+  margin: 44px 0px;
+  flex-shrink: 0;
+  overflow: hidden;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.content {
+  max-width: 1110px;
+  position: relative;
+}
+
+.foreground {
+  position: relative;
+  z-index: 5;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.productShot {
+  user-select: none;
+  width: 100%;
+  max-width: 807px;
+}
+
+.title {
+  position: relative;
+  display: inline-flex;
+  overflow: hidden;
+  color: #A3A1B2;
+  font-family: Gilroy !important;
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 78px;
+  text-align: center;
+}
+
+.coloredTitle {
+  position: relative;
+  display: inline-flex;
+  overflow: hidden;
+
+  font-family: Gilroy !important;
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 78px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.coloredTitleWord {
+  background: linear-gradient(to right, #30CFD0 0%, #330867 100%);
+  background: linear-gradient(315deg, #5B23E1 0%, #A22FEB 100%);
+  margin-bottom: 16px;
+}
+
+.subText {
+  color: #C2C0CC;
+  font-family: Gilroy !important;
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 34px;
+  text-align: center;
+
+  width: 100%;
+  max-width: 1110px;
+}
+
+.descriptionBody {
+  overflow: hidden;
+}
+
+.description {
+  margin-bottom: 16px;
+}
+
+.dotsLogo {
+  user-select: none;
+  width: 382px;
+  position: absolute;
+  top: 230px; 
+  right: -118px;
+  z-index: 0
+}
+
+.textAnimate {
+  margin-right: 18px;
+  overflow: hidden;
+  display: inline-flex;
+}
+
+.gradient1 {
+  background: linear-gradient(315deg, #8A2BE8 0%, #A22FEB 100%);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+}
+
+.gradient2 {
+  background: linear-gradient(315deg, #832AE7 0%, #882AE8 100%);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+}
+
+.gradient3 {
+  background: linear-gradient(315deg, #7127E4 0%, #812AE7 100%);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+}
+
+.gradient4 {
+  background: linear-gradient(315deg, #6C25E3 0%, #6E26E3 100%);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+}
+
+.gradient5 {
+  background: linear-gradient(315deg, #5B23E1 0%, #6926E3 100%);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+}
+
+/* Mobile Styles */
+
+.mobileContainer {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 20px 0px 96px;
+  overflow: hidden;
+}
+
+.mobileContainer .dotsLogo {
+  width: 440px;
+  position: absolute;
+  z-index: 0;
+  top: 130px;
+  left: -100%;
+  right: -100%;
+  margin: 0px auto;
+}
+
+.mobileContainer .textSection {
+  position: relative;
+  z-index: 10;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mobileContainer .title {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  color: #A3A1B2;
+  font-family: Gilroy;
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 64px;
+  text-align: center;
+  max-width: 350px;
+  margin: -12px auto 0px;
+}
+
+.mobileContainer .titleColor {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-family: Gilroy;
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 64px;
+  text-align: center;
+  max-width: 350px;
+
+  background: linear-gradient(315deg, #5B23E1 0%, #A22FEB 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 40px;
+}
+
+.mobileContainer .coloredTitleWord {
+  margin-bottom: 0px;
+}
+
+.mobileContainer .textDescription {
+  width: 100%;
+  color: #C2C0CC;
+  font-family: Gilroy;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 23px;
+  text-align: center;
+  padding: 0px 6px;
+}
+
+.mobileContainer .textDescription p {
+  margin-bottom: 16px;
+}

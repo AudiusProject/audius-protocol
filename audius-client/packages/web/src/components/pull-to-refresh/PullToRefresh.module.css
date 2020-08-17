@@ -1,0 +1,33 @@
+.wrapper {
+  position: relative;
+  transition: transform 0.5s ease-in-out;
+}
+
+.wrapper.addPadding {
+  transform: translate3d(0, 50px, 0);
+}
+
+.pullToRefresh {
+  position: absolute;
+  top: -62px;
+  height: 76px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 8;
+}
+
+.pullToRefresh.noPad {
+  top: 6px;
+}
+
+.pullToRefresh.light path {
+  stroke: var(--static-white);
+}
+
+.icon {
+  height: 24px;
+  width: 24px;
+}

@@ -1,0 +1,232 @@
+.collectionHeader {
+  padding: 16px 35px 0px;
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--white);
+}
+
+.typeLabel {
+  margin-bottom: 15px;
+  height: 18px;
+  color: var(--neutral-light-4);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.coverArt {
+  box-sizing: border-box;
+  height: 195px;
+  width: 195px;
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 23px;
+  background-size: cover;
+  background-position: 50%;
+  background-repeat: no-repeat;
+}
+
+.imageIcon {
+  opacity: 0.3;
+  mix-blend-mode: overlay;
+}
+
+.title {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  line-height: 25px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.artist {
+  color: var(--secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-l);
+  font-weight: var(--font-medium);
+  line-height: 16px;
+  text-align: center;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.artist h2 {
+  display: inline;
+  color: var(--secondary);
+}
+
+.verified {
+  height: 16px;
+  width: 16px;
+  margin-left: 8px;
+}
+
+/* Button Section */
+.buttonSection {
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+
+.playAllButton {
+  width: 100%;
+  height: 40px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.playAllButton .playAllButtonText {
+  color: var(--static-white);
+  font-size: var(--font-xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.71px;
+  line-height: normal;
+  text-align: center;
+}
+
+.buttonContainer {
+  flex: 1;
+  width: 100%;
+}
+
+.smallerButtons {
+  width: calc(100% + 8px);
+  display: inline-flex;
+  margin: 0px -4px;
+}
+
+.smallerButton {
+  flex: 1 0 0;
+  padding: 0px;
+  display: flex;
+  justify-content: center;
+  margin: 0px 4px;
+}
+
+.shareButton {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Info Label Section */
+.infoFact {
+  padding-right: 12px;
+  margin-top: 14px;
+}
+
+.infoFact:last-child  {
+  padding-right: 0px;
+}
+
+.infoLabelsSection {
+  display: inline-flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin-bottom: 16px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.infoDuration {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  height: 14px;
+}
+
+.modifiedContainer {
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.infoModifed {
+  height: 14px;
+  width: 76px;
+  color: var(--neutral-light-5);
+  font-family: "Avenir Next LT Pro";
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 0.35px;
+  line-height: 14px;
+  margin-right: 2px;
+  text-transform: uppercase;
+}
+
+.collectionHeader > span {
+  width: 100%;
+}
+
+.description {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  white-space: pre-line;
+  line-height: 26px;
+  text-align: left;
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.description > a {
+  color: var(--primary);
+}
+
+/* Loading */
+
+.loadingSkeleton, .loadingSkeleton :global(.ant-skeleton-content) {
+  padding: 0 !important;
+}
+.loadingSkeleton :global(.ant-skeleton-paragraph) li {
+  border-radius: 4px;
+}
+
+.loadingSkeleton.loadingArtwork :global(.ant-skeleton-paragraph) li {
+  height: 195px !important;
+  width: 195px !important;
+}
+
+.loadingSkeleton.loadingTitle :global(.ant-skeleton-paragraph) li {
+  height: 24px;
+  width: 160px !important;
+}
+.loadingSkeleton.loadingName :global(.ant-skeleton-paragraph) li {
+  height: 24px;
+  width: 120px !important;
+}
+
+.loadingInfoSection {
+  width: 100%;
+}
+
+.loadingDescription {
+  margin-top: 8px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.loadingSkeleton.loadingInfoSection :global(.ant-skeleton-paragraph) li {
+  height: 24px;
+  width: 100% !important;
+}
+
+.loadingSkeleton.loadingDescription :global(.ant-skeleton-paragraph) li {
+  height: 24px;
+  width: 100% !important;
+}

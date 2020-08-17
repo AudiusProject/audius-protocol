@@ -1,0 +1,82 @@
+.searchBarResultContainer {
+  width: 100%;
+  position: relative;
+  display: inline-flex;
+}
+
+.imageContainer {
+  margin-right: 8px;
+  width: 33px;
+  height: 33px;
+  display: block;
+}
+
+.image {
+  width: 33px;
+  height: 33px;
+  display: block;
+  border-radius: 2px;
+  border: 1px solid var(--neutral-light-8);
+  transition: border 0.18 ease-in-out;
+}
+
+.userImage {
+  border-radius: 50%;
+}
+
+.emptyUserImage {
+  background-color: var(--default-profile-picture-background);
+}
+
+.textContainer {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.primaryContainer {
+  display: inline-flex;
+  align-items: center;
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  line-height: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.primaryText {
+  display: inline-block;
+  max-width: 194px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.secondaryContainer {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-2xs);
+  font-weight: var(--font-medium);
+  line-height: 8px;
+  margin-top: 4px;
+}
+
+.primaryContainer .verified {
+  height: 10px;
+  width: 10px;
+  margin-left: 6px;
+}
+
+.secondaryContainer .verified {
+  height: 8px;
+  width: 8px;
+  margin-left: 4px;
+}
+
+.searchBarResultContainer:hover .verified path,
+.searchBarResultContainer:active .verified path {
+  fill: var(--white);
+}

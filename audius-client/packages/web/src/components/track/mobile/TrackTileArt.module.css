@@ -1,0 +1,9 @@
+.container {
+  flex: 0 0 74px;
+  height: 74px;
+}
+
+.imageWrapper {
+  border-radius: 4px;
+  overflow: hidden;
+}

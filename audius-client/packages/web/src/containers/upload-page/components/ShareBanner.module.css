@@ -1,0 +1,127 @@
+.container {
+  height: 100%;
+  width: 100%;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  transition: all ease-in-out 0.2s;
+  max-height: 0px;
+  margin-bottom: 0px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.container.fullHeight {
+  max-height: 304px;
+  margin-bottom: 52px;
+  opacity: 1;
+}
+
+.title {
+  color: var(--static-white);
+  font-size: var(--font-3xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0;
+  line-height: 34px;
+  text-align: center;
+  margin-bottom: 18px;
+  margin-top: 40px;
+}
+
+.description {
+  color: var(--static-white);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-bold);
+  text-align: center;
+  margin: 0px 16px 32px;
+}
+
+.button {
+  margin: auto;
+  margin-bottom: 24px;
+  height: 64px !important;
+  min-height: 64px;
+  width: 400px !important;
+  transition: all .14s ease-in-out !important;
+}
+
+.button svg {
+  height: 32px !important;
+  width: 32px !important;
+}
+
+.button svg path {
+  fill: var(--static-twitter-blue) !important;
+}
+
+
+.button .buttonText {
+  color: var(--static-twitter-blue);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0;
+  line-height: 14px;
+  text-align: center;
+}
+
+.copyLinkWrapper {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  margin-bottom: 48px;
+}
+
+.copyLinkContainer {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  transition: all ease-in-out .07s;
+  transform: scale3d(1, 1, 1);
+  backface-visibility: hidden;
+  cursor: pointer;
+}
+
+.copyLinkContainer:hover{
+  text-decoration: underline;
+  text-decoration-color: var(--static-white);
+  transform: scale3d(1.02, 1.02, 1.02);
+}
+
+.copyLinkContainer:active {
+  transform: scale3d(0.99, 0.99, 0.99);
+}
+
+.shareIcon {
+  margin-right: 8px;
+  height: 28px;
+  width: 28px;
+}
+
+.shareIcon g path {
+  fill: var(--static-white);
+}
+
+
+.copyText {
+  color: var(--static-white);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  letter-spacing: 0;
+  line-height: 20px;
+  text-align: center;
+}
+
+.toast {
+  top: 16px !important;
+  left: 240px !important;
+  right: 0px !important;
+  display: flex;
+  justify-content: center;
+  padding: 0px;
+}

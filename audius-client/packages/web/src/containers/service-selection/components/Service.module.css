@@ -1,0 +1,112 @@
+.service {
+  padding: 12px 16px;
+
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.39px;
+  background-color: var(--white);
+
+  /* Make it so the borders overlap */
+  border: 1px solid var(--neutral-light-7);
+  margin: -1px;
+}
+
+.service .empty {
+  color: var(--accent-red);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.39px;
+  text-align: center;
+}
+
+.service .syncing {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+.service .syncing path {
+  stroke: var(--neutral-light-2);
+}
+
+.service > .wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.service > .wrapper > .country {
+  padding-top: 2px;
+  font-size: var(--font-l);
+  margin-right: 4px;
+}
+
+.service > .wrapper > .divider {
+  margin-right: 4px;
+}
+
+.service > .wrapper > .button {
+  margin-right: 16px;
+  cursor: pointer;
+}
+
+.service > .wrapper > .button:hover svg {
+  transform: scale(1.04);
+}
+
+.service > .wrapper > .button:hover .add circle {
+  fill: var(--accent-green-dark-1);
+}
+
+.service > .wrapper > .button:hover .remove circle {
+  fill: var(--accent-red-dark-1);
+}
+
+.service > .wrapper > .button:active svg {
+  transform: scale(0.97);
+}
+
+.service > .wrapper > .button svg {
+  width: 18px;
+  height: 18px;
+  transition: all 0.07s ease-in-out;
+}
+
+.service > .wrapper > .button.disabled {
+  cursor: default;
+}
+
+.service > .wrapper > .button.disabled:hover svg {
+  transform: none;
+}
+
+.service > .wrapper > .button.disabled:active svg {
+  transform: none;
+}
+
+.service > .wrapper > .button.disabled circle {
+  fill: var(--neutral-light-7);
+}
+
+.service > .wrapper > .button.disabled:hover circle {
+  fill: var(--neutral-light-7);
+}
+
+.service > .wrapper > .drag path {
+  fill: var(--neutral-light-6);
+  transition: all 0.07s ease-in-out;
+}
+
+.service > .wrapper > .drag:hover path {
+  fill: var(--neutral);
+}
+
+.service > .wrapper > .drag:active path {
+  fill: var(--neutral);
+
+}
+
+.service > .wrapper > .drag {
+  margin: -8px -8px -8px auto;
+  padding: 8px;
+}

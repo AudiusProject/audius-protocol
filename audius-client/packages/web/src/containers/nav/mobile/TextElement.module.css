@@ -1,0 +1,25 @@
+.textElement {
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  letter-spacing: 0.05px;
+  color: var(--neutral-light-6);
+  padding: 0px 10px;
+  opacity: 1;
+  transition: opacity 0.17s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.textElement.isEnabled.primary {
+  color: var(--primary);
+}
+
+.textElement.isEnabled.secondary {
+  color: var(--secondary);
+}
+
+.textElement.isEnabled:active {
+  opacity: 0.8;
+  transition: none;
+}

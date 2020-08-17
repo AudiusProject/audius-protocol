@@ -1,0 +1,72 @@
+.bodyClassName {
+  max-width: 404px;
+  background-color: var(--neutral-light-10);
+  box-shadow: 0 16px 20px -5px var(--search-bar-shadow);
+}
+
+.container {
+  padding: 17px 32px 19px;
+}
+
+.header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 2px;
+}
+
+.divider {
+  border-bottom: 1px solid var(--neutral-light-6);
+  margin: 16px 0px;
+}
+
+.iconRemove {
+  position: absolute;
+  left: 0;
+  cursor: pointer;
+}
+
+.iconRemove path {
+  fill: var(--neutral-light-4);
+}
+
+.title {
+  color: var(--neutral-light-4);
+  font-size: var(--font-l);
+  font-weight: var(--font-heavy);
+  letter-spacing: 0.5px;
+  line-height: 23px;
+  text-align: center;
+}
+
+.toggleContainer {
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  line-height: 20px;
+}
+
+.toggleContainer:not(:first-child) {
+  margin-top: 16px;
+}
+
+.toggleContainer.isDisabled {
+  color: var(--neutral);
+  opacity: 0.5;
+}
+
+.email {
+  margin-bottom: 12px;
+}
+
+.permissionDeniedText {
+  margin-top: 8px;
+  color: var(--static-accent-red);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  line-height: 18px;
+}

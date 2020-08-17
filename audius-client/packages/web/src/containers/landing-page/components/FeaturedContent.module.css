@@ -1,0 +1,262 @@
+.container {
+  flex-shrink: 0;
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  padding: 94px 0px 114px;
+  overflow: hidden;
+}
+
+.content {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  max-width: 1144px;
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.animateTitleContainer {
+  overflow: hidden;
+  margin-bottom: 58px;
+}
+
+.header {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.title {
+  color: #480B79;
+  font-family: Gilroy !important;
+  font-size: 42px;
+  font-weight: bold;
+  line-height: 56px;
+  text-align: center;
+}
+
+.subTitle {
+  max-width: 608px;
+  color: #C2C0CC;
+  font-family: Gilroy !important;
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 31px;
+  text-align: center;
+}
+
+.tracksContainer {
+  flex: 1;
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease-in-out;
+}
+
+.trackMoveContainer {
+  user-select: none;
+  flex: 1 0 293px;
+}
+
+.trackContainer {
+  user-select: none;
+  cursor: pointer;
+  height: 293px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.track {
+  overflow: hidden;
+  height: 266px;
+  width: 266px;
+  margin: 0px auto;
+  border-radius: 16px;
+  transition: all 0.3s ease-in-out;
+  background-size: cover;
+}
+
+.track:hover {
+  transform: scale3d(1.10, 1.10, 1.10);
+}
+
+.track:active {
+  transform: scale3d(0.99, 0.99, 0.99);
+}
+
+.trackContent {
+  width: 100%;
+  height: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 19px;
+  transition: all 0.3s ease-in-out;
+  background: rgba(0,0,0,0);
+}
+
+.trackContent:hover,
+.trackContent:active {
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%);
+}
+
+.track .trackTitle {
+  opacity: 0;
+  color: #FFFFFF;
+  font-family: "Avenir Next LT Pro";
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 23px;
+  text-align: center;
+  margin-bottom: 4px;
+  transition: all 0.07s ease-in-out;
+}
+
+.track .trackArtist {
+  opacity: 0;
+  color: rgba(255,255,255, 1);
+  font-family: "Avenir Next LT Pro";
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 23px;
+  text-align: center;
+  margin-bottom: 19px;
+  transition: all 0.07s ease-in-out;
+}
+
+.track .listenOnAudius {
+  opacity: 0;
+  width: 154px;
+  transition: all 0.07s ease-in-out;
+}
+
+.track:hover .trackTitle {
+  opacity: 1;
+}
+
+.track:hover .trackArtist {
+  opacity: 1;
+}
+
+.track:hover .listenOnAudius {
+  opacity: 1;
+}
+
+.lines {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  width: 120%;
+  height: auto;
+  top: 50%;
+  z-index: 0;
+}
+
+/* Mobile */
+
+.mobileContainer {
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 116px 26px 56px;
+  position: relative;
+  height: auto;
+  overflow: hidden;
+}
+
+.mobileContainer .title {
+  color: #480B79;
+  font-family: Gilroy;
+  font-size: 32px;
+  font-weight: bold;
+  line-height: 56px;
+  text-align: center;
+}
+.mobileContainer .subTitle {
+  max-width: 300px;
+  color: #C2C0CC;
+  font-family: Gilroy;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 23px;
+  text-align: center;
+}
+
+.mobileContainer .tracksContainer {
+  width: 100%;
+  position: relative;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-around;
+  margin-top: 38px;
+}
+
+.mobileContainer .trackContainer {
+  max-width: 152px;
+  height: auto;
+  display: inline-flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.mobileContainer .trackImage {
+	height: 152px;
+  width: 152px;
+	border-radius: 8px;
+  margin-bottom: 8px;
+  background-size: cover;
+  background-position: center;
+}
+
+.mobileContainer .trackTitle {
+  position: relative;
+  color: #858199;
+  font-family: "Avenir Next LT Pro";
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  text-align: center;
+  margin: 0px auto 2px;
+  padding-left: 16px;
+}
+
+.mobileContainer .mobileIconArrow {
+  height: 12px;
+  width: 12px;
+  margin-left: 4px;
+}
+
+.mobileContainer .mobileIconArrow path {
+  fill: #858199;
+}
+
+.mobileContainer .trackArtist {
+  color: #858199;
+  font-family: "Avenir Next LT Pro";
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  text-align: center;
+  margin: 0px auto;
+}
+
+.mobileContainer .lines {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  width: 500%;
+  height: auto;
+  top: 65%;
+  z-index: 0;
+}

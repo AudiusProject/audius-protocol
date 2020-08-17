@@ -1,0 +1,45 @@
+.socialLinkInput {
+  position: relative;
+}
+
+.icon {
+  position: absolute;
+  top: 3px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  z-index: 2;
+}
+
+.icon g path,
+.icon path {
+  fill: var(--accent-purple);
+}
+
+.at {
+  position: absolute;
+  left: 34px;
+  z-index: 2;
+  top: 12px;
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  opacity: 0;
+  transition: all 0s;
+}
+
+.focused .at,
+.hasValue .at {
+  opacity: 1;
+  transition: all 0.07s ease-in-out;
+}
+
+.input input {
+  font-size: var(--font-xs) !important;
+  padding-left: 32px;
+}
+
+.focused .input.handle input,
+.hasValue .input.handle input {
+  padding-left: 44px;
+}

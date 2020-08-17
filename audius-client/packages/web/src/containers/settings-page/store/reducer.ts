@@ -1,0 +1,157 @@
+import {
+  ToggleNotificationSetting,
+  TOGGLE_NOTIFICATION_SETTING,
+  UPDATE_EMAIL_FREQUENCY,
+  SET_NOTIFICATION_SETTINGS,
+  SettingActions,
+  SET_PUSH_NOTIFICATION_SETTINGS,
+  TOGGLE_PUSH_NOTIFICATION_SETTING,
+  TogglePushNotificationSetting,
+  UPDATE_CAST_METHOD,
+  SET_BROWSER_NOTIFICATION_PERMISSION,
+  SET_BROWSER_NOTIFICATION_ENABLED
+} from './actions'
+import { ActionsMap } from 'utils/reducer'
+import SettingsPageState, {
+  BrowserNotificationSetting,
+  emailFrequency,
+  EmailFrequency,
+  PushNotificationSetting,
+  Cast
+} from './types'
+import { getIsIOS } from 'utils/browser'
+
+export const CAST_METHOD = 'CAST_METHOD'
+const getCastMethod = () => {
+  if (!getIsIOS()) return Cast.CHROMECAST
+  try {
+    const castMethod = window.localStorage.getItem(CAST_METHOD)
+    if (castMethod === Cast.CHROMECAST) return Cast.CHROMECAST
+  } catch (err) {}
+  return Cast.AIRPLAY
+}
+
+export const initialState = {
+  browserNotifications: {
+    [BrowserNotificationSetting.Permission]: null,
+    [BrowserNotificationSetting.BrowserPush]: false,
+    [BrowserNotificationSetting.MilestonesAndAchievements]: true,
+    [BrowserNotificationSetting.Followers]: true,
+    [BrowserNotificationSetting.Reposts]: true,
+    [BrowserNotificationSetting.Favorites]: true,
+    [BrowserNotificationSetting.Remixes]: true
+  },
+  pushNotifications: {
+    [PushNotificationSetting.MobilePush]: true,
+    [PushNotificationSetting.MilestonesAndAchievements]: true,
+    [PushNotificationSetting.Followers]: true,
+    [PushNotificationSetting.Reposts]: true,
+    [PushNotificationSetting.Remixes]: true,
+    [PushNotificationSetting.Favorites]: true
+  },
+  [emailFrequency]: EmailFrequency.Daily,
+  castMethod: getCastMethod()
+}
+
+const actionsMap: ActionsMap<SettingsPageState> = {
+  [SET_NOTIFICATION_SETTINGS](state, action) {
+    if (!action.settings) return state
+    return {
+      ...state,
+      browserNotifications: {
+        ...state.browserNotifications,
+        [BrowserNotificationSetting.MilestonesAndAchievements]:
+          action.settings.milestonesAndAchievements,
+        [BrowserNotificationSetting.Followers]: action.settings.followers,
+        [BrowserNotificationSetting.Reposts]: action.settings.reposts,
+        [BrowserNotificationSetting.Favorites]: action.settings.favorites,
+        [BrowserNotificationSetting.Remixes]: action.settings.remixes
+      }
+    }
+  },
+  [SET_PUSH_NOTIFICATION_SETTINGS](state, action) {
+    if (!action.settings) return state
+    return {
+      ...state,
+      pushNotifications: {
+        ...state.pushNotifications,
+        [PushNotificationSetting.MobilePush]: action.settings.mobilePush,
+        [PushNotificationSetting.MilestonesAndAchievements]:
+          action.settings.milestonesAndAchievements,
+        [PushNotificationSetting.Followers]: action.settings.followers,
+        [PushNotificationSetting.Reposts]: action.settings.reposts,
+        [PushNotificationSetting.Remixes]: action.settings.remixes,
+        [PushNotificationSetting.Favorites]: action.settings.favorites
+      }
+    }
+  },
+  [SET_BROWSER_NOTIFICATION_PERMISSION](state, action) {
+    return {
+      ...state,
+      browserNotifications: {
+        ...state.browserNotifications,
+        [BrowserNotificationSetting.Permission]: action.permission
+      }
+    }
+  },
+  [SET_BROWSER_NOTIFICATION_ENABLED](state, action) {
+    return {
+      ...state,
+      browserNotifications: {
+        ...state.browserNotifications,
+        [BrowserNotificationSetting.BrowserPush]: action.enabled
+      }
+    }
+  },
+  [TOGGLE_NOTIFICATION_SETTING](
+    state: SettingsPageState,
+    action: ToggleNotificationSetting
+  ) {
+    // If the browser push notifications are turned off, don't allow toggle other settings
+    if (!state.browserNotifications[BrowserNotificationSetting.BrowserPush])
+      return state
+    return {
+      ...state,
+      browserNotifications: {
+        ...state.browserNotifications,
+        [action.notificationType]:
+          typeof action.isOn === 'boolean'
+            ? action.isOn
+            : !state.browserNotifications[action.notificationType]
+      }
+    }
+  },
+  [TOGGLE_PUSH_NOTIFICATION_SETTING](
+    state: SettingsPageState,
+    action: TogglePushNotificationSetting
+  ) {
+    return {
+      ...state,
+      pushNotifications: {
+        ...state.pushNotifications,
+        [action.notificationType]:
+          typeof action.isOn === 'boolean'
+            ? action.isOn
+            : !state.pushNotifications[action.notificationType]
+      }
+    }
+  },
+  [UPDATE_EMAIL_FREQUENCY](state, action) {
+    return {
+      ...state,
+      [emailFrequency]: action.frequency
+    }
+  },
+  [UPDATE_CAST_METHOD](state, action) {
+    return {
+      ...state,
+      castMethod: action.cast
+    }
+  }
+}
+
+export default function search(state = initialState, action: SettingActions) {
+  const matchingReduceFunction = actionsMap[action.type]
+  if (!matchingReduceFunction) return state
+  return matchingReduceFunction(state, action)
+}

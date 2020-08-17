@@ -1,0 +1,21 @@
+.modalTitle {
+  font-weight: var(--font-heavy);
+  letter-spacing: .5px;
+  color: var(--neutral-light-4);
+  font-size: var(--font-l);
+}
+
+.scrollable {
+  min-height: 0;
+  max-height: 690px;
+  height: 100%;
+  overflow-y: auto;
+  padding: 0 18px;
+  overflow-x: hidden;
+}
+
+.scrollable :global(.simplebar-scrollbar) {
+  width: 6px;
+  border-radius: 4px;
+  opacity: 0.5;
+}

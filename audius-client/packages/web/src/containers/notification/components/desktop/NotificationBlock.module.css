@@ -1,0 +1,142 @@
+.container {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--notification-border);
+  border-radius: 4px;
+  background-color: var(--notification-background);
+  padding: 16px;
+  transition: all 0.12s ease-in-out;
+  margin-bottom: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.container.unRead {
+  border: 1px solid var(--notification-unread-border);
+  background-color: var(--notification-unread-background);
+}
+
+.container:hover {
+  background-color: var(--notification-background-hover);
+  border-color: var(--notification-border-hover);
+  transform: scale3d(1.015,1.015,1.015);
+  box-shadow: var(--notification-background-box-shadow);
+}
+
+.unRead.container:hover {
+  background-color: var(--notification-unread-background-hover);
+  box-shadow: var(--notification-unread-background-box-shadow);
+}
+
+.container:active {
+  border-color: var(--notification-border-active);
+  background-color: var(--notification-background-active);
+  transform: scale3d(1,1,1);
+}
+
+.unRead.container:active {
+  border-color: var(--notification-unread-border-active);
+  background-color: var(--notification-unread-background-active);
+}
+
+
+.unReadDot {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  height: 8px;
+  width: 8px;
+  border-radius: 8px;
+  background-color: var(--secondary);
+  opacity: 0;
+  transition: all 0.12s ease-in-out
+}
+
+.unRead .unReadDot {
+  opacity: 1;
+}
+
+.headerContainer {
+  position: relative;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-right: 28px;
+}
+
+.bodyContainer {
+  position: relative;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+}
+
+.userImage {
+  height: 32px;
+  width: 32px;
+}
+
+.singleUserImage {
+  flex: 0 0 32px;
+  height: 32px;
+  margin-right: 12px;
+}
+
+.body {
+  position: relative;
+  padding-right: 28px;
+}
+
+.timeLabel {
+  margin-top: 12px;
+  line-height: 10px;
+  color: var(--neutral-light-4);
+  font-size: var(--font-xs);
+  font-weight: var(--font-demi-bold);
+}
+
+.container :global(.artistPopover) {
+  display: inline-block
+}
+
+.iconKebabHorizontal {
+  height: 20px;
+  width: 20px;
+  transition: all .07s ease-in-out !important;
+}
+
+.iconKebabHorizontal:hover {
+  transform: scale3d(1.10,1.10,1.10);
+}
+
+.iconKebabHorizontal:active {
+  transform: scale(0.95);
+}
+
+.iconKebabHorizontal path {
+  fill: var(--static-neutral-light-6);
+}
+
+.iconKebabHorizontal:hover path,
+.iconKebabHorizontal:active path,
+:global(.ant-tooltip-open) .iconKebabHorizontal path {
+  fill: var(--neutral-light-2);
+}
+
+.menuContainer {
+  position: absolute;
+  right: -10px;
+}
+
+.menuContainer {
+  position: absolute;
+  right: -10px;
+}
+
+.iconContainer {
+  padding: 0px 10px;
+}

@@ -1,0 +1,38 @@
+.filterContainer :global(.ant-input-affix-wrapper) {
+  z-index: 1;
+  width: 152px;
+  height: 28px;
+  position: relative;
+}
+
+.filterContainer :global(.ant-input-affix-wrapper .ant-input) {
+  border-radius: 6px;
+  border: 1px solid var(--neutral-light-6);
+  background-color: var(--neutral-light-9);
+  transition: width 0.2s ease-in-out, background 0.04s ease-in-out;
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+
+  padding-top: 1px;
+  padding-bottom: 1px;
+  height: 24px;
+}
+
+.filterContainer :global(.ant-input-affix-wrapper .ant-input):hover {
+  border: 1px solid var(--neutral-light-4);
+  box-shadow:none;
+}
+
+.filterContainer :global(.ant-input-affix-wrapper .ant-input):focus {
+  border: 1px solid var(--neutral-light-6);
+  box-shadow:none;
+}
+
+.filterContainer :global(.ant-input-prefix)>svg {
+  width: 12px;
+  height: 12px;
+}
+.filterContainer :global(.ant-input-prefix)>svg g path {
+  fill: var(--neutral-light-4);
+}

@@ -1,0 +1,294 @@
+.modalContainer {
+  width: 360px;
+  border-radius: 8px;
+  background-color: var(--white);
+  box-shadow: 0 16px 20px -5px var(--notification-panel-box-shadow);
+  padding: 0px !important;
+}
+
+.modalContainer :global(.ant-modal-body) {
+  padding: 0px;
+}
+
+.modalContainer :global(.ant-modal-content) {
+  background-color: transparent;
+  border-radius: 8px;
+}
+
+.panelContainer {
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  border-radius: 8px;
+  background-color: var(--white);
+  padding: 0px;
+}
+
+.header {
+  height: 40px;
+  width: 100%;
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--secondary);
+  border-bottom: 2px solid var(--secondary-dark-2);
+  border-radius: 8px 8px 0px 0px;
+  padding: 12px 16px 8px 21px;
+}
+
+.title {
+  user-select: none;
+  color: var(--static-white);
+  font-family: var(--font-family);
+  font-size: var(--font-m);
+  line-height: 12px;
+  font-weight: var(--font-bold);
+  letter-spacing: 0.29px;
+  padding: 2px 0px 6px;
+}
+
+.markAllRead {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: var(--static-neutral-light-10);
+  color: var(--secondary);
+  font-size: var(--font-xs);
+  line-height: 12px;
+  font-weight: var(--font-demi-bold);
+  letter-spacing: 0.21px;
+  opacity: 1;
+  transform: scale3d(1,1,1);
+  transition: all .07s ease-in-out !important;
+}
+
+.markAllRead:hover {
+  opacity: 0.8;
+  transform: scale3d(1.02,1.02,1.02);
+}
+
+.markAllRead:active {
+  opacity: 1;
+  transform: scale3d(1,1,1);
+}
+
+.content {
+  padding: 14px 15px;
+}
+
+.scrollContent {
+  overflow-y: scroll;
+  max-height: calc(100vh - 333px);
+  background: var(--white);
+  border-radius: 0px 0px 8px 8px;
+}
+
+.scrollContent::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+ * The simplebar doesn't do calculations correctly because it races
+ * with the modal opening
+ */
+.scrollContent :global(.simplebar-offset) {
+  right: -20px !important;
+}
+
+.scrollContent :global(.simplebar-content-wrapper) {
+  padding-right: 20px !important;
+}
+
+.scrollContent :global(.simplebar-scrollbar) {
+  width: 6px;
+  border-radius: 4px;
+  opacity: 0.5;
+}
+
+.scrollContent :global(.simplebar-scrollbar:before) {
+  width: 6px;
+}
+
+/* Notification Tile */
+.notification {
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  border: 1px solid var(--notification-border);
+  background-color: var(--notification-background);
+}
+
+.notification.read {
+  border: 1px solid var(--neutral-light-8);
+  background-color: var(--white);
+}
+
+.notification.shortDescription {
+  cursor: default;
+}
+
+.notification .header {
+  user-select: none;
+  display: inline-flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 16px 16px 12px;
+}
+
+.notification .headerDivider {
+  width: 312px;
+  border-bottom: 1px solid var(--neutral-light-8);
+  margin-left: 16px;
+}
+
+.notification .icon {
+  height: 24px;
+  width: 24px;
+  margin-right: 17px;
+  display: flex;
+  align-items: center;
+}
+
+.notification .headerTextContainer {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.notification.read .headerTextContainer {
+  color: var(--neutral);
+}
+
+.notification .headerText {
+  font-family: var(--font-family);
+  font-size: var(--font-m);
+  font-weight: var(--font-bold);
+}
+
+.notification .date {
+  font-family: var(--font-family);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+}
+
+.notification .body {
+  padding: 12px 16px 16px;
+}
+
+.notification .message {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  line-height: 18px;
+}
+
+.notification.read .message {
+  color: var(--neutral);
+}
+
+.notification .readMore {
+  margin-top: 12px;
+
+  user-select: none;
+  color: var(--secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  line-height: 21px;
+  cursor: pointer;
+}
+
+.notification .readMore:hover {
+  text-decoration: underline;
+}
+
+
+/* Notification Markdown */
+
+
+.notification .body {
+  user-select: none;
+  color: var(--secondary-light-2);
+  font-family: var(--font-family);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  line-height: 19px;
+}
+
+.notification .body h1, 
+.notification .body h2,
+.notification .body h3,
+.notification .body h4,
+.notification .body h5,
+.notification .body h6 { 
+  margin-bottom: 12px;
+  font-weight: var(--font-bold);
+}
+
+.notification .body h1 { 
+  font-size: var(--font-2xl);
+}
+.notification .body h2 { 
+  font-size: var(--font-xl);
+}
+.notification .body h3 { 
+  font-size: var(--font-l);
+}
+.notification .body h4 { 
+  font-size: var(--font-m);
+}
+.notification .body h5 { 
+  font-size: var(--font-s);
+}
+.notification .body h6 { 
+  font-size: var(--font-xs);
+}
+.notification .body p {}
+
+.notification .body strong {
+  font-weight: var(--font-bold);
+}
+
+.notification .body em {
+  font-style: italic;
+}
+
+.notification .body ul {
+  margin: 0;
+}
+.notification .body ul {
+  list-style-type: none;
+}
+.notification .body ul > li {}
+.notification .body ul > li:before {
+  content: "-";
+  margin-right: 4px;
+}
+
+.notLoaded {
+  padding: 32px;
+}
+
+.spinnerContainer > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding-top: 2px;
+}
+
+.spinnerContainer svg {
+  max-height: 32px;
+  max-width: 32px;
+}
+
+.spinnerContainer g path {
+  stroke: var(--neutral-light-5) !important;
+  stroke-width: 3px;
+}

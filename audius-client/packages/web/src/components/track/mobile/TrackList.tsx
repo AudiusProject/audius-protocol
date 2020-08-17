@@ -1,0 +1,184 @@
+import React, { memo, useCallback } from 'react'
+import cn from 'classnames'
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
+
+import { ID } from 'models/common/Identifiers'
+import { CoverArtSizes } from 'models/common/ImageSizes'
+import styles from './TrackList.module.css'
+import TrackListItem from './ConnectedTrackListItem'
+import { TrackItemAction } from './TrackListItem'
+import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
+
+type TrackListProps = {
+  containerClassName?: string
+  itemClassName?: string
+  tracks: Array<{
+    isLoading: boolean
+    isSaved?: boolean
+    isReposted?: boolean
+    isActive?: boolean
+    isPlaying?: boolean
+    artistHandle: string
+    artistName: string
+    trackTitle: string
+    trackId: ID
+    uid?: string
+    coverArtSizes?: CoverArtSizes
+    isDeleted: boolean
+  }>
+  showTopDivider?: boolean
+  showDivider?: boolean
+  noDividerMargin?: boolean
+  showBorder?: boolean
+  onSave?: (isSaved: boolean, trackId: ID) => void
+  togglePlay?: (uid: string, trackId: ID) => void
+  trackItemAction?: TrackItemAction
+  isReorderable?: boolean
+  onReorder?: (index1: number, index2: number) => void
+}
+
+const TrackList = ({
+  containerClassName = '',
+  itemClassName,
+  tracks,
+  onSave,
+  showTopDivider,
+  showDivider,
+  noDividerMargin,
+  showBorder,
+  togglePlay,
+  trackItemAction,
+  isReorderable = false,
+  onReorder = () => {}
+}: TrackListProps) => {
+  const onDragEnd = useCallback(
+    (result: any) => {
+      const { source, destination } = result
+
+      if (!source || !destination) return
+      if (
+        destination.droppableId === source.droppableId &&
+        destination.index === source.index
+      )
+        return
+      onReorder(source.index, destination.index)
+    },
+    [onReorder]
+  )
+  const onDragStart = () => {
+    const message = new HapticFeedbackMessage()
+    message.send()
+  }
+  const onDragUpdate = () => {
+    const message = new HapticFeedbackMessage()
+    message.send()
+  }
+
+  // The dividers above and belove the active track should be hidden
+  const activeIndex = tracks.findIndex(track => track.isActive)
+  const hideDivider = (idx: number) =>
+    activeIndex >= 0 && (activeIndex === idx || activeIndex === idx - 1)
+
+  const renderedTracks = tracks.map((track, idx) => {
+    const listItem = (isDragging?: boolean) => (
+      <div key={track.uid}>
+        {showDivider && (showTopDivider || idx > 0) ? (
+          <div
+            className={cn(styles.divider, {
+              [styles.hideDivider]: hideDivider(idx),
+              [styles.noMargin]: noDividerMargin
+            })}
+          ></div>
+        ) : null}
+        <TrackListItem
+          trackId={track.trackId}
+          className={itemClassName}
+          isLoading={track.isLoading}
+          isSaved={track.isSaved}
+          isReposted={track.isReposted}
+          isActive={track.isActive}
+          isPlaying={track.isPlaying}
+          artistHandle={track.artistHandle}
+          artistName={track.artistName}
+          trackTitle={track.trackTitle}
+          coverArtSizes={track.coverArtSizes}
+          uid={track.uid}
+          isDeleted={track.isDeleted}
+          onSave={onSave}
+          togglePlay={togglePlay}
+          trackItemAction={trackItemAction}
+          isReorderable={isReorderable}
+          isDragging={isDragging}
+        />
+      </div>
+    )
+    return isReorderable ? (
+      <Draggable
+        key={track.trackId}
+        draggableId={`${track.trackId}`}
+        index={idx}
+      >
+        {(provided: any, snapshot: any) => {
+          const updatedStyles = provided.draggableProps.style.transform
+            ? {
+                transform: `translate3d(0, ${provided.draggableProps.style.transform.substring(
+                  provided.draggableProps.style.transform.indexOf(',') + 1,
+                  provided.draggableProps.style.transform.indexOf(')')
+                )}, 0)`
+              }
+            : {}
+          return (
+            <div
+              ref={provided.innerRef}
+              {...provided.draggableProps}
+              {...provided.dragHandleProps}
+              style={{
+                ...provided.draggableProps.style,
+                ...provided.dragHandleProps.style,
+                ...updatedStyles
+              }}
+            >
+              {listItem(snapshot.isDragging)}
+            </div>
+          )
+        }}
+      </Draggable>
+    ) : (
+      listItem()
+    )
+  })
+
+  return (
+    <div
+      className={cn(styles.trackListContainer, containerClassName, {
+        [styles.border]: showBorder
+      })}
+    >
+      {isReorderable ? (
+        <DragDropContext
+          onDragEnd={onDragEnd}
+          onDragStart={onDragStart}
+          onDragUpdate={onDragUpdate}
+        >
+          <Droppable droppableId='track-list-droppable' type='TRACK'>
+            {(provided: any, snapshot: any) => (
+              <div ref={provided.innerRef} {...provided.droppableProps}>
+                {renderedTracks}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      ) : (
+        renderedTracks
+      )}
+    </div>
+  )
+}
+
+TrackList.defaultProps = {
+  hasTopDivider: false,
+  showDivider: true,
+  showBorder: false
+}
+
+export default memo(TrackList)

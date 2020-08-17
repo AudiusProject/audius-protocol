@@ -1,0 +1,48 @@
+.content {
+  position: relative;
+}
+
+.check {
+  position: absolute;
+}
+
+.check.tiny {
+  bottom: 2px;
+  right: -2px;
+}
+
+.check.small {
+  bottom: -4px;
+  right: -5px;
+}
+
+.check.medium {
+  bottom: -3px;
+  right: -3px;
+}
+
+.check.large {
+  bottom: -8px;
+  right: -8px;
+}
+
+.check.xlarge {
+  bottom: -7px;
+  right: -7px;
+}
+
+.children {
+  width: 100%;
+  height: 100%;
+}
+
+.tooltip {
+  --tooltip-background-color: var(--white);
+}
+
+.tooltip :global(.ant-tooltip-inner) {
+  padding: 8px 16px;
+  overflow: hidden;
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 12px;
+}

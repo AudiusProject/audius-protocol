@@ -1,0 +1,82 @@
+.volumeBarWrapper {
+  display: flex;
+  align-items: center;
+}
+
+.volumeBar {
+  margin-left: 8px;
+  width: 68px;
+}
+
+.volumeIcon {
+  width: 16px;
+  height: 16px;
+  transition: all .17s ease-in-out;
+  cursor: pointer;
+}
+
+.volumeIcon path {
+  fill: var(--neutral);
+}
+
+.volumeIcon:hover {
+  transform: scale(1.1);
+}
+.volumeIcon:active {
+  transform: scale(0.9);
+}
+
+.volumeBar :global(.ant-slider) {
+  padding: 0;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.volumeBar :global(.ant-slider-rail),
+.volumeBar :global(.ant-slider:hover .ant-slider-rail) {
+  border-radius: 4px;
+  height: 9px;
+  width: 100%;
+  background-color: rgba(143,149,152,0.1);
+}
+
+.volumeBar :global(.ant-slider-track) {
+  border-radius: 4px 0 0 4px;
+}
+
+.volumeBar :global(.ant-slider-track),
+.volumeBar :global(.ant-slider:hover .ant-slider-track) {
+  height: 9px;
+  background-color: var(--neutral);
+  transition: opacity .3s ease;
+}
+
+.volumeBar :global(.ant-slider-track:before) {
+  position: absolute;
+  background: var(--primary-gradient);
+  content: "";
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border-radius: 4px 0 0 4px;
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+
+.volumeBar :global(.ant-slider-track.borderRadius:before) {
+  border-radius: 4px;
+}
+.volumeBar :global(.ant-slider-track.borderRadius) {
+  border-radius: 4px;
+}
+
+.volumeBar :global(.ant-slider:hover .ant-slider-track:before) {
+  opacity: 1;
+}
+
+.volumeBar :global(.ant-slider-handle),
+.volumeBar :global(.ant-slider:hover .ant-slider-handle:not(.ant-tooltip-open)),
+.volumeBar :global(.ant-slider-handle:focus) {
+  display: none;
+}

@@ -1,0 +1,47 @@
+.navButton {
+  height: 36px;
+  padding: 0 20px;
+}
+
+.navButton > .navButtonText {
+  font-size: var(--font-xs);
+  font-weight: var(--font-demi-bold);
+  letter-spacing: 0px;
+}
+
+.createAccount > .navButtonText {
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  letter-spacing: 0.5px;
+}
+
+.createAccount > .navButtonText {
+  margin-right: 8px !important;
+}
+
+.upload > .navButtonText {
+  color: var(--neutral-light-4);
+}
+
+.upload .navButtonIcon {
+  margin-right: 8px !important;
+}
+
+.upload > .navButtonIcon g path {
+  fill: var(--neutral-light-4);
+}
+
+.spinner {
+  display: block;
+  height: 16px;
+  width: 16px;
+}
+
+.spinner :global(.ant-spin-dot) {
+  height: 16px;
+  width: 16px;
+}
+
+.spinner :global(.ant-spin-dot i) {
+  background-color: var(--neutral-light-4);
+}

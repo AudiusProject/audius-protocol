@@ -1,0 +1,63 @@
+.actionButton {
+  width: 40px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  bottom: 1px;
+}
+
+.animatedActionButton svg,
+.actionButton svg {
+  height: 40px !important;
+  width: 40px !important;
+}
+
+.animatedActionButton svg path {
+  fill: var(--neutral-light-4);
+}
+
+.favoriteButton svg {
+  height: 30px !important;
+  width: 30px !important;
+}
+
+.actionButton path {
+  fill: var(--neutral-light-4);
+}
+
+.activeButton svg path {
+  fill: var(--primary);
+}
+
+.disabledButton path {
+  fill: var(--neutral-light-8) !important;
+}
+
+.spinner svg path {
+  stroke: var(--neutral-light-4);
+}
+
+.buttonsRow {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  border-bottom: 1px solid var(--neutral-light-7);
+  height: 60px;
+  padding: 12px 0px 8px;
+}
+
+.buttonsRow > div {
+  margin: 0px 12px;
+}
+
+.animatedIconWrapper {
+  width: 40px;
+  height: 100%;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

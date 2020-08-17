@@ -1,0 +1,66 @@
+.settingsPageContent {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+  width: 100%;
+}
+
+.headerContainer {
+  margin-bottom: 32px;
+}
+
+.settings {
+  display: flex;
+  flex-direction: column;
+}
+
+.signOutButton {
+  margin-bottom: 16px;
+  height: 48px;
+  flex: 0 0 48px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.signOutButton .signOutButtonText {
+  color: var(--neutral-light-4);
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-m);
+}
+
+.signOutButton .signOutButtonIcon path {
+  fill: var(--neutral-light-4);
+}
+
+.resetButton .resetButtonIcon path {
+  fill: var(--secondary);
+}
+
+.version {
+  width: 168px;
+  align-self: center;
+  flex: 0 1;
+  margin-top: 80px;
+  display: inline-flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: flex-end;
+  color: var(--neutral-light-5);
+  font-family: var(--font-family);
+  font-size: var(--font-xs);
+  text-align: center;
+}
+
+.version span {
+  line-height: 20px;
+}
+
+.downloadButton {
+  padding-left: 17px;
+  padding-right: 17px;
+}
+
+.selectedServices > * {
+  justify-content: center;
+}

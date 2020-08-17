@@ -1,0 +1,332 @@
+.container {
+  position: relative;
+  min-height: 152px;
+  flex: 1 1 352px;
+  border: 1px solid var(--neutral-light-8);
+  background-color: var(--white);
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2), 0 2px 5px -2px var(--tile-shadow-3);
+  display: flex;
+  overflow: hidden;
+  border-radius: 8px;
+  max-width: 400px;
+  cursor: pointer;
+  transition: all 0.2 ease-in-out;
+  user-select: none;
+  margin: 0px auto 12px;
+}
+
+.container:active {
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 2px 3px -2px var(--tile-shadow-3);
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.rightContent {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 53px;
+}
+
+.rightContent > *:last-child {
+  border-bottom: 0px;
+}
+
+.metadata {
+  position: relative;
+  display: flex;
+  flex: 1 1;
+}
+
+.topRight {
+  position: absolute;
+  right: 10px;
+  left: 0;
+  top: 10px;
+  text-align: right;
+  display: inline-flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  padding: 0px 10px;
+  transform: scale(1);
+  transition: transform 0.07s ease-in-out;
+}
+
+.statItem:active {
+  transform: scale(0.93);
+  color: var(--primary);
+}
+
+.statItem:active svg path {
+  fill: var(--primary);
+}
+
+.disabledStatItem {
+  opacity: 0.5;
+}
+
+.listenCount {
+  margin-left: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bottomButtons {
+  margin: 0px 10px;
+  border-top: 1px solid var(--neutral-light-8);
+  height: 38px;
+  display: flex;
+  align-items: center;
+}
+
+.bottomButtons div {
+  margin-right: 36px;
+}
+
+.bottomButtons div:last-child {
+  margin-left: auto;
+  margin-right: 0px;
+}
+
+.bottomButton svg {
+  height: 24px !important;
+  width: 24px !important;
+}
+
+.overflowButton {
+  position: relative;
+  top: -2px;
+}
+
+.titles {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  color: var(--neutral);
+  font-size: 16px;
+  text-align: left;
+
+  /* Text truncation*/
+  flex: 0 1 65%;
+  overflow:hidden;
+  margin-right: 12px;
+  margin-top: 10px;
+}
+
+.titles.titleFeatured {
+  padding-top: 4px;
+}
+
+.title path {
+  fill: var(--primary);
+}
+
+.title svg {
+  flex: 0 0 auto;
+}
+
+.titlesActive {
+  color: var(--primary);
+}
+
+.titles div {
+  overflow:hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.title {
+  margin-top: auto;
+  font-weight: var(--font-bold);
+  line-height: normal;
+  padding-right: 5px;
+  margin-bottom: 2px;
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  position: relative;
+}
+
+.title:active {
+  text-decoration: underline;
+}
+
+.title svg {
+  margin-left: 8px;
+}
+
+.artist {
+  margin-bottom: auto;
+  font-weight: 500;
+  line-height: normal;
+  padding-right: 5px;
+  max-width: 100%;
+  min-height: 20px;
+  flex-wrap: nowrap;
+  align-items: center;
+  position: relative;
+}
+
+.artist:active {
+  text-decoration: underline;
+}
+
+.userName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.skeleton {
+  position: absolute;
+  top: 0;
+}
+
+.coSignLabel {
+  position: absolute;
+  bottom: -3px;
+  left: 96px;
+  color: var(--primary);
+  font-size: var(--font-xs);
+  font-weight: var(--font-heavy);
+  letter-spacing: 1px;
+  line-height: 15px;
+  text-transform: uppercase;
+}
+
+.coSignText {
+  color: var(--neutral-light-4);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.2px;
+  line-height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-left: 10px;
+  margin-top: 8px;
+}
+
+.coSignText .name {
+  margin-right: 4px;
+}
+
+.coSignText .iconVerified {
+  height: 8px;
+  width: 8px;
+}
+
+.stats {
+  display: flex;
+  flex: 0 0 26px;
+  align-items: stretch;
+  padding: 2px 0px;
+  margin: 0px 10px 0px 0px;
+  height: 30px;
+}
+
+.statText {
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  line-height: 11px;
+  color: var(--neutral-light-4);
+}
+
+.stats svg {
+  width: 14px;
+  height: 14px;
+  position: relative;
+  bottom: 1px;
+  margin-left: 3px;
+}
+
+.stats path {
+  fill: var(--neutral-light-4);
+}
+
+.albumArt {
+  border-radius: 4px;
+  flex: 0 0 74px;
+  background-size: 100%;
+}
+
+.albumArtContainer {
+  margin: 10px 12px 0px 10px;
+}
+
+.activeButton path {
+  fill: var(--primary)
+}
+
+.heartIcon {
+  height: 22px;
+  width: 22px;
+}
+
+.iconVerified {
+  flex: 0 0 14px;
+  margin-left: 4px;
+  height: 10px;
+  width: 10px;
+}
+
+.iconVerified path {
+  fill: var(--primary);
+}
+
+.artistPick {
+  margin-right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  color: var(--neutral-light-4);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.2px;
+}
+
+.artistPick svg {
+  height: 16px;
+  width: 16px;
+  margin-right: 4px;
+}
+
+.artistPick svg path {
+  fill: var(--neutral-light-4);
+}
+
+.favoriteButton {
+    height: 14px;
+    width: 14px;
+    margin-left: 4px;
+}
+
+.repostButton {
+    height: 16px;
+    width: 16px;
+    margin-left: 4px;
+}
+
+.hide {
+  opacity: 0;
+}
+
+.show {
+  opacity: 1;
+  transition: opacity ease-in-out 0.5s;
+}

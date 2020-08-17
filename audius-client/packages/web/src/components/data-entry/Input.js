@@ -1,0 +1,169 @@
+/* globals Element */
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+import cn from 'classnames'
+
+import styles from './Input.module.css'
+
+class Input extends Component {
+  state = {
+    value: this.props.defaultValue,
+    focused: false,
+    warning: false
+  }
+
+  onFocus = () => {
+    this.setState({
+      focused: true
+    })
+    if (this.props.onFocus) this.props.onFocus(true)
+  }
+
+  onBlur = () => {
+    this.setState({
+      focused: false
+    })
+    if (this.props.onBlur) this.props.onBlur()
+  }
+
+  onChange = e => {
+    if (
+      this.props.characterLimit &&
+      e.target.value.length > this.props.characterLimit
+    )
+      return
+
+    if (!this.props.value) {
+      this.setState({
+        value: e.target.value,
+        warning:
+          !!this.props.characterLimit &&
+          e.target.value.length >= 0.9 * this.props.characterLimit
+      })
+    }
+    this.props.onChange(e.target.value)
+  }
+
+  onKeyDown = (...args) => {
+    if (this.props.onKeyDown) this.props.onKeyDown(...args)
+  }
+
+  render() {
+    const {
+      className,
+      name,
+      autoComplete,
+      characterLimit,
+      showCharacterLimit,
+      size,
+      variant,
+      disabled,
+      isRequired,
+      error,
+      type,
+      inputRef,
+      value: valueOverride
+    } = this.props
+    let { placeholder } = this.props
+
+    const { focused, warning } = this.state
+    let value = this.state.value
+    if (valueOverride !== null && valueOverride !== undefined)
+      value = valueOverride
+
+    const miniPlaceholder = focused || value !== ''
+    if (isRequired && !miniPlaceholder && placeholder)
+      placeholder = placeholder + ' *'
+
+    const style = {
+      [styles.large]: size === 'large',
+      [styles.medium]: size === 'medium',
+      [styles.small]: size === 'small',
+      [styles.warning]: (warning && focused) || this.props.warning,
+      [styles.elevatedPlaceholder]: variant === 'elevatedPlaceholder',
+      [styles.shaded]: variant === 'shaded',
+      [styles.focused]: focused,
+      [styles.disabled]: disabled,
+      [styles.error]: error,
+      [styles.data]: miniPlaceholder
+    }
+
+    const inputProps = {
+      onChange: this.onChange,
+      onFocus: this.onFocus,
+      onBlur: this.onBlur,
+      onKeyDown: this.onKeyDown,
+      type,
+      name,
+      autoComplete,
+      disabled: disabled,
+      value,
+      ref: inputRef
+    }
+
+    if (!focused && variant !== 'elevatedPlaceholder') {
+      inputProps.placeholder = placeholder
+    }
+
+    return (
+      <div className={cn(styles.input, style, className)}>
+        {variant === 'elevatedPlaceholder' ? (
+          <div
+            className={cn('placeholder', styles.placeholder, {
+              focus: focused || value !== ''
+            })}
+          >
+            {placeholder}
+          </div>
+        ) : null}
+        <input {...inputProps} />
+        {showCharacterLimit && (
+          <div className={styles.characterCount}>
+            {value.length}/{characterLimit}
+          </div>
+        )}
+      </div>
+    )
+  }
+}
+
+Input.propTypes = {
+  className: PropTypes.string,
+  placeholder: PropTypes.string,
+  defaultValue: PropTypes.string,
+  value: PropTypes.string,
+  name: PropTypes.string,
+  autoComplete: PropTypes.string,
+  characterLimit: PropTypes.number,
+  showCharacterLimit: PropTypes.bool,
+  size: PropTypes.oneOf(['large', 'medium', 'small']),
+  variant: PropTypes.oneOf(['normal', 'elevatedPlaceholder', 'shaded']),
+  type: PropTypes.string,
+  disabled: PropTypes.bool,
+  error: PropTypes.bool,
+  warning: PropTypes.bool,
+  onKeyDown: PropTypes.func,
+  isRequired: PropTypes.bool,
+  onChange: PropTypes.func,
+  onFocus: PropTypes.func,
+  onBlur: PropTypes.func,
+  inputRef: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.shape({ current: PropTypes.instanceOf(Element) })
+  ])
+}
+
+Input.defaultProps = {
+  type: 'text',
+  placeholder: 'Input',
+  defaultValue: '',
+  autoComplete: 'off',
+  size: 'medium',
+  variant: 'normal',
+  disabled: false,
+  error: false,
+  isRequired: false,
+  onChange: () => {}
+}
+
+export default Input

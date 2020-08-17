@@ -1,0 +1,85 @@
+.drawer {
+  position: fixed;
+  right: 0;
+  left: 0;
+  background: var(--white);
+  height: 100vh;
+  margin-bottom: 0px;
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+  padding-top: 0px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+
+  user-select: none;
+  touch-action: none;
+  border-radius: 40px 40px 0px 0px;
+  box-shadow: 0 16px 20px 15px var(--notification-panel-box-shadow);
+}
+
+/* Fixes positioning on ios Safari */
+@supports (-webkit-overflow-scrolling: touch) {
+  .drawer {
+    height: calc(100vh - 100px);
+  }
+}
+
+.drawer.native {
+  height: 100vh;
+}
+
+.playBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.header {
+  position: absolute;
+  margin-top: 8px;
+  left: 0;
+  right: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header path {
+  fill: var(--neutral-light-4);
+}
+
+.nowPlaying {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  /**
+   * Necessary to prevent this div from stretching over potentially unmarked safe areas
+   * as seen on android chrome where the "safe area" that includes the browser
+   * search bar is unmarked.
+   */
+  max-height: 100%;
+}
+
+.bottomBar {
+  width: 100%;
+  bottom: 0;
+  position: fixed;
+}
+
+.skirt {
+  position: absolute;
+  /* Need to provide a small overlap
+    between skirt and now playing,
+    otherwise we see a ~1px gap
+    between them when the drawer translates.
+    (Probably something to due with fractional
+    pixel translations/aliasing etc)
+  */
+  bottom: -799px;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  height: 800px;
+}

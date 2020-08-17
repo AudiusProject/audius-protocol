@@ -1,0 +1,71 @@
+.bottomButtons {
+  margin: 2px 12px;
+  border-top: 1px solid var(--neutral-light-8);
+  height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.bottomButtons > * {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0px 16px;
+}
+
+.bottomButtons button {
+  height: 32px;
+  width: 32px;
+}
+
+.bottomButtons > *:last-child {
+  margin-left: auto;
+  margin-right: 0px;
+}
+
+.bottomButtons > *:first-child {
+  margin-left: 0px;
+}
+
+.bottomButton svg {
+  height: 24px !important;
+  width: 24px !important;
+}
+
+.activeButton path {
+  fill: var(--primary) !important;
+}
+
+.disabledButton path {
+  fill: var(--neutral-light-8) !important;
+}
+
+.repostsButton svg {
+  height: 30px !important;
+  width: 30px !important;
+}
+
+.tinted path {
+  fill: var(--neutral-light-4);
+}
+
+.share {
+  position: relative;
+  top: -1px;
+  height: 32px;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.share svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.overflow {
+  height: 32px;
+  width: 32px;
+}
+

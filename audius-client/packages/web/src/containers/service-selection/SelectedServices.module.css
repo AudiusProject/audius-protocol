@@ -1,0 +1,55 @@
+.selectedServices {
+  color: var(--neutral-light-2);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+
+  display: flex;
+  align-items: center;
+
+  margin-top: 16px;
+  opacity: 0;
+  transition: all 1s ease-in-out;
+}
+
+.selectedServices.lighter {
+  color: var(--neutral-light-5);
+}
+
+.selectedServices.show {
+  opacity: 1;
+}
+
+.services {
+  margin-right: 8px;
+}
+
+.selection {
+  color: var(--neutral);
+  display: flex;
+  align-items: center;
+  text-decoration: underline;
+  transition: all .07s ease-in-out;
+  user-select: none;
+}
+
+.show .selection {
+  cursor: pointer;
+}
+
+.lighter .selection {
+  color: var(--neutral-light-2);
+}
+
+.selection:hover {
+  color: var(--neutral-dark-1);
+}
+
+.iconInfo {
+  height: 16px;
+  width: 16px;
+  margin-left: 8px;
+}
+
+.iconInfo g path {
+  fill: var(--neutral-light-4);
+}
