@@ -22,6 +22,12 @@ contract DelegateManager is InitializableV2 {
     string private constant ERROR_MINIMUM_DELEGATION = (
         "DelegateManager: Minimum delegation amount required"
     );
+    string private constant ERROR_ONLY_SP_GOVERNANCE = (
+        "DelegateManager: Only callable by target SP or governance"
+    );
+    string private constant ERROR_DELEGATOR_STAKE = (
+        "DelegateManager: Delegator must be staked for SP"
+    );
 
     address private governanceAddress;
     address private stakingAddress;
@@ -29,16 +35,32 @@ contract DelegateManager is InitializableV2 {
     address private claimsManagerAddress;
 
     /**
-     * Number of blocks an undelegate operation has to wait
-     * @notice must be >= Governance.votingPeriod
+     * Period in  blocks an undelegate operation is delayed.
+     * The undelegate operation speed bump is to prevent a delegator from
+     *      attempting to remove their delegation in anticipation of a slash.
+     * @notice Must be greater than governance votingPeriod + executionDelay
      */
     uint256 private undelegateLockupDuration;
 
-    // Maximum number of delegators a single account can handle
+    /// @notice Maximum number of delegators a single account can handle
     uint256 private maxDelegators;
 
-    // Minimum amount of delegation allowed
+    /// @notice Minimum amount of delegation allowed
     uint256 private minDelegationAmount;
+
+    /**
+     * Lockup duration for a remove delegator request.
+     * The remove delegator speed bump is to prevent a service provider from maliciously
+     *     removing a delegator prior to the evaluation of a proposal.
+     * @notice Must be greater than governance votingPeriod + executionDelay
+     */
+    uint256 private removeDelegatorLockupDuration;
+
+    /**
+     * Evaluation period for a remove delegator request
+     * @notice added to expiry block calculated for removeDelegatorLockupDuration
+     */
+    uint256 private removeDelegatorEvalDuration;
 
     // Staking contract ref
     ERC20Mintable private audiusToken;
@@ -67,28 +89,38 @@ contract DelegateManager is InitializableV2 {
     // Requester to pending undelegate request
     mapping (address => UndelegateStakeRequest) private undelegateRequests;
 
+    // Pending remove delegator requests
+    // service provider -> (delegator -> lockupExpiryBlock)
+    mapping (address => mapping (address => uint256)) private removeDelegatorRequests;
+
     event IncreaseDelegatedStake(
-      address _delegator,
-      address _serviceProvider,
-      uint256 _increaseAmount
+        address indexed _delegator,
+        address indexed _serviceProvider,
+        uint256 indexed _increaseAmount
     );
 
     event DecreaseDelegatedStake(
-      address _delegator,
-      address _serviceProvider,
-      uint256 _decreaseAmount
+        address indexed _delegator,
+        address indexed _serviceProvider,
+        uint256 indexed _decreaseAmount
     );
 
     event Claim(
-      address _claimer,
-      uint256 _rewards,
-      uint256 newTotal
+        address indexed _claimer,
+        uint256 indexed _rewards,
+        uint256 indexed _newTotal
     );
 
     event Slash(
-      address _target,
-      uint256 _amount,
-      uint256 _newTotal
+        address indexed _target,
+        uint256 indexed _amount,
+        uint256 indexed _newTotal
+    );
+
+    event DelegatorRemoved(
+        address indexed _serviceProvider,
+        address indexed _delegator,
+        uint256 indexed _unstakedAmount
     );
 
     event MaxDelegatorsUpdated(uint256 indexed _maxDelegators);
@@ -98,6 +130,8 @@ contract DelegateManager is InitializableV2 {
     event StakingAddressUpdated(address indexed _newStakingAddress);
     event ServiceProviderFactoryAddressUpdated(address indexed _newServiceProviderFactoryAddress);
     event ClaimsManagerAddressUpdated(address indexed _newClaimsManagerAddress);
+    event RemoveDelegatorLockupDurationUpdated(uint256 indexed _removeDelegatorLockupDuration);
+    event RemoveDelegatorEvalDurationUpdated(uint256 indexed _removeDelegatorEvalDuration);
 
     /**
      * @notice Function to initialize the contract
@@ -115,11 +149,18 @@ contract DelegateManager is InitializableV2 {
     {
         _updateGovernanceAddress(_governanceAddress);
         audiusToken = ERC20Mintable(_tokenAddress);
-        undelegateLockupDuration = _undelegateLockupDuration;
         maxDelegators = 175;
         // Default minimum delegation amount set to 100AUD
         minDelegationAmount = 100 * 10**uint256(18);
         InitializableV2.initialize();
+
+        _updateUndelegateLockupDuration(_undelegateLockupDuration);
+
+        // 1 week = 168hrs * 60 min/hr * 60 sec/min / ~13 sec/block = 46523 blocks
+        _updateRemoveDelegatorLockupDuration(46523);
+
+        // 24hr * 60min/hr * 60sec/min / ~13 sec/block = 6646 blocks
+        removeDelegatorEvalDuration = 6646;
     }
 
     /**
@@ -218,7 +259,7 @@ contract DelegateManager is InitializableV2 {
         address delegator = msg.sender;
         require(
             _delegatorExistsForSP(delegator, _target),
-            "DelegateManager: Delegator must be staked for SP"
+            ERROR_DELEGATOR_STAKE
         );
 
         // Confirm no pending delegation request
@@ -341,11 +382,6 @@ contract DelegateManager is InitializableV2 {
         );
         // Reset undelegate request
         _resetUndelegateStakeRequest(delegator);
-
-        // Validate balance
-        ServiceProviderFactory(
-            serviceProviderFactoryAddress
-        ).validateAccountStakeBalance(serviceProvider);
 
         emit DecreaseDelegatedStake(
             delegator,
@@ -514,7 +550,55 @@ contract DelegateManager is InitializableV2 {
     }
 
     /**
-     * @notice Allow a service provider to forcibly remove a delegator
+     * @notice Initiate forcible removal of a delegator
+     * @param _serviceProvider - address of service provider
+     * @param _delegator - address of delegator
+     */
+    function requestRemoveDelegator(address _serviceProvider, address _delegator) external {
+        _requireIsInitialized();
+
+        require(
+            msg.sender == _serviceProvider || msg.sender == governanceAddress,
+            ERROR_ONLY_SP_GOVERNANCE
+        );
+
+        require(
+            removeDelegatorRequests[_serviceProvider][_delegator] == 0,
+            "DelegateManager: Pending remove delegator request"
+        );
+
+        require(
+            _delegatorExistsForSP(_delegator, _serviceProvider),
+            ERROR_DELEGATOR_STAKE
+        );
+
+        // Update lockup
+        removeDelegatorRequests[_serviceProvider][_delegator] = (
+            block.number + removeDelegatorLockupDuration
+        );
+    }
+
+    /**
+     * @notice Cancel pending removeDelegator request
+     * @param _serviceProvider - address of service provider
+     * @param _delegator - address of delegator
+     */
+    function cancelRemoveDelegator(address _serviceProvider, address _delegator) external {
+        require(
+            msg.sender == _serviceProvider || msg.sender == governanceAddress,
+            ERROR_ONLY_SP_GOVERNANCE
+        );
+        require(
+            removeDelegatorRequests[_serviceProvider][_delegator] != 0,
+            "DelegateManager: No pending request"
+        );
+
+        // Reset lockup expiry
+        removeDelegatorRequests[_serviceProvider][_delegator] = 0;
+    }
+
+    /**
+     * @notice Evaluate removeDelegator request
      * @param _serviceProvider - address of service provider
      * @param _delegator - address of delegator
      * @return Updated total amount delegated to the service provider by delegator
@@ -525,8 +609,26 @@ contract DelegateManager is InitializableV2 {
 
         require(
             msg.sender == _serviceProvider || msg.sender == governanceAddress,
-            "DelegateManager: Only callable by target SP or governance"
+            ERROR_ONLY_SP_GOVERNANCE
         );
+
+        require(
+            removeDelegatorRequests[_serviceProvider][_delegator] != 0,
+            "DelegateManager: No pending request"
+        );
+
+        // Enforce lockup expiry block
+        require(
+            block.number >= removeDelegatorRequests[_serviceProvider][_delegator],
+            "DelegateManager: Lockup must be expired"
+        );
+
+        // Enforce evaluation window for request
+        require(
+            block.number < removeDelegatorRequests[_serviceProvider][_delegator] + removeDelegatorEvalDuration,
+            "DelegateManager: RemoveDelegator evaluation window expired"
+        );
+
         uint256 unstakeAmount = delegateInfo[_delegator][_serviceProvider];
         // Unstake on behalf of target service provider
         Staking(stakingAddress).undelegateStakeFor(
@@ -558,6 +660,10 @@ contract DelegateManager is InitializableV2 {
 
         // Remove from list of delegators
         _removeFromDelegatorsList(_serviceProvider, _delegator);
+
+        // Reset lockup expiry
+        removeDelegatorRequests[_serviceProvider][_delegator] = 0;
+        emit DelegatorRemoved(_serviceProvider, _delegator, unstakeAmount);
     }
 
     /**
@@ -569,7 +675,7 @@ contract DelegateManager is InitializableV2 {
 
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
 
-        undelegateLockupDuration = _duration;
+        _updateUndelegateLockupDuration(_duration);
         emit UndelegateLockupDurationUpdated(_duration);
     }
 
@@ -600,6 +706,32 @@ contract DelegateManager is InitializableV2 {
     }
 
     /**
+     * @notice Update remove delegator lockup duration
+     * @param _duration - new lockup duration
+     */
+    function updateRemoveDelegatorLockupDuration(uint256 _duration) external {
+        _requireIsInitialized();
+
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
+
+        _updateRemoveDelegatorLockupDuration(_duration);
+        emit RemoveDelegatorLockupDurationUpdated(_duration);
+    }
+
+    /**
+     * @notice Update remove delegator evaluation window duration
+     * @param _duration - new window duration
+     */
+    function updateRemoveDelegatorEvalDuration(uint256 _duration) external {
+        _requireIsInitialized();
+
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
+
+        removeDelegatorEvalDuration = _duration;
+        emit RemoveDelegatorEvalDurationUpdated(_duration);
+    }
+
+    /**
      * @notice Set the Governance address
      * @dev Only callable by Governance address
      * @param _governanceAddress - address for new Governance contract
@@ -608,6 +740,7 @@ contract DelegateManager is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
+
         _updateGovernanceAddress(_governanceAddress);
         governanceAddress = _governanceAddress;
         emit GovernanceAddressUpdated(_governanceAddress);
@@ -706,6 +839,22 @@ contract DelegateManager is InitializableV2 {
         return (req.serviceProvider, req.amount, req.lockupExpiryBlock);
     }
 
+    /**
+     * @notice Get status of pending remove delegator request for a given address
+     * @param _serviceProvider - address of the service provider
+     * @param _delegator - address of the delegator
+     * @return - current lockup expiry block for remove delegator request
+     */
+    function getPendingRemoveDelegatorRequest(
+        address _serviceProvider,
+        address _delegator
+    ) external view returns (uint256)
+    {
+        _requireIsInitialized();
+
+        return removeDelegatorRequests[_serviceProvider][_delegator];
+    }
+
     /// @notice Get current undelegate lockup duration
     function getUndelegateLockupDuration()
     external view returns (uint256)
@@ -731,6 +880,24 @@ contract DelegateManager is InitializableV2 {
         _requireIsInitialized();
 
         return minDelegationAmount;
+    }
+
+    /// @notice Get the duration for remove delegator request lockup
+    function getRemoveDelegatorLockupDuration()
+    external view returns (uint256)
+    {
+        _requireIsInitialized();
+
+        return removeDelegatorLockupDuration;
+    }
+
+    /// @notice Get the duration for evaluation of remove delegator operations
+    function getRemoveDelegatorEvalDuration()
+    external view returns (uint256)
+    {
+        _requireIsInitialized();
+
+        return removeDelegatorEvalDuration;
     }
 
     /// @notice Get the Governance address
@@ -973,6 +1140,32 @@ contract DelegateManager is InitializableV2 {
             "DelegateManager: _governanceAddress is not a valid governance contract"
         );
         governanceAddress = _governanceAddress;
+    }
+
+    /**
+     * @notice Set the remove delegator lockup duration after validating against governance
+     * @param _duration - Incoming remove delegator duration value
+     */
+    function _updateRemoveDelegatorLockupDuration(uint256 _duration) internal {
+        Governance governance = Governance(governanceAddress);
+        require(
+            _duration > governance.getVotingPeriod() + governance.getExecutionDelay(),
+            "DelegateManager: removeDelegatorLockupDuration duration must be greater than governance votingPeriod + executionDelay"
+        );
+        removeDelegatorLockupDuration = _duration;
+    }
+
+    /**
+     * @notice Set the undelegate lockup duration after validating against governance
+     * @param _duration - Incoming undelegate lockup duration value
+     */
+    function _updateUndelegateLockupDuration(uint256 _duration) internal {
+        Governance governance = Governance(governanceAddress);
+        require(
+            _duration > governance.getVotingPeriod() + governance.getExecutionDelay(),
+            "DelegateManager: undelegateLockupDuration duration must be greater than governance votingPeriod + executionDelay"
+        );
+        undelegateLockupDuration = _duration;
     }
 
     /**

@@ -17,13 +17,25 @@ contract ServiceProviderFactory is InitializableV2 {
     string private constant ERROR_ONLY_GOVERNANCE = (
         "ServiceProviderFactory: Only callable by Governance contract"
     );
+    string private constant ERROR_ONLY_SP_GOVERNANCE = (
+        "ServiceProviderFactory: Only callable by Service Provider or Governance"
+    );
 
     address private stakingAddress;
     address private delegateManagerAddress;
     address private governanceAddress;
     address private serviceTypeManagerAddress;
     address private claimsManagerAddress;
+
+    /// @notice Period in blocks that a decrease stake operation is delayed.
+    ///         Must be greater than governance votingPeriod + executionDelay in order to
+    ///         prevent pre-emptive withdrawal in anticipation of a slash proposal
     uint256 private decreaseStakeLockupDuration;
+
+    /// @notice Period in blocks that an update deployer cut operation is delayed.
+    ///         Must be greater than funding round block diff in order
+    ///         to prevent manipulation around a funding round
+    uint256 private deployerCutLockupDuration;
 
     /// @dev - Stores following entities
     ///        1) Directly staked amount by SP, not including delegators
@@ -47,8 +59,11 @@ contract ServiceProviderFactory is InitializableV2 {
         uint256 lockupExpiryBlock;
     }
 
-    /// @dev - Mapping of service provider address to details
-    mapping(address => ServiceProviderDetails) private spDetails;
+    /// @dev - Data structure for time delay during deployer cut update
+    struct UpdateDeployerCutRequest {
+        uint256 newDeployerCut;
+        uint256 lockupExpiryBlock;
+    }
 
     /// @dev - Struct maintaining information about sp
     /// @dev - blocknumber is block.number when endpoint registered
@@ -58,6 +73,9 @@ contract ServiceProviderFactory is InitializableV2 {
         uint256 blocknumber;
         address delegateOwnerWallet;
     }
+
+    /// @dev - Mapping of service provider address to details
+    mapping(address => ServiceProviderDetails) private spDetails;
 
     /// @dev - Uniquely assigned serviceProvider ID, incremented for each service type
     /// @notice - Keeps track of the total number of services registered regardless of
@@ -81,6 +99,9 @@ contract ServiceProviderFactory is InitializableV2 {
 
     /// @dev - Mapping of service provider -> decrease stake request
     mapping(address => DecreaseStakeRequest) private decreaseStakeRequests;
+
+    /// @dev - Mapping of service provider -> update deployer cut requests
+    mapping(address => UpdateDeployerCutRequest) private updateDeployerCutRequests;
 
     event RegisteredServiceProvider(
       uint256 indexed _spID,
@@ -124,6 +145,7 @@ contract ServiceProviderFactory is InitializableV2 {
     );
 
     event DecreaseStakeLockupDurationUpdated(uint256 indexed _lockupDuration);
+    event UpdateDeployerCutLockupDurationUpdated(uint256 indexed _lockupDuration);
     event GovernanceAddressUpdated(address indexed _newGovernanceAddress);
     event StakingAddressUpdated(address indexed _newStakingAddress);
     event ClaimsManagerAddressUpdated(address indexed _newClaimsManagerAddress);
@@ -140,11 +162,15 @@ contract ServiceProviderFactory is InitializableV2 {
      */
     function initialize (
         address _governanceAddress,
-        uint256 _decreaseStakeLockupDuration
+        address _claimsManagerAddress,
+        uint256 _decreaseStakeLockupDuration,
+        uint256 _deployerCutLockupDuration
     ) public initializer
     {
-        decreaseStakeLockupDuration = _decreaseStakeLockupDuration;
         _updateGovernanceAddress(_governanceAddress);
+        claimsManagerAddress = _claimsManagerAddress;
+        _updateDecreaseStakeLockupDuration(_decreaseStakeLockupDuration);
+        _updateDeployerCutLockupDuration(_deployerCutLockupDuration);
         InitializableV2.initialize();
     }
 
@@ -384,7 +410,7 @@ contract ServiceProviderFactory is InitializableV2 {
     /**
      * @notice Request to decrease stake. This sets a lockup for decreaseStakeLockupDuration after
                which the actual decreaseStake can be called
-     * @dev Decreasing stake is only processed in a service provider is within valid bounds
+     * @dev Decreasing stake is only processed if a service provider is within valid bounds
      * @param _decreaseStakeAmount - amount to decrease stake by in wei
      * @return New total stake amount after the lockup
      */
@@ -576,6 +602,86 @@ contract ServiceProviderFactory is InitializableV2 {
     }
 
     /**
+     * @notice Update the deployer cut for a given service provider
+     * @param _serviceProvider - address of service provider
+     * @param _cut - new value for deployer cut
+     */
+    function requestUpdateDeployerCut(address _serviceProvider, uint256 _cut) external
+    {
+        _requireIsInitialized();
+
+        require(
+            msg.sender == _serviceProvider || msg.sender == governanceAddress,
+            ERROR_ONLY_SP_GOVERNANCE
+        );
+
+        require(
+            (updateDeployerCutRequests[_serviceProvider].lockupExpiryBlock == 0) &&
+            (updateDeployerCutRequests[_serviceProvider].newDeployerCut == 0),
+            "ServiceProviderFactory: Update deployer cut operation pending"
+        );
+
+        require(
+            _cut <= DEPLOYER_CUT_BASE,
+            "ServiceProviderFactory: Service Provider cut cannot exceed base value"
+        );
+
+        updateDeployerCutRequests[_serviceProvider] = UpdateDeployerCutRequest({
+            lockupExpiryBlock: block.number + deployerCutLockupDuration,
+            newDeployerCut: _cut
+        });
+    }
+
+    /**
+     * @notice Cancel a pending request to update deployer cut
+     * @param _serviceProvider - address of service provider
+     */
+    function cancelUpdateDeployerCut(address _serviceProvider) external
+    {
+        _requireIsInitialized();
+        _requirePendingDeployerCutOperation(_serviceProvider);
+
+        require(
+            msg.sender == _serviceProvider || msg.sender == governanceAddress,
+            ERROR_ONLY_SP_GOVERNANCE
+        );
+
+        // Zero out request information
+        delete updateDeployerCutRequests[_serviceProvider];
+    }
+
+    /**
+     * @notice Evalue request to update service provider cut of claims
+     * @notice Update service provider cut as % of delegate claim, divided by the deployerCutBase.
+     * @dev SPs will interact with this value as a percent, value translation done client side
+       @dev A value of 5 dictates a 5% cut, with ( 5 / 100 ) * delegateReward going to an SP from each delegator each round.
+     */
+    function updateDeployerCut(address _serviceProvider) external
+    {
+        _requireIsInitialized();
+        _requirePendingDeployerCutOperation(_serviceProvider);
+
+        require(
+            msg.sender == _serviceProvider || msg.sender == governanceAddress,
+            ERROR_ONLY_SP_GOVERNANCE
+        );
+
+        require(
+            updateDeployerCutRequests[_serviceProvider].lockupExpiryBlock <= block.number,
+            "ServiceProviderFactory: Lockup must be expired"
+        );
+
+        spDetails[_serviceProvider].deployerCut = (
+            updateDeployerCutRequests[_serviceProvider].newDeployerCut
+        );
+
+        // Zero out request information
+        delete updateDeployerCutRequests[_serviceProvider];
+
+        emit ServiceProviderCutUpdated(_serviceProvider, spDetails[_serviceProvider].deployerCut);
+    }
+
+    /**
      * @notice Update service provider balance
      * @dev Called by DelegateManager by functions modifying entire stake like claim and slash
      * @param _serviceProvider - address of service provider
@@ -599,32 +705,6 @@ contract ServiceProviderFactory is InitializableV2 {
         _updateServiceProviderBoundStatus(_serviceProvider);
     }
 
-    /**
-     * @notice Update service provider cut of claims
-     * @notice Update service provider cut as % of delegate claim, divided by the deployerCutBase.
-     * @dev SPs will interact with this value as a percent, value translation done client side
-       @dev A value of 5 dictates a 5% cut, with ( 5 / 100 ) * delegateReward going to an SP from each delegator each round.
-     * @param _serviceProvider - address of service provider
-     * @param _cut - new deployer cut value
-     */
-    function updateServiceProviderCut(
-        address _serviceProvider,
-        uint256 _cut
-    ) external
-    {
-        _requireIsInitialized();
-
-        require(
-            msg.sender == _serviceProvider,
-            "ServiceProviderFactory: Service Provider cut update operation restricted to deployer");
-
-        require(
-            _cut <= DEPLOYER_CUT_BASE,
-            "ServiceProviderFactory: Service Provider cut cannot exceed base value");
-        spDetails[_serviceProvider].deployerCut = _cut;
-        emit ServiceProviderCutUpdated(_serviceProvider, _cut);
-    }
-
     /// @notice Update service provider lockup duration
     function updateDecreaseStakeLockupDuration(uint256 _duration) external {
         _requireIsInitialized();
@@ -634,8 +714,21 @@ contract ServiceProviderFactory is InitializableV2 {
             ERROR_ONLY_GOVERNANCE
         );
 
-        decreaseStakeLockupDuration = _duration;
+        _updateDecreaseStakeLockupDuration(_duration);
         emit DecreaseStakeLockupDurationUpdated(_duration);
+    }
+
+    /// @notice Update service provider lockup duration
+    function updateDeployerCutLockupDuration(uint256 _duration) external {
+        _requireIsInitialized();
+
+        require(
+            msg.sender == governanceAddress,
+            ERROR_ONLY_GOVERNANCE
+        );
+
+        _updateDeployerCutLockupDuration(_duration);
+        emit UpdateDeployerCutLockupDurationUpdated(_duration);
     }
 
     /// @notice Get denominator for deployer cut calculations
@@ -645,6 +738,15 @@ contract ServiceProviderFactory is InitializableV2 {
         _requireIsInitialized();
 
         return DEPLOYER_CUT_BASE;
+    }
+
+    /// @notice Get current deployer cut update lockup duration
+    function getDeployerCutLockupDuration()
+    external view returns (uint256)
+    {
+        _requireIsInitialized();
+
+        return deployerCutLockupDuration;
     }
 
     /// @notice Get total number of service providers for a given serviceType
@@ -733,6 +835,21 @@ contract ServiceProviderFactory is InitializableV2 {
         return (
             decreaseStakeRequests[_serviceProvider].decreaseAmount,
             decreaseStakeRequests[_serviceProvider].lockupExpiryBlock
+        );
+    }
+
+    /**
+     * @notice Get information about pending decrease stake requests for service provider
+     * @param _serviceProvider - address of service provider
+     */
+    function getPendingUpdateDeployerCutRequest(address _serviceProvider)
+    external view returns (uint256 newDeployerCut, uint256 lockupExpiryBlock)
+    {
+        _requireIsInitialized();
+
+        return (
+            updateDeployerCutRequests[_serviceProvider].newDeployerCut,
+            updateDeployerCutRequests[_serviceProvider].lockupExpiryBlock
         );
     }
 
@@ -893,6 +1010,33 @@ contract ServiceProviderFactory is InitializableV2 {
     }
 
     /**
+     * @notice Set the deployer cut lockup duration
+     * @param _duration - incoming duration
+     */
+    function _updateDeployerCutLockupDuration(uint256 _duration) internal
+    {
+        require(
+            ClaimsManager(claimsManagerAddress).getFundingRoundBlockDiff() < _duration,
+            "ServiceProviderFactory: Incoming duration must be greater than funding round block diff"
+        );
+        deployerCutLockupDuration = _duration;
+    }
+
+    /**
+     * @notice Set the decrease stake lockup duration
+     * @param _duration - incoming duration
+     */
+    function _updateDecreaseStakeLockupDuration(uint256 _duration) internal
+    {
+        Governance governance = Governance(governanceAddress);
+        require(
+            _duration > governance.getVotingPeriod() + governance.getExecutionDelay(),
+            "ServiceProviderFactory: decreaseStakeLockupDuration duration must be greater than governance votingPeriod + executionDelay"
+        );
+        decreaseStakeLockupDuration = _duration;
+    }
+
+    /**
      * @notice Compare a given amount input against valid min and max bounds for service provider
      * @param _serviceProvider - address of service provider
      * @param _amount - amount in wei to compare
@@ -936,9 +1080,18 @@ contract ServiceProviderFactory is InitializableV2 {
     }
 
     // ========================================= Private Functions =========================================
+    function _requirePendingDeployerCutOperation (address _serviceProvider) private view {
+        require(
+            (updateDeployerCutRequests[_serviceProvider].lockupExpiryBlock != 0),
+            "ServiceProviderFactory: No update deployer cut operation pending"
+        );
+    }
 
     function _requireStakingAddressIsSet() private view {
-        require(stakingAddress != address(0x00), "stakingAddress is not set");
+        require(
+            stakingAddress != address(0x00),
+            "ServiceProviderFactory: stakingAddress is not set"
+        );
     }
 
     function _requireDelegateManagerAddressIsSet() private view {

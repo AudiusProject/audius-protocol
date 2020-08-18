@@ -123,7 +123,15 @@ export const encodeCall = (name, args, values) => {
   return '0x' + methodId + params
 }
 
-export const registerServiceProvider = async (token, staking, serviceProviderFactory, type, endpoint, amount, account) => {
+export const registerServiceProvider = async (
+  token,
+  staking,
+  serviceProviderFactory,
+  type,
+  endpoint,
+  amount,
+  account
+) => {
   // Approve staking transfer
   await token.approve(staking.address, amount, { from: account })
     // register service provider
@@ -248,6 +256,45 @@ export const deployGovernance = async (
 
   const governance = await Governance.at(governanceProxy.address)
   return governance
+}
+
+export const deployClaimsManager = async (
+  artifacts,
+  registry,
+  governance,
+  proxyDeployerAddress,
+  guardianAddress,
+  tokenAddress,
+  fundingDiff,
+  registryKey
+) => {
+  const governanceAddress = governance.address
+  const ClaimsManager = artifacts.require('ClaimsManager')
+  const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+  const claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
+  const claimsInitializeCallData = encodeCall(
+    'initialize',
+    ['address', 'address'],
+    [tokenAddress, governanceAddress]
+  )
+  let claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
+    claimsManager0.address,
+    governanceAddress,
+    claimsInitializeCallData,
+    { from: proxyDeployerAddress }
+  )
+  let claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
+  await registry.addContract(registryKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
+
+  // Update funding found block diff
+  await governance.guardianExecuteTransaction(
+    registryKey,
+    toBN(0),
+    'updateFundingRoundBlockDiff(uint256)',
+    abiEncode(['uint256'], [fundingDiff]),
+    { from: guardianAddress }
+  )
+  return claimsManager
 }
 
 export const addServiceType = async (serviceType, typeMin, typeMax, governance, guardianAddress, serviceTypeManagerRegKey) => {
@@ -538,10 +585,6 @@ export const configureServiceProviderFactoryAddresses = async (
     { from: guardianAddress })
   assert.equal(serviceTypeManagerAddress, await spFactory.getServiceTypeManagerAddress(), 'Unexpected service type manager address')
 
-  await assertRevert(
-    spFactory.increaseStake(100),
-    "claimsManagerAddress is not set"
-  )
   let claimsManagerTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),

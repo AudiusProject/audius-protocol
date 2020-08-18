@@ -16,9 +16,9 @@ const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 
-// stake lockup duration = 1 wk in blocks
+// undelegate lockup duration = 1 wk in blocks
 // - 1/13 block/s * 604800 s/wk ~= 46523 block/wk
-const decreaseStakeLockupDuration = 46523
+const undelegateLockupDuration = 46523
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
@@ -43,7 +43,7 @@ module.exports = (deployer, network, accounts) => {
     const initializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'uint256'],
-      [token.address, governanceAddress, decreaseStakeLockupDuration]
+      [token.address, governanceAddress, undelegateLockupDuration]
     )
     const delegateManagerProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,

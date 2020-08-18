@@ -1,4 +1,5 @@
 import * as _lib from '../utils/lib.js'
+import { update } from 'lodash'
 const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
 const Staking = artifacts.require('Staking')
@@ -28,14 +29,15 @@ const MIN_STAKE_AMOUNT = 10
 const VOTING_PERIOD = 10
 const EXECUTION_DELAY = VOTING_PERIOD
 const VOTING_QUORUM_PERCENT = 10
-const DECREASE_STAKE_LOCKUP_DURATION = 10
+const DECREASE_STAKE_LOCKUP_DURATION = VOTING_PERIOD + EXECUTION_DELAY + 1
+const DEPLOYER_CUT_LOCKUP_DURATION = 11
 
 const INITIAL_BAL = _lib.audToWeiBN(1000)
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
 
 contract('ServiceProvider test', async (accounts) => {
-  let token, registry, staking0, stakingInitializeData, proxy, claimsManager0, claimsManagerProxy, claimsManager, governance
+  let token, registry, staking0, stakingInitializeData, proxy, claimsManager, governance
   let staking, serviceProviderFactory, serviceTypeManager, mockDelegateManager
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
@@ -169,24 +171,21 @@ contract('ServiceProvider test', async (accounts) => {
     await registry.addContract(serviceTypeManagerProxyKey, serviceTypeManager.address, { from: proxyDeployerAddress })
 
     // Deploy + register claimsManagerProxy
-    claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
-    const claimsInitializeCallData = _lib.encodeCall(
-      'initialize',
-      ['address', 'address'],
-      [token.address, governance.address]
+    claimsManager = await _lib.deployClaimsManager(
+      artifacts,
+      registry,
+      governance,
+      proxyDeployerAddress,
+      guardianAddress,
+      token.address,
+      10,
+      claimsManagerProxyKey
     )
-    claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
-      claimsManager0.address,
-      governance.address,
-      claimsInitializeCallData,
-      { from: proxyDeployerAddress }
-    )
-    claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
-    await registry.addContract(claimsManagerProxyKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
+    // End claims manager setup
 
     // Deploy mock delegate manager with only function to forward processClaim call
     mockDelegateManager = await MockDelegateManager.new()
-    await mockDelegateManager.initialize(claimsManagerProxy.address)
+    await mockDelegateManager.initialize(claimsManager.address)
     await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
 
     /** addServiceTypes creatornode and discprov via Governance */
@@ -219,8 +218,13 @@ contract('ServiceProvider test', async (accounts) => {
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'uint'],
-      [governance.address, DECREASE_STAKE_LOCKUP_DURATION]
+      ['address', 'address', 'uint256', 'uint256'],
+      [
+        governance.address,
+        claimsManager.address,
+        DECREASE_STAKE_LOCKUP_DURATION,
+        DEPLOYER_CUT_LOCKUP_DURATION
+      ]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
@@ -248,7 +252,7 @@ contract('ServiceProvider test', async (accounts) => {
       stakingProxyKey,
       staking,
       serviceProviderFactoryProxy.address,
-      claimsManagerProxy.address,
+      claimsManager.address,
       _lib.addressZero
     )
     // ---- Set up claims manager contract permissions
@@ -289,7 +293,7 @@ contract('ServiceProvider test', async (accounts) => {
       serviceProviderFactory,
       staking.address,
       serviceTypeManagerProxy.address,
-      claimsManagerProxy.address,
+      claimsManager.address,
       mockDelegateManager.address
     )
 
@@ -315,7 +319,7 @@ contract('ServiceProvider test', async (accounts) => {
       initTxs.claimsManagerTx.tx,
       ServiceProviderFactory,
       'ClaimsManagerAddressUpdated',
-      { _newClaimsManagerAddress: claimsManagerProxy.address }
+      { _newClaimsManagerAddress: claimsManager.address }
     )
   })
 
@@ -492,16 +496,49 @@ contract('ServiceProvider test', async (accounts) => {
 
     it('Update service provider cut', async () => {
       let updatedCutValue = 10
+      // Permission of request to input account
       await _lib.assertRevert(
-        serviceProviderFactory.updateServiceProviderCut(
+        serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCutValue, { from: accounts[4] }),
+        'Only callable by Service Provider or Governance'
+      )
+      // Eval fails if no pending operation
+      await _lib.assertRevert(
+        serviceProviderFactory.updateDeployerCut(
           stakerAccount,
-          updatedCutValue,
           { from: accounts[4] }),
-        'Service Provider cut update operation restricted to deployer')
-      let updateTx = await serviceProviderFactory.updateServiceProviderCut(
+        'No update deployer cut operation pending'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.cancelUpdateDeployerCut(stakerAccount),
+        'No update deployer cut operation pending'
+      )
+
+      let deployerCutUpdateDuration = await serviceProviderFactory.getDeployerCutLockupDuration()
+      let requestTx = await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCutValue, { from: stakerAccount })
+      let requestBlock = _lib.toBN(requestTx.receipt.blockNumber)
+
+      // Retrieve pending info
+      let pendingOp = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount)
+      assert.isTrue(
+        (requestBlock.add(deployerCutUpdateDuration)).eq(pendingOp.lockupExpiryBlock),
+        'Unexpected expiry block'
+      )
+
+      await _lib.assertRevert(
+        serviceProviderFactory.updateDeployerCut(
+          stakerAccount,
+          { from: stakerAccount }
+        ),
+        'Lockup must be expired'
+      )
+
+      await time.advanceBlockTo(pendingOp.lockupExpiryBlock)
+
+      let updateTx = await serviceProviderFactory.updateDeployerCut(
         stakerAccount,
-        updatedCutValue,
-        { from: stakerAccount })
+        { from: stakerAccount }
+      )
 
       await expectEvent.inTransaction(
         updateTx.tx,
@@ -511,15 +548,65 @@ contract('ServiceProvider test', async (accounts) => {
           _updatedCut: `${updatedCutValue}`
         }
       )
-
       let info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
       assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCutValue)), 'Expect updated cut')
-      let newCut = 110
+
+      // Reset the value for updated cut to 0
+      updatedCutValue = 0
+      requestTx = await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCutValue, { from: stakerAccount })
+      pendingOp = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount)
+      await time.advanceBlockTo(pendingOp.lockupExpiryBlock)
+      updateTx = await serviceProviderFactory.updateDeployerCut(stakerAccount, { from: stakerAccount })
+      info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCutValue)), 'Expect updated cut')
+
+      // Confirm cancellation works
+      let preUpdatecut = updatedCutValue
+      updatedCutValue = 10
+      // Submit request
+      requestTx = await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCutValue, { from: stakerAccount })
+      // Confirm request status
+      pendingOp = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount)
+      assert.isTrue(pendingOp.newDeployerCut.eq(_lib.toBN(updatedCutValue)), 'Expect in flight request')
+      assert.isTrue(!pendingOp.lockupExpiryBlock.eq(_lib.toBN(0)), 'Expect in flight request')
+      // Submit cancellation
+      await serviceProviderFactory.cancelUpdateDeployerCut(stakerAccount, { from: stakerAccount })
+      // Confirm request status
+      pendingOp = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount)
+      assert.isTrue(pendingOp.newDeployerCut.eq(_lib.toBN(0)), 'Expect cancelled request')
+      assert.isTrue(pendingOp.lockupExpiryBlock.eq(_lib.toBN(0)), 'Expect cancelled request')
+      // Confirm no change in deployer cut
+      info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      assert.isTrue((info.deployerCut).eq(_lib.toBN(preUpdatecut)), 'Expect updated cut')
+
+      let invalidCut = 110
       let base = await serviceProviderFactory.getServiceProviderDeployerCutBase()
-      assert.isTrue(_lib.toBN(newCut).gt(base), 'Expect invalid newCut')
+      assert.isTrue(_lib.toBN(invalidCut).gt(base), 'Expect invalid newCut')
       await _lib.assertRevert(
-        serviceProviderFactory.updateServiceProviderCut(stakerAccount, newCut, { from: stakerAccount }),
+        serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, invalidCut, { from: stakerAccount }),
         'Service Provider cut cannot exceed base value')
+
+      // Set an invalid value for lockup
+      await _lib.assertRevert(
+        governance.guardianExecuteTransaction(
+          serviceProviderFactoryKey,
+          callValue,
+          'updateDeployerCutLockupDuration(uint256)',
+          _lib.abiEncode(['uint256'], [1]),
+          { from: guardianAddress }
+        )
+      )
+
+      let validUpdatedDuration = DEPLOYER_CUT_LOCKUP_DURATION + 1
+      await governance.guardianExecuteTransaction(
+        serviceProviderFactoryKey,
+        callValue,
+        'updateDeployerCutLockupDuration(uint256)',
+        _lib.abiEncode(['uint256'], [validUpdatedDuration]),
+        { from: guardianAddress }
+      )
+      let fromChainDuration = await serviceProviderFactory.getDeployerCutLockupDuration()
+      assert.isTrue(fromChainDuration.eq(_lib.toBN(validUpdatedDuration)), 'Expected update')
     })
 
     it('Fails to register duplicate endpoint w/same account', async () => {
@@ -1149,7 +1236,7 @@ contract('ServiceProvider test', async (accounts) => {
       // Confirm only governance can call set functions
       await _lib.assertRevert(
         serviceTypeManager.setGovernanceAddress(_lib.addressZero),
-        'Only governance'
+        'Only callable by Governance contract'
       )
       await _lib.assertRevert(
         serviceTypeManager.setServiceVersion(web3.utils.utf8ToHex('fake-type'), web3.utils.utf8ToHex('0.0')),

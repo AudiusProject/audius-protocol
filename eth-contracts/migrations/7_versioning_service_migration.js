@@ -35,6 +35,10 @@ const dpTypeMax = _lib.audToWei(2000000)
 // - 1/13 block/s * 604800 s/wk ~= 46523 block/wk
 const decreaseStakeLockupDuration = 46523
 
+// modifying deployer cut = 8 days in blocks
+// - 1/13 block/s * 691200 s/8 days ~= 53169 block/wk
+const deployerCutLockupDuration = 53169
+
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
     const config = contractConfig[network]
@@ -106,8 +110,13 @@ module.exports = (deployer, network, accounts) => {
     const serviceProviderFactory0 = await deployer.deploy(ServiceProviderFactory, { from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'uint'],
-      [process.env.governanceAddress, decreaseStakeLockupDuration]
+      ['address', 'address', 'uint256', 'uint256'],
+      [
+        process.env.governanceAddress,
+        process.env.claimsManagerAddress,
+        decreaseStakeLockupDuration,
+        deployerCutLockupDuration
+      ]
     )
     const serviceProviderFactoryProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,

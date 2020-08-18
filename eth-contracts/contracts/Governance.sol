@@ -202,7 +202,7 @@ contract Governance is InitializableV2 {
         );
         maxInProgressProposals = _maxInProgressProposals;
 
-        require(_maxDescriptionLength > 0, "Requires non-zero _maxDescriptionLength");
+        require(_maxDescriptionLength > 0, "Governance: Requires non-zero _maxDescriptionLength");
         maxDescriptionLength = _maxDescriptionLength;
 
         require(
@@ -379,7 +379,7 @@ contract Governance is InitializableV2 {
         // Ensure previous vote is not None
         require(
             previousVote != Vote.None,
-            "Governance::updateVote: To submit new vote, call submitVote()"
+            "Governance: To submit new vote, call submitVote()"
         );
 
         // Override previous vote
@@ -547,7 +547,7 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
-        require(_stakingAddress != address(0x00), "Requires non-zero _stakingAddress");
+        require(_stakingAddress != address(0x00), "Governance: Requires non-zero _stakingAddress");
         stakingAddress = _stakingAddress;
     }
 
@@ -605,7 +605,10 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
-        require(_newMaxInProgressProposals > 0, "Requires non-zero _newMaxInProgressProposals");
+        require(
+            _newMaxInProgressProposals > 0,
+            "Governance: Requires non-zero _newMaxInProgressProposals"
+        );
         maxInProgressProposals = _newMaxInProgressProposals;
     }
 
@@ -618,7 +621,10 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         require(msg.sender == address(this), "Only callable by self");
-        require(_newMaxDescriptionLength > 0, "Requires non-zero _newMaxDescriptionLength");
+        require(
+            _newMaxDescriptionLength > 0,
+            "Governance: Requires non-zero _newMaxDescriptionLength"
+        );
         maxDescriptionLength = _newMaxDescriptionLength;
     }
 
@@ -639,7 +645,7 @@ contract Governance is InitializableV2 {
 
     /**
      * @notice Allows the guardianAddress to execute protocol actions
-     * @param _targetContractRegistryKey - key in registry of target contraact
+     * @param _targetContractRegistryKey - key in registry of target contract
      * @param _callValue - amount of wei if a token transfer is involved
      * @param _functionSignature - function signature of the function to be executed if proposal is successful
      * @param _callData - encoded value(s) to call function with if proposal is successful
@@ -769,7 +775,7 @@ contract Governance is InitializableV2 {
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
-            "Must provide valid non-zero _proposalId"
+            "Governance: Must provide valid non-zero _proposalId"
         );
 
         return (proposals[_proposalId].contractHash);
@@ -789,7 +795,7 @@ contract Governance is InitializableV2 {
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
-            "Must provide valid non-zero _proposalId"
+            "Governance: Must provide valid non-zero _proposalId"
         );
 
         return (proposals[_proposalId].description);
@@ -906,7 +912,7 @@ contract Governance is InitializableV2 {
     // ========================================= Internal Functions =========================================
 
     /**
-     * @notice Execute a transaction attached to a governanace proposal
+     * @notice Execute a transaction attached to a governance proposal
      * @dev We are aware of both potential re-entrancy issues and the risks associated with low-level solidity
      *      function calls here, but have chosen to keep this code with those issues in mind. All governance
      *      proposals go through a voting process, and all will be reviewed carefully to ensure that they
@@ -1017,7 +1023,7 @@ contract Governance is InitializableV2 {
     private view returns (uint256) {
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
-            "Governance::_validateVoteAndGetVoterStake: Must provide valid non-zero _proposalId"
+            "Governance: Must provide valid non-zero _proposalId"
         );
 
         // Require voter was active Staker at proposal submission time
@@ -1027,13 +1033,13 @@ contract Governance is InitializableV2 {
         );
         require(
             voterStake > 0,
-            "Governance::_validateVoteAndGetVoterStake: Voter must be active staker with non-zero stake."
+            "Governance: Voter must be active staker with non-zero stake."
         );
 
         // Require proposal is still active
         require(
             proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance::_validateVoteAndGetVoterStake: Cannot vote on inactive proposal."
+            "Governance: Cannot vote on inactive proposal."
         );
 
         // Require proposal votingPeriod is still active.
@@ -1041,13 +1047,13 @@ contract Governance is InitializableV2 {
         uint256 endBlockNumber = submissionBlockNumber.add(votingPeriod);
         require(
             block.number > submissionBlockNumber && block.number <= endBlockNumber,
-            "Governance::_validateVoteAndGetVoterStake: Proposal votingPeriod has ended"
+            "Governance: Proposal votingPeriod has ended"
         );
 
         // Require vote is either Yes or No
         require(
             _vote == Vote.Yes || _vote == Vote.No,
-            "Governance::_validateVoteAndGetVoterStake: Can only submit a Yes or No vote"
+            "Governance: Can only submit a Yes or No vote"
         );
 
         return voterStake;

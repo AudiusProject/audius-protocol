@@ -16,9 +16,9 @@ contract AudiusToken is InitializableV2,
     ERC20Pausable,
     ERC20Burnable
 {
-    string constant NAME = "TestAudius";
+    string constant NAME = "Audius";
 
-    string constant SYMBOL = "TAUDS";
+    string constant SYMBOL = "AUDS";
 
     // Defines number of Wei in 1 token
     // 18 decimals is standard - imitates relationship between Ether and Wei

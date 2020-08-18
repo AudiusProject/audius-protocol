@@ -29,13 +29,15 @@ const DEFAULT_AMOUNT = _lib.toBN(DEFAULT_AMOUNT_VAL)
 const VOTING_PERIOD = 10
 const EXECUTION_DELAY = VOTING_PERIOD
 const VOTING_QUORUM_PERCENT = 10
-const DECREASE_STAKE_LOCKUP_DURATION = 10
+const DEPLOYER_CUT_LOCKUP_DURATION = 11
+const UNDELEGATE_LOCKUP_DURATION = VOTING_PERIOD + EXECUTION_DELAY + 1
+const DECREASE_STAKE_LOCKUP_DURATION = UNDELEGATE_LOCKUP_DURATION
 
 const callValue0 = _lib.toBN(0)
 
 
 contract('DelegateManager', async (accounts) => {
-  let staking, stakingAddress, token, registry, governance, claimsManager0, claimsManagerProxy
+  let staking, stakingAddress, token, registry, governance
   let serviceProviderFactory, serviceTypeManager, claimsManager, delegateManager
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
@@ -111,12 +113,28 @@ contract('DelegateManager', async (accounts) => {
     // Register discprov serviceType
     await _lib.addServiceType(testDiscProvType, serviceTypeMinStake, serviceTypeMaxStake, governance, guardianAddress, serviceTypeManagerProxyKey)
 
+    claimsManager = await _lib.deployClaimsManager(
+      artifacts,
+      registry,
+      governance,
+      proxyDeployerAddress,
+      guardianAddress,
+      token.address,
+      10,
+      claimsManagerProxyKey
+    )
+
     // Deploy ServiceProviderFactory
     let serviceProviderFactory0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
       'initialize',
-      ['address', 'uint'],
-      [governance.address, DECREASE_STAKE_LOCKUP_DURATION]
+      ['address', 'address', 'uint256', 'uint256'],
+      [
+        governance.address,
+        claimsManager.address,
+        DECREASE_STAKE_LOCKUP_DURATION,
+        DEPLOYER_CUT_LOCKUP_DURATION
+      ]
     )
     let serviceProviderFactoryProxy = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory0.address,
@@ -127,29 +145,7 @@ contract('DelegateManager', async (accounts) => {
     serviceProviderFactory = await ServiceProviderFactory.at(serviceProviderFactoryProxy.address)
     await registry.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy.address, { from: proxyDeployerAddress })
 
-    // Deploy new claimsManager proxy
-    claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
-    const claimsInitializeCallData = _lib.encodeCall(
-      'initialize',
-      ['address', 'address'],
-      [token.address, governance.address]
-    )
-    claimsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
-      claimsManager0.address,
-      governance.address,
-      claimsInitializeCallData,
-      { from: proxyDeployerAddress }
-    )
-    claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
-
-    // Register claimsManagerProxy
-    await registry.addContract(
-      claimsManagerProxyKey,
-      claimsManagerProxy.address,
-      { from: proxyDeployerAddress }
-    )
-
-    // Register new contract as a minter, from the same address that deployed the contract
+    // Register new ClaimsManager contract as a minter, from the same address that deployed the contract
     await governance.guardianExecuteTransaction(
       tokenRegKey,
       callValue0,
@@ -161,7 +157,7 @@ contract('DelegateManager', async (accounts) => {
     const delegateManagerInitializeData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'uint256'],
-      [token.address, governance.address, 10]
+      [token.address, governance.address, UNDELEGATE_LOCKUP_DURATION]
     )
     let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
     let delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
@@ -174,14 +170,6 @@ contract('DelegateManager', async (accounts) => {
     delegateManager = await DelegateManager.at(delegateManagerProxy.address)
     await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: proxyDeployerAddress })
 
-    // Clear min delegation amount for testing
-    await governance.guardianExecuteTransaction(
-      delegateManagerKey,
-      _lib.toBN(0),
-      'updateMinDelegationAmount(uint256)',
-      _lib.abiEncode(['uint256'], [0]),
-      { from: guardianAddress }
-    )
     // ---- Configuring addresses
     await _lib.configureGovernanceStakingAddress(
       governance,
@@ -196,7 +184,7 @@ contract('DelegateManager', async (accounts) => {
       stakingProxyKey,
       staking,
       serviceProviderFactoryProxy.address,
-      claimsManagerProxy.address,
+      claimsManager.address,
       delegateManagerProxy.address
     )
 
@@ -256,8 +244,60 @@ contract('DelegateManager', async (accounts) => {
       serviceProviderFactory,
       staking.address,
       serviceTypeManagerProxy.address,
-      claimsManagerProxy.address,
+      claimsManager.address,
       delegateManagerProxy.address
+    )
+
+    // Clear min delegation amount for testing
+    let updateTx = await governance.guardianExecuteTransaction(
+      delegateManagerKey,
+      _lib.toBN(0),
+      'updateMinDelegationAmount(uint256)',
+      _lib.abiEncode(['uint256'], [0]),
+      { from: guardianAddress }
+    )
+    await expectEvent.inTransaction(
+      updateTx.tx,
+      DelegateManager,
+      'MinDelegationUpdated',
+      { _minDelegationAmount: '0' }
+    )
+    // Expect revert for 8 since it is below votingPeriod + votingDelay
+    await _lib.assertRevert(
+      governance.guardianExecuteTransaction(
+        delegateManagerKey,
+        _lib.toBN(0),
+        'updateRemoveDelegatorLockupDuration(uint256)',
+        _lib.abiEncode(['uint256'], [8]),
+        { from: guardianAddress }
+      )
+    )
+    // Reset lockup and eval duration for testing
+    updateTx = await governance.guardianExecuteTransaction(
+      delegateManagerKey,
+      _lib.toBN(0),
+      'updateRemoveDelegatorLockupDuration(uint256)',
+      _lib.abiEncode(['uint256'], [100]),
+      { from: guardianAddress }
+    )
+    await expectEvent.inTransaction(
+      updateTx.tx,
+      DelegateManager,
+      'RemoveDelegatorLockupDurationUpdated',
+      { _removeDelegatorLockupDuration: '100' }
+    )
+    updateTx = await governance.guardianExecuteTransaction(
+      delegateManagerKey,
+      _lib.toBN(0),
+      'updateRemoveDelegatorEvalDuration(uint256)',
+      _lib.abiEncode(['uint256'], [10]),
+      { from: guardianAddress }
+    )
+    await expectEvent.inTransaction(
+      updateTx.tx,
+      DelegateManager,
+      'RemoveDelegatorEvalDurationUpdated',
+      { _removeDelegatorEvalDuration: '10' }
     )
   })
 
@@ -413,9 +453,31 @@ contract('DelegateManager', async (accounts) => {
       let finalBal = await token.balanceOf(stakerAccount)
       assert.isTrue(initialBal.eq(finalBal.add(DEFAULT_AMOUNT)), 'Expect funds to be transferred')
 
-      // Update SP Deployer Cut to 10%
-      await serviceProviderFactory.updateServiceProviderCut(stakerAccount, 10, { from: stakerAccount })
-      await serviceProviderFactory.updateServiceProviderCut(stakerAccount2, 10, { from: stakerAccount2 })
+      let updatedCut = 10
+
+      // Request Update SP Deployer Cut to 10%
+      await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCut, { from: stakerAccount })
+      await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount2, updatedCut, { from: stakerAccount2 })
+
+      // Advance to 2nd update block number
+      let pending2ndUpdate = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount2)
+      await time.advanceBlockTo(pending2ndUpdate.lockupExpiryBlock)
+
+      // Evaluate both updates
+      await serviceProviderFactory.updateDeployerCut(
+        stakerAccount2,
+        { from: stakerAccount2 }
+      )
+      await serviceProviderFactory.updateDeployerCut(
+        stakerAccount,
+        { from: stakerAccount }
+      )
+
+      // Confirm updates
+      let info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount)
+      assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCut)), 'Expect updated cut')
+      info = await serviceProviderFactory.getServiceProviderDetails(stakerAccount2)
+      assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCut)), 'Expect updated cut')
     })
 
     it('Initial state + claim', async () => {
@@ -704,7 +766,7 @@ contract('DelegateManager', async (accounts) => {
       // Get rewards
       await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
       await delegateManager.claimRewards(stakerAccount2, { from: stakerAccount2 })
-      let fundBlock = await claimsManager.getLastFundBlock()
+      let fundBlock = await claimsManager.getLastFundedBlock()
       let blockDiff = await claimsManager.getFundingRoundBlockDiff()
       let roundEndBlock = fundBlock.add(blockDiff)
       await time.advanceBlockTo(roundEndBlock)
@@ -1252,6 +1314,64 @@ contract('DelegateManager', async (accounts) => {
       await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
     })
 
+    it('Undelegate after slash below bounds', async () => {
+      let initialDelegateAmount = _lib.audToWeiBN(60)
+
+      // Approve staking transfer for delegator 1
+      await token.approve(
+        stakingAddress,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      // Stake initial value for delegator 1
+      await delegateManager.delegateStake(
+        stakerAccount,
+        initialDelegateAmount,
+        { from: delegatorAccount1 })
+
+      let preSlashInfo = await getAccountStakeInfo(stakerAccount, false)
+      // Set slash amount to all but 1 AUD for this SP
+      let diffAmount = _lib.audToWeiBN(1)
+      let slashAmount = (preSlashInfo.totalInStakingContract).sub(diffAmount)
+      // Perform slash functions
+      await _lib.slash(_lib.audToWei(_lib.fromWei(slashAmount)), slasherAccount, governance, delegateManagerKey, guardianAddress)
+
+      // Confirm bounds have been violated for SP
+      let spDetails = await getAccountStakeInfo(stakerAccount, false)
+      assert.isFalse(
+        spDetails.validBounds,
+        'Bound violation expected')
+
+      // Determine remaining amount
+      let remainingAmount = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
+
+      // Submit request to undelegate
+      await delegateManager.requestUndelegateStake(
+        stakerAccount,
+        remainingAmount,
+        { from: delegatorAccount1 }
+      )
+
+      let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      assert.isTrue(
+        undelegateRequestInfo.amount.eq(remainingAmount),
+        'Expect request to match undelegate amount')
+
+      // Advance to valid block
+      await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
+      let delegatorBalance = await token.balanceOf(delegatorAccount1)
+
+      // Confirm undelegation works despite bound violation
+      await delegateManager.undelegateStake({ from: delegatorAccount1 })
+      let delegatorBalanceAfterUndelegation = await token.balanceOf(delegatorAccount1)
+      // Confirm transfer of token balance
+      assert.isTrue((delegatorBalanceAfterUndelegation.sub(remainingAmount)).eq(delegatorBalance))
+      // Confirm no balance remaining
+      assert.isTrue(
+        (await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)).eq(_lib.toBN(0))
+      )
+    })
+
     it('Slash below sp bounds', async () => {
       let preSlashInfo = await getAccountStakeInfo(stakerAccount, false)
       // Set slash amount to all but 1 AUD for this SP
@@ -1629,6 +1749,14 @@ contract('DelegateManager', async (accounts) => {
         delegateManager.slash(10, slasherAccount),
         "Only callable by Governance contract"
       )
+      await _lib.assertRevert(
+        delegateManager.updateRemoveDelegatorLockupDuration(10, { from: accounts[3] }),
+        "Only callable by Governance contract"
+      )
+      await _lib.assertRevert(
+        delegateManager.updateRemoveDelegatorEvalDuration(10, { from: accounts[3] }),
+        "Only callable by Governance contract"
+      )
     })
 
     it('Fail to set service addresses from non-governance contract', async () => {
@@ -1712,14 +1840,27 @@ contract('DelegateManager', async (accounts) => {
         'Expect pending request'
       )
 
-      // fail to removeDelegator from not a SP or governance
+      // Fail to call removeDelegator from not a SP or governance
       await _lib.assertRevert(
         delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: delegatorAccount1 }),
         "Only callable by target SP or governance"
       )
       
-      // Forcibly remove the delegator from service provider account
+      // Confirm failure without a pending request
+      await _lib.assertRevert(
+        delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount }),
+        "No pending request"
+      )
+
+      // Remove delegator
+      await delegateManager.requestRemoveDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+
+      let requestTargetBlock = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount1)
+
+      // Move to valid block and actually perform remove
+      await time.advanceBlockTo(requestTargetBlock)
       await delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+
       let stakeAfterRemoval = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
       let delegatorsList = await delegateManager.getDelegatorsList(stakerAccount)
       pendingUndelegateRequest = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
@@ -1768,14 +1909,19 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('Deregister delegator', async () => {
+    // Validate behavior around removeDelegator
+    //       - expiry block calculated correctly (done)
+    //       - cancelRemoveDelegator behavior resets request (done)
+    //       - evaluation window enforced (done) 
+    //       - invalid delegator for this sp during call to removeDelegator (done)
+    //       - Pending request before call to requestRemoveDelegator
+    it('removeDelegator validation', async () => {
       const delegationAmount = _lib.toBN(100)
+      const delegatorAccount2 = accounts[5]
       // Transfer tokens to delegator
       await token.transfer(delegatorAccount1, delegationAmount, { from: proxyDeployerAddress })
-      await token.approve(
-        stakingAddress,
-        delegationAmount,
-        { from: delegatorAccount1 })
+      await token.transfer(delegatorAccount2, delegationAmount, { from: proxyDeployerAddress })
+      await token.approve(stakingAddress, delegationAmount, { from: delegatorAccount1 })
       await delegateManager.delegateStake(
         stakerAccount,
         delegationAmount,
@@ -1788,9 +1934,32 @@ contract('DelegateManager', async (accounts) => {
         delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: delegatorAccount1 }),
         "Only callable by target SP or governance"
       )
-      
+
+      let removeReqDuration = await delegateManager.getRemoveDelegatorLockupDuration()
+      let removeReqEvalDuration = await delegateManager.getRemoveDelegatorEvalDuration()
+
+      // Remove delegator
+      let tx = await delegateManager.requestRemoveDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+      let blocknumber = _lib.toBN(tx.receipt.blockNumber)
+      let expectedTarget = blocknumber.add(removeReqDuration)
+
+      let requestTargetBlock = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount1)
+      assert.isTrue(requestTargetBlock.eq(expectedTarget), 'Target unexpected')
+
+      // Move to valid block and actually perform remove
+      await time.advanceBlockTo(requestTargetBlock)
+      tx = await delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+      await expectEvent.inTransaction(
+        tx.tx,
+        DelegateManager,
+        'DelegatorRemoved',
+        { _serviceProvider: stakerAccount, _delegator: delegatorAccount1, _unstakedAmount: delegationAmount }
+      )
+
+      requestTargetBlock = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount1)
+      assert.isTrue(requestTargetBlock.eq(_lib.toBN(0)), 'Reset expected')
+
       // Forcibly remove the delegator from service provider account
-      await delegateManager.removeDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
       let stakeAfterRemoval = await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)
       let delegatorsList = await delegateManager.getDelegatorsList(stakerAccount)
       assert.isTrue(stakeAfterRemoval.eq(_lib.toBN(0)), 'Expect 0 delegated stake')
@@ -1799,6 +1968,61 @@ contract('DelegateManager', async (accounts) => {
       let delegatorTokenBalance2 = await token.balanceOf(delegatorAccount1)
       let diff = delegatorTokenBalance2.sub(delegatorTokenBalance)
       assert.isTrue(diff.eq(delegationAmount), 'Expect full delegation amount to be refunded')
+
+      // Try to remove a delegator that does not yet exist, confirm failure
+      await _lib.assertRevert(
+        delegateManager.requestRemoveDelegator(stakerAccount, delegatorAccount2, { from: stakerAccount }),
+        'Delegator must be staked for SP'
+      )
+
+      // Delegate from a new account
+      await token.approve(
+        stakingAddress,
+        delegationAmount,
+        { from: delegatorAccount2 })
+      await delegateManager.delegateStake(
+        stakerAccount,
+        delegationAmount,
+        { from: delegatorAccount2 })
+
+      // Request removal
+      tx = await delegateManager.requestRemoveDelegator(stakerAccount, delegatorAccount2, { from: stakerAccount })
+      blocknumber = _lib.toBN(tx.receipt.blockNumber)
+      expectedTarget = blocknumber.add(removeReqDuration)
+
+      requestTargetBlock = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount2)
+      assert.isTrue(requestTargetBlock.eq(expectedTarget), 'Target block unexpected')
+
+      // Call from wrong account
+      await _lib.assertRevert(
+        delegateManager.cancelRemoveDelegator(stakerAccount, delegatorAccount2),
+        'Only callable by target SP'
+      )
+
+      // Cancel and validate request
+      await delegateManager.cancelRemoveDelegator(stakerAccount, delegatorAccount2, { from: stakerAccount })
+      let requestTargetBlockAfterCancel = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount2)
+      assert.isTrue(requestTargetBlockAfterCancel.eq(_lib.toBN(0)), 'Expect reset')
+
+      // Reissue request
+      await delegateManager.requestRemoveDelegator(stakerAccount, delegatorAccount2, { from: stakerAccount })
+      requestTargetBlock = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount2)
+      let evalBlock = requestTargetBlock.add(removeReqEvalDuration)
+
+      // Progress to the evaluation block
+      await time.advanceBlockTo(evalBlock)
+
+      // Confirm rejection after window
+      await _lib.assertRevert(
+        delegateManager.removeDelegator(stakerAccount, delegatorAccount2, { from: stakerAccount }),
+        'RemoveDelegator evaluation window expired'
+       )
+
+      // Retry should fail here as the request has not been cancelled yet, but the window has expired
+      await _lib.assertRevert(
+        delegateManager.requestRemoveDelegator(stakerAccount, delegatorAccount2, { from: stakerAccount }),
+        'Pending remove delegator request'
+      )
     })
 
     describe('Service provider decrease stake behavior', async () => {
