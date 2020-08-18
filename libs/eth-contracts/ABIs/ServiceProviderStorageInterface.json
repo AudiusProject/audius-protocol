@@ -71,6 +71,10 @@
           "type": "bytes32"
         },
         {
+          "name": "_endpoint",
+          "type": "string"
+        },
+        {
           "name": "_updatedDelegateOwnerWallet",
           "type": "address"
         }
@@ -80,6 +84,37 @@
         {
           "name": "",
           "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "name": "_oldEndpoint",
+          "type": "string"
+        },
+        {
+          "name": "_newEndpoint",
+          "type": "string"
+        }
+      ],
+      "name": "updateEndpoint",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
         }
       ],
       "payable": false,
@@ -126,7 +161,7 @@
       "inputs": [
         {
           "name": "_endpoint",
-          "type": "bytes32"
+          "type": "string"
         }
       ],
       "name": "getServiceProviderIdFromEndpoint",
@@ -152,11 +187,11 @@
           "type": "bytes32"
         }
       ],
-      "name": "getServiceProviderIdFromAddress",
+      "name": "getServiceProviderIdsFromAddress",
       "outputs": [
         {
           "name": "",
-          "type": "uint256"
+          "type": "uint256[]"
         }
       ],
       "payable": false,
@@ -192,6 +227,10 @@
         {
           "name": "_serviceType",
           "type": "bytes32"
+        },
+        {
+          "name": "_endpoint",
+          "type": "string"
         }
       ],
       "name": "getDelegateOwnerWallet",
@@ -199,6 +238,25 @@
         {
           "name": "",
           "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_ownerAddress",
+          "type": "address"
+        }
+      ],
+      "name": "getNumberOfEndpointsFromAddress",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
         }
       ],
       "payable": false,

@@ -8,8 +8,7 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x41c0e1b5"
+      "type": "function"
     },
     {
       "constant": false,
@@ -18,8 +17,7 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x715018a6"
+      "type": "function"
     },
     {
       "constant": true,
@@ -33,8 +31,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x8da5cb5b"
+      "type": "function"
     },
     {
       "constant": true,
@@ -48,8 +45,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x8f32d59b"
+      "type": "function"
     },
     {
       "constant": false,
@@ -63,8 +59,7 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xa91ee0dc"
+      "type": "function"
     },
     {
       "constant": false,
@@ -78,8 +73,7 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xf2fde38b"
+      "type": "function"
     },
     {
       "inputs": [
@@ -90,26 +84,7 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "constructor",
-      "signature": "constructor"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "test",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "name": "msg",
-          "type": "string"
-        }
-      ],
-      "name": "TestStg",
-      "type": "event",
-      "signature": "0x9f1c36321e12d306f94d4b5154ac504bf754a1022a6be84df15067251afb4a64"
+      "type": "constructor"
     },
     {
       "anonymous": false,
@@ -126,8 +101,7 @@
         }
       ],
       "name": "OwnershipTransferred",
-      "type": "event",
-      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+      "type": "event"
     },
     {
       "constant": false,
@@ -158,8 +132,7 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x7cc977ba"
+      "type": "function"
     },
     {
       "constant": false,
@@ -186,8 +159,7 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xe2f4b9e2"
+      "type": "function"
     },
     {
       "constant": false,
@@ -199,6 +171,10 @@
         {
           "name": "_serviceType",
           "type": "bytes32"
+        },
+        {
+          "name": "_endpoint",
+          "type": "string"
         },
         {
           "name": "_updatedDelegateOwnerWallet",
@@ -214,8 +190,38 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x9e53c41f"
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "name": "_oldEndpoint",
+          "type": "string"
+        },
+        {
+          "name": "_newEndpoint",
+          "type": "string"
+        }
+      ],
+      "name": "updateEndpoint",
+      "outputs": [
+        {
+          "name": "spID",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
       "constant": true,
@@ -234,8 +240,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x623fa631"
+      "type": "function"
     },
     {
       "constant": true,
@@ -270,15 +275,14 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0xbd1ed292"
+      "type": "function"
     },
     {
       "constant": true,
       "inputs": [
         {
           "name": "_endpoint",
-          "type": "bytes32"
+          "type": "string"
         }
       ],
       "name": "getServiceProviderIdFromEndpoint",
@@ -290,8 +294,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x860dba22"
+      "type": "function"
     },
     {
       "constant": true,
@@ -305,17 +308,35 @@
           "type": "bytes32"
         }
       ],
-      "name": "getServiceProviderIdFromAddress",
+      "name": "getServiceProviderIdsFromAddress",
       "outputs": [
         {
           "name": "spID",
+          "type": "uint256[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_ownerAddress",
+          "type": "address"
+        }
+      ],
+      "name": "getNumberOfEndpointsFromAddress",
+      "outputs": [
+        {
+          "name": "numberOfEndpoints",
           "type": "uint256"
         }
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x2cd6e60f"
+      "type": "function"
     },
     {
       "constant": true,
@@ -327,6 +348,10 @@
         {
           "name": "_serviceType",
           "type": "bytes32"
+        },
+        {
+          "name": "_endpoint",
+          "type": "string"
         }
       ],
       "name": "getDelegateOwnerWallet",
@@ -338,8 +363,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x940d59d1"
+      "type": "function"
     }
   ]
 }
