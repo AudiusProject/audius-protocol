@@ -78,7 +78,6 @@ const outputJsonConfigFile = async (outputFilePath) => {
         console.log(err)
       }
     })
-    console.log(`eth-contracts JSON Config written to ${outputFilePath}`)
   } catch (e) {
     console.log(e)
   }
