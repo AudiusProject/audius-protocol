@@ -25,7 +25,7 @@ playlist_model = ns.model('playlist', {
     "is_album": fields.Boolean(required=True),
     "playlist_name": fields.String(required=True),
     "repost_count": fields.Integer(required=True),
-    "save_count": fields.Integer(required=True),
+    "favorite_count": fields.Integer(required=True),
     "user": fields.Nested(user_model, required=True),
 })
 

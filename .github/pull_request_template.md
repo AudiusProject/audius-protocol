@@ -12,6 +12,11 @@
 - [ ] Libs
 - [ ] Contracts
 
+### Does it touch a critical flow like Discovery indexing, Creator Node track upload, Creator Node gateway, or Creator Node file system?
+Delete an option.
+- 🚨 Yes, this touches <flow>
+- ✅ Nope
+
 
 ### How Has This Been Tested?
 

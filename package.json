@@ -1,0 +1,19 @@
+{
+  "name": "audius-protocol",
+  "description": "Audius is working to create a fully decentralized community of artists, developers, and listeners collaborating to share and defend the world’s music.",
+  "dependencies": {
+    "pre-commit": "^1.2.2"
+  },
+  "scripts": {
+    "check-secrets": "sh ./check_secrets.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AudiusProject/audius-protocol.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "pre-commit": [
+    "check-secrets"
+  ]
+}

@@ -434,3 +434,45 @@ source={self.source},\
 play_item_id={self.play_item_id}\
 updated_at={self.updated_at}\
 created_at={self.created_at}>"
+
+class RouteMetrics(Base):
+    __tablename__ = "route_metrics"
+
+    version = Column(String, nullable=True)
+    route_path = Column(String, nullable=False)
+    query_string = Column(String, nullable=True, default='')
+    count = Column(Integer, nullable=False)
+    timestamp = Column(DateTime, nullable=False, default=func.now())
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    PrimaryKeyConstraint(route_path, query_string, timestamp)
+
+    def __repr__(self):
+        return f"<RouteMetrics(\
+version={self.version},\
+route_path={self.route_path},\
+query_string={self.query_string},\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class AppNameMetrics(Base):
+    __tablename__ = "app_name_metrics"
+
+    application_name = Column(String, nullable=False)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(DateTime, nullable=False, default=func.now())
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    PrimaryKeyConstraint(application_name, timestamp)
+
+    def __repr__(self):
+        return f"<AppNameMetrics(\
+application_name={self.application_name},\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"

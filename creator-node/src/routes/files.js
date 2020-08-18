@@ -103,6 +103,8 @@ const getCID = async (req, res) => {
     return sendResponse(req, res, errorResponseNotFound(`No valid file found for provided CID: ${CID}`))
   }
 
+  if (queryResults.type === 'dir') return sendResponse(req, res, errorResponseBadRequest('this dag node is a directory'))
+
   redisClient.incr('ipfsStandaloneReqs')
   const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
   req.logger.info(`IPFS Standalone Request - ${CID}`)

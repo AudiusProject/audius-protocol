@@ -68,6 +68,10 @@ class ConfigIni(configparser.ConfigParser):  # pylint: disable=too-many-ancestor
         if ('url_read_replica' not in current_app.config['db']) or (not current_app.config['db']['url_read_replica']):
             current_app.config['db']['url_read_replica'] = current_app.config['db']['url']
 
+        # Always disable (not included in app.default_config)
+        # See https://flask-restx.readthedocs.io/en/latest/mask.html#usage
+        current_app.config['RESTX_MASK_SWAGGER'] = False
+
     def _load_item(self, section_name, key):
         """Load the specified item from the [flask] section. Type is
         determined by the type of the equivalent value in app.default_config
