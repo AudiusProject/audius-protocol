@@ -64,6 +64,7 @@ class TestMultihashIsDirectory:
         # Instantiate IPFS client from src lib
         ipfsclient = IPFSClient(ipfs_peer_host, ipfs_peer_port, [])
 
+        # override the cat function in the ipfs api so it returns an Exception
         def cat_handler_dir(cid, s, e, timeout):
             raise Exception('this dag node is a directory')
         ipfsclient._api.cat = cat_handler_dir
@@ -80,6 +81,7 @@ class TestMultihashIsDirectory:
         # Instantiate IPFS client from src lib
         ipfsclient = IPFSClient(ipfs_peer_host, ipfs_peer_port, [])
 
+        # override the cat function in the ipfs api so it returns an Exception
         def cat_handler_not_dir(cid, s, e, timeout):
             return 'not a directory'
         ipfsclient._api.cat = cat_handler_not_dir
