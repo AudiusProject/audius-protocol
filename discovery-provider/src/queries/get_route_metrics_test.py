@@ -22,6 +22,12 @@ def test_get_route_metrics(db_mock):
         'query_string': 'with_users=true',
         'count': 2,
         'timestamp': before_date
+    }, {
+        'version': '1',
+        'route_path': 'tracks/some_hash/stream',
+        'query_string': '',
+        'count': 4,
+        'timestamp': before_date
     }]
 
     RouteMetrics.__table__.create(db_mock._engine)
@@ -41,7 +47,8 @@ def test_get_route_metrics(db_mock):
     args_1 = {
         'limit': 10,
         'start_time': before_all_date,
-        'path': 'tracks/some_hash'
+        'path': 'tracks/some_hash',
+        'exact': True
     }
     metrics_1 = get_route_metrics(args_1)
 
@@ -52,19 +59,32 @@ def test_get_route_metrics(db_mock):
         'limit': 10,
         'start_time': before_all_date,
         'path': 'tracks/some_hash',
-        'query_string': 'with_users=true'
+        'exact': False
     }
     metrics_2 = get_route_metrics(args_2)
 
     assert len(metrics_2) == 1
-    assert metrics_2[0]['count'] == 2
+    assert metrics_2[0]['count'] == 9
 
     args_3 = {
         'limit': 10,
         'start_time': before_all_date,
         'path': 'tracks/some_hash',
-        'query_string': 'with_users=WRONG'
+        'query_string': 'with_users=true',
+        'exact': False
     }
     metrics_3 = get_route_metrics(args_3)
 
-    assert not metrics_3
+    assert len(metrics_3) == 1
+    assert metrics_3[0]['count'] == 2
+
+    args_4 = {
+        'limit': 10,
+        'start_time': before_all_date,
+        'path': 'tracks/some_hash',
+        'query_string': 'with_users=WRONG',
+        'exact': False
+    }
+    metrics_4 = get_route_metrics(args_4)
+
+    assert not metrics_4

@@ -56,7 +56,8 @@ def search_tags():
     except Exception:
         return api_helpers.error_response(
             "Invalid value for parameter 'kind' must be in %s" % [
-                k.name for k in validSearchKinds]
+                k.name for k in validSearchKinds],
+            400
         )
 
     results = {}
