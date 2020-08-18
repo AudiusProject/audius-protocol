@@ -88,7 +88,7 @@
   },
   "main": "src/electron.js",
   "scripts": {
-    "configure-local-env": "node ./configureLocalEnv.js",
+    "configure-local-env": "node ./scripts/configureLocalEnv.js",
     "publish-scripts": "./scripts/publishScripts.sh",
     "start": "react-scripts start",
     "start:development": "npm run write-sha && npm run configure-local-env && npm run publish-scripts && env-cmd ./.env/.env.git npm start",
