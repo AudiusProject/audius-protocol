@@ -20,6 +20,7 @@ const AudiusLibs = 'libs'
 const AudiusSharedLibs = 'audius-shared-libs'
 const AudiusDiscoveryProvider = 'discovery-provider'
 const AudiusIdentityService = 'identity-service'
+const AudiusCreatorNode = 'creator-node'
 const AudiusContentService = 'content-service'
 
 let registry
@@ -90,13 +91,14 @@ const outputJsonConfigFile = async (outputPath) => {
     let outputDictionary = {}
     outputDictionary['registryAddress'] = registry.address
     outputDictionary['ownerWallet'] = await getDefaultAccount()
+    outputDictionary['allWallets'] = await web3.eth.getAccounts()
 
     fs.writeFile(outputPath, JSON.stringify(outputDictionary), (err)=>{
       if(err != null){
         console.log(err)
       }
     })
-    console.log(outputDictionary)
+    console.log(`contracts JSON Config written to ${outputPath}`)
   }
   catch (e) {
     console.log(e)
@@ -173,7 +175,7 @@ module.exports = async callback => {
     catch(e){
       console.log("Identity service doesn't exist, probably running via E2E setup scripts")
     }
-    
+
     // special case for content service which isn't run locally for E2E test or during front end dev
     try {
       outputJsonConfigFile(getDirectoryRoot(AudiusContentService) + '/contract-config.json')
@@ -193,19 +195,26 @@ module.exports = async callback => {
   else if (process.argv[4] === '-run-audlib'){
     const libsDirRoot = path.join(getDirectoryRoot(AudiusLibs), 'data-contracts')
     fs.removeSync(libsDirRoot)
-    
+
     await copyBuildDirectory(path.join(libsDirRoot, '/ABIs'))
     copySignatureSchemas(path.join(libsDirRoot, '/signatureSchemas.js'))
     outputJsonConfigFile(path.join(libsDirRoot, '/config.json'))
-    
+
     // output to Identity Service
     try {
-      outputJsonConfigFile(getDirectoryRoot(AudiusIdentityService) + '/contract-config.json') 
+      outputJsonConfigFile(getDirectoryRoot(AudiusIdentityService) + '/contract-config.json')
     }
     catch(e){
       console.log("Identity service doesn't exist, probably running via E2E setup scripts")
     }
-    
+
+    // output to Creator Node
+    try {
+      outputJsonConfigFile(getDirectoryRoot(AudiusCreatorNode) + '/contract-config.json')
+    } catch (e) {
+      console.log("Creator node dir doesn't exist, probably running via E2E setup scripts")
+    }
+
     // special case for content service which isn't run locally for E2E test or during front end dev
     try {
       outputJsonConfigFile(getDirectoryRoot(AudiusContentService) + '/contract-config.json')

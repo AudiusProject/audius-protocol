@@ -62,14 +62,14 @@ async function ensurePrimaryMiddleware (req, res, next) {
 
   let serviceEndpoint
   try {
-    serviceEndpoint = await _getOwnEndpoint(req)
+    serviceEndpoint = await getOwnEndpoint(req)
   } catch (e) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
 
   let creatorNodeEndpoints
   try {
-    creatorNodeEndpoints = await _getCreatorNodeEndpoints(req, req.session.wallet)
+    creatorNodeEndpoints = await getCreatorNodeEndpoints(req, req.session.wallet)
   } catch (e) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
@@ -120,7 +120,7 @@ async function triggerSecondarySyncs (req) {
 }
 
 /** Retrieves current FQDN registered on-chain with node's owner wallet. */
-async function _getOwnEndpoint (req) {
+async function getOwnEndpoint (req) {
   if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
   const libs = req.app.get('audiusLibs')
 
@@ -133,10 +133,8 @@ async function _getOwnEndpoint (req) {
     throw new Error('Must provide either spOwnerWallet or ethWallets and spOwnerWalletIndex config vars.')
   }
 
-  const spInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromAddress(
-    spOwnerWallet,
-    'creator-node'
-  )
+  const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(spOwnerWallet, 'creator-node')
+  const spInfo = [await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', spId)]
 
   // confirm on-chain endpoint exists and is valid FQDN
   if (!spInfo ||
@@ -149,11 +147,11 @@ async function _getOwnEndpoint (req) {
 }
 
 /** Get all creator node endpoints for user by wallet from discprov. */
-async function _getCreatorNodeEndpoints (req, wallet) {
+async function getCreatorNodeEndpoints (req, wallet) {
   if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
   const libs = req.app.get('audiusLibs')
 
-  req.logger.info(`Starting _getCreatorNodeEndpoints for wallet ${wallet}`)
+  req.logger.info(`Starting getCreatorNodeEndpoints for wallet ${wallet}`)
   const start = Date.now()
 
   // Poll discprov until it has indexed provided blocknumber to ensure up-to-date user data.
@@ -168,7 +166,7 @@ async function _getCreatorNodeEndpoints (req, wallet) {
     const RetryTimeout = 5000 // 5 seconds
     await utils.timeout(1000)
     for (let retry = 1; retry <= MaxRetries; retry++) {
-      req.logger.info(`_getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
+      req.logger.info(`getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
       try {
         const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
         if (!fetchedUser || fetchedUser.length === 0 || !fetchedUser[0].hasOwnProperty('blocknumber') || !fetchedUser[0].hasOwnProperty('track_blocknumber')) {
@@ -183,7 +181,7 @@ async function _getCreatorNodeEndpoints (req, wallet) {
         req.logger.info(e)
       }
       await utils.timeout(RetryTimeout)
-      req.logger.info(`_getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
+      req.logger.info(`getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
     }
 
     if (discprovBlockNumber < blockNumber) {
@@ -193,7 +191,7 @@ async function _getCreatorNodeEndpoints (req, wallet) {
       throw new Error(`Failed to retrieve user from discprov after ${MaxRetries} retries. Aborting.`)
     }
   } else {
-    req.logger.info(`_getCreatorNodeEndpoints || no blockNumber passed, fetching user without retries.`)
+    req.logger.info(`getCreatorNodeEndpoints || no blockNumber passed, fetching user without retries.`)
     user = await libs.User.getUsers(1, 0, null, wallet)
   }
 
@@ -203,14 +201,15 @@ async function _getCreatorNodeEndpoints (req, wallet) {
   const endpoint = user[0]['creator_node_endpoint']
   const resp = endpoint ? endpoint.split(',') : []
 
-  req.logger.info(`_getCreatorNodeEndpoints route time ${Date.now() - start}`)
+  req.logger.info(`getCreatorNodeEndpoints route time ${Date.now() - start}`)
   return resp
 }
 
 // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
 function _isFQDN (url) {
-  let FQDN = new RegExp(/(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm)
+  if (config.get('creatorNodeIsDebug')) return true
+  const FQDN = new RegExp(/(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm)
   return FQDN.test(url)
 }
 
-module.exports = { authMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs, syncLockMiddleware }
+module.exports = { authMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs, syncLockMiddleware, getOwnEndpoint, getCreatorNodeEndpoints }

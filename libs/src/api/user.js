@@ -22,6 +22,31 @@ const USER_REQUIRED_PROPS = [
 ]
 
 class Users extends Base {
+  constructor (...args) {
+    super(...args)
+    this.getUsers = this.getUsers.bind(this)
+    this.getMutualFollowers = this.getMutualFollowers.bind(this)
+    this.getFollowersForUser = this.getFollowersForUser.bind(this)
+    this.getFolloweesForUser = this.getFolloweesForUser.bind(this)
+    this.getUserRepostFeed = this.getUserRepostFeed.bind(this)
+    this.getSocialFeed = this.getSocialFeed.bind(this)
+    this.getTopCreatorsByGenres = this.getTopCreatorsByGenres.bind(this)
+    this.uploadProfileImages = this.uploadProfileImages.bind(this)
+    this.addUser = this.addUser.bind(this)
+    this.updateUser = this.updateUser.bind(this)
+    this.addCreator = this.addCreator.bind(this)
+    this.updateCreator = this.updateCreator.bind(this)
+    this.upgradeToCreator = this.upgradeToCreator.bind(this)
+    this.updateIsVerified = this.updateIsVerified.bind(this)
+    this.addUserFollow = this.addUserFollow.bind(this)
+    this.deleteUserFollow = this.deleteUserFollow.bind(this)
+    this._waitForCreatorNodeUpdate = this._waitForCreatorNodeUpdate.bind(this)
+    this._addUserOperations = this._addUserOperations.bind(this)
+    this._updateUserOperations = this._updateUserOperations.bind(this)
+    this._validateUserMetadata = this._validateUserMetadata.bind(this)
+    this._cleanUserMetadata = this._cleanUserMetadata.bind(this)
+  }
+
   /* ----------- GETTERS ---------- */
 
   /**

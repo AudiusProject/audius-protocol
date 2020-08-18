@@ -246,10 +246,18 @@ def parse_track_event(
         # if cover_art CID is of a dir, store under _sizes field instead
         if track_record.cover_art:
             logger.warning(f"tracks.py | Processing track cover art {track_record.cover_art}")
-            is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
-            if is_directory:
-                track_record.cover_art_sizes = track_record.cover_art
-                track_record.cover_art = None
+            try:
+                is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
+                if is_directory:
+                    track_record.cover_art_sizes = track_record.cover_art
+                    track_record.cover_art = None
+            except Exception as e:
+                # we are unable to get the cover art
+                if 'invalid multihash' in str(e):
+                    track_record.cover_art_sizes = None
+                    track_record.cover_art = None
+                else:
+                    raise e
 
         update_remixes_table(session, track_record, track_metadata)
 
@@ -272,7 +280,7 @@ def is_blacklisted_ipld(session, ipld_blacklist_multihash):
     return ipld_blacklist_entry.count() > 0
 
 def is_valid_json_field(metadata, field):
-    if field in metadata and isinstance(metadata[field], dict) and len(metadata[field]) > 0:
+    if field in metadata and isinstance(metadata[field], dict) and metadata[field]:
         return True
     return False
 

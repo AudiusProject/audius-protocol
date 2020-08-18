@@ -17,7 +17,7 @@ const {
 
 // Base milestone list shared across all types
 // Each type can be configured as needed
-const baseMilestoneList = [10, 25, 50, 100, 250, 500, 1000]
+const baseMilestoneList = [10, 25, 50, 100, 250, 500, 1000, 5000, 10000, 20000, 50000, 100000, 1000000]
 const followerMilestoneList = baseMilestoneList
 // Repost milestone list shared across tracks/albums/playlists
 const repostMilestoneList = baseMilestoneList

@@ -1,70 +1,38 @@
 const axios = require('axios')
 
 const Utils = require('../../utils')
-const { raceRequests } = require('../../utils/network')
-const { serviceType } = require('../ethContracts/index')
 
 const {
   UNHEALTHY_BLOCK_DIFF,
   REQUEST_TIMEOUT_MS
 } = require('./constants')
 
+const Requests = require('./requests')
+
 // TODO - webpack workaround. find a way to do this without checkout for .default property
 let urlJoin = require('proper-url-join')
+const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 const MAKE_REQUEST_RETRY_COUNT = 3
-const MAX_MAKE_REQUEST_RETRY_COUNT = 50
-const AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT = 3
+const MAX_MAKE_REQUEST_RETRY_COUNT = 20
 
 class DiscoveryProvider {
-  constructor (autoselect, whitelist, userStateManager, ethContracts, web3Manager) {
-    this.autoselect = autoselect
+  constructor (whitelist, userStateManager, ethContracts, web3Manager, reselectTimeout, selectionCallback) {
     this.whitelist = whitelist
     this.userStateManager = userStateManager
     this.ethContracts = ethContracts
     this.web3Manager = web3Manager
+
+    this.serviceSelector = new DiscoveryProviderSelection({
+      whitelist: this.whitelist,
+      reselectTimeout,
+      selectionCallback
+    }, this.ethContracts)
   }
 
   async init () {
-    let endpoint
-    let pick
-    let isValid = null
-
-    if (this.autoselect) {
-      endpoint = await this.autoSelectEndpoint()
-    } else {
-      if (typeof this.whitelist === 'string') {
-        endpoint = this.whitelist
-      } else {
-        if (!this.whitelist || this.whitelist.size === 0) {
-          throw new Error('Must pass autoselect true or provide whitelist.')
-        }
-
-        // use this as a lookup between version endpoint and base url
-        const whitelistMap = {}
-        this.whitelist.forEach((url) => {
-          whitelistMap[urlJoin(url, '/version')] = url
-        })
-
-        try {
-          const { response } = await raceRequests(Object.keys(whitelistMap), (url) => {
-            pick = whitelistMap[url]
-          }, {}, REQUEST_TIMEOUT_MS)
-
-          isValid = pick && response.data.service && (response.data.service === serviceType.DISCOVERY_PROVIDER)
-          if (isValid) {
-            console.info('Initial discovery provider was valid')
-            endpoint = pick
-          } else {
-            console.info('Initial discovery provider was invalid, searching for a new one')
-            endpoint = await this.ethContracts.selectDiscoveryProvider(this.whitelist)
-          }
-        } catch (e) {
-          throw new Error('Could not select a discprov from the whitelist', e)
-        }
-      }
-    }
+    const endpoint = await this.serviceSelector.select()
     this.setEndpoint(endpoint)
 
     if (endpoint && this.web3Manager && this.web3Manager.web3) {
@@ -76,25 +44,6 @@ class DiscoveryProvider {
 
   setEndpoint (endpoint) {
     this.discoveryProviderEndpoint = endpoint
-  }
-
-  /**
-   * Wrapper method to auto select a valid discovery provider.
-   * @param {*} retries max retries before throwing an error
-   * @param {*} clearCachedDiscoveryProvider if set to true, implies that the previously
-   * selected discovery provider has been failing to serve requests. The prior recurring interval of
-   * checking local storage for DP and old DP local storage entry need to be cleared.
-   */
-  async autoSelectEndpoint (retries = 3, clearCachedDiscoveryProvider = false) {
-    if (retries > 0) {
-      const endpoint = await this.ethContracts.autoselectDiscoveryProvider(this.whitelist, clearCachedDiscoveryProvider)
-      if (endpoint) {
-        this.setEndpoint(endpoint)
-        return endpoint
-      }
-      return this.autoSelectEndpoint(retries - 1)
-    }
-    throw new Error('Failed to autoselect discovery provider')
   }
 
   /**
@@ -122,28 +71,15 @@ class DiscoveryProvider {
    * await getUsers(100, 0, [3,2,6]) - Invalid user ids will not be accepted
    */
   async getUsers (limit = 100, offset = 0, idsArray = null, walletAddress = null, handle = null, isCreator = null, minBlockNumber = null) {
-    let req = {
-      endpoint: 'users',
-      queryParams: { limit: limit, offset: offset }
-    }
-    if (isCreator !== null) {
-      req.queryParams.is_creator = isCreator
-    }
-    if (handle) {
-      req.queryParams.handle = handle
-    }
-    if (walletAddress) {
-      req.queryParams.wallet = walletAddress
-    }
-    if (minBlockNumber) {
-      req.queryParams.min_block_number = minBlockNumber
-    }
-    if (idsArray != null) {
-      if (!Array.isArray(idsArray)) {
-        throw new Error('Expected integer array of user ids')
-      }
-      req.queryParams.id = idsArray
-    }
+    const req = Requests.getUsers(
+      limit,
+      offset,
+      idsArray,
+      walletAddress,
+      handle,
+      isCreator,
+      minBlockNumber
+    )
     return this._makeRequest(req)
   }
 
@@ -169,29 +105,16 @@ class DiscoveryProvider {
    * await getTracks(100, 0, [3,2,6]) - Invalid track ids will not be accepted
    */
   async getTracks (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null, minBlockNumber = null, filterDeleted = null, withUsers = false) {
-    let req = { endpoint: 'tracks', queryParams: { limit: limit, offset: offset } }
-    if (idsArray) {
-      if (!Array.isArray(idsArray)) {
-        throw new Error('Expected array of track ids')
-      }
-      req.queryParams.id = idsArray
-    }
-    if (minBlockNumber) {
-      req.queryParams.min_block_number = minBlockNumber
-    }
-    if (targetUserId) {
-      req.queryParams.user_id = targetUserId
-    }
-    if (sort) {
-      req.queryParams.sort = sort
-    }
-    if (typeof filterDeleted === 'boolean') {
-      req.queryParams.filter_deleted = filterDeleted
-    }
-    if (withUsers) {
-      req.queryParams.with_users = true
-    }
-
+    const req = Requests.getTracks(
+      limit,
+      offset,
+      idsArray,
+      targetUserId,
+      sort,
+      minBlockNumber,
+      filterDeleted,
+      withUsers
+    )
     return this._makeRequest(req)
   }
 
@@ -209,17 +132,10 @@ class DiscoveryProvider {
    * @returns {(Array)} track
    */
   async getTracksIncludingUnlisted (identifiers, withUsers = false) {
-    let req = {
-      endpoint: 'tracks_including_unlisted',
-      method: 'post',
-      data: {
-        tracks: identifiers
-      },
-      queryParams: {}
-    }
-    if (withUsers) {
-      req.queryParams.with_users = true
-    }
+    const req = Requests.getTracksIncludingUnlisted(
+      identifiers,
+      withUsers
+    )
     return this._makeRequest(req)
   }
 
@@ -229,12 +145,7 @@ class DiscoveryProvider {
    * @returns {(Array)} track
    */
   async getStemsForTrack (trackId) {
-    const req = {
-      endpoint: `stems/${trackId}`,
-      queryParams: {
-        with_users: true
-      }
-    }
+    const req = Requests.getStemsForTrack(trackId)
     return this._makeRequest(req)
   }
 
@@ -246,14 +157,7 @@ class DiscoveryProvider {
    * @returns {(Array)} track
    */
   async getRemixesOfTrack (trackId, limit = null, offset = null) {
-    const req = {
-      endpoint: `remixes/${trackId}/children`,
-      queryParams: {
-        with_users: true,
-        limit,
-        offset
-      }
-    }
+    const req = Requests.getRemixesOfTrack(trackId, limit, offset)
     return this._makeRequest(req)
   }
 
@@ -264,14 +168,7 @@ class DiscoveryProvider {
    * @returns {(Array)} track
    */
   async getRemixTrackParents (trackId, limit = null, offset = null) {
-    const req = {
-      endpoint: `remixes/${trackId}/parents`,
-      queryParams: {
-        with_users: true,
-        limit,
-        offset
-      }
-    }
+    const req = Requests.getRemixTrackParents(trackId, limit, offset)
     return this._makeRequest(req)
   }
 
@@ -285,47 +182,8 @@ class DiscoveryProvider {
    * @returns {{listenCounts: Array<{trackId:number, listens:number}>}}
    */
   async getTrendingTracks (genre = null, timeFrame = null, idsArray = null, limit = null, offset = null, withUsers = false) {
-    let queryUrl = '/trending/'
-
-    if (timeFrame != null) {
-      switch (timeFrame) {
-        case 'day':
-        case 'week':
-        case 'month':
-        case 'year':
-          break
-        default:
-          throw new Error('Invalid timeFrame value provided')
-      }
-      queryUrl += timeFrame
-    }
-
-    let queryParams = {}
-    if (idsArray !== null) {
-      queryParams['id'] = idsArray
-    }
-
-    if (limit !== null) {
-      queryParams['limit'] = limit
-    }
-
-    if (offset !== null) {
-      queryParams['offset'] = offset
-    }
-
-    if (genre !== null) {
-      queryParams['genre'] = genre
-    }
-
-    if (withUsers) {
-      queryParams['with_users'] = withUsers
-    }
-
-    return this._makeRequest({
-      endpoint: queryUrl,
-      method: 'get',
-      queryParams
-    })
+    const req = Requests.getTrendingTracks(genre, timeFrame, idsArray, limit, offset, withUsers)
+    return this._makeRequest(req)
   }
 
   /**
@@ -343,19 +201,7 @@ class DiscoveryProvider {
    *  {Boolean} has_current_user_saved - has current user saved given playlist
    */
   async getPlaylists (limit = 100, offset = 0, idsArray = null, targetUserId = null, withUsers = false) {
-    let req = { endpoint: 'playlists', queryParams: { limit: limit, offset: offset } }
-    if (idsArray != null) {
-      if (!Array.isArray(idsArray)) {
-        throw new Error('Expected integer array of user ids')
-      }
-      req.queryParams.playlist_id = idsArray
-    }
-    if (targetUserId) {
-      req.queryParams.user_id = targetUserId
-    }
-    if (withUsers) {
-      req.queryParams.with_users = true
-    }
+    const req = Requests.getPlaylists(limit, offset, idsArray, targetUserId, withUsers)
     return this._makeRequest(req)
   }
 
@@ -374,17 +220,7 @@ class DiscoveryProvider {
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
   async getSocialFeed (filter, limit = 100, offset = 0, withUsers = false, tracksOnly = false) {
-    let req = {
-      endpoint: 'feed/',
-      queryParams: {
-        filter: filter,
-        limit: limit,
-        offset: offset,
-        with_users: withUsers,
-        tracks_only: tracksOnly
-      }
-    }
-
+    const req = Requests.getSocialFeed(filter, limit, offset, withUsers, tracksOnly)
     return this._makeRequest(req)
   }
 
@@ -404,11 +240,7 @@ class DiscoveryProvider {
    *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
    */
   async getUserRepostFeed (userId, limit = 100, offset = 0, withUsers = false) {
-    let req = {
-      endpoint: 'feed',
-      urlParams: '/reposts/' + userId,
-      queryParams: { limit: limit, offset: offset, with_users: withUsers }
-    }
+    const req = Requests.getUserRepostFeed(userId, limit, offset, withUsers)
     return this._makeRequest(req)
   }
 
@@ -420,11 +252,7 @@ class DiscoveryProvider {
    * getFollowIntersectionUsers(100, 0, 1, 1) - IDs must be valid
    */
   async getFollowIntersectionUsers (limit = 100, offset = 0, followeeUserId, followerUserId) {
-    let req = {
-      endpoint: 'users',
-      urlParams: '/intersection/follow/' + followeeUserId + '/' + followerUserId,
-      queryParams: { limit: limit, offset: offset }
-    }
+    const req = Requests.getFollowIntersectionUsers(limit, offset, followeeUserId, followerUserId)
     return this._makeRequest(req)
   }
 
@@ -437,11 +265,7 @@ class DiscoveryProvider {
    * getTrackRepostIntersectionUsers(100, 0, 1, 1) - IDs must be valid
    */
   async getTrackRepostIntersectionUsers (limit = 100, offset = 0, repostTrackId, followerUserId) {
-    let req = {
-      endpoint: 'users',
-      urlParams: '/intersection/repost/track/' + repostTrackId + '/' + followerUserId,
-      queryParams: { limit: limit, offset: offset }
-    }
+    const req = Requests.getTrackRepostIntersectionUsers(limit = 100, offset = 0, repostTrackId, followerUserId)
     return this._makeRequest(req)
   }
 
@@ -454,11 +278,7 @@ class DiscoveryProvider {
    * getPlaylistRepostIntersectionUsers(100, 0, 1, 1) - IDs must be valid
    */
   async getPlaylistRepostIntersectionUsers (limit = 100, offset = 0, repostPlaylistId, followerUserId) {
-    let req = {
-      endpoint: 'users',
-      urlParams: '/intersection/repost/playlist/' + repostPlaylistId + '/' + followerUserId,
-      queryParams: { limit: limit, offset: offset }
-    }
+    const req = Requests.getPlaylistRepostIntersectionUsers(limit, offset, repostPlaylistId, followerUserId)
     return this._makeRequest(req)
   }
 
@@ -468,11 +288,7 @@ class DiscoveryProvider {
    * @return {Array} array of user objects with standard user metadata
    */
   async getFollowersForUser (limit = 100, offset = 0, followeeUserId) {
-    let req = {
-      endpoint: 'users',
-      urlParams: '/followers/' + followeeUserId,
-      queryParams: { limit: limit, offset: offset }
-    }
+    const req = Requests.getFollowersForUser(limit, offset, followeeUserId)
     return this._makeRequest(req)
   }
 
@@ -482,11 +298,7 @@ class DiscoveryProvider {
    * @return {Array} array of user objects with standard user metadata
    */
   async getFolloweesForUser (limit = 100, offset = 0, followerUserId) {
-    let req = {
-      endpoint: 'users',
-      urlParams: '/followees/' + followerUserId,
-      queryParams: { limit: limit, offset: offset }
-    }
+    const req = Requests.getFolloweesForUser(limit, offset, followerUserId)
     return this._makeRequest(req)
   }
 
@@ -500,11 +312,7 @@ class DiscoveryProvider {
    * getRepostersForTrack(100, 0, 1) - ID must be valid
    */
   async getRepostersForTrack (limit = 100, offset = 0, repostTrackId) {
-    let req = {
-      endpoint: 'users',
-      urlParams: '/reposts/track/' + repostTrackId,
-      queryParams: { limit: limit, offset: offset }
-    }
+    const req = Requests.getRepostersForTrack(limit, offset, repostTrackId)
     return this._makeRequest(req)
   }
 
@@ -518,11 +326,7 @@ class DiscoveryProvider {
    * getRepostersForPlaylist(100, 0, 1) - ID must be valid
    */
   async getRepostersForPlaylist (limit = 100, offset = 0, repostPlaylistId) {
-    let req = {
-      endpoint: 'users',
-      urlParams: '/reposts/playlist/' + repostPlaylistId,
-      queryParams: { limit: limit, offset: offset }
-    }
+    const req = Requests.getRepostersForPlaylist(limit, offset, repostPlaylistId)
     return this._makeRequest(req)
   }
 
@@ -536,11 +340,7 @@ class DiscoveryProvider {
    * getSaversForTrack(100, 0, 1) - ID must be valid
    */
   async getSaversForTrack (limit = 100, offset = 0, saveTrackId) {
-    let req = {
-      endpoint: 'users',
-      urlParams: '/saves/track/' + saveTrackId,
-      queryParams: { limit: limit, offset: offset }
-    }
+    const req = Requests.getSaversForTrack(limit, offset, saveTrackId)
     return this._makeRequest(req)
   }
 
@@ -554,11 +354,7 @@ class DiscoveryProvider {
    * getSaversForPlaylist(100, 0, 1) - ID must be valid
    */
   async getSaversForPlaylist (limit = 100, offset = 0, savePlaylistId) {
-    let req = {
-      endpoint: 'users',
-      urlParams: '/saves/playlist/' + savePlaylistId,
-      queryParams: { limit: limit, offset: offset }
-    }
+    const req = Requests.getSaversForPlaylist(limit, offset, savePlaylistId)
     return this._makeRequest(req)
   }
 
@@ -572,10 +368,7 @@ class DiscoveryProvider {
    * @param {number} offset offset into list to return from (for pagination)
    */
   async searchFull (text, kind, limit = 100, offset = 0) {
-    let req = {
-      endpoint: 'search/full',
-      queryParams: { query: text, kind, limit, offset }
-    }
+    const req = Requests.searchFull(text, kind, limit, offset)
     return this._makeRequest(req)
   }
 
@@ -589,10 +382,7 @@ class DiscoveryProvider {
    * @param {number} offset offset into list to return from (for pagination)
    */
   async searchAutocomplete (text, limit = 100, offset = 0) {
-    let req = {
-      endpoint: 'search/autocomplete',
-      queryParams: { query: text, limit: limit, offset: offset }
-    }
+    const req = Requests.searchAutocomplete(text, limit, offset)
     return this._makeRequest(req)
   }
 
@@ -606,10 +396,7 @@ class DiscoveryProvider {
    * @param {number} offset offset into list to return from (for pagination)
    */
   async searchTags (text, user_tag_count = 2, kind = 'all', limit = 100, offset = 0) {
-    let req = {
-      endpoint: 'search/tags',
-      queryParams: { query: text, user_tag_count, kind, limit, offset }
-    }
+    const req = Requests.searchTags(text, user_tag_count, kind, limit, offset)
     return this._makeRequest(req)
   }
 
@@ -620,10 +407,7 @@ class DiscoveryProvider {
    * @param {number} offset - offset into list to return from (for pagination)
    */
   async getSavedPlaylists (limit = 100, offset = 0, withUsers = false) {
-    let req = {
-      endpoint: 'saves/playlists',
-      queryParams: { limit: limit, offset: offset, with_users: withUsers }
-    }
+    const req = Requests.getSavedPlaylists(limit, offset, withUsers)
     return this._makeRequest(req)
   }
 
@@ -634,10 +418,7 @@ class DiscoveryProvider {
    * @param {number} offset - offset into list to return from (for pagination)
    */
   async getSavedAlbums (limit = 100, offset = 0, withUsers = false) {
-    let req = {
-      endpoint: 'saves/albums',
-      queryParams: { limit: limit, offset: offset, with_users: withUsers }
-    }
+    const req = Requests.getSavedAlbums(limit, offset, withUsers)
     return this._makeRequest(req)
   }
 
@@ -648,10 +429,7 @@ class DiscoveryProvider {
    * @param {number} offset - offset into list to return from (for pagination)
    */
   async getSavedTracks (limit = 100, offset = 0, withUsers = false) {
-    let req = {
-      endpoint: 'saves/tracks',
-      queryParams: { limit: limit, offset: offset, with_users: withUsers }
-    }
+    const req = Requests.getSavedTracks(limit, offset, withUsers)
     return this._makeRequest(req)
   }
 
@@ -659,63 +437,32 @@ class DiscoveryProvider {
    * Return user collections (saved & uploaded) along w/ users for those collections
    */
   async getUserAccount (wallet) {
-    if (wallet === undefined) {
-      throw new Error('Expected wallet to get user account')
-    }
-    let req = {
-      endpoint: 'users/account',
-      queryParams: { wallet }
-    }
+    const req = Requests.getUserAccount(wallet)
     return this._makeRequest(req)
   }
 
   async getTopPlaylists (type, limit, mood, filter, withUsers = false) {
-    const req = {
-      endpoint: `/top/${type}`,
-      queryParams: {
-        limit,
-        mood,
-        filter,
-        with_users: withUsers
-      }
-    }
+    const req = Requests.getTopPlaylists(type, limit, mood, filter, withUsers)
     return this._makeRequest(req)
   }
 
   async getTopFolloweeWindowed (type, window, limit, withUsers = false) {
-    const req = {
-      endpoint: `/top_followee_windowed/${type}/${window}`,
-      queryParams: {
-        limit,
-        with_users: withUsers
-      }
-    }
+    const req = Requests.getTopFolloweeWindowed(type, window, limit, withUsers)
     return this._makeRequest(req)
   }
 
   async getTopFolloweeSaves (type, limit, withUsers = false) {
-    const req = {
-      endpoint: `/top_followee_saves/${type}`,
-      queryParams: {
-        limit,
-        with_users: withUsers
-      }
-    }
+    const req = Requests.getTopFolloweeSaves(type, limit, withUsers)
     return this._makeRequest(req)
   }
 
   async getLatest (type) {
-    const req = {
-      endpoint: `/latest/${type}`
-    }
+    const req = Requests.getLatest(type)
     return this._makeRequest(req)
   }
 
   async getTopCreatorsByGenres (genres, limit = 30, offset = 0, withUsers = false) {
-    let req = {
-      endpoint: 'users/genre/top',
-      queryParams: { genre: genres, limit, offset, with_users: withUsers }
-    }
+    const req = Requests.getTopCreatorsByGenres(genres, limit, offset, withUsers)
     return this._makeRequest(req)
   }
 
@@ -733,14 +480,16 @@ class DiscoveryProvider {
     }
 
     if (!this.discoveryProviderEndpoint) {
-      await this.autoSelectEndpoint()
+      const endpoint = await this.serviceSelector.select()
+      this.setEndpoint(endpoint)
     }
 
     if (retries === 0) {
       // Reset the retries count in the case that the newly selected disc prov fails, we can
       // allow it to try MAKE_REQUEST_RETRIES_COUNT number of times before trying another
       retries = MAKE_REQUEST_RETRY_COUNT
-      await this.autoSelectEndpoint(AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT, true)
+      const endpoint = await this.serviceSelector.select()
+      this.setEndpoint(endpoint)
     }
 
     let requestUrl
@@ -791,8 +540,12 @@ class DiscoveryProvider {
         ) {
           // Select a new one
           console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
-          const endpoint = await this.autoSelectEndpoint(AUTOSELECT_DISCOVERY_PROVIDER_RETRY_COUNT, true)
+          // Mark the current selection as a backup
+          this.serviceSelector.addBackup(this.discoveryProviderEndpoint, response)
+          // Select a new one
+          const endpoint = await this.serviceSelector.select()
           this.setEndpoint(endpoint)
+
           retries = MAKE_REQUEST_RETRY_COUNT // reset retry count when setting a new endpoint
           throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
         }

@@ -10,7 +10,9 @@ export const NotificationType = Object.freeze({
   Favorite: 'Favorite',
   Milestone: 'Milestone',
   UserSubscription: 'UserSubscription',
-  Announcement: 'Announcement'
+  Announcement: 'Announcement',
+  RemixCreate: 'RemixCreate',
+  RemixCosign: 'RemixCosign'
 })
 
 const EntityType = Object.freeze({
@@ -139,7 +141,29 @@ const notificationMap = {
         <BodyText text={` released a new ${notification.entity.type} ${notification.entity.name}`} />
       </span>
     )
+  },
+  [NotificationType.RemixCreate] (notification) {
+    const { remixUser, remixTrack, parentTrackUser, parentTrack } = notification
+    return (
+      <span className={'notificationText'}>
+        <HighlightText text={remixTrack.title} />
+        <BodyText text={` by `} />
+        <HighlightText text={remixUser.name} />
+      </span>
+    )
+  },
+  [NotificationType.RemixCosign] (notification) {
+    const { parentTrackUser, parentTracks } = notification
+    const parentTrack = parentTracks.find(t => t.owner_id === parentTrackUser.user_id)
+    return (
+      <span className={'notificationText'}>
+        <HighlightText text={parentTrackUser.name} />
+        <BodyText text={` Co-signed your Remix of `} />
+        <HighlightText text={parentTrack.title} />
+      </span>
+    )
   }
+
 }
 
 const getMessage = (notification) => {
@@ -148,10 +172,88 @@ const getMessage = (notification) => {
   return getNotificationMessage(notification)
 }
 
+const getTitle = (notification) => {
+  switch (notification.type) {
+    case NotificationType.RemixCreate: {
+      const { parentTrack } = notification
+      return (
+        <span className={'notificationText'}>
+          <BodyText text={`New remix of your track `} />
+          <HighlightText text={parentTrack.title} />
+        </span>
+      )
+    }
+    default: 
+      return null
+  }
+}
+
+const getTrackMessage = (notification) => {
+  switch (notification.type) {
+    case NotificationType.RemixCosign: {
+      const { remixTrack } = notification
+      return (
+        <span className={'notificationText'}>
+          <HighlightText text={remixTrack.title} />
+        </span>
+      )
+    }
+    default: 
+      return null
+  }
+}
+
+export const getTrackLink = (track) => {
+  return `https://audius.co/${track.route_id}-${track.track_id}`
+}
+
+const getTwitter = (notification) => {
+  switch (notification.type) {
+    case NotificationType.RemixCreate: {
+      const { parentTrack, parentTrackUser, remixUser, remixTrack } = notification
+      const twitterHandle = parentTrackUser.twitterHandle 
+        ? `@${parentTrackUser.twitterHandle}`
+        : parentTrackUser.name
+      const text = `New remix of ${parentTrack.title} by ${twitterHandle} on @AudiusProject #Audius`
+      const url = getTrackLink(remixTrack)
+      return {
+        message: 'Share With Your Friends',
+        href: `http://twitter.com/share?url=${encodeURIComponent(url)
+          }&text=${encodeURIComponent(text)}`
+      }
+    }
+    case NotificationType.RemixCosign: {
+      const { parentTracks, parentTrackUser, remixTrack } = notification
+      const parentTrack = parentTracks.find(t => t.owner_id === parentTrackUser.user_id)
+      const url = getTrackLink(remixTrack)
+      const twitterHandle = parentTrackUser.twitterHandle 
+        ? `@${parentTrackUser.twitterHandle}`
+        : parentTrackUser.name
+      const text = `My remix of ${parentTrack.title} was Co-Signed by ${twitterHandle} on @AudiusProject #Audius`
+      return {
+        message: 'Share With Your Friends',
+        href: `http://twitter.com/share?url=${encodeURIComponent(url)
+          }&text=${encodeURIComponent(text)}`
+      }
+    }
+    default: 
+      return null
+  }
+}
+
 const Notification = (props) => {
   const message = getMessage(props)
+  const title = getTitle(props)
+  const trackMessage = getTrackMessage(props)
+  const twitter = getTwitter(props)
   return (
-    <NotificationBody {...props} message={message} />
+    <NotificationBody
+      {...props}
+      title={title}
+      message={message}
+      trackMessage={trackMessage}
+      twitter={twitter}
+    />
   )
 }
 

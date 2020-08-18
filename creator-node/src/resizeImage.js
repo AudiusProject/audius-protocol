@@ -1,5 +1,12 @@
 const Jimp = require('jimp')
 const ExifParser = require('exif-parser')
+const { logger: genericLogger } = require('./logging')
+const { ipfs } = require('./ipfsClient')
+const fs = require('fs')
+const path = require('path')
+const { promisify } = require('util')
+const writeFile = promisify(fs.writeFile)
+const mkdir = promisify(fs.mkdir)
 
 const MAX_HEIGHT = 6000 // No image should be taller than this.
 const COLOR_WHITE = 0xFFFFFFFF
@@ -8,29 +15,28 @@ const MIME_TYPE_JPEG = 'image/jpeg'
 
 /**
  * Returns an image that's been resized, cropped into a square, converted into JPEG, and compressed.
- * @param {Object} req
- * @param {string} imageBuffer the buffer of the image to use
+ * @param {string} image the buffer of the image to use
  * @param {number} maxWidth max width of the returned image (default is 1,000px)
  * @param {boolean} square whether or not to square the image
  * @return {Buffer} the converted image
  * @dev TODO - replace with child node process bc need for speed
  */
-async function resizeImage (req, imageBuffer, maxWidth, square) {
+async function resizeImage (image, maxWidth, square, logger) {
+  let img = image.clone()
   // eslint-disable-next-line
   let exif
   let time = Date.now()
-  req.logger.info(`resize image ${maxWidth} - start`)
+  logger.info(`resize image ${maxWidth} - start`)
   try {
-    exif = ExifParser.create(imageBuffer).parse()
-    req.logger.info(`resize image ${maxWidth} - create time ${Date.now() - time}`)
+    exif = ExifParser.create(img).parse()
+    logger.info(`resize image ${maxWidth} - create time ${Date.now() - time}`)
     time = Date.now()
   } catch (error) {
-    req.logger.error(error)
+    logger.error(error)
     exif = null
   }
 
-  let img = await Jimp.read(imageBuffer)
-  req.logger.info(`resize image ${maxWidth} - read time ${Date.now() - time}`)
+  logger.info(`resize image ${maxWidth} - read time ${Date.now() - time}`)
 
   img = _exifRotate(img, exif)
   img.background(COLOR_WHITE)
@@ -96,4 +102,85 @@ function _exifRotate (img, exif) {
   return img
 }
 
-module.exports = resizeImage
+module.exports = async (job) => {
+  const {
+    file,
+    fileName,
+    storagePath,
+    sizes,
+    square,
+    logContext
+  } = job.data
+  const logger = genericLogger.child(logContext)
+
+  // Read the image once, clone it later on
+  let img
+  try {
+    img = await Jimp.read(file)
+  } catch (e) {
+    throw new Error(`Could not generate image buffer during image resize: ${e}`)
+  }
+
+  // Resize all the images
+  const resizes = await Promise.all(
+    Object.keys(sizes).map(size => {
+      return resizeImage(img, sizes[size], square, logger)
+    })
+  )
+
+  // Add all the images to IPFS including the original
+  const toAdd = Object.keys(sizes).map((size, i) => {
+    return {
+      path: path.join(fileName, size),
+      content: resizes[i]
+    }
+  })
+  const original = await img.getBufferAsync(MIME_TYPE_JPEG)
+  toAdd.push({
+    path: path.join(fileName, 'original.jpg'),
+    content: original
+  })
+  resizes.push(original)
+
+  const ipfsAddResp = await ipfs.add(
+    toAdd,
+    { pin: false }
+  )
+
+  // Write all the images to file storage and
+  // return the CIDs and storage paths to write to db
+  // in the main thread
+  const dirCID = ipfsAddResp[ipfsAddResp.length - 1].hash
+  const dirDestPath = path.join(storagePath, dirCID)
+
+  const resp = {
+    dir: { dirCID, dirDestPath },
+    files: []
+  }
+
+  try {
+    await mkdir(dirDestPath)
+  } catch (e) {
+    // if error = 'already exists', ignore else throw
+    if (e.message.indexOf('already exists') < 0) throw e
+  }
+
+  const ipfsFileResps = ipfsAddResp.slice(0, ipfsAddResp.length - 1)
+  await Promise.all(ipfsFileResps.map(async (fileResp, i) => {
+    logger.info('file CID', fileResp.hash)
+
+    // Save file to disk
+    const destPath = path.join(storagePath, dirCID, fileResp.hash)
+    await writeFile(destPath, resizes[i])
+
+    logger.info('Added file', fileResp, file)
+
+    resp.files.push({
+      multihash: fileResp.hash,
+      sourceFile: fileResp.path,
+      storagePath: destPath
+    })
+  }))
+
+  return Promise.resolve(resp)
+}

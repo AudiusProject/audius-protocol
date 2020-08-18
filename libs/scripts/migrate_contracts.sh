@@ -5,7 +5,7 @@ then
   cd ../contracts/
   node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run-audlib
 
-  echo "Writing flask config file"
+  echo "Writing config files"
   node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run
 else
   echo "INCORRECT REPOSITORY STRUCTURE. PLEASE FOLLOW README"
@@ -17,6 +17,7 @@ if [ -d "../eth-contracts/build/contracts" ]
 then
   echo "Audius eth-contracts repo is present"
   cd ../eth-contracts/
+  echo "Writing eth-contracts config files"
   node_modules/.bin/truffle exec scripts/migrate-contracts.js
 else
   echo "INCORRECT REPOSITORY STRUCTURE. PLEASE FOLLOW README"

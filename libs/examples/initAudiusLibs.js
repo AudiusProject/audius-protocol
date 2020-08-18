@@ -9,6 +9,7 @@ const identityServiceEndpoint = 'http://localhost:7000'
 const dataWeb3ProviderEndpoints = ['http://localhost:8545', 'http://localhost:8545']
 const ethWeb3ProviderEndpoint = 'http://localhost:8546'
 const isServer = true
+const isDebug = true
 
 async function initAudiusLibs (useExternalWeb3, ownerWalletOverride = null, ethOwnerWalletOverride = null) {
   let audiusLibsConfig
@@ -29,8 +30,9 @@ async function initAudiusLibs (useExternalWeb3, ownerWalletOverride = null, ethO
         ethWeb3ProviderEndpoint,
         ethWallet
       ),
-      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(false, new Set(['http://docker.for.mac.localhost:5000'])),
-      isServer
+      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(new Set(['http://docker.for.mac.localhost:5000'])),
+      isServer,
+      isDebug,
     }
   } else {
     audiusLibsConfig = {
@@ -41,9 +43,10 @@ async function initAudiusLibs (useExternalWeb3, ownerWalletOverride = null, ethO
         ethWeb3ProviderEndpoint,
         ethContractsConfig.ownerWallet),
       creatorNodeConfig: AudiusLibs.configCreatorNode(creatorNodeEndpoint),
-      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true),
+      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
       identityServiceConfig: AudiusLibs.configIdentityService(identityServiceEndpoint),
-      isServer
+      isServer,
+      isDebug
     }
   }
   let audiusLibs = new AudiusLibs(audiusLibsConfig)

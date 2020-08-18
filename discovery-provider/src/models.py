@@ -1,7 +1,12 @@
+import logging
 import enum
+
+from jsonschema import ValidationError
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import validates
+from sqlalchemy.sql import null
 from sqlalchemy import (
     Column,
     Integer,
@@ -12,9 +17,67 @@ from sqlalchemy import (
     Text,
     Enum,
     PrimaryKeyConstraint,
+    func,
 )
+from src.model_validator import ModelValidator
 
 Base = declarative_base()
+logger = logging.getLogger(__name__)
+
+def validate_field_helper(field, value, model):
+    # TODO: need to write custom validator for these datetime fields as jsonschema
+    # validates datetime in format 2018-11-13T20:20:39+00:00, not a format we use
+    # also not totally necessary as these fields are created server side
+    if field in ('created_at', 'updated_at'):
+        return value
+
+    to_validate = {
+        field: value
+    }
+    try:
+        ModelValidator.validate(to_validate=to_validate, model=model, field=field)
+    except ValidationError as e:
+        value = get_default_value(field, value, model, e)
+    except BaseException as e:
+        logger.error(f"Validation failed: {e}")
+
+    return value
+
+def get_default_value(field, value, model, e):
+    field_props = ModelValidator.get_properties_for_field(model, field)
+
+    # type field from the schema. this can either be a string or list
+    # required by JSONSchema, cannot be None
+    schema_type_field = field_props['type']
+    try:
+        default_value = field_props['default']
+    except KeyError:
+        default_value = None
+
+    # If the schema indicates this field is equal to object(if string) or contains object(if list) and
+    # the default value isn't set in the schema, set to SQL null, otherwise JSONB columns get
+    # set to string 'null'.
+    # Other fields can be set to their regular defaults or None.
+    if not default_value:
+        # if schema_type_field is defined as a list, need to check if 'object' is in list, else check string
+        if isinstance(schema_type_field, list) and 'object' in schema_type_field:
+            default_value = null() # sql null
+        elif schema_type_field == 'object':
+            default_value = null() # sql null
+
+    logger.warning(f"Validation: Setting the default value {default_value} for field {field} " \
+        f"of type {schema_type_field} because of error: {e}")
+
+    return default_value
+
+def get_fields_to_validate(model):
+    try:
+        fields = ModelValidator.models_to_schema_and_fields_dict[model]['fields']
+    except BaseException as e:
+        logger.error(f"Validation failed: {e}. No validation will occur for {model}")
+        fields = ['']
+
+    return fields
 
 class BlockMixin():
 
@@ -55,7 +118,7 @@ class BlacklistedIPLD(Base):
     blocknumber = Column(Integer, ForeignKey("ipld_blacklist_blocks.number"), nullable=False)
     ipld = Column(String, nullable=False)
     is_blacklisted = Column(Boolean, nullable=False)
-    is_current = Column(Boolean, nullable=False)
+    is_current = Column(Boolean, nullable=False, index=True)
 
     PrimaryKeyConstraint(blockhash, ipld, is_blacklisted, is_current)
 
@@ -71,7 +134,6 @@ class User(Base):
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
     blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
     user_id = Column(Integer, nullable=False)
-    is_ready = Column(Boolean, nullable=False)
     is_current = Column(Boolean, nullable=False)
     handle = Column(String)
     handle_lc = Column(String, index=True)
@@ -93,11 +155,18 @@ class User(Base):
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, user_id, blockhash)
 
+    ModelValidator.init_model_schemas('User')
+    fields = get_fields_to_validate('User')
+
+    # unpacking args into @validates
+    @validates(*fields)
+    def validate_field(self, field, value):
+        return validate_field_helper(field, value, 'User')
+
     def __repr__(self):
         return f"<User(blockhash={self.blockhash},\
 blocknumber={self.blocknumber},\
 user_id={self.user_id},\
-is_ready={self.is_ready},\
 is_current={self.is_current},\
 handle={self.handle},\
 wallet={self.wallet},\
@@ -125,24 +194,24 @@ class Track(Base):
     is_delete = Column(Boolean, nullable=False)
     owner_id = Column(Integer, nullable=False)
     route_id = Column(String, nullable=False)
-    title = Column(Text)
-    length = Column(Integer)
-    cover_art = Column(String)
-    cover_art_sizes = Column(String)
-    tags = Column(String)
-    genre = Column(String)
-    mood = Column(String)
-    credits_splits = Column(String)
+    title = Column(Text, nullable=True)
+    length = Column(Integer, nullable=True)
+    cover_art = Column(String, nullable=True)
+    cover_art_sizes = Column(String, nullable=True)
+    tags = Column(String, nullable=True)
+    genre = Column(String, nullable=True)
+    mood = Column(String, nullable=True)
+    credits_splits = Column(String, nullable=True)
     remix_of = Column(postgresql.JSONB, nullable=True)
-    create_date = Column(String)
-    release_date = Column(String)
-    file_type = Column(String)
-    description = Column(String)
-    license = Column(String)
-    isrc = Column(String)
-    iswc = Column(String)
+    create_date = Column(String, nullable=True)
+    release_date = Column(String, nullable=True)
+    file_type = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    license = Column(String, nullable=True)
+    isrc = Column(String, nullable=True)
+    iswc = Column(String, nullable=True)
     track_segments = Column(postgresql.JSONB, nullable=False)
-    metadata_multihash = Column(String)
+    metadata_multihash = Column(String, nullable=True)
     download = Column(postgresql.JSONB, nullable=True)
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
@@ -152,6 +221,14 @@ class Track(Base):
 
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, track_id, blockhash)
+
+    ModelValidator.init_model_schemas('Track')
+    fields = get_fields_to_validate('Track')
+
+    # unpacking args into @validates
+    @validates(*fields)
+    def validate_field(self, field, value):
+        return validate_field_helper(field, value, 'Track')
 
     def __repr__(self):
         return (
@@ -322,8 +399,8 @@ class Stem(Base):
     PrimaryKeyConstraint(parent_track_id, child_track_id)
 
     def __repr__(self):
-        return f"<Remix(parent_track_id={self.parent_track_id},\
-            child_track_id={self.child_track_id})"
+        return f"<Stem(parent_track_id={self.parent_track_id},\
+child_track_id={self.child_track_id})>"
 
 class Remix(Base):
     __tablename__ = "remixes"
@@ -334,4 +411,65 @@ class Remix(Base):
 
     def __repr__(self):
         return f"<Remix(parent_track_id={self.parent_track_id},\
-            child_track_id={self.child_track_id}>"
+child_track_id={self.child_track_id}>"
+
+class Play(Base):
+    __tablename__ = "plays"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, nullable=True, index=False)
+    source = Column(String, nullable=True, index=False)
+    play_item_id = Column(Integer, nullable=False, index=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<Play(\
+id={self.id},\
+user_id={self.user_id},\
+source={self.source},\
+play_item_id={self.play_item_id}\
+updated_at={self.updated_at}\
+created_at={self.created_at}>"
+
+class RouteMetrics(Base):
+    __tablename__ = "route_metrics"
+
+    version = Column(String, nullable=True)
+    route_path = Column(String, nullable=False)
+    query_string = Column(String, nullable=True, default='')
+    count = Column(Integer, nullable=False)
+    timestamp = Column(DateTime, nullable=False, default=func.now())
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    PrimaryKeyConstraint(route_path, query_string, timestamp)
+
+    def __repr__(self):
+        return f"<RouteMetrics(\
+version={self.version},\
+route_path={self.route_path},\
+query_string={self.query_string},\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class AppNameMetrics(Base):
+    __tablename__ = "app_name_metrics"
+
+    application_name = Column(String, nullable=False)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(DateTime, nullable=False, default=func.now())
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    PrimaryKeyConstraint(application_name, timestamp)
+
+    def __repr__(self):
+        return f"<AppNameMetrics(\
+application_name={self.application_name},\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"

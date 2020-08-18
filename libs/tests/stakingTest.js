@@ -1,6 +1,3 @@
-// HN TODO 4/10/19 - Revisit these tests they are fully broken after all our changes
-// Disabling all for now
-
 const assert = require('assert')
 const nock = require('nock')
 const helpers = require('./helpers')
@@ -11,8 +8,6 @@ const initializeLibConfig = helpers.initializeLibConfig
 const ethContractsConfig = require('../eth-contracts/config.json')
 const AudiusLibs = require('../src/index')
 
-const testServiceType = 'discovery-provider'
-
 let token
 let ownerWallet
 let accounts
@@ -20,8 +15,6 @@ let audius1
 let audius2
 let sp1
 let sp2
-
-const fromBn = n => parseInt(n.valueOf(), 10)
 
 const assertThrows = async (blockOrPromise, expectedErrorCode, expectedReason) => {
   try {
@@ -41,52 +34,49 @@ const assertRevert = async (blockOrPromise, expectedReason) => {
     return
   }
   const expectedMsgFound = error.message.indexOf(expectedReason) >= 0
-  assert.strictEqual(expectedMsgFound, true, `Expected revert reason '${expectedReason}' not found. Found ${error.message}`)
+  assert.equal(expectedMsgFound, true, 'Expected revert reason not found')
 }
 
 const getRandomLocalhost = () => {
   return 'http://localhost:' + Math.floor(1000 + Math.random() * 9000)
 }
 
-const deregisterAllSPEndpoints = async (libs, account, type) => {
-  let idsRegisteredToAddress = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdsFromAddress(
+const testDeregisterSPEndpoint = async (libs, account, type) => {
+  let previousRegisteredId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(
     sp1,
     type)
-  await Promise.all(idsRegisteredToAddress.map(async (x) => {
-    let idsRegisteredToAddress = x
-    let prevSpInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo(
-      type,
-      idsRegisteredToAddress)
-    // Confirm expected return values
-    assert(prevSpInfo.hasOwnProperty('owner'), `Expected owner, found ${JSON.stringify(prevSpInfo)}`)
-    assert(prevSpInfo.hasOwnProperty('endpoint') && prevSpInfo['endpoint'], `Expected endpoint, found ${JSON.stringify(prevSpInfo)}`)
-    assert(prevSpInfo.hasOwnProperty('spID') && prevSpInfo['spID'], `Expected spID, found ${JSON.stringify(prevSpInfo)}}`)
-    assert(prevSpInfo.hasOwnProperty('type') && prevSpInfo['type'], `Expected type, found ${JSON.stringify(prevSpInfo)}`)
-    assert(prevSpInfo.hasOwnProperty('blocknumber') && prevSpInfo['blocknumber'], `Expected blocknumber, found ${JSON.stringify(prevSpInfo)}`)
-    let tx = await libs.ethContracts.ServiceProviderFactoryClient.deregister(
-      type,
-      prevSpInfo.endpoint)
-  }))
-}
+  let prevSpInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo(
+    type,
+    previousRegisteredId)
 
-const clearAllRegisteredEndpoints = async () => {
-  try {
-    // Deregister any previously registered endpoints
-    await deregisterAllSPEndpoints(audius1, sp1, testServiceType)
-    await deregisterAllSPEndpoints(audius2, sp2, testServiceType)
-  } catch (e) {
-    console.log(`Error deregistering: ${e}`)
+  let path = '/version'      
+  let response = {
+    service: type,
+    version : '0.0.1'
   }
+
+  if (type === 'discovery-provider') {
+    path = '/health_check'
+    response = {data: {...response}}
+  }
+
+  nock(prevSpInfo.endpoint)
+    .get(path)
+    .reply(200, response)
+  let tx = await libs.ethContracts.ServiceProviderFactoryClient.deregister(
+    type,
+    prevSpInfo.endpoint)
 }
 
 describe('Staking tests', () => {
+  let testServiceType = 'discovery-provider'
   before(async function () {
     await audius0.init()
     token = audius0.ethContracts.AudiusTokenClient
     accounts = await audius0.ethWeb3Manager.getWeb3().eth.getAccounts()
 
     // Reset min stake
-    // await audius0.ethContracts.StakingProxyClient.setMinStakeAmount(0)
+    await audius0.ethContracts.StakingProxyClient.setMinStakeAmount(0)
 
     ownerWallet = accounts[0]
     sp1 = accounts[1]
@@ -108,18 +98,21 @@ describe('Staking tests', () => {
     await audius2.init()
 
     // Refund test accounts
-    await token.transfer(sp1, 10000)
-    await token.transfer(sp2, 10000)
+    await token.transfer(sp1, 1000)
+    await token.transfer(sp2, 1000)
   })
 
   beforeEach(async () => {
-    let currentlyStaked = await audius0.ethContracts.StakingProxyClient.totalStaked()
-    await clearAllRegisteredEndpoints()
+    try {
+      // Deregister any previously registered endpoints
+      await testDeregisterSPEndpoint(audius1, sp1, testServiceType)
+      await testDeregisterSPEndpoint(audius2, sp2, testServiceType)
+    } catch (e) {
+      // console.log(`benign error: ${e}`)
+    }
   })
 
   after(async () => {
-    // Clear any remaining state
-    await clearAllRegisteredEndpoints()
     let sp1Balance = await token.balanceOf(sp1)
     let sp2Balance = await token.balanceOf(sp2)
 
@@ -135,26 +128,16 @@ describe('Staking tests', () => {
     // Confirm no balance remaining in test account wallets
     sp1Balance = await token.balanceOf(sp1)
     sp2Balance = await token.balanceOf(sp2)
-    assert.strictEqual(sp1Balance, 0)
-    assert.strictEqual(sp2Balance, 0)
-
-    let currentlyStaked = await audius0.ethContracts.StakingProxyClient.totalStaked()
-    assert.strictEqual(
-      currentlyStaked,
-      0,
-      `Expect no stake on finish - found ${currentlyStaked}`)
+    assert.equal(sp1Balance, 0)
+    assert.equal(sp2Balance, 0)
   })
 
   it('initial staking contract state', async function () {
     let tokenAddr = await audius0.ethContracts.StakingProxyClient.token()
     assert(token.contractAddress, tokenAddr, 'Expect correct token address from staking proxy')
     let supportsHistory = await audius0.ethContracts.StakingProxyClient.supportsHistory()
-    assert.strictEqual(supportsHistory, true, 'History support required')
-    let currentlyStaked = await audius0.ethContracts.StakingProxyClient.totalStaked()
-    assert.strictEqual(
-      currentlyStaked,
-      0,
-      `Expect no stake on init - found ${currentlyStaked}`)
+    assert.equal(supportsHistory, true, 'History support required')
+    assert.equal(await audius0.ethContracts.StakingProxyClient.totalStaked(), 0, 'Expect no stake on init')
   })
 
   describe('Registration', () => {
@@ -171,30 +154,28 @@ describe('Staking tests', () => {
       beforeEach() setup is failing the register() call
     */
     beforeEach(async () => {
-      return
+
       // Clear any accounts registered w/the audius1 account
       initialSPBalance = await token.balanceOf(sp1)
+      testEndpt = getRandomLocalhost()
 
-      // Refund account if necessary
-      if (initialSPBalance < defaultStake) {
-        await token.transfer(sp1, 1000)
-        initialSPBalance = await token.balanceOf(sp1)
+      let path = '/version'      
+      let response = {
+        service: testServiceType,
+        version : '0.0.1'
       }
 
-      testEndpt = getRandomLocalhost()
+      if (testServiceType === 'discovery-provider') {
+        path = '/health_check'
+        response = {data: {...response}}
+      }
+
       nock(testEndpt)
-        .get('/version')
-        .reply(200, {
-          service: testServiceType,
-          version: '0.0.1'
-        })
+        .get(path)
+        .reply(200, response)
 
       // Cache stake amount prior to register
       initialStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
-
-      let preRegistrationHighestSPTypeId = fromBn(
-        await audius0.ethContracts.ServiceProviderFactoryClient.getTotalServiceTypeProviders(testServiceType)
-      )
 
       // Register
       let tx = await audius1.ethContracts.ServiceProviderFactoryClient.register(
@@ -202,34 +183,21 @@ describe('Staking tests', () => {
         testEndpt,
         defaultStake
       )
-
-      assert.strictEqual(
-        (preRegistrationHighestSPTypeId + 1),
-        tx.spID,
-        `Expect increase of one for service type. Initial ${preRegistrationHighestSPTypeId}. Returned ${tx.spID}`)
-
-      // Validate returned values
-      let idFromEndpoint =
-        fromBn(await audius0.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(testEndpt))
-
-      assert.strictEqual(
-        idFromEndpoint,
-        tx.spID,
-        `Id from endpoint check. Returned ${tx.spID}, queried ${idFromEndpoint}`)
+      // TOOD: validate tx
+      // console.dir(tx, {depth:5})
     })
 
     it('register service provider + stake', async function () {
-      return
-      // Confirm changes
-      assert.strictEqual(
+      assert.equal(
         initialSPBalance - defaultStake,
         await token.balanceOf(sp1),
         'Expect decrease in bal')
-      assert.strictEqual(
+      assert.equal(
         await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1),
         initialStake + defaultStake,
         'Expect increase in stake')
     })
+
     // subsequent tests will fail
 
     // it('increases service provider stake', async function () {

@@ -13,29 +13,37 @@ class ServiceProviderFactoryClient extends ContractClient {
     contractRegistryKey,
     getRegistryAddress,
     audiusTokenClient,
-    stakingProxyClient
+    stakingProxyClient,
+    isDebug = false
   ) {
     super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress)
     this.audiusTokenClient = audiusTokenClient
     this.stakingProxyClient = stakingProxyClient
+    this.isDebug = isDebug
   }
 
   async registerWithDelegate (serviceType, endpoint, amount, delegateOwnerWallet) {
-    if (!Utils.isFQDN(endpoint)) {
+    if (!this.isDebug && !Utils.isFQDN(endpoint)) {
       throw new Error('Not a fully qualified domain name!')
     }
     if (!Number.isInteger(amount) && !Utils.isBN(amount)) {
       throw new Error('Invalid amount')
     }
 
-    let requestUrl = urlJoin(endpoint, 'version')
+    let requestUrl = urlJoin(endpoint, 'health_check')
     let axiosRequestObj = {
       url: requestUrl,
       method: 'get',
       timeout: 1000
     }
     const resp = await axios(axiosRequestObj)
-    const endpointServiceType = resp.data.service
+    let endpointServiceType
+    try {
+      endpointServiceType = resp.data.data.service
+    } catch (e) {
+      endpointServiceType = resp.data.service
+    }
+
     if (serviceType !== endpointServiceType) {
       throw new Error('Attempting to register endpoint with mismatched service type')
     }
@@ -149,12 +157,13 @@ class ServiceProviderFactoryClient extends ContractClient {
       endpoint: info.endpoint,
       spID: parseInt(serviceId),
       type: serviceType,
-      blocknumber: info.blockNumber
+      blocknumber: info.blocknumber,
+      delegateOwnerWallet: info.delegateOwnerWallet
     }
   }
 
   async getServiceProviderInfoFromEndpoint (endpoint) {
-    let requestUrl = urlJoin(endpoint, 'version')
+    let requestUrl = urlJoin(endpoint, 'health_check')
     let axiosRequestObj = {
       url: requestUrl,
       method: 'get',
@@ -162,7 +171,13 @@ class ServiceProviderFactoryClient extends ContractClient {
     }
 
     const resp = await axios(axiosRequestObj)
-    const serviceType = resp.data.service
+    let serviceType
+    try {
+      serviceType = resp.data.data.service
+    } catch (e) {
+      serviceType = resp.data.service
+    }
+
     let serviceProviderId = await this.getServiceProviderIdFromEndpoint(endpoint)
     let info = await this.getServiceProviderInfo(serviceType, serviceProviderId)
     return info
@@ -178,14 +193,11 @@ class ServiceProviderFactoryClient extends ContractClient {
   }
 
   async getServiceProviderInfoFromAddress (ownerAddress, serviceType) {
-    let idsList = await this.getServiceProviderIdsFromAddress(ownerAddress, serviceType)
+    let spId = await this.getServiceProviderIdFromAddress(ownerAddress, serviceType)
 
-    const spsInfo = await Promise.all(
-      range(idsList.length).map(i =>
-        this.getServiceProviderInfo(serviceType, idsList[i])
-      )
-    )
-    return spsInfo
+    // cast this as an array for backwards compatibility because everything expects an array
+    const spInfo = [await this.getServiceProviderInfo(serviceType, spId)]
+    return spInfo
   }
 
   async getServiceProviderList (serviceType) {

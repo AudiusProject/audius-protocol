@@ -16,7 +16,7 @@ module.exports = function (app) {
   }))
 
   app.post('/social_handles', handleResponse(async (req, res, next) => {
-    let { handle, twitterHandle, instagramHandle } = req.body
+    let { handle, twitterHandle, instagramHandle, website, donation } = req.body
     if (!handle) return errorResponseBadRequest('Please provide handle')
 
     const socialHandles = await models.SocialHandles.findOne({
@@ -34,13 +34,17 @@ module.exports = function (app) {
       await socialHandles.update({
         handle,
         twitterHandle,
-        instagramHandle
+        instagramHandle,
+        website,
+        donation
       })
     } else {
       await models.SocialHandles.create({
         handle,
         twitterHandle,
-        instagramHandle
+        instagramHandle,
+        website,
+        donation
       })
     }
     return successResponse()

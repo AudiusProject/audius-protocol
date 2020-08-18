@@ -1,21 +1,22 @@
 const nock = require('nock')
 const assert = require('assert')
 const semver = require('semver')
-
 const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 
-const mockEthContracts = (urls, currrentVersion) => ({
+const mockEthContracts = (urls, currrentVersion, previousVersions = null) => ({
   getCurrentVersion: async () => currrentVersion,
   getNumberOfVersions: async (spType) => 2,
   getVersion: async (spType, queryIndex) => {
+    if (previousVersions) {
+      return previousVersions[queryIndex]
+    }
     return ['1.2.2', '1.2.3'][queryIndex]
   },
-  getServiceProviderList: async () => urls,
-  isValidSPVersion: (version1, version2) => {
+  getServiceProviderList: async () => urls.map(u => ({ endpoint: u })),
+  hasSameMajorAndMinorVersion: (version1, version2) => {
     return (
       semver.major(version1) === semver.major(version2) &&
-      semver.minor(version1) === semver.minor(version2) &&
-      semver.patch(version2) >= semver.patch(version1)
+      semver.minor(version1) === semver.minor(version2)
     )
   }
 })
@@ -26,16 +27,19 @@ describe('DiscoveryProviderSelection', () => {
     const localStorage = new LocalStorage('./local-storage')
     localStorage.removeItem('@audius/libs:discovery-provider-timestamp')
   })
+  afterEach(() => {
+    nock.cleanAll()
+  })
 
   it('selects a healthy service', async () => {
     const healthy = 'https://healthy.audius.co'
     nock(healthy)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 0
-      })
+      } })
 
     const s = new DiscoveryProviderSelection(
       {},
@@ -49,19 +53,19 @@ describe('DiscoveryProviderSelection', () => {
     const healthy = 'https://healthy.audius.co'
     nock(healthy)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 0
-      })
+      } })
     const unhealthy = 'https://unhealthy.audius.co'
     nock(unhealthy)
       .get('/health_check')
-      .reply(400, {
+      .reply(400, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 0
-      })
+      } })
 
     const s = new DiscoveryProviderSelection(
       {},
@@ -75,19 +79,19 @@ describe('DiscoveryProviderSelection', () => {
     const healthy = 'https://healthy.audius.co'
     nock(healthy)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 0
-      })
+      } })
     const outdated = 'https://outdated.audius.co'
     nock(outdated)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.2',
         block_difference: 0
-      })
+      } })
 
     const s = new DiscoveryProviderSelection(
       {},
@@ -101,19 +105,19 @@ describe('DiscoveryProviderSelection', () => {
     const healthy = 'https://healthy.audius.co'
     nock(healthy)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 0
-      })
+      } })
     const behind = 'https://behind.audius.co'
     nock(behind)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 20
-      })
+      } })
 
     const s = new DiscoveryProviderSelection(
       {},
@@ -127,19 +131,19 @@ describe('DiscoveryProviderSelection', () => {
     const healthyButBehind = 'https://healthyButBehind.audius.co'
     nock(healthyButBehind)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 20
-      })
+      } })
     const pastVersionNotBehind = 'https://pastVersionNotBehind.audius.co'
     nock(pastVersionNotBehind)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.2',
         block_difference: 0
-      })
+      } })
 
     const s = new DiscoveryProviderSelection(
       { requestTimeout: 100 },
@@ -166,26 +170,26 @@ describe('DiscoveryProviderSelection', () => {
     const behind20 = 'https://behind20.audius.co'
     nock(behind20)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.2',
         block_difference: 20
-      })
+      } })
     const behind40 = 'https://behind40.audius.co'
     nock(behind40)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 40
-      })
+      } })
 
     const s = new DiscoveryProviderSelection(
       { requestTimeout: 100 },
       mockEthContracts([behind20, behind40], '1.2.3')
     )
     const service = await s.select()
-    assert.strictEqual(service, behind40)
+    assert.strictEqual(service, behind20)
     assert.deepStrictEqual(s.backups, {
       [behind20]: {
         service: 'discovery-provider',
@@ -202,15 +206,59 @@ describe('DiscoveryProviderSelection', () => {
     assert.strictEqual(s.isInRegressedMode(), true)
   })
 
+  it('can select the discprov that is the least number of blocks behind for past versions', async () => {
+    const behind100 = 'https://behind100.audius.co'
+    nock(behind100)
+      .get('/health_check')
+      .reply(200, { data: {
+        service: 'discovery-provider',
+        version: '1.2.3',
+        block_difference: 100
+      } })
+    const behind200 = 'https://behind200.audius.co'
+    nock(behind200)
+      .get('/health_check')
+      .reply(200, { data: {
+        service: 'discovery-provider',
+        version: '1.2.3',
+        block_difference: 200
+      } })
+
+    const s = new DiscoveryProviderSelection(
+      { requestTimeout: 100 },
+      mockEthContracts(
+        [behind100, behind200],
+        '1.2.0',
+        ['1.2.0']
+      )
+    )
+    const service = await s.select()
+    assert.strictEqual(service, behind100)
+    assert.deepStrictEqual(s.backups, {
+      [behind100]: {
+        service: 'discovery-provider',
+        version: '1.2.3',
+        block_difference: 100
+      },
+      [behind200]: {
+        service: 'discovery-provider',
+        version: '1.2.3',
+        block_difference: 200
+      }
+    })
+    assert.strictEqual(s.getTotalAttempts(), 2)
+    assert.strictEqual(s.isInRegressedMode(), true)
+  })
+
   it('will not pick a minor version behind provider', async () => {
     const minorBehind = 'https://minorBehind.audius.co'
     nock(minorBehind)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.1.3',
         block_difference: 20
-      })
+      } })
     const s = new DiscoveryProviderSelection(
       { requestTimeout: 100 },
       mockEthContracts([minorBehind], '1.2.3')
@@ -223,20 +271,20 @@ describe('DiscoveryProviderSelection', () => {
     const healthy1 = 'https://healthy1.audius.co'
     nock(healthy1)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 0
-      })
+      } })
 
     const healthy2 = 'https://healthy2.audius.co'
     nock(healthy2)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 0
-      })
+      } })
 
     const s = new DiscoveryProviderSelection(
       {
@@ -255,11 +303,11 @@ describe('DiscoveryProviderSelection', () => {
     const healthy1 = 'https://healthy1.audius.co'
     nock(healthy1)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 0
-      })
+      } })
 
     const s = new DiscoveryProviderSelection(
       {},
@@ -282,30 +330,30 @@ describe('DiscoveryProviderSelection', () => {
     nock(healthy1)
       .get('/health_check')
       .delay(100)
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 0
-      })
+      } })
 
     const healthy2 = 'https://healthy2.audius.co'
     nock(healthy2)
       .get('/health_check')
       .delay(100)
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 0
-      })
+      } })
 
     const initiallyUnhealthy = 'https://initiallyUnhealthy.audius.co'
     nock(initiallyUnhealthy)
       .get('/health_check')
-      .reply(400, {
+      .reply(400, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 0
-      })
+      } })
 
     const s = new DiscoveryProviderSelection(
       {},
@@ -334,25 +382,25 @@ describe('DiscoveryProviderSelection', () => {
     // Make healthy1 start failing but healthy2 succeed
     nock(healthy1)
       .get('/health_check')
-      .reply(400, {
+      .reply(400, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 0
-      })
+      } })
     nock(healthy2)
       .get('/health_check')
-      .reply(400, {
+      .reply(400, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 0
-      })
+      } })
     nock(initiallyUnhealthy)
       .get('/health_check')
-      .reply(200, {
+      .reply(200, { data: {
         service: 'discovery-provider',
         version: '1.2.3',
         block_difference: 0
-      })
+      } })
 
     const fifthService = await s.select()
     assert.strictEqual(fifthService, initiallyUnhealthy)

@@ -38,8 +38,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     emailFrequency: {
       allowNull: false,
-      type: DataTypes.ENUM('daily', 'weekly', 'off'),
-      defaultValue: 'daily'
+      type: DataTypes.ENUM('live', 'daily', 'weekly', 'off'),
+      defaultValue: 'live'
     }
 
   }, {})

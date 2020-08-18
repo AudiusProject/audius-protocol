@@ -20,18 +20,24 @@ function requestNotExcludedFromLogging (url) {
   return (excludedRoutes.indexOf(url) === -1)
 }
 
-function loggingMiddleware (req, res, next) {
+function getRequestLoggingContext (req) {
   const requestID = shortid.generate()
-  res.set('CN-Request-ID', requestID)
-
-  req.logger = logger.child({
+  return {
     requestID: requestID,
     requestMethod: req.method,
     requestHostname: req.hostname,
     requestUrl: req.originalUrl,
     requestWallet: req.get('user-wallet-addr'),
     requestBlockchainUserId: req.get('user-id')
-  })
+  }
+}
+
+function loggingMiddleware (req, res, next) {
+  const requestID = shortid.generate()
+  res.set('CN-Request-ID', requestID)
+
+  req.logContext = getRequestLoggingContext(req)
+  req.logger = logger.child(req.logContext)
 
   res.on('finish', function () {
     // header is set by response-time npm module, but it's only set
@@ -46,4 +52,4 @@ function loggingMiddleware (req, res, next) {
   next()
 }
 
-module.exports = { logger, loggingMiddleware, requestNotExcludedFromLogging }
+module.exports = { logger, loggingMiddleware, requestNotExcludedFromLogging, getRequestLoggingContext }

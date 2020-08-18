@@ -10,7 +10,7 @@ const formatFavorite = (notification, metadata, entity) => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
       if (!user) return null
-      return { name: user.name, image: user.thumbnail }
+      return { id: user.id, handle: user.handle, name: user.name, image: user.thumbnail }
     }),
     entity
   }
@@ -23,7 +23,7 @@ const formatRepost = (notification, metadata, entity) => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
       if (!user) return null
-      return { name: user.name, image: user.thumbnail }
+      return { id: user.user_id, handle: user.handle, name: user.name, image: user.thumbnail }
     }),
     entity
   }
@@ -64,7 +64,7 @@ function formatFollow (notification, metadata) {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
       if (!user) return null
-      return { name: user.name, image: user.thumbnail }
+      return { id: userId, handle: user.handle, name: user.name, image: user.thumbnail }
     })
   }
 }
@@ -78,31 +78,38 @@ function formatAnnouncement (notification) {
 }
 
 function formatRemixCreate (notification, metadata) {
-  const {
-    'entity_id': trackId,
-    'entity_owner_id': userId,
-    'remix_parent_track_user_id': parentTrackUserId,
-    'remix_parent_track_id': parentTrackId
-  } = notification.metadata
+  const trackId = notification.entityId
+  const parentTrackAction = notification.actions.find(action =>
+    action.actionEntityType === actionEntityTypes.Track &&
+    action.actionEntityId !== trackId)
+  const parentTrackId = parentTrackAction.actionEntityId
+  const remixTrack = metadata.tracks[trackId]
+  const parentTrack = metadata.tracks[parentTrackId]
+  const userId = remixTrack.owner_id
+  const parentTrackUserId = parentTrack.owner_id
 
   return {
     type: NotificationType.RemixCreate,
     remixUser: metadata.users[userId],
-    remixTrack: metadata.tracks[trackId],
+    remixTrack,
     parentTrackUser: metadata.users[parentTrackUserId],
-    parentTrack: metadata.tracks[parentTrackId]
+    parentTrack
   }
 }
 
 function formatRemixCosign (notification, metadata) {
-  const {
-    'entity_id': trackId
-  } = notification.metadata
-  const parentTrackUserId = notification.initiator
+  const trackId = notification.entityId
+  const parentTrackUserAction = notification.actions.find(action =>
+    action.actionEntityType === actionEntityTypes.User
+  )
+  const parentTrackUserId = parentTrackUserAction.actionEntityId
+  const remixTrack = metadata.tracks[trackId]
+  const parentTracks = remixTrack.remix_of.tracks.map(t => metadata.tracks[t.parent_track_id])
   return {
     type: NotificationType.RemixCosign,
     parentTrackUser: metadata.users[parentTrackUserId],
-    remixTrack: metadata.tracks[trackId]
+    parentTracks,
+    remixTrack
   }
 }
 

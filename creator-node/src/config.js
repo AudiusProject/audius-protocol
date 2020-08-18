@@ -77,17 +77,41 @@ const config = convict({
     env: 'port',
     default: null
   },
+  setTimeout: {
+    doc: `
+      Sets the timeout value (in ms) for sockets
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_settimeout_msecs_callback
+    `,
+    format: 'nat',
+    env: 'timeout',
+    default: 60 * 60 * 1000 // 1 hour
+  },
+  timeout: {
+    doc: `
+      Sets the timeout value (in ms) for socket inactivity
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_timeout
+    `,
+    format: 'nat',
+    env: 'timeout',
+    default: 60 * 60 * 1000 // 1 hour
+  },
   keepAliveTimeout: {
-    doc: 'Server keep alive timeout',
+    doc: `
+      Server keep alive timeout
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_keepalivetimeout
+    `,
     format: 'nat',
     env: 'keepAliveTimeout',
     default: 5000 // node.js default value
   },
   headersTimeout: {
-    doc: 'Server headers timeout',
+    doc: `
+      Server headers timeout
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_headerstimeout
+    `,
     format: 'nat',
     env: 'headersTimeout',
-    default: 60000 // node.js default value
+    default: 60 * 1000 // 60s - node.js default value
   },
   logLevel: {
     doc: 'Log level',
@@ -174,10 +198,26 @@ const config = convict({
     default: 6
   },
   hlsSegmentType: {
-    doc: 'Time of each HLS segment',
+    doc: 'Segment type of each HLS segment',
     format: String,
     env: 'hlsSegmentType',
     default: 'mpegts'
+  },
+
+  // Transcoding settings
+  transcodingMaxConcurrency: {
+    doc: 'Maximum ffmpeg processes to spawn concurrently. If unset (-1), set to # of CPU cores available',
+    format: Number,
+    env: 'transcodingMaxConcurrency',
+    default: -1
+  },
+
+  // Image processing settings
+  imageProcessingMaxConcurrency: {
+    doc: 'Maximum image resizing processes to spawn concurrently. If unset (-1), set to # of CPU cores available',
+    format: Number,
+    env: 'imageProcessingMaxConcurrency',
+    default: -1
   },
 
   // wallet information
@@ -248,11 +288,35 @@ const config = convict({
     env: 'isUserMetadataNode',
     default: false
   },
+  userMetadataNodeUrl: {
+    doc: 'address for user metadata node',
+    format: String,
+    env: 'userMetadataNodeUrl',
+    default: ''
+  },
   debounceTime: {
     doc: 'sync debounce time',
     format: 'nat',
     env: 'debounceTime',
     default: 30000 // 30000ms = 30s
+  },
+  dataRegistryAddress: {
+    doc: 'data contracts registry address',
+    format: String,
+    env: 'dataRegistryAddress',
+    default: null
+  },
+  dataProviderUrl: {
+    doc: 'data contracts web3 provider url',
+    format: String,
+    env: 'dataProviderUrl',
+    default: null
+  },
+  dataNetworkId: {
+    doc: 'data contracts network id',
+    format: String,
+    env: 'dataNetworkId',
+    default: null
   },
 
   // Service selection
@@ -260,6 +324,12 @@ const config = convict({
     doc: 'Whitelisted discovery providers to select from (comma-separated)',
     format: String,
     env: 'discoveryProviderWhitelist',
+    default: ''
+  },
+  identityService: {
+    doc: 'Identity service endpoint to record creator-node driven plays against',
+    format: String,
+    env: 'identityService',
     default: ''
   },
 
@@ -275,6 +345,18 @@ const config = convict({
     format: String,
     env: 'trackBlacklist',
     default: ''
+  },
+  creatorNodeIsDebug: {
+    doc: 'Whether the creatornode is in debug mode.',
+    format: Boolean,
+    env: 'creatorNodeIsDebug',
+    default: false
+  },
+  rehydrateMaxConcurrency: {
+    doc: 'Number of concurrent rehydrate queue tasks running',
+    format: 'nat',
+    env: 'rehydrateMaxConcurrency',
+    default: 10
   }
 
   // unsupported options at the moment
@@ -314,6 +396,13 @@ if (fs.existsSync('eth-contract-config.json')) {
     'ethRegistryAddress': ethContractConfig.registryAddress,
     'ethOwnerWallet': ethContractConfig.ownerWallet,
     'ethWallets': ethContractConfig.allWallets
+  })
+}
+
+if (fs.existsSync('contract-config.json')) {
+  const dataContractConfig = require('../contract-config.json')
+  config.load({
+    'dataRegistryAddress': dataContractConfig.registryAddress
   })
 }
 

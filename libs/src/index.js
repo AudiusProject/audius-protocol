@@ -9,6 +9,7 @@ const Hedgehog = require('./services/hedgehog/index')
 const CreatorNode = require('./services/creatorNode/index')
 const DiscoveryProvider = require('./services/discoveryProvider/index')
 const AudiusABIDecoder = require('./services/ABIDecoder/index')
+const SchemaValidator = require('./services/schemaValidator')
 const UserStateManager = require('./userStateManager')
 const Utils = require('./utils')
 const SanityChecks = require('./sanityChecks')
@@ -23,13 +24,12 @@ const ServiceProvider = require('./api/serviceProvider')
 class AudiusLibs {
   /**
    * Configures a discovery provider wrapper
-   * @param {boolean} autoselect whether or not to autoselect a discovery provider endpoint
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whitelist)
-   * - if `autoselect=true`, autoselections are validated against the whitelist
-   * - if `autoselect=false`, selection is performed at random from the whitelist
+   * @param {number?} reselectTimeout timeout to clear locally cached discovery providers
+   * @param {(selection: string) => void?} selectionCallback invoked with the select discovery provider
    */
-  static configDiscoveryProvider (autoselect = true, whitelist = null) {
-    return { autoselect, whitelist }
+  static configDiscoveryProvider (whitelist = null, reselectTimeout = null, selectionCallback = null) {
+    return { whitelist, reselectTimeout, selectionCallback }
   }
 
   /**
@@ -56,6 +56,7 @@ class AudiusLibs {
    * @param {Object} web3Provider equal to web.currentProvider
    * @param {?number} networkId network chain id
    * @param {?string} walletOverride wallet address to force use instead of the first wallet on the provided web3
+   * @param {?number} walletIndex if using a wallet returned from web3, pick the wallet at this index
    */
   static async configExternalWeb3 (registryAddress, web3Provider, networkId, walletOverride = null) {
     const web3Instance = await Utils.configureWeb3(web3Provider, networkId)
@@ -118,7 +119,8 @@ class AudiusLibs {
     identityServiceConfig,
     discoveryProviderConfig,
     creatorNodeConfig,
-    isServer
+    isServer,
+    isDebug = false
   }) {
     // set version
     this.version = packageJSON.version
@@ -129,6 +131,7 @@ class AudiusLibs {
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
     this.isServer = isServer
+    this.isDebug = isDebug
 
     this.AudiusABIDecoder = AudiusABIDecoder
 
@@ -149,6 +152,11 @@ class AudiusLibs {
     this.Track = null
     this.Playlist = null
     this.File = null
+
+    // Schemas
+    const schemaValidator = new SchemaValidator()
+    schemaValidator.init()
+    this.schemas = schemaValidator.getSchemas()
   }
 
   /** Init services based on presence of a relevant config. */
@@ -188,7 +196,8 @@ class AudiusLibs {
         this.ethWeb3Manager,
         this.ethWeb3Config ? this.ethWeb3Config.tokenAddress : null,
         this.ethWeb3Config ? this.ethWeb3Config.registryAddress : null,
-        this.isServer
+        this.isServer,
+        this.isDebug
       )
       contractsToInit.push(this.ethContracts.init())
     }
@@ -204,11 +213,12 @@ class AudiusLibs {
     /** Discovery Provider */
     if (this.discoveryProviderConfig) {
       this.discoveryProvider = new DiscoveryProvider(
-        this.discoveryProviderConfig.autoselect,
         this.discoveryProviderConfig.whitelist,
         this.userStateManager,
         this.ethContracts,
-        this.web3Manager
+        this.web3Manager,
+        this.discoveryProviderConfig.reselectTimeout,
+        this.discoveryProviderConfig.selectionCallback
       )
       await this.discoveryProvider.init()
     }
@@ -225,7 +235,8 @@ class AudiusLibs {
         creatorNodeEndpoint,
         this.isServer,
         this.userStateManager,
-        this.creatorNodeConfig.lazyConnect)
+        this.creatorNodeConfig.lazyConnect,
+        this.schemas)
       await this.creatorNode.init()
     }
 

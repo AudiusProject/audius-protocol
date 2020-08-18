@@ -161,6 +161,7 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
       const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
 
       // map properties necessary to render push notification message
+      // note that user.thumbnail will be undefined with default fetchThumbnail = false above
       const mapNotification = notificationResponseMap[notificationTypes.Follow]
       let msgGenNotif = {
         ...notifWithAddProps,
@@ -275,6 +276,7 @@ async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, 
       const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
 
       // map properties necessary to render push notification message
+      // note that user.thumbnail will be undefined with default fetchThumbnail = false above
       const mapNotification = notificationResponseMap[repostType]
       let msgGenNotif = {
         ...notifWithAddProps,
@@ -388,6 +390,7 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
       const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
 
       // map properties necessary to render push notification message
+      // note that user.thumbnail will be undefined with default fetchThumbnail = false above
       const mapNotification = notificationResponseMap[favoriteType]
       let msgGenNotif = {
         ...notifWithAddProps,
@@ -532,6 +535,7 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
       const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
 
       // map properties necessary to render push notification message
+      // note that user.thumbnail will be undefined with default fetchThumbnail = false above
       const mapNotification = notificationResponseMap[createType]
       let msgGenNotif = {
         ...notifWithAddProps,
@@ -659,6 +663,7 @@ async function _processRemixCreateNotifications (audiusLibs, notif, blocknumber,
     const metadata = await fetchNotificationMetadata(audiusLibs, childTrackUserId, [notifWithAddProps])
 
     // map properties necessary to render push notification message
+    // note that user.thumbnail will be undefined with default fetchThumbnail = false above
     const mapNotification = notificationResponseMap[notificationTypes.RemixCreate]
     let msgGenNotif = {
       ...notifWithAddProps,
@@ -738,6 +743,7 @@ async function _processCosignNotifications (audiusLibs, notif, blocknumber, time
     logger.debug('processCosignNotification - About to send a push notification for cosign', notif)
     let notifWithAddProps = {
       ...notif,
+      entityId: childTrackId,
       actions: [{
         actionEntityType: actionEntityTypes.User,
         actionEntityId: parentTrackUserId,
@@ -754,6 +760,7 @@ async function _processCosignNotifications (audiusLibs, notif, blocknumber, time
     const metadata = await fetchNotificationMetadata(audiusLibs, notifWithAddProps.initiator, [notifWithAddProps])
 
     // map properties necessary to render push notification message
+    // note that user.thumbnail will be undefined with default fetchThumbnail = false above
     const mapNotification = notificationResponseMap[notificationTypes.RemixCosign]
     let msgGenNotif = {
       ...notifWithAddProps,

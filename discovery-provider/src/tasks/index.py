@@ -1,4 +1,5 @@
 import logging
+
 from src import contract_addresses
 from src.models import Block, User, Track, Repost, Follow, Playlist, Save
 from src.tasks.celery_app import celery
@@ -9,7 +10,7 @@ from src.tasks.playlists import playlist_state_update
 from src.tasks.user_library import user_library_state_update
 from src.utils.helpers import get_ipfs_info_from_cnode_endpoint
 from src.utils.redis_constants import latest_block_redis_key, \
-    latest_block_hash_redis_key, most_recent_indexed_block_redis_key
+    latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, most_recent_indexed_block_redis_key
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,8 @@ def get_contract_info_if_exists(self, address):
     return None
 
 def initialize_blocks_table_if_necessary(db):
+    redis = update_task.redis
+
     target_blockhash = None
     target_blockhash = update_task.shared_config["discprov"]["start_block"]
     target_block = update_task.web3.eth.getBlock(target_blockhash, True)
@@ -45,7 +48,6 @@ def initialize_blocks_table_if_necessary(db):
                 parenthash=target_blockhash,
                 is_current=True,
             )
-
             if target_block.number == 0:
                 block_model.number = None
 
@@ -55,6 +57,13 @@ def initialize_blocks_table_if_necessary(db):
             assert (
                 current_block_query_result.count() == 1
             ), "Expected SINGLE row marked as current"
+
+            # set the last indexed block in redis
+            current_block_result = current_block_query_result.first()
+            if current_block_result.number:
+                redis.set(most_recent_indexed_block_redis_key, current_block_result.number)
+            if current_block_result.blockhash:
+                redis.set(most_recent_indexed_block_hash_redis_key, current_block_result.blockhash)
 
     return target_blockhash
 
@@ -99,18 +108,19 @@ def index_blocks(self, db, blocks_list):
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     for i in block_order_range:
-        if i % 10 == 0 and i != 0:
-            block_index = num_blocks - i
-            logger.info(f"index.py | index_blocks | processing block {block_index}/{num_blocks} blocks")
-
         block = blocks_list[i]
+        block_index = num_blocks - i
         block_number = block.number
         block_timestamp = block.timestamp
+        logger.info(
+            f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
+        )
 
         # Handle each block in a distinct transaction
         with db.scoped_session() as session:
             current_block_query = session.query(Block).filter_by(is_current=True)
 
+            # Without this check we may end up duplicating an insert operation
             block_model = Block(
                 blockhash=web3.toHex(block.hash),
                 parenthash=web3.toHex(block.parentHash),
@@ -230,6 +240,7 @@ def index_blocks(self, db, blocks_list):
 
         # add the block number of the most recently processed block to redis
         redis.set(most_recent_indexed_block_redis_key, block.number)
+        redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
@@ -237,10 +248,17 @@ def index_blocks(self, db, blocks_list):
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
 def revert_blocks(self, db, revert_blocks_list):
     # TODO: Remove this exception once the unexpected revert scenario has been diagnosed
-    if len(revert_blocks_list) > 500:
-        logger.error("Revert blocks list:")
+    num_revert_blocks = len(revert_blocks_list)
+    if num_revert_blocks == 0:
+        return
+
+    if num_revert_blocks > 500:
+        logger.error(f"index.py | {self.request.id} | Revert blocks list > 500:")
         logger.error(revert_blocks_list)
-        raise Exception('Unexpected revert, >500 blocks')
+        raise Exception('Unexpected revert, >0 blocks')
+
+    logger.error(f"index.py | {self.request.id} | Reverting {num_revert_blocks} blocks")
+    logger.error(revert_blocks_list)
 
     with db.scoped_session() as session:
 
@@ -260,11 +278,11 @@ def revert_blocks(self, db, revert_blocks_list):
                 parent_hash = default_config_start_hash
 
             # Update newly current block row and outdated row (indicated by current block's parent hash)
-            session.query(Block).filter(Block.blockhash == parent_hash).update(
-                {"is_current": True}
-            )
             session.query(Block).filter(Block.blockhash == revert_hash).update(
                 {"is_current": False}
+            )
+            session.query(Block).filter(Block.blockhash == parent_hash).update(
+                {"is_current": True}
             )
 
             # aggregate all transactions in current block
@@ -425,7 +443,7 @@ def refresh_peer_connections(task_context):
             for cnode_user_set in entry:
                 cnode_entries = cnode_user_set.split(',')
                 for cnode_url in cnode_entries:
-                    if cnode_url == '':
+                    if cnode_url == "''":
                         continue
                     cnode_endpoints[cnode_url] = True
 
@@ -442,7 +460,7 @@ def refresh_peer_connections(task_context):
             stored_in_redis = redis.get(cnode_url)
             if stored_in_redis is not None:
                 continue
-            if cnode_url == '':
+            if cnode_url == "''":
                 continue
 
             try:
@@ -483,7 +501,7 @@ def update_task(self):
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock("disc_prov_lock", timeout=25, blocking_timeout=25)
+    update_lock = redis.lock("disc_prov_lock", blocking_timeout=25)
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
@@ -491,7 +509,7 @@ def update_task(self):
             # Refresh all IPFS peer connections
             refresh_peer_connections(self)
 
-            logger.info(f"index.py | update_task | Acquired disc_prov_lock")
+            logger.info(f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock")
             initialize_blocks_table_if_necessary(db)
 
             latest_block = get_latest_block(db)
@@ -603,8 +621,9 @@ def update_task(self):
 
             # Perform indexing operations
             index_blocks(self, db, index_blocks_list)
+            logger.info(f"index.py | update_task | {self.request.id} | Processing complete within session")
         else:
-            logger.error("index.py | update_task | Failed to acquire disc_prov_lock")
+            logger.error(f"index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock")
     except Exception as e:
         logger.error("Fatal error in main loop", exc_info=True)
         raise e

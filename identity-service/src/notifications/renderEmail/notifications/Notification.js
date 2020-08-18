@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.getEntity = exports.getUsers = exports.NotificationType = void 0;
+exports["default"] = exports.getTrackLink = exports.getEntity = exports.getUsers = exports.NotificationType = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
@@ -33,7 +33,9 @@ var NotificationType = Object.freeze({
   Favorite: 'Favorite',
   Milestone: 'Milestone',
   UserSubscription: 'UserSubscription',
-  Announcement: 'Announcement'
+  Announcement: 'Announcement',
+  RemixCreate: 'RemixCreate',
+  RemixCosign: 'RemixCosign'
 });
 exports.NotificationType = NotificationType;
 var EntityType = Object.freeze({
@@ -177,7 +179,36 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
   }, _react["default"].createElement(HighlightText, {
     text: user.name
   }), _react["default"].createElement(BodyText, {
-    text: " released a new ".concat(notification.entity.type, "  ").concat(notification.entity.name)
+    text: " released a new ".concat(notification.entity.type, " ").concat(notification.entity.name)
+  }));
+}), _defineProperty(_notificationMap, NotificationType.RemixCreate, function (notification) {
+  var remixUser = notification.remixUser,
+      remixTrack = notification.remixTrack,
+      parentTrackUser = notification.parentTrackUser,
+      parentTrack = notification.parentTrack;
+  return _react["default"].createElement("span", {
+    className: 'notificationText'
+  }, _react["default"].createElement(HighlightText, {
+    text: remixTrack.title
+  }), _react["default"].createElement(BodyText, {
+    text: " by "
+  }), _react["default"].createElement(HighlightText, {
+    text: remixUser.name
+  }));
+}), _defineProperty(_notificationMap, NotificationType.RemixCosign, function (notification) {
+  var parentTrackUser = notification.parentTrackUser,
+      parentTracks = notification.parentTracks;
+  var parentTrack = parentTracks.find(function (t) {
+    return t.owner_id === parentTrackUser.user_id;
+  });
+  return _react["default"].createElement("span", {
+    className: 'notificationText'
+  }, _react["default"].createElement(HighlightText, {
+    text: parentTrackUser.name
+  }), _react["default"].createElement(BodyText, {
+    text: " Co-signed your Remix of "
+  }), _react["default"].createElement(HighlightText, {
+    text: parentTrack.title
   }));
 }), _notificationMap);
 
@@ -187,10 +218,102 @@ var getMessage = function getMessage(notification) {
   return getNotificationMessage(notification);
 };
 
+var getTitle = function getTitle(notification) {
+  switch (notification.type) {
+    case NotificationType.RemixCreate:
+      {
+        var parentTrack = notification.parentTrack;
+        return _react["default"].createElement("span", {
+          className: 'notificationText'
+        }, _react["default"].createElement(BodyText, {
+          text: "New remix of your track "
+        }), _react["default"].createElement(HighlightText, {
+          text: parentTrack.title
+        }));
+      }
+
+    default:
+      return null;
+  }
+};
+
+var getTrackMessage = function getTrackMessage(notification) {
+  switch (notification.type) {
+    case NotificationType.RemixCosign:
+      {
+        var remixTrack = notification.remixTrack;
+        return _react["default"].createElement("span", {
+          className: 'notificationText'
+        }, _react["default"].createElement(HighlightText, {
+          text: remixTrack.title
+        }));
+      }
+
+    default:
+      return null;
+  }
+};
+
+var getTrackLink = function getTrackLink(track) {
+  return "https://audius.co/".concat(track.route_id, "-").concat(track.track_id);
+};
+
+exports.getTrackLink = getTrackLink;
+
+var getTwitter = function getTwitter(notification) {
+  switch (notification.type) {
+    case NotificationType.RemixCreate:
+      {
+        var parentTrack = notification.parentTrack,
+            parentTrackUser = notification.parentTrackUser,
+            remixUser = notification.remixUser,
+            remixTrack = notification.remixTrack;
+        var twitterHandle = parentTrackUser.twitterHandle ? "@".concat(parentTrackUser.twitterHandle) : parentTrackUser.name;
+        var text = "New remix of ".concat(parentTrack.title, " by ").concat(twitterHandle, " on @AudiusProject #Audius");
+        var url = getTrackLink(remixTrack);
+        return {
+          message: 'Share With Your Friends',
+          href: "http://twitter.com/share?url=".concat(encodeURIComponent(url), "&text=").concat(encodeURIComponent(text))
+        };
+      }
+
+    case NotificationType.RemixCosign:
+      {
+        var parentTracks = notification.parentTracks,
+            _parentTrackUser = notification.parentTrackUser,
+            _remixTrack = notification.remixTrack;
+
+        var _parentTrack = parentTracks.find(function (t) {
+          return t.owner_id === _parentTrackUser.user_id;
+        });
+
+        var _url = getTrackLink(_remixTrack);
+
+        var _twitterHandle = _parentTrackUser.twitterHandle ? "@".concat(_parentTrackUser.twitterHandle) : _parentTrackUser.name;
+
+        var _text = "My remix of ".concat(_parentTrack.title, " was Co-Signed by ").concat(_twitterHandle, " on @AudiusProject #Audius");
+
+        return {
+          message: 'Share With Your Friends',
+          href: "http://twitter.com/share?url=".concat(encodeURIComponent(_url), "&text=").concat(encodeURIComponent(_text))
+        };
+      }
+
+    default:
+      return null;
+  }
+};
+
 var Notification = function Notification(props) {
   var message = getMessage(props);
+  var title = getTitle(props);
+  var trackMessage = getTrackMessage(props);
+  var twitter = getTwitter(props);
   return _react["default"].createElement(_NotificationBody["default"], _extends({}, props, {
-    message: message
+    title: title,
+    message: message,
+    trackMessage: trackMessage,
+    twitter: twitter
   }));
 };
 

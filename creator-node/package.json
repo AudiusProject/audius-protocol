@@ -4,7 +4,10 @@
   "main": "src/index.js",
   "scripts": {
     "start": "nodemon src/index.js | ./node_modules/.bin/bunyan || exit 0",
-    "test": "./scripts/run-tests.sh",
+    "test": "./scripts/run-tests.sh standalone_creator",
+    "test:ci": "./scripts/run-tests.sh",
+    "test:local:teardown": "./scripts/run-tests.sh standalone_creator teardown",
+    "test:teardown": "./scripts/run-tests.sh teardown",
     "coverage": "nyc npm run test",
     "report": "nyc report --reporter=html",
     "lint": "./node_modules/.bin/standard",
@@ -14,12 +17,13 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@audius/libs": "0.11.18",
+    "@audius/libs": "^0.13.1",
     "JSONStream": "^1.3.5",
     "axios": "^0.19.0",
     "base64-url": "^2.2.0",
-    "bl": "^3.0.0",
+    "bl": "^4.0.1",
     "body-parser": "^1.18.3",
+    "bull": "^3.14.0",
     "bunyan": "^1.8.12",
     "content-disposition": "^0.5.3",
     "convict": "^5.1.0",
@@ -34,6 +38,7 @@
     "express-rate-limit": "^3.5.0",
     "ffmpeg-static": "^2.4.0",
     "ffprobe-static": "^3.0.0",
+    "hashids": "^2.2.1",
     "ioredis": "^4.9.3",
     "ipfs-http-client": "^33.1.1",
     "ipfs-http-client-latest": "npm:ipfs-http-client@^42.0.0",
@@ -55,6 +60,7 @@
     "sequelize-cli": "^5.3.0",
     "sinon": "^7.0.0",
     "standard": "^12.0.1",
+    "fs-extra": "^9.0.1",
     "supertest": "^3.3.0"
   },
   "//": {

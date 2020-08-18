@@ -280,3 +280,53 @@ describe('ServiceSelection withShortCircuit', () => {
     assert.strictEqual(service, shortcircuit)
   })
 })
+
+describe('ServiceSelection findAll', () => {
+  it('can find all the healthy services', async () => {
+    const a = 'https://a.audius.co'
+    nock(a)
+      .get('/health_check')
+      .reply(200)
+
+    const b = 'https://b.audius.co'
+    nock(b)
+      .get('/health_check')
+      .reply(200)
+
+    const c = 'https://c.audius.co'
+    nock(c)
+      .get('/health_check')
+      .reply(400)
+
+    const s = new ServiceSelection({
+      getServices: () => [a, b, c]
+    })
+    const all = await s.findAll()
+    assert.deepStrictEqual(all, [a, b])
+  })
+
+  it('will drop slow services', async () => {
+    const a = 'https://a.audius.co'
+    nock(a)
+      .get('/health_check')
+      .delay(200)
+      .reply(200)
+
+    const b = 'https://b.audius.co'
+    nock(b)
+      .get('/health_check')
+      .reply(200)
+
+    const c = 'https://c.audius.co'
+    nock(c)
+      .get('/health_check')
+      .reply(200)
+
+    const s = new ServiceSelection({
+      getServices: () => [a, b, c],
+      requestTimeout: 100
+    })
+    const all = await s.findAll()
+    assert.deepStrictEqual(all, [b, c])
+  })
+})

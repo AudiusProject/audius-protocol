@@ -24,9 +24,14 @@ async function processEmailNotifications (expressApp, audiusLibs) {
 
     mg = expressApp.get('mailgun')
     if (mg === null) {
-      logger.error('Mailgun not configured')
+      logger.error('processEmailNotifications - Mailgun not configured')
       return
     }
+
+    let liveEmailUsers = await models.UserNotificationSettings.findAll({
+      attributes: ['userId'],
+      where: { emailFrequency: 'live' }
+    }).map(x => x.userId)
 
     let dailyEmailUsers = await models.UserNotificationSettings.findAll({
       attributes: ['userId'],
@@ -38,17 +43,26 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       where: { emailFrequency: 'weekly' }
     }).map(x => x.userId)
 
-    logger.info(`processEmailNotifications - ${dailyEmailUsers.length} daily users, ${weeklyEmailUsers.length}`)
+    logger.info(`processEmailNotifications - ${liveEmailUsers.length} live users`)
+    logger.info(`processEmailNotifications - ${dailyEmailUsers.length} daily users`)
+    logger.info(`processEmailNotifications - ${weeklyEmailUsers.length} weekly users`)
+    let currentTime = moment.utc()
     let now = moment()
     let dayAgo = now.clone().subtract(1, 'days')
     let weekAgo = now.clone().subtract(7, 'days')
 
-    let appAnnouncements = expressApp.get('announcements')
+    let appAnnouncements = expressApp.get('announcements').filter(a => {
+      let announcementDate = moment(a['datePublished'])
+      let timeSinceAnnouncement = moment.duration(currentTime.diff(announcementDate)).asHours()
+      // If the announcement is too old filter it out, it's not necessary to process.
+      return timeSinceAnnouncement < (weekInHours * 1.5)
+    })
+
     // For each announcement, we generate a list of valid users
     // Based on the user's email frequency
+    let liveUsersWithPendingAnnouncements = []
     let dailyUsersWithPendingAnnouncements = []
     let weeklyUsersWithPendingAnnouncements = []
-    let currentTime = moment.utc()
     for (var announcement of appAnnouncements) {
       let announcementDate = moment(announcement['datePublished'])
       let timeSinceAnnouncement = moment.duration(currentTime.diff(announcementDate)).asHours()
@@ -73,27 +87,51 @@ async function processEmailNotifications (expressApp, audiusLibs) {
         if (userNotificationQuery) {
           continue
         }
-        if (dailyEmailUsers.includes(user)) {
+        if (liveEmailUsers.includes(user)) {
+          // As an added safety check, only process if the announcement was made in the last hour
+          if (timeSinceAnnouncement < 1) {
+            logger.info(`Announcements - ${id} | Live user ${user}`)
+            liveUsersWithPendingAnnouncements.push(user)
+          }
+        } else if (dailyEmailUsers.includes(user)) {
           if (timeSinceAnnouncement < (dayInHours * 1.5)) {
             logger.info(`Announcements - ${id} | Daily user ${user}, <1 day`)
-            dailyUsersWithPendingAnnouncements.append(user)
+            dailyUsersWithPendingAnnouncements.push(user)
           }
         } else if (weeklyEmailUsers.includes(user)) {
           if (timeSinceAnnouncement < (weekInHours * 1.5)) {
             logger.info(`Announcements - ${id} | Weekly user ${user}, <1 week`)
-            weeklyUsersWithPendingAnnouncements.append(user)
+            weeklyUsersWithPendingAnnouncements.push(user)
           }
         }
       }
     }
     let pendingNotificationUsers = new Set()
     // Add users with pending announcement notifications
+    liveUsersWithPendingAnnouncements.forEach(
+      item => pendingNotificationUsers.add(item))
     dailyUsersWithPendingAnnouncements.forEach(
       item => pendingNotificationUsers.add(item))
     weeklyUsersWithPendingAnnouncements.forEach(
       item => pendingNotificationUsers.add(item))
 
     // Query users with pending notifications grouped by frequency
+    let liveEmailUsersWithUnseenNotifications = await models.Notification.findAll({
+      attributes: ['userId'],
+      where: {
+        isViewed: false,
+        userId: { [ models.Sequelize.Op.in ]: liveEmailUsers },
+        // Over fetch users here, they will get dropped later on if they have 0 notifications
+        // to process.
+        // We could be more precise here by looking at the last sent email for each user
+        // but that query would be more expensive than just finding extra users here and then
+        // dropping them.
+        timestamp: { [models.Sequelize.Op.gt]: dayAgo }
+      },
+      group: ['userId']
+    }).map(x => x.userId)
+    liveEmailUsersWithUnseenNotifications.forEach(item => pendingNotificationUsers.add(item))
+
     let dailyEmailUsersWithUnseeenNotifications = await models.Notification.findAll({
       attributes: ['userId'],
       where: {
@@ -115,8 +153,10 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       group: ['userId']
     }).map(x => x.userId)
     weeklyEmailUsersWithUnseeenNotifications.forEach(item => pendingNotificationUsers.add(item))
-    logger.info(`Daily Email Users: ${dailyEmailUsersWithUnseeenNotifications}`)
-    logger.info(`Weekly Email Users: ${weeklyEmailUsersWithUnseeenNotifications}`)
+
+    logger.info(`processEmailNotifications - Live Email Users: ${liveEmailUsersWithUnseenNotifications}`)
+    logger.info(`processEmailNotifications - Daily Email Users: ${dailyEmailUsersWithUnseeenNotifications}`)
+    logger.info(`processEmailNotifications - Weekly Email Users: ${weeklyEmailUsersWithUnseeenNotifications}`)
 
     // All users with notifications, including announcements
     let allUsersWithUnseenNotifications = [...pendingNotificationUsers]
@@ -151,18 +191,45 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       let startOfUserDay = userTime.clone().startOf('day')
       let difference = moment.duration(userTime.diff(startOfUserDay)).asHours()
 
+      let latestUserEmail = await models.NotificationEmail.findOne({
+        where: {
+          userId
+        },
+        order: [['timestamp', 'DESC']]
+      })
+      let lastSentTimestamp
+      if (latestUserEmail) {
+        lastSentTimestamp = moment(latestUserEmail.timestamp)
+      } else {
+        lastSentTimestamp = moment(0) // EPOCH
+      }
+
+      // If the user is in live email mode, just send them right away
+      if (frequency === 'live') {
+        let sent = await renderAndSendEmail(
+          userId,
+          userEmail,
+          appAnnouncements,
+          frequency,
+          lastSentTimestamp, // use lastSentTimestamp to get all new notifs
+          audiusLibs
+        )
+        if (!sent) { continue }
+        logger.info(`Live email to ${userId}, last email from ${lastSentTimestamp}`)
+        await models.NotificationEmail.create({
+          userId,
+          emailFrequency: frequency,
+          timestamp: currentUtcTime
+        })
+        continue
+      }
+
       // Based on this difference, schedule email for users
       // In prod, this difference must be <1 hour or between midnight - 1am
       let maxHourDifference = 2 // 1.5
       // Valid time found
       if (difference < maxHourDifference) {
         logger.info(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
-        let latestUserEmail = await models.NotificationEmail.findOne({
-          where: {
-            userId
-          },
-          order: [['timestamp', 'DESC']]
-        })
         if (!latestUserEmail) {
           let sent = await renderAndSendEmail(
             userId,
@@ -180,7 +247,6 @@ async function processEmailNotifications (expressApp, audiusLibs) {
             timestamp: currentUtcTime
           })
         } else {
-          let lastSentTimestamp = moment(latestUserEmail.timestamp)
           let timeSinceEmail = moment.duration(currentUtcTime.diff(lastSentTimestamp)).asHours()
           if (frequency === 'daily') {
             // If 1 day has passed, send email
@@ -258,7 +324,9 @@ async function renderAndSendEmail (
 
     let renderProps = {}
     renderProps['notifications'] = notificationProps
-    if (frequency === 'daily') {
+    if (frequency === 'live') {
+      renderProps['title'] = `Email - ${userEmail}`
+    } else if (frequency === 'daily') {
       renderProps['title'] = `Daily Email - ${userEmail}`
     } else if (frequency === 'weekly') {
       renderProps['title'] = `Weekly Email - ${userEmail}`
@@ -269,10 +337,19 @@ async function renderAndSendEmail (
     let weekAgo = now.clone().subtract(7, 'days')
     let formattedDayAgo = dayAgo.format('MMMM Do YYYY')
     let shortWeekAgoFormat = weekAgo.format('MMMM Do')
+    let liveSubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''}`
     let weeklySubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''} from ${shortWeekAgoFormat} - ${formattedDayAgo}`
     let dailySubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''} from ${formattedDayAgo}`
 
-    const subject = frequency === 'daily' ? dailySubjectFormat : weeklySubjectFormat
+    let subject
+    if (frequency === 'live') {
+      subject = liveSubjectFormat
+    } else if (frequency === 'daily') {
+      subject = dailySubjectFormat
+    } else {
+      subject = weeklySubjectFormat
+    }
+
     renderProps['subject'] = subject
     const notifHtml = renderEmail(renderProps)
 

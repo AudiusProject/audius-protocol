@@ -27,19 +27,22 @@ class DiscoveryProviderSelection extends ServiceSelection {
        */
       getServices: async () => {
         this.currentVersion = await ethContracts.getCurrentVersion(DISCOVERY_SERVICE_NAME)
-        return this.ethContracts.getServiceProviderList(DISCOVERY_SERVICE_NAME)
+        const services = await this.ethContracts.getServiceProviderList(DISCOVERY_SERVICE_NAME)
+        return services.map(e => e.endpoint)
       },
       ...config
     })
     this.ethContracts = ethContracts
     this.currentVersion = null
+    this.reselectTimeout = config.reselectTimeout
+    this.selectionCallback = config.selectionCallback
 
     // Whether or not we are running in `regressed` mode, meaning we were
     // unable to select a discovery provider that was up-to-date. Clients may
     // want to consider blocking writes.
     this._regressedMode = false
 
-    // Set of valid past discovery provider versions registered on chain
+    // List of valid past discovery provider versions registered on chain
     this.validVersions = null
   }
 
@@ -49,8 +52,13 @@ class DiscoveryProviderSelection extends ServiceSelection {
       const discProvTimestamp = localStorage.getItem(DISCOVERY_PROVIDER_TIMESTAMP)
       if (discProvTimestamp) {
         const { endpoint: latestEndpoint, timestamp } = JSON.parse(discProvTimestamp)
+
         const inWhitelist = !this.whitelist || this.whitelist.has(latestEndpoint)
-        const isExpired = (Date.now() - timestamp) > DISCOVERY_PROVIDER_RESELECT_TIMEOUT
+
+        const timeout = this.reselectTimeout
+          ? this.reselectTimeout
+          : DISCOVERY_PROVIDER_RESELECT_TIMEOUT
+        const isExpired = (Date.now() - timestamp) > timeout
         if (!inWhitelist || isExpired) {
           this.clearCached()
         } else {
@@ -80,7 +88,13 @@ class DiscoveryProviderSelection extends ServiceSelection {
 
   async select () {
     const endpoint = await super.select()
-    this.setCached(endpoint)
+    if (endpoint) {
+      this.setCached(endpoint)
+    }
+    console.info(`Selected discprov ${endpoint}`, this.decisionTree)
+    if (this.selectionCallback) {
+      this.selectionCallback(endpoint, this.decisionTree)
+    }
     return endpoint
   }
 
@@ -99,17 +113,25 @@ class DiscoveryProviderSelection extends ServiceSelection {
    */
   isHealthy (response, urlMap) {
     const { status, data } = response
-    const { block_difference: blockDiff, service, version } = data
+    const { block_difference: blockDiff, service, version } = data.data
     if (status !== 200) return false
     if (service !== DISCOVERY_SERVICE_NAME) return false
     if (!semver.valid(version)) return false
-    if (!this.ethContracts.isValidSPVersion(version, this.currentVersion)) return false
 
-    if (
-      blockDiff > UNHEALTHY_BLOCK_DIFF ||
-      version !== this.currentVersion
-    ) {
-      this.addBackup(urlMap[response.config.url], response.data)
+    // If this service is not the same major/minor as what's on chain, reject
+    if (!this.ethContracts.hasSameMajorAndMinorVersion(this.currentVersion, version)) {
+      return false
+    }
+
+    // If this service is behind by patches, add it as a backup and reject
+    if (semver.patch(version) < semver.patch(this.currentVersion)) {
+      this.addBackup(urlMap[response.config.url], data.data)
+      return false
+    }
+
+    // If this service is an unhealthy block diff behind, add it as a backup and reject
+    if (blockDiff > UNHEALTHY_BLOCK_DIFF) {
+      this.addBackup(urlMap[response.config.url], data.data)
       return false
     }
 
@@ -150,7 +172,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     // TODO: Clean up this logic when we can validate a specific version rather
     // than traversing backwards through all the versions
     if (!this.validVersions) {
-      this.validVersions = new Set([this.currentVersion])
+      this.validVersions = [this.currentVersion]
       const numberOfVersions = await this.ethContracts.getNumberOfVersions(DISCOVERY_SERVICE_NAME)
       for (let i = 0; i < Math.min(PREVIOUS_VERSIONS_TO_CHECK, numberOfVersions - 1); ++i) {
         const pastServiceVersion = await this.ethContracts.getVersion(
@@ -159,7 +181,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
           // Latest index is numberOfVersions - 1, so 2nd oldest version starts at numberOfVersions - 2
           numberOfVersions - 2 - i
         )
-        this.validVersions.add(pastServiceVersion)
+        this.validVersions.push(pastServiceVersion)
       }
     }
 
@@ -168,8 +190,16 @@ class DiscoveryProviderSelection extends ServiceSelection {
     // { blockdiff => [provider] }
     Object.keys(this.backups).forEach(backup => {
       const { block_difference: blockDiff, version } = this.backups[backup]
-      // Filter out any version that wasn't registered on chain
-      if (!this.validVersions.has(version)) return
+
+      let isVersionOk = false
+      for (let i = 0; i < this.validVersions.length; ++i) {
+        if (this.ethContracts.hasSameMajorAndMinorVersion(this.validVersions[i], version)) {
+          isVersionOk = true
+          break
+        }
+      }
+      // Filter out any version that wasn't valid given what's registered on chain
+      if (!isVersionOk) return
 
       versions.push(version)
       blockDiffs.push(blockDiff)
@@ -204,7 +234,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     }
 
     // Select the best block diff provider
-    const bestBlockDiff = blockDiffs.sort().reverse()[0]
+    const bestBlockDiff = blockDiffs.sort()[0]
 
     selected = blockDiffMap[bestBlockDiff][0]
     this.enterRegressedMode()

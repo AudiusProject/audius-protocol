@@ -1,4 +1,5 @@
 const Sequelize = require('sequelize')
+const moment = require('moment-timezone')
 
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
@@ -407,7 +408,7 @@ module.exports = function (app) {
     const { trackIdList } = req.query
 
     if (!trackIdList || !Array.isArray(trackIdList)) {
-      return errorResponseBadRequest('Please provid an array of track ids')
+      return errorResponseBadRequest('Please provide an array of track ids')
     }
 
     const listens = await models.UserTrackListen.findAll({
@@ -434,6 +435,58 @@ module.exports = function (app) {
 
     return successResponse({
       listenMap
+    })
+  }))
+
+  /**
+   * Gets user listen records in bulk.
+   *
+   * GET query parameters:
+   *  startTime (string) the start time to fetch listens from (in unix seconds format)
+   *  limit (number) the number of records to fetch from each user listens and anonymous listens
+   */
+  app.get('/listens/bulk', handleResponse(async (req, res) => {
+    let { startTime, limit } = req.query
+    if (!startTime || !limit) {
+      return errorResponseBadRequest('Please provide a startTime and limit')
+    }
+
+    limit = parseInt(limit)
+    if (!limit) {
+      return errorResponseBadRequest(`Provided limit ${limit} not parseable`)
+    }
+    if (limit > 5000) {
+      return errorResponseBadRequest(`Provided limit ${limit} too large (must be <= 5000)`)
+    }
+
+    let updatedAtMoment
+    try {
+      updatedAtMoment = moment.unix(startTime)
+      if (!updatedAtMoment.isValid()) throw new Error()
+    } catch (e) {
+      return errorResponseBadRequest(`Provided startTime ${startTime} not parseable`)
+    }
+
+    const userListens = await models.UserTrackListen.findAll({
+      attributes: { exclude: ['id'] },
+      where: {
+        updatedAt: { [models.Sequelize.Op.gt]: updatedAtMoment.toDate() }
+      },
+      order: [['createdAt', 'ASC'], ['trackId', 'ASC']],
+      limit
+    })
+
+    const anonListens = await models.TrackListenCount.findAll({
+      attributes: ['trackId', ['listens', 'count'], 'createdAt', 'updatedAt'],
+      where: {
+        updatedAt: { [models.Sequelize.Op.gt]: updatedAtMoment.toDate() }
+      },
+      order: [['createdAt', 'ASC'], ['trackId', 'ASC']],
+      limit
+    })
+
+    return successResponse({
+      listens: [...userListens, ...anonListens]
     })
   }))
 }

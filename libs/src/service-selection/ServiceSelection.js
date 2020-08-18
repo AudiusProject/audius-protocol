@@ -1,5 +1,5 @@
 const { sampleSize } = require('lodash')
-const { raceRequests } = require('../utils/network')
+const { raceRequests, allRequests } = require('../utils/network')
 
 /**
  * A class that assists with autoselecting services.
@@ -65,39 +65,57 @@ class ServiceSelection {
 
     // Total number of services attempted
     this.totalAttempts = 0
+
+    // The decision tree path that was taken. Reset on each new selection.
+    this.decisionTree = []
   }
 
-  async select () {
+  /**
+   * Selects a service
+   * @param {boolean} reset if reset is true, clear the decision tree
+   */
+  async select (reset = true) {
+    if (reset) { this.decisionTree = [] }
+
     // If a short circuit is provided, take it. Don't check it, just use it.
     const shortcircuit = this.shortcircuit()
+    this.decisionTree.push({ stage: 'Check Short Circuit', val: shortcircuit })
     if (shortcircuit) return shortcircuit
 
     // Get all the services
     let services = await this.getServices()
+    this.decisionTree.push({ stage: 'Get All Services', val: services })
 
     // If a whitelist is provided, filter down to it
     if (this.whitelist) {
       services = this.filterToWhitelist(services)
+      this.decisionTree.push({ stage: 'Filter To Whitelist', val: services })
     }
 
     // Filter out anything we know is already unhealthy
     const filteredServices = this.filterOutKnownUnhealthy(services)
+    this.decisionTree.push({ stage: 'Filter Out Known Unhealthy', val: filteredServices })
 
     // Randomly sample a "round" to test
     const round = this.getSelectionRound(filteredServices)
+    this.decisionTree.push({ stage: 'Get Selection Round', val: round })
 
     this.totalAttempts += round.length
 
     // If there are no services left to try, either pick a backup or return null
     if (filteredServices.length === 0) {
+      this.decisionTree.push({ stage: 'No Services Left To Try' })
       if (Object.keys(this.backups).length > 0) {
         // Some backup exists
-        return this.selectFromBackups()
+        const backup = this.selectFromBackups()
+        this.decisionTree.push({ stage: 'Selected From Backup', val: backup })
+        return backup
       } else {
         // Nothing could be found that was healthy.
         // Reset everything we know so that we might try again.
         this.unhealthy = []
         this.backups = {}
+        this.decisionTree.push({ stage: 'Failed Everything. Resetting.' })
         return null
       }
     }
@@ -116,11 +134,46 @@ class ServiceSelection {
 
     // Recursively try this selection function if we didn't find something
     if (!best) {
-      return this.select()
+      this.decisionTree.push({ stage: 'Round Failed Retry' })
+      return this.select(/* reset */ false)
     }
 
+    this.decisionTree.push({ stage: 'Made A Selection', val: best })
     // If we made it this far, we found the best service! (of the rounds we tried)
     return best
+  }
+
+  /**
+   * Finds all selectable services (respecting whitelist, health checks & timeouts).
+   * Note: this method is potentially slow.
+   * If you need just a single service, prefer calling `.select()`
+   */
+  async findAll () {
+    // Get all the services
+    let services = await this.getServices()
+
+    // If a whitelist is provided, filter down to it
+    if (this.whitelist) {
+      services = this.filterToWhitelist(services)
+    }
+
+    // Key the services by their health check endpoint
+    const map = services.reduce((acc, s) => {
+      acc[ServiceSelection.getHealthCheckEndpoint(s)] = s
+      return acc
+    }, {})
+
+    try {
+      const results = await allRequests({
+        urlMap: map,
+        timeout: this.requestTimeout,
+        validationCheck: (resp) => this.isHealthy(resp, map)
+      })
+      return results
+    } catch (e) {
+      console.error(e)
+      return []
+    }
   }
 
   /** Triggers a clean up of unhealthy and backup services so they can be retried later */
@@ -198,6 +251,7 @@ class ServiceSelection {
         /* timeBetweenRequests */ 0,
         /* validationCheck */ (resp) => this.isHealthy(resp, map)
       )
+      this.decisionTree.push({ stage: 'Raced And Found Best', val: best })
       return { best, errored: errored.map(e => map[e.config.url]) }
     } catch (e) {
       return { best: null, errored: [] }

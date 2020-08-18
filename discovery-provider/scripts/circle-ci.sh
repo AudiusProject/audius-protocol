@@ -3,8 +3,6 @@ source ./scripts/utilities.sh
 
 function main {
   set -e
-  export audius_ipfs_port=5001
-  export audius_redis_url=redis://localhost:6379/0
   source venv/bin/activate
   cd_contracts_repo
   echo 'Migrating contracts'

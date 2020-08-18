@@ -1,18 +1,15 @@
-import logging # pylint: disable=C0302
-import redis
+import logging  # pylint: disable=C0302
 import json
-import sqlalchemy
+import redis
 
 from flask import Blueprint, request
-from urllib.parse import urljoin, unquote
 
 from src import api_helpers
-from src.models import User, Track, RepostType, Follow, SaveType
 from src.utils.db_session import get_db_read_replica
 from src.utils.config import shared_config
 from src.queries.query_helpers import get_pagination_vars
 from src.tasks.generate_trending import generate_trending, trending_cache_hits_key, \
-        trending_cache_miss_key, trending_cache_total_key
+    trending_cache_miss_key, trending_cache_total_key
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("trending", __name__)
@@ -21,6 +18,7 @@ REDIS_URL = shared_config["redis"]["url"]
 REDIS = redis.Redis.from_url(url=REDIS_URL)
 
 ######## ROUTES ########
+
 
 @bp.route("/trending/<time>", methods=("GET",))
 def trending(time):
@@ -36,15 +34,17 @@ def trending(time):
             json_cache = json.loads(redis_cache_value.decode('utf-8'))
             if json_cache is not None:
                 num_cached_entries = len(json_cache['listen_counts'])
-                logger.error(f'Cache for {redis_key}, {num_cached_entries} entries, request limit {limit}')
+                logger.info(
+                    f'Cache for {redis_key}, {num_cached_entries} entries, request limit {limit}')
                 if offset + limit <= num_cached_entries:
                     json_cache['listen_counts'] = json_cache['listen_counts'][offset:offset + limit]
-                    logger.error(f'Returning cache for {redis_key}')
+                    logger.info(f'Returning cache for {redis_key}')
                     # Increment cache hit count
                     REDIS.incr(trending_cache_hits_key, 1)
                     return api_helpers.success_response(json_cache)
     # Increment cache miss count
     REDIS.incr(trending_cache_miss_key, 1)
     # Recalculate trending values if necessary
-    final_resp = generate_trending(get_db_read_replica(), time, genre, limit, offset)
+    final_resp = generate_trending(
+        get_db_read_replica(), time, genre, limit, offset)
     return api_helpers.success_response(final_resp)

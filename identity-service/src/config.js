@@ -162,6 +162,12 @@ const config = convict({
     env: 'rateLimitingListensPerIPPerWeek',
     default: null
   },
+  rateLimitingListensIPWhitelist: {
+    doc: 'Regex of IP addresses that should not get rate limited',
+    format: String,
+    env: 'rateLimitingListensIPWhitelist',
+    default: null
+  },
   minimumBalance: {
     doc: 'Minimum token balance below which /balance_check fails',
     format: Number,

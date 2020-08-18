@@ -1,0 +1,44 @@
+version: '3'
+services:
+  identity-db:
+    image: postgres:11.1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: audius_identity_service
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - '7432:5432'
+    networks:
+      - audius_dev
+  identity-redis:
+    image: redis:5.0.4
+    ports:
+      - '7379:6379'
+    networks:
+      - audius_dev
+  identity-service:
+    build: ../.
+    command: sh -c '/usr/bin/wait && exec ./scripts/dev-server.sh'
+    env_file:
+      - .env
+    depends_on:
+      - identity-db
+      - identity-redis
+    volumes:
+      - ..:/usr/src/app
+      # Prevent hiding node_modules on container with host volume
+      # From https://github.com/barrysteyn/node-scrypt/issues/148
+      - /usr/src/app/node_modules
+      - ../../libs:/usr/src/audius-libs
+    ports:
+      - '7000:7000'
+    networks:
+      - audius_dev
+
+volumes:
+  postgres_data:
+
+networks:
+  audius_dev:
+    external: true

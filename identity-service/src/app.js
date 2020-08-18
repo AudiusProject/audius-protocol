@@ -107,7 +107,12 @@ class App {
     this.express.use(cors())
   }
 
-  _getRateLimiter ({ prefix, max, expiry = DEFAULT_EXPIRY, keyGenerator = DEFAULT_KEY_GENERATOR }) {
+  _isIPWhitelisted (ip) {
+    const whitelistRegex = config.get('rateLimitingListensIPWhitelist')
+    return whitelistRegex && !!ip.match(whitelistRegex)
+  }
+
+  _getRateLimiter ({ prefix, max, expiry = DEFAULT_EXPIRY, keyGenerator = DEFAULT_KEY_GENERATOR, skip }) {
     return rateLimit({
       store: new RedisStore({
         client: this.redisClient,
@@ -115,16 +120,22 @@ class App {
         expiry
       }),
       max, // max requests per hour
+      skip,
       keyGenerator
     })
   }
 
   // Create rate limits for listens on a per track per user basis and per track per ip basis
   _createRateLimitsForListenCounts (interval, timeInSeconds) {
+    const isIPWhitelisted = this._isIPWhitelisted
+
     const listenCountLimiter = this._getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-track:::`,
       expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerTrackPer${interval}`), // max requests per interval
+      skip: function (req) {
+        return isIPWhitelisted(req.ip)
+      },
       keyGenerator: function (req) {
         const trackId = req.params.id
         const userId = req.body.userId
@@ -136,6 +147,9 @@ class App {
       prefix: `listenCountLimiter:::${interval}-ip:::`,
       expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
+      skip: function (req) {
+        return isIPWhitelisted(req.ip)
+      },
       keyGenerator: function (req) {
         const trackId = req.params.id
         return `${req.ip}:::${trackId}`

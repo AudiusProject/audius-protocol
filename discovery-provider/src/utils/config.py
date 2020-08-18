@@ -68,6 +68,10 @@ class ConfigIni(configparser.ConfigParser):  # pylint: disable=too-many-ancestor
         if ('url_read_replica' not in current_app.config['db']) or (not current_app.config['db']['url_read_replica']):
             current_app.config['db']['url_read_replica'] = current_app.config['db']['url']
 
+        # Always disable (not included in app.default_config)
+        # See https://flask-restx.readthedocs.io/en/latest/mask.html#usage
+        current_app.config['RESTX_MASK_SWAGGER'] = False
+
     def _load_item(self, section_name, key):
         """Load the specified item from the [flask] section. Type is
         determined by the type of the equivalent value in app.default_config
@@ -100,3 +104,15 @@ for section in shared_config.sections():
     for static_item in shared_config.items(section):
         static_key = static_item[0]
         env_config_update(shared_config, section, static_key)
+
+try:
+    owner_wallet = shared_config['delegate']['owner_wallet']
+    private_key = shared_config['delegate']['private_key']
+
+    if not owner_wallet or not private_key:
+        raise RuntimeError()
+
+except (KeyError, RuntimeError) as e:
+    raise RuntimeError(f"""
+    Missing delegate owner wallet ({owner_wallet}) and/or delgate private key ({private_key}): {e}
+    """)

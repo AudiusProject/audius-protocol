@@ -27,6 +27,17 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    // the queryable filename if this file entry is inside a dir
+    // used for images that are stored in IPFS directories (e.g. /CID/fileName.jpg)
+    fileName: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    // the parent dir's CID if this file entry is inside a dir
+    dirMultihash: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     storagePath: { // format: '/file_storage/__multihash__
       type: DataTypes.TEXT,
       allowNull: false
@@ -35,10 +46,23 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(16),
       allowNull: true,
       validate: {
+        // track and non types broken down below and attached to Track model
         isIn: [['track', 'metadata', 'image', 'dir', 'copy320']]
       }
     }
-  }, {})
+  }, {
+    indexes: [
+      {
+        fields: ['cnodeUserUUID']
+      },
+      {
+        fields: ['multihash']
+      },
+      {
+        fields: ['dirMultihash']
+      }
+    ]
+  })
 
   File.associate = function (models) {
     File.belongsTo(models.CNodeUser, {
@@ -52,6 +76,9 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'RESTRICT'
     })
   }
+
+  File.TrackTypes = ['track', 'copy320']
+  File.NonTrackTypes = ['dir', 'image', 'metadata']
 
   return File
 }

@@ -1,7 +1,4 @@
 import logging
-
-from flask import request
-
 from src import api_helpers
 
 
@@ -13,6 +10,11 @@ class Base(Exception):
 
 
 class ArgumentError(Base):
+    ''' Invalid arguments passed to request '''
+    pass # pylint: disable=W0107
+
+
+class NotFoundError(Base):
     ''' Invalid arguments passed to request '''
     pass # pylint: disable=W0107
 
@@ -32,5 +34,4 @@ def register_exception_handlers(flask_app):
 
     @flask_app.errorhandler(404)
     def handle_404(_error): # pylint: disable=W0612
-        logger.error('404 - %s', request.url)
         return api_helpers.error_response(["Route does not exist"], 404)

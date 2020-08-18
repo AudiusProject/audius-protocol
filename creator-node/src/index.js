@@ -1,8 +1,6 @@
 'use strict'
 
 const ON_DEATH = require('death')
-const ipfsClient = require('ipfs-http-client')
-const ipfsClientLatest = require('ipfs-http-client-latest')
 const path = require('path')
 const AudiusLibs = require('@audius/libs')
 
@@ -12,6 +10,12 @@ const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const BlacklistManager = require('./blacklistManager')
+const { ipfs, ipfsLatest, logIpfsPeerIds } = require('./ipfsClient')
+
+const exitWithError = (...msg) => {
+  logger.error(...msg)
+  process.exit(1)
+}
 
 const initAudiusLibs = async () => {
   const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
@@ -19,9 +23,15 @@ const initAudiusLibs = async () => {
     config.get('ethNetworkId'),
     /* requiresAccount */ false
   )
+  const dataWeb3 = await AudiusLibs.Utils.configureWeb3(
+    config.get('dataProviderUrl'),
+    null,
+    false
+  )
   const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
     ? new Set(config.get('discoveryProviderWhitelist').split(','))
     : null
+  const identityService = config.get('identityService')
 
   const audiusLibs = new AudiusLibs({
     ethWeb3Config: AudiusLibs.configEthWeb3(
@@ -30,7 +40,18 @@ const initAudiusLibs = async () => {
       ethWeb3,
       config.get('ethOwnerWallet')
     ),
-    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(true, discoveryProviderWhitelist)
+    web3Config: {
+      registryAddress: config.get('dataRegistryAddress'),
+      useExternalWeb3: true,
+      externalWeb3Config: {
+        web3: dataWeb3,
+        ownerWallet: config.get('delegateOwnerWallet')
+      }
+    },
+    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),
+    // If an identity service config is present, set up libs with the connection, otherwise do nothing
+    identityServiceConfig: identityService ? AudiusLibs.configIdentityService(identityService) : undefined,
+    isDebug: config.get('creatorNodeIsDebug')
   })
   await audiusLibs.init()
   return audiusLibs
@@ -38,31 +59,9 @@ const initAudiusLibs = async () => {
 
 const configFileStorage = () => {
   if (!config.get('storagePath')) {
-    logger.error('Must set storagePath to use for content repository.')
-    process.exit(1)
+    exitWithError('Must set storagePath to use for content repository.')
   }
   return (path.resolve('./', config.get('storagePath')))
-}
-
-const initIPFS = async () => {
-  const ipfsAddr = config.get('ipfsHost')
-  if (!ipfsAddr) {
-    logger.error('Must set ipfsAddr')
-    process.exit(1)
-  }
-  const ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
-  const ipfsLatest = ipfsClientLatest({ host: ipfsAddr, port: config.get('ipfsPort'), protocol: 'http' })
-
-  // initialize ipfs here
-  const identity = await ipfs.id()
-  // Pretty print the JSON obj with no filter fn (e.g. filter by string or number) and spacing of size 2
-  logger.info(`Current IPFS Peer ID: ${JSON.stringify(identity, null, 2)}`)
-
-  // init latest version of ipfs
-  const identityLatest = await ipfsLatest.id()
-  logger.info(`Current IPFS Peer ID (using latest version of ipfs client): ${JSON.stringify(identityLatest, null, 2)}`)
-
-  return { ipfs, ipfsLatest }
 }
 
 const runDBMigrations = async () => {
@@ -71,8 +70,7 @@ const runDBMigrations = async () => {
     await runMigrations()
     logger.info('Migrations completed successfully')
   } catch (err) {
-    logger.error('Error in migrations: ', err)
-    process.exit(1)
+    exitWithError('Error in migrations: ', err)
   }
 }
 
@@ -89,9 +87,15 @@ const startApp = async () => {
   logger.info('Configuring service...')
 
   await config.asyncConfig()
-  const storagePath = configFileStorage()
 
-  const { ipfs, ipfsLatest } = await initIPFS()
+  // fail if delegateOwnerWallet & delegatePrivateKey not present
+  const delegateOwnerWallet = config.get('delegateOwnerWallet')
+  const delegatePrivateKey = config.get('delegatePrivateKey')
+
+  if (!delegateOwnerWallet || !delegatePrivateKey) {
+    exitWithError('Cannot startup without delegateOwnerWallet and delegatePrivateKey')
+  }
+  const storagePath = configFileStorage()
 
   const mode = getMode()
   let appInfo
@@ -103,6 +107,8 @@ const startApp = async () => {
     if (mode === '--run-all') {
       await runDBMigrations()
     }
+
+    await logIpfsPeerIds()
 
     /** Run app */
     await BlacklistManager.blacklist(ipfs)
@@ -123,5 +129,4 @@ const startApp = async () => {
     if (appInfo) { appInfo.server.close() }
   })
 }
-
 startApp()

@@ -6,6 +6,23 @@ class Account extends Base {
     super(...services)
 
     this.User = userApi
+
+    this.searchAutocomplete = this.searchAutocomplete.bind(this)
+    this.getCurrentUser = this.getCurrentUser.bind(this)
+    this.login = this.login.bind(this)
+    this.logout = this.logout.bind(this)
+    this.signUp = this.signUp.bind(this)
+    this.generateRecoveryLink = this.generateRecoveryLink.bind(this)
+    this.resetPassword = this.resetPassword.bind(this)
+    this.checkIfEmailRegistered = this.checkIfEmailRegistered.bind(this)
+    this.associateTwitterUser = this.associateTwitterUser.bind(this)
+    this.associateInstagramUser = this.associateInstagramUser.bind(this)
+    this.handleIsValid = this.handleIsValid.bind(this)
+    this.lookupTwitterHandle = this.lookupTwitterHandle.bind(this)
+    this.updateCreatorNodeEndpoint = this.updateCreatorNodeEndpoint.bind(this)
+    this.searchFull = this.searchFull.bind(this)
+    this.searchAutocomplete = this.searchAutocomplete.bind(this)
+    this.searchTags = this.searchTags.bind(this)
   }
 
   /**
@@ -86,7 +103,7 @@ class Account extends Base {
     profilePictureFile = null,
     coverPhotoFile = null,
     hasWallet = false,
-    host = (window && window.location.origin) || null
+    host = (typeof window !== 'undefined' && window.location.origin) || null
   ) {
     let userId
 

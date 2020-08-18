@@ -4,11 +4,22 @@ import MultiUserHeader from './MultiUserHeader'
 
 const UserImage = ({ user }) => (
   <img
-    src={user.image}
+    src={user.image || user.thumbnail}
     style={{
       height: '32px',
       width: '32px',
       borderRadius: '50%'
+    }}
+  />
+)
+
+const TrackImage = ({ track }) => (
+  <img
+    src={track.image || track.thumbnail}
+    style={{
+      height: '42px',
+      width: '42px',
+      borderRadius: '3px'
     }}
   />
 )
@@ -85,7 +96,7 @@ const OpenAudiusLink = () => (
 const WrapLink = (props) => {
   return (
     <a
-      href='https://audius.co'
+      href='https://audius.co/feed?openNotifications=true' 
       style={{ textDecoration: 'none' }}>
       {props.children}
     </a>
@@ -93,10 +104,9 @@ const WrapLink = (props) => {
   )
 }
 
-const Favorite = (props) => {
+const Body = (props) => {
   const hasUsers = Array.isArray(props.users)
   const hasMultiUser = hasUsers && props.users.length > 1
-
   return (
     <table
       border='0'
@@ -131,6 +141,21 @@ const Favorite = (props) => {
                   <AnnouncementHeader />
                 </tr>
               )}
+              {props.title && (
+                <tr>
+                  <td
+                    colspan={'12'}
+                    valign='center'
+                    style={{
+                      padding: '16px 16px 0px',
+                      paddingTop: '16px',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    {props.title}
+                  </td>
+                </tr>
+              )}
               {hasMultiUser && (
                 <tr>
                   <td
@@ -138,7 +163,7 @@ const Favorite = (props) => {
                     valign='center'
                     style={{
                       padding: '16px 16px 0px',
-                      paddingTop: props.type === 'Announcement' ? '8px' : '16px',
+                      paddingTop: (props.type === 'Announcement' || props.title) ? '8px' : '16px',
                       borderRadius: '4px'
                     }}
                   >
@@ -165,12 +190,100 @@ const Favorite = (props) => {
                   style={{
                     padding: '12px 16px 8px',
                     paddingLeft: (hasUsers && !hasMultiUser) ? '12px' : '16px',
+                    paddingTop: props.title ? '8px': ((hasUsers && !hasMultiUser) ? '12px' : '16px'),
                     width: '100%'
                   }}
                 >
                   {props.message}
                 </td>
               </tr>
+              {props.trackMessage && (
+                <tr>
+                  <td
+                    colspan={'1'}
+                    valign='center'
+                    style={{
+                      padding: '6px 0px 8px 16px',
+                      width: '60px'
+                    }}
+                  >
+                    <TrackImage track={props.track} />
+                  </td>
+                  <td
+                    colspan={11}
+                    valign='center'
+                    style={{
+                      padding: '6px 16px 8px',
+                      paddingLeft: '12px',
+                      width: '100%'
+                    }}
+                  >
+                    {props.trackMessage}
+                  </td>
+                </tr>
+              )}
+              {props.twitter && (
+                <tr>
+                  <td colspan={'12'} style={{ padding: '4px 0px 16px 16px', borderRadius: '4px' }}>
+                  <a
+                    href={props.twitter.href}
+                    target='_blank'
+                    style={{
+                      textDecoration: 'none'
+                    }}
+                  >
+                    <table
+                      cellspacing='0'
+                      cellpadding='0'
+                      style={{ margin: '0px' }}
+                    >
+                      <tr>
+                          <td style={{ borderRadius: '4px', padding: '4px 8px', margin: '0px' }} bgcolor='#1BA1F1'>
+                            <table
+                              cellspacing='0'
+                              cellpadding='0'
+                              style={{ margin: '0px' }}
+                            >
+                              <tr>
+                                <td 
+                                  valign='center'
+                                  style={{
+                                    margin: '0px'
+                                  }}
+                                >
+                                  <img
+                                    src='https://download.audius.co/static-resources/email/iconTwitterWhite.png'
+                                    alt='twitter'
+                                    style={{
+                                      height: '18px',
+                                      width: '18px',
+                                      padding: '0px',
+                                      marginRight: '8px',
+                                      verticalAlign: 'text-bottom'
+                                    }}
+                                  />
+                                </td>
+                                <td 
+                                  valign='center'
+                                  style={{
+                                    margin: '0px',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    color: '#ffffff',
+                                    textDecoration: 'none'
+                                  }}
+                                >
+                                {props.twitter.message}
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </a>
+                  </td>
+                </tr>
+              )}
               {props.hasReadMore && (
                 <tr>
                   <td
@@ -201,4 +314,4 @@ const Favorite = (props) => {
   )
 }
 
-export default Favorite
+export default Body

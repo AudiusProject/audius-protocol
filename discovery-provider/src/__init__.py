@@ -9,7 +9,7 @@ from web3 import HTTPProvider, Web3
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import exc
 from celery import Task
-from celery.schedules import timedelta
+from celery.schedules import timedelta, crontab
 
 import redis
 from flask import Flask
@@ -21,6 +21,7 @@ import alembic.config  # pylint: disable=E0611
 
 from src import exceptions
 from src.queries import queries, search, health_check, trending, notifications
+from src.api.v1 import api as api_v1
 from src.utils import helpers, config
 from src.utils.db_session import SessionManager
 from src.utils.config import config_files, shared_config, ConfigIni
@@ -45,7 +46,8 @@ logger = logging.getLogger(__name__)
 
 
 def initContracts():
-    registry_address = web3.toChecksumAddress(shared_config["contracts"]["registry"])
+    registry_address = web3.toChecksumAddress(
+        shared_config["contracts"]["registry"])
     registry_instance = web3.eth.contract(
         address=registry_address, abi=abi_values["Registry"]["abi"]
     )
@@ -114,8 +116,6 @@ def initContracts():
     )
 
 
-
-
 def create_app(test_config=None):
     return create(test_config)
 
@@ -167,7 +167,7 @@ def create(test_config=None, mode="app"):
     configure_flask(test_config, app, mode)
 
     if mode == "app":
-        helpers.configure_logging(shared_config["discprov"]["loglevel_flask"])
+        helpers.configure_flask_app_logging(app, shared_config["discprov"]["loglevel_flask"])
         return app
 
     if mode == "celery":
@@ -239,12 +239,16 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(search.bp)
     app.register_blueprint(notifications.bp)
     app.register_blueprint(health_check.bp)
+
+    app.register_blueprint(api_v1.bp)
+
     return app
 
 
 def configure_celery(flask_app, celery, test_config=None):
     database_url = shared_config["db"]["url"]
-    engine_args_literal = ast.literal_eval(shared_config["db"]["engine_args_literal"])
+    engine_args_literal = ast.literal_eval(
+        shared_config["db"]["engine_args_literal"])
     redis_url = shared_config["redis"]["url"]
 
     if test_config is not None:
@@ -254,7 +258,8 @@ def configure_celery(flask_app, celery, test_config=None):
 
     # Update celery configuration
     celery.conf.update(
-        imports=["src.tasks.index", "src.tasks.index_blacklist", "src.tasks.index_cache"],
+        imports=["src.tasks.index", "src.tasks.index_blacklist",
+                 "src.tasks.index_cache", "src.tasks.index_plays", "src.tasks.index_metrics"],
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
@@ -267,6 +272,14 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_cache": {
                 "task": "update_discovery_cache",
                 "schedule": timedelta(seconds=60)
+            },
+            "update_play_count": {
+                "task": "update_play_count",
+                "schedule": timedelta(seconds=5)
+            },
+            "update_metrics": {
+                "task": "update_metrics",
+                "schedule": crontab(minute=0, hour="*")
             }
         },
         task_serializer="json",
@@ -280,7 +293,8 @@ def configure_celery(flask_app, celery, test_config=None):
 
     # Initialize IPFS client for celery task context
     gateway_addrs = shared_config["ipfs"]["gateway_hosts"].split(',')
-    gateway_addrs.append(shared_config["discprov"]["user_metadata_service_url"])
+    gateway_addrs.append(
+        shared_config["discprov"]["user_metadata_service_url"])
     logger.warning(f"__init__.py | {gateway_addrs}")
     ipfs_client = IPFSClient(
         shared_config["ipfs"]["host"], shared_config["ipfs"]["port"], gateway_addrs

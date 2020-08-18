@@ -1,6 +1,8 @@
 const axios = require('axios')
 const FormData = require('form-data')
 
+const SchemaValidator = require('../schemaValidator')
+
 // Currently only supports a single logged-in audius user
 class CreatorNode {
   /* Static Utils */
@@ -39,11 +41,12 @@ class CreatorNode {
 
   /* -------------- */
 
-  constructor (web3Manager, creatorNodeEndpoint, isServer, userStateManager, lazyConnect) {
+  constructor (web3Manager, creatorNodeEndpoint, isServer, userStateManager, lazyConnect, schemas) {
     this.web3Manager = web3Manager
     this.creatorNodeEndpoint = creatorNodeEndpoint
     this.isServer = isServer
     this.userStateManager = userStateManager
+    this.schemas = schemas
 
     this.lazyConnect = lazyConnect
     this.connected = false
@@ -111,13 +114,22 @@ class CreatorNode {
    * @param {object} metadata the creator metadata
    */
   async uploadCreatorContent (metadata) {
-    return this._makeRequest({
-      url: '/audius_users/metadata',
-      method: 'post',
-      data: {
-        metadata
-      }
-    })
+    // this does the actual validation before sending to the creator node
+    // if validation fails, validate() will throw an error
+    try {
+      this.schemas[SchemaValidator.userSchemaType].validate(metadata)
+      console.log('user metadata validation passed', metadata)
+
+      return this._makeRequest({
+        url: '/audius_users/metadata',
+        method: 'post',
+        data: {
+          metadata
+        }
+      })
+    } catch (e) {
+      console.error('Error validating creator metadata', e)
+    }
   }
 
   /**
@@ -194,6 +206,15 @@ class CreatorNode {
    * @param {string?} sourceFile
    */
   async uploadTrackMetadata (metadata, sourceFile) {
+    // this does the actual validation before sending to the creator node
+    // if validation fails, validate() will throw an error
+    try {
+      this.schemas[SchemaValidator.trackSchemaType].validate(metadata)
+      console.log('track metadata validation passed', metadata)
+    } catch (e) {
+      console.error('Error validating track metadata', e)
+    }
+
     return this._makeRequest({
       url: '/tracks/metadata',
       method: 'post',
@@ -328,7 +349,11 @@ class CreatorNode {
     }, false)
   }
 
-  /** Logs in a creator node user. */
+  /**
+   * Logs user into cnode, if not already logged in.
+   * Requests a challenge from cnode, sends signed challenge response to cn.
+   * If successful, receive and set authToken locally.
+   */
   async _loginNodeUser () {
     if (this.authToken) {
       return
@@ -350,7 +375,7 @@ class CreatorNode {
       clientChallengeKey = challengeResp.challenge
       url = '/users/login/challenge'
     } catch (e) {
-      // If '/users/login/get_challenge' returns 404, login using non-challenge route
+      // If '/users/login/get_challenge' returns 404, login using legacy non-challenge route
       if (e.response && e.response.status === 404) {
         clientChallengeKey = Math.round((new Date()).getTime() / 1000)
         url = '/users/login'
@@ -444,11 +469,23 @@ class CreatorNode {
     let total
     const url = this.creatorNodeEndpoint + route
     try {
+      // Hack alert!
+      //
+      // Axios auto-detects browser vs node based on
+      // the existance of XMLHttpRequest at the global namespace, which
+      // is imported by a web3 module, causing Axios to incorrectly
+      // presume we're in a browser env when we're in a node env.
+      // For uploads to work in a node env,
+      // axios needs to correctly detect we're in node and use the `http` module
+      // rather than XMLHttpRequest. We force that here.
+      // https://github.com/axios/axios/issues/1180
+      const isBrowser = typeof window !== 'undefined'
       const resp = await axios.post(
         url,
         formData,
         {
           headers: headers,
+          adapter: isBrowser ? require('axios/lib/adapters/xhr') : require('axios/lib/adapters/http'),
           // Add a 10% inherit processing time for the file upload.
           onUploadProgress: (progressEvent) => {
             if (!total) total = progressEvent.total

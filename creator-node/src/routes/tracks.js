@@ -2,22 +2,38 @@ const path = require('path')
 const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
 
-const ffmpeg = require('../ffmpeg')
+const config = require('../config.js')
 const { getSegmentsDuration } = require('../segmentDuration')
 const models = require('../models')
-const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, trackFileUpload } = require('../fileManager')
+const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, handleTrackContentUpload } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseForbidden } = require('../apiHelpers')
-const { getFileUUIDForImageCID, rehydrateIpfsFromFsIfNecessary } = require('../utils')
+const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
+const TranscodingQueue = require('../TranscodingQueue')
+const { getCID } = require('./files')
+const { decode } = require('../hashids.js')
+const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 
 module.exports = function (app) {
   /**
    * upload track segment files and make avail - will later be associated with Audius track
    * @dev - currently stores each segment twice, once under random file UUID & once under IPFS multihash
    *      - this should be addressed eventually
+   * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
    */
-  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, trackFileUpload.single('file'), handleResponse(async (req, res) => {
-    if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
+  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
+    if (req.fileSizeError) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseBadRequest(req.fileSizeError)
+    }
+    if (req.fileFilterError) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseBadRequest(req.fileFilterError)
+    }
     const routeTimeStart = Date.now()
     let codeBlockTimeStart = Date.now()
 
@@ -26,19 +42,22 @@ module.exports = function (app) {
     let segmentFilePaths
     try {
       const transcode = await Promise.all([
-        ffmpeg.transcodeFileTo320(req, req.fileDir, req.fileName),
-        ffmpeg.segmentFile(req, req.fileDir, req.fileName)
+        TranscodingQueue.segment(req.fileDir, req.fileName, { logContext: req.logContext }),
+        TranscodingQueue.transcode320(req.fileDir, req.fileName, { logContext: req.logContext })
       ])
-      transcodedFilePath = transcode[0]
-      segmentFilePaths = transcode[1]
+      segmentFilePaths = transcode[0].filePaths
+      transcodedFilePath = transcode[1].filePath
+
       req.logger.info(`Time taken in /track_content to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
     } catch (err) {
+      // Prune upload artifacts
       removeTrackFolder(req, req.fileDir)
+
       return errorResponseServerError(err)
     }
 
     // for each path, call saveFile and get back multihash; return multihash + segment duration
-    // run all async ops in parallel as they are not independent
+    // run all async ops in parallel as they are independent
     codeBlockTimeStart = Date.now()
     const t = await models.sequelize.transaction()
 
@@ -74,7 +93,12 @@ module.exports = function (app) {
       await t.commit()
     } catch (e) {
       req.logger.info(`failed to commit...rolling back. file ${req.fileName}`)
+
       await t.rollback()
+
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
       return errorResponseServerError(e)
     }
     req.logger.info(`Time taken in /track_content to commit tx block to db: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
@@ -89,7 +113,12 @@ module.exports = function (app) {
     trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
 
     // error if there are no track segments
-    if (!trackSegments || !trackSegments.length) return errorResponseServerError('Track upload failed - no track segments')
+    if (!trackSegments || !trackSegments.length) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseServerError('Track upload failed - no track segments')
+    }
 
     // Don't allow if any segment CID is in blacklist.
     try {
@@ -99,13 +128,18 @@ module.exports = function (app) {
         }
       }))
     } catch (e) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
       if (e.message.indexOf('blacklisted') >= 0) {
-        // TODO clean up orphaned content
         return errorResponseForbidden(`Track upload failed - part or all of this track has been blacklisted by this node.`)
       } else {
         return errorResponseServerError(e.message)
       }
     }
+
+    // Prune upload artifacts
+    removeTrackFolder(req, req.fileDir)
 
     req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
     return successResponse({
@@ -142,8 +176,8 @@ module.exports = function (app) {
       return errorResponseForbidden(e.message)
     }
 
-    // If track marked as downloadable, kick off the transcoding process if there doesn't
-    // already exist a transcoded master.
+    // If metadata indicates track is downloadable but doesn't provide a transcode CID,
+    //    ensure that a transcoded master record exists in DB
     if (metadataJSON.download && metadataJSON.download.is_downloadable && !metadataJSON.download.cid) {
       let sourceFile = req.body.sourceFile
       const trackId = metadataJSON.track_id
@@ -152,7 +186,6 @@ module.exports = function (app) {
       }
 
       // See if the track already has a transcoded master
-      let hasTranscodedMaster = false
       if (trackId) {
         const { trackUUID } = await models.Track.findOne({
           attributes: ['trackUUID'],
@@ -160,7 +193,8 @@ module.exports = function (app) {
             blockchainId: trackId
           }
         })
-        // Short circuit if there is a transcoded version available
+
+        // Error if no DB entry for transcode found
         const transcodedFile = await models.File.findOne({
           attributes: ['multihash'],
           where: {
@@ -169,55 +203,9 @@ module.exports = function (app) {
             trackUUID
           }
         })
-
-        if (transcodedFile && transcodedFile.multihash) hasTranscodedMaster = true
-      }
-
-      // If it does not, create it from the source file
-      if (!hasTranscodedMaster) {
-        if (!sourceFile) {
-          // Find the source file.
-          const { trackUUID } = await models.Track.findOne({
-            attributes: ['trackUUID'],
-            where: {
-              blockchainId: trackId
-            }
-          })
-
-          const firstSegment = metadataJSON.track_segments[0]
-          if (!firstSegment) return errorResponseServerError('No segment found for track')
-
-          const file = await models.File.findOne({
-            where: {
-              multihash: firstSegment.multihash,
-              cnodeUserUUID: req.session.cnodeUserUUID,
-              trackUUID
-            }
-          })
-          if (!file || !file.sourceFile) {
-            return errorResponseBadRequest(`Invalid track_segments input - no matching source file found for segment CIDs.`)
-          }
-          sourceFile = file.sourceFile
+        if (!transcodedFile) {
+          return errorResponseServerError('Failed to find transcoded file ')
         }
-
-        // Sanity check that the source file exists in the db.
-        const file = await models.File.findOne({
-          where: {
-            sourceFile
-          }
-        })
-        if (!file) {
-          return errorResponseBadRequest(`Invalid sourceFile input - no matching file entry found.`)
-        }
-        // Ensure sourceFile exists on disk.
-        const fileDir = path.resolve(req.app.get('storagePath'), sourceFile.split('.')[0])
-        const filePath = path.resolve(fileDir, sourceFile)
-        if (!fs.existsSync(filePath)) {
-          req.logger.error(`SourceFile not found at ${filePath}.`)
-          return errorResponseServerError('Cannot make downloadable - no sourceFile found on disk.')
-        }
-
-        createDownloadableCopy(req, sourceFile)
       }
     }
 
@@ -443,17 +431,67 @@ module.exports = function (app) {
       return successResponse({ isDownloadable: true, cid: null })
     }
 
-    // If copyFile exists, only return CID if it is available on local IPFS node.
+    // Asynchronously rehydrate and return CID. If file is not in ipfs, serve from FS
     try {
       // Rehydrate master copy if necessary
-      await rehydrateIpfsFromFsIfNecessary(
-        req,
-        copyFile.multihash,
-        copyFile.storagePath)
+      RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(copyFile.multihash, copyFile.storagePath, { logContext: req.logContext })
+
       return successResponse({ isDownloadable: true, cid: copyFile.multihash })
     } catch (e) {
       return successResponse({ isDownloadable: true, cid: null })
     }
+  }))
+
+  /**
+   * Gets a streamable mp3 link for a track by encodedId. Supports range request headers.
+   * @dev - Wrapper around getCID, which retrieves track given its CID.
+   **/
+  app.get('/tracks/stream/:encodedId', handleResponse(async (req, res) => {
+    const libs = req.app.get('audiusLibs')
+    const delegateOwnerWallet = config.get('delegateOwnerWallet')
+
+    const encodedId = req.params.encodedId
+    if (!encodedId) {
+      return errorResponseBadRequest('Please provide a track ID')
+    }
+
+    const blockchainId = decode(encodedId)
+    if (!blockchainId) {
+      return errorResponseBadRequest(`Invalid ID: ${encodedId}`)
+    }
+
+    const { trackUUID } = await models.Track.findOne({
+      attributes: ['trackUUID'],
+      where: { blockchainId }
+    })
+
+    if (!trackUUID) {
+      return errorResponseBadRequest(`No track found for blockchainId ${blockchainId}`)
+    }
+
+    const { multihash } = await models.File.findOne({
+      attributes: ['multihash'],
+      where: {
+        type: 'copy320',
+        trackUUID
+      }
+    })
+
+    if (!multihash) {
+      return errorResponseBadRequest(`No file found for blockchainId ${blockchainId}`)
+    }
+
+    if (libs.identityService) {
+      req.logger.info(`Logging listen for track ${blockchainId} by ${delegateOwnerWallet}`)
+      // Fire and forget listen recording
+      // TODO: Consider queueing these requests
+      libs.identityService.logTrackListen(blockchainId, delegateOwnerWallet)
+    }
+
+    req.params.CID = multihash
+    req.params.streamable = true
+
+    return getCID(req, res)
   }))
 
   /** List all unlisted tracks for a user */
@@ -474,23 +512,4 @@ module.exports = function (app) {
       }))
     })
   }))
-}
-
-/** Transcode track master file to 320kbps for downloading. Save to disk, IPFS, & DB. */
-async function createDownloadableCopy (req, fileName) {
-  try {
-    const start = Date.now()
-    req.logger.info(`Transcoding file ${fileName}...`)
-
-    const fileDir = path.resolve(req.app.get('storagePath'), fileName.split('.')[0])
-    const dlCopyFilePath = await ffmpeg.transcodeFileTo320(req, fileDir, fileName)
-
-    req.logger.info(`Transcoded file ${fileName} in ${Date.now() - start}ms.`)
-
-    await saveFileToIPFSFromFS(req, dlCopyFilePath, 'copy320', fileName)
-
-    return dlCopyFilePath
-  } catch (err) {
-    req.logger.error(err)
-  }
 }

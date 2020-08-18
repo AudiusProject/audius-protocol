@@ -1,4 +1,9 @@
+const config = require('./config')
+const Web3 = require('web3')
+const web3 = new Web3()
+
 const { requestNotExcludedFromLogging } = require('./logging')
+const versionInfo = require('../.version.json')
 
 module.exports.handleResponse = (func) => {
   return async function (req, res, next) {
@@ -53,10 +58,57 @@ const isValidResponse = module.exports.isValidResponse = (resp) => {
 }
 
 module.exports.successResponse = (obj = {}) => {
+  // generate timestamp
+  const timestamp = new Date().toISOString()
+
+  // format data to sign
+  let toSign = {
+    data: {
+      ...obj
+    },
+    // TODO: remove duplication of obj -- kept for backwards compatibility
+    ...obj,
+    signer: config.get('delegateOwnerWallet'),
+    ...versionInfo,
+    timestamp
+  }
+
+  const toSignStr = JSON.stringify(_sortKeys(toSign))
+
+  // hash data
+  const toSignHash = web3.utils.keccak256(toSignStr)
+
+  // generate signature with hashed data and private key
+  const signedResponse = web3.eth.accounts.sign(toSignHash, config.get('delegatePrivateKey'))
+
+  const responseWithSignature = { ...toSign, signature: signedResponse.signature }
+
   return {
     statusCode: 200,
-    object: obj
+    object: {
+      ...responseWithSignature
+    }
   }
+}
+
+/**
+ * Recover the public wallet address
+ * @param {*} data obj with structure {...data, timestamp}
+ * @param {*} signature signature generated with signed data
+ */
+// eslint-disable-next-line no-unused-vars
+const recoverWallet = (data, signature) => {
+  let structuredData = JSON.stringify(_sortKeys(data))
+  const hashedData = web3.utils.keccak256(structuredData)
+  const recoveredWallet = web3.eth.accounts.recover(hashedData, signature)
+
+  return recoveredWallet
+}
+
+const _sortKeys = x => {
+  if (typeof x !== 'object' || !x) { return x }
+  if (Array.isArray(x)) { return x.map(_sortKeys) }
+  return Object.keys(x).sort().reduce((o, k) => ({ ...o, [k]: _sortKeys(x[k]) }), {})
 }
 
 const errorResponse = module.exports.errorResponse = (statusCode, message) => {
@@ -76,6 +128,10 @@ module.exports.errorResponseForbidden = (message) => {
 
 module.exports.errorResponseBadRequest = (message) => {
   return errorResponse(400, message)
+}
+
+module.exports.errorResponseRangeNotSatisfiable = (message) => {
+  return errorResponse(416, message)
 }
 
 module.exports.errorResponseServerError = (message) => {

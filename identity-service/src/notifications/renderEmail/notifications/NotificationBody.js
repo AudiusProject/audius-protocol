@@ -14,11 +14,23 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 var UserImage = function UserImage(_ref) {
   var user = _ref.user;
   return _react["default"].createElement("img", {
-    src: user.image,
+    src: user.image || user.thumbnail,
     style: {
       height: '32px',
       width: '32px',
       borderRadius: '50%'
+    }
+  });
+};
+
+var TrackImage = function TrackImage(_ref2) {
+  var track = _ref2.track;
+  return _react["default"].createElement("img", {
+    src: track.image || track.thumbnail,
+    style: {
+      height: '42px',
+      width: '42px',
+      borderRadius: '3px'
     }
   });
 };
@@ -82,14 +94,14 @@ var OpenAudiusLink = function OpenAudiusLink() {
 
 var WrapLink = function WrapLink(props) {
   return _react["default"].createElement("a", {
-    href: "https://audius.co",
+    href: "https://audius.co/feed?openNotifications=true",
     style: {
       textDecoration: 'none'
     }
   }, props.children);
 };
 
-var Favorite = function Favorite(props) {
+var Body = function Body(props) {
   var hasUsers = Array.isArray(props.users);
   var hasMultiUser = hasUsers && props.users.length > 1;
   return _react["default"].createElement("table", {
@@ -115,12 +127,20 @@ var Favorite = function Favorite(props) {
       height: 'auto',
       width: '100%'
     }
-  }, props.type === 'Announcement' && _react["default"].createElement("tr", null, _react["default"].createElement(AnnouncementHeader, null)), hasMultiUser && _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+  }, props.type === 'Announcement' && _react["default"].createElement("tr", null, _react["default"].createElement(AnnouncementHeader, null)), props.title && _react["default"].createElement("tr", null, _react["default"].createElement("td", {
     colspan: '12',
     valign: "center",
     style: {
       padding: '16px 16px 0px',
-      paddingTop: props.type === 'Announcement' ? '8px' : '16px',
+      paddingTop: '16px',
+      borderRadius: '4px'
+    }
+  }, props.title)), hasMultiUser && _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+    colspan: '12',
+    valign: "center",
+    style: {
+      padding: '16px 16px 0px',
+      paddingTop: props.type === 'Announcement' || props.title ? '8px' : '16px',
       borderRadius: '4px'
     }
   }, _react["default"].createElement(_MultiUserHeader["default"], {
@@ -140,9 +160,82 @@ var Favorite = function Favorite(props) {
     style: {
       padding: '12px 16px 8px',
       paddingLeft: hasUsers && !hasMultiUser ? '12px' : '16px',
+      paddingTop: props.title ? '8px' : hasUsers && !hasMultiUser ? '12px' : '16px',
       width: '100%'
     }
-  }, props.message)), props.hasReadMore && _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+  }, props.message)), props.trackMessage && _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+    colspan: '1',
+    valign: "center",
+    style: {
+      padding: '6px 0px 8px 16px',
+      width: '60px'
+    }
+  }, _react["default"].createElement(TrackImage, {
+    track: props.track
+  })), _react["default"].createElement("td", {
+    colspan: 11,
+    valign: "center",
+    style: {
+      padding: '6px 16px 8px',
+      paddingLeft: '12px',
+      width: '100%'
+    }
+  }, props.trackMessage)), props.twitter && _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+    colspan: '12',
+    style: {
+      padding: '4px 0px 16px 16px',
+      borderRadius: '4px'
+    }
+  }, _react["default"].createElement("a", {
+    href: props.twitter.href,
+    target: "_blank",
+    style: {
+      textDecoration: 'none'
+    }
+  }, _react["default"].createElement("table", {
+    cellspacing: "0",
+    cellpadding: "0",
+    style: {
+      margin: '0px'
+    }
+  }, _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+    style: {
+      borderRadius: '4px',
+      padding: '4px 8px',
+      margin: '0px'
+    },
+    bgcolor: "#1BA1F1"
+  }, _react["default"].createElement("table", {
+    cellspacing: "0",
+    cellpadding: "0",
+    style: {
+      margin: '0px'
+    }
+  }, _react["default"].createElement("tr", null, _react["default"].createElement("td", {
+    valign: "center",
+    style: {
+      margin: '0px'
+    }
+  }, _react["default"].createElement("img", {
+    src: "https://download.audius.co/static-resources/email/iconTwitterWhite.png",
+    alt: "twitter",
+    style: {
+      height: '18px',
+      width: '18px',
+      padding: '0px',
+      marginRight: '8px',
+      verticalAlign: 'text-bottom'
+    }
+  })), _react["default"].createElement("td", {
+    valign: "center",
+    style: {
+      margin: '0px',
+      fontSize: '14px',
+      fontWeight: '500',
+      color: '#ffffff',
+      textDecoration: 'none'
+    }
+  }, props.twitter.message))))))))), props.hasReadMore && _react["default"].createElement("tr", null, _react["default"].createElement("td", {
     colspan: '12',
     valign: "center",
     className: 'avenir',
@@ -161,5 +254,5 @@ var Favorite = function Favorite(props) {
   }, _react["default"].createElement(OpenAudiusLink, null))))))));
 };
 
-var _default = Favorite;
+var _default = Body;
 exports["default"] = _default;

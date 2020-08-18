@@ -1,6 +1,7 @@
 import logging
 import json
 import time
+import re
 from urllib.parse import urlparse, urljoin
 import requests
 from requests.exceptions import ReadTimeout
@@ -164,6 +165,10 @@ class IPFSClient:
             raise  # error is of type ipfshttpclient.exceptions.TimeoutError
 
     def multihash_is_directory(self, multihash):
+        # Check if the multihash is valid
+        if not self.cid_is_valid(multihash):
+            raise Exception(f'invalid multihash {multihash}')
+
         # First attempt to cat multihash locally.
         try:
             # If cat successful, multihash is not directory.
@@ -232,3 +237,9 @@ class IPFSClient:
 
     def ipfs_id_multiaddr(self):
         return self._multiaddr
+
+    def cid_is_valid(self, cid):
+        if cid and re.match(r"^Qm[a-zA-Z0-9]{44}$", cid):
+            return True
+
+        return False
