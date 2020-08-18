@@ -65,22 +65,18 @@ const run = async () => {
         console.log('initialized libs')
         break
       case 'distribute':
-        console.log('distribute')
         await distributeTokens(audiusLibs, amountOfAuds)
         break
 
       case 'fundclaim':
-        console.log('fundclaim')
         await fundNewClaim(audiusLibs, amountOfAuds)
         break
 
       case 'getclaim':
-        console.log('getclaim')
         await getClaimInfo(audiusLibs)
         break
 
       case 'stakeinfo':
-        console.log('stakeinfo')
         await getStakingParameters(audiusLibs)
         break
 

@@ -4,7 +4,7 @@ let urlJoin = require('proper-url-join')
 
 const AudiusTokenClient = require('./audiusTokenClient')
 const RegistryClient = require('./registryClient')
-const VersioningFactoryClient = require('./versioningFactoryClient')
+const ServiceTypeManagerClient = require('./serviceTypeManagerClient')
 const ServiceProviderFactoryClient = require('./serviceProviderFactoryClient')
 const StakingProxyClient = require('./stakingProxyClient')
 const Utils = require('../../utils')
@@ -19,13 +19,13 @@ if (typeof window === 'undefined' || window === null) {
 
 const AudiusTokenABI = Utils.importEthContractABI('AudiusToken.json').abi
 const RegistryABI = Utils.importEthContractABI('Registry.json').abi
-const VersioningFactoryABI = Utils.importEthContractABI('VersioningFactory.json').abi
+const ServiceTypeManagerABI = Utils.importEthContractABI('ServiceTypeManager.json').abi
 const ServiceProviderFactoryABI = Utils.importEthContractABI('ServiceProviderFactory.json').abi
 const StakingABI = Utils.importEthContractABI('Staking.json').abi
 
-const VersioningFactoryRegistryKey = 'VersioningFactory'
+const ServiceTypeManagerProxyKey = 'ServiceTypeManagerProxy'
 const ServiceProviderFactoryRegistryKey = 'ServiceProviderFactory'
-const OwnedUpgradeabilityProxyKey = 'OwnedUpgradeabilityProxy'
+const StakingProxyKey = 'StakingProxy'
 
 const TWO_MINUTES = 2 * 60 * 1000
 
@@ -65,17 +65,17 @@ class EthContracts {
     )
     this.getRegistryAddressForContract = this.getRegistryAddressForContract.bind(this)
 
-    this.VersioningFactoryClient = new VersioningFactoryClient(
+    this.ServiceTypeManagerClient = new ServiceTypeManagerClient(
       this.ethWeb3Manager,
-      VersioningFactoryABI,
-      VersioningFactoryRegistryKey,
+      ServiceTypeManagerABI,
+      ServiceTypeManagerProxyKey,
       this.getRegistryAddressForContract
     )
 
     this.StakingProxyClient = new StakingProxyClient(
       this.ethWeb3Manager,
       StakingABI,
-      OwnedUpgradeabilityProxyKey,
+      StakingProxyKey,
       this.getRegistryAddressForContract,
       this.AudiusTokenClient
     )
@@ -91,7 +91,7 @@ class EthContracts {
     )
 
     this.contractClients = [
-      this.VersioningFactoryClient,
+      this.ServiceTypeManagerClient,
       this.StakingProxyClient,
       this.ServiceProviderFactoryClient
     ]
@@ -140,7 +140,7 @@ class EthContracts {
 
   async getCurrentVersion (serviceType) {
     try {
-      const version = await this.VersioningFactoryClient.getCurrentVersion(serviceType)
+      const version = await this.ServiceTypeManagerClient.getCurrentVersion(serviceType)
       return version
     } catch (e) {
       console.log(`Error retrieving version for ${serviceType}`)
@@ -436,13 +436,13 @@ class EthContracts {
       await this.ServiceProviderFactoryClient.getServiceProviderList(spType)
 
     let numberOfServiceVersions =
-      await this.VersioningFactoryClient.getNumberOfVersions(spType)
+      await this.ServiceTypeManagerClient.getNumberOfVersions(spType)
     // Exclude the latest version when querying older versions
     // Latest index is numberOfServiceVersions - 1, so 2nd oldest version starts at numberOfServiceVersions - 2
     let queryIndex = numberOfServiceVersions - 2
     while (queryIndex >= 0) {
       let pastServiceVersion =
-        await this.VersioningFactoryClient.getVersion(spType, queryIndex)
+        await this.ServiceTypeManagerClient.getVersion(spType, queryIndex)
 
       // Querying all versions
       let foundVersions = new Set()

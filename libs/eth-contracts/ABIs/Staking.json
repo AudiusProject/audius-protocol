@@ -2,9 +2,41 @@
   "contractName": "Staking",
   "abi": [
     {
+      "constant": false,
+      "inputs": [],
+      "name": "kill",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [],
-      "name": "hasInitialized",
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
       "outputs": [
         {
           "name": "",
@@ -13,38 +45,35 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x0803fac0"
+      "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "getInitializationBlock",
-      "outputs": [
+      "constant": false,
+      "inputs": [
         {
-          "name": "",
-          "type": "uint256"
+          "name": "_registryAddress",
+          "type": "address"
         }
       ],
+      "name": "setRegistry",
+      "outputs": [],
       "payable": false,
-      "stateMutability": "view",
-      "type": "function",
-      "signature": "0x8b3dd749"
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "isPetrified",
-      "outputs": [
+      "constant": false,
+      "inputs": [
         {
-          "name": "",
-          "type": "bool"
+          "name": "newOwner",
+          "type": "address"
         }
       ],
+      "name": "transferOwnership",
+      "outputs": [],
       "payable": false,
-      "stateMutability": "view",
-      "type": "function",
-      "signature": "0xde4796ed"
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
       "anonymous": false,
@@ -66,26 +95,7 @@
         }
       ],
       "name": "StakeTransferred",
-      "type": "event",
-      "signature": "0x12861ea0805055f005591dcf1a162dde778b417bed309995158aeafff52c1ded"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "test",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "msg",
-          "type": "string"
-        }
-      ],
-      "name": "Test",
-      "type": "event",
-      "signature": "0x2ccccc5fa46a4a55e969e7340ef613f539c149a9908c6d7fd2bf9e158d9d3958"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -102,8 +112,29 @@
         }
       ],
       "name": "Claimed",
-      "type": "event",
-      "signature": "0xd8138f8a3f377c5259ca548e70e4c2de94f129f5a11036a15b69513cba2b426a"
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "total",
+          "type": "uint256"
+        }
+      ],
+      "name": "Slashed",
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -130,8 +161,7 @@
         }
       ],
       "name": "Staked",
-      "type": "event",
-      "signature": "0xc65e53b88159e7d2c0fc12a0600072e28ae53ff73b4c1715369c30f160935142"
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -158,8 +188,24 @@
         }
       ],
       "name": "Unstaked",
-      "type": "event",
-      "signature": "0xaf01bfc8475df280aca00b578c4a948e6d95700f0db8c13365240f7f973c8754"
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
     },
     {
       "constant": false,
@@ -171,14 +217,38 @@
         {
           "name": "_treasuryAddress",
           "type": "address"
+        },
+        {
+          "name": "_registryAddress",
+          "type": "address"
+        },
+        {
+          "name": "_claimFactoryKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_delegateManagerKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_serviceProviderFactoryKey",
+          "type": "bytes32"
         }
       ],
       "name": "initialize",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x485cc955"
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
       "constant": false,
@@ -186,24 +256,17 @@
         {
           "name": "_amount",
           "type": "uint256"
+        },
+        {
+          "name": "_stakerAccount",
+          "type": "address"
         }
       ],
-      "name": "fundNewClaim",
+      "name": "stakeRewards",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x9bd5a8e6"
-    },
-    {
-      "constant": false,
-      "inputs": [],
-      "name": "makeClaim",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xf5aa0200"
+      "type": "function"
     },
     {
       "constant": false,
@@ -221,72 +284,7 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x3d82e3c1"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_stakeCaller",
-          "type": "address"
-        }
-      ],
-      "name": "setStakingOwnerAddress",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x180f89c9"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "setMinStakeAmount",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xeb4af045"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "setMaxStakeAmount",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xdcc2a55e"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_amount",
-          "type": "uint256"
-        },
-        {
-          "name": "_data",
-          "type": "bytes"
-        }
-      ],
-      "name": "stake",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x0e89439b"
+      "type": "function"
     },
     {
       "constant": false,
@@ -308,27 +306,7 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x0ef96356"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_amount",
-          "type": "uint256"
-        },
-        {
-          "name": "_data",
-          "type": "bytes"
-        }
-      ],
-      "name": "unstake",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xc8fd6ed0"
+      "type": "function"
     },
     {
       "constant": false,
@@ -350,8 +328,59 @@
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x41dfcb86"
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_accountAddress",
+          "type": "address"
+        },
+        {
+          "name": "_delegatorAddress",
+          "type": "address"
+        },
+        {
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "name": "_data",
+          "type": "bytes"
+        }
+      ],
+      "name": "delegateStakeFor",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_accountAddress",
+          "type": "address"
+        },
+        {
+          "name": "_delegatorAddress",
+          "type": "address"
+        },
+        {
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "name": "_data",
+          "type": "bytes"
+        }
+      ],
+      "name": "undelegateStakeFor",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
       "constant": true,
@@ -365,8 +394,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0xfc0c546a"
+      "type": "function"
     },
     {
       "constant": true,
@@ -380,8 +408,7 @@
       ],
       "payable": false,
       "stateMutability": "pure",
-      "type": "function",
-      "signature": "0x7033e4a6"
+      "type": "function"
     },
     {
       "constant": true,
@@ -400,8 +427,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x233b7451"
+      "type": "function"
     },
     {
       "constant": true,
@@ -420,27 +446,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x46350ae6"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getClaimInfo",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function",
-      "signature": "0x85182416"
+      "type": "function"
     },
     {
       "constant": true,
@@ -463,8 +469,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0xede38421"
+      "type": "function"
     },
     {
       "constant": true,
@@ -483,38 +488,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0xc9c53232"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getMinStakeAmount",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function",
-      "signature": "0x527cb1d7"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getMaxStakeAmount",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function",
-      "signature": "0x451309ed"
+      "type": "function"
     },
     {
       "constant": true,
@@ -533,8 +507,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x4b341aed"
+      "type": "function"
     },
     {
       "constant": true,
@@ -548,8 +521,7 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x817b1cd2"
+      "type": "function"
     }
   ]
 }

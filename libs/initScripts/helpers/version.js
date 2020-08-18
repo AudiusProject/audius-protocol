@@ -12,7 +12,7 @@ async function setServiceVersion (audiusLibs, serviceType, serviceVersionStr, pr
   let testTx = null
 
   try {
-    testTx = await audiusLibs.ethContracts.VersioningFactoryClient.setServiceVersion(
+    testTx = await audiusLibs.ethContracts.ServiceTypeManagerClient.setServiceVersion(
       serviceType,
       serviceVersionStr,
       privateKey)
@@ -25,8 +25,8 @@ async function setServiceVersion (audiusLibs, serviceType, serviceVersionStr, pr
     }
   }
 
-  let versionTx = await audiusLibs.ethContracts.VersioningFactoryClient.getCurrentVersion(serviceType)
-  let numVersionsTx = await audiusLibs.ethContracts.VersioningFactoryClient.getNumberOfVersions(serviceType)
+  let versionTx = await audiusLibs.ethContracts.ServiceTypeManagerClient.getCurrentVersion(serviceType)
+  let numVersionsTx = await audiusLibs.ethContracts.ServiceTypeManagerClient.getNumberOfVersions(serviceType)
   console.log(`${serviceType} | current version: ${versionTx} | number of versions : ${numVersionsTx}`)
 
   console.log('/----version init---')

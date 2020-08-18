@@ -62,7 +62,12 @@ sh ./scripts/migrate_contracts.sh
 
 # run tests
 printf '\nSTART tests:\n\n'
-./node_modules/.bin/mocha tests/index.js
+if [ "$#" -eq  "0" ]
+ then
+  ./node_modules/.bin/nyc --include src ./node_modules/.bin/mocha tests/index.js
+else
+  ./node_modules/.bin/nyc --include src ./node_modules/.bin/mocha $1
+fi
 
 # run linter
 node_modules/.bin/standard

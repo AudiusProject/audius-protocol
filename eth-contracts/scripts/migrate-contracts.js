@@ -8,13 +8,9 @@ const Registry = artifacts.require('Registry')
 const AudiusIdentityService = 'identity-service'
 const AudiusContentService = 'content-service'
 const AudiusCreatorNode = 'creator-node'
+const AudiusEthContracts = 'eth-contracts'
 
 const Libs = 'libs'
-
-const getDefaultAccount = async () => {
-  let accounts = await web3.eth.getAccounts()
-  return accounts[0]
-}
 
 /**  dirName is directory name of the audius repo that you're trying to get the path to */
 const getDirectoryRoot = (dirName) => {
@@ -66,20 +62,22 @@ async function createDir (dir) {
  */
 const outputJsonConfigFile = async (outputFilePath) => {
   try {
-    const audiusToken = await AudiusToken.deployed()
-    const registry = await Registry.deployed()
+    let migrationOutputPath = path.join(getDirectoryRoot(AudiusEthContracts), 'migrations', 'migration-output.json')
+    if (!fs.existsSync(migrationOutputPath)) {
+      console.log('Failed to find migration output')
+      throw new Error('Failed to find migration output')
+    }
+    const addressInfo = require(migrationOutputPath)
     let outputDictionary = {}
-    outputDictionary['audiusTokenAddress'] = audiusToken.address
-    outputDictionary['registryAddress'] = registry.address
-    outputDictionary['ownerWallet'] = await getDefaultAccount()
+    outputDictionary['audiusTokenAddress'] = addressInfo.tokenAddress
+    outputDictionary['registryAddress'] = addressInfo.registryAddress
+    outputDictionary['ownerWallet'] = addressInfo.proxyDeployerAddress
     outputDictionary['allWallets'] = await web3.eth.getAccounts()
-
     fs.writeFile(outputFilePath, JSON.stringify(outputDictionary), (err) => {
       if (err != null) {
         console.log(err)
       }
     })
-    console.log(`eth-contracts JSON Config written to ${outputFilePath}`)
   } catch (e) {
     console.log(e)
   }
@@ -88,28 +86,29 @@ const outputJsonConfigFile = async (outputFilePath) => {
 /** Replace eth-contracts artifacts in libs with new ABIs and config */
 module.exports = async callback => {
   const libsDirRoot = path.join(getDirectoryRoot(Libs), 'eth-contracts')
+  console.log(libsDirRoot)
   fs.removeSync(libsDirRoot)
 
   await copyBuildDirectory(path.join(libsDirRoot, '/ABIs'))
-  outputJsonConfigFile(path.join(libsDirRoot, '/config.json'))
+  await outputJsonConfigFile(path.join(libsDirRoot, '/config.json'))
 
   // output to Identity Service
   try {
-    outputJsonConfigFile(path.join(getDirectoryRoot(AudiusIdentityService), '/eth-contract-config.json'))
+    await outputJsonConfigFile(path.join(getDirectoryRoot(AudiusIdentityService), '/eth-contract-config.json'))
   } catch (e) {
     console.log("Identity service doesn't exist, probably running via E2E setup scripts", e)
   }
 
   // output to Creator Node
   try {
-    outputJsonConfigFile(path.join(getDirectoryRoot(AudiusCreatorNode), '/eth-contract-config.json'))
+    await outputJsonConfigFile(path.join(getDirectoryRoot(AudiusCreatorNode), '/eth-contract-config.json'))
   } catch (e) {
     console.log("Creator node doesn't exist, probably running via E2E setup scripts", e)
   }
 
   // special case for content service which isn't run locally for E2E test or during front end dev
   try {
-    outputJsonConfigFile(path.join(getDirectoryRoot(AudiusContentService), '/eth-contract-config.json'))
+    await outputJsonConfigFile(path.join(getDirectoryRoot(AudiusContentService), '/eth-contract-config.json'))
   } catch (e) {
     console.log("Content service folder doesn't exist, probably running via E2E setup scripts", e)
   }
@@ -118,5 +117,5 @@ module.exports = async callback => {
   if (!fs.existsSync(dappOutput)) {
     fs.mkdirSync(dappOutput, { recursive: true })
   }
-  outputJsonConfigFile(path.join(dappOutput, '/eth-config.json'))
+  await outputJsonConfigFile(path.join(dappOutput, '/eth-config.json'))
 }
