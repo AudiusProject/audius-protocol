@@ -7,7 +7,7 @@ from src.queries.search_queries import SearchKind, search
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_tracks import get_tracks
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_favorite, extend_track, \
-     extend_user, make_response, search_parser, success_response
+     extend_user, make_response, search_parser, success_response, abort_bad_request_param
 from .models.tracks import track
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
@@ -107,6 +107,8 @@ class UserSearchResult(Resource):
         """Seach for a user."""
         args = search_parser.parse_args()
         query = args["query"]
+        if not query:
+            abort_bad_request_param('query', ns)
         search_args = {
             "query": query,
             "kind": SearchKind.users.name,
