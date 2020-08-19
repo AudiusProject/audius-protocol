@@ -1,26 +1,17 @@
 {
-  "contractName": "Migrations",
+  "contractName": "MockAccount",
   "abi": [
     {
-      "inputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "lastCompletedMigration",
-      "outputs": [
+      "inputs": [
         {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
+          "internalType": "address payable",
+          "name": "_owner",
+          "type": "address"
         }
       ],
       "payable": false,
-      "stateMutability": "view",
-      "type": "function"
+      "stateMutability": "nonpayable",
+      "type": "constructor"
     },
     {
       "constant": true,
@@ -41,12 +32,12 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "_completed",
-          "type": "uint256"
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
         }
       ],
-      "name": "setCompleted",
+      "name": "setOwner",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -56,12 +47,12 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "address",
-          "name": "_newAddress",
+          "internalType": "address payable",
+          "name": "recipient",
           "type": "address"
         }
       ],
-      "name": "upgrade",
+      "name": "destroy",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
