@@ -59,7 +59,6 @@ def get_trending_tracks(args):
         trending_tracks = generate_trending(
             get_db_read_replica(), query_time, args.get('genre', None),
             limit, offset)
-        return
 
         track_scores = [z(time, track) for track in trending_tracks['listen_counts']]
         sorted_track_scores = sorted(track_scores, key=lambda k: k['score'], reverse=True)

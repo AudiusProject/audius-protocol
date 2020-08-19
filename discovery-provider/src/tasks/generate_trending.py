@@ -1,7 +1,7 @@
 import logging # pylint: disable=C0302
 from urllib.parse import urljoin, unquote
 import requests
-from sqlalchemy import func
+from sqlalchemy import func, desc
 from datetime import datetime, timedelta
 
 from src import api_helpers
@@ -18,19 +18,60 @@ trending_cache_miss_key = 'trending_cache_miss'
 trending_cache_total_key = 'trending_cache_total'
 
 def get_listen_counts(db, time, genre, limit, offset):
-    t = datetime.now() - timedelta(weeks=1)
+
+    def with_time_filter(base_query, time):
+        delta = None
+        if not time:
+            return base_query
+        if time == "year":
+            delta = timedelta(weeks=52)
+        elif time == "month":
+            delta = timedelta(days=30)
+        elif time == "week":
+            delta = timedelta(weeks=1)
+        elif time == "day":
+            delta = timedelta(days=1)
+        else:
+            logger.warning(f"Invalid time passed to get_listen_counts: {time}")
+            return base_query
+        return (base_query
+            .filter(
+                Play.created_at > datetime.now() - delta
+            ))
+
+    def with_genre_filter(base_query, genre):
+        if not genre:
+            return base_query
+        return (base_query
+            .join(Track, Track.track_id == Play.play_item_id)
+            .filter(Track.genre == genre)
+        )
+
     with db.scoped_session() as session:
-        # TODO: handle genres
-        listens = (session.query(Play.play_item_id, func.count())
-            .filter(Play.created_at > t)
-            .group_by(Play.play_item_id)
-            .all())
+        # Construct base query
+        base_query = (
+            session.query(Play.play_item_id, func.count(Play.id))
+                .group_by(Play.play_item_id)
+            )
+
+        # Add time filter, if any
+        base_query = with_time_filter(base_query, time)
+        base_query = with_genre_filter(base_query, genre)
+
+        # Add limit + offset + sort
+        base_query = (base_query
+                        .order_by(desc(func.count(Play.id)))
+                        .limit(limit)
+                        .offset(offset))
+        listens = base_query.all()
+
+        # Format the results
+        listens = [{"trackId": listen[0], "listens": listen[1]} for listen in listens]
         return listens
 
 def generate_trending(db, time, genre, limit, offset):
     listen_data = get_listen_counts(db, time, genre, limit, offset)
     logger.warning(listen_data)
-    return
     identity_url = shared_config['discprov']['identity_service_url']
     identity_trending_endpoint = urljoin(identity_url, f"/tracks/trending/{time}")
 
@@ -73,6 +114,7 @@ def generate_trending(db, time, genre, limit, offset):
         return api_helpers.error_response(json_resp["error"], 500)
 
     listen_counts = json_resp["listenCounts"]
+    logger.warning(listen_counts)
     # Convert trackId to snakeCase
     for track_entry in listen_counts:
         track_entry[response_name_constants.track_id] = track_entry['trackId']
