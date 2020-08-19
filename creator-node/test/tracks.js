@@ -6,14 +6,16 @@ const sinon = require('sinon')
 
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
-
+const ipfsClient = require('../src/ipfsClient')
 const blacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
+const models = require('../src/models')
 
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
+const { sortKeys } = require('../src/apiHelpers')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
@@ -388,12 +390,22 @@ describe('test Tracks', function () {
   })
 })
 
-describe('test /track_content with actual ipfsClient', function () {
-  let app, server, session, ipfs, libsMock
+describe('test /track_content and /tracks/metadata with actual ipfsClient', function () {
+  let app, server, session, libsMock, ipfs
+
+  // Will need a '.' in front of storagePath to look at current dir
+  // a '/' will search the root dir
+  before(async () => {
+    let storagePath = config.get('storagePath')
+    if (storagePath.startsWith('/')) {
+      storagePath = '.' + storagePath
+      config.set('storagePath', storagePath)
+    }
+  })
 
   /** Inits ipfs client, libs mock, web server app, blacklist manager, and creates starter CNodeUser */
   beforeEach(async () => {
-    ipfs = require('../src/ipfsClient').ipfs
+    ipfs = ipfsClient.ipfs
     libsMock = getLibsMock()
 
     const appInfo = await getApp(ipfs, libsMock, blacklistManager)
@@ -409,6 +421,7 @@ describe('test /track_content with actual ipfsClient', function () {
     await server.close()
   })
 
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ /track_content TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   it('sends server error response if segmenting fails', async function () {
     const file = fs.readFileSync(testAudioFilePath)
     sinon.stub(TranscodingQueue, 'segment').rejects(new Error('failed to segment'))
@@ -472,6 +485,101 @@ describe('test /track_content with actual ipfsClient', function () {
       const returnedSegmentFileBuf = fs.readFileSync(cidPath)
       assert.deepStrictEqual(expectedSegmentFileBuf.compare(returnedSegmentFileBuf), 0)
     })
+  })
+
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ /tracks/metadata TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+  it('should throw an error if no metadata is passed', async function () {
+    const resp = await request(app)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', session)
+      .send({})
+      .expect(400)
+
+    assert.deepStrictEqual(resp.body.error, 'Metadata object must include owner_id and non-empty track_segments array')
+  })
+
+  it('should throw an error if segment is blacklisted', async function () {
+    sinon.stub(blacklistManager, 'CIDIsInBlacklist').returns(true)
+    const metadata = {
+      test: 'field1',
+      track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
+      owner_id: 1
+    }
+
+    const resp = await request(app)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', session)
+      .send({ metadata })
+      .expect(403)
+
+    assert.deepStrictEqual(resp.body.error, `Segment CID ${metadata.track_segments[0].multihash} has been blacklisted by this node.`)
+  })
+
+  it('should throw error response if saving metadata to fails', async function () {
+    sinon.stub(ipfs, 'add').rejects(new Error('ipfs add failed!'))
+    const metadata = {
+      test: 'field1',
+      track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
+      owner_id: 1
+    }
+
+    const resp = await request(app)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', session)
+      .send({ metadata })
+      .expect(500)
+
+    assert.deepStrictEqual(resp.body.error, 'Could not save file to disk, ipfs, and/or db: Error: ipfs add failed!')
+  })
+
+  it('successfully adds metadata file to filesystem, db, and ipfs', async function () {
+    const metadata = sortKeys({
+      test: 'field1',
+      track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
+      owner_id: 1
+    })
+
+    const resp = await request(app)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', session)
+      .send({ metadata })
+      .expect(function (res) {
+        if (res.body.error) {
+          console.error(res.body.error)
+          assert.fail(res.body.error)
+        }
+      })
+      .expect(200)
+
+    // check that the metadata file was written to storagePath under its multihash
+    const metadataPath = path.join(config.get('storagePath'), resp.body.metadataMultihash)
+    assert.ok(fs.existsSync(metadataPath))
+
+    // check that the metadata file contents match the metadata specified
+    let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
+    metadataFileData = sortKeys(JSON.parse(metadataFileData))
+    assert.deepStrictEqual(metadataFileData, metadata)
+
+    // check that the correct metadata file properties were written to db
+    const file = await models.File.findOne({ where: {
+      multihash: resp.body.metadataMultihash,
+      storagePath: metadataPath,
+      type: 'metadata'
+    } })
+    assert.ok(file)
+
+    // check that the metadata file is in IPFS
+    let ipfsResp
+    try {
+      ipfsResp = await ipfs.cat(resp.body.metadataMultihash)
+    } catch (e) {
+      // If CID is not present, will throw timeout error
+      assert.fail(e.message)
+    }
+
+    // check that the ipfs content matches what we expect
+    const metadataBuffer = Buffer.from(JSON.stringify(metadata))
+    assert.deepStrictEqual(metadataBuffer.compare(ipfsResp), 0)
   })
 })
 
