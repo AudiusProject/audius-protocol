@@ -15,6 +15,9 @@ const CHALLENGE_TTL_SECONDS = 120
 const CHALLENGE_PREFIX = 'userLoginChallenge:'
 
 module.exports = function (app) {
+  /**
+   * Creates CNodeUser table entry if one doesn't already exist
+   */
   app.post('/users', handleResponse(async (req, res, next) => {
     let walletAddress = req.body.walletAddress
     if (!ethereumUtils.isValidAddress(walletAddress)) {
@@ -32,7 +35,11 @@ module.exports = function (app) {
       return successResponse() // do nothing if user already exists
     }
 
-    await models.CNodeUser.create({ walletPublicKey: walletAddress })
+    await models.CNodeUser.create({
+      walletPublicKey: walletAddress,
+      // Initialize clock value for cnodeUser to 0
+      clock: 0
+    })
     return successResponse()
   }))
 
@@ -144,5 +151,23 @@ module.exports = function (app) {
   app.post('/users/logout', authMiddleware, syncLockMiddleware, handleResponse(async (req, res, next) => {
     await sessionManager.deleteSession(req.get(sessionManager.sessionTokenHeader))
     return successResponse()
+  }))
+
+  app.get('/users/clock_status/:walletPublicKey', handleResponse(async (req, res) => {
+    let walletPublicKey = req.body.walletPublicKey
+
+    if (!ethereumUtils.isValidAddress(walletPublicKey)) {
+      return errorResponseBadRequest('Ethereum address is invalid')
+    }
+
+    walletPublicKey = walletPublicKey.toLowerCase()
+
+    const cnodeUser = await models.CNodeUser.findOne({
+      where: { walletPublicKey }
+    })
+
+    const clockValue = (cnodeUser) ? cnodeUser.block : -1
+
+    return successResponse({ clockValue })
   }))
 }

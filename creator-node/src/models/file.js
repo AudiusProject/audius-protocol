@@ -49,6 +49,10 @@ module.exports = (sequelize, DataTypes) => {
         // track and non types broken down below and attached to Track model
         isIn: [['track', 'metadata', 'image', 'dir', 'copy320']]
       }
+    },
+    clock: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     }
   }, {
     indexes: [
