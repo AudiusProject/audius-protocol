@@ -33,6 +33,8 @@ from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_t
 from src.queries.get_previously_private_playlists import get_previously_private_playlists
 from src.queries.query_helpers import get_current_user_id
 
+from src.queries.get_users_cnode import get_users_cnode
+
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("queries", __name__)
@@ -442,5 +444,14 @@ def get_previously_private_playlists_route():
     try:
         playlists = get_previously_private_playlists(to_dict(request.args))
         return api_helpers.success_response(playlists)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+# Get the users for a given creator node ID
+@bp.route("/users/creator_node/<int:sp_node_id>", methods=("GET",))
+def get_creator_node_users(sp_node_id):
+    try:
+        users = get_users_cnode(sp_node_id)
+        return api_helpers.success_response(users)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)

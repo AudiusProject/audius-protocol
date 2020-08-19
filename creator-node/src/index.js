@@ -3,7 +3,7 @@
 const ON_DEATH = require('death')
 const path = require('path')
 const AudiusLibs = require('@audius/libs')
-const RecurringSync = require('./recurringSync')
+const StateMachine = require('./stateMachine')
 
 const initializeApp = require('./app')
 const config = require('./config')
@@ -65,9 +65,9 @@ const configFileStorage = () => {
   return (path.resolve('./', config.get('storagePath')))
 }
 
-const initRecurringSyncs = async () => {
-  const recurringSync = new RecurringSync()
-  await recurringSync.init()
+const initUserStateMachine = async (libs) => {
+  const userStateMachine = new StateMachine(libs)
+  await userStateMachine.init()
 }
 
 const runDBMigrations = async () => {
@@ -136,7 +136,7 @@ const startApp = async () => {
     appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager, ipfsLatest)
 
     // start recurring sync jobs
-    await initRecurringSyncs()
+    await initUserStateMachine(audiusLibs)
   }
 
   // when app terminates, close down any open DB connections gracefully
