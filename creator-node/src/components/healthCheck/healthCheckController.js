@@ -10,8 +10,9 @@ const router = express.Router()
 /** Controller for `health_check` route, calls
  * `healthCheckComponentService`.
  */
-const healthCheckController = async () => {
-  const response = healthCheck(serviceRegistry)
+const healthCheckController = async (req) => {
+  const logger = req.logger
+  const response = healthCheck(serviceRegistry, logger)
   return successResponse(response)
 }
 

@@ -1,15 +1,13 @@
 const versionInfo = require('../../../.version.json')
-const { getLogger } = require('../../logging.js')
 
 /**
  * Perform a basic health check, returning the
  * currently selected discovery provider (if any),
  * the current git SHA, and service version info.
  * @param {*} ServiceRegistry
+ * @param {*} logger
  */
-const healthCheck = ({ libs } = {}) => {
-  const logger = getLogger()
-
+const healthCheck = ({ libs } = {}, logger) => {
   let response = {
     ...versionInfo,
     'healthy': true,
