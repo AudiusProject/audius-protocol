@@ -39,7 +39,7 @@ def populate_mock_db(db, date):
         session.bulk_save_objects(route_metric_obj)
 
 
-def test_get_route_metrics(db_mock):
+def test_get_route_metrics_exact(db_mock):
     """Tests that the route metrics can queried by exact path match"""
 
     date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
@@ -59,7 +59,7 @@ def test_get_route_metrics(db_mock):
     assert metrics[0]['count'] == 5
 
 
-def test_get_route_metrics(db_mock):
+def test_get_route_metrics_non_exact(db_mock):
     """Tests that the route metrics can be queried by non-exact path match"""
 
     date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
@@ -79,7 +79,7 @@ def test_get_route_metrics(db_mock):
     assert metrics[0]['count'] == 9
 
 
-def test_get_route_metrics(db_mock):
+def test_get_route_metrics_query_string(db_mock):
     """Tests that the route metrics are queried with query_string parameter"""
 
     date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
@@ -100,7 +100,7 @@ def test_get_route_metrics(db_mock):
     assert metrics[0]['count'] == 2
 
 
-def test_get_route_metrics(db_mock):
+def test_get_route_metrics_no_matches(db_mock):
     """Tests that route metrics returns nothing if no matching query_string"""
 
     date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
