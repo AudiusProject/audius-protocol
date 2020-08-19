@@ -7,7 +7,8 @@ const router = express.Router()
 
 // Controllers
 
-/** Controller for `health_check` route, calls
+/**
+ * Controller for `health_check` route, calls
  * `healthCheckComponentService`.
  */
 const healthCheckController = async (req) => {
