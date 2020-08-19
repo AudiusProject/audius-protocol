@@ -4,6 +4,46 @@ const BlacklistManager = require('./blacklistManager')
 const AudiusLibs = require('@audius/libs')
 const config = require('./config')
 
+/**
+ * `ServiceRegistry` is a container responsible for exposing various
+ * services for use throughout CreatorNode.
+ *
+ * Services:
+ *  - `redis`: Redis Client
+ *  - `ipfs`: IPFS Client
+ *  - `ipfsLatest`: IPFS Client, latest version
+ *  - `blackListManager`: responsible for handling blacklisted content
+ *  - `audiusLibs`: an instance of Audius Libs
+ *
+ * `initServices` must be called prior to consuming servies from the registry.
+ */
+class ServiceRegistry {
+  constructor () {
+    this.redis = redisClient
+    this.ipfs = ipfs
+    this.ipfsLatest = ipfsLatest
+    this.blacklistManager = BlacklistManager
+
+    // this.audiusLibs isn't initialized until
+    // `initServices` is called.
+    this.audiusLibs = null
+  }
+
+  /**
+   * Configure services, init libs.
+   */
+  async initServices () {
+    // Initialize private IPFS gateway counters
+    this.redis.set('ipfsGatewayReqs', 0)
+    this.redis.set('ipfsStandaloneReqs', 0)
+
+    await this.blacklistManager.blacklist(this.ipfs)
+    const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
+    this.libs = audiusLibs
+  }
+}
+
+/** Private helper used by ServiceRegistry for initializing libs */
 const initAudiusLibs = async () => {
   const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
     config.get('ethProviderUrl'),
@@ -44,32 +84,7 @@ const initAudiusLibs = async () => {
   return audiusLibs
 }
 
-/**
- * Construct a ServiceRegistry object.
- *
- * `initServices` must be called before services are consumed.
- */
-function ServiceRegistry () {
-  this.redis = redisClient
-  this.ipfs = ipfs
-  this.ipfsLatest = ipfsLatest
-  this.blacklistManager = BlacklistManager
-  this.audiusLibs = null
-
-  /**
-   * Configure services, init libs.
-   */
-  this.initServices = async () => {
-    // Initialize private IPFS gateway counters
-    this.redis.set('ipfsGatewayReqs', 0)
-    this.redis.set('ipfsStandaloneReqs', 0)
-
-    await this.blacklistManager.blacklist(this.ipfs)
-    const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
-    this.libs = audiusLibs
-  }
-}
-
+/* Export a single instance of the ServiceRegistry. */
 const serviceRegistry = new ServiceRegistry()
 
 module.exports = {

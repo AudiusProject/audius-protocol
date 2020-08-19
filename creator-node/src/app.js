@@ -8,7 +8,7 @@ const { logger, loggingMiddleware } = require('./logging')
 const { userNodeMiddleware } = require('./userNodeMiddleware')
 const { userReqLimiter, trackReqLimiter, audiusUserReqLimiter, metadataReqLimiter, imageReqLimiter } = require('./reqLimiter')
 const config = require('./config')
-const healthCheckRoutes = require('./components/healthCheck/healthCheckAPI')
+const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
 
 const app = express()
 // middleware functions will be run in order they are added to the app below
