@@ -1,4 +1,4 @@
-const { healthCheck } = require('./healthCheck')
+const { healthCheck } = require('./healthCheckComponentService')
 const assert = require('assert')
 const version = require('../../../.version.json')
 
@@ -10,9 +10,13 @@ const libsMock = {
   }
 }
 
+const mockLogger = {
+  warn: () => {}
+}
+
 describe('Test Health Check', function () {
   it('Should pass', function () {
-    const res = healthCheck({ libs: libsMock })
+    const res = healthCheck({ libs: libsMock }, mockLogger)
     assert.deepStrictEqual(res, {
       ...version,
       service: 'creator-node',
@@ -23,7 +27,7 @@ describe('Test Health Check', function () {
   })
 
   it('Should handle no libs', function () {
-    const res = healthCheck()
+    const res = healthCheck({}, mockLogger)
     assert.deepStrictEqual(res, {
       ...version,
       service: 'creator-node',
