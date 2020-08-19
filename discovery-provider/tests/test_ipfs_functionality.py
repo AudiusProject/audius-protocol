@@ -69,7 +69,7 @@ class TestMultihashIsDirectory:
             raise Exception('this dag node is a directory')
         ipfsclient._api.cat = cat_handler_dir
 
-        # Invoke audius-ipfs with a invalid cid, verify that it throws an 'invalid multihash' error
+        # Invoke audius-ipfs with an invalid cid, verify that it throws an 'invalid multihash' error
         is_directory = ipfsclient.multihash_is_directory('QmVmEZnQr49gDtd7xpcsNdmgrtRTT5Te2x27KbTRPNapqy')
         assert is_directory is True
 
