@@ -26,7 +26,6 @@
     "body-parser": "^1.18.3",
     "bull": "^3.14.0",
     "bunyan": "^1.8.12",
-    "cls-hooked": "^4.2.2",
     "content-disposition": "^0.5.3",
     "convict": "^5.1.0",
     "cors": "^2.8.4",
