@@ -42,15 +42,29 @@ def get_listen_counts(db, time, genre, limit, offset):
     def with_genre_filter(base_query, genre):
         if not genre:
             return base_query
+
+        # Parse encoded characters, such as Hip-Hop%252FRap -> Hip-Hop/Rap
+        genre = unquote(genre)
+
+        # Use a list of genres rather than a single genre
+        # string to account for umbrella genres
+        # like 'Electronic
+        genre_list = get_genre_list(genre)
         return (base_query
-            .join(Track, Track.track_id == Play.play_item_id)
-            .filter(Track.genre == genre)
+            .filter(Track.genre.in_(genre_list))
         )
 
     with db.scoped_session() as session:
         # Construct base query
         base_query = (
             session.query(Play.play_item_id, func.count(Play.id))
+                .join(Track, Track.track_id == Play.play_item_id)
+                .filter(
+                    Track.is_current == True,
+                    Track.is_delete == False,
+                    Track.is_unlisted== False,
+                    Track.stem_of == None
+                )
                 .group_by(Play.play_item_id)
             )
 
@@ -66,59 +80,12 @@ def get_listen_counts(db, time, genre, limit, offset):
         listens = base_query.all()
 
         # Format the results
-        listens = [{"trackId": listen[0], "listens": listen[1]} for listen in listens]
+        listens = [{"track_id": listen[0], "listens": listen[1]} for listen in listens]
         return listens
 
 def generate_trending(db, time, genre, limit, offset):
-    listen_data = get_listen_counts(db, time, genre, limit, offset)
-    logger.warning(listen_data)
-    identity_url = shared_config['discprov']['identity_service_url']
-    identity_trending_endpoint = urljoin(identity_url, f"/tracks/trending/{time}")
-
-    post_body = {}
-    post_body["limit"] = limit
-    post_body["offset"] = offset
-
-    # Retrieve genre and query all tracks if required
-    if genre is not None:
-        # Parse encoded characters, such as Hip-Hop%252FRap -> Hip-Hop/Rap
-        genre = unquote(genre)
-        with db.scoped_session() as session:
-            genre_list = get_genre_list(genre)
-            genre_track_ids = (
-                session.query(Track.track_id)
-                .filter(
-                    Track.genre.in_(genre_list),
-                    Track.is_current == True,
-                    Track.is_delete == False,
-                    Track.is_unlisted == False,
-                    Track.stem_of == None
-                )
-                .all()
-            )
-            genre_specific_track_ids = [record[0] for record in genre_track_ids]
-            post_body["track_ids"] = genre_specific_track_ids
-
-    # Query trending information from identity service
-    resp = None
-    try:
-        resp = requests.post(identity_trending_endpoint, json=post_body)
-    except Exception as e: # pylint: disable=W0703
-        logger.error(
-            f'Error retrieving trending info - {identity_trending_endpoint}, {post_body}'
-        )
-        return api_helpers.error_response(e, 500)
-
-    json_resp = resp.json()
-    if "error" in json_resp:
-        return api_helpers.error_response(json_resp["error"], 500)
-
-    listen_counts = json_resp["listenCounts"]
+    listen_counts = get_listen_counts(db, time, genre, limit, offset)
     logger.warning(listen_counts)
-    # Convert trackId to snakeCase
-    for track_entry in listen_counts:
-        track_entry[response_name_constants.track_id] = track_entry['trackId']
-        del track_entry['trackId']
 
     track_ids = [track[response_name_constants.track_id] for track in listen_counts]
 
