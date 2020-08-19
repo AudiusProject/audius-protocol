@@ -2,9 +2,10 @@ import logging # pylint: disable=C0302
 from urllib.parse import urljoin, unquote
 import requests
 from sqlalchemy import func
+from datetime import datetime, timedelta
 
 from src import api_helpers
-from src.models import Track, RepostType, Follow, SaveType
+from src.models import Track, RepostType, Follow, SaveType, Play
 from src.utils.config import shared_config
 from src.queries import response_name_constants
 from src.queries.query_helpers import \
@@ -16,7 +17,20 @@ trending_cache_hits_key = 'trending_cache_hits'
 trending_cache_miss_key = 'trending_cache_miss'
 trending_cache_total_key = 'trending_cache_total'
 
+def get_listen_counts(db, time, genre, limit, offset):
+    t = datetime.now() - timedelta(weeks=1)
+    with db.scoped_session() as session:
+        # TODO: handle genres
+        listens = (session.query(Play.play_item_id, func.count())
+            .filter(Play.created_at > t)
+            .group_by(Play.play_item_id)
+            .all())
+        return listens
+
 def generate_trending(db, time, genre, limit, offset):
+    listen_data = get_listen_counts(db, time, genre, limit, offset)
+    logger.warning(listen_data)
+    return
     identity_url = shared_config['discprov']['identity_service_url']
     identity_trending_endpoint = urljoin(identity_url, f"/tracks/trending/{time}")
 
