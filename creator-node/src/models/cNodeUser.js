@@ -27,6 +27,10 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
       allowNull: true,
       defaultValue: null
+    },
+    clock: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     }
   }, {})
 

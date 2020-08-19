@@ -11,7 +11,7 @@ async function createStarterCNodeUser () {
 }
 
 async function createStarterCNodeUserWithKey (walletPublicKey) {
-  const cnodeUser = await CNodeUser.create({ walletPublicKey })
+  const cnodeUser = await CNodeUser.create({ walletPublicKey, clock: 0 })
   return sessionManager.createSession(cnodeUser.cnodeUserUUID)
 }
 

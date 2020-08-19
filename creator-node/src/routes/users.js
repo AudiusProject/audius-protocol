@@ -15,6 +15,9 @@ const CHALLENGE_TTL_SECONDS = 120
 const CHALLENGE_PREFIX = 'userLoginChallenge:'
 
 module.exports = function (app) {
+  /**
+   * Creates CNodeUser table entry if one doesn't already exist
+   */
   app.post('/users', handleResponse(async (req, res, next) => {
     const walletAddress = req.body.walletAddress
     const spID = req.body.spID || null
@@ -54,7 +57,9 @@ module.exports = function (app) {
     if (!existingUser) {
       await models.CNodeUser.create({
         walletPublicKey,
-        spID
+        spID,
+        // Initialize clock value for cnodeUser to 0
+        clock: 0
       })
     }
 
@@ -170,5 +175,23 @@ module.exports = function (app) {
   app.post('/users/logout', authMiddleware, syncLockMiddleware, handleResponse(async (req, res, next) => {
     await sessionManager.deleteSession(req.get(sessionManager.sessionTokenHeader))
     return successResponse()
+  }))
+
+  app.get('/users/clock_status/:walletPublicKey', handleResponse(async (req, res) => {
+    let walletPublicKey = req.body.walletPublicKey
+
+    if (!ethereumUtils.isValidAddress(walletPublicKey)) {
+      return errorResponseBadRequest('Ethereum address is invalid')
+    }
+
+    walletPublicKey = walletPublicKey.toLowerCase()
+
+    const cnodeUser = await models.CNodeUser.findOne({
+      where: { walletPublicKey }
+    })
+
+    const clockValue = (cnodeUser) ? cnodeUser.block : -1
+
+    return successResponse({ clockValue })
   }))
 }

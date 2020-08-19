@@ -42,14 +42,22 @@ async function saveFileFromBuffer (req, buffer, fileType) {
 
   await writeFile(dstPath, buffer)
 
+  // fetch highest clock value in CNodeUsers table for cnodeUserUUID
+  const newClockVal = req.session.cnodeUser.clock + 1
+
   // add reference to file to database
-  const file = (await models.File.findOrCreate({ where: {
+  let file = await models.File.create({
     cnodeUserUUID: req.session.cnodeUserUUID,
     multihash: multihash,
     sourceFile: req.fileName,
     storagePath: dstPath,
-    type: fileType
-  } }))[0].dataValues
+    type: fileType,
+    clock: newClockVal
+  })
+  file = file.dataValues
+
+  // Increment clockVal in cnodeUsers table
+  await req.session.cnodeUser.update({ clock: newClockVal })
 
   req.logger.info('\nAdded file:', multihash, 'file id', file.fileUUID)
   return { multihash: multihash, fileUUID: file.fileUUID }
@@ -83,18 +91,25 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
 
   req.logger.info(`Time taken in saveFileToIpfsFromFS to copyFileSync: ${Date.now() - codeBlockTimeStart}`)
 
+  // fetch highest clock value in CNodeUsers table for cnodeUserUUID
+  const newClockVal = req.session.cnodeUser.clock + 1
+
   // add reference to file to database
-  const queryObj = { where: {
-    cnodeUserUUID: req.session.cnodeUserUUID,
-    multihash: multihash,
-    sourceFile: sourceFile,
-    storagePath: dstPath,
-    type: fileType
-  } }
-  if (transaction) {
-    queryObj.transaction = transaction
-  }
-  const file = ((await models.File.findOrCreate(queryObj))[0].dataValues)
+  let file = await models.File.create(
+    {
+      cnodeUserUUID: req.session.cnodeUserUUID,
+      multihash: multihash,
+      sourceFile: sourceFile,
+      storagePath: dstPath,
+      type: fileType,
+      clock: newClockVal
+    },
+    { transaction }
+  )
+  file = file.dataValues
+
+  // Increment clockVal in cnodeUsers table
+  await req.session.cnodeUser.update({ clock: newClockVal }, { transaction })
 
   req.logger.info(`Added file: ${multihash} for fileUUID ${file.fileUUID} from sourceFile ${sourceFile}`)
   return { multihash: multihash, fileUUID: file.fileUUID }

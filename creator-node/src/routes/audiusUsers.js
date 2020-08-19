@@ -6,6 +6,7 @@ const { saveFileFromBuffer } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
+const { logger } = require('../logging')
 
 module.exports = function (app) {
   /** Create AudiusUser from provided metadata, and make metadata available to network. */
@@ -59,19 +60,26 @@ module.exports = function (app) {
     }
 
     const t = await models.sequelize.transaction()
+
     try {
-      // Insert / update audiusUser entry on db.
-      const audiusUser = await models.AudiusUser.upsert({
+      logger.info(`beginning audiusUsers DB transactions`)
+
+      // compute new clock value for cnodeUserUUID by incrementing current clock value from CNodeUsers table
+      const newClockVal = req.session.cnodeUser.clock + 1
+
+      // Insert new audiusUser entry to DB
+      const audiusUser = await models.AudiusUser.create({
         cnodeUserUUID,
         metadataFileUUID,
         metadataJSON,
         blockchainId: blockchainUserId,
         coverArtFileUUID,
-        profilePicFileUUID
+        profilePicFileUUID,
+        clock: newClockVal
       }, { transaction: t, returning: true })
 
-      // Update cnodeUser's latestBlockNumber.
-      await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
+      // Update cnodeUser's latestBlockNumber and clock
+      await cnodeUser.update({ latestBlockNumber: blockNumber, clock: newClockVal }, { transaction: t })
 
       await t.commit()
       triggerSecondarySyncs(req)
