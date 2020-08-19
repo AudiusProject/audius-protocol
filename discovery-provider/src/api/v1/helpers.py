@@ -3,6 +3,7 @@ from src.utils.config import shared_config
 from hashids import Hashids
 from flask_restx import fields, reqparse
 from src.queries.search_queries import SearchKind
+from datetime import datetime
 
 HASH_MIN_LENGTH = 5
 HASH_SALT = "azowernasdfoia"
@@ -108,6 +109,21 @@ def extend_remix_of(remix_of):
     remix_of["tracks"] = list(map(extend_track_element, remix_of["tracks"]))
     return remix_of
 
+def parse_bool_param(param):
+    if not isinstance(params, str):
+        return None
+    param = param.lower()
+    if param == 'true':
+        return True
+    elif param == 'false':
+        return False
+    return None
+
+def parse_unix_epoch_param(time, default=0):
+    if time is None:
+        return datetime.utcfromtimestamp(default)
+    return datetime.utcfromtimestamp(time)
+
 def extend_track(track):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
@@ -122,7 +138,8 @@ def extend_track(track):
     track["favorite_count"] = track["save_count"]
     duration = 0.
     for segment in track["track_segments"]:
-        duration += segment["duration"]
+        # NOTE: Legacy track segments store the duration as a string
+        duration += float(segment["duration"])
     track["duration"] = round(duration)
     return track
 
@@ -136,6 +153,9 @@ def extend_playlist(playlist):
     playlist = add_playlist_artwork(playlist)
     playlist["favorite_count"] = playlist["save_count"]
     return playlist
+
+def abort_bad_request_param(param, namespace):
+    namespace.abort(400, "Oh no! Bad request parameter {}.".format(param))
 
 def abort_not_found(identifier, namespace):
     namespace.abort(404, "Oh no! Resource for ID {} not found.".format(identifier))

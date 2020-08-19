@@ -1,0 +1,405 @@
+{
+  "contractName": "Governance",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "kill",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_registryAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setRegistry",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_registryAddress",
+          "type": "address"
+        },
+        {
+          "name": "_stakingProxyOwnerKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_votingPeriod",
+          "type": "uint256"
+        },
+        {
+          "name": "_votingQuorum",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "proposalId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "name": "proposer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "startBlockNumber",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "description",
+          "type": "string"
+        }
+      ],
+      "name": "ProposalSubmitted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "proposalId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "name": "voter",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "vote",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "name": "voterStake",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "previousVote",
+          "type": "uint8"
+        }
+      ],
+      "name": "ProposalVoteSubmitted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "proposalId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "name": "outcome",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "name": "voteMagnitudeYes",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "voteMagnitudeNo",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "numVotes",
+          "type": "uint256"
+        }
+      ],
+      "name": "ProposalOutcomeEvaluated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "txHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "targetContractAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "callValue",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "signature",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "callData",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "name": "returnData",
+          "type": "bytes"
+        }
+      ],
+      "name": "TransactionExecuted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_targetContractRegistryKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_callValue",
+          "type": "uint256"
+        },
+        {
+          "name": "_signature",
+          "type": "string"
+        },
+        {
+          "name": "_callData",
+          "type": "bytes"
+        },
+        {
+          "name": "_description",
+          "type": "string"
+        }
+      ],
+      "name": "submitProposal",
+      "outputs": [
+        {
+          "name": "proposalId",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_proposalId",
+          "type": "uint256"
+        },
+        {
+          "name": "_vote",
+          "type": "uint8"
+        }
+      ],
+      "name": "submitProposalVote",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_proposalId",
+          "type": "uint256"
+        }
+      ],
+      "name": "evaluateProposalOutcome",
+      "outputs": [
+        {
+          "name": "proposalOutcome",
+          "type": "uint8"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_proposalId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getProposalById",
+      "outputs": [
+        {
+          "name": "proposalId",
+          "type": "uint256"
+        },
+        {
+          "name": "proposer",
+          "type": "address"
+        },
+        {
+          "name": "startBlockNumber",
+          "type": "uint256"
+        },
+        {
+          "name": "targetContractRegistryKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "targetContractAddress",
+          "type": "address"
+        },
+        {
+          "name": "callValue",
+          "type": "uint256"
+        },
+        {
+          "name": "signature",
+          "type": "string"
+        },
+        {
+          "name": "callData",
+          "type": "bytes"
+        },
+        {
+          "name": "outcome",
+          "type": "uint8"
+        },
+        {
+          "name": "voteMagnitudeYes",
+          "type": "uint256"
+        },
+        {
+          "name": "voteMagnitudeNo",
+          "type": "uint256"
+        },
+        {
+          "name": "numVotes",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_proposalId",
+          "type": "uint256"
+        },
+        {
+          "name": "_voter",
+          "type": "address"
+        }
+      ],
+      "name": "getVoteByProposalAndVoter",
+      "outputs": [
+        {
+          "name": "vote",
+          "type": "uint8"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

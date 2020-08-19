@@ -5,38 +5,51 @@
   "author": "AudiusProject",
   "license": "Apache-2.0",
   "scripts": {
-    "test": "npm run truffle-test",
-    "test-circle-ci": "./scripts/circleci-test.sh",
-    "truffle-test": "./scripts/truffle-test.sh",
-    "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
-    "ganache": "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json",
-    "ganache-local-network": "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:latest -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100",
+    "ganache": "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 -a 50",
+    "ganache-test": "docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 -a 50",
     "ganache-i": "docker ps",
     "ganache-q": "docker rm -f audius_ganache_cli_eth_contracts > /dev/null",
+    "ganache-test-q": "docker rm -f audius_ganache_cli_eth_contracts_test > /dev/null",
     "truffle-compile": "./node_modules/.bin/truffle compile",
     "truffle-migrate": "npm run truffle-compile && ./node_modules/.bin/truffle migrate --reset --network development",
+    "truffle-migrate-test": "npm run truffle-compile && ./node_modules/.bin/truffle migrate --reset --network test_local",
     "truffle-console": "./node_modules/.bin/truffle console --network development",
+    "truffle-console-test": "./node_modules/.bin/truffle console --network test_local",
+    "test": "npm run truffle-test",
+    "test-coverage": "ENABLE_OPTIMIZER=false node --max-old-space-size=4096 ./node_modules/.bin/truffle run coverage",
+    "test-only": "./node_modules/.bin/truffle test --network=test_local",
+    "truffle-test": "./scripts/truffle-test.sh",
+    "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
+    "test-circle-ci": "./scripts/circleci-test.sh",
     "solidity-lint": "./node_modules/.bin/solium -d contracts",
     "lint": "./node_modules/.bin/standard",
-    "lint-fix": "./node_modules/.bin/standard --fix"
+    "lint-circle-ci": "./scripts/lint.sh"
   },
   "dependencies": {
+    "@aragon/court": "^1.1.2",
+    "@openzeppelin/contracts-ethereum-package": "2.5.0",
+    "@openzeppelin/upgrades": "2.8.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "ethereumjs-abi": "^0.6.7",
     "ethlint": "^1.2.3",
     "fs-extra": "^7.0.0",
-    "openzeppelin-solidity": "^2.3.0",
-    "truffle": "5.0.42",
-    "truffle-hdwallet-provider": "^1.0.13",
-    "lodash": "^4.17.15"
+    "lodash": "^4.17.15",
+    "truffle": "5.1.23",
+    "truffle-hdwallet-provider": "^1.0.13"
   },
   "devDependencies": {
-    "standard": "^12.0.1",
+    "@openzeppelin/test-helpers": "^0.5.5",
     "async": "^2.6.1",
-    "babel-register": "^6.26.0"
+    "babel-register": "^6.26.0",
+    "bignumber.js": "8.0.1",
+    "solidity-coverage": "^0.7.4",
+    "standard": "^12.0.1"
   },
   "//": {
+    "scriptsComments": {
+      "solidity-coverage": "Expanded heap size fix link here - https://github.com/sc-forks/solidity-coverage/blob/master/docs/faq.md#running-out-of-memory"
+    },
     "dependenciesComments": {
       "lodash": "Vuln in < 4.17.13, fixed by https://github.com/lodash/lodash/pull/4336"
     }

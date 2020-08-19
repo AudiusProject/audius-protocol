@@ -79,15 +79,12 @@ class ServiceProviderFactoryClient extends ContractClient {
       this.web3Manager.getWalletAddress())
   }
 
-  async increaseStake (serviceType, endpoint, amount) {
+  async increaseStake (amount) {
     const contractAddress = await this.stakingProxyClient.getAddress()
     let tx0 = await this.audiusTokenClient.approve(
       contractAddress,
       amount)
-    let method = await this.getMethod('increaseServiceStake',
-      Utils.utf8ToHex(serviceType),
-      endpoint,
-      amount)
+    let method = await this.getMethod('increaseStake', amount)
     let tx = await this.web3Manager.sendTransaction(method, 1000000)
     return {
       txReceipt: tx,
@@ -95,11 +92,8 @@ class ServiceProviderFactoryClient extends ContractClient {
     }
   }
 
-  async decreaseStake (serviceType, endpoint, amount) {
-    let method = await this.getMethod('decreaseServiceStake',
-      Utils.utf8ToHex(serviceType),
-      endpoint,
-      amount)
+  async decreaseStake (amount) {
+    let method = await this.getMethod('decreaseStake', amount)
     let tx = await this.web3Manager.sendTransaction(method, 1000000)
     return {
       txReceipt: tx
@@ -146,7 +140,7 @@ class ServiceProviderFactoryClient extends ContractClient {
 
   async getServiceProviderIdFromEndpoint (endpoint) {
     const method = await this.getMethod('getServiceProviderIdFromEndpoint',
-      Utils.keccak256(endpoint)
+      (endpoint)
     )
     let info = await method.call()
     return info
@@ -161,7 +155,7 @@ class ServiceProviderFactoryClient extends ContractClient {
     return {
       owner: info.owner,
       endpoint: info.endpoint,
-      spID: serviceId,
+      spID: parseInt(serviceId),
       type: serviceType,
       blocknumber: info.blocknumber,
       delegateOwnerWallet: info.delegateOwnerWallet
@@ -189,8 +183,8 @@ class ServiceProviderFactoryClient extends ContractClient {
     return info
   }
 
-  async getServiceProviderIdFromAddress (ownerAddress, serviceType) {
-    const method = await this.getMethod('getServiceProviderIdFromAddress',
+  async getServiceProviderIdsFromAddress (ownerAddress, serviceType) {
+    const method = await this.getMethod('getServiceProviderIdsFromAddress',
       ownerAddress,
       Utils.utf8ToHex(serviceType)
     )

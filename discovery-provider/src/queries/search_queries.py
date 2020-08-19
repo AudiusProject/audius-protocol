@@ -56,7 +56,8 @@ def search_tags():
     except Exception:
         return api_helpers.error_response(
             "Invalid value for parameter 'kind' must be in %s" % [
-                k.name for k in validSearchKinds]
+                k.name for k in validSearchKinds],
+            400
         )
 
     results = {}
@@ -295,7 +296,6 @@ def search_tags():
 
 def add_users(session, results):
     user_id_list = get_users_ids(results)
-    logger.warning(user_id_list)
     users = get_users_by_id(session, user_id_list)
     for result in results:
         user_id = None

@@ -19,10 +19,21 @@ module.exports = function (app) {
    * upload track segment files and make avail - will later be associated with Audius track
    * @dev - currently stores each segment twice, once under random file UUID & once under IPFS multihash
    *      - this should be addressed eventually
+   * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
    */
   app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
-    if (req.fileSizeError) return errorResponseBadRequest(req.fileSizeError)
-    if (req.fileFilterError) return errorResponseBadRequest(req.fileFilterError)
+    if (req.fileSizeError) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseBadRequest(req.fileSizeError)
+    }
+    if (req.fileFilterError) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseBadRequest(req.fileFilterError)
+    }
     const routeTimeStart = Date.now()
     let codeBlockTimeStart = Date.now()
 
@@ -39,12 +50,14 @@ module.exports = function (app) {
 
       req.logger.info(`Time taken in /track_content to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
     } catch (err) {
+      // Prune upload artifacts
       removeTrackFolder(req, req.fileDir)
+
       return errorResponseServerError(err)
     }
 
     // for each path, call saveFile and get back multihash; return multihash + segment duration
-    // run all async ops in parallel as they are not independent
+    // run all async ops in parallel as they are independent
     codeBlockTimeStart = Date.now()
     const t = await models.sequelize.transaction()
 
@@ -80,7 +93,12 @@ module.exports = function (app) {
       await t.commit()
     } catch (e) {
       req.logger.info(`failed to commit...rolling back. file ${req.fileName}`)
+
       await t.rollback()
+
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
       return errorResponseServerError(e)
     }
     req.logger.info(`Time taken in /track_content to commit tx block to db: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
@@ -95,7 +113,12 @@ module.exports = function (app) {
     trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
 
     // error if there are no track segments
-    if (!trackSegments || !trackSegments.length) return errorResponseServerError('Track upload failed - no track segments')
+    if (!trackSegments || !trackSegments.length) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseServerError('Track upload failed - no track segments')
+    }
 
     // Don't allow if any segment CID is in blacklist.
     try {
@@ -105,13 +128,18 @@ module.exports = function (app) {
         }
       }))
     } catch (e) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
       if (e.message.indexOf('blacklisted') >= 0) {
-        // TODO clean up orphaned content
         return errorResponseForbidden(`Track upload failed - part or all of this track has been blacklisted by this node.`)
       } else {
         return errorResponseServerError(e.message)
       }
     }
+
+    // Prune upload artifacts
+    removeTrackFolder(req, req.fileDir)
 
     req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
     return successResponse({
@@ -183,7 +211,15 @@ module.exports = function (app) {
 
     // Store + pin metadata multihash to disk + IPFS.
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
-    const { multihash, fileUUID } = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
+
+    let multihash, fileUUID
+    try {
+      const saveFileFromBufferResp = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
+      multihash = saveFileFromBufferResp.multihash
+      fileUUID = saveFileFromBufferResp.fileUUID
+    } catch (e) {
+      return errorResponseServerError(`Could not save file to disk, ipfs, and/or db: ${e}`)
+    }
 
     return successResponse({
       'metadataMultihash': multihash,
