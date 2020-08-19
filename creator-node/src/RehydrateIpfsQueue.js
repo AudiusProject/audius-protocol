@@ -59,7 +59,6 @@ class RehydrateIpfsQueue {
 
   async logError (logContext, message) {
     const logger = genericLogger.child(logContext)
-    const count = await this.queue.count()
     logger.error(`RehydrateIpfsQueue error: ${message}`)
   }
 
