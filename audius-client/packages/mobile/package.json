@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "jetifier": "jetifier",
-    "copy:local-production": "mkdir -p web-app/Web.bundle/build && rm -rf web-app/Web.bundle/build && cp -r ../audius-dapp/build-mobile-production web-app/Web.bundle/build",
-    "copy:local-staging": "mkdir -p web-app/Web.bundle/build && rm -rf web-app/Web.bundle/build && cp -r ../audius-dapp/build-mobile-staging web-app/Web.bundle/build",
+    "copy:local-production": "mkdir -p web-app/Web.bundle/build && rm -rf web-app/Web.bundle/build && cp -r ../audius-client/build-mobile-production web-app/Web.bundle/build",
+    "copy:local-staging": "mkdir -p web-app/Web.bundle/build && rm -rf web-app/Web.bundle/build && cp -r ../audius-client/build-mobile-staging web-app/Web.bundle/build",
     "copy:remote-production": "mkdir -p web-app/Web.bundle/build && rm -rf web-app/Web.bundle/build && aws s3 sync s3://audius-mobile/build web-app/Web.bundle/build",
     "copy:remote-staging": "mkdir -p web-app/Web.bundle/build && rm -rf web-app/Web.bundle/build && aws s3 sync s3://audius-mobile-staging/build web-app/Web.bundle/build",
     "android": "react-native run-android",
