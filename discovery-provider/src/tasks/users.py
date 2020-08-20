@@ -186,18 +186,34 @@ def parse_user_event(
     # if profile_picture CID is of a dir, store under _sizes field instead
     if user_record.profile_picture:
         logger.warning(f"users.py | Processing user profile_picture {user_record.profile_picture}")
-        is_directory = update_task.ipfs_client.multihash_is_directory(user_record.profile_picture)
-        if is_directory:
-            user_record.profile_picture_sizes = user_record.profile_picture
-            user_record.profile_picture = None
+        try:
+            is_directory = update_task.ipfs_client.multihash_is_directory(user_record.profile_picture)
+            if is_directory:
+                user_record.profile_picture_sizes = user_record.profile_picture
+                user_record.profile_picture = None
+        except Exception as e:
+            # we are unable to get the profile picture
+            if 'invalid multihash' in str(e):
+                user_record.profile_picture_sizes = None
+                user_record.profile_picture = None
+            else:
+                raise e
 
     # if cover_photo CID is of a dir, store under _sizes field instead
     if user_record.cover_photo:
         logger.warning(f"users.py | Processing user cover photo {user_record.cover_photo}")
-        is_directory = update_task.ipfs_client.multihash_is_directory(user_record.cover_photo)
-        if is_directory:
-            user_record.cover_photo_sizes = user_record.cover_photo
-            user_record.cover_photo = None
+        try:
+            is_directory = update_task.ipfs_client.multihash_is_directory(user_record.cover_photo)
+            if is_directory:
+                user_record.cover_photo_sizes = user_record.cover_photo
+                user_record.cover_photo = None
+        except Exception as e:
+            # we are unable to get the profile picture
+            if 'invalid multihash' in str(e):
+                user_record.cover_photo_sizes = None
+                user_record.cover_photo = None
+            else:
+                raise e
 
     return user_record
 
