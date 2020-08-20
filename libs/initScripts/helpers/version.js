@@ -16,7 +16,6 @@ async function setServiceVersion (audiusLibs, serviceType, serviceVersionStr, pr
       serviceType,
       serviceVersionStr,
       privateKey)
-    console.log(testTx)
   } catch (e) {
     if (!e.toString().includes('Already registered')) {
       console.log(e)

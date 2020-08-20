@@ -45,7 +45,7 @@ const testDeregisterSPEndpoint = async (libs, account, type) => {
   let previousRegisteredId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(
     sp1,
     type)
-  let prevSpInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo(
+  let prevSpInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
     type,
     previousRegisteredId)
 
