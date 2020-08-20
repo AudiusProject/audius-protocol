@@ -9,10 +9,9 @@ async function setServiceVersion (audiusLibs, serviceType, serviceVersionStr, pr
   if (!audiusLibs) throw new Error('audiusLibs is not defined')
 
   console.log('----version init---')
-  let testTx = null
 
   try {
-    testTx = await audiusLibs.ethContracts.ServiceTypeManagerClient.setServiceVersion(
+    await audiusLibs.ethContracts.ServiceTypeManagerClient.setServiceVersion(
       serviceType,
       serviceVersionStr,
       privateKey)
