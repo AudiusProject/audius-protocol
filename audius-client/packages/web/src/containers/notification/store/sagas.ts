@@ -536,8 +536,24 @@ function* watchTogglePanel() {
   })
 }
 
+// On Native App open, clear the notification badges
+function* resetNotificationBadgeCount() {
+  try {
+    yield call(waitForBackendSetup)
+
+    const hasAccount = yield select(getHasAccount)
+    if (hasAccount && NATIVE_MOBILE) {
+      const message = new ResetNotificationsBadgeCount()
+      message.send()
+      yield call(AudiusBackend.clearNotificationBadges)
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
 export default function sagas() {
-  return [
+  const sagas: (() => Generator)[] = [
     watchFetchNotifications,
     watchFetchNotificationUsers,
     watchMarkNotificationsRead,
@@ -550,4 +566,8 @@ export default function sagas() {
     watchTogglePanel,
     watchNotificationError
   ]
+  if (NATIVE_MOBILE) {
+    sagas.push(resetNotificationBadgeCount)
+  }
+  return sagas
 }
