@@ -493,18 +493,18 @@ module.exports = function (app) {
   /*
    * Clears a user's notification badge count to 0
   */
- app.post('/notifications/clear_badges', authMiddleware, handleResponse(async (req, res, next) => {
-  const { blockchainUserId: userId } = req.user
+  app.post('/notifications/clear_badges', authMiddleware, handleResponse(async (req, res, next) => {
+    const { blockchainUserId: userId } = req.user
 
-  try {
-    await clearBadgeCounts(userId, req.logger)
-    return successResponse({ message: 'success' })
-  } catch (err) {
-    return errorResponseBadRequest({
-      message: `[Error] Unable to clear user badges for userID: ${userID}`
-    })
-  }
-}))
+    try {
+      await clearBadgeCounts(userId, req.logger)
+      return successResponse({ message: 'success' })
+    } catch (err) {
+      return errorResponseBadRequest({
+        message: `[Error] Unable to clear user badges for userID: ${userId}`
+      })
+    }
+  }))
 
   /**
    * @deprecated
