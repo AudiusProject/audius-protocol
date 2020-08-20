@@ -34,6 +34,7 @@ import { getIsReachable } from 'store/reachability/selectors'
 import { retrieveCollections } from 'store/cache/collections/utils'
 import { retrieveTracks } from 'store/cache/tracks/utils'
 import Track from 'models/Track'
+import { MessageType } from 'services/native-mobile-interface/types'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -536,13 +537,11 @@ function* watchTogglePanel() {
   })
 }
 
-// On Native App open, clear the notification badges
+// Clear the notification badges if the user is signed in
 function* resetNotificationBadgeCount() {
   try {
-    yield call(waitForBackendSetup)
-
     const hasAccount = yield select(getHasAccount)
-    if (hasAccount && NATIVE_MOBILE) {
+    if (hasAccount) {
       const message = new ResetNotificationsBadgeCount()
       message.send()
       yield call(AudiusBackend.clearNotificationBadges)
@@ -550,6 +549,13 @@ function* resetNotificationBadgeCount() {
   } catch (error) {
     console.error(error)
   }
+}
+
+// On Native App open and enter foreground, clear the notification badges
+function* watchResetNotificationBadgeCount() {
+  yield call(waitForBackendSetup)
+  yield call(resetNotificationBadgeCount)
+  yield takeEvery(MessageType.ENTER_FOREGROUND, resetNotificationBadgeCount)
 }
 
 export default function sagas() {
@@ -567,7 +573,7 @@ export default function sagas() {
     watchNotificationError
   ]
   if (NATIVE_MOBILE) {
-    sagas.push(resetNotificationBadgeCount)
+    sagas.push(watchResetNotificationBadgeCount)
   }
   return sagas
 }
