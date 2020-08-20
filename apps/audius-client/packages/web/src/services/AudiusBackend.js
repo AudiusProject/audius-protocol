@@ -1950,6 +1950,25 @@ class AudiusBackend {
     }
   }
 
+  static async clearNotificationBadges() {
+    await waitForLibsInit()
+    const account = audiusLibs.Account.getCurrentUser()
+    if (!account) return
+    try {
+      const { data, signature } = await AudiusBackend.signData()
+      return fetch(`${IDENTITY_SERVICE}/notifications/clear_badges`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          [AuthHeaders.Message]: data,
+          [AuthHeaders.Signature]: signature
+        }
+      }).then(res => res.json())
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   static async getEmailNotificationSettings() {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
