@@ -16,7 +16,7 @@ class GovernanceClient extends ContractClient {
     this.isDebug = isDebug
   }
 
-  async guardianExecuteTransaction(
+  async guardianExecuteTransaction (
     registryKey,
     functionSignature,
     callData

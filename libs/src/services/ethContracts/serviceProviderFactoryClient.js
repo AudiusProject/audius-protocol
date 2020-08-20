@@ -182,11 +182,11 @@ class ServiceProviderFactoryClient extends ContractClient {
     let info = await this.getServiceEndpointInfo(serviceType, serviceProviderId)
     return info
   }
-  
+
   async getServiceProviderIdsFromAddress (ownerAddress, serviceType) {
     const method = await this.getMethod('getServiceProviderIdsFromAddress',
-    ownerAddress,
-    Utils.utf8ToHex(serviceType)
+      ownerAddress,
+      Utils.utf8ToHex(serviceType)
     )
     let info = await method.call()
     return info

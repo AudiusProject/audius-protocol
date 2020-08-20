@@ -15,8 +15,8 @@ const abiEncode = (types, values) => {
 /**
  * Transform a method name and its argument types into a string-composed
  * signature, e.g. someMethod(bytes32, int32)
- * @param {string} methodName 
- * @param {Array<string>} argumentTypes 
+ * @param {string} methodName
+ * @param {Array<string>} argumentTypes
  */
 const createMethodSignature = (methodName, argumentTypes) => {
   return `${methodName}(${argumentTypes.join(',')})`
