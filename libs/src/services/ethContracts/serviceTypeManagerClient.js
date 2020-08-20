@@ -4,6 +4,7 @@ const DEFAULT_GAS_AMOUNT = 200000
 
 class ServiceTypeManagerClient extends GovernedContractClient {
   async setServiceVersion (serviceType, serviceVersion, privateKey = null) {
+    const registryKey = this.contractRegistryKey
     const method = await this.getGovernedMethod(
       'setServiceVersion',
       Utils.utf8ToHex(serviceType),

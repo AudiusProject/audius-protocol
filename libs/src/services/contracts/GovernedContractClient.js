@@ -1,3 +1,5 @@
+const web3 = require('web3')
+const ethers = require('ethers')
 const ContractClient = require('./ContractClient')
 
 /**
@@ -5,15 +7,16 @@ const ContractClient = require('./ContractClient')
  * @param {Array<string>} types
  * @param {Array<string>} values
  */
-const abiEncode = (web3, types, values) => {
-  return web3.eth.abi.encodeParameters(types, values)
+const abiEncode = (types, values) => {
+  const abi = new ethers.utils.AbiCoder()
+  return abi.encode(types, values)
 }
 
 /**
  * Transform a method name and its argument types into a string-composed
- * signature, e.g. someMethod(bytes32,int32)
- * @param {string} methodName
- * @param {Array<string>} argumentTypes
+ * signature, e.g. someMethod(bytes32, int32)
+ * @param {string} methodName 
+ * @param {Array<string>} argumentTypes 
  */
 const createMethodSignature = (methodName, argumentTypes) => {
   return `${methodName}(${argumentTypes.join(',')})`
@@ -41,20 +44,18 @@ class GovernedContractClient extends ContractClient {
    * Similar to `getMethod`
    */
   async getGovernedMethod (methodName, ...args) {
-    const web3 = this.web3Manager.getWeb3()
-
     const contractMethod = await this.getMethod(methodName, ...args)
 
     const argumentTypes = contractMethod._method.inputs.map(i => i.type)
     const argumentValues = contractMethod.arguments
 
     const signature = createMethodSignature(methodName, argumentTypes)
-    const callData = abiEncode(web3, argumentTypes, argumentValues)
+    const callData = abiEncode(argumentTypes, argumentValues)
 
-    const contractRegistryKey = web3.utils.utf8ToHex(this.contractRegistryKey)
+    const registryKey = web3.utils.utf8ToHex(this.contractRegistryKey)
 
     const method = await this.governanceClient.guardianExecuteTransaction(
-      contractRegistryKey,
+      registryKey,
       signature,
       callData
     )
