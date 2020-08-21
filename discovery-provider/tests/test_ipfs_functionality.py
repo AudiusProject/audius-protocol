@@ -2,7 +2,7 @@ import json
 import ipfshttpclient
 import pytest  # pylint: disable=unused-import
 from chance import chance
-from src.utils.ipfs_lib import IPFSClient
+from src.utils.ipfs_lib import IPFSClient, construct_image_dir_gateway_url
 from src.utils.helpers import remove_test_file
 from src.tasks.metadata import track_metadata_format
 
@@ -43,6 +43,29 @@ def test_ipfs(app):
 
 # test for ipfs_lib.py, multihash_is_directory
 class TestMultihashIsDirectory:
+    def test_construct_image_dir_gateway_url(self, app):
+        # valid CID used for the rest of this function test
+        cid = 'QmZgVbuZXzMQrweB3J864LGkGqUg4R27SXkua5BzTSirmK'
+        # passing in a False-y address should return None
+        assert construct_image_dir_gateway_url(None, cid) is None
+
+        # passing in a valid CID and address will result in a fully formed url string
+        square_gateway_url = construct_image_dir_gateway_url(
+            'https://gateway-url.co',
+            'QmZgVbuZXzMQrweB3J864LGkGqUg4R27SXkua5BzTSirmK'
+        )
+        square_gateway_url_correct = f'https://gateway-url.co/ipfs/{cid}/150x150.jpg'
+        assert square_gateway_url == square_gateway_url_correct
+
+        # passing in a valid CID and address for a non-square image will result in correct url string
+        non_square_gateway_url = construct_image_dir_gateway_url(
+            'https://gateway-url.co',
+            cid,
+            False
+        )
+        non_square_gateway_url_correct = f'https://gateway-url.co/ipfs/{cid}/640x.jpg'
+        assert non_square_gateway_url == non_square_gateway_url_correct
+
     # Invoke multihash_is_directory with a invalid cid, verify that it throws an 'invalid multihash' error
     def test_invalid_cid(self, app):
         ipfs_peer_host = app.config["ipfs"]["host"]

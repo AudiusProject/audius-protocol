@@ -1,7 +1,6 @@
 import logging
 import json
 import time
-import re
 from urllib.parse import urlparse, urljoin
 import requests
 from requests.exceptions import ReadTimeout
@@ -165,7 +164,16 @@ class IPFSClient:
             logger.error(f"IPFSCLIENT | IPFS cat timed out for CID {multihash}")
             raise  # error is of type ipfshttpclient.exceptions.TimeoutError
 
-    def multihash_is_directory(self, multihash):
+    def multihash_is_directory(self, multihash, is_square=True):
+        """Given a profile picture or cover photo CID, determine if it's a
+        directory or a regular file CID
+
+        self - class self
+        multihash - CID to check if directory
+        is_square - flag to toggle between square and non-square images
+                    user cover photo is the only is_square=False image,
+                    everything else is square
+        """
         # Check if the multihash is valid
         if not self.cid_is_valid(multihash):
             raise Exception(f'invalid multihash {multihash}')
@@ -184,13 +192,14 @@ class IPFSClient:
         gateway_endpoints = self._cnode_endpoints
         for address in gateway_endpoints:
             # First, query as dir.
-            gateway_query_address = urljoin(address, f"/ipfs/{multihash}/150x150.jpg")
+            gateway_query_address = construct_image_dir_gateway_url(address, multihash)
             r = None
-            try:
-                logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
-                r = requests.get(gateway_query_address, timeout=3)
-            except Exception as e:
-                logger.warning(f"Failed to query {gateway_query_address} with error {e}")
+            if gateway_query_address:
+                try:
+                    logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
+                    r = requests.get(gateway_query_address, timeout=3)
+                except Exception as e:
+                    logger.warning(f"Failed to query {gateway_query_address} with error {e}")
 
             if r is not None:
                 try:
@@ -246,5 +255,20 @@ class IPFSClient:
         try:
             make_cid(cid)
             return True
-        except:
+        except Exception as e:
             return False
+
+def construct_image_dir_gateway_url(address, CID, is_square=True):
+    """Construct the gateway url for an image directory.
+
+    address - base url of gateway
+    CID - CID of the image directory
+    is_square - flag to toggle between square and non-square images
+                square images are generally profile pictures while
+                is_square=False is cover photos
+    """
+    if not address:
+        return None
+
+    image_file_name = '150x150.jpg' if is_square else '640x.jpg'
+    return urljoin(address, f"/ipfs/{CID}/{image_file_name}")

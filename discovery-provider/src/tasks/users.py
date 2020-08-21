@@ -203,7 +203,7 @@ def parse_user_event(
     if user_record.cover_photo:
         logger.warning(f"users.py | Processing user cover photo {user_record.cover_photo}")
         try:
-            is_directory = update_task.ipfs_client.multihash_is_directory(user_record.cover_photo)
+            is_directory = update_task.ipfs_client.multihash_is_directory(user_record.cover_photo, False)
             if is_directory:
                 user_record.cover_photo_sizes = user_record.cover_photo
                 user_record.cover_photo = None
