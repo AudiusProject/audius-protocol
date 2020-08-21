@@ -62,6 +62,7 @@ export enum MessageType {
   REQUEST_TWITTER_AUTH = 'request-twiter-auth',
 
   // Lifecycle
+  ENTER_FOREGROUND = 'action/enter-foreground',
   BACKEND_SETUP = 'backend-setup',
   REQUEST_NETWORK_CONNECTED = 'request-network-connected',
   IS_NETWORK_CONNECTED = 'is-network-connected',

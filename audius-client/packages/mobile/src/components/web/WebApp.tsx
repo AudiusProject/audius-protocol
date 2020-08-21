@@ -353,6 +353,10 @@ const WebApp = ({
         index: trackIndex,
         isAction: true
       })
+      postMessage(webRef.current, {
+        type: MessageType.ENTER_FOREGROUND,
+        isAction: true
+      })
     }
     resetServerInterval()
     // Set immediate to give JS context time to be ready
