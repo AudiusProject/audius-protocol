@@ -14,7 +14,7 @@ from src.queries.query_helpers import get_current_user_id, get_users_by_id, get_
     get_track_play_counts
 
 logger = logging.getLogger(__name__)
-bp = Blueprint("search_queries", __name__)
+bp = Blueprint("search_tags", __name__)
 
 
 ######## VARS ########
