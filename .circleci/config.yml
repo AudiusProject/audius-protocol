@@ -8,6 +8,45 @@ orbs:
   helm: circleci/helm@0.1.2
   kubernetes: circleci/kubernetes@0.3.0
 jobs:
+  test-mad-dog-e2e:
+    machine:
+      image: ubuntu-1604:201903-01    # recommended linux image - includes Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
+    steps:
+      - add_ssh_keys
+      - checkout
+      - run:
+          name: clone tooling and mad dog 
+          command: |
+            cd ../
+            mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
+            git clone git@github.com:AudiusProject/audius-tooling.git
+            git clone git@github.com:AudiusProject/mad-dog.git
+      - run:
+          name: execute
+          command: |
+            export PROTOCOL_DIR=/home/circleci/project/
+            source ~/.bash_profile
+            nvm install v10.16
+            nvm use 10.16
+            cd /home/circleci/project/libs/
+            npm install
+            npm link
+            cd /home/circleci/audius-tooling/service-commands/
+            npm install
+            npm link
+            npm link @audius/libs
+            cd /home/circleci/mad-dog/
+            npm install
+            npm link @audius/libs
+            npm link @audius/service-commands
+            cd /home/circleci/audius-tooling/service-commands/scripts/
+            sh init-repos.sh
+            sudo "$(which node)" hosts.js add
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            "$(which node)" setup.js up -nc 3
+            cd /home/circleci/mad-dog/
+            docker ps
+            npm run start test-ci
   test-libs:
     docker:
       # specify the version you desire here
@@ -320,6 +359,10 @@ jobs:
           name: discovery provider tests
           command: |
             cd discovery-provider
+            export audius_ipfs_port=5001
+            export audius_redis_url=redis://localhost:6379/0
+            export audius_delegate_owner_wallet=0x1D9c77BcfBfa66D37390BF2335f0140979a6122B
+            export audius_delegate_private_key=0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19ca
             ./scripts/circle-ci.sh
 
   test-identity-service:
@@ -498,6 +541,12 @@ workflows:
           filters:
             branches:
               ignore: /(^master$)|(.*?hotfix(.*)?)/
+      - test-mad-dog-e2e:
+          filters:
+            branches:
+              only: /(^master$)/
+
+
 
   # push public docker images when a git tag is present
   # tag must be in the format @audius/<service>@x.x.x
