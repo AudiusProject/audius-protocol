@@ -1,6 +1,5 @@
 import logging  # pylint: disable=C0302
 import datetime
-import time as t
 from dateutil.parser import parse
 
 from src.models import Track
@@ -72,7 +71,6 @@ def get_trending_tracks(args):
             Track.stem_of == None,
             Track.track_id.in_(track_ids)
         ).all()
-
         tracks = helpers.query_result_to_list(tracks)
 
         tracks = populate_track_metadata(

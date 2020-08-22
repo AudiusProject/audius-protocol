@@ -17,8 +17,14 @@ trending_cache_hits_key = 'trending_cache_hits'
 trending_cache_miss_key = 'trending_cache_miss'
 trending_cache_total_key = 'trending_cache_total'
 
+
+# Returns listens counts for tracks, subject to time and
+# genre restrictions.
+# Returns [{ track_id: number, listens: number }]
 def get_listen_counts(session, time, genre, limit, offset):
 
+    # Adds a created_at filter
+    # on the base query, if applicable.
     def with_time_filter(base_query, time):
         delta = None
         if not time:
@@ -39,6 +45,8 @@ def get_listen_counts(session, time, genre, limit, offset):
                 Play.created_at > datetime.now() - delta
             ))
 
+    # Adds a genre filter
+    # on the base query, if applicable.
     def with_genre_filter(base_query, genre):
         if not genre:
             return base_query
@@ -67,7 +75,7 @@ def get_listen_counts(session, time, genre, limit, offset):
             .group_by(Play.play_item_id)
         )
 
-    # Add time filter, if any
+    # Add filters to query
     base_query = with_time_filter(base_query, time)
     base_query = with_genre_filter(base_query, genre)
 
