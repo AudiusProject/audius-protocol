@@ -8,6 +8,7 @@ const GovernanceClient = require('./governanceClient')
 const ServiceTypeManagerClient = require('./serviceTypeManagerClient')
 const ServiceProviderFactoryClient = require('./serviceProviderFactoryClient')
 const StakingProxyClient = require('./stakingProxyClient')
+const DelegateManagerClient = require('./delegateManagerClient')
 const Utils = require('../../utils')
 
 let localStorage
@@ -24,11 +25,13 @@ const GovernanceABI = Utils.importEthContractABI('Governance.json').abi
 const ServiceTypeManagerABI = Utils.importEthContractABI('ServiceTypeManager.json').abi
 const ServiceProviderFactoryABI = Utils.importEthContractABI('ServiceProviderFactory.json').abi
 const StakingABI = Utils.importEthContractABI('Staking.json').abi
+const DelegateManagerABI = Utils.importEthContractABI('DelegateManager.json').abi
 
 const GovernanceRegistryKey = 'Governance'
 const ServiceTypeManagerProxyKey = 'ServiceTypeManagerProxy'
 const ServiceProviderFactoryRegistryKey = 'ServiceProviderFactory'
 const StakingProxyKey = 'StakingProxy'
+const DelegateManagerRegistryKey = 'DelegateManager'
 
 const TWO_MINUTES = 2 * 60 * 1000
 
@@ -98,7 +101,16 @@ class EthContracts {
       this.getRegistryAddressForContract,
       this.AudiusTokenClient,
       this.StakingProxyClient,
+      this.GovernanceClient,
       this.isDebug
+    )
+
+    this.DelegateManagerClient = new DelegateManagerClient(
+      this.ethWeb3Manager,
+      DelegateManagerABI,
+      DelegateManagerRegistryKey,
+      this.getRegistryAddressForContract,
+      this.GovernanceClient
     )
 
     this.contractClients = [

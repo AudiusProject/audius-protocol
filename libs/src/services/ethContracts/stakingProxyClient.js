@@ -5,6 +5,7 @@ class StakingProxyClient extends ContractClient {
   constructor (ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress, audiusTokenClient) {
     super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress)
     this.audiusTokenClient = audiusTokenClient
+    this.toBN = ethWeb3Manager.getWeb3().utils.toBN
   }
 
   async getCurrentVersion (serviceType) {
@@ -20,17 +21,17 @@ class StakingProxyClient extends ContractClient {
 
   async totalStaked () {
     const method = await this.getMethod('totalStaked')
-    return parseInt(await method.call(), 10)
+    return this.toBN(await method.call())
   }
 
   async getMinStakeAmount () {
     const method = await this.getMethod('getMinStakeAmount')
-    return parseInt(await method.call(), 10)
+    return this.toBN(await method.call())
   }
 
   async getMaxStakeAmount () {
     const method = await this.getMethod('getMaxStakeAmount')
-    return parseInt(await method.call(), 10)
+    return this.toBN(await method.call())
   }
 
   async supportsHistory () {
@@ -40,7 +41,7 @@ class StakingProxyClient extends ContractClient {
 
   async totalStakedFor (account) {
     const method = await this.getMethod('totalStakedFor', account)
-    return parseInt(await method.call(), 10)
+    return this.toBN(await method.call())
   }
 
   /**

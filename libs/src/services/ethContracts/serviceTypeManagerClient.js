@@ -3,19 +3,22 @@ const GovernedContractClient = require('../contracts/GovernedContractClient')
 const DEFAULT_GAS_AMOUNT = 200000
 
 class ServiceTypeManagerClient extends GovernedContractClient {
-  async setServiceVersion (serviceType, serviceVersion, privateKey = null) {
+  async setServiceVersion (serviceType, serviceVersion) {
     const method = await this.getGovernedMethod(
       'setServiceVersion',
       Utils.utf8ToHex(serviceType),
       Utils.utf8ToHex(serviceVersion)
     )
-    const contractAddress = await this.getAddress()
     return this.web3Manager.sendTransaction(
       method,
-      DEFAULT_GAS_AMOUNT,
-      contractAddress,
-      privateKey
+      DEFAULT_GAS_AMOUNT
     )
+  }
+
+  async getValidServiceTypes () {
+    const method = await this.getMethod('getValidServiceTypes')
+    const types = await method.call()
+    return types.map(t => Utils.hexToUtf8(t))
   }
 
   async getCurrentVersion (serviceType) {

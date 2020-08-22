@@ -11,7 +11,7 @@ const dataWeb3ProviderEndpoint = 'http://localhost:8545'
 const ethWeb3ProviderEndpoint = 'http://localhost:8546'
 const isServer = true
 
-module.exports.constants = {
+const constants = {
   trackMetadataCID: 'QmSH5gJPHg9xLzV823ty8BSGyHNP6ty22bgLsv5MLY3kBq',
   trackMetadataCID2: 'QmSH5gJPHg9xLzV823ty8BSGyHNP6ty22bgLaaaaaaaaaa',
   creatorMetadataCID: 'QmTDhoEDLE3k3CE5bu4mF1ogsEVkPwEAM41KsN7hZX1eWY',
@@ -38,6 +38,7 @@ const audiusLibsConfig = {
     ethContractsConfig.registryAddress,
     ethWeb3,
     ethContractsConfig.ownerWallet
+    // '0xd5f59910Fba70816231633977F4B0853c0fd7735'
   ),
   isServer: true
 }
@@ -58,10 +59,29 @@ async function initializeLibConfig (ownerWallet) {
   }
 }
 
-// Export configured libs instance
-module.exports.audiusInstance = new AudiusLibs(audiusLibsConfig)
+/**
+ * Advances numberOfBlocks ahead
+ * @param {Web3} web3
+ * @param {number} numberOfBlocks blocks to advance
+ */
+async function advanceBlocks (web3, numberOfBlocks) {
+  for (let i = 0; i < numberOfBlocks; ++i) {
+    await new Promise((resolve, reject) => {
+      web3.currentProvider.send({
+        jsonrpc: '2.0',
+        method: 'evm_mine',
+        id: Date.now(),
+      }, (err, res) => err ? reject(err) : resolve(res))
+    })
+  }
+}
 
-// Export libs config for re-use
-module.exports.audiusLibsConfig = audiusLibsConfig
-
-module.exports.initializeLibConfig = initializeLibConfig
+module.exports = {
+  constants,
+  // Export configured libs instance
+  audiusInstance: new AudiusLibs(audiusLibsConfig),
+  // Export libs config for re-use
+  audiusLibsConfig,
+  initializeLibConfig,
+  advanceBlocks
+}
