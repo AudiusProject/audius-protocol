@@ -54,7 +54,7 @@ track = ns.model('Track', {
     "tags": fields.String,
     "title": fields.String(required=True),
     "user": fields.Nested(user_model, required=True),
-    "duration": fields.Float(required=True)
+    "duration": fields.Integer(required=True)
 })
 
 track_full = ns.clone('track_full', track, {
