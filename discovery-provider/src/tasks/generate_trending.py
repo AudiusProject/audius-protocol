@@ -1,6 +1,5 @@
 import logging # pylint: disable=C0302
 from urllib.parse import urljoin, unquote
-import time as t
 from sqlalchemy import func, desc
 from sqlalchemy.dialects import postgresql
 from datetime import datetime, timedelta
@@ -18,7 +17,7 @@ trending_cache_hits_key = 'trending_cache_hits'
 trending_cache_miss_key = 'trending_cache_miss'
 trending_cache_total_key = 'trending_cache_total'
 
-def get_listen_counts(db, time, genre, limit, offset):
+def get_listen_counts(session, time, genre, limit, offset):
 
     def with_time_filter(base_query, time):
         delta = None
@@ -51,60 +50,52 @@ def get_listen_counts(db, time, genre, limit, offset):
         # string to account for umbrella genres
         # like 'Electronic
         genre_list = get_genre_list(genre)
-        print(genre_list)
         return (base_query
             .filter(Track.genre.in_(genre_list))
         )
 
-    with db.scoped_session() as session:
-        # Construct base query
-        base_query = (
-            session.query(Play.play_item_id, func.count(Play.id))
-                .join(Track, Track.track_id == Play.play_item_id)
-                .filter(
-                    Track.is_current == True,
-                    Track.is_delete == False,
-                    Track.is_unlisted== False,
-                    Track.stem_of == None
-                )
-                .group_by(Play.play_item_id)
+    # Construct base query
+    base_query = (
+        session.query(Play.play_item_id, func.count(Play.id))
+            .join(Track, Track.track_id == Play.play_item_id)
+            .filter(
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.is_unlisted== False,
+                Track.stem_of == None
             )
+            .group_by(Play.play_item_id)
+        )
 
-        # Add time filter, if any
-        base_query = with_time_filter(base_query, time)
-        base_query = with_genre_filter(base_query, genre)
+    # Add time filter, if any
+    base_query = with_time_filter(base_query, time)
+    base_query = with_genre_filter(base_query, genre)
 
-        # Add limit + offset + sort
-        base_query = (base_query
-                        .order_by(desc(func.count(Play.id)))
-                        .limit(limit)
-                        .offset(offset))
+    # Add limit + offset + sort
+    base_query = (base_query
+                    .order_by(desc(func.count(Play.id)))
+                    .limit(limit)
+                    .offset(offset))
 
-        # logger.info(str(base_query.statement.compile(dialect=postgresql.dialect(),compile_kwargs={"literal_binds": True})))
-        s = t.time()
-        listens = base_query.all()
-        e = t.time()
-        logger.warning(f"Get listen counts: {e - s}")
+    listens = base_query.all()
 
-        # Format the results
-        listens = [{"track_id": listen[0], "listens": listen[1]} for listen in listens]
-        return listens
+    # Format the results
+    listens = [{"track_id": listen[0], "listens": listen[1]} for listen in listens]
+    return listens
 
 def generate_trending(db, time, genre, limit, offset):
-    listen_counts = get_listen_counts(db, time, genre, limit, offset)
-
-    track_ids = [track[response_name_constants.track_id] for track in listen_counts]
-
     with db.scoped_session() as session:
+        # Get listen counts
+        listen_counts = get_listen_counts(session, time, genre, limit, offset)
+
+        track_ids = [track[response_name_constants.track_id] for track in listen_counts]
+
         # Get created_at info
-        s = t.time()
         tracks_created_at = (
             session.query(Track.track_id, Track.created_at)
             .filter(Track.track_id.in_(track_ids))
             .all()
         )
-        e = t.time()
-        logger.warning(f"track created at: {e - s}")
 
         # Generate track id -> created_at date
         track_created_at_dict = {
@@ -112,10 +103,8 @@ def generate_trending(db, time, genre, limit, offset):
         }
 
         # Query repost counts
-        s = t.time()
         repost_counts = get_repost_counts(session, False, True, track_ids, None)
-        e = t.time()
-        logger.warning(f"reposts: {e - s}")
+
          # Generate track_id --> repost_count mapping
         track_repost_counts = {
             repost_item_id: repost_count
@@ -124,11 +113,9 @@ def generate_trending(db, time, genre, limit, offset):
         }
 
         # Query repost count with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
-        s = t.time()
         track_repost_counts_for_time = \
             get_repost_counts(session, False, True, track_ids, None, None, time)
-        e = t.time()
-        logger.warning(f"reposts windowed: {e - s}")
+
         # Generate track_id --> windowed_save_count mapping
         track_repost_counts_for_time = {
             repost_item_id: repost_count
@@ -138,7 +125,7 @@ def generate_trending(db, time, genre, limit, offset):
 
         # Query follower info for each track owner
         # Query each track owner
-        raw_query = (
+        track_owners_query = (
             session.query(Track.track_id, Track.owner_id)
             .filter
             (
@@ -147,13 +134,7 @@ def generate_trending(db, time, genre, limit, offset):
                 Track.stem_of == None,
                 Track.track_id.in_(track_ids)
             )
-        )
-        logger.info(str(raw_query.statement.compile(dialect=postgresql.dialect(),compile_kwargs={"literal_binds": True})))
-        s = t.time()
-        track_owners_query = raw_query.all()
-
-        e = t.time()
-        logger.warning(f"track owners: {e - s}")
+        ).all()
 
         # Generate track_id <-> owner_id mapping
         track_owner_dict = {track_id: owner_id for (track_id, owner_id) in track_owners_query}
@@ -162,7 +143,6 @@ def generate_trending(db, time, genre, limit, offset):
 
 
         # build dict of owner_id --> follower_count
-        s = t.time()
         follower_counts = (
             session.query(
                 Follow.followee_user_id,
@@ -176,16 +156,11 @@ def generate_trending(db, time, genre, limit, offset):
             .group_by(Follow.followee_user_id)
             .all()
         )
-        e = t.time()
-        logger.warning(f"follower counts: {e - s}")
         follower_count_dict = \
                 {user_id: follower_count for (user_id, follower_count) in follower_counts}
 
         # Query save counts
-        s = t.time()
         save_counts = get_save_counts(session, False, True, track_ids, None)
-        e = t.time()
-        logger.warning(f"save counts: {e - s}")
         # Generate track_id --> save_count mapping
         track_save_counts = {
             save_item_id: save_count
@@ -194,10 +169,7 @@ def generate_trending(db, time, genre, limit, offset):
         }
 
         # Query save counts with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
-        s = t.time()
         save_counts_for_time = get_save_counts(session, False, True, track_ids, None, None, time)
-        e = t.time()
-        logger.warning(f"windowed save counts: {e - s}")
          # Generate track_id --> windowed_save_count mapping
         track_save_counts_for_time = {
             save_item_id: save_count
