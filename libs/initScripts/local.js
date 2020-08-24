@@ -13,7 +13,7 @@ const { deregisterLocalService } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 const { getEthContractAccounts } = require('./helpers/utils')
 
-const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service']
+const serviceTypeList = ['discovery-provider', 'creator-node']
 const spDiscProvType = serviceTypeList[0]
 const spCreatorNodeType = serviceTypeList[1]
 const discProvEndpoint1 = 'http://audius-disc-prov_web-server_1:5000'
