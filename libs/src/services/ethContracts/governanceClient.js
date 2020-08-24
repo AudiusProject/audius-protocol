@@ -17,7 +17,7 @@ class GovernanceClient extends ContractClient {
   }
 
   async guardianExecuteTransaction (
-    registryKey,
+    contractRegistryKey,
     functionSignature,
     callData
   ) {
@@ -27,7 +27,7 @@ class GovernanceClient extends ContractClient {
 
     const method = await this.getMethod(
       'guardianExecuteTransaction',
-      registryKey,
+      contractRegistryKey,
       callValue0,
       functionSignature,
       callData
