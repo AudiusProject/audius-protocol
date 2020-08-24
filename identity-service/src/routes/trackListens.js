@@ -6,7 +6,7 @@ const { handleResponse, successResponse, errorResponseBadRequest } = require('..
 const { logger } = require('../logging')
 const authMiddleware = require('../authMiddleware')
 
-async function getListenHour () {
+async function getListenHour() {
   let listenDate = new Date()
   listenDate.setMinutes(0)
   listenDate.setSeconds(0)
@@ -251,7 +251,7 @@ module.exports = function (app) {
 
     const trackListens = await models.UserTrackListen.findAll({
       where: { userId },
-      order: [[ 'updatedAt', 'DESC' ]],
+      order: [['updatedAt', 'DESC']],
       attributes: ['trackId', 'updatedAt'],
       limit,
       offset
@@ -385,7 +385,7 @@ module.exports = function (app) {
         }
       },
       order: [
-        [ 'count', 'DESC' ]
+        ['count', 'DESC']
       ],
       limit
     })
@@ -472,21 +472,25 @@ module.exports = function (app) {
       where: {
         updatedAt: { [models.Sequelize.Op.gt]: updatedAtMoment.toDate() }
       },
-      order: [['createdAt', 'ASC'], ['trackId', 'ASC']],
+      order: [['updatedAt', 'ASC'], ['trackId', 'ASC']],
       limit
     })
 
     const anonListens = await models.TrackListenCount.findAll({
-      attributes: ['trackId', ['listens', 'count'], 'createdAt', 'updatedAt'],
+      attributes: ['trackId', ['listens', 'count'], ['hour', 'createdAt'], 'updatedAt'],
       where: {
         updatedAt: { [models.Sequelize.Op.gt]: updatedAtMoment.toDate() }
       },
-      order: [['createdAt', 'ASC'], ['trackId', 'ASC']],
+      order: [['updatedAt', 'ASC'], ['trackId', 'ASC']],
       limit
     })
 
+    const listens = [...userListens, ...anonListens].sort((a, b) => {
+      return moment(a.updatedAt) - moment(b.updatedAt)
+    }).slice(0, limit)
+
     return successResponse({
-      listens: [...userListens, ...anonListens]
+      listens
     })
   }))
 }
