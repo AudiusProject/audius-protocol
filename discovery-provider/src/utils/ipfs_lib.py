@@ -6,6 +6,7 @@ from urllib.parse import urlparse, urljoin
 import requests
 from requests.exceptions import ReadTimeout
 import ipfshttpclient
+from cid import make_cid
 from src.utils.helpers import get_valid_multiaddr_from_id_json
 
 logger = logging.getLogger(__name__)
@@ -239,7 +240,11 @@ class IPFSClient:
         return self._multiaddr
 
     def cid_is_valid(self, cid):
-        if cid and re.match(r"^Qm[a-zA-Z0-9]{44}$", cid):
-            return True
+        if not cid:
+            return False
 
-        return False
+        try:
+            make_cid(cid)
+            return True
+        except:
+            return False
