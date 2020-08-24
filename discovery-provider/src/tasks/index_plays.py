@@ -1,4 +1,5 @@
 import logging
+import time
 from urllib.parse import urljoin
 import datetime
 import requests
@@ -12,11 +13,20 @@ logger = logging.getLogger(__name__)
 # The number of listens to get per request to identity
 REQUEST_LISTENS_LIMIT = 5000
 
+# The name of the job to be printed w/ each log
+JOB = 'index-plays'
+
+def get_time_diff(previous_time):
+    # Returns the time difference in milliseconds
+    return int(time.time() - previous_time * 1000)
+
 # Retrieve the play counts from the identity service
 # NOTE: indexing the plays will eventually be a part of `index_blocks`
 
 
 def get_track_plays(self, db):
+    start_time = time.time()
+    job_extra_info = {'job': JOB}
     with db.scoped_session() as session:
         # Get the most retrieved play date in the db to use as an offet for fetching
         # more play counts from identity
@@ -41,8 +51,11 @@ def get_track_plays(self, db):
 
         track_listens = {}
         try:
+            identity_response_time = time.time()
             resp = requests.get(identity_tracks_endpoint, params=params)
             track_listens = resp.json()
+            job_extra_info['identity_response_time'] = get_time_diff(
+                identity_response_time)
         except Exception as e:
             logger.error(
                 f'Error retrieving track play counts - {identity_tracks_endpoint}, {e}'
@@ -63,6 +76,7 @@ def get_track_plays(self, db):
         """
         if 'listens' in track_listens:
             # 1.) Get the user_id to track_id pairs and track_id to current hr pairs
+            listens_query_building_time = time.time()
             for listen in track_listens['listens']:
                 if 'userId' in listen and listen['userId'] != None:
                     # Add the user_id to track_id mapping
@@ -79,10 +93,13 @@ def get_track_plays(self, db):
                     track_hours.append(and_(
                         Play.user_id == None,
                         Play.play_item_id == listen['trackId'],
-                        Play.created_at >= current_hour
+                        Play.created_at == current_hour
                     ))
 
+            job_extra_info['listens_query_building_time'] = get_time_diff(
+                listens_query_building_time)
             # 2.) Query the plays and build a dict
+            listens_query_time = time.time()
 
             # Query the plays for existing user-track listens & build
             # a dict of { '{user_id}-{track_id}' : listen_count }
@@ -120,6 +137,9 @@ def get_track_plays(self, db):
                     # pylint: disable=C0301
                     f'{play[0]}-{play[1].replace(microsecond=0, second=0, minute=0)}': play[2] for play in track_play_counts
                 }
+            job_extra_info['listens_query_time'] = get_time_diff(
+                listens_query_time)
+            build_insert_query_time = time.time()
 
             # 3.) Insert new listens - subtracting the identity listens from existsing listens
             for listen in track_listens['listens']:
@@ -136,6 +156,7 @@ def get_track_plays(self, db):
                             Play(
                                 user_id=listen['userId'],
                                 play_item_id=listen['trackId'],
+                                updated_at=listen['updatedAt'],
                                 created_at=listen['createdAt'],
                             ) for _ in range(new_play_count)
                         ])
@@ -155,13 +176,25 @@ def get_track_plays(self, db):
                         plays.extend([
                             Play(
                                 play_item_id=listen['trackId'],
-                                created_at=listen['createdAt'],
+                                updated_at=listen['updatedAt'],
+                                created_at=listen['createdAt']
                             ) for _ in range(new_play_count)
                         ])
+            job_extra_info['build_insert_query_time'] = get_time_diff(
+                build_insert_query_time)
+
+        insert_refresh_time = time.time()
 
         if plays:
             session.bulk_save_objects(plays)
             session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+
+        job_extra_info['number_rows_insert'] = len(plays)
+        job_extra_info['insert_refresh_time'] = get_time_diff(
+            insert_refresh_time)
+        job_extra_info['total_time'] = get_time_diff(start_time)
+        logger.info("index_plays.py | update_play_count complete",
+                       extra=job_extra_info)
 
 ######## CELERY TASK ########
 @celery.task(name="update_play_count", bind=True)
@@ -181,17 +214,14 @@ def update_play_count(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info(
-                f"index_plays.py | update_play_count | {self.request.id} | Acquired update_play_count_lock")
             get_track_plays(self, db)
-            logger.info(
-                f"index_plays.py | update_play_count | {self.request.id} | Processing complete within session")
         else:
             logger.error(
-                f"index_plays.py | update_play_count | {self.request.id} | Failed to acquire update_play_count_lock")
+                f"index_plays.py | update_play_count | {self.request.id} | Failed to acquire update_play_count_lock",
+                extra={'job': JOB})
     except Exception as e:
         logger.error(
-            "Fatal error in main loop of update_play_count", exc_info=True)
+            "Fatal error in main loop of update_play_count", exc_info=True, extra={'job': JOB})
         raise e
     finally:
         if have_lock:
