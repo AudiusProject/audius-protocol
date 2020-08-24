@@ -1,18 +1,27 @@
 {
-  "contractName": "MinterRole",
+  "contractName": "AudiusAdminUpgradeabilityProxy",
   "abi": [
     {
-      "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
           "internalType": "address",
-          "name": "account",
+          "name": "_logic",
           "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_proxyAdmin",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_data",
+          "type": "bytes"
         }
       ],
-      "name": "MinterAdded",
-      "type": "event"
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "constructor"
     },
     {
       "anonymous": false,
@@ -20,23 +29,28 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "account",
+          "name": "implementation",
           "type": "address"
         }
       ],
-      "name": "MinterRemoved",
+      "name": "Upgraded",
       "type": "event"
+    },
+    {
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "fallback"
     },
     {
       "constant": false,
       "inputs": [
         {
           "internalType": "address",
-          "name": "sender",
+          "name": "_newImplementation",
           "type": "address"
         }
       ],
-      "name": "initialize",
+      "name": "upgradeTo",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -44,19 +58,28 @@
     },
     {
       "constant": true,
-      "inputs": [
+      "inputs": [],
+      "name": "getAudiusProxyAdminAddress",
+      "outputs": [
         {
           "internalType": "address",
-          "name": "account",
+          "name": "",
           "type": "address"
         }
       ],
-      "name": "isMinter",
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "implementation",
       "outputs": [
         {
-          "internalType": "bool",
+          "internalType": "address",
           "name": "",
-          "type": "bool"
+          "type": "address"
         }
       ],
       "payable": false,
@@ -68,20 +91,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "account",
+          "name": "_adminAddress",
           "type": "address"
         }
       ],
-      "name": "addMinter",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [],
-      "name": "renounceMinter",
+      "name": "setAudiusProxyAdminAddress",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
