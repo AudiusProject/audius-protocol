@@ -5,12 +5,12 @@ const DEFAULT_GAS_AMOUNT = 200000
 
 /**
  * ABI encodes argument types and values together into one encoded string
+ * @param {Web3} web3
  * @param {Array<string>} types
  * @param {Array<string>} values
  */
-const abiEncode = (types, values) => {
-  const abi = new ethers.utils.AbiCoder()
-  return abi.encode(types, values)
+const abiEncode = (web3, types, values) => {
+  return web3.eth.encodeParameters(types, values)
 }
 
 /**
@@ -40,11 +40,13 @@ class GovernanceClient extends ContractClient {
   }
 
   getSignatureAndCallData (methodName, contractMethod) {
+    const web3 = this.web3Manager.getWeb3()
+
     const argumentTypes = contractMethod._method.inputs.map(i => i.type)
     const argumentValues = contractMethod.arguments
 
     const signature = createMethodSignature(methodName, argumentTypes)
-    const callData = abiEncode(argumentTypes, argumentValues)
+    const callData = abiEncode(web3, argumentTypes, argumentValues)
 
     return { signature, callData }
   }
