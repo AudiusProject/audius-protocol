@@ -1,5 +1,5 @@
 {
-  "contractName": "Governance",
+  "contractName": "GovernanceUpgraded",
   "abi": [
     {
       "anonymous": false,
@@ -240,141 +240,6 @@
     },
     {
       "constant": false,
-      "inputs": [],
-      "name": "initialize",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_registryAddress",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_votingPeriod",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_executionDelay",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_votingQuorumPercent",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint16",
-          "name": "_maxInProgressProposals",
-          "type": "uint16"
-        },
-        {
-          "internalType": "uint16",
-          "name": "_maxDescriptionLength",
-          "type": "uint16"
-        },
-        {
-          "internalType": "address",
-          "name": "_guardianAddress",
-          "type": "address"
-        }
-      ],
-      "name": "initialize",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "_targetContractRegistryKey",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_callValue",
-          "type": "uint256"
-        },
-        {
-          "internalType": "string",
-          "name": "_functionSignature",
-          "type": "string"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_callData",
-          "type": "bytes"
-        },
-        {
-          "internalType": "string",
-          "name": "_description",
-          "type": "string"
-        }
-      ],
-      "name": "submitProposal",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_proposalId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "enum Governance.Vote",
-          "name": "_vote",
-          "type": "uint8"
-        }
-      ],
-      "name": "submitVote",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_proposalId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "enum Governance.Vote",
-          "name": "_vote",
-          "type": "uint8"
-        }
-      ],
-      "name": "updateVote",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
       "inputs": [
         {
           "internalType": "uint256",
@@ -395,168 +260,78 @@
       "type": "function"
     },
     {
-      "constant": false,
-      "inputs": [
+      "constant": true,
+      "inputs": [],
+      "name": "getExecutionDelay",
+      "outputs": [
         {
           "internalType": "uint256",
-          "name": "_proposalId",
+          "name": "",
           "type": "uint256"
         }
       ],
-      "name": "vetoProposal",
-      "outputs": [],
       "payable": false,
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
-      "constant": false,
-      "inputs": [
+      "constant": true,
+      "inputs": [],
+      "name": "getGuardianAddress",
+      "outputs": [
         {
           "internalType": "address",
-          "name": "_stakingAddress",
+          "name": "",
           "type": "address"
         }
       ],
-      "name": "setStakingAddress",
-      "outputs": [],
       "payable": false,
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
-      "constant": false,
-      "inputs": [
+      "constant": true,
+      "inputs": [],
+      "name": "getInProgressProposals",
+      "outputs": [
         {
-          "internalType": "uint256",
-          "name": "_votingPeriod",
-          "type": "uint256"
+          "internalType": "uint256[]",
+          "name": "",
+          "type": "uint256[]"
         }
       ],
-      "name": "setVotingPeriod",
-      "outputs": [],
       "payable": false,
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_votingQuorumPercent",
-          "type": "uint256"
-        }
-      ],
-      "name": "setVotingQuorumPercent",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_registryAddress",
-          "type": "address"
-        }
-      ],
-      "name": "setRegistryAddress",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
+      "constant": true,
+      "inputs": [],
+      "name": "getMaxDescriptionLength",
+      "outputs": [
         {
           "internalType": "uint16",
-          "name": "_newMaxInProgressProposals",
+          "name": "",
           "type": "uint16"
         }
       ],
-      "name": "setMaxInProgressProposals",
-      "outputs": [],
       "payable": false,
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
-      "constant": false,
-      "inputs": [
+      "constant": true,
+      "inputs": [],
+      "name": "getMaxInProgressProposals",
+      "outputs": [
         {
           "internalType": "uint16",
-          "name": "_newMaxDescriptionLength",
+          "name": "",
           "type": "uint16"
         }
       ],
-      "name": "setMaxDescriptionLength",
-      "outputs": [],
       "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_newExecutionDelay",
-          "type": "uint256"
-        }
-      ],
-      "name": "setExecutionDelay",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "_targetContractRegistryKey",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_callValue",
-          "type": "uint256"
-        },
-        {
-          "internalType": "string",
-          "name": "_functionSignature",
-          "type": "string"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_callData",
-          "type": "bytes"
-        }
-      ],
-      "name": "guardianExecuteTransaction",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_newGuardianAddress",
-          "type": "address"
-        }
-      ],
-      "name": "transferGuardianship",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -644,12 +419,12 @@
           "type": "uint256"
         }
       ],
-      "name": "getProposalTargetContractHash",
+      "name": "getProposalDescriptionById",
       "outputs": [
         {
-          "internalType": "bytes32",
+          "internalType": "string",
           "name": "",
-          "type": "bytes32"
+          "type": "string"
         }
       ],
       "payable": false,
@@ -665,12 +440,42 @@
           "type": "uint256"
         }
       ],
-      "name": "getProposalDescriptionById",
+      "name": "getProposalTargetContractHash",
       "outputs": [
         {
-          "internalType": "string",
+          "internalType": "bytes32",
           "name": "",
-          "type": "string"
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getRegistryAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getStakingAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "payable": false,
@@ -697,36 +502,6 @@
           "internalType": "enum Governance.Vote",
           "name": "",
           "type": "uint8"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getGuardianAddress",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getStakingAddress",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
         }
       ],
       "payable": false,
@@ -764,18 +539,102 @@
       "type": "function"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_targetContractRegistryKey",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_callValue",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "_functionSignature",
+          "type": "string"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_callData",
+          "type": "bytes"
+        }
+      ],
+      "name": "guardianExecuteTransaction",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [],
-      "name": "getRegistryAddress",
+      "name": "inProgressProposalsAreUpToDate",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "bool",
           "name": "",
-          "type": "address"
+          "type": "bool"
         }
       ],
       "payable": false,
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_registryAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_votingPeriod",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_executionDelay",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_votingQuorumPercent",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint16",
+          "name": "_maxInProgressProposals",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "_maxDescriptionLength",
+          "type": "uint16"
+        },
+        {
+          "internalType": "address",
+          "name": "_guardianAddress",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -794,24 +653,140 @@
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "getMaxInProgressProposals",
-      "outputs": [
+      "constant": false,
+      "inputs": [
         {
-          "internalType": "uint16",
-          "name": "",
-          "type": "uint16"
+          "internalType": "uint256",
+          "name": "_newExecutionDelay",
+          "type": "uint256"
         }
       ],
+      "name": "setExecutionDelay",
+      "outputs": [],
       "payable": false,
-      "stateMutability": "view",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "getExecutionDelay",
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_newMaxDescriptionLength",
+          "type": "uint16"
+        }
+      ],
+      "name": "setMaxDescriptionLength",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_newMaxInProgressProposals",
+          "type": "uint16"
+        }
+      ],
+      "name": "setMaxInProgressProposals",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_registryAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setRegistryAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_stakingAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setStakingAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_votingPeriod",
+          "type": "uint256"
+        }
+      ],
+      "name": "setVotingPeriod",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_votingQuorumPercent",
+          "type": "uint256"
+        }
+      ],
+      "name": "setVotingQuorumPercent",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_targetContractRegistryKey",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_callValue",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "_functionSignature",
+          "type": "string"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_callData",
+          "type": "bytes"
+        },
+        {
+          "internalType": "string",
+          "name": "_description",
+          "type": "string"
+        }
+      ],
+      "name": "submitProposal",
       "outputs": [
         {
           "internalType": "uint256",
@@ -820,48 +795,88 @@
         }
       ],
       "payable": false,
-      "stateMutability": "view",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "getMaxDescriptionLength",
-      "outputs": [
+      "constant": false,
+      "inputs": [
         {
-          "internalType": "uint16",
-          "name": "",
-          "type": "uint16"
+          "internalType": "uint256",
+          "name": "_proposalId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "enum Governance.Vote",
+          "name": "_vote",
+          "type": "uint8"
         }
       ],
+      "name": "submitVote",
+      "outputs": [],
       "payable": false,
-      "stateMutability": "view",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "getInProgressProposals",
-      "outputs": [
+      "constant": false,
+      "inputs": [
         {
-          "internalType": "uint256[]",
-          "name": "",
-          "type": "uint256[]"
+          "internalType": "address",
+          "name": "_newGuardianAddress",
+          "type": "address"
         }
       ],
+      "name": "transferGuardianship",
+      "outputs": [],
       "payable": false,
-      "stateMutability": "view",
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_proposalId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "enum Governance.Vote",
+          "name": "_vote",
+          "type": "uint8"
+        }
+      ],
+      "name": "updateVote",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_proposalId",
+          "type": "uint256"
+        }
+      ],
+      "name": "vetoProposal",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "constant": true,
       "inputs": [],
-      "name": "inProgressProposalsAreUpToDate",
+      "name": "newFunction",
       "outputs": [
         {
-          "internalType": "bool",
+          "internalType": "uint256",
           "name": "",
-          "type": "bool"
+          "type": "uint256"
         }
       ],
       "payable": false,

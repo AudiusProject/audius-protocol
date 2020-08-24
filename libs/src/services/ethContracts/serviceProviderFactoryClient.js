@@ -146,8 +146,8 @@ class ServiceProviderFactoryClient extends ContractClient {
     return info
   }
 
-  async getServiceProviderInfo (serviceType, serviceId) {
-    const method = await this.getMethod('getServiceProviderInfo',
+  async getServiceEndpointInfo (serviceType, serviceId) {
+    const method = await this.getMethod('getServiceEndpointInfo',
       Utils.utf8ToHex(serviceType),
       serviceId
     )
@@ -179,7 +179,7 @@ class ServiceProviderFactoryClient extends ContractClient {
     }
 
     let serviceProviderId = await this.getServiceProviderIdFromEndpoint(endpoint)
-    let info = await this.getServiceProviderInfo(serviceType, serviceProviderId)
+    let info = await this.getServiceEndpointInfo(serviceType, serviceProviderId)
     return info
   }
 
@@ -192,11 +192,16 @@ class ServiceProviderFactoryClient extends ContractClient {
     return info
   }
 
-  async getServiceProviderInfoFromAddress (ownerAddress, serviceType) {
+  async getServiceProviderIdFromAddress (ownerAddress, serviceType) {
+    const infos = await this.getServiceProviderIdsFromAddress(ownerAddress, serviceType)
+    return infos[0]
+  }
+
+  async getServiceEndpointInfoFromAddress (ownerAddress, serviceType) {
     let spId = await this.getServiceProviderIdFromAddress(ownerAddress, serviceType)
 
     // cast this as an array for backwards compatibility because everything expects an array
-    const spInfo = [await this.getServiceProviderInfo(serviceType, spId)]
+    const spInfo = [await this.getServiceEndpointInfo(serviceType, spId)]
     return spInfo
   }
 
@@ -205,7 +210,7 @@ class ServiceProviderFactoryClient extends ContractClient {
 
     const providerList = await Promise.all(
       range(1, numberOfProviders + 1).map(i =>
-        this.getServiceProviderInfo(serviceType, i)
+        this.getServiceEndpointInfo(serviceType, i)
       )
     )
     return providerList.filter(provider => provider.endpoint !== '')

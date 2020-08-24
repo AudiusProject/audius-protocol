@@ -2,41 +2,81 @@
   "contractName": "ServiceTypeManager",
   "abi": [
     {
-      "constant": false,
-      "inputs": [],
-      "name": "kill",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
+      "anonymous": false,
       "inputs": [
         {
-          "name": "",
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "_serviceType",
           "type": "bytes32"
         },
         {
-          "name": "",
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_serviceTypeMin",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_serviceTypeMax",
           "type": "uint256"
         }
       ],
-      "name": "serviceTypeVersions",
-      "outputs": [
+      "name": "ServiceTypeAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
         {
-          "name": "",
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "_serviceType",
           "type": "bytes32"
         }
       ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
+      "name": "ServiceTypeRemoved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "_serviceVersion",
+          "type": "bytes32"
+        }
+      ],
+      "name": "SetServiceVersion",
+      "type": "event"
     },
     {
       "constant": false,
       "inputs": [],
-      "name": "renounceOwnership",
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_governanceAddress",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -45,9 +85,10 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "owner",
+      "name": "getGovernanceAddress",
       "outputs": [
         {
+          "internalType": "address",
           "name": "",
           "type": "address"
         }
@@ -57,11 +98,119 @@
       "type": "function"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_governanceAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setGovernanceAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_serviceTypeMin",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_serviceTypeMax",
+          "type": "uint256"
+        }
+      ],
+      "name": "addServiceType",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_serviceType",
+          "type": "bytes32"
+        }
+      ],
+      "name": "removeServiceType",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
-      "inputs": [],
-      "name": "isOwner",
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_serviceType",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getServiceTypeInfo",
       "outputs": [
         {
+          "internalType": "bool",
+          "name": "isValid",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minStake",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxStake",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getValidServiceTypes",
+      "outputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "",
+          "type": "bytes32[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_serviceType",
+          "type": "bytes32"
+        }
+      ],
+      "name": "serviceTypeIsValid",
+      "outputs": [
+        {
+          "internalType": "bool",
           "name": "",
           "type": "bool"
         }
@@ -74,99 +223,12 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_registryAddress",
-          "type": "address"
-        }
-      ],
-      "name": "setRegistry",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "transferOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
+          "internalType": "bytes32",
           "name": "_serviceType",
           "type": "bytes32"
         },
         {
-          "indexed": false,
-          "name": "_serviceVersion",
-          "type": "bytes32"
-        }
-      ],
-      "name": "SetServiceVersion",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "previousOwner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "OwnershipTransferred",
-      "type": "event"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_registryAddress",
-          "type": "address"
-        },
-        {
-          "name": "_versionerAddress",
-          "type": "address"
-        }
-      ],
-      "name": "initialize",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [],
-      "name": "initialize",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
+          "internalType": "bytes32",
           "name": "_serviceVersion",
           "type": "bytes32"
         }
@@ -181,10 +243,12 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "bytes32",
           "name": "_serviceType",
           "type": "bytes32"
         },
         {
+          "internalType": "uint256",
           "name": "_versionIndex",
           "type": "uint256"
         }
@@ -192,7 +256,8 @@
       "name": "getVersion",
       "outputs": [
         {
-          "name": "version",
+          "internalType": "bytes32",
+          "name": "",
           "type": "bytes32"
         }
       ],
@@ -204,6 +269,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "bytes32",
           "name": "_serviceType",
           "type": "bytes32"
         }
@@ -211,7 +277,8 @@
       "name": "getCurrentVersion",
       "outputs": [
         {
-          "name": "currentVersion",
+          "internalType": "bytes32",
+          "name": "",
           "type": "bytes32"
         }
       ],
@@ -223,6 +290,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "bytes32",
           "name": "_serviceType",
           "type": "bytes32"
         }
@@ -230,8 +298,35 @@
       "name": "getNumberOfVersions",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_serviceVersion",
+          "type": "bytes32"
+        }
+      ],
+      "name": "serviceVersionIsValid",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
         }
       ],
       "payable": false,

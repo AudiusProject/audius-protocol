@@ -4,6 +4,7 @@ let urlJoin = require('proper-url-join')
 
 const AudiusTokenClient = require('./audiusTokenClient')
 const RegistryClient = require('./registryClient')
+const GovernanceClient = require('./governanceClient')
 const ServiceTypeManagerClient = require('./serviceTypeManagerClient')
 const ServiceProviderFactoryClient = require('./serviceProviderFactoryClient')
 const StakingProxyClient = require('./stakingProxyClient')
@@ -19,10 +20,12 @@ if (typeof window === 'undefined' || window === null) {
 
 const AudiusTokenABI = Utils.importEthContractABI('AudiusToken.json').abi
 const RegistryABI = Utils.importEthContractABI('Registry.json').abi
+const GovernanceABI = Utils.importEthContractABI('Governance.json').abi
 const ServiceTypeManagerABI = Utils.importEthContractABI('ServiceTypeManager.json').abi
 const ServiceProviderFactoryABI = Utils.importEthContractABI('ServiceProviderFactory.json').abi
 const StakingABI = Utils.importEthContractABI('Staking.json').abi
 
+const GovernanceRegistryKey = 'Governance'
 const ServiceTypeManagerProxyKey = 'ServiceTypeManagerProxy'
 const ServiceProviderFactoryRegistryKey = 'ServiceProviderFactory'
 const StakingProxyKey = 'StakingProxy'
@@ -65,11 +68,19 @@ class EthContracts {
     )
     this.getRegistryAddressForContract = this.getRegistryAddressForContract.bind(this)
 
+    this.GovernanceClient = new GovernanceClient(
+      this.ethWeb3Manager,
+      GovernanceABI,
+      GovernanceRegistryKey,
+      this.getRegistryAddressForContract
+    )
+
     this.ServiceTypeManagerClient = new ServiceTypeManagerClient(
       this.ethWeb3Manager,
       ServiceTypeManagerABI,
       ServiceTypeManagerProxyKey,
-      this.getRegistryAddressForContract
+      this.getRegistryAddressForContract,
+      this.GovernanceClient
     )
 
     this.StakingProxyClient = new StakingProxyClient(
@@ -195,11 +206,11 @@ class EthContracts {
   }
 
   async getNumberOfVersions (spType) {
-    return this.VersioningFactoryClient.getNumberOfVersions(spType)
+    return this.ServiceTypeManagerClient.getNumberOfVersions(spType)
   }
 
   async getVersion (spType, queryIndex) {
-    return this.VersioningFactoryClient.getVersion(spType, queryIndex)
+    return this.ServiceTypeManagerClient.getVersion(spType, queryIndex)
   }
 
   /**
