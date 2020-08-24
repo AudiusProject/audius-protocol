@@ -6,7 +6,7 @@ const { handleResponse, successResponse, errorResponseBadRequest } = require('..
 const { logger } = require('../logging')
 const authMiddleware = require('../authMiddleware')
 
-async function getListenHour() {
+async function getListenHour () {
   let listenDate = new Date()
   listenDate.setMinutes(0)
   listenDate.setSeconds(0)

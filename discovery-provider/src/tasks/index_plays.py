@@ -194,7 +194,7 @@ def get_track_plays(self, db):
             insert_refresh_time)
         job_extra_info['total_time'] = get_time_diff(start_time)
         logger.info("index_plays.py | update_play_count complete",
-                       extra=job_extra_info)
+                    extra=job_extra_info)
 
 ######## CELERY TASK ########
 @celery.task(name="update_play_count", bind=True)
