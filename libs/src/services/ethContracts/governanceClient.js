@@ -1,4 +1,3 @@
-const ethers = require('ethers')
 const ContractClient = require('../contracts/ContractClient')
 
 const DEFAULT_GAS_AMOUNT = 200000

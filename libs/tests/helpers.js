@@ -38,7 +38,6 @@ const audiusLibsConfig = {
     ethContractsConfig.registryAddress,
     ethWeb3,
     ethContractsConfig.ownerWallet
-    // '0xd5f59910Fba70816231633977F4B0853c0fd7735'
   ),
   isServer: true
 }
