@@ -24,9 +24,9 @@ class GovernedContractClient extends ContractClient {
   async getGovernedMethod (methodName, ...args) {
     const contractMethod = await this.getMethod(methodName, ...args)
     const { signature, callData } = this.governanceClient.getSignatureAndCallData(methodName, contractMethod)
-    const registryKey = this.web3Manager.getWeb3().utils.utf8ToHex(this.contractRegistryKey)
+    const contractRegistryKey = this.web3Manager.getWeb3().utils.utf8ToHex(this.contractRegistryKey)
     const method = await this.governanceClient.guardianExecuteTransaction(
-      registryKey,
+      contractRegistryKey,
       signature,
       callData
     )
