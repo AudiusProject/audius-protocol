@@ -50,7 +50,7 @@ def get_trending_tracks(args):
     time = args.get('time')
     # Identity understands allTime as millennium.
     # TODO: Change this in https://github.com/AudiusProject/audius-protocol/pull/768/files
-    if (time == 'allTime'):
+    if time == 'allTime':
         time = 'millennium'
 
     with db.scoped_session() as session:
