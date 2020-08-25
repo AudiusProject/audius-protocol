@@ -1,12 +1,9 @@
 import logging # pylint: disable=C0302
-from urllib.parse import urljoin, unquote
-from sqlalchemy import func, desc
-from sqlalchemy.dialects import postgresql
 from datetime import datetime, timedelta
+from urllib.parse import unquote
+from sqlalchemy import func, desc
 
-from src import api_helpers
 from src.models import Track, RepostType, Follow, SaveType, Play
-from src.utils.config import shared_config
 from src.queries import response_name_constants
 from src.queries.query_helpers import \
     get_karma, get_repost_counts, get_save_counts, get_genre_list
@@ -41,9 +38,9 @@ def get_listen_counts(session, time, genre, limit, offset):
             logger.warning(f"Invalid time passed to get_listen_counts: {time}")
             return base_query
         return (base_query
-            .filter(
-                Play.created_at > datetime.now() - delta
-            ))
+                .filter(
+                    Play.created_at > datetime.now() - delta
+                ))
 
     # Adds a genre filter
     # on the base query, if applicable.
@@ -59,21 +56,21 @@ def get_listen_counts(session, time, genre, limit, offset):
         # like 'Electronic
         genre_list = get_genre_list(genre)
         return (base_query
-            .filter(Track.genre.in_(genre_list))
-        )
+                .filter(Track.genre.in_(genre_list))
+               )
 
     # Construct base query
     base_query = (
         session.query(Play.play_item_id, func.count(Play.id))
-            .join(Track, Track.track_id == Play.play_item_id)
-            .filter(
-                Track.is_current == True,
-                Track.is_delete == False,
-                Track.is_unlisted== False,
-                Track.stem_of == None
-            )
-            .group_by(Play.play_item_id)
+        .join(Track, Track.track_id == Play.play_item_id)
+        .filter(
+            Track.is_current == True,
+            Track.is_delete == False,
+            Track.is_unlisted == False,
+            Track.stem_of == None
         )
+        .group_by(Play.play_item_id)
+    )
 
     # Add filters to query
     base_query = with_time_filter(base_query, time)
@@ -81,9 +78,9 @@ def get_listen_counts(session, time, genre, limit, offset):
 
     # Add limit + offset + sort
     base_query = (base_query
-                    .order_by(desc(func.count(Play.id)))
-                    .limit(limit)
-                    .offset(offset))
+                  .order_by(desc(func.count(Play.id)))
+                  .limit(limit)
+                  .offset(offset))
 
     listens = base_query.all()
 
@@ -95,6 +92,7 @@ def generate_trending(db, time, genre, limit, offset):
     with db.scoped_session() as session:
         # Get listen counts
         listen_counts = get_listen_counts(session, time, genre, limit, offset)
+        logger.warning(listen_counts)
 
         track_ids = [track[response_name_constants.track_id] for track in listen_counts]
 

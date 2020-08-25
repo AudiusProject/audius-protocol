@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 
-from flask.globals import session
 from src.tasks.generate_trending import get_listen_counts
 from src.models import Track, Block, Play
 
@@ -42,10 +41,10 @@ test_plays = [
 
 # Setup trending from simplified metadata
 def setup_trending(db):
+    # pylint: disable=W0621
     with db.scoped_session() as session:
         # seed tracks + blocks
-        for i in range(len(test_tracks)):
-            track_meta = test_tracks[i]
+        for i, track_meta in enumerate(test_tracks):
             blockhash = hex(i)
             block = Block(
                 blockhash=blockhash,
@@ -77,8 +76,7 @@ def setup_trending(db):
             session.add(track)
 
         # seed plays
-        for i in range(len(test_plays)):
-            play_meta = test_plays[i]
+        for i, play_meta in enumerate(test_plays):
             play = Play(
                 id=i,
                 play_item_id=play_meta.get("item_id"),

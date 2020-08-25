@@ -3,15 +3,16 @@ Test fixtures to support unit testing
 """
 
 from unittest.mock import MagicMock
+import tempfile
 import pytest
 import fakeredis
-import src.utils.redis_connection
-import src.utils.web3_provider
-import src.utils.db_session
-import tempfile
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pytest_postgresql import factories
+# TODO: these aren't fixed yet - grouped emails
+import src.utils.redis_connection
+import src.utils.web3_provider
+import src.utils.db_session
 from src.models import Base
 
 socket_dir = tempfile.TemporaryDirectory()
@@ -28,6 +29,7 @@ postgresql_my = factories.postgresql('postgresql_my_proc')
 # More or less follows steps here:
 # https://medium.com/@geoffreykoh/fun-with-fixtures-for-database-applications-8253eaf1a6d
 @pytest.fixture(scope='function')
+# pylint: disable=W0621
 def setup_database(postgresql_my):
 
     def dbcreator():
@@ -53,6 +55,7 @@ def setup_database(postgresql_my):
 # Monkeypatches get_db_read_replica
 # to return this mocked db instance.
 @pytest.fixture(scope='function')
+# pylint: disable=W0621
 def postgres_mock_db(monkeypatch, setup_database):
     # A mock Session, with __enter__ and __exit
     # methods so we can follow the standard
