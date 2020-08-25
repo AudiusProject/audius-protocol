@@ -8,7 +8,7 @@ DB_CONTAINER='cn_test_db'
 REDIS_CONTAINER='cn_test_redis'
 
 PG_PORT=$POSTGRES_TEST_PORT
-if [ -z "${PG_PORT}" ]; then	
+if [ -z "${PG_PORT}" ]; then
   PG_PORT=4432
 fi
 
@@ -23,6 +23,20 @@ tear_down () {
   docker container rm $IPFS_CONTAINER
   docker container rm $DB_CONTAINER
   docker container rm $REDIS_CONTAINER
+  set -e
+}
+
+run_unit_tests () {
+  set +e
+  echo Running unit tests...
+  ./node_modules/mocha/bin/mocha src/**/*.test.js
+  set -e
+}
+
+run_integration_tests () {
+  set +e
+  echo Running integration tests...
+  ./node_modules/mocha/bin/mocha --timeout 30000 --exit
   set -e
 }
 
@@ -52,7 +66,11 @@ if [ "$1" == "standalone_creator" ]; then
   fi
 elif [ "$1" == "teardown" ]; then
   tear_down
+elif [ "$1" == "unit_test" ]; then
+  run_unit_tests
+  exit
 fi
+
 
 export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_creator_node_test"
 
@@ -62,10 +80,10 @@ export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_creator_nod
 # database does not exist). If psql is not installed (ex. in CircleCI), this command will
 # fail, so we check if it is installed first.
 # In CircleCI, the docker environment variables set up audius_creator_node_test instead of
-# audius_creator_node. 
+# audius_creator_node.
 
 # CircleCI job and docker run in separate environments and cannot directly communicate with each other.
-# Therefore the 'docker exec' command will not work when running the CI build. 
+# Therefore the 'docker exec' command will not work when running the CI build.
 # https://circleci.com/docs/2.0/building-docker-images/#separation-of-environments
 # So, if tests are run locally, run docker exec command. Else, run the psql command in the job.
 if [ -z "${isCIBuild}" ]; then
@@ -82,7 +100,8 @@ export delegateOwnerWallet="0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
 export delegatePrivateKey="0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d"
 
 # tests
-./node_modules/mocha/bin/mocha --timeout 30000 --exit
+run_unit_tests
+run_integration_tests
 
 rm -r $storagePath
 

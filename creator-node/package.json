@@ -8,6 +8,7 @@
     "test:ci": "./scripts/run-tests.sh",
     "test:local:teardown": "./scripts/run-tests.sh standalone_creator teardown",
     "test:teardown": "./scripts/run-tests.sh teardown",
+    "test:unit": "./scripts/run-tests.sh unit_test",
     "coverage": "nyc npm run test",
     "report": "nyc report --reporter=html",
     "lint": "./node_modules/.bin/standard",

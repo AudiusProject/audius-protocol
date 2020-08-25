@@ -9,13 +9,14 @@ bp = Blueprint("search_queries", __name__)
 def validate_search_args(args):
     searchStr = args.get("query")
     if not searchStr:
-        return api_helpers.error_response("Invalid value for parameter 'query'")
+        return api_helpers.error_response("Invalid value for parameter 'query'", 400)
 
     kind = args.get("kind", "all")
     if kind not in SearchKind.__members__:
         return api_helpers.error_response(
             "Invalid value for parameter 'kind' must be in %s" % [
-                k.name for k in SearchKind]
+                k.name for k in SearchKind],
+            400
         )
     return None
 

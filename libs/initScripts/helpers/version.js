@@ -9,14 +9,12 @@ async function setServiceVersion (audiusLibs, serviceType, serviceVersionStr, pr
   if (!audiusLibs) throw new Error('audiusLibs is not defined')
 
   console.log('----version init---')
-  let testTx = null
 
   try {
-    testTx = await audiusLibs.ethContracts.VersioningFactoryClient.setServiceVersion(
+    await audiusLibs.ethContracts.ServiceTypeManagerClient.setServiceVersion(
       serviceType,
       serviceVersionStr,
       privateKey)
-    console.log(testTx)
   } catch (e) {
     if (!e.toString().includes('Already registered')) {
       console.log(e)
@@ -25,8 +23,8 @@ async function setServiceVersion (audiusLibs, serviceType, serviceVersionStr, pr
     }
   }
 
-  let versionTx = await audiusLibs.ethContracts.VersioningFactoryClient.getCurrentVersion(serviceType)
-  let numVersionsTx = await audiusLibs.ethContracts.VersioningFactoryClient.getNumberOfVersions(serviceType)
+  let versionTx = await audiusLibs.ethContracts.ServiceTypeManagerClient.getCurrentVersion(serviceType)
+  let numVersionsTx = await audiusLibs.ethContracts.ServiceTypeManagerClient.getNumberOfVersions(serviceType)
   console.log(`${serviceType} | current version: ${versionTx} | number of versions : ${numVersionsTx}`)
 
   console.log('/----version init---')

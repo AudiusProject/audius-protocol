@@ -25,15 +25,27 @@ def get_route_metrics(args):
 
         metrics_query = (
             session.query(
-                RouteMetrics.route_path,
                 RouteMetrics.timestamp,
                 func.sum(RouteMetrics.count).label('count')
             )
             .filter(
-                RouteMetrics.route_path == args.get('path'),
                 RouteMetrics.timestamp > args.get('start_time')
             )
         )
+        if args.get("exact") == True:
+            metrics_query = (
+                metrics_query
+                .filter(
+                    RouteMetrics.route_path == args.get("path")
+                )
+            )
+        else:
+            metrics_query = (
+                metrics_query
+                .filter(
+                    RouteMetrics.route_path.like('{}%'.format(args.get("path")))
+                )
+            )
 
         if args.get("query_string", None) != None:
             metrics_query = (
@@ -49,13 +61,13 @@ def get_route_metrics(args):
 
         metrics_query = (
             metrics_query
-            .group_by(RouteMetrics.route_path, RouteMetrics.timestamp)
+            .group_by(RouteMetrics.timestamp)
             .order_by(desc(RouteMetrics.timestamp))
             .limit(args.get('limit'))
         )
 
         metrics = metrics_query.all()
-        metrics = [{'route': m[0], 'timestamp': int(time.mktime(
-            m[1].timetuple())), 'count': m[2]} for m in metrics]
+        metrics = [{'timestamp': int(time.mktime(
+            m[0].timetuple())), 'count': m[1]} for m in metrics]
 
         return metrics

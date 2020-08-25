@@ -14,7 +14,7 @@ from src.queries.query_helpers import get_current_user_id, get_users_by_id, get_
     get_track_play_counts
 
 logger = logging.getLogger(__name__)
-bp = Blueprint("search_queries", __name__)
+bp = Blueprint("search_tags", __name__)
 
 
 ######## VARS ########
@@ -56,7 +56,8 @@ def search_tags():
     except Exception:
         return api_helpers.error_response(
             "Invalid value for parameter 'kind' must be in %s" % [
-                k.name for k in validSearchKinds]
+                k.name for k in validSearchKinds],
+            400
         )
 
     results = {}

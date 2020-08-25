@@ -2,21 +2,28 @@
   "contractName": "UpgradeabilityProxy",
   "abi": [
     {
-      "inputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_logic",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_data",
+          "type": "bytes"
+        }
+      ],
       "payable": true,
       "stateMutability": "payable",
-      "type": "fallback"
+      "type": "constructor"
     },
     {
       "anonymous": false,
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
           "name": "implementation",
           "type": "address"
         }
@@ -25,18 +32,9 @@
       "type": "event"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "implementation",
-      "outputs": [
-        {
-          "name": "impl",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "fallback"
     }
   ]
 }

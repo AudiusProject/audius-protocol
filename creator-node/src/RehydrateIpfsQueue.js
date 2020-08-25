@@ -8,6 +8,8 @@ const PROCESS_NAMES = Object.freeze({
   rehydrate_file: 'rehydrate_file'
 })
 
+const MAX_COUNT = 50000
+
 class RehydrateIpfsQueue {
   constructor () {
     this.queue = new Bull(
@@ -54,15 +56,12 @@ class RehydrateIpfsQueue {
   async logStatus (logContext, message) {
     const logger = genericLogger.child(logContext)
     const count = await this.queue.count()
-    logger.info(`RehydrateIpfsQueue: ${message}`)
-    logger.info(`RehydrateIpfsQueue: count: ${count}`)
+    logger.debug(`RehydrateIpfsQueue: ${message}, count: ${count}`)
   }
 
   async logError (logContext, message) {
     const logger = genericLogger.child(logContext)
-    const count = await this.queue.count()
     logger.error(`RehydrateIpfsQueue error: ${message}`)
-    logger.info(`RehydrateIpfsQueue: count: ${count}`)
   }
 
   /**
@@ -73,6 +72,8 @@ class RehydrateIpfsQueue {
    */
   async addRehydrateIpfsFromFsIfNecessaryTask (multihash, storagePath, { logContext }, filename = null) {
     this.logStatus(logContext, 'Adding a rehydrateIpfsFromFsIfNecessary task to the queue!')
+    const count = await this.queue.count()
+    if (count > MAX_COUNT) return
     const job = await this.queue.add(
       PROCESS_NAMES.rehydrate_file,
       { multihash, storagePath, filename, logContext }
@@ -89,6 +90,8 @@ class RehydrateIpfsQueue {
    */
   async addRehydrateIpfsDirFromFsIfNecessaryTask (multihash, { logContext }) {
     this.logStatus(logContext, 'Adding a rehydrateIpfsDirFromFsIfNecessary task to the queue!')
+    const count = await this.queue.count()
+    if (count > MAX_COUNT) return
     const job = await this.queue.add(
       PROCESS_NAMES.rehydrate_dir,
       { multihash, logContext }

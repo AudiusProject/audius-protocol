@@ -193,7 +193,7 @@ async function getOwnEndpoint (req) {
   }
 
   const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(spOwnerWallet, 'creator-node')
-  const spInfo = [await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', spId)]
+  const spInfo = [await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('creator-node', spId)]
 
   // confirm on-chain endpoint exists and is valid FQDN
   if (!spInfo ||

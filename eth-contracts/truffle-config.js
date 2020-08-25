@@ -19,6 +19,8 @@ const getEnv = env => {
   }
   return value
 }
+let ENABLE_OPTIMIZER = true
+if (getEnv('ENABLE_OPTIMIZER') === 'false') ENABLE_OPTIMIZER = false
 
 // Values must be set in calling environment
 // Consult @hareeshnagaraj for details
@@ -26,6 +28,29 @@ const privateKey = getEnv('ETH_WALLET_PRIVATE_KEY')
 const liveNetwork = getEnv('ETH_LIVE_NETWORK')
 const liveNetworkId = getEnv('ETH_LIVE_NETWORK_ID')
 
+const solc = {
+  // 0.5.17 is latest 0.5.x version
+  // cannot use 0.6.x due to openzeppelin dependency, which are only 0.5.x compatible
+  version: '0.5.17',
+  parser: 'solcjs', // Leverages solc-js purely for speedy parsing
+  settings: {
+    evmVersion: 'istanbul' // istanbul is latest stable, and default setting
+  }
+}
+
+if (ENABLE_OPTIMIZER) {
+  solc.settings.optimizer = {
+    enabled: true,
+    runs: 200, // 200 is default value
+    details: {
+      orderLiterals: true,
+      deduplicate: true,
+      cse: true,
+      constantOptimizer: true,
+      yul: false // disabled as Yul optimizer is still experimental in 0.5.x
+    }
+  }
+}
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
   // to customize your Truffle configuration!
@@ -41,9 +66,9 @@ module.exports = {
       gasPrice: web3.utils.toWei('20', 'gwei')
     },
     development: {
-      host: '127.0.0.1',     // Localhost (default: none)
-      port: 8546,            // Standard Ethereum port (default: none)
-      network_id: '*'        // Any network (default: none)
+      host: '127.0.0.1', // Localhost (default: none)
+      port: 8546, // Standard Ethereum port (default: none)
+      network_id: '*' // Any network (default: none)
     },
     test_local: {
       host: '127.0.0.1',
@@ -51,7 +76,12 @@ module.exports = {
       network_id: '*'
     }
   },
+  // https://solidity.readthedocs.io/en/develop/using-the-compiler.html#input-description
+  compilers: {
+    solc: solc
+  },
   mocha: {
     enableTimeouts: false
-  }
+  },
+  plugins: ['solidity-coverage']
 }

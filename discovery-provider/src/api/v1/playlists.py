@@ -4,7 +4,7 @@ from src.queries.get_playlists import get_playlists
 from flask_restx import Resource, Namespace, fields
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track,\
-    make_response, success_response, search_parser
+    make_response, success_response, search_parser, abort_bad_request_param
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache
@@ -86,6 +86,8 @@ class PlaylistSearchResult(Resource):
         """Search for a playlist."""
         args = search_parser.parse_args()
         query = args["query"]
+        if not query:
+            abort_bad_request_param('query', ns)
         search_args = {
             "query": query,
             "kind": SearchKind.playlists.name,

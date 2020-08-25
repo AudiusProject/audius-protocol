@@ -107,7 +107,11 @@ const ipfsSingleByteCat = (path, logContext, timeout = 1000) => {
       logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
       resolve()
     } catch (e) {
-      logger.error(`ipfsSingleByteCat - Error: ${e}`)
+      // Expected message for e is `TimeoutError: Request timed out`
+      // if it's not that message, log out the error
+      if (!e.message.includes('Request timed out')) {
+        logger.error(`ipfsSingleByteCat - Error: ${e}`)
+      }
       reject(e)
     }
   })

@@ -644,7 +644,7 @@ def update_task(self):
         else:
             logger.error(f"index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock")
     except Exception as e:
-        logger.error("Fatal error in main loop", exc_info=True)
+        logger.error(f"Fatal error in main loop {e}", exc_info=True)
         raise e
     finally:
         if have_lock:

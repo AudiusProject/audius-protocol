@@ -79,15 +79,12 @@ class ServiceProviderFactoryClient extends ContractClient {
       this.web3Manager.getWalletAddress())
   }
 
-  async increaseStake (serviceType, endpoint, amount) {
+  async increaseStake (amount) {
     const contractAddress = await this.stakingProxyClient.getAddress()
     let tx0 = await this.audiusTokenClient.approve(
       contractAddress,
       amount)
-    let method = await this.getMethod('increaseServiceStake',
-      Utils.utf8ToHex(serviceType),
-      endpoint,
-      amount)
+    let method = await this.getMethod('increaseStake', amount)
     let tx = await this.web3Manager.sendTransaction(method, 1000000)
     return {
       txReceipt: tx,
@@ -95,11 +92,8 @@ class ServiceProviderFactoryClient extends ContractClient {
     }
   }
 
-  async decreaseStake (serviceType, endpoint, amount) {
-    let method = await this.getMethod('decreaseServiceStake',
-      Utils.utf8ToHex(serviceType),
-      endpoint,
-      amount)
+  async decreaseStake (amount) {
+    let method = await this.getMethod('decreaseStake', amount)
     let tx = await this.web3Manager.sendTransaction(method, 1000000)
     return {
       txReceipt: tx
@@ -146,14 +140,14 @@ class ServiceProviderFactoryClient extends ContractClient {
 
   async getServiceProviderIdFromEndpoint (endpoint) {
     const method = await this.getMethod('getServiceProviderIdFromEndpoint',
-      Utils.keccak256(endpoint)
+      (endpoint)
     )
     let info = await method.call()
     return info
   }
 
-  async getServiceProviderInfo (serviceType, serviceId) {
-    const method = await this.getMethod('getServiceProviderInfo',
+  async getServiceEndpointInfo (serviceType, serviceId) {
+    const method = await this.getMethod('getServiceEndpointInfo',
       Utils.utf8ToHex(serviceType),
       serviceId
     )
@@ -161,7 +155,7 @@ class ServiceProviderFactoryClient extends ContractClient {
     return {
       owner: info.owner,
       endpoint: info.endpoint,
-      spID: serviceId,
+      spID: parseInt(serviceId),
       type: serviceType,
       blocknumber: info.blocknumber,
       delegateOwnerWallet: info.delegateOwnerWallet
@@ -185,12 +179,12 @@ class ServiceProviderFactoryClient extends ContractClient {
     }
 
     let serviceProviderId = await this.getServiceProviderIdFromEndpoint(endpoint)
-    let info = await this.getServiceProviderInfo(serviceType, serviceProviderId)
+    let info = await this.getServiceEndpointInfo(serviceType, serviceProviderId)
     return info
   }
 
-  async getServiceProviderIdFromAddress (ownerAddress, serviceType) {
-    const method = await this.getMethod('getServiceProviderIdFromAddress',
+  async getServiceProviderIdsFromAddress (ownerAddress, serviceType) {
+    const method = await this.getMethod('getServiceProviderIdsFromAddress',
       ownerAddress,
       Utils.utf8ToHex(serviceType)
     )
@@ -198,11 +192,16 @@ class ServiceProviderFactoryClient extends ContractClient {
     return info
   }
 
-  async getServiceProviderInfoFromAddress (ownerAddress, serviceType) {
+  async getServiceProviderIdFromAddress (ownerAddress, serviceType) {
+    const infos = await this.getServiceProviderIdsFromAddress(ownerAddress, serviceType)
+    return infos[0]
+  }
+
+  async getServiceEndpointInfoFromAddress (ownerAddress, serviceType) {
     let spId = await this.getServiceProviderIdFromAddress(ownerAddress, serviceType)
 
     // cast this as an array for backwards compatibility because everything expects an array
-    const spInfo = [await this.getServiceProviderInfo(serviceType, spId)]
+    const spInfo = [await this.getServiceEndpointInfo(serviceType, spId)]
     return spInfo
   }
 
@@ -211,7 +210,7 @@ class ServiceProviderFactoryClient extends ContractClient {
 
     const providerList = await Promise.all(
       range(1, numberOfProviders + 1).map(i =>
-        this.getServiceProviderInfo(serviceType, i)
+        this.getServiceEndpointInfo(serviceType, i)
       )
     )
     return providerList.filter(provider => provider.endpoint !== '')
