@@ -42,7 +42,7 @@ const SEARCH_MAX_SAVED_RESULTS = 10
 const SEARCH_MAX_TOTAL_RESULTS = 50
 const IMAGE_CACHE_MAX_SIZE = 200
 
-let DISCOVERY_PROVIDER_FALLBACKS = process.env
+const DISCOVERY_PROVIDER_FALLBACKS = process.env
   .REACT_APP_DISCOVERY_PROVIDER_FALLBACKS
   ? new Set(process.env.REACT_APP_DISCOVERY_PROVIDER_FALLBACKS.split(','))
   : null
@@ -394,12 +394,9 @@ class AudiusBackend {
 
     // apply overrides to default whitelist values
     if (resp && resp.data) {
-      const { discoveryProviderWhitelist, creatorNodeWhitelist } = resp.data
+      const { creatorNodeWhitelist } = resp.data
 
       // these whitelists are already defined, just override with values from s3
-      DISCOVERY_PROVIDER_FALLBACKS = discoveryProviderWhitelist
-        ? new Set(discoveryProviderWhitelist.split(','))
-        : null
       CREATOR_NODE_FALLBACKS = creatorNodeWhitelist
         ? new Set(creatorNodeWhitelist.split(','))
         : null
@@ -426,7 +423,7 @@ class AudiusBackend {
         web3Config,
         ethWeb3Config,
         discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
-          DISCOVERY_PROVIDER_FALLBACKS,
+          null,
           getRemoteVar(IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS),
           discoveryProviderSelectionCallback
         ),
