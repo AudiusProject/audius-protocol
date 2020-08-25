@@ -13,6 +13,7 @@ const TranscodingQueue = require('../TranscodingQueue')
 const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
+const { logger } = require('../logging.js')
 
 module.exports = function (app) {
   /**
@@ -74,7 +75,7 @@ module.exports = function (app) {
         response.segmentName = filePath
         return response
       }))
-      transcodedFilePromResp = await saveFileToIPFSFromFS(req, transcodedFilePath, 'copy320', req.fileName)
+      transcodedFilePromResp = await saveFileToIPFSFromFS(req, transcodedFilePath, 'copy320', req.fileName, t)
       req.logger.info(`Time taken in /track_content for saving segments and transcoding to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
       codeBlockTimeStart = Date.now()
@@ -157,11 +158,13 @@ module.exports = function (app) {
   app.post('/tracks/metadata', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     const metadataJSON = req.body.metadata
 
-    if (!metadataJSON ||
-        !metadataJSON.owner_id ||
-        !metadataJSON.track_segments ||
-        !Array.isArray(metadataJSON.track_segments) ||
-        !metadataJSON.track_segments.length) {
+    if (
+      !metadataJSON ||
+      !metadataJSON.owner_id ||
+      !metadataJSON.track_segments ||
+      !Array.isArray(metadataJSON.track_segments) ||
+      !metadataJSON.track_segments.length
+    ) {
       return errorResponseBadRequest('Metadata object must include owner_id and non-empty track_segments array')
     }
 
@@ -204,7 +207,7 @@ module.exports = function (app) {
           }
         })
         if (!transcodedFile) {
-          return errorResponseServerError('Failed to find transcoded file ')
+          return errorResponseServerError('Failed to find transcoded file')
         }
       }
     }
@@ -274,25 +277,40 @@ module.exports = function (app) {
     const t = await models.sequelize.transaction()
 
     try {
-      // Create / update track entry on db.
-      const resp = (await models.Track.upsert({
-        cnodeUserUUID,
-        metadataFileUUID,
-        metadataJSON,
-        blockchainId: blockchainTrackId,
-        coverArtFileUUID
-      },
-      { transaction: t, returning: true }
-      ))
-      const track = resp[0]
-      const trackCreated = resp[1]
+      logger.debug('Beginning POST /tracks DB transactions')
 
+      const existingTrackEntry = await models.Track.findOne({
+        where: {
+          cnodeUserUUID,
+          metadataFileUUID,
+          blockchainId: blockchainTrackId,
+          coverArtFileUUID
+        },
+        transaction: t
+      })
+
+      // compute new clock value for cnodeUserUUID by incrementing current clock value from CNodeUsers table
+      const newClockVal = cnodeUser.clock + 1
+
+      // Insert new track entry on db (for track update, a new entry is still created with incremented clock val)
+      const track = await models.Track.create(
+        {
+          cnodeUserUUID,
+          metadataFileUUID,
+          metadataJSON,
+          blockchainId: blockchainTrackId,
+          coverArtFileUUID,
+          clock: newClockVal
+        },
+        { transaction: t }
+      )
+      
       /** Associate matching segment files on DB with new/updated track. */
 
       const trackSegmentCIDs = metadataJSON.track_segments.map(segment => segment.multihash)
 
       // if track created, ensure files exist with trackuuid = null and update them.
-      if (trackCreated) {
+      if (!existingTrackEntry) {
         // Update the transcoded 320kbps copy
         if (transcodedTrackUUID) {
           const transcodedFile = await models.File.findOne({
@@ -394,8 +412,14 @@ module.exports = function (app) {
         given blockNumber ${blockNumber}`
       )
       if (blockNumber > updatedCNodeUser.latestBlockNumber) {
-        await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
+        // Update cnodeUser's latestBlockNumber and clock
+        await cnodeUser.update({ latestBlockNumber: blockNumber, clock: newClockVal }, { transaction: t })
+      } else {
+        // Update cnodeUser's clock
+        await cnodeUser.update({  clock: newClockVal }, { transaction: t })
       }
+
+      logger.info(`completed POST tracks route`)
 
       await t.commit()
       triggerSecondarySyncs(req)

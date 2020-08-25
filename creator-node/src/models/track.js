@@ -28,6 +28,10 @@ module.exports = (sequelize, DataTypes) => {
     coverArtFileUUID: {
       type: DataTypes.UUID,
       allowNull: true
+    },
+    clock: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     }
   }, {})
 

@@ -31,6 +31,10 @@ module.exports = (sequelize, DataTypes) => {
     profilePicFileUUID: {
       type: DataTypes.UUID,
       allowNull: true
+    },
+    clock: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     }
   }, {})
   AudiusUser.associate = function (models) {

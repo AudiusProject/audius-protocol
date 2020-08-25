@@ -272,11 +272,12 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         req.logger.info(redisKey, `beginning add ops for cnodeUserUUID ${fetchedCnodeUserUUID}`)
 
         // Upsert cnodeUser row.
-        await models.CNodeUser.upsert({
+        await models.CNodeUser.create({
           cnodeUserUUID: fetchedCnodeUserUUID,
           walletPublicKey: fetchedWalletPublicKey,
           latestBlockNumber: fetchedLatestBlockNumber,
-          lastLogin: fetchedCNodeUser.lastLogin
+          lastLogin: fetchedCNodeUser.lastLogin,
+          clock: fetchedCNodeUser.clock
         }, { transaction: t })
         req.logger.info(redisKey, `upserted nodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)
 
@@ -329,7 +330,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           storagePath: file.storagePath,
           type: file.type,
           fileName: file.fileName,
-          dirMultihash: file.dirMultihash
+          dirMultihash: file.dirMultihash,
+          clock: file.clock
         })), { transaction: t })
         req.logger.info(redisKey, 'created all non-track files')
 
@@ -339,7 +341,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           cnodeUserUUID: fetchedCnodeUserUUID,
           metadataJSON: track.metadataJSON,
           metadataFileUUID: track.metadataFileUUID,
-          coverArtFileUUID: track.coverArtFileUUID
+          coverArtFileUUID: track.coverArtFileUUID,
+          clock: track.clock
         })), { transaction: t })
         req.logger.info(redisKey, 'created all tracks')
 
@@ -353,7 +356,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           storagePath: trackFile.storagePath,
           type: trackFile.type,
           fileName: trackFile.fileName,
-          dirMultihash: trackFile.dirMultihash
+          dirMultihash: trackFile.dirMultihash,
+          clock: trackFile.clock
         })), { transaction: t })
         req.logger.info('saved all track files to db')
 
@@ -364,7 +368,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           metadataJSON: audiusUser.metadataJSON,
           metadataFileUUID: audiusUser.metadataFileUUID,
           coverArtFileUUID: audiusUser.coverArtFileUUID,
-          profilePicFileUUID: audiusUser.profilePicFileUUID
+          profilePicFileUUID: audiusUser.profilePicFileUUID,
+          clock: audiusUser.clock
         })), { transaction: t })
         req.logger.info('saved all audiususer data to db')
 
