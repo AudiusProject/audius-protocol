@@ -97,9 +97,9 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
   }
 
   /**
+   * Makes a request to decrease stake
    * @param {BN} amount
-   * TODO: This method will need to broken out because the waitForBlock duration is a long time
-   * but as a proof of concept, this is how it can/should look.
+   * @returns decrease stake lockup expiry block
    */
   async requestDecreaseStake (amount) {
     const requestDecreaseMethod = await this.getMethod('requestDecreaseStake', amount)
@@ -113,15 +113,31 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return lockupExpiryBlock
   }
 
-  async getLockupExpiry (account) {
+  /**
+   * Gets the pending decrease stake request for a given account
+   * @param {string} account wallet address to fetch for
+   */
+  async getPendingDecreaseStakeRequest (account) {
     const requestInfoMethod = await this.getMethod('getPendingDecreaseStakeRequest', account)
-    const requestInfo = await requestInfoMethod.call()
+    return requestInfoMethod.call()
+  }
 
-    const { lockupExpiryBlock } = requestInfo
+  /**
+   * Fetches the pending decrease stake lockup expiry block for a user
+   * @param {string} account wallet address to fetch for
+   */
+  async getLockupExpiry (account) {
+    const { lockupExpiryBlock } = await this.getPendingDecreaseStakeRequest(account)
     return lockupExpiryBlock
   }
 
-  async decreaseStake (lockupExpiryBlock) {
+  /**
+   * Actuates a decrease stake. Will be rejected if there was not a request
+   * pending that passed its expiry.
+   * @returns {object}
+   *  txReceipt: the transaction receipt
+   */
+  async decreaseStake () {
     const method = await this.getMethod('decreaseStake')
     const tx = await this.web3Manager.sendTransaction(method, 1000000)
 
@@ -130,6 +146,11 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     }
   }
 
+  /**
+   * Deregisters a service
+   * @param {string} serviceType
+   * @param {string} endpoint
+   */
   async deregister (serviceType, endpoint) {
     let method = await this.getMethod('deregister',
       Utils.utf8ToHex(serviceType),
