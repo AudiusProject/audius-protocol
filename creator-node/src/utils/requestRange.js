@@ -5,6 +5,8 @@
  *
  * This is a widely supported pattern, e.g.
  * https://musicpartners.sonos.com/node/465
+ * or
+ * https://github.com/tumtumtum/StreamingKit/blob/eb9268e83ea0c0cea6a1c7af16559de455d4326e/StreamingKit/StreamingKit/STKHTTPDataSource.m#L605
  *
  * @param {Request} req express request object
  *
@@ -35,6 +37,15 @@ const getRequestRange = (req) => {
   }
 }
 
+/**
+ * Formats a Content-Range header response
+ * @returns {string} Content-Range header value
+ */
+const formatContentRange = (start, end, size) => {
+  return `bytes ${start}-${end || size}/${size}`
+}
+
 module.exports = {
-  getRequestRange
+  getRequestRange,
+  formatContentRange
 }

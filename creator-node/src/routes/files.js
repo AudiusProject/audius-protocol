@@ -2,7 +2,7 @@ const Redis = require('ioredis')
 const fs = require('fs')
 var contentDisposition = require('content-disposition')
 
-const { getRequestRange } = require('../utils/requestRange')
+const { getRequestRange, formatContentRange } = require('../utils/requestRange')
 const { uploadTempDiskStorage } = require('../fileManager')
 const {
   handleResponse,
@@ -62,7 +62,7 @@ const streamFromFileSystem = async (req, res, path) => {
       fileStream = fs.createReadStream(path, { start, end: end || stat.size })
 
       // Add a content range header to the response
-      res.set('Content-Range', `${start}-${end || stat.size}/${stat.size}`)
+      res.set('Content-Range', formatContentRange(start, end, stat.size))
       // set 206 "Partial Content" success status response code
       res.status(206)
     } else {
@@ -140,7 +140,6 @@ const getCID = async (req, res) => {
       const range = getRequestRange(req)
 
       if (req.params.streamable && range) {
-        req.logger.info('should not be here\n\n\n\n', range)
         const { start, end } = range
         if (end >= stat.size) {
           // Set "Requested Range Not Satisfiable" header and exit
@@ -153,7 +152,7 @@ const getCID = async (req, res) => {
           CID, { offset: start, length: (end || stat.size) - start + 1 }
         )
         // Add a content range header to the response
-        res.set('Content-Range', `${start}-${end || stat.size}/${stat.size}`)
+        res.set('Content-Range', formatContentRange(start, end, stat.size))
         // set 206 "Partial Content" success status response code
         res.status(206)
       } else {

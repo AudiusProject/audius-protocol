@@ -1,5 +1,5 @@
 const assert = require('assert')
-const { getRequestRange } = require('./requestRange')
+const { getRequestRange, formatContentRange } = require('./requestRange')
 
 describe('Test getRequestRange', () => {
   it('Should calculate start and end', () => {
@@ -34,5 +34,17 @@ describe('Test getRequestRange', () => {
     }
     const range = getRequestRange(req)
     assert.strictEqual(range, null)
+  })
+})
+
+describe('Test formatContentRange', () => {
+  it('Should format correctly', () => {
+    const header = formatContentRange(1024, 2048, 4096)
+    assert.strictEqual(header, 'bytes 1024-2048/4096')
+  })
+
+  it('Should use size when end is unset', () => {
+    const header = formatContentRange(1024, undefined, 4096)
+    assert.strictEqual(header, 'bytes 1024-4096/4096')
   })
 })
