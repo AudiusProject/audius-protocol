@@ -1,9 +1,6 @@
 const assert = require('assert')
 const nock = require('nock')
 const helpers = require('./helpers')
-require('@openzeppelin/test-helpers/configure')({
-  provider: 'http://localhost:8546',
-});
 const { time } = require('@openzeppelin/test-helpers')
 
 const audius0 = helpers.audiusInstance

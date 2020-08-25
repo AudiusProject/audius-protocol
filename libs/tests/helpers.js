@@ -9,6 +9,9 @@ const discoveryProviderEndpoint = 'http://localhost:5000'
 const identityServiceEndpoint = 'http://localhost:7000'
 const dataWeb3ProviderEndpoint = 'http://localhost:8545'
 const ethWeb3ProviderEndpoint = 'http://localhost:8546'
+require('@openzeppelin/test-helpers/configure')({
+  provider: ethWeb3ProviderEndpoint,
+})
 const isServer = true
 
 const constants = {
