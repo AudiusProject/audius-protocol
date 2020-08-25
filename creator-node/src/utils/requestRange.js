@@ -42,7 +42,7 @@ const getRequestRange = (req) => {
  * @returns {string} Content-Range header value
  */
 const formatContentRange = (start, end, size) => {
-  return `bytes ${start}-${end || size}/${size}`
+  return `bytes ${start}-${end || (size - 1)}/${size}`
 }
 
 module.exports = {

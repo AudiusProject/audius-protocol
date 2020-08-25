@@ -59,7 +59,7 @@ const streamFromFileSystem = async (req, res, path) => {
         return sendResponse(req, res, errorResponseRangeNotSatisfiable('Range not satisfiable'))
       }
 
-      fileStream = fs.createReadStream(path, { start, end: end || stat.size })
+      fileStream = fs.createReadStream(path, { start, end: end || (stat.size - 1) })
 
       // Add a content range header to the response
       res.set('Content-Range', formatContentRange(start, end, stat.size))
@@ -148,8 +148,9 @@ const getCID = async (req, res) => {
         }
 
         // Set length to be end - start + 1 so it matches behavior of fs.createReadStream
+        const length = end ? end - start + 1 : stat.size - start
         stream = req.app.get('ipfsAPI').catReadableStream(
-          CID, { offset: start, length: (end || stat.size) - start + 1 }
+          CID, { offset: start, length }
         )
         // Add a content range header to the response
         res.set('Content-Range', formatContentRange(start, end, stat.size))
