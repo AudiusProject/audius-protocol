@@ -12,6 +12,7 @@ import {
   TRENDING_YEAR_PREFIX
 } from 'containers/discover-page/store/lineups/trending/actions'
 import TimeRange from 'models/TimeRange'
+import { GENRES } from 'utils/genres'
 
 import {
   SET_SUGGESTED_FOLLOWS,
@@ -24,11 +25,17 @@ import {
 
 import FeedFilter from 'models/FeedFilter'
 
+const urlParams = new URLSearchParams(window.location.search)
+const genre = urlParams.get('genre')
+const timeRange = urlParams.get('timeRange')
+
 const initialState = {
   suggestedFollows: [],
   feedFilter: FeedFilter.ALL,
-  trendingTimeRange: TimeRange.WEEK,
-  trendingGenre: null,
+  trendingTimeRange: Object.values(TimeRange).includes(timeRange)
+    ? timeRange
+    : TimeRange.WEEK,
+  trendingGenre: Object.values(GENRES).includes(genre) ? genre : null,
   lastFetchedTrendingTimeRange: null,
   lastFetchedTrendingGenre: null
 }
