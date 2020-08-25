@@ -257,7 +257,7 @@ class IPFSClient:
             make_cid(cid)
             return True
         except Exception as e:
-            logger.error(f'IPFSCLIENT | cid_is_valid {str(e)}')
+            logger.error(f'IPFSCLIENT | Error in cid_is_valid {str(e)}')
             return False
 
 def construct_image_dir_gateway_url(address, CID, is_square=True):
