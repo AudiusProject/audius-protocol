@@ -141,6 +141,7 @@ def extend_track(track):
         # NOTE: Legacy track segments store the duration as a string
         duration += float(segment["duration"])
     track["duration"] = round(duration)
+    track["downloadable"] = track["download"] and track["download"]["is_downloadable"]
     return track
 
 def extend_playlist(playlist):
