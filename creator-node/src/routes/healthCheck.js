@@ -13,7 +13,6 @@ const MAX_DB_CONNECTIONS = 90
 const MAX_DISK_USAGE_PERCENT = 90 // 90%
 
 module.exports = function (app) {
-<<<<<<< HEAD
   /** Call this to tell CN to call another CN's /permission route to test cross-CN auth */
   app.get('/test', handleResponse(async (req, res) => {
     const redisClient = req.app.get('redisClient')
@@ -124,8 +123,6 @@ module.exports = function (app) {
     return successResponse(response)
   }))
 
-=======
->>>>>>> master
   /**
    * Performs diagnostic ipfs operations to confirm functionality
    */

@@ -280,7 +280,7 @@ const _updateUserReplicaSetManagerDelegateWallet = async (spID, defaultLibs) => 
   let cnType = 'creator-node'
   let spClient = defaultLibs.ethContracts.ServiceProviderFactoryClient
   let rsManagerClient = defaultLibs.contracts.UserReplicaSetManagerClient
-  let spInfo = await spClient.getServiceProviderInfo(cnType, spID)
+  let spInfo = await spClient.getServiceEndpointInfo(cnType, spID)
 
   // Exit if this spID is not present in eth-contracts
   if (spInfo.owner === zeroAddress) {

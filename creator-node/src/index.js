@@ -80,6 +80,7 @@ const startApp = async () => {
 
     await serviceRegistry.initServices()
     logger.info('Initialized services!')
+    let audiusLibs = serviceRegistry.libs
 
     /** if spID is 0, check if registered on chain and store locally */
     if (spID === 0 && audiusLibs) {
@@ -93,7 +94,7 @@ const startApp = async () => {
     // appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager, ipfsLatest)
 
     // start recurring sync jobs
-    await initUserStateMachine(serviceRegistry.audiusLibs)
+    await initUserStateMachine(audiusLibs)
     appInfo = initializeApp(config.get('port'), storagePath, serviceRegistry)
   }
 
