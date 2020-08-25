@@ -154,19 +154,20 @@ module.exports = function (app) {
   }))
 
   app.get('/users/clock_status/:walletPublicKey', handleResponse(async (req, res) => {
-    let walletPublicKey = req.body.walletPublicKey
+    let walletPublicKey = req.params.walletPublicKey
 
-    if (!ethereumUtils.isValidAddress(walletPublicKey)) {
-      return errorResponseBadRequest('Ethereum address is invalid')
-    }
+    // TODO - this doesn't work
+    // if (!ethereumUtils.isValidAddress(walletPublicKey)) {
+    //   return errorResponseBadRequest('Ethereum address is invalid')
+    // }
 
     walletPublicKey = walletPublicKey.toLowerCase()
 
-    const cnodeUser = await models.CNodeUser.findOne({
+    const cnodeUser = (await models.CNodeUser.findOne({
       where: { walletPublicKey }
-    })
+    })).dataValues
 
-    const clockValue = (cnodeUser) ? cnodeUser.block : -1
+    const clockValue = (cnodeUser) ? cnodeUser.clock : -1
 
     return successResponse({ clockValue })
   }))
