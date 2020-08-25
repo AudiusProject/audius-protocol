@@ -10,7 +10,7 @@ const DEFAULT_GAS_AMOUNT = 200000
  * @param {Array<string>} values
  */
 const abiEncode = (web3, types, values) => {
-  return web3.eth.encodeParameters(types, values)
+  return web3.eth.abi.encodeParameters(types, values)
 }
 
 /**
