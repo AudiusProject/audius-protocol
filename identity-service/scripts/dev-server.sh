@@ -2,7 +2,7 @@
 set -o xtrace
 set -e
 
-link_libs=false
+link_libs=true
 
 if [ "$link_libs" = true ]
 then
