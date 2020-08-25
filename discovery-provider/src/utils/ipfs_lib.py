@@ -1,7 +1,6 @@
 import logging
 import json
 import time
-import re
 from urllib.parse import urlparse, urljoin
 import requests
 from requests.exceptions import ReadTimeout
@@ -246,5 +245,5 @@ class IPFSClient:
         try:
             make_cid(cid)
             return True
-        except:
+        except Exception as e:
             return False

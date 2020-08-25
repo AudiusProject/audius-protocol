@@ -276,7 +276,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "update_play_count": {
                 "task": "update_play_count",
-                "schedule": timedelta(seconds=5)
+                "schedule": timedelta(seconds=10)
             },
             "update_metrics": {
                 "task": "update_metrics",
