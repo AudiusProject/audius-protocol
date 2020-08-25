@@ -58,29 +58,11 @@ async function initializeLibConfig (ownerWallet) {
   }
 }
 
-/**
- * Advances numberOfBlocks ahead
- * @param {Web3} web3
- * @param {number} numberOfBlocks blocks to advance
- */
-async function advanceBlocks (web3, numberOfBlocks) {
-  for (let i = 0; i < numberOfBlocks; ++i) {
-    await new Promise((resolve, reject) => {
-      web3.currentProvider.send({
-        jsonrpc: '2.0',
-        method: 'evm_mine',
-        id: Date.now(),
-      }, (err, res) => err ? reject(err) : resolve(res))
-    })
-  }
-}
-
 module.exports = {
   constants,
   // Export configured libs instance
   audiusInstance: new AudiusLibs(audiusLibsConfig),
   // Export libs config for re-use
   audiusLibsConfig,
-  initializeLibConfig,
-  advanceBlocks
+  initializeLibConfig
 }

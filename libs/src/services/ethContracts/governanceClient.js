@@ -38,6 +38,13 @@ class GovernanceClient extends ContractClient {
     this.isDebug = isDebug
   }
 
+  /**
+   * Gets the function signature and call data for a contract method.
+   * The signature and call data are passed to other contracts (like governance)
+   * as arguments.
+   * @param {string} methodName
+   * @param {Contract.method} contractMethod
+   */
   getSignatureAndCallData (methodName, contractMethod) {
     const web3 = this.web3Manager.getWeb3()
 
@@ -51,7 +58,7 @@ class GovernanceClient extends ContractClient {
   }
 
   async guardianExecuteTransaction (
-    registryKey,
+    contractRegistryKey,
     functionSignature,
     callData
   ) {
@@ -61,7 +68,7 @@ class GovernanceClient extends ContractClient {
 
     const method = await this.getMethod(
       'guardianExecuteTransaction',
-      registryKey,
+      contractRegistryKey,
       callValue0,
       functionSignature,
       callData
@@ -75,9 +82,9 @@ class GovernanceClient extends ContractClient {
     const methodName = 'setVotingPeriod'
     const contractMethod = await this.getMethod(methodName, period)
     const { signature, callData } = this.getSignatureAndCallData(methodName, contractMethod)
-    const registryKey = this.web3Manager.getWeb3().utils.utf8ToHex(this.contractRegistryKey)
+    const contractRegistryKey = this.web3Manager.getWeb3().utils.utf8ToHex(this.contractRegistryKey)
     const method = await this.guardianExecuteTransaction(
-      registryKey,
+      contractRegistryKey,
       signature,
       callData
     )
@@ -90,9 +97,9 @@ class GovernanceClient extends ContractClient {
     const methodName = 'setExecutionDelay'
     const contractMethod = await this.getMethod(methodName, delay)
     const { signature, callData } = this.getSignatureAndCallData(methodName, contractMethod)
-    const registryKey = this.web3Manager.getWeb3().utils.utf8ToHex(this.contractRegistryKey)
+    const contractRegistryKey = this.web3Manager.getWeb3().utils.utf8ToHex(this.contractRegistryKey)
     const method = await this.guardianExecuteTransaction(
-      registryKey,
+      contractRegistryKey,
       signature,
       callData
     )

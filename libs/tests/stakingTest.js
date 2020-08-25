@@ -1,6 +1,10 @@
 const assert = require('assert')
 const nock = require('nock')
 const helpers = require('./helpers')
+require('@openzeppelin/test-helpers/configure')({
+  provider: 'http://localhost:8546',
+});
+const { time } = require('@openzeppelin/test-helpers')
 
 const audius0 = helpers.audiusInstance
 // const audiusConfig = helpers.audiusLibsConfig
@@ -238,7 +242,7 @@ describe('Staking tests', () => {
       const lockupExpiryBlock = await audius1.ethContracts.ServiceProviderFactoryClient.requestDecreaseStake(
         decreaseAmount
       )
-      await helpers.advanceBlocks(audius1.ethWeb3Manager.getWeb3(), 10)
+      await time.advanceBlockTo(lockupExpiryBlock)
 
       await audius1.ethContracts.ServiceProviderFactoryClient.decreaseStake(
         lockupExpiryBlock
@@ -297,7 +301,7 @@ describe('Staking tests', () => {
         audius1.ethWeb3Manager.getWalletAddress()
       )
 
-      await helpers.advanceBlocks(audius1.ethWeb3Manager.getWeb3(), 10)
+      await time.advanceBlockTo(lockupExpiryBlock)
 
       await audius1.ethContracts.ServiceProviderFactoryClient.decreaseStake(
         lockupExpiryBlock
