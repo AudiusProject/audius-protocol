@@ -178,7 +178,7 @@ class IPFSClient:
         if not self.cid_is_valid(multihash):
             raise Exception(f'invalid multihash {multihash}')
 
-        # First attempt to cat multihash locally.
+        # First, Attempt to cat multihash locally via IPFS.
         try:
             # If cat successful, multihash is not directory.
             self._api.cat(multihash, 0, 1, timeout=3)
@@ -188,7 +188,7 @@ class IPFSClient:
                 logger.warning(f"IPFSCLIENT | Found directory {multihash}")
                 return True
 
-        # Attempt to retrieve from cnode gateway endpoints.
+        # If not found via IPFS, attempt to retrieve from cnode gateway endpoints.
         gateway_endpoints = self._cnode_endpoints
         for address in gateway_endpoints:
             # First, query as dir.
@@ -204,7 +204,8 @@ class IPFSClient:
             if r is not None:
                 try:
                     json_resp = r.json()
-                    # Gateway will return "no link named" error if dir  but no file named 150x150.jpg exists in dir.
+                    # Gateway will return "no link named" error if dir but no file named
+                    # 150x150.jpg or 640x.jpg exists in dir.
                     if 'error' in json_resp and 'no link named' in json_resp['error']:
                         logger.warning(f"IPFSCLIENT | Found directory {gateway_query_address}")
                         return True
@@ -256,6 +257,7 @@ class IPFSClient:
             make_cid(cid)
             return True
         except Exception as e:
+            logger.error(f'IPFSCLIENT | cid_is_valid {str(e)}')
             return False
 
 def construct_image_dir_gateway_url(address, CID, is_square=True):
