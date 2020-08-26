@@ -1,12 +1,14 @@
 const Utils = require('../../utils')
-const ContractClient = require('../contracts/ContractClient')
+const GovernedContractClient = require('../contracts/GovernedContractClient')
 const axios = require('axios')
 const { range } = require('lodash')
+
+const DEFAULT_GAS_AMOUNT = 200000
 
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
-class ServiceProviderFactoryClient extends ContractClient {
+class ServiceProviderFactoryClient extends GovernedContractClient {
   constructor (
     ethWeb3Manager,
     contractABI,
@@ -14,9 +16,10 @@ class ServiceProviderFactoryClient extends ContractClient {
     getRegistryAddress,
     audiusTokenClient,
     stakingProxyClient,
+    governanceClient,
     isDebug = false
   ) {
-    super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress)
+    super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress, governanceClient)
     this.audiusTokenClient = audiusTokenClient
     this.stakingProxyClient = stakingProxyClient
     this.isDebug = isDebug
@@ -83,7 +86,8 @@ class ServiceProviderFactoryClient extends ContractClient {
     const contractAddress = await this.stakingProxyClient.getAddress()
     let tx0 = await this.audiusTokenClient.approve(
       contractAddress,
-      amount)
+      amount
+    )
     let method = await this.getMethod('increaseStake', amount)
     let tx = await this.web3Manager.sendTransaction(method, 1000000)
     return {
@@ -92,32 +96,62 @@ class ServiceProviderFactoryClient extends ContractClient {
     }
   }
 
-  async decreaseStake (amount) {
-    let method = await this.getMethod('decreaseStake', amount)
-    let tx = await this.web3Manager.sendTransaction(method, 1000000)
+  /**
+   * Makes a request to decrease stake
+   * @param {BN} amount
+   * @returns decrease stake lockup expiry block
+   */
+  async requestDecreaseStake (amount) {
+    const requestDecreaseMethod = await this.getMethod('requestDecreaseStake', amount)
+    await this.web3Manager.sendTransaction(
+      requestDecreaseMethod,
+      1000000
+    )
+
+    const account = this.web3Manager.getWalletAddress()
+    const lockupExpiryBlock = await this.getLockupExpiry(account)
+    return lockupExpiryBlock
+  }
+
+  /**
+   * Gets the pending decrease stake request for a given account
+   * @param {string} account wallet address to fetch for
+   */
+  async getPendingDecreaseStakeRequest (account) {
+    const requestInfoMethod = await this.getMethod('getPendingDecreaseStakeRequest', account)
+    return requestInfoMethod.call()
+  }
+
+  /**
+   * Fetches the pending decrease stake lockup expiry block for a user
+   * @param {string} account wallet address to fetch for
+   */
+  async getLockupExpiry (account) {
+    const { lockupExpiryBlock } = await this.getPendingDecreaseStakeRequest(account)
+    return lockupExpiryBlock
+  }
+
+  /**
+   * Actuates a decrease stake. Will be rejected if there was not a request
+   * pending that passed its expiry.
+   * @returns {object}
+   *  txReceipt: the transaction receipt
+   */
+  async decreaseStake () {
+    const method = await this.getMethod('decreaseStake')
+    const tx = await this.web3Manager.sendTransaction(method, 1000000)
+
     return {
       txReceipt: tx
     }
   }
 
+  /**
+   * Deregisters a service
+   * @param {string} serviceType
+   * @param {string} endpoint
+   */
   async deregister (serviceType, endpoint) {
-    // TODO: Review whether the below validation is necessary...
-    // When testing locally, an ngrok endpoint that disappeared was registered
-    // Since owner validation is already performed, this should NOT be necessary
-    // let requestUrl = urlJoin(endpoint, 'version')
-    /*
-    let axiosRequestObj = {
-      url: requestUrl,
-      method: 'get',
-      timeout: 1000
-    }
-    const resp = await axios(axiosRequestObj)
-    const endpointServiceType = resp.data.service
-    if (serviceType !== endpointServiceType) {
-      throw new Error('Attempting to deregister endpoint with mismatched service type')
-    }
-    */
-
     let method = await this.getMethod('deregister',
       Utils.utf8ToHex(serviceType),
       endpoint)
@@ -214,6 +248,17 @@ class ServiceProviderFactoryClient extends ContractClient {
       )
     )
     return providerList.filter(provider => provider.endpoint !== '')
+  }
+
+  async updateDecreaseStakeLockupDuration (duration) {
+    const method = await this.getGovernedMethod(
+      'updateDecreaseStakeLockupDuration',
+      duration
+    )
+    return this.web3Manager.sendTransaction(
+      method,
+      DEFAULT_GAS_AMOUNT
+    )
   }
 }
 

@@ -12,7 +12,7 @@ class AudiusTokenClient {
 
   async balanceOf (account) {
     const balance = await this.AudiusTokenContract.methods.balanceOf(account).call()
-    return parseInt(balance, 10)
+    return this.web3.utils.toBN(balance)
   }
 
   /* ------- SETTERS ------- */
