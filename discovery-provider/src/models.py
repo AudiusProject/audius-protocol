@@ -17,6 +17,7 @@ from sqlalchemy import (
     Text,
     Enum,
     PrimaryKeyConstraint,
+    Index,
     func,
 )
 from src.model_validator import ModelValidator
@@ -422,6 +423,9 @@ class Play(Base):
     play_item_id = Column(Integer, nullable=False, index=False)
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    Index('ix_plays_user_play_item', 'play_item_id', 'user_id', unique=False)
+    Index('ix_plays_user_play_item_date', 'play_item_id', 'user_id', 'created_at', unique=False)
 
     def __repr__(self):
         return f"<Play(\

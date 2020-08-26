@@ -131,6 +131,10 @@ class Trending(Resource):
     @record_metrics
     @ns.doc(
         id="""Trending Tracks""",
+        params={
+            'genre': 'Trending tracks for a specified genre',
+            'time': 'Trending tracks over a specified time range (week, month, allTime)'
+        },
         responses={
             200: 'Success',
             400: 'Bad request',
