@@ -51,8 +51,7 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
                         "events": []
                     }
 
-                track_events[track_id]["events"].append(event_type)
-                track_events[track_id]["track"] = parse_track_event(
+                parsed_track = parse_track_event(
                     self,
                     session,
                     update_task,
@@ -60,17 +59,19 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
                     event_type,
                     track_events[track_id]["track"],
                     block_timestamp)
+
+                # If track record object is None, it has a blacklisted metadata CID
+                if parsed_track is not None:
+                    track_events[track_id]["events"].append(event_type)
+                    track_events[track_id]["track"] = parsed_track
+
             num_total_changes += len(track_events_tx)
 
     for track_id, value_obj in track_events.items():
-        # If track record object is null, it has a blacklisted metadata CID
-        if value_obj['track'] is None:
-            logger.warning(f"tracks.py | Skipping over track record with id ({track_id})")
-            continue
-
-        logger.info(f"tracks.py | Adding {value_obj['track']}")
-        invalidate_old_track(session, track_id)
-        session.add(value_obj["track"])
+        if value_obj['events']:
+            logger.info(f"tracks.py | Adding {value_obj['track']}")
+            invalidate_old_track(session, track_id)
+            session.add(value_obj["track"])
 
     return num_total_changes
 
