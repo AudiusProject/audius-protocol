@@ -1,7 +1,6 @@
 import logging
 import json
 import time
-import re
 from urllib.parse import urlparse, urljoin
 import requests
 from requests.exceptions import ReadTimeout
