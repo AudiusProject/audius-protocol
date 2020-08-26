@@ -26,11 +26,15 @@ docker rm -f audius_ganache_cli_eth_contracts_test
 # echo commands from here out
 # useful to know what the test script is actually doing
 set -x
-docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000
+# Ganache parameters
+# -h = hostname
+# -l = gas limit on block
+# -a = number of accounts to generate on startup
+docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 -a 500 -k istanbul
 
 # compile and lint
 ./node_modules/.bin/truffle compile
-./scripts/lint.sh
+# ./scripts/lint.sh
 
 # run truffle tests
 if [ $# -eq 0 ]
@@ -47,5 +51,5 @@ else
 fi
 
 # tear down
-docker rm -f audius_ganache_cli_eth_contracts_test
-rm -rf ./build/
+# docker rm -f audius_ganache_cli_eth_contracts_test
+# rm -rf ./build/

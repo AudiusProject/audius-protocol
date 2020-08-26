@@ -1,27 +1,21 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-const responseTime = require('response-time')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
 const { userNodeMiddleware } = require('./userNodeMiddleware')
 const { userReqLimiter, trackReqLimiter, audiusUserReqLimiter, metadataReqLimiter, imageReqLimiter } = require('./reqLimiter')
-const redisClient = require('./redis')
 const config = require('./config')
+const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
 
 const app = express()
 // middleware functions will be run in order they are added to the app below
 //  - loggingMiddleware must be first to ensure proper error handling
-app.use(responseTime())
 app.use(loggingMiddleware)
 app.use(bodyParser.json({ limit: '1mb' }))
 app.use(userNodeMiddleware)
 app.use(cors())
-
-// Initialize private IPFS gateway counters
-redisClient.set('ipfsGatewayReqs', 0)
-redisClient.set('ipfsStandaloneReqs', 0)
 
 // Rate limit routes
 app.use('/users/', userReqLimiter)
@@ -32,6 +26,7 @@ app.use('/image_upload', imageReqLimiter)
 
 // import routes
 require('./routes')(app)
+app.use('/', healthCheckRoutes)
 
 function errorHandler (err, req, res, next) {
   req.logger.error('Internal server error')
@@ -40,15 +35,17 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
-const initializeApp = (port, storageDir, ipfsAPI, audiusLibs, blacklistManager, ipfsAPILatest) => {
-  app.set('ipfsAPI', ipfsAPI)
+const initializeApp = (port, storageDir, serviceRegistry) => {
+  // TODO: Can remove these when all routes
+  // consume serviceRegistry
+  app.set('ipfsAPI', serviceRegistry.ipfs)
   app.set('storagePath', storageDir)
-  app.set('redisClient', redisClient)
-  app.set('audiusLibs', audiusLibs)
-  app.set('blacklistManager', blacklistManager)
+  app.set('redisClient', serviceRegistry.redis)
+  app.set('audiusLibs', serviceRegistry.libs)
+  app.set('blacklistManager', serviceRegistry.blacklistManager)
 
   // add a newer version of ipfs as app property
-  app.set('ipfsLatestAPI', ipfsAPILatest)
+  app.set('ipfsLatestAPI', serviceRegistry.ipfsLatest)
 
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 

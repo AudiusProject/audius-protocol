@@ -69,7 +69,7 @@ async function initializeVersionServiceProviderContracts () {
   for (const serviceType of serviceTypeList) {
     console.log(`\nregistering ${serviceType}`)
     try {
-      testTx = await audiusLibs.ethContracts.VersioningFactoryClient.setServiceVersion(
+      testTx = await audiusLibs.ethContracts.ServiceTypeManagerClient.setServiceVersion(
         serviceType,
         latestVersionStr,
         privateKey)
@@ -84,8 +84,8 @@ async function initializeVersionServiceProviderContracts () {
   }
   */
   for (const serviceType of serviceTypeList) {
-    let versionTx = await audiusLibs.ethContracts.VersioningFactoryClient.getCurrentVersion(serviceType)
-    let numVersionsTx = await audiusLibs.ethContracts.VersioningFactoryClient.getNumberOfVersions(serviceType)
+    let versionTx = await audiusLibs.ethContracts.ServiceTypeManagerClient.getCurrentVersion(serviceType)
+    let numVersionsTx = await audiusLibs.ethContracts.ServiceTypeManagerClient.getNumberOfVersions(serviceType)
     console.log(`${serviceType} | current version: ${versionTx} | number of versions : ${numVersionsTx}`)
   }
 

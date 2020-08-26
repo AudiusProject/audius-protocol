@@ -1,5 +1,5 @@
 {
-  "extends": "solium:all",
+  "extends": "solium:recommended",
   "plugins": ["security"],
   "rules": {
     "quotes":           ["error", "double"],
@@ -10,7 +10,14 @@
     "max-len":          ["error", 99],
     "no-unused-vars":   ["error"],
     "pragma-on-top":    ["error"],
-    "function-order":   ["error"],
+    "function-order":   [
+      "error",
+      {
+        "ignore": {
+          "functions": ["initialize"]
+        }
+      }
+    ],
     "visibility-first": ["error"],
     "security/no-inline-assembly": ["warning"]
   }

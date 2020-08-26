@@ -85,11 +85,11 @@ async function queryLocalServices (audiusLibs, serviceTypeList) {
         await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(endpoint)
       console.log(`ID from endpoint: ${idFromEndpoint}`)
       let infoFromId =
-        await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo(type, spID)
+        await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(type, spID)
       let jsonInfoFromId = JSON.stringify(infoFromId)
       console.log(`Info from ID: ${jsonInfoFromId}`)
       let idsFromAddress =
-        await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(
+        await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdsFromAddress(
           ethAccounts[0],
           type)
       console.log(`SP IDs from owner wallet ${ethAccounts[0]}: ${idsFromAddress}`)

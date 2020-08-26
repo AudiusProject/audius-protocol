@@ -2,59 +2,18 @@
 
 const ON_DEATH = require('death')
 const path = require('path')
-const AudiusLibs = require('@audius/libs')
 
 const initializeApp = require('./app')
 const config = require('./config')
 const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
-const BlacklistManager = require('./blacklistManager')
-const { ipfs, ipfsLatest, logIpfsPeerIds } = require('./ipfsClient')
+const { logIpfsPeerIds } = require('./ipfsClient')
+const { serviceRegistry } = require('./serviceRegistry')
 
 const exitWithError = (...msg) => {
   logger.error(...msg)
   process.exit(1)
-}
-
-const initAudiusLibs = async () => {
-  const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
-    config.get('ethProviderUrl'),
-    config.get('ethNetworkId'),
-    /* requiresAccount */ false
-  )
-  const dataWeb3 = await AudiusLibs.Utils.configureWeb3(
-    config.get('dataProviderUrl'),
-    null,
-    false
-  )
-  const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
-    ? new Set(config.get('discoveryProviderWhitelist').split(','))
-    : null
-  const identityService = config.get('identityService')
-
-  const audiusLibs = new AudiusLibs({
-    ethWeb3Config: AudiusLibs.configEthWeb3(
-      config.get('ethTokenAddress'),
-      config.get('ethRegistryAddress'),
-      ethWeb3,
-      config.get('ethOwnerWallet')
-    ),
-    web3Config: {
-      registryAddress: config.get('dataRegistryAddress'),
-      useExternalWeb3: true,
-      externalWeb3Config: {
-        web3: dataWeb3,
-        ownerWallet: config.get('delegateOwnerWallet')
-      }
-    },
-    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),
-    // If an identity service config is present, set up libs with the connection, otherwise do nothing
-    identityServiceConfig: identityService ? AudiusLibs.configIdentityService(identityService) : undefined,
-    isDebug: config.get('creatorNodeIsDebug')
-  })
-  await audiusLibs.init()
-  return audiusLibs
 }
 
 const configFileStorage = () => {
@@ -110,13 +69,10 @@ const startApp = async () => {
 
     await logIpfsPeerIds()
 
-    /** Run app */
-    await BlacklistManager.blacklist(ipfs)
+    await serviceRegistry.initServices()
+    logger.info('Initialized services!')
 
-    const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
-    logger.info('Initialized audius libs')
-
-    appInfo = initializeApp(config.get('port'), storagePath, ipfs, audiusLibs, BlacklistManager, ipfsLatest)
+    appInfo = initializeApp(config.get('port'), storagePath, serviceRegistry)
   }
 
   // when app terminates, close down any open DB connections gracefully

@@ -6,7 +6,7 @@ from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
     extend_track, make_response, search_parser, \
-    trending_parser, success_response
+    trending_parser, success_response, abort_bad_request_param
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_trending_tracks import get_trending_tracks
@@ -109,6 +109,8 @@ class TrackSearchResult(Resource):
         """Search for a track."""
         args = search_parser.parse_args()
         query = args["query"]
+        if not query:
+            abort_bad_request_param('query', ns)
         search_args = {
             "query": query,
             "kind": SearchKind.tracks.name,
@@ -129,6 +131,10 @@ class Trending(Resource):
     @record_metrics
     @ns.doc(
         id="""Trending Tracks""",
+        params={
+            'genre': 'Trending tracks for a specified genre',
+            'time': 'Trending tracks over a specified time range (week, month, allTime)'
+        },
         responses={
             200: 'Success',
             400: 'Bad request',

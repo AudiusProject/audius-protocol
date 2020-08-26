@@ -24,8 +24,11 @@ module.exports.handleResponse = (func) => {
 }
 
 const sendResponse = module.exports.sendResponse = (req, res, resp) => {
+  const endTime = process.hrtime(req.startTime)
+  const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
   let logger = req.logger.child({
-    statusCode: resp.statusCode
+    statusCode: resp.statusCode,
+    duration
   })
   if (resp.statusCode === 200) {
     if (requestNotExcludedFromLogging(req.originalUrl)) {
@@ -73,7 +76,7 @@ module.exports.successResponse = (obj = {}) => {
     timestamp
   }
 
-  const toSignStr = JSON.stringify(_sortKeys(toSign))
+  const toSignStr = JSON.stringify(sortKeys(toSign))
 
   // hash data
   const toSignHash = web3.utils.keccak256(toSignStr)
@@ -98,18 +101,19 @@ module.exports.successResponse = (obj = {}) => {
  */
 // eslint-disable-next-line no-unused-vars
 const recoverWallet = (data, signature) => {
-  let structuredData = JSON.stringify(_sortKeys(data))
+  let structuredData = JSON.stringify(sortKeys(data))
   const hashedData = web3.utils.keccak256(structuredData)
   const recoveredWallet = web3.eth.accounts.recover(hashedData, signature)
 
   return recoveredWallet
 }
 
-const _sortKeys = x => {
+const sortKeys = x => {
   if (typeof x !== 'object' || !x) { return x }
-  if (Array.isArray(x)) { return x.map(_sortKeys) }
-  return Object.keys(x).sort().reduce((o, k) => ({ ...o, [k]: _sortKeys(x[k]) }), {})
+  if (Array.isArray(x)) { return x.map(sortKeys) }
+  return Object.keys(x).sort().reduce((o, k) => ({ ...o, [k]: sortKeys(x[k]) }), {})
 }
+module.exports.sortKeys = sortKeys
 
 const errorResponse = module.exports.errorResponse = (statusCode, message) => {
   return {

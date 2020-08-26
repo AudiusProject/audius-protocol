@@ -2,274 +2,335 @@
   "contractName": "ServiceProviderFactory",
   "abi": [
     {
-      "constant": false,
-      "inputs": [],
-      "name": "kill",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x41c0e1b5"
-    },
-    {
-      "constant": false,
-      "inputs": [],
-      "name": "renounceOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x715018a6"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function",
-      "signature": "0x8da5cb5b"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "isOwner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function",
-      "signature": "0x8f32d59b"
-    },
-    {
-      "constant": false,
+      "anonymous": false,
       "inputs": [
         {
-          "name": "_registryAddress",
+          "indexed": true,
+          "internalType": "address",
+          "name": "_newClaimsManagerAddress",
           "type": "address"
         }
       ],
-      "name": "setRegistry",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xa91ee0dc"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "transferOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xf2fde38b"
-    },
-    {
-      "inputs": [
-        {
-          "name": "_registryAddress",
-          "type": "address"
-        },
-        {
-          "name": "_stakingProxyOwnerKey",
-          "type": "bytes32"
-        },
-        {
-          "name": "_serviceProviderStorageRegistryKey",
-          "type": "bytes32"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "constructor",
-      "signature": "constructor"
+      "name": "ClaimsManagerAddressUpdated",
+      "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "name": "_spID",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "name": "_owner",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "name": "_endpoint",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "name": "_stakeAmount",
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_lockupDuration",
           "type": "uint256"
         }
       ],
-      "name": "RegisteredServiceProvider",
-      "type": "event",
-      "signature": "0xda2823651979534b78c11c1fd32e8a90ecd0f8f98a8648a8f78fb12d01765c6d"
+      "name": "DecreaseStakeLockupDurationUpdated",
+      "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
+          "indexed": true,
+          "internalType": "address",
+          "name": "_newDelegateManagerAddress",
+          "type": "address"
+        }
+      ],
+      "name": "DelegateManagerAddressUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
           "name": "_spID",
           "type": "uint256"
         },
         {
           "indexed": false,
+          "internalType": "address",
+          "name": "_updatedWallet",
+          "type": "address"
+        }
+      ],
+      "name": "DelegateOwnerWalletUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_spID",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
           "name": "_serviceType",
           "type": "bytes32"
         },
         {
-          "indexed": false,
+          "indexed": true,
+          "internalType": "address",
           "name": "_owner",
           "type": "address"
         },
         {
           "indexed": false,
+          "internalType": "string",
           "name": "_endpoint",
           "type": "string"
         },
         {
           "indexed": false,
+          "internalType": "uint256",
           "name": "_unstakeAmount",
           "type": "uint256"
         }
       ],
       "name": "DeregisteredServiceProvider",
-      "type": "event",
-      "signature": "0x4b8bf251858c5cb19e132cd9a354e12ccae21f47bf38534fd03b2708c0fba5a4"
+      "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "name": "_spID",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
+          "indexed": true,
+          "internalType": "bytes32",
           "name": "_serviceType",
           "type": "bytes32"
         },
         {
-          "indexed": false,
+          "indexed": true,
+          "internalType": "address",
           "name": "_owner",
           "type": "address"
         },
         {
           "indexed": false,
+          "internalType": "string",
+          "name": "_oldEndpoint",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "_newEndpoint",
+          "type": "string"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_spID",
+          "type": "uint256"
+        }
+      ],
+      "name": "EndpointUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_newGovernanceAddress",
+          "type": "address"
+        }
+      ],
+      "name": "GovernanceAddressUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_spID",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
           "name": "_endpoint",
           "type": "string"
         },
         {
           "indexed": false,
+          "internalType": "uint256",
+          "name": "_stakeAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "RegisteredServiceProvider",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_updatedCut",
+          "type": "uint256"
+        }
+      ],
+      "name": "ServiceProviderCutUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_newServiceTypeManagerAddress",
+          "type": "address"
+        }
+      ],
+      "name": "ServiceTypeManagerAddressUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_newStakingAddress",
+          "type": "address"
+        }
+      ],
+      "name": "StakingAddressUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_lockupDuration",
+          "type": "uint256"
+        }
+      ],
+      "name": "UpdateDeployerCutLockupDurationUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
           "name": "_stakeAmount",
           "type": "uint256"
         }
       ],
       "name": "UpdatedStakeAmount",
-      "type": "event",
-      "signature": "0x74b7febb5adb1bb0065200d3ecc2cbf299f2b30bc6bc5adff24f695b34ee2f15"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "test",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "name": "msg",
-          "type": "string"
-        }
-      ],
-      "name": "Test",
-      "type": "event",
-      "signature": "0x48912ec7290f5632f782d57553918136d1725b8af9c6f8805b18e23a35577703"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "test",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "msg",
-          "type": "string"
-        }
-      ],
-      "name": "TestUint",
-      "type": "event",
-      "signature": "0xd4c17c087be9518d1da0c156ff84c0c67887335306b81fb83520c317c3c760f9"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "previousOwner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "OwnershipTransferred",
-      "type": "event",
-      "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+      "type": "event"
     },
     {
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
+          "name": "_governanceAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_claimsManagerAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_decreaseStakeLockupDuration",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_deployerCutLockupDuration",
+          "type": "uint256"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "bytes32",
           "name": "_serviceType",
           "type": "bytes32"
         },
         {
+          "internalType": "string",
           "name": "_endpoint",
           "type": "string"
         },
         {
+          "internalType": "uint256",
           "name": "_stakeAmount",
           "type": "uint256"
         },
         {
+          "internalType": "address",
           "name": "_delegateOwnerWallet",
           "type": "address"
         }
@@ -277,23 +338,25 @@
       "name": "register",
       "outputs": [
         {
-          "name": "spID",
+          "internalType": "uint256",
+          "name": "",
           "type": "uint256"
         }
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x4fe84c09"
+      "type": "function"
     },
     {
       "constant": false,
       "inputs": [
         {
+          "internalType": "bytes32",
           "name": "_serviceType",
           "type": "bytes32"
         },
         {
+          "internalType": "string",
           "name": "_endpoint",
           "type": "string"
         }
@@ -301,99 +364,278 @@
       "name": "deregister",
       "outputs": [
         {
-          "name": "deregisteredSpID",
+          "internalType": "uint256",
+          "name": "",
           "type": "uint256"
         }
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xeb3c972a"
+      "type": "function"
     },
     {
       "constant": false,
       "inputs": [
         {
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
-          "name": "_endpoint",
-          "type": "string"
-        },
-        {
+          "internalType": "uint256",
           "name": "_increaseStakeAmount",
           "type": "uint256"
         }
       ],
-      "name": "increaseServiceStake",
+      "name": "increaseStake",
       "outputs": [
         {
-          "name": "newTotalStake",
+          "internalType": "uint256",
+          "name": "",
           "type": "uint256"
         }
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x7d2f7876"
+      "type": "function"
     },
     {
       "constant": false,
       "inputs": [
         {
-          "name": "_serviceType",
-          "type": "bytes32"
-        },
-        {
-          "name": "_endpoint",
-          "type": "string"
-        },
-        {
+          "internalType": "uint256",
           "name": "_decreaseStakeAmount",
           "type": "uint256"
         }
       ],
-      "name": "decreaseServiceStake",
+      "name": "requestDecreaseStake",
       "outputs": [
         {
-          "name": "newTotalStake",
+          "internalType": "uint256",
+          "name": "",
           "type": "uint256"
         }
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xf61f08d3"
+      "type": "function"
     },
     {
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
+          "name": "_account",
+          "type": "address"
+        }
+      ],
+      "name": "cancelDecreaseStakeRequest",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "decreaseStake",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "bytes32",
           "name": "_serviceType",
           "type": "bytes32"
         },
         {
+          "internalType": "string",
+          "name": "_endpoint",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
           "name": "_updatedDelegateOwnerWallet",
           "type": "address"
         }
       ],
       "name": "updateDelegateOwnerWallet",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_serviceType",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "string",
+          "name": "_oldEndpoint",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_newEndpoint",
+          "type": "string"
+        }
+      ],
+      "name": "updateEndpoint",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
-          "type": "address"
+          "type": "uint256"
         }
       ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xcd2bc478"
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_cut",
+          "type": "uint256"
+        }
+      ],
+      "name": "requestUpdateDeployerCut",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        }
+      ],
+      "name": "cancelUpdateDeployerCut",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        }
+      ],
+      "name": "updateDeployerCut",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateServiceProviderStake",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_duration",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateDecreaseStakeLockupDuration",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_duration",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateDeployerCutLockupDuration",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getServiceProviderDeployerCutBase",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getDeployerCutLockupDuration",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
     },
     {
       "constant": true,
       "inputs": [
         {
+          "internalType": "bytes32",
           "name": "_serviceType",
           "type": "bytes32"
         }
@@ -401,114 +643,380 @@
       "name": "getTotalServiceTypeProviders",
       "outputs": [
         {
-          "name": "numberOfProviders",
+          "internalType": "uint256",
+          "name": "",
           "type": "uint256"
         }
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x623fa631"
+      "type": "function"
     },
     {
       "constant": true,
       "inputs": [
         {
+          "internalType": "string",
+          "name": "_endpoint",
+          "type": "string"
+        }
+      ],
+      "name": "getServiceProviderIdFromEndpoint",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_ownerAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_serviceType",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getServiceProviderIdsFromAddress",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "",
+          "type": "uint256[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "bytes32",
           "name": "_serviceType",
           "type": "bytes32"
         },
         {
+          "internalType": "uint256",
           "name": "_serviceId",
           "type": "uint256"
         }
       ],
-      "name": "getServiceProviderInfo",
+      "name": "getServiceEndpointInfo",
       "outputs": [
         {
+          "internalType": "address",
           "name": "owner",
           "type": "address"
         },
         {
+          "internalType": "string",
           "name": "endpoint",
           "type": "string"
         },
         {
+          "internalType": "uint256",
           "name": "blockNumber",
           "type": "uint256"
         },
         {
+          "internalType": "address",
           "name": "delegateOwnerWallet",
           "type": "address"
         }
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0xbd1ed292"
+      "type": "function"
     },
     {
       "constant": true,
       "inputs": [
         {
-          "name": "_endpoint",
-          "type": "bytes32"
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
         }
       ],
-      "name": "getServiceProviderIdFromEndpoint",
+      "name": "getServiceProviderDetails",
       "outputs": [
         {
-          "name": "spID",
+          "internalType": "uint256",
+          "name": "deployerStake",
           "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function",
-      "signature": "0x860dba22"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "_ownerAddress",
-          "type": "address"
         },
         {
-          "name": "_serviceType",
-          "type": "bytes32"
-        }
-      ],
-      "name": "getServiceProviderIdFromAddress",
-      "outputs": [
+          "internalType": "uint256",
+          "name": "deployerCut",
+          "type": "uint256"
+        },
         {
-          "name": "spIds",
+          "internalType": "bool",
+          "name": "validBounds",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "numberOfEndpoints",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minAccountStake",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxAccountStake",
           "type": "uint256"
         }
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x2cd6e60f"
+      "type": "function"
     },
     {
       "constant": true,
       "inputs": [
         {
-          "name": "_serviceType",
-          "type": "bytes32"
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
         }
       ],
-      "name": "getDelegateOwnerWallet",
+      "name": "getPendingDecreaseStakeRequest",
       "outputs": [
         {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "lockupExpiryBlock",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        }
+      ],
+      "name": "getPendingUpdateDeployerCutRequest",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "newDeployerCut",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "lockupExpiryBlock",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getDecreaseStakeLockupDuration",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        }
+      ],
+      "name": "validateAccountStakeBalance",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getGovernanceAddress",
+      "outputs": [
+        {
+          "internalType": "address",
           "name": "",
           "type": "address"
         }
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function",
-      "signature": "0x59fe321f"
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getStakingAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getDelegateManagerAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getServiceTypeManagerAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getClaimsManagerAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_governanceAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setGovernanceAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "name": "setStakingAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "name": "setDelegateManagerAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "name": "setServiceTypeManagerAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "name": "setClaimsManagerAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
   ]
 }
