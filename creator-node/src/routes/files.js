@@ -2,6 +2,7 @@ const Redis = require('ioredis')
 const fs = require('fs')
 var contentDisposition = require('content-disposition')
 
+const { getRequestRange, formatContentRange } = require('../utils/requestRange')
 const { uploadTempDiskStorage } = require('../fileManager')
 const {
   handleResponse,
@@ -47,22 +48,21 @@ const streamFromFileSystem = async (req, res, path) => {
 
     // If a range header is present, use that to create the readstream
     // otherwise, stream the whole file.
+    const range = getRequestRange(req)
 
-    // https://expressjs.com/en/5x/api.html#req.range
-    // Returns array of range objects - [{start, end}]
-    const range = req.range()
-
-    // TODO - route doesn't support multipart ranges (see spec above),
-    if (stat && range && range[0]) {
-      const { start, end } = range[0]
+    // TODO - route doesn't support multipart ranges.
+    if (stat && range) {
+      const { start, end } = range
       if (end >= stat.size) {
         // Set "Requested Range Not Satisfiable" header and exit
         res.status(416)
         return sendResponse(req, res, errorResponseRangeNotSatisfiable('Range not satisfiable'))
       }
 
-      fileStream = fs.createReadStream(path, { start, end })
+      fileStream = fs.createReadStream(path, { start, end: end || (stat.size - 1) })
 
+      // Add a content range header to the response
+      res.set('Content-Range', formatContentRange(start, end, stat.size))
       // set 206 "Partial Content" success status response code
       res.status(206)
     } else {
@@ -137,9 +137,10 @@ const getCID = async (req, res) => {
     await new Promise((resolve, reject) => {
       let stream
       // If a range header is present, use that to create the ipfs stream
-      const range = req.range()
-      if (req.params.streamable && range && range[0]) {
-        const { start, end } = range[0]
+      const range = getRequestRange(req)
+
+      if (req.params.streamable && range) {
+        const { start, end } = range
         if (end >= stat.size) {
           // Set "Requested Range Not Satisfiable" header and exit
           res.status(416)
@@ -147,9 +148,13 @@ const getCID = async (req, res) => {
         }
 
         // Set length to be end - start + 1 so it matches behavior of fs.createReadStream
+        const length = end ? end - start + 1 : stat.size - start
         stream = req.app.get('ipfsAPI').catReadableStream(
-          CID, { offset: start, length: end - start + 1 }
+          CID, { offset: start, length }
         )
+        // Add a content range header to the response
+        res.set('Content-Range', formatContentRange(start, end, stat.size))
+        // set 206 "Partial Content" success status response code
         res.status(206)
       } else {
         stream = req.app.get('ipfsAPI').catReadableStream(CID)

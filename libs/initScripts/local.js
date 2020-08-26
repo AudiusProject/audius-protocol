@@ -13,7 +13,7 @@ const { deregisterLocalService } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 const { getEthContractAccounts } = require('./helpers/utils')
 
-const serviceTypeList = ['discovery-provider', 'creator-node', 'content-service']
+const serviceTypeList = ['discovery-provider', 'creator-node']
 const spDiscProvType = serviceTypeList[0]
 const spCreatorNodeType = serviceTypeList[1]
 const discProvEndpoint1 = 'http://audius-disc-prov_web-server_1:5000'
@@ -22,7 +22,7 @@ const creatorNodeEndpoint1 = 'http://cn1_creator-node_1:4000'
 const creatorNodeEndpoint2 = 'http://cn2_creator-node_1:4001'
 const creatorNodeEndpoint3 = 'http://cn3_creator-node_1:4002'
 const creatorNodeEndpoint4 = 'http://cn4_creator-node_1:4003'
-const amountOfAuds = 100000
+const amountOfAuds = 200000
 
 // try to dynamically get versions from .version.json
 let serviceVersions = {}

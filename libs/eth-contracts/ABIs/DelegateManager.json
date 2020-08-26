@@ -2,147 +2,61 @@
   "contractName": "DelegateManager",
   "abi": [
     {
-      "constant": false,
-      "inputs": [],
-      "name": "kill",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [],
-      "name": "renounceOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "isOwner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_registryAddress",
-          "type": "address"
-        }
-      ],
-      "name": "setRegistry",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "transferOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "name": "_tokenAddress",
-          "type": "address"
-        },
-        {
-          "name": "_registryAddress",
-          "type": "address"
-        },
-        {
-          "name": "_governanceKey",
-          "type": "bytes32"
-        },
-        {
-          "name": "_stakingProxyOwnerKey",
-          "type": "bytes32"
-        },
-        {
-          "name": "_serviceProviderFactoryKey",
-          "type": "bytes32"
-        },
-        {
-          "name": "_claimFactoryKey",
-          "type": "bytes32"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "name": "_delegator",
+          "indexed": true,
+          "internalType": "address",
+          "name": "_claimer",
           "type": "address"
         },
         {
-          "indexed": false,
-          "name": "_serviceProvider",
-          "type": "address"
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_rewards",
+          "type": "uint256"
         },
         {
-          "indexed": false,
-          "name": "_increaseAmount",
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_newTotal",
           "type": "uint256"
         }
       ],
-      "name": "IncreaseDelegatedStake",
+      "name": "Claim",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
+          "indexed": true,
+          "internalType": "address",
+          "name": "_newClaimsManagerAddress",
+          "type": "address"
+        }
+      ],
+      "name": "ClaimsManagerAddressUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
           "name": "_delegator",
           "type": "address"
         },
         {
-          "indexed": false,
+          "indexed": true,
+          "internalType": "address",
           "name": "_serviceProvider",
           "type": "address"
         },
         {
-          "indexed": false,
+          "indexed": true,
+          "internalType": "uint256",
           "name": "_decreaseAmount",
           "type": "uint256"
         }
@@ -154,39 +68,148 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "name": "_claimer",
+          "indexed": true,
+          "internalType": "address",
+          "name": "_serviceProvider",
           "type": "address"
         },
         {
-          "indexed": false,
-          "name": "_rewards",
-          "type": "uint256"
+          "indexed": true,
+          "internalType": "address",
+          "name": "_delegator",
+          "type": "address"
         },
         {
-          "indexed": false,
-          "name": "newTotal",
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_unstakedAmount",
           "type": "uint256"
         }
       ],
-      "name": "Claim",
+      "name": "DelegatorRemoved",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
+          "indexed": true,
+          "internalType": "address",
+          "name": "_newGovernanceAddress",
+          "type": "address"
+        }
+      ],
+      "name": "GovernanceAddressUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_delegator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_increaseAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "IncreaseDelegatedStake",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_maxDelegators",
+          "type": "uint256"
+        }
+      ],
+      "name": "MaxDelegatorsUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_minDelegationAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "MinDelegationUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_removeDelegatorEvalDuration",
+          "type": "uint256"
+        }
+      ],
+      "name": "RemoveDelegatorEvalDurationUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_removeDelegatorLockupDuration",
+          "type": "uint256"
+        }
+      ],
+      "name": "RemoveDelegatorLockupDurationUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_newServiceProviderFactoryAddress",
+          "type": "address"
+        }
+      ],
+      "name": "ServiceProviderFactoryAddressUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
           "name": "_target",
           "type": "address"
         },
         {
-          "indexed": false,
+          "indexed": true,
+          "internalType": "uint256",
           "name": "_amount",
           "type": "uint256"
         },
         {
-          "indexed": false,
+          "indexed": true,
+          "internalType": "uint256",
           "name": "_newTotal",
           "type": "uint256"
         }
@@ -199,26 +222,71 @@
       "inputs": [
         {
           "indexed": true,
-          "name": "previousOwner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "name": "newOwner",
+          "internalType": "address",
+          "name": "_newStakingAddress",
           "type": "address"
         }
       ],
-      "name": "OwnershipTransferred",
+      "name": "StakingAddressUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_undelegateLockupDuration",
+          "type": "uint256"
+        }
+      ],
+      "name": "UndelegateLockupDurationUpdated",
       "type": "event"
     },
     {
       "constant": false,
       "inputs": [
         {
-          "name": "_target",
+          "internalType": "address",
+          "name": "_tokenAddress",
           "type": "address"
         },
         {
+          "internalType": "address",
+          "name": "_governanceAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_undelegateLockupDuration",
+          "type": "uint256"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_targetSP",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
           "name": "_amount",
           "type": "uint256"
         }
@@ -226,7 +294,8 @@
       "name": "delegateStake",
       "outputs": [
         {
-          "name": "delegeatedAmountForSP",
+          "internalType": "uint256",
+          "name": "",
           "type": "uint256"
         }
       ],
@@ -238,10 +307,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_target",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "_amount",
           "type": "uint256"
         }
@@ -249,7 +320,8 @@
       "name": "requestUndelegateStake",
       "outputs": [
         {
-          "name": "newDelegateAmount",
+          "internalType": "uint256",
+          "name": "",
           "type": "uint256"
         }
       ],
@@ -272,7 +344,8 @@
       "name": "undelegateStake",
       "outputs": [
         {
-          "name": "newTotal",
+          "internalType": "uint256",
+          "name": "",
           "type": "uint256"
         }
       ],
@@ -282,7 +355,13 @@
     },
     {
       "constant": false,
-      "inputs": [],
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        }
+      ],
       "name": "claimRewards",
       "outputs": [],
       "payable": false,
@@ -293,10 +372,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_amount",
           "type": "uint256"
         },
         {
+          "internalType": "address",
           "name": "_slashAddress",
           "type": "address"
         }
@@ -308,9 +389,205 @@
       "type": "function"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_delegator",
+          "type": "address"
+        }
+      ],
+      "name": "requestRemoveDelegator",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_delegator",
+          "type": "address"
+        }
+      ],
+      "name": "cancelRemoveDelegator",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_delegator",
+          "type": "address"
+        }
+      ],
+      "name": "removeDelegator",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_duration",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateUndelegateLockupDuration",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_maxDelegators",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateMaxDelegators",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_minDelegationAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateMinDelegationAmount",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_duration",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateRemoveDelegatorLockupDuration",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_duration",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateRemoveDelegatorEvalDuration",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_governanceAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setGovernanceAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_stakingAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setStakingAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_spFactory",
+          "type": "address"
+        }
+      ],
+      "name": "setServiceProviderFactoryAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_claimsManagerAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setClaimsManagerAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_sp",
           "type": "address"
         }
@@ -318,7 +595,8 @@
       "name": "getDelegatorsList",
       "outputs": [
         {
-          "name": "dels",
+          "internalType": "address[]",
+          "name": "",
           "type": "address[]"
         }
       ],
@@ -330,6 +608,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_sp",
           "type": "address"
         }
@@ -337,7 +616,8 @@
       "name": "getTotalDelegatedToServiceProvider",
       "outputs": [
         {
-          "name": "total",
+          "internalType": "uint256",
+          "name": "",
           "type": "uint256"
         }
       ],
@@ -349,6 +629,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_sp",
           "type": "address"
         }
@@ -356,7 +637,8 @@
       "name": "getTotalLockedDelegationForServiceProvider",
       "outputs": [
         {
-          "name": "total",
+          "internalType": "uint256",
+          "name": "",
           "type": "uint256"
         }
       ],
@@ -368,29 +650,12 @@
       "constant": true,
       "inputs": [
         {
-          "name": "_delegator",
-          "type": "address"
-        }
-      ],
-      "name": "getTotalDelegatorStake",
-      "outputs": [
-        {
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
+          "internalType": "address",
           "name": "_delegator",
           "type": "address"
         },
         {
+          "internalType": "address",
           "name": "_serviceProvider",
           "type": "address"
         }
@@ -398,7 +663,8 @@
       "name": "getDelegatorStakeForServiceProvider",
       "outputs": [
         {
-          "name": "amount",
+          "internalType": "uint256",
+          "name": "",
           "type": "uint256"
         }
       ],
@@ -410,6 +676,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_delegator",
           "type": "address"
         }
@@ -417,16 +684,180 @@
       "name": "getPendingUndelegateRequest",
       "outputs": [
         {
+          "internalType": "address",
           "name": "target",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "amount",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "lockupExpiryBlock",
           "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_delegator",
+          "type": "address"
+        }
+      ],
+      "name": "getPendingRemoveDelegatorRequest",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getUndelegateLockupDuration",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getMaxDelegators",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getMinDelegationAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getRemoveDelegatorLockupDuration",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getRemoveDelegatorEvalDuration",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getGovernanceAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getServiceProviderFactoryAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getClaimsManagerAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getStakingAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "payable": false,

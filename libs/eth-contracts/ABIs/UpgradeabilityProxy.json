@@ -4,10 +4,12 @@
     {
       "inputs": [
         {
+          "internalType": "address",
           "name": "_logic",
           "type": "address"
         },
         {
+          "internalType": "bytes",
           "name": "_data",
           "type": "bytes"
         }
@@ -17,21 +19,22 @@
       "type": "constructor"
     },
     {
-      "payable": true,
-      "stateMutability": "payable",
-      "type": "fallback"
-    },
-    {
       "anonymous": false,
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
           "name": "implementation",
           "type": "address"
         }
       ],
       "name": "Upgraded",
       "type": "event"
+    },
+    {
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "fallback"
     }
   ]
 }

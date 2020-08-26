@@ -20,4 +20,3 @@ flask-restx==0.2.0
 hashids==1.2.0
 fakeredis==1.4.2
 jsonformatter==0.3.0
-py-cid==0.3.0

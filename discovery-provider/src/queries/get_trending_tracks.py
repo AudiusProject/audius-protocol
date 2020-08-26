@@ -19,7 +19,7 @@ O = 1
 R = 0.25
 i = 0.01
 q = 5.0
-T = {'week':7, 'month':30, 'year':365}
+T = {'week':7, 'month':30, 'year':365, 'allTime': 100000}
 def z(time, track):
     # pylint: disable=W,C,R
     E=track['listens']
@@ -46,10 +46,17 @@ def get_trending_tracks(args):
     current_user_id = get_current_user_id(required=False)
 
     db = get_db_read_replica()
+
     time = args.get('time')
+    # Identity understands allTime as millennium.
+    # TODO: Change this in https://github.com/AudiusProject/audius-protocol/pull/768/files
+    query_time = time
+    if time == 'allTime':
+        query_time = 'millennium'
+
     with db.scoped_session() as session:
         trending_tracks = generate_trending(
-            get_db_read_replica(), time, args.get('genre', None),
+            get_db_read_replica(), query_time, args.get('genre', None),
             limit, offset)
 
         track_scores = [z(time, track) for track in trending_tracks['listen_counts']]

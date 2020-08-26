@@ -1,61 +1,50 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "$ref": "#/definitions/User",
-    "definitions": {
-        "User": {
-            "type": "object",
-            "additionalProperties": true,
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "default": null
-                },
-                "profile_picture": {
-                    "type": ["string", "null"],
-                    "default": null,
-                    "$ref": "#/definitions/CID"
-                },
-                "profile_picture_sizes": {
-                    "type": ["string", "null"],
-                    "default": null,
-                    "$ref": "#/definitions/CID"
-                },
-                "cover_photo": {
-                    "type": ["string", "null"],
-                    "default": null,
-                    "$ref": "#/definitions/CID"
-                },
-                "cover_photo_sizes": {
-                    "type": ["string", "null"],
-                    "default": null,
-                    "$ref": "#/definitions/CID"
-                },
-                "bio": {
-                    "type": ["string", "null"],
-                    "default": null
-                },
-                "location": {
-                    "type": ["string", "null"],
-                    "default": null
-                }
-            },
-            "required": [
-                "bio",
-                "cover_photo",
-                "cover_photo_sizes",
-                "location",
-                "name",
-                "profile_picture",
-                "profile_picture_sizes"
-            ],
-            "title": "User"
-        },
-        "CID": {
-            "type": ["string", "null"],
-            "minLength": 46,
-            "maxLength": 46,
-            "pattern": "^Qm[a-zA-Z0-9]{44}$",
-            "title": "CID"
-        }
-    }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/User",
+  "definitions": {
+      "User": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+              "name": {
+                  "type": "string",
+                  "default": null
+              },
+              "profile_picture": {
+                  "type": ["string", "null"],
+                  "default": null
+              },
+              "profile_picture_sizes": {
+                  "type": ["string", "null"],
+                  "default": null
+              },
+              "cover_photo": {
+                  "type": ["string", "null"],
+                  "default": null
+              },
+              "cover_photo_sizes": {
+                  "type": ["string", "null"],
+                  "default": null
+              },
+              "bio": {
+                  "type": ["string", "null"],
+                  "default": null
+              },
+              "location": {
+                  "type": ["string", "null"],
+                  "default": null
+              }
+          },
+          "required": [
+              "bio",
+              "cover_photo",
+              "cover_photo_sizes",
+              "location",
+              "name",
+              "profile_picture",
+              "profile_picture_sizes"
+          ],
+          "title": "User"
+      }
+  }
 }
