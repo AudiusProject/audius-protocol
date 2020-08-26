@@ -47,6 +47,7 @@ jobs:
             "$(which node)" setup.js up -nc 3
             cd /home/circleci/mad-dog/
             docker ps
+            set -e
             npm run start test-ci
   test-libs:
     docker:
@@ -552,7 +553,7 @@ workflows:
       - test-mad-dog-e2e:
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^master$)|(.*?mad-?dog(.*)?)/
 
 
 
