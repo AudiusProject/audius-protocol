@@ -25,6 +25,7 @@ jobs:
       - run:
           name: execute
           command: |
+            set -e
             export PROTOCOL_DIR=/home/circleci/project/
             source ~/.bash_profile
             nvm install v10.16
@@ -47,7 +48,6 @@ jobs:
             "$(which node)" setup.js up -nc 3
             cd /home/circleci/mad-dog/
             docker ps
-            set -e
             npm run start test-ci
   test-libs:
     docker:
