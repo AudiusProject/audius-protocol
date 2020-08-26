@@ -61,11 +61,11 @@ def setup_trending(db):
                 is_delete=track_meta.get("is_delete", False),
                 owner_id=300,
                 route_id='',
-                track_segments={},
+                track_segments=[],
                 genre=track_meta.get("genre", ""),
                 updated_at=track_meta.get("updated_at", datetime.now()),
                 created_at=track_meta.get("created_at", datetime.now()),
-                is_unlisted=track_meta.get("is_unlisted", datetime.now())
+                is_unlisted=track_meta.get("is_unlisted", False)
             )
 
             # add block and then flush before
