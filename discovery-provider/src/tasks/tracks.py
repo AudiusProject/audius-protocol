@@ -6,6 +6,7 @@ from src import contract_addresses
 from src.utils import multihash, helpers
 from src.models import Track, User, BlacklistedIPLD, Stem, Remix
 from src.tasks.metadata import track_metadata_format
+from src.tasks.ipld_blacklist import is_blacklisted_ipld
 
 logger = logging.getLogger(__name__)
 
@@ -282,12 +283,6 @@ def parse_track_event(
     track_record.updated_at = block_datetime
 
     return track_record
-
-def is_blacklisted_ipld(session, ipld_blacklist_multihash):
-    ipld_blacklist_entry = (
-        session.query(BlacklistedIPLD).filter(BlacklistedIPLD.ipld == ipld_blacklist_multihash)
-    )
-    return ipld_blacklist_entry.count() > 0
 
 def is_valid_json_field(metadata, field):
     if field in metadata and isinstance(metadata[field], dict) and metadata[field]:
