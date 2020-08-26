@@ -174,6 +174,9 @@ const getTrendingTracks = async (
       let oneYearBefore = new Date(currentHour.getTime() - oneYearInMs)
       dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneYearBefore }
       break
+    case 'millennium':
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: new Date(0) }
+      break
     case undefined:
       break
     default:
