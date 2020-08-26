@@ -4,7 +4,7 @@ from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import null
 from src import contract_addresses
 from src.utils import multihash, helpers
-from src.models import Track, User, BlacklistedIPLD, Stem, Remix
+from src.models import Track, User, Stem, Remix
 from src.tasks.metadata import track_metadata_format
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 
@@ -227,7 +227,7 @@ def parse_track_event(
         # continue with the next entry in the update_track_events list
         if is_blacklisted_ipld(session, upd_track_metadata_multihash):
             logger.warning(f"Encountered blacklisted CID {upd_track_metadata_multihash} in indexing update track")
-            return None 
+            return None
 
         owner_id = event_args._trackOwnerId
         handle = (

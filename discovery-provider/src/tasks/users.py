@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from src import contract_addresses
 from src.utils import helpers
-from src.models import User, BlacklistedIPLD
+from src.models import User
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.metadata import user_metadata_format
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
@@ -70,7 +70,7 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
     # we do this after all processing has completed so the user record is atomic by block, not tx
     for user_id, value_obj in user_events_lookup.items():
         logger.info(f"users.py | Adding {value_obj['user']}")
-        if len(value_obj["events"]) > 0:
+        if value_obj["events"]:
             invalidate_old_user(session, user_id)
             session.add(value_obj["user"])
 
@@ -156,7 +156,7 @@ def parse_user_event(
         is_blacklisted = is_blacklisted_ipld(session, profile_photo_multihash)
         if is_blacklisted:
             return None
-        user_record.profile_picture =  profile_photo_multihash
+        user_record.profile_picture = profile_photo_multihash
     elif event_type == user_event_types_lookup["update_cover_photo"]:
         cover_photo_multihash = helpers.multihash_digest_to_cid(event_args._coverPhotoDigest)
         is_blacklisted = is_blacklisted_ipld(session, cover_photo_multihash)
