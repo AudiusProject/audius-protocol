@@ -136,12 +136,18 @@ def extend_track(track):
     track = add_track_artwork(track)
     track["remix_of"] = extend_remix_of(track["remix_of"])
     track["favorite_count"] = track["save_count"]
+
     duration = 0.
     for segment in track["track_segments"]:
         # NOTE: Legacy track segments store the duration as a string
         duration += float(segment["duration"])
     track["duration"] = round(duration)
-    track["downloadable"] = track["download"] and track["download"]["is_downloadable"]
+
+    downloadable = "download" in track and \
+        track["download"] and \
+        track["download"]["is_downloadable"]
+    track["downloadable"] = bool(downloadable)
+
     return track
 
 def extend_playlist(playlist):
