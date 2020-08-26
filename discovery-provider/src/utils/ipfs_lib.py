@@ -170,7 +170,7 @@ class IPFSClient:
 
         self - class self
         multihash - CID to check if directory
-        is_square - flag to toggle between square and non-square images
+        is_square - flag to toggle between square and non-square images.
                     user cover photo is the only is_square=False image,
                     everything else is square
         """
@@ -192,7 +192,7 @@ class IPFSClient:
         gateway_endpoints = self._cnode_endpoints
         for address in gateway_endpoints:
             # First, query as dir.
-            gateway_query_address = construct_image_dir_gateway_url(address, multihash)
+            gateway_query_address = construct_image_dir_gateway_url(address, multihash, is_square)
             r = None
             if gateway_query_address:
                 try:
@@ -202,6 +202,12 @@ class IPFSClient:
                     logger.warning(f"Failed to query {gateway_query_address} with error {e}")
 
             if r is not None:
+                # Success non-json response indicates image in dir
+                if r.status_code == 200:
+                    logger.warning(f"IPFSCLIENT | Returned image at {gateway_query_address}")
+                    return True
+
+                # If not a success code, try to parse the json and see if it contains an error
                 try:
                     json_resp = r.json()
                     # Gateway will return "no link named" error if dir but no file named
@@ -211,11 +217,6 @@ class IPFSClient:
                         return True
                 except Exception as e:
                     logger.warning(f"IPFSCLIENT | Failed to deserialize json for {multihash} for error {e}")
-
-                # Success non-json response indicates image in dir
-                if r.status_code == 200:
-                    logger.warning(f"IPFSCLIENT | Returned image at {gateway_query_address}")
-                    return True
 
             # Else, query as non-dir image
             gateway_query_address = urljoin(address, f"/ipfs/{multihash}")
