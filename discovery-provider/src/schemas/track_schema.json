@@ -17,12 +17,14 @@
                 },
                 "cover_art": {
                     "type": ["string", "null"],
-                    "default": null
+                    "default": null,
+                    "$ref": "#/definitions/CID"
                 },
                 "cover_art_sizes": {
                   "$comment": "type can be null if attached as a stem",
                   "type": ["string",  "null"],
-                  "default": null
+                  "default": null,
+                  "$ref": "#/definitions/CID"
               },
                 "tags": {
                     "type": ["string", "null"],
@@ -174,7 +176,8 @@
             "additionalProperties": false,
             "properties": {
                 "cid": {
-                    "type": ["string", "null"]
+                    "type": ["string", "null"],
+                    "$ref": "#/definitions/CID"
                 },
                 "is_downloadable": {
                     "type": "boolean"
@@ -243,7 +246,8 @@
                     "type": "number"
                 },
                 "multihash": {
-                    "type": "string"
+                    "type": "string",
+                    "$ref": "#/definitions/CID"
                 }
             },
             "required": [
@@ -251,6 +255,13 @@
                 "multihash"
             ],
             "title": "TrackSegment"
+        },
+        "CID": {
+            "type": ["string", "null"],
+            "minLength": 46,
+            "maxLength": 46,
+            "pattern": "^Qm[a-zA-Z0-9]{44}$",
+            "title": "CID"
         }
     }
 }
