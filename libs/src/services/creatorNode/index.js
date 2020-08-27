@@ -118,7 +118,6 @@ class CreatorNode {
     // if validation fails, validate() will throw an error
     try {
       this.schemas[SchemaValidator.userSchemaType].validate(metadata)
-      console.log('user metadata validation passed', metadata)
 
       return this._makeRequest({
         url: '/audius_users/metadata',
@@ -210,7 +209,6 @@ class CreatorNode {
     // if validation fails, validate() will throw an error
     try {
       this.schemas[SchemaValidator.trackSchemaType].validate(metadata)
-      console.log('track metadata validation passed', metadata)
     } catch (e) {
       console.error('Error validating track metadata', e)
     }

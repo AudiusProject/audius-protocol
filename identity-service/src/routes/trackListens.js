@@ -174,6 +174,9 @@ const getTrendingTracks = async (
       let oneYearBefore = new Date(currentHour.getTime() - oneYearInMs)
       dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneYearBefore }
       break
+    case 'millennium':
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: new Date(0) }
+      break
     case undefined:
       break
     default:
@@ -251,7 +254,7 @@ module.exports = function (app) {
 
     const trackListens = await models.UserTrackListen.findAll({
       where: { userId },
-      order: [[ 'updatedAt', 'DESC' ]],
+      order: [['updatedAt', 'DESC']],
       attributes: ['trackId', 'updatedAt'],
       limit,
       offset
@@ -385,7 +388,7 @@ module.exports = function (app) {
         }
       },
       order: [
-        [ 'count', 'DESC' ]
+        ['count', 'DESC']
       ],
       limit
     })
@@ -472,21 +475,25 @@ module.exports = function (app) {
       where: {
         updatedAt: { [models.Sequelize.Op.gt]: updatedAtMoment.toDate() }
       },
-      order: [['createdAt', 'ASC'], ['trackId', 'ASC']],
+      order: [['updatedAt', 'ASC'], ['trackId', 'ASC']],
       limit
     })
 
     const anonListens = await models.TrackListenCount.findAll({
-      attributes: ['trackId', ['listens', 'count'], 'createdAt', 'updatedAt'],
+      attributes: ['trackId', ['listens', 'count'], ['hour', 'createdAt'], 'updatedAt'],
       where: {
         updatedAt: { [models.Sequelize.Op.gt]: updatedAtMoment.toDate() }
       },
-      order: [['createdAt', 'ASC'], ['trackId', 'ASC']],
+      order: [['updatedAt', 'ASC'], ['trackId', 'ASC']],
       limit
     })
 
+    const listens = [...userListens, ...anonListens].sort((a, b) => {
+      return moment(a.updatedAt) - moment(b.updatedAt)
+    }).slice(0, limit)
+
     return successResponse({
-      listens: [...userListens, ...anonListens]
+      listens
     })
   }))
 }

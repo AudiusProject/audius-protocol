@@ -54,7 +54,11 @@ track = ns.model('Track', {
     "tags": fields.String,
     "title": fields.String(required=True),
     "user": fields.Nested(user_model, required=True),
-    "duration": fields.Integer(required=True)
+    # Total track duration, rounded to the nearest second
+    "duration": fields.Integer(required=True),
+    # Whether or not the track is downloadable, see `download`
+    # on `track_full` for more details
+    "downloadable": fields.Boolean
 })
 
 track_full = ns.clone('track_full', track, {

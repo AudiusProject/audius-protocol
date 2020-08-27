@@ -66,7 +66,7 @@ our team [on Discord](https://discord.com/invite/yNUg2e2) or via other channels 
 ## Security
 
 Please report security issues to `security@audius.co` with a description of the
-vulenerability and any steps to reproduce. We have bounties available for issues reported
+vulnerability and any steps to reproduce. We have bounties available for issues reported
 via responsible disclosure!
 
 ## License
