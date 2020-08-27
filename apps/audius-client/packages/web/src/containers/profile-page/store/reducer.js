@@ -52,6 +52,7 @@ const actionsMap = {
     return {
       ...state,
       handle: action.handle,
+      userId: action.userId,
       status: action.shouldSetLoading ? Status.LOADING : state.status
     }
   },
@@ -59,7 +60,8 @@ const actionsMap = {
     return {
       ...state,
       status: Status.SUCCESS,
-      userId: action.userId
+      userId: action.userId,
+      handle: action.handle
     }
   },
   [FETCH_FOLLOW_USERS](state, action) {

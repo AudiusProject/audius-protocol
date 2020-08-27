@@ -15,28 +15,33 @@ function* watchFetchCollection() {
     const collectionId = action.id
     const handle = action.handle
 
-    const user = yield call(fetchUserByHandle, handle)
-    if (!user) {
-      yield put(collectionActions.fetchCollectionFailed())
+    let user
+    if (handle) {
+      user = yield call(fetchUserByHandle, handle)
+      if (!user) {
+        yield put(collectionActions.fetchCollectionFailed())
+      }
     }
-    const userUid = makeUid(Kind.USERS, user.user_id)
 
     // Retrieve collections and fetch nested tracks
     const { collections, uids: collectionUids } = yield call(
       retrieveCollections,
-      user.user_id,
+      user?.user_id ?? null,
       [collectionId],
       true
     )
 
     if (Object.values(collections).length === 0) {
-      yield put(collectionActions.fetchCollectionFailed(userUid))
+      yield put(collectionActions.fetchCollectionFailed())
     }
     const collection = collections[collectionId]
+    const userUid = makeUid(Kind.USERS, collection.playlist_owner_id)
     const collectionUid = collectionUids[collectionId]
     if (collection) {
       yield put(
-        cacheActions.subscribe(Kind.USERS, [{ uid: userUid, id: user.user_id }])
+        cacheActions.subscribe(Kind.USERS, [
+          { uid: userUid, id: collection.playlist_owner_id }
+        ])
       )
       yield put(
         collectionActions.fetchCollectionSucceeded(

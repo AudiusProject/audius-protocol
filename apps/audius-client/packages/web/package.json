@@ -37,6 +37,7 @@
     "glsl-noise": "0.0.0",
     "glsl-random": "0.0.4",
     "glslify-loader": "^1.0.2",
+    "hashids": "^2.2.1",
     "hex-rgb": "^1.0.0",
     "history": "^4.7.2",
     "hls.js": "^0.13.2",

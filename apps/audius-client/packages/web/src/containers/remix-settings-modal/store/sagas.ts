@@ -1,10 +1,8 @@
 import { takeEvery, call, put } from 'redux-saga/effects'
-import { matchPath } from 'react-router-dom'
 
 import { fetchTrack, fetchTrackSucceeded, fetchTrackFailed } from './slice'
-import { TRACK_PAGE } from 'utils/route'
-import { parseIdFromRoute } from 'containers/track-page/TrackPageProvider'
 import { retrieveTracks } from 'store/cache/tracks/utils/retrieveTracks'
+import { parseTrackRoute } from 'utils/route/trackRouteParser'
 
 const getTrackId = (url: string) => {
   // Get just the pathname part from the url
@@ -18,13 +16,9 @@ const getTrackId = (url: string) => {
     ) {
       return null
     }
-    // Match on the pathname and return a valid track id if found
-    const match = matchPath<{ trackName: string; handle: string }>(pathname, {
-      path: TRACK_PAGE,
-      exact: true
-    })
-    if (match && match.params.trackName) {
-      const { trackId } = parseIdFromRoute(match.params.trackName)
+    const params = parseTrackRoute(pathname)
+    if (params) {
+      const { trackId } = params
       return trackId
     }
     return null
