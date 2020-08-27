@@ -629,7 +629,6 @@ workflows:
             branches:
               only: /(^master$)|(.*?hotfix(.*)?)/
       - test-mad-dog-e2e:
-          force: true
           filters:
             branches:
               only: /(^master$)|(.*?mad-?dog(.*)?)/
