@@ -174,7 +174,7 @@ def parse_track_event(
         # If the IPLD is blacklisted, do not keep processing the current entry
         # continue with the next entry in the update_track_events list
         if is_blacklisted_ipld(session, track_metadata_multihash):
-            logger.warning(f"Encountered blacklisted CID {track_metadata_multihash} in indexing new track")
+            logger.info(f"Encountered blacklisted metadata CID {track_metadata_multihash} in indexing new track")
             return None
 
         owner_id = event_args._trackOwnerId
@@ -206,6 +206,11 @@ def parse_track_event(
 
         # if cover_art CID is of a dir, store under _sizes field instead
         if track_record.cover_art:
+            # If CID is in IPLD blacklist table, do not continue with indexing
+            if is_blacklisted_ipld(session, track_record.cover_art):
+                logger.info(f"Encountered blacklisted cover art CID {track_metadata_multihash} in indexing new track")
+                return None
+
             logger.warning(f"tracks.py | Processing track cover art {track_record.cover_art}")
             is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
             if is_directory:
