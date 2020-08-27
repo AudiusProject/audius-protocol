@@ -197,10 +197,18 @@ def parse_track_event(
         # if cover_art CID is of a dir, store under _sizes field instead
         if track_record.cover_art:
             logger.warning(f"tracks.py | Processing track cover art {track_record.cover_art}")
-            is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
-            if is_directory:
-                track_record.cover_art_sizes = track_record.cover_art
-                track_record.cover_art = None
+            try:
+                is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
+                if is_directory:
+                    track_record.cover_art_sizes = track_record.cover_art
+                    track_record.cover_art = None
+            except Exception as e:
+                # we are unable to get the cover art
+                if 'invalid multihash' in str(e):
+                    track_record.cover_art_sizes = None
+                    track_record.cover_art = None
+                else:
+                    raise e
 
         update_stems_table(session, track_record, track_metadata)
         update_remixes_table(session, track_record, track_metadata)
