@@ -9,9 +9,12 @@ const discoveryProviderEndpoint = 'http://localhost:5000'
 const identityServiceEndpoint = 'http://localhost:7000'
 const dataWeb3ProviderEndpoint = 'http://localhost:8545'
 const ethWeb3ProviderEndpoint = 'http://localhost:8546'
+require('@openzeppelin/test-helpers/configure')({
+  provider: ethWeb3ProviderEndpoint,
+})
 const isServer = true
 
-module.exports.constants = {
+const constants = {
   trackMetadataCID: 'QmSH5gJPHg9xLzV823ty8BSGyHNP6ty22bgLsv5MLY3kBq',
   trackMetadataCID2: 'QmSH5gJPHg9xLzV823ty8BSGyHNP6ty22bgLaaaaaaaaaa',
   creatorMetadataCID: 'QmTDhoEDLE3k3CE5bu4mF1ogsEVkPwEAM41KsN7hZX1eWY',
@@ -61,10 +64,11 @@ async function initializeLibConfig (ethOwnerWallet, dataOwnerWallet) {
   }
 }
 
-// Export configured libs instance
-module.exports.audiusInstance = new AudiusLibs(audiusLibsConfig)
-
-// Export libs config for re-use
-module.exports.audiusLibsConfig = audiusLibsConfig
-
-module.exports.initializeLibConfig = initializeLibConfig
+module.exports = {
+  constants,
+  // Export configured libs instance
+  audiusInstance: new AudiusLibs(audiusLibsConfig),
+  // Export libs config for re-use
+  audiusLibsConfig,
+  initializeLibConfig
+}
