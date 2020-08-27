@@ -26,6 +26,7 @@ import {
 import { makeUid, makeUids, makeKindId } from 'utils/uid'
 
 import {
+  fetchUsers,
   fetchUserByHandle,
   fetchUserCollections
 } from 'store/cache/users/sagas'
@@ -44,14 +45,26 @@ function* watchFetchProfile() {
 
 function* fetchProfileAsync(action) {
   try {
-    const user = yield call(
-      fetchUserByHandle,
-      action.handle,
-      new Set(),
-      action.forceUpdate,
-      action.shouldSetLoading,
-      action.deleteExistingEntry
-    )
+    let user
+    if (action.handle) {
+      user = yield call(
+        fetchUserByHandle,
+        action.handle,
+        new Set(),
+        action.forceUpdate,
+        action.shouldSetLoading,
+        action.deleteExistingEntry
+      )
+    } else if (action.userId) {
+      const users = yield call(
+        fetchUsers,
+        [action.userId],
+        new Set(),
+        action.forceUpdate,
+        action.shouldSetLoading
+      )
+      user = users.entries[action.userId]
+    }
     if (!user) {
       const isReachable = yield select(getIsReachable)
       if (isReachable) {
@@ -59,7 +72,7 @@ function* fetchProfileAsync(action) {
       }
       return
     }
-    yield put(profileActions.fetchProfileSucceeded(action.handle, user.user_id))
+    yield put(profileActions.fetchProfileSucceeded(user.handle, user.user_id))
     yield fork(fetchUserCollections, user.user_id)
     const isSubscribed = yield call(
       AudiusBackend.getUserSubscribed,

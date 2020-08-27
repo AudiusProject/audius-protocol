@@ -1,8 +1,7 @@
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
-import { push as pushRoute } from 'connected-react-router'
-import { matchPath } from 'react-router'
+import { push as pushRoute, replace } from 'connected-react-router'
 import moment from 'moment'
 import { UnregisterCallback } from 'history'
 import { AppState, Status } from 'store/types'
@@ -22,6 +21,7 @@ import { feedActions } from './store/lineups/feed/actions'
 import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getAccountUser } from 'store/account/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
+import { getLocationPathname } from 'store/routing/selectors'
 
 import { makeGetCurrent } from 'store/queue/selectors'
 import {
@@ -30,7 +30,7 @@ import {
   getProfileTracksLineup
 } from './store/selectors'
 import { CollectionSortMode } from 'containers/profile-page/store/types'
-import { NOT_FOUND_PAGE, staticRoutes } from 'utils/route'
+import { NOT_FOUND_PAGE, profilePage } from 'utils/route'
 import { newUserMetadata } from 'schemas'
 import { formatCount } from 'utils/formatUtil'
 
@@ -44,6 +44,7 @@ import {
 } from 'store/application/ui/mobileOverflowModal/types'
 import { make, TrackEvent } from 'store/analytics/actions'
 import { Name, FollowSource, ShareSource } from 'services/analytics'
+import { parseUserRoute } from 'utils/route/userRouteParser'
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
@@ -116,7 +117,11 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         this.props.resetProfile()
         this.props.resetArtistTracks()
         this.props.resetUserFeedTracks()
-        this.fetchProfile(location.pathname)
+        const params = parseUserRoute(location.pathname)
+        if (params) {
+          // Fetch profile if this is a new profile page
+          this.fetchProfile(location.pathname)
+        }
         this.setState({
           ...INITIAL_UPDATE_FIELDS
         })
@@ -129,7 +134,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   componentDidUpdate(prevProps: ProfilePageProps, prevState: ProfilePageState) {
-    const { profile, artistTracks, goToRoute } = this.props
+    const { pathname, profile, artistTracks, goToRoute } = this.props
     const { activeTab } = this.state
 
     if (profile && profile.status === Status.ERROR) {
@@ -160,6 +165,18 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       this.setState({
         activeTab: Tabs.REPOSTS
       })
+    }
+
+    // Replace the URL with the properly formatted /handle route
+    if (profile && profile.profile && profile.status === Status.SUCCESS) {
+      const params = parseUserRoute(pathname)
+      if (params) {
+        const { handle } = params
+        if (!handle) {
+          const newPath = profilePage(profile.profile.handle)
+          this.props.replaceRoute(newPath)
+        }
+      }
     }
   }
 
@@ -212,18 +229,17 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     shouldSetLoading = true,
     deleteExistingEntry = false
   ) => {
-    const match = matchPath<{ handle: string }>(pathname, {
-      path: '/:handle',
-      exact: true
-    })
-    if (match && !staticRoutes.has(pathname)) {
-      const handle = match.params.handle
+    const params = parseUserRoute(pathname)
+    if (params) {
       this.props.fetchProfile(
-        handle,
+        params.handle,
+        params.userId,
         forceUpdate,
         shouldSetLoading,
         deleteExistingEntry
       )
+    } else {
+      this.props.goToRoute(NOT_FOUND_PAGE)
     }
   }
 
@@ -868,7 +884,8 @@ function makeMapStateToProps() {
     userFeed: getUserFeedMetadatas(state),
     currentQueueItem: getCurrentQueueItem(state),
     playing: getPlaying(state),
-    buffering: getBuffering(state)
+    buffering: getBuffering(state),
+    pathname: getLocationPathname(state)
   })
   return mapStateToProps
 }
@@ -876,7 +893,8 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     fetchProfile: (
-      handle: string,
+      handle: string | null,
+      userId: ID | null,
       forceUpdate: boolean,
       shouldSetLoading: boolean,
       deleteExistingEntry: boolean
@@ -884,6 +902,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(
         profileActions.fetchProfile(
           handle,
+          userId,
           forceUpdate,
           shouldSetLoading,
           deleteExistingEntry
@@ -893,6 +912,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(profileActions.updateProfile(metadata)),
     resetProfile: () => dispatch(profileActions.resetProfile()),
     goToRoute: (route: string) => dispatch(pushRoute(route)),
+    replaceRoute: (route: string) => dispatch(replace(route)),
     updateCollectionOrder: (mode: CollectionSortMode) =>
       dispatch(profileActions.updateCollectionSortMode(mode)),
     onFollow: (userId: ID) =>

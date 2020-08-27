@@ -4,7 +4,6 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { UnregisterCallback } from 'history'
 import { push as pushRoute, replace } from 'connected-react-router'
-import { matchPath } from 'react-router'
 import { AppState, Status, Kind } from 'store/types'
 import { Dispatch } from 'redux'
 
@@ -26,7 +25,9 @@ import {
   FEED_PAGE,
   REPOSTING_USERS_ROUTE,
   FAVORITING_USERS_ROUTE,
-  fullPlaylistPage
+  fullPlaylistPage,
+  playlistPage,
+  albumPage
 } from 'utils/route'
 import { setRepost } from 'containers/reposts-page/store/actions'
 import { RepostType } from 'containers/reposts-page/store/types'
@@ -77,6 +78,7 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { SmartCollection } from 'models/Collection'
 import DeletedPage from 'containers/deleted-page/DeletedPage'
+import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
 
 type OwnProps = {
   type: CollectionsPageType
@@ -143,7 +145,7 @@ class CollectionPage extends Component<
 
   componentDidUpdate(prevProps: CollectionPageProps) {
     const {
-      collection: { userUid, metadata, status },
+      collection: { userUid, metadata, status, user },
       smartCollection,
       tracks,
       location: { pathname },
@@ -156,12 +158,12 @@ class CollectionPage extends Component<
 
     const { updatingRoute, initialOrder } = this.state
 
-    const routeParams = this.getRouteParams(pathname)
-    if (!routeParams) return
+    const params = parseCollectionRoute(pathname)
+    if (!params) return
     if (status === Status.ERROR) {
       if (
-        routeParams &&
-        routeParams.id === this.state.playlistId &&
+        params &&
+        params.collectionId === this.state.playlistId &&
         metadata?.playlist_owner_id !== this.props.userId
       ) {
         // Only route to not found page if still on the collection page and
@@ -211,21 +213,32 @@ class CollectionPage extends Component<
       this.setState({ updatingRoute: false })
     }
 
-    // Check that the collection name hasn't changed. If so, update url.
     const {
       collection: { metadata: prevMetadata }
     } = prevProps
-    if (
-      metadata &&
-      prevMetadata &&
-      metadata.playlist_name !== prevMetadata.playlist_name
-    ) {
-      const routeParams = this.getRouteParams(pathname)
-      if (routeParams) {
-        const { id, name } = routeParams
+    if (metadata) {
+      const params = parseCollectionRoute(pathname)
+      if (params) {
+        const { collectionId, title, collectionType, handle } = params
         const newCollectionName = formatUrlName(metadata.playlist_name)
-        if (newCollectionName !== name && id === metadata.playlist_id) {
-          const newPath = pathname.replace(name, newCollectionName)
+
+        const routeLacksCollectionInfo =
+          (!title || !handle || !collectionType) && user
+        if (routeLacksCollectionInfo) {
+          // Check if we are coming from a non-canonical route and replace route if necessary.
+          const newPath = metadata.is_album
+            ? albumPage(user!.handle, metadata.playlist_name, collectionId)
+            : playlistPage(user!.handle, metadata.playlist_name, collectionId)
+          this.props.replaceRoute(newPath)
+        } else if (
+          // Check that the collection name hasn't changed. If so, update url.
+          prevMetadata &&
+          metadata.playlist_name !== prevMetadata.playlist_name &&
+          title &&
+          newCollectionName !== title &&
+          collectionId === metadata.playlist_id
+        ) {
+          const newPath = pathname.replace(title, newCollectionName)
           this.props.replaceRoute(newPath)
         }
       }
@@ -270,47 +283,23 @@ class CollectionPage extends Component<
   }
 
   fetchCollection = (pathname: string, forceFetch = false) => {
-    const routeParams = this.getRouteParams(pathname)
-    if (routeParams) {
-      const { id, handle } = routeParams
-      if (forceFetch || id !== this.state.playlistId) {
+    const params = parseCollectionRoute(pathname)
+    if (params) {
+      const { handle, collectionId } = params
+      if (forceFetch || collectionId !== this.state.playlistId) {
         this.resetCollection()
-        this.setState({ playlistId: id as number })
-        this.props.fetchCollection(handle, id as number)
+        this.setState({ playlistId: collectionId as number })
+        this.props.fetchCollection(handle, collectionId as number)
         this.props.fetchTracks()
       }
     }
+
     if (
       this.props.smartCollection &&
       this.props.smartCollection.playlist_contents
     ) {
       this.props.fetchTracks()
     }
-  }
-
-  getRouteParams = (pathname: string) => {
-    const match = matchPath<{
-      handle: string
-      collectionType: string
-      name: string
-    }>(pathname, {
-      path: '/:handle/:collectionType/:name',
-      exact: true
-    })
-    if (
-      !match ||
-      (match.params.collectionType !== 'playlist' &&
-        match.params.collectionType !== 'album')
-    ) {
-      return null
-    }
-    const collectionType = match.params.collectionType
-    const nameParts = match.params.name.split('-')
-    const handleEncoded = match.params.handle
-    const handle = decodeURIComponent(handleEncoded)
-    const name = nameParts.slice(0, -1).join('-')
-    const id = this.maybeParseInt(nameParts[nameParts.length - 1])
-    return { id, name, handle, collectionType }
   }
 
   resetCollection = () => {
@@ -806,7 +795,7 @@ function makeMapStateToProps() {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    fetchCollection: (handle: string, id: number) =>
+    fetchCollection: (handle: string | null, id: number) =>
       dispatch(collectionActions.fetchCollection(handle, id)),
     fetchTracks: () =>
       dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined)),

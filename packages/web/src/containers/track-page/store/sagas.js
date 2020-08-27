@@ -15,7 +15,7 @@ import TimeRange from 'models/TimeRange'
 import { push as pushRoute } from 'connected-react-router'
 import { retrieveTracks } from 'store/cache/tracks/utils'
 import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
-import { getUsers } from 'store/cache/users/selectors'
+import { getUsers, getUserFromTrack } from 'store/cache/users/selectors'
 
 function* watchTrackBadge() {
   yield takeEvery(trackPageActions.GET_TRACK_RANKS, function* (action) {
@@ -87,18 +87,26 @@ function* getTrackRanks(trackId) {
 }
 
 function* getMoreByThisArtist(trackId, ownerHandle) {
+  const owner = yield select(getUserFromTrack, { id: trackId })
   yield put(
-    tracksActions.fetchLineupMetadatas(0, 6, false, { ownerHandle, trackId })
+    tracksActions.fetchLineupMetadatas(0, 6, false, {
+      ownerHandle: owner.handle,
+      trackId
+    })
   )
 }
 
 function* watchFetchTrack() {
   yield takeEvery(trackPageActions.FETCH_TRACK, function* (action) {
-    const { trackId, trackName, ownerHandle } = action
+    const { trackId, trackName, ownerHandle, canBeUnlisted } = action
+    const ids = canBeUnlisted
+      ? [{ id: trackId, url_title: trackName, handle: ownerHandle }]
+      : [trackId]
+
     try {
       const trackIds = yield call(retrieveTracks, {
-        trackIds: [{ id: trackId, url_title: trackName, handle: ownerHandle }],
-        canBeUnlisted: true,
+        trackIds: ids,
+        canBeUnlisted,
         withStems: true,
         withRemixes: true,
         withRemixParents: true
@@ -106,7 +114,7 @@ function* watchFetchTrack() {
       if (
         !trackIds ||
         !trackIds.length ||
-        trackIds.every(id => id === undefined)
+        trackIds.every(track => track === undefined || !track.track_id)
       ) {
         // If no tracks because no internet, do nothing. Else navigate to 404.
         const isReachable = yield select(getIsReachable)

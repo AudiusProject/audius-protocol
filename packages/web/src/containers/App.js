@@ -52,7 +52,10 @@ import {
   FOLLOWING_USERS_ROUTE,
   FOLLOWERS_USERS_ROUTE,
   TRENDING_GENRES,
-  APP_REDIRECT
+  APP_REDIRECT,
+  TRACK_ID_PAGE,
+  USER_ID_PAGE,
+  PLAYLIST_ID_PAGE
 } from 'utils/route'
 import 'utils/redirect'
 import { isMobile, getClient } from 'utils/clientUtil'
@@ -704,6 +707,20 @@ class App extends Component {
                 render={() => <CollectionPage type='album' />}
               />
 
+              {/* Hash id routes */}
+              <Route
+                exact
+                path={USER_ID_PAGE}
+                render={props => (
+                  <ProfilePage
+                    {...props}
+                    containerRef={this.state.mainContent}
+                  />
+                )}
+              />
+              <Route exact path={TRACK_ID_PAGE} component={TrackPage} />
+              <Route exact path={PLAYLIST_ID_PAGE} component={CollectionPage} />
+
               <Route exact path={TRACK_PAGE} component={TrackPage} />
 
               <Route
@@ -741,6 +758,7 @@ class App extends Component {
                 isMobile={isMobileClient}
                 component={FollowersPage}
               />
+
               <Route
                 exact
                 path={PROFILE_PAGE}

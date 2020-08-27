@@ -23,8 +23,11 @@ export const UPDATE_MOST_USED_TAGS = 'PROFILE/UPDATE_MOST_USED_TAGS'
 export const SET_NOTIFICATION_SUBSCRIPTION =
   'PROFILE/SET_NOTIFICATION_SUBSCRIPTION'
 
+// Either handle or userId is required
+// TODO: Move this to redux toolkit
 export function fetchProfile(
   handle,
+  userId,
   forceUpdate,
   shouldSetLoading,
   deleteExistingEntry
@@ -32,6 +35,7 @@ export function fetchProfile(
   return {
     type: FETCH_PROFILE,
     handle,
+    userId,
     forceUpdate,
     shouldSetLoading,
     deleteExistingEntry

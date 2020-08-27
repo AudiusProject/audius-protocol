@@ -10,16 +10,16 @@ import {
   getSourceSelector as sourceSelector,
   getLineup
 } from 'containers/track-page/store/selectors'
-import { fetchUserByHandle } from 'store/cache/users/sagas'
+import { getUserFromTrack } from 'store/cache/users/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 import { processAndCacheTracks } from 'store/cache/tracks/utils'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { waitForValue } from 'utils/sagaHelpers'
 
 function* getTracks({ offset, limit, payload }) {
-  const { ownerHandle, trackId } = payload
+  const { trackId } = payload
 
-  const user = yield call(fetchUserByHandle, ownerHandle)
+  const user = yield select(getUserFromTrack, { id: trackId })
 
   const tracks = yield call(AudiusBackend.getArtistTracks, {
     offset,

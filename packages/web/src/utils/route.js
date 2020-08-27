@@ -57,6 +57,10 @@ export const ALBUM_PAGE = '/:handle/album/:albumName'
 export const TRACK_PAGE = '/:handle/:trackName'
 export const TRACK_REMIXES_PAGE = '/:handle/:trackName/remixes'
 export const PROFILE_PAGE = '/:handle'
+// Opaque id routes
+export const TRACK_ID_PAGE = '/tracks/:id'
+export const USER_ID_PAGE = '/users/:id'
+export const PLAYLIST_ID_PAGE = '/playlists/:id'
 
 // Mobile Only Routes
 export const REPOSTING_USERS_ROUTE = '/reposting_users'

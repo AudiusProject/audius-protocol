@@ -23,11 +23,12 @@ export const resetTrackPage = rank => ({ type: RESET })
 export const setTrackId = trackId => ({ type: SET_TRACK_ID, trackId })
 export const makeTrackPublic = trackId => ({ type: MAKE_TRACK_PUBLIC, trackId })
 
-export const fetchTrack = (trackId, trackName, ownerHandle) => ({
+export const fetchTrack = (trackId, trackName, ownerHandle, canBeUnlisted) => ({
   type: FETCH_TRACK,
   trackId,
   trackName,
-  ownerHandle
+  ownerHandle,
+  canBeUnlisted
 })
 export const fetchTrackSucceeded = trackId => ({
   type: FETCH_TRACK_SUCCEEDED,

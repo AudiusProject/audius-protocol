@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import { open } from 'store/application/ui/mobileOverflowModal/actions'
 import { connect } from 'react-redux'
 import { push as pushRoute, replace } from 'connected-react-router'
-import { matchPath } from 'react-router'
 import { AppState, Status } from 'store/types'
 import { Dispatch } from 'redux'
 
@@ -30,9 +29,11 @@ import {
   FAVORITING_USERS_ROUTE,
   REPOSTING_USERS_ROUTE,
   fullTrackPage,
-  trackRemixesPage
+  trackRemixesPage,
+  trackPage
 } from 'utils/route'
 import { formatUrlName } from 'utils/formatUtil'
+import { parseTrackRoute } from 'utils/route/trackRouteParser'
 import { ID, CID, PlayableType } from 'models/common/Identifiers'
 import { Uid } from 'utils/uid'
 import { getLocationPathname } from 'store/routing/selectors'
@@ -75,16 +76,8 @@ import StemsSEOHint from './components/StemsSEOHint'
 import { getTrackPageTitle, getTrackPageDescription } from 'utils/seo'
 import { formatSeconds, formatDate } from 'utils/timeUtil'
 import { getCannonicalName } from 'utils/genres'
-import restrictedHandles from 'utils/restrictedHandles'
 import Track from 'models/Track'
 import DeletedPage from 'containers/deleted-page/DeletedPage'
-
-export const parseIdFromRoute = (route: string) => {
-  const nameParts = route.split('-')
-  const trackTitle = nameParts.slice(0, nameParts.length - 1).join('-')
-  const trackId = parseInt(nameParts[nameParts.length - 1], 10)
-  return { trackTitle, trackId }
-}
 
 const getRemixParentTrackId = (track: Track | null) =>
   track?.remix_of?.tracks?.[0]?.parent_track_id
@@ -116,7 +109,7 @@ class TrackPageProvider extends Component<
     pathname: this.props.pathname,
     ownerHandle: null,
     showDeleteConfirmation: false,
-    routeKey: parseIdFromRoute(this.props.pathname).trackId,
+    routeKey: parseTrackRoute(this.props.pathname)?.trackId ?? 0,
     source: undefined
   }
 
@@ -129,9 +122,12 @@ class TrackPageProvider extends Component<
     if (status === Status.ERROR) {
       this.props.goToRoute(NOT_FOUND_PAGE)
     }
-    if (pathname !== this.state.pathname) {
-      this.setState({ pathname })
-      this.fetchTracks(pathname)
+    if (!isMobile()) {
+      // Refetch if the pathname changes because on desktop the component is shared
+      if (pathname !== this.state.pathname) {
+        this.setState({ pathname })
+        this.fetchTracks(pathname)
+      }
     }
 
     // Set the lineup source in state once it's set in redux
@@ -152,19 +148,28 @@ class TrackPageProvider extends Component<
       refetchTracksLinup()
     }
 
-    // Check that the track name hasn't changed. If so, update url.
     if (track) {
-      const match = matchPath<{ name: string; handle: string }>(pathname, {
-        path: '/:handle/:name',
-        exact: true
-      })
-      if (match) {
-        const { trackTitle, trackId } = parseIdFromRoute(match.params.name)
+      const params = parseTrackRoute(pathname)
+      if (params) {
+        // Check if we are coming from a non-canonical route and replace route if necessary.
+        const { trackTitle, trackId, handle } = params
         const newTrackTitle = formatUrlName(track.title)
-        if (track.track_id === trackId) {
-          if (newTrackTitle !== trackTitle) {
-            const newPath = pathname.replace(trackTitle, newTrackTitle)
+        if (!trackTitle || !handle) {
+          if (this.props.user) {
+            const newPath = trackPage(
+              this.props.user.handle,
+              newTrackTitle,
+              track.track_id
+            )
             this.props.replaceRoute(newPath)
+          }
+        } else {
+          // Check that the track name hasn't changed. If so, update url.
+          if (track.track_id === trackId) {
+            if (newTrackTitle !== trackTitle) {
+              const newPath = pathname.replace(trackTitle, newTrackTitle)
+              this.props.replaceRoute(newPath)
+            }
           }
         }
       }
@@ -172,7 +177,6 @@ class TrackPageProvider extends Component<
   }
 
   componentWillUnmount() {
-    this.props.reset(this.state.source)
     if (!isMobile()) {
       // Don't reset on mobile because there are two
       // track pages mounted at a time due to animations.
@@ -182,34 +186,32 @@ class TrackPageProvider extends Component<
 
   fetchTracks = (pathname: string) => {
     const { track } = this.props
-    const match = matchPath<{
-      handle: string
-      name: string
-    }>(pathname, {
-      path: '/:handle/:name',
-      exact: true
-    })
-    if (!match || restrictedHandles.has(match.params.handle)) return
-    const nameParts = match.params.name.split('-')
-    const ownerHandle = match.params.handle
-    const trackId = parseInt(nameParts[nameParts.length - 1], 10)
-    // Go to 404 if the track id isn't parsed correctly
-    if (isNaN(trackId)) {
-      this.props.goToRoute(NOT_FOUND_PAGE)
-      return
-    }
-    // Go to feed if the track is deleted
-    if (track && track.track_id === trackId) {
-      if (track._marked_deleted) {
-        this.props.goToRoute(FEED_PAGE)
-        return
+    const params = parseTrackRoute(pathname)
+    if (params) {
+      const { trackTitle, trackId, handle } = params
+
+      // Go to feed if the track is deleted
+      if (track && track.track_id === trackId) {
+        if (track._marked_deleted) {
+          this.props.goToRoute(FEED_PAGE)
+          return
+        }
       }
+      this.props.reset()
+      this.props.setTrackId(trackId)
+      this.props.fetchTrack(
+        trackId,
+        trackTitle,
+        handle,
+        !!(trackTitle && handle)
+      )
+      if (handle) {
+        this.setState({ ownerHandle: handle })
+      }
+    } else {
+      // Go to 404 if the track id isn't parsed correctly
+      this.props.goToRoute(NOT_FOUND_PAGE)
     }
-    this.props.reset()
-    this.props.setTrackId(trackId)
-    const trackName = nameParts.slice(0, nameParts.length - 1).join('-')
-    this.props.fetchTrack(trackId, trackName, ownerHandle)
-    this.setState({ ownerHandle })
   }
 
   onHeroPlay = (heroPlaying: boolean) => {
@@ -497,8 +499,20 @@ function makeMapStateToProps() {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    fetchTrack: (trackId: ID, trackName: string, ownerHandle: string) =>
-      dispatch(trackPageActions.fetchTrack(trackId, trackName, ownerHandle)),
+    fetchTrack: (
+      trackId: ID,
+      trackName: string | null,
+      ownerHandle: string | null,
+      canBeUnlisted: boolean
+    ) =>
+      dispatch(
+        trackPageActions.fetchTrack(
+          trackId,
+          trackName,
+          ownerHandle,
+          canBeUnlisted
+        )
+      ),
     setTrackId: (trackId: number) =>
       dispatch(trackPageActions.setTrackId(trackId)),
     resetTrackPage: () => dispatch(trackPageActions.resetTrackPage()),
