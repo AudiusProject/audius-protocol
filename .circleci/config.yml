@@ -25,6 +25,9 @@ jobs:
             cd mad-dog/
             git checkout dm-exit-code-ci
             cd ../
+            cd audius-protocol/
+            git checkout dm-link-dev-server
+            cd ../
       - run:
           name: execute
           command: |
@@ -555,6 +558,9 @@ workflows:
               ignore: /(^master$)|(.*?hotfix(.*)?)/
       - hold-test-mad-dog-e2e:
           type: approval
+          filters:
+            branches:
+              ignore: /(^master$)|(.*?mad-?dog(.*)?)/
       - test-mad-dog-e2e:
           requires:
             - hold-test-mad-dog-e2e
