@@ -550,10 +550,14 @@ workflows:
           filters:
             branches:
               ignore: /(^master$)|(.*?hotfix(.*)?)/
+      - hold-test-mad-dog-e2e:
+          type: approval
       - test-mad-dog-e2e:
+          requires:
+            - hold-test-mad-dog-e2e
           filters:
             branches:
-              only: /(^master$)|(.*?mad-?dog(.*)?)/
+              ignore: /(^master$)|(.*?mad-?dog(.*)?)/
 
 
 
@@ -624,6 +628,11 @@ workflows:
               only: /^@audius/creator-node@\d+\.\d+\.\d+/
             branches:
               only: /(^master$)|(.*?hotfix(.*)?)/
+      - test-mad-dog-e2e:
+          force: true
+          filters:
+            branches:
+              only: /(^master$)|(.*?mad-?dog(.*)?)/
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
