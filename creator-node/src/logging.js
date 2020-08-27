@@ -21,12 +21,15 @@ function requestNotExcludedFromLogging (url) {
 }
 
 function getRequestLoggingContext (req) {
+  req.startTime = process.hrtime()
   const requestID = shortid.generate()
+  const urlParts = req.url.split('?')
   return {
     requestID: requestID,
     requestMethod: req.method,
     requestHostname: req.hostname,
-    requestUrl: req.originalUrl,
+    requestUrl: urlParts[0],
+    requestQueryParams: urlParts.length > 1 ? urlParts[1] : undefined,
     requestWallet: req.get('user-wallet-addr'),
     requestBlockchainUserId: req.get('user-id')
   }
@@ -38,13 +41,6 @@ function loggingMiddleware (req, res, next) {
 
   req.logContext = getRequestLoggingContext(req)
   req.logger = logger.child(req.logContext)
-
-  res.on('finish', function () {
-    // header is set by response-time npm module, but it's only set
-    // when you're about to write headers, so that's why this is in
-    // finish event
-    req.logger.info('Request Duration', res.get('X-Response-Time'))
-  })
 
   if (requestNotExcludedFromLogging(req.originalUrl)) {
     req.logger.debug('Begin processing request')

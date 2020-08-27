@@ -50,12 +50,13 @@ def get_trending_tracks(args):
     time = args.get('time')
     # Identity understands allTime as millennium.
     # TODO: Change this in https://github.com/AudiusProject/audius-protocol/pull/768/files
+    query_time = time
     if time == 'allTime':
-        time = 'millennium'
+        query_time = 'millennium'
 
     with db.scoped_session() as session:
         trending_tracks = generate_trending(
-            get_db_read_replica(), time, args.get('genre', None),
+            get_db_read_replica(), query_time, args.get('genre', None),
             limit, offset)
 
         track_scores = [z(time, track) for track in trending_tracks['listen_counts']]

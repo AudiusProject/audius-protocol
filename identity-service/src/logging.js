@@ -22,11 +22,14 @@ function requestNotExcludedFromLogging (url) {
 
 function loggingMiddleware (req, res, next) {
   const requestID = shortid.generate()
+  const urlParts = req.url.split('?')
+  req.startTime = process.hrtime()
   req.logger = logger.child({
     requestID: requestID,
     requestMethod: req.method,
     requestHostname: req.hostname,
-    requestUrl: req.url.split('?')[0], // remove query params from request before logging
+    requestUrl: urlParts[0],
+    requestQueryParams: urlParts.length > 1 ? urlParts[1] : undefined,
     requestIP: req.ip
   })
   if (requestNotExcludedFromLogging(req.originalUrl)) {

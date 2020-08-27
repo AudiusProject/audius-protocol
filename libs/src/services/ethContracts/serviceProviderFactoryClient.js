@@ -180,6 +180,12 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return info
   }
 
+  // TODO: Remove this method after all consumers are using
+  // `getServiceEndpointInfo` directly
+  async getServiceProviderInfo (serviceType, serviceId) {
+    return this.getServiceEndpointInfo(serviceType, serviceId)
+  }
+
   async getServiceEndpointInfo (serviceType, serviceId) {
     const method = await this.getMethod('getServiceEndpointInfo',
       Utils.utf8ToHex(serviceType),
