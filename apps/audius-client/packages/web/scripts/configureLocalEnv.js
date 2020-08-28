@@ -4,6 +4,15 @@ const AUDIUS_ETH_CONFIG = '.audius/eth-config.json'
 const fs = require('fs')
 const path = require('path')
 const homeDir = require('os').homedir()
+
+let HOST = 'localhost'
+if (process.argv[2] && process.argv[2] === '--remote-host') {
+  HOST = process.env.AUDIUS_REMOTE_DEV_HOST
+  if (!HOST) {
+    throw new Error('Misconfigured local env. Ensure AUDIUS_REMOTE_DEV_HOST envvar has been exported.')
+  }
+}
+
 try {
   const configFile = require(path.join(homeDir, AUDIUS_CONFIG))
   const ethConfigFile = require(path.join(homeDir, AUDIUS_ETH_CONFIG))
@@ -11,15 +20,15 @@ try {
   const REACT_APP_ENVIRONMENT = 'development'
   const REACT_APP_DISCOVERY_PROVIDER_FALLBACKS =
     'http://audius-disc-prov_web-server_1:5000'
-  const REACT_APP_IDENTITY_SERVICE = 'http://localhost:7000'
+  const REACT_APP_IDENTITY_SERVICE = `http://${HOST}:7000`
   const REACT_APP_USER_NODE = 'http://cn1_creator-node_1:4000'
 
   const REACT_APP_REGISTRY_ADDRESS = configFile.registryAddress
   const REACT_APP_WEB3_PROVIDER_URLS =
-    'http://localhost:8545,http://localhost:8545'
+    `http://${HOST}:8545,http://${HOST}:8545`
 
   const REACT_APP_ETH_REGISTRY_ADDRESS = ethConfigFile.registryAddress
-  const REACT_APP_ETH_PROVIDER_URL = 'http://localhost:8546'
+  const REACT_APP_ETH_PROVIDER_URL = `http://${HOST}:8546`
   const REACT_APP_ETH_TOKEN_ADDRESS = ethConfigFile.audiusTokenAddress
   const REACT_APP_ETH_OWNER_WALLET = ethConfigFile.ownerWallet
 
