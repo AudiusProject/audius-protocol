@@ -90,9 +90,11 @@
   "main": "src/electron.js",
   "scripts": {
     "configure-local-env": "node ./scripts/configureLocalEnv.js",
+    "configure-local-env-cloud": "node ./scripts/configureLocalEnv.js --remote-host",
     "publish-scripts": "./scripts/publishScripts.sh",
     "start": "react-scripts start",
     "start:development": "npm run write-sha && npm run configure-local-env && npm run publish-scripts && env-cmd ./.env/.env.git npm start",
+    "start:development:cloud": "npm run write-sha && npm run configure-local-env-cloud && npm run publish-scripts && env-cmd ./.env/.env.git npm start",
     "start:staging": "npm run write-sha && npm run publish-scripts && env-cmd ./.env/.env.staging env-cmd ./.env/.env.git npm start",
     "start:production": "npm run write-sha && npm run publish-scripts && env-cmd ./.env/.env.prod env-cmd ./.env/.env.git npm start",
     "start:mobile-production": "env-cmd ./.env/.env.mobile npm run start:production",
