@@ -26,7 +26,7 @@
   "rateLimitingListensPerIPPerDay": 60,
   "rateLimitingListensPerTrackPerWeek": 120,
   "rateLimitingListensPerIPPerWeek": 180,
-  "rateLimitingListensIPWhitelist": "(.*192.168.*|ffff:172.19.0.14.*)",
+  "rateLimitingListensIPWhitelist": "(.*192.168.*|ffff:172.*)",
   "minimumBalance": 10,
   "ethProviderUrl": "http://audius_ganache_cli_eth_contracts:8545",
   "notificationDiscoveryProvider": "http://audius-disc-prov_web-server_1:5000",
