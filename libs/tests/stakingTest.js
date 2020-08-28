@@ -1,12 +1,15 @@
 const assert = require('assert')
 const nock = require('nock')
 const helpers = require('./helpers')
+const { time } = require('@openzeppelin/test-helpers')
 
 const audius0 = helpers.audiusInstance
 // const audiusConfig = helpers.audiusLibsConfig
 const initializeLibConfig = helpers.initializeLibConfig
 const ethContractsConfig = require('../eth-contracts/config.json')
-const AudiusLibs = require('../src/index')
+const AudiusLibs = require('../src/index');
+const { convertAudsToWeiBN } = require('../initScripts/helpers/utils');
+const { initial } = require('lodash')
 
 let token
 let ownerWallet
@@ -29,7 +32,6 @@ const assertThrows = async (blockOrPromise, expectedErrorCode, expectedReason) =
 
 const assertRevert = async (blockOrPromise, expectedReason) => {
   const error = await assertThrows(blockOrPromise, 'revert', expectedReason)
-  // console.log(error)
   if (!expectedReason) {
     return
   }
@@ -70,10 +72,18 @@ const testDeregisterSPEndpoint = async (libs, account, type) => {
 
 describe('Staking tests', () => {
   let testServiceType = 'discovery-provider'
+
   before(async function () {
     await audius0.init()
     token = audius0.ethContracts.AudiusTokenClient
     accounts = await audius0.ethWeb3Manager.getWeb3().eth.getAccounts()
+
+    // Set lockup durations to a small number so we can reach it
+    // in a reasonable test time
+    await audius0.ethContracts.GovernanceClient.setVotingPeriod(1)
+    await audius0.ethContracts.GovernanceClient.setExecutionDelay(0)
+    await audius0.ethContracts.ServiceProviderFactoryClient.updateDecreaseStakeLockupDuration(10)
+    await audius0.ethContracts.DelegateManagerClient.updateUndelegateLockupDuration(10)
 
     ownerWallet = accounts[0]
     sp1 = accounts[1]
@@ -95,17 +105,17 @@ describe('Staking tests', () => {
     await audius2.init()
 
     // Refund test accounts
-    await token.transfer(sp1, 1000)
-    await token.transfer(sp2, 1000)
+    await token.transfer(sp1, convertAudsToWeiBN(audius1.ethWeb3Manager.getWeb3(), 2000000))
+    await token.transfer(sp2, convertAudsToWeiBN(audius1.ethWeb3Manager.getWeb3(), 2000000))
+
   })
 
   beforeEach(async () => {
     try {
-      // Deregister any previously registered endpoints
       await testDeregisterSPEndpoint(audius1, sp1, testServiceType)
       await testDeregisterSPEndpoint(audius2, sp2, testServiceType)
     } catch (e) {
-      // console.log(`benign error: ${e}`)
+      // no-op -- was already registered
     }
   })
 
@@ -141,16 +151,9 @@ describe('Staking tests', () => {
     let initialSPBalance
     let testEndpt
     let testEndpt2
-    let defaultStake = 200
-    let initialStake = 0
+    let initialStake
+    let defaultStake
 
-    /* TODO: fix tests;
-      note subsequent tests after the first it() test may rreturn
-      error message: 
-        Error: Returned error: VM Exception while processing transaction: revert Account already has an endpoint registered.
-
-      beforeEach() setup is failing the register() call
-    */
     beforeEach(async () => {
 
       // Clear any accounts registered w/the audius1 account
@@ -174,6 +177,7 @@ describe('Staking tests', () => {
 
       // Cache stake amount prior to register
       initialStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
+      defaultStake = convertAudsToWeiBN(audius1.ethWeb3Manager.getWeb3(), 210000)
 
       // Register
       let tx = await audius1.ethContracts.ServiceProviderFactoryClient.register(
@@ -181,142 +185,139 @@ describe('Staking tests', () => {
         testEndpt,
         defaultStake
       )
-      // TOOD: validate tx
-      // console.dir(tx, {depth:5})
     })
 
-    // it('register service provider + stake', async function () {
-    //   assert.equal(
-    //     initialSPBalance - defaultStake,
-    //     await token.balanceOf(sp1),
-    //     'Expect decrease in bal')
-    //   assert.equal(
-    //     await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1),
-    //     initialStake + defaultStake,
-    //     'Expect increase in stake')
-    // })
+    it('register service provider + stake', async function () {
+      const newBalance = await token.balanceOf(sp1)
+      const expectedNewBalance = initialSPBalance.sub(defaultStake)
+      assert(
+        newBalance.eq(expectedNewBalance),
+        'Expect decrease in bal'
+      )
 
-    // subsequent tests will fail
+      const staked = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
+      const expectedStaked = initialStake.add(defaultStake)
+      assert(
+        staked.eq(expectedStaked),
+        'Expect increase in stake'
+      )
+    })
 
-    // it('increases service provider stake', async function () {
-    //   let preIncreaseBalance = await token.balanceOf(sp1)
-    //   let preIncreaseStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
-    //   let tx = await audius1.ethContracts.ServiceProviderFactoryClient.increaseStake(
-    //     testServiceType,
-    //     testEndpt,
-    //     defaultStake)
-    //   //console.dir(tx, {depth:5})
+    it('increases service provider stake', async function () {
+      let preIncreaseBalance = await token.balanceOf(sp1)
+      let preIncreaseStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
+      let tx = await audius1.ethContracts.ServiceProviderFactoryClient.increaseStake(defaultStake)
 
-    //   assert.equal(
-    //     preIncreaseBalance - defaultStake,
-    //     await token.balanceOf(sp1),
-    //     'Expect decrease in balance')
-    //   assert.equal(
-    //     preIncreaseStake + defaultStake,
-    //     await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1),
-    //     'Expect increase in stake')
+      const newBalance = await token.balanceOf(sp1)
+      const expectedBalance = preIncreaseBalance.sub(defaultStake)
+      assert(
+        newBalance.eq(expectedBalance),
+        'Expect decrease in balance'
+      )
+      const totalStaked = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
+      const expectedStaked = preIncreaseStake.add(defaultStake)
+      assert(
+        totalStaked.eq(expectedStaked),
+        'Expect increase in stake'
+      )
 
-    //   // Confirm revert occurred for incorrect owner
-    //   assertRevert(
-    //     audius2.ethContracts.ServiceProviderFactoryClient.increaseStake(
-    //       testServiceType,
-    //       testEndpt,
-    //       defaultStake),
-    //       "incorrect owner")
-    //   let tx2 = await audius1.ethContracts.ServiceProviderFactoryClient.increaseStake(
-    //     testServiceType,
-    //     testEndpt,
-    //     defaultStake)
-    //   //console.dir(tx2, {depth: 5})
-    // })
+      // Confirm revert occurred for incorrect owner
+      assertRevert(
+        audius2.ethContracts.ServiceProviderFactoryClient.increaseStake(
+          defaultStake
+        ),
+        'incorrect owner'
+      )
+    })
 
-    // it('decreases service provider stake', async () => {
-    //   let preDecreaseBal = await token.balanceOf(sp1)
-    //   let preDecreaseStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
-    //   let decreaseAmount = defaultStake / 2
-    //   let tx = await audius1.ethContracts.ServiceProviderFactoryClient.decreaseStake(
-    //     testServiceType,
-    //     testEndpt,
-    //     decreaseAmount)
+    it('decreases service provider stake', async () => {
+      const preDecreaseBal = await token.balanceOf(sp1)
+      const preDecreaseStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
 
-    //   assert.equal(
-    //     preDecreaseBal + decreaseAmount,
-    //     await token.balanceOf(sp1),
-    //     'Expect increase in balance')
-    //   assert.equal(
-    //     preDecreaseStake - decreaseAmount,
-    //     await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1),
-    //     'Expect decrease in stake')
+      const decreaseAmount = audius1.ethWeb3Manager.getWeb3().utils.toBN(10000)
 
-    //   assertRevert(
-    //     audius2.ethContracts.ServiceProviderFactoryClient.decreaseStake(
-    //       testServiceType,
-    //       testEndpt,
-    //       decreaseAmount),
-    //     'incorrect owner')
+      const lockupExpiryBlock = await audius1.ethContracts.ServiceProviderFactoryClient.requestDecreaseStake(
+        decreaseAmount
+      )
+      await time.advanceBlockTo(lockupExpiryBlock)
 
-    //   let currentStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
-    //   // Configure amount greater than current stake to try and decrease
-    //   let invalidDecreaseAmount = currentStake + 10
-    //   assertRevert(
-    //     audius1.ethContracts.ServiceProviderFactoryClient.decreaseStake(
-    //       testServiceType,
-    //       testEndpt,
-    //       invalidDecreaseAmount),
-    //     'subtraction overflow'
-    //   )
-    // })
+      await audius1.ethContracts.ServiceProviderFactoryClient.decreaseStake(
+        lockupExpiryBlock
+      )
 
-    // it('deregisters service provider + recover stake', async function () {
-    //   assert.equal(
-    //     initialSPBalance - defaultStake,
-    //     await token.balanceOf(sp1),
-    //     'Expect decrease in bal')
+      const newBalance = await token.balanceOf(sp1)
+      const expectedBalance = preDecreaseBal.add(decreaseAmount)
+      assert(
+        newBalance.eq(expectedBalance),
+        'Expect increase in balance'
+      )
 
-    //   let preDeregisterStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
-    //   nock(testEndpt)
-    //     .get('/version')
-    //     .reply(200, {
-    //       service: testServiceType,
-    //       version: '0.0.1'
-    //     })
+      const totalStaked = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
+      const expectedStaked = preDecreaseStake.sub(decreaseAmount)
+      assert(
+        totalStaked.eq(expectedStaked),
+        'Expect decrease in stake'
+      )
 
-    //   let tx = await audius1.ethContracts.ServiceProviderFactoryClient.deregister(
-    //     testServiceType,
-    //     testEndpt)
-    //   // console.dir(tx, {depth:5})
+      assertRevert(
+        audius2.ethContracts.ServiceProviderFactoryClient.decreaseStake(
+          decreaseAmount
+        ),
+        'incorrect owner'
+      )
 
-    //   assert.equal(
-    //     initialSPBalance,
-    //     await token.balanceOf(sp1),
-    //     'Expect stake returned after deregistration')
+      const currentStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
+      // Configure amount greater than current stake to try and decrease
+      const increaseAmt = audius1.ethWeb3Manager.getWeb3().utils.toBN(10)
+      const invalidDecreaseAmount = currentStake.add(increaseAmt)
+      assertRevert(
+        audius1.ethContracts.ServiceProviderFactoryClient.decreaseStake(
+          invalidDecreaseAmount
+        ),
+        'subtraction overflow'
+      )
+    })
 
-    //   assert.equal(
-    //     preDeregisterStake - defaultStake,
-    //     await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1),
-    //     'Expect decrease in stake after deregistration')
-    // })
+    it('deregisters service provider + recover stake', async function () {
+      const initialBalance = await token.balanceOf(sp1)
+      const preDeregisterStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
 
-    // it('funds new claim', async function () {
-    //   let treasuryAddress = ownerWallet
-    //   let stakedTreasuryBalance = await audius0.ethContracts.StakingProxyClient.totalStakedFor(treasuryAddress)
-    //   assert.strictEqual(
-    //     stakedTreasuryBalance,
-    //     0,
-    //     'no treasury bal expected')
-    //   let initialClaimAmount = 100000
-    //   let tx = await audius0.ethContracts.StakingProxyClient.fundNewClaim(initialClaimAmount)
-    //   assert.strictEqual(
-    //     await audius1.ethContracts.StakingProxyClient.totalStakedFor(treasuryAddress),
-    //     initialClaimAmount,
-    //     'Expect all claim funds in treasury')
-    //   let initialSP1Stake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
-    //   let claimTx = await audius1.ethContracts.StakingProxyClient.makeClaim()
-    //   assert.strictEqual(
-    //     await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1),
-    //     initialSP1Stake + initialClaimAmount,
-    //     'Expect full claim transfer to sp1')
-    // })
+      nock(testEndpt)
+        .get('/version')
+        .reply(200, {
+          service: testServiceType,
+          version: '0.0.1'
+      })
+
+      const tx = await audius1.ethContracts.ServiceProviderFactoryClient.deregister(
+        testServiceType,
+        testEndpt
+      )
+
+      const lockupExpiryBlock = await audius1.ethContracts.ServiceProviderFactoryClient.getLockupExpiry(
+        audius1.ethWeb3Manager.getWalletAddress()
+      )
+
+      await time.advanceBlockTo(lockupExpiryBlock)
+
+      await audius1.ethContracts.ServiceProviderFactoryClient.decreaseStake(
+        lockupExpiryBlock
+      )
+
+      const newBalance = await token.balanceOf(sp1)
+      const expectedBalance = initialBalance.add(preDeregisterStake)
+      assert(
+        newBalance.eq(expectedBalance),
+        'Expect stake returned after deregistration'
+      )
+
+      const totalStaked = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
+      const expectedStaked = preDeregisterStake.sub(defaultStake)
+      assert(
+        totalStaked.isZero(),
+        'Expect decrease in stake after deregistration'
+      )
+    })
   })
 })
 
