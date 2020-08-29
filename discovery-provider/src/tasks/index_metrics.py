@@ -8,7 +8,7 @@ from src.utils.redis_metrics import metrics_prefix, metrics_application, \
 logger = logging.getLogger(__name__)
 
 
-def process_route_keys(session, redis, key, date):
+def process_route_keys(session, redis, key, ip, date):
     """
     For a redis hset storing a mapping of routes to the number of times they are hit,
     parse each key out into the version, path, and query string.
@@ -43,6 +43,7 @@ def process_route_keys(session, redis, key, date):
                     route_path=path,
                     query_string=query_string,
                     count=val,
+                    ip=ip,
                     timestamp=date
                 )
             )
@@ -51,10 +52,9 @@ def process_route_keys(session, redis, key, date):
             session.bulk_save_objects(route_metrics)
         redis.delete(key)
     except Exception as e:
-        logger.error(
-            "Error processing route key %s with error %s", key, e.message)
+        raise Exception("Error processing route key %s with error %s", key, e)
 
-def process_app_name_keys(session, redis, key, date):
+def process_app_name_keys(session, redis, key, ip, date):
     """
     For a redis hset storing a mapping of app_name usage in request parameters to count,
     Create a new entry in the DB for each app_name.
@@ -70,6 +70,7 @@ def process_app_name_keys(session, redis, key, date):
                 AppNameMetrics(
                     application_name=app_name,
                     count=val,
+                    ip=ip,
                     timestamp=date
                 )
             )
@@ -78,8 +79,7 @@ def process_app_name_keys(session, redis, key, date):
         redis.delete(key)
 
     except Exception as e:
-        logger.error(
-            "Error processing app name key %s with error %s", key, e.message)
+        raise Exception("Error processing app name key %s with error %s", key, e)
 
 def sweep_metrics(db, redis):
     """
@@ -92,21 +92,26 @@ def sweep_metrics(db, redis):
     with db.scoped_session() as session:
         for key_byte in redis.scan_iter(f"{metrics_prefix}:*"):
             key = key_byte.decode("utf-8")
-            parsed_key = parse_metrics_key(key)
+            try:
+                parsed_key = parse_metrics_key(key)
 
-            if parsed_key is None:
-                logger.warning(
-                    f"index_metrics.py | Unable to parse key {key} | Skipping process key")
-                continue
-            source, key_date = parsed_key
+                if parsed_key is None:
+                    raise KeyError(f"index_metrics.py | Unable to parse key {key} | Skipping process key")
+                source, ip, key_date = parsed_key
 
-            current_date_time = get_rounded_date_time()
+                current_date_time = get_rounded_date_time()
 
-            if key_date < current_date_time:
-                if source == metrics_routes:
-                    process_route_keys(session, redis, key, key_date)
-                elif source == metrics_application:
-                    process_app_name_keys(session, redis, key, key_date)
+                if key_date: # < current_date_time:
+                    if source == metrics_routes:
+                        process_route_keys(session, redis, key, ip, key_date)
+                    elif source == metrics_application:
+                        process_app_name_keys(session, redis, key, ip, key_date)
+            except KeyError as e:
+                logger.warn(e)
+                redis.delete(key)
+            except Exception as e:
+                logger.error(e)
+                redis.delete(key)
 
 ######## CELERY TASK ########
 
@@ -138,7 +143,7 @@ def update_metrics(self):
                 f"index_metrics.py | update_metrics | {self.request.id} | Failed to acquire update_metrics_lock")
     except Exception as e:
         logger.error(
-            "Fatal error in main loop of update_metrics: %s", e.message, exc_info=True)
+            "Fatal error in main loop of update_metrics: %s", e, exc_info=True)
         raise e
     finally:
         if have_lock:
