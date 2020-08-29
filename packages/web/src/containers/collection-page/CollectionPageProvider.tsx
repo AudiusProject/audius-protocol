@@ -223,7 +223,7 @@ class CollectionPage extends Component<
         const newCollectionName = formatUrlName(metadata.playlist_name)
 
         const routeLacksCollectionInfo =
-          (!title || !handle || !collectionType) && user
+          (title === null || handle === null || collectionType === null) && user
         if (routeLacksCollectionInfo) {
           // Check if we are coming from a non-canonical route and replace route if necessary.
           const newPath = metadata.is_album
