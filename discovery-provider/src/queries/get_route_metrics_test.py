@@ -26,16 +26,14 @@ def populate_mock_db(db, date):
         'ip': '192.168.0.1',
         'count': 4,
         'timestamp': date
-    },
-    {
+    }, {
         'version': '1',
         'route_path': 'tracks/some_hash',
         'query_string': '',
         'ip': '192.168.0.2',
         'count': 2,
         'timestamp': date
-    }
-    ]
+    }]
 
     RouteMetrics.__table__.create(db._engine)
 

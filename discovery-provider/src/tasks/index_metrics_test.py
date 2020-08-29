@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
+from sqlalchemy import func
 from src.models import RouteMetrics, AppNameMetrics
 from src.tasks.index_metrics import process_route_keys, \
     process_app_name_keys, sweep_metrics
 from src.utils.redis_metrics import datetime_format
-from sqlalchemy import func
 
 
 def test_process_route_keys(redis_mock, db_mock):
@@ -120,7 +120,7 @@ def test_sweep_metrics(redis_mock, db_mock):
     before_date = (date + timedelta(hours=-1))
     after_date = (date + timedelta(hours=1))
 
-    ip='192.168.0.1'
+    ip = '192.168.0.1'
     current = date.strftime(datetime_format)
     before = before_date.strftime(datetime_format)
     after = after_date.strftime(datetime_format)
@@ -162,4 +162,6 @@ def test_sweep_metrics(redis_mock, db_mock):
     keys = redis_mock.keys(f'API_METRICS:applications:*')
     key_strs = [key_byte.decode("utf-8") for key_byte in keys]
 
-    assert len(keys) == 0
+    assert len(keys) == 2
+    assert currentKey in key_strs
+    assert afterKey in key_strs
