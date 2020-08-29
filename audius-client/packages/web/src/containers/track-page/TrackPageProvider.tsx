@@ -154,7 +154,7 @@ class TrackPageProvider extends Component<
         // Check if we are coming from a non-canonical route and replace route if necessary.
         const { trackTitle, trackId, handle } = params
         const newTrackTitle = formatUrlName(track.title)
-        if (!trackTitle || !handle) {
+        if (trackTitle === null || handle === null) {
           if (this.props.user) {
             const newPath = trackPage(
               this.props.user.handle,
