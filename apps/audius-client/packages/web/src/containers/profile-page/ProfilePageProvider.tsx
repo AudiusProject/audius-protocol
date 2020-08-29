@@ -172,7 +172,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       const params = parseUserRoute(pathname)
       if (params) {
         const { handle } = params
-        if (!handle) {
+        if (handle === null) {
           const newPath = profilePage(profile.profile.handle)
           this.props.replaceRoute(newPath)
         }
