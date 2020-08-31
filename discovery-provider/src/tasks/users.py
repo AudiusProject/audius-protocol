@@ -35,6 +35,7 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
     for tx_receipt in user_factory_txs:
         for event_type in user_event_types_arr:
             user_events_tx = getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
+            processedEntries = 0 # if record does not get added, do not count towards num_total_changes
             for entry in user_events_tx:
                 user_id = entry["args"]._userId
 
@@ -63,8 +64,9 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
                 if user_record is not None:
                     user_events_lookup[user_id]["events"].append(event_type)
                     user_events_lookup[user_id]["user"] = user_record
+                    processedEntries += 1
 
-            num_total_changes += len(user_events_tx)
+            num_total_changes += processedEntries
 
     # for each record in user_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx

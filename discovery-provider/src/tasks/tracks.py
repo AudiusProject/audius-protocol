@@ -36,6 +36,7 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
     for tx_receipt in track_factory_txs:
         for event_type in track_event_types_arr:
             track_events_tx = getattr(track_contract.events, event_type)().processReceipt(tx_receipt)
+            processedEntries = 0 # if record does not get added, do not count towards num_total_changes
             for entry in track_events_tx:
                 event_args = entry["args"]
                 track_id = event_args._trackId if '_trackId' in event_args else event_args._id
@@ -64,8 +65,9 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
                 if parsed_track is not None:
                     track_events[track_id]["events"].append(event_type)
                     track_events[track_id]["track"] = parsed_track
+                    processedEntries += 1
 
-            num_total_changes += len(track_events_tx)
+            num_total_changes += processedEntries
 
     for track_id, value_obj in track_events.items():
         if value_obj['events']:
@@ -191,7 +193,6 @@ def parse_track_event(
 
         track_record.is_delete = False
 
-        # TODO: wrap in try/execpt to catch errors thrown, then add CID to blacklist
         track_metadata = update_task.ipfs_client.get_metadata(
             track_metadata_multihash,
             track_metadata_format
