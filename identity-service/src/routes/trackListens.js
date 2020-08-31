@@ -204,7 +204,8 @@ const getTrendingTracks = async (
 module.exports = function (app) {
   app.post('/tracks/:id/listen', handleResponse(async (req, res) => {
     const trackId = parseInt(req.params.id)
-    if (!req.body.userId || !trackId) {
+    const userId = req.body.userId
+    if (!userId || !trackId) {
       return errorResponseBadRequest('Must include user id and valid track id')
     }
     let currentHour = await getListenHour()
@@ -217,12 +218,13 @@ module.exports = function (app) {
     }
     await models.TrackListenCount.increment('listens', { where: { hour: currentHour, trackId: req.params.id } })
 
-    // The client will send a randomly generated UUID for anonymous users.
+    // Clients will send a randomly generated string UUID for anonymous users.
     // Those listened should NOT be recorded in the userTrackListen table
-    if (!isNaN(req.body.userId)) {
+    const isRealUser = typeof userId === 'number'
+    if (isRealUser) {
       // Find / Create the record of the user listening to the track
       const [userTrackListenRecord, created] = await models.UserTrackListen
-        .findOrCreate({ where: { userId: req.body.userId, trackId } })
+        .findOrCreate({ where: { userId, trackId } })
 
       // If the record was not created, updated the timestamp
       if (!created) {
