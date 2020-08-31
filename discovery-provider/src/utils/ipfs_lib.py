@@ -130,7 +130,6 @@ class IPFSClient:
         )
 
     def get_metadata_from_ipfs_node(self, multihash, metadata_format):
-
         try:
             res = self.cat(multihash)
             resp_val = json.loads(res)
