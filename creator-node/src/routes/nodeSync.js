@@ -265,6 +265,12 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
             transaction: t
           })
           req.logger.info(redisKey, `numNonTrackFilesDeleted ${numNonTrackFilesDeleted}`)
+
+          // Delete cnodeUser entry
+          await cnodeUser.destroy({
+            transaction: t
+          })
+          req.logger.info(redisKey, `deleted cnodeUserEntry`)
         }
 
         /* Populate all new data for fetched cnodeUser. */
@@ -279,7 +285,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           lastLogin: fetchedCNodeUser.lastLogin,
           clock: fetchedCNodeUser.clock
         }, { transaction: t })
-        req.logger.info(redisKey, `upserted nodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)
+        req.logger.info(redisKey, `Inserted nodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)
 
         // Make list of all track Files to add after track creation.
 
