@@ -330,13 +330,13 @@ const config = convict({
   pgConnectionPoolMin: {
     doc: 'The max count for the pool of connections',
     format: 'nat',
-    default: 50,
+    default: 5,
     env: 'pgConnectionPoolMin'
   },
   pgConnectionPoolMax: {
     doc: 'The minimum count for the pool of connections',
     format: 'nat',
-    default: 5,
+    default: 50,
     env: 'pgConnectionPoolMax'
   },
   pgConnectionPoolAcquireTimeout: {
