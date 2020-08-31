@@ -22,8 +22,6 @@ jobs:
             mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
             git clone git@github.com:AudiusProject/audius-tooling.git
             git clone git@github.com:AudiusProject/mad-dog.git
-            cd /home/circleci/project/
-            git checkout dm-link-dev-server
       - run:
           name: execute
           command: |
