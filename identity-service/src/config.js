@@ -326,6 +326,32 @@ const config = convict({
     format: String,
     default: 'development',
     env: 'environment'
+  },
+  pgConnectionPoolMin: {
+    doc: 'The max count for the pool of connections',
+    format: 'nat',
+    default: 50,
+    env: 'pgConnectionPoolMin'
+  },
+  pgConnectionPoolMax: {
+    doc: 'The minimum count for the pool of connections',
+    format: 'nat',
+    default: 5,
+    env: 'pgConnectionPoolMax'
+  },
+  pgConnectionPoolAcquireTimeout: {
+    doc:
+      'The maximum time (ms) the pool will try to get the connection before throwing an error',
+    format: 'nat',
+    default: 60000,
+    env: 'pgConnectionPoolAcquireTimeout'
+  },
+  pgConnectionPoolIdleTimeout: {
+    doc:
+      'The maximum time (ms) that a connection can be idle before being released',
+    format: 'nat',
+    default: 10000,
+    env: 'pgConnectionPoolIdleTimeout'
   }
 })
 
@@ -340,10 +366,10 @@ if (defaultConfigExists) config.loadFile('default-config.json')
 if (fs.existsSync('eth-contract-config.json')) {
   let ethContractConfig = require('../eth-contract-config.json')
   config.load({
-    'ethTokenAddress': ethContractConfig.audiusTokenAddress,
-    'ethRegistryAddress': ethContractConfig.registryAddress,
-    'ethOwnerWallet': ethContractConfig.ownerWallet,
-    'ethWallets': ethContractConfig.allWallets
+    ethTokenAddress: ethContractConfig.audiusTokenAddress,
+    ethRegistryAddress: ethContractConfig.registryAddress,
+    ethOwnerWallet: ethContractConfig.ownerWallet,
+    ethWallets: ethContractConfig.allWallets
   })
 }
 
