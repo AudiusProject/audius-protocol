@@ -220,7 +220,7 @@ module.exports = function (app) {
     let idleConnections = null
 
     // Get number of open DB connections
-    let numConnectionsQuery = await sequelize.query("SELECT numbackends from pg_stat_database where datname = 'audius_identity_service'")
+    const numConnectionsQuery = await sequelize.query("SELECT numbackends from pg_stat_database where datname = 'audius_identity_service'")
     if (numConnectionsQuery && numConnectionsQuery[0] && numConnectionsQuery[0][0] && numConnectionsQuery[0][0].numbackends) {
       numConnections = numConnectionsQuery[0][0].numbackends
     }
