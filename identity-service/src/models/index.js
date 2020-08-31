@@ -13,10 +13,10 @@ const sequelize = new Sequelize(globalConfig.get('dbUrl'), {
   logging: false,
   operatorsAliases: false,
   pool: {
-    max: 50,
-    min: 5,
-    acquire: 60000,
-    idle: 10000
+    max: globalConfig.get('pgConnectionPoolMax'),
+    min: globalConfig.get('pgConnectionPoolMin'),
+    acquire: globalConfig.get('pgConnectionPoolAcquireTimeout'),
+    idle: globalConfig.get('pgConnectionPoolIdleTimeout')
   }
 })
 
