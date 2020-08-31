@@ -3,8 +3,9 @@ const { logger } = require('./logging')
 const utils = require('./utils')
 const config = require('./config.js')
 
-// TODO: Come up with a distinct name for this
-class StateMachine {
+// Snap back state machine
+// Ensures file availability through sync and user replica operations
+class SnapbackSM {
   constructor (audiusLibs) {
     this.stateMachineQueue = new Bull(
       'creator-node-state-machine',
@@ -148,4 +149,4 @@ class StateMachine {
   }
 }
 
-module.exports = StateMachine
+module.exports = SnapbackSM
