@@ -3,6 +3,7 @@ const { logger } = require('./logging')
 const utils = require('./utils')
 const config = require('./config.js')
 const axios = require('axios')
+const models = require('./models')
 
 // Snap back state machine
 // Ensures file availability through sync and user replica operations
@@ -135,9 +136,9 @@ class SnapbackSM {
     let nodeList = Object.keys(nodesInfo)
     await Promise.all(nodeList.map(async (nodeId)=> {
       logger.info('------------------Process cshared rSet------------------')
-      logger.info(nodeId)
+      // logger.info(nodeId)
       let targetNodeInfo = nodesInfo[nodeId]
-      logger.info(`targeting ${JSON.stringify(targetNodeInfo)}`)
+      // logger.info(`targeting ${JSON.stringify(targetNodeInfo)}`)
       // Users shared with remote creator node
       let sharedUsers = sharedRsets[nodeId]
       // Calculate users for which this node is primary
@@ -150,7 +151,7 @@ class SnapbackSM {
       // handle users for which this node is primary
       // logger.info(`Current primary users shared with node ${nodeId}`)
       // logger.info(cnodePrimaryUsers)
-      await cnodePrimaryUsers.map(async (user)=> {
+      await Promise.all(cnodePrimaryUsers.map(async (user)=> {
         let walletPublicKey = user.wallet
         logger.info(`Sending clock request to ${nodeId} - ${targetNodeInfo.endpoint} for user ${walletPublicKey}`)
         let requestParams = {
@@ -159,14 +160,20 @@ class SnapbackSM {
           url: `/users/clock_status/${walletPublicKey}`,
           responseType: 'json'
         }
-        logger.info(requestParams)
         // TODO: Hit axios route
         let resp = await axios(requestParams)
-        logger.info(`----`)
-        logger.info(resp.data)
         let secondaryClockValue = resp.data.clockValue
-        logger.info(`From ${targetNodeInfo.endpoint} - clock request resp= clockVal: ${secondaryClockValue} for user ${walletPublicKey}`)
+        const cnodeUser = await models.CNodeUser.findOne({ where: { walletPublicKey } })
+        let primaryClockValue = cnodeUser.clock
+        logger.info(`USER ${walletPublicKey} | primary=${spInfo.spID} secondaryInfo=${targetNodeInfo.spID} primaryClock=${primaryClockValue}, secondaryClock=${secondaryClockValue}`)
+        if (primaryClockValue >= secondaryClockValue) {
+          logger.info(`USER ${walletPublicKey} | No SYNC REQUIRED BETWEEN primary=${spInfo.spID} secondaryInfo=${targetNodeInfo.spID} primaryClock=${primaryClockValue}, secondaryClock=${secondaryClockValue}`)
+
+        } else {
+          logger.info(`USER ${walletPublicKey} | SYNC REQUIRED BETWEEN primary=${spInfo.spID} secondaryInfo=${targetNodeInfo.spID} primaryClock=${primaryClockValue}, secondaryClock=${secondaryClockValue}`)
+        }
       })
+      )
 
 
       // TODO: Non-primary operations will include reconfiguration/etc
