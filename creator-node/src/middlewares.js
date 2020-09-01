@@ -154,6 +154,8 @@ async function ensurePrimaryMiddleware (req, res, next) {
  * @dev - Is not a middleware so it can be run before responding to client.
  */
 async function triggerSecondarySyncs (req) {
+  return
+  /*
   if (config.get('isUserMetadataNode')) return
   try {
     if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) return
@@ -176,6 +178,7 @@ async function triggerSecondarySyncs (req) {
   } catch (e) {
     req.logger.error(`Trigger secondary syncs ${req.session.wallet}`, e.message)
   }
+  */
 }
 
 /** Retrieves current FQDN registered on-chain with node's owner wallet. */

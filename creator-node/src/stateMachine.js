@@ -9,6 +9,7 @@ const models = require('./models')
 // Ensures file availability through sync and user replica operations
 class SnapbackSM {
   constructor (audiusLibs) {
+    // State machine queue processes all users
     this.stateMachineQueue = new Bull(
       'creator-node-state-machine',
       {
@@ -77,11 +78,11 @@ class SnapbackSM {
 
     // 3.) Determine list of nodes that share replica sets with this node
     //     This includes all distinct nodes that are part of the list of cnodeUsers returned above
-    let nodeList = { } // Will be converted into array
+    let nodesInfoMap = { } // Will be converted into array
     let sharedRsets = { } // nodeId -> [rSets]
 
     // TODO: Evaluate thread safety?
-    // What happens in the case of parallel updates to nodeList?
+    // What happens in the case of parallel updates to nodesInfoMap?
     await Promise.all(
       cnodeUsers.map(async (user) => {
         const primary = user.primary
@@ -89,30 +90,29 @@ class SnapbackSM {
 
         // Append replica_set value
         user.replica_set = [primary].concat(secondaries)
-        logger.info()
 
-        // Check if primary spID exists in nodeList, if not add to object
+        // Check if primary spID exists in nodesInfoMap, if not add to object
         // Exclude own spID
-        if (!nodeList[primary] && primary !== spInfo.spID) {
+        if (!nodesInfoMap[primary] && primary !== spInfo.spID) {
           // TODO: How will we pay for this / account for eth network latency IRL?
           let serviceEndpointInfo = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('creator-node', primary)
           // In this case, current node is a secondary
           // Why? The primary stored on chain is not equal to the configured spID for this creator-node
-          nodeList[primary] = serviceEndpointInfo
+          nodesInfoMap[primary] = serviceEndpointInfo
         }
         if (!sharedRsets[primary]) {
           sharedRsets[primary] = []
         }
         sharedRsets[primary].push(user)
 
-        // Check if secondary spIDs exist in nodeList, if not add to object
+        // Check if secondary spIDs exist in nodesInfoMap, if not add to object
         for (const secondary of secondaries) {
           if (secondary === spInfo.spID) {
             continue
           }
-          if (!nodeList[secondary]) {
+          if (!nodesInfoMap[secondary]) {
             let serviceEndpointInfo = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('creator-node', secondary)
-            nodeList[secondary] = serviceEndpointInfo
+            nodesInfoMap[secondary] = serviceEndpointInfo
           }
           if (!sharedRsets[secondary]) {
             // TODO: Evaluate thread safety?
@@ -123,21 +123,21 @@ class SnapbackSM {
       })
     )
 
-    // At this point, nodeList and sharedRsets are ready for further processing
-    logger.info('--nodeList--')
-    logger.info(nodeList)
+    // At this point, nodesInfoMap and sharedRsets are ready for further processing
+    logger.info('--nodesInfoMap--')
+    logger.info(nodesInfoMap)
     logger.info('--sharedRsets--')
     // logger.info(sharedRsets)
-    await this.processSharedRsets(spInfo, nodeList, sharedRsets)
+    await this.processSharedRsets(spInfo, nodesInfoMap, sharedRsets)
     logger.info('------------------END Process state machine operation------------------')
   }
 
-  async processSharedRsets(spInfo, nodesInfo, sharedRsets) {
-    let nodeList = Object.keys(nodesInfo)
+  async processSharedRsets(spInfo, nodeInfoMap, sharedRsets) {
+    let nodeList = Object.keys(nodeInfoMap)
     await Promise.all(nodeList.map(async (nodeId)=> {
-      logger.info('------------------Process cshared rSet------------------')
+      logger.info('------------------Process shared rSet------------------')
       // logger.info(nodeId)
-      let targetNodeInfo = nodesInfo[nodeId]
+      let targetNodeInfo = nodeInfoMap[nodeId]
       // logger.info(`targeting ${JSON.stringify(targetNodeInfo)}`)
       // Users shared with remote creator node
       let sharedUsers = sharedRsets[nodeId]
@@ -151,35 +151,52 @@ class SnapbackSM {
       // handle users for which this node is primary
       // logger.info(`Current primary users shared with node ${nodeId}`)
       // logger.info(cnodePrimaryUsers)
-      await Promise.all(cnodePrimaryUsers.map(async (user)=> {
-        let walletPublicKey = user.wallet
-        logger.info(`Sending clock request to ${nodeId} - ${targetNodeInfo.endpoint} for user ${walletPublicKey}`)
-        let requestParams = {
-          method: 'get',
-          baseURL: targetNodeInfo.endpoint,
-          url: `/users/clock_status/${walletPublicKey}`,
-          responseType: 'json'
-        }
-        // TODO: Hit axios route
-        let resp = await axios(requestParams)
-        let secondaryClockValue = resp.data.clockValue
-        const cnodeUser = await models.CNodeUser.findOne({ where: { walletPublicKey } })
-        let primaryClockValue = cnodeUser.clock
-        logger.info(`USER ${walletPublicKey} | primary=${spInfo.spID} secondaryInfo=${targetNodeInfo.spID} primaryClock=${primaryClockValue}, secondaryClock=${secondaryClockValue}`)
-        if (primaryClockValue >= secondaryClockValue) {
-          logger.info(`USER ${walletPublicKey} | No SYNC REQUIRED BETWEEN primary=${spInfo.spID} secondaryInfo=${targetNodeInfo.spID} primaryClock=${primaryClockValue}, secondaryClock=${secondaryClockValue}`)
+      await Promise.all(
+        cnodePrimaryUsers.map(async (user)=> {
+          let walletPublicKey = user.wallet
+          logger.info(`Sending clock request to ${nodeId} - ${targetNodeInfo.endpoint} for user ${walletPublicKey}`)
+          let requestParams = {
+            method: 'get',
+            baseURL: targetNodeInfo.endpoint,
+            url: `/users/clock_status/${walletPublicKey}`,
+            responseType: 'json'
+          }
+          // TODO: Hit axios route
+          let resp = await axios(requestParams)
+          let secondaryClockValue = resp.data.clockValue
+          const cnodeUser = await models.CNodeUser.findOne({ where: { walletPublicKey } })
+          let primaryClockValue = cnodeUser.clock
+          logger.info(`USER ${walletPublicKey} | primary=${spInfo.spID} secondaryInfo=${targetNodeInfo.spID} primaryClock=${primaryClockValue}, secondaryClock=${secondaryClockValue}`)
+          if (primaryClockValue == secondaryClockValue) {
+            logger.info(`USER ${walletPublicKey} | No SYNC REQUIRED BETWEEN primary=${spInfo.spID} secondaryInfo=${targetNodeInfo.spID} primaryClock=${primaryClockValue}, secondaryClock=${secondaryClockValue}`)
 
-        } else {
-          logger.info(`USER ${walletPublicKey} | SYNC REQUIRED BETWEEN primary=${spInfo.spID} secondaryInfo=${targetNodeInfo.spID} primaryClock=${primaryClockValue}, secondaryClock=${secondaryClockValue}`)
+          } else if (primaryClockValue > secondaryClockValue) {
+            logger.info(`USER ${walletPublicKey} | SYNC REQUIRED BETWEEN primary=${spInfo.spID} secondaryInfo=${targetNodeInfo.spID} primaryClock=${primaryClockValue}, secondaryClock=${secondaryClockValue}`)
+            // Issue sync
+            let syncParams = {
+              baseURL: targetNodeInfo.endpoint,
+              url: '/sync',
+              method: 'post',
+              data: {
+                wallet: [walletPublicKey],
+                creator_node_endpoint: spInfo.endpoint,
+                immediate: true
+              }
+            }
+            logger.info(syncParams)
+            // NOTE - THIS NOW WORKS, MUST BE ABSTRACTED
+            let syncResp = await axios(syncParams)
+            logger.info(syncResp)
+          }
+          // If primary is BEHIND secondary, update rset state for wallet and determine reconfig
         }
-      })
+        )
       )
-
 
       // TODO: Non-primary operations will include reconfiguration/etc
 
       // Filter users that match this sp primary
-      logger.info('------------------END Process cshared rSet------------------')
+      logger.info('------------------END Process shared rSet------------------')
     }))
   }
 
@@ -196,10 +213,10 @@ class SnapbackSM {
     this.stateMachineQueue.process(async (job, done) => {
       try {
         await this.processStateMachineOperation(job)
-        await utils.timeout(3000)
       } catch (e) {
         logger.info(`Error processing ${e}`)
       } finally {
+        await utils.timeout(10000)
         // Restart job
         // Can be replaced with cron after development is complete
         this.stateMachineQueue.add({ startTime: Date.now() })

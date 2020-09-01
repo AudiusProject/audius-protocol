@@ -188,9 +188,8 @@ module.exports = function (app) {
 
     const cnodeUser = (await models.CNodeUser.findOne({
       where: { walletPublicKey }
-    })).dataValues
-
-    const clockValue = (cnodeUser) ? cnodeUser.clock : -1
+    }))
+    const clockValue = (cnodeUser) ? cnodeUser.dataValues.clock : -1
 
     return successResponse({ clockValue })
   }))
