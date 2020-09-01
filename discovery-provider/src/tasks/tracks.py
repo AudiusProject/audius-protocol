@@ -271,7 +271,7 @@ def parse_track_event(
 
         # if cover_art CID is of a dir, store under _sizes field instead
         if track_record.cover_art:
-            logger.warning(f"tracks.py | Processing track cover art {track_record.cover_art}")
+            logger.info(f"tracks.py | Processing track cover art {track_record.cover_art}")
             try:
                 is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
                 if is_directory:
