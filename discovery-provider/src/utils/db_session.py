@@ -1,11 +1,21 @@
 import ast
 from contextlib import contextmanager
+from src.queries.search_config import set_search_similarity
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from flask import current_app, g
 
 
 session_manager = None
+
+
+def on_init_db(db):
+    """
+    Queries to run on web server startup.
+    """
+    with db.scoped_session() as session:
+        set_search_similarity(session)
+
 
 
 def get_db():
@@ -18,6 +28,7 @@ def get_db():
             current_app.config["db"]["url"],
             ast.literal_eval(current_app.config["db"]["engine_args_literal"]),
         )
+        on_init_db(g.db)
 
     return g.db
 
@@ -32,6 +43,7 @@ def get_db_read_replica():
             current_app.config["db"]["url_read_replica"],
             ast.literal_eval(current_app.config["db"]["engine_args_literal"]),
         )
+        on_init_db(g.db_read_replica)
 
     return g.db_read_replica
 
