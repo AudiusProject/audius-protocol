@@ -23,7 +23,7 @@ from src import exceptions
 from src.queries import queries, search, search_queries, health_check, trending, notifications
 from src.api.v1 import api as api_v1
 from src.utils import helpers, config
-from src.utils.db_session import SessionManager
+from src.utils.db_session import SessionManager, on_init_db
 from src.utils.config import config_files, shared_config, ConfigIni
 from src.utils.ipfs_lib import IPFSClient
 from src.tasks import celery_app
@@ -232,6 +232,19 @@ def configure_flask(test_config, app, mode="app"):
     if test_config is not None:
         # load the test config if passed in
         app.config.update(test_config)
+
+    app.db_session_manager = SessionManager(
+        app.config["db"]["url"],
+        ast.literal_eval(app.config["db"]["engine_args_literal"]),
+    )
+    on_init_db(app.db_session_manager)
+
+    app.db_read_replica_session_manager = SessionManager(
+        app.config["db"]["url_read_replica"],
+        ast.literal_eval(app.config["db"]["engine_args_literal"]),
+    )
+    on_init_db(app.db_read_replica_session_manager)
+
 
     exceptions.register_exception_handlers(app)
     app.register_blueprint(queries.bp)

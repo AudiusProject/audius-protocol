@@ -1,13 +1,8 @@
-import ast
 from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from flask import current_app, g
+from flask import current_app
 from src.queries.search_config import set_search_similarity
-
-
-session_manager = None
-
 
 def on_init_db(db):
     """
@@ -17,20 +12,12 @@ def on_init_db(db):
         set_search_similarity(session)
 
 
-
 def get_db():
     """Connect to the configured database. The connection
     is unique for each request and will be reused if this is called
     again.
     """
-    if "db" not in g:
-        g.db = SessionManager(
-            current_app.config["db"]["url"],
-            ast.literal_eval(current_app.config["db"]["engine_args_literal"]),
-        )
-        on_init_db(g.db)
-
-    return g.db
+    return current_app.db_session_manager
 
 
 def get_db_read_replica():
@@ -38,14 +25,7 @@ def get_db_read_replica():
     is unique for each request and will be reused if this is called
     again.
     """
-    if "db_read_replica" not in g:
-        g.db_read_replica = SessionManager(
-            current_app.config["db"]["url_read_replica"],
-            ast.literal_eval(current_app.config["db"]["engine_args_literal"]),
-        )
-        on_init_db(g.db_read_replica)
-
-    return g.db_read_replica
+    return current_app.db_read_replica_session_manager
 
 
 class SessionManager:
