@@ -2,6 +2,7 @@ const Bull = require('bull')
 const { logger } = require('./logging')
 const utils = require('./utils')
 const config = require('./config.js')
+const axios = require('axios')
 
 // Snap back state machine
 // Ensures file availability through sync and user replica operations
@@ -75,52 +76,104 @@ class SnapbackSM {
 
     // 3.) Determine list of nodes that share replica sets with this node
     //     This includes all distinct nodes that are part of the list of cnodeUsers returned above
-
     let nodeList = { } // Will be converted into array
     let sharedRsets = { } // nodeId -> [rSets]
 
     // TODO: Evaluate thread safety?
     // What happens in the case of parallel updates to nodeList?
-    cnodeUsers.map((user) => {
-      const primary = user.primary
-      const secondaries = user.secondaries
+    await Promise.all(
+      cnodeUsers.map(async (user) => {
+        const primary = user.primary
+        const secondaries = user.secondaries
 
-      // Append replica_set value
-      user.replica_set = [primary].concat(secondaries)
+        // Append replica_set value
+        user.replica_set = [primary].concat(secondaries)
+        logger.info()
 
-      // Check if primary spID exists in nodeList, if not add to object
-      // Exclude own spID
-      if (!nodeList[primary] && primary !== spInfo.spID) {
-        nodeList[primary] = true
-      }
-      if (!sharedRsets[primary]) {
-        sharedRsets[primary] = []
-      }
-      sharedRsets[primary].push(user)
+        // Check if primary spID exists in nodeList, if not add to object
+        // Exclude own spID
+        if (!nodeList[primary] && primary !== spInfo.spID) {
+          // TODO: How will we pay for this / account for eth network latency IRL?
+          let serviceEndpointInfo = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('creator-node', primary)
+          // In this case, current node is a secondary
+          // Why? The primary stored on chain is not equal to the configured spID for this creator-node
+          nodeList[primary] = serviceEndpointInfo
+        }
+        if (!sharedRsets[primary]) {
+          sharedRsets[primary] = []
+        }
+        sharedRsets[primary].push(user)
 
-      // Check if secondary spIDs exist in nodeList, if not add to object
-      for (const secondary of secondaries) {
-        if (secondary === spInfo.spID) {
-          continue
+        // Check if secondary spIDs exist in nodeList, if not add to object
+        for (const secondary of secondaries) {
+          if (secondary === spInfo.spID) {
+            continue
+          }
+          if (!nodeList[secondary]) {
+            let serviceEndpointInfo = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('creator-node', secondary)
+            nodeList[secondary] = serviceEndpointInfo
+          }
+          if (!sharedRsets[secondary]) {
+            // TODO: Evaluate thread safety?
+            sharedRsets[secondary] = []
+          }
+          sharedRsets[secondary].push(user)
         }
-        if (!nodeList[secondary]) {
-          nodeList[secondary] = true
-        }
-        if (!sharedRsets[secondary]) {
-          // TODO: Evaluate thread safety?
-          sharedRsets[secondary] = []
-        }
-        sharedRsets[secondary].push(user)
-      }
-    })
+      })
+    )
 
     // At this point, nodeList and sharedRsets are ready for further processing
-    nodeList = Object.keys(nodeList)
     logger.info('--nodeList--')
     logger.info(nodeList)
     logger.info('--sharedRsets--')
-    logger.info(sharedRsets)
+    // logger.info(sharedRsets)
+    await this.processSharedRsets(spInfo, nodeList, sharedRsets)
     logger.info('------------------END Process state machine operation------------------')
+  }
+
+  async processSharedRsets(spInfo, nodesInfo, sharedRsets) {
+    let nodeList = Object.keys(nodesInfo)
+    await Promise.all(nodeList.map(async (nodeId)=> {
+      logger.info('------------------Process cshared rSet------------------')
+      logger.info(nodeId)
+      let targetNodeInfo = nodesInfo[nodeId]
+      logger.info(`targeting ${JSON.stringify(targetNodeInfo)}`)
+      // Users shared with remote creator node
+      let sharedUsers = sharedRsets[nodeId]
+      // Calculate users for which this node is primary
+      let cnodePrimaryUsers = sharedUsers.filter((user) => {
+        if (user.primary == spInfo.spID) {
+          return true
+        }
+        return false
+      })
+      // handle users for which this node is primary
+      // logger.info(`Current primary users shared with node ${nodeId}`)
+      // logger.info(cnodePrimaryUsers)
+      await cnodePrimaryUsers.map(async (user)=> {
+        let walletPublicKey = user.wallet
+        logger.info(`Sending clock request to ${nodeId} - ${targetNodeInfo.endpoint} for user ${walletPublicKey}`)
+        let requestParams = {
+          method: 'get',
+          baseURL: targetNodeInfo.endpoint,
+          url: `/users/clock_status/${walletPublicKey}`,
+          responseType: 'json'
+        }
+        logger.info(requestParams)
+        // TODO: Hit axios route
+        let resp = await axios(requestParams)
+        logger.info(`----`)
+        logger.info(resp.data)
+        let secondaryClockValue = resp.data.clockValue
+        logger.info(`From ${targetNodeInfo.endpoint} - clock request resp= clockVal: ${secondaryClockValue} for user ${walletPublicKey}`)
+      })
+
+
+      // TODO: Non-primary operations will include reconfiguration/etc
+
+      // Filter users that match this sp primary
+      logger.info('------------------END Process cshared rSet------------------')
+    }))
   }
 
   // Initialize the creator node state machine
@@ -135,8 +188,8 @@ class SnapbackSM {
 
     this.stateMachineQueue.process(async (job, done) => {
       try {
-        await utils.timeout(3000)
         await this.processStateMachineOperation(job)
+        await utils.timeout(3000)
       } catch (e) {
         logger.info(`Error processing ${e}`)
       } finally {
