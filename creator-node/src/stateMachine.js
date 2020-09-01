@@ -10,8 +10,18 @@ const models = require('./models')
 class SnapbackSM {
   constructor (audiusLibs) {
     // State machine queue processes all users
-    this.stateMachineQueue = new Bull(
-      'creator-node-state-machine',
+    this.stateMachineQueue = this.createBullQueue('creator-node-state-machine')
+
+    // Sync queue handles issuing of sync operations
+    this.syncQueue = this.createBullQueue('creator-node-sync-queue')
+
+    this.audiusLibs = audiusLibs
+    logger.info(`${this.audiusLibs == null}`)
+  }
+
+  createBullQueue(queueName) {
+    return new Bull(
+      queueName,
       {
         redis: {
           port: config.get('redisPort'),
@@ -19,9 +29,6 @@ class SnapbackSM {
         }
       }
     )
-
-    this.audiusLibs = audiusLibs
-    logger.info(`${this.audiusLibs == null}`)
   }
 
   // Helper function to retrieve all config based
@@ -132,6 +139,8 @@ class SnapbackSM {
     logger.info('------------------END Process state machine operation------------------')
   }
 
+  // StateMachine Queue Function
+  // Process shared data structures after calculation
   async processSharedRsets(spInfo, nodeInfoMap, sharedRsets) {
     let nodeList = Object.keys(nodeInfoMap)
     await Promise.all(nodeList.map(async (nodeId)=> {
@@ -173,7 +182,7 @@ class SnapbackSM {
           } else if (primaryClockValue > secondaryClockValue) {
             logger.info(`USER ${walletPublicKey} | SYNC REQUIRED BETWEEN primary=${spInfo.spID} secondaryInfo=${targetNodeInfo.spID} primaryClock=${primaryClockValue}, secondaryClock=${secondaryClockValue}`)
             // Issue sync
-            let syncParams = {
+            let syncRequestParameters = {
               baseURL: targetNodeInfo.endpoint,
               url: '/sync',
               method: 'post',
@@ -183,10 +192,13 @@ class SnapbackSM {
                 immediate: true
               }
             }
-            logger.info(syncParams)
+            logger.info(syncRequestParameters)
             // NOTE - THIS NOW WORKS, MUST BE ABSTRACTED
-            let syncResp = await axios(syncParams)
-            logger.info(syncResp)
+            // let syncResp = await axios(syncParams)
+            // logger.info(syncResp)
+            logger.info(`Adding ${walletPublicKey} to sync queue, count=${await this.syncQueue.count()}`)
+            await this.syncQueue.add({ syncRequestParameters, startTime: Date.now() }, { lifo: true })
+            logger.info(`Finished adding ${walletPublicKey} to sync queue, count=${await this.syncQueue.count()}`)
           }
           // If primary is BEHIND secondary, update rset state for wallet and determine reconfig
         }
@@ -200,9 +212,34 @@ class SnapbackSM {
     }))
   }
 
+  // Main sync queue job
+  async processSyncOperation(job) {
+    logger.info('------------------Process SYNC------------------')
+    logger.info(job.data)
+    let syncRequestParameters = job.data.syncRequestParameters
+    logger.info(syncRequestParameters)
+    // TODO: Expand this and actually check validity of data params
+    let isValidSyncJobData = (
+      ('baseURL' in syncRequestParameters) &&
+      ('url' in syncRequestParameters) &&
+      ('method' in syncRequestParameters) &&
+      ('data' in syncRequestParameters)
+    )
+    logger.info(`isValidSync ${isValidSyncJobData}`)
+    if (!isValidSyncJobData) {
+      logger.error(`Invalid sync data found`)
+      logger.error(job.data)
+      return
+    }
+    // Issue sync request to secondary
+    await axios(syncRequestParameters)
+    logger.info('------------------END Process SYNC------------------')
+  }
+
   // Initialize the creator node state machine
   async init () {
     await this.stateMachineQueue.empty()
+    await this.syncQueue.empty()
 
     // TODO: Enable after dev
     // Run the task every x hours
@@ -211,18 +248,31 @@ class SnapbackSM {
     this.stateMachineQueue.add({ startTime: Date.now() })
 
     this.stateMachineQueue.process(async (job, done) => {
-      try {
-        await this.processStateMachineOperation(job)
-      } catch (e) {
-        logger.info(`Error processing ${e}`)
-      } finally {
-        await utils.timeout(10000)
-        // Restart job
-        // Can be replaced with cron after development is complete
-        this.stateMachineQueue.add({ startTime: Date.now() })
-        done()
+        try {
+          await this.processStateMachineOperation(job)
+        } catch (e) {
+          logger.info(`Error processing ${e}`)
+        } finally {
+          await utils.timeout(10000)
+          // Restart job
+          // Can be replaced with cron after development is complete
+          this.stateMachineQueue.add({ startTime: Date.now() })
+          done()
+        }
       }
-    })
+    )
+    this.syncQueue.process(async (job, done) => {
+        try {
+          await this.processSyncOperation(job)
+        } catch (e) {
+          logger.info(`Error processing ${e}`)
+        } finally {
+          // Restart job
+          // Can be replaced with cron after development is complete
+          done()
+        }
+      }
+    )
   }
 }
 
