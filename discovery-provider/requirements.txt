@@ -1,3 +1,4 @@
+# web3 used to be 5.11.0 but due to a build issue in docker, downgraded to 5.8.0
 web3==5.8.0
 Flask==1.0.2
 psycopg2==2.7.7
