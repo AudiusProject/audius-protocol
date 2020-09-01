@@ -1,4 +1,4 @@
-web3==5.11.0
+web3==5.8.0
 Flask==1.0.2
 psycopg2==2.7.7
 SQLAlchemy==1.2.5
