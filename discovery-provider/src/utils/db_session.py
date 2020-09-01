@@ -1,9 +1,9 @@
 import ast
 from contextlib import contextmanager
-from src.queries.search_config import set_search_similarity
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from flask import current_app, g
+from src.queries.search_config import set_search_similarity
 
 
 session_manager = None
