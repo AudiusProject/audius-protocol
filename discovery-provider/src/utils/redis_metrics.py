@@ -33,47 +33,48 @@ def get_rounded_date_time():
 def parse_metrics_key(key):
     """
     Validates that a key is correctly formatted and returns
-    the source: (routes|applications) and date of key
+    the source: (routes|applications), ip address, and date of key
     """
     if not metrics_prefix.startswith(metrics_prefix):
         logger.warning(f"Bad redis key inserted w/out metrics prefix {key}")
         return None
 
     fragments = key.split(':')
-    if len(fragments) != 4:
-        logger.warning(f"Bad redis key inserted: must have 4 parts {key}")
+    if len(fragments) != 5:
+        logger.warning(f"Bad redis key inserted: must have 5 parts {key}")
         return None
 
-    _, source, date, time = fragments
+    _, source, ip, date, time = fragments
     if source not in (metrics_routes, metrics_application):
         logger.warning(f"Bad redis key inserted: must be routes or application {key}")
         return None
     date_time = datetime.strptime(f"{date}:{time}", datetime_format)
 
-    return source, date_time
+    return source, ip, date_time
 
 def extract_app_name_key():
     """
     Extracts the application name redis key and hash from the request
     The key should be of format:
-        <metrics_prefix>:<metrics_application>:<rounded_date_time_format>
-        ie: "API_METRICS:applications:2020/08/04:14"
+        <metrics_prefix>:<metrics_application>:<ip>:<rounded_date_time_format>
+        ie: "API_METRICS:applications:192.168.0.1:2020/08/04:14"
     The hash should be of format:
         <app_name>
         ie: "audius_dapp"
     """
     application_name = request.args.get(app_name_param, type=str, default=None)
+    ip = request.remote_addr
     date_time = get_rounded_date_time().strftime(datetime_format)
 
-    appplication_key = f"{metrics_prefix}:{metrics_application}:{date_time}"
-    return (appplication_key, application_name)
+    application_key = f"{metrics_prefix}:{metrics_application}:{ip}:{date_time}"
+    return (application_key, application_name)
 
 def extract_route_key():
     """
     Extracts the route redis key and hash from the request
     The key should be of format:
-        <metrics_prefix>:<metrics_routes>:<rounded_date_time_format>
-        ie: "API_METRICS:routes:2020/08/04:14"
+        <metrics_prefix>:<metrics_routes>:<ip>:<rounded_date_time_format>
+        ie: "API_METRICS:routes:192.168.0.1:2020/08/04:14"
     The hash should be of format:
         <path><sorted_query_params>
         ie: "/v1/tracks/search?genre=rap&query=best"
@@ -82,9 +83,10 @@ def extract_route_key():
     req_args = request.args.items()
     req_args = stringify_query_params(req_args)
     route = f"{path}?{req_args}" if req_args else path
-
+    ip = request.remote_addr
     date_time = get_rounded_date_time().strftime(datetime_format)
-    route_key = f"{metrics_prefix}:{metrics_routes}:{date_time}"
+
+    route_key = f"{metrics_prefix}:{metrics_routes}:{ip}:{date_time}"
     return (route_key, route)
 
 # Metrics decorator.
@@ -99,11 +101,11 @@ def record_metrics(func):
     @functools.wraps(func)
     def wrap(*args, **kwargs):
         try:
-            appplication_key, application_name = extract_app_name_key()
+            application_key, application_name = extract_app_name_key()
             route_key, route = extract_route_key()
             REDIS.hincrby(route_key, route, 1)
             if application_name:
-                REDIS.hincrby(appplication_key, application_name, 1)
+                REDIS.hincrby(application_key, application_name, 1)
         except Exception as e:
             logger.error('Error while recording metrics: %s', e.message)
 
