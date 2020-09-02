@@ -14,6 +14,7 @@ const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const { logger } = require('../logging.js')
+const { incrementAndFetchCNodeUserClock } = require('../utils/incrementAndFetchCNodeUserClock')
 
 module.exports = function (app) {
   /**
@@ -66,16 +67,37 @@ module.exports = function (app) {
     let segmentSaveFilePromResps
     let segmentDurations
     try {
+      // increment and fetch cnodeUser.clock value
+      const finalClockVal = await incrementAndFetchCNodeUserClock(req, segmentFilePaths.length + 1)
+      const initialClockVal = finalClockVal - (segmentFilePaths.length + 1)
+
+      // Call saveFileToIPFSFromFS for transcode file
+      transcodedFilePromResp = await saveFileToIPFSFromFS(
+        req,
+        transcodedFilePath,
+        'copy320',
+        req.fileName,
+        (initialClockVal + 1),
+        t
+      )
+
+      // Call saveFileToIPFSFromFS for each track segment file
       req.logger.info(`segmentFilePaths.length ${segmentFilePaths.length}`)
-      let counter = 1
-      segmentSaveFilePromResps = await Promise.all(segmentFilePaths.map(async filePath => {
+      segmentSaveFilePromResps = await Promise.all(segmentFilePaths.map(async (filePath, i) => {
         const absolutePath = path.join(req.fileDir, 'segments', filePath)
-        req.logger.info(`about to perform saveFileToIPFSFromFS #${counter++}`)
-        let response = await saveFileToIPFSFromFS(req, absolutePath, 'track', req.fileName, t)
+        req.logger.info(`about to perform saveFileToIPFSFromFS #${i}`)
+        let response = await saveFileToIPFSFromFS(
+          req,
+          absolutePath,
+          'track',
+          req.fileName,
+          (initialClockVal + 1 + (i + 1)),
+          t
+        )
         response.segmentName = filePath
         return response
       }))
-      transcodedFilePromResp = await saveFileToIPFSFromFS(req, transcodedFilePath, 'copy320', req.fileName, t)
+
       req.logger.info(`Time taken in /track_content for saving segments and transcoding to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
       codeBlockTimeStart = Date.now()
@@ -289,20 +311,18 @@ module.exports = function (app) {
         transaction: t
       })
 
-      // compute new clock value for cnodeUserUUID by incrementing current clock value from CNodeUsers table
-      const newClockVal = cnodeUser.clock + 1
+      // increment and fetch cnodeUser.clock value
+      const newClockVal = await incrementAndFetchCNodeUserClock(req)
 
       // Insert new track entry on db (for track update, a new entry is still created with incremented clock val)
-      const track = await models.Track.create(
-        {
-          cnodeUserUUID,
-          metadataFileUUID,
-          metadataJSON,
-          blockchainId: blockchainTrackId,
-          coverArtFileUUID,
-          clock: newClockVal
-        },
-        { transaction: t }
+      const track = await models.Track.create({
+        cnodeUserUUID,
+        metadataFileUUID,
+        metadataJSON,
+        blockchainId: blockchainTrackId,
+        coverArtFileUUID,
+        clock: newClockVal
+        }, { transaction: t }
       )
       
       /** Associate matching segment files on DB with new/updated track. */
@@ -412,11 +432,8 @@ module.exports = function (app) {
         given blockNumber ${blockNumber}`
       )
       if (blockNumber > updatedCNodeUser.latestBlockNumber) {
-        // Update cnodeUser's latestBlockNumber and clock
-        await cnodeUser.update({ latestBlockNumber: blockNumber, clock: newClockVal }, { transaction: t })
-      } else {
-        // Update cnodeUser's clock
-        await cnodeUser.update({  clock: newClockVal }, { transaction: t })
+        // Update cnodeUser's latestBlockNumber
+        await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
       }
 
       logger.info(`completed POST tracks route`)

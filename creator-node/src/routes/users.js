@@ -153,6 +153,9 @@ module.exports = function (app) {
     return successResponse()
   }))
 
+  /**
+   * Returns latest clock value stored in CNodeUsers entry given wallet, or -1 if no entry found
+   */
   app.get('/users/clock_status/:walletPublicKey', handleResponse(async (req, res) => {
     let walletPublicKey = req.params.walletPublicKey
 
@@ -163,11 +166,11 @@ module.exports = function (app) {
 
     walletPublicKey = walletPublicKey.toLowerCase()
 
-    const cnodeUser = (await models.CNodeUser.findOne({
+    const cnodeUser = await models.CNodeUser.findOne({
       where: { walletPublicKey }
-    })).dataValues
+    })
 
-    const clockValue = (cnodeUser) ? cnodeUser.clock : -1
+    const clockValue = (cnodeUser) ? cnodeUser.dataValues.clock : -1
 
     return successResponse({ clockValue })
   }))

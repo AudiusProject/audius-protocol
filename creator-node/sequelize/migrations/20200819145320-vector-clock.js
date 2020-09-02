@@ -49,50 +49,12 @@ module.exports = {
         name: 'Tracks_unique_constraint_(cnodeUserUUID,clock)'
       }
     )
-
-    // Add 'isCurrent' column to tables - TBD
-    // await queryInterface.addColumn('AudiusUsers', 'isCurrent', {
-    //   type: Sequelize.BOOLEAN,
-    //   unique: false,
-    //   allowNull: false
-    // })
-    // await queryInterface.addColumn('Tracks', 'isCurrent', {
-    //   type: Sequelize.BOOLEAN,
-    //   unique: false,
-    //   allowNull: false
-    // })
-    // await queryInterface.addColumn('Files', 'isCurrent', {
-    //   type: Sequelize.BOOLEAN,
-    //   unique: false,
-    //   allowNull: false
-    // })
-
-    // TBD - Add constraint on (cnodeUserUUID, isCurrent) in each table to ensure only 1 row marked isCurrent = true
     // await queryInterface.addConstraint(
-    //   'AudiusUsers',
+    //   'Files',
     //   {
     //     type: 'UNIQUE',
-    //     fields: ['cnodeUserUUID', 'isCurrent'],
-    //     where: { isCurrent: true },
-    //     name: 'AudiusUsers_unique_constraint_(cnodeUserUUID,isCurrent)'
-    //   }
-    // )
-    // await queryInterface.addConstraint(
-    //   'Tracks',
-    //   {
-    //     type: 'UNIQUE',
-    //     fields: ['cnodeUserUUID', 'isCurrent'],
-    //     where: { isCurrent: true },
-    //     name: 'AudiusUsers_unique_constraint_(cnodeUserUUID,isCurrent)'
-    //   }
-    // )
-    // await queryInterface.addConstraint(
-    //   'AudiusUsers',
-    //   {
-    //     type: 'UNIQUE',
-    //     fields: ['cnodeUserUUID', 'isCurrent'],
-    //     where: { isCurrent: true },
-    //     name: 'AudiusUsers_unique_constraint_(cnodeUserUUID,isCurrent)'
+    //     fields: ['cnodeUserUUID', 'clock'],
+    //     name: 'Files_unique_constraint_(cnodeUserUUID,clock)'
     //   }
     // )
   },

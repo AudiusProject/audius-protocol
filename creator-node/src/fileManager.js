@@ -15,6 +15,7 @@ const mkdir = promisify(fs.mkdir)
 const config = require('./config')
 const models = require('./models')
 const Utils = require('./utils')
+const { incrementAndFetchCNodeUserClock } = require('./utils/incrementAndFetchCNodeUserClock')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -42,22 +43,18 @@ async function saveFileFromBuffer (req, buffer, fileType) {
 
   await writeFile(dstPath, buffer)
 
-  // fetch highest clock value in CNodeUsers table for cnodeUserUUID
-  const newClockVal = req.session.cnodeUser.clock + 1
+  // increment and fetch cnodeUser.clock value
+  const newClockVal = await incrementAndFetchCNodeUserClock(req)
 
   // add reference to file to database
-  let file = await models.File.create({
+  const file = (await models.File.create({
     cnodeUserUUID: req.session.cnodeUserUUID,
     multihash: multihash,
     sourceFile: req.fileName,
     storagePath: dstPath,
     type: fileType,
     clock: newClockVal
-  })
-  file = file.dataValues
-
-  // Increment clockVal in cnodeUsers table
-  await req.session.cnodeUser.update({ clock: newClockVal })
+  })).dataValues
 
   req.logger.info('\nAdded file:', multihash, 'file id', file.fileUUID)
   return { multihash: multihash, fileUUID: file.fileUUID }
@@ -69,7 +66,7 @@ async function saveFileFromBuffer (req, buffer, fileType) {
  * - Re-save file to disk under multihash.
  * - Save reference to file in DB.
  */
-async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transaction = null) {
+async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, clockVal, transaction = null) {
   // make sure user has authenticated before saving file
   if (!req.session.cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
@@ -91,9 +88,6 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
 
   req.logger.info(`Time taken in saveFileToIpfsFromFS to copyFileSync: ${Date.now() - codeBlockTimeStart}`)
 
-  // fetch highest clock value in CNodeUsers table for cnodeUserUUID
-  const newClockVal = req.session.cnodeUser.clock + 1
-
   // add reference to file to database
   let file = await models.File.create(
     {
@@ -102,14 +96,11 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, transac
       sourceFile: sourceFile,
       storagePath: dstPath,
       type: fileType,
-      clock: newClockVal
+      clock: clockVal
     },
     { transaction }
   )
   file = file.dataValues
-
-  // Increment clockVal in cnodeUsers table
-  await req.session.cnodeUser.update({ clock: newClockVal }, { transaction })
 
   req.logger.info(`Added file: ${multihash} for fileUUID ${file.fileUUID} from sourceFile ${sourceFile}`)
   return { multihash: multihash, fileUUID: file.fileUUID }

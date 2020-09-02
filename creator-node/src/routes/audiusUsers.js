@@ -6,6 +6,7 @@ const { saveFileFromBuffer } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
+const { incrementAndFetchCNodeUserClock } = require('../utils/incrementAndFetchCNodeUserClock')
 const { logger } = require('../logging')
 
 module.exports = function (app) {
@@ -67,13 +68,12 @@ module.exports = function (app) {
       return errorResponseBadRequest(e.message)
     }
 
-    const t = await models.sequelize.transaction()
-
+    const transaction = await models.sequelize.transaction()
     try {
       logger.info(`beginning audiusUsers DB transactions`)
 
-      // compute new clock value for cnodeUserUUID by incrementing current clock value from CNodeUsers table
-      const newClockVal = req.session.cnodeUser.clock + 1
+      // increment and fetch cnodeUser.clock value
+      const newClockVal = await incrementAndFetchCNodeUserClock(req)
 
       // Insert new audiusUser entry to DB
       const audiusUser = await models.AudiusUser.create({
@@ -84,16 +84,16 @@ module.exports = function (app) {
         coverArtFileUUID,
         profilePicFileUUID,
         clock: newClockVal
-      }, { transaction: t, returning: true })
+      }, { transaction, returning: true })
 
       // Update cnodeUser's latestBlockNumber and clock
-      await cnodeUser.update({ latestBlockNumber: blockNumber, clock: newClockVal }, { transaction: t })
+      await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction })
 
-      await t.commit()
+      await transaction.commit()
       triggerSecondarySyncs(req)
       return successResponse({ audiusUserUUID: audiusUser.audiusUserUUID })
     } catch (e) {
-      await t.rollback()
+      await transaction.rollback()
       return errorResponseServerError(e.message)
     }
   }))

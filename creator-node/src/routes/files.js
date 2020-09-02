@@ -22,6 +22,7 @@ const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('.
 const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
+const { incrementAndFetchCNodeUserClock } = require('../utils/incrementAndFetchCNodeUserClock')
 
 /**
  * Helper method to stream file from file system on creator node
@@ -285,8 +286,9 @@ module.exports = function (app) {
     const t = await models.sequelize.transaction()
     // Add the created files to the DB
     try {
-      // compute new clock value for cnodeUserUUID by incrementing current clock value from CNodeUsers table
-      const newClockVal = req.session.cnodeUser.clock + 1
+      // increment and fetch cnodeUser.clock value
+      const finalClockVal = await incrementAndFetchCNodeUserClock(req, resizeResp.files.length + 1)
+      const initialClockVal = finalClockVal - (resizeResp.files.length + 1)
 
       // Save dir file reference to DB
       const dir = (await models.File.create(
@@ -296,13 +298,13 @@ module.exports = function (app) {
           sourceFile: null,
           storagePath: resizeResp.dir.dirDestPath,
           type: 'dir',
-          clock: newClockVal
+          clock: (initialClockVal + 1)
         },
         { transaction: t }
       )).dataValues
 
       // Save each file to the DB
-      await Promise.all(resizeResp.files.map(async (fileResp) => {
+      await Promise.all(resizeResp.files.map(async (fileResp, i) => {
         const file = (await models.File.create(
           {
             cnodeUserUUID: req.session.cnodeUserUUID,
@@ -312,16 +314,13 @@ module.exports = function (app) {
             type: 'image',
             dirMultihash: resizeResp.dir.dirCID,
             fileName: fileResp.sourceFile.split('/').slice(-1)[0],
-            clock: newClockVal
+            clock: (initialClockVal + 1 + (i + 1)) // increment clock val for each file entry
           },
           { transaction: t }
         )).dataValues
 
         req.logger.info('Added file', fileResp, file)
       }))
-
-      // Update cnodeUser's clock
-      await req.session.cnodeUser.update({ clock: newClockVal }, { transaction: t })
 
       req.logger.info('Added all files for dir', dir)
       req.logger.info(`route time = ${Date.now() - routestart}`)
