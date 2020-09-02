@@ -24,5 +24,8 @@ def get_track_user_creator_node(args):
         ).filter(
             User.is_current
         ).first()
+
+        if not user:
+            return None
         creator_nodes = user[0]
         return creator_nodes
