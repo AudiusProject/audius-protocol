@@ -33,6 +33,7 @@ from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_t
 from src.queries.get_previously_private_playlists import get_previously_private_playlists
 from src.queries.query_helpers import get_current_user_id
 
+from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("queries", __name__)
@@ -54,8 +55,8 @@ def parse_id_array_param(list):
 
 # Returns all users (paginated) with each user's follow count
 # Optionally filters by is_creator, wallet, or user ids
-
 @bp.route("/users", methods=("GET",))
+@record_metrics
 def get_users_route():
     args = to_dict(request.args)
     if "is_creator" in request.args:
@@ -72,6 +73,7 @@ def get_users_route():
 
 
 @bp.route("/tracks", methods=("GET",))
+@record_metrics
 def get_tracks_route():
     args = to_dict(request.args)
     if "id" in request.args:
@@ -92,6 +94,7 @@ def get_tracks_route():
 # Expects a JSON body of shape:
 #   { "tracks": [{ "id": number, "url_title": string, "handle": string }]}
 @bp.route("/tracks_including_unlisted", methods=("POST",))
+@record_metrics
 def get_tracks_including_unlisted_route():
     args = to_dict(request.args)
     if "filter_deleted" in request.args:
@@ -104,6 +107,7 @@ def get_tracks_including_unlisted_route():
 
 
 @bp.route("/stems/<int:track_id>", methods=("GET",))
+@record_metrics
 def get_stems_of_route(track_id):
     stems = get_stems_of(track_id)
     return api_helpers.success_response(stems)
@@ -112,6 +116,7 @@ def get_stems_of_route(track_id):
 # Return playlist content in json form
 # optional parameters playlist owner's user_id, playlist_id = []
 @bp.route("/playlists", methods=("GET",))
+@record_metrics
 def get_playlists_route():
     args = to_dict(request.args)
     if "playlist_id" in request.args:
@@ -136,6 +141,7 @@ def get_playlists_route():
 #   - Combine unsorted playlist and track arrays
 #   - Sort combined results by 'timestamp' field and return
 @bp.route("/feed", methods=("GET",))
+@record_metrics
 def get_feed_route():
     args = to_dict(request.args)
     # filter should be one of ["all", "reposts", "original"]
@@ -160,6 +166,7 @@ def get_feed_route():
 # - combine unsorted playlist and track arrays
 # - sort combined results by activity_timestamp field and return
 @bp.route("/feed/reposts/<int:user_id>", methods=("GET",))
+@record_metrics
 def get_repost_feed_for_user_route(user_id):
     args = to_dict(request.args)
     if "with_users" in request.args:
@@ -172,6 +179,7 @@ def get_repost_feed_for_user_route(user_id):
 # get intersection of users that follow followeeUserId and users that are followed by followerUserId
 # followee = user that is followed; follower = user that follows
 @bp.route("/users/intersection/follow/<int:followee_user_id>/<int:follower_user_id>", methods=("GET",))
+@record_metrics
 def get_follow_intersection_users_route(followee_user_id, follower_user_id):
     users = get_follow_intersection_users(followee_user_id, follower_user_id)
     return api_helpers.success_response(users)
@@ -182,6 +190,7 @@ def get_follow_intersection_users_route(followee_user_id, follower_user_id):
 # - Followee = user that is followed. Follower = user that follows.
 # - repost_track_id = track that is reposted. repost_user_id = user that reposted track.
 @bp.route("/users/intersection/repost/track/<int:repost_track_id>/<int:follower_user_id>", methods=("GET",))
+@record_metrics
 def get_track_repost_intersection_users_route(repost_track_id, follower_user_id):
     try:
         users = get_track_repost_intersection_users(
@@ -196,6 +205,7 @@ def get_track_repost_intersection_users_route(repost_track_id, follower_user_id)
 # - Followee = user that is followed. Follower = user that follows.
 # - repost_playlist_id = playlist that is reposted. repost_user_id = user that reposted playlist.
 @bp.route("/users/intersection/repost/playlist/<int:repost_playlist_id>/<int:follower_user_id>", methods=("GET",))
+@record_metrics
 def get_playlist_repost_intersection_users_route(repost_playlist_id, follower_user_id):
     try:
         users = get_playlist_repost_intersection_users(
@@ -207,6 +217,7 @@ def get_playlist_repost_intersection_users_route(repost_playlist_id, follower_us
 
 # Get paginated users that follow provided followee_user_id, sorted by their follower count descending.
 @bp.route("/users/followers/<int:followee_user_id>", methods=("GET",))
+@record_metrics
 def get_followers_for_user_route(followee_user_id):
     users = get_followers_for_user(followee_user_id)
     return api_helpers.success_response(users)
@@ -214,6 +225,7 @@ def get_followers_for_user_route(followee_user_id):
 
 # Get paginated users that are followed by provided follower_user_id, sorted by their follower count descending.
 @bp.route("/users/followees/<int:follower_user_id>", methods=("GET",))
+@record_metrics
 def get_followees_for_user_route(follower_user_id):
     users = get_followees_for_user(follower_user_id)
     return api_helpers.success_response(users)
@@ -221,6 +233,7 @@ def get_followees_for_user_route(follower_user_id):
 
 # Get paginated users that reposted provided repost_track_id, sorted by their follower count descending.
 @bp.route("/users/reposts/track/<int:repost_track_id>", methods=("GET",))
+@record_metrics
 def get_reposters_for_track_route(repost_track_id):
     try:
         user_results = get_reposters_for_track(repost_track_id)
@@ -231,6 +244,7 @@ def get_reposters_for_track_route(repost_track_id):
 
 # Get paginated users that reposted provided repost_playlist_id, sorted by their follower count descending.
 @bp.route("/users/reposts/playlist/<int:repost_playlist_id>", methods=("GET",))
+@record_metrics
 def get_reposters_for_playlist_route(repost_playlist_id):
     try:
         user_results = get_reposters_for_playlist(repost_playlist_id)
@@ -241,6 +255,7 @@ def get_reposters_for_playlist_route(repost_playlist_id):
 
 # Get paginated users that saved provided save_track_id, sorted by their follower count descending.
 @bp.route("/users/saves/track/<int:save_track_id>", methods=("GET",))
+@record_metrics
 def get_savers_for_track_route(save_track_id):
     try:
         user_results = get_savers_for_track(save_track_id)
@@ -251,6 +266,7 @@ def get_savers_for_track_route(save_track_id):
 
 # Get paginated users that saved provided save_playlist_id, sorted by their follower count descending.
 @bp.route("/users/saves/playlist/<int:save_playlist_id>", methods=("GET",))
+@record_metrics
 def get_savers_for_playlist_route(save_playlist_id):
     try:
         user_results = get_savers_for_playlist(save_playlist_id)
@@ -261,6 +277,7 @@ def get_savers_for_playlist_route(save_playlist_id):
 
 # Get paginated saves of provided save_type for current user.
 @bp.route("/saves/<save_type>", methods=("GET",))
+@record_metrics
 def get_saves_route(save_type):
     try:
         user_id = get_current_user_id()
@@ -274,6 +291,7 @@ def get_saves_route(save_type):
 # NOTE: This is a one off endpoint for retrieving a user's collections/associated user and should
 # be consolidated later in the client
 @bp.route("/users/account", methods=("GET",))
+@record_metrics
 def get_users_account_route():
     try:
         user = get_users_account(to_dict(request.args))
@@ -284,6 +302,7 @@ def get_users_account_route():
 
 # Gets the max id for tracks, playlists, or users.
 @bp.route("/latest/<type>", methods=("GET",))
+@record_metrics
 def get_max_id_route(type):
     try:
         latest = get_max_id(type)
@@ -293,6 +312,7 @@ def get_max_id_route(type):
 
 
 @bp.route("/top/<type>", methods=("GET",))
+@record_metrics
 def get_top_playlists_route(type):
     """
     An endpoint to retrieve the "top" of a certain demographic of playlists or albums.
@@ -328,6 +348,7 @@ def get_top_playlists_route(type):
 
 
 @bp.route("/top_followee_windowed/<type>/<window>")
+@record_metrics
 def get_top_followee_windowed_route(type, window):
     """
         Gets a windowed (over a certain timerange) view into the "top" of a certain type
@@ -358,6 +379,7 @@ def get_top_followee_windowed_route(type, window):
 
 
 @bp.route("/top_followee_saves/<type>")
+@record_metrics
 def get_top_followee_saves_route(type):
     """
         Gets a global view into the most saved of `type` amongst followees. Requires an account.
@@ -394,6 +416,7 @@ def get_top_followee_saves_route(type):
 #   urlParam: {boolean?}        with_user
 #             Boolean if the response should be the user ID or user metadata defaults to false
 @bp.route("/users/genre/top", methods=("GET",))
+@record_metrics
 def get_top_genre_users_route():
     args = to_dict(request.args)
     if "with_users" in request.args:
@@ -405,6 +428,7 @@ def get_top_genre_users_route():
 # Get the tracks that are 'children' remixes of the requested track
 # The results are sorted by if the original artist has reposted or saved the track
 @bp.route("/remixes/<int:track_id>/children", methods=("GET",))
+@record_metrics
 def get_remixes_of_route(track_id):
     args = to_dict(request.args)
     if "with_users" in request.args:
@@ -418,6 +442,7 @@ def get_remixes_of_route(track_id):
 
 # Get the tracks that are 'parent' remixes of the requested track
 @bp.route("/remixes/<int:track_id>/parents", methods=("GET",))
+@record_metrics
 def get_remix_track_parents_route(track_id):
     args = to_dict(request.args)
     if "with_users" in request.args:
@@ -428,6 +453,7 @@ def get_remix_track_parents_route(track_id):
 
 # Get the tracks that were previously unlisted and became public after the date provided
 @bp.route("/previously_unlisted/track", methods=("GET",))
+@record_metrics
 def get_previously_unlisted_tracks_route():
     try:
         tracks = get_previously_unlisted_tracks(to_dict(request.args))
@@ -438,6 +464,7 @@ def get_previously_unlisted_tracks_route():
 
 # Get the playlists that were previously private and became public after the date provided
 @bp.route("/previously_private/playlist", methods=("GET",))
+@record_metrics
 def get_previously_private_playlists_route():
     try:
         playlists = get_previously_private_playlists(to_dict(request.args))
