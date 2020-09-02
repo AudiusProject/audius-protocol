@@ -107,7 +107,12 @@ module.exports = function (app) {
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
     const immediate = (req.body.immediate === true || req.body.immediate === 'true')
-
+    var stateMachineRequest = false
+    if ('state_machine' in req.body) {
+      stateMachineRequest = true
+    }
+    req.logger.error(`parsing stateMachine: ${stateMachineRequest}`)
+    req.logger.error(req.body)
     if (!immediate) {
       req.logger.info('debounce time', config.get('debounceTime'))
       // Debounce nodeysnc op
@@ -117,13 +122,13 @@ module.exports = function (app) {
           req.logger.info('clear timeout for', wallet, 'time', Date.now())
         }
         syncQueue[wallet] = setTimeout(
-          async () => _nodesync(req, [wallet], creatorNodeEndpoint),
+          async () => _nodesync(req, [wallet], creatorNodeEndpoint, stateMachineRequest),
           config.get('debounceTime')
         )
         req.logger.info('set timeout for', wallet, 'time', Date.now())
       }
     } else {
-      await _nodesync(req, walletPublicKeys, creatorNodeEndpoint)
+      await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, stateMachineRequest)
     }
     return successResponse()
   }))
@@ -145,9 +150,10 @@ module.exports = function (app) {
   }))
 }
 
-async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
+async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, stateMachineRequest) {
   const start = Date.now()
-  req.logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
+  req.logger.info('begin nodesync for ', walletPublicKeys, 'time', start, 'stateMachineRequest', stateMachineRequest)
+  req.logger.error(`nodesync stateMachine: ${stateMachineRequest}`)
 
   // ensure access to each wallet, then acquire it for sync.
   const redisClient = req.app.get('redisClient')
@@ -230,11 +236,14 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         if (cnodeUser) {
           // Ensure imported data has higher blocknumber than already stored.
           const latestBlockNumber = cnodeUser.latestBlockNumber
-          if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
-            (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber <= latestBlockNumber)
-          ) {
-            throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
-              ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}`)
+          // TODO: Evaluate after update with row-level vector clock atomicity
+          if (!stateMachineRequest) {
+            if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
+              (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber <= latestBlockNumber)
+            ) {
+              throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
+                ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}`)
+            }
           }
 
           const cnodeUserUUID = cnodeUser.cnodeUserUUID

@@ -12,11 +12,10 @@ class SnapbackSM {
     // State machine queue processes all users
     this.stateMachineQueue = this.createBullQueue('creator-node-state-machine')
 
-    // Sync queue handles issuing of sync operations
+    // Sync queue handles issuing of sync operations from primary -> secondaries
     this.syncQueue = this.createBullQueue('creator-node-sync-queue')
 
     this.audiusLibs = audiusLibs
-    logger.info(`${this.audiusLibs == null}`)
   }
 
   createBullQueue(queueName) {
@@ -175,12 +174,12 @@ class SnapbackSM {
           let secondaryClockValue = resp.data.clockValue
           const cnodeUser = await models.CNodeUser.findOne({ where: { walletPublicKey } })
           let primaryClockValue = cnodeUser.clock
-          logger.info(`USER ${walletPublicKey} | primary=${spInfo.spID} secondaryInfo=${targetNodeInfo.spID} primaryClock=${primaryClockValue}, secondaryClock=${secondaryClockValue}`)
+          logger.info(`USER ${walletPublicKey} | primaryId=${spInfo.spID} secondaryId=${targetNodeInfo.spID} pClock=${primaryClockValue} sClock=${secondaryClockValue}`)
           if (primaryClockValue == secondaryClockValue) {
-            logger.info(`USER ${walletPublicKey} | No SYNC REQUIRED BETWEEN primary=${spInfo.spID} secondaryInfo=${targetNodeInfo.spID} primaryClock=${primaryClockValue}, secondaryClock=${secondaryClockValue}`)
+            logger.info(`USER ${walletPublicKey} | No SYNC REQUIRED BETWEEN primaryId=${spInfo.spID} secondaryId=${targetNodeInfo.spID} pClock=${primaryClockValue} sClock=${secondaryClockValue}`)
 
           } else if (primaryClockValue > secondaryClockValue) {
-            logger.info(`USER ${walletPublicKey} | SYNC REQUIRED BETWEEN primary=${spInfo.spID} secondaryInfo=${targetNodeInfo.spID} primaryClock=${primaryClockValue}, secondaryClock=${secondaryClockValue}`)
+            logger.info(`USER ${walletPublicKey} | SYNC REQUIRED BETWEEN primaryId=${spInfo.spID} secondaryId=${targetNodeInfo.spID} pClock=${primaryClockValue} sClock=${secondaryClockValue}`)
             // Issue sync
             let syncRequestParameters = {
               baseURL: targetNodeInfo.endpoint,
@@ -189,15 +188,12 @@ class SnapbackSM {
               data: {
                 wallet: [walletPublicKey],
                 creator_node_endpoint: spInfo.endpoint,
-                immediate: true
+                immediate: true,
+                state_machine: true // state machine specific flag
               }
             }
-            logger.info(syncRequestParameters)
-            // NOTE - THIS NOW WORKS, MUST BE ABSTRACTED
-            // let syncResp = await axios(syncParams)
-            // logger.info(syncResp)
             logger.info(`Adding ${walletPublicKey} to sync queue, count=${await this.syncQueue.count()}`)
-            await this.syncQueue.add({ syncRequestParameters, startTime: Date.now() }, { lifo: true })
+            await this.syncQueue.add({ syncRequestParameters, startTime: Date.now() })
             logger.info(`Finished adding ${walletPublicKey} to sync queue, count=${await this.syncQueue.count()}`)
           }
           // If primary is BEHIND secondary, update rset state for wallet and determine reconfig
