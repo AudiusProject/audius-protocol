@@ -3,8 +3,8 @@ const nock = require('nock')
 const helpers = require('./helpers')
 const { time } = require('@openzeppelin/test-helpers')
 
-const audius0 = helpers.audiusInstance
 // const audiusConfig = helpers.audiusLibsConfig
+const { getRandomLocalhost, audiusInstance: audius0 } = helpers
 const initializeLibConfig = helpers.initializeLibConfig
 const ethContractsConfig = require('../eth-contracts/config.json')
 const AudiusLibs = require('../src/index');
@@ -39,10 +39,6 @@ const assertRevert = async (blockOrPromise, expectedReason) => {
   assert.equal(expectedMsgFound, true, 'Expected revert reason not found')
 }
 
-const getRandomLocalhost = () => {
-  return 'http://localhost:' + Math.floor(1000 + Math.random() * 9000)
-}
-
 const testDeregisterSPEndpoint = async (libs, account, type) => {
   let previousRegisteredId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(
     sp1,
@@ -51,7 +47,7 @@ const testDeregisterSPEndpoint = async (libs, account, type) => {
     type,
     previousRegisteredId)
 
-  let path = '/version'      
+  let path = '/version'
   let response = {
     service: type,
     version : '0.0.1'
@@ -160,7 +156,7 @@ describe('Staking tests', () => {
       initialSPBalance = await token.balanceOf(sp1)
       testEndpt = getRandomLocalhost()
 
-      let path = '/version'      
+      let path = '/version'
       let response = {
         service: testServiceType,
         version : '0.0.1'
@@ -320,4 +316,3 @@ describe('Staking tests', () => {
     })
   })
 })
-

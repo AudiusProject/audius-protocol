@@ -61,11 +61,16 @@ async function initializeLibConfig (ownerWallet) {
   }
 }
 
+const getRandomLocalhost = () => {
+  return 'http://localhost:' + Math.floor(1000 + Math.random() * 9000)
+}
+
 module.exports = {
   constants,
   // Export configured libs instance
   audiusInstance: new AudiusLibs(audiusLibsConfig),
   // Export libs config for re-use
   audiusLibsConfig,
-  initializeLibConfig
+  initializeLibConfig,
+  getRandomLocalhost
 }
