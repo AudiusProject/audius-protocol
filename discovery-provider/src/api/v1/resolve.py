@@ -28,8 +28,11 @@ class Resolve(Resource):
     )
     def get(self):
         """
-        Resolves a provided url to the canonical api object.
-        Follow the redirect (302) returned by this endpoint.
+        Resolves a provided Audius app URL to the canonical API resource it represents.
+
+        This endpoint returns a 307 redirect to the canonical API route.
+        Follow the redirect to request the resource from the API.
+        Tracks, Playlists, and Users are supported.
         """
         args = resolve_route_parser.parse_args()
         url = args.get("url")
@@ -39,7 +42,11 @@ class Resolve(Resource):
             db = db_session.get_db_read_replica()
             with db.scoped_session() as session:
                 resolved_url = resolve_url(session, url)
-            return redirect(resolved_url, code=307)
+                if not resolved_url:
+                    return abort_not_found(url)
+
+                return redirect(resolved_url, code=307)
+
         except Exception as e:
             logger.warning(e)
             abort_not_found(url, ns)
