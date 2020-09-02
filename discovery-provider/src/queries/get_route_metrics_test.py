@@ -9,19 +9,29 @@ def populate_mock_db(db, date):
         'version': '1',
         'route_path': 'tracks/some_hash',
         'query_string': '',
+        'ip': '192.168.0.1',
         'count': 3,
         'timestamp': date
     }, {
         'version': '1',
         'route_path': 'tracks/some_hash',
         'query_string': 'with_users=true',
+        'ip': '192.168.0.1',
         'count': 2,
         'timestamp': date
     }, {
         'version': '1',
         'route_path': 'tracks/some_hash/stream',
         'query_string': '',
+        'ip': '192.168.0.1',
         'count': 4,
+        'timestamp': date
+    }, {
+        'version': '1',
+        'route_path': 'tracks/some_hash',
+        'query_string': '',
+        'ip': '192.168.0.2',
+        'count': 2,
         'timestamp': date
     }]
 
@@ -32,6 +42,7 @@ def populate_mock_db(db, date):
             version=metric['version'],
             route_path=metric['route_path'],
             query_string=metric['query_string'],
+            ip=metric['ip'],
             count=metric['count'],
             timestamp=metric['timestamp']
         ) for metric in mock_route_metrics]
@@ -56,7 +67,8 @@ def test_get_route_metrics_exact(db_mock):
     metrics = get_route_metrics(args)
 
     assert len(metrics) == 1
-    assert metrics[0]['count'] == 5
+    assert metrics[0]['count'] == 7
+    assert metrics[0]['unique_count'] == 2
 
 
 def test_get_route_metrics_non_exact(db_mock):
@@ -76,7 +88,8 @@ def test_get_route_metrics_non_exact(db_mock):
     metrics = get_route_metrics(args)
 
     assert len(metrics) == 1
-    assert metrics[0]['count'] == 9
+    assert metrics[0]['count'] == 11
+    assert metrics[0]['unique_count'] == 2
 
 
 def test_get_route_metrics_query_string(db_mock):
@@ -98,6 +111,7 @@ def test_get_route_metrics_query_string(db_mock):
 
     assert len(metrics) == 1
     assert metrics[0]['count'] == 2
+    assert metrics[0]['unique_count'] == 1
 
 
 def test_get_route_metrics_no_matches(db_mock):

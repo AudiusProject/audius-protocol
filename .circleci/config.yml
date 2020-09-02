@@ -311,7 +311,7 @@ jobs:
     docker:
       - image: circleci/python:3.7-stretch-node-browsers-legacy
         # Discovery provider dependencies
-      - image: circleci/postgres:9.6-alpine
+      - image: circleci/postgres:11.1
         environment:
           POSTGRES_USER: postgres
           POSTGRES_DB: audius_discovery
