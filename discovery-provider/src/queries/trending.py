@@ -48,6 +48,8 @@ def trending(time):
     # Increment cache miss count
     REDIS.incr(trending_cache_miss_key, 1)
     # Recalculate trending values if necessary
-    final_resp = generate_trending(
-        get_db_read_replica(), time, genre, limit, offset)
-    return api_helpers.success_response(final_resp)
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        final_resp = generate_trending(
+            session, time, genre, limit, offset)
+        return api_helpers.success_response(final_resp)
