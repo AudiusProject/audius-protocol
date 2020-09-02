@@ -1,9 +1,13 @@
+import logging
 import sqlalchemy
 
 trackTitleWeight = 0.7
 userNameWeight = 0.7
 playlistNameWeight = 0.7
 minSearchSimilarity = 0.1
+
+
+logger = logging.getLogger(__name__)
 
 
 def set_search_similarity(session):
@@ -14,6 +18,9 @@ def set_search_similarity(session):
     Note: set_limit was replaced by pg_trgm.similarity_threshold in PG 9.6.
     https://stackoverflow.com/a/11250001/11435157
     """
-    session.execute(sqlalchemy.text(
-        f"SET pg_trgm.similarity_threshold = {minSearchSimilarity}"
-    ))
+    try:
+        session.execute(sqlalchemy.text(
+            f"SET pg_trgm.similarity_threshold = {minSearchSimilarity}"
+        ))
+    except Exception as e:
+        logger.error(f"Unable to set similarity_threshold, {0}".format(e))
