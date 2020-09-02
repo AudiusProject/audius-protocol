@@ -5,6 +5,7 @@ from src import contract_addresses
 from src.utils import helpers
 from src.models import Playlist
 from src.utils.playlist_event_constants import playlist_event_types_arr, playlist_event_types_lookup
+from src.tasks.ipld_blacklist import is_blacklisted_ipld
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +49,7 @@ def playlist_state_update(
                     event_type,
                     playlist_events_lookup[playlist_id]["playlist"],
                     block_timestamp,
+                    session
                 )
 
                 if playlist_record is not None:
@@ -122,7 +124,7 @@ def invalidate_old_playlist(session, playlist_id):
 
 
 def parse_playlist_event(
-        self, update_task, entry, event_type, playlist_record, block_timestamp
+        self, update_task, entry, event_type, playlist_record, block_timestamp, session
 ):
     event_args = entry["args"]
     # Just use block_timestamp as integer
