@@ -214,7 +214,7 @@ def parse_playlist_event(
         playlist_record.is_private = event_args._updatedIsPrivate
 
     if event_type == playlist_event_types_lookup["playlist_cover_photo_updated"]:
-        playlist_image_multihash = helpers.multihash_digest_to_cid(
+        playlist_record.playlist_image_multihash = helpers.multihash_digest_to_cid(
             event_args._playlistImageMultihashDigest
         )
 
