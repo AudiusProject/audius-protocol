@@ -224,7 +224,8 @@ def parse_playlist_event(
             logger.info(f"playlists.py | Encountered blacklisted CID {playlist_image_multihash} in indexing playlist image multihash")
             return None
 
-        playlist_record.playlist_image_multihash = None
+        # if playlist_image_multihash CID is of a dir, store under _sizes field instead
+        if playlist_record.playlist_image_multihash:
             logger.info(f"playlists.py | Processing playlist image {playlist_record.playlist_image_multihash}")
             try:
                 is_directory = update_task.ipfs_client.multihash_is_directory(playlist_record.playlist_image_multihash)
