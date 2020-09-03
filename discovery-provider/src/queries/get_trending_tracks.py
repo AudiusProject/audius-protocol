@@ -19,6 +19,7 @@ O = 1
 R = 0.25
 i = 0.01
 q = 5.0
+G = 5000
 T = {'week':7, 'month':30, 'year':365, 'allTime': 100000}
 def z(time, track):
     # pylint: disable=W,C,R
@@ -29,9 +30,12 @@ def z(time, track):
     A=track['save_count']
     o=track['created_at']
     l=track['track_owner_follower_count']
+    j=track['karma']
     if l<3:
         return{'score':0,**track}
     H=(N*E+F*e+O*x+R*t+i*A)
+    if j>G:
+        H=H*j
     L=T[time]
     K=datetime.datetime.now()
     w=parse(o)

@@ -815,6 +815,46 @@ def get_repost_counts(
     return repost_counts_query.all()
 
 
+def get_repost_karma(session, track_ids):
+    """Gets the total repost karma for provided track_ids"""
+    # Create a subquery of user id to track id for each user id
+    # that reposted any of provided `filter_ids`
+    subquery = (
+        session.query(
+            Repost.user_id.label('user_id'),
+            Repost.repost_item_id.label('track_id')
+        )
+        .join(
+            User,
+            User.user_id == Repost.user_id
+        )
+        .filter(
+            Repost.repost_item_id.in_(track_ids),
+            Repost.is_current == True,
+            User.is_current == True
+        )
+        .subquery()
+    )
+    # Join each user id against their followers and count them
+    query = (
+        session.query(
+            subquery.c.track_id,
+            func.count(subquery.c.user_id)
+        )
+        .select_from(subquery)
+        .join(
+            Follow,
+            subquery.c.user_id == Follow.followee_user_id
+        )
+        .filter(
+            Follow.is_current == True
+        )
+        .group_by(subquery.c.track_id)
+    )
+
+    return query.all()
+
+
 def get_save_counts_query(
         session,
         query_by_user_flag,
