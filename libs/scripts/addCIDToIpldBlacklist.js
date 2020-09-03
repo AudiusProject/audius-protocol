@@ -39,7 +39,11 @@ async function run () {
     // manually check ipld blacklist table to see if CID was added
     // NOTE: might need to wait ~60s
   } catch (e) {
-    // absorb error as they are logged out in helper methods
+    console.error(e.message)
+    if (e.message.includes('Incorrect script usage')) {
+      console.log('Available environments are:')
+      console.log(networks)
+    }
   }
 }
 
@@ -51,12 +55,9 @@ function parseArgs () {
 
   // check appropriate CLI usage
   if (!network || !cid || !networks.has(network)) {
-    console.error(
-      `Incorrect script usage for input env (${network}) and (cid) ${cid}. \nPlease follow the structure 'node addCIDToIpldBlacklist.js <env> <cid>'`
-    )
-    console.log('\nAvailable environments are: ')
-    console.log(networks)
-    throw new Error()
+    let errorMessage = `Incorrect script usage for input env (${network}) and (cid) ${cid}.`
+    errorMessage += "\nPlease follow the structure 'node addCIDToIpldBlacklist.js <env> <cid>'"
+    throw new Error(errorMessage)
   }
 
   return { network, cid }
@@ -68,7 +69,7 @@ function decodeCID (cid) {
   try {
     decodedCID = Utils.decodeMultihash(cid)
   } catch (e) {
-    console.error(`Error with decoding input CID ${cid}: ${e}`)
+    throw new Error(`Error with decoding input CID ${cid}: ${e}`)
   }
   return decodedCID
 }
@@ -100,8 +101,7 @@ async function createAndInitLibs (blacklisterPublicKey) {
     audiusLibs = new AudiusLibs(libsConfig)
     await audiusLibs.init()
   } catch (e) {
-    console.error(`Error with initializing libs: ${e}`)
-    throw new Error()
+    throw new Error(`Error with initializing libs: ${e}`)
   }
 
   return audiusLibs
@@ -115,8 +115,7 @@ async function addIPLDTxToChain (audiusLibs, digest) {
       digest
     )
   } catch (e) {
-    console.error(`Error with adding IPLD blacklist txn: ${e}`)
-    throw new Error()
+    throw new Error(`Error with adding IPLD blacklist txn: ${e}`)
   }
 
   return ipldTxReceipt
