@@ -70,8 +70,6 @@ def get_users_route():
 
 # Returns all tracks (paginated) with each track's repost count
 # optionally filters by track ids
-
-
 @bp.route("/tracks", methods=("GET",))
 @record_metrics
 def get_tracks_route():
