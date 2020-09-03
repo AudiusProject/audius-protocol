@@ -45,6 +45,6 @@ describe('Test formatContentRange', () => {
 
   it('Should use size when end is unset', () => {
     const header = formatContentRange(1024, undefined, 4096)
-    assert.strictEqual(header, 'bytes 1024-4096/4096')
+    assert.strictEqual(header, 'bytes 1024-4095/4096')
   })
 })
