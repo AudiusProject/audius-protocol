@@ -14,33 +14,38 @@ const createMethodSignature = (methodName, argumentTypes) => {
 
 
 /**
- * txn returns many fields we don't care about on the Proposal object;
- * prune these off.
+ * Prune off extraneous fields from proposal returned by txn
  */
-const formatProposal = (returnedProposal) => ({
-  proposalId: parseInt(returnedProposal.proposalId),
-  proposer: returnedProposal.proposer,
-  submissionBlockNumber: parseInt(returnedProposal.submissionBlockNumber),
-  targetContractRegistryKey: returnedProposal.targetContractRegistryKey,
-  targetContractAddress: returnedProposal.targetContractAddress,
-  callValue: parseInt(returnedProposal.callValue),
-  functionSigntaure: returnedProposal.functionSignature,
-  callData: returnedProposal.callData,
-  outcome: parseInt(returnedProposal.outcome),
-  numVotes: parseInt(returnedProposal.numVotes),
+const formatProposal = (proposal) => ({
+  proposalId: parseInt(proposal.proposalId),
+  proposer: proposal.proposer,
+  submissionBlockNumber: parseInt(proposal.submissionBlockNumber),
+  targetContractRegistryKey: proposal.targetContractRegistryKey,
+  targetContractAddress: proposal.targetContractAddress,
+  callValue: parseInt(proposal.callValue),
+  functionSigntaure: proposal.functionSignature,
+  callData: proposal.callData,
+  outcome: parseInt(proposal.outcome),
+  numVotes: parseInt(proposal.numVotes),
   /* voteMagnitude can be extremely large (sum of stakes), so left as strings*/
-  voteMagnitudeYes: returnedProposal.voteMagnitudeYes,
-  voteMagnitudeNo: returnedProposal.voteMagnitudeNo,
+  voteMagnitudeYes: proposal.voteMagnitudeYes,
+  voteMagnitudeNo: proposal.voteMagnitudeNo,
 })
 
-// TODO: figure out how to represent the vote value (rather than just an integer)
 
-const formatVote = (returnedVote) => ({
-  proposalId: returnedVote.proposalId,
-  voter: returnedVote.voter,
-  vote: returnedVote.vote,
-  voterStake: returnedVote.voterStake
-})
+
+/**
+ * Prune off extraneous fields from vote event
+ */
+const formatVote = (voteEvent) => {
+  const event = voteEvent.returnValues
+  return {
+    proposalId: event.proposalId,
+    voter: event.voter,
+    vote: event.vote,
+    voterStake: event.voterStake
+  }
+}
 
 class GovernanceClient extends GovernedContractClient {
 
@@ -220,7 +225,7 @@ class GovernanceClient extends GovernedContractClient {
       'evaluateProposalOutcome',
       proposalId
     )
-    const outcome = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    const outcome = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT * 2)
     return outcome
   }
 
@@ -229,11 +234,13 @@ class GovernanceClient extends GovernedContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents("ProposalVoteSubmitted", { fromBlock: queryStartBlock, filter: { proposalId: proposalId } })
-    events = events
-      .map(e => e.returnValues)
-      .map(formatVote)
-    return events
+    let events = await contract.getPastEvents("ProposalVoteSubmitted", {
+      fromBlock: queryStartBlock,
+      filter: {
+        proposalId: proposalId
+      }
+    })
+    return events.map(formatVote)
   }
 
   async getVoteUpdates({
@@ -241,12 +248,43 @@ class GovernanceClient extends GovernedContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents("ProposalVoteUpdated", { fromBlock: queryStartBlock, filter: { proposalId: proposalId } })
-    events = events
-      .map(e => e.returnValues)
-      .map(formatVote)
-    return events
+    let events = await contract.getPastEvents("ProposalVoteUpdated", {
+      fromBlock: queryStartBlock,
+      filter: {
+        proposalId: proposalId
+      }
+    })
+    return events.map(formatVote)
   }
+
+  async getVoteSubmissionsByAddress({
+    addresses,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    let events = await contract.getPastEvents("ProposalVoteSubmitted", {
+      fromBlock: queryStartBlock,
+      filter: {
+        voter: addresses
+      }
+    })
+    return events.map(formatVote)
+  }
+
+  async getVoteUpdatesByAddress({
+    addresses,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    let events = await contract.getPastEvents("ProposalVoteUpdated", {
+      fromBlock: queryStartBlock,
+      filter: {
+        voter: addresses
+      }
+    })
+    return events.map(formatVote)
+  }
+
 
   // Helpers
 

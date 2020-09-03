@@ -178,7 +178,7 @@ describe('Governance tests', function() {
     assert.equal(inProgressIds2.length, 0)
   })
 
-  it.only('Gets votes by address', async function() {
+  it('Gets votes by address', async function() {
     const id = await submitProposal()
     const proposal = await audius0.ethContracts.GovernanceClient.getProposalById({id})
     const queryStartBlock = proposal.submissionBlockNumber
