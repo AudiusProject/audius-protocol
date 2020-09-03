@@ -150,7 +150,7 @@ def parse_playlist_event(
 
     if event_type == playlist_event_types_lookup["playlist_track_added"]:
         if getattr(playlist_record, 'playlist_contents') is not None:
-            logger.info('playlist event playlist_track_added')
+            logger.info('playlists.py | Processing playlist event: [playlist_track_added]')
             old_playlist_content_array = playlist_record.playlist_contents["track_ids"]
             new_playlist_content_array = old_playlist_content_array
             # Append new track object
@@ -162,7 +162,7 @@ def parse_playlist_event(
 
     if event_type == playlist_event_types_lookup["playlist_track_deleted"]:
         if getattr(playlist_record, 'playlist_contents') is not None:
-            logger.info('playlist event playlist_track_deleted')
+            logger.info('playlists.py | Processing playlist event: [playlist_track_deleted]')
             old_playlist_content_array = playlist_record.playlist_contents["track_ids"]
             new_playlist_content_array = []
             deleted_track_id = event_args._deletedTrackId
@@ -180,7 +180,7 @@ def parse_playlist_event(
 
     if event_type == playlist_event_types_lookup["playlist_tracks_ordered"]:
         if getattr(playlist_record, 'playlist_contents') is not None:
-            logger.info('playlist event playlist_tracks_ordered')
+            logger.info('playlists.py | Processing playlist event: [playlist_tracks_ordered]')
             old_playlist_content_array = playlist_record.playlist_contents["track_ids"]
 
             intermediate_track_time_lookup_dict = {}
@@ -221,21 +221,21 @@ def parse_playlist_event(
         # If cid is in blacklist, do not index playlist
         is_blacklisted = is_blacklisted_ipld(session, playlist_image_multihash)
         if is_blacklisted:
-            logger.info(f"Encountered blacklisted CID {playlist_image_multihash} in indexing playlist image multihash")
+            logger.info(f"playlists.py | Encountered blacklisted CID {playlist_image_multihash} in indexing playlist image multihash")
             return None
 
         playlist_record.playlist_image_multihash = None
-        if playlist_image_multihash:
-            logger.info(f"playlists.py | Processing playlist image {playlist_image_multihash}")
+            logger.info(f"playlists.py | Processing playlist image {playlist_record.playlist_image_multihash}")
             try:
-                # if playlist_image_multihash CID is of a dir, store under _sizes field instead
-                is_directory = update_task.ipfs_client.multihash_is_directory(playlist_image_multihash)
+                is_directory = update_task.ipfs_client.multihash_is_directory(playlist_record.playlist_image_multihash)
                 if is_directory:
-                    playlist_record.playlist_image_sizes_multihash = playlist_image_multihash
+                    playlist_record.playlist_image_sizes_multihash = playlist_record.playlist_image_multihash
+                    playlist_record.playlist_image_multihash = None
             except Exception as e:
                 # we are unable to get the playlist image
                 if 'invalid multihash' in str(e):
                     playlist_record.playlist_image_sizes_multihash = None
+                    playlist_record.playlist_image_multihash = None
                 else:
                     raise e
 
