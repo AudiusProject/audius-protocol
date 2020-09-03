@@ -6,13 +6,13 @@ const config = require('../config.js')
 const audiusNotificationUrl = config.get('audiusNotificationUrl')
 
 async function pushAnnouncementNotifications () {
+  // Read-only tx
+  const tx = await models.sequelize.transaction()
   try {
     const requestUrl = `${audiusNotificationUrl}/index-mobile.json`
     logger.info(`pushAnnouncementNotifications - ${requestUrl}`)
     const response = await axios.get(requestUrl)
 
-    // Read-only tx
-    const tx = await models.sequelize.transaction()
     if (response.data && Array.isArray(response.data.notifications)) {
       // TODO: Worth slicing?
       for (var notif of response.data.notifications) {
@@ -26,7 +26,8 @@ async function pushAnnouncementNotifications () {
     // Drain pending announcements
     await drainPublishedAnnouncements()
   } catch (e) {
-    logger.error(`pushAnnouncementNotifications ${e}`)
+    logger.error(`pushAnnouncementNotifications error: ${e}`)
+    await tx.rollback() // abort the tx
   }
 }
 
