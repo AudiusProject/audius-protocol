@@ -15,7 +15,6 @@ const mkdir = promisify(fs.mkdir)
 const config = require('./config')
 const models = require('./models')
 const Utils = require('./utils')
-const { incrementAndFetchCNodeUserClock } = require('./utils/incrementAndFetchCNodeUserClock')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -29,7 +28,7 @@ const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
  * @dev - only call this function when file is not already stored to disk
  *      - if it is, then use saveFileToIPFSFromFS()
  */
-async function saveFileFromBuffer (req, buffer, fileType) {
+async function saveFileFromBuffer (req, buffer, fileType, clockVal, transaction = null) {
   // make sure user has authenticated before saving file
   if (!req.session.cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
@@ -43,18 +42,18 @@ async function saveFileFromBuffer (req, buffer, fileType) {
 
   await writeFile(dstPath, buffer)
 
-  // increment and fetch cnodeUser.clock value
-  const newClockVal = await incrementAndFetchCNodeUserClock(req)
-
   // add reference to file to database
-  const file = (await models.File.create({
-    cnodeUserUUID: req.session.cnodeUserUUID,
-    multihash: multihash,
-    sourceFile: req.fileName,
-    storagePath: dstPath,
-    type: fileType,
-    clock: newClockVal
-  })).dataValues
+  const file = (await models.File.create(
+    {
+      cnodeUserUUID: req.session.cnodeUserUUID,
+      multihash: multihash,
+      sourceFile: req.fileName,
+      storagePath: dstPath,
+      type: fileType,
+      clock: clockVal
+    },
+    { transaction }
+  )).dataValues
 
   req.logger.info('\nAdded file:', multihash, 'file id', file.fileUUID)
   return { multihash: multihash, fileUUID: file.fileUUID }
@@ -89,7 +88,7 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, clockVa
   req.logger.info(`Time taken in saveFileToIpfsFromFS to copyFileSync: ${Date.now() - codeBlockTimeStart}`)
 
   // add reference to file to database
-  let file = await models.File.create(
+  const file = (await models.File.create(
     {
       cnodeUserUUID: req.session.cnodeUserUUID,
       multihash: multihash,
@@ -99,8 +98,7 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, clockVa
       clock: clockVal
     },
     { transaction }
-  )
-  file = file.dataValues
+  )).dataValues
 
   req.logger.info(`Added file: ${multihash} for fileUUID ${file.fileUUID} from sourceFile ${sourceFile}`)
   return { multihash: multihash, fileUUID: file.fileUUID }

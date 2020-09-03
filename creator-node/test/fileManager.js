@@ -24,7 +24,8 @@ const req = {
     cnodeUserUUID: uuid()
   },
   logger: {
-    info: () => {}
+    info: () => {},
+    error: () => {}
   },
   app: {
     get: key => {
@@ -47,6 +48,7 @@ const metadata = {
   owner_id: 1
 }
 const buffer = Buffer.from(JSON.stringify(metadata))
+const clockVal = 1
 
 describe('test fileManager', () => {
   afterEach(function () {
@@ -72,7 +74,7 @@ describe('test fileManager', () => {
       }
 
       try {
-        await saveFileToIPFSFromFS(reqOverride, srcPath, fileType, sourceFile)
+        await saveFileToIPFSFromFS(reqOverride, srcPath, fileType, sourceFile, clockVal)
         assert.fail('Should not have passed if cnodeUserUUID is not present in request.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'User must be authenticated to save a file')
@@ -88,7 +90,7 @@ describe('test fileManager', () => {
       sinon.stub(ipfs, 'addFromFs').rejects(new Error('ipfs is down!'))
 
       try {
-        await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile)
+        await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile, clockVal)
         assert.fail('Should not have passed if ipfs is down.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'ipfs is down!')
@@ -104,7 +106,7 @@ describe('test fileManager', () => {
       sinon.stub(fs, 'copyFileSync').throws(new Error('Failed to copy files!!'))
 
       try {
-        await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile)
+        await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile, clockVal)
         assert.fail('Should not have passed if file copying fails.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'Failed to copy files!!')
@@ -117,10 +119,10 @@ describe('test fileManager', () => {
      * Then: an error is thrown
      */
     it('should throw an error if db connection is down', async () => {
-      sinon.stub(models.File, 'findOrCreate').rejects(new Error('Failed to find or create file!!!'))
+      sinon.stub(models.File, 'create').rejects(new Error('Failed to find or create file!!!'))
 
       try {
-        await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile)
+        await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile, clockVal)
         assert.fail('Should not have passed if db connection is down.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'Failed to find or create file!!!')
@@ -136,10 +138,10 @@ describe('test fileManager', () => {
      *  - that segment should be present in IPFS
      */
     it('should pass saving file to ipfs from fs (happy path)', async () => {
-      sinon.stub(models.File, 'findOrCreate').returns([{ dataValues: 'data' }])
+      sinon.stub(models.File, 'create').returns({ dataValues: { fileUUID: 'uuid' } })
 
       try {
-        await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile)
+        await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile, clockVal)
       } catch (e) {
         assert.fail(e.message)
       }
@@ -231,10 +233,10 @@ describe('test fileManager', () => {
      * Then: an error is thrown
      */
     it('should throw an error if writing reference to db fails', async () => {
-      sinon.stub(models.File, 'findOrCreate').rejects(new Error('Failed to find or create file!!!'))
+      sinon.stub(models.File, 'create').rejects(new Error('Failed to find or create file!!!'))
 
       try {
-        await saveFileFromBuffer(req, buffer, 'metadata')
+        await saveFileFromBuffer(req, buffer, 'metadata', clockVal)
         assert.fail('Should not have if db connection is down.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'Failed to find or create file!!!')
@@ -247,11 +249,11 @@ describe('test fileManager', () => {
     * Then: ipfs, fs, and db should have the buffer contents
     */
     it('should pass saving file from buffer (happy path)', async () => {
-      sinon.stub(models.File, 'findOrCreate').returns([{ dataValues: { fileUUID: 'uuid' } }])
+      sinon.stub(models.File, 'create').returns({ dataValues: { fileUUID: 'uuid' } })
 
       let resp
       try {
-        resp = await saveFileFromBuffer(req, buffer, 'metadata')
+        resp = await saveFileFromBuffer(req, buffer, 'metadata', clockVal)
       } catch (e) {
         assert.fail(e.message)
       }

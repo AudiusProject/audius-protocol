@@ -31,5 +31,5 @@ const incrementAndFetchCNodeUserClock = async (req, incrementBy = 1) => {
 }
 
 module.exports = {
-    incrementAndFetchCNodeUserClock
+  incrementAndFetchCNodeUserClock
 }

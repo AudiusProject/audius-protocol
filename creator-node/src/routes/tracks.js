@@ -237,12 +237,25 @@ module.exports = function (app) {
     // Store + pin metadata multihash to disk + IPFS.
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
 
+    const transaction = await models.sequelize.transaction()
     let multihash, fileUUID
     try {
-      const saveFileFromBufferResp = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
+      // increment and fetch cnodeUser.clock value
+      const newClockVal = await incrementAndFetchCNodeUserClock(req)
+
+      const saveFileFromBufferResp = await saveFileFromBuffer(
+        req,
+        metadataBuffer,
+        'metadata',
+        newClockVal,
+        transaction
+      )
       multihash = saveFileFromBufferResp.multihash
       fileUUID = saveFileFromBufferResp.fileUUID
+
+      await transaction.commit()
     } catch (e) {
+      await transaction.rollback()
       return errorResponseServerError(`Could not save file to disk, ipfs, and/or db: ${e}`)
     }
 
@@ -322,9 +335,9 @@ module.exports = function (app) {
         blockchainId: blockchainTrackId,
         coverArtFileUUID,
         clock: newClockVal
-        }, { transaction: t }
+      }, { transaction: t }
       )
-      
+
       /** Associate matching segment files on DB with new/updated track. */
 
       const trackSegmentCIDs = metadataJSON.track_segments.map(segment => segment.multihash)
