@@ -5,6 +5,7 @@ Test fixtures to support unit testing
 from unittest.mock import MagicMock
 import pytest
 import fakeredis
+from src import create_app
 import src.utils.redis_connection
 import src.utils.web3_provider
 import src.utils.db_session

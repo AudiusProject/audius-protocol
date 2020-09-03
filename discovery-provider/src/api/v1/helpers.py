@@ -110,7 +110,7 @@ def extend_remix_of(remix_of):
     return remix_of
 
 def parse_bool_param(param):
-    if not isinstance(params, str):
+    if not isinstance(param, str):
         return None
     param = param.lower()
     if param == 'true':
