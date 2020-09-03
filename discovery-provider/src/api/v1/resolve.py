@@ -20,18 +20,18 @@ class Resolve(Resource):
     @ns.doc(
         id="""Resolve""",
         params={
-            'url': 'Url to resolve. Either fully formed with protocol and domain or the absolute path'
+            'url': 'URL to resolve. Either fully formed URL (https://audius.co) or just the absolute path'
         },
         responses={
-            307: 'Internal redirect'
+            302: 'Internal redirect'
         }
     )
     def get(self):
         """
-        Resolves a provided Audius app URL to the canonical API resource it represents.
+        Resolves and redirects a provided Audius app URL to the API resource URL it represents.
 
-        This endpoint returns a 307 redirect to the canonical API route.
-        Follow the redirect to request the resource from the API.
+        This endpoint allows you to lookup and access API resources when you only know the
+        audius.co URL.
         Tracks, Playlists, and Users are supported.
         """
         args = resolve_route_parser.parse_args()
@@ -45,7 +45,7 @@ class Resolve(Resource):
                 if not resolved_url:
                     return abort_not_found(url)
 
-                return redirect(resolved_url, code=307)
+                return redirect(resolved_url, code=302)
 
         except Exception as e:
             logger.warning(e)
