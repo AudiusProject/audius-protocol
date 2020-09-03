@@ -8,7 +8,7 @@ from src.models import Track, RepostType, Follow, SaveType
 from src.utils.config import shared_config
 from src.queries import response_name_constants
 from src.queries.query_helpers import \
-    get_repost_karma, get_repost_counts, get_save_counts, get_genre_list
+    get_karma, get_repost_counts, get_save_counts, get_genre_list
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +159,7 @@ def generate_trending(db, time, genre, limit, offset):
             if save_type == SaveType.track
         }
 
-        karma_query = get_repost_karma(session, tuple(not_deleted_track_ids))
+        karma_query = get_karma(session, tuple(not_deleted_track_ids))
         karma_counts_for_id = {track_id: karma for (track_id, karma) in karma_query}
 
         trending_tracks = []
