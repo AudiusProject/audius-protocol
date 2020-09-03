@@ -212,18 +212,17 @@ def parse_track_event(
                 logger.info(f"Encountered blacklisted cover art CID {track_metadata_multihash} in indexing new track")
                 return None
 
-            cover_art_multihash = track_record.cover_art
-            track_record.cover_art = None
-
             logger.info(f"tracks.py | Processing track cover art {track_record.cover_art}")
             try:
                 is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
                 if is_directory:
-                    track_record.cover_art_sizes = cover_art_multihash
+                    track_record.cover_art_sizes = track_record.cover_art
+                    track_record.cover_art = None
             except Exception as e:
                 # we are unable to get the cover art
                 if 'invalid multihash' in str(e):
                     track_record.cover_art_sizes = None
+                    track_record.cover_art = None
                 else:
                     raise e
 
