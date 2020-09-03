@@ -16,6 +16,8 @@ const networks = new Set([
 let config
 
 // node addCIDToIpldBlacklist.js <env> <cid>
+// From libs root:
+// node scripts/addCIDToIpldBlacklist.js development QmSH5gJPHg9xLzV823ty8BSGyHNP6ty22bgLsv5MLY3kBq
 
 async function run () {
   try {
