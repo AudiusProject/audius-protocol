@@ -6,14 +6,13 @@ const config = require('../config.js')
 const audiusNotificationUrl = config.get('audiusNotificationUrl')
 
 async function pushAnnouncementNotifications () {
-  let tx
+  // Read-only tx
+  const tx = await models.sequelize.transaction()
   try {
     const requestUrl = `${audiusNotificationUrl}/index-mobile.json`
     logger.info(`pushAnnouncementNotifications - ${requestUrl}`)
     const response = await axios.get(requestUrl)
 
-    // Read-only tx
-    tx = await models.sequelize.transaction()
     if (response.data && Array.isArray(response.data.notifications)) {
       // TODO: Worth slicing?
       for (var notif of response.data.notifications) {
