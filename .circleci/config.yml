@@ -25,6 +25,7 @@ jobs:
       - run:
           name: execute
           command: |
+            set -e
             export PROTOCOL_DIR=/home/circleci/project/
             source ~/.bash_profile
             nvm install v10.16
@@ -304,13 +305,14 @@ jobs:
             export delegatePrivateKey=0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d
             export storagePath="test_file_storage"
             export ipfsPort=5001
+            npm run test:unit
             npm run test:ci
 
   test-discovery-provider:
     docker:
       - image: circleci/python:3.7-stretch-node-browsers-legacy
         # Discovery provider dependencies
-      - image: circleci/postgres:9.6-alpine
+      - image: circleci/postgres:11.1
         environment:
           POSTGRES_USER: postgres
           POSTGRES_DB: audius_discovery
@@ -549,10 +551,17 @@ workflows:
           filters:
             branches:
               ignore: /(^master$)|(.*?hotfix(.*)?)/
-      - test-mad-dog-e2e:
+      - hold-test-mad-dog-e2e:
+          type: approval
           filters:
             branches:
-              only: /(^master$)/
+              ignore: /(^master$)|(.*?mad-?dog(.*)?)/
+      - test-mad-dog-e2e:
+          requires:
+            - hold-test-mad-dog-e2e
+          filters:
+            branches:
+              ignore: /(^master$)|(.*?mad-?dog(.*)?)/
 
 
 
@@ -623,6 +632,10 @@ workflows:
               only: /^@audius/creator-node@\d+\.\d+\.\d+/
             branches:
               only: /(^master$)|(.*?hotfix(.*)?)/
+      - test-mad-dog-e2e:
+          filters:
+            branches:
+              only: /(^master$)|(.*?mad-?dog(.*)?)/
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node

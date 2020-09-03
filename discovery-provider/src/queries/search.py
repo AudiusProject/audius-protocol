@@ -4,6 +4,8 @@ from src.queries.queries import to_dict
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.queries.search_queries import SearchKind, search
 
+from src.utils.redis_metrics import record_metrics
+
 bp = Blueprint("search_queries", __name__)
 
 def validate_search_args(args):
@@ -23,6 +25,7 @@ def validate_search_args(args):
 
 # Returns records that match a search term. usage is ```/search/full?query=<search term> ```
 @bp.route("/search/full", methods=("GET",))
+@record_metrics
 def search_full():
     args = to_dict(request.args)
     validation_error = validate_search_args(args)
@@ -48,6 +51,7 @@ def search_full():
 # lightweight search used for autocomplete - does not populate object metadata,
 #   and appends user data for every track/playlist
 @bp.route("/search/autocomplete", methods=("GET",))
+@record_metrics
 def search_autocomplete():
     args = to_dict(request.args)
     validation_error = validate_search_args(args)
