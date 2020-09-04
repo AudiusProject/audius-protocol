@@ -1,4 +1,4 @@
-const GovernedContractClient = require('../contracts/GovernedContractClient')
+const ContractClient = require('../contracts/ContractClient')
 
 const DEFAULT_GAS_AMOUNT = 200000
 
@@ -11,7 +11,6 @@ const DEFAULT_GAS_AMOUNT = 200000
 const createMethodSignature = (methodName, argumentTypes) => {
   return `${methodName}(${argumentTypes.join(',')})`
 }
-
 
 /**
  * Prune off extraneous fields from proposal returned by txn
@@ -27,12 +26,10 @@ const formatProposal = (proposal) => ({
   callData: proposal.callData,
   outcome: parseInt(proposal.outcome),
   numVotes: parseInt(proposal.numVotes),
-  /* voteMagnitude can be extremely large (sum of stakes), so left as strings*/
+  /* voteMagnitude can be extremely large (sum of stakes), so left as strings */
   voteMagnitudeYes: proposal.voteMagnitudeYes,
-  voteMagnitudeNo: proposal.voteMagnitudeNo,
+  voteMagnitudeNo: proposal.voteMagnitudeNo
 })
-
-
 
 /**
  * Prune off extraneous fields from vote event
@@ -47,18 +44,15 @@ const formatVote = (voteEvent) => {
   }
 }
 
-class GovernanceClient extends GovernedContractClient {
+/**
+ * Represent an instance of a proposal vote.
+ */
+const Vote = Object.freeze({
+  no: 1,
+  yes: 2
+})
 
-  /**
-   * Represent an instance of a proposal vote.
-   *
-   * @static
-   * @memberof GovernanceClient
-   */
-  static Vote = Object.freeze({
-    no: 1,
-    yes: 2
-  })
+class GovernanceClient extends ContractClient {
 
   constructor (
     ethWeb3Manager,
@@ -143,9 +137,9 @@ class GovernanceClient extends GovernedContractClient {
     return this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
   }
 
-  async getProposalById({
+  async getProposalById (
     id
-  }) {
+  ) {
     const method = await this.getMethod(
       'getProposalById',
       id
@@ -155,9 +149,9 @@ class GovernanceClient extends GovernedContractClient {
     return formattedProposal
   }
 
-  async getProposalDescriptionById({
+  async getProposalDescriptionById (
     id
-  }) {
+  ) {
     const method = await this.getMethod(
       'getProposalDescriptionById',
       id
@@ -165,36 +159,36 @@ class GovernanceClient extends GovernedContractClient {
     return method.call()
   }
 
-  async getInProgressProposals() {
+  async getInProgressProposals () {
     const method = await this.getMethod('getInProgressProposals')
     const ids = await method.call()
     return ids
   }
 
-  async submitProposal({
+  async submitProposal ({
     targetContractRegistryKey,
     callValue,
     functionSignature,
     callData,
-    description}) {
-      const method = await this.getMethod(
-        'submitProposal',
-        targetContractRegistryKey,
-        callValue,
-        functionSignature,
-        callData,
-        description,
-      )
-      const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT * 10)
-      if (tx && tx.events && tx.events.ProposalSubmitted && tx.events.ProposalSubmitted.returnValues) {
-        const id = tx.events.ProposalSubmitted.returnValues.proposalId
-        return id
-      }
-      throw new Error("No proposal Id")
-
+    description
+  }) {
+    const method = await this.getMethod(
+      'submitProposal',
+      targetContractRegistryKey,
+      callValue,
+      functionSignature,
+      callData,
+      description
+    )
+    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT * 10)
+    if (tx && tx.events && tx.events.ProposalSubmitted && tx.events.ProposalSubmitted.returnValues) {
+      const id = tx.events.ProposalSubmitted.returnValues.proposalId
+      return id
+    }
+    throw new Error('No proposal Id')
   }
 
-  async submitVote({
+  async submitVote ({
     proposalId,
     vote
   }) {
@@ -206,7 +200,7 @@ class GovernanceClient extends GovernedContractClient {
     await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
   }
 
-  async updateVote({
+  async updateVote ({
     proposalId,
     vote
   }) {
@@ -218,9 +212,9 @@ class GovernanceClient extends GovernedContractClient {
     await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
   }
 
-  async evaluateProposalOutcome({
+  async evaluateProposalOutcome (
     proposalId
-  }) {
+  ) {
     const method = await this.getMethod(
       'evaluateProposalOutcome',
       proposalId
@@ -229,12 +223,12 @@ class GovernanceClient extends GovernedContractClient {
     return outcome
   }
 
-  async getVotes({
+  async getVotes ({
     proposalId,
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents("ProposalVoteSubmitted", {
+    let events = await contract.getPastEvents('ProposalVoteSubmitted', {
       fromBlock: queryStartBlock,
       filter: {
         proposalId: proposalId
@@ -243,12 +237,12 @@ class GovernanceClient extends GovernedContractClient {
     return events.map(formatVote)
   }
 
-  async getVoteUpdates({
+  async getVoteUpdates ({
     proposalId,
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents("ProposalVoteUpdated", {
+    let events = await contract.getPastEvents('ProposalVoteUpdated', {
       fromBlock: queryStartBlock,
       filter: {
         proposalId: proposalId
@@ -257,12 +251,12 @@ class GovernanceClient extends GovernedContractClient {
     return events.map(formatVote)
   }
 
-  async getVoteSubmissionsByAddress({
+  async getVoteSubmissionsByAddress ({
     addresses,
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents("ProposalVoteSubmitted", {
+    let events = await contract.getPastEvents('ProposalVoteSubmitted', {
       fromBlock: queryStartBlock,
       filter: {
         voter: addresses
@@ -271,12 +265,12 @@ class GovernanceClient extends GovernedContractClient {
     return events.map(formatVote)
   }
 
-  async getVoteUpdatesByAddress({
+  async getVoteUpdatesByAddress ({
     addresses,
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents("ProposalVoteUpdated", {
+    let events = await contract.getPastEvents('ProposalVoteUpdated', {
       fromBlock: queryStartBlock,
       filter: {
         voter: addresses
@@ -284,7 +278,6 @@ class GovernanceClient extends GovernedContractClient {
     })
     return events.map(formatVote)
   }
-
 
   // Helpers
 
@@ -294,9 +287,9 @@ class GovernanceClient extends GovernedContractClient {
    * @param {Array<string>} types
    * @param {Array<string>} values
    */
-  abiEncode(web3, types, values) {
+  abiEncode (web3, types, values) {
     return web3.eth.abi.encodeParameters(types, values)
   }
 }
 
-module.exports = GovernanceClient
+module.exports = { GovernanceClient, Vote }

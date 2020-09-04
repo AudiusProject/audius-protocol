@@ -2,9 +2,8 @@ const helpers = require('./helpers')
 const assert = require('assert')
 const { convertAudsToWeiBN } = require('../initScripts/helpers/utils')
 const nock = require('nock')
-const GovernanceClient = require('../src/services/ethContracts/governanceClient')
+const {GovernanceClient} = require('../src/services/ethContracts/governanceClient')
 const time = require('@openzeppelin/test-helpers/src/time')
-const { before } = require('lodash')
 const { initializeLibConfig } = require('./helpers')
 const AudiusLibs = require('../src')
 
@@ -89,7 +88,7 @@ const evaluateProposal = async (id, shouldVote = true) => {
   await time.advanceBlockTo(desired)
 
   // Evaluate
-  await audius0.ethContracts.GovernanceClient.evaluateProposalOutcome({ proposalId: id })
+  await audius0.ethContracts.GovernanceClient.evaluateProposalOutcome(id)
 }
 
 describe('Governance tests', function() {
@@ -117,7 +116,7 @@ describe('Governance tests', function() {
   it('Gets submitted proposal by ID', async function() {
     // Submit the proposal
     const id = await submitProposal()
-    const proposal = await audius0.ethContracts.GovernanceClient.getProposalById({id})
+    const proposal = await audius0.ethContracts.GovernanceClient.getProposalById(id)
 
     // Sanity check proposal
     assert.equal(proposal.proposalId, id)
@@ -129,21 +128,21 @@ describe('Governance tests', function() {
     // Submit a yes vote initially
     const voteYes = GovernanceClient.Vote.yes
     await audius0.ethContracts.GovernanceClient.submitVote({proposalId: id, vote: voteYes})
-    const proposal = await audius0.ethContracts.GovernanceClient.getProposalById({id})
+    const proposal = await audius0.ethContracts.GovernanceClient.getProposalById(id)
     assert.equal(parseInt(proposal.voteMagnitudeNo), 0)
     assert.ok(parseInt(proposal.voteMagnitudeYes) > 0)
 
     // Update the vote to be 'no'
     const voteNo = GovernanceClient.Vote.no
     await audius0.ethContracts.GovernanceClient.updateVote({proposalId: id, vote: voteNo})
-    const proposal2 = await audius0.ethContracts.GovernanceClient.getProposalById({id})
+    const proposal2 = await audius0.ethContracts.GovernanceClient.getProposalById(id)
     assert.equal(parseInt(proposal2.voteMagnitudeYes), 0)
     assert.ok(parseInt(proposal2.voteMagnitudeNo) > 0)
   })
 
   it('Queries for votes', async function() {
     const id = await submitProposal()
-    const proposal = await audius0.ethContracts.GovernanceClient.getProposalById({id})
+    const proposal = await audius0.ethContracts.GovernanceClient.getProposalById(id)
     const queryStartBlock = proposal.submissionBlockNumber
     // Test for vote creation
     const voteYes = GovernanceClient.Vote.yes
@@ -162,7 +161,7 @@ describe('Governance tests', function() {
 
   it('Gets proposal description', async function() {
     const id = await submitProposal()
-    const description = await audius0.ethContracts.GovernanceClient.getProposalDescriptionById({id})
+    const description = await audius0.ethContracts.GovernanceClient.getProposalDescriptionById(id)
     assert.equal(description, PROPOSAL_DESCRIPTION)
   })
 

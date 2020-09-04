@@ -50,6 +50,7 @@ npm run truffle-migrate
 #### RUN TESTS #####
 
 cd ../libs/
+node ./initScripts/local.js distribute
 
 # Run unit tests
 npm run test:units
