@@ -15,6 +15,7 @@ from flask.json import dumps
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
+
 logger = logging.getLogger(__name__)
 ns = Namespace('tracks', description='Track related operations')
 

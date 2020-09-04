@@ -14,18 +14,27 @@ def test_get_app_name_metrics(db_mock):
 
     app_names = [{
         'application_name': 'joe',
+        'ip': '192.168.0.1',
         'count': 3,
         'timestamp': date
     }, {
         'application_name': 'joe',
+        'ip': '192.168.0.1',
         'count': 4,
         'timestamp': after_date
     }, {
         'application_name': 'mike',
+        'ip': '192.168.0.1',
         'count': 1,
         'timestamp': date
     }, {
         'application_name': 'ray',
+        'ip': '192.168.0.1',
+        'count': 2,
+        'timestamp': date
+    }, {
+        'application_name': 'ray',
+        'ip': '192.168.0.2',
         'count': 2,
         'timestamp': date
     }]
@@ -36,6 +45,7 @@ def test_get_app_name_metrics(db_mock):
     with db_mock.scoped_session() as session:
         app_name_rows = [AppNameMetrics(
             application_name=app_name['application_name'],
+            ip=app_name['ip'],
             count=app_name['count'],
             timestamp=app_name['timestamp']
         ) for app_name in app_names]
@@ -51,7 +61,9 @@ def test_get_app_name_metrics(db_mock):
 
     assert len(metrics_1) == 2
     assert metrics_1[0]['count'] == 4
+    assert metrics_1[0]['unique_count'] == 1
     assert metrics_1[1]['count'] == 3
+    assert metrics_1[1]['unique_count'] == 1
 
     app_name = 'mike'
     args_2 = {
@@ -62,3 +74,15 @@ def test_get_app_name_metrics(db_mock):
 
     assert len(metrics_2) == 1
     assert metrics_2[0]['count'] == 1
+    assert metrics_2[0]['unique_count'] == 1
+
+    app_name = 'ray'
+    args_2 = {
+        'limit': 10,
+        'start_time': before_date
+    }
+    metrics_2 = get_app_name_metrics(app_name, args_2)
+
+    assert len(metrics_2) == 1
+    assert metrics_2[0]['count'] == 4
+    assert metrics_2[0]['unique_count'] == 2
