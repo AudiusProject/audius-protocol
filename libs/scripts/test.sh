@@ -50,7 +50,6 @@ npm run truffle-migrate
 #### RUN TESTS #####
 
 cd ../libs/
-node ./initScripts/local.js distribute
 
 # Run unit tests
 npm run test:units
@@ -60,6 +59,8 @@ npm run test:units
 # - Data contracts config: registry contract & owner wallet addresses
 # - Eth contracts config: AudiusToken contract, registry contract and owner wallet addresses
 sh ./scripts/migrate_contracts.sh
+
+node ./initScripts/local.js distribute
 
 # run tests
 printf '\nSTART tests:\n\n'
