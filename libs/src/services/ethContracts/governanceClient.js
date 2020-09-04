@@ -53,7 +53,6 @@ const Vote = Object.freeze({
 })
 
 class GovernanceClient extends ContractClient {
-
   constructor (
     ethWeb3Manager,
     contractABI,
@@ -77,13 +76,11 @@ class GovernanceClient extends ContractClient {
    * @param {Contract.method} contractMethod
    */
   getSignatureAndCallData (methodName, contractMethod) {
-    const web3 = this.web3Manager.getWeb3()
-
     const argumentTypes = contractMethod._method.inputs.map(i => i.type)
     const argumentValues = contractMethod.arguments
 
     const signature = createMethodSignature(methodName, argumentTypes)
-    const callData = this.abiEncode(web3, argumentTypes, argumentValues)
+    const callData = this.abiEncode(argumentTypes, argumentValues)
 
     return { signature, callData }
   }
@@ -180,12 +177,13 @@ class GovernanceClient extends ContractClient {
       callData,
       description
     )
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT * 10)
+    // Increased gas because submitting can be expensive
+    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT * 2)
     if (tx && tx.events && tx.events.ProposalSubmitted && tx.events.ProposalSubmitted.returnValues) {
       const id = tx.events.ProposalSubmitted.returnValues.proposalId
       return id
     }
-    throw new Error('No proposal Id')
+    throw new Error('submitProposal: txn malformed')
   }
 
   async submitVote ({
@@ -219,6 +217,7 @@ class GovernanceClient extends ContractClient {
       'evaluateProposalOutcome',
       proposalId
     )
+    // Increase gas because evaluating proposals can be expensive
     const outcome = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT * 2)
     return outcome
   }
@@ -283,12 +282,11 @@ class GovernanceClient extends ContractClient {
 
   /**
    * ABI encodes argument types and values together into one encoded string
-   * @param {Web3} web3
    * @param {Array<string>} types
    * @param {Array<string>} values
    */
-  abiEncode (web3, types, values) {
-    return web3.eth.abi.encodeParameters(types, values)
+  abiEncode (types, values) {
+    return this.web3Manager.getWeb3().eth.abi.encodeParameters(types, values)
   }
 }
 
