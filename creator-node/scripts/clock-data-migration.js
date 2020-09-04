@@ -1,13 +1,19 @@
 const fs = require('fs-extra')
 const assert = require('assert')
 
-const models = require('../src/models')
+const initDB = require('./db.js')
 
 
 const discprovUsersFilePath = './discprov-users.txt'
 
 const usersToRSetMap = {}
 const nodeToUsersMap = {}
+
+const endpointToDbUrl = {
+  'http://cn1_creator-node_1:4000': 'postgres://postgres:postgres@127.0.0.1:4432/audius_creator_node',
+  'http://cn2_creator-node_1:4001': 'postgres://postgres:postgres@127.0.0.1:4433/audius_creator_node',
+  'http://cn3_creator-node_1:4002': 'postgres://postgres:postgres@127.0.0.1:4434/audius_creator_node'
+}
 
 const buildNodeToUsersMap = async () => {
   const fileData = fs.readFileSync(discprovUsersFilePath, 'utf8')
@@ -49,13 +55,24 @@ const populateClockVals = async () => {
   const nodes = Object.keys(nodeToUsersMap)
 
   for (const node of nodes) {
-    for (const { userId, secondaries } of nodeToUsersMap[node]) {
-      // console.log(node, userId, secondaries)
-      // const { userId, secondaries } = userObj
+    // init DB instances
+    const dbUrl = endpointToDbUrl[node]
+    const models = await initDB(dbUrl)
 
-      // const transaction = await models.sequelize.transaction()
-      const resp = await models.CNodeUser.find()
-      console.log(resp)
+    for (const { userId, secondaries } of nodeToUsersMap[node]) {
+      console.log(node, dbUrl, userId, secondaries)
+
+      const transaction = await models.sequelize.transaction()
+
+      const audiusUser = await models.AudiusUser.findAll({
+        where: { "blockchainId": userId },
+        transaction
+      })
+
+      console.log(audiusUser)
+      console.log('\n\n\n\n\n')
+
+      await transaction.commit()
     }
   }
 }

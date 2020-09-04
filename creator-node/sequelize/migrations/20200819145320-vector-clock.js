@@ -5,23 +5,19 @@ module.exports = {
     // Add 'clock2' column to all 4 data tables - TESTING ONLY
     await queryInterface.addColumn('CNodeUsers', 'clock2', {
       type: Sequelize.INTEGER,
-      unique: false,
-      allowNull: false
+      unique: false
     })
     await queryInterface.addColumn('AudiusUsers', 'clock2', {
       type: Sequelize.INTEGER,
-      unique: false,
-      allowNull: false
+      unique: false
     })
     await queryInterface.addColumn('Tracks', 'clock2', {
       type: Sequelize.INTEGER,
-      unique: false,
-      allowNull: false
+      unique: false
     })
     await queryInterface.addColumn('Files', 'clock2', {
       type: Sequelize.INTEGER,
-      unique: false,
-      allowNull: false
+      unique: false
     })
 
 

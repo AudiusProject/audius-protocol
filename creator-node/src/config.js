@@ -386,10 +386,10 @@ const config = convict({
  */
 
 // TODO(DM) - remove these defaults
-const defaultConfigExists = fs.existsSync('../default-config.json')
-if (defaultConfigExists) config.loadFile('../default-config.json')
+const defaultConfigExists = fs.existsSync('default-config.json')
+if (defaultConfigExists) config.loadFile('default-config.json')
 
-if (fs.existsSync('../eth-contract-config.json')) {
+if (fs.existsSync('eth-contract-config.json')) {
   let ethContractConfig = require('../eth-contract-config.json')
   config.load({
     'ethTokenAddress': ethContractConfig.audiusTokenAddress,
@@ -399,7 +399,7 @@ if (fs.existsSync('../eth-contract-config.json')) {
   })
 }
 
-if (fs.existsSync('../contract-config.json')) {
+if (fs.existsSync('contract-config.json')) {
   const dataContractConfig = require('../contract-config.json')
   config.load({
     'dataRegistryAddress': dataContractConfig.registryAddress

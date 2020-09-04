@@ -25,6 +25,9 @@ module.exports = (sequelize, DataTypes) => {
     clock: {
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    clock2: {
+      type: DataTypes.INTEGER
     }
   }, {})
 
