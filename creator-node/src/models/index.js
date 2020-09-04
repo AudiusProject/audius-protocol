@@ -12,6 +12,10 @@ const db = {}
 const sequelize = new Sequelize(globalConfig.get('dbUrl'), {
   logging: true,
   operatorsAliases: false,
+  // dialectOptions: {
+  //   idleTimeoutMillis: 500,
+  //   connectionTimeoutMillis: 500
+  // },
   pool: {
     max: 100,
     min: 5,

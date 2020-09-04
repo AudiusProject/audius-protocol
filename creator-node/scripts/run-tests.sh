@@ -29,7 +29,7 @@ tear_down () {
 run_unit_tests () {
   set +e
   echo Running unit tests...
-  ./node_modules/mocha/bin/mocha src/**/*.test.js
+  ./node_modules/mocha/bin/mocha src/**/*.test.js --timeout 100000 --exit
   set -e
 }
 
@@ -100,7 +100,7 @@ export delegateOwnerWallet="0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
 export delegatePrivateKey="0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d"
 
 # tests
-run_unit_tests
+# run_unit_tests
 run_integration_tests
 
 rm -r $storagePath
