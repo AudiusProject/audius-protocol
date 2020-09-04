@@ -1,4 +1,4 @@
-import logging  # pylint: disable=C0302
+import logging
 from urllib.parse import urljoin
 import requests
 from sqlalchemy import func, desc, text, Integer, and_, bindparam
@@ -813,6 +813,58 @@ def get_repost_counts(
             Repost.created_at >= text(interval)
         )
     return repost_counts_query.all()
+
+
+def get_karma(session, track_ids, time=None):
+    """Gets the total karma for provided track_ids"""
+    reposters = (
+        session.query(
+            Repost.user_id.label('user_id'),
+            Repost.repost_item_id.label('track_id')
+        )
+        .filter(
+            Repost.repost_item_id.in_(track_ids),
+            Repost.is_current == True
+        )
+    )
+    savers = (
+        session.query(
+            Save.user_id.label('user_id'),
+            Save.save_item_id.label('track_id')
+        )
+        .filter(
+            Save.save_item_id.in_(track_ids),
+            Save.is_current == True
+        )
+    )
+    if time is not None:
+        interval = "NOW() - interval '1 {}'".format(time)
+        savers = savers.filter(
+            Repost.created_at >= text(interval)
+        )
+        reposters = reposters.filter(
+            Repost.created_at >= text(interval)
+        )
+
+    saves_and_reposts = reposters.union_all(savers).subquery()
+
+    query = (
+        session.query(
+            saves_and_reposts.c.track_id,
+            func.count(Follow.followee_user_id)
+        )
+        .select_from(saves_and_reposts)
+        .join(
+            Follow,
+            saves_and_reposts.c.user_id == Follow.followee_user_id
+        )
+        .filter(
+            Follow.is_current == True
+        )
+        .group_by(saves_and_reposts.c.track_id)
+    )
+
+    return query.all()
 
 
 def get_save_counts_query(
