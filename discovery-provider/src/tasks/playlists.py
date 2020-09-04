@@ -219,10 +219,12 @@ def parse_playlist_event(
         )
 
         # If cid is in blacklist, do not index playlist
-        is_blacklisted = is_blacklisted_ipld(session, playlist_image_multihash)
+        is_blacklisted = is_blacklisted_ipld(session, playlist_record.playlist_image_multihash)
         if is_blacklisted:
-            logger.info(f"playlists.py | Encountered blacklisted CID {playlist_record.playlist_image_multihash}\
-                in indexing playlist image multihash")
+            logger.info(
+                "playlists.py | Encountered blacklisted CID %s in indexing playlist image multihash",
+                playlist_record.playlist_image_multihash
+            )
             return None
 
         # if playlist_image_multihash CID is of a dir, store under _sizes field instead
