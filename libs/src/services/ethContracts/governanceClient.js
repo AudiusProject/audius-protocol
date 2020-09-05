@@ -13,38 +13,6 @@ const createMethodSignature = (methodName, argumentTypes) => {
 }
 
 /**
- * Prune off extraneous fields from proposal returned by txn
- */
-const formatProposal = (proposal) => ({
-  proposalId: parseInt(proposal.proposalId),
-  proposer: proposal.proposer,
-  submissionBlockNumber: parseInt(proposal.submissionBlockNumber),
-  targetContractRegistryKey: proposal.targetContractRegistryKey,
-  targetContractAddress: proposal.targetContractAddress,
-  callValue: parseInt(proposal.callValue),
-  functionSigntaure: proposal.functionSignature,
-  callData: proposal.callData,
-  outcome: parseInt(proposal.outcome),
-  numVotes: parseInt(proposal.numVotes),
-  /* voteMagnitude can be extremely large (sum of stakes), so left as strings */
-  voteMagnitudeYes: proposal.voteMagnitudeYes,
-  voteMagnitudeNo: proposal.voteMagnitudeNo
-})
-
-/**
- * Prune off extraneous fields from vote event
- */
-const formatVote = (voteEvent) => {
-  const event = voteEvent.returnValues
-  return {
-    proposalId: event.proposalId,
-    voter: event.voter,
-    vote: event.vote,
-    voterStake: event.voterStake
-  }
-}
-
-/**
  * Represent an instance of a proposal vote.
  */
 const Vote = Object.freeze({
@@ -66,6 +34,7 @@ class GovernanceClient extends ContractClient {
     this.audiusTokenClient = audiusTokenClient
     this.stakingProxyClient = stakingProxyClient
     this.isDebug = isDebug
+    this.formatVote = this.formatVote.bind(this)
   }
 
   /**
@@ -92,7 +61,7 @@ class GovernanceClient extends ContractClient {
   ) {
     // 0 eth valued transaction. We don't anticipate needed to attach
     // value to this txn, so default to 0.
-    const callValue0 = this.web3Manager.getWeb3().utils.toBN(0)
+    const callValue0 = this.toBN(0)
 
     const method = await this.getMethod(
       'guardianExecuteTransaction',
@@ -102,6 +71,12 @@ class GovernanceClient extends ContractClient {
       callData
     )
     return method
+  }
+
+  async getVotingPeriod () {
+    const method = await this.getMethod('getVotingPeriod')
+    const period = await method.call()
+    return parseInt(period)
   }
 
   async setVotingPeriod (
@@ -117,6 +92,24 @@ class GovernanceClient extends ContractClient {
       callData
     )
     return this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+  }
+
+  async getVotingQuorumPercent () {
+    const method = await this.getMethod('getVotingQuorumPercent')
+    const percent = await method.call()
+    return parseInt(percent)
+  }
+
+  async getExecutionDelay () {
+    const method = await this.getMethod('getExecutionDelay')
+    const delay = await method.call()
+    return parseInt(delay)
+  }
+
+  async getMaxDescriptionLength () {
+    const method = await this.getMethod('getMaxDescriptionLength')
+    const length = await method.call()
+    return parseInt(length)
   }
 
   async setExecutionDelay (
@@ -142,7 +135,7 @@ class GovernanceClient extends ContractClient {
       id
     )
     const proposal = await method.call()
-    const formattedProposal = formatProposal(proposal)
+    const formattedProposal = this.formatProposal(proposal)
     return formattedProposal
   }
 
@@ -151,6 +144,16 @@ class GovernanceClient extends ContractClient {
   ) {
     const method = await this.getMethod(
       'getProposalDescriptionById',
+      id
+    )
+    return method.call()
+  }
+
+  async getProposalTargetContractHash (
+    id
+  ) {
+    const method = await this.getMethod(
+      'getProposalTargetContractHash',
       id
     )
     return method.call()
@@ -233,7 +236,7 @@ class GovernanceClient extends ContractClient {
         proposalId: proposalId
       }
     })
-    return events.map(formatVote)
+    return events.map(this.formatVote)
   }
 
   async getVoteUpdates ({
@@ -247,7 +250,7 @@ class GovernanceClient extends ContractClient {
         proposalId: proposalId
       }
     })
-    return events.map(formatVote)
+    return events.map(this.formatVote)
   }
 
   async getVoteSubmissionsByAddress ({
@@ -261,7 +264,7 @@ class GovernanceClient extends ContractClient {
         voter: addresses
       }
     })
-    return events.map(formatVote)
+    return events.map(this.formatVote)
   }
 
   async getVoteUpdatesByAddress ({
@@ -275,7 +278,20 @@ class GovernanceClient extends ContractClient {
         voter: addresses
       }
     })
-    return events.map(formatVote)
+    return events.map(this.formatVote)
+  }
+
+  async getVoteByProposalAndVoter ({
+    proposalId,
+    voterAddress
+  }) {
+    const method = await this.getMethod(
+      'getVoteByProposalAndVoter',
+      proposalId,
+      voterAddress
+    )
+    const vote = await method.call()
+    return parseInt(vote)
   }
 
   // Helpers
@@ -287,6 +303,43 @@ class GovernanceClient extends ContractClient {
    */
   abiEncode (types, values) {
     return this.web3Manager.getWeb3().eth.abi.encodeParameters(types, values)
+  }
+
+  toBN (val) {
+    return this.web3Manager.getWeb3().utils.toBN(val)
+  }
+
+  /**
+   * Prune off extraneous fields from proposal returned by txn
+   */
+  formatProposal (proposal) {
+    return {
+      proposalId: parseInt(proposal.proposalId),
+      proposer: proposal.proposer,
+      submissionBlockNumber: parseInt(proposal.submissionBlockNumber),
+      targetContractRegistryKey: proposal.targetContractRegistryKey,
+      targetContractAddress: proposal.targetContractAddress,
+      callValue: parseInt(proposal.callValue),
+      functionSigntaure: proposal.functionSignature,
+      callData: proposal.callData,
+      outcome: parseInt(proposal.outcome),
+      numVotes: parseInt(proposal.numVotes),
+      voteMagnitudeYes: this.toBN(proposal.voteMagnitudeYes),
+      voteMagnitudeNo: this.toBN(proposal.voteMagnitudeNo)
+    }
+  }
+
+  /**
+   * Prune off extraneous fields from vote event
+   */
+  formatVote (voteEvent) {
+    const event = voteEvent.returnValues
+    return {
+      proposalId: parseInt(event.proposalId),
+      voter: event.voter,
+      vote: parseInt(event.vote),
+      voterStake: this.toBN(event.voterStake)
+    }
   }
 }
 
