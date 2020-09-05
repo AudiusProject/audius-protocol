@@ -208,12 +208,12 @@ class IPFSClient:
                 try:
                     json_resp = r.json()
                     # Gateway will return "no link named" error if dir but no file named
-                    # 150x150.jpg or 640x.jpg exists in dir.
+                    # with filename (original.jpg, 150x150.jpg) exists in dir.
                     if 'error' in json_resp and 'no link named' in json_resp['error']:
                         logger.warning(f"IPFSCLIENT | Found directory {gateway_query_address}")
                         return True
                 except Exception as e:
-                    logger.warning(f"IPFSCLIENT | Failed to deserialize json for {multihash} for error {e}")
+                    logger.warning(f"IPFSCLIENT | Failed to deserialize json for {gateway_query_address} for error {e}")
 
             # Else, query as non-dir image
             gateway_query_address = urljoin(address, f"/ipfs/{multihash}")
