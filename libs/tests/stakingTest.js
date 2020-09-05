@@ -10,6 +10,7 @@ const ethContractsConfig = require('../eth-contracts/config.json')
 const AudiusLibs = require('../src/index');
 const { convertAudsToWeiBN } = require('../initScripts/helpers/utils');
 const { initial } = require('lodash')
+const { deregisterSPEndpoint } = require('./helpers')
 
 let token
 let ownerWallet
@@ -37,33 +38,6 @@ const assertRevert = async (blockOrPromise, expectedReason) => {
   }
   const expectedMsgFound = error.message.indexOf(expectedReason) >= 0
   assert.equal(expectedMsgFound, true, 'Expected revert reason not found')
-}
-
-const testDeregisterSPEndpoint = async (libs, account, type) => {
-  let previousRegisteredId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(
-    sp1,
-    type)
-  let prevSpInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
-    type,
-    previousRegisteredId)
-
-  let path = '/version'
-  let response = {
-    service: type,
-    version : '0.0.1'
-  }
-
-  if (type === 'discovery-provider') {
-    path = '/health_check'
-    response = {data: {...response}}
-  }
-
-  nock(prevSpInfo.endpoint)
-    .get(path)
-    .reply(200, response)
-  let tx = await libs.ethContracts.ServiceProviderFactoryClient.deregister(
-    type,
-    prevSpInfo.endpoint)
 }
 
 describe('Staking tests', () => {
@@ -104,35 +78,6 @@ describe('Staking tests', () => {
     await token.transfer(sp1, convertAudsToWeiBN(audius1.ethWeb3Manager.getWeb3(), 2000000))
     await token.transfer(sp2, convertAudsToWeiBN(audius1.ethWeb3Manager.getWeb3(), 2000000))
 
-  })
-
-  beforeEach(async () => {
-    try {
-      await testDeregisterSPEndpoint(audius1, sp1, testServiceType)
-      await testDeregisterSPEndpoint(audius2, sp2, testServiceType)
-    } catch (e) {
-      // no-op -- was already registered
-    }
-  })
-
-  after(async () => {
-    let sp1Balance = await token.balanceOf(sp1)
-    let sp2Balance = await token.balanceOf(sp2)
-
-    // Drain test balance
-    await audius1.ethContracts.AudiusTokenClient.transfer(
-      ownerWallet,
-      sp1Balance)
-
-    await audius2.ethContracts.AudiusTokenClient.transfer(
-      ownerWallet,
-      sp2Balance)
-
-    // Confirm no balance remaining in test account wallets
-    sp1Balance = await token.balanceOf(sp1)
-    sp2Balance = await token.balanceOf(sp2)
-    assert.equal(sp1Balance, 0)
-    assert.equal(sp2Balance, 0)
   })
 
   it('initial staking contract state', async function () {
@@ -181,6 +126,14 @@ describe('Staking tests', () => {
         testEndpt,
         defaultStake
       )
+    })
+
+    afterEach(async () => {
+      try {
+        await deregisterSPEndpoint(audius1, sp1, testServiceType)
+      } catch (e) {
+        // no-op -- was already registered
+      }
     })
 
     it('register service provider + stake', async function () {

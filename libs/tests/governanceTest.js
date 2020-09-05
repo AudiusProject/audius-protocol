@@ -4,7 +4,7 @@ const { convertAudsToWeiBN } = require('../initScripts/helpers/utils')
 const nock = require('nock')
 const {GovernanceClient, Vote} = require('../src/services/ethContracts/governanceClient')
 const time = require('@openzeppelin/test-helpers/src/time')
-const { initializeLibConfig } = require('./helpers')
+const { initializeLibConfig, deregisterSPEndpoint } = require('./helpers')
 const AudiusLibs = require('../src')
 
 const { audiusInstance: audius0, getRandomLocalhost } = helpers
@@ -14,8 +14,11 @@ let audius2
 let accounts = null
 let web3 = null
 let toBN = null
+let sp1
+let sp2
 const DEFAULT_STAKE = 210000
 const PROPOSAL_DESCRIPTION = 'TestDescription'
+const testServiceType = 'discovery-provider'
 
 const setupAccounts = async () => {
   // create additional libs instances
@@ -23,8 +26,8 @@ const setupAccounts = async () => {
   web3 = audius0.ethWeb3Manager.getWeb3()
   toBN = web3.utils.toBN
   accounts = await web3.eth.getAccounts()
-  const sp1 = accounts[1]
-  const sp2 = accounts[2]
+  sp1 = accounts[1]
+  sp2 = accounts[2]
   const libsConf1 = await initializeLibConfig(sp1)
   const libsConf2 = await initializeLibConfig(sp2)
   audius1 = new AudiusLibs(libsConf1)
@@ -35,7 +38,6 @@ const setupAccounts = async () => {
 
   // Register endpoints & stake
   const inittedLibs = [audius0, audius1, audius2]
-  const testServiceType = 'discovery-provider'
   const defaultStake = convertAudsToWeiBN(audius0.ethWeb3Manager.getWeb3(), DEFAULT_STAKE)
   for (const lib of inittedLibs) {
     const testEndpoint = getRandomLocalhost()
@@ -51,6 +53,16 @@ const setupAccounts = async () => {
       testEndpoint,
       defaultStake
     )
+  }
+}
+
+const cleanupAccounts = async () => {
+  try {
+    await helpers.deregisterSPEndpoint(audius1, sp1, testServiceType)
+    await helpers.deregisterSPEndpoint(audius2, sp2, testServiceType)
+  } catch (e) {
+    console.error(e)
+    // no-op -- was already registered
   }
 }
 
@@ -108,6 +120,10 @@ describe('Governance tests', function() {
     for (let id of ids) {
       await evaluateProposal(id, false)
     }
+  })
+
+  after(async function() {
+    await cleanupAccounts()
   })
 
   it('Submits a proposal successfully', async function() {
