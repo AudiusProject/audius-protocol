@@ -168,14 +168,15 @@ class IPFSClient:
         """Given a profile picture or cover photo CID, determine if it's a
         directory or a regular file CID
 
-        self - class self
-        multihash - CID to check if directory
+        Args:
+            args.self - class self
+            args.multihash - CID to check if directory
         """
         # Check if the multihash is valid
         if not self.cid_is_valid(multihash):
             raise Exception(f'invalid multihash {multihash}')
 
-        # First, Attempt to cat multihash locally via IPFS.
+        # First, attempt to cat multihash locally via IPFS.
         try:
             # If cat successful, multihash is not directory.
             self._api.cat(multihash, 0, 1, timeout=3)
@@ -261,8 +262,9 @@ class IPFSClient:
 def construct_image_dir_gateway_url(address, CID):
     """Construct the gateway url for an image directory.
 
-    address - base url of gateway
-    CID - CID of the image directory
+    Args:
+        args.address - base url of gateway
+        args.CID - CID of the image directory
     """
     if not address:
         return None
