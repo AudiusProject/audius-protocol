@@ -50,21 +50,12 @@ class TestMultihashIsDirectory:
         assert construct_image_dir_gateway_url(None, cid) is None
 
         # passing in a valid CID and address will result in a fully formed url string
-        square_gateway_url = construct_image_dir_gateway_url(
+        gateway_url = construct_image_dir_gateway_url(
             'https://gateway-url.co',
             'QmZgVbuZXzMQrweB3J864LGkGqUg4R27SXkua5BzTSirmK'
         )
-        square_gateway_url_correct = f'https://gateway-url.co/ipfs/{cid}/150x150.jpg'
-        assert square_gateway_url == square_gateway_url_correct
-
-        # passing in a valid CID and address for a non-square image will result in correct url string
-        non_square_gateway_url = construct_image_dir_gateway_url(
-            'https://gateway-url.co',
-            cid,
-            False
-        )
-        non_square_gateway_url_correct = f'https://gateway-url.co/ipfs/{cid}/640x.jpg'
-        assert non_square_gateway_url == non_square_gateway_url_correct
+        gateway_url_correct = f'https://gateway-url.co/ipfs/{cid}/original.jpg'
+        assert gateway_url == gateway_url_correct
 
     # Invoke multihash_is_directory with a invalid cid, verify that it throws an 'invalid multihash' error
     def test_invalid_cid(self, app):

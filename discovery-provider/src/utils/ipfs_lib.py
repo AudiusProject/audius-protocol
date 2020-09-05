@@ -164,15 +164,12 @@ class IPFSClient:
             logger.error(f"IPFSCLIENT | IPFS cat timed out for CID {multihash}")
             raise  # error is of type ipfshttpclient.exceptions.TimeoutError
 
-    def multihash_is_directory(self, multihash, is_square=True):
+    def multihash_is_directory(self, multihash):
         """Given a profile picture or cover photo CID, determine if it's a
         directory or a regular file CID
 
         self - class self
         multihash - CID to check if directory
-        is_square - flag to toggle between square and non-square images.
-                    user cover photo is the only is_square=False image,
-                    everything else is square
         """
         # Check if the multihash is valid
         if not self.cid_is_valid(multihash):
@@ -192,12 +189,12 @@ class IPFSClient:
         gateway_endpoints = self._cnode_endpoints
         for address in gateway_endpoints:
             # First, query as dir.
-            gateway_query_address = construct_image_dir_gateway_url(address, multihash, is_square)
+            gateway_query_address = construct_image_dir_gateway_url(address, multihash)
             r = None
             if gateway_query_address:
                 try:
                     logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
-                    r = requests.get(gateway_query_address, timeout=3)
+                    r = requests.head(gateway_query_address, timeout=3)
                 except Exception as e:
                     logger.warning(f"Failed to query {gateway_query_address} with error {e}")
 
@@ -261,17 +258,13 @@ class IPFSClient:
             logger.error(f'IPFSCLIENT | Error in cid_is_valid {str(e)}')
             return False
 
-def construct_image_dir_gateway_url(address, CID, is_square=True):
+def construct_image_dir_gateway_url(address, CID):
     """Construct the gateway url for an image directory.
 
     address - base url of gateway
     CID - CID of the image directory
-    is_square - flag to toggle between square and non-square images
-                square images are generally profile pictures while
-                is_square=False is cover photos
     """
     if not address:
         return None
 
-    image_file_name = '150x150.jpg' if is_square else '640x.jpg'
-    return urljoin(address, f"/ipfs/{CID}/{image_file_name}")
+    return urljoin(address, f"/ipfs/{CID}/original.jpg")
