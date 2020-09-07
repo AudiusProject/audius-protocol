@@ -62,17 +62,36 @@ const populateClockVals = async () => {
     for (const { userId, secondaries } of nodeToUsersMap[node]) {
       console.log(node, dbUrl, userId, secondaries)
 
-      const transaction = await models.sequelize.transaction()
+      const transaction = null // await models.sequelize.transaction()
 
-      const audiusUser = await models.AudiusUser.findAll({
-        where: { "blockchainId": userId },
+      const audiusUsers = await models.AudiusUser.findAll({
+        where: { blockchainId: userId },
+        transaction
+      })
+      console.log(audiusUsers)
+
+      if (!audiusUsers) continue
+
+      const cnodeUserUUID = audiusUsers[0].cnodeUserUUID
+
+      const cnodeUsers = await models.CNodeUser.findAll({
+        where: { cnodeUserUUID },
+        transaction
+      })
+      const tracks = await models.Track.findAll({
+        where: { cnodeUserUUID },
+        transaction
+      })
+      const files = await models.File.findAll({
+        where: { cnodeUserUUID },
         transaction
       })
 
-      console.log(audiusUser)
-      console.log('\n\n\n\n\n')
+      // order all rows from Files, Tracks, AudiusUsers by "updatedAt" asc
 
-      await transaction.commit()
+      // if dupe timestamps -> log out (this should never happen)
+
+      // await transaction.commit()
     }
   }
 }
