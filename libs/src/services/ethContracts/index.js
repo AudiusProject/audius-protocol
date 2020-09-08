@@ -110,6 +110,8 @@ class EthContracts {
       DelegateManagerABI,
       DelegateManagerRegistryKey,
       this.getRegistryAddressForContract,
+      this.AudiusTokenClient,
+      this.StakingProxyClient,
       this.GovernanceClient
     )
 
@@ -223,6 +225,10 @@ class EthContracts {
 
   async getVersion (spType, queryIndex) {
     return this.ServiceTypeManagerClient.getVersion(spType, queryIndex)
+  }
+
+  async getServiceTypeInfo (spType) {
+    return this.ServiceTypeManagerClient.getServiceTypeInfo(spType)
   }
 
   /**
