@@ -3,13 +3,14 @@ const nock = require('nock')
 const helpers = require('./helpers')
 const { time } = require('@openzeppelin/test-helpers')
 
-const audius0 = helpers.audiusInstance
 // const audiusConfig = helpers.audiusLibsConfig
+const { getRandomLocalhost, audiusInstance: audius0 } = helpers
 const initializeLibConfig = helpers.initializeLibConfig
 const ethContractsConfig = require('../eth-contracts/config.json')
 const AudiusLibs = require('../src/index');
 const { convertAudsToWeiBN } = require('../initScripts/helpers/utils');
 const { initial } = require('lodash')
+const { deregisterSPEndpoint } = require('./helpers')
 
 let token
 let ownerWallet
@@ -37,37 +38,6 @@ const assertRevert = async (blockOrPromise, expectedReason) => {
   }
   const expectedMsgFound = error.message.indexOf(expectedReason) >= 0
   assert.equal(expectedMsgFound, true, 'Expected revert reason not found')
-}
-
-const getRandomLocalhost = () => {
-  return 'http://localhost:' + Math.floor(1000 + Math.random() * 9000)
-}
-
-const testDeregisterSPEndpoint = async (libs, account, type) => {
-  let previousRegisteredId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(
-    sp1,
-    type)
-  let prevSpInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
-    type,
-    previousRegisteredId)
-
-  let path = '/version'      
-  let response = {
-    service: type,
-    version : '0.0.1'
-  }
-
-  if (type === 'discovery-provider') {
-    path = '/health_check'
-    response = {data: {...response}}
-  }
-
-  nock(prevSpInfo.endpoint)
-    .get(path)
-    .reply(200, response)
-  let tx = await libs.ethContracts.ServiceProviderFactoryClient.deregister(
-    type,
-    prevSpInfo.endpoint)
 }
 
 describe('Staking tests', () => {
@@ -110,35 +80,6 @@ describe('Staking tests', () => {
 
   })
 
-  beforeEach(async () => {
-    try {
-      await testDeregisterSPEndpoint(audius1, sp1, testServiceType)
-      await testDeregisterSPEndpoint(audius2, sp2, testServiceType)
-    } catch (e) {
-      // no-op -- was already registered
-    }
-  })
-
-  after(async () => {
-    let sp1Balance = await token.balanceOf(sp1)
-    let sp2Balance = await token.balanceOf(sp2)
-
-    // Drain test balance
-    await audius1.ethContracts.AudiusTokenClient.transfer(
-      ownerWallet,
-      sp1Balance)
-
-    await audius2.ethContracts.AudiusTokenClient.transfer(
-      ownerWallet,
-      sp2Balance)
-
-    // Confirm no balance remaining in test account wallets
-    sp1Balance = await token.balanceOf(sp1)
-    sp2Balance = await token.balanceOf(sp2)
-    assert.equal(sp1Balance, 0)
-    assert.equal(sp2Balance, 0)
-  })
-
   it('initial staking contract state', async function () {
     let tokenAddr = await audius0.ethContracts.StakingProxyClient.token()
     assert(token.contractAddress, tokenAddr, 'Expect correct token address from staking proxy')
@@ -160,7 +101,7 @@ describe('Staking tests', () => {
       initialSPBalance = await token.balanceOf(sp1)
       testEndpt = getRandomLocalhost()
 
-      let path = '/version'      
+      let path = '/version'
       let response = {
         service: testServiceType,
         version : '0.0.1'
@@ -185,6 +126,14 @@ describe('Staking tests', () => {
         testEndpt,
         defaultStake
       )
+    })
+
+    afterEach(async () => {
+      try {
+        await deregisterSPEndpoint(audius1, sp1, testServiceType)
+      } catch (e) {
+        // no-op -- was already registered
+      }
     })
 
     it('register service provider + stake', async function () {
@@ -320,4 +269,3 @@ describe('Staking tests', () => {
     })
   })
 })
-

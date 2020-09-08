@@ -4,7 +4,7 @@ let urlJoin = require('proper-url-join')
 
 const AudiusTokenClient = require('./audiusTokenClient')
 const RegistryClient = require('./registryClient')
-const GovernanceClient = require('./governanceClient')
+const { GovernanceClient } = require('./governanceClient')
 const ServiceTypeManagerClient = require('./serviceTypeManagerClient')
 const ServiceProviderFactoryClient = require('./serviceProviderFactoryClient')
 const StakingProxyClient = require('./stakingProxyClient')
