@@ -1,6 +1,7 @@
 const redisClient = require('./redis')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 const BlacklistManager = require('./blacklistManager')
+const SnapbackSM = require('./snapbackSM')
 const AudiusLibs = require('@audius/libs')
 const config = require('./config')
 
@@ -40,6 +41,9 @@ class ServiceRegistry {
     await this.blacklistManager.blacklist(this.ipfs)
     const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
     this.libs = audiusLibs
+    // Initialize state machine
+    this.snapbackSM = new SnapbackSM(this.audiusLibs) 
+    await this.snapbackSM.init()
   }
 }
 
