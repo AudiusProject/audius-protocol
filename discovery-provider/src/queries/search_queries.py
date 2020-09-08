@@ -2,6 +2,7 @@ from enum import Enum
 import logging  # pylint: disable=C0302
 from flask import Blueprint, request
 import sqlalchemy
+from sqlalchemy.sql.functions import current_user
 
 from src import api_helpers, exceptions
 from src.models import User, Track, RepostType, Playlist, Save, SaveType, Follow
@@ -363,13 +364,15 @@ def search(args):
             if (searchKind in [SearchKind.all, SearchKind.tracks]):
                 results['tracks'] = with_users_added(track_search_query(
                     session, searchStr, limit, offset, False, is_auto_complete, current_user_id))
-                results['saved_tracks'] = with_users_added(track_search_query(
-                    session, searchStr, limit, offset, True, is_auto_complete, current_user_id))
+                if current_user_id:
+                    results['saved_tracks'] = with_users_added(track_search_query(
+                        session, searchStr, limit, offset, True, is_auto_complete, current_user_id))
             if (searchKind in [SearchKind.all, SearchKind.users]):
                 results['users'] = user_search_query(
                     session, searchStr, limit, offset, False, is_auto_complete, current_user_id)
-                results['followed_users'] = user_search_query(
-                    session, searchStr, limit, offset, True, is_auto_complete, current_user_id)
+                if current_user_id:
+                    results['followed_users'] = user_search_query(
+                        session, searchStr, limit, offset, True, is_auto_complete, current_user_id)
             if (searchKind in [SearchKind.all, SearchKind.playlists]):
                 results['playlists'] = with_users_added(playlist_search_query(
                     session,
@@ -381,29 +384,31 @@ def search(args):
                     is_auto_complete,
                     current_user_id
                 ))
-                results['saved_playlists'] = with_users_added(playlist_search_query(
-                    session,
-                    searchStr,
-                    limit,
-                    offset,
-                    False,
-                    True,
-                    is_auto_complete,
-                    current_user_id
-                ))
+                if current_user_id:
+                    results['saved_playlists'] = with_users_added(playlist_search_query(
+                        session,
+                        searchStr,
+                        limit,
+                        offset,
+                        False,
+                        True,
+                        is_auto_complete,
+                        current_user_id
+                    ))
             if (searchKind in [SearchKind.all, SearchKind.albums]):
                 results['albums'] = with_users_added(playlist_search_query(
                     session, searchStr, limit, offset, True, False, is_auto_complete, current_user_id))
-                results['saved_albums'] = with_users_added(playlist_search_query(
-                    session,
-                    searchStr,
-                    limit,
-                    offset,
-                    True,
-                    True,
-                    is_auto_complete,
-                    current_user_id
-                ))
+                if current_user_id:
+                    results['saved_albums'] = with_users_added(playlist_search_query(
+                        session,
+                        searchStr,
+                        limit,
+                        offset,
+                        True,
+                        True,
+                        is_auto_complete,
+                        current_user_id
+                    ))
 
     return results
 
