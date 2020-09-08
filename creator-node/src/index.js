@@ -74,18 +74,6 @@ const startApp = async () => {
     await serviceRegistry.initServices()
     logger.info('Initialized services!')
 
-    let audiusLibs = serviceRegistry.libs
-    const spID = config.get('spID')
-    const endpoint = config.get('creatorNodeEndpoint')
-    if (spID === 0 && audiusLibs) {
-      console.log(`Retrieving spID for ${endpoint}`)
-      const recoveredSpID = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
-        config.get('creatorNodeEndpoint')
-      )
-      console.log(`Recovered ${recoveredSpID} for ${config.get('creatorNodeEndpoint')}`)
-      config.set('spID', recoveredSpID)
-    }
-
     appInfo = initializeApp(config.get('port'), storagePath, serviceRegistry)
   }
 

@@ -42,7 +42,7 @@ class ServiceRegistry {
     const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
     this.libs = audiusLibs
     // Initialize state machine
-    this.snapbackSM = new SnapbackSM(this.audiusLibs) 
+    this.snapbackSM = new SnapbackSM(this.libs) 
     await this.snapbackSM.init()
   }
 }
