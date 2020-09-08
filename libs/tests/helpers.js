@@ -1,5 +1,6 @@
-const Web3 = require('../src/web3')
+const nock = require('nock')
 
+const Web3 = require('../src/web3')
 const AudiusLibs = require('../src/index')
 const dataContractsConfig = require('../data-contracts/config.json')
 const ethContractsConfig = require('../eth-contracts/config.json')
@@ -61,11 +62,44 @@ async function initializeLibConfig (ownerWallet) {
   }
 }
 
+const getRandomLocalhost = () => {
+  return 'http://localhost:' + Math.floor(1000 + Math.random() * 9000)
+}
+
+const deregisterSPEndpoint = async (libs, account, type) => {
+  let previousRegisteredId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(
+    account,
+    type)
+  let prevSpInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
+    type,
+    previousRegisteredId)
+
+  let path = '/version'
+  let response = {
+    service: type,
+    version : '0.0.1'
+  }
+
+  if (type === 'discovery-provider') {
+    path = '/health_check'
+    response = {data: {...response}}
+  }
+
+  nock(prevSpInfo.endpoint)
+    .get(path)
+    .reply(200, response)
+  let tx = await libs.ethContracts.ServiceProviderFactoryClient.deregister(
+    type,
+    prevSpInfo.endpoint)
+}
+
 module.exports = {
   constants,
   // Export configured libs instance
   audiusInstance: new AudiusLibs(audiusLibsConfig),
   // Export libs config for re-use
   audiusLibsConfig,
-  initializeLibConfig
+  initializeLibConfig,
+  getRandomLocalhost,
+  deregisterSPEndpoint
 }
