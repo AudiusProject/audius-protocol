@@ -60,6 +60,8 @@ npm run test:units
 # - Eth contracts config: AudiusToken contract, registry contract and owner wallet addresses
 sh ./scripts/migrate_contracts.sh
 
+node ./initScripts/local.js distribute
+
 # run tests
 printf '\nSTART tests:\n\n'
 if [ "$#" -eq  "0" ]
