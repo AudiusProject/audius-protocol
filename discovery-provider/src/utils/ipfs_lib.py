@@ -245,5 +245,5 @@ class IPFSClient:
         try:
             make_cid(cid)
             return True
-        except Exception:
+        except Exception as e:
             return False
