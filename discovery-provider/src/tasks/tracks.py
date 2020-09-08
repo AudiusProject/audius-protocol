@@ -270,6 +270,11 @@ def parse_track_event(
 
         # if cover_art CID is of a dir, store under _sizes field instead
         if track_record.cover_art:
+            # If CID is in IPLD blacklist table, do not continue with indexing
+            if is_blacklisted_ipld(session, track_record.cover_art):
+                logger.warning(f"Encountered blacklisted cover art CID {track_record.cover_art} in indexing new track")
+                return None
+
             logger.info(f"tracks.py | Processing track cover art {track_record.cover_art}")
             try:
                 is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
