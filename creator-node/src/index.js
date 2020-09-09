@@ -50,7 +50,6 @@ const startApp = async () => {
   // fail if delegateOwnerWallet & delegatePrivateKey not present
   const delegateOwnerWallet = config.get('delegateOwnerWallet')
   const delegatePrivateKey = config.get('delegatePrivateKey')
-  const endpoint = config.get('creatorNodeEndpoint')
 
   // TODO: Throw here as well
   if (!delegateOwnerWallet || !delegatePrivateKey) {
