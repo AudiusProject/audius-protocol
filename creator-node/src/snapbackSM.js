@@ -70,7 +70,7 @@ class SnapbackSM {
     // this.stateMachineQueue.add({}, { repeat: { cron: '0 */x * * *' } })
 
     // Enqueue first state machine operation
-    // TODO: Remove this line permanently when enabling
+    // TODO: Remove this line permanently prior to final check-in
     // this.stateMachineQueue.add({ startTime: Date.now() })
 
     // Process state machine operations
