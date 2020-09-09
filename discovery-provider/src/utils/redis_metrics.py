@@ -63,7 +63,7 @@ def extract_app_name_key():
         ie: "audius_dapp"
     """
     application_name = request.args.get(app_name_param, type=str, default=None)
-    ip = request.remote_addr
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     date_time = get_rounded_date_time().strftime(datetime_format)
 
     application_key = f"{metrics_prefix}:{metrics_application}:{ip}:{date_time}"
@@ -83,7 +83,7 @@ def extract_route_key():
     req_args = request.args.items()
     req_args = stringify_query_params(req_args)
     route = f"{path}?{req_args}" if req_args else path
-    ip = request.remote_addr
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     date_time = get_rounded_date_time().strftime(datetime_format)
 
     route_key = f"{metrics_prefix}:{metrics_routes}:{ip}:{date_time}"
