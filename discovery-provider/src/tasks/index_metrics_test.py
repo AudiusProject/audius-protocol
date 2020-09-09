@@ -12,7 +12,8 @@ def test_process_route_keys(redis_mock, db_mock):
     routes = {
         "/v1/users/search?query=ray": "3",
         "/v1/tracks/trending?genre=rap&timeRange=week": "2",
-        "/v1/playlists/hash": "1"
+        "/v1/playlists/hash": "1",
+        "/tracks": "1"
     }
 
     key = "API_METRICS:routes:192.168.0.1:2020/08/06:19"
@@ -29,7 +30,7 @@ def test_process_route_keys(redis_mock, db_mock):
         process_route_keys(session, redis_mock, key, ip, date)
 
         all_route_metrics = session.query(RouteMetrics).all()
-        assert len(all_route_metrics) == 3
+        assert len(all_route_metrics) == 4
 
         user_search = session.query(RouteMetrics).filter(
             RouteMetrics.version == '1',
@@ -60,6 +61,16 @@ def test_process_route_keys(redis_mock, db_mock):
         ).all()
 
         assert len(playlist_route) == 1
+
+        no_version_tracks = session.query(RouteMetrics).filter(
+            RouteMetrics.version == '0',
+            RouteMetrics.route_path == 'tracks',
+            RouteMetrics.ip == '192.168.0.1',
+            RouteMetrics.count == 1,
+            RouteMetrics.timestamp == date
+        ).all()
+
+        assert len(no_version_tracks) == 1
 
     keys = redis_mock.keys(key)
     assert not keys

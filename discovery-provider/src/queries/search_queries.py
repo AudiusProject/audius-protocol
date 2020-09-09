@@ -5,6 +5,7 @@ import sqlalchemy
 from sqlalchemy.sql.functions import current_user
 
 from src import api_helpers, exceptions
+from src.queries.search_config import trackTitleWeight, userNameWeight, playlistNameWeight
 from src.models import User, Track, RepostType, Playlist, Save, SaveType, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
@@ -19,13 +20,6 @@ bp = Blueprint("search_tags", __name__)
 
 
 ######## VARS ########
-
-
-trackTitleWeight = 0.7
-userNameWeight = 0.7
-playlistNameWeight = 0.7
-minSearchSimilarity = 0.1
-
 
 class SearchKind(Enum):
     all = 1
@@ -357,9 +351,6 @@ def search(args):
                     return results
                 return add_users(session, results)
 
-            # Set similarity threshold to be used by % operator in queries.
-            session.execute(sqlalchemy.text(
-                f"select set_limit({minSearchSimilarity});"))
 
             if (searchKind in [SearchKind.all, SearchKind.tracks]):
                 results['tracks'] = with_users_added(track_search_query(
