@@ -69,6 +69,8 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
 
             num_total_changes += processedEntries
 
+    logger.info(f"[track indexing] There are {num_total_changes} events processed.")
+
     for track_id, value_obj in track_events.items():
         if value_obj['events']:
             logger.info(f"tracks.py | Adding {value_obj['track']}")

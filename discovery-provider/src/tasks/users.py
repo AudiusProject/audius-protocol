@@ -68,6 +68,8 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
 
             num_total_changes += processedEntries
 
+    logger.info(f"[users indexing] There are {num_total_changes} events processed.")
+
     # for each record in user_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
     for user_id, value_obj in user_events_lookup.items():
