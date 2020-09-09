@@ -252,7 +252,7 @@ def parse_playlist_event(
         playlist_record.description = event_args._playlistDescription
 
     if event_type == playlist_event_types_lookup["playlist_upc_updated"]:
-        logger.info(f"[playlist_description_updated] | Updating playlist {playlist_record.playlist_id} UPC to {event_args._playlistUPC}")
+        logger.info(f"[playlist_upc_updated] | Updating playlist {playlist_record.playlist_id} UPC to {event_args._playlistUPC}")
         playlist_record.upc = helpers.bytes32_to_str(event_args._playlistUPC)
 
     playlist_record.updated_at = block_datetime
