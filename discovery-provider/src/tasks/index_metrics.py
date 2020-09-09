@@ -21,7 +21,7 @@ def process_route_keys(session, redis, key, ip, date):
             route = key_bstr.decode('utf-8').strip('/')
             val = int(routes[key_bstr].decode('utf-8'))
 
-            version = None
+            version = "0" # default value if version is not present
             path = route
             query_string = None
 
