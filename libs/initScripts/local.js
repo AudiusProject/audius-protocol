@@ -228,7 +228,7 @@ const _updateCreatorNodeConfig = async (account, readPath, writePath = readPath,
   let ganacheEthAccounts = await getEthContractAccounts()
   // PKey is now recovered
   let delegateWalletPkey = ganacheEthAccounts['private_keys'][`${acct}`]
-  await _updateCreatorNodeDockerEnv(readPath, writePath, acct, delegateWalletPkey, endpoint, isShell)
+  await _updateCreatorNodeConfigFile(readPath, writePath, acct, delegateWalletPkey, endpoint, isShell)
 }
 
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
@@ -253,7 +253,8 @@ const _initAllVersions = async (audiusLibs) => {
   }
 }
 
-const _updateCreatorNodeDockerEnv = async (readPath, writePath, delegateOwnerWallet, delegateWalletPkey, endpoint, isShell) => {
+// Write an update to either the common .sh file for creator nodes or docker env file
+const _updateCreatorNodeConfigFile = async (readPath, writePath, delegateOwnerWallet, delegateWalletPkey, endpoint, isShell) => {
   const fileStream = fs.createReadStream(readPath)
   const rl = readline.createInterface({
     input: fileStream,
@@ -278,8 +279,7 @@ const _updateCreatorNodeDockerEnv = async (readPath, writePath, delegateOwnerWal
     } else if (line.includes('creatorNodeEndpoint')) {
       output.push(endpointLine)
       endpointFound = true
-    }
-    else {
+    } else {
       output.push(line)
     }
   }
