@@ -59,7 +59,7 @@ class SnapbackSM {
       )
       // A returned spID of 0 means this endpoint is currently not registered on chain
       // In this case, we
-      if (recoveredSpID == 0) return
+      if (recoveredSpID === 0) return
       config.set('spID', recoveredSpID)
       this.initialized = true
     }

@@ -10,7 +10,6 @@ const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const { logIpfsPeerIds } = require('./ipfsClient')
 const { serviceRegistry } = require('./serviceRegistry')
-const { update } = require('lodash')
 
 const exitWithError = (...msg) => {
   logger.error(...msg)
