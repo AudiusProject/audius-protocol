@@ -1,7 +1,6 @@
 const versionInfo = require('../../../.version.json')
 const config = require('../../config')
 
-
 /**
  * Perform a basic health check, returning the
  * currently selected discovery provider (if any),
