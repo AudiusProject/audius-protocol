@@ -20,7 +20,6 @@ jobs:
           command: |
             cd ../
             mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
-            git clone git@github.com:AudiusProject/mad-dog.git
       - run:
           name: execute
           command: |
@@ -36,7 +35,7 @@ jobs:
             npm install
             npm link
             npm link @audius/libs
-            cd /home/circleci/mad-dog/
+            cd /home/circleci/project/mad-dog/
             npm install
             npm link @audius/libs
             npm link @audius/service-commands
@@ -45,7 +44,7 @@ jobs:
             sudo "$(which node)" hosts.js add
             sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             "$(which node)" setup.js up -nc 3
-            cd /home/circleci/mad-dog/
+            cd /home/circleci/project/mad-dog/
             docker ps
             npm run start test-ci
   test-libs:
