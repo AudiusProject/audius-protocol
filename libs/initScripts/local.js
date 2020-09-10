@@ -134,30 +134,6 @@ const run = async () => {
         break
       }
 
-      case 'update-cnode-1-delegatewallet':
-        // Account 1 - Cnode 1 Delegate Wallet Update
-        envPath = '../creator-node/docker-compose/development.env'
-        await _updateCreatorNodeConfig(ethAccounts[1], envPath, envPath)
-        break
-
-      case 'update-cnode-2-delegatewallet':
-        // Account 2 - Cnode 2 Delegate Wallet Update
-        envPath = '../creator-node/docker-compose/dev/development2.env'
-        await _updateCreatorNodeConfig(ethAccounts[2], envPath, envPath)
-        break
-
-      case 'update-cnode-3-delegatewallet':
-        // Account 4 - Cnode 3 Delegate Wallet Update
-        envPath = '../creator-node/docker-compose/dev/development3.env'
-        await _updateCreatorNodeConfig(ethAccounts[4], envPath, envPath)
-        break
-
-      case 'update-cnode-4-delegatewallet':
-        // Account 5 - Cnode 4 Delegate Wallet Update
-        envPath = '../creator-node/docker-compose/dev/development4.env'
-        await _updateCreatorNodeConfig(ethAccounts[5], envPath, envPath)
-        break
-
       case 'init-all':
         await _initializeLocalEnvironment(audiusLibs, ethAccounts)
         break

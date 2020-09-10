@@ -51,7 +51,6 @@ const startApp = async () => {
   const delegateOwnerWallet = config.get('delegateOwnerWallet')
   const delegatePrivateKey = config.get('delegatePrivateKey')
 
-  // TODO: Throw here as well
   if (!delegateOwnerWallet || !delegatePrivateKey) {
     exitWithError('Cannot startup without delegateOwnerWallet and delegatePrivateKey')
   }
