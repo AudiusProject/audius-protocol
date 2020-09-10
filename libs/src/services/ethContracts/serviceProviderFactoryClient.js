@@ -207,7 +207,6 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       serviceId
     )
     const info = await method.call()
-    console.log({ info })
     return {
       owner: info.owner,
       endpoint: info.endpoint,
