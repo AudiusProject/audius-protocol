@@ -28,6 +28,8 @@ class ServiceRegistry {
     // this.audiusLibs isn't initialized until
     // `initServices` is called.
     this.audiusLibs = null
+    // this.snapbackSM isn't initialized until 'initServices'
+    this.snapbackSM = null
   }
 
   /**
