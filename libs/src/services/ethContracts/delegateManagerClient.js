@@ -20,7 +20,7 @@ class DelegateManagerClient extends GovernedContractClient {
   async delegateStake (targetSP, amount) {
     // Approve token transfer operation
     const contractAddress = await this.stakingProxyClient.getAddress()
-    let tx0 = await this.audiusTokenClient.approve(
+    const tx0 = await this.audiusTokenClient.approve(
       contractAddress,
       amount)
     const method = await this.getMethod(
@@ -141,7 +141,7 @@ class DelegateManagerClient extends GovernedContractClient {
       'getDelegatorsList',
       serviceProvider
     )
-    let info = await method.call()
+    const info = await method.call()
     return info
   }
 
@@ -150,7 +150,7 @@ class DelegateManagerClient extends GovernedContractClient {
       'getTotalDelegatedToServiceProvider',
       serviceProvider
     )
-    let info = await method.call()
+    const info = await method.call()
     return Utils.toBN(info)
   }
 
@@ -159,7 +159,7 @@ class DelegateManagerClient extends GovernedContractClient {
       'getTotalLockedDelegationForServiceProvider',
       serviceProvider
     )
-    let info = await method.call()
+    const info = await method.call()
     return Utils.toBN(info)
   }
 
@@ -169,7 +169,7 @@ class DelegateManagerClient extends GovernedContractClient {
       delegator,
       serviceProvider
     )
-    let info = await method.call()
+    const info = await method.call()
     return Utils.toBN(info)
   }
 
@@ -178,7 +178,7 @@ class DelegateManagerClient extends GovernedContractClient {
       'getPendingUndelegateRequest',
       delegator
     )
-    let info = await method.call()
+    const info = await method.call()
     return {
       amount: Utils.toBN(info.amount),
       lockupExpiryBlock: parseInt(info.lockupExpiryBlock),
@@ -192,15 +192,15 @@ class DelegateManagerClient extends GovernedContractClient {
       serviceProvider,
       delegator
     )
-    let info = await method.call()
-    return parseInt(info)
+    const info = await method.call()
+    return { lockupExpiryBlock: parseInt(info) }
   }
 
   async getUndelegateLockupDuration () {
     const method = await this.getMethod(
       'getUndelegateLockupDuration',
     )
-    let info = await method.call()
+    const info = await method.call()
     return parseInt(info)
   }
 
@@ -208,7 +208,7 @@ class DelegateManagerClient extends GovernedContractClient {
     const method = await this.getMethod(
       'getMaxDelegators',
     )
-    let info = await method.call()
+    const info = await method.call()
     return parseInt(info)
   }
 
@@ -216,7 +216,7 @@ class DelegateManagerClient extends GovernedContractClient {
     const method = await this.getMethod(
       'getMinDelegationAmount',
     )
-    let info = await method.call()
+    const info = await method.call()
     return Utils.toBN(info)
   }
 
@@ -224,7 +224,7 @@ class DelegateManagerClient extends GovernedContractClient {
     const method = await this.getMethod(
       'getRemoveDelegatorLockupDuration',
     )
-    let info = await method.call()
+    const info = await method.call()
     return parseInt(info)
   }
 
@@ -232,7 +232,7 @@ class DelegateManagerClient extends GovernedContractClient {
     const method = await this.getMethod(
       'getRemoveDelegatorEvalDuration',
     )
-    let info = await method.call()
+    const info = await method.call()
     return parseInt(info)
   }
 
@@ -240,7 +240,7 @@ class DelegateManagerClient extends GovernedContractClient {
     const method = await this.getMethod(
       'getGovernanceAddress',
     )
-    let info = await method.call()
+    const info = await method.call()
     return info
   }
 
@@ -248,7 +248,7 @@ class DelegateManagerClient extends GovernedContractClient {
     const method = await this.getMethod(
       'getServiceProviderFactoryAddress',
     )
-    let info = await method.call()
+    const info = await method.call()
     return info
   }
 
@@ -256,7 +256,7 @@ class DelegateManagerClient extends GovernedContractClient {
     const method = await this.getMethod(
       'getClaimsManagerAddress',
     )
-    let info = await method.call()
+    const info = await method.call()
     return info
   }
 
@@ -264,7 +264,7 @@ class DelegateManagerClient extends GovernedContractClient {
     const method = await this.getMethod(
       'getStakingAddress',
     )
-    let info = await method.call()
+    const info = await method.call()
     return info
   }
 
