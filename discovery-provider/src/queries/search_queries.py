@@ -326,7 +326,7 @@ def add_users(session, results):
 
 def search(args):
     """ Perform a search. `args` should contain `is_auto_complete`,
-    `query`, `kind`, `current_user_id`, and `with_users`.
+    `query`, `kind`, `current_user_id`, `with_users`, and `only_downloadable`
     """
     searchStr = args.get("query")
 
@@ -337,6 +337,7 @@ def search(args):
     with_users = args.get("with_users")
     is_auto_complete = args.get("is_auto_complete")
     current_user_id = args.get("current_user_id")
+    only_downloadable = args.get("only_downloadable")
     limit = args.get("limit")
     offset = args.get("offset")
 
@@ -354,10 +355,10 @@ def search(args):
 
             if (searchKind in [SearchKind.all, SearchKind.tracks]):
                 results['tracks'] = with_users_added(track_search_query(
-                    session, searchStr, limit, offset, False, is_auto_complete, current_user_id))
+                    session, searchStr, limit, offset, False, is_auto_complete, current_user_id, only_downloadable))
                 if current_user_id:
                     results['saved_tracks'] = with_users_added(track_search_query(
-                        session, searchStr, limit, offset, True, is_auto_complete, current_user_id))
+                        session, searchStr, limit, offset, True, is_auto_complete, current_user_id, only_downloadable))
             if (searchKind in [SearchKind.all, SearchKind.users]):
                 results['users'] = user_search_query(
                     session, searchStr, limit, offset, False, is_auto_complete, current_user_id)
@@ -403,7 +404,7 @@ def search(args):
 
     return results
 
-def track_search_query(session, searchStr, limit, offset, personalized, is_auto_complete, current_user_id):
+def track_search_query(session, searchStr, limit, offset, personalized, is_auto_complete, current_user_id, only_downloadable):
     if personalized and not current_user_id:
         return []
 
@@ -421,10 +422,20 @@ def track_search_query(session, searchStr, limit, offset, personalized, is_auto_
                     if personalized and current_user_id
                     else ""
                 }
+                {
+                    'inner join "tracks" t on t.track_id = d.track_id'
+                    if only_downloadable
+                    else ""
+                }
                 where d."word" % :query
                 {
                     "and s.save_type='track' and s.is_current=true and s.is_delete=false and s.user_id = :current_user_id"
                     if personalized and current_user_id
+                    else ""
+                }
+                {
+                    "and (t.download->>'is_downloadable')::boolean is True"
+                    if only_downloadable
                     else ""
                 }
             ) as results
@@ -450,7 +461,7 @@ def track_search_query(session, searchStr, limit, offset, personalized, is_auto_
     # track_ids is list of tuples - simplify to 1-D list
     track_ids = [i[0] for i in track_ids]
 
-    tracks = (
+    tracks_query = (
         session.query(Track)
         .filter(
             Track.is_delete == False,
@@ -459,8 +470,13 @@ def track_search_query(session, searchStr, limit, offset, personalized, is_auto_
             Track.stem_of == None,
             Track.track_id.in_(track_ids),
         )
-        .all()
     )
+
+    # Filter to downloadable if needed
+    if only_downloadable:
+        tracks_query = tracks_query.filter(Track.download['is_downloadable'].cast(sqlalchemy.Boolean) == True)
+
+    tracks = tracks_query.all()
     tracks = helpers.query_result_to_list(tracks)
 
     if is_auto_complete == True:
