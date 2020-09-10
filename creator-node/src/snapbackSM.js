@@ -66,7 +66,7 @@ class SnapbackSM {
         endpoint
       )
       // A returned spID of 0 means this endpoint is currently not registered on chain
-      // In this case, the stateMachine is considered to be 'uninitialized' 
+      // In this case, the stateMachine is considered to be 'uninitialized'
       if (recoveredSpID === 0) return
       config.set('spID', recoveredSpID)
       this.initialized = true
