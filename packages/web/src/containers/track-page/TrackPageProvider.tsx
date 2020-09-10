@@ -33,7 +33,7 @@ import {
   trackPage
 } from 'utils/route'
 import { formatUrlName } from 'utils/formatUtil'
-import { parseTrackRoute } from 'utils/route/trackRouteParser'
+import { parseTrackRoute, TrackRouteParams } from 'utils/route/trackRouteParser'
 import { ID, CID, PlayableType } from 'models/common/Identifiers'
 import { Uid } from 'utils/uid'
 import { getLocationPathname } from 'store/routing/selectors'
@@ -114,7 +114,13 @@ class TrackPageProvider extends Component<
   }
 
   componentDidMount() {
-    this.fetchTracks(this.props.pathname)
+    const params = parseTrackRoute(this.props.pathname)
+    if (params) {
+      this.fetchTracks(params)
+    } else {
+      // Go to 404 if the track id isn't parsed correctly
+      this.props.goToRoute(NOT_FOUND_PAGE)
+    }
   }
 
   componentDidUpdate(prevProps: TrackPageProviderProps) {
@@ -123,10 +129,16 @@ class TrackPageProvider extends Component<
       this.props.goToRoute(NOT_FOUND_PAGE)
     }
     if (!isMobile()) {
-      // Refetch if the pathname changes because on desktop the component is shared
+      // On componentDidUpdate we try to reparse the URL because if you’re on a track page
+      // and go to another track page, the component doesn’t remount but we need to
+      // trigger a re-fetch based on the URL. On mobile, separate page provider components are
+      // used so this is a non-issue.
       if (pathname !== this.state.pathname) {
-        this.setState({ pathname })
-        this.fetchTracks(pathname)
+        const params = parseTrackRoute(pathname)
+        if (params) {
+          this.setState({ pathname })
+          this.fetchTracks(params)
+        }
       }
     }
 
@@ -184,33 +196,22 @@ class TrackPageProvider extends Component<
     }
   }
 
-  fetchTracks = (pathname: string) => {
+  fetchTracks = (params: NonNullable<TrackRouteParams>) => {
     const { track } = this.props
-    const params = parseTrackRoute(pathname)
-    if (params) {
-      const { trackTitle, trackId, handle } = params
+    const { trackTitle, trackId, handle } = params
 
-      // Go to feed if the track is deleted
-      if (track && track.track_id === trackId) {
-        if (track._marked_deleted) {
-          this.props.goToRoute(FEED_PAGE)
-          return
-        }
+    // Go to feed if the track is deleted
+    if (track && track.track_id === trackId) {
+      if (track._marked_deleted) {
+        this.props.goToRoute(FEED_PAGE)
+        return
       }
-      this.props.reset()
-      this.props.setTrackId(trackId)
-      this.props.fetchTrack(
-        trackId,
-        trackTitle,
-        handle,
-        !!(trackTitle && handle)
-      )
-      if (handle) {
-        this.setState({ ownerHandle: handle })
-      }
-    } else {
-      // Go to 404 if the track id isn't parsed correctly
-      this.props.goToRoute(NOT_FOUND_PAGE)
+    }
+    this.props.reset()
+    this.props.setTrackId(trackId)
+    this.props.fetchTrack(trackId, trackTitle, handle, !!(trackTitle && handle))
+    if (handle) {
+      this.setState({ ownerHandle: handle })
     }
   }
 
