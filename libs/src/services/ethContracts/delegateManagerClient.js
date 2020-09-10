@@ -3,7 +3,7 @@ const GovernedContractClient = require('../contracts/GovernedContractClient')
 const DEFAULT_GAS_AMOUNT = 1000000
 
 class DelegateManagerClient extends GovernedContractClient {
-  constructor(
+  constructor (
     ethWeb3Manager,
     contractABI,
     contractRegistryKey,
@@ -91,7 +91,7 @@ class DelegateManagerClient extends GovernedContractClient {
       DEFAULT_GAS_AMOUNT
     )
   }
-  
+
   async requestRemoveDelegator (serviceProvider, delegator) {
     const method = await this.getMethod(
       'requestRemoveDelegator',
@@ -103,7 +103,7 @@ class DelegateManagerClient extends GovernedContractClient {
       DEFAULT_GAS_AMOUNT
     )
   }
-  
+
   async cancelRemoveDelegator (serviceProvider, delegator) {
     const method = await this.getMethod(
       'cancelRemoveDelegator',
@@ -115,7 +115,7 @@ class DelegateManagerClient extends GovernedContractClient {
       DEFAULT_GAS_AMOUNT
     )
   }
-  
+
   async removeDelegator (serviceProvider, delegator) {
     const method = await this.getMethod(
       'removeDelegator',
@@ -198,7 +198,7 @@ class DelegateManagerClient extends GovernedContractClient {
 
   async getUndelegateLockupDuration () {
     const method = await this.getMethod(
-      'getUndelegateLockupDuration',
+      'getUndelegateLockupDuration'
     )
     const info = await method.call()
     return parseInt(info)
@@ -206,7 +206,7 @@ class DelegateManagerClient extends GovernedContractClient {
 
   async getMaxDelegators () {
     const method = await this.getMethod(
-      'getMaxDelegators',
+      'getMaxDelegators'
     )
     const info = await method.call()
     return parseInt(info)
@@ -214,7 +214,7 @@ class DelegateManagerClient extends GovernedContractClient {
 
   async getMinDelegationAmount () {
     const method = await this.getMethod(
-      'getMinDelegationAmount',
+      'getMinDelegationAmount'
     )
     const info = await method.call()
     return Utils.toBN(info)
@@ -222,7 +222,7 @@ class DelegateManagerClient extends GovernedContractClient {
 
   async getRemoveDelegatorLockupDuration () {
     const method = await this.getMethod(
-      'getRemoveDelegatorLockupDuration',
+      'getRemoveDelegatorLockupDuration'
     )
     const info = await method.call()
     return parseInt(info)
@@ -230,7 +230,7 @@ class DelegateManagerClient extends GovernedContractClient {
 
   async getRemoveDelegatorEvalDuration () {
     const method = await this.getMethod(
-      'getRemoveDelegatorEvalDuration',
+      'getRemoveDelegatorEvalDuration'
     )
     const info = await method.call()
     return parseInt(info)
@@ -238,7 +238,7 @@ class DelegateManagerClient extends GovernedContractClient {
 
   async getGovernanceAddress () {
     const method = await this.getMethod(
-      'getGovernanceAddress',
+      'getGovernanceAddress'
     )
     const info = await method.call()
     return info
@@ -246,7 +246,7 @@ class DelegateManagerClient extends GovernedContractClient {
 
   async getServiceProviderFactoryAddress () {
     const method = await this.getMethod(
-      'getServiceProviderFactoryAddress',
+      'getServiceProviderFactoryAddress'
     )
     const info = await method.call()
     return info
@@ -254,7 +254,7 @@ class DelegateManagerClient extends GovernedContractClient {
 
   async getClaimsManagerAddress () {
     const method = await this.getMethod(
-      'getClaimsManagerAddress',
+      'getClaimsManagerAddress'
     )
     const info = await method.call()
     return info
@@ -262,7 +262,7 @@ class DelegateManagerClient extends GovernedContractClient {
 
   async getStakingAddress () {
     const method = await this.getMethod(
-      'getStakingAddress',
+      'getStakingAddress'
     )
     const info = await method.call()
     return info

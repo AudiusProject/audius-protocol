@@ -1,4 +1,3 @@
-const Utils = require('../../utils')
 const ContractClient = require('../contracts/ContractClient')
 
 class StakingProxyClient extends ContractClient {
@@ -35,24 +34,24 @@ class StakingProxyClient extends ContractClient {
 
   async isStaker (account) {
     const method = await this.getMethod('isStaker', account)
-    return await method.call()
+    return method.call()
   }
- 
+
   async getDelegateManagerAddress () {
     const method = await this.getMethod('getDelegateManagerAddress')
-    return await method.call()
+    return method.call()
   }
   async getClaimsManagerAddress () {
     const method = await this.getMethod('getClaimsManagerAddress')
-    return await method.call()
+    return method.call()
   }
   async getServiceProviderFactoryAddress () {
     const method = await this.getMethod('getServiceProviderFactoryAddress')
-    return await method.call()
+    return method.call()
   }
   async getGovernanceAddress () {
     const method = await this.getMethod('getGovernanceAddress')
-    return await method.call()
+    return method.call()
   }
 
   async getLastClaimedBlockForUser () {
@@ -60,7 +59,6 @@ class StakingProxyClient extends ContractClient {
     let tx = await method.call()
     return tx
   }
-
 }
 
 module.exports = StakingProxyClient

@@ -9,7 +9,7 @@ let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 class ServiceProviderFactoryClient extends GovernedContractClient {
-  constructor(
+  constructor (
     ethWeb3Manager,
     contractABI,
     contractRegistryKey,
@@ -25,7 +25,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     this.isDebug = isDebug
   }
 
-  async registerWithDelegate(serviceType, endpoint, amount, delegateOwnerWallet) {
+  async registerWithDelegate (serviceType, endpoint, amount, delegateOwnerWallet) {
     if (!this.isDebug && !Utils.isFQDN(endpoint)) {
       throw new Error('Not a fully qualified domain name!')
     }
@@ -75,7 +75,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     }
   }
 
-  async register(serviceType, endpoint, amount) {
+  async register (serviceType, endpoint, amount) {
     return this.registerWithDelegate(
       serviceType,
       endpoint,
@@ -83,7 +83,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       this.web3Manager.getWalletAddress())
   }
 
-  async increaseStake(amount) {
+  async increaseStake (amount) {
     const contractAddress = await this.stakingProxyClient.getAddress()
     const tx0 = await this.audiusTokenClient.approve(
       contractAddress,
@@ -102,7 +102,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
    * @param {BN} amount
    * @returns decrease stake lockup expiry block
    */
-  async requestDecreaseStake(amount) {
+  async requestDecreaseStake (amount) {
     const requestDecreaseMethod = await this.getMethod('requestDecreaseStake', amount)
     await this.web3Manager.sendTransaction(
       requestDecreaseMethod,
@@ -118,7 +118,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
    * Gets the pending decrease stake request for a given account
    * @param {string} account wallet address to fetch for
    */
-  async getPendingDecreaseStakeRequest(account) {
+  async getPendingDecreaseStakeRequest (account) {
     const requestInfoMethod = await this.getMethod('getPendingDecreaseStakeRequest', account)
     const {
       amount,
@@ -134,7 +134,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
    * Cancels the pending decrease stake request
    * @param {string} account wallet address to cancel request for
    */
-  async cancelDecreaseStakeRequest(account) {
+  async cancelDecreaseStakeRequest (account) {
     const requestCancelDecreaseMethod = await this.getMethod('cancelDecreaseStakeRequest', account)
     await this.web3Manager.sendTransaction(
       requestCancelDecreaseMethod,
@@ -146,12 +146,12 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
    * Fetches the pending decrease stake lockup expiry block for a user
    * @param {string} account wallet address to fetch for
    */
-  async getLockupExpiry(account) {
+  async getLockupExpiry (account) {
     const { lockupExpiryBlock } = await this.getPendingDecreaseStakeRequest(account)
     return parseInt(lockupExpiryBlock)
   }
 
- async decreaseStake() {
+  async decreaseStake () {
     const method = await this.getMethod('decreaseStake')
     const tx = await this.web3Manager.sendTransaction(method, 1000000)
 
@@ -165,7 +165,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
    * @param {string} serviceType
    * @param {string} endpoint
    */
-  async deregister(serviceType, endpoint) {
+  async deregister (serviceType, endpoint) {
     const method = await this.getMethod('deregister',
       Utils.utf8ToHex(serviceType),
       endpoint)
@@ -179,7 +179,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     }
   }
 
-  async getTotalServiceTypeProviders(serviceType) {
+  async getTotalServiceTypeProviders (serviceType) {
     const method = await this.getMethod('getTotalServiceTypeProviders',
       Utils.utf8ToHex(serviceType)
     )
@@ -187,7 +187,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return parseInt(count)
   }
 
-  async getServiceProviderIdFromEndpoint(endpoint) {
+  async getServiceProviderIdFromEndpoint (endpoint) {
     const method = await this.getMethod('getServiceProviderIdFromEndpoint',
       (endpoint)
     )
@@ -197,11 +197,11 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
 
   // TODO: Remove this method after all consumers are using
   // `getServiceEndpointInfo` directly
-  async getServiceProviderInfo(serviceType, serviceId) {
+  async getServiceProviderInfo (serviceType, serviceId) {
     return this.getServiceEndpointInfo(serviceType, serviceId)
   }
 
-  async getServiceEndpointInfo(serviceType, serviceId) {
+  async getServiceEndpointInfo (serviceType, serviceId) {
     const method = await this.getMethod('getServiceEndpointInfo',
       Utils.utf8ToHex(serviceType),
       serviceId
@@ -217,7 +217,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     }
   }
 
-  async getServiceProviderInfoFromEndpoint(endpoint) {
+  async getServiceProviderInfoFromEndpoint (endpoint) {
     const requestUrl = urlJoin(endpoint, 'health_check')
     const axiosRequestObj = {
       url: requestUrl,
@@ -238,7 +238,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return info
   }
 
-  async getServiceProviderIdsFromAddress(ownerAddress, serviceType) {
+  async getServiceProviderIdsFromAddress (ownerAddress, serviceType) {
     const method = await this.getMethod('getServiceProviderIdsFromAddress',
       ownerAddress,
       Utils.utf8ToHex(serviceType)
@@ -247,12 +247,12 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return info.map(id => parseInt(id))
   }
 
-  async getServiceProviderIdFromAddress(ownerAddress, serviceType) {
+  async getServiceProviderIdFromAddress (ownerAddress, serviceType) {
     const infos = await this.getServiceProviderIdsFromAddress(ownerAddress, serviceType)
     return infos[0]
   }
 
-  async getServiceEndpointInfoFromAddress(ownerAddress, serviceType) {
+  async getServiceEndpointInfoFromAddress (ownerAddress, serviceType) {
     const spId = await this.getServiceProviderIdFromAddress(ownerAddress, serviceType)
 
     // cast this as an array for backwards compatibility because everything expects an array
@@ -260,7 +260,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return spInfo
   }
 
-  async getServiceProviderList(serviceType) {
+  async getServiceProviderList (serviceType) {
     const numberOfProviders = await this.getTotalServiceTypeProviders(serviceType)
 
     const providerList = await Promise.all(
@@ -271,7 +271,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return providerList.filter(provider => provider.endpoint !== '')
   }
 
-  async updateDecreaseStakeLockupDuration(duration) {
+  async updateDecreaseStakeLockupDuration (duration) {
     const method = await this.getGovernedMethod(
       'updateDecreaseStakeLockupDuration',
       duration
@@ -282,7 +282,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     )
   }
 
-  async getServiceProviderDetails(serviceProviderAddress) {
+  async getServiceProviderDetails (serviceProviderAddress) {
     const method = await this.getMethod(
       'getServiceProviderDetails',
       serviceProviderAddress
@@ -298,7 +298,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     }
   }
 
-  async updateDelegateOwnerWallet(serviceType, endpoint, updatedDelegateOwnerWallet) {
+  async updateDelegateOwnerWallet (serviceType, endpoint, updatedDelegateOwnerWallet) {
     const method = await this.getMethod(
       'updateDelegateOwnerWallet',
       Utils.utf8ToHex(serviceType),
@@ -310,7 +310,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return tx
   }
 
-  async updateEndpoint(serviceType, oldEndpoint, newEndpoint) {
+  async updateEndpoint (serviceType, oldEndpoint, newEndpoint) {
     const method = await this.getMethod(
       'updateEndpoint',
       Utils.utf8ToHex(serviceType),
@@ -321,7 +321,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return tx
   }
 
-  async requestUpdateDeployerCut(ownerAddress, deployerCut) {
+  async requestUpdateDeployerCut (ownerAddress, deployerCut) {
     const method = await this.getMethod(
       'requestUpdateDeployerCut',
       ownerAddress,
@@ -331,7 +331,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return tx
   }
 
-  async getPendingUpdateDeployerCutRequest(ownerAddress) {
+  async getPendingUpdateDeployerCutRequest (ownerAddress) {
     const method = await this.getMethod(
       'getPendingUpdateDeployerCutRequest',
       ownerAddress
@@ -340,7 +340,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return { lockupExpiryBlock: parseInt(lockupExpiryBlock), newDeployerCut: parseInt(newDeployerCut) }
   }
 
-  async cancelUpdateDeployerCut(ownerAddress) {
+  async cancelUpdateDeployerCut (ownerAddress) {
     const method = await this.getMethod(
       'cancelUpdateDeployerCut',
       ownerAddress
@@ -349,7 +349,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return tx
   }
 
-  async updateDeployerCut(ownerAddress) {
+  async updateDeployerCut (ownerAddress) {
     const method = await this.getMethod(
       'updateDeployerCut',
       ownerAddress
@@ -358,7 +358,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return tx
   }
 
-  async updateServiceProviderStake(ownerAddress, newAmount) {
+  async updateServiceProviderStake (ownerAddress, newAmount) {
     const method = await this.getMethod(
       'updateServiceProviderStake',
       ownerAddress,
@@ -367,7 +367,6 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
     return tx
   }
-
 }
 
 module.exports = ServiceProviderFactoryClient
