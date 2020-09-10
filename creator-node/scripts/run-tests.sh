@@ -28,8 +28,12 @@ tear_down () {
 
 run_unit_tests () {
   set +e
+  set -x
   echo Running unit tests...
-  ./node_modules/mocha/bin/mocha src/**/*.test.js
+  # Previous tests
+  ./node_modules/mocha/bin/mocha src/*/*/*.test.js
+  # Component level unit tests
+  ./node_modules/mocha/bin/mocha src/*/*.test.js
   set -e
 }
 
