@@ -3,7 +3,7 @@ import { TRACK_ID_PAGE, TRACK_PAGE } from 'utils/route'
 import { decodeHashId } from './hashIds'
 import { ID } from 'models/common/Identifiers'
 
-type TrackRouteParams =
+export type TrackRouteParams =
   | { trackTitle: string; trackId: ID; handle: string }
   | { trackTitle: null; trackId: ID; handle: null }
   | null
