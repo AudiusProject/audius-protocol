@@ -32,6 +32,11 @@ class StakingProxyClient extends ContractClient {
     return this.toBN(await method.call())
   }
 
+  async totalStakedAt (blockNumber) {
+    const method = await this.getMethod('totalStakedAt', blockNumber)
+    return this.toBN(await method.call())
+  }
+
   async isStaker (account) {
     const method = await this.getMethod('isStaker', account)
     return method.call()
@@ -41,14 +46,17 @@ class StakingProxyClient extends ContractClient {
     const method = await this.getMethod('getDelegateManagerAddress')
     return method.call()
   }
+
   async getClaimsManagerAddress () {
     const method = await this.getMethod('getClaimsManagerAddress')
     return method.call()
   }
+
   async getServiceProviderFactoryAddress () {
     const method = await this.getMethod('getServiceProviderFactoryAddress')
     return method.call()
   }
+
   async getGovernanceAddress () {
     const method = await this.getMethod('getGovernanceAddress')
     return method.call()
