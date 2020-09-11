@@ -1,8 +1,8 @@
-const Utils = require("../../utils")
-const GovernedContractClient = require('../contracts/GovernedContractClient')
+const Utils = require('../../utils')
+const ContractClient = require('../contracts/ContractClient')
 const DEFAULT_GAS_AMOUNT = 1000000
 
-class ClaimsManagerClient extends GovernedContractClient {
+class ClaimsManagerClient extends ContractClient {
   /* ------- GETTERS ------- */
 
   // Get the duration of a funding round in blocks
@@ -86,7 +86,6 @@ class ClaimsManagerClient extends GovernedContractClient {
     const info = await method.call()
     return info
   }
-
 
   // Returns boolean indicating whether a claim is considered pending
   async initiateRound () {
