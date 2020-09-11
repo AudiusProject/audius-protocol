@@ -2,7 +2,6 @@ from enum import Enum
 import logging  # pylint: disable=C0302
 from flask import Blueprint, request
 import sqlalchemy
-from sqlalchemy.sql.functions import current_user
 
 from src import api_helpers, exceptions
 from src.queries.search_config import trackTitleWeight, userNameWeight, playlistNameWeight
@@ -404,7 +403,15 @@ def search(args):
 
     return results
 
-def track_search_query(session, searchStr, limit, offset, personalized, is_auto_complete, current_user_id, only_downloadable):
+def track_search_query(
+        session,
+        searchStr,
+        limit,
+        offset,
+        personalized,
+        is_auto_complete,
+        current_user_id,
+        only_downloadable):
     if personalized and not current_user_id:
         return []
 
