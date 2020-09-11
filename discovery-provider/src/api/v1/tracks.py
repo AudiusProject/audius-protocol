@@ -146,7 +146,7 @@ class Trending(Resource):
         }
     )
     @ns.marshal_with(tracks_response)
-    @cache(ttl_sec=1)
+    @cache(ttl_sec=30 * 60)
     def get(self):
         """Gets the top 100 trending (most popular) tracks on Audius"""
         args = trending_parser.parse_args()

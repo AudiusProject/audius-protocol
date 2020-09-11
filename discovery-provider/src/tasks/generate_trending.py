@@ -91,7 +91,6 @@ def get_listen_counts(session, time, genre, limit, offset):
 def generate_trending(session, time, genre, limit, offset):
     # Get listen counts
     listen_counts = get_listen_counts(session, time, genre, limit, offset)
-    logger.warning(listen_counts)
 
     track_ids = [track[response_name_constants.track_id] for track in listen_counts]
 
@@ -218,12 +217,10 @@ def generate_trending(session, time, genre, limit, offset):
         else:
             track_entry[response_name_constants.created_at] = None
 
-        track_entry["karma"] = karma_counts_for_id[track_entry[response_name_constants.track_id]] \
-            if track_entry[response_name_constants.track_id] in karma_counts_for_id else 0
+        track_entry["karma"] = karma_counts_for_id.get(track_id, 0)
 
         trending_tracks.append(track_entry)
 
     final_resp = {}
     final_resp['listen_counts'] = trending_tracks
-    logger.warning(trending_tracks[:4])
     return final_resp
