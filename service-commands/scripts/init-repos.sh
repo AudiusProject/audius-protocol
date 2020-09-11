@@ -35,4 +35,19 @@ cd $PROTOCOL_DIR/
 cd identity-service/
 npm install --dev &
 
+# setup service commands
+cd $PROTOCOL_DIR/
+cd service-commands/
+npm install &
+
+# setup mad dog
+cd $PROTOCOL_DIR/libs
+npm link
+cd $PROTOCOL_DIR/service-commands
+npm link
+cd $PROTOCOL_DIR/mad-dog/
+npm link @audius/libs
+npm link @audius/service-commands
+npm install &
+
 wait

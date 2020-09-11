@@ -11,9 +11,6 @@ const loadLibsVars = () => {
   const dataConfig = `${configDir}/config.json`
   const ethConfig = `${configDir}/eth-config.json`
   try {
-    console.log(`Config dir: ${configDir}`)
-    console.log(dataConfig)
-    console.log(ethConfig)
     const dataConfigJson = require(dataConfig)
     const ethConfigJson = require(ethConfig)
 
