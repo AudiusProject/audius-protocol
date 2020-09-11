@@ -183,6 +183,6 @@ console.log(buildParams)
 copyBuildDir(program.env === 'production').then(() => {
   builder.build(buildParams).catch(e => {
     console.error(e)
-    throw new Error(e)
+    process.exit(1)
   })
 })
