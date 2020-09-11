@@ -16,7 +16,7 @@ const mockLogger = {
 }
 
 describe('Test Health Check', function () {
-  it.only('Should pass', function () {
+  it('Should pass', function () {
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
     config.set('spID', 10)
     let expectedEndpoint = config.get('creatorNodeEndpoint')
