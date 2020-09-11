@@ -1,13 +1,12 @@
 const Bull = require('bull')
 const config = require('./config')
-const { rehydrateIpfsFromFsIfNecessary, rehydrateIpfsDirFromFsIfNecessary } = require('./utils')
 const { logger: genericLogger } = require('./logging')
 
 const PROCESS_NAMES = Object.freeze({
   rehydrate_dir: 'rehydrate_dir',
   rehydrate_file: 'rehydrate_file'
 })
-
+const MAX_CONCURRENCY = config.get('rehydrateMaxConcurrency')
 const MAX_COUNT = 50000
 
 class RehydrateIpfsQueue {
@@ -23,31 +22,8 @@ class RehydrateIpfsQueue {
     )
 
     // Most errors in the rehydrate calls will be caught; this try/catch is to catch unexpected errors
-
-    this.queue.process(PROCESS_NAMES.rehydrate_file, config.get('rehydrateMaxConcurrency'), async (job, done) => {
-      const { multihash, storagePath, filename, logContext } = job.data
-
-      this.logStatus(logContext, `Processing a rehydrateIpfsFromFsIfNecessary task for ${multihash}`)
-      try {
-        await rehydrateIpfsFromFsIfNecessary(multihash, storagePath, logContext, filename)
-        done()
-      } catch (e) {
-        this.logError(logContext, `Problem with processing a rehydrateIpfsFromFsIfNecessary task for ${multihash}: ${e}`)
-        done(e)
-      }
-    })
-
-    this.queue.process(PROCESS_NAMES.rehydrate_dir, config.get('rehydrateMaxConcurrency'), async (job, done) => {
-      const { multihash, logContext } = job.data
-      this.logStatus(logContext, `Processing a rehydrateIpfsDirFromFsIfNecessary task for ${multihash}`)
-      try {
-        await rehydrateIpfsDirFromFsIfNecessary(multihash, logContext)
-        done()
-      } catch (e) {
-        this.logError(logContext, `Problem with processing a rehydrateIpfsDirFromFsIfNecessary task for ${multihash}: ${e}`)
-        done(e)
-      }
-    })
+    this.queue.process(PROCESS_NAMES.rehydrate_file, MAX_CONCURRENCY, `${__dirname}/rehydrateIpfsTasks.js`)
+    this.queue.process(PROCESS_NAMES.rehydrate_dir, MAX_CONCURRENCY, `${__dirname}/rehydrateIpfsTasks.js`)
 
     this.addRehydrateIpfsFromFsTask = this.addRehydrateIpfsFromFsIfNecessaryTask.bind(this)
     this.addRehydrateIpfsDirFromFsIfNecessaryTask = this.addRehydrateIpfsDirFromFsIfNecessaryTask.bind(this)
