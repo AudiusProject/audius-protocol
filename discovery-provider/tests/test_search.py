@@ -113,7 +113,7 @@ def test_gets_all_results(app):
         res = track_search_query(session, "the", 10, 0, False, False, None, False)
         assert len(res) == 2
 
-def test_gets_all_results(app):
+def test_gets_downloadable_results(app):
     """Tests we get all results, including downloaded"""
     with app.app_context():
         db = get_db()
