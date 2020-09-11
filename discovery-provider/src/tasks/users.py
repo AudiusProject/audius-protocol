@@ -147,7 +147,7 @@ def parse_user_event(
         is_blacklisted = is_blacklisted_ipld(session, metadata_multihash)
         # If cid is in blacklist, do not update user
         if is_blacklisted:
-            logger.info(f"Encountered blacklisted CID {metadata_multihash} in indexing update metadata multihash")
+            logger.info(f"Encountered blacklisted CID {metadata_multihash} in indexing update user metadata multihash")
             return None
         user_record.metadata_multihash = metadata_multihash
     elif event_type == user_event_types_lookup["update_name"]:
@@ -160,14 +160,14 @@ def parse_user_event(
         profile_photo_multihash = helpers.multihash_digest_to_cid(event_args._profilePhotoDigest)
         is_blacklisted = is_blacklisted_ipld(session, profile_photo_multihash)
         if is_blacklisted:
-            logger.info(f"Encountered blacklisted CID {profile_photo_multihash} in indexing update profile photo")
+            logger.info(f"Encountered blacklisted CID {profile_photo_multihash} in indexing update user profile photo")
             return None
         user_record.profile_picture = profile_photo_multihash
     elif event_type == user_event_types_lookup["update_cover_photo"]:
         cover_photo_multihash = helpers.multihash_digest_to_cid(event_args._coverPhotoDigest)
         is_blacklisted = is_blacklisted_ipld(session, cover_photo_multihash)
         if is_blacklisted:
-            logger.info(f"Encountered blacklisted CID {cover_photo_multihash} in indexing update cover photo")
+            logger.info(f"Encountered blacklisted CID {cover_photo_multihash} in indexing update user cover photo")
             return None
         user_record.cover_photo = cover_photo_multihash
     elif event_type == user_event_types_lookup["update_is_creator"]:
