@@ -114,7 +114,7 @@ def test_gets_all_results(app):
         assert len(res) == 2
 
 def test_gets_downloadable_results(app):
-    """Tests we get all results, including downloaded"""
+    """Tests we get only downloadable results"""
     with app.app_context():
         db = get_db()
         setup_search(db)
