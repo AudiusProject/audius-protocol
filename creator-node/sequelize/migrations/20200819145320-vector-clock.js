@@ -2,45 +2,47 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // const transaction = await queryInterface.sequelize.transaction()
+
     // Add 'clock2' column to all 4 data tables - TESTING ONLY
-    await queryInterface.addColumn('CNodeUsers', 'clock2', {
-      type: Sequelize.INTEGER,
-      unique: false
-    })
-    await queryInterface.addColumn('AudiusUsers', 'clock2', {
-      type: Sequelize.INTEGER,
-      unique: false
-    })
-    await queryInterface.addColumn('Tracks', 'clock2', {
-      type: Sequelize.INTEGER,
-      unique: false
-    })
-    await queryInterface.addColumn('Files', 'clock2', {
-      type: Sequelize.INTEGER,
-      unique: false
-    })
+    // await queryInterface.addColumn('CNodeUsers', 'clock2', {
+    //   type: Sequelize.INTEGER,
+    //   unique: false
+    // })
+    // await queryInterface.addColumn('AudiusUsers', 'clock2', {
+    //   type: Sequelize.INTEGER,
+    //   unique: false
+    // })
+    // await queryInterface.addColumn('Tracks', 'clock2', {
+    //   type: Sequelize.INTEGER,
+    //   unique: false
+    // })
+    // await queryInterface.addColumn('Files', 'clock2', {
+    //   type: Sequelize.INTEGER,
+    //   unique: false
+    // })
 
 
     // Add 'clock' column to all 4 data tables
     await queryInterface.addColumn('CNodeUsers', 'clock', {
       type: Sequelize.INTEGER,
-      unique: false,
-      allowNull: false
+      unique: false
+      // allowNull: false
     })
     await queryInterface.addColumn('AudiusUsers', 'clock', {
       type: Sequelize.INTEGER,
-      unique: false,
-      allowNull: false
+      unique: false
+      // allowNull: false
     })
     await queryInterface.addColumn('Tracks', 'clock', {
       type: Sequelize.INTEGER,
-      unique: false,
-      allowNull: false
+      unique: false
+      // allowNull: false
     })
     await queryInterface.addColumn('Files', 'clock', {
       type: Sequelize.INTEGER,
-      unique: false,
-      allowNull: false
+      unique: false
+      // allowNull: false
     })
 
     // Add composite uniqueness constraint on (cnodeUserUUID, clock) in each table
