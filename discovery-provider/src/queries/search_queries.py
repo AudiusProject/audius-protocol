@@ -468,7 +468,7 @@ def track_search_query(
     # track_ids is list of tuples - simplify to 1-D list
     track_ids = [i[0] for i in track_ids]
 
-    tracks_query = (
+    tracks = (
         session.query(Track)
         .filter(
             Track.is_delete == False,
@@ -476,14 +476,9 @@ def track_search_query(
             Track.is_unlisted == False,
             Track.stem_of == None,
             Track.track_id.in_(track_ids),
-        )
+        ).all()
     )
 
-    # Filter to downloadable if needed
-    if only_downloadable:
-        tracks_query = tracks_query.filter(Track.download['is_downloadable'].cast(sqlalchemy.Boolean) == True)
-
-    tracks = tracks_query.all()
     tracks = helpers.query_result_to_list(tracks)
 
     if is_auto_complete == True:

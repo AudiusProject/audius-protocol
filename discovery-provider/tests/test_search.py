@@ -72,7 +72,7 @@ def setup_search(db):
             updated_at=now,
             created_at=now,
             is_unlisted=False,
-            title="random title",
+            title="xyz",
             download={"cid": None, "is_downloadable": True, "requires_follow": False}
         )
     ]
@@ -117,7 +117,7 @@ def test_gets_downloadable_results(app):
     """Tests we get only downloadable results"""
     with app.app_context():
         db = get_db()
-        setup_search(db)
+    setup_search(db)
     with db.scoped_session() as session:
         res = track_search_query(session, "the", 10, 0, False, False, None, True)
         assert len(res) == 1
