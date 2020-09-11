@@ -182,7 +182,7 @@ def generate_trending(session, time, genre, limit, offset):
         if save_type == SaveType.track
     }
 
-    karma_query = get_karma(session, tuple(not_deleted_track_ids))
+    karma_query = get_karma(session, tuple(track_ids))
     karma_counts_for_id = {track_id: karma for (track_id, karma) in karma_query}
 
     trending_tracks = []
@@ -203,7 +203,7 @@ def generate_trending(session, time, genre, limit, offset):
 
         # Populate listen counts
         owner_id = track_owner_dict[track_id]
-        owner_follow_count = follower_count_dict.get('owner_id', 0)
+        owner_follow_count = follower_count_dict.get(owner_id, 0)
         track_entry[response_name_constants.track_owner_id] = owner_id
         track_entry[response_name_constants.track_owner_follower_count] = owner_follow_count
 
@@ -225,4 +225,5 @@ def generate_trending(session, time, genre, limit, offset):
 
     final_resp = {}
     final_resp['listen_counts'] = trending_tracks
+    logger.warning(trending_tracks[:4])
     return final_resp
