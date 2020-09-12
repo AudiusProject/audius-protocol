@@ -418,6 +418,14 @@ contract('DelegateManager', async (accounts) => {
     return Object.assign(accountSummary, spDetails)
   }
 
+  const validateAccountStakeBalance = async (account) => {
+    let info = await getAccountStakeInfo(account)
+    assert.isTrue(
+      info.totalInStakingContract.eq(info.outsideStake),
+      `Imbalanced stake for account ${account} - totalInStakingContract=${info.totalInStakingContract.toString()}, outside=${info.outsideStake.toString()}`
+    )
+  }
+
   describe('Delegation tests', () => {
     let regTx
 
@@ -2202,18 +2210,18 @@ contract('DelegateManager', async (accounts) => {
         let totalStakedForStaker5 = await staking.totalStakedFor(stakerAccount5) 
         console.log(`acct 5=${stakerAccount5} - ${totalStakedForStaker5.toString()}`)
     
-
         await claimsManager.initiateRound({ from: stakerAccount })
+
         // TODO: Claim for all
-        console.log(`1st claim for ${stakerAccount2}`)
-        let tx = await delegateManager.claimRewards(stakerAccount2, { from: stakerAccount2 })
-        console.log(tx.receipt.transactionHash)
-        console.log(`Claimed for ${stakerAccount2}`)
-  
         console.log(`1st claim for ${stakerAccount}`)
-        tx = await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
+        let tx = await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
         console.log(tx.receipt.transactionHash)
         console.log(`Claimed for ${stakerAccount}`)
+
+        console.log(`1st claim for ${stakerAccount2}`)
+        tx = await delegateManager.claimRewards(stakerAccount2, { from: stakerAccount2 })
+        console.log(tx.receipt.transactionHash)
+        console.log(`Claimed for ${stakerAccount2}`)
   
         console.log('Moving to next round...')
 
@@ -2251,13 +2259,29 @@ contract('DelegateManager', async (accounts) => {
         tx = await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
         console.log(tx.receipt.transactionHash)
         console.log(`2nd Claimed for ${stakerAccount}`)
+        console.log('------------------')
+        console.log(`total stake=${(await staking.totalStaked()).toString()}`)
+        totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
+        console.log(`acct 1=${stakerAccount} - ${totalStakedForAccount.toString()}`)
   
+        totalStakedForStaker2 = await staking.totalStakedFor(stakerAccount2) 
+        sp2Stake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount2)).deployerStake
+        sp2DelegatedStake = await delegateManager.getTotalDelegatedToServiceProvider(stakerAccount2)
+        console.log(`acct 2=${stakerAccount2} - ${totalStakedForStaker2.toString()} - deployerStake=${sp2Stake.toString()} - delegation=${sp2DelegatedStake.toString()}`)
+  
+        totalStakedForStaker3 = await staking.totalStakedFor(stakerAccount3) 
+        console.log(`acct 3=${stakerAccount3} - ${totalStakedForStaker3.toString()}`)
+        totalStakedForStaker4 = await staking.totalStakedFor(stakerAccount4) 
+        console.log(`acct 4=${stakerAccount4} - ${totalStakedForStaker4.toString()}`)
+        totalStakedForStaker5 = await staking.totalStakedFor(stakerAccount5) 
+        console.log(`acct 5=${stakerAccount5} - ${totalStakedForStaker5.toString()}`)
 
-
-
-
-
-
+        await validateAccountStakeBalance(stakerAccount)
+        await validateAccountStakeBalance(stakerAccount2)
+        await validateAccountStakeBalance(stakerAccount3)
+        await validateAccountStakeBalance(stakerAccount4)
+        await validateAccountStakeBalance(stakerAccount5)
+        await validateAccountStakeBalance(stakerAccount6)
       })
 
       it.only('Decrease in reward for pending stake decrease', async () => {
