@@ -445,14 +445,11 @@ contract DelegateManager is InitializableV2 {
         );
 
         // Rewards directly allocated to service provider for their stake
-        uint256 spRewardShare = (
-            totalRewards.sub(totalDelegatedStakeIncrease)
-        ).sub(spDeployerCutRewards);
-
+       uint256 spRewardShare = totalRewards.sub(totalDelegatedStakeIncrease);
         spFactory.updateServiceProviderStake(
             _serviceProvider,
-            /// newSpBalance = totalBalanceInSPFactory + spRewardShare + spDeployerCutRewards;
-            totalBalanceInSPFactory.add(spRewardShare.add(spDeployerCutRewards))
+            /// newSpBalance = totalBalanceInSPFactory + spRewardShare
+            totalBalanceInSPFactory.add(spRewardShare)
         );
     }
 

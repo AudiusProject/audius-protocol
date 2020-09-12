@@ -40,7 +40,7 @@ const DECREASE_STAKE_LOCKUP_DURATION = UNDELEGATE_LOCKUP_DURATION
 const callValue0 = _lib.toBN(0)
 
 
-contract('DelegateManager', async (accounts) => {
+contract.only('DelegateManager', async (accounts) => {
   let staking, stakingAddress, token, registry, governance
   let serviceProviderFactory, serviceTypeManager, claimsManager, delegateManager
 
@@ -424,6 +424,7 @@ contract('DelegateManager', async (accounts) => {
       info.totalInStakingContract.eq(info.outsideStake),
       `Imbalanced stake for account ${account} - totalInStakingContract=${info.totalInStakingContract.toString()}, outside=${info.outsideStake.toString()}`
     )
+    return info
   }
 
   describe('Delegation tests', () => {
@@ -918,7 +919,7 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('40 delegators to one SP + claim', async () => {
+    it.only('40 delegators to one SP + claim', async () => {
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
 
       let numDelegators = 40
@@ -932,6 +933,7 @@ contract('DelegateManager', async (accounts) => {
       let delegatorAccounts = accounts.slice(delegateAccountOffset, delegateAccountOffset + numDelegators)
       let totalDelegationAmount = DEFAULT_AMOUNT
       let singleDelegateAmount = totalDelegationAmount.div(web3.utils.toBN(numDelegators))
+      console.log(`Initial delegate amount: ${singleDelegateAmount}`)
 
       for (var delegator of delegatorAccounts) {
         // Transfer 1000 tokens to each delegator
@@ -989,40 +991,88 @@ contract('DelegateManager', async (accounts) => {
       let fundingAmount = await claimsManager.getFundsPerRound()
       let totalRewards = (totalStakedForSP.mul(fundingAmount)).div(totalStake)
 
-      let spDelegationRewards = web3.utils.toBN(0)
+      let spDeployerCutRewards = web3.utils.toBN(0)
+      let totalDelegateStakeIncrease = web3.utils.toBN(0)
+
       // Expected value for each delegator
       let expectedDelegateStakeDictionary = {}
       for (let delegator of delegatorAccounts) {
+        // TODO: Get delegator stake FOR THIS SP SPECIFICALLY
         let delegatorStake = await getTotalDelegatorStake(delegator)
         let delegateRewardsPriorToSPCut = (delegatorStake.mul(totalRewards)).div(totalValueOutsideStaking)
         let spDeployerCut = (delegateRewardsPriorToSPCut.mul(deployerCut)).div(deployerCutBase)
         let delegateRewards = delegateRewardsPriorToSPCut.sub(spDeployerCut)
+        console.log(`${delegator} : Expected delegateRewards=${delegateRewards}`)
         // Update dictionary of expected values
         let expectedDelegateStake = delegatorStake.add(delegateRewards)
         expectedDelegateStakeDictionary[delegator] = expectedDelegateStake
-        spDelegationRewards = spDelegationRewards.add(spDeployerCut)
+        // Update total deployer cut tracking
+        spDeployerCutRewards = spDeployerCutRewards.add(spDeployerCut)
+        console.log(`${delegator} : Increasing ${totalDelegateStakeIncrease} by ${delegateRewards.toString()}`)
+        // Update total delegated stake increase
+        totalDelegateStakeIncrease = totalDelegateStakeIncrease.add(delegateRewards)
       }
+      console.log(expectedDelegateStakeDictionary)
 
       // Expected value for SP
-      let spRewardShare = (spStake.mul(totalRewards)).div(totalValueOutsideStaking)
-      let expectedSpStake = spStake.add(spRewardShare.add(spDelegationRewards))
+      console.log(`totalRewards: ${totalRewards.toString()}`)
+      console.log(`spStake: ${spStake.toString()}`)
+      console.log(`totalDelegateStakeIncrease: ${totalDelegateStakeIncrease.toString()}`)
+      let spRewardShare = (totalRewards.sub(totalDelegateStakeIncrease))
+      let expectedSpStake = spStake.add(spRewardShare)
+
+      console.log(`expectedSpStake=${spStake.toString()} + (${totalRewards.toString()} - ${totalDelegateStakeIncrease.toString()})`)
+      console.log(`expectedSpStake=${spStake.toString()} + ${spRewardShare.toString()}`)
+      console.log('Validating')
+
+      let preClaimInfo = await validateAccountStakeBalance(stakerAccount)
+      console.log('Validated')
+      console.log(`\nPre-claim stats`)
+      console.log(`totalBalanceInStaking:${preClaimInfo.totalInStakingContract}, outside=${preClaimInfo.outsideStake}`)
+      console.log(`spfactory:${preClaimInfo.spFactoryStake}, delegated=${preClaimInfo.delegatedStake}\n`)
+
+      /*
+      totalInStakingContract,
+      delegatedStake,
+      spFactoryStake,
+      delegatorInfo,
+      outsideStake,
+      lockedUpDelegatorStake,
+      totalActiveStake,
+      spDecreaseRequest
+      */
 
       // Perform claim
       let claimTx = await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
+
+      let postClaimInfo = await validateAccountStakeBalance(stakerAccount)
+      console.log(`\nPost-claim stats`)
+      console.log(`totalBalanceInStaking:${postClaimInfo.totalInStakingContract}, outside=${postClaimInfo.outsideStake}`)
+      console.log(`spfactory:${postClaimInfo.spFactoryStake}, delegated=${postClaimInfo.delegatedStake}\n`)
+
+      let rewarded = postClaimInfo.totalInStakingContract.sub(preClaimInfo.totalInStakingContract)
+      console.log(`Rewarded: ${rewarded}`)
+
       // console.dir(claimTx, { depth: 5 })
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
-
-      // Validate final SP value vs expected
-      let finalSpStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
-      assert.isTrue(finalSpStake.eq(expectedSpStake), 'Expected SP stake matches found value')
       // Validate each delegate value against expected
       for (let delegator of delegatorAccounts) {
         let finalDelegatorStake = await getTotalDelegatorStake(delegator)
         let expectedDelegatorStake = expectedDelegateStakeDictionary[delegator]
         assert.isTrue(
           finalDelegatorStake.eq(expectedDelegatorStake),
-          'Unexpected delegator stake after claim is made')
+          `Unexpected delegator stake after claim is made - ${finalDelegatorStake.toString()}, expected ${expectedDelegatorStake.toString()}`
+        )
+        console.log(`${delegator} - Found ${finalDelegatorStake.toString()}, expected ${expectedDelegatorStake.toString()}`)
       }
+      console.log('Validated delegators')
+
+      // Validate final SP value vs expected
+      let finalSpStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
+      assert.isTrue(
+        finalSpStake.eq(expectedSpStake),
+        `Expected SP stake matches found value. Found ${finalSpStake.toString()}, Expected ${expectedSpStake.toString()}`
+      )
     })
 
     it('Undelegate partial amount', async () => {
@@ -2122,7 +2172,7 @@ contract('DelegateManager', async (accounts) => {
         assert.isTrue(acctInfo.spFactoryStake.eq(DEFAULT_AMOUNT), 'Expect default in sp factory')
       })
 
-      it.only('Reward mismatch', async () => {
+      it('Reward mismatch', async () => {
         const staker3Amt = _lib.toBN('384823535956494802781028')
         const staker4Amt = _lib.toBN('462563700468205107730431')
         const staker5Amt = _lib.toBN('221500000000000000000000')
@@ -2251,7 +2301,7 @@ contract('DelegateManager', async (accounts) => {
         await validateAccountStakeBalance(stakerAccount6)
       })
 
-      it.only('Decrease in reward for pending stake decrease', async () => {
+      it('Decrease in reward for pending stake decrease', async () => {
         // At the start of this test, we have 2 SPs each with DEFAULT_AMOUNT staked
         let fundsPerRound = await claimsManager.getFundsPerRound()
         let expectedIncrease = fundsPerRound.div(_lib.toBN(4))
