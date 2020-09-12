@@ -409,7 +409,6 @@ contract DelegateManager is InitializableV2 {
             uint256 totalBalanceInStaking,
             uint256 totalBalanceInSPFactory,
             uint256 totalActiveFunds,
-            uint256 spLockedStake,
             uint256 totalRewards
         ) = _validateClaimRewards(spFactory, _serviceProvider);
 
@@ -428,10 +427,7 @@ contract DelegateManager is InitializableV2 {
         ( ,uint256 deployerCut, , , , ) = spFactory.getServiceProviderDetails(_serviceProvider);
         uint256 deployerCutBase = spFactory.getServiceProviderDeployerCutBase();
 
-        (
-            uint256 totalDelegatedStakeIncrease,
-            uint256 spDeployerCutRewards
-        ) = _distributeDelegateRewards(
+        uint256 totalDelegatedStakeIncrease = _distributeDelegateRewards(
             _serviceProvider,
             totalActiveFunds,
             totalRewards,
@@ -938,12 +934,11 @@ contract DelegateManager is InitializableV2 {
         uint256 totalBalanceInStaking,
         uint256 totalBalanceInSPFactory,
         uint256 totalActiveFunds,
-        uint256 spLockedStake,
         uint256 totalRewards
     )
     {
         // Account for any pending locked up stake for the service provider
-        (spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(_serviceProvider);
+        (uint256 spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(_serviceProvider);
         uint256 totalLockedUpStake = (
             spDelegateInfo[_serviceProvider].totalLockedUpStake.add(spLockedStake)
         );
@@ -983,7 +978,6 @@ contract DelegateManager is InitializableV2 {
             totalBalanceInStaking,
             totalBalanceInSPFactory,
             totalActiveFunds,
-            spLockedStake,
             mintedRewards
         );
     }
@@ -1081,7 +1075,7 @@ contract DelegateManager is InitializableV2 {
         uint256 _deployerCut,
         uint256 _deployerCutBase
     )
-    internal returns (uint256 totalDelegatedStakeIncrease, uint256 spDeployerCutRewards)
+    internal returns (uint256 totalDelegatedStakeIncrease)
     {
         // Traverse all delegates and calculate their rewards
         // As each delegate reward is calculated, increment SP cut reward accordingly
@@ -1110,7 +1104,6 @@ contract DelegateManager is InitializableV2 {
             ).div(
                 _totalActiveFunds.mul(_deployerCutBase)
             );
-            spDeployerCutRewards = spDeployerCutRewards.add(spDeployerCut);
             // Increase total delegate reward in DelegateManager
             // Subtract SP reward from rewards to calculate delegate reward
             // delegateReward = rewardsPriorToSPCut - spDeployerCut;
@@ -1122,7 +1115,7 @@ contract DelegateManager is InitializableV2 {
             );
         }
 
-        return (totalDelegatedStakeIncrease, spDeployerCutRewards);
+        return (totalDelegatedStakeIncrease);
     }
 
     /**
