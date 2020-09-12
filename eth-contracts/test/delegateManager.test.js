@@ -934,8 +934,7 @@ contract.only('DelegateManager', async (accounts) => {
       let totalDelegationAmount = DEFAULT_AMOUNT
       let singleDelegateAmount = totalDelegationAmount.div(web3.utils.toBN(numDelegators))
       console.log(`Initial delegate amount: ${singleDelegateAmount}`)
-
-      for (var delegator of delegatorAccounts) {
+      await Promise.all(delegatorAccounts.map(async(delegator) => {
         // Transfer 1000 tokens to each delegator
         await token.transfer(delegator, INITIAL_BAL, { from: proxyDeployerAddress })
         // Approve staking transfer
@@ -959,7 +958,7 @@ contract.only('DelegateManager', async (accounts) => {
         assert.isTrue(
           delegatorStakeForSP.eq(singleDelegateAmount),
           'Expected total delegator stake to SP to match input')
-      }
+      }))
 
       let totalSPStakeAfterDelegation = await staking.totalStakedFor(stakerAccount)
       let expectedTotalStakeAfterDelegation = totalStakedForSP.add(totalDelegationAmount)
@@ -989,17 +988,16 @@ contract.only('DelegateManager', async (accounts) => {
         'Expect equivalent value between staking contract and protocol contracts')
 
       let fundingAmount = await claimsManager.getFundsPerRound()
-      let totalRewards = (totalStakedForSP.mul(fundingAmount)).div(totalStake)
+      let totalExpectedRewards = (totalStakedForSP.mul(fundingAmount)).div(totalStake)
 
       let spDeployerCutRewards = web3.utils.toBN(0)
       let totalDelegateStakeIncrease = web3.utils.toBN(0)
 
       // Expected value for each delegator
       let expectedDelegateStakeDictionary = {}
-      for (let delegator of delegatorAccounts) {
-        // TODO: Get delegator stake FOR THIS SP SPECIFICALLY
-        let delegatorStake = await getTotalDelegatorStake(delegator)
-        let delegateRewardsPriorToSPCut = (delegatorStake.mul(totalRewards)).div(totalValueOutsideStaking)
+      await Promise.all(delegatorAccounts.map(async (delegator) => {
+        let delegatorStake = await delegateManager.getDelegatorStakeForServiceProvider(delegator, stakerAccount)
+        let delegateRewardsPriorToSPCut = (delegatorStake.mul(totalExpectedRewards)).div(totalValueOutsideStaking)
         let spDeployerCut = (delegateRewardsPriorToSPCut.mul(deployerCut)).div(deployerCutBase)
         let delegateRewards = delegateRewardsPriorToSPCut.sub(spDeployerCut)
         console.log(`${delegator} : Expected delegateRewards=${delegateRewards}`)
@@ -1011,17 +1009,17 @@ contract.only('DelegateManager', async (accounts) => {
         console.log(`${delegator} : Increasing ${totalDelegateStakeIncrease} by ${delegateRewards.toString()}`)
         // Update total delegated stake increase
         totalDelegateStakeIncrease = totalDelegateStakeIncrease.add(delegateRewards)
-      }
+      }))
       console.log(expectedDelegateStakeDictionary)
 
       // Expected value for SP
-      console.log(`totalRewards: ${totalRewards.toString()}`)
+      console.log(`totalExpectedRewards: ${totalExpectedRewards.toString()}`)
       console.log(`spStake: ${spStake.toString()}`)
       console.log(`totalDelegateStakeIncrease: ${totalDelegateStakeIncrease.toString()}`)
-      let spRewardShare = (totalRewards.sub(totalDelegateStakeIncrease))
+      let spRewardShare = (totalExpectedRewards.sub(totalDelegateStakeIncrease))
       let expectedSpStake = spStake.add(spRewardShare)
 
-      console.log(`expectedSpStake=${spStake.toString()} + (${totalRewards.toString()} - ${totalDelegateStakeIncrease.toString()})`)
+      console.log(`expectedSpStake=${spStake.toString()} + (${totalExpectedRewards.toString()} - ${totalDelegateStakeIncrease.toString()})`)
       console.log(`expectedSpStake=${spStake.toString()} + ${spRewardShare.toString()}`)
       console.log('Validating')
 
@@ -1031,41 +1029,30 @@ contract.only('DelegateManager', async (accounts) => {
       console.log(`totalBalanceInStaking:${preClaimInfo.totalInStakingContract}, outside=${preClaimInfo.outsideStake}`)
       console.log(`spfactory:${preClaimInfo.spFactoryStake}, delegated=${preClaimInfo.delegatedStake}\n`)
 
-      /*
-      totalInStakingContract,
-      delegatedStake,
-      spFactoryStake,
-      delegatorInfo,
-      outsideStake,
-      lockedUpDelegatorStake,
-      totalActiveStake,
-      spDecreaseRequest
-      */
-
       // Perform claim
-      let claimTx = await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
+      await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
 
       let postClaimInfo = await validateAccountStakeBalance(stakerAccount)
       console.log(`\nPost-claim stats`)
       console.log(`totalBalanceInStaking:${postClaimInfo.totalInStakingContract}, outside=${postClaimInfo.outsideStake}`)
       console.log(`spfactory:${postClaimInfo.spFactoryStake}, delegated=${postClaimInfo.delegatedStake}\n`)
 
-      let rewarded = postClaimInfo.totalInStakingContract.sub(preClaimInfo.totalInStakingContract)
-      console.log(`Rewarded: ${rewarded}`)
-
       // console.dir(claimTx, { depth: 5 })
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       // Validate each delegate value against expected
-      for (let delegator of delegatorAccounts) {
-        let finalDelegatorStake = await getTotalDelegatorStake(delegator)
+      await Promise.all(delegatorAccounts.map(async (delegator) => {
+        let finalDelegatorStake = await delegateManager.getDelegatorStakeForServiceProvider(delegator, stakerAccount)
         let expectedDelegatorStake = expectedDelegateStakeDictionary[delegator]
         assert.isTrue(
           finalDelegatorStake.eq(expectedDelegatorStake),
           `Unexpected delegator stake after claim is made - ${finalDelegatorStake.toString()}, expected ${expectedDelegatorStake.toString()}`
         )
         console.log(`${delegator} - Found ${finalDelegatorStake.toString()}, expected ${expectedDelegatorStake.toString()}`)
-      }
+      }))
       console.log('Validated delegators')
+
+      let finalRewards = postClaimInfo.totalInStakingContract.sub(preClaimInfo.totalInStakingContract)
+      assert.isTrue(finalRewards.eq(totalExpectedRewards), `Expected ${totalExpectedRewards.toString()} in rewards, found ${finalRewards.toString()}`)
 
       // Validate final SP value vs expected
       let finalSpStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake
