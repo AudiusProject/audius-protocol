@@ -933,7 +933,6 @@ contract('DelegateManager', async (accounts) => {
       let delegatorAccounts = accounts.slice(delegateAccountOffset, delegateAccountOffset + numDelegators)
       let totalDelegationAmount = DEFAULT_AMOUNT
       let singleDelegateAmount = totalDelegationAmount.div(web3.utils.toBN(numDelegators))
-      console.log(`Initial delegate amount: ${singleDelegateAmount}`)
       await Promise.all(delegatorAccounts.map(async(delegator) => {
         // Transfer 1000 tokens to each delegator
         await token.transfer(delegator, INITIAL_BAL, { from: proxyDeployerAddress })
@@ -1000,44 +999,24 @@ contract('DelegateManager', async (accounts) => {
         let delegateRewardsPriorToSPCut = (delegatorStake.mul(totalExpectedRewards)).div(totalValueOutsideStaking)
         let spDeployerCut = (delegateRewardsPriorToSPCut.mul(deployerCut)).div(deployerCutBase)
         let delegateRewards = delegateRewardsPriorToSPCut.sub(spDeployerCut)
-        console.log(`${delegator} : Expected delegateRewards=${delegateRewards}`)
         // Update dictionary of expected values
         let expectedDelegateStake = delegatorStake.add(delegateRewards)
         expectedDelegateStakeDictionary[delegator] = expectedDelegateStake
         // Update total deployer cut tracking
         spDeployerCutRewards = spDeployerCutRewards.add(spDeployerCut)
-        console.log(`${delegator} : Increasing ${totalDelegateStakeIncrease} by ${delegateRewards.toString()}`)
         // Update total delegated stake increase
         totalDelegateStakeIncrease = totalDelegateStakeIncrease.add(delegateRewards)
       }))
-      console.log(expectedDelegateStakeDictionary)
 
       // Expected value for SP
-      console.log(`totalExpectedRewards: ${totalExpectedRewards.toString()}`)
-      console.log(`spStake: ${spStake.toString()}`)
-      console.log(`totalDelegateStakeIncrease: ${totalDelegateStakeIncrease.toString()}`)
       let spRewardShare = (totalExpectedRewards.sub(totalDelegateStakeIncrease))
       let expectedSpStake = spStake.add(spRewardShare)
-
-      console.log(`expectedSpStake=${spStake.toString()} + (${totalExpectedRewards.toString()} - ${totalDelegateStakeIncrease.toString()})`)
-      console.log(`expectedSpStake=${spStake.toString()} + ${spRewardShare.toString()}`)
-      console.log('Validating')
-
       let preClaimInfo = await validateAccountStakeBalance(stakerAccount)
-      console.log('Validated')
-      console.log(`\nPre-claim stats`)
-      console.log(`totalBalanceInStaking:${preClaimInfo.totalInStakingContract}, outside=${preClaimInfo.outsideStake}`)
-      console.log(`spfactory:${preClaimInfo.spFactoryStake}, delegated=${preClaimInfo.delegatedStake}\n`)
 
       // Perform claim
       await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
-
       let postClaimInfo = await validateAccountStakeBalance(stakerAccount)
-      console.log(`\nPost-claim stats`)
-      console.log(`totalBalanceInStaking:${postClaimInfo.totalInStakingContract}, outside=${postClaimInfo.outsideStake}`)
-      console.log(`spfactory:${postClaimInfo.spFactoryStake}, delegated=${postClaimInfo.delegatedStake}\n`)
 
-      // console.dir(claimTx, { depth: 5 })
       totalStakedForSP = await staking.totalStakedFor(stakerAccount)
       // Validate each delegate value against expected
       await Promise.all(delegatorAccounts.map(async (delegator) => {
@@ -1047,9 +1026,7 @@ contract('DelegateManager', async (accounts) => {
           finalDelegatorStake.eq(expectedDelegatorStake),
           `Unexpected delegator stake after claim is made - ${finalDelegatorStake.toString()}, expected ${expectedDelegatorStake.toString()}`
         )
-        console.log(`${delegator} - Found ${finalDelegatorStake.toString()}, expected ${expectedDelegatorStake.toString()}`)
       }))
-      console.log('Validated delegators')
 
       let finalRewards = postClaimInfo.totalInStakingContract.sub(preClaimInfo.totalInStakingContract)
       assert.isTrue(finalRewards.eq(totalExpectedRewards), `Expected ${totalExpectedRewards.toString()} in rewards, found ${finalRewards.toString()}`)
