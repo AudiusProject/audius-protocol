@@ -104,7 +104,7 @@ module.exports = function (app) {
 
       await transaction.commit()
       triggerSecondarySyncs(req)
-      return successResponse({ audiusUserUUID: audiusUser.audiusUserUUID })
+      return successResponse()
     } catch (e) {
       await transaction.rollback()
       return errorResponseServerError(e.message)

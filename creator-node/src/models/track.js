@@ -2,12 +2,6 @@
 
 module.exports = (sequelize, DataTypes) => {
   const Track = sequelize.define('Track', {
-    trackUUID: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      primaryKey: true,
-      defaultValue: DataTypes.UUIDV4
-    },
     cnodeUserUUID: {
       type: DataTypes.UUID,
       allowNull: false
@@ -42,11 +36,6 @@ module.exports = (sequelize, DataTypes) => {
     Track.belongsTo(models.CNodeUser, {
       foreignKey: 'cnodeUserUUID',
       targetKey: 'cnodeUserUUID',
-      onDelete: 'RESTRICT'
-    })
-    Track.belongsTo(models.File, { // belongsTo, or hasMany?
-      foreignKey: 'trackUUID',
-      targetKey: 'trackUUID',
       onDelete: 'RESTRICT'
     })
     Track.belongsTo(models.File, { // belongsTo, or hasOne

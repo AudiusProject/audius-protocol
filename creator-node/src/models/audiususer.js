@@ -1,16 +1,10 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
   const AudiusUser = sequelize.define('AudiusUser', {
-    audiusUserUUID: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      primaryKey: true,
-      defaultValue: DataTypes.UUIDV4
-    },
     blockchainId: {
       type: DataTypes.BIGINT,
       unique: true,
-      allowNull: true
+      allowNull: true //should this be false?
     },
     cnodeUserUUID: {
       type: DataTypes.UUID,
