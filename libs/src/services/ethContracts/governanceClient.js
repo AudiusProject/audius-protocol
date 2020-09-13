@@ -35,6 +35,7 @@ class GovernanceClient extends ContractClient {
     this.stakingProxyClient = stakingProxyClient
     this.isDebug = isDebug
     this.formatVote = this.formatVote.bind(this)
+    this.formatProposalEvent = this.formatProposalEvent.bind(this)
   }
 
   /**
@@ -159,6 +160,14 @@ class GovernanceClient extends ContractClient {
     return method.call()
   }
 
+  async getProposals (queryStartBlock = 0) {
+    const contract = await this.getContract()
+    let events = await contract.getPastEvents('ProposalSubmitted', {
+      fromBlock: queryStartBlock
+    })
+    return events.map(this.formatProposalEvent)
+  }
+
   async getInProgressProposals () {
     const method = await this.getMethod('getInProgressProposals')
     const ids = await method.call()
@@ -169,15 +178,18 @@ class GovernanceClient extends ContractClient {
     targetContractRegistryKey,
     callValue,
     functionSignature,
-    callData,
+    callData, // array of args, e.g. [slashAmount, targetAddress]
     description
   }) {
+    const argumentTypes = functionSignature.match(/.*\((?<args>.*)\)/).groups.args.split(',')
+    const encodedCallData = this.abiEncode(argumentTypes, callData)
+
     const method = await this.getMethod(
       'submitProposal',
       targetContractRegistryKey,
       callValue,
       functionSignature,
-      callData,
+      encodedCallData,
       description
     )
     // Increased gas because submitting can be expensive
@@ -223,6 +235,20 @@ class GovernanceClient extends ContractClient {
     // Increase gas because evaluating proposals can be expensive
     const outcome = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT * 2)
     return outcome
+  }
+
+  async getProposalEvaluation (
+    proposalId,
+    queryStartBlock = 0
+  ) {
+    const contract = await this.getContract()
+    let events = await contract.getPastEvents('ProposalOutcomeEvaluated', {
+      fromBlock: queryStartBlock,
+      filter: {
+        proposalId: proposalId
+      }
+    })
+    return events
   }
 
   async getVotes ({
@@ -320,12 +346,25 @@ class GovernanceClient extends ContractClient {
       targetContractRegistryKey: proposal.targetContractRegistryKey,
       targetContractAddress: proposal.targetContractAddress,
       callValue: parseInt(proposal.callValue),
-      functionSigntaure: proposal.functionSignature,
+      functionSignature: proposal.functionSignature,
       callData: proposal.callData,
       outcome: parseInt(proposal.outcome),
       numVotes: parseInt(proposal.numVotes),
       voteMagnitudeYes: this.toBN(proposal.voteMagnitudeYes),
       voteMagnitudeNo: this.toBN(proposal.voteMagnitudeNo)
+    }
+  }
+
+  /**
+   * Formats a proposal event
+   */
+  formatProposalEvent (proposalEvent) {
+    const event = proposalEvent.returnValues
+    return {
+      proposalId: parseInt(event.proposalId),
+      proposer: event.proposer,
+      submissionBlockNumber: parseInt(event.submissionBlockNumber),
+      description: event.description
     }
   }
 
