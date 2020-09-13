@@ -4,7 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     blockchainId: {
       type: DataTypes.BIGINT,
       unique: true,
-      allowNull: true //should this be false?
+      allowNull: true // should this be false?
     },
     cnodeUserUUID: {
       type: DataTypes.UUID,

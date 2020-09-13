@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
@@ -61,4 +61,4 @@ module.exports = {
       The up migration destroys tons of information, if we need to revert the best option is to restore from a snapshot
     */
   }
-};
+}
