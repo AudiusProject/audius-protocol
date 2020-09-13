@@ -249,7 +249,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           const numTrackFilesDeleted = await models.File.destroy({
             where: {
               cnodeUserUUID: cnodeUserUUID,
-              trackUUID: { [models.Sequelize.Op.ne]: null } // Op.ne = notequal
+              trackBlockchainId: { [models.Sequelize.Op.ne]: null } // Op.ne = notequal
             },
             transaction: t
           })
@@ -289,7 +289,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
 
         // Make list of all track Files to add after track creation.
 
-        // Files with trackUUIDs cannot be created until tracks have been created,
+        // Files with trackBlockchainIds cannot be created until tracks have been created,
         // but tracks cannot be created until metadata and cover art files have been created.
         const trackFiles = fetchedCNodeUser.files.filter(file => models.File.TrackTypes.includes(file.type))
         const nonTrackFiles = fetchedCNodeUser.files.filter(file => models.File.NonTrackTypes.includes(file.type))
@@ -329,7 +329,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
 
         await models.File.bulkCreate(nonTrackFiles.map(file => ({
           fileUUID: file.fileUUID,
-          trackUUID: null,
+          trackBlockchainId: null,
           cnodeUserUUID: fetchedCnodeUserUUID,
           multihash: file.multihash,
           sourceFile: file.sourceFile,
@@ -342,7 +342,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         req.logger.info(redisKey, 'created all non-track files')
 
         await models.Track.bulkCreate(fetchedCNodeUser.tracks.map(track => ({
-          trackUUID: track.trackUUID,
+          blockchainId: track.blockchainId,
           blockchainId: track.blockchainId,
           cnodeUserUUID: fetchedCnodeUserUUID,
           metadataJSON: track.metadataJSON,
@@ -355,7 +355,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         // Save all track files to db
         await models.File.bulkCreate(trackFiles.map(trackFile => ({
           fileUUID: trackFile.fileUUID,
-          trackUUID: trackFile.trackUUID,
+          trackBlockchainId: trackFile.blockch,
           cnodeUserUUID: fetchedCnodeUserUUID,
           multihash: trackFile.multihash,
           sourceFile: trackFile.sourceFile,
@@ -368,7 +368,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         req.logger.info('saved all track files to db')
 
         await models.AudiusUser.bulkCreate(fetchedCNodeUser.audiusUsers.map(audiusUser => ({
-          audiusUserUUID: audiusUser.audiusUserUUID,
           cnodeUserUUID: fetchedCnodeUserUUID,
           blockchainId: audiusUser.blockchainId,
           metadataJSON: audiusUser.metadataJSON,

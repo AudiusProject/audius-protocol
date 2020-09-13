@@ -212,11 +212,12 @@ module.exports = function (app) {
 
       // See if the track already has a transcoded master
       if (trackId) {
-        const { trackUUID } = await models.Track.findOne({
-          attributes: ['trackUUID'],
+        const { blockchainId } = await models.Track.findOne({
+          attributes: ['blockchainId'],
           where: {
             blockchainId: trackId
-          }
+          },
+          order: [['clock', 'DESC']]
         })
 
         // Error if no DB entry for transcode found
@@ -225,7 +226,7 @@ module.exports = function (app) {
           where: {
             cnodeUserUUID: req.session.cnodeUserUUID,
             type: 'copy320',
-            trackUUID
+            trackBlockchainId: blockchainId
           }
         })
         if (!transcodedFile) {
@@ -321,6 +322,7 @@ module.exports = function (app) {
           blockchainId: blockchainTrackId,
           coverArtFileUUID
         },
+        order: [['clock', 'DESC']],
         transaction: t
       })
 
@@ -342,7 +344,7 @@ module.exports = function (app) {
 
       const trackSegmentCIDs = metadataJSON.track_segments.map(segment => segment.multihash)
 
-      // if track created, ensure files exist with trackuuid = null and update them.
+      // if track created, ensure files exist with trackBlockchainId = null and update them.
       if (!existingTrackEntry) {
         // Update the transcoded 320kbps copy
         if (transcodedTrackUUID) {
@@ -350,7 +352,7 @@ module.exports = function (app) {
             where: {
               fileUUID: transcodedTrackUUID,
               cnodeUserUUID,
-              trackUUID: null,
+              trackBlockchainId: null,
               type: 'copy320'
             },
             transaction: t
@@ -359,11 +361,11 @@ module.exports = function (app) {
             throw new Error('Did not find a transcoded file for the provided CID.')
           }
           const numAffectedRows = await models.File.update(
-            { trackUUID: track.trackUUID },
+            { trackBlockchainId: track.blockchainId },
             { where: {
               fileUUID: transcodedTrackUUID,
               cnodeUserUUID,
-              trackUUID: null,
+              trackBlockchainId: null,
               type: 'copy320'
             },
             transaction: t
@@ -379,7 +381,7 @@ module.exports = function (app) {
           where: {
             multihash: trackSegmentCIDs,
             cnodeUserUUID,
-            trackUUID: null,
+            trackBlockchainId: null,
             type: 'track'
           },
           transaction: t
@@ -388,11 +390,11 @@ module.exports = function (app) {
           throw new Error('Did not find files for every track segment CID.')
         }
         const numAffectedRows = await models.File.update(
-          { trackUUID: track.trackUUID },
+          { trackBlockchainId: track.blockchainId },
           { where: {
             multihash: trackSegmentCIDs,
             cnodeUserUUID,
-            trackUUID: null,
+            trackBlockchainId: null,
             type: 'track'
           },
           transaction: t
@@ -401,14 +403,14 @@ module.exports = function (app) {
         if (numAffectedRows < trackSegmentCIDs.length) {
           throw new Error('Failed to associate files for every track segment CID.')
         }
-      } else { /** If track updated, ensure files exist with trackuuid. */
+      } else { /** If track updated, ensure files exist with trackBlockchainId. */
         // Check the transcoded copy if present
         if (transcodedTrackUUID) {
           const transcodedFile = await models.File.findOne({
             where: {
               fileUUID: transcodedTrackUUID,
               cnodeUserUUID,
-              trackUUID: track.trackUUID,
+              trackBlockchainId: track.trackId,
               type: 'copy320'
             },
             transaction: t
@@ -423,13 +425,13 @@ module.exports = function (app) {
           where: {
             multihash: trackSegmentCIDs,
             cnodeUserUUID,
-            trackUUID: track.trackUUID,
+            trackBlockchainId: track.blockchainId,
             type: 'track'
           },
           transaction: t
         })
         if (trackFiles.length < trackSegmentCIDs.length) {
-          throw new Error('Did not find files for every track segment CID with trackUUID.')
+          throw new Error('Did not find files for every track segment CID with trackBlockchainId.')
         }
       }
 
@@ -453,7 +455,7 @@ module.exports = function (app) {
 
       await t.commit()
       triggerSecondarySyncs(req)
-      return successResponse({ trackUUID: track.trackUUID })
+      return successResponse()
     } catch (e) {
       req.logger.error(e.message)
       await t.rollback()
@@ -468,7 +470,10 @@ module.exports = function (app) {
       return errorResponseBadRequest('Please provide blockchainId.')
     }
 
-    const track = await models.Track.findOne({ where: { blockchainId } })
+    const track = await models.Track.findOne({
+      where: { blockchainId },
+      order: [['clock', 'DESC']]
+    })
     if (!track) {
       return errorResponseBadRequest(`No track found for blockchainId ${blockchainId}`)
     }
@@ -479,11 +484,11 @@ module.exports = function (app) {
     }
 
     // Case: track is marked as downloadable
-    // - Check if downloadable file exists. Since copyFile may or may not have trackUUID association,
-    //    fetch a segmentFile for trackUUID, and find copyFile for segmentFile's sourceFile.
+    // - Check if downloadable file exists. Since copyFile may or may not have trackBlockchainId association,
+    //    fetch a segmentFile for trackBlockchainId, and find copyFile for segmentFile's sourceFile.
     const segmentFile = await models.File.findOne({ where: {
       type: 'track',
-      trackUUID: track.trackUUID
+      trackBlockchainId: track.blockchainId
     } })
     const copyFile = await models.File.findOne({ where: {
       type: 'copy320',
@@ -522,12 +527,13 @@ module.exports = function (app) {
       return errorResponseBadRequest(`Invalid ID: ${encodedId}`)
     }
 
-    const { trackUUID } = await models.Track.findOne({
-      attributes: ['trackUUID'],
-      where: { blockchainId }
+    const { blockchainId: blockchainIdFromTrack } = await models.Track.findOne({
+      attributes: ['blockchainId'],
+      where: { blockchainId },
+      order: [['clock', 'DESC']]
     })
 
-    if (!trackUUID) {
+    if (!blockchainIdFromTrack) {
       return errorResponseBadRequest(`No track found for blockchainId ${blockchainId}`)
     }
 
@@ -535,7 +541,7 @@ module.exports = function (app) {
       attributes: ['multihash'],
       where: {
         type: 'copy320',
-        trackUUID
+        trackBlockchainId: blockchainIdFromTrack
       }
     })
 
