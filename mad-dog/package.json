@@ -1,0 +1,46 @@
+{
+  "name": "mad-dog",
+  "version": "0.0.1",
+  "description": "🐶 Audius Protocol System Level Test Suite",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js --inspect"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AudiusProject/mad-dog.git"
+  },
+  "author": "Audius",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AudiusProject/mad-dog/issues"
+  },
+  "homepage": "https://github.com/AudiusProject/mad-dog#readme",
+  "engines": {
+    "node": ">=10.16.0"
+  },
+  "engineStrict": true,
+  "dependencies": {
+    "fs-extra": "^9.0.1",
+    "lodash": "^4.17.15",
+    "logform": "^2.1.2",
+    "node-fetch": "^2.6.0",
+    "nodemon": "^2.0.4",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "concurrently": "^5.2.0",
+    "eslint": "^7.2.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-prettier-standard": "^3.0.1",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.21.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "prettier": "^2.0.5",
+    "prettier-config-standard": "^1.0.1"
+  }
+}
