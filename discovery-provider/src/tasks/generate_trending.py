@@ -22,6 +22,10 @@ def get_listen_counts(session, time, genre, limit, offset):
 
     # Adds a created_at filter
     # on the base query, if applicable.
+    #
+    # If no `time` param, that means
+    # no filter so we return base_query
+    # to get all time plays.
     def with_time_filter(base_query, time):
         delta = None
         if not time:
