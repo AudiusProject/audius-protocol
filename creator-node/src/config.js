@@ -357,6 +357,13 @@ const config = convict({
     format: 'nat',
     env: 'rehydrateMaxConcurrency',
     default: 10
+  },
+  redisRehydrateCacheTTL: {
+    doc: 'Max time a cache entry for rehydrate key will live in seconds',
+    format: 'nat',
+    env: 'redisRehydrateCacheTTL',
+    default: 60 // 5min for testing
+    // default: 3600 // 60 min * (60 seconds/min) = 3600 seconds (1 hr)
   }
 
   // unsupported options at the moment

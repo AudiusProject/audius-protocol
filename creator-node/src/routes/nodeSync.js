@@ -24,6 +24,7 @@ module.exports = function (app) {
    * }
    */
   app.get('/export', handleResponse(async (req, res) => {
+    const redisClient = req.app.get('redisClient')
     const walletPublicKeys = req.query.wallet_public_key // array
 
     const t = await models.sequelize.transaction()
@@ -43,7 +44,9 @@ module.exports = function (app) {
       /** Bundle all data into cnodeUser objects to maximize import speed. */
 
       const cnodeUsersDict = {}
-      cnodeUsers.forEach(cnodeUser => {
+      const TTL = config.get('redisRehydrateCacheTTL')
+
+      const cnodeUserUUIDsOfFilesToRehydrateArray = cnodeUsers.map(async cnodeUser => {
         // Convert sequelize object to plain js object to allow adding additional fields.
         const cnodeUserDictObj = cnodeUser.toJSON()
 
@@ -53,7 +56,18 @@ module.exports = function (app) {
         cnodeUserDictObj['files'] = []
 
         cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUserDictObj
+
+        // Use redis cache to check if user with associated wallet has had its files recently rehydrated
+        // If so, do not rehydrate
+        const entry = await redisClient.get(`recently_rehydrated_wallet_${cnodeUser.walletPublicKey}`)
+        if (!entry) {
+          // expires in 60s
+          await redisClient.set(`recently_rehydrated_wallet_${cnodeUser.walletPublicKey}`, cnodeUser.cnodeUserUUID, 'EX', TTL)
+          return Promise.resolve(cnodeUser.cnodeUserUUID)
+        }
       })
+
+      const cnodeUserUUIDsOfFilesToRehydrateSet = new Set(await Promise.all(cnodeUserUUIDsOfFilesToRehydrateArray))
 
       audiusUsers.forEach(audiusUser => {
         const audiusUserDictObj = audiusUser.toJSON()
@@ -63,17 +77,23 @@ module.exports = function (app) {
         let trackDictObj = track.toJSON()
         cnodeUsersDict[trackDictObj['cnodeUserUUID']]['tracks'].push(trackDictObj)
       })
+
+      const filesToRehydrate = []
       files.forEach(file => {
         let fileDictObj = file.toJSON()
         cnodeUsersDict[fileDictObj['cnodeUserUUID']]['files'].push(fileDictObj)
+
+        if (cnodeUserUUIDsOfFilesToRehydrateSet.has(fileDictObj.cnodeUserUUID)) {
+          filesToRehydrate.push(fileDictObj)
+        }
       })
 
       // Expose ipfs node's peer ID.
       const ipfs = req.app.get('ipfsAPI')
       let ipfsIDObj = await getIPFSPeerId(ipfs, config)
 
-      for (let i = 0; i < files.length; i += RehydrateIPFSConcurrencyLimit) {
-        const exportFilesSlice = files.slice(i, i + RehydrateIPFSConcurrencyLimit)
+      for (let i = 0; i < filesToRehydrate.length; i += RehydrateIPFSConcurrencyLimit) {
+        const exportFilesSlice = filesToRehydrate.slice(i, i + RehydrateIPFSConcurrencyLimit)
         req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}`)
         // Ensure all relevant files are available through IPFS at export time
         await Promise.all(exportFilesSlice.map(async (file) => {
@@ -83,9 +103,9 @@ module.exports = function (app) {
               // to address legacy single-res image rehydration where images are stored directly under its file CID
               (file.type === 'image' && file.sourceFile === null)
             ) {
-              await RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(file.multihash, file.storagePath, { logContext: req.logContext })
+              RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(file.multihash, file.storagePath, { logContext: req.logContext })
             } else if (file.type === 'dir') {
-              await RehydrateIpfsQueue.addRehydrateIpfsDirFromFsIfNecessaryTask(file.multihash, { logContext: req.logContext })
+              RehydrateIpfsQueue.addRehydrateIpfsDirFromFsIfNecessaryTask(file.multihash, { logContext: req.logContext })
             }
           } catch (e) {
             req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}, ${e}`)
