@@ -9,7 +9,6 @@ import src.utils.redis_connection
 import src.utils.web3_provider
 import src.utils.db_session
 
-
 # Test fixture to mock a postgres database using an in-memory alternative
 @pytest.fixture()
 def db_mock(monkeypatch):
