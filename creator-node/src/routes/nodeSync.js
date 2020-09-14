@@ -328,52 +328,28 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         req.logger.info('Saved all non-track files to disk.')
 
         await models.File.bulkCreate(nonTrackFiles.map(file => ({
-          fileUUID: file.fileUUID,
+          ...file,
           trackBlockchainId: null,
-          cnodeUserUUID: fetchedCnodeUserUUID,
-          multihash: file.multihash,
-          sourceFile: file.sourceFile,
-          storagePath: file.storagePath,
-          type: file.type,
-          fileName: file.fileName,
-          dirMultihash: file.dirMultihash,
-          clock: file.clock
+          cnodeUserUUID: fetchedCnodeUserUUID
         })), { transaction: t })
         req.logger.info(redisKey, 'created all non-track files')
 
         await models.Track.bulkCreate(fetchedCNodeUser.tracks.map(track => ({
-          blockchainId: track.blockchainId,
-          cnodeUserUUID: fetchedCnodeUserUUID,
-          metadataJSON: track.metadataJSON,
-          metadataFileUUID: track.metadataFileUUID,
-          coverArtFileUUID: track.coverArtFileUUID,
-          clock: track.clock
+          ...track,
+          cnodeUserUUID: fetchedCnodeUserUUID
         })), { transaction: t })
         req.logger.info(redisKey, 'created all tracks')
 
         // Save all track files to db
         await models.File.bulkCreate(trackFiles.map(trackFile => ({
-          fileUUID: trackFile.fileUUID,
-          trackBlockchainId: trackFile.trackBlockchainId,
-          cnodeUserUUID: fetchedCnodeUserUUID,
-          multihash: trackFile.multihash,
-          sourceFile: trackFile.sourceFile,
-          storagePath: trackFile.storagePath,
-          type: trackFile.type,
-          fileName: trackFile.fileName,
-          dirMultihash: trackFile.dirMultihash,
-          clock: trackFile.clock
+          ...trackFile,
+          cnodeUserUUID: fetchedCnodeUserUUID
         })), { transaction: t })
         req.logger.info('saved all track files to db')
 
         await models.AudiusUser.bulkCreate(fetchedCNodeUser.audiusUsers.map(audiusUser => ({
+          ...audiusUser,
           cnodeUserUUID: fetchedCnodeUserUUID,
-          blockchainId: audiusUser.blockchainId,
-          metadataJSON: audiusUser.metadataJSON,
-          metadataFileUUID: audiusUser.metadataFileUUID,
-          coverArtFileUUID: audiusUser.coverArtFileUUID,
-          profilePicFileUUID: audiusUser.profilePicFileUUID,
-          clock: audiusUser.clock
         })), { transaction: t })
         req.logger.info('saved all audiususer data to db')
 
