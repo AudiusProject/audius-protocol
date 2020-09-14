@@ -36,6 +36,7 @@ class GovernanceClient extends ContractClient {
     this.isDebug = isDebug
     this.formatVote = this.formatVote.bind(this)
     this.formatProposalEvent = this.formatProposalEvent.bind(this)
+    this.abiEncode = this.abiEncode.bind(this)
   }
 
   /**
@@ -242,7 +243,7 @@ class GovernanceClient extends ContractClient {
     queryStartBlock = 0
   ) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('ProposalOutcomeEvaluated', {
+    const events = await contract.getPastEvents('ProposalOutcomeEvaluated', {
       fromBlock: queryStartBlock,
       filter: {
         proposalId: proposalId
