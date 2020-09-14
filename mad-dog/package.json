@@ -23,7 +23,7 @@
   "engineStrict": true,
   "dependencies": {
     "fs-extra": "^9.0.1",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "logform": "^2.1.2",
     "node-fetch": "^2.6.0",
     "nodemon": "^2.0.4",
