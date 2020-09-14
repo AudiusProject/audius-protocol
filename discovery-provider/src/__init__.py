@@ -290,10 +290,10 @@ def configure_celery(flask_app, celery, test_config=None):
                 "task": "update_discovery_cache",
                 "schedule": timedelta(seconds=60)
             },
-            "update_play_count": {
-                "task": "update_play_count",
-                "schedule": timedelta(seconds=10)
-            },
+            # "update_play_count": {
+            #     "task": "update_play_count",
+            #     "schedule": timedelta(seconds=10)
+            # },
             "update_metrics": {
                 "task": "update_metrics",
                 "schedule": crontab(minute=0, hour="*")
