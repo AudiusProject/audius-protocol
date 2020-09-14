@@ -47,7 +47,7 @@ module.exports = {
       -- remove the audiusUserUUID field as the AudiusUsers pkey
       ALTER TABLE "AudiusUsers" DROP CONSTRAINT "AudiusUsers_pkey";
 
-      -- remove the trackUUID column from Tracks
+      -- remove the audiusUserUUID column from AudiusUsers
       ALTER TABLE "AudiusUsers" DROP COLUMN "audiusUserUUID";
 
       COMMIT;

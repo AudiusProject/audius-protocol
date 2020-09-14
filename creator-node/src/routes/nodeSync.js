@@ -343,7 +343,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
 
         await models.Track.bulkCreate(fetchedCNodeUser.tracks.map(track => ({
           blockchainId: track.blockchainId,
-          blockchainId: track.blockchainId,
           cnodeUserUUID: fetchedCnodeUserUUID,
           metadataJSON: track.metadataJSON,
           metadataFileUUID: track.metadataFileUUID,
@@ -355,7 +354,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         // Save all track files to db
         await models.File.bulkCreate(trackFiles.map(trackFile => ({
           fileUUID: trackFile.fileUUID,
-          trackBlockchainId: trackFile.blockch,
+          trackBlockchainId: trackFile.trackBlockchainId,
           cnodeUserUUID: fetchedCnodeUserUUID,
           multihash: trackFile.multihash,
           sourceFile: trackFile.sourceFile,
