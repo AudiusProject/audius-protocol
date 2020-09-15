@@ -349,7 +349,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
 
         await models.AudiusUser.bulkCreate(fetchedCNodeUser.audiusUsers.map(audiusUser => ({
           ...audiusUser,
-          cnodeUserUUID: fetchedCnodeUserUUID,
+          cnodeUserUUID: fetchedCnodeUserUUID
         })), { transaction: t })
         req.logger.info('saved all audiususer data to db')
 
