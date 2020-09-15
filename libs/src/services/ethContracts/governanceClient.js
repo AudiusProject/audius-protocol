@@ -169,6 +169,17 @@ class GovernanceClient extends ContractClient {
     return events.map(this.formatProposalEvent)
   }
 
+  async getProposalsForAddresses (addresses, queryStartBlock = 0) {
+    const contract = await this.getContract()
+    let events = await contract.getPastEvents('ProposalSubmitted', {
+      fromBlock: queryStartBlock,
+      filter: {
+        proposer: addresses
+      }
+    })
+    return events.map(this.formatProposalEvent)
+  }
+
   async getInProgressProposals () {
     const method = await this.getMethod('getInProgressProposals')
     const ids = await method.call()
@@ -365,7 +376,8 @@ class GovernanceClient extends ContractClient {
       proposalId: parseInt(event.proposalId),
       proposer: event.proposer,
       submissionBlockNumber: parseInt(event.submissionBlockNumber),
-      description: event.description
+      description: event.description,
+      blockNumber: proposalEvent.blockNumber
     }
   }
 
@@ -378,7 +390,8 @@ class GovernanceClient extends ContractClient {
       proposalId: parseInt(event.proposalId),
       voter: event.voter,
       vote: parseInt(event.vote),
-      voterStake: this.toBN(event.voterStake)
+      voterStake: this.toBN(event.voterStake),
+      blockNumber: voteEvent.blockNumber
     }
   }
 }
