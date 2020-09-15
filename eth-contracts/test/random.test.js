@@ -27,7 +27,8 @@ contract.only('Random testing', async (accounts) => {
     // const numUsers = 1
     const numUsers = 5
     const minNumServicesPerUser = 1
-    const maxNumServicesPerUser = 2 // TOOD: CONSUME THIS
+    const maxNumServicesPerUser = 2 // TODO: CONSUME THIS
+    // const numRounds = 2
     const numRounds = 5
     const fundingRoundBlockDiffForTest = 200
 
@@ -53,7 +54,6 @@ contract.only('Random testing', async (accounts) => {
 
         serviceTypeManager = await ServiceTypeManager.at(serviceTypeManagerAddrFromSPFactory)
         console.log(`ServiceTypeManager: ${serviceTypeManager.address}, expected ${serviceTypeManagerAddrFromSPFactory}`)
-
 
         const delManAddrFromClaimsManager = await claimsManager.getDelegateManagerAddress()
         delegateManager = await DelegateManager.at(delManAddrFromClaimsManager)
@@ -152,16 +152,54 @@ contract.only('Random testing', async (accounts) => {
         await validateAccountStakeBalance(user)
     }
 
+    const delegate = async (target, amount, sender) => {
+        let currentBalance = await token.balanceOf(sender)
+        if (amount.gt(currentBalance)) {
+            let missing = amount.sub(currentBalance)
+            await token.transfer(sender, missing, { from: proxyDeployerAddress })
+            currentBalance = await token.balanceOf(sender)
+        }
+
+        // Approve staking transfer
+        await token.approve(
+            staking.address,
+            amount,
+            { from: sender }
+        )
+
+        // Delegate valid min to SP 1
+        await delegateManager.delegateStake(
+            target,
+            amount,
+            { from: sender }
+        )
+    }
+
+    const randomlyDelegate = async (user) => {
+        // 50% chance of delegation FROM this user
+        let shouldDelegate = rand(0, 100)
+        if (shouldDelegate < 50) return
+        console.log(`${user} - Random delegation decision flow rolled ${shouldDelegate}`)
+        let otherUsers = users.filter(x=>x!=user)
+        let randTargetUser = otherUsers[Math.floor(Math.random()*otherUsers.length)];
+        // Select between 100 and 500 AUD to delegate
+        let amount = rand(100000000000000000000, 500000000000000000000)
+        console.log(`${user} - Selected ${randTargetUser} SP, sending ${amount}`)
+        await delegate(randTargetUser, _lib.toBN(amount), user)
+        console.log(`${user} - END RAND DEL DECISION FLOW`)
+    }
+
     // Add services as expected
     const processUserState = async (users) => {
-        console.log('processUserState')
         await Promise.all(
             users.map(async (user) => {
                 let userServiceInfo = await getUserServiceInfo(user)
                 if (userServiceInfo.numServices < minNumServicesPerUser) {
+                    // In this case, our user has not
                     await addNewServiceForUser(user)
                 } else {
                     console.log(`${user} - Satisifed service requirements`)
+                    await randomlyDelegate(user)
                 }
             })
         )
@@ -222,10 +260,7 @@ contract.only('Random testing', async (accounts) => {
             )
         )
         console.log(`------- Finished Claiming Rewards -------`)
-        /*
-            3142465753420000000000000 * 1342465753420000000000000 / 3142465753420000000000000
-        */
-    }
+   }
 
     const initiateRound = async (user) => {
         console.log(`------- Initiating Round -------`)
@@ -259,13 +294,10 @@ contract.only('Random testing', async (accounts) => {
                 // TODO: Randomize from which acct the round is initiated
                 await initiateRound(users[0])
 
-                // TODO: CLAIM IN EACH ROUND
                 await claimPendingRewards(users)
 
                 await validateUsers(users)
-
                 console.log(`------------------------ AUDIUS RANDOM TESTING - Finished Round ${currentRound} ------------------------\n`)
-
                 // Progress round
                 currentRound++
             }
