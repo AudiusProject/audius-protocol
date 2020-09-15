@@ -24,7 +24,8 @@ contract.only('Random testing', async (accounts) => {
     const guardianAddress = proxyDeployerAddress
     const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
     const userOffset = 25 
-    const numUsers = 5
+    const numUsers = 1
+    // const numUsers = 5
     const minNumServicesPerUser = 1
     const maxNumServicesPerUser = 2 // TOOD: CONSUME THIS
     const numRounds = 2
@@ -141,6 +142,8 @@ contract.only('Random testing', async (accounts) => {
             amount,
             user
         )
+        // Confirm system is internally consistent for this user
+        await validateAccountStakeBalance(user)
     }
 
     // Add services as expected
@@ -158,15 +161,11 @@ contract.only('Random testing', async (accounts) => {
         )
     }
 
-    const getAccountStakeInfo = async (account, print = false) => {
-        let spFactoryStake
-        let totalInStakingContract
-    
+    const getAccountStakeInfo = async (account) => {
         let spDetails = await serviceProviderFactory.getServiceProviderDetails(account)
-        spFactoryStake = spDetails.deployerStake
-        totalInStakingContract = await staking.totalStakedFor(account)
+        let spFactoryStake = spDetails.deployerStake
+        let totalInStakingContract = await staking.totalStakedFor(account)
         let totalDelegatedToSP = await delegateManager.getTotalDelegatedToServiceProvider(account)
-
         let outsideStake = spFactoryStake.add(totalDelegatedToSP)
         return {
             totalInStakingContract,
@@ -178,10 +177,12 @@ contract.only('Random testing', async (accounts) => {
 
     const validateAccountStakeBalance = async (account) => {
         let info = await getAccountStakeInfo(account)
+        let infoStr = `totalInStakingContract=${info.totalInStakingContract.toString()}, outside=${info.outsideStake.toString()}`
         assert.isTrue(
           info.totalInStakingContract.eq(info.outsideStake),
-          `Imbalanced stake for account ${account} - totalInStakingContract=${info.totalInStakingContract.toString()}, outside=${info.outsideStake.toString()}`
+          `Imbalanced stake for account ${account} - ${infoStr}`
         )
+        console.log(`${account} - ${infoStr}`)
         return info
     }
 
@@ -191,6 +192,31 @@ contract.only('Random testing', async (accounts) => {
             await validateAccountStakeBalance(user)
         }))
         console.log(`------- Finished Validating User State -------`)
+    }
+
+    const claimPendingRewards = async (users) => {
+        console.log(`------- Claiming Rewards -------`)
+        let lastFundedBlock = await claimsManager.getLastFundedBlock()
+        let totalAtFundBlock = await staking.totalStakedAt(lastFundedBlock)
+        let fundsPerRound = await claimsManager.getFundsPerRound()
+        console.log(`Round INFO lastFundBlock=${lastFundedBlock} - totalAtFundBlock=${totalAtFundBlock} - fundsPerRound=${fundsPerRound}`)
+        // TODO: Randomize this here
+        await Promise.all(users.map(async (user) => {
+            let preClaimInfo = await getAccountStakeInfo(user)
+            let totalForUserAtFundBlock = await staking.totalStakedForAt(user, lastFundedBlock)
+            let spInfo = await serviceProviderFactory.getServiceProviderDetails(user)
+            console.log(spInfo)
+            console.log(`${user} - totalForUserAtFundBlock=${totalForUserAtFundBlock}`)
+            let tx = await delegateManager.claimRewards(user, { from: user })
+            console.dir(tx, { depth: 5 })
+            let postClaimInfo = await getAccountStakeInfo(user)
+            let rewards = postClaimInfo.totalInStakingContract.sub(preClaimInfo.totalInStakingContract)
+            console.log(`${user} - Claimed ${rewards}`)
+        }))
+        console.log(`------- Finished Claiming Rewards -------`)
+        /*
+            3142465753420000000000000 * 1342465753420000000000000 / 3142465753420000000000000
+        */
     }
 
     const initiateRound = async (user) => {
@@ -226,6 +252,7 @@ contract.only('Random testing', async (accounts) => {
                 await initiateRound(users[0])
 
                 // TODO: CLAIM IN EACH ROUND
+                await claimPendingRewards(users)
 
                 await validateUsers(users)
                 // Progress round
