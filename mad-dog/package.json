@@ -1,7 +1,7 @@
 {
   "name": "mad-dog",
   "version": "0.0.1",
-  "description": "🐶 Audius Protocol System Level Test Suite",
+  "description": "🐶 Audius Protocol Creator Node Test Suite",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
@@ -22,7 +22,9 @@
   },
   "engineStrict": true,
   "dependencies": {
+    "convict": "^6.0.0",
     "fs-extra": "^9.0.1",
+    "ipfs-http-client": "^33.1.1",
     "lodash": "^4.17.15",
     "logform": "^2.1.2",
     "node-fetch": "^2.6.0",

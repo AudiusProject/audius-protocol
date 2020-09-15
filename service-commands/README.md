@@ -3,6 +3,8 @@
 Service Commands presents a high level API for interacting with local Audius Services.
 This API allows you to bring services up and down and control your local audius configuration.
 
+Actions against individual services (e.g. creating a user, uploading a track) are not particularly stable yet.
+
 **Before you begin:**
 - Install tools: `docker`, `docker-compose`, `node`.
 - Clone the [audius-protocol](https://github.com/AudiusProject/audius-protocol) repo.
@@ -23,7 +25,7 @@ node setup.js run init-repos up
 ***Linking local libs***
 - Link libs to consume changes from your local branch within the system
   - In `<audius-protocol>/libs`, run `npm link`.
-  - In `<audius-protocol>/service-commands`, run `npm link @audius/libs`.
+  - In `<audius-tooling>/service-commands`, run `npm link @audius/libs`.
 
 **Bringing up all services:**
 - In `<service-commands>/scripts/`, run `node setup.js up` to bring all services up.
@@ -35,7 +37,7 @@ node setup.js up -nc 2
 node setup.js up --num-cnodes 5
 ```
 
-For a breakdown of how the `up` operation brings up the entire system, reference [the code here.](src/setup.js#L208)
+For a breakdown of how the `up` operation brings up the entire system, reference [the code here.](https://github.com/AudiusProject/audius-tooling/blob/f59b3c52dc79b11620ed6dfe4606c1c6090ba321/service-commands/src/setup.js#L208)
 
 
 **Tearing Down all services**
@@ -45,16 +47,19 @@ For a breakdown of how the `up` operation brings up the entire system, reference
 
 ## Structure
 
-All commands to the system are structured as a combination of `service` and `command` - the mapping is stored in [service-commands.json](src/commands/service-commands.json). Any of these service + command combinations are accessible to you through the `node setup.js run` entrypoint detailed below.
+All commands to the system are structured as a combination of `service` and `command` - the mapping is stored in [service-commands.json](https://github.com/AudiusProject/audius-tooling/blob/master/service-commands/src/commands/service-commands.json). Any of these service + command combinations are accessible to you through the `node setup.js run` entrypoint detailed below.
 
 
 
 ### Bringing up services locally
+In the __near__ future, we will present a nice CLI for bringing up & down service in `setup-scripts`. For the time being, 
+we may use some of the scripts in service-commands to accomplish this goal. Pardon our mess!
+
 Individual service commands can be executed with: `node setup.js run <service> [command]`
 
 
-* [List of services](src/setup.js#L94)
-* [List of commands](src/setup.js#L79)
+* [List of services](https://github.com/AudiusProject/audius-tooling/blob/master/service-commands/src/setup.js#L119)
+* [List of commands](https://github.com/AudiusProject/audius-tooling/blob/master/service-commands/src/setup.js#L103)
 
 
 

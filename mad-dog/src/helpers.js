@@ -8,7 +8,12 @@ const streamPipeline = util.promisify(require('stream').pipeline)
 const { logger } = require('./logger.js')
 
 const ServiceCommands = require('@audius/service-commands')
-const { addUser, upgradeToCreator, autoSelectCreatorNodes } = ServiceCommands
+const {
+  addUser,
+  upgradeToCreator,
+  autoSelectCreatorNodes,
+  getLibsUserInfo
+} = ServiceCommands
 
 const TRACK_URLS = [
   'https://royalty-free-content.s3-us-west-2.amazonaws.com/audio/Gipsy.mp3',
@@ -43,18 +48,37 @@ const addAndUpgradeUsers = async (
   executeAll,
   executeOne
 ) => {
-  let userIds
+  let addedUserIds = []
+  let existingUserIds = []
+  const walletIndexToUserIdMap = {}
+
   await logOps('Add users', async () => {
     const users = genRandomUsers(userCount)
-    userIds = await executeAll(async (libs, i) => {
-      const userMetadata = users[i]
-      const newUser = await addUser(libs, userMetadata, USER_PIC_PATH)
-      return newUser
+    await executeAll(async (libs, i) => {
+      // If user already exists, do not recreate user and use existing user
+      const existingUser = await getUser({ executeOne, walletIndex: i })
+      let userId
+      if (existingUser) {
+        existingUserIds.push(existingUser.user_id)
+        userId = existingUser.user_id
+      } else {
+        const userMetadata = users[i]
+        const newUserId = await addUser(libs, userMetadata, USER_PIC_PATH)
+        addedUserIds.push(newUserId)
+        userId = newUserId
+      }
+
+      // add to wallet index to userId mapping
+      walletIndexToUserIdMap[i] = userId
     })
-    logger.info(`Adding users, userIds=${userIds}`)
+
+    // print userIds that exist and were added
+    logger.info(`Adding users, userIds=${addedUserIds}`)
+    logger.info(`Users already exist, userIds=${existingUserIds}`)
     await waitForIndexing()
   })
 
+  // TODO: should check if existing users are already creators. if so, dont upgrade
   await logOps('Upgrade to creator', async () => {
     try {
       for (const i of _.range(userCount)) {
@@ -67,14 +91,14 @@ const addAndUpgradeUsers = async (
         await executeOne(i, l => upgradeToCreator(l, endpointString))
       }
     } catch (e) {
-      logger.error('GOT ERR UPGRADING')
+      logger.error('GOT ERR UPGRADING USER TO CREATOR')
       logger.error(e)
     }
     await waitForIndexing()
   })
 
-  // Map out walletId => userId
-  return userIds.reduce((acc, cur, idx) => ({ ...acc, [idx]: cur }), {})
+  // Map out walletId index => userId
+  return walletIndexToUserIdMap
 }
 
 /**
@@ -95,8 +119,31 @@ const logOps = async (name, work) => {
 }
 
 /**
+ * Checks to see if user exists at wallet index. Returns the user
+ * @param {*} executeOne
+ * @param {*} walletIndex
+ */
+const getUser = async ({ executeOne, walletIndex }) => {
+  let user
+  try {
+    // if a user is already created for walletIndex, use that user for test
+    user = await executeOne(walletIndex, libsWrapper => {
+      return getLibsUserInfo(libsWrapper)
+    })
+  } catch (e) {
+    if (e.message !== 'No users!') {
+      throw new Error(
+        `Error with getting user with wallet index ${walletIndex}: ${e.message}`
+      )
+    }
+  }
+
+  return user
+}
+
+/**
  * Generates random users.
- * @param {*} count
+ * @param {int} count
  */
 const genRandomUsers = count => _.range(count).map(x => getRandomUser())
 
@@ -127,9 +174,10 @@ const getRandomUser = () => {
 const getRandomTrackMetadata = userId => {
   return {
     owner_id: userId,
+    cover_art: null,
     cover_art_sizes: null,
     title: `title_${r6()}`,
-    length: null,
+    length: 0,
     cover_art: null,
     tags: '',
     genre: 'SomeGenre',
@@ -153,6 +201,10 @@ const getRandomTrackMetadata = userId => {
  *    randomly select any file from the parent folder.
  */
 const getRandomTrackFilePath = async localDirPath => {
+  if (!fs.existsSync(localDirPath)) {
+    fs.mkdirSync(localDirPath)
+  }
+
   const trackURL = _.sample(TRACK_URLS)
   const targetFilePath = path.resolve(localDirPath, `${genRandomString(6)}.mp3`)
 
@@ -190,10 +242,10 @@ const r6 = (withNum = false) => genRandomString(6, withNum)
 /** Delay execution for n ms */
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-/** Wrapper around 5s delay with nice logging */
-const waitForIndexing = async () => {
-  logger.info('Pausing for discprov indexing...')
-  await delay(5000)
+/** Wrapper for custom delay time */
+const waitForIndexing = async (waitTime = 5000) => {
+  logger.info(`Pausing ${waitTime}ms for discprov indexing...`)
+  await delay(waitTime)
 }
 
 /**

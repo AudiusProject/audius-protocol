@@ -1,4 +1,5 @@
 const AudiusLibs = require('@audius/libs')
+const Utils = require('@audius/libs/src/utils')
 const config = require('../config/config')
 const untildify = require('untildify')
 const Web3 = require('web3')
@@ -11,6 +12,9 @@ const loadLibsVars = () => {
   const dataConfig = `${configDir}/config.json`
   const ethConfig = `${configDir}/eth-config.json`
   try {
+    console.log(`Config dir: ${configDir}`)
+    console.log(dataConfig)
+    console.log(ethConfig)
     const dataConfigJson = require(dataConfig)
     const ethConfigJson = require(ethConfig)
 
@@ -38,7 +42,7 @@ loadLibsVars()
  *
  * Every instance of a LibsWrapper is tied to a single wallet, and thus a single user. Multiple instances of LibsWrappers can exist.
  * Each method may throw.
- * @param {*} walletIndex Ganache can be setup with multiple pre-created wallets. WalletIndex lets you pick which wallet to use for libs.
+ * @param {int} walletIndex Ganache can be setup with multiple pre-created wallets. WalletIndex lets you pick which wallet to use for libs.
  */
 function LibsWrapper(walletIndex = 0) {
   this.libsInstance = null
@@ -208,7 +212,8 @@ function LibsWrapper(walletIndex = 0) {
       null /* filterDeleted */,
       true /* withUsers */
     )
-    if (!tracks.length) {
+
+    if (!tracks || !tracks.length) {
       throw new Error('No tracks returned.')
     }
     return tracks[0]
@@ -231,6 +236,185 @@ function LibsWrapper(walletIndex = 0) {
     }
     return users[0]
   }
+
+  /**
+   * Gets the user associated with the wallet set in libs
+   */
+  this.getLibsUserInfo = async () => {
+    assertLibsDidInit()
+    const users = await this.libsInstance.User.getUsers(
+      1,
+      0,
+      null,
+      this.libsInstance.web3Manager.getWalletAddress()
+    )
+
+    if (!users.length) {
+      throw new Error('No users!')
+    }
+    return users[0]
+  }
+
+  /**
+   * Add ipld blacklist txn with bad CID to chain
+   * @param {string} digest base 58 decoded in hex
+   * @param {string} blacklisterAddressPrivateKey private key associated with blacklisterAddress
+   */
+  this.addIPLDToBlacklist = async (digest, blacklisterAddressPrivateKey) => {
+    assertLibsDidInit()
+    const ipldTxReceipt = await this.libsInstance.contracts.IPLDBlacklistFactoryClient.addIPLDToBlacklist(
+      digest,
+      blacklisterAddressPrivateKey
+    )
+    return ipldTxReceipt
+  }
+
+  /**
+   * Add an add track txn to chain
+   * @param {int} userId
+   * @param {object} param2 track data
+   */
+  this.addTrackToChain = async (userId, { digest, hashFn, size }) => {
+    assertLibsDidInit()
+    const trackTxReceipt = await this.libsInstance.contracts.TrackFactoryClient.addTrack(
+      userId,
+      digest,
+      hashFn,
+      size
+    )
+    return trackTxReceipt
+  }
+
+  /**
+   * Add an update track txn to chain
+   * @param {int} trackId
+   * @param {int} userId
+   * @param {object} param3 track data
+   */
+  this.updateTrackOnChain = async (
+    trackId,
+    userId,
+    { digest, hashFn, size }
+  ) => {
+    assertLibsDidInit()
+    const trackTxReceipt = await this.libsInstance.contracts.TrackFactoryClient.updateTrack(
+      trackId,
+      userId,
+      digest,
+      hashFn,
+      size
+    )
+    return trackTxReceipt
+  }
+
+  /**
+   * Add an update user metadata CID txn to chain
+   * @param {int} userId
+   * @param {string} multihashDigest
+   */
+  this.updateMultihash = async (userId, multihashDigest) => {
+    assertLibsDidInit()
+    const updateMultihashTxReceipt = await this.libsInstance.contracts.UserFactoryClient.updateMultihash(
+      userId,
+      multihashDigest
+    )
+    return updateMultihashTxReceipt
+  }
+
+  /**
+   * Add an update user cover photo txn to chain
+   * @param {int} userId
+   * @param {string} coverPhotoMultihashDigest
+   */
+  this.updateCoverPhoto = async (userId, coverPhotoMultihashDigest) => {
+    assertLibsDidInit()
+    const updateCoverPhotoTxReceipt = await this.libsInstance.contracts.UserFactoryClient.updateCoverPhoto(
+      userId,
+      coverPhotoMultihashDigest
+    )
+    return updateCoverPhotoTxReceipt
+  }
+
+  /**
+   * Add an update user profile photo txn to chain
+   * @param {int} userId
+   * @param {string} profilePhotoMultihashDigest
+   */
+  this.updateProfilePhoto = async (userId, profilePhotoMultihashDigest) => {
+    assertLibsDidInit()
+    const updateProfilePhotoTxReceipt = await this.libsInstance.contracts.UserFactoryClient.updateProfilePhoto(
+      userId,
+      profilePhotoMultihashDigest
+    )
+    return updateProfilePhotoTxReceipt
+  }
+
+  /**
+   * Add a create playlist txn to chain
+   * @param {int} userId
+   * @param {string} playlistName
+   * @param {boolean} isPrivate
+   * @param {boolean} isAlbum
+   * @param {array} trackIds
+   */
+  this.createPlaylist = async (
+    userId,
+    playlistName,
+    isPrivate,
+    isAlbum,
+    trackIds
+  ) => {
+    assertLibsDidInit()
+    const createPlaylistTxReceipt = await this.libsInstance.contracts.PlaylistFactoryClient.createPlaylist(
+      userId,
+      playlistName,
+      isPrivate,
+      isAlbum,
+      trackIds
+    )
+    return createPlaylistTxReceipt
+  }
+
+  /**
+   * Add an update playlist txn to chain
+   * @param {*} playlistId
+   * @param {*} updatedPlaylistImageMultihashDigest
+   */
+  this.updatePlaylistCoverPhoto = async (
+    playlistId,
+    updatedPlaylistImageMultihashDigest
+  ) => {
+    assertLibsDidInit()
+    const updatePlaylistCoverPhotoTxReceipt = await this.libsInstance.contracts.PlaylistFactoryClient.updatePlaylistCoverPhoto(
+      playlistId,
+      updatedPlaylistImageMultihashDigest
+    )
+    return updatePlaylistCoverPhotoTxReceipt
+  }
+
+  // returns array of playlist objs
+  this.getPlaylists = async (
+    limit = 100,
+    offset = 0,
+    idsArray = null,
+    targetUserId = null,
+    withUsers = false
+  ) => {
+    assertLibsDidInit()
+    const playlists = await this.libsInstance.Playlist.getPlaylists(
+      limit,
+      offset,
+      idsArray,
+      targetUserId,
+      withUsers
+    )
+
+    if (!playlists || playlists.length === 0) {
+      throw new Error('No playlists found!')
+    }
+
+    return playlists
+  }
 }
 
-module.exports = { LibsWrapper }
+module.exports = { LibsWrapper, Utils }
