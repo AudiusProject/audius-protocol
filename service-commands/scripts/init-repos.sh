@@ -5,6 +5,16 @@ set -x
 cd $PROTOCOL_DIR/
 npm install &
 
+# setup service commands
+cd $PROTOCOL_DIR/
+cd service-commands/
+npm install &
+
+# setup mad dog
+cd $PROTOCOL_DIR/
+cd mad-dog/
+npm install &
+
 # setup contracts
 cd $PROTOCOL_DIR/
 cd contracts/
