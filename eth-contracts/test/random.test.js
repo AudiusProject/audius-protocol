@@ -28,9 +28,12 @@ contract.only('Random testing', async (accounts) => {
     const numUsers = 5
     const minNumServicesPerUser = 1
     const maxNumServicesPerUser = 2 // TODO: CONSUME THIS
+
     // const numRounds = 2
-    const numRounds = 5
+    const numRounds = 15
     const fundingRoundBlockDiffForTest = 200
+
+    // TODO: Add non-SP delegators after everything else
 
     beforeEach(async () => {
         console.log(`Addresses from test`)
@@ -125,7 +128,7 @@ contract.only('Random testing', async (accounts) => {
         if(!typeInfo) throw new Error('Undefined type information')
 
         // Stash
-        //amount = (dpTypeInfo.maxStake.sub(dpTypeInfo.minStake))
+        // amount = (dpTypeInfo.maxStake.sub(dpTypeInfo.minStake))
         // TEMP: Start with min stake
         amount = (typeInfo.minStake.add(_lib.toBN(rand(0, 100000)))) // Min + random amount up to 100k WEI
 
@@ -153,40 +156,50 @@ contract.only('Random testing', async (accounts) => {
     }
 
     const delegate = async (target, amount, sender) => {
-        let currentBalance = await token.balanceOf(sender)
-        if (amount.gt(currentBalance)) {
-            let missing = amount.sub(currentBalance)
-            await token.transfer(sender, missing, { from: proxyDeployerAddress })
-            currentBalance = await token.balanceOf(sender)
+        try {
+            let currentBalance = await token.balanceOf(sender)
+            if (amount.gt(currentBalance)) {
+                let missing = amount.sub(currentBalance)
+                await token.transfer(sender, missing, { from: proxyDeployerAddress })
+                currentBalance = await token.balanceOf(sender)
+            }
+
+            // Approve staking transfer
+            await token.approve(
+                staking.address,
+                amount,
+                { from: sender }
+            )
+
+            // Delegate valid min to SP 1
+            await delegateManager.delegateStake(
+                target,
+                amount,
+                { from: sender }
+            )
+        } catch (e) {
+            console.error(`Error delegating ${amount} from ${sender} to ${target}`)
+            console.error(e)
         }
-
-        // Approve staking transfer
-        await token.approve(
-            staking.address,
-            amount,
-            { from: sender }
-        )
-
-        // Delegate valid min to SP 1
-        await delegateManager.delegateStake(
-            target,
-            amount,
-            { from: sender }
-        )
     }
 
     const randomlyDelegate = async (user) => {
         // 50% chance of delegation FROM this user
         let shouldDelegate = rand(0, 100)
         if (shouldDelegate < 50) return
-        console.log(`${user} - Random delegation decision flow rolled ${shouldDelegate}`)
+        console.log(`${user} ------- Random delegation rolled ${shouldDelegate} -------`)
         let otherUsers = users.filter(x=>x!=user)
         let randTargetUser = otherUsers[Math.floor(Math.random()*otherUsers.length)];
         // Select between 100 and 500 AUD to delegate
         let amount = rand(100000000000000000000, 500000000000000000000)
-        console.log(`${user} - Selected ${randTargetUser} SP, sending ${amount}`)
+        console.log(`${user} ------- Selected ${randTargetUser} SP, sending ${amount}`)
         await delegate(randTargetUser, _lib.toBN(amount), user)
-        console.log(`${user} - END RAND DEL DECISION FLOW`)
+        console.log(`${user} ------- End Random delegation`)
+    }
+
+    // TODO: FILL THIS OUT
+    const randomlyDecreaseStake = async (user) => {
+
     }
 
     // Add services as expected
@@ -239,6 +252,7 @@ contract.only('Random testing', async (accounts) => {
         console.log(`------- Finished Validating User State -------`)
     }
 
+    // Lower probability of claim to <100% but still high
     const claimPendingRewards = async (users) => {
         console.log(`------- Claiming Rewards -------`)
         let lastFundedBlock = await claimsManager.getLastFundedBlock()
@@ -281,6 +295,8 @@ contract.only('Random testing', async (accounts) => {
         console.log(`latestBlock: ${latestBlock.number.toString()}`)
         await claimsManager.initiateRound({ from: user })
     }
+
+    // After every single action, randomly decide to advance a random number of blocks
 
     describe('Random test cases', () => {
         it('sandbox', async () => {
