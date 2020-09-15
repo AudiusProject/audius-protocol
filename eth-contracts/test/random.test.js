@@ -191,6 +191,8 @@ contract.only('Random testing', async (accounts) => {
                 // TODO: Randomize from which acct the round is initiated
                 await initiateRound(users[0])
 
+                // TODO: CLAIM IN EACH ROUND
+
                 // Progress round
                 currentRound++
             }
