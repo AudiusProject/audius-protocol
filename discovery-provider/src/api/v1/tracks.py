@@ -90,13 +90,15 @@ class TrackStream(Resource):
 track_search_result = make_response(
     "track_search", ns, fields.List(fields.Nested(track)))
 
-
 @ns.route("/search")
 class TrackSearchResult(Resource):
     @record_metrics
     @ns.doc(
         id="""Search Tracks""",
-        params={'query': 'Search Query'},
+        params={
+            'query': 'Search Query',
+            'only_downloadable': 'Return only downloadable tracks'
+        },
         responses={
             200: 'Success',
             400: 'Bad request',
@@ -119,7 +121,8 @@ class TrackSearchResult(Resource):
             "current_user_id": None,
             "with_users": True,
             "limit": 10,
-            "offset": 0
+            "offset": 0,
+            "only_downloadable": args["only_downloadable"]
         }
         response = search(search_args)
         tracks = response["tracks"]

@@ -39,6 +39,10 @@ class Utils {
     return Web3.utils.isBN(number)
   }
 
+  static toBN (number) {
+    return new Web3.utils.BN(number)
+  }
+
   static checkStrLen (str, maxLen, minLen = 1) {
     if (str === undefined || str === null || str.length > maxLen || str.length < minLen) {
       throw new Error(`String must be between ${minLen}-${maxLen} characters`)

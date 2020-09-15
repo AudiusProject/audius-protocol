@@ -28,7 +28,7 @@ installation and usage instructions for any of the sub-components of the Audius 
 These off-chain services are run by community members via the Audius staking system:
 
 | Service                                                        | Description                                                                                       
-| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------
+| -- | --
 | [`creator-node`](creator-node)                  | Maintains the availability of users' content on IPFS including user metadata, images, and audio content
 | [`discovery-provider`](discovery-provider)      | Indexes and stores the contents of the audius contracts on the ethereum blockchain for clients to query via an API
 | [`identity-service`](identity-service)          | Stores encrypted auth ciphertexts, does Twitter oauth and relays transactions on behalf of users
@@ -39,7 +39,7 @@ These off-chain services are run by community members via the Audius staking sys
 The independent sets of smart contracts that underpin the Audius protocol:
 
 | Contracts                                                        | Description                                                                                       
-| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------
+| -- | --
 | [`contracts`](https://github.com/AudiusProject/audius-protocol/tree/master/contracts)         | The POA network smart contracts for the Audius protocol, encompassing user account, content listing, and content interaction functionality
 | [`eth-contracts`](https://github.com/AudiusProject/audius-protocol/tree/master/eth-contracts) | The ethereum smart contracts that run the Audius protocol, encompassing the Audius ERC20 token and functionality for staking, off-chain service registration / lookup, and governance
 
@@ -50,8 +50,17 @@ Client-side libraries to provide a unified interface for interacting with the en
 Audius protocol:
 
 | Library                                                        | Description                                                                                       
-| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------
+| -- | --
 | [`libs`](https://github.com/AudiusProject/audius-protocol/tree/master/libs)     | A complete javascript interface to the Audius smart contracts and Audius services: Identity Service, Discovery Provider, Creator Node
+
+### Audius Tools & Tests
+
+Packages for developers to run and test Audius
+
+| Library                                                        | Description                                                                                       
+| -- | --
+| [`service-commands`](https://github.com/AudiusProject/audius-protocol/tree/master/service-commands)     | Tooling to run an entire instance of Audius locally with all dependencies
+| [`mad-dog`](https://github.com/AudiusProject/audius-protocol/tree/master/mad-dog)     | A system level test suite and tests for Audius
 
 ## Usage
 

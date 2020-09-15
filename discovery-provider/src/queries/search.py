@@ -41,7 +41,8 @@ def search_full():
         "current_user_id": current_user_id,
         "with_users": False,
         "limit": limit,
-        "offset": offset
+        "offset": offset,
+        "only_downloadable": False
     }
     resp = search(search_args)
     return api_helpers.success_response(resp)
@@ -67,7 +68,8 @@ def search_autocomplete():
         "current_user_id": current_user_id,
         "with_users": False,
         "limit": limit,
-        "offset": offset
+        "offset": offset,
+        "only_downloadable": False
     }
     resp = search(search_args)
     return api_helpers.success_response(resp)
