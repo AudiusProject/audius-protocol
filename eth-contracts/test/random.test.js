@@ -28,7 +28,7 @@ contract.only('Random testing', async (accounts) => {
     const numUsers = 5
     const minNumServicesPerUser = 1
     const maxNumServicesPerUser = 2 // TOOD: CONSUME THIS
-    const numRounds = 2
+    const numRounds = 5
     const fundingRoundBlockDiffForTest = 200
 
     beforeEach(async () => {
