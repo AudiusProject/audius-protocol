@@ -8,7 +8,6 @@ const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const DelegateManager = artifacts.require('DelegateManager')
 const ClaimsManager = artifacts.require('ClaimsManager')
-const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
 
 const serviceTypeCN = web3.utils.utf8ToHex('creator-node')
@@ -159,6 +158,41 @@ contract.only('Random testing', async (accounts) => {
         )
     }
 
+    const getAccountStakeInfo = async (account, print = false) => {
+        let spFactoryStake
+        let totalInStakingContract
+    
+        let spDetails = await serviceProviderFactory.getServiceProviderDetails(account)
+        spFactoryStake = spDetails.deployerStake
+        totalInStakingContract = await staking.totalStakedFor(account)
+        let totalDelegatedToSP = await delegateManager.getTotalDelegatedToServiceProvider(account)
+
+        let outsideStake = spFactoryStake.add(totalDelegatedToSP)
+        return {
+            totalInStakingContract,
+            spFactoryStake,
+            totalDelegatedToSP,
+            outsideStake
+        }
+    }
+
+    const validateAccountStakeBalance = async (account) => {
+        let info = await getAccountStakeInfo(account)
+        assert.isTrue(
+          info.totalInStakingContract.eq(info.outsideStake),
+          `Imbalanced stake for account ${account} - totalInStakingContract=${info.totalInStakingContract.toString()}, outside=${info.outsideStake.toString()}`
+        )
+        return info
+    }
+
+    const validateUsers = async (users) => {
+        console.log(`------- Validating User State -------`)
+        await Promise.all(users.map(async (user) => {
+            await validateAccountStakeBalance(user)
+        }))
+        console.log(`------- Finished Validating User State -------`)
+    }
+
     const initiateRound = async (user) => {
         console.log(`------- Initiating Round -------`)
         let lastFundedBlock = await claimsManager.getLastFundedBlock()
@@ -193,6 +227,7 @@ contract.only('Random testing', async (accounts) => {
 
                 // TODO: CLAIM IN EACH ROUND
 
+                await validateUsers(users)
                 // Progress round
                 currentRound++
             }
