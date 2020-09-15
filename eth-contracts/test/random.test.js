@@ -199,7 +199,11 @@ contract.only('Random testing', async (accounts) => {
 
     // TODO: FILL THIS OUT
     const randomlyDecreaseStake = async (user) => {
-
+        // TODO: ENABLE RANDOMNESS
+        // let shouldDecrease = rand(0, 100)
+        // if (shouldDecrease < 50) return
+        let pendingDecreaseReq = await serviceProviderFactory.getPendingDecreaseStakeRequest(user)
+        console.log(pendingDecreaseReq)
     }
 
     // Add services as expected
