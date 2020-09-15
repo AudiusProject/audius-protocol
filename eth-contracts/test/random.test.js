@@ -149,11 +149,8 @@ contract.only('Random testing', async (accounts) => {
         console.log('processUserState')
         await Promise.all(
             users.map(async (user) => {
-                console.log(`${user} - minNumServices = ${minNumServicesPerUser}`)
                 let userServiceInfo = await getUserServiceInfo(user)
-                console.log(`${user} - numServices: ${userServiceInfo.numServices}`)
                 if (userServiceInfo.numServices < minNumServicesPerUser) {
-                    console.log(`${user} - Missing service`)
                     await addNewServiceForUser(user)
                 } else {
                     console.log(`${user} - Satisifed service requirements`)
@@ -171,12 +168,14 @@ contract.only('Random testing', async (accounts) => {
         let nextFundingRoundBlock = lastFundedBlock.add(fundingRoundDiff)
         console.log(`nextFundingRoundBlock: ${nextFundingRoundBlock.toString()}`)
         let latestBlock = await web3.eth.getBlock('latest')
-        console.log(`latestBlock: ${latestBlock.toString()}`)
-        try {
-            await time.advanceBlockTo(nextFundingRoundBlock.add(_lib.toBN(1)))
-        } catch(e) {
-            console.log(`Caught ${e} advancing blocks`)
+        if (nextFundingRoundBlock.gte(_lib.toBN(latestBlock.number))) {
+            try {
+                await time.advanceBlockTo(nextFundingRoundBlock.add(_lib.toBN(1)))
+            } catch(e) {
+                console.log(`Caught ${e} advancing blocks`)
+            }
         }
+        console.log(`latestBlock: ${latestBlock.toString()}`)
         await claimsManager.initiateRound({ from: user })
     }
 
