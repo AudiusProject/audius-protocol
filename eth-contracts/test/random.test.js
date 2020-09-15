@@ -1,16 +1,13 @@
 const { current } = require("@openzeppelin/test-helpers/src/balance")
 import * as _lib from '../utils/lib.js'
+const { time } = require('@openzeppelin/test-helpers')
 
-const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
-const StakingUpgraded = artifacts.require('StakingUpgraded')
 const Governance = artifacts.require('Governance')
-const GovernanceUpgraded = artifacts.require('GovernanceUpgraded')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const DelegateManager = artifacts.require('DelegateManager')
 const ClaimsManager = artifacts.require('ClaimsManager')
-const TestContract = artifacts.require('TestContract')
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
 
@@ -20,19 +17,19 @@ const serviceTypeDP = web3.utils.utf8ToHex('discovery-provider')
 contract.only('Random testing', async (accounts) => {
     let token, staking, serviceTypeManager, serviceProviderFactory
     let claimsManager, governance, delegateManager
+    let users = []
+    let cnTypeInfo, dpTypeInfo
     // proxyDeployerAddress is used to transfer tokens to service accounts as needed
     const proxyDeployerAddress = accounts[11]
-
-    let userOffset = 25 
-    let users = []
-    let numUsers = 5
-
-    let minNumServicesPerUser = 1
-    let maxNumServicesPerUser = 2 // TOOD: CONSUME THIS
-
-    let numRounds = 2
-
-    let cnTypeInfo, dpTypeInfo
+    // guardian is equal to proxyDeployer for test purposes
+    const guardianAddress = proxyDeployerAddress
+    const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
+    const userOffset = 25 
+    const numUsers = 5
+    const minNumServicesPerUser = 1
+    const maxNumServicesPerUser = 2 // TOOD: CONSUME THIS
+    const numRounds = 2
+    const fundingRoundBlockDiffForTest = 200
 
     beforeEach(async () => {
         console.log(`Addresses from test`)
@@ -73,6 +70,20 @@ contract.only('Random testing', async (accounts) => {
         dpTypeInfo = await serviceTypeManager.getServiceTypeInfo(serviceTypeDP)
         console.log(`DP: ${serviceTypeDP}`)
         console.log(`CN: ${serviceTypeCN}`)
+
+        const curBlockDiff = await claimsManager.getFundingRoundBlockDiff.call()
+        console.log(`Current block diff: ${curBlockDiff}`)
+
+        // Update funding found block diff
+        await governance.guardianExecuteTransaction(
+            claimsManagerProxyKey,
+            _lib.toBN(0),
+            'updateFundingRoundBlockDiff(uint256)',
+            _lib.abiEncode(['uint256'], [fundingRoundBlockDiffForTest]),
+            { from: guardianAddress }
+        )
+        const newBlockDiff = await claimsManager.getFundingRoundBlockDiff.call()
+        console.log(`Updated block diff: ${newBlockDiff}`)
     })
 
 
@@ -85,13 +96,9 @@ contract.only('Random testing', async (accounts) => {
     }
 
     const getUserServiceInfo = async (user) => {
-        console.log(`${user} getServiceProviderIdsFromAddress NOT WORKING CN - ${user}, ${serviceTypeCN}`)
         let cnodeIds = await serviceProviderFactory.getServiceProviderIdsFromAddress(user, serviceTypeCN)
-        console.log(`${user} - cnodeIds=${cnodeIds}`)
         if (!cnodeIds) { cnodeIds = [] }
-        console.log(`${user} getServiceProviderIdsFromAddress NOT WORKING DP - ${user}, ${serviceTypeDP}`)
         let dpIds = await serviceProviderFactory.getServiceProviderIdsFromAddress(user, serviceTypeDP)
-        console.log(`${user} - dpIds=${dpIds}`)
         if (!dpIds) { dpIds = [] }
         let numServices = cnodeIds.length + dpIds.length
         return {
@@ -135,9 +142,6 @@ contract.only('Random testing', async (accounts) => {
             amount,
             user
         )
-        console.log(`${user} - registered endpoint ${serviceEndpoint}`)
-        let foundSpID = await serviceProviderFactory.getServiceProviderIdFromEndpoint(serviceEndpoint)
-        console.log(`${user} - endpoint=${serviceEndpoint}, id=${foundSpID}`)
     }
 
     // Add services as expected
@@ -158,13 +162,37 @@ contract.only('Random testing', async (accounts) => {
         )
     }
 
+    const initiateRound = async (user) => {
+        console.log(`------- Initiating Round -------`)
+        let lastFundedBlock = await claimsManager.getLastFundedBlock()
+        console.log(`lastFundedBlock: ${lastFundedBlock.toString()}`)
+        let fundingRoundDiff = await claimsManager.getFundingRoundBlockDiff()
+        console.log(`fundingRoundDiff: ${fundingRoundDiff.toString()}`)
+        let nextFundingRoundBlock = lastFundedBlock.add(fundingRoundDiff)
+        console.log(`nextFundingRoundBlock: ${nextFundingRoundBlock.toString()}`)
+        let latestBlock = await web3.eth.getBlock('latest')
+        console.log(`latestBlock: ${latestBlock.toString()}`)
+        try {
+            await time.advanceBlockTo(nextFundingRoundBlock.add(_lib.toBN(1)))
+        } catch(e) {
+            console.log(`Caught ${e} advancing blocks`)
+        }
+        await claimsManager.initiateRound({ from: user })
+    }
+
     describe('Random test cases', () => {
         it('sandbox', async () => {
             console.log(users)
             let currentRound = 1
             while (currentRound <= numRounds) {
                 console.log(`------------------------ AUDIUS RANDOM TESTING - Round ${currentRound} ------------------------`)
+                // Ensure base user state (service requirements satisfied)
                 await processUserState(users)
+
+                // TODO: Randomize from which acct the round is initiated
+                await initiateRound(users[0])
+
+                // Progress round
                 currentRound++
             }
         })
