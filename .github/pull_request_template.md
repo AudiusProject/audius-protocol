@@ -11,6 +11,8 @@
 - [ ] Identity Service
 - [ ] Libs
 - [ ] Contracts
+- [ ] Service Commands
+- [ ] Mad Dog
 
 ### Does it touch a critical flow like Discovery indexing, Creator Node track upload, Creator Node gateway, or Creator Node file system?
 Delete an option.
