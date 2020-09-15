@@ -24,8 +24,8 @@ contract.only('Random testing', async (accounts) => {
     const guardianAddress = proxyDeployerAddress
     const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
     const userOffset = 25 
-    const numUsers = 1
-    // const numUsers = 5
+    // const numUsers = 1
+    const numUsers = 5
     const minNumServicesPerUser = 1
     const maxNumServicesPerUser = 2 // TOOD: CONSUME THIS
     const numRounds = 2
@@ -86,7 +86,6 @@ contract.only('Random testing', async (accounts) => {
         console.log(`Updated block diff: ${newBlockDiff}`)
     })
 
-
     const rand = (min, max) => {
         return Math.floor(Math.random() * (max - min) + min)
     }
@@ -114,14 +113,21 @@ contract.only('Random testing', async (accounts) => {
         let serviceTypeDiceRoll = rand(0, 100)
         let amount
         let serviceType
+        let typeInfo = null
         // TODO: Improve rand amount calculation
         if (serviceTypeDiceRoll <= 50) {
             serviceType = serviceTypeCN
-            amount = (cnTypeInfo.maxStake.sub(cnTypeInfo.minStake))
+            typeInfo = cnTypeInfo
         } else {
             serviceType = serviceTypeDP
-            amount = (dpTypeInfo.maxStake.sub(dpTypeInfo.minStake))
+            typeInfo = dpTypeInfo
         }
+        if(!typeInfo) throw new Error('Undefined type information')
+
+        // Stash
+        //amount = (dpTypeInfo.maxStake.sub(dpTypeInfo.minStake))
+        // TEMP: Start with min stake
+        amount = (typeInfo.minStake.add(_lib.toBN(rand(0, 100000)))) // Min + random amount up to 100k WEI
 
         console.log(`${user} - ${serviceTypeDiceRoll} dice roll - adding ${web3.utils.hexToUtf8(serviceType)} - ${amount.toString()} audwei `)
         let currentBalance = await token.balanceOf(user)
@@ -171,7 +177,8 @@ contract.only('Random testing', async (accounts) => {
             totalInStakingContract,
             spFactoryStake,
             totalDelegatedToSP,
-            outsideStake
+            outsideStake,
+            spDetails
         }
     }
 
@@ -201,18 +208,19 @@ contract.only('Random testing', async (accounts) => {
         let fundsPerRound = await claimsManager.getFundsPerRound()
         console.log(`Round INFO lastFundBlock=${lastFundedBlock} - totalAtFundBlock=${totalAtFundBlock} - fundsPerRound=${fundsPerRound}`)
         // TODO: Randomize this here
-        await Promise.all(users.map(async (user) => {
-            let preClaimInfo = await getAccountStakeInfo(user)
-            let totalForUserAtFundBlock = await staking.totalStakedForAt(user, lastFundedBlock)
-            let spInfo = await serviceProviderFactory.getServiceProviderDetails(user)
-            console.log(spInfo)
-            console.log(`${user} - totalForUserAtFundBlock=${totalForUserAtFundBlock}`)
-            let tx = await delegateManager.claimRewards(user, { from: user })
-            console.dir(tx, { depth: 5 })
-            let postClaimInfo = await getAccountStakeInfo(user)
-            let rewards = postClaimInfo.totalInStakingContract.sub(preClaimInfo.totalInStakingContract)
-            console.log(`${user} - Claimed ${rewards}`)
-        }))
+        await Promise.all(
+            users.map(
+                async (user) => {
+                    let preClaimInfo = await getAccountStakeInfo(user)
+                    let totalForUserAtFundBlock = await staking.totalStakedForAt(user, lastFundedBlock)
+                    console.log(`${user} - totalForUserAtFundBlock=${totalForUserAtFundBlock} - validBounds==${preClaimInfo.spDetails.validBounds}`)
+                    let tx = await delegateManager.claimRewards(user, { from: user })
+                    let postClaimInfo = await getAccountStakeInfo(user)
+                    let rewards = postClaimInfo.totalInStakingContract.sub(preClaimInfo.totalInStakingContract)
+                    console.log(`${user} - Claimed ${rewards}`)
+                }
+            )
+        )
         console.log(`------- Finished Claiming Rewards -------`)
         /*
             3142465753420000000000000 * 1342465753420000000000000 / 3142465753420000000000000
@@ -235,7 +243,7 @@ contract.only('Random testing', async (accounts) => {
                 console.log(`Caught ${e} advancing blocks`)
             }
         }
-        console.log(`latestBlock: ${latestBlock.toString()}`)
+        console.log(`latestBlock: ${latestBlock.number.toString()}`)
         await claimsManager.initiateRound({ from: user })
     }
 
@@ -255,6 +263,9 @@ contract.only('Random testing', async (accounts) => {
                 await claimPendingRewards(users)
 
                 await validateUsers(users)
+
+                console.log(`------------------------ AUDIUS RANDOM TESTING - Finished Round ${currentRound} ------------------------\n`)
+
                 // Progress round
                 currentRound++
             }
