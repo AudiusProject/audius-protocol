@@ -2,13 +2,8 @@ from __future__ import absolute_import
 import pytest
 from sqlalchemy_utils import database_exists, drop_database
 from web3 import HTTPProvider, Web3
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from pytest_postgresql import factories
 from src import create_app, create_celery
 from src.utils import helpers
-from src.models import Base
-import src
 
 DB_URL = "postgresql+psycopg2://postgres:postgres@localhost/test_audius_discovery"
 TEST_BROKER_URL = "redis://localhost:5379/0"
@@ -105,72 +100,3 @@ def contracts(app):  # pylint: disable=redefined-outer-name
         "track_factory_contract": track_factory_contract,
         "web3": web3,
     }
-
-postgresql_my = factories.postgresql('postgresql_nooproc')
-
-# Returns Postgres DB session, and configures
-# SQLAlchemy to use said connection.
-# This fixture is primarily used by the
-# `postgres_mock_db` fixture, and probably shouldn't
-# be consumed directly by a test.
-#
-# More or less follows steps here:
-# https://medium.com/@geoffreykoh/fun-with-fixtures-for-database-applications-8253eaf1a6d
-# pylint: disable=W0621
-@pytest.fixture(scope='function')
-def setup_database(postgresql_my):
-
-    def dbcreator():
-        return postgresql_my.cursor().connection
-
-    engine = create_engine('postgresql+psycopg2://', creator=dbcreator)
-    Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
-    # pytest allows you to yield a value as
-    # a return, and any code following the yield
-    # is run as cleanup after test execution
-    yield session
-    session.close()
-
-
-# Returns a mocked db instance.
-#
-# Calls setup_database
-# to set up SQLAlchemy with Postgres.
-#
-# Monkeypatches get_db_read_replica
-# to return this mocked db instance.
-# pylint: disable=W0621
-@pytest.fixture(scope='function')
-def postgres_mock_db(monkeypatch, setup_database):
-    # A mock Session, with __enter__ and __exit
-    # methods so we can follow the standard
-    # `with db.scoped_session() as session`
-    # process.
-    class MockSession:
-        def __enter__(self):
-            return setup_database
-        def __exit__(self, type, value, tb):
-            pass
-        def scoped_session(self):
-            return setup_database
-
-    # A mock DB, which just returns
-    # the MockSession.
-    class MockDb:
-        def scoped_session(self):
-            return MockSession()
-
-    mock = MockDb()
-    def get_db_read_replica():
-        return mock
-
-    monkeypatch.setattr(
-        src.utils.db_session,
-        'get_db_read_replica',
-        get_db_read_replica
-    )
-
-    return mock

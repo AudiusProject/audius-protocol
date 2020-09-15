@@ -16,7 +16,7 @@ jobs:
       - add_ssh_keys
       - checkout
       - run:
-          name: clone tooling and mad dog
+          name: clone tooling and mad dog 
           command: |
             cd ../
             mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config

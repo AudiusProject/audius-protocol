@@ -1,6 +1,5 @@
 import logging
 import json
-from src.utils import db_session
 from src.tasks.celery_app import celery
 from src.tasks.generate_trending import generate_trending, trending_cache_hits_key, \
         trending_cache_miss_key, trending_cache_total_key
@@ -10,13 +9,12 @@ logger = logging.getLogger(__name__)
 
 ######## HELPER FUNCTIONS ########
 def update_trending_cache(self, db, redis, time):
-    with db.scoped_session() as session:
-        resp = generate_trending(session, time, None, 1000, 0)
-        resp_json = json.dumps(resp)
-        redis_key = f"trending-{time}"
-        # Cache value for 5 minutes
-        redis.set(redis_key, resp_json, 300)
-        logger.info(f"index_cache.py | Updated trending cache {redis_key}")
+    resp = generate_trending(db, time, None, 1000, 0)
+    resp_json = json.dumps(resp)
+    redis_key = f"trending-{time}"
+    # Cache value for 5 minutes
+    redis.set(redis_key, resp_json, 300)
+    logger.info(f"index_cache.py | Updated trending cache {redis_key}")
 
 # Update cache for all trending timeframes
 def update_all_trending_cache(self, db, redis):
