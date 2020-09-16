@@ -83,7 +83,9 @@ contract.only('Random testing', async (accounts) => {
         dpTypeInfo = await serviceTypeManager.getServiceTypeInfo(serviceTypeDP)
         console.log(`DP: ${serviceTypeDP}`)
         console.log(`CN: ${serviceTypeCN}`)
+    })
 
+    const initializeTestState = async () => {
         const curBlockDiff = await claimsManager.getFundingRoundBlockDiff.call()
         console.log(`Current block diff: ${curBlockDiff}`)
 
@@ -130,7 +132,7 @@ contract.only('Random testing', async (accounts) => {
             { from: guardianAddress }
         )
         console.log(`Updated decreaseStakeLockupDuration to ${decreaseStakeLockupDuration}`)
-    })
+    }
 
     const rand = (min, max) => {
         return Math.floor(Math.random() * (max - min) + min)
@@ -242,7 +244,6 @@ contract.only('Random testing', async (accounts) => {
         console.log(`${user} ------- End Random delegation`)
     }
 
-    // TODO: FILL THIS OUT
     const randomlyDecreaseStake = async (user) => {
         let userInfo = await getAccountStakeInfo(user)
         // TODO: ENABLE RANDOMNESS
