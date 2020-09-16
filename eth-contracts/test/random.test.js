@@ -83,6 +83,8 @@ contract.only('Random testing', async (accounts) => {
         dpTypeInfo = await serviceTypeManager.getServiceTypeInfo(serviceTypeDP)
         console.log(`DP: ${serviceTypeDP}`)
         console.log(`CN: ${serviceTypeCN}`)
+
+        await initializeTestState()
     })
 
     const initializeTestState = async () => {
