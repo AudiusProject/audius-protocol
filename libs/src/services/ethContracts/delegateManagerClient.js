@@ -72,11 +72,10 @@ class DelegateManagerClient extends GovernedContractClient {
         _delegator: delegator
       }
     })
-
     return events.map(event => ({
       blockNumber: parseInt(event.blockNumber),
       delegator: event.returnValues._delegator,
-      increaseAmount: Utils.toBN(event.returnValues._increaseAmount),
+      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
       serviceProvider: event.returnValues._serviceProvider
     }))
   }
