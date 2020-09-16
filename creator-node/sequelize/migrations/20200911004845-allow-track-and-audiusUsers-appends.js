@@ -2,19 +2,28 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Scope of the migration is:
+    // Remove trackUUID from Files and replace it with trackBlockchainId and migrate all existing values over
+    // Remove trackUUID field from Tracks table
+    // Remove UNIQUE constraint for blockchainId in Tracks table
+    // Add NOT NULL constraint for blockchainId in Tracks table
+    // Remove audiusUserUUID field from AudiusUsers table
+    // Remove UNIQUE constraint for blockchainId in AudiusUsers table
+    // Add NOT NULL constraint for blockchainId in AudiusUsers table
+
     await queryInterface.sequelize.query(`
       BEGIN;
-      -- replace a table in place with extra trackBlockchainId column
+      -- replace Files table in place with extra trackBlockchainId column and drops the trackUUID column
       CREATE TABLE "Files_new" ( like "Files" );
       ALTER TABLE "Files_new" ADD COLUMN "trackBlockchainId" INTEGER;
-      INSERT INTO "Files_new" (SELECT f.*, t."blockchainId" FROM "Files" f LEFT OUTER JOIN "Tracks" t ON f."trackUUID" = t."trackUUID");
+      INSERT INTO "Files_new" ("multihash", "sourceFile", "storagePath", "createdAt", "updatedAt", "fileUUID", "cnodeUserUUID", "trackUUID", "type", "fileName", "dirMultihash", "trackBlockchainId") SELECT f."multihash", f."sourceFile", f."storagePath", f."createdAt", f."updatedAt", f."fileUUID", f."cnodeUserUUID", f."trackUUID", f."type", f."fileName", f."dirMultihash", t."blockchainId" FROM "Files" f LEFT OUTER JOIN "Tracks" t ON f."trackUUID" = t."trackUUID";
       ALTER TABLE "Files_new" DROP COLUMN "trackUUID";
       ALTER TABLE "Files" RENAME TO "Files_old";
       ALTER TABLE "Files_new" RENAME TO "Files";
       DROP TABLE "Files_old" CASCADE;
 
-      -- add back unique and pkey
-      ALTER TABLE "Files" ADD CONSTRAINT "Files_fileUUID_key" UNIQUE ("fileUUID");
+      -- add pkey
+      -- ALTER TABLE "Files" ADD CONSTRAINT "Files_fileUUID_key" UNIQUE ("fileUUID");
       ALTER TABLE "Files" ADD PRIMARY KEY ("fileUUID");
 
       -- add back indexes
@@ -54,6 +63,8 @@ module.exports = {
     `)
     // TODO - add a primary key to Tracks (blockchainId:clock)
     // TODO - add a primary key to AudiusUsers (blockchainId:clock)
+    // TODO - remove Files unique constraint since pkey does that
+    // TODO - change blockchainId in AudiusUsers and Tracks to be not null
   },
 
   down: (queryInterface, Sequelize) => {
