@@ -25,7 +25,7 @@ node setup.js run init-repos up
 ***Linking local libs***
 - Link libs to consume changes from your local branch within the system
   - In `<audius-protocol>/libs`, run `npm link`.
-  - In `<audius-tooling>/service-commands`, run `npm link @audius/libs`.
+  - In `<audius-protocol>/service-commands`, run `npm link @audius/libs`.
 
 **Bringing up all services:**
 - In `<service-commands>/scripts/`, run `node setup.js up` to bring all services up.
