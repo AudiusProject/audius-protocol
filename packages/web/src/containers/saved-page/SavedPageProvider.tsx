@@ -104,7 +104,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       handle: entry.user.handle,
       date: entry.dateSaved,
       time: entry.duration,
-      plays: entry._listen_count
+      plays: entry.play_count
     }))
   }
 

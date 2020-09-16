@@ -341,7 +341,7 @@ class CollectionPage extends Component<
       handle: metadata.user.handle,
       date: metadata.dateAdded || metadata.created_at,
       time: metadata.duration,
-      plays: metadata._listen_count
+      plays: metadata.play_count
     }))
   }
 

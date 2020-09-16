@@ -105,7 +105,7 @@ const ConnectedTrackTile = memo(
       has_current_user_reposted: isReposted,
       has_current_user_saved: isFavorited,
       _cover_art_sizes,
-      _listen_count: listenCount,
+      play_count,
       duration
     } = getTrackWithFallback(track)
 
@@ -305,7 +305,7 @@ const ConnectedTrackTile = memo(
           isOwner={isOwner}
           isLoading={isLoading}
           isDarkMode={isDarkMode()}
-          listenCount={listenCount}
+          listenCount={play_count}
           isActive={isActive}
           isArtistPick={isArtistPick}
           artwork={artwork}

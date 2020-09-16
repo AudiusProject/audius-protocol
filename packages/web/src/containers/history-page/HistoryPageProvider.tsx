@@ -89,7 +89,7 @@ const HistoryPage = g(props => {
       handle: entry.user.handle,
       date: entry.dateListened,
       time: entry.duration,
-      plays: entry._listen_count
+      plays: entry.play_count
     }))
   }
 

@@ -14,6 +14,8 @@ import {
 } from 'services/native-mobile-interface/queue'
 import { MessageType, Message } from 'services/native-mobile-interface/types'
 import { getUserId } from 'store/account/selectors'
+import Track from 'models/Track'
+import User from 'models/User'
 
 const PUBLIC_IPFS_GATEWAY = 'http://cloudflare-ipfs.com/ipfs/'
 const DEFAULT_IMAGE_URL =
@@ -26,8 +28,8 @@ const getImageUrl = (cid: string, gateway: string | null): string => {
 
 function* getTrackInfo(id: ID, uid: UID) {
   const currentUserId = yield select(getUserId)
-  const track = yield select(getTrack, { id })
-  const owner = yield select(getUser, { id: track.owner_id })
+  const track: Track = yield select(getTrack, { id })
+  const owner: User = yield select(getUser, { id: track.owner_id })
   const gateways = owner
     ? getCreatorNodeIPFSGateways(owner.creator_node_endpoint)
     : []
@@ -44,11 +46,11 @@ function* getTrackInfo(id: ID, uid: UID) {
   return {
     title: track.title,
     artist: owner.name,
-    artwork: getImageUrl(imageHash, gateways[0]),
-    largeArtwork: getImageUrl(largeImageHash, gateways[0]),
+    artwork: getImageUrl(imageHash!, gateways[0]),
+    largeArtwork: getImageUrl(largeImageHash!, gateways[0]),
     uid,
     currentUserId,
-    currentListenCount: track._listen_count,
+    currentListenCount: track.play_count,
     isDelete: track.is_delete,
     ownerId: track.owner_id,
     trackId: id,

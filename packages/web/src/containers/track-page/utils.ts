@@ -18,7 +18,7 @@ export const getTrackDefaults = (heroTrack: Track | null) => ({
   coverArtSizes: heroTrack?._cover_art_sizes ?? null,
   tags: emptyStringGuard(heroTrack?.tags),
   description: emptyStringGuard(heroTrack?.description),
-  listenCount: heroTrack?._listen_count ?? 0,
+  playCount: heroTrack?.play_count ?? 0,
   duration: heroTrack?.duration ?? 0,
   released: emptyStringGuard(heroTrack?.release_date || heroTrack?.created_at),
   credits: emptyStringGuard(heroTrack?.credits_splits),

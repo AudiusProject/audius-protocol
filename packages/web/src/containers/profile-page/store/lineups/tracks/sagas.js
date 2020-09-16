@@ -14,7 +14,6 @@ import { LineupSagas } from 'store/lineup/sagas'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { fetchUserByHandle } from 'store/cache/users/sagas'
 import { tracksActions as lineupActions } from './actions'
-import { keyBy } from 'lodash'
 import { SET_ARTIST_PICK } from 'store/social/tracks/actions'
 import { retrieveTracks, processAndCacheTracks } from 'store/cache/tracks/utils'
 
@@ -40,22 +39,11 @@ const getSortedTracks = async ({ offset, limit, payload, user }) => {
       userId: user.user_id,
       filterDeleted: true
     })
-    const trackListenCounts = await AudiusBackend.getTrackListenCounts(
-      tracks.map(track => track.track_id)
-    )
-    const moreByArtistListenCounts = keyBy(trackListenCounts, 'trackId')
 
     const sortedPopularTracks = tracks
       .filter(t => !t.is_delete)
-      // Add listen counts
-      .map((t, i) => ({
-        ...t,
-        _listen_count: moreByArtistListenCounts[t.track_id]
-          ? moreByArtistListenCounts[t.track_id].listens
-          : 0
-      }))
       // Sort by listen count desc
-      .sort((a, b) => b._listen_count - a._listen_count)
+      .sort((a, b) => b.play_count - a.play_count)
 
     userTracks.userId = user.user_id
     userTracks.tracks = sortedPopularTracks
