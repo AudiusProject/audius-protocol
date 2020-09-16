@@ -1,7 +1,7 @@
 """Add indices to plays table
 
 Revision ID: ffcb2df7b0ee
-Revises: 1ec93fb00e69
+Revises: 83e9edcc7014
 Create Date: 2020-09-15 13:27:54.686093
 
 """

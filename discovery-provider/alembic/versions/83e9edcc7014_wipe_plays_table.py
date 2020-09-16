@@ -1,7 +1,7 @@
 """Wipe plays table
 
 Revision ID: 83e9edcc7014
-Revises: ffcb2df7b0ee
+Revises: 4c3784d41d41
 Create Date: 2020-09-15 17:07:41.777345
 
 """
@@ -20,7 +20,7 @@ def upgrade():
     connection = op.get_bind()
     connection.execute('''
         --- Drop all plays
-        DELETE plays;
+        DELETE FROM plays;
     ''')
 
 
