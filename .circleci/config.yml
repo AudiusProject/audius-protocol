@@ -45,7 +45,7 @@ jobs:
             cd /home/circleci/project/mad-dog/
             docker ps
             export ipfsHost="localhost"
-            export ipfsPort=6002
+            export ipfsPort=6001
             npm run start test-ci
   test-libs:
     docker:
