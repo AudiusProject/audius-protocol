@@ -82,7 +82,7 @@ const ConnectedTrackTile = memo(
       has_current_user_saved,
       _cover_art_sizes,
       activity_timestamp,
-      _listen_count,
+      play_count,
       _co_sign,
       duration
     } = getTrackWithFallback(track)
@@ -187,7 +187,7 @@ const ConnectedTrackTile = memo(
         activityTimestamp={activity_timestamp}
         trackTileStyles={trackTileStyles}
         size={size}
-        listenCount={_listen_count}
+        listenCount={play_count}
         coSign={_co_sign}
         // Artist Pick
         showArtistPick={showArtistPick}

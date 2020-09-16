@@ -40,27 +40,6 @@ import { makeKindId } from 'utils/uid'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
-function* fetchListenCounts(entries) {
-  try {
-    const needsCount = entries.filter(e => !e.metadata._listen_count)
-    const listenCounts = yield call(
-      AudiusBackend.getTrackListenCounts,
-      needsCount.map(e => e.id)
-    )
-    yield put(
-      cacheActions.update(
-        Kind.TRACKS,
-        listenCounts.map(lc => ({
-          id: lc.trackId,
-          metadata: { _listen_count: lc.listens }
-        }))
-      )
-    )
-  } catch (err) {
-    console.error(err)
-  }
-}
-
 function* fetchRepostInfo(entries) {
   const userIds = []
   entries.forEach(entry => {
@@ -106,7 +85,6 @@ function* fetchFirstSegments(entries) {
 function* watchAdd() {
   yield takeEvery(cacheActions.ADD_SUCCEEDED, function* (action) {
     if (action.kind === Kind.TRACKS) {
-      yield fork(fetchListenCounts, action.entries)
       if (!NATIVE_MOBILE) {
         yield fork(fetchRepostInfo, action.entries)
         yield fork(fetchFirstSegments, action.entries)
