@@ -16,7 +16,7 @@ jobs:
       - add_ssh_keys
       - checkout
       - run:
-          name: clone tooling and mad dog 
+          name: clone tooling and mad dog
           command: |
             cd ../
             mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
@@ -24,23 +24,21 @@ jobs:
           name: execute
           command: |
             set -e
-            export PROTOCOL_DIR=/home/circleci/project/
+            export PROTOCOL_DIR=/home/circleci/project
             source ~/.bash_profile
             nvm install v10.16
             nvm use 10.16
+            cd /home/circleci/project/service-commands/scripts/
+            sh init-repos.sh
             cd /home/circleci/project/libs/
-            npm install
             npm link
             cd /home/circleci/project/service-commands/
-            npm install
             npm link
             npm link @audius/libs
             cd /home/circleci/project/mad-dog/
-            npm install
             npm link @audius/libs
             npm link @audius/service-commands
             cd /home/circleci/project/service-commands/scripts/
-            sh init-repos.sh
             sudo "$(which node)" hosts.js add
             sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             "$(which node)" setup.js up -nc 3
