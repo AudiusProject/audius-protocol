@@ -1,5 +1,4 @@
 import { call, select } from 'redux-saga/effects'
-import { keyBy } from 'lodash'
 import AudiusBackend from 'services/AudiusBackend'
 
 import {
@@ -29,14 +28,6 @@ function* getTracks({ offset, limit, payload }) {
   })
   const processed = yield call(processAndCacheTracks, tracks)
 
-  const moreByArtistListenCounts = keyBy(
-    yield call(
-      AudiusBackend.getTrackListenCounts,
-      processed.map(track => track.track_id)
-    ),
-    'trackId'
-  )
-
   // Add the hero track into the lineup so that the queue can pull directly from the lineup
   // TODO: Create better ad-hoc add to queue methods and use that instead of this
   const track = yield select(getTrack, { id: trackId })
@@ -60,15 +51,8 @@ function* getTracks({ offset, limit, payload }) {
           t.track_id !== remixParentTrackId &&
           !t.is_delete
       )
-      // Add listen counts
-      .map((t, i) => ({
-        ...t,
-        _listen_count: moreByArtistListenCounts[t.track_id]
-          ? moreByArtistListenCounts[t.track_id].listens
-          : 0
-      }))
-      // Sort by listen count desc
-      .sort((a, b) => b._listen_count - a._listen_count)
+      // Sort by play count desc
+      .sort((a, b) => b.play_count - a.play_count)
       // Take only the first 5
       .slice(0, 5)
   )

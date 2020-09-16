@@ -62,6 +62,7 @@ export type TrackMetadata = {
   length: number | null
   license: string
   mood: string
+  play_count: number
   owner_id: ID
   release_date: string
   repost_count: number
@@ -69,7 +70,8 @@ export type TrackMetadata = {
   tags: string
   title: string
   track_segments: TrackSegment[]
-  cover_art: string
+  cover_art: CID | null
+  cover_art_sizes: CID
   is_unlisted: boolean
   field_visibility?: FieldVisibility
   listenCount?: number
@@ -96,7 +98,6 @@ export type Track = {
   track_id: number
   cover_art_url: string
   _cover_art_sizes: CoverArtSizes
-  _listen_count?: number
   _first_segment?: string
   _followees?: Followee[]
   _cover_art_color?: Color

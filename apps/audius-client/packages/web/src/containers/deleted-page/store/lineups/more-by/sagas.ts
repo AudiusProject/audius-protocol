@@ -1,5 +1,4 @@
 import { call } from 'redux-saga/effects'
-import { keyBy } from 'lodash'
 
 import AudiusBackend from 'services/AudiusBackend'
 
@@ -11,7 +10,7 @@ import { LineupSagas } from 'store/lineup/sagas'
 import { getLineup } from 'containers/deleted-page/store/selectors'
 import { processAndCacheTracks } from 'store/cache/tracks/utils'
 import { ID } from 'models/common/Identifiers'
-import Track from 'models/Track'
+import Track, { UserTrack } from 'models/Track'
 
 function* getTracks({
   offset,
@@ -23,33 +22,18 @@ function* getTracks({
   payload: { userId: ID | null }
 }) {
   const { userId } = payload
-  const tracks = yield call(AudiusBackend.getArtistTracks, {
+  const tracks: UserTrack[] = yield call(AudiusBackend.getArtistTracks, {
     offset,
     limit,
     userId,
     filterDeleted: true
   })
-  const processed = yield call(processAndCacheTracks, tracks)
-
-  const moreByArtistListenCounts = keyBy(
-    yield call(
-      AudiusBackend.getTrackListenCounts,
-      processed.map((track: any) => track.track_id)
-    ),
-    'trackId'
-  )
+  const processed: Track[] = yield call(processAndCacheTracks, tracks)
 
   return (
     processed
-      // Add listen counts
-      .map((t: Track, i: number) => ({
-        ...t,
-        _listen_count: moreByArtistListenCounts[t.track_id]
-          ? moreByArtistListenCounts[t.track_id].listens
-          : 0
-      }))
       // Sort by listen count desc
-      .sort((a: Track, b: Track) => b._listen_count! - a._listen_count!)
+      .sort((a, b) => b.play_count - a.play_count)
       // Take only the first 5
       .slice(0, 5)
   )

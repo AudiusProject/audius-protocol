@@ -54,9 +54,7 @@ const HistoryPage = ({
   onFilterChange,
   filterText
 }: HistoryPageProps) => {
-  const tableLoading = !dataSource.every(
-    (track: any) => track._listen_count > -1
-  )
+  const tableLoading = !dataSource.every((track: any) => track.play_count > -1)
 
   const playAllButton = !loading ? (
     <Button

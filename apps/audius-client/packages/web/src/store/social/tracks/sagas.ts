@@ -539,9 +539,9 @@ export function* watchRecordListen() {
     if (NATIVE_MOBILE) return
     console.debug('Listen recorded for track', action.trackId)
     const userId = yield select(getUserId)
-    const track = yield select(getTrack, { id: action.trackId })
+    const track: Track = yield select(getTrack, { id: action.trackId })
 
-    if (userId !== track.owner_id || track._listen_count < 10) {
+    if (userId !== track.owner_id || track.play_count < 10) {
       yield call(AudiusBackend.recordTrackListen, action.trackId)
     }
 
