@@ -29,8 +29,8 @@ contract.only('Random testing', async (accounts) => {
     const minNumServicesPerUser = 1
     const maxNumServicesPerUser = 2 // TODO: CONSUME THIS
 
-    // const numRounds = 2
-    const numRounds = 15
+    const numRounds = 4
+    // const numRounds = 15
     const fundingRoundBlockDiffForTest = 200
 
     // TODO: Add non-SP delegators after everything else
@@ -218,6 +218,8 @@ contract.only('Random testing', async (accounts) => {
                     console.log(`${user} - Satisifed service requirements`)
                     await randomlyDelegate(user)
                 }
+                // Randomly advance blocks
+                await randomlyAdvanceBlocks()
             })
         )
     }
@@ -278,7 +280,8 @@ contract.only('Random testing', async (accounts) => {
             )
         )
         console.log(`------- Finished Claiming Rewards -------`)
-   }
+        await randomlyAdvanceBlocks()
+    }
 
     const initiateRound = async (user) => {
         console.log(`------- Initiating Round -------`)
@@ -301,6 +304,25 @@ contract.only('Random testing', async (accounts) => {
     }
 
     // After every single action, randomly decide to advance a random number of blocks
+    const randomlyAdvanceBlocks = async () => {
+        // 50% of randomly advancing blocks
+        let shouldRandomlyAdvance = rand(0, 100)
+        if (shouldRandomlyAdvance < 50) return
+        // Randomly generate num blocks between 1 and 10
+        let numBlocks = _lib.toBN(rand(1, 10))
+        let latestBlock = await web3.eth.getBlock('latest')
+        let latestBlockNumber = _lib.toBN(latestBlock.number)
+        let targetBlockNumber = latestBlockNumber.add(numBlocks)
+        try {
+            console.log(`\n-- Randomly advancing ${numBlocks} blocks from ${latestBlockNumber} to ${targetBlockNumber}, ${shouldRandomlyAdvance}/100`)
+            await time.advanceBlockTo(targetBlockNumber)
+            latestBlock = await web3.eth.getBlock('latest')
+            latestBlockNumber = _lib.toBN(latestBlock.number)
+            console.log(`--- Advanced to ${latestBlockNumber}`)
+        } catch(e) {
+            console.log(e)
+        }
+    }
 
     describe('Random test cases', () => {
         it('sandbox', async () => {
