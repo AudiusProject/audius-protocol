@@ -4,11 +4,12 @@ let urlJoin = require('proper-url-join')
 
 const AudiusTokenClient = require('./audiusTokenClient')
 const RegistryClient = require('./registryClient')
-const GovernanceClient = require('./governanceClient')
+const { GovernanceClient } = require('./governanceClient')
 const ServiceTypeManagerClient = require('./serviceTypeManagerClient')
 const ServiceProviderFactoryClient = require('./serviceProviderFactoryClient')
 const StakingProxyClient = require('./stakingProxyClient')
 const DelegateManagerClient = require('./delegateManagerClient')
+const ClaimsManagerClient = require('./claimsManagerClient')
 const Utils = require('../../utils')
 
 let localStorage
@@ -26,12 +27,14 @@ const ServiceTypeManagerABI = Utils.importEthContractABI('ServiceTypeManager.jso
 const ServiceProviderFactoryABI = Utils.importEthContractABI('ServiceProviderFactory.json').abi
 const StakingABI = Utils.importEthContractABI('Staking.json').abi
 const DelegateManagerABI = Utils.importEthContractABI('DelegateManager.json').abi
+const ClaimsManagerABI = Utils.importEthContractABI('ClaimsManager.json').abi
 
 const GovernanceRegistryKey = 'Governance'
 const ServiceTypeManagerProxyKey = 'ServiceTypeManagerProxy'
 const ServiceProviderFactoryRegistryKey = 'ServiceProviderFactory'
 const StakingProxyKey = 'StakingProxy'
 const DelegateManagerRegistryKey = 'DelegateManager'
+const ClaimsManagerProxyKey = 'ClaimsManagerProxy'
 
 const TWO_MINUTES = 2 * 60 * 1000
 
@@ -78,6 +81,14 @@ class EthContracts {
       this.getRegistryAddressForContract
     )
 
+    this.ClaimsManagerClient = new ClaimsManagerClient(
+      this.ethWeb3Manager,
+      ClaimsManagerABI,
+      ClaimsManagerProxyKey,
+      this.getRegistryAddressForContract,
+      this.GovernanceClient
+    )
+
     this.ServiceTypeManagerClient = new ServiceTypeManagerClient(
       this.ethWeb3Manager,
       ServiceTypeManagerABI,
@@ -110,6 +121,8 @@ class EthContracts {
       DelegateManagerABI,
       DelegateManagerRegistryKey,
       this.getRegistryAddressForContract,
+      this.AudiusTokenClient,
+      this.StakingProxyClient,
       this.GovernanceClient
     )
 
@@ -223,6 +236,10 @@ class EthContracts {
 
   async getVersion (spType, queryIndex) {
     return this.ServiceTypeManagerClient.getVersion(spType, queryIndex)
+  }
+
+  async getServiceTypeInfo (spType) {
+    return this.ServiceTypeManagerClient.getServiceTypeInfo(spType)
   }
 
   /**

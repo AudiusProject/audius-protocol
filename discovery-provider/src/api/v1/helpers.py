@@ -185,6 +185,7 @@ def to_dict(multi_dict):
 
 search_parser = reqparse.RequestParser()
 search_parser.add_argument('query', required=True)
+search_parser.add_argument('only_downloadable', required=False, default=False)
 
 trending_parser = reqparse.RequestParser()
 trending_parser.add_argument('genre', required=False)

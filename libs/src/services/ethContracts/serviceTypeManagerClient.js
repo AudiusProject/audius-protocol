@@ -36,7 +36,26 @@ class ServiceTypeManagerClient extends GovernedContractClient {
 
   async getNumberOfVersions (serviceType) {
     const method = await this.getMethod('getNumberOfVersions', Utils.utf8ToHex(serviceType))
-    return method.call()
+    return parseInt(method.call())
+  }
+
+  /**
+   * @notice Add a new service type
+   * @param serviceType
+   * @returns {
+   *  isValid: boolean - Is the types type is isValid
+   *  minStake: number - minimum stake for service type
+   *  maxStake: number - minimum stake for service type
+   * }
+   */
+  async getServiceTypeInfo (serviceType) {
+    const method = await this.getMethod('getServiceTypeInfo', Utils.utf8ToHex(serviceType))
+    const response = await method.call()
+    return {
+      isValid: response[0],
+      minStake: Utils.toBN(response[1]),
+      maxStake: Utils.toBN(response[2])
+    }
   }
 }
 

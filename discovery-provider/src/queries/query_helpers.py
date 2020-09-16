@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 import logging
 from urllib.parse import urljoin
 import requests
