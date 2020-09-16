@@ -92,7 +92,7 @@ const addAndUpgradeUsers = async (
       }
     } catch (e) {
       logger.error('GOT ERR UPGRADING USER TO CREATOR')
-      logger.error(e)
+      logger.error(e.message)
     }
     await waitForIndexing()
   })
@@ -212,10 +212,17 @@ const getRandomTrackFilePath = async localDirPath => {
   if (!response.ok) {
     throw new Error(`unexpected response ${response.statusText}`)
   }
-  await fs.ensureDir(localDirPath)
-  await streamPipeline(response.body, fs.createWriteStream(targetFilePath))
 
-  logger.info(`Wrote track to temp local storage at ${targetFilePath}`)
+  try {
+    await fs.ensureDir(localDirPath)
+    await streamPipeline(response.body, fs.createWriteStream(targetFilePath))
+  
+    logger.info(`Wrote track to temp local storage at ${targetFilePath}`)  
+  } catch (e) {
+    const error = `Error with writing track to path ${localDirPath}: ${e.message}` 
+    logger.error(error)
+    throw new Error(error)
+  }
 
   // Return full file path
   return targetFilePath
