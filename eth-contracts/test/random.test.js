@@ -23,15 +23,25 @@ contract.only('Random testing', async (accounts) => {
     // guardian is equal to proxyDeployer for test purposes
     const guardianAddress = proxyDeployerAddress
     const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
+    const governanceRegKey = web3.utils.utf8ToHex('Governance')
+    const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
+
     const userOffset = 25 
     // const numUsers = 1
     const numUsers = 5
     const minNumServicesPerUser = 1
     const maxNumServicesPerUser = 2 // TODO: CONSUME THIS
 
-    const numRounds = 4
+    const numRounds = 5
+
     // const numRounds = 15
     const fundingRoundBlockDiffForTest = 200
+
+    const votingPeriod = 10 
+    const executionDelayBlocks = 10
+
+    const decreaseStakeLockupDuration = 21
+    const deployerCutLockupDuration = 11
 
     // TODO: Add non-SP delegators after everything else
 
@@ -77,6 +87,9 @@ contract.only('Random testing', async (accounts) => {
         const curBlockDiff = await claimsManager.getFundingRoundBlockDiff.call()
         console.log(`Current block diff: ${curBlockDiff}`)
 
+        // Local dev sanity config updates
+        // https://github.com/AudiusProject/audius-protocol/commit/12116eede803b395a9518c707360e7b633cf6ad2
+
         // Update funding found block diff
         await governance.guardianExecuteTransaction(
             claimsManagerProxyKey,
@@ -85,8 +98,38 @@ contract.only('Random testing', async (accounts) => {
             _lib.abiEncode(['uint256'], [fundingRoundBlockDiffForTest]),
             { from: guardianAddress }
         )
+        console.log(`Updated fundingRoundBlockDiff to ${fundingRoundBlockDiffForTest}`)
         const newBlockDiff = await claimsManager.getFundingRoundBlockDiff.call()
-        console.log(`Updated block diff: ${newBlockDiff}`)
+        console.log(`Updated fundingRoundBlockDiff from ClaimsManager: ${newBlockDiff}`)
+
+        // Set voting period
+        await governance.guardianExecuteTransaction(
+            governanceRegKey,
+            _lib.toBN(0),
+            'setVotingPeriod(uint256)',
+            _lib.abiEncode(['uint256'], [votingPeriod]),
+            { from: guardianAddress }
+        )
+        console.log(`Updated votingPeriod to ${votingPeriod}`)
+
+        // Set execution delay
+        await governance.guardianExecuteTransaction(
+            governanceRegKey,
+            _lib.toBN(0),
+            'setExecutionDelay(uint256)',
+            _lib.abiEncode(['uint256'], [executionDelayBlocks]),
+            { from: guardianAddress }
+        )
+        console.log(`Updated executionDelay to ${executionDelayBlocks}`)
+
+        await governance.guardianExecuteTransaction(
+            serviceProviderFactoryKey,
+            _lib.toBN(0),
+            'updateDecreaseStakeLockupDuration(uint256)',
+            _lib.abiEncode(['uint256'], [decreaseStakeLockupDuration]),
+            { from: guardianAddress }
+        )
+        console.log(`Updated decreaseStakeLockupDuration to ${decreaseStakeLockupDuration}`)
     })
 
     const rand = (min, max) => {
@@ -106,7 +149,8 @@ contract.only('Random testing', async (accounts) => {
         return {
             cnodeIds,
             dpIds,
-            numServices
+            numServices,
+            user
         }
     }
 
@@ -129,8 +173,9 @@ contract.only('Random testing', async (accounts) => {
 
         // Stash
         // amount = (dpTypeInfo.maxStake.sub(dpTypeInfo.minStake))
+        amount = (typeInfo.maxStake.sub(typeInfo.minStake))
         // TEMP: Start with min stake
-        amount = (typeInfo.minStake.add(_lib.toBN(rand(0, 100000)))) // Min + random amount up to 100k WEI
+        // amount = (typeInfo.minStake.add(_lib.toBN(rand(0, 100000)))) // Min + random amount up to 100k WEI
 
         console.log(`${user} - ${serviceTypeDiceRoll} dice roll - adding ${web3.utils.hexToUtf8(serviceType)} - ${amount.toString()} audwei `)
         let currentBalance = await token.balanceOf(user)
@@ -179,7 +224,7 @@ contract.only('Random testing', async (accounts) => {
             )
         } catch (e) {
             console.error(`Error delegating ${amount} from ${sender} to ${target}`)
-            console.error(e)
+            // console.error(e)
         }
     }
 
@@ -199,29 +244,36 @@ contract.only('Random testing', async (accounts) => {
 
     // TODO: FILL THIS OUT
     const randomlyDecreaseStake = async (user) => {
+        let userInfo = await getAccountStakeInfo(user)
         // TODO: ENABLE RANDOMNESS
         // let shouldDecrease = rand(0, 100)
         // if (shouldDecrease < 50) return
-        let pendingDecreaseReq = await serviceProviderFactory.getPendingDecreaseStakeRequest(user)
-        console.log(pendingDecreaseReq)
-    }
 
-    // Add services as expected
-    const processUserState = async (users) => {
-        await Promise.all(
-            users.map(async (user) => {
-                let userServiceInfo = await getUserServiceInfo(user)
-                if (userServiceInfo.numServices < minNumServicesPerUser) {
-                    // In this case, our user has not
-                    await addNewServiceForUser(user)
-                } else {
-                    console.log(`${user} - Satisifed service requirements`)
-                    await randomlyDelegate(user)
-                }
-                // Randomly advance blocks
-                await randomlyAdvanceBlocks()
-            })
-        )
+        let pendingDecreaseReq = await serviceProviderFactory.getPendingDecreaseStakeRequest(user)
+        let isRequestPending = !(pendingDecreaseReq.lockupExpiryBlock.eq(_lib.toBN(0)))
+        let currentMaxForAcct = userInfo.spDetails.maxAccountStake
+        let currentMinForAcct = userInfo.spDetails.minAccountStake
+        let currentForDeployer = userInfo.spDetails.deployerStake
+        let extraStake = currentForDeployer.sub(currentMaxForAcct)
+        // let targetAmount = rand(currentMinForAcct.toNumber(), currentMaxForAcct.toNumber())
+        // Decrease to the minimum bound
+        let decreaseAmount = currentForDeployer.sub(currentMinForAcct)
+
+        // If no request is pending and we are out of bounds, submit a decrease request
+        if (!isRequestPending && !userInfo.spDetails.validBounds) {
+            console.log(`${user} - randomlyDecreaseStake, validBounds: ${userInfo.spDetails.validBounds}, isRequestPending: ${isRequestPending}`)
+            console.log(`${user} - randomlyDecreaseStake, currentMax: ${currentMaxForAcct}, currentForDeployer: ${currentForDeployer}, extraStake=${extraStake}, decreasing by ${decreaseAmount}`)
+            console.log(`${user} - SUBMITTING`)
+            await serviceProviderFactory.requestDecreaseStake(decreaseAmount, { from: user })
+        } else if (isRequestPending) {
+            let latestBlock = _lib.toBN((await web3.eth.getBlock('latest')).number)
+            let readyToEvaluate = pendingDecreaseReq.lockupExpiryBlock.lte(latestBlock)
+            console.log(`${user} - randomlyDecreaseStake lockupExpiryBlock: ${pendingDecreaseReq.lockupExpiryBlock}, latest=${latestBlock}, readyToEvaluate=${readyToEvaluate}`)
+            if (readyToEvaluate) {
+                await serviceProviderFactory.decreaseStake({ from: user })
+                console.log(`${user} - Finished evaluating decrease stake request`)
+            }
+        }
     }
 
     const getAccountStakeInfo = async (account) => {
@@ -322,6 +374,25 @@ contract.only('Random testing', async (accounts) => {
         } catch(e) {
             console.log(e)
         }
+    }
+
+    // Add services as expected
+    const processUserState = async (users) => {
+        await Promise.all(
+            users.map(async (user) => {
+                let userServiceInfo = await getUserServiceInfo(user)
+                if (userServiceInfo.numServices < minNumServicesPerUser) {
+                    // In this case, our user has not
+                    await addNewServiceForUser(user)
+                } else {
+                    console.log(`${user} - Satisifed service requirements`)
+                    await randomlyDelegate(user)
+                    await randomlyDecreaseStake(user)
+                }
+                // Randomly advance blocks
+                await randomlyAdvanceBlocks()
+            })
+        )
     }
 
     describe('Random test cases', () => {
