@@ -44,6 +44,7 @@ jobs:
             "$(which node)" setup.js up -nc 3
             cd /home/circleci/project/mad-dog/
             docker ps
+            export ipfsPort=5001
             npm run start test-ci
   test-libs:
     docker:
