@@ -143,16 +143,16 @@ async function main() {
         numCreatorNodes: NUM_CREATOR_NODES,
         numUsers: NUM_USERS
       })
-      const tests = [test]
 
-      // dynamically create ipld tests and append to tests array
-      for (const [testName, testLogic] of Object.entries(ipldBlacklistTests)) {
-        const testFn = makeTest(testName, testLogic, {
-          numCreatorNodes: 1,
-          numUsers: NUM_USERS
-        })
-        tests.push(testFn)
-      }
+      // dynamically create ipld tests
+      const blacklistTests = Object.entries(ipldBlacklistTests).map(
+        ([testName, testLogic]) =>
+          makeTest(testName, testLogic, {
+            numCreatorNodes: 1,
+            numUsers: NUM_USERS
+          })
+      )
+      const tests = [test, ...blacklistTests]
 
       try {
         await testRunner(tests)
