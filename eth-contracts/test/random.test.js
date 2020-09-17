@@ -17,7 +17,10 @@ contract.only('Random testing', async (accounts) => {
     let token, staking, serviceTypeManager, serviceProviderFactory
     let claimsManager, governance, delegateManager
     let users = []
+    let logs = {}
     let cnTypeInfo, dpTypeInfo
+    let currentRound = 1
+
     // proxyDeployerAddress is used to transfer tokens to service accounts as needed
     const proxyDeployerAddress = accounts[11]
     // guardian is equal to proxyDeployer for test purposes
@@ -32,7 +35,7 @@ contract.only('Random testing', async (accounts) => {
     const minNumServicesPerUser = 1
     const maxNumServicesPerUser = 2 // TODO: CONSUME THIS
 
-    const numRounds = 5
+    const numRounds = 2
 
     // const numRounds = 15
     const fundingRoundBlockDiffForTest = 200
@@ -44,9 +47,17 @@ contract.only('Random testing', async (accounts) => {
     const deployerCutLockupDuration = 11
 
     // TODO: Add non-SP delegators after everything else
-
     beforeEach(async () => {
-        console.log(`Addresses from test`)
+        // Select user slice
+        users = accounts.slice(userOffset, userOffset + numUsers)
+
+        // Initialize in memory log
+        logs["system"] = []
+        users.map((user)=>{ logs[user] = []})
+        console.log(`Initialized logs`)
+        console.dir(logs, {depth:5})
+
+        console.log(`Addresses for test`)
         console.log(`proxyDeployer: ${proxyDeployerAddress}`)
         token = await AudiusToken.at(process.env.tokenAddress)
         console.log(`AudiusToken: ${token.address}, expected ${process.env.tokenAddress}`)
@@ -78,22 +89,19 @@ contract.only('Random testing', async (accounts) => {
             return
         }
 
-        users = accounts.slice(userOffset, userOffset + numUsers)
         cnTypeInfo = await serviceTypeManager.getServiceTypeInfo(serviceTypeCN)
-        dpTypeInfo = await serviceTypeManager.getServiceTypeInfo(serviceTypeDP)
-        console.log(`DP: ${serviceTypeDP}`)
-        console.log(`CN: ${serviceTypeCN}`)
+        console.log(`CN: ${serviceTypeCN} - min: ${cnTypeInfo.minStake}, max: ${cnTypeInfo.maxStake}`)
 
+        dpTypeInfo = await serviceTypeManager.getServiceTypeInfo(serviceTypeDP)
+        console.log(`DP: ${serviceTypeDP} - min: ${dpTypeInfo.minStake}, max: ${dpTypeInfo.maxStake}`)
         await initializeTestState()
     })
 
     const initializeTestState = async () => {
         const curBlockDiff = await claimsManager.getFundingRoundBlockDiff.call()
         console.log(`Current block diff: ${curBlockDiff}`)
-
         // Local dev sanity config updates
         // https://github.com/AudiusProject/audius-protocol/commit/12116eede803b395a9518c707360e7b633cf6ad2
-
         // Update funding found block diff
         await governance.guardianExecuteTransaction(
             claimsManagerProxyKey,
@@ -105,7 +113,6 @@ contract.only('Random testing', async (accounts) => {
         console.log(`Updated fundingRoundBlockDiff to ${fundingRoundBlockDiffForTest}`)
         const newBlockDiff = await claimsManager.getFundingRoundBlockDiff.call()
         console.log(`Updated fundingRoundBlockDiff from ClaimsManager: ${newBlockDiff}`)
-
         // Set voting period
         await governance.guardianExecuteTransaction(
             governanceRegKey,
@@ -115,7 +122,6 @@ contract.only('Random testing', async (accounts) => {
             { from: guardianAddress }
         )
         console.log(`Updated votingPeriod to ${votingPeriod}`)
-
         // Set execution delay
         await governance.guardianExecuteTransaction(
             governanceRegKey,
@@ -125,7 +131,6 @@ contract.only('Random testing', async (accounts) => {
             { from: guardianAddress }
         )
         console.log(`Updated executionDelay to ${executionDelayBlocks}`)
-
         await governance.guardianExecuteTransaction(
             serviceProviderFactoryKey,
             _lib.toBN(0),
@@ -144,6 +149,15 @@ contract.only('Random testing', async (accounts) => {
         return `https://${user}-${type}:${rand(0, 10000000000)}`
     }
 
+    const testLog = (user, msg) => {
+        console.log(`${user} - ${msg}`)
+        logs[user].push({
+            user,
+            currentRound,
+            msg
+        })
+    }
+
     const getUserServiceInfo = async (user) => {
         let cnodeIds = await serviceProviderFactory.getServiceProviderIdsFromAddress(user, serviceTypeCN)
         if (!cnodeIds) { cnodeIds = [] }
@@ -159,7 +173,7 @@ contract.only('Random testing', async (accounts) => {
     }
 
     const addNewServiceForUser = async (user) => {
-        console.log(`${user} - Adding new service endpoint`)
+        testLog(user, 'Adding new service endpoint')
         // 50% chance of disc prov, 50% chance of creator node
         let serviceTypeDiceRoll = rand(0, 100)
         let amount
@@ -212,14 +226,12 @@ contract.only('Random testing', async (accounts) => {
                 await token.transfer(sender, missing, { from: proxyDeployerAddress })
                 currentBalance = await token.balanceOf(sender)
             }
-
             // Approve staking transfer
             await token.approve(
                 staking.address,
                 amount,
                 { from: sender }
             )
-
             // Delegate valid min to SP 1
             await delegateManager.delegateStake(
                 target,
@@ -236,7 +248,7 @@ contract.only('Random testing', async (accounts) => {
         // 50% chance of delegation FROM this user
         let shouldDelegate = rand(0, 100)
         if (shouldDelegate < 50) return
-        console.log(`${user} ------- Random delegation rolled ${shouldDelegate} -------`)
+        console.log(`${user} ------- Random delegation rolled ${shouldDelegate}/100 -------`)
         let otherUsers = users.filter(x=>x!=user)
         let randTargetUser = otherUsers[Math.floor(Math.random()*otherUsers.length)];
         // Select between 100 and 500 AUD to delegate
@@ -401,22 +413,29 @@ contract.only('Random testing', async (accounts) => {
     describe('Random test cases', () => {
         it('sandbox', async () => {
             console.log(users)
-            let currentRound = 1
             while (currentRound <= numRounds) {
                 console.log(`------------------------ AUDIUS RANDOM TESTING - Round ${currentRound} ------------------------`)
                 // Ensure base user state (service requirements satisfied)
                 await processUserState(users)
-
                 // TODO: Randomize from which acct the round is initiated
                 await initiateRound(users[0])
-
                 await claimPendingRewards(users)
-
                 await validateUsers(users)
                 console.log(`------------------------ AUDIUS RANDOM TESTING - Finished Round ${currentRound} ------------------------\n`)
                 // Progress round
                 currentRound++
             }
+            logTestSummary()
         })
     })
+
+    const logTestSummary = () => {
+        console.dir(logs, { depth: 5 })
+        let logKeys = Object.keys(logs)
+        console.log(logKeys)
+        // Iterate over every user and print summary
+        for (var key of logKeys) {
+            console.log(`--${key}`)
+        }
+    }
 })
