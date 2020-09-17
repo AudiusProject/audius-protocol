@@ -10,9 +10,8 @@ const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
-const TrackSaveConcurrencyLimit = 10
-const NonTrackFileSaveConcurrencyLimit = 10
-const RehydrateIPFSConcurrencyLimit = 10
+const TrackSaveConcurrencyLimit = config.get('trackSaveConcurrencyLimit')
+const NonTrackFileSaveConcurrencyLimit = config.get('nonTrackFileSaveConcurrencyLimit')
 
 module.exports = function (app) {
   /**
@@ -39,14 +38,15 @@ module.exports = function (app) {
         models.Track.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t }),
         models.File.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t })
       ])
-      await t.commit()
+      await t.commit() // why do we have this if we're not making changes?
 
       /** Bundle all data into cnodeUser objects to maximize import speed. */
 
       const cnodeUsersDict = {}
       const TTL = config.get('redisRehydrateCacheTTL')
 
-      const cnodeUserUUIDsOfFilesToRehydrateArray = cnodeUsers.map(async cnodeUser => {
+      // Iterate through cnode users and return the cnode user UUIDs that require rehydration
+      const cnodeUserUUIDsOfFilesToRehydrateArray = await Promise.all(cnodeUsers.map(async cnodeUser => {
         // Convert sequelize object to plain js object to allow adding additional fields.
         const cnodeUserDictObj = cnodeUser.toJSON()
 
@@ -58,16 +58,14 @@ module.exports = function (app) {
         cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUserDictObj
 
         // Use redis cache to check if user with associated wallet has had its files recently rehydrated
-        // If so, do not rehydrate
+        // If so, do not add to rehydrate array
         const entry = await redisClient.get(`recently_rehydrated_wallet_${cnodeUser.walletPublicKey}`)
         if (!entry) {
           // expires in 60s
           await redisClient.set(`recently_rehydrated_wallet_${cnodeUser.walletPublicKey}`, cnodeUser.cnodeUserUUID, 'EX', TTL)
           return Promise.resolve(cnodeUser.cnodeUserUUID)
         }
-      })
-
-      const cnodeUserUUIDsOfFilesToRehydrateSet = new Set(await Promise.all(cnodeUserUUIDsOfFilesToRehydrateArray))
+      }))
 
       audiusUsers.forEach(audiusUser => {
         const audiusUserDictObj = audiusUser.toJSON()
@@ -77,42 +75,18 @@ module.exports = function (app) {
         let trackDictObj = track.toJSON()
         cnodeUsersDict[trackDictObj['cnodeUserUUID']]['tracks'].push(trackDictObj)
       })
-
-      const filesToRehydrate = []
       files.forEach(file => {
         let fileDictObj = file.toJSON()
         cnodeUsersDict[fileDictObj['cnodeUserUUID']]['files'].push(fileDictObj)
+      })
 
-        if (cnodeUserUUIDsOfFilesToRehydrateSet.has(fileDictObj.cnodeUserUUID)) {
-          filesToRehydrate.push(fileDictObj)
-        }
       })
 
       // Expose ipfs node's peer ID.
       const ipfs = req.app.get('ipfsAPI')
       let ipfsIDObj = await getIPFSPeerId(ipfs, config)
 
-      for (let i = 0; i < filesToRehydrate.length; i += RehydrateIPFSConcurrencyLimit) {
-        const exportFilesSlice = filesToRehydrate.slice(i, i + RehydrateIPFSConcurrencyLimit)
-        req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}`)
-        // Ensure all relevant files are available through IPFS at export time
-        await Promise.all(exportFilesSlice.map(async (file) => {
-          try {
-            if (
-              (file.type === 'track' || file.type === 'metadata' || file.type === 'copy320') ||
-              // to address legacy single-res image rehydration where images are stored directly under its file CID
-              (file.type === 'image' && file.sourceFile === null)
-            ) {
-              RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(file.multihash, file.storagePath, { logContext: req.logContext })
-            } else if (file.type === 'dir') {
-              RehydrateIpfsQueue.addRehydrateIpfsDirFromFsIfNecessaryTask(file.multihash, { logContext: req.logContext })
-            }
-          } catch (e) {
-            req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}, ${e}`)
-          }
-        }))
-      }
-      return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj: ipfsIDObj })
+      return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
     } catch (e) {
       await t.rollback()
       return errorResponseServerError(e.message)

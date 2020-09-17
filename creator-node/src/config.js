@@ -353,9 +353,27 @@ const config = convict({
     default: false
   },
   rehydrateMaxConcurrency: {
-    doc: 'Number of concurrent rehydrate queue tasks running',
+    doc: 'Max number of concurrent rehydrate queue tasks running',
     format: 'nat',
     env: 'rehydrateMaxConcurrency',
+    default: 10
+  },
+  rehydrateIPFSConcurrencyLimit: {
+    doc: 'Max number of concurrent rehydrate ipfs calls to make',
+    format: 'nat',
+    env: 'rehydrateIPFSConcurrencyLimit',
+    default: 10
+  },
+  trackSaveConcurrencyLimit: {
+    doc: 'Max number of concurrent track saves',
+    format: 'nat',
+    env: 'trackSaveConcurrencyLimit',
+    default: 10
+  },
+  nonTrackFileSaveConcurrencyLimit: {
+    doc: 'Max number of concurrent non track saves',
+    format: 'nat',
+    env: 'nonTrackFileSaveConcurrencyLimit',
     default: 10
   },
   redisRehydrateCacheTTL: {

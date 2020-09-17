@@ -4,6 +4,7 @@ const { BufferListStream } = require('bl')
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
+const config = require('./config')
 
 class Utils {
   static verifySignature (data, sig) {
@@ -195,6 +196,48 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
   }
 })
 
+/**
+ * Rehydrate files and directories per cnode uuid
+ * @param {string} cnodeUserUUID
+ * @param {object} logContext
+ */
+async function rehydrateIpfsPerCnodeUUIDIfNecessary (cnodeUserUUID, { logContext }) {
+  const logger = genericLogger.child(logContext)
+
+  const t = await models.sequelize.transaction()
+  let files
+  try {
+    // Get all files associated with cnodeUUID
+    files = await models.File.findAll({ where: { cnodeUserUUID }, transaction: t })
+  } catch (e) {
+    t.rollback()
+    throw new Error(`rehydrateIpfsPerWalletIfNecessary ERROR - Could not query files for cnode user ${cnodeUserUUID} ${e}`)
+  }
+
+  // Iterate through files and rehydrate
+  const RehydrateIPFSConcurrencyLimit = config.get('rehydrateIPFSConcurrencyLimit')
+  for (let i = 0; i < files.length; i += RehydrateIPFSConcurrencyLimit) {
+    const exportFilesSlice = files.slice(i, i + RehydrateIPFSConcurrencyLimit)
+    logger.info(`rehydrateIpfsPerCnodeUUIDIfNecessary - processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}`)
+    // Ensure all relevant files are available through IPFS at export time
+    await Promise.all(exportFilesSlice.map(async (file) => {
+      try {
+        if (
+          (file.type === 'track' || file.type === 'metadata' || file.type === 'copy320') ||
+          // to address legacy single-res image rehydration where images are stored directly under its file CID
+          (file.type === 'image' && file.sourceFile === null)
+        ) {
+          rehydrateIpfsFromFsIfNecessary(file.multihash, file.storagePath, { logContext })
+        } else if (file.type === 'dir') {
+          rehydrateIpfsDirFromFsIfNecessary(file.multihash, { logContext })
+        }
+      } catch (e) {
+        logger.warning(`rehydrateIpfsPerCnodeUUIDIfNecessary ERROR - processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}, ${e}`)
+      }
+    }))
+  }
+}
+
 async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContext, filename = null) {
   const logger = genericLogger.child(logContext)
   let ipfsPath = multihash
@@ -313,12 +356,15 @@ async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
   }
 }
 
-module.exports = Utils
-module.exports.getFileUUIDForImageCID = getFileUUIDForImageCID
-module.exports.getIPFSPeerId = getIPFSPeerId
-module.exports.rehydrateIpfsFromFsIfNecessary = rehydrateIpfsFromFsIfNecessary
-module.exports.rehydrateIpfsDirFromFsIfNecessary = rehydrateIpfsDirFromFsIfNecessary
-module.exports.ipfsSingleByteCat = ipfsSingleByteCat
-module.exports.ipfsCat = ipfsCat
-module.exports.ipfsGet = ipfsGet
-module.exports.ipfsStat = ipfsStat
+module.exports = {
+  Utils,
+  getFileUUIDForImageCID,
+  getIPFSPeerId,
+  rehydrateIpfsFromFsIfNecessary,
+  rehydrateIpfsDirFromFsIfNecessary,
+  rehydrateIpfsPerCnodeUUIDIfNecessary,
+  ipfsSingleByteCat,
+  ipfsCat,
+  ipfsGet,
+  ipfsStat
+}
