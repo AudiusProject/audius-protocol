@@ -30,18 +30,12 @@ user_model = ns.model("user", {
     "track_count": fields.Integer(required=True),
 })
 
-user_full = ns.clone("user_full", user_model, {
-    "blockhash": fields.String(required=True),
-    "blocknumber": fields.Integer(required=True),
+user_model_full = ns.clone("user_full", user_model, {
     "created_at": fields.String(required=True),
     "creator_node_endpoint": fields.String,
     "current_user_followee_follow_count": fields.Integer(required=True),
     "does_current_user_follow": fields.Boolean(required=True),
     "handle_lc": fields.String(required=True),
     "is_creator": fields.Boolean(required=True),
-    "is_current": fields.Boolean(required=True),
-    "metadata_multihash": fields.String(required=True),
-    "track_blocknumber": fields.Integer(required=True),
     "updated_at": fields.String(required=True),
-    "wallet": fields.String(required=True)
 })

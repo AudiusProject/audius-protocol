@@ -2,12 +2,13 @@ from urllib.parse import urljoin
 import logging  # pylint: disable=C0302
 from flask import redirect
 from flask_restx import Resource, Namespace, fields
+from flask_restx import resource
 from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
     extend_track, make_response, search_parser, \
     trending_parser, success_response, abort_bad_request_param
-from .models.tracks import track
+from .models.tracks import track, track_full
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_trending_tracks import get_trending_tracks
 from src.utils.config import shared_config
@@ -18,12 +19,25 @@ from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
 ns = Namespace('tracks', description='Track related operations')
+full_ns = Namespace('tracks', description='Full track operations')
 
 track_response = make_response("track_response", ns, fields.Nested(track))
+full_track_response = make_response("full_track_response", full_ns, fields.Nested(track_full))
+
 tracks_response = make_response(
     "tracks_response", ns, fields.List(fields.Nested(track)))
 
-@ns.route('/<string:track_id>')
+def get_single_track(track_id, endpoint_ns):
+    decoded_id = decode_with_abort(track_id, endpoint_ns)
+    args = {"id": [decoded_id], "with_users": True, "filter_deleted": True}
+    tracks = get_tracks(args)
+    if not tracks:
+        abort_not_found(track_id, endpoint_ns)
+    single_track = extend_track(tracks[0])
+    return success_response(single_track)
+
+TRACK_ROUTE = '/<string:track_id>'
+@ns.route(TRACK_ROUTE)
 class Track(Resource):
     @record_metrics
     @ns.doc(
@@ -39,14 +53,16 @@ class Track(Resource):
     @cache(ttl_sec=5)
     def get(self, track_id):
         """Fetch a track."""
-        decoded_id = decode_with_abort(track_id, ns)
-        args = {"id": [decoded_id], "with_users": True, "filter_deleted": True}
-        tracks = get_tracks(args)
-        if not tracks:
-            abort_not_found(track_id, ns)
-        single_track = extend_track(tracks[0])
-        return success_response(single_track)
+        logger.warning("HITTING TRACK ENDPOINT")
+        return get_single_track(track_id, ns)
 
+@full_ns.route(TRACK_ROUTE)
+class FullTrack(Resource):
+    @record_metrics
+    @full_ns.marshal_with(full_track_response)
+    @cache(ttl_sec=5)
+    def get(self, track_id):
+        return get_single_track(track_id, full_ns)
 
 def tranform_stream_cache(stream_url):
     return redirect(stream_url)
@@ -149,6 +165,7 @@ class Trending(Resource):
     @cache(ttl_sec=30 * 60)
     def get(self):
         """Gets the top 100 trending (most popular) tracks on Audius"""
+        logger.warning("HITTING TRENDING!!!")
         args = trending_parser.parse_args()
         time = args.get("time") if args.get("time") is not None else 'week'
         args = {
@@ -158,4 +175,6 @@ class Trending(Resource):
         }
         tracks = get_trending_tracks(args)
         tracks = list(map(extend_track, tracks))
+        logger.warning("TRACKS!!")
+        logger.warning(tracks)
         return success_response(tracks)

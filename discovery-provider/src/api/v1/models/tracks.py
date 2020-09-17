@@ -1,6 +1,6 @@
 from src.api.v1.helpers import make_response
 from flask_restx import fields
-from .users import user_model
+from .users import user_model, user_model_full
 from .common import favorite, ns, repost
 
 track_artwork = ns.model('track_artwork', {
@@ -62,29 +62,23 @@ track = ns.model('Track', {
 })
 
 track_full = ns.clone('track_full', track, {
-    "blockhash": fields.String(required=True),
     "create_date": fields.String,
     "created_at": fields.String,
     "credits_splits": fields.String,
     "download": fields.Nested(download),
     "isrc": fields.String,
-    "length": fields.Integer,
     "license": fields.String,
     "iswc": fields.String,
     "field_visibility": fields.Nested(field_visibility),
     "followee_reposts": fields.List(fields.Nested(repost), required=True),
     "has_current_user_reposted": fields.Boolean(required=True),
-    "is_current": fields.Boolean(required=True),
-    "is_delete": fields.Boolean(required=True),
     "is_unlisted": fields.Boolean(required=True),
     "has_current_user_saved": fields.Boolean(required=True),
     "followee_favorites": fields.List(fields.Nested(favorite), required=True),
-    "file_type": fields.String,
     "route_id": fields.String(required=True),
-    "blocknumber": fields.Integer(required=True),
-    "metadata_multihash": fields.String(required=True),
     "stem_of": fields.Nested(stem_parent),
     "track_segments": fields.List(fields.Nested(track_segment)),
     "updated_at": fields.String,
-    "user_id": fields.String(required=True)
+    "user_id": fields.String(required=True),
+    "user": fields.Nested(user_model_full, required=True)
 })
