@@ -43,7 +43,9 @@ module.exports = (deployer, network, accounts) => {
     await registry.addContract(trackStorageKey, TrackStorage.address)
 
     const verifierAddress = config.verifierAddress || accounts[0]
+    // this is the blacklist's veriferAddress
     const blacklisterAddress = config.blacklisterAddress || accounts[0]
+
     await deployer.deploy(UserFactory, Registry.address, userStorageKey, network_id, verifierAddress)
     await registry.addContract(userFactoryKey, UserFactory.address)
 
@@ -71,6 +73,5 @@ module.exports = (deployer, network, accounts) => {
 
     await deployer.deploy(IPLDBlacklistFactory, Registry.address, network_id, blacklisterAddress)
     await registry.addContract(ipldBlacklistFactorykey, IPLDBlacklistFactory.address)
-
   })
 }
