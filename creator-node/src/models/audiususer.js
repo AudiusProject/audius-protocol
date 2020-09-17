@@ -3,8 +3,7 @@ module.exports = (sequelize, DataTypes) => {
   const AudiusUser = sequelize.define('AudiusUser', {
     blockchainId: {
       type: DataTypes.BIGINT,
-      unique: true,
-      allowNull: true // should this be false?
+      allowNull: false
     },
     cnodeUserUUID: {
       type: DataTypes.UUID,

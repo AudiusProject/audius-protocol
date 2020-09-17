@@ -5,10 +5,10 @@ module.exports = {
     // Scope of the migration is:
     // Remove trackUUID from Files and replace it with trackBlockchainId and migrate all existing values over
     // Remove trackUUID field from Tracks table
-    // Remove UNIQUE constraint for blockchainId in Tracks table
+    // Remove UNIQUE constraint for blockchainId, trackUUID in Tracks table
     // Add NOT NULL constraint for blockchainId in Tracks table
     // Remove audiusUserUUID field from AudiusUsers table
-    // Remove UNIQUE constraint for blockchainId in AudiusUsers table
+    // Remove UNIQUE constraint for audiusUserUUID in AudiusUsers table (no unique constraint on blockchainId)
     // Add NOT NULL constraint for blockchainId in AudiusUsers table
 
     await queryInterface.sequelize.query(`
@@ -47,11 +47,19 @@ module.exports = {
       ALTER TABLE "Tracks" DROP CONSTRAINT "Tracks_trackUUID_key";
       ALTER TABLE "Tracks" DROP CONSTRAINT "blockchainId_unique_idx";
 
+      -- add a not null constraint to Tracks blockchainId, just run a delete query to remove any outstanding Tracks without a blockchainId in case there are any
+      DELETE FROM "Tracks" WHERE "blockchainId" IS NULL;
+      ALTER TABLE "Tracks" ALTER COLUMN "blockchainId" SET NOT NULL;
+
       -- remove the trackUUID column from Tracks
       ALTER TABLE "Tracks" DROP COLUMN "trackUUID";
 
       -- remove the unique constraint from AudiusUsers
       ALTER TABLE "AudiusUsers" DROP CONSTRAINT "AudiusUsers_audiusUserUUID_key";
+
+      -- add a not null constraint to AudiusUsers blockchainId, just run a delete query to remove any outstanding AudiusUsers without a blockchainId in case there are any
+      DELETE FROM "AudiusUsers" WHERE "blockchainId" IS NULL;
+      ALTER TABLE "AudiusUsers" ALTER COLUMN "blockchainId" SET NOT NULL;
 
       -- remove the audiusUserUUID field as the AudiusUsers pkey
       ALTER TABLE "AudiusUsers" DROP CONSTRAINT "AudiusUsers_pkey";
@@ -64,7 +72,6 @@ module.exports = {
     // TODO - add a primary key to Tracks (blockchainId:clock)
     // TODO - add a primary key to AudiusUsers (blockchainId:clock)
     // TODO - remove Files unique constraint since pkey does that
-    // TODO - change blockchainId in AudiusUsers and Tracks to be not null
   },
 
   down: (queryInterface, Sequelize) => {
